@@ -6,6 +6,8 @@ import Footer from '/src/components/Footer.vue'
 
 <script>
 import axios from "axios";
+const images = import.meta.glob("/src/assets/images/roadmap/*")
+
 function getCookie(name) {
     var r = document.cookie.match("\\b" + name + "=([^;]*)\\b");
     return r ? r[1] : undefined;

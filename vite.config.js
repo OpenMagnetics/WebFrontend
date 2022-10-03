@@ -11,11 +11,11 @@ export default defineConfig({
                 
                 assetFileNames: ({name}) => {
                     if (/\.(gif|jpe?g|png|svg)$/.test(name ?? '')){
-                            return 'assets/images/[name]-[hash][extname]';
+                        return 'assets/images/[name]-[hash][extname]';
                     }
                     
                     if (/\.css$/.test(name ?? '')) {
-                            return 'assets/css/[name]-[hash][extname]';     
+                        return 'assets/css/[name]-[hash][extname]';
                     }
  
                     // default value
