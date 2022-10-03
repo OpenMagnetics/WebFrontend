@@ -91,7 +91,7 @@ export default {
                       <p class="lead mb-0"><a href="http://www.how2power.com/pdf_view.php?url=/newsletters/2209/H2PowerToday2209_FocusOnMagnetics.pdf">Read it!</a>  </p>
                     </div>
                     <div class="col-xl-6">
-                  <img class=" ml-2 card-img-right flex-auto d-none d-xl-block" alt="Dowell's Curves" style="width: 500px;" src="/src/public/images/musings/4/loops.gif"  >
+                  <img class=" ml-2 card-img-right flex-auto d-none d-xl-block" alt="Dowell's Curves" style="width: 500px;" src="/images/musings/4/loops.gif"  >
                     </div>
                 </div>
             </div>
