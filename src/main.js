@@ -1,10 +1,8 @@
 import { createApp } from 'vue'
 // import './style.css'
 import App from './App.vue'
-import './styles/css/custom.css'
-// import './styles/css/custom.css.map'
+import './assets/css/custom.css'
 import 'bootstrap';
-// import 'bootstrap/dist/css/bootstrap.min.css';
 import router from "./router";
 
 const app = createApp(App);

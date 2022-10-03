@@ -12,7 +12,6 @@ import Footer from '/src/components/Footer.vue'
                     <h1 class="text-white">Alf’s Musings #3</h1>
                     <div class="user d-flex align-items-start justify-content-between bg-secondary p-4 rounded">
                         <div class="d-flex align-items-start">
-                            <img src="./img/kajal.png" class="img-fluid rounded-circle" alt="">
                             <div class="d-block">
                                 <span class="d-block text-white">by <a class="h6">Alfonso Martínez</a></span>
                                 <span class="d-block text-muted">23rd Dec 2021</span>

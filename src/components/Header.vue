@@ -81,9 +81,9 @@ export default {
 <template>
     <nav class="navbar navbar-expand-lg bg-light navbar-dark text-primary mb-2" id="header_wrapper">
         <div class="container-fluid">
-            <a href="/">
+<!--             <a href="/">
                 <img src="/static/images/logo.png" width="40" height="auto" href="/" class="d-inline-block align-top mr-2" alt="">
-            </a>
+            </a> -->
             <a class="navbar-brand text-primary" href="/">Open Magnetics</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon navbar-primary"></span>
