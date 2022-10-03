@@ -6,8 +6,6 @@ import Footer from '/src/components/Footer.vue'
 
 <script>
 import axios from "axios";
-const images = import.meta.glob("/src/assets/images/roadmap/*")
-
 function getCookie(name) {
     var r = document.cookie.match("\\b" + name + "=([^;]*)\\b");
     return r ? r[1] : undefined;
@@ -38,7 +36,7 @@ export default {
                     title: 'Steinmetz Equation',
                     section: 'Core losses', 
                     description: 'Implement Steinmetz Equation, the first and simplest of method for calculating the Core Losses of a magnetic core from a few coefficients provided by the manufacturer.',
-                    imgSrc: '/src/assets/images/roadmap/steinmetz.png',
+                    imgSrc: '/images/roadmap/steinmetz.png',
                     imgAlt: 'Charles Proteus Steinmetz',
                     state: "To Do"
                 },
@@ -54,7 +52,7 @@ export default {
                     title: 'Barg\'s model',
                     section: 'Core losses', 
                     description: 'Implement Barg\'s model for Core losses, as described in "Core Loss Calculation of Symmetric Trapezoidal Magnetic Flux Density Waveform".',
-                    imgSrc: '/src/assets/images/roadmap/barg.png',
+                    imgSrc: '/images/roadmap/barg.png',
                     imgAlt: 'Flux density waveform',
                     state: "To Do"
                 },
@@ -63,7 +61,7 @@ export default {
                     title: 'Roshen\'s model',
                     section: 'Core losses', 
                     description: 'Implement Roshen\'s model for Core losses, as described in "Ferrite Core Loss for Power Magnetic Components Design" and "A Practical, Accurate and Very General Core Loss Model for Nonsinusoidal Waveforms".',
-                    imgSrc: '/src/assets/images/roadmap/roshen.png',
+                    imgSrc: '/images/roadmap/roshen.png',
                     imgAlt: 'Roshen minor loop',
                     state: "To Do"
                 },
@@ -72,7 +70,7 @@ export default {
                     title: 'Zhang method',
                     section: 'Gap Reluctance', 
                     description: 'Implement Zhang method for calculating the Reluctance of the gaps in the magnetic core, and therefore the Inductance of the final component.',
-                    imgSrc: '/src/assets/images/roadmap/zhang.png',
+                    imgSrc: '/images/roadmap/zhang.png',
                     imgAlt: 'Zhang gap example',
                     state: "To Do"
                 },
@@ -81,7 +79,7 @@ export default {
                     title: 'Stenglein method',
                     section: 'Gap Reluctance', 
                     description: 'Implement Stenglein method for calculating the Reluctance of the gaps in the magnetic core, and therefore the Inductance of the final component. Especial model for large gaps',
-                    imgSrc: '/src/assets/images/roadmap/stenglein.png',
+                    imgSrc: '/images/roadmap/stenglein.png',
                     imgAlt: 'Stenglein gap example',
                     state: "To Do"
                 },
@@ -90,7 +88,7 @@ export default {
                     title: 'Balakrishnan method',
                     section: 'Gap Reluctance', 
                     description: 'Implement Balakrishnan method for calculating the Reluctance of the gaps in the magnetic core, and therefore the Inductance of the final component.',
-                    imgSrc: '/src/assets/images/roadmap/balakrishnan.png',
+                    imgSrc: '/images/roadmap/balakrishnan.png',
                     imgAlt: 'Balakrishnan gap example',
                     state: "To Do"
                 },
@@ -99,7 +97,7 @@ export default {
                     title: 'Mühlethaler method',
                     section: 'Gap Reluctance', 
                     description: 'Implement Mühlethaler method for calculating the Reluctance of the gaps in the magnetic core, and therefore the Inductance of the final component.',
-                    imgSrc: '/src/assets/images/roadmap/muehlethaler.png',
+                    imgSrc: '/images/roadmap/muehlethaler.png',
                     imgAlt: 'Mühlethaler gap example',
                     state: "To Do"
                 },
@@ -136,7 +134,7 @@ export default {
                     title: 'Shape Artisan',
                     section: 'Magnetic Design', 
                     description: 'Implement an online tool for customizing any type of family of cores, by either introducing the dimensions or dragging a 2D schema. Do you want a PQ42? an RM23? You have them.',
-                    imgSrc: '/src/assets/images/roadmap/shape_artisan.png',
+                    imgSrc: '/images/roadmap/shape_artisan.png',
                     imgAlt: 'Custom shape example',
 
                     state: "To Do"
@@ -146,7 +144,7 @@ export default {
                     title: 'Waveform Artisan',
                     section: 'Magnetic Design', 
                     description: 'Implement an online tool for introducing and customizing electrical waveforms by drawing in a canvas and adjusting the levels by dragging.',
-                    imgSrc: '/src/assets/images/roadmap/waveform_artisan.png',
+                    imgSrc: '/images/roadmap/waveform_artisan.png',
                     imgAlt: 'Draggable waveform example',
                     state: "To Do"
                 },
@@ -162,7 +160,7 @@ export default {
                     title: 'Magnetic Data Structure',
                     section: 'Magnetic Design', 
                     description: 'Define a structure that is able to describe any magnetic component without any ambiguity; including core, wires, winding structure, connectors, assembly, excitation, electromagnetic and thermal behavior',
-                    imgSrc: '/src/assets/images/roadmap/data_structure.png',
+                    imgSrc: '/images/roadmap/data_structure.png',
                     imgAlt: 'Magnetic Agnostic Structure example',
                     state: 'Done on August 2022'
                 },

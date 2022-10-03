@@ -34,15 +34,15 @@ import Footer from '/src/components/Footer.vue'
                         <h1 class="h2">Exempli gratia</h1>
                         <p>Let me put an example: We have a magnetic with four layers: primary, secondary, primary, secondary (PSPS), each with 10 turns.</p>
                         <p>If we connect it to a circuit that will feed the primary 1A, we get the following mmf diagram:</p>
-                        <img src="/src/assets/images/musings/2/image2.png" class="img-fluid bounce-little my-3" alt="">
+                        <img src="/src/public/images/musings/2/image2.png" class="img-fluid bounce-little my-3" alt="">
                         <p>This is a classical example, where Dowell’s method is totally applicable. The primary increases the mmf in its layers, and it is afterward counteracted by the current flowing in the opposite direction in the secondary.</p>
                         <p>But, if now we grab this magnetic and connect it to a Flyback converter, where the primary is conducting half the period (let’s assume 0.5 duty cycle, for clarity) and the secondary is conducting the other half. The mmf diagram we get is the following:</p>
-                        <img src="/src/assets/images/musings/2/image3.png" class="img-fluid bounce-little my-3" alt="">
+                        <img src="/src/public/images/musings/2/image3.png" class="img-fluid bounce-little my-3" alt="">
                         <p>We can observe how the mmf in the first half grows from the first layer and is not counteracted by any opposing current. And equally happens in the second half of the period with the secondary.</p>
                         <p>I know all this can be a bit dry, but stay with me a bit longer: Supposing we apply Dowell’s method for calculating the AC resistance to this magnetic as proposed by him, not even directly his equations, but the method that is summarized by the equations; the first step would be to calculate the current density “at the tops of conductors” in the diagram, and from it derive the magnetic flux through the previous layers.</p>
                         <p>But lo and behold! In the first case, we would be parting from half the mmf than in the second case, and this would derive a smaller AC factor for the first case than for the second case. Same magnetic, with the same number of turns and interleaved layers arrangement, and with the same peak current circulating through it, will have a different AC resistance. (I know, I know, I already reached this implication in my third point before, but this is a more extreme case)</p>
                         <p>This example shows why you should NOT apply Dowell’s formulas to magnetics used in topologies with windings that are conducting part of the period. And hey, you can believe me, or you can believe Dowell, who literally starts his paper with two principles in which his following reasoning is based, and the second is:</p>
-                        <img src="/src/assets/images/musings/2/image1.png" class="img-fluid bounce-little my-3" alt="">
+                        <img src="/src/public/images/musings/2/image1.png" class="img-fluid bounce-little my-3" alt="">
                         <p>You still want to use Dowell’s for your Flyback? Really? Let me point out one more ridiculous consequence of applying Dowell’s to a Flyback.</p>
                         <p>The mmf diagram is a rough one dimensional representation of the H field distribution in the winding. If we translate this to practical engineering terms, it means that the bigger the area of the diagram over (or under ) the x axis at a winding layer, the proportionally bigger the losses due to induced currents (proximity effect) in that layer.</p>
                         <p>So… does that mean that in the second half of the period there are no losses due to proximity effect in the first (left most) layer of the primary, where the mmf is zero? Wait wait, that is just because we decided to draw the diagram from the left, if we do it from the right, that layer get’s the maximum mmf. Which one is correct? The answer is neither, you cannot apply Dowell’s to a Flyback and keep all your <a href="https://www.d20srd.org/srd/variant/campaigns/sanity.htm">sanity points</a>.</p>
@@ -71,7 +71,7 @@ import Footer from '/src/components/Footer.vue'
                                 <li>Secondary: DC, skin, and proximity due to the current through itself.</li>
                             </ul>
                         </ul>
-                        <img src="/src/assets/images/musings/1/image1.png" class="img-fluid bounce-little my-3" alt="">
+                        <img src="/src/public/images/musings/1/image1.png" class="img-fluid bounce-little my-3" alt="">
                         <p class="p">Regretfully originally published in https://drmolina.substack.com/p/5-mergence-transformer-best-f1-championship</p>
                     </div>
                 </div>

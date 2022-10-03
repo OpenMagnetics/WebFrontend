@@ -25,6 +25,7 @@ export default defineConfig({
             },
         }
     },
+    publicDir: 'src/public',
     plugins: [vue()],
     server: {
         proxy: {

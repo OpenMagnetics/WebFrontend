@@ -34,7 +34,7 @@ export default {
                     section: 'Winding losses', 
                     description: 'First chapter of the series based on analyzing Dowell\'s work on winding losses.', 
                     date:'Dec 2021', 
-                    imgSrc: '/src/assets/images/musings/1/image3.png', 
+                    imgSrc: '/images/musings/1/image3.png', 
                     imgAlt: 'Dowell\'s Curves'
                 },
                 {
@@ -44,7 +44,7 @@ export default {
                     section: 'Winding losses', 
                     description: 'Second chapter of the series based on analyzing Dowell\'s work on winding losses.', 
                     date:'Dec 2021', 
-                    imgSrc: '/src/assets/images/musings/2/image3.png', 
+                    imgSrc: '/images/musings/2/image3.png', 
                     imgAlt: 'Dowell\'s Curves'
                 },
                 {
@@ -54,7 +54,7 @@ export default {
                     section: 'Winding losses', 
                     description: 'Third and last chapter of the series based on analyzing Dowell\'s work on winding losses.', 
                     date:'Dec 2021', 
-                    imgSrc: '/src/assets/images/musings/3/image1.png', 
+                    imgSrc: '/images/musings/3/image1.png', 
                     imgAlt: 'Dowell\'s Curves'
                 },
                 {
@@ -64,7 +64,7 @@ export default {
                     section: 'Magnetics for dummies', 
                     description: 'First chapter of Magnetics for dummies, where we define what a Magnetic is.', 
                     date:'Jul 2022', 
-                    imgSrc: '/src/assets/images/musings/5/image5.png', 
+                    imgSrc: '/images/musings/5/image5.png', 
                     imgAlt: 'Dowell\'s Curves'
                 }
             ]
@@ -91,7 +91,7 @@ export default {
                       <p class="lead mb-0"><a href="http://www.how2power.com/pdf_view.php?url=/newsletters/2209/H2PowerToday2209_FocusOnMagnetics.pdf">Read it!</a>  </p>
                     </div>
                     <div class="col-xl-6">
-                  <img class=" ml-2 card-img-right flex-auto d-none d-xl-block" alt="Dowell's Curves" style="width: 500px;" src="/src/assets/images/musings/4/loops.gif"  >
+                  <img class=" ml-2 card-img-right flex-auto d-none d-xl-block" alt="Dowell's Curves" style="width: 500px;" src="/src/public/images/musings/4/loops.gif"  >
                     </div>
                 </div>
             </div>
