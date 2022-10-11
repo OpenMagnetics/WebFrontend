@@ -31,6 +31,11 @@ const routes = [
     name: 'Roadmap',
     component: () => import('../views/Roadmap.vue')
   },
+  {
+    path: '/operation_point',
+    name: 'OperationPoint',
+    component: () => import('../views/OperationPoint.vue')
+  },
 ]
 const router = createRouter({
   history: createWebHistory(),

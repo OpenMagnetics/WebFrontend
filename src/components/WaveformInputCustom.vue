@@ -1,0 +1,133 @@
+<script setup>
+import { ref, watch, computed, defineProps, onMounted } from 'vue'
+import { Form, Field, configure} from 'vee-validate';
+import * as Yup from 'yup';
+import * as Utils from '/src/assets/js/waveformUtils.js'
+import { useCurrentStore } from '/src/stores/waveform'
+import { useVoltageStore } from '/src/stores/waveform'
+import { useCommonStore } from '/src/stores/waveform'
+
+
+import { loadBase } from '/src/assets/js/WaveformInputBase.js'
+import WaveformInputCustomPoint from '/src/components/WaveformInputCustomPoint.vue'
+
+const props = defineProps({
+    electricalParameter: {
+        type: String,
+        required: false,
+        default: "current",
+    },
+    precision: {
+        type: Number,
+        required: false,
+        default: -2,
+    },
+    isChartReady: {
+        type: Boolean,
+        required: false,
+        default: false,
+    },
+})
+
+const titleColor = computed(() => {
+    if (props.electricalParameter == "current") {
+        return "text-info"
+    }
+    else {
+        return "text-primary"
+    }
+})
+
+var store
+var commonStore = useCommonStore()
+if (props.electricalParameter == "current") {
+    store = useCurrentStore()
+} else {
+    store = useVoltageStore()
+}
+const data = props.isChartReady? ref(Utils.deepCopy(store.getDataPoints.value)) : ref([{x: 0, y: -10 }, {x: 0.5, y: 10 }, {x: 1, y: -10 }])
+var switchingFrequency = ref(100000)
+
+function getParamsFromDataPoints(dataPoints, precision) {
+    var peakToPeakValue = Utils.roundWithDecimals(Math.abs(dataPoints[1].y - dataPoints[0].y), Math.pow(10, precision))
+    var offsetValue = Utils.roundWithDecimals((dataPoints[0].y + dataPoints[1].y) / 2, Math.pow(10, precision))
+    var dutyCycleValue = Utils.roundWithDecimals((dataPoints[1].x - dataPoints[0].x) / (dataPoints[2].x - dataPoints[0].x), Math.pow(10, precision))          
+    return {peakToPeakValue, offsetValue, dutyCycleValue}
+}
+
+function getDataPointsFromParams(params) {
+    const aux = [{x: 0, y: Number(params['offset']) - Number(params['peakToPeak']) / 2 }, {x: Number(Math.abs(params['dutyCycle']) % 1), y: Number(params['offset']) + Number(params['peakToPeak']) / 2 }, {x: 1, y: Number(params['offset']) - Number(params['peakToPeak']) / 2 } ]
+    return aux
+}
+
+function onTimeChange(newValue) {
+    data.value[newValue.index].x = Number(newValue.x)
+}
+function onValueChange(newValue) {
+    data.value[newValue.index].y = Number(newValue.y)
+        console.log()
+    if (newValue.index == 0 || newValue.index == (data.value.length - 1)){
+        data.value[0].y = Number(newValue.y)
+        data.value[data.value.length - 1].y = Number(newValue.y)
+        store.setDataPoint(data.value[0], 0);
+        store.setDataPoint(data.value[data.value.length - 1], data.value.length - 1);
+        console.log(store.getDataPoints)
+    }
+}
+
+function onAddPointBelow(index) {
+    var newItem = Utils.deepCopy(data.value[index])
+    newItem.x = (data.value[index].x + data.value[index + 1].x) / 2
+    newItem.y = (data.value[index].y + data.value[index + 1].y) / 2
+    data.value.splice(index + 1, 0, newItem);
+    store.setDataPoints(Utils.deepCopy(Utils.scaleData(data.value, switchingFrequency.value)));
+}
+function onRemovePoint(index) {
+    data.value.splice(index, 1)
+    store.setDataPoints(Utils.deepCopy(Utils.scaleData(data.value, switchingFrequency.value)));
+}
+
+onMounted(() => {
+    if (props.isChartReady) {
+        switchingFrequency = commonStore.getSwitchingFrequency;
+        data.value = Utils.deepCopy(store.getDataPoints.value)
+    }
+
+    store.$onAction((action) => {
+        if (action.name == "setChartReady") {
+            store.setDataPoints(Utils.deepCopy(Utils.scaleData(data.value, switchingFrequency.value)));
+        }
+        else if (action.name == "setDataPointsFromDragging") {
+            const dataPoints = action.args[0]
+            data.value = Utils.deepCopy(dataPoints)
+        }
+    })
+    commonStore.$onAction((action) => {
+        if (action.name == "setSwitchingFrequency") {
+            switchingFrequency.value = action.args[0]
+            store.setDataPoints(Utils.deepCopy(Utils.scaleData(data.value, switchingFrequency.value)));
+        }
+    })
+})
+
+const orderedData = computed(() => {
+    console.log(Utils.scaleData(data.value, switchingFrequency.value))
+    // console.log(data.value.at(-1), data.value.at(-2))
+    // return [data.value.at(-1), data.value.at(-2)];
+    return Utils.scaleData(data.value, switchingFrequency.value)
+})
+
+
+</script>
+
+
+<template>
+    <div class="container-flex text-white mt-2 mb-3 pb-3 border-bottom">
+        <label class="fs-4 mx-3 mb-3" :class="titleColor"> Waveform for {{electricalParameter}}</label>
+        <div></div>
+        <div v-for="(value, key) in data">
+            <WaveformInputCustomPoint :index="key" :electricalParameter="electricalParameter" :time="value.x" :value="value.y" @time-change="onTimeChange" @value-change="onValueChange" @add-point-below="onAddPointBelow" @remove-point="onRemovePoint"/>
+        </div>
+    </div>
+</template>
+
