@@ -5,7 +5,6 @@ import * as Yup from 'yup';
 import * as Utils from '/src/assets/js/waveformUtils.js'
 import { useCurrentStore } from '/src/stores/waveform'
 import { useVoltageStore } from '/src/stores/waveform'
-import { Vue3ToggleButton } from 'vue3-toggle-button'
 import { useCommonStore } from '/src/stores/waveform'
 import * as Defaults from '/src/assets/js/waveformDefaults.js'
 
