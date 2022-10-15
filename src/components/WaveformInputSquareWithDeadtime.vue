@@ -7,17 +7,13 @@ import { useCurrentStore } from '/src/stores/waveform'
 import { useVoltageStore } from '/src/stores/waveform'
 
 import { loadBase } from '/src/assets/js/WaveformInputBase.js'
+import * as Defaults from '/src/assets/js/waveformDefaults.js'
 
 const props = defineProps({
     electricalParameter: {
         type: String,
         required: false,
         default: "current",
-    },
-    precision: {
-        type: Number,
-        required: false,
-        default: -2,
     },
     isChartReady: {
         type: Boolean,
@@ -26,30 +22,36 @@ const props = defineProps({
     },
 })
 
-const defaultData = [{x: 0, y: -10 },
-                     {x: 0.25, y: -10 },
-                     {x: 0.25, y: 0 },
-                     {x: 0.50, y: 0 },
-                     {x: 0.50, y: 10 },
-                     {x: 0.75, y: 10 },
-                     {x: 0.75, y: 0 },
-                     {x: 1, y: 0 },
-                     {x: 1, y: -10 }]
+function createWaveform(peakToPeak, dutyCycle) {
+    const dc = Number(Math.abs(dutyCycle) % 0.5001)
+    const max = +Number(peakToPeak / 2)
+    const min = -Number(peakToPeak / 2)
+    const data = [{x: 0  , y: 0 },
+                  {x: 0.25 - dc / 2, y: 0 },
+                  {x: 0.25 - dc / 2, y: max },
+                  {x: 0.25 + dc / 2, y: max },
+                  {x: 0.25 + dc / 2, y: 0 },
+                  {x: 0.75 - dc / 2, y: 0 },
+                  {x: 0.75 - dc / 2, y: min },
+                  {x: 0.75 + dc / 2, y: min },
+                  {x: 0.75 + dc / 2, y: 0 },
+                  {x: 1, y: 0 }]
+    return data
+}
+
+const defaultData = createWaveform(Defaults.defaultPeakToPeak, Defaults.defaultDutyCycle)
 
 const {offset,
        peakToPeak,
        dutyCycle,
        data,
        store,
-       getDataPoints,
-       titleColor,
-       offsetValue,
        peakToPeakChange,
        dutyCycleChange,
        offsetChange,
        schema,
        formRef,
-       } = loadBase(props.electricalParameter, props.precision, props.isChartReady, defaultData, getParamsFromDataPoints, getDataPointsFromParams)
+       } = loadBase(props.electricalParameter, props.isChartReady, defaultData, getParamsFromDataPoints, getDataPointsFromParams)
 
 function getParamsFromDataPoints(dataPoints, precision) {
     const maxMin = Utils.getMaxMinInPoints(dataPoints, 'y')
@@ -62,19 +64,7 @@ function getParamsFromDataPoints(dataPoints, precision) {
 }
 
 function getDataPointsFromParams(params) {
-    const dc = Number(Math.abs(params['dutyCycle']) % 0.5)
-    const max = Number(params['offset']) + Number(params['peakToPeak'] / 2)
-    const min = Number(params['offset']) - Number(params['peakToPeak'] / 2)
-    const aux = [{x: 0, y: min },
-                 {x: dc, y: min },
-                 {x: dc, y: 0 },
-                 {x: 0.50, y: 0 },
-                 {x: 0.50, y: max },
-                 {x: 0.50 + dc, y: max },
-                 {x: 0.50 + dc, y: 0 },
-                 {x: 1, y: 0 },
-                 {x: 1, y: min }]
-    return aux
+    return createWaveform(params['peakToPeak'], params['dutyCycle'])
 }
 </script>
 
@@ -82,11 +72,11 @@ function getDataPointsFromParams(params) {
 <template>
     <div class="container-flex text-white mt-2 mb-3 pb-3 border-bottom">
         <Form ref="formRef" :validation-schema="schema" v-slot="{ errors }" class="form-inline">
-            <label class="fs-4 mx-3 mb-3" :class="titleColor"> Waveform for {{electricalParameter}}</label>
+            <label class="fs-4 mx-3 mb-3" :class="Defaults.titleColor(electricalParameter)"> Waveform for {{electricalParameter}}</label>
             <div></div>
             <label class="fs-5 mx-3">Peak to peak:</label>
             <label class="fs-5 mx-1 float-end" style="width: 10px;">{{electricalParameter == "current"? 'A' : 'V'}}</label>
-            <Field name="peakToPeakValidator" type="number" :value="peakToPeak" @change="peakToPeakChange" :class="{ 'is-invalid': errors.peakToPeakValidator }" class= "bg-light text-white float-end" style="width: 100%; max-width: 70px;"/>
+            <Field name="peakToPeakValidator" type="number" :value="peakToPeak" @change="peakToPeakChange" :class="{ 'is-invalid': errors.peakToPeakValidator }" class="rounded-2 bg-light text-white float-end" style="width: 100%; max-width: 70px;"/>
 
             <div></div>
 

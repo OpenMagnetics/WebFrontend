@@ -13,6 +13,15 @@ $popover-bg:                        $dark !default;
 $popover-body-color:                $white !default;
 $enable-responsive-font-sizes: 		true;
 
+$grid-breakpoints: (
+  xs: 0,
+  sm: 576px,
+  md: 768px,
+  lg: 1075px,
+  xl: 1200px,
+  xxl: 1400px
+);
+
 
 @import "./bootstrap-5.2.1/scss/bootstrap";
 

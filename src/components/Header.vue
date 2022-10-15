@@ -96,6 +96,16 @@ export default {
                     <li class="nav-item">
                         <router-link class="nav-link text-primary" to="/musings">Alf's Musings</router-link>
                     </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle rounded-3 ms-5 text-light bg-primary" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            Create Element
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="/operation_point">Operation Point</a></li>
+                            <li><a class="dropdown-item disabled" href="#">Core</a></li>
+                            <li><a class="dropdown-item disabled" href="#">Simulation</a></li>
+                        </ul>
+                    </li>
                 </ul>
             </div>
         </div>

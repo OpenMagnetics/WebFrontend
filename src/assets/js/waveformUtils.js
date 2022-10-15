@@ -1,5 +1,11 @@
-export function roundWithDecimals(value, precision) {
-    return Math.round(value / precision) * precision;
+import * as Everpolate from 'everpolate'
+import * as FFT from 'fft.js'
+
+export function roundWithDecimals(value, precision, trunc=false) {
+    if (trunc)
+        return Math.trunc(value / precision) * precision;
+    else
+        return Math.round(value / precision) * precision;
 }
 
 export function roundValue(chart, datasetIndex, index, value, xPrecision, yPrecision) {
@@ -9,18 +15,19 @@ export function roundValue(chart, datasetIndex, index, value, xPrecision, yPreci
     chart.data.datasets[datasetIndex].data[index] = value
 }
 
-export function checkHorizontalLimits(chart, datasetIndex, index, value) {
-    if (index < chart.data.datasets[datasetIndex].data.length - 1) {
-        if (value.x > chart.data.datasets[datasetIndex].data[index + 1].x) {
-            chart.data.datasets[datasetIndex].data[index].x = chart.data.datasets[datasetIndex].data[index + 1].x
+export function checkHorizontalLimits(data, index, value) {
+    if (index < data.length - 1) {
+        if (value.x > data[index + 1].x) {
+            data[index].x = data[index + 1].x
         }
     }
 
     if (index > 0) {
-        if (value.x < chart.data.datasets[datasetIndex].data[index - 1].x) {
-            chart.data.datasets[datasetIndex].data[index].x = chart.data.datasets[datasetIndex].data[index - 1].x
+        if (value.x < data[index - 1].x) {
+            data[index].x = data[index - 1].x
         }
     }
+    return data[index]
 }
 
 export function synchronizeExtremes(chart, datasetIndex, index, value, force=false) {
@@ -30,15 +37,21 @@ export function synchronizeExtremes(chart, datasetIndex, index, value, force=fal
     }
 }
 
-export function getMaxMinInPoints(points, elem) {
+export function getMaxMinInPoints(points, elem=null) {
     var max = -Infinity
     var min = Infinity
     points.forEach((item, index) => {
-        if (item[elem] > max) {
-            max = item[elem];
+        var value
+        if (elem == null)
+            value = item
+        else 
+            value = item[elem]
+
+        if (value > max) {
+            max = value;
         }
-        if (item[elem] < min) {
-            min = item[elem];
+        if (value < min) {
+            min = value;
         }
     });
     return {max, min}
@@ -71,6 +84,92 @@ export function scaleData(points, switchingFrequency) {
     return points
 }
 
+export function formatFrequency(frequency) {
+    var base
+    var unit
+    var label
+    if (frequency < 1000) {
+        base = 1
+        unit = "Hz"
+    }
+    else if (frequency >= 1000 && frequency < 1000000) {
+        base = 1000
+        unit = "kHz"
+    }
+    else if (frequency >= 1000000 && frequency < 1000000000) {
+        base = 1000000
+        unit = "MHz"
+    }
+    label = frequency / base
+    return {label, unit}
+}
 export function deepCopy(data) {
     return JSON.parse(JSON.stringify(data))
+}
+
+export function fourierTransform(data, switchingFrequency, samplingNumberPoints) {
+        // Interpolation
+        const x = []
+        const y = []
+        data.forEach((item, index) => {
+            x.push(item.x)
+            y.push(item.y)
+        })
+
+        const sampledSignal = []
+        for(var i = 0; i < samplingNumberPoints; i++) {
+            sampledSignal.push(i / switchingFrequency / (samplingNumberPoints));
+        }
+        var linear = Everpolate.linear
+        var sampledWaveform = linear(sampledSignal, x, y)
+
+        // Fourier Transform
+        const fft = new FFT(samplingNumberPoints);
+        const fourier = fft.createComplexArray();
+        fft.realTransform(fourier, sampledWaveform);            
+        fft.completeSpectrum(fourier);
+
+        // Harmonic extraction
+        const harmonicsAmplitude = []
+        const harmonicsFrequencies = []
+        for(var i = 0; i < fourier.length / 2; i+=2) {
+            harmonicsAmplitude.push(2 * Math.sqrt(Math.pow(fourier[i], 2) + Math.pow(fourier[i + 1], 2)) / samplingNumberPoints)
+        }
+        for(var i = 0; i < samplingNumberPoints / 2; i++) {
+            harmonicsFrequencies.push(switchingFrequency * i)
+        }
+        return {sampledSignal, sampledWaveform, harmonicsAmplitude, harmonicsFrequencies}
+}
+
+export function getRootMeanSquare(data) {
+    var sumOfSquares = data.reduce(function(s,x) {return (s + x*x)}, 0);
+    return Math.sqrt(sumOfSquares / data.length);
+}
+
+export function getEffectiveFrequency(data, time) {
+    const dividend = []
+    const divisor = []
+    data.forEach((item, index) => {
+        const dataSquared = Math.pow(item, 2)
+        const timeSquared = Math.pow(time[index], 2)
+        dividend.push(dataSquared * timeSquared)
+        divisor.push(dataSquared)
+    })
+    return Math.sqrt(dividend.reduce((a, b) => a + b, 0) / divisor.reduce((a, b) => a + b, 0));
+}
+
+export function removeTrailingZeroes(value, maximumNumberDecimals=4) {
+    const split = value.toFixed(4).split(".")
+    const decimals = split[1]
+    if (decimals[3] != 0 && maximumNumberDecimals > 3)
+        value = value.toFixed(4)
+    else if (decimals[2] != 0 && maximumNumberDecimals > 2)
+        value = value.toFixed(3)
+    else if (decimals[1] != 0 && maximumNumberDecimals > 1)
+        value = value.toFixed(2)
+    else if (decimals[0] != 0 && maximumNumberDecimals > 0)
+        value = value.toFixed(1)
+    else
+        value = value.toFixed(0)
+    return value
 }

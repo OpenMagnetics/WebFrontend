@@ -1,7 +1,8 @@
 <script setup>
 import Header from '/src/components/Header.vue'
 import Footer from '/src/components/Footer.vue'
-import Waveform from '/src/components/Waveform.vue'
+import WaveformGraph from '/src/components/WaveformGraph.vue'
+import WaveformFourier from '/src/components/WaveformFourier.vue'
 import WaveformInputCustom from '/src/components/WaveformInputCustom.vue'
 import WaveformInputTriangular from '/src/components/WaveformInputTriangular.vue'
 import WaveformInputSquare from '/src/components/WaveformInputSquare.vue'
@@ -9,10 +10,12 @@ import WaveformInputSinusoidal from '/src/components/WaveformInputSinusoidal.vue
 import WaveformInputSquareWithDeadtime from '/src/components/WaveformInputSquareWithDeadtime.vue'
 import OperationPointHeader from '/src/components/OperationPointHeader.vue'
 import WaveformInputCommon from '/src/components/WaveformInputCommon.vue'
+import WaveformOutput from '/src/components/WaveformOutput.vue'
 
 import { useCurrentStore } from '/src/stores/waveform'
 import { useVoltageStore } from '/src/stores/waveform'
 import { useCommonStore } from '/src/stores/waveform'
+import * as Defaults from '/src/assets/js/waveformDefaults.js'
 
 </script>
 <script>
@@ -21,60 +24,36 @@ const voltageStore = useVoltageStore()
 const commonStore = useCommonStore()
 
 export default {
-    components: {
-        Waveform,
-        WaveformInputCustom,
-        WaveformInputTriangular,
-        WaveformInputSquare,
-        WaveformInputSinusoidal,
-        WaveformInputSquareWithDeadtime,
-        OperationPointHeader,
-        WaveformInputCommon,
-    },
     data() {
         return {
-            switchingFrequency: 10000,
+            switchingFrequency: Defaults.defaultSwitchingFrequency,
             isChartReady: false,
             waveformTypes: {
-                current: "Triangular",
-                voltage: "Square"
+                current: Defaults.defaultCurrentType,
+                voltage: Defaults.defaultVoltageType,
             }
         }
     },
     methods: {
         onVoltageChange(newValue) {
-            console.log(newValue)
             this.waveformTypes['voltage'] = newValue
         },
         onCurrentChange(newValue) {
-            console.log(newValue)
             this.waveformTypes['current'] = newValue
         },
         onChartReady() {
             this.isChartReady = true
         },
         onSwitchingFrequencyChange(newValue) {
-            console.log(newValue)
             commonStore.setSwitchingFrequency(newValue * 1000)
         },
         onDutyCycleChange(newValue) {
             commonStore.setDutyCycle(newValue / 100)
-            console.log(newValue)
         },
     },
     mounted() {
     },
     created() {
-        // currentStore.$subscribe((mutation, state) => {
-        //     // console.log("whaaaaaaat")
-        //     // console.log(mutation)
-        //     // console.log(state)
-        // })
-        // voltageStore.$subscribe((mutation, state) => {
-        //     // console.log("whaaaaaaat")
-        //     // console.log(mutation)
-        //     // console.log(state)
-        // })
     },
 }
 </script>
@@ -89,23 +68,35 @@ export default {
                 </div>
             </div>
             <div class="row">
-                <div class="col-lg-3">
+                <div class="col-lg-3 col-md-12">
                     <WaveformInputCommon @switching-frequency-change="onSwitchingFrequencyChange" @duty-cycle-change="onDutyCycleChange"/>
                     <div v-for="(value, key) in waveformTypes">
-                        <WaveformInputTriangular :electricalParameter="key" :isChartReady="isChartReady" v-if="value === 'Triangular'"/>
-                        <WaveformInputCustom :electricalParameter="key" :isChartReady="isChartReady" v-if="value === 'Custom'"/>
-                        <WaveformInputSquare :electricalParameter="key" :isChartReady="isChartReady" v-else-if="value === 'Square'"/>
-                        <WaveformInputSinusoidal :electricalParameter="key" :isChartReady="isChartReady" v-else-if="value === 'Sinusoidal'"/>
-                        <WaveformInputSquareWithDeadtime :electricalParameter="key" :isChartReady="isChartReady" v-else-if="value === 'Square with Dead-Time'"/>
+                        <WaveformInputTriangular :electricalParameter="key" :isChartReady="isChartReady" v-if="value === 'Triangular'" class="scrollable-column"/>
+                        <WaveformInputCustom :electricalParameter="key" :isChartReady="isChartReady" v-if="value === 'Custom'" class="scrollable-column"/>
+                        <WaveformInputSquare :electricalParameter="key" :isChartReady="isChartReady" v-else-if="value === 'Square'" class="scrollable-column"/>
+                        <WaveformInputSinusoidal :electricalParameter="key" :isChartReady="isChartReady" v-else-if="value === 'Sinusoidal'" class="scrollable-column"/>
+                        <WaveformInputSquareWithDeadtime :electricalParameter="key" :isChartReady="isChartReady" v-else-if="value === 'Square with Dead-Time'" class="scrollable-column"/>
                     </div>
                 </div>
-                <div class="col-lg-6">
-                    <Waveform :waveformTypes="waveformTypes" @chart-ready="onChartReady" />
+                <div class="col-lg-6 col-md-8">
+                    <WaveformGraph class="" :waveformTypes="waveformTypes" @chart-ready="onChartReady" style="height: 66%"/>
+                    <WaveformFourier class="mt-3" style="height: 32%"/>
                 </div>
-                <div class="col-lg-3">
+                <div class="col-lg-3 col-md-4">
+                    <div v-for="(value, key) in waveformTypes">
+                        <WaveformOutput :electricalParameter="key"/>
+                    </div>
                 </div>
             </div>
         </div>
     </main>
     <Footer />
 </template>
+
+<style type="text/css">
+.scrollable-column {
+  max-height: 27vh;
+  overflow: hidden;
+  overflow-y: auto; 
+}
+</style>

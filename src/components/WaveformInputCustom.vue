@@ -10,6 +10,7 @@ import { useCommonStore } from '/src/stores/waveform'
 
 import { loadBase } from '/src/assets/js/WaveformInputBase.js'
 import WaveformInputCustomPoint from '/src/components/WaveformInputCustomPoint.vue'
+import * as Defaults from '/src/assets/js/waveformDefaults.js'
 
 const props = defineProps({
     electricalParameter: {
@@ -17,26 +18,14 @@ const props = defineProps({
         required: false,
         default: "current",
     },
-    precision: {
-        type: Number,
-        required: false,
-        default: -2,
-    },
     isChartReady: {
         type: Boolean,
         required: false,
         default: false,
     },
 })
+const precision = Defaults.defaultPrecision
 
-const titleColor = computed(() => {
-    if (props.electricalParameter == "current") {
-        return "text-info"
-    }
-    else {
-        return "text-primary"
-    }
-})
 
 var store
 var commonStore = useCommonStore()
@@ -45,7 +34,9 @@ if (props.electricalParameter == "current") {
 } else {
     store = useVoltageStore()
 }
-const data = props.isChartReady? ref(Utils.deepCopy(store.getDataPoints.value)) : ref([{x: 0, y: -10 }, {x: 0.5, y: 10 }, {x: 1, y: -10 }])
+const data = props.isChartReady? ref(Utils.deepCopy(store.getDataPoints.value)) : ref([{x: 0, y: -Defaults.defaultPeakToPeak / 2 },
+                                                                                       {x: Defaults.defaultDutyCycle, y: Defaults.defaultPeakToPeak / 2 },
+                                                                                       {x: 1, y: -Defaults.defaultPeakToPeak / 2 }])
 var switchingFrequency = ref(100000)
 
 function getParamsFromDataPoints(dataPoints, precision) {
@@ -65,13 +56,11 @@ function onTimeChange(newValue) {
 }
 function onValueChange(newValue) {
     data.value[newValue.index].y = Number(newValue.y)
-        console.log()
     if (newValue.index == 0 || newValue.index == (data.value.length - 1)){
         data.value[0].y = Number(newValue.y)
         data.value[data.value.length - 1].y = Number(newValue.y)
         store.setDataPoint(data.value[0], 0);
         store.setDataPoint(data.value[data.value.length - 1], data.value.length - 1);
-        console.log(store.getDataPoints)
     }
 }
 
@@ -111,9 +100,6 @@ onMounted(() => {
 })
 
 const orderedData = computed(() => {
-    console.log(Utils.scaleData(data.value, switchingFrequency.value))
-    // console.log(data.value.at(-1), data.value.at(-2))
-    // return [data.value.at(-1), data.value.at(-2)];
     return Utils.scaleData(data.value, switchingFrequency.value)
 })
 
@@ -123,7 +109,7 @@ const orderedData = computed(() => {
 
 <template>
     <div class="container-flex text-white mt-2 mb-3 pb-3 border-bottom">
-        <label class="fs-4 mx-3 mb-3" :class="titleColor"> Waveform for {{electricalParameter}}</label>
+        <label class="fs-4 mx-3 mb-3" :class="Defaults.titleColor(electricalParameter)"> Waveform for {{electricalParameter}}</label>
         <div></div>
         <div v-for="(value, key) in data">
             <WaveformInputCustomPoint :index="key" :electricalParameter="electricalParameter" :time="value.x" :value="value.y" @time-change="onTimeChange" @value-change="onValueChange" @add-point-below="onAddPointBelow" @remove-point="onRemovePoint"/>

@@ -1,9 +1,3 @@
-<template>
-    <div>
-        <canvas id="chart"></canvas>
-    </div>
-</template>
-
 <script setup>
 import { useCurrentStore } from '/src/stores/waveform'
 import { useVoltageStore } from '/src/stores/waveform'
@@ -45,7 +39,7 @@ export default {
             data: {
                 datasets: [
                     {
-                        label: 'current',
+                        label: 'Current',
                         yAxisID: 'current',
                         data:  [],
                         borderWidth: 5,
@@ -53,7 +47,7 @@ export default {
                         backgroundColor: theme['info'],
                     },
                     {
-                        label: 'voltage',
+                        label: 'Voltage',
                         yAxisID: 'voltage',
                         data: [],
                         borderWidth: 5,
@@ -90,6 +84,7 @@ export default {
                     },
                     onDrag: (e, datasetIndex, index, value) => {
                         e.target.style.cursor = 'grabbing'
+                        const originalValue = value
                         Utils.roundValue(chart,
                                          datasetIndex,
                                          index,
@@ -97,7 +92,10 @@ export default {
                                          commonStore.getXPrecision.value,
                                          datasetIndex == 0? currentStore.getYPrecision.value : voltageStore.getYPrecision.value);
                         this.processByType(datasetIndex, index, value)
-                        chart.update()
+                        if (originalValue != value) {
+                            chart.update()
+                        }
+
                     },
                     onDragEnd: (e, datasetIndex, index, value) => {
                         e.target.style.cursor = 'default    '
@@ -113,6 +111,17 @@ export default {
                         }
                     },
                 },
+                legend: {
+                    labels: {
+                        color: theme['white'], 
+                        font: {
+                            size: 12
+                        },
+                        filter: function(item, chart) {
+                            return !item.text.includes('zeroLineCurrent');
+                        }
+                    }
+                },
             },
             scales: {
                 current: {
@@ -124,6 +133,10 @@ export default {
                         font: {
                             size: 12
                         },
+                        callback: function(value, index, values) {
+                            value = Utils.removeTrailingZeroes(value)
+                            return value + "A"
+                        }
                     },
                     max: 15,
                     min: -15,
@@ -143,6 +156,10 @@ export default {
                         font: {
                             size: 12
                         },
+                        callback: function(value, index, values) {
+                            value = Utils.removeTrailingZeroes(value)
+                            return value + "V"
+                        }
                     },
                     max: 100,
                     min: -100,
@@ -164,7 +181,8 @@ export default {
                         callback: function(value, index, values) {
                             const exp = Math.floor(Math.log10(commonStore.getSwitchingFrequency.value))
                             const base = 10 ** exp
-                            return Utils.roundWithDecimals(value * base * 10, 0.01).toFixed(2) + "e-" + exp;
+                            value = Utils.removeTrailingZeroes(value * base * 10)
+                            return value + "e-" + exp + "s";
                         }
                     },
                     grid: {
@@ -174,19 +192,14 @@ export default {
                         lineWidth: 0.4
                     },
                 }
-            }
+            },
         }
 
         Chart.register(...registerables)
-        this.createChart('chart', options)
+        this.createChart('chartWaveforms', options)
 
     },
     created() {
-        currentStore.$onAction((action) => {
-            if (action.name == "setDataPoint") {
-                chart.data.datasets[0].data = JSON.parse(JSON.stringify(currentStore.getDataPoints.value))
-            }
-        })
         currentStore.$subscribe((mutation, state) => {
             chart.data.datasets[0].data = JSON.parse(JSON.stringify(currentStore.getDataPoints.value))
             chart.update()
@@ -252,10 +265,10 @@ export default {
                 }
             }
             else if (this.waveformTypes[electricalParameter] == "Square with Dead-Time") {
-                if (index == 0 || index == 3 || index == 4 || index == 7 || index == 8) {
+                if (index == 0 || index == 9) {
                     chart.options.plugins.dragData.dragX = false
                 }
-                if (index == 2 || index == 3 || index == 6 || index == 7) {
+                if (index == 0 || index == 1 || index == 4 || index == 5 || index == 8 || index == 9) {
                     chart.options.plugins.dragData.dragY = false
                 }
             }
@@ -271,11 +284,11 @@ export default {
         processByType(datasetIndex, index, value) {
             const electricalParameter = this.getElectricalParameter(datasetIndex)
             if (this.waveformTypes[electricalParameter] == "Triangular") {
-                Utils.checkHorizontalLimits(chart, datasetIndex, index, value);
+                Utils.checkHorizontalLimits(chart.data.datasets[datasetIndex].data, index, value);
                 Utils.synchronizeExtremes(chart, datasetIndex, index, value);
             }
             else if (this.waveformTypes[electricalParameter] == "Custom") {
-                Utils.checkHorizontalLimits(chart, datasetIndex, index, value);
+                Utils.checkHorizontalLimits(chart.data.datasets[datasetIndex].data, index, value);
                 Utils.synchronizeExtremes(chart, datasetIndex, index, value);
             }
             else if (this.waveformTypes[electricalParameter] == "Square") {
@@ -326,47 +339,82 @@ export default {
             else if (this.waveformTypes[electricalParameter] == "Square with Dead-Time") {
                 var data = chart.data.datasets[datasetIndex].data
                 var dc
-                var firstValue = data[1].y
-                var secondValue = data[4].y
+                var firstValue = data[2].y
+                var secondValue = data[6].y
+                const initialTime = data[0].x
+                const period = data[9].x
+
                 switch (index) {
-                    case 0:
                     case 1:
-                    case 8:
-                        firstValue = value.y
-                        secondValue = -value.y
-                        dc = (data[1].x - data[0].x) / (data[7].x - data[0].x)
-                    break;
                     case 2:
-                        dc = (data[2].x - data[0].x) / (data[7].x - data[0].x)
+                        value.x = Math.min(value.x, 0.25 * period)
+                        value.x = Math.max(value.x, 0)
+                    break;
+                    case 3:
+                    case 4:
+                        value.x = Math.min(value.x, 0.5 * period)
+                        value.x = Math.max(value.x, 0.25 * period)
                     break;
                     case 5:
-                        if (data[5].x < data[4].x) {
-                            data[5].x = data[4].x
-                        }
+                    case 6:
+                        value.x = Math.min(value.x, 0.75 * period)
+                        value.x = Math.max(value.x, 0.5 * period)
+                    break;
+                    case 7:
+                    case 8:
+                        value.x = Math.min(value.x, 1 * period)
+                        value.x = Math.max(value.x, 0.75 * period)
+                    break;
+
+                }
+                
+                switch (index) {
+                    case 1:
+                        dc = (data[3].x - value.x) / (data[9].x - data[0].x)
+                    break;
+                    case 2:
+                        firstValue = value.y
+                        secondValue = -value.y
+                        dc = (data[3].x - value.x) / (data[9].x - data[0].x)
+                    break;
+                    case 3:
+                        firstValue = value.y
+                        secondValue = -value.y
+                        dc = (value.x - data[2].x) / (data[9].x - data[0].x)
+                    break;
                     case 4:
-                        firstValue = -value.y
-                        secondValue = value.y 
-                        dc = (data[5].x - data[4].x) / (data[7].x - data[0].x)
+                        dc = (value.x - data[1].x) / (data[9].x - data[0].x)
+                    break;
+                    case 5:
+                        dc = (data[8].x - value.x) / (data[9].x - data[0].x)
                     break;
                     case 6:
-                        dc = (data[6].x - data[4].x) / (data[7].x - data[0].x)
+                        firstValue = -value.y
+                        secondValue = value.y
+                        dc = (data[8].x - value.x) / (data[9].x - data[0].x)
                     break;
-                    default:
-                        dc = (data[1].x - data[0].x) / (data[7].x - data[0].x)
+                    case 7:
+                        firstValue = -value.y
+                        secondValue = value.y
+                        dc = (value.x - data[6].x) / (data[9].x - data[0].x)
                     break;
+                    case 8 :
+                        dc = (value.x - data[5].x) / (data[9].x - data[0].x)
+                    break;
+
                 }
-                const initialTime = data[0].x
-                const period = data[7].x
-                const semiPeriod = data[3].x
-                data = [{x: initialTime, y: firstValue },
-                        {x: dc * period, y: firstValue },
-                        {x: dc * period, y: 0 },
-                        {x: semiPeriod, y: 0 },
-                        {x: semiPeriod, y: secondValue },
-                        {x: semiPeriod + dc * period, y: secondValue },
-                        {x: semiPeriod + dc * period, y: 0 },
-                        {x: period, y: 0 },
-                        {x: period, y: firstValue }]
+                dc = Math.min(dc, 0.5)
+                dc = Math.max(dc, 0)
+                data = [{x: initialTime  , y: 0 },
+                        {x: (0.25 - dc / 2) * period, y: 0 },
+                        {x: (0.25 - dc / 2) * period, y: firstValue },
+                        {x: (0.25 + dc / 2) * period, y: firstValue },
+                        {x: (0.25 + dc / 2) * period, y: 0 },
+                        {x: (0.75 - dc / 2) * period, y: 0 },
+                        {x: (0.75 - dc / 2) * period, y: secondValue },
+                        {x: (0.75 + dc / 2) * period, y: secondValue },
+                        {x: (0.75 + dc / 2) * period, y: 0 },
+                        {x: period, y: 0 }]
                 chart.data.datasets[datasetIndex].data = data
             }
             else if (this.waveformTypes[electricalParameter] == "Sinusoidal") {
@@ -393,3 +441,9 @@ canvas {
     background-color : var(--bs-light);
 }
 </style>
+
+<template>
+    <div>
+        <canvas id="chartWaveforms"></canvas>
+    </div>
+</template>

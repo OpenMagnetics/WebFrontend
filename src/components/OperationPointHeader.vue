@@ -6,12 +6,12 @@ We can create two-way bindings between state and form inputs using the v-model d
 import { ref } from 'vue'
 import { Form, Field } from 'vee-validate';
 import * as Yup from 'yup';
+import * as Defaults from '/src/assets/js/waveformDefaults.js'
 
-const nameRef = ref('Nominal Point')
 const selected = ref()
 const emit = defineEmits(['voltage-type-change', 'current-type-change'])
-const voltageSelected = ref('Square')
-const currentSelected = ref('Triangular')
+const voltageSelected = ref(Defaults.defaultVoltageType)
+const currentSelected = ref(Defaults.defaultCurrentType)
 const voltageRef = ref(null)
 const currentRef = ref(null)
 
@@ -93,13 +93,13 @@ function onCurrentChange(event) {
 </script>
 
 <template>
-    <div class="container-flex text-white mt-2 mb-3 pb-3 border-bottom">
+    <div class="container-flex text-white mt-3 mb-3 pb-3 border-bottom">
         <Form :validation-schema="schema" v-slot="{ errors }" class="form-inline">
             <label class="fs-5 mx-3">Operation Point Name:</label>
-            <Field name="operationPointName" type="text"  :class="{ 'is-invalid': errors.operationPointName }" :placeholder="nameRef" class= "bg-light text-white"/>
+            <Field name="operationPointName" type="text"  :class="{ 'is-invalid': errors.operationPointName }" :placeholder="Defaults.defaultOperationNamePlaceHolder" :value="Defaults.defaultOperationName" class= "bg-light text-white rounded-2"/>
 
             <label class="fs-5 ms-5 me-3">Voltage waveform:</label>
-            <Field name="voltageType" ref="voltageRef" as="select" :class="{ 'is-invalid': errors.voltageType }" @change="onVoltageChange" :value="voltageSelected" class= "bg-light text-white">
+            <Field name="voltageType" ref="voltageRef" as="select" :class="{ 'is-invalid': errors.voltageType }" @change="onVoltageChange" :value="voltageSelected" class= "bg-light text-white rounded-2">
                 <option disabled value="">Please select one</option>
                 <option value="Custom">Custom</option>
                 <option value="Square">Square</option>
@@ -108,13 +108,13 @@ function onCurrentChange(event) {
             </Field>
 
             <label class="fs-5 ms-5 me-3">Current waveform:</label>
-            <Field name="currentType" ref="currentRef" as="select" :class="{ 'is-invalid': errors.currentType }" @change="onCurrentChange" :value="currentSelected" class= "bg-light text-white">
+            <Field name="currentType" ref="currentRef" as="select" :class="{ 'is-invalid': errors.currentType }" @change="onCurrentChange" :value="currentSelected" class= "bg-light text-white rounded-2">
                 <option disabled value="">Please select one</option>
                 <option value="Custom">Custom</option>
-                <!-- <option value="Square">Square</option> -->
                 <option value="Triangular">Triangular</option>
-                <option value="Square">Square</option>
                 <option value="Sinusoidal">Sinusoidal</option>
+                <option disabled value="Sinusoidal">Flyback (coming soon)</option>
+                <option disabled value="Sinusoidal">PS Full Bridge (coming soon)</option>
             </Field>
 
             <div class="invalid-feedback">{{errors.operationPointName}}</div>

@@ -10,11 +10,10 @@ import { useCurrentStore } from '/src/stores/waveform'
 import { useVoltageStore } from '/src/stores/waveform'
 import { useCommonStore } from '/src/stores/waveform'
 import * as Utils from '/src/assets/js/waveformUtils.js'
+import * as Defaults from '/src/assets/js/waveformDefaults.js'
 
 const emit = defineEmits(['time-change', 'value-change', 'add-point-below', 'remove-point'])
-const timePlaceHolder = ref(0.5)
-const valuePlaceHolder = ref(10)
-const timeExponent = ref(5)
+const timeExponent = ref(Defaults.defaultTimeExponent)
 const schema = ref(null)
 const formRef = ref(null)
 const props = defineProps({
@@ -56,7 +55,6 @@ function onTimeChange(event) {
     timeVar.value = event.target.value
     const newPoint = {x: timeVar.value / Math.pow(10, timeExponent.value + 1), y: Number(valueVar.value)}
     store.setDataPoint(newPoint, props.index)
-    console.log(store.getDataPoints)
     emit("time-change", {x: newPoint.x, index: props.index})
 }
 function onValueChange(event) {
@@ -123,16 +121,18 @@ const getExponentLabel = computed(() => {
 <template>
     <div class="container-flex text-white mt-2 mb-1">
         <Form ref="formRef" :validation-schema="schema" v-slot="{ errors }" class="form-inline">
-            <label class="fs-5 mx-3">x: </label>
-            <Field name="timeValidator" type="number" :disabled="index == 0 || index == (store.getDataPoints.value.length - 1)" :placeholder="timePlaceHolder" :value="timeVar" @change="onTimeChange" :class="{ 'is-invalid': errors.timeValidator }" class= "bg-light text-white" style="width: 100%; max-width: 50px;"/>
-            <input class="fs-6 ms-1 bg-light text-white" style="width: 30px;" :value="getExponentLabel" disabled/>
-            <label class="fs-5 ms-1" style="width: 10px;">{{'s'}}</label>
+            <label class="fs-5 ms-3 me-1">x: </label>
+            <Field name="timeValidator" type="number" :disabled="index == 0 || index == (store.getDataPoints.value.length - 1)" :value="timeVar" @change="onTimeChange" :class="{ 'is-invalid': errors.timeValidator }" class="rounded-2 bg-light text-white" style="width: 100%; max-width: 50px;"/>
+            <input class="fs-6 ms-1 bg-light text-white bg-dark border-0" style="width: 30px;" :value="getExponentLabel" disabled/>
+            <label class="fs-5 me-2" style="width: 10px;">{{'s'}}</label>
 
-            <label class="fs-5 mx-3">y: </label>
-            <Field name="valueValidator" type="number" :placeholder="valuePlaceHolder" :value="valueVar" @change="onValueChange" :class="{ 'is-invalid': errors.valueValidator }" class= "bg-light text-white" style="width: 100%; max-width: 70px;"/>
+            <label class="fs-5 ms-1 me-1">y: </label>
+            <Field name="valueValidator" type="number" :value="valueVar" @change="onValueChange" :class="{ 'is-invalid': errors.valueValidator }" class=" rounded-2 bg-light text-white" style="width: 100%; max-width: 60px;"/>
             <label class="fs-5 mx-1" style="width: 10px;">{{electricalParameter == "current"? 'A' : 'V'}}</label>
-            <button v-if="index != (store.getDataPoints.value.length - 1)" type="button" class="btn btn-default btn-circle bg-dark ms-4" @click="onAddPointBelow"><i class="fa-solid fa-circle-plus text-secondary"></i> </button>
-            <button v-if="index != 0 && index != (store.getDataPoints.value.length - 1)" type="button" class="btn btn-default btn-circle bg-dark ms-2" @click="onRemovePoint"><i class="fa-solid fa-circle-minus text-danger"></i> </button>
+            <span class="ms-2">
+                <button v-if="index != (store.getDataPoints.value.length - 1)" type="button" class="btn btn-default btn-circle bg-dark mb-1 me-1" @click="onAddPointBelow"><i class="fa-solid fa-circle-plus text-secondary"></i> </button>
+                <button v-if="index != 0 && index != (store.getDataPoints.value.length - 1)" type="button" class="btn btn-default btn-circle bg-dark mb-1" @click="onRemovePoint"><i class="fa-solid fa-circle-minus text-danger"></i> </button>
+            </span>
             <div class="invalid-feedback">{{errors.timeValidator}}</div>
             <div class="invalid-feedback">{{errors.valueValidator}}</div>
         </Form>
@@ -143,12 +143,12 @@ const getExponentLabel = computed(() => {
 <style type="text/css">
     
 .btn-circle {
-    width: 25px;
-    height: 25px;
+    width: 1.2vw;
+    height: 1.2vw;
     padding: 0px 0px;
     border-radius: 12.5px;
     text-align: center;
-    font-size: 23px;
+    font-size: 1.2vw;
     line-height: 0
 }
 

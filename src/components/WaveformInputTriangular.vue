@@ -7,17 +7,13 @@ import { useCurrentStore } from '/src/stores/waveform'
 import { useVoltageStore } from '/src/stores/waveform'
 
 import { loadBase } from '/src/assets/js/WaveformInputBase.js'
+import * as Defaults from '/src/assets/js/waveformDefaults.js'
 
 const props = defineProps({
     electricalParameter: {
         type: String,
         required: false,
         default: "current",
-    },
-    precision: {
-        type: Number,
-        required: false,
-        default: -2,
     },
     isChartReady: {
         type: Boolean,
@@ -26,21 +22,22 @@ const props = defineProps({
     },
 })
 
-const defaultData = [{x: 0, y: -10 }, {x: 0.5, y: 10 }, {x: 1, y: -10 }]
+function createWaveform(offset, peakToPeak, dutyCycle) {
+    const aux = [{x: 0, y: Number(offset) - Number(peakToPeak) / 2 }, {x: Number(Math.abs(dutyCycle) % 1), y: Number(offset) + Number(peakToPeak) / 2 }, {x: 1, y: Number(offset) - Number(peakToPeak) / 2 } ]
+    return aux
+}
+const defaultData = createWaveform(Defaults.defaultOffset, Defaults.defaultPeakToPeak, Defaults.defaultDutyCycle)
 
 const {offset,
        peakToPeak,
        dutyCycle,
        data,
        store,
-       getDataPoints,
-       titleColor,
-       offsetValue,
        peakToPeakChange,
        offsetChange,
        schema,
        formRef,
-       } = loadBase(props.electricalParameter, props.precision, props.isChartReady, defaultData, getParamsFromDataPoints, getDataPointsFromParams)
+       } = loadBase(props.electricalParameter, props.isChartReady, defaultData, getParamsFromDataPoints, getDataPointsFromParams)
 
 function getParamsFromDataPoints(dataPoints, precision) {
     var peakToPeakValue = Utils.roundWithDecimals(Math.abs(dataPoints[1].y - dataPoints[0].y), Math.pow(10, precision))
@@ -52,8 +49,7 @@ function getParamsFromDataPoints(dataPoints, precision) {
 }
 
 function getDataPointsFromParams(params) {
-    const aux = [{x: 0, y: Number(params['offset']) - Number(params['peakToPeak']) / 2 }, {x: Number(Math.abs(params['dutyCycle']) % 1), y: Number(params['offset']) + Number(params['peakToPeak']) / 2 }, {x: 1, y: Number(params['offset']) - Number(params['peakToPeak']) / 2 } ]
-    return aux
+    return createWaveform(params['offset'], params['peakToPeak'], params['dutyCycle'])
 }
 </script>
 
@@ -61,17 +57,17 @@ function getDataPointsFromParams(params) {
 <template>
     <div class="container-flex text-white mt-2 mb-3 pb-3 border-bottom">
         <Form ref="formRef" :validation-schema="schema" v-slot="{ errors }" class="form-inline">
-            <label class="fs-4 mx-3 mb-3" :class="titleColor"> Waveform for {{electricalParameter}}</label>
+            <label class="fs-4 mx-3 mb-3" :class="Defaults.titleColor(electricalParameter)"> Waveform for {{electricalParameter}}</label>
             <div></div>
             <label class="fs-5 mx-3">Peak to peak:</label>
             <label class="fs-5 mx-1 float-end" style="width: 10px;">{{electricalParameter == "current"? 'A' : 'V'}}</label>
-            <Field name="peakToPeakValidator" type="number" :value="peakToPeak" @change="peakToPeakChange" :class="{ 'is-invalid': errors.peakToPeakValidator }" class= "bg-light text-white float-end" style="width: 100%; max-width: 70px;"/>
+            <Field name="peakToPeakValidator" type="number" :value="peakToPeak" @change="peakToPeakChange" :class="{ 'is-invalid': errors.peakToPeakValidator }" class="rounded-2 bg-light text-white float-end" style="width: 100%; max-width: 70px;"/>
 
             <div></div>
 
             <label class="fs-5 mx-3">Offset:</label>
             <label class="fs-5 mx-1 float-end" style="width: 10px;">{{electricalParameter == "current"? 'A' : 'V'}}</label>
-            <Field name="offsetValidator" type="number" :value="offset" @change="offsetChange" :class="{ 'is-invalid': errors.offsetValidator }" class="bg-light text-white float-end" style="width: 100%; max-width: 70px;"/>
+            <Field name="offsetValidator" type="number" :value="offset" @change="offsetChange" :class="{ 'is-invalid': errors.offsetValidator }" class="rounded-2 bg-light text-white float-end" style="width: 100%; max-width: 70px;"/>
 
 
             <div class="invalid-feedback">{{errors.peakToPeakValidator}}</div>

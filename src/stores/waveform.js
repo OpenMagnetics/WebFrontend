@@ -1,25 +1,30 @@
 import { defineStore } from 'pinia'
 import * as Utils from '/src/assets/js/waveformUtils.js'
 import { ref, watch, computed  } from 'vue'
+import * as Defaults from '/src/assets/js/waveformDefaults.js'
 
 
 const commonPart = () => {
     const dataPoints = ref([])
-    const switchingFrequency = ref(0)
+    const sampledDataPoints = ref([])
+    const harmonicsAmplitude = ref([])
     const valuePrecision = ref(null)
     const chartReady = ref(false)
-    const params = ref({offset: null, peakToPeak: null, dutyCycle: null, })
+    const params = ref({offset: Defaults.defaultOffset, peakToPeak: Defaults.defaultPeakToPeak, dutyCycle: Defaults.defaultDutyCycle, })
     const getParams = computed(() => {
         return params
     })
     const getDataPoints = computed(() => {
         return dataPoints
     })
+    const getSampledDataPoints = computed(() => {
+        return sampledDataPoints
+    })
+    const getHarmonicsAmplitude = computed(() => {
+        return harmonicsAmplitude
+    })
     const getDataPoint = computed((index) => {
         return dataPoints[index]
-    })
-    const getSwitchingFrequency = computed(() => {
-        return switchingFrequency
     })
     const getYPrecision = computed(() => {
         return valuePrecision
@@ -28,6 +33,12 @@ const commonPart = () => {
         return chartReady
     })
 
+    function setHarmonicsAmplitude(harmonicsAmplitude) {
+        this.harmonicsAmplitude = Utils.deepCopy(harmonicsAmplitude)
+    }
+    function setSampledDataPoints(points) {
+        this.sampledDataPoints = Utils.deepCopy(points)
+    }
     function setDataPoint(point, index) {
         this.dataPoints[index] = Utils.deepCopy(point)
         var aux = Utils.getMaxMinInPoints(this.dataPoints, 'y')
@@ -49,10 +60,7 @@ const commonPart = () => {
             this.valuePrecision = Math.abs(aux['max'] - aux['min']) / 100
         }
     }
-    function setSwitchingFrequency(switchingFrequency) {
-        this.switchingFrequency = switchingFrequency
-        this.timePrecision = 1 / switchingFrequency / 100
-    }
+
     function setParam(param, value) {
         this.params[param] = value
     }
@@ -61,19 +69,22 @@ const commonPart = () => {
     }
     return {
         dataPoints,
-        switchingFrequency,
         valuePrecision,
         params,
+        sampledDataPoints,
+        harmonicsAmplitude,
         getParams,
         getDataPoint,
         getDataPoints,
-        getSwitchingFrequency,
         getYPrecision,
+        getSampledDataPoints,
+        getHarmonicsAmplitude,
         setDataPoint,
         setDataPoints,
         setDataPointsFromDragging,
-        setSwitchingFrequency,
         setParam,
+        setSampledDataPoints,
+        setHarmonicsAmplitude,
         isChartReady,
         setChartReady,
     }
@@ -81,9 +92,11 @@ const commonPart = () => {
 export const useCurrentStore = defineStore("current", commonPart)
 export const useVoltageStore = defineStore("voltage", commonPart)
 export const useCommonStore = defineStore("common", () => {
-    const switchingFrequency = ref(100000)
-    const dutyCycle = ref(0.5)
-    const timePrecision = ref(1 / 10000000)
+    const sampledTimePoints = ref([])
+    const harmonicsFrequencies = ref([])
+    const switchingFrequency = ref(Defaults.defaultSwitchingFrequency)
+    const dutyCycle = ref(Defaults.defaultDutyCycle)
+    const timePrecision = ref(1 / Defaults.defaultSwitchingFrequency / 100)
     const getSwitchingFrequency = computed(() => {
         return switchingFrequency
     })
@@ -92,6 +105,12 @@ export const useCommonStore = defineStore("common", () => {
     })
     const getDutyCycle = computed(() => {
         return dutyCycle
+    })
+    const getSampledTimePoints = computed(() => {
+        return sampledTimePoints
+    })
+    const getHarmonicsFrequencies = computed(() => {
+        return harmonicsFrequencies
     })
     function setSwitchingFrequency(switchingFrequency) {
         this.switchingFrequency = switchingFrequency
@@ -103,17 +122,26 @@ export const useCommonStore = defineStore("common", () => {
     function setDutyCycleFromPoints(dutyCycle) {
         this.dutyCycle = dutyCycle
     }
+    function setSampledTimePoints(sampledTimePoints) {
+        this.sampledTimePoints = sampledTimePoints
+    }
+    function setHarmonicsFrequencies(harmonicsFrequencies) {
+        this.harmonicsFrequencies = harmonicsFrequencies
+    }
     return {
         switchingFrequency,
+        sampledTimePoints,
         timePrecision,
+        harmonicsFrequencies,
         getSwitchingFrequency,
         getXPrecision,
-        setSwitchingFrequency,
+        getSampledTimePoints,
         getDutyCycle,
+        setHarmonicsFrequencies,
+        setSwitchingFrequency,
         setDutyCycle,
         setDutyCycleFromPoints,
+        setSampledTimePoints,
+        getHarmonicsFrequencies,
     }
 })
-
-// export const useCurrentStore = defineStore("current", {...waveformStoreOptions})
-// export const useVoltageStore = defineStore("voltage", {...waveformStoreOptions})
