@@ -91,7 +91,7 @@ export function loadBase(electricalParameter, isChartReady, defaultData, getPara
     })
 
     const schema = Yup.object().shape({
-        offsetValidator: Yup.number().required().typeError("The value for offset must be a number").min(Defaults.defaultMinimumNumberForms),
+        offsetValidator: Yup.number().required().typeError("The value for offset must be a number").min(0),
         peakToPeakValidator: Yup.number().required().typeError("The value for peak to peak must be a number").min(Defaults.defaultMinimumNumberForms),
     });
 
