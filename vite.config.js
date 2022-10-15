@@ -23,7 +23,11 @@ export default defineConfig({
                     return 'assets/[name]-[hash][extname]';
                 },
             },
-        }
+        },
+        commonjsOptions: { include: [] },
+    },
+    optimizeDeps: {
+        disabled: false,
     },
     publicDir: 'src/public',
     plugins: [vue()],
