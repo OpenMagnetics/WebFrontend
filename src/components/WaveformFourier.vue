@@ -136,9 +136,7 @@ export default {
     },
     created() {
         currentStore.$subscribe((mutation, state) => {
-            console.log("aux from currentStore")
             const aux = JSON.parse(JSON.stringify(currentStore.getDataPoints.value))
-            console.log(aux)
             
             const {sampledSignal,
                    sampledWaveform,
@@ -159,9 +157,7 @@ export default {
             chart.update()
         })
         voltageStore.$subscribe((mutation, state) => {
-            console.log("aux from voltageStore")
             const aux = JSON.parse(JSON.stringify(voltageStore.getDataPoints.value))
-            console.log(aux)
             const {sampledSignal,
                    sampledWaveform,
                    harmonicsAmplitude,
