@@ -42,7 +42,13 @@ var switchingFrequency = ref(100000)
 function getParamsFromDataPoints(dataPoints, precision) {
     var peakToPeakValue = Utils.roundWithDecimals(Math.abs(dataPoints[1].y - dataPoints[0].y), Math.pow(10, precision))
     var offsetValue = Utils.roundWithDecimals((dataPoints[0].y + dataPoints[1].y) / 2, Math.pow(10, precision))
-    var dutyCycleValue = Utils.roundWithDecimals((dataPoints[1].x - dataPoints[0].x) / (dataPoints[2].x - dataPoints[0].x), Math.pow(10, precision))          
+    var dutyCycleValue = Utils.roundWithDecimals((dataPoints[1].x - dataPoints[0].x) / (dataPoints[2].x - dataPoints[0].x), Math.pow(10, precision))
+    console.log("Custom peakToPeakValue")
+    console.log(peakToPeakValue)
+    console.log("Custom offsetValue")
+    console.log(offsetValue)
+    console.log("Custom dutyCycleValue")
+    console.log(dutyCycleValue)
     return {peakToPeakValue, offsetValue, dutyCycleValue}
 }
 
@@ -86,7 +92,7 @@ onMounted(() => {
         if (action.name == "setChartReady") {
             store.setDataPoints(Utils.deepCopy(Utils.scaleData(data.value, switchingFrequency.value)));
         }
-        else if (action.name == "setDataPointsFromDragging") {
+        else if (action.name == "setDataPointsFromDragging" || action.name == "setDataPointsFromFile") {
             const dataPoints = action.args[0]
             data.value = Utils.deepCopy(dataPoints)
         }
@@ -97,6 +103,7 @@ onMounted(() => {
             store.setDataPoints(Utils.deepCopy(Utils.scaleData(data.value, switchingFrequency.value)));
         }
     })
+    store.setNewWaveformType()
 })
 
 const orderedData = computed(() => {

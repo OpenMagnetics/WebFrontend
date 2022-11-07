@@ -55,6 +55,12 @@ function getParamsFromDataPoints(dataPoints, precision) {
     var peakToPeakValue = Utils.roundWithDecimals(Math.abs(maxMin['max'] - maxMin['min']), Math.pow(10, precision))
     var offsetValue = (maxMin['max'] + maxMin['min']) / 2
     var dutyCycleValue = commonStore.getDutyCycle.value
+    console.log("Sinusoidal peakToPeakValue")
+    console.log(peakToPeakValue)
+    console.log("Sinusoidal offsetValue")
+    console.log(offsetValue)
+    console.log("Sinusoidal dutyCycleValue")
+    console.log(dutyCycleValue)
     formRef.value.setFieldValue("peakToPeakValidator", peakToPeakValue);
     formRef.value.setFieldValue("offsetValidator", offsetValue);
     return {peakToPeakValue, offsetValue, dutyCycleValue}

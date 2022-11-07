@@ -1,5 +1,5 @@
 <script setup>
-import { ref, watch, computed, defineProps, onMounted } from 'vue'
+import { ref, watch, computed, defineProps } from 'vue'
 import { Form, Field, configure} from 'vee-validate';
 import * as Yup from 'yup';
 import * as Utils from '/src/assets/js/waveformUtils.js'
@@ -45,6 +45,7 @@ const dcOffset = ref(null);
 const effectiveSwitchingFrequency = ref(null);
 const effectiveSwitchingFrequencyUnit = ref(null);
 const rms = ref(null);
+const thd = ref(null);
 
 function getOutputs(data) {
     const sampledDataPoints = data
@@ -52,13 +53,26 @@ function getOutputs(data) {
     const harmonicsFrequencies = commonStore.getHarmonicsFrequencies.value
     const harmonicsAmplitude = store.getHarmonicsAmplitude.value
     const maxMin = Utils.getMaxMinInPoints(sampledDataPoints)
-    peakToPeak.value = Utils.removeTrailingZeroes(Utils.roundWithDecimals(maxMin['max'] - maxMin['min'], 0.01))
-    dcOffset.value = Utils.removeTrailingZeroes(Utils.roundWithDecimals(sampledDataPoints.reduce((a, b) => a + b, 0) / sampledDataPoints.length, 0.01, true))
-    rms.value = Utils.removeTrailingZeroes(Utils.roundWithDecimals(Utils.getRootMeanSquare(sampledDataPoints), 0.01))
-    effectiveSwitchingFrequency.value = Utils.getEffectiveFrequency(harmonicsAmplitude, harmonicsFrequencies), 0.01
-    const aux = Utils.formatFrequency(effectiveSwitchingFrequency.value)
+    const peakToPeakRaw = maxMin['max'] - maxMin['min']
+    peakToPeak.value = Utils.removeTrailingZeroes(Utils.roundWithDecimals(peakToPeakRaw, 0.01))
+    const dcOffsetRaw = sampledDataPoints.reduce((a, b) => a + b, 0) / sampledDataPoints.length
+    dcOffset.value = Utils.removeTrailingZeroes(Utils.roundWithDecimals(dcOffsetRaw, 0.01, true))
+    const rmsRaw = Utils.getRootMeanSquare(sampledDataPoints)
+    rms.value = Utils.removeTrailingZeroes(Utils.roundWithDecimals(rmsRaw, 0.01))
+    const effectiveSwitchingFrequencyRaw = Utils.getEffectiveFrequency(harmonicsAmplitude, harmonicsFrequencies)
+    const aux = Utils.formatFrequency(effectiveSwitchingFrequencyRaw, 0.01)
     effectiveSwitchingFrequency.value =  Utils.removeTrailingZeroes(aux['label'], 2)
     effectiveSwitchingFrequencyUnit.value = aux['unit']
+    const thdRaw = Utils.getTotalHarmonicDistorsion(harmonicsAmplitude)
+    thd.value = Utils.removeTrailingZeroes(Utils.roundWithDecimals(thdRaw * 100, 0.1, true))
+    store.setOutputs({
+            label: store.getOutputs.value["label"],
+            peakToPeak: peakToPeakRaw,
+            offset: dcOffsetRaw,
+            rms: rmsRaw,
+            effectiveFrequency: effectiveSwitchingFrequencyRaw,
+            thd: thdRaw,
+        })
 }
 
 store.$onAction((action) => {
@@ -95,6 +109,12 @@ store.$onAction((action) => {
             <label class="fs-5 ms-3">Eff. Frequency:</label>
             <label class="fs-5 ms-2 me-4 float-end" style="width: 10px;">{{effectiveSwitchingFrequencyUnit}}</label>
             <label class="fs-5 bg-dark text-white float-end" style="width: 100%; max-width: 60px; text-align:right;">{{effectiveSwitchingFrequency}}</label>
+
+            <div></div>
+
+            <label class="fs-5 ms-3">THD:</label>
+            <label class="fs-5 ms-2 me-4 float-end" style="width: 10px;">%</label>
+            <label class="fs-5 bg-dark text-white float-end" style="width: 100%; max-width: 60px; text-align:right;">{{thd}}</label>
 
             <div></div>
 

@@ -39,7 +39,7 @@ export default {
             this.waveformTypes['voltage'] = newValue
         },
         onCurrentChange(newValue) {
-            this.waveformTypes['current'] = newValue
+            this.waveformTypes['current'] = newValue 
         },
         onChartReady() {
             this.isChartReady = true
@@ -48,6 +48,8 @@ export default {
             commonStore.setSwitchingFrequency(newValue * 1000)
         },
         onDutyCycleChange(newValue) {
+            console.log("newValue onDutyCycleChange")
+            console.log(newValue)
             commonStore.setDutyCycle(newValue / 100)
         },
     },
@@ -61,7 +63,7 @@ export default {
 <template>
     <Header />
     <main role="main">
-        <div class="container-flex">
+        <div class="container mx-auto">
             <div class="row">
                 <div class="col-lg-12">
                     <OperationPointHeader @voltage-type-change="onVoltageChange" @current-type-change="onCurrentChange"/>
@@ -80,7 +82,7 @@ export default {
                 </div>
                 <div class="col-lg-6 col-md-8">
                     <WaveformGraph class="" :waveformTypes="waveformTypes" @chart-ready="onChartReady" style="height: 66%"/>
-                    <WaveformFourier class="mt-3" style="height: 32%"/>
+                    <WaveformFourier class="mt-3" style="height: 30%"/>
                 </div>
                 <div class="col-lg-3 col-md-4">
                     <div v-for="(value, key) in waveformTypes">

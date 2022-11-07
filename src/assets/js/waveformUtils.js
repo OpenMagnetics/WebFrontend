@@ -107,7 +107,7 @@ export function deepCopy(data) {
     return JSON.parse(JSON.stringify(data))
 }
 
-export function fourierTransform(data, switchingFrequency, samplingNumberPoints) {
+export function sampleWaveform(data, switchingFrequency, samplingNumberPoints) {
         // Interpolation
         const x = []
         const y = []
@@ -116,12 +116,19 @@ export function fourierTransform(data, switchingFrequency, samplingNumberPoints)
             y.push(item.y)
         })
 
-        const sampledSignal = []
+        const sampledTime = []
         for(var i = 0; i < samplingNumberPoints; i++) {
-            sampledSignal.push(i / switchingFrequency / (samplingNumberPoints));
+            sampledTime.push(i / switchingFrequency / (samplingNumberPoints));
         }
         var linear = Everpolate.linear
-        var sampledWaveform = linear(sampledSignal, x, y)
+        var sampledWaveform = linear(sampledTime, x, y)
+
+        return {sampledTime, sampledWaveform}
+}
+
+
+export function fourierTransform(data, switchingFrequency, samplingNumberPoints) {
+        const {sampledTime, sampledWaveform} = sampleWaveform(data, switchingFrequency, samplingNumberPoints)
 
         // Fourier Transform
         const fft = new FFT(samplingNumberPoints);
@@ -138,7 +145,7 @@ export function fourierTransform(data, switchingFrequency, samplingNumberPoints)
         for(var i = 0; i < samplingNumberPoints / 2; i++) {
             harmonicsFrequencies.push(switchingFrequency * i)
         }
-        return {sampledSignal, sampledWaveform, harmonicsAmplitude, harmonicsFrequencies}
+        return {sampledTime, sampledWaveform, harmonicsAmplitude, harmonicsFrequencies}
 }
 
 export function getRootMeanSquare(data) {
@@ -155,7 +162,23 @@ export function getEffectiveFrequency(data, time) {
         dividend.push(dataSquared * timeSquared)
         divisor.push(dataSquared)
     })
-    return Math.sqrt(dividend.reduce((a, b) => a + b, 0) / divisor.reduce((a, b) => a + b, 0));
+    const sumDivisor = divisor.reduce((a, b) => a + b, 0);
+    if (sumDivisor > 0)
+        return Math.sqrt(dividend.reduce((a, b) => a + b, 0) / sumDivisor);
+    else
+        return 0
+}
+
+export function getTotalHarmonicDistorsion(data) {
+    const dividend = []
+    const divisor = data[1]
+    data.slice([2]).forEach((item, index) => {
+        dividend.push(Math.pow(item, 2))
+    })
+    if (divisor > 0)
+        return Math.sqrt(dividend.reduce((a, b) => a + b, 0)) / divisor;
+    else
+        return 0;
 }
 
 export function removeTrailingZeroes(value, maximumNumberDecimals=4) {
@@ -172,4 +195,86 @@ export function removeTrailingZeroes(value, maximumNumberDecimals=4) {
     else
         value = value.toFixed(0)
     return value
+}
+
+export function unpackDataPoints(dataPoints) {
+    const values = []
+    const times = []
+    dataPoints.forEach((item, index) => {
+        values.push(item.y)
+        times.push(item.x)
+    })
+    return {values, times}
+}
+
+export function packDataPoints(waveform, frequency, compress) {
+    const dataPoints = []
+    var compressedData = []
+    var compressedTime = []
+    var previousSlope = 0
+
+    if (!("time" in waveform)) {
+        waveform["time"] = []
+        for (let i = 0; i < waveform["data"].length; i++) {
+            waveform["time"].push(i / frequency / waveform["data"].length)
+        }
+    }
+
+    if (compress) {
+        for (let i = 0; i < waveform["data"].length; i++) {
+            var slope
+            if (i < waveform["data"].length - 1) {
+                slope = (waveform["data"][i + 1] - waveform["data"][i]) / (waveform["time"][i + 1] - waveform["time"][i])
+            }
+            else {
+                slope = 0
+            }
+            if ((Math.abs(slope - previousSlope) > 1e-6) || (i == 0) || (i == (waveform["data"].length - 1))) {
+                compressedData.push(waveform["data"][i])
+                compressedTime.push(waveform["time"][i])
+            }
+            previousSlope = slope
+        }
+    }
+    else {
+        compressedData = waveform["data"]
+        compressedTime = waveform["time"]
+    }
+
+    for (let i = 0; i < compressedData.length; i++) {
+        dataPoints.push({x: compressedTime[i], y: compressedData[i]})
+    }
+
+    return dataPoints
+}
+
+export function tryGuessType(dataPoints, frequency) {
+    if (dataPoints.length == 3) {
+        if (roundWithDecimals(1 / (dataPoints[2].x - dataPoints[0].x), 0.001) == frequency)
+        if (dataPoints[0].y == dataPoints[2].y)
+            return "Triangular"
+    }
+    else if (dataPoints.length == 5) {
+        if (roundWithDecimals(1 / (dataPoints[4].x - dataPoints[0].x), 0.001) == frequency)
+        if (dataPoints[0].y == dataPoints[1].y)
+        if (dataPoints[1].x == dataPoints[2].x)
+        if (dataPoints[2].y == dataPoints[3].y)
+        if (dataPoints[0].y == dataPoints[4].y)
+            return "Square"
+    }
+    else if (dataPoints.length == 10) {
+        if (roundWithDecimals(1 / (dataPoints[9].x - dataPoints[0].x), 0.001) == frequency)
+        if (dataPoints[0].y == dataPoints[1].y)
+        if (dataPoints[1].x == dataPoints[2].x)
+        if (dataPoints[2].y == dataPoints[3].y)
+        if (dataPoints[3].x == dataPoints[4].x)
+        if (dataPoints[4].y == dataPoints[5].y)
+        if (dataPoints[5].x == dataPoints[6].x)
+        if (dataPoints[6].y == dataPoints[7].y)
+        if (dataPoints[7].x == dataPoints[8].x)
+        if (dataPoints[8].y == dataPoints[9].y)
+        if (dataPoints[0].y == dataPoints[9].y)
+            return "Square with Dead-Time"
+    }
+    return "Custom"
 }

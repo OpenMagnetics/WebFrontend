@@ -15,15 +15,23 @@ export function loadBase(electricalParameter, isChartReady, defaultData, getPara
       validateOnModelUpdate: true,
     });
 
-    const offset = ref(Defaults.defaultOffset)
-    const peakToPeak = ref(Defaults.defaultPeakToPeak)
-    const dutyCycle = ref(Defaults.defaultDutyCycle)
-    const switchingFrequency = ref(Defaults.defaultSwitchingFrequency)
+    var store = null
+    
+    if (electricalParameter == "current") {
+        store = useCurrentStore()
+    } else {
+        store = useVoltageStore()
+    }
+    const commonStore = useCommonStore()
+    var params = store.getParams.value
+
+    const offset = ref(params['offset'])
+    const peakToPeak = ref(params['peakToPeak'])
+    const switchingFrequency = ref(commonStore.getSwitchingFrequency.value)
+    const dutyCycle = ref(commonStore.getDutyCycle.value)
     const data = ref(defaultData)
     const formRef = ref(null);
-    const commonStore = useCommonStore()
 
-    var store = null
 
     function peakToPeakChange(event) {
         peakToPeak.value = Number(event.target.value)
@@ -47,16 +55,10 @@ export function loadBase(electricalParameter, isChartReady, defaultData, getPara
         }
         const aux = getDataPointsFromParams(params)
         store.setDataPoints(Utils.deepCopy(Utils.scaleData(aux, switchingFrequency.value)));
+
     }
 
     onMounted(() => {
-        if (electricalParameter == "current") {
-            store = useCurrentStore()
-        } else {
-            store = useVoltageStore()
-        }
-
-
         if (isChartReady) {
             switchingFrequency.value = commonStore.getSwitchingFrequency.value;
             dutyCycle.value = commonStore.getDutyCycle.value;
@@ -67,7 +69,8 @@ export function loadBase(electricalParameter, isChartReady, defaultData, getPara
             if (action.name == "setChartReady") {
                 store.setDataPoints(Utils.deepCopy(Utils.scaleData(data.value, switchingFrequency.value)));
             }
-            else if (action.name == "setDataPointsFromDragging") {
+            else if (action.name == "setDataPointsFromDragging" || action.name == "setDataPointsFromFile") {
+                console.log("setDataPointsFromFilesetDataPointsFromFilesetDataPointsFromFilesetDataPointsFromFilesetDataPointsFromFile")
                 const dataPoints = action.args[0]
                 const {peakToPeakValue, dutyCycleValue, offsetValue} = getParamsFromDataPoints(dataPoints, Defaults.defaultPrecision)
                 peakToPeak.value = Number(peakToPeakValue)
@@ -88,10 +91,11 @@ export function loadBase(electricalParameter, isChartReady, defaultData, getPara
             }
         })
 
+        store.setNewWaveformType()
     })
 
     const schema = Yup.object().shape({
-        offsetValidator: Yup.number().required().typeError("The value for offset must be a number").min(0),
+        offsetValidator: Yup.number().required().typeError("The value for offset must be a number"),
         peakToPeakValidator: Yup.number().required().typeError("The value for peak to peak must be a number").min(Defaults.defaultMinimumNumberForms),
     });
 

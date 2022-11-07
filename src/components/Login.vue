@@ -1,10 +1,95 @@
-<script setup lang="ts">
+<script setup>
+import { defineProps, computed, ref, onMounted, inject } from 'vue';
 import { Form } from 'vee-validate';
 import * as Yup from 'yup';
 import TextInput from './TextInput.vue';
+import axios from "axios";
+
+const props = defineProps({
+    isLogin: {
+        type: Boolean,
+        default: true,
+    },
+});
+
+const $cookies = inject('$cookies');
+
+
+const usedUsernames = []
+const usedEmails = []
+const formRef = ref(null)
+const testref = ref(null)
+const passwordRef = ref(null)
+const usernameRef = ref(null)
+const posting = ref(false)
+const done = ref(false)
+
+const isRegister = computed(() => {
+    return !props.isLogin
+})
+
+const emit = defineEmits(['onLoggedIn'])
+
+onMounted(() => {
+})
 
 function onSubmit(values) {
-  alert(JSON.stringify(values, null, 2));
+    var url
+    var data
+    if (props.isLogin) {
+        url = 'http://localhost:8888/login'
+        data = {
+            username: values['loginUsername'],
+            password: values['loginPassword'],
+        }
+    }
+    else {
+        url = 'http://localhost:8888/register'
+        data = {
+            username: values['registerUsername'],
+            email: values['email'],
+            password: values['registerPassword'],
+        }
+    }
+
+    posting.value = true
+
+    axios.post(url, data)
+    .then(response => {
+        console.log(response.data)
+        console.log($cookies.get("username"))
+        if (response.data['status'] == 'username exists'){
+            usedUsernames.push(response.data['username'].toLowerCase())
+            formRef.value.validate()
+        }
+        else if (response.data['status'] == 'email exists'){
+            usedEmails.push(response.data['email'].toLowerCase())
+            formRef.value.validate()
+        }
+        else if (response.data['status'] == 'registered'){
+            done.value = true
+            $cookies.set("username", response.data['username'], "1h")
+            emit("onLoggedIn")
+        }
+        else if (response.data['status'] == 'wrong password'){
+            formRef.value.setFieldError('loginPassword', "Wrong password. Please try again")
+        }
+        else if (response.data['status'] == 'unknown username'){
+            formRef.value.setFieldError('loginUsername', "Unknown username")
+        }
+        else if (response.data['status'] == 'logged in'){
+            done.value = true
+            $cookies.set("username", response.data['username'], "1h")
+            console.log("ea")
+            emit("onLoggedIn")
+            console.log("ea")
+        }
+        posting.value = false
+        console.log($cookies.get("username"))
+    })
+    .catch(error => {
+        posting.value = false
+    });
 }
 
 function onInvalidSubmit() {
@@ -15,70 +100,88 @@ function onInvalidSubmit() {
   }, 1000);
 }
 
-// Using yup to generate a validation schema
-// https://vee-validate.logaretm.com/v4/guide/validation#validation-schemas-with-yup
-const schema = Yup.object().shape({
-  name: Yup.string().required(),
-  email: Yup.string().email().required(),
-  password: Yup.string().min(6).required(),
-  confirm_password: Yup.string()
-    .required()
-    .oneOf([Yup.ref('password')], 'Passwords do not match'),
-});
+const schema = computed(() => {
+    if (props.isLogin) {
+        const loginSchema = Yup.object().shape({
+            loginUsername: Yup.string().required().label("Username"),
+            loginPassword: Yup.string().min(6).required().label("Password"),
+        });
+        return loginSchema
+    }
+    else {
+        const registerSchema = Yup.object().shape({
+            registerUsername: Yup.lazy(value => { return Yup.string().lowercase().trim().required().notOneOf(usedUsernames, 'Username is already in use').label("Username")}),
+            email: Yup.lazy(value => { return Yup.string().email().lowercase().trim().required().notOneOf(usedEmails, 'Email is already in use').label("Email")}),
+            registerPassword: Yup.string().min(6).required().label("Password"),
+            confirmPassword: Yup.string().required().oneOf([Yup.ref('registerPassword')], 'Passwords do not match').label("Password"),
+        });
+        return registerSchema
+    }
+})
+
 </script>
 
 <template>
-  <div>
-    <Form
-      @submit="onSubmit"
-      :validation-schema="schema"
-      @invalid-submit="onInvalidSubmit"
-    >
-      <TextInput
-        name="name"
-        type="text"
-        label="Full Name"
-        placeholder="Your Name"
-        success-message="Nice to meet you!"
-      />
-      <TextInput
-        name="email"
-        type="email"
-        label="E-mail"
-        placeholder="Your email address"
-        success-message="Got it, we won't spam you!"
-      />
-      <TextInput
-        name="password"
-        type="password"
-        label="Password"
-        placeholder="Your password"
-        success-message="Nice and secure!"
-      />
-      <TextInput
-        name="confirm_password"
-        type="password"
-        label="Confirm Password"
-        placeholder="Type it again"
-        success-message="Glad you remembered it!"
-      />
+    <div class="modal-dialog">
+        <div class="modal-content bg-dark text-white">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="modalLabel">{{isLogin? "Login" : "Register"}}</h1>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div v-if="!done" class="modal-body">
+                <Form ref=formRef @submit="onSubmit" :validation-schema="schema" @invalid-submit="onInvalidSubmit">
+                    <TextInput
+                        ref="usernameRef"
+                        class="text-white bg-dark"
+                        :name="isLogin? 'loginUsername' : 'registerUsername'"
+                        type="text"
+                        label="Username"
+                        placeholder="Your Username"
+                        :success-message="isLogin? '' : 'Nice to meet you!'"
+                    />
+                    <TextInput
+                        v-if="isRegister"
+                        class="text-white bg-dark"
+                        name="email"
+                        type="email"
+                        label="E-mail"
+                        placeholder="Your email address"
+                        success-message="Got it, we won't spam you!"
+                    />
+                    <TextInput
+                        ref="passwordRef"
+                        class="text-white bg-dark"
+                        :name="isLogin? 'loginPassword' : 'registerPassword'"
+                        type="password"
+                        label="Password"
+                        placeholder="Your password"
+                        :success-message="isLogin? '' : 'Nice and secure!'"
+                    />
+                    <TextInput
+                        v-if="isRegister"
+                        class="text-white bg-dark"
+                        name="confirmPassword"
+                        type="password"
+                        label="Confirm Password"
+                        placeholder="Type it again"
+                        success-message="Glad you remembered it!"
+                    />
 
-      <button class="submit-btn" type="submit">Submit</button>
-    </Form>
-  </div>
+                    <button v-if="!posting" class="submit-btn btn btn-primary" type="submit">{{isLogin? "Login" : "Register"}}</button>
+                    <img v-if="posting" class="mx-auto d-block" alt="loading" style="width: 150px; height: auto;" src="/images/loading.gif">
+                </Form>
+            </div>
+            <div v-if="done" class="modal-body">
+                <h1 class="modal-title fs-5 text-center" >{{isLogin? "Welcome back" : "Welcome to Open Magnetics!"}}</h1>
+                <button class="btn btn-primary mx-auto d-block mt-5" data-bs-dismiss="modal" >{{"Go back"}}</button>
+            </div>
+        </div>
+    </div>
 </template>
 
-<style>
+<style scoped>
 * {
   box-sizing: border-box;
-}
-
-:root {
-  --primary-color: #0071fe;
-  --error-color: #f23648;
-  --error-bg-color: #fddfe2;
-  --success-color: #21a67a;
-  --success-bg-color: #e0eee4;
 }
 
 html,
@@ -87,16 +190,6 @@ body {
   height: 100%;
 }
 
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  color: #2c3e50;
-  margin-top: 60px;
-
-  width: 100%;
-  height: 100%;
-}
 
 form {
   width: 300px;
@@ -105,10 +198,8 @@ form {
 }
 
 .submit-btn {
-  background: var(--primary-color);
   outline: none;
   border: none;
-  color: #fff;
   font-size: 18px;
   padding: 10px 15px;
   display: block;

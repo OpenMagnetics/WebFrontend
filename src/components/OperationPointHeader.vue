@@ -1,17 +1,25 @@
-<!--
-We can create two-way bindings between state and form inputs using the v-model directive.
--->
-
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { Form, Field } from 'vee-validate';
 import * as Yup from 'yup';
 import * as Defaults from '/src/assets/js/waveformDefaults.js'
+import * as Utils from '/src/assets/js/waveformUtils.js'
+import { useCurrentStore } from '/src/stores/waveform'
+import { useVoltageStore } from '/src/stores/waveform'
+import { useCommonStore } from '/src/stores/waveform'
+import OperationPointExport from '/src/components/OperationPointExport.vue'
+import OperationPointImport from '/src/components/OperationPointImport.vue'
+import OperationPointNew from '/src/components/OperationPointNew.vue'
+
+const currentStore = useCurrentStore()
+const voltageStore = useVoltageStore()
+const commonStore = useCommonStore()
 
 const selected = ref()
 const emit = defineEmits(['voltage-type-change', 'current-type-change'])
-const voltageSelected = ref(Defaults.defaultVoltageType)
 const currentSelected = ref(Defaults.defaultCurrentType)
+const voltageSelected = ref(Defaults.defaultVoltageType)
+const operationPointNameSelected = ref(Defaults.defaultOperationName)
 const voltageRef = ref(null)
 const currentRef = ref(null)
 
@@ -21,7 +29,7 @@ const schema = Yup.object().shape({
     currentType: Yup.string()
         .required('Please, choose a Current waveform type'),
     operationPointName: Yup.string()
-        .required('Name cannot be empty').min(4),
+        .required('Name cannot be empty').min(1),
 });
 
 const voltageCompatibilities = {
@@ -68,7 +76,7 @@ const currentCompatibilities = {
 
 function onVoltageChange(event) {
     emit("voltage-type-change", event.target.value)
-    voltageSelected.value = event.target.value
+    voltageStore.setOutput("label", voltageSelected.value)
     if (voltageCompatibilities[event.target.value]['none'].includes(currentSelected.value)) {
         const found = voltageCompatibilities[event.target.value]['none'].find(element => element == currentSelected.value);
         currentRef.value.setErrors(["Voltage of type '" + found +"' is not recommended with current of type '" + currentSelected.value + "'. We recommend change the current to '" + voltageCompatibilities[event.target.value]['totally'][0] + "' instead."])
@@ -78,9 +86,10 @@ function onVoltageChange(event) {
 
     }
 }
+
 function onCurrentChange(event) {
     emit("current-type-change", event.target.value)
-    currentSelected.value = event.target.value
+    currentStore.setOutput("label", currentSelected.value)
     if (currentCompatibilities[event.target.value]['none'].includes(voltageSelected.value)) {
         const found = currentCompatibilities[event.target.value]['none'].find(element => element == voltageSelected.value);
         voltageRef.value.setErrors(["Current of type '" + found +"' is not recommended with voltage of type '" + voltageSelected.value + "'. We recommend change the current to '" + currentCompatibilities[event.target.value]['totally'][0] + "' instead."])
@@ -90,37 +99,87 @@ function onCurrentChange(event) {
     }
 }
 
+function onOperationPointName(event) {
+    commonStore.setOperationPointName(operationPointNameSelected.value)
+}
+
+function onVoltageChangeFromImport(newType) {
+    const event = {target: {value: newType}}
+    voltageSelected.value = newType
+    onVoltageChange(event)
+}
+
+function onCurrentChangeFromImport(newType) {
+    const event = {target: {value: newType}}
+    currentSelected.value = newType
+    onCurrentChange(event)
+}
+
+function onSaveToDB(event) {
+    console.log("TODO, process default and save to MongoDB")
+}
+
+onMounted(()=> {
+    commonStore.setOperationPointName(operationPointNameSelected.value)
+    currentStore.setOutput("label", currentSelected.value)
+    voltageStore.setOutput("label", voltageSelected.value)
+})
+
 </script>
 
 <template>
-    <div class="container-flex text-white mt-3 mb-3 pb-3 border-bottom">
-        <Form :validation-schema="schema" v-slot="{ errors }" class="form-inline">
-            <label class="fs-5 mx-3">Operation Point Name:</label>
-            <Field name="operationPointName" type="text"  :class="{ 'is-invalid': errors.operationPointName }" :placeholder="Defaults.defaultOperationNamePlaceHolder" :value="Defaults.defaultOperationName" class= "bg-light text-white rounded-2"/>
+    <div class="container text-white mt-3 mb-3 pb-3 border-bottom">
+        <div class="row gx-1">
+            <div class="col-12 col-sm-2 col-md-2 col-lg-2 col-xl-2 ">
+                <div class="row gx-2">
+                    <button class="btn text-white bg-secondary py-1 my-1 col-10 col-sm-12 col-md-12 col-lg-5 col-xl-5" data-bs-toggle="modal" data-bs-target="#newOperationPointModal">New</button>
+                    <div class="col-12 col-sm-2 col-md-2 col-lg-2 col-xl-2"> </div>
+                    <button class="btn text-white bg-secondary py-1 my-1 col-10 col-sm-12 col-md-12 col-lg-5 col-xl-5" data-bs-toggle="offcanvas" data-bs-target="#ImportOffCanvas" aria-controls="ImportOffCanvas">Import</button>
 
-            <label class="fs-5 ms-5 me-3">Voltage waveform:</label>
-            <Field name="voltageType" ref="voltageRef" as="select" :class="{ 'is-invalid': errors.voltageType }" @change="onVoltageChange" :value="voltageSelected" class= "bg-light text-white rounded-2">
-                <option disabled value="">Please select one</option>
-                <option value="Custom">Custom</option>
-                <option value="Square">Square</option>
-                <option value="Square with Dead-Time">Square with Dead-Time</option>
-                <option value="Sinusoidal">Sinusoidal</option>
-            </Field>
+                </div>
+            </div>
+            <div class="col-11 col-sm-8 col-md-8 col-lg-8 col-xl-8 pe-5 ps-3">
+                <Form :validation-schema="schema" v-slot="{ errors }" class="form-inline row">
+                    <label class="medium-text col-sm-4 col-md-4 col-lg-3 col-xl-3 text-md-end">Op. Point Name:</label>
+                    <Field name="operationPointName" type="text" :class="{ 'is-invalid': errors.operationPointName }" :placeholder="Defaults.defaultOperationNamePlaceHolder"  @change="onOperationPointName" :value="Defaults.defaultOperationName" class= "small-text bg-light text-white rounded-2 col-sm-8 col-md-8 col-lg-9 col-xl-9" v-model="operationPointNameSelected"/>
 
-            <label class="fs-5 ms-5 me-3">Current waveform:</label>
-            <Field name="currentType" ref="currentRef" as="select" :class="{ 'is-invalid': errors.currentType }" @change="onCurrentChange" :value="currentSelected" class= "bg-light text-white rounded-2">
-                <option disabled value="">Please select one</option>
-                <option value="Custom">Custom</option>
-                <option value="Triangular">Triangular</option>
-                <option value="Sinusoidal">Sinusoidal</option>
-                <option disabled value="Sinusoidal">Flyback (coming soon)</option>
-                <option disabled value="Sinusoidal">PS Full Bridge (coming soon)</option>
-            </Field>
+                    <label class="medium-text mt-2 col-sm-4 col-md-4 col-lg-3 col-xl-3 text-md-end">Voltage type:</label>
+                    <Field name="voltageType" ref="voltageRef" as="select" :class="{ 'is-invalid': errors.voltageType }" @change="onVoltageChange" :value="voltageSelected" class= "small-text bg-light text-white rounded-2 mt-2 col-sm-8 col-md-8 col-lg-3 col-xl-3" v-model="voltageSelected">
+                        <option disabled value="">Please select one</option>
+                        <option value="Custom">Custom</option>
+                        <option value="Square">Square</option>
+                        <option value="Square with Dead-Time">Square with Dead-Time</option>
+                        <option value="Sinusoidal">Sinusoidal</option>
+                    </Field>
 
-            <div class="invalid-feedback">{{errors.operationPointName}}</div>
-            <div class="invalid-feedback">{{errors.voltageType}}</div>
-            <div class="invalid-feedback">{{errors.currentType}}</div>
-        </Form>
+                    <label class="medium-text  mt-2 col-sm-4 col-md-4 col-lg-3 col-xl-3 text-md-end">Current type:</label>
+                    <Field name="currentType" ref="currentRef" as="select" :class="{ 'is-invalid': errors.currentType }" @change="onCurrentChange" :value="currentSelected" class= "small-text bg-light text-white rounded-2 mt-2 col-sm-8 col-md-8 col-lg-3 col-xl-3" v-model="currentSelected">
+                        <option disabled value="">Please select one</option>
+                        <option value="Custom">Custom</option>
+                        <option value="Triangular">Triangular</option>
+                        <option value="Sinusoidal">Sinusoidal</option>
+                        <option disabled value="Sinusoidal">Flyback (coming soon)</option>
+                        <option disabled value="Sinusoidal">PS Full Bridge (coming soon)</option>
+                    </Field>
+
+                    <div class="invalid-feedback">{{errors.operationPointName}}</div>
+                    <div class="invalid-feedback">{{errors.voltageType}}</div>
+                    <div class="invalid-feedback">{{errors.currentType}}</div>
+                </Form>
+            </div>
+            <div class="col-12 col-sm-2 col-md-2 col-lg-2 col-xl-2 container">
+                <div class="row">
+                    <button class="btn text-white bg-secondary py-1 px-2 my-1 col-10 col-sm-12 col-md-12 col-lg-12 col-xl-12 disabled" @click="onSaveToDB">Save</button>
+                    <button class="btn text-white bg-secondary py-1 px-2 my-1 col-10 col-sm-12 col-md-12 col-lg-5 col-xl-5 disabled" @click="onSaveToDB">Publish</button>
+                    <div class="col-12 col-sm-2 col-md-2 col-lg-2 col-xl-2"> </div>
+                    <button class="btn text-white bg-secondary py-1 px-2 my-1 col-10 col-sm-12 col-md-12 col-lg-5 col-xl-5" data-bs-toggle="offcanvas" data-bs-target="#ExportOffCanvas" aria-controls="ExportOffCanvas">Export</button>
+
+                </div>
+            </div>
+        </div>
     </div>
-</template>
+    <OperationPointImport @voltage-type-change="onVoltageChangeFromImport" @current-type-change="onCurrentChangeFromImport"/>
+    <OperationPointExport />
+    <OperationPointNew />
 
+</template>

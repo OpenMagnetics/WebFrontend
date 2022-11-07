@@ -43,6 +43,12 @@ function getParamsFromDataPoints(dataPoints, precision) {
     var peakToPeakValue = Utils.roundWithDecimals(Math.abs(dataPoints[1].y - dataPoints[0].y), Math.pow(10, precision))
     var offsetValue = Utils.roundWithDecimals((dataPoints[0].y + dataPoints[1].y) / 2, Math.pow(10, precision))
     var dutyCycleValue = Utils.roundWithDecimals((dataPoints[1].x - dataPoints[0].x) / (dataPoints[2].x - dataPoints[0].x), Math.pow(10, precision)) 
+    console.log("Triangular peakToPeakValue")
+    console.log(peakToPeakValue)
+    console.log("Triangular offsetValue")
+    console.log(offsetValue)
+    console.log("Triangular dutyCycleValue")
+    console.log(dutyCycleValue)
     formRef.value.setFieldValue("peakToPeakValidator", peakToPeakValue);
     formRef.value.setFieldValue("offsetValidator", offsetValue);         
     return {peakToPeakValue, offsetValue, dutyCycleValue}

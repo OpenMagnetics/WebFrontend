@@ -223,7 +223,7 @@ export default {
 <template>
     <Header />
     <main role="main">
-        <div class="container-flex mx-2">
+        <div class="container mx-auto">
                 <div class="row mb-2">
                     <div class="col-xl-12 px-0">
                         <h1 class="display-4 text-center text-secondary">Open Magnetics Roadmap</h1>

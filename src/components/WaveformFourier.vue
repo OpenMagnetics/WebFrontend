@@ -138,7 +138,7 @@ export default {
         currentStore.$subscribe((mutation, state) => {
             const aux = JSON.parse(JSON.stringify(currentStore.getDataPoints.value))
             
-            const {sampledSignal,
+            const {sampledTime,
                    sampledWaveform,
                    harmonicsAmplitude,
                    harmonicsFrequencies} = Utils.fourierTransform(aux,
@@ -149,7 +149,7 @@ export default {
                 currentSampledSignal = sampledWaveform
                 commonStore.setHarmonicsFrequencies(harmonicsFrequencies)
                 currentStore.setHarmonicsAmplitude(harmonicsAmplitude)
-                commonStore.setSampledTimePoints(sampledSignal)
+                commonStore.setSampledTimePoints(sampledTime)
                 currentStore.setSampledDataPoints(sampledWaveform)
             }
             chart.data.datasets[0].data = harmonicsAmplitude
@@ -158,7 +158,7 @@ export default {
         })
         voltageStore.$subscribe((mutation, state) => {
             const aux = JSON.parse(JSON.stringify(voltageStore.getDataPoints.value))
-            const {sampledSignal,
+            const {sampledTime,
                    sampledWaveform,
                    harmonicsAmplitude,
                    harmonicsFrequencies} = Utils.fourierTransform(aux,
@@ -168,7 +168,7 @@ export default {
                 voltageSampledSignal = sampledWaveform
                 commonStore.setHarmonicsFrequencies(harmonicsFrequencies)
                 voltageStore.setHarmonicsAmplitude(harmonicsAmplitude)
-                commonStore.setSampledTimePoints(sampledSignal)
+                commonStore.setSampledTimePoints(sampledTime)
                 voltageStore.setSampledDataPoints(sampledWaveform)
             }
             chart.data.datasets[1].data = harmonicsAmplitude

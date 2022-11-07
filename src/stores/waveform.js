@@ -10,9 +10,18 @@ const commonPart = () => {
     const harmonicsAmplitude = ref([])
     const valuePrecision = ref(null)
     const chartReady = ref(false)
-    const params = ref({offset: Defaults.defaultOffset, peakToPeak: Defaults.defaultPeakToPeak, dutyCycle: Defaults.defaultDutyCycle, })
+    const params = ref({offset: Defaults.defaultOffset, peakToPeak: Defaults.defaultPeakToPeak})
+    const outputs = ref({label: null, 
+                         peakToPeak: null, 
+                         dcOffset: null,
+                         rms: null,
+                         effectiveSwitchingFrequency: null,
+                         thd: null})
     const getParams = computed(() => {
         return params
+    })
+    const getOutputs = computed(() => {
+        return outputs
     })
     const getDataPoints = computed(() => {
         return dataPoints
@@ -60,12 +69,26 @@ const commonPart = () => {
             this.valuePrecision = Math.abs(aux['max'] - aux['min']) / 100
         }
     }
-
+    function setDataPointsFromFile(points) {
+        this.dataPoints = Utils.deepCopy(points)
+        var aux = Utils.getMaxMinInPoints(points, 'y')
+        if (aux['max'] != aux['min']) {
+            this.valuePrecision = Math.abs(aux['max'] - aux['min']) / 100
+        }
+    }
     function setParam(param, value) {
         this.params[param] = value
     }
+    function setOutput(output, value) {
+        this.outputs[output] = value
+    }
+    function setOutputs(outputs) {
+        this.outputs = outputs
+    }
     function setChartReady(param, value) {
         this.chartReady = true
+    }
+    function setNewWaveformType() {
     }
     return {
         dataPoints,
@@ -81,17 +104,24 @@ const commonPart = () => {
         getHarmonicsAmplitude,
         setDataPoint,
         setDataPoints,
+        setDataPointsFromFile,
         setDataPointsFromDragging,
         setParam,
         setSampledDataPoints,
+        setNewWaveformType,
         setHarmonicsAmplitude,
         isChartReady,
         setChartReady,
+        outputs,
+        getOutputs,
+        setOutput,
+        setOutputs,
     }
 }
 export const useCurrentStore = defineStore("current", commonPart)
 export const useVoltageStore = defineStore("voltage", commonPart)
 export const useCommonStore = defineStore("common", () => {
+    const operationPointName = ref(Defaults.defaultOperationName)
     const sampledTimePoints = ref([])
     const harmonicsFrequencies = ref([])
     const switchingFrequency = ref(Defaults.defaultSwitchingFrequency)
@@ -112,6 +142,9 @@ export const useCommonStore = defineStore("common", () => {
     const getHarmonicsFrequencies = computed(() => {
         return harmonicsFrequencies
     })
+    const getOperationPointName = computed(() => {
+        return operationPointName
+    })
     function setSwitchingFrequency(switchingFrequency) {
         this.switchingFrequency = switchingFrequency
         this.timePrecision = 1 / switchingFrequency / 100
@@ -128,7 +161,11 @@ export const useCommonStore = defineStore("common", () => {
     function setHarmonicsFrequencies(harmonicsFrequencies) {
         this.harmonicsFrequencies = harmonicsFrequencies
     }
+    function setOperationPointName(operationPointName) {
+        this.operationPointName = operationPointName
+    }
     return {
+        dutyCycle,
         switchingFrequency,
         sampledTimePoints,
         timePrecision,
@@ -143,5 +180,8 @@ export const useCommonStore = defineStore("common", () => {
         setDutyCycleFromPoints,
         setSampledTimePoints,
         getHarmonicsFrequencies,
+        operationPointName,
+        getOperationPointName,
+        setOperationPointName,
     }
 })
