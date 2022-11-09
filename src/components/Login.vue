@@ -38,14 +38,14 @@ function onSubmit(values) {
     var url
     var data
     if (props.isLogin) {
-        url = 'http://localhost:8888/login'
+        url = 'http://'+ import.meta.env.VITE_API_ENDPOINT + '/login'
         data = {
             username: values['loginUsername'],
             password: values['loginPassword'],
         }
     }
     else {
-        url = 'http://localhost:8888/register'
+        url = 'http://'+ import.meta.env.VITE_API_ENDPOINT + '/register'
         data = {
             username: values['registerUsername'],
             email: values['email'],

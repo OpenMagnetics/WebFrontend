@@ -53,7 +53,7 @@ export default {
                 data["username"] = userStore.getUsername.value
             }
             data["slug"] = this.slug
-            const url = 'http://localhost:8888/operation_point_publish'
+            const url = 'http://'+ import.meta.env.VITE_API_ENDPOINT + '/operation_point_publish'
 
             axios.post(url, data)
             .then(response => {

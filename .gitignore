@@ -25,3 +25,4 @@ dist-ssr
 *Zone.Identifier
 *package-lock.json
 *.sass-cache*
+*.env

@@ -89,7 +89,7 @@
     }
 
 
-    .accordion-button: {
+    .accordion-button {
         color: var(--bs-primary)  !important;
         background-color: var(--bs-light) !important;
         border-color: var(--bs-primary) !important;

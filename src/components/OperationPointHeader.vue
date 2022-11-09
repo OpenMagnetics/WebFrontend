@@ -159,7 +159,7 @@ function saveToDB(anonymousUser=false) {
         }
     }
     operationPointData["slug"] = publishedSlug
-    const url = 'http://localhost:8888/operation_point_save' + (currentOperationPointId.value == null? '' : ('/' + currentOperationPointId.value))
+    const url = 'http://'+ import.meta.env.VITE_API_ENDPOINT + '/operation_point_save' + (currentOperationPointId.value == null? '' : ('/' + currentOperationPointId.value))
     console.log(url)
     console.log(currentOperationPointId.value)
     axios.post(url, operationPointData)

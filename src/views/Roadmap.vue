@@ -192,7 +192,7 @@ export default {
         }
     },
     mounted() {
-        axios.post('http://localhost:8888/get_all_number_votes', {})
+        axios.post('http://' + import.meta.env.VITE_API_ENDPOINT + '/get_all_number_votes', {})
         .then(response => {
             var votesList = response.data;
             var orderedMilestone = [];
