@@ -4,6 +4,7 @@ import { Form } from 'vee-validate';
 import * as Yup from 'yup';
 import TextInput from './TextInput.vue';
 import axios from "axios";
+import { useUserStore } from '/src/stores/user'
 
 const props = defineProps({
     isLogin: {
@@ -13,7 +14,7 @@ const props = defineProps({
 });
 
 const $cookies = inject('$cookies');
-
+const userStore = useUserStore();
 
 const usedUsernames = []
 const usedEmails = []
@@ -56,8 +57,6 @@ function onSubmit(values) {
 
     axios.post(url, data)
     .then(response => {
-        console.log(response.data)
-        console.log($cookies.get("username"))
         if (response.data['status'] == 'username exists'){
             usedUsernames.push(response.data['username'].toLowerCase())
             formRef.value.validate()
@@ -80,12 +79,9 @@ function onSubmit(values) {
         else if (response.data['status'] == 'logged in'){
             done.value = true
             $cookies.set("username", response.data['username'], "1h")
-            console.log("ea")
             emit("onLoggedIn")
-            console.log("ea")
         }
         posting.value = false
-        console.log($cookies.get("username"))
     })
     .catch(error => {
         posting.value = false
@@ -172,7 +168,7 @@ const schema = computed(() => {
                 </Form>
             </div>
             <div v-if="done" class="modal-body">
-                <h1 class="modal-title fs-5 text-center" >{{isLogin? "Welcome back" : "Welcome to Open Magnetics!"}}</h1>
+                <h1 class="modal-title fs-5 text-center" >{{isLogin? "Welcome back, " + $cookies.get("username") : "Welcome to Open Magnetics!"}}</h1>
                 <button class="btn btn-primary mx-auto d-block mt-5" data-bs-dismiss="modal" >{{"Go back"}}</button>
             </div>
         </div>

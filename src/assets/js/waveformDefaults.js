@@ -15,7 +15,12 @@ export const defaultTimeExponent = 5
 export const defaultSinusoidalNumberPoints = 120
 
 export const defaultSamplingNumberPoints = 32
-
+export const defaultOperationPointSaveConfiguration = {
+    numberPoints: 128,
+    exportEquidistant: false,
+    includeProcessed: false,
+    includeHarmonics: false,
+}
 
 export function titleColor(electricalParameter){
     if (electricalParameter == "current") {

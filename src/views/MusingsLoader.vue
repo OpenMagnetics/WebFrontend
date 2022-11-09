@@ -24,9 +24,7 @@ export default defineComponent({
   },
   created() {
     const index = this.$route.params.index;
-    console.log(this.$route.params);
     this.componentPath = "Musing" + index;
-    console.log(this.componentPath);
   },
 });
 </script>

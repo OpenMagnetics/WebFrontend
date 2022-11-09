@@ -278,3 +278,80 @@ export function tryGuessType(dataPoints, frequency) {
     }
     return "Custom"
 }
+
+export function getOperationPointData(commonStore, currentStore, voltageStore, configuration) {
+    const exportedData = {};
+    exportedData["frequency"] = commonStore.getSwitchingFrequency.value;
+    exportedData["name"] = commonStore.getOperationPointName.value
+    exportedData["current"] = {};
+    exportedData["voltage"] = {};
+    exportedData["current"]["waveform"] = {}
+    exportedData["voltage"]["waveform"] = {}
+    const currentData = JSON.parse(JSON.stringify(currentStore.getDataPoints.value))
+    const voltageData = JSON.parse(JSON.stringify(voltageStore.getDataPoints.value))
+
+    if (configuration["exportEquidistant"]) {
+        const currentsampledWaveform = sampleWaveform(currentData,
+                                                        commonStore.getSwitchingFrequency.value,
+                                                        configuration["numberPoints"] - 1)
+        const voltagesampledWaveform = sampleWaveform(voltageData,
+                                                        commonStore.getSwitchingFrequency.value,
+                                                        configuration["numberPoints"] - 1)
+
+        exportedData["current"]["waveform"]["data"] = currentsampledWaveform["sampledWaveform"];
+        exportedData["current"]["waveform"]["data"].push(exportedData["current"]["waveform"]["data"][0])
+        exportedData["voltage"]["waveform"]["data"] = voltagesampledWaveform["sampledWaveform"];
+        exportedData["voltage"]["waveform"]["data"].push(exportedData["voltage"]["waveform"]["data"][0])
+    }
+    else {
+        const unpackedCurrentData = unpackDataPoints(currentData)
+        const unpackedVoltageData = unpackDataPoints(voltageData)
+
+        exportedData["current"]["waveform"]["data"] = unpackedCurrentData["values"]
+        exportedData["current"]["waveform"]["time"] = unpackedCurrentData["times"]
+        exportedData["current"]["waveform"]["ancillaryLabel"] = currentStore.getOutputs.value["label"]
+        exportedData["voltage"]["waveform"]["data"] = unpackedVoltageData["values"]
+        exportedData["voltage"]["waveform"]["time"] = unpackedVoltageData["times"]
+        exportedData["voltage"]["waveform"]["ancillaryLabel"] = voltageStore.getOutputs.value["label"]
+    }
+
+    if (configuration["includeProcessed"]) {
+        exportedData["current"]["processed"] = {
+            label: currentStore.getOutputs.value["label"],
+            dutyCycle: commonStore.getDutyCycle.value,
+            peakToPeak: currentStore.getOutputs.value["peakToPeak"],
+            offset: currentStore.getOutputs.value["offset"],
+            rms: currentStore.getOutputs.value["rms"],
+            effectiveFrequency: currentStore.getOutputs.value["effectiveFrequency"],
+            thd: currentStore.getOutputs.value["thd"],
+        }
+
+        exportedData["voltage"]["processed"] = {
+            label: voltageStore.getOutputs.value["label"],
+            dutyCycle: commonStore.getDutyCycle.value,
+            peakToPeak: voltageStore.getOutputs.value["peakToPeak"],
+            offset: voltageStore.getOutputs.value["offset"],
+            rms: voltageStore.getOutputs.value["rms"],
+            effectiveFrequency: voltageStore.getOutputs.value["effectiveFrequency"],
+            thd: voltageStore.getOutputs.value["thd"],
+        }
+    }
+
+    if (configuration["includeHarmonics"]) {
+        const currentFourierData = fourierTransform(currentData,
+                                                    commonStore.getSwitchingFrequency.value,
+                                                    configuration["numberPoints"])
+        const voltageFourierData = fourierTransform(voltageData,
+                                                    commonStore.getSwitchingFrequency.value,
+                                                    configuration["numberPoints"])
+        exportedData["current"]["harmonics"] = {
+            amplitudes: currentFourierData["harmonicsAmplitude"],
+            frequencies: currentFourierData["harmonicsFrequencies"]
+        }
+        exportedData["voltage"]["harmonics"] = {
+            amplitudes: voltageFourierData["harmonicsAmplitude"],
+            frequencies: voltageFourierData["harmonicsFrequencies"]
+        }
+    }
+    return exportedData
+}

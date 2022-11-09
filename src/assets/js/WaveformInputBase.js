@@ -70,7 +70,6 @@ export function loadBase(electricalParameter, isChartReady, defaultData, getPara
                 store.setDataPoints(Utils.deepCopy(Utils.scaleData(data.value, switchingFrequency.value)));
             }
             else if (action.name == "setDataPointsFromDragging" || action.name == "setDataPointsFromFile") {
-                console.log("setDataPointsFromFilesetDataPointsFromFilesetDataPointsFromFilesetDataPointsFromFilesetDataPointsFromFile")
                 const dataPoints = action.args[0]
                 const {peakToPeakValue, dutyCycleValue, offsetValue} = getParamsFromDataPoints(dataPoints, Defaults.defaultPrecision)
                 peakToPeak.value = Number(peakToPeakValue)

@@ -16,81 +16,18 @@ const numberEquidistantPointsPicked = ref(512)
 const waveformAndProcessedPicked = ref("onlyWaveform")
 const waveformAndFourierPicked = ref("withoutHarmonics")
 const exported = ref(false)
+const emit = defineEmits(['exported'])
 
 function onExport(event) {
-    const exportedData = {};
-    exportedData["frequency"] = commonStore.getSwitchingFrequency.value;
-    exportedData["current"] = {};
-    exportedData["voltage"] = {};
-    exportedData["current"]["waveform"] = {}
-    exportedData["voltage"]["waveform"] = {}
-    const currentData = JSON.parse(JSON.stringify(currentStore.getDataPoints.value))
-    const voltageData = JSON.parse(JSON.stringify(voltageStore.getDataPoints.value))
-
-    if (waveformTypePicked.value == "equidistantWaveform") {
-        const currentsampledWaveform = Utils.sampleWaveform(currentData,
-                                                        commonStore.getSwitchingFrequency.value,
-                                                        numberEquidistantPointsPicked.value - 1)
-        const voltagesampledWaveform = Utils.sampleWaveform(voltageData,
-                                                        commonStore.getSwitchingFrequency.value,
-                                                        numberEquidistantPointsPicked.value - 1)
-
-        exportedData["current"]["waveform"]["data"] = currentsampledWaveform["sampledWaveform"];
-        exportedData["current"]["waveform"]["data"].push(exportedData["current"]["waveform"]["data"][0])
-        exportedData["voltage"]["waveform"]["data"] = voltagesampledWaveform["sampledWaveform"];
-        exportedData["voltage"]["waveform"]["data"].push(exportedData["voltage"]["waveform"]["data"][0])
+    const configuration = {
+        numberPoints: numberEquidistantPointsPicked.value,
+        exportEquidistant: waveformTypePicked.value == "equidistantWaveform",
+        includeProcessed: waveformAndProcessedPicked.value == "waveformAndProcessed",
+        includeHarmonics: waveformAndFourierPicked.value == "withHarmonics"
     }
-    else {
-        const unpackedCurrentData = Utils.unpackDataPoints(currentData)
-        const unpackedVoltageData = Utils.unpackDataPoints(voltageData)
-
-        exportedData["current"]["waveform"]["data"] = unpackedCurrentData["values"]
-        exportedData["current"]["waveform"]["time"] = unpackedCurrentData["times"]
-        exportedData["current"]["waveform"]["ancillaryLabel"] = currentStore.getOutputs.value["label"]
-        exportedData["voltage"]["waveform"]["data"] = unpackedVoltageData["values"]
-        exportedData["voltage"]["waveform"]["time"] = unpackedVoltageData["times"]
-        exportedData["voltage"]["waveform"]["ancillaryLabel"] = voltageStore.getOutputs.value["label"]
-    }
-
-    if (waveformAndProcessedPicked.value == "waveformAndProcessed") {
-        exportedData["current"]["processed"] = {
-            label: currentStore.getOutputs.value["label"],
-            dutyCycle: commonStore.getDutyCycle.value,
-            peakToPeak: currentStore.getOutputs.value["peakToPeak"],
-            offset: currentStore.getOutputs.value["offset"],
-            rms: currentStore.getOutputs.value["rms"],
-            effectiveFrequency: currentStore.getOutputs.value["effectiveFrequency"],
-            thd: currentStore.getOutputs.value["thd"],
-        }
-
-        exportedData["voltage"]["processed"] = {
-            label: voltageStore.getOutputs.value["label"],
-            dutyCycle: commonStore.getDutyCycle.value,
-            peakToPeak: voltageStore.getOutputs.value["peakToPeak"],
-            offset: voltageStore.getOutputs.value["offset"],
-            rms: voltageStore.getOutputs.value["rms"],
-            effectiveFrequency: voltageStore.getOutputs.value["effectiveFrequency"],
-            thd: voltageStore.getOutputs.value["thd"],
-        }
-    }
-
-    if (waveformAndFourierPicked.value == "withHarmonics") {
-        const currentFourierData = Utils.fourierTransform(currentData,
-                                                    commonStore.getSwitchingFrequency.value,
-                                                    numberEquidistantPointsPicked.value)
-        const voltageFourierData = Utils.fourierTransform(voltageData,
-                                                    commonStore.getSwitchingFrequency.value,
-                                                    numberEquidistantPointsPicked.value)
-        exportedData["current"]["harmonics"] = {
-            amplitudes: currentFourierData["harmonicsAmplitude"],
-            frequencies: currentFourierData["harmonicsFrequencies"]
-        }
-        exportedData["voltage"]["harmonics"] = {
-            amplitudes: voltageFourierData["harmonicsAmplitude"],
-            frequencies: voltageFourierData["harmonicsFrequencies"]
-        }
-    }
+    const exportedData = Utils.getOperationPointData(commonStore, currentStore, voltageStore, configuration)
     download(JSON.stringify(exportedData, null, 4), commonStore.getOperationPointName.value + ".json", "text/plain");
+    emit("exported")
     exported.value = true
     setTimeout(() => exported.value = false, 2000);
 }

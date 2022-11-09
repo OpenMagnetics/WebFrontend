@@ -48,8 +48,6 @@ export default {
             commonStore.setSwitchingFrequency(newValue * 1000)
         },
         onDutyCycleChange(newValue) {
-            console.log("newValue onDutyCycleChange")
-            console.log(newValue)
             commonStore.setDutyCycle(newValue / 100)
         },
     },
@@ -61,8 +59,8 @@ export default {
 </script>
 
 <template>
-    <Header />
     <main role="main">
+        <Header />
         <div class="container mx-auto">
             <div class="row">
                 <div class="col-lg-12">
@@ -91,8 +89,8 @@ export default {
                 </div>
             </div>
         </div>
+        <Footer />
     </main>
-    <Footer />
 </template>
 
 <style type="text/css">

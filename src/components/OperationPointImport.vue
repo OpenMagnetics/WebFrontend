@@ -67,7 +67,6 @@ function onImport(event) {
 
 onMounted(() => {
     currentStore.$onAction((action) => {
-        console.log(action.name)
         if (action.name == "setNewWaveformType" && waitingforCurrentMounted) {
             waitingforCurrentMounted = false
             setTimeout(() => currentStore.setDataPointsFromFile(currentDataPoints), 100);

@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed, inject } from 'vue'
 import { Form, Field } from 'vee-validate';
 import * as Yup from 'yup';
 import * as Defaults from '/src/assets/js/waveformDefaults.js'
@@ -7,13 +7,17 @@ import * as Utils from '/src/assets/js/waveformUtils.js'
 import { useCurrentStore } from '/src/stores/waveform'
 import { useVoltageStore } from '/src/stores/waveform'
 import { useCommonStore } from '/src/stores/waveform'
+import { useUserStore } from '/src/stores/user'
 import OperationPointExport from '/src/components/OperationPointExport.vue'
 import OperationPointImport from '/src/components/OperationPointImport.vue'
 import OperationPointNew from '/src/components/OperationPointNew.vue'
+import OperationPointPublish from '/src/components/OperationPointPublish.vue'
+import axios from "axios";
 
 const currentStore = useCurrentStore()
 const voltageStore = useVoltageStore()
 const commonStore = useCommonStore()
+const userStore = useUserStore()
 
 const selected = ref()
 const emit = defineEmits(['voltage-type-change', 'current-type-change'])
@@ -22,6 +26,11 @@ const voltageSelected = ref(Defaults.defaultVoltageType)
 const operationPointNameSelected = ref(Defaults.defaultOperationName)
 const voltageRef = ref(null)
 const currentRef = ref(null)
+const isLoggedIn = ref(false)
+const saveMessage = ref("Save")
+const currentOperationPointId = ref(null)
+const $cookies = inject('$cookies');
+var publishedSlug = null
 
 const schema = Yup.object().shape({
     voltageType: Yup.string()
@@ -116,13 +125,77 @@ function onCurrentChangeFromImport(newType) {
 }
 
 function onSaveToDB(event) {
-    console.log("TODO, process default and save to MongoDB")
+    const result = saveToDB(false)
+    saveMessage.value = result
+    console.log(saveMessage.value)
+
+} 
+
+function onExport(event) {
+    saveToDB(true)
 }
+
+function onPublish(slug) {
+    publishedSlug = slug
+    saveToDB(false)
+} 
+
+function onNewOperationPoint() {
+    console.log("currentOperationPointId")
+    currentOperationPointId.value = null
+} 
+
+function saveToDB(anonymousUser=false) {
+    const operationPointData = Utils.getOperationPointData(commonStore, currentStore, voltageStore, Defaults.defaultOperationPointSaveConfiguration)
+    if (anonymousUser) {
+        operationPointData["username"] = "anonymous"
+    }
+    else {
+        if (userStore.getUsername.value == null) {
+            operationPointData["username"] = "anonymous"
+        }
+        else {
+            operationPointData["username"] = userStore.getUsername.value
+        }
+    }
+    operationPointData["slug"] = publishedSlug
+    const url = 'http://localhost:8888/operation_point_save' + (currentOperationPointId.value == null? '' : ('/' + currentOperationPointId.value))
+    console.log(url)
+    console.log(currentOperationPointId.value)
+    axios.post(url, operationPointData)
+    .then(response => {
+        console.log(response.data);
+        if (response.data["operation_point_id"] != null){
+            currentOperationPointId.value = response.data["operation_point_id"]
+        }
+        setTimeout(() => saveMessage.value = "Save", 1000);
+    })
+    .catch(error => {
+        console.log(error.data);
+        saveMessage.value = "Error, try against later"
+        setTimeout(() => saveMessage.value = "Save", 10000);
+
+    });
+    return "Saving"
+} 
+
+const colorSaveButton = computed(() => {
+    if (saveMessage.value == "Error, try against later")
+        return "bg-danger"
+    else
+        return "bg-secondary"
+})
 
 onMounted(()=> {
     commonStore.setOperationPointName(operationPointNameSelected.value)
     currentStore.setOutput("label", currentSelected.value)
     voltageStore.setOutput("label", voltageSelected.value)
+
+    isLoggedIn.value = userStore.isLoggedIn.value
+
+    userStore.$subscribe((mutation, state) => {
+        isLoggedIn.value = userStore.isLoggedIn.value
+    })
 })
 
 </script>
@@ -132,7 +205,7 @@ onMounted(()=> {
         <div class="row gx-1">
             <div class="col-12 col-sm-2 col-md-2 col-lg-2 col-xl-2 ">
                 <div class="row gx-2">
-                    <button class="btn text-white bg-secondary py-1 my-1 col-10 col-sm-12 col-md-12 col-lg-5 col-xl-5" data-bs-toggle="modal" data-bs-target="#newOperationPointModal">New</button>
+                    <button class="btn text-white bg-secondary py-1 my-1 col-10 col-sm-12 col-md-12 col-lg-5 col-xl-5" data-bs-toggle="modal" data-bs-target="#newOperationPointModal" @new-operation_point="onNewOperationPoint">New</button>
                     <div class="col-12 col-sm-2 col-md-2 col-lg-2 col-xl-2"> </div>
                     <button class="btn text-white bg-secondary py-1 my-1 col-10 col-sm-12 col-md-12 col-lg-5 col-xl-5" data-bs-toggle="offcanvas" data-bs-target="#ImportOffCanvas" aria-controls="ImportOffCanvas">Import</button>
 
@@ -169,8 +242,8 @@ onMounted(()=> {
             </div>
             <div class="col-12 col-sm-2 col-md-2 col-lg-2 col-xl-2 container">
                 <div class="row">
-                    <button class="btn text-white bg-secondary py-1 px-2 my-1 col-10 col-sm-12 col-md-12 col-lg-12 col-xl-12 disabled" @click="onSaveToDB">Save</button>
-                    <button class="btn text-white bg-secondary py-1 px-2 my-1 col-10 col-sm-12 col-md-12 col-lg-5 col-xl-5 disabled" @click="onSaveToDB">Publish</button>
+                    <button :class="colorSaveButton" class="btn text-white py-1 px-2 my-1 col-10 col-sm-12 col-md-12 col-lg-12 col-xl-12" :disabled="!isLoggedIn || saveMessage != 'Save'" @click="onSaveToDB">{{saveMessage}}</button>
+                    <button class="btn text-white bg-secondary py-1 px-2 my-1 col-10 col-sm-12 col-md-12 col-lg-5 col-xl-5" data-bs-toggle="modal" data-bs-target="#publishOperationPointModal">Publish</button>
                     <div class="col-12 col-sm-2 col-md-2 col-lg-2 col-xl-2"> </div>
                     <button class="btn text-white bg-secondary py-1 px-2 my-1 col-10 col-sm-12 col-md-12 col-lg-5 col-xl-5" data-bs-toggle="offcanvas" data-bs-target="#ExportOffCanvas" aria-controls="ExportOffCanvas">Export</button>
 
@@ -179,7 +252,8 @@ onMounted(()=> {
         </div>
     </div>
     <OperationPointImport @voltage-type-change="onVoltageChangeFromImport" @current-type-change="onCurrentChangeFromImport"/>
-    <OperationPointExport />
+    <OperationPointExport @exported="onExport"/>
     <OperationPointNew />
+    <OperationPointPublish :isLoggedIn="isLoggedIn" @published="onPublish"/>
 
 </template>

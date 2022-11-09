@@ -1,10 +1,7 @@
 <script setup>
 import { ref } from 'vue'
 
-function onExport(event) {
-
-}
-
+const emit = defineEmits(['new-operation_point'])
 </script>
 
 
@@ -18,8 +15,8 @@ function onExport(event) {
                 </div>
                 <div class="modal-body row mt-4">
                     <h1 class="modal-title fs-5 text-center col-12" >Are you sure? All changes will be lost</h1>
-                    <a class="btn text-dark bg-danger mt-5 offset-1 col-5"  href="/operation_point">Yes, new one please!</a>
-                    <button class="btn btn-primary mx-auto d-block mt-5 offset-1 col-5  " data-bs-dismiss="modal" >No, take my back</button>
+                    <a class="btn text-dark bg-danger mt-5 offset-1 col-5"  href="/operation_point" @click="emit('new-operation_point')">Yes, new one please!</a>
+                    <button class="btn btn-primary mx-auto d-block mt-5 offset-1 col-5" data-bs-dismiss="modal" >No, take my back</button>
 
                 </div>
             </div>

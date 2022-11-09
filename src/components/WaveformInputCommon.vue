@@ -48,7 +48,6 @@ commonStore.$onAction((action) => {
         formRef.value.setFieldValue("dutyCycleValidator", dutyCycleValue * 100);
         if (dutyCycle.value != dutyCycleValue) {
             dutyCycle.value = dutyCycleValue
-            console.log("Setting setDutyCycleFromPoints")
             commonStore.setDutyCycle(dutyCycleValue);
         }
 

@@ -120,16 +120,20 @@
 
 <script setup >
 import LoginModal from '/src/components/Login.vue'
+import { useUserStore } from '/src/stores/user'
 </script>
 
 <script>
+
 export default {
     components: { LoginModal },
     data() {
+        const userStore = useUserStore()
         return {
             showModal: false,
             loggedIn: false,
             username: null,
+            userStore,
         }
     },
     methods: {
@@ -139,6 +143,17 @@ export default {
         onLoggedIn() {
             this.loggedIn = this.$cookies.get('username') != null
             this.username = this.$cookies.get('username')
+            if (this.loggedIn) {
+                this.userStore.login()
+                this.userStore.setUsername(this.username)
+            }
+        },
+        onLoggedOut() {
+            this.$cookies.remove("username");
+            this.loggedIn = false
+            this.username = null
+            this.userStore.logout()
+            this.userStore.setUsername(null)
         }
     },
     computed: {
@@ -229,6 +244,7 @@ export default {
                 <a class="list-group-item list-group-item-action bg-light text-primary border-primary border-opacity-50 " href="#">My bobbins <span class="badge text-bg-secondary opacity-80">{{numberMagnetics}}</span> </a>
                 <a class="list-group-item list-group-item-action bg-light text-primary border-primary border-opacity-50 " href="#">My wires <span class="badge text-bg-secondary opacity-80">{{numberMagnetics}}</span> </a>
             </div>
+            <button class="btn mt-5 text-dark bg-primary fs-5" data-bs-dismiss="offcanvas" @click="onLoggedOut">Logout</button>
         </div>
     </div>
 
