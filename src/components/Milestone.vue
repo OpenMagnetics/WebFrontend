@@ -88,7 +88,7 @@ export default {
         .then(x => x.json())
         .then(({ ip }) => {
             this.ipAddress = ip;
-            axios.post('http://'+ import.meta.env.VITE_API_ENDPOINT + '/is_vote_casted', {
+            axios.post(import.meta.env.VITE_API_ENDPOINT + '/is_vote_casted', {
                 ip_address: ip,
                 user_id: null,
                 milestone_id: this.id,
@@ -100,7 +100,7 @@ export default {
             });
         });
 
-        axios.post('http://'+ import.meta.env.VITE_API_ENDPOINT + '/get_number_votes', {
+        axios.post(import.meta.env.VITE_API_ENDPOINT + '/get_number_votes', {
             milestone_id: this.id,
         })
         .then(response => {
@@ -111,7 +111,7 @@ export default {
     },
     methods: {
         vote(event) {
-            axios.post('http://'+ import.meta.env.VITE_API_ENDPOINT + '/cast_vote', {
+            axios.post(import.meta.env.VITE_API_ENDPOINT + '/cast_vote', {
                 ip_address: this.ipAddress,
                 user_id: null,
                 milestone_id: this.id,
