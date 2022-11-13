@@ -1,3 +1,197 @@
+<script setup >
+import LoginModal from '/src/components/User/Login.vue'
+import { useUserStore } from '/src/stores/user'
+import axios from "axios"
+</script>
+
+<script>
+
+export default {
+    components: { LoginModal },
+    data() {
+        const userStore = useUserStore()
+        return {
+            showModal: false,
+            loggedIn: false,
+            username: null,
+            userStore,
+        }
+    },
+    methods: {
+        onShowModal() {
+            this.showModal = true
+        },
+        onLoggedIn() {
+            this.loggedIn = this.$cookies.get('username') != null
+            this.username = this.$cookies.get('username')
+            if (this.loggedIn) {
+                this.userStore.login()
+                this.userStore.setUsername(this.username)
+            }
+        },
+        onClickNumberOperationPoints() {
+            this.userStore.setUserSubsection("operationPoints")
+            this.$router.push('/user');
+        },
+        onClickNumberCores() {
+            this.userStore.setUserSubsection("cores")
+            this.$router.push('/user');
+        },
+        onClickNumberBobbins() {
+            this.userStore.setUserSubsection("bobbins")
+            this.$router.push('/user');
+        },
+        onClickNumberWires() {
+            this.userStore.setUserSubsection("wires")
+            this.$router.push('/user');
+        },
+        onClickNumberMagnetics() {
+            this.userStore.setUserSubsection("magnetics")
+            this.$router.push('/user');
+        },
+        onLoggedOut() {
+            this.$cookies.remove("username");
+            this.loggedIn = false
+            this.username = null
+            this.userStore.logout()
+            this.userStore.setUsername(null)
+        },
+        getNumberElements() {
+            const data = {"username": this.userStore.getUsername.value}
+            var url
+            url = import.meta.env.VITE_API_ENDPOINT + '/operation_point_count'
+            axios.post(url, data)
+            .then(response => {
+                this.userStore.setNumberOperationPoints(response.data["count"])
+            })
+            .catch(error => {
+            });
+
+            url = import.meta.env.VITE_API_ENDPOINT + '/core_count'
+            axios.post(url, data)
+            .then(response => {
+                this.userStore.setNumberCores(response.data["count"])
+            })
+            .catch(error => {
+            });
+            
+            url = import.meta.env.VITE_API_ENDPOINT + '/bobbin_count'
+            axios.post(url, data)
+            .then(response => {
+                this.userStore.setNumberBobbins(response.data["count"])
+            })
+            .catch(error => {
+            });
+            
+            url = import.meta.env.VITE_API_ENDPOINT + '/wire_count'
+            axios.post(url, data)
+            .then(response => {
+                this.userStore.setNumberWires(response.data["count"])
+            })
+            .catch(error => {
+            });
+            
+            url = import.meta.env.VITE_API_ENDPOINT + '/magnetic_count'
+            axios.post(url, data)
+            .then(response => {
+                this.userStore.setNumberMagnetics(response.data["count"])
+            })
+            .catch(error => {
+            });
+        },
+    },
+    computed: {
+    },
+    mounted() {
+        let fontawesome = document.createElement('script')
+        fontawesome.setAttribute('src', 'https://kit.fontawesome.com/d5a40d6941.js')
+        document.head.appendChild(fontawesome)
+        this.onLoggedIn()
+        this.getNumberElements()
+    }
+}
+</script>
+
+<template>
+    <nav class="navbar navbar-expand-lg bg-light navbar-dark text-primary mb-2" id="header_wrapper">
+        <div class="container-fluid">
+            <a href="/">
+                <img src="/images/logo.svg" width="60" height="auto" href="/" class="d-inline-block align-top me-3" alt="">
+            </a>
+            <a class="navbar-brand text-primary" href="/">Open Magnetics</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon navbar-primary"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarNavDropdown">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <router-link class="nav-link text-primary" to="/roadmap">Roadmap</router-link>
+                    </li>
+                    <li class="nav-item">
+                        <router-link class="nav-link text-primary me-3" to="/musings">Alf's Musings</router-link>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle rounded-3 text-light bg-primary ps-3" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            Create Element
+                        </a>
+                        <ul class="dropdown-menu" style="margin: 0">
+                            <li><a class="dropdown-item" href="/operation_point">Operation Point</a></li>
+                            <li><a class="dropdown-item disabled" href="#">Core</a></li>
+                            <li><a class="dropdown-item disabled" href="#">Simulation</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+            <div class="collapse navbar-collapse" id="navbarNavDropdown">
+                <ul class="navbar-nav ms-auto">
+                    <li v-if="!loggedIn" class="nav-item">
+                        <span class="nav-item">
+                            <button class="btn nav-link text-primary" data-bs-toggle="modal" data-bs-target="#registerModal">Register</button>
+                        </span>
+                    </li>
+                    <li v-if="!loggedIn" class="nav-item">
+                        <span class="nav-item">
+                            <button class="btn nav-link text-primary" data-bs-toggle="modal" data-bs-target="#loginModal">Login</button>
+                        </span>
+                    </li>
+                    <li v-if="loggedIn" class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle rounded-3 ps-1 text-light bg-primary ps-3 pe-3" href="#" role="button" data-bs-toggle="offcanvas" data-bs-target="#UserOffCanvas" aria-controls="UserOffCanvas">
+                            {{username}}
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+        </div>
+    </nav>
+ 
+    <div class="offcanvas offcanvas-end bg-light" tabindex="-1" id="UserOffCanvas" aria-labelledby="UserOffCanvasLabel">
+        <div class="offcanvas-header">
+            <h5 class="offcanvas-title text-white fs-3" id="UserOffCanvasLabel">{{username}}</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body">
+            <div class="list-group" style="margin: 0" >
+                <button class="list-group-item list-group-item-action bg-light text-primary border-primary border-opacity-50 " @click="onClickNumberOperationPoints">My magnetics <span class="badge text-bg-secondary opacity-80">{{userStore.numberOperationPoints}}</span> </button>
+                <button class="list-group-item list-group-item-action bg-light text-primary border-primary border-opacity-50 " @click="onClickNumberCores">My operation points <span class="badge text-bg-secondary opacity-80">{{userStore.numberCores}}</span> </button>
+                <button class="list-group-item list-group-item-action bg-light text-primary border-primary border-opacity-50 " @click="onClickNumberBobbins">My cores <span class="badge text-bg-secondary opacity-80">{{userStore.numberBobbins}}</span> </button>
+                <button class="list-group-item list-group-item-action bg-light text-primary border-primary border-opacity-50 " @click="onClickNumberWires">My bobbins <span class="badge text-bg-secondary opacity-80">{{userStore.numberWires}}</span> </button>
+                <button class="list-group-item list-group-item-action bg-light text-primary border-primary border-opacity-50 " @click="onClickNumberMagnetics">My wires <span class="badge text-bg-secondary opacity-80">{{userStore.numberMagnetics}}</span> </button>
+            </div>
+            <button class="btn mt-5 text-dark bg-primary fs-5" data-bs-dismiss="offcanvas" @click="onLoggedOut">Logout</button>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal fade" id="registerModal" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+        <LoginModal :isLogin="false" @onLoggedIn="onLoggedIn"/>
+    </div>
+    <div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+        <LoginModal :isLogin="true" @onLoggedIn="onLoggedIn"/>
+    </div>
+</template>
+
 <style>
 
     html {
@@ -60,9 +254,8 @@
     }
 
     .container {
-        max-width: 95vw;
+        max-width: 100vw;
         align-items: center;
-        overflow: auto;
     }
 
     ::-webkit-scrollbar { height: 3px;}
@@ -116,143 +309,3 @@
     }
 
 </style>
-
-
-<script setup >
-import LoginModal from '/src/components/Login.vue'
-import { useUserStore } from '/src/stores/user'
-</script>
-
-<script>
-
-export default {
-    components: { LoginModal },
-    data() {
-        const userStore = useUserStore()
-        return {
-            showModal: false,
-            loggedIn: false,
-            username: null,
-            userStore,
-        }
-    },
-    methods: {
-        onShowModal() {
-            this.showModal = true
-        },
-        onLoggedIn() {
-            this.loggedIn = this.$cookies.get('username') != null
-            this.username = this.$cookies.get('username')
-            if (this.loggedIn) {
-                this.userStore.login()
-                this.userStore.setUsername(this.username)
-            }
-        },
-        onLoggedOut() {
-            this.$cookies.remove("username");
-            this.loggedIn = false
-            this.username = null
-            this.userStore.logout()
-            this.userStore.setUsername(null)
-        }
-    },
-    computed: {
-        numberMagnetics() {
-            return 42
-        }
-    },
-    mounted() {
-        let fontawesome = document.createElement('script')
-        fontawesome.setAttribute('src', 'https://kit.fontawesome.com/d5a40d6941.js')
-        document.head.appendChild(fontawesome)
-        this.onLoggedIn()
-    }
-}
-</script>
-
-<template>
-    <nav class="navbar navbar-expand-lg bg-light navbar-dark text-primary mb-2" id="header_wrapper">
-        <div class="container-fluid">
-<!--             <a href="/">
-                <img src="/static/images/logo.png" width="40" height="auto" href="/" class="d-inline-block align-top mr-2" alt="">
-            </a> -->
-            <a class="navbar-brand text-primary" href="/">Open Magnetics</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon navbar-primary"></span>
-            </button>
-
-            <div class="collapse navbar-collapse" id="navbarNavDropdown">
-                <ul class="navbar-nav">
-                    <li class="nav-item">
-                        <router-link class="nav-link text-primary" to="/roadmap">Roadmap</router-link>
-                    </li>
-                    <li class="nav-item">
-                        <router-link class="nav-link text-primary" to="/musings">Alf's Musings</router-link>
-                    </li>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle rounded-3 ms-3 text-light bg-primary ps-3" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            Create Element
-                        </a>
-                        <ul class="dropdown-menu" style="margin: 0">
-                            <li><a class="dropdown-item" href="/operation_point">Operation Point</a></li>
-                            <li><a class="dropdown-item disabled" href="#">Core</a></li>
-                            <li><a class="dropdown-item disabled" href="#">Simulation</a></li>
-                        </ul>
-                    </li>
-                </ul>
-            </div>
-            <div class="collapse navbar-collapse" id="navbarNavDropdown">
-                <ul class="navbar-nav ms-auto">
-                    <li v-if="!loggedIn" class="nav-item">
-                        <span class="nav-item">
-                            <button class="btn nav-link text-primary" data-bs-toggle="modal" data-bs-target="#registerModal">Register</button>
-                        </span>
-                    </li>
-                    <li v-if="!loggedIn" class="nav-item">
-                        <span class="nav-item">
-                            <button class="btn nav-link text-primary" data-bs-toggle="modal" data-bs-target="#loginModal">Login</button>
-                        </span>
-                    </li>
-                    <li v-if="loggedIn" class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle rounded-3 ps-1 text-light bg-primary ps-3 pe-3" href="#" role="button" data-bs-toggle="offcanvas" data-bs-target="#UserOffCanvas" aria-controls="UserOffCanvas">
-                            {{username}}
-                        </a>
-<!--                         <ul class="dropdown-menu" style="margin: 0" >
-                            <li><a class="dropdown-item disabled" href="#">My magnetics</a></li>
-                            <li><a class="dropdown-item disabled" href="#">My operation points</a></li>
-                            <li><a class="dropdown-item disabled" href="#">My cores</a></li>
-                            <li><a class="dropdown-item disabled" href="#">My bobbins</a></li>
-                            <li><a class="dropdown-item disabled" href="#">My wires</a></li>
-                        </ul> -->
-                    </li>
-                </ul>
-            </div>
-
-        </div>
-    </nav>
- 
-    <div class="offcanvas offcanvas-end bg-light" tabindex="-1" id="UserOffCanvas" aria-labelledby="UserOffCanvasLabel">
-        <div class="offcanvas-header">
-            <h5 class="offcanvas-title text-white fs-3" id="UserOffCanvasLabel">{{username}}</h5>
-            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
-        </div>
-        <div class="offcanvas-body">
-            <div class="list-group" style="margin: 0" >
-                <a class="list-group-item list-group-item-action bg-light text-primary border-primary border-opacity-50 " href="#">My magnetics <span class="badge text-bg-secondary opacity-80">{{numberMagnetics}}</span> </a>
-                <a class="list-group-item list-group-item-action bg-light text-primary border-primary border-opacity-50 " href="#">My operation points <span class="badge text-bg-secondary opacity-80">{{numberMagnetics}}</span> </a>
-                <a class="list-group-item list-group-item-action bg-light text-primary border-primary border-opacity-50 " href="#">My cores <span class="badge text-bg-secondary opacity-80">{{numberMagnetics}}</span> </a>
-                <a class="list-group-item list-group-item-action bg-light text-primary border-primary border-opacity-50 " href="#">My bobbins <span class="badge text-bg-secondary opacity-80">{{numberMagnetics}}</span> </a>
-                <a class="list-group-item list-group-item-action bg-light text-primary border-primary border-opacity-50 " href="#">My wires <span class="badge text-bg-secondary opacity-80">{{numberMagnetics}}</span> </a>
-            </div>
-            <button class="btn mt-5 text-dark bg-primary fs-5" data-bs-dismiss="offcanvas" @click="onLoggedOut">Logout</button>
-        </div>
-    </div>
-
-    <!-- Modal -->
-    <div class="modal fade" id="registerModal" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
-        <LoginModal :isLogin="false" @onLoggedIn="onLoggedIn"/>
-    </div>
-    <div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
-        <LoginModal :isLogin="true" @onLoggedIn="onLoggedIn"/>
-    </div>
-</template>

@@ -22,8 +22,8 @@ var currentDataPoints = []
 var voltageDataPoints = []
 var waitingforCurrentMounted = false
 var waitingforVoltageMounted = false
-var currentCurrentType = Defaults.defaultCurrentType
-var currentVoltageType = Defaults.defaultVoltageType
+var currentCurrentType = currentStore.getType.value == null? Defaults.defaultCurrentType : currentStore.getType.value
+var currentVoltageType = voltageStore.getType.value == null? Defaults.defaultVoltageType : voltageStore.getType.value
 
 
 function onImport(event) {

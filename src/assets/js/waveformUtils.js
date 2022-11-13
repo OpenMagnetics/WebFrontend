@@ -1,5 +1,6 @@
 import * as Everpolate from 'everpolate'
 import * as FFT from 'fft.js'
+import * as Defaults from '/src/assets/js/waveformDefaults.js'
 
 export function roundWithDecimals(value, precision, trunc=false) {
     if (trunc)
@@ -277,6 +278,38 @@ export function tryGuessType(dataPoints, frequency) {
             return "Square with Dead-Time"
     }
     return "Custom"
+}
+
+export function tryGuessDutyCycle(dataPoints, frequency) {
+    if (dataPoints.length == 3) {
+        if (roundWithDecimals(1 / (dataPoints[2].x - dataPoints[0].x), 0.001) == frequency)
+        if (dataPoints[0].y == dataPoints[2].y)
+            return roundWithDecimals((dataPoints[1].x - dataPoints[0].x) / (dataPoints[2].x - dataPoints[0].x), Math.pow(10, Defaults.defaultPrecision - 2)) 
+    }
+    else if (dataPoints.length == 5) {
+        if (roundWithDecimals(1 / (dataPoints[4].x - dataPoints[0].x), 0.001) == frequency)
+        if (dataPoints[0].y == dataPoints[1].y)
+        if (dataPoints[1].x == dataPoints[2].x)
+        if (dataPoints[2].y == dataPoints[3].y)
+        if (dataPoints[0].y == dataPoints[4].y) {
+            return roundWithDecimals((dataPoints[1].x - dataPoints[0].x) / (dataPoints[4].x - dataPoints[0].x), Math.pow(10, Defaults.defaultPrecision - 2))
+        }
+    }
+    else if (dataPoints.length == 10) {
+        if (roundWithDecimals(1 / (dataPoints[9].x - dataPoints[0].x), 0.001) == frequency)
+        if (dataPoints[0].y == dataPoints[1].y)
+        if (dataPoints[1].x == dataPoints[2].x)
+        if (dataPoints[2].y == dataPoints[3].y)
+        if (dataPoints[3].x == dataPoints[4].x)
+        if (dataPoints[4].y == dataPoints[5].y)
+        if (dataPoints[5].x == dataPoints[6].x)
+        if (dataPoints[6].y == dataPoints[7].y)
+        if (dataPoints[7].x == dataPoints[8].x)
+        if (dataPoints[8].y == dataPoints[9].y)
+        if (dataPoints[0].y == dataPoints[9].y)
+            return roundWithDecimals((dataPoints[1].x - dataPoints[0].x) / (dataPoints[7].x - dataPoints[0].x), Math.pow(10, Defaults.defaultPrecision - 2))
+    }
+    return Defaults.defaultDutyCycle
 }
 
 export function getOperationPointData(commonStore, currentStore, voltageStore, configuration) {

@@ -32,9 +32,19 @@ const routes = [
     component: () => import('../views/Roadmap.vue')
   },
   {
+    path: '/operation_point/:slug',
+    name: 'OperationPointSlug',
+    component: () => import('../views/SlugLoader.vue')
+  },
+  {
     path: '/operation_point',
     name: 'OperationPoint',
     component: () => import('../views/OperationPoint.vue')
+  },
+  {
+    path: '/user',
+    name: 'User',
+    component: () => import('../views/User.vue')
   },
 ]
 const router = createRouter({

@@ -10,6 +10,8 @@ const commonPart = () => {
     const harmonicsAmplitude = ref([])
     const valuePrecision = ref(null)
     const chartReady = ref(false)
+    const dataImported = ref(false)
+    const type = ref(null)
     const params = ref({offset: Defaults.defaultOffset, peakToPeak: Defaults.defaultPeakToPeak})
     const outputs = ref({label: null, 
                          peakToPeak: null, 
@@ -40,6 +42,12 @@ const commonPart = () => {
     })
     const isChartReady = computed(() => {
         return chartReady
+    })
+    const getType = computed(() => {
+        return type
+    })
+    const isDataImported = computed(() => {
+        return dataImported
     })
 
     function setHarmonicsAmplitude(harmonicsAmplitude) {
@@ -88,7 +96,13 @@ const commonPart = () => {
     function setChartReady(param, value) {
         this.chartReady = true
     }
+    function setType(type) {
+        this.type = type
+    }
     function setNewWaveformType() {
+    }
+    function setDataImported(dataImported) {
+        this.dataImported = dataImported
     }
     return {
         dataPoints,
@@ -116,6 +130,12 @@ const commonPart = () => {
         getOutputs,
         setOutput,
         setOutputs,
+        type,
+        getType,
+        setType,
+        dataImported,
+        isDataImported,
+        setDataImported,
     }
 }
 export const useCurrentStore = defineStore("current", commonPart)
@@ -127,6 +147,9 @@ export const useCommonStore = defineStore("common", () => {
     const switchingFrequency = ref(Defaults.defaultSwitchingFrequency)
     const dutyCycle = ref(Defaults.defaultDutyCycle)
     const timePrecision = ref(1 / Defaults.defaultSwitchingFrequency / 100)
+    const dataImported = ref(false)
+    const dataReadOnly = ref(false)
+
     const getSwitchingFrequency = computed(() => {
         return switchingFrequency
     })
@@ -145,6 +168,13 @@ export const useCommonStore = defineStore("common", () => {
     const getOperationPointName = computed(() => {
         return operationPointName
     })
+    const isDataImported = computed(() => {
+        return dataImported
+    })
+    const isDataReadOnly = computed(() => {
+        return dataReadOnly
+    })
+
     function setSwitchingFrequency(switchingFrequency) {
         this.switchingFrequency = switchingFrequency
         this.timePrecision = 1 / switchingFrequency / 100
@@ -164,6 +194,13 @@ export const useCommonStore = defineStore("common", () => {
     function setOperationPointName(operationPointName) {
         this.operationPointName = operationPointName
     }
+    function setDataImported(dataImported) {
+        this.dataImported = dataImported
+    }
+    function setDataReadOnly(dataReadOnly) {
+        this.dataReadOnly = dataReadOnly
+    }
+
     return {
         dutyCycle,
         switchingFrequency,
@@ -183,5 +220,11 @@ export const useCommonStore = defineStore("common", () => {
         operationPointName,
         getOperationPointName,
         setOperationPointName,
+        dataImported,
+        isDataImported,
+        setDataImported,
+        isDataReadOnly,
+        dataReadOnly,
+        setDataReadOnly,
     }
 })

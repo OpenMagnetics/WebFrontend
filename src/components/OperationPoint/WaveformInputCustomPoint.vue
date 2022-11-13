@@ -71,6 +71,9 @@ function onRemovePoint(event) {
     emit("remove-point", props.index)
 }
 
+function handleSubmit(params) {
+}
+
 commonStore.$onAction((action) => {
     if (action.name == "setSwitchingFrequency") {
         const switchingFrequency = action.args[0]
@@ -120,7 +123,7 @@ const getExponentLabel = computed(() => {
 
 <template>
     <div class="container-flex text-white mt-2 mb-1">
-        <Form ref="formRef" :validation-schema="schema" v-slot="{ errors }" class="form-inline">
+        <Form ref="formRef" :validation-schema="schema" v-slot="{ handleSubmit, errors }" class="form-inline"  @submit="handleSubmit($event, onSubmit)">
             <label class="fs-5 ms-3 me-1">x: </label>
             <Field name="timeValidator" type="number" :disabled="index == 0 || index == (store.getDataPoints.value.length - 1)" :value="timeVar" @change="onTimeChange" :class="{ 'is-invalid': errors.timeValidator }" class="rounded-2 bg-light text-white" style="width: 100%; max-width: 50px;"/>
             <input class="fs-6 ms-1 bg-light text-white bg-dark border-0" style="width: 30px;" :value="getExponentLabel" disabled/>

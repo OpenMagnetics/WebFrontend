@@ -2,7 +2,7 @@
 import { defineProps, computed, ref, onMounted, inject } from 'vue';
 import { Form } from 'vee-validate';
 import * as Yup from 'yup';
-import TextInput from './TextInput.vue';
+import TextInput from '/src/components/User/TextInput.vue';
 import axios from "axios";
 import { useUserStore } from '/src/stores/user'
 

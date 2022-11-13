@@ -30,6 +30,9 @@ export function loadBase(electricalParameter, isChartReady, defaultData, getPara
     const switchingFrequency = ref(commonStore.getSwitchingFrequency.value)
     const dutyCycle = ref(commonStore.getDutyCycle.value)
     const data = ref(defaultData)
+    if (store.isDataImported.value) {
+        data.value = Utils.deepCopy(store.getDataPoints.value)
+    }
     const formRef = ref(null);
 
 
@@ -90,6 +93,14 @@ export function loadBase(electricalParameter, isChartReady, defaultData, getPara
             }
         })
 
+        if (store.isDataImported.value) {
+            const {peakToPeakValue, dutyCycleValue, offsetValue} = getParamsFromDataPoints(store.getDataPoints.value, Defaults.defaultPrecision)
+            peakToPeak.value = Number(peakToPeakValue)
+            offset.value = Number(offsetValue)
+            store.setParam("peakToPeak", peakToPeakValue);
+            store.setParam("offset", offsetValue);
+            store.setDataImported(false)
+        }
         store.setNewWaveformType()
     })
 

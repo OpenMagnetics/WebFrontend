@@ -2,6 +2,7 @@
 import Header from '/src/components/Header.vue'
 import Milestone from '/src/components/Milestone.vue'
 import Footer from '/src/components/Footer.vue'
+import * as Utils from '/src/assets/js/waveformUtils.js'
 </script>
 
 <script>
@@ -177,6 +178,13 @@ export default {
                     section: 'Magnetic Design', 
                     description: 'Implement functionality to automatically create a Technical Drawing for any Commercial Off-The-Shelf or Custom core.',
                     state: 'To Do'
+                },
+                {
+                    id: 18,
+                    title: 'Cooperative editing',
+                    section: 'Magnetic Design', 
+                    description: 'Implement functionality to allow users to share their designs and let other view or edit them.',
+                    state: 'To Do'
                 }
             ]
         }
@@ -201,20 +209,22 @@ export default {
             this.milestones.forEach((item, index) => {
                 existingIds.push(item["id"])
             });
+
             votesList.forEach((item, index) => {
-                if (item["milestone_id"] in existingIds) {
+                if (existingIds.includes(item["milestone_id"])) {
                     orderedMilestone.push(this.milestones[item["milestone_id"]])
                 }
             });
+
             this.milestones.forEach((item, index) => {
                 if (!orderedMilestone.includes(item)) {
                     orderedMilestone.push(item)
                 }
             });
+
             this.milestones = orderedMilestone
         })
         .catch(error => {
-            console.log(error.data);
         });
     }
 }

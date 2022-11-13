@@ -9,7 +9,7 @@ import { useCommonStore } from '/src/stores/waveform'
 
 
 import { loadBase } from '/src/assets/js/WaveformInputBase.js'
-import WaveformInputCustomPoint from '/src/components/WaveformInputCustomPoint.vue'
+import WaveformInputCustomPoint from '/src/components/OperationPoint/WaveformInputCustomPoint.vue'
 import * as Defaults from '/src/assets/js/waveformDefaults.js'
 
 const props = defineProps({
@@ -37,7 +37,12 @@ if (props.electricalParameter == "current") {
 const data = props.isChartReady? ref(Utils.deepCopy(store.getDataPoints.value)) : ref([{x: 0, y: -Defaults.defaultPeakToPeak / 2 },
                                                                                        {x: Defaults.defaultDutyCycle, y: Defaults.defaultPeakToPeak / 2 },
                                                                                        {x: 1, y: -Defaults.defaultPeakToPeak / 2 }])
-var switchingFrequency = ref(100000)
+
+if (store.isDataImported.value) {
+    data.value = store.getDataPoints.value
+    store.setDataImported(false)
+}
+var switchingFrequency = ref(commonStore.getSwitchingFrequency.value)
 
 function getParamsFromDataPoints(dataPoints, precision) {
     var peakToPeakValue = Utils.roundWithDecimals(Math.abs(dataPoints[1].y - dataPoints[0].y), Math.pow(10, precision))

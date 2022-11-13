@@ -8,10 +8,10 @@ import { useCurrentStore } from '/src/stores/waveform'
 import { useVoltageStore } from '/src/stores/waveform'
 import { useCommonStore } from '/src/stores/waveform'
 import { useUserStore } from '/src/stores/user'
-import OperationPointExport from '/src/components/OperationPointExport.vue'
-import OperationPointImport from '/src/components/OperationPointImport.vue'
-import OperationPointNew from '/src/components/OperationPointNew.vue'
-import OperationPointPublish from '/src/components/OperationPointPublish.vue'
+import OperationPointExport from '/src/components/OperationPoint/OperationPointExport.vue'
+import OperationPointImport from '/src/components/OperationPoint/OperationPointImport.vue'
+import OperationPointNew from '/src/components/OperationPoint/OperationPointNew.vue'
+import OperationPointPublish from '/src/components/OperationPoint/OperationPointPublish.vue'
 import axios from "axios";
 
 const currentStore = useCurrentStore()
@@ -21,14 +21,20 @@ const userStore = useUserStore()
 
 const selected = ref()
 const emit = defineEmits(['voltage-type-change', 'current-type-change'])
-const currentSelected = ref(Defaults.defaultCurrentType)
-const voltageSelected = ref(Defaults.defaultVoltageType)
-const operationPointNameSelected = ref(Defaults.defaultOperationName)
+const currentSelected = ref(currentStore.getType.value == null? Defaults.defaultCurrentType : currentStore.getType.value)
+const voltageSelected = ref(voltageStore.getType.value == null? Defaults.defaultVoltageType : voltageStore.getType.value)
+const operationPointNameSelected = ref(commonStore.getOperationPointName.value == null? Defaults.defaultOperationName : commonStore.getOperationPointName.value)
 const voltageRef = ref(null)
 const currentRef = ref(null)
 const isLoggedIn = ref(false)
-const saveMessage = ref("Save")
 const currentOperationPointId = ref(null)
+if (userStore.getCurrentOperationPoint.value != null) {
+    if (!commonStore.isDataReadOnly.value) {
+        currentOperationPointId.value = userStore.getCurrentOperationPoint.value["_id"]
+    }
+}
+const saveMessage = ref(currentOperationPointId.value == null? "Create and add to library" : "Save changes")
+
 const $cookies = inject('$cookies');
 var publishedSlug = null
 
@@ -165,15 +171,15 @@ function saveToDB(anonymousUser=false) {
     axios.post(url, operationPointData)
     .then(response => {
         console.log(response.data);
-        if (response.data["operation_point_id"] != null){
-            currentOperationPointId.value = response.data["operation_point_id"]
+        if (response.data["id"] != null){
+            currentOperationPointId.value = response.data["id"]
         }
-        setTimeout(() => saveMessage.value = "Save", 1000);
+        setTimeout(() => saveMessage.value = "Save changes", 1000);
     })
     .catch(error => {
         console.log(error.data);
         saveMessage.value = "Error, try against later"
-        setTimeout(() => saveMessage.value = "Save", 10000);
+        setTimeout(() => saveMessage.value = "Save changes", 10000);
 
     });
     return "Saving"
@@ -205,7 +211,7 @@ onMounted(()=> {
         <div class="row gx-1">
             <div class="col-12 col-sm-2 col-md-2 col-lg-2 col-xl-2 ">
                 <div class="row gx-2">
-                    <button class="btn text-white bg-secondary py-1 my-1 col-10 col-sm-12 col-md-12 col-lg-5 col-xl-5" data-bs-toggle="modal" data-bs-target="#newOperationPointModal" @new-operation_point="onNewOperationPoint">New</button>
+                    <button class="btn text-white bg-secondary py-1 my-1 col-10 col-sm-12 col-md-12 col-lg-5 col-xl-5" data-bs-toggle="modal" data-bs-target="#newOperationPointModal" @new_operation_point="onNewOperationPoint">New</button>
                     <div class="col-12 col-sm-2 col-md-2 col-lg-2 col-xl-2"> </div>
                     <button class="btn text-white bg-secondary py-1 my-1 col-10 col-sm-12 col-md-12 col-lg-5 col-xl-5" data-bs-toggle="offcanvas" data-bs-target="#ImportOffCanvas" aria-controls="ImportOffCanvas">Import</button>
 
@@ -242,7 +248,7 @@ onMounted(()=> {
             </div>
             <div class="col-12 col-sm-2 col-md-2 col-lg-2 col-xl-2 container">
                 <div class="row">
-                    <button :class="colorSaveButton" class="btn text-white py-1 px-2 my-1 col-10 col-sm-12 col-md-12 col-lg-12 col-xl-12" :disabled="!isLoggedIn || saveMessage != 'Save'" @click="onSaveToDB">{{saveMessage}}</button>
+                    <button :class="colorSaveButton" class="btn text-white py-1 px-2 my-1 col-10 col-sm-12 col-md-12 col-lg-12 col-xl-12" :disabled="!isLoggedIn || (saveMessage != 'Save changes' && saveMessage != 'Create and add to library')" @click="onSaveToDB">{{saveMessage}}</button>
                     <button class="btn text-white bg-secondary py-1 px-2 my-1 col-10 col-sm-12 col-md-12 col-lg-5 col-xl-5" data-bs-toggle="modal" data-bs-target="#publishOperationPointModal">Publish</button>
                     <div class="col-12 col-sm-2 col-md-2 col-lg-2 col-xl-2"> </div>
                     <button class="btn text-white bg-secondary py-1 px-2 my-1 col-10 col-sm-12 col-md-12 col-lg-5 col-xl-5" data-bs-toggle="offcanvas" data-bs-target="#ExportOffCanvas" aria-controls="ExportOffCanvas">Export</button>
