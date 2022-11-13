@@ -19,6 +19,7 @@ const voltageStore = useVoltageStore()
 const commonStore = useCommonStore()
 const userStore = useUserStore()
 const formRef = ref(null)
+const slug = ref("example")
 
 export default {
     data() {
@@ -27,7 +28,6 @@ export default {
             slug: Yup.lazy(value => { return Yup.string().lowercase().trim().required().notOneOf(usedSlugs, 'Slug is already in use, please choose a different one').label("Slug")}),
         });
         return {
-            slug: "example",
             posting: false,
             usedSlugs,
             schema,
@@ -52,7 +52,7 @@ export default {
             else {
                 data["username"] = userStore.getUsername.value
             }
-            data["slug"] = this.slug
+            data["slug"] = slug.value
             const url = import.meta.env.VITE_API_ENDPOINT + '/operation_point_publish'
 
             axios.post(url, data)
@@ -75,6 +75,9 @@ export default {
         }
     },
     computed: {
+        getURL() {
+            return "http://localhost:5173/operation_point/" + slug.value
+        }
     },
     mounted() {
     }
@@ -91,7 +94,7 @@ export default {
                 <div class="modal-body row mt-4">
                     <h1 v-if="isLoggedIn" class="modal-title fs-6 text-center col-12" >Your operation point will be saved into your account and anybody with the following link will be able to access it</h1>
                     <h1 v-else class="modal-title fs-6 text-center col-12" >Anybody with the following link will be able to access this operation point:</h1>
-                    <a class="text-primary my-3 offset-1 col-6"  href="/operation_point">{{"http://localhost:5173/operation_point/" + this.slug}}</a>
+                    <a class="text-primary my-3 offset-1 col-6"  href="/operation_point">{{getURL}}</a>
 
                     <Form ref="formRef" :validation-schema="schema" v-slot="{ errors }" class="form-inline row">
                         <label class="medium-text col-sm-4 col-md-4 col-lg-4 col-xl-4 text-md-end">Edit identifier?</label>
