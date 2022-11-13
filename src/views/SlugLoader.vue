@@ -7,13 +7,15 @@ import * as Utils from '/src/assets/js/waveformUtils.js'
 
 </script>
 <script>
-const userStore = useUserStore()
-const operationPointCommonStore = useCommonStore()
 
 export default {
     data() {
+        const userStore = useUserStore()
+        const operationPointCommonStore = useCommonStore()
         return {
-            operationPointLoaded: false
+            operationPointLoaded: false,
+            userStore,
+            operationPointCommonStore,
         }
     },
     methods: {

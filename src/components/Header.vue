@@ -59,45 +59,55 @@ export default {
         getNumberElements() {
             const data = {"username": this.userStore.getUsername.value}
             var url
-            url = import.meta.env.VITE_API_ENDPOINT + '/operation_point_count'
-            axios.post(url, data)
-            .then(response => {
-                this.userStore.setNumberOperationPoints(response.data["count"])
-            })
-            .catch(error => {
-            });
+            if (this.userStore.numberOperationPoints == null) {
+                url = import.meta.env.VITE_API_ENDPOINT + '/operation_point_count'
+                axios.post(url, data)
+                .then(response => {
+                    this.userStore.setNumberOperationPoints(response.data["count"])
+                })
+                .catch(error => {
+                });
+            }
 
-            url = import.meta.env.VITE_API_ENDPOINT + '/core_count'
-            axios.post(url, data)
-            .then(response => {
-                this.userStore.setNumberCores(response.data["count"])
-            })
-            .catch(error => {
-            });
-            
-            url = import.meta.env.VITE_API_ENDPOINT + '/bobbin_count'
-            axios.post(url, data)
-            .then(response => {
-                this.userStore.setNumberBobbins(response.data["count"])
-            })
-            .catch(error => {
-            });
-            
-            url = import.meta.env.VITE_API_ENDPOINT + '/wire_count'
-            axios.post(url, data)
-            .then(response => {
-                this.userStore.setNumberWires(response.data["count"])
-            })
-            .catch(error => {
-            });
-            
-            url = import.meta.env.VITE_API_ENDPOINT + '/magnetic_count'
-            axios.post(url, data)
-            .then(response => {
-                this.userStore.setNumberMagnetics(response.data["count"])
-            })
-            .catch(error => {
-            });
+            if (this.userStore.numberCores == null) {
+                url = import.meta.env.VITE_API_ENDPOINT + '/core_count'
+                axios.post(url, data)
+                .then(response => {
+                    this.userStore.setNumberCores(response.data["count"])
+                })
+                .catch(error => {
+                });
+            }
+                
+            if (this.userStore.numberBobbins == null) {
+                url = import.meta.env.VITE_API_ENDPOINT + '/bobbin_count'
+                axios.post(url, data)
+                .then(response => {
+                    this.userStore.setNumberBobbins(response.data["count"])
+                })
+                .catch(error => {
+                });
+            }
+                
+            if (this.userStore.numberWires == null) {
+                url = import.meta.env.VITE_API_ENDPOINT + '/wire_count'
+                axios.post(url, data)
+                .then(response => {
+                    this.userStore.setNumberWires(response.data["count"])
+                })
+                .catch(error => {
+                });
+            }
+                
+            if (this.userStore.numberMagnetics == null) {
+                url = import.meta.env.VITE_API_ENDPOINT + '/magnetic_count'
+                axios.post(url, data)
+                .then(response => {
+                    this.userStore.setNumberMagnetics(response.data["count"])
+                })
+                .catch(error => {
+                });
+            }
         },
     },
     computed: {

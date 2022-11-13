@@ -14,13 +14,13 @@ import { useCommonStore } from '/src/stores/waveform'
 
 <script>
 
-const operationPointCommonStore = useCommonStore()
 export default {
     components: {
         VueGoodTable,
     },
     data() {
         const userStore = useUserStore()
+        const operationPointCommonStore = useCommonStore()
         const operationPointsData = []
         const coresData = []
         const bobbinsData = []
@@ -123,6 +123,7 @@ export default {
             typeToDelete: null,
             idToDelete: null,
             userStore,
+            operationPointCommonStore,
             operationPointsColor: "bg-light text-primary",
             coresColor: "bg-light text-primary",
             bobbinsColor: "bg-light text-primary",
@@ -355,7 +356,6 @@ export default {
                         this.userStore.setCurrentOperationPoint(response.data["element"])
                         this.operationPointCommonStore.setDataReadOnly(false)
                         this.$router.push('/operation_point');
-
                     })
                     .catch(error => {
                         this.requestingOperationPoints = false
