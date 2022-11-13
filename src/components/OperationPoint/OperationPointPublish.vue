@@ -76,7 +76,7 @@ export default {
     },
     computed: {
         getURL() {
-            return "http://localhost:5173/operation_point/" + slug.value
+            return window.location.href + "/" + slug.value
         }
     },
     mounted() {
@@ -94,7 +94,7 @@ export default {
                 <div class="modal-body row mt-4">
                     <h1 v-if="isLoggedIn" class="modal-title fs-6 text-center col-12" >Your operation point will be saved into your account and anybody with the following link will be able to access it</h1>
                     <h1 v-else class="modal-title fs-6 text-center col-12" >Anybody with the following link will be able to access this operation point:</h1>
-                    <a class="text-primary my-3 offset-1 col-6"  href="/operation_point">{{getURL}}</a>
+                    <a class="text-primary my-3 offset-1 col-6"  :href="getURL">{{getURL}}</a>
 
                     <Form ref="formRef" :validation-schema="schema" v-slot="{ errors }" class="form-inline row">
                         <label class="medium-text col-sm-4 col-md-4 col-lg-4 col-xl-4 text-md-end">Edit identifier?</label>
