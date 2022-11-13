@@ -59,6 +59,8 @@ export default {
 
 <template>
     <OperationPoint v-if="operationPointLoaded"/>
-    <img v-else class="mx-auto d-block" alt="loading" style="width: 50vw; height: auto;" src="/images/loading.gif">
+    <div v-else class="d-flex align-middle align-self-center">
+        <img class="mx-auto my-auto" alt="loading" style="width: 35vw; height: auto;" src="/images/loading.gif">
+    </div>
 </template>
 
