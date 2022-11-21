@@ -2,7 +2,7 @@
 import Header from '/src/components/Header.vue'
 import Milestone from '/src/components/Milestone.vue'
 import Footer from '/src/components/Footer.vue'
-import * as Utils from '/src/assets/js/waveformUtils.js'
+import * as Utils from '/src/assets/js/utils.js'
 </script>
 
 <script>

@@ -1,17 +1,15 @@
 import { defineStore } from 'pinia'
 import { ref, watch, computed  } from 'vue'
+import * as Utils from '/src/assets/js/utils.js'
+import * as Defaults from '/src/assets/js/defaults.js'
 
 export const useUserStore = defineStore("user", () => {
     const loggedIn = ref(false)
     const username = ref(null)
-    const currentOperationPoint = ref(null)
+    const globalOperationPoint = ref(Utils.deepCopy(Defaults.defaultOperationPoint))
+    const globalCore = ref(Utils.deepCopy(Defaults.defaultCore))
     const idToDelete = ref(null)
     const userSubsection = ref("operationPoints")
-    const numberOperationPoints = ref(null)
-    const numberCores = ref(null)
-    const numberBobbins = ref(null)
-    const numberWires = ref(null)
-    const numberMagnetics = ref(null)
     const isLoggedIn = computed(() => {
         return loggedIn
     })
@@ -21,12 +19,28 @@ export const useUserStore = defineStore("user", () => {
     const getUserSubsection = computed(() => {
         return userSubsection
     })
-    const getCurrentOperationPoint = computed(() => {
-        return currentOperationPoint
+    const getGlobalOperationPoint = computed(() => {
+        return globalOperationPoint
+    })
+    const getGlobalCore = computed(() => {
+        return globalCore
     })
     const getIdToDelete = computed(() => {
         return idToDelete
     })
+
+    function resetGlobalOperationPoint() {
+        this.globalOperationPoint = Defaults.defaultOperationPoint
+    }
+    function reset() {
+        console.log("resetting")
+        this.loggedIn = false
+        this.username = null
+        this.globalOperationPoint = Utils.deepCopy(Defaults.defaultOperationPoint)
+        this.globalCore = null
+        this.idToDelete = null
+        this.userSubsection = "operationPoints"
+    }
 
     function setUsername(username) {
         this.username = username
@@ -40,26 +54,16 @@ export const useUserStore = defineStore("user", () => {
     function logout() {
         this.loggedIn = false
     }
-    function setCurrentOperationPoint(currentOperationPoint) {
-        this.currentOperationPoint = currentOperationPoint
+    function setGlobalOperationPoint(globalOperationPoint) {
+        this.globalOperationPoint = globalOperationPoint
+    }
+    function setGlobalCore(globalCore) {
+        console.log("settttttttttttttting globalCore")
+        console.log(globalCore)
+        this.globalCore = globalCore
     }
     function setIdToDelete(idToDelete) {
         this.idToDelete = idToDelete
-    }
-    function setNumberOperationPoints(numberOperationPoints) {
-        this.numberOperationPoints = numberOperationPoints
-    }
-    function setNumberCores(numberCores) {
-        this.numberCores = numberCores
-    }
-    function setNumberBobbins(numberBobbins) {
-        this.numberBobbins = numberBobbins
-    }
-    function setNumberWires(numberWires) {
-        this.numberWires = numberWires
-    }
-    function setNumberMagnetics(numberMagnetics) {
-        this.numberMagnetics = numberMagnetics
     }
     return {
         loggedIn,
@@ -72,21 +76,19 @@ export const useUserStore = defineStore("user", () => {
         userSubsection,
         getUserSubsection,
         setUserSubsection,
-        currentOperationPoint,
-        getCurrentOperationPoint,
-        setCurrentOperationPoint,
+        globalOperationPoint,
+        getGlobalOperationPoint,
+        setGlobalOperationPoint,
+        globalCore,
+        getGlobalCore,
+        setGlobalCore,
         idToDelete,
         getIdToDelete,
         setIdToDelete,
-        numberOperationPoints,
-        numberCores,
-        numberBobbins,
-        numberWires,
-        numberMagnetics,
-        setNumberOperationPoints,
-        setNumberCores,
-        setNumberBobbins,
-        setNumberWires,
-        setNumberMagnetics,
+        resetGlobalOperationPoint,
+        reset,
     }
+},
+{
+    persist: true,
 })

@@ -46,6 +46,11 @@ const routes = [
     name: 'User',
     component: () => import('../views/User.vue')
   },
+  {
+    path: '/core',
+    name: 'Core',
+    component: () => import('../views/Core.vue')
+  },
 ]
 const router = createRouter({
   history: createWebHistory(),

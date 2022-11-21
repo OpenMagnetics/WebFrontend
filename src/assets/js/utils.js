@@ -1,6 +1,9 @@
 import * as Everpolate from 'everpolate'
 import * as FFT from 'fft.js'
-import * as Defaults from '/src/assets/js/waveformDefaults.js'
+import * as Defaults from '/src/assets/js/defaults.js'
+import axios from "axios"
+
+var requesting = 0
 
 export function roundWithDecimals(value, precision, trunc=false) {
     if (trunc)
@@ -85,25 +88,46 @@ export function scaleData(points, switchingFrequency) {
     return points
 }
 
-export function formatFrequency(frequency) {
+export function formatUnit(value, unitValue) {
     var base
     var unit
     var label
-    if (frequency < 1000) {
+    if (value < 0.001) {
+        base = 0.000001
+        unit = "μ" + unitValue
+    }
+    else if (value < 0.1) {
+        base = 0.001
+        unit = "m" + unitValue
+    }
+    else if (value < 1000) {
         base = 1
-        unit = "Hz"
+        unit = unitValue
     }
-    else if (frequency >= 1000 && frequency < 1000000) {
+    else if (value >= 1000 && value < 1000000) {
         base = 1000
-        unit = "kHz"
+        unit = "k" + unitValue
     }
-    else if (frequency >= 1000000 && frequency < 1000000000) {
+    else if (value >= 1000000 && value < 1000000000) {
         base = 1000000
-        unit = "MHz"
+        unit = "M" + unitValue
     }
-    label = frequency / base
+    label = value / base
     return {label, unit}
 }
+
+export function formatFrequency(frequency) {
+    return formatUnit(frequency, "Hz")
+}
+
+export function formatPower(power) {
+    return formatUnit(power, "W")
+}
+
+export function formatDimension(dimension) {
+    return formatUnit(dimension, "m")
+}
+
 export function deepCopy(data) {
     return JSON.parse(JSON.stringify(data))
 }
@@ -180,6 +204,15 @@ export function getTotalHarmonicDistorsion(data) {
         return Math.sqrt(dividend.reduce((a, b) => a + b, 0)) / divisor;
     else
         return 0;
+}
+
+export function getInstantaneousPower(currentDataPoints, voltageDataPoints) {
+    const timeSlot = 1 / currentDataPoints.length
+    var instantaneousPower = 0
+    for (let i = 0; i < currentDataPoints.length; i++) {
+        instantaneousPower += Math.abs(currentDataPoints[i] * voltageDataPoints[i]) * timeSlot
+    }
+    return instantaneousPower
 }
 
 export function removeTrailingZeroes(value, maximumNumberDecimals=4) {
@@ -312,6 +345,84 @@ export function tryGuessDutyCycle(dataPoints, frequency) {
     return Defaults.defaultDutyCycle
 }
 
+export function tryLoadElements(userStore, username) {
+    if (username == null)
+        return false
+    if (requesting == 0) {
+
+        const data = {"username": username}
+        var url
+        if (userStore.operationPoints == null) {
+            url = import.meta.env.VITE_API_ENDPOINT + '/operation_point_load'
+            requesting += 1
+            axios.post(url, data)
+            .then(response => {
+                userStore.setOperationPoints(response.data["elements"])
+                requesting -= 1
+            })
+            .catch(error => {
+                requesting -= 1
+            });
+        }
+
+        if (userStore.cores == null) {
+            url = import.meta.env.VITE_API_ENDPOINT + '/core_load'
+            requesting += 1
+            axios.post(url, data)
+            .then(response => {
+                userStore.setCores(response.data["elements"])
+                requesting -= 1
+            })
+            .catch(error => {
+                requesting -= 1
+            });
+        }
+            
+        if (userStore.bobbins == null) {
+            url = import.meta.env.VITE_API_ENDPOINT + '/bobbin_load'
+            requesting += 1
+            axios.post(url, data)
+            .then(response => {
+                userStore.setBobbins(response.data["elements"])
+                requesting -= 1
+            })
+            .catch(error => {
+                requesting -= 1
+            });
+        }
+            
+        if (userStore.wires == null) {
+            url = import.meta.env.VITE_API_ENDPOINT + '/wire_load'
+            requesting += 1
+            axios.post(url, data)
+            .then(response => {
+                userStore.setWires(response.data["elements"])
+                requesting -= 1
+            })
+            .catch(error => {
+                requesting -= 1
+            });
+        }
+            
+        if (userStore.magnetics == null) {
+            url = import.meta.env.VITE_API_ENDPOINT + '/magnetic_load'
+            requesting += 1
+            axios.post(url, data)
+            .then(response => {
+                userStore.setMagnetics(response.data["elements"])
+                requesting -= 1
+            })
+            .catch(error => {
+                requesting -= 1
+            });
+        }
+        return true
+    }
+    else {
+        return true
+    }
+}
+
 export function getOperationPointData(commonStore, currentStore, voltageStore, configuration) {
     const exportedData = {};
     exportedData["frequency"] = commonStore.getSwitchingFrequency.value;
@@ -323,13 +434,19 @@ export function getOperationPointData(commonStore, currentStore, voltageStore, c
     const currentData = JSON.parse(JSON.stringify(currentStore.getDataPoints.value))
     const voltageData = JSON.parse(JSON.stringify(voltageStore.getDataPoints.value))
 
+    var currentsampledWaveform
+    var voltagesampledWaveform
+
+    if (configuration["exportEquidistant"] || configuration["includeProcessed"]) {
+
+        currentsampledWaveform = sampleWaveform(currentData,
+                                                        commonStore.getSwitchingFrequency.value,
+                                                        configuration["numberPoints"] - 1)
+        voltagesampledWaveform = sampleWaveform(voltageData,
+                                                        commonStore.getSwitchingFrequency.value,
+                                                        configuration["numberPoints"] - 1)
+    }
     if (configuration["exportEquidistant"]) {
-        const currentsampledWaveform = sampleWaveform(currentData,
-                                                        commonStore.getSwitchingFrequency.value,
-                                                        configuration["numberPoints"] - 1)
-        const voltagesampledWaveform = sampleWaveform(voltageData,
-                                                        commonStore.getSwitchingFrequency.value,
-                                                        configuration["numberPoints"] - 1)
 
         exportedData["current"]["waveform"]["data"] = currentsampledWaveform["sampledWaveform"];
         exportedData["current"]["waveform"]["data"].push(exportedData["current"]["waveform"]["data"][0])
@@ -368,6 +485,12 @@ export function getOperationPointData(commonStore, currentStore, voltageStore, c
             effectiveFrequency: voltageStore.getOutputs.value["effectiveFrequency"],
             thd: voltageStore.getOutputs.value["thd"],
         }
+
+        exportedData["electricalPower"] = {}
+        exportedData["electricalPower"]["processed"] = {
+            rms: exportedData["voltage"]["processed"]["rms"] * exportedData["current"]["processed"]["rms"],
+            instantaneous: getInstantaneousPower(currentsampledWaveform["sampledWaveform"], voltagesampledWaveform["sampledWaveform"]),
+        }
     }
 
     if (configuration["includeHarmonics"]) {
@@ -387,4 +510,14 @@ export function getOperationPointData(commonStore, currentStore, voltageStore, c
         }
     }
     return exportedData
+}
+
+
+export function hexToRgb(hex) {
+    var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? {
+        r: parseInt(result[1], 16),
+        g: parseInt(result[2], 16),
+        b: parseInt(result[3], 16)
+    } : null;
 }

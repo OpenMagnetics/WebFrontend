@@ -28,15 +28,31 @@ const commonStore = useCommonStore()
 const userStore = useUserStore()
 
 export default {
+    props: {
+        key: {
+            type: Number,
+            required: false,
+            default: 0
+        },
+    },
     data() {
         var switchingFrequency
         var waveformTypes
 
-        const data = userStore.getGlobalOperationPoint.value
-        console.log(data)
-        const aux = this.loadOperationPoint(data)
-        switchingFrequency = aux["switchingFrequency"]
-        waveformTypes = aux["waveformTypes"]
+
+        if (userStore.getGlobalOperationPoint.value == null) {
+            switchingFrequency = commonStore.getSwitchingFrequency.value
+            waveformTypes = {
+                current: currentStore.getType.value == null? Defaults.defaultCurrentType : currentStore.getType.value,
+                voltage: voltageStore.getType.value == null? Defaults.defaultVoltageType : voltageStore.getType.value,
+            }
+        }
+        else {
+            const data = userStore.getGlobalOperationPoint.value
+            const aux = this.loadOperationPoint(data)
+            switchingFrequency = aux["switchingFrequency"]
+            waveformTypes = aux["waveformTypes"]
+        }
 
         return {
             switchingFrequency,
@@ -66,20 +82,23 @@ export default {
 
             const switchingFrequency = data["frequency"]
             const waveformTypes = {
-                current: data["current"]["type"] != null? data["current"]["type"] : Utils.tryGuessType(compressedCurrentData, data["frequency"]),
-                voltage: data["voltage"]["type"] != null? data["voltage"]["type"] : Utils.tryGuessType(compressedVoltageData, data["frequency"]),
+                current: Utils.tryGuessType(compressedCurrentData, data["frequency"]),
+                voltage: Utils.tryGuessType(compressedVoltageData, data["frequency"]),
             }
             currentStore.setType(waveformTypes["current"])
             voltageStore.setType(waveformTypes["voltage"])
 
-            currentStore.setDataPointsFromFile(compressedCurrentData)
-            voltageStore.setDataPointsFromFile(compressedVoltageData)
-            currentStore.setDataImported(true)
-            voltageStore.setDataImported(true)
-            commonStore.setDataImported(true)
-            commonStore.setOperationPointName(data["name"])
-            commonStore.setSwitchingFrequency(switchingFrequency)
-            commonStore.setDutyCycle(Utils.tryGuessDutyCycle(waveformTypes["current"] != "Custom"? compressedCurrentData : compressedVoltageData, data["frequency"]))
+            setTimeout(() => {
+                currentStore.setDataPointsFromFile(compressedCurrentData)
+                voltageStore.setDataPointsFromFile(compressedVoltageData)
+                currentStore.setDataImported(true)
+                voltageStore.setDataImported(true)
+                commonStore.setDataImported(true)
+                commonStore.setOperationPointName(data["name"])
+                commonStore.setSwitchingFrequency(switchingFrequency)
+                commonStore.setDutyCycle(Utils.tryGuessDutyCycle(waveformTypes["current"] != "Custom"? compressedCurrentData : compressedVoltageData, data["frequency"]))
+            }, 1000);
+
             return {switchingFrequency, waveformTypes}
         }
     },
@@ -90,17 +109,17 @@ export default {
 }
 </script>
 
+
 <template>
-    <main role="main">
-        <Header />
+    <div class="offcanvas offcanvas-start bg-dark" tabindex="-1" id="OperationPointOffCanvas" aria-labelledby="OperationPointOffCanvasLabel">
+    <div class="offcanvas-header">
+        <h5 class="offcanvas-title text-white fs-3" id="OperationPointOffCanvasLabel">Edit Operation Point</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body">
         <div class="container mx-auto">
             <div class="row">
-                <div class="col-lg-12">
-                    <OperationPointHeader @voltage-type-change="onVoltageChange" @current-type-change="onCurrentChange"/>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-lg-3 col-md-12">
+                <div class="col-12">
                     <WaveformInputCommon @switching-frequency-change="onSwitchingFrequencyChange" @duty-cycle-change="onDutyCycleChange"/>
                     <div v-for="(value, key) in waveformTypes">
                         <WaveformInputTriangular :electricalParameter="key" :isChartReady="isChartReady" v-if="value === 'Triangular'" class="scrollable-column"/>
@@ -108,28 +127,20 @@ export default {
                         <WaveformInputSquare :electricalParameter="key" :isChartReady="isChartReady" v-else-if="value === 'Square'" class="scrollable-column"/>
                         <WaveformInputSinusoidal :electricalParameter="key" :isChartReady="isChartReady" v-else-if="value === 'Sinusoidal'" class="scrollable-column"/>
                         <WaveformInputSquareWithDeadtime :electricalParameter="key" :isChartReady="isChartReady" v-else-if="value === 'Square with Dead-Time'" class="scrollable-column"/>
-                    </div>
-                </div>
-                <div class="col-lg-6 col-md-8">
-                    <WaveformGraph class="" :waveformTypes="waveformTypes" @chart-ready="onChartReady" style="height: 66%"/>
-                    <WaveformFourier class="mt-3" style="height: 30%"/>
-                </div>
-                <div class="col-lg-3 col-md-4">
-                    <div v-for="(value, key) in waveformTypes">
+
                         <WaveformOutput :electricalParameter="key"/>
                     </div>
+                </div>
+                <div class="col-12">
                     <WaveformCombinedOutput/>
+                </div>
+                <div v-show="true" class="col-12">
+                    <WaveformGraph class="mt-3 " :waveformTypes="waveformTypes" @chart-ready="onChartReady" style="height: 66%"/>
+                    <WaveformFourier class="" style="height: 50%"/>
                 </div>
             </div>
         </div>
-        <Footer />
-    </main>
-</template>
+    </div>
+</div>
 
-<style type="text/css">
-.scrollable-column {
-  max-height: 27vh;
-  overflow: hidden;
-  overflow-y: auto; 
-}
-</style>
+</template>

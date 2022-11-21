@@ -2,16 +2,14 @@
 import { ref, watch, computed, defineProps } from 'vue'
 import { Form, Field, configure} from 'vee-validate';
 import * as Yup from 'yup';
-import * as Utils from '/src/assets/js/waveformUtils.js'
+import * as Utils from '/src/assets/js/utils.js'
 import { useCurrentStore } from '/src/stores/waveform'
 import { useVoltageStore } from '/src/stores/waveform'
 import { useCommonStore } from '/src/stores/waveform'
-import * as Defaults from '/src/assets/js/waveformDefaults.js'
+import * as Defaults from '/src/assets/js/defaults.js'
 
 const commonStore = useCommonStore()
 var store = null
-
-const emit = defineEmits(['switching-frequency-change', 'duty-cycle-change'])
 
 const style = getComputedStyle(document.body);
 const theme = {

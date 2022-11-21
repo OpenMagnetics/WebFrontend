@@ -1,10 +1,13 @@
 import { defineStore } from 'pinia'
-import * as Utils from '/src/assets/js/waveformUtils.js'
+import * as Utils from '/src/assets/js/utils.js'
 import { ref, watch, computed  } from 'vue'
-import * as Defaults from '/src/assets/js/waveformDefaults.js'
+import * as Defaults from '/src/assets/js/defaults.js'
+import { useUserStore } from '/src/stores/user'
+
 
 
 const commonPart = () => {
+    const userStore = useUserStore()
     const dataPoints = ref([])
     const sampledDataPoints = ref([])
     const harmonicsAmplitude = ref([])
@@ -64,6 +67,8 @@ const commonPart = () => {
         }
     }
     function setDataPoints(points) {
+        const unpackedPoints = Utils.unpackDataPoints(points)
+        userStore.globalOperationPoint[this.$id]["waveform"] = {data: unpackedPoints["values"], time: unpackedPoints["times"]}
         this.dataPoints = Utils.deepCopy(points)
         var aux = Utils.getMaxMinInPoints(points, 'y')
         if (aux['max'] != aux['min']) {
@@ -71,6 +76,8 @@ const commonPart = () => {
         }
     }
     function setDataPointsFromDragging(points) {
+        const unpackedPoints = Utils.unpackDataPoints(points)
+        userStore.globalOperationPoint[this.$id]["waveform"] = {data: unpackedPoints["values"], time: unpackedPoints["times"]}
         this.dataPoints = Utils.deepCopy(points)
         var aux = Utils.getMaxMinInPoints(points, 'y')
         if (aux['max'] != aux['min']) {
@@ -78,6 +85,8 @@ const commonPart = () => {
         }
     }
     function setDataPointsFromFile(points) {
+        const unpackedPoints = Utils.unpackDataPoints(points)
+        userStore.globalOperationPoint[this.$id]["waveform"] = {data: unpackedPoints["values"], time: unpackedPoints["times"]}
         this.dataPoints = Utils.deepCopy(points)
         var aux = Utils.getMaxMinInPoints(points, 'y')
         if (aux['max'] != aux['min']) {
@@ -97,6 +106,7 @@ const commonPart = () => {
         this.chartReady = true
     }
     function setType(type) {
+        userStore.globalOperationPoint[this.$id]["type"] = type
         this.type = type
     }
     function setNewWaveformType() {
@@ -141,6 +151,7 @@ const commonPart = () => {
 export const useCurrentStore = defineStore("current", commonPart)
 export const useVoltageStore = defineStore("voltage", commonPart)
 export const useCommonStore = defineStore("common", () => {
+    const userStore = useUserStore()
     const operationPointName = ref(Defaults.defaultOperationName)
     const sampledTimePoints = ref([])
     const harmonicsFrequencies = ref([])
@@ -176,6 +187,7 @@ export const useCommonStore = defineStore("common", () => {
     })
 
     function setSwitchingFrequency(switchingFrequency) {
+        userStore.globalOperationPoint["frequency"] = switchingFrequency
         this.switchingFrequency = switchingFrequency
         this.timePrecision = 1 / switchingFrequency / 100
     }
@@ -192,6 +204,7 @@ export const useCommonStore = defineStore("common", () => {
         this.harmonicsFrequencies = harmonicsFrequencies
     }
     function setOperationPointName(operationPointName) {
+        userStore.globalOperationPoint["name"] = operationPointName
         this.operationPointName = operationPointName
     }
     function setDataImported(dataImported) {

@@ -2,12 +2,12 @@
 import { ref, watch, computed, defineProps, onMounted } from 'vue'
 import { Form, Field, configure} from 'vee-validate';
 import * as Yup from 'yup';
-import * as Utils from '/src/assets/js/waveformUtils.js'
+import * as Utils from '/src/assets/js/utils.js'
 import { useCurrentStore } from '/src/stores/waveform'
 import { useVoltageStore } from '/src/stores/waveform'
 
 import { loadBase } from '/src/assets/js/WaveformInputBase.js'
-import * as Defaults from '/src/assets/js/waveformDefaults.js'
+import * as Defaults from '/src/assets/js/defaults.js'
 
 const props = defineProps({
     electricalParameter: {

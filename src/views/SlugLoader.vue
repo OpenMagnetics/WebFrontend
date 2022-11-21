@@ -3,7 +3,7 @@ import OperationPoint from '/src/views/OperationPoint.vue'
 import axios from "axios"
 import { useUserStore } from '/src/stores/user'
 import { useCommonStore } from '/src/stores/waveform'
-import * as Utils from '/src/assets/js/waveformUtils.js'
+import * as Utils from '/src/assets/js/utils.js'
 
 </script>
 <script>
@@ -38,7 +38,7 @@ export default {
                     if (response.data == null)
                         this.$router.push('/');
                     else {
-                        this.userStore.setCurrentOperationPoint(response.data["element"])
+                        this.userStore.setGlobalOperationPoint(response.data["element"])
                         this.operationPointCommonStore.setDataReadOnly(true)
                         this.operationPointLoaded = true
                     }

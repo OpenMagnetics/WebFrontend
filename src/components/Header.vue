@@ -1,7 +1,8 @@
 <script setup >
 import LoginModal from '/src/components/User/Login.vue'
 import { useUserStore } from '/src/stores/user'
-import axios from "axios"
+import { useUserDatabaseStore } from '/src/stores/userDatabase'
+import * as Utils from '/src/assets/js/utils.js'
 </script>
 
 <script>
@@ -10,11 +11,13 @@ export default {
     components: { LoginModal },
     data() {
         const userStore = useUserStore()
+        const userDatabaseStore = useUserDatabaseStore()
         return {
             showModal: false,
             loggedIn: false,
             username: null,
             userStore,
+            userDatabaseStore,
         }
     },
     methods: {
@@ -53,71 +56,54 @@ export default {
             this.$cookies.remove("username");
             this.loggedIn = false
             this.username = null
+            this.userStore.reset()
             this.userStore.logout()
             this.userStore.setUsername(null)
         },
-        getNumberElements() {
-            const data = {"username": this.userStore.getUsername.value}
-            var url
-            if (this.userStore.numberOperationPoints == null) {
-                url = import.meta.env.VITE_API_ENDPOINT + '/operation_point_count'
-                axios.post(url, data)
-                .then(response => {
-                    this.userStore.setNumberOperationPoints(response.data["count"])
-                })
-                .catch(error => {
-                });
-            }
-
-            if (this.userStore.numberCores == null) {
-                url = import.meta.env.VITE_API_ENDPOINT + '/core_count'
-                axios.post(url, data)
-                .then(response => {
-                    this.userStore.setNumberCores(response.data["count"])
-                })
-                .catch(error => {
-                });
-            }
-                
-            if (this.userStore.numberBobbins == null) {
-                url = import.meta.env.VITE_API_ENDPOINT + '/bobbin_count'
-                axios.post(url, data)
-                .then(response => {
-                    this.userStore.setNumberBobbins(response.data["count"])
-                })
-                .catch(error => {
-                });
-            }
-                
-            if (this.userStore.numberWires == null) {
-                url = import.meta.env.VITE_API_ENDPOINT + '/wire_count'
-                axios.post(url, data)
-                .then(response => {
-                    this.userStore.setNumberWires(response.data["count"])
-                })
-                .catch(error => {
-                });
-            }
-                
-            if (this.userStore.numberMagnetics == null) {
-                url = import.meta.env.VITE_API_ENDPOINT + '/magnetic_count'
-                axios.post(url, data)
-                .then(response => {
-                    this.userStore.setNumberMagnetics(response.data["count"])
-                })
-                .catch(error => {
-                });
-            }
-        },
     },
     computed: {
+        getOperationPointsLength() {
+            if (this.userDatabaseStore.operationPoints != null)
+                return this.userDatabaseStore.operationPoints.length
+            else
+                return "Loading"
+        },
+        getCoresLength() {
+            if (this.userDatabaseStore.cores != null)
+                return this.userDatabaseStore.cores.length
+            else
+                return "Loading"
+        },
+        getBobbinsLength() {
+            if (this.userDatabaseStore.bobbins != null)
+                return this.userDatabaseStore.bobbins.length
+            else
+                return "Loading"
+        },
+        getWiresLength() {
+            if (this.userDatabaseStore.wires != null)
+                return this.userDatabaseStore.wires.length
+            else
+                return "Loading"
+        },
+        getMagneticsLength() {
+            if (this.userDatabaseStore.magnetics != null)
+                return this.userDatabaseStore.magnetics.length
+            else
+                return "Loading"
+        },
+    },
+    created() {
+        if (this.userStore.isLoggedIn.value && this.$cookies.get('username') == null) {
+            this.userStore.reset()
+        }
     },
     mounted() {
         let fontawesome = document.createElement('script')
         fontawesome.setAttribute('src', 'https://kit.fontawesome.com/d5a40d6941.js')
         document.head.appendChild(fontawesome)
         this.onLoggedIn()
-        this.getNumberElements()
+        Utils.tryLoadElements(this.userDatabaseStore, this.userStore.getUsername.value)
     }
 }
 </script>
@@ -147,7 +133,7 @@ export default {
                         </a>
                         <ul class="dropdown-menu" style="margin: 0">
                             <li><a class="dropdown-item" href="/operation_point">Operation Point</a></li>
-                            <li><a class="dropdown-item disabled" href="#">Core</a></li>
+                            <li><a class="dropdown-item" href="/core">Core</a></li>
                             <li><a class="dropdown-item disabled" href="#">Simulation</a></li>
                         </ul>
                     </li>
@@ -183,11 +169,11 @@ export default {
         </div>
         <div class="offcanvas-body">
             <div class="list-group" style="margin: 0" >
-                <button class="list-group-item list-group-item-action bg-light text-primary border-primary border-opacity-50 " @click="onClickNumberOperationPoints">My magnetics <span class="badge text-bg-secondary opacity-80">{{userStore.numberOperationPoints}}</span> </button>
-                <button class="list-group-item list-group-item-action bg-light text-primary border-primary border-opacity-50 " @click="onClickNumberCores">My operation points <span class="badge text-bg-secondary opacity-80">{{userStore.numberCores}}</span> </button>
-                <button class="list-group-item list-group-item-action bg-light text-primary border-primary border-opacity-50 " @click="onClickNumberBobbins">My cores <span class="badge text-bg-secondary opacity-80">{{userStore.numberBobbins}}</span> </button>
-                <button class="list-group-item list-group-item-action bg-light text-primary border-primary border-opacity-50 " @click="onClickNumberWires">My bobbins <span class="badge text-bg-secondary opacity-80">{{userStore.numberWires}}</span> </button>
-                <button class="list-group-item list-group-item-action bg-light text-primary border-primary border-opacity-50 " @click="onClickNumberMagnetics">My wires <span class="badge text-bg-secondary opacity-80">{{userStore.numberMagnetics}}</span> </button>
+                <button class="list-group-item list-group-item-action bg-light text-primary border-primary border-opacity-50" data-bs-dismiss="offcanvas" @click="onClickNumberOperationPoints">My operation points <span class="badge text-bg-secondary opacity-80">{{getOperationPointsLength}}</span> </button>
+                <button class="list-group-item list-group-item-action bg-light text-primary border-primary border-opacity-50" data-bs-dismiss="offcanvas" @click="onClickNumberCores">My cores <span class="badge text-bg-secondary opacity-80">{{getCoresLength}}</span> </button>
+                <button class="list-group-item list-group-item-action bg-light text-primary border-primary border-opacity-50" data-bs-dismiss="offcanvas" @click="onClickNumberBobbins">My bobbins <span class="badge text-bg-secondary opacity-80">{{getBobbinsLength}}</span> </button>
+                <button class="list-group-item list-group-item-action bg-light text-primary border-primary border-opacity-50" data-bs-dismiss="offcanvas" @click="onClickNumberWires">My wires <span class="badge text-bg-secondary opacity-80">{{getWiresLength}}</span> </button>
+                <button class="list-group-item list-group-item-action bg-light text-primary border-primary border-opacity-50" data-bs-dismiss="offcanvas" @click="onClickNumberMagnetics">My magnetics <span class="badge text-bg-secondary opacity-80">{{getMagneticsLength}}</span> </button>
             </div>
             <button class="btn mt-5 text-dark bg-primary fs-5" data-bs-dismiss="offcanvas" @click="onLoggedOut">Logout</button>
         </div>

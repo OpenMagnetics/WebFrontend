@@ -2,7 +2,7 @@
 import { ref, watch, computed, defineProps, onMounted } from 'vue'
 import { Form, Field, configure} from 'vee-validate';
 import * as Yup from 'yup';
-import * as Utils from '/src/assets/js/waveformUtils.js'
+import * as Utils from '/src/assets/js/utils.js'
 import { useCurrentStore } from '/src/stores/waveform'
 import { useVoltageStore } from '/src/stores/waveform'
 import { useCommonStore } from '/src/stores/waveform'
@@ -10,7 +10,7 @@ import { useCommonStore } from '/src/stores/waveform'
 
 import { loadBase } from '/src/assets/js/WaveformInputBase.js'
 import WaveformInputCustomPoint from '/src/components/OperationPoint/WaveformInputCustomPoint.vue'
-import * as Defaults from '/src/assets/js/waveformDefaults.js'
+import * as Defaults from '/src/assets/js/defaults.js'
 
 const props = defineProps({
     electricalParameter: {
@@ -26,7 +26,6 @@ const props = defineProps({
 })
 const precision = Defaults.defaultPrecision
 
-
 var store
 var commonStore = useCommonStore()
 if (props.electricalParameter == "current") {
@@ -34,9 +33,10 @@ if (props.electricalParameter == "current") {
 } else {
     store = useVoltageStore()
 }
-const data = props.isChartReady? ref(Utils.deepCopy(store.getDataPoints.value)) : ref([{x: 0, y: -Defaults.defaultPeakToPeak / 2 },
-                                                                                       {x: Defaults.defaultDutyCycle, y: Defaults.defaultPeakToPeak / 2 },
-                                                                                       {x: 1, y: -Defaults.defaultPeakToPeak / 2 }])
+const defaultData = [{x: 0, y: -Defaults.defaultPeakToPeak / 2 },
+                     {x: Defaults.defaultDutyCycle, y: Defaults.defaultPeakToPeak / 2 },
+                     {x: 1, y: -Defaults.defaultPeakToPeak / 2 }]
+const data = props.isChartReady? ref(Utils.deepCopy(store.getDataPoints.value)) : ref(defaultData)
 
 if (store.isDataImported.value) {
     data.value = store.getDataPoints.value
@@ -45,6 +45,9 @@ if (store.isDataImported.value) {
 var switchingFrequency = ref(commonStore.getSwitchingFrequency.value)
 
 function getParamsFromDataPoints(dataPoints, precision) {
+    if (dataPoints == null){
+        dataPoints = Utils.deepCopy(defaultData)
+    }
     var peakToPeakValue = Utils.roundWithDecimals(Math.abs(dataPoints[1].y - dataPoints[0].y), Math.pow(10, precision))
     var offsetValue = Utils.roundWithDecimals((dataPoints[0].y + dataPoints[1].y) / 2, Math.pow(10, precision))
     var dutyCycleValue = Utils.roundWithDecimals((dataPoints[1].x - dataPoints[0].x) / (dataPoints[2].x - dataPoints[0].x), Math.pow(10, precision))

@@ -2,8 +2,8 @@
 import { ref, onMounted, computed, inject } from 'vue'
 import { Form, Field } from 'vee-validate';
 import * as Yup from 'yup';
-import * as Defaults from '/src/assets/js/waveformDefaults.js'
-import * as Utils from '/src/assets/js/waveformUtils.js'
+import * as Defaults from '/src/assets/js/defaults.js'
+import * as Utils from '/src/assets/js/utils.js'
 import { useCurrentStore } from '/src/stores/waveform'
 import { useVoltageStore } from '/src/stores/waveform'
 import { useCommonStore } from '/src/stores/waveform'
@@ -28,9 +28,9 @@ const voltageRef = ref(null)
 const currentRef = ref(null)
 const isLoggedIn = ref(false)
 const currentOperationPointId = ref(null)
-if (userStore.getCurrentOperationPoint.value != null) {
+if (userStore.getGlobalOperationPoint.value != null) {
     if (!commonStore.isDataReadOnly.value) {
-        currentOperationPointId.value = userStore.getCurrentOperationPoint.value["_id"]
+        currentOperationPointId.value = userStore.getGlobalOperationPoint.value["_id"]
     }
 }
 const saveMessage = ref(currentOperationPointId.value == null? "Create and add to library" : "Save changes")
@@ -90,6 +90,7 @@ const currentCompatibilities = {
 }
 
 function onVoltageChange(event) {
+    voltageStore.setType(event.target.value)
     emit("voltage-type-change", event.target.value)
     voltageStore.setOutput("label", voltageSelected.value)
     if (voltageCompatibilities[event.target.value]['none'].includes(currentSelected.value)) {
@@ -103,6 +104,7 @@ function onVoltageChange(event) {
 }
 
 function onCurrentChange(event) {
+    currentStore.setType(event.target.value)
     emit("current-type-change", event.target.value)
     currentStore.setOutput("label", currentSelected.value)
     if (currentCompatibilities[event.target.value]['none'].includes(voltageSelected.value)) {
@@ -149,6 +151,7 @@ function onPublish(slug) {
 function onNewOperationPoint() {
     console.log("currentOperationPointId")
     currentOperationPointId.value = null
+    userStore.resetGlobalOperationPoint()
 } 
 
 function saveToDB(anonymousUser=false) {
@@ -211,7 +214,7 @@ onMounted(()=> {
         <div class="row gx-1">
             <div class="col-12 col-sm-2 col-md-2 col-lg-2 col-xl-2 ">
                 <div class="row gx-2">
-                    <button class="btn text-white bg-secondary py-1 my-1 col-10 col-sm-12 col-md-12 col-lg-5 col-xl-5" data-bs-toggle="modal" data-bs-target="#newOperationPointModal" @new_operation_point="onNewOperationPoint">New</button>
+                    <button class="btn text-white bg-secondary py-1 my-1 col-10 col-sm-12 col-md-12 col-lg-5 col-xl-5" data-bs-toggle="modal" data-bs-target="#newOperationPointModal" @click="onNewOperationPoint">New</button>
                     <div class="col-12 col-sm-2 col-md-2 col-lg-2 col-xl-2"> </div>
                     <button class="btn text-white bg-secondary py-1 my-1 col-10 col-sm-12 col-md-12 col-lg-5 col-xl-5" data-bs-toggle="offcanvas" data-bs-target="#ImportOffCanvas" aria-controls="ImportOffCanvas">Import</button>
 

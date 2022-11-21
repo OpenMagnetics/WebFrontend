@@ -3,7 +3,7 @@ import { useCurrentStore } from '/src/stores/waveform'
 import { useVoltageStore } from '/src/stores/waveform'
 import { useCommonStore } from '/src/stores/waveform'
 import { Chart, registerables } from 'chart.js'
-import * as Utils from '/src/assets/js/waveformUtils.js'
+import * as Utils from '/src/assets/js/utils.js'
 import 'chartjs-plugin-dragdata'
 </script>
 
@@ -85,12 +85,14 @@ export default {
                     onDrag: (e, datasetIndex, index, value) => {
                         e.target.style.cursor = 'grabbing'
                         const originalValue = value
-                        Utils.roundValue(chart,
-                                         datasetIndex,
-                                         index,
-                                         value,
-                                         commonStore.getXPrecision.value,
-                                         datasetIndex == 0? currentStore.getYPrecision.value : voltageStore.getYPrecision.value);
+                        if (this.waveformTypes[this.getElectricalParameter(datasetIndex)] == "Sinusoidal") {
+                            Utils.roundValue(chart,
+                                             datasetIndex,
+                                             index,
+                                             value,
+                                             commonStore.getXPrecision.value,
+                                             datasetIndex == 0? currentStore.getYPrecision.value : voltageStore.getYPrecision.value);
+                        }
                         this.processByType(datasetIndex, index, value)
                         if (originalValue != value) {
                             chart.update()

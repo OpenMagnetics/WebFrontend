@@ -9,8 +9,8 @@ import * as Yup from 'yup';
 import { useCurrentStore } from '/src/stores/waveform'
 import { useVoltageStore } from '/src/stores/waveform'
 import { useCommonStore } from '/src/stores/waveform'
-import * as Utils from '/src/assets/js/waveformUtils.js'
-import * as Defaults from '/src/assets/js/waveformDefaults.js'
+import * as Utils from '/src/assets/js/utils.js'
+import * as Defaults from '/src/assets/js/defaults.js'
 
 const emit = defineEmits(['time-change', 'value-change', 'add-point-below', 'remove-point'])
 const timeExponent = ref(Defaults.defaultTimeExponent)

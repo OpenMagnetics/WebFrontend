@@ -53,7 +53,7 @@ export default {
                 data["username"] = userStore.getUsername.value
             }
             data["slug"] = slug.value
-            const url = import.meta.env.VITE_API_ENDPOINT + '/operation_point_publish'
+            const url = import.meta.env.VITE_API_ENDPOINT + '/core_publish'
 
             axios.post(url, data)
             .then(response => {
@@ -84,16 +84,16 @@ export default {
 }
 </script>
 <template>
-    <div class="modal fade" id="publishOperationPointModal" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+    <div class="modal fade" id="publishCoreModal" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content bg-dark text-white">
                 <div class="modal-header">
-                    <h1 class="modal-title fs-5" id="modalLabel">Publish operation point</h1>
+                    <h1 class="modal-title fs-5" id="modalLabel">Publish core</h1>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body row mt-4">
-                    <h1 v-if="isLoggedIn" class="modal-title fs-6 text-center col-12" >Your operation point will be saved into your account and anybody with the following link will be able to access it</h1>
-                    <h1 v-else class="modal-title fs-6 text-center col-12" >Anybody with the following link will be able to access this operation point:</h1>
+                    <h1 v-if="isLoggedIn" class="modal-title fs-6 text-center col-12" >Your core will be saved into your account and anybody with the following link will be able to access it</h1>
+                    <h1 v-else class="modal-title fs-6 text-center col-12" >Anybody with the following link will be able to access this core:</h1>
                     <a class="text-primary my-3 offset-1 col-6"  :href="getURL">{{getURL}}</a>
 
                     <Form ref="formRef" :validation-schema="schema" v-slot="{ errors }" class="form-inline row">
@@ -102,7 +102,7 @@ export default {
 
                         <div class="invalid-feedback">{{errors.slug}}</div>
                     </Form>
-                    <p class="text-success modal-title fs-6 text-center my-2 col-12" >{{isPublished? "Your operation point is published, but you can still change the identifier" : " "}}</p>
+                    <p class="text-success modal-title fs-6 text-center my-2 col-12" >{{isPublished? "Your core is published, but you can still change the identifier" : " "}}</p>
                     <img v-if="posting" class="mx-auto d-block" alt="loading" style="width: 150px; height: auto;" src="/images/loading.gif">
                     <button v-if="!posting" class="btn text-dark bg-primary mt-2 offset-1 col-5" @click="onPublish" >{{isPublished? "Update" : "Publish"}}</button>
                     <button v-if="!posting" class="btn btn-dark text-primary border-primary mx-auto d-block mt-2 offset-1 col-5" data-bs-dismiss="modal" >Close</button>

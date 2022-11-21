@@ -1,10 +1,3 @@
-<script setup>
-import { ref } from 'vue'
-
-const emit = defineEmits(['new_operation_point'])
-</script>
-
-
 <template>
     <div class="modal fade" id="newOperationPointModal" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
         <div class="modal-dialog">
@@ -15,7 +8,7 @@ const emit = defineEmits(['new_operation_point'])
                 </div>
                 <div class="modal-body row mt-4">
                     <h1 class="modal-title fs-5 text-center col-12" >Are you sure? All changes will be lost</h1>
-                    <a class="btn text-dark bg-danger mt-5 offset-1 col-5"  href="/operation_point" @click="emit('new_operation_point')">Yes, new one please!</a>
+                    <a class="btn text-dark bg-danger mt-5 offset-1 col-5"  href="/operation_point">Yes, new one please!</a>
                     <button class="btn btn-primary mx-auto d-block mt-5 offset-1 col-5" data-bs-dismiss="modal" >No, take my back</button>
 
                 </div>
