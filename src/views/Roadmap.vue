@@ -138,7 +138,7 @@ export default {
                     imgSrc: '/images/roadmap/shape_artisan.png',
                     imgAlt: 'Custom shape example',
 
-                    state: "To Do"
+                    state: "Done on November 2022"
                 },
                 {
                     id: 13,
@@ -147,7 +147,7 @@ export default {
                     description: 'Implement an online tool for introducing and customizing electrical waveforms by drawing in a canvas and adjusting the levels by dragging.',
                     imgSrc: '/images/roadmap/waveform_artisan.png',
                     imgAlt: 'Draggable waveform example',
-                    state: "To Do"
+                    state: "Done on October 2022"
                 },
                 {
                     id: 14,
@@ -185,7 +185,28 @@ export default {
                     section: 'Magnetic Design', 
                     description: 'Implement functionality to allow users to share their designs and let other view or edit them.',
                     state: 'To Do'
-                }
+                },
+                {
+                    id: 19,
+                    title: 'Add dV/dT slope in square waveforms',
+                    section: 'Waveform Artisan', 
+                    description: 'Add dV/dT slope field in square waveforms, to they are closer to reality',
+                    state: 'To Do'
+                },
+                {
+                    id: 20,
+                    title: 'Gapping Artisan',
+                    section: 'Core Design', 
+                    description: 'Add module to configure any number of gaps in any place of the core',
+                    state: 'To Do'
+                },
+                {
+                    id: 21,
+                    title: 'Material Artisan',
+                    section: 'Core Design', 
+                    description: 'Add module to configure and visualize any core material',
+                    state: 'To Do'
+                },
             ]
         }
     },

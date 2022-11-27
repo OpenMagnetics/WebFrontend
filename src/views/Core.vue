@@ -3,8 +3,10 @@ import Header from '/src/components/Header.vue'
 import Footer from '/src/components/Footer.vue'
 import CoreHeader from '/src/components/Core/CoreHeader.vue'
 import CoreToolMenu from '/src/components/Core/CoreToolMenu.vue'
-import CoreVisualizer from '/src/components/Core/CoreVisualizer.vue'
-import CoreShapeArtisanInput from '/src/components/Core/CoreShapeArtisanInput.vue'
+import CoreShapeArtisan from '/src/components/Core/CoreShapeArtisan.vue'
+import CoreCalculator from '/src/components/Core/CoreCalculator.vue'
+import CoreGappingArtisan from '/src/components/Core/CoreGappingArtisan.vue'
+import CoreMaterialArtisan from '/src/components/Core/CoreMaterialArtisan.vue'
 
 import { useCurrentStore } from '/src/stores/waveform'
 import { useVoltageStore } from '/src/stores/waveform'
@@ -23,6 +25,7 @@ export default {
         const commonStore = useCommonStore()
         const userStore = useUserStore()
         const coreStore = useCoreStore()
+        var chosenTool = userStore.getCoreSubsection
 
         return {
             currentStore,
@@ -30,11 +33,14 @@ export default {
             commonStore,
             userStore,
             coreStore,
+            chosenTool,
         }
     },
     methods: {
         onToolChange(newTool) {
             console.log(newTool)
+            this.userStore.setCoreSubsection(newTool)
+            this.chosenTool = newTool
         },
     },
     mounted() {
@@ -57,21 +63,11 @@ export default {
                 <div class="col-lg-2">
                     <CoreToolMenu @tool_change="onToolChange"/>
                 </div>
-                <div class="container col-lg-10">
-                    <div class="row">
-                        <div class="col-lg-2">
-                            <CoreShapeArtisanInput/>
-                        </div>
-                        <div class="col-lg-6" style="height: 50vh">
-                            <CoreVisualizer/>
-                        </div>
-                        <div class="col-lg-3">
-                            <!-- <div v-for="(value, key) in waveformTypes"> -->
-                                <!-- <WaveformOutput :electricalParameter="key"/> -->
-                            <!-- </div> -->
-                            <!-- <WaveformCombinedOutput/> -->
-                        </div>
-                    </div>
+                <div class="col-lg-10">
+                    <CoreShapeArtisan v-if="chosenTool == 'shapeArtisan'"/>
+                    <CoreCalculator v-if="chosenTool == 'calculator'"/>
+                    <CoreGappingArtisan v-if="chosenTool == 'gappingArtisan'"/>
+                    <CoreMaterialArtisan v-if="chosenTool == 'materialArtisan'"/>
                 </div>
             </div>
         </div>

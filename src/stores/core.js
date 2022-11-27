@@ -39,6 +39,10 @@ export const useCoreStore = defineStore("core", () => {
     }
     function setStreamedObj(object) {
     }
+    function setTechnicalDrawing(object) {
+    }
+    function requestingNewShape(object) {
+    }
     return {
         customizedShape,
         customizedMaterial,
@@ -56,5 +60,7 @@ export const useCoreStore = defineStore("core", () => {
         isDataReadOnly,
         setDataReadOnly,
         setStreamedObj,
+        setTechnicalDrawing,
+        requestingNewShape,
     }
 })

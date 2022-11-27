@@ -7,7 +7,7 @@ import Footer from '/src/components/Footer.vue'
 <template>
     <Header />
     <main role="main">
-        <div class="container marketing">
+        <div class="container">
             <div class="row">
                 <div class="offset-1 col-lg-10 text-center">
                     <h2 class="text-white my-5">These Are Not the Droids You Are Looking For</h2>

@@ -30,7 +30,11 @@ export default {
         const subtypeLabels = []
         const dimensionsValueInMm = {}
         const isDataDirty = false
-        var hasError = {}
+        var errors = {}
+        var hasError = false
+        var hasFreeCADError = false
+        var tryingToSend = false;
+        var recentChange = false
 
         return {
             posting,
@@ -44,19 +48,15 @@ export default {
             subtypeLabels,
             dimensionsValueInMm,
             isDataDirty,
+            errors,
             hasError,
+            hasFreeCADError,
+            recentChange,
+            tryingToSend,
         }
     },
     methods: {
-        onSubmit() {
-            var hasError = false
-            for (const [key, value] of Object.entries(this.hasError)) {
-                hasError |= value
-            }
-            const dimensionsValueInM = {}
-            for (const [key, value] of Object.entries(this.dimensionsValueInMm)) {
-                dimensionsValueInM[key] = value / 1000
-            }
+        get_technical_drawing(dimensionsValueInM) {
             const data = {
                 'aliases': [],
                 'dimensions': dimensionsValueInM,
@@ -65,30 +65,110 @@ export default {
                 'name': 'Custom',
                 'type': 'custom'
             }
-            const url = import.meta.env.VITE_API_ENDPOINT + '/core_compute_shape'
+            const url = import.meta.env.VITE_API_ENDPOINT + '/core_compute_technical_drawing'
 
-            const globalCore = this.userStore.globalCore
-            globalCore['functionalDescription']['shape'] = data
-            this.userStore.setGlobalCore(globalCore)
-            console.log(this.userStore.globalCore)
-
+            console.log("get_technical_drawing send")
             axios.post(url, data)
             .then(response => {
-                this.coreStore.setStreamedObj(response.data)
+                console.log("get_technical_drawing")
+                console.log(response.data)
+                this.coreStore.setTechnicalDrawing(response.data)
             })
-            .catch(error => {
+            .catch(error => { 
                 console.log(error.data)
             });
+        },
+        get_core_parameters(dimensionsValueInM) {
+            const url = import.meta.env.VITE_API_ENDPOINT + '/core_compute_core_parameters'
+
+            axios.post(url, this.userStore.globalCore)
+            .then(response => {
+                console.log(response.data)
+                const globalCore = this.userStore.globalCore
+                globalCore['geometricalDescription'] = response.data['geometricalDescription']
+                globalCore['processedDescription'] = response.data['processedDescription']
+                this.userStore.setGlobalCore(globalCore)
+
+            })
+            .catch(error => { 
+                console.log(error.data)
+            });
+        },
+        compute_shape() {
+            if (!this.posting) {
+                this.posting = true
+                this.fix_optional_missing()
+                const dimensionsValueInM = {}
+                for (const [key, value] of Object.entries(this.dimensionsValueInMm)) {
+                    dimensionsValueInM[key] = value / 1000
+                }
+                console.log("dimensionsValueInM")
+                console.log(dimensionsValueInM)
+                const data = {
+                    'aliases': [],
+                    'dimensions': dimensionsValueInM,
+                    'family': this.familyLabelSelected,
+                    'familySubtype': this.subtypeLabelSelected,
+                    'name': 'Custom',
+                    'type': 'custom'
+                }
+                const url = import.meta.env.VITE_API_ENDPOINT + '/core_compute_shape'
+
+                this.hasFreeCADError = false
+
+                this.coreStore.requestingNewShape()
+                axios.post(url, data)
+                .then(response => {
+                    const globalCore = this.userStore.globalCore
+                    globalCore['functionalDescription']['shape'] = data
+                    this.userStore.setGlobalCore(globalCore)
+                    this.posting = false
+                    this.isDataDirty = false
+                    this.coreStore.setStreamedObj(response.data)
+                    this.get_technical_drawing(dimensionsValueInM)
+                    this.get_core_parameters(dimensionsValueInM)
+                })
+                .catch(error => {
+                    console.log("Error")
+                    this.posting = false
+                    this.isDataDirty = false
+                    this.hasFreeCADError = true
+                });
+            }
 
         },
         onInvalidSubmit() {
         },
         onDimensionUpdate(name, newValue, oldValue) {
+            this.hasFreeCADError = false
+            this.recentChange = true
             this.isDataDirty = true
             this.dimensionsValueInMm[name] = newValue
+            this.tryToSend()
+
+        },
+        tryToSend() {
+            if (!this.tryingToSend) {
+                this.recentChange = false
+                this.tryingToSend = true
+                setTimeout(() => {
+                    if (!this.hasError) {
+                        if (this.recentChange) {
+                            this.tryingToSend = false
+                            this.tryToSend()
+                        }
+                        else {
+                            this.tryingToSend = false
+                            this.compute_shape()
+                        }
+                    }
+                }
+                , 500);
+            }
         },
         onFamilyChange(event) {
-            this.hasError = {}
+            this.errors = {}
+            this.hasFreeCADError = false
             this.isDataDirty = true
             const family = event.target.value
             this.subtypeLabels = Object.keys(this.familiesData[family])
@@ -100,139 +180,227 @@ export default {
             }
         },
         onsubtypeChange(event) {
-            this.hasError = {}
+            this.errors = {}
+            this.hasFreeCADError = false
             this.isDataDirty = true
             this.dimensionsLabel = this.familiesData[this.familyLabelSelected][event.target.value]
         },
         onLoadCommercialShape(data) {
-            this.hasError = {}
+            this.errors = {}
             this.familyLabelSelected = data['family'].toLowerCase()
             this.subtypeLabels = Object.keys(this.familiesData[data['family'].toLowerCase()])
-            if ('familySubtype' in data) {
+            if ('familySubtype' in data && data['familySubtype'] != null) {
                 this.subtypeLabelSelected = data['familySubtype']
             }
-            this.dimensionsLabel = []
+            else {
+                this.subtypeLabelSelected = 1
+            }
+
+            this.dimensionsLabel = Object.values(this.familiesData[this.familyLabelSelected][this.subtypeLabelSelected])
+
             this.dimensionsValueInMm = {}
             for (const [key, value] of Object.entries(data['dimensions'])) {
-                this.dimensionsLabel.push(key)
-                this.dimensionsValueInMm[key] = Number(Utils.removeTrailingZeroes(value * 1000, 1))
-            }
-        },
-        messageDimension(name) {
-            this.hasError[name] = false
-            if (this.dimensionsValueInMm[name] == null) {
-                this.hasError[name] = true
-                return name + ' cannot be empty'
-            }
-            else if (this.dimensionsValueInMm[name] == 0 && name != 'H'){
-                this.hasError[name] = true
-                return name + ' must greater than 0'
-            }
-            else {
-                if (name == 'B'){
-                    if (this.dimensionsValueInMm['D'] >= this.dimensionsValueInMm['B']){
-                        this.hasError[name] = true
-                        return 'B must greater than D'
-                    }
-                }
-                else if (name == 'D'){
-                    if (this.dimensionsValueInMm['D'] >= this.dimensionsValueInMm['B']){
-                        this.hasError[name] = true
-                        return 'D must smaller than B'
-                    }
-                }
-
-                if (name == 'A'){
-                    if (this.dimensionsValueInMm['E'] >= this.dimensionsValueInMm['A']){
-                        this.hasError[name] = true
-                        return 'A must greater than E'
-                    }
-                }
-                else if (name == 'E'){
-                    if (this.dimensionsValueInMm['E'] >= this.dimensionsValueInMm['A']){
-                        this.hasError[name] = true
-                        return 'E must smaller than A'
-                    }
-                }
-
-                if (name == 'E'){
-                    if (this.dimensionsValueInMm['F'] >= this.dimensionsValueInMm['E']){
-                        this.hasError[name] = true
-                        return 'E must greater than F'
-                    }
-                }
-                else if (name == 'F'){
-                    if (this.dimensionsValueInMm['F'] >= this.dimensionsValueInMm['E']){
-                        this.hasError[name] = true
-                        return 'F must smaller than E'
-                    }
-                }
-
-                if (name == 'E'){
-                    if (this.dimensionsValueInMm['G'] >= this.dimensionsValueInMm['E']){
-                        this.hasError[name] = true
-                        return 'E must greater than G'
-                    }
-                }
-                else if (name == 'G'){
-                    if (this.dimensionsValueInMm['G'] >= this.dimensionsValueInMm['E']){
-                        this.hasError[name] = true
-                        return 'G must smaller than E'
-                    }
-                }
-
-                if (name == 'C'){
-                    if (this.dimensionsValueInMm['F'] > this.dimensionsValueInMm['C']){
-                        this.hasError[name] = true
-                        return 'C must Freater than F'
-                    }
-                }
-                else if (name == 'F'){
-                    if (this.dimensionsValueInMm['F'] > this.dimensionsValueInMm['C']){
-                        this.hasError[name] = true
-                        return 'F must smaller than C'
-                    }
+                if (this.dimensionsLabel.includes(key)) {
+                    this.dimensionsValueInMm[key] = Number(Utils.removeTrailingZeroes(value * 1000, 1))
                 }
             }
         },
-
+        fix_optional_missing() {
+            if (this.dimensionsValueInMm['G'] == null || isNaN(this.dimensionsValueInMm['G'])) {
+                this.dimensionsValueInMm['G'] = 0
+            }
+            if (this.dimensionsValueInMm['H'] == null || isNaN(this.dimensionsValueInMm['H'])) {
+                this.dimensionsValueInMm['H'] = 0
+            }
+            if (this.dimensionsValueInMm['C'] == null || isNaN(this.dimensionsValueInMm['C'])) {
+                this.dimensionsValueInMm['C'] = 0
+            }
+        },
     },
     computed: {
         computeColor() {
             if (this.isDataDirty) {
                 return "btn-success text-light"
             }
-            else {
+            else if (this.hasFreeCADError){
+                return "btn-danger text-light"
+            } else {
                 return "btn-light text-primary"
             }
-        }
+        },
+        errorMessages() {
+            console.log("Checking errors")
+            const messages = {}
+            this.dimensionsLabel.forEach((name) => {
+                this.errors[name] = false
+                if (this.dimensionsValueInMm[name] == null) {
+                    this.errors[name] = true
+                    messages[name] = name + ' cannot be empty'
+                }
+                else if (this.dimensionsValueInMm[name] == 0) {
+                    if ((name != 'H' || this.familyLabelSelected.toLowerCase() == 'ur') &&
+                        (name != 'G') &&
+                        (name == 'C' && this.familyLabelSelected.toLowerCase() != 'p')) {
+                        this.errors[name] = true
+                        messages[name] = name + ' must greater than 0'
+                    }
+                }
+                else {
+                    if (name == 'B'){
+                        if (this.dimensionsValueInMm['D'] >= this.dimensionsValueInMm['B']){
+                            this.errors[name] = true
+                            messages[name] = 'B must greater than D'
+                        }
+                    }
+                    else if (name == 'D'){
+                        if (this.dimensionsValueInMm['D'] >= this.dimensionsValueInMm['B']){
+                            this.errors[name] = true
+                            messages[name] = 'D must smaller than B'
+                        }
+                    }
+
+                    if (name == 'A'){
+                        if (this.dimensionsValueInMm['E'] >= this.dimensionsValueInMm['A']){
+                            this.errors[name] = true
+                            messages[name] = 'A must greater than E'
+                        }
+                    }
+                    else if (name == 'E'){
+                        if (this.dimensionsValueInMm['E'] >= this.dimensionsValueInMm['A']){
+                            this.errors[name] = true
+                            messages[name] = 'E must smaller than A'
+                        }
+                    }
+
+                    if (name == 'E'){
+                        if (this.dimensionsValueInMm['F'] >= this.dimensionsValueInMm['E']){
+                            this.errors[name] = true
+                            messages[name] = 'E must greater than F'
+                        }
+                    }
+                    else if (name == 'F'){
+                        if (this.dimensionsValueInMm['F'] >= this.dimensionsValueInMm['E']){
+                            this.errors[name] = true
+                            messages[name] = 'F must smaller than E'
+                        }
+                    }
+
+                    if (name == 'E'){
+                        if (this.dimensionsValueInMm['G'] >= this.dimensionsValueInMm['E']){
+                            this.errors[name] = true
+                            messages[name] = 'E must greater than G'
+                        }
+                    }
+                    else if (name == 'G'){
+                        if (this.dimensionsValueInMm['G'] >= this.dimensionsValueInMm['E']){
+                            this.errors[name] = true
+                            messages[name] = 'G must smaller than E'
+                        }
+                    }
+
+                    if (this.familyLabelSelected.toLowerCase() == "er") {
+                        if (this.dimensionsValueInMm['G'] > 0) {
+                            if (name == 'F'){
+                                if (this.dimensionsValueInMm['G'] < this.dimensionsValueInMm['F']){
+                                    this.errors[name] = true
+                                    messages[name] = 'F must smaller than G'
+                                }
+                            }
+                            else if (name == 'G'){
+                                if (this.dimensionsValueInMm['G'] < this.dimensionsValueInMm['F']){
+                                    this.errors[name] = true
+                                    messages[name] = 'G must greater than F'
+                                }
+                            }
+                        }
+                    }
+
+                    if (!(this.familyLabelSelected.toLowerCase() == "rm" && this.subtypeLabelSelected == 2) && !(this.familyLabelSelected.toLowerCase() == "p") && !(this.familyLabelSelected.toLowerCase() == "efd")) {
+                        var c_f_condition = false
+                        if (this.familyLabelSelected.toLowerCase() != "er") {
+                            c_f_condition = this.dimensionsValueInMm['F'] >= this.dimensionsValueInMm['C']
+                        }
+                        else {
+                            c_f_condition = this.dimensionsValueInMm['F'] > this.dimensionsValueInMm['C']
+                        }
+                        if (name == 'C'){
+                            if (c_f_condition){
+                                this.errors[name] = true
+                                messages[name] = 'C must greater than F'
+                            }
+                        }
+                        else if (name == 'F'){
+                            if (c_f_condition){
+                                this.errors[name] = true
+                                messages[name] = 'F must smaller than C'
+                            }
+                        }
+                    }
+
+                    if (name == 'J'){
+                        if (this.dimensionsValueInMm['E'] > this.dimensionsValueInMm['J']){
+                            this.errors[name] = true
+                            messages[name] = 'J must greater than E'
+                        }
+                    }
+                    else if (name == 'E'){
+                        if (this.dimensionsValueInMm['E'] > this.dimensionsValueInMm['J']){
+                            this.errors[name] = true
+                            messages[name] = 'E must smaller than J'
+                        }
+                    }
+                    if (this.familyLabelSelected.toLowerCase() !== "efd") {
+                        if (name == 'K'){
+                            if (this.dimensionsValueInMm['F'] / 2 > this.dimensionsValueInMm['K']){
+                                this.errors[name] = true
+                                messages[name] = 'K must greater than F/2'
+                            }
+                            else if (this.dimensionsValueInMm['F'] / 2 + this.dimensionsValueInMm['K'] > this.dimensionsValueInMm['C'] ){
+                                this.errors[name] = true
+                                messages[name] = 'C must greater than F/2 + K'
+                            }
+                        }
+                    }
+                }
+            })
+            this.hasError = Object.keys(messages).length > 0
+            return messages
+        },
+
     },
     mounted() {
+
+        console.log("posting")
+        console.log(this.posting)
         const url = import.meta.env.VITE_API_ENDPOINT + '/core_get_families'
+        console.log("send families")
         axios.post(url, {})
         .then(response => {
+            console.log("response families")
             this.familiesData = response.data["families"]
             this.familiesLabels = Object.keys(this.familiesData)
 
             this.familyLabelSelected = this.userStore.globalCore['functionalDescription']['shape']['family']
-            console.log(this.userStore.globalCore)
             this.subtypeLabels = Object.keys(this.familiesData[this.familyLabelSelected.toLowerCase()])
-            console.log(this.subtypeLabels)
-            if ('familySubtype' in this.userStore.globalCore['functionalDescription']['shape']) {
+            if ('familySubtype' in this.userStore.globalCore['functionalDescription']['shape'] && this.userStore.globalCore['functionalDescription']['shape']['familySubtype'] != null) {
                 this.subtypeLabelSelected = this.userStore.globalCore['functionalDescription']['shape']['familySubtype']
             }
+            else {
+                this.subtypeLabelSelected = 1
+            }
+
+            this.dimensionsLabel = Object.values(this.familiesData[this.familyLabelSelected][this.subtypeLabelSelected])
 
             this.dimensionsValueInMm = {}
             for (const [key, value] of Object.entries(this.userStore.globalCore['functionalDescription']['shape']['dimensions'])) {
-                this.dimensionsValueInMm[key] = value * 1000
+                if (this.dimensionsLabel.includes(key)) {
+                    this.dimensionsValueInMm[key] = Number(Utils.removeTrailingZeroes(value * 1000, 1))
+                }
             }
 
-            this.dimensionsLabel = []
-            for (const [key, value] of Object.entries(this.userStore.globalCore['functionalDescription']['shape']['dimensions'])) {
-                this.dimensionsLabel.push(key)
-            }
         })
         .catch(error => {
+            console.log("error families")
         });
 
     },
@@ -242,7 +410,7 @@ export default {
 
 <template>
     <CoreLoadCommercialShape @onLoadCommercialShape="onLoadCommercialShape"/>
-    <Form ref=formRef @submit="onSubmit" @invalid-submit="onInvalidSubmit" class="pb-1">
+    <Form ref=formRef @submit="compute_shape" @invalid-submit="onInvalidSubmit" class="pb-1">
         <Field name="familiesSelect" ref="familiesRef" as="select" style="width: 100%" @change="onFamilyChange" class= "small-text bg-light text-white rounded-2 mt-2 col-sm-8 col-md-8 col-lg-3 col-xl-3" v-model="familyLabelSelected">
             <option disabled value="">Please select one family</option>
             <option v-for="item, index in familiesLabels"
@@ -268,12 +436,12 @@ export default {
                     :step="0.1"
                     :max="1000">
                     </vue-number-input>
-                <label class="text-danger col-12 pt-1" style="font-size: 0.7em">{{messageDimension(value)}}</label>
+                <label class="text-danger col-12 pt-1" style="font-size: 0.7em">{{errorMessages[value]}}</label>
             </div>
         </div>
 
-        <button v-if="!posting" :class="computeColor" class="submit-btn btn mt-2 fs-6" type="submit">Compute shape</button>
-        <button v-if="!posting" class="btn btn-primary mt-2 fs-6" data-bs-toggle="modal" data-bs-target="#loadCommercialShapeModal">Load commercial shape</button>
+        <button v-if="!posting" :disabled="hasError" :class="computeColor" class="submit-btn btn mt-2 fs-6" type="submit">Compute shape</button>
+        <button v-if="!posting" class="submit-btn btn btn-primary mt-2 fs-6" data-bs-toggle="modal" data-bs-target="#loadCommercialShapeModal">Load commercial shape</button>
         <img v-if="posting" class="mx-auto d-block" alt="loading" style="width: 150px; height: auto;" src="/images/loading.gif">
     </Form>
   <div>

@@ -33,20 +33,23 @@ export default {
                 tooltip: 'Dimension of the enveloping cube',
             },
             {
-                label: 'Effective Area',
+                label: 'Eff. Length (mm)',
+                field: 'effectiveLength',
+                type: 'decimal',
+                tdClass: 'text-center',
+                tooltip: 'Effective Length of the shape',
+            },
+            {
+                label: 'Eff. Area (mm²)',
                 field: 'effectiveArea',
+                type: 'decimal',
                 tdClass: 'text-center',
                 tooltip: 'Effective Area of the shape',
             },
             {
-                label: 'Effective Area',
-                field: 'effectiveArea',
-                tdClass: 'text-center',
-                tooltip: 'Effective Area of the shape',
-            },
-            {
-                label: 'Effective Volume',
+                label: 'Eff. Volume (mm³)',
                 field: 'effectiveVolume',
+                type: 'decimal',
                 tdClass: 'text-center',
                 tooltip: 'Effective Volume of the shape',
             },
@@ -94,9 +97,9 @@ export default {
                     name: item['functionalDescription']['shape']['name'],
                     family: item['functionalDescription']['shape']['family'].toUpperCase(),
                     dimensions: Utils.removeTrailingZeroes(item['processedDescription']['width'], 4) + " x " + Utils.removeTrailingZeroes(item['processedDescription']['height'], 4) + " x " + Utils.removeTrailingZeroes(item['processedDescription']['depth'], 4) + " m",
-                    effectiveLength: Number.parseFloat(item['processedDescription']['effectiveParameters']['effectiveLength']).toExponential(3) + " m",
-                    effectiveArea: Number.parseFloat(item['processedDescription']['effectiveParameters']['effectiveArea']).toExponential(6) + " m²",
-                    effectiveVolume: Number.parseFloat(item['processedDescription']['effectiveParameters']['effectiveVolume']).toExponential(6) + " m³",
+                    effectiveLength: item['processedDescription']['effectiveParameters']['effectiveLength'] * 1000,
+                    effectiveArea: item['processedDescription']['effectiveParameters']['effectiveArea'] * 1000000,
+                    effectiveVolume: item['processedDescription']['effectiveParameters']['effectiveVolume'] * 1000000000,
                 }
                 this.commercialData.push(datum)
             })

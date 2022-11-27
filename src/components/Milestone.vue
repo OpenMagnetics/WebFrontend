@@ -71,6 +71,12 @@ export default {
             else if (this.section == "Magnetic Design") {
                 return "background-color: Gold; color: var(--bs-dark)";
             }
+            else if (this.section == "Waveform Artisan") {
+                return "background-color: Pink; color: var(--bs-dark)";
+            }
+            else if (this.section == "Core Design") {
+                return "background-color: Green; color: var(--bs-dark)";
+            }
 
         },
         card_class() {

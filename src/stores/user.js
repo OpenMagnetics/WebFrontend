@@ -10,6 +10,7 @@ export const useUserStore = defineStore("user", () => {
     const globalCore = ref(Utils.deepCopy(Defaults.defaultCore))
     const idToDelete = ref(null)
     const userSubsection = ref("operationPoints")
+    const coreSubsection = ref("shapeArtisan")
     const isLoggedIn = computed(() => {
         return loggedIn
     })
@@ -18,6 +19,9 @@ export const useUserStore = defineStore("user", () => {
     })
     const getUserSubsection = computed(() => {
         return userSubsection
+    })
+    const getCoreSubsection = computed(() => {
+        return coreSubsection
     })
     const getGlobalOperationPoint = computed(() => {
         return globalOperationPoint
@@ -33,13 +37,13 @@ export const useUserStore = defineStore("user", () => {
         this.globalOperationPoint = Defaults.defaultOperationPoint
     }
     function reset() {
-        console.log("resetting")
         this.loggedIn = false
         this.username = null
         this.globalOperationPoint = Utils.deepCopy(Defaults.defaultOperationPoint)
         this.globalCore = null
         this.idToDelete = null
         this.userSubsection = "operationPoints"
+        this.coreSubsection = "shapeArtisan"
     }
 
     function setUsername(username) {
@@ -47,6 +51,9 @@ export const useUserStore = defineStore("user", () => {
     }
     function setUserSubsection(userSubsection) {
         this.userSubsection = userSubsection
+    }
+    function setCoreSubsection(coreSubsection) {
+        this.coreSubsection = coreSubsection
     }
     function login() {
         this.loggedIn = true
@@ -58,8 +65,6 @@ export const useUserStore = defineStore("user", () => {
         this.globalOperationPoint = globalOperationPoint
     }
     function setGlobalCore(globalCore) {
-        console.log("settttttttttttttting globalCore")
-        console.log(globalCore)
         this.globalCore = globalCore
     }
     function setIdToDelete(idToDelete) {
@@ -76,6 +81,9 @@ export const useUserStore = defineStore("user", () => {
         userSubsection,
         getUserSubsection,
         setUserSubsection,
+        coreSubsection,
+        getCoreSubsection,
+        setCoreSubsection,
         globalOperationPoint,
         getGlobalOperationPoint,
         setGlobalOperationPoint,
