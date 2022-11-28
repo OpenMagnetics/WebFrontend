@@ -232,8 +232,13 @@ export default {
             this.dimensionsLabel.forEach((name) => {
                 this.errors[name] = false
                 if (this.dimensionsValueInMm[name] == null) {
-                    this.errors[name] = true
-                    messages[name] = name + ' cannot be empty'
+                    if (name == 'G' || name == 'H') {
+                        this.dimensionsValueInMm[name] = 0
+                    }
+                    else {
+                        this.errors[name] = true
+                        messages[name] = name + ' cannot be empty'
+                    }
                 }
                 else if (this.dimensionsValueInMm[name] == 0) {
                     if ((name != 'H' || this.familyLabelSelected.toLowerCase() == 'ur') &&

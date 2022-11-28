@@ -27,7 +27,7 @@ export default {
                 tooltip: 'Family of the shape',
             },
             {
-                label: 'Dimensions (W x H x D)',
+                label: 'Dim. (W x H x D)',
                 field: 'dimensions',
                 tdClass: 'text-center',
                 tooltip: 'Dimension of the enveloping cube',
@@ -62,11 +62,13 @@ export default {
         const userStore = useUserStore();
         const commercialData = []
         const commercialRawData = []
+        const scaledColumns = []
         return {
             userStore,
             columns,
             commercialData,
             commercialRawData,
+            scaledColumns,
         }
     },
     methods: {
@@ -84,6 +86,24 @@ export default {
             this.userStore.setGlobalCore(globalCore)
 
             this.$emit("onLoadCommercialShape", dataToLoad['functionalDescription']['shape'])
+        },
+        scaleColumns() {
+            this.scaledColumns = []
+
+            this.columns.forEach((item, index) => {
+                const newItem = Utils.deepCopy(item)
+                if (window.innerWidth < 700) {
+                    var slice = 4
+                    if (window.innerWidth < 400)
+                        slice = 0
+                    else if (window.innerWidth < 500)
+                        slice = 1
+                    else if (window.innerWidth < 600)
+                        slice = 2
+                    newItem.label = newItem.label.slice(0, slice) + '.'
+                }
+                this.scaledColumns.push(newItem)
+            })
         },
     },
     mounted() {
@@ -103,10 +123,14 @@ export default {
                 }
                 this.commercialData.push(datum)
             })
+            this.scaleColumns()  // To avoid bug in vue-good-table-next
         })
         .catch(error => {
             console.log(error.data)
         });
+        window.addEventListener('resize', () => {
+            this.scaleColumns()
+        })
 
     },
 }
@@ -123,7 +147,7 @@ export default {
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <vue-good-table
-                    :columns="columns"
+                    :columns="scaledColumns"
                     :rows="commercialData"
                     theme="open-magnetics"
                     max-height="58vh"

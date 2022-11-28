@@ -1,4 +1,5 @@
 <script setup>
+import GapInput from '/src/components/Core/CoreGappingArtisan/GapInput.vue'
 </script>
 
 <template>
