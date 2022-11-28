@@ -102,8 +102,6 @@ export default {
                 for (const [key, value] of Object.entries(this.dimensionsValueInMm)) {
                     dimensionsValueInM[key] = value / 1000
                 }
-                console.log("dimensionsValueInM")
-                console.log(dimensionsValueInM)
                 const data = {
                     'aliases': [],
                     'dimensions': dimensionsValueInM,
@@ -121,7 +119,7 @@ export default {
                 .then(response => {
                     const globalCore = this.userStore.globalCore
                     globalCore['functionalDescription']['shape'] = data
-                    this.userStore.setGlobalCore(globalCore)
+                    this.userStore.setGlobalCoreAlt(globalCore)
                     this.posting = false
                     this.isDataDirty = false
                     this.coreStore.setStreamedObj(response.data)
@@ -317,7 +315,7 @@ export default {
 
                     if (!(this.familyLabelSelected.toLowerCase() == "rm" && this.subtypeLabelSelected == 2) && !(this.familyLabelSelected.toLowerCase() == "p") && !(this.familyLabelSelected.toLowerCase() == "efd")) {
                         var c_f_condition = false
-                        if (this.familyLabelSelected.toLowerCase() != "er") {
+                        if (this.familyLabelSelected.toLowerCase() != "er" && this.familyLabelSelected.toLowerCase() != "e" && this.familyLabelSelected.toLowerCase() != "etd" && this.familyLabelSelected.toLowerCase() != "ec") {
                             c_f_condition = this.dimensionsValueInMm['F'] >= this.dimensionsValueInMm['C']
                         }
                         else {

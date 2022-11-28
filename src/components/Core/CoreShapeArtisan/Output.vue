@@ -27,8 +27,6 @@ export default {
         this.userStore.$onAction((action) => {
             if (action.name == "setGlobalCore") {
                 var globalCore = action.args[0]
-                console.log("globalCore")
-                console.log(globalCore)
                 this.effectiveLength = Utils.removeTrailingZeroes(globalCore['processedDescription']['effectiveParameters']['effectiveLength'] * 1000, 1)
                 this.effectiveArea = Utils.removeTrailingZeroes(globalCore['processedDescription']['effectiveParameters']['effectiveArea'] * 1000000, 1)
                 this.effectiveVolume = Utils.removeTrailingZeroes(globalCore['processedDescription']['effectiveParameters']['effectiveVolume'] * 1000000000, 1)

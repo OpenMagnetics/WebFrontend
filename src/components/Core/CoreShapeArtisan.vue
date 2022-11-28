@@ -1,8 +1,8 @@
 <script setup>
-import CoreShapeArtisanVisualizer from '/src/components/Core/CoreShapeArtisanVisualizer.vue'
-import CoreShapeArtisanInput from '/src/components/Core/CoreShapeArtisanInput.vue'
-import CoreShapeArtisanOutput from '/src/components/Core/CoreShapeArtisanOutput.vue'
-import CoreShapeArtisanTechnicalDrawer from '/src/components/Core/CoreShapeArtisanTechnicalDrawer.vue'
+import Visualizer from '/src/components/Core/CoreShapeArtisan/Visualizer.vue'
+import Input from '/src/components/Core/CoreShapeArtisan/Input.vue'
+import Output from '/src/components/Core/CoreShapeArtisan/Output.vue'
+import TechnicalDrawer from '/src/components/Core/CoreShapeArtisan/TechnicalDrawer.vue'
 
 </script>
 
@@ -10,22 +10,22 @@ import CoreShapeArtisanTechnicalDrawer from '/src/components/Core/CoreShapeArtis
     <div class="container">
         <div class="row">
             <div class="col-lg-2">
-                <CoreShapeArtisanInput/>
+                <Input/>
             </div>
             <div class="col-lg-6 container">
                 <div class="row">
                     <div class="col-12" style="height: 45vh">
-                        <CoreShapeArtisanVisualizer/>
+                        <Visualizer/>
                     </div>
                 </div>
                 <div class="row">
                     <div class="col-12">
-                        <CoreShapeArtisanOutput />
+                        <Output />
                     </div>
                 </div>
             </div>
             <div class="col-lg-4 container">
-                <CoreShapeArtisanTechnicalDrawer />
+                <TechnicalDrawer />
             </div>
         </div>
     </div>

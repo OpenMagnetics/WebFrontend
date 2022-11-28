@@ -67,6 +67,9 @@ export const useUserStore = defineStore("user", () => {
     function setGlobalCore(globalCore) {
         this.globalCore = globalCore
     }
+    function setGlobalCoreAlt(globalCore) {
+        this.globalCore = globalCore
+    }
     function setIdToDelete(idToDelete) {
         this.idToDelete = idToDelete
     }
@@ -90,6 +93,7 @@ export const useUserStore = defineStore("user", () => {
         globalCore,
         getGlobalCore,
         setGlobalCore,
+        setGlobalCoreAlt,
         idToDelete,
         getIdToDelete,
         setIdToDelete,
