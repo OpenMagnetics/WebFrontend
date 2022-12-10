@@ -4,6 +4,8 @@ import Footer from '/src/components/Footer.vue'
 </script>
 
 <template>
+      <div class="d-flex flex-column min-vh-100">
+
     <Header />
     <div class="container text-white" style="">
        <span>
@@ -147,6 +149,7 @@ import Footer from '/src/components/Footer.vue'
        </span>
     </div>
 
-    <Footer />
+   <Footer class="mt-auto"/>
+</div>
 </template>
 

@@ -25,16 +25,10 @@ import TechnicalDrawer from '/src/components/Core/CoreShapeArtisan/TechnicalDraw
                 </div>
             </div>
             <div class="col-lg-4 container">
-                <TechnicalDrawer />
+                <div class="row">
+                        <TechnicalDrawer class=""/>
+                </div>
             </div>
         </div>
     </div>
 </template>
-
-<style type="text/css">
-.scrollable-column {
-  max-height: 27vh;
-  overflow: hidden;
-  overflow-y: auto; 
-}
-</style>

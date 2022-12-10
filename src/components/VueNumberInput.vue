@@ -348,7 +348,7 @@ export default defineComponent({
 
         &:disabled,
         &[readonly] {
-            background-color: var(--bs-danger);
+            background-color: var(--bs-dark);
         }
     }
 

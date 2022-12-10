@@ -1,4 +1,4 @@
-export const defaultOperationPoint = {
+export const defaultOperationPoint = {  
     "name": "My Operation Point",
     "frequency": 100000,
     "current": {
@@ -55,7 +55,16 @@ export const defaultCore = {
                    'familySubtype': '1',
                    'name': 'Custom',
                    'type': 'custom'},
-        "gapping": [],
+        "gapping": [{
+            "type": "subtractive",
+            "length": 0.001
+        },{
+            "type": "residual",
+            "length": 0.00001
+        },{
+            "type": "residual",
+            "length": 0.00001
+        }],
         "numberStacks": 1
     },
     "geometricalDescription": null,
@@ -102,3 +111,16 @@ export function titleColor(electricalParameter){
         return "text-primary"
     }
 }
+
+export var engineConstants = {}
+
+import axios from "axios";
+(function () {
+    axios.post(import.meta.env.VITE_API_ENDPOINT + '/get_constants', {})
+    .then(response => {
+        engineConstants = response.data
+    })
+    .catch(error => {
+        console.error("Could not load constants from MKF")
+    });
+})();

@@ -7,7 +7,9 @@ import UserInventory from '/src/components/User/UserInventory.vue'
 
 
 <template>
-    <Header />
-    <UserInventory />
-    <Footer />
+    <div class="d-flex flex-column min-vh-100">
+        <Header />
+        <UserInventory />
+        <Footer class="mt-auto"/>
+    </div>
 </template>

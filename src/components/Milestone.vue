@@ -37,16 +37,21 @@ export default {
             required: true,
             default: "Backlog"
         },
-        state: {
-            type: String,
-            required: true,
-            default: "Backlog"
-        }
+        voted: {
+            type: Boolean,
+            required: false,
+            default: true
+        },
+        numberVotes: {
+            type: Number,
+            required: false,
+            default: 0
+        },
     },
     data() {
         return {
             backgroundColor: 'red',
-            numberVotes: 0,
+            numberVotesTemp: 0,
             ipAddress: 0,
             alreadyVoted: true
         }
@@ -89,31 +94,17 @@ export default {
 
         }
     },
+    watch: { 
+        voted: function(newVal, oldVal) { // watch it
+            this.alreadyVoted = this.voted
+        },
+        numberVotes: function(newVal, oldVal) { // watch it
+            this.numberVotesTemp = this.numberVotes
+        },
+    },
     mounted () {
-        fetch('https://api.ipify.org?format=json')
-        .then(x => x.json())
-        .then(({ ip }) => {
-            this.ipAddress = ip;
-            axios.post(import.meta.env.VITE_API_ENDPOINT + '/is_vote_casted', {
-                ip_address: ip,
-                user_id: null,
-                milestone_id: this.id,
-            })
-            .then(response => {
-                this.alreadyVoted = response.data['already_voted'];
-            })
-            .catch(error => {
-            });
-        });
-
-        axios.post(import.meta.env.VITE_API_ENDPOINT + '/get_number_votes', {
-            milestone_id: this.id,
-        })
-        .then(response => {
-            this.numberVotes = response.data['number_votes'];
-        })
-        .catch(error => {
-        });
+        this.alreadyVoted = this.voted
+        this.numberVotesTemp = this.numberVotes
     },
     methods: {
         vote(event) {
@@ -125,7 +116,7 @@ export default {
             .then(response => {
                 this.alreadyVoted |= response.data['voted'];
                 if (response.data['voted'])
-                    this.numberVotes += 1;
+                    this.numberVotesTemp += 1;
             })
             .catch(error => {
             });
@@ -150,7 +141,7 @@ export default {
                 <img v-if="imgSrc != null" class="card-img-right flex-auto d-none d-lg-block" :alt="imgAlt" style="object-fit: cover; width: 150px; max-height: 150px;" :src="imgSrc">
             </div>
             <div v-if="state == 'To Do'" class="card-footer bg-transparent">
-                <p class="text-end text-dark my-0">Current votes: {{numberVotes}}
+                <p class="text-end text-dark my-0">Current votes: {{numberVotesTemp}}
                     <button :disabled="alreadyVoted" :class=btn_class @click="vote">{{alreadyVoted? "Already voted" : "Vote feature!"}}</button>
                 </p>
             </div>

@@ -1,15 +1,282 @@
 <script setup>
 import GapInput from '/src/components/Core/CoreGappingArtisan/GapInput.vue'
+import GapModelInput from '/src/components/Core/CoreGappingArtisan/GapModelInput.vue';
+import { useUserStore } from '/src/stores/user'
+import * as Defaults from '/src/assets/js/defaults.js'
+import * as Utils from '/src/assets/js/utils.js'
 </script>
 
+<script>
+
+export default {
+    data() {
+        const userStore = useUserStore();
+        const numberColumns = userStore.globalCore['processedDescription']['columns'].length
+        const columnData = []
+        for (let i = 0; i < numberColumns; i++) {
+            columnData.push({
+                gapType: 'Residual',
+                gaps: [{
+                    length: Defaults.engineConstants['residualGap'],
+                    height: 0,
+                    globalGapIndex: i,
+                }]
+            })        
+        }
+
+        return {
+            numberColumns,
+            userStore,
+            columnData,
+        }
+    },
+    computed: {
+    },
+    mounted () {
+        this.getNumberColumns()
+        this.columnData = this.decodeUserStoreGap()
+
+        this.userStore.$onAction((action) => {
+            if (action.name == "updateAllLengths") {
+                this.getNumberColumns()
+                this.columnData = this.decodeUserStoreGap()
+            }
+        })
+    },
+    methods: {
+        getNumberColumns() {
+            if ('processedDescription' in this.userStore.globalCore) {
+                this.numberColumns = this.userStore.globalCore['processedDescription']['columns'].length
+            }
+        },
+        decodeUserStoreGap() {
+
+            const columnData = []
+            const gapping = this.userStore.globalCore['functionalDescription']['gapping']
+            const columns = this.userStore.globalCore['processedDescription']['columns']
+            columns.forEach((item) => {
+                columnData.push ({
+                    gapType: null,
+                    gaps: [],
+                    coordinates: item['coordinates'],
+                })
+            })
+
+            var firstGuessGapType = []
+
+            if (this.numberColumns == gapping.length) {
+                var allHaveType = true
+                var allSpacer = true
+                var haveGapEqualLength = true
+                for (let i = 0; i < this.numberColumns; i++) {
+                    allHaveType &= ("type" in gapping[i])
+                }
+
+                if (allHaveType) {
+                    for (let i = 0; i < this.numberColumns; i++) {
+                        allSpacer &= gapping[i]['type'] == 'additive'
+                    }
+                    if (allSpacer){
+                        for (let i = 0; i < this.numberColumns; i++) {
+                            firstGuessGapType.push({
+                                gapType: "Spacer",
+                                coordinates: columns[i]['coordinates']
+                            })
+                        }
+                    }
+                    else {
+                        for (let i = 0; i < this.numberColumns; i++) {
+                            if (gapping[i]['type'] == 'residual') {
+                                firstGuessGapType.push({
+                                    gapType: "Residual",
+                                    coordinates: columns[i]['coordinates']
+                                })
+                            }
+                            else {
+                                firstGuessGapType.push({
+                                    gapType: "Grinded",
+                                    coordinates: columns[i]['coordinates']
+                                })
+                            }
+                        }
+                    }
+                }
+                else {
+                    for (let i = 0; i < this.numberColumns - 1; i++) {
+                        haveGapEqualLength &= (gapping[i]['length'] == gapping[i + 1]['length'])
+                    }
+
+                    if (haveGapEqualLength) {
+                        if (gapping[0]['length'] != Defaults.engineConstants['residualGap']) {
+                            for (let i = 0; i < this.numberColumns; i++) {
+                                firstGuessGapType.push({
+                                    gapType: "Spacer",
+                                    coordinates: columns[i]['coordinates']
+                                })
+                            }
+                        }
+                        else {
+                            for (let i = 0; i < this.numberColumns; i++) {
+                                if (gapping[i]['type'] == 'residual') {
+                                    firstGuessGapType.push({
+                                        gapType: "Residual",
+                                        coordinates: columns[i]['coordinates']
+                                    })
+                                }
+                                else {
+                                    firstGuessGapType.push({
+                                        gapType: "Grinded",
+                                        coordinates: columns[i]['coordinates']
+                                    })
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            else {
+                for (let i = 0; i < this.numberColumns; i++) {
+                    var numberGapsInColumn = 0;
+                    var sampleLengthInColumn = null
+                    gapping.forEach((item, index) => {
+                        if (item['coordinates'][0] == columnData[i]['coordinates'][0] &&
+                            item['coordinates'][2] == columnData[i]['coordinates'][2]) {
+                            numberGapsInColumn += 1;
+                            sampleLengthInColumn = item['length']
+                        }
+                    })
+                    if ((numberGapsInColumn == 1) && (sampleLengthInColumn == Defaults.engineConstants['residualGap'])) {
+                        firstGuessGapType.push({
+                            gapType: "Residual",
+                            coordinates: columns[i]['coordinates']
+                        })
+                    }
+                    else {
+                        firstGuessGapType.push({
+                            gapType: "Grinded",
+                            coordinates: columns[i]['coordinates']
+                        })
+                    }
+                }
+
+            }
+
+            console.log("columnData")
+            console.log(columnData)
+            gapping.forEach((item, index) => {
+                var columnIndex = null;
+                var firstGuessGapTypeIndex = null;
+                for (let i = 0; i < columnData.length; i++) {
+                    if (item['coordinates'][0] == columnData[i]['coordinates'][0] &&
+                        item['coordinates'][2] == columnData[i]['coordinates'][2]) {
+                        columnIndex = i;
+                        break;
+                    }
+                }
+                for (let i = 0; i < firstGuessGapType.length; i++) {
+                    if (item['coordinates'][0] == firstGuessGapType[i]['coordinates'][0] &&
+                        item['coordinates'][2] == firstGuessGapType[i]['coordinates'][2]) {
+                        firstGuessGapTypeIndex = i;
+                        break;
+                    }
+                }
+
+                columnData[columnIndex]['gaps'].push({
+                    length: item['length'],
+                    height: item['coordinates'][1],
+                    globalGapIndex: index
+                })
+
+                if (columnData[columnIndex]['gaps'].length > 1){
+                    columnData[columnIndex]['gapType'] = 'Distributed'
+                }
+                else {
+                    columnData[columnIndex]['gapType'] = firstGuessGapType[firstGuessGapTypeIndex]['gapType']
+                }
+
+            })
+
+
+            return columnData
+        },
+        changeAllOtherGapTypes(newType, columnIndex) {
+            const aux = this.columnData;
+            const gapIndexesInThisColumn = []
+            aux.forEach((item, index) => {
+                if (index != columnIndex) {
+                    item['gapType'] = newType
+                    // item['gaps'].splice(1);
+                }
+            })
+            this.columnData[columnIndex]['gaps'].forEach((item, index) => {
+                gapIndexesInThisColumn.push(item['globalGapIndex'])
+            })
+            this.userStore.globalCore['functionalDescription']['gapping'].forEach((item, index) => {
+                if (!gapIndexesInThisColumn.includes(index)) {
+                    if (newType == "Spacer"){
+                        item['type'] = "additive"
+                    }
+                    else if (newType == "Residual"){
+                        item['type'] = "residual"
+                    }
+                    else {
+                        item['type'] = "subtractive"
+                    }
+                }
+            })
+            this.columnData = Utils.deepCopy(aux);
+        },
+        gapTypeChanged(newType, columnIndex) {
+            if (newType == "Spacer") {
+                this.columnData[columnIndex]['gapType'] = newType
+                this.changeAllOtherGapTypes("Spacer", columnIndex)
+            }
+            else {
+                if (this.columnData[0]['gapType'] == "Spacer") {
+                    this.columnData[columnIndex]['gapType'] = newType
+                    this.changeAllOtherGapTypes("Residual", columnIndex)
+                }
+                else {
+                    // We update it to provoke a change and trigger the watchs
+                    const aux = this.columnData;
+                    aux[columnIndex]['gapType'] = newType
+                    this.columnData = Utils.deepCopy(this.columnData);
+                }
+            }
+        }
+    }
+}
+</script>
 <template>
-    <div class="container">
+    <div class="container columns-container">
         <div class="row">
-            <div class="offset-1 col-lg-10 text-center">
-                <h2 class="text-white my-5">We are working on this</h2>
-                <i class="fa-solid fa-person-digging fa-9x bd-placeholder-img rounded-circle text-primary" width="140" height="140" xmlns="http://www.w3.org/2000/svg" role="img" focusable="false"></i>
-                <h2 class="text-white my-5">Coming soon</h2>
+            <div v-if="numberColumns > 2" :class="'col-xl-' + Number(Math.round(9 / numberColumns))" class="text-center">
+                <GapInput title="Left Lateral Column" :index="2" imageFile="/images/columns/leftColumn.svg" :columnData="columnData[2]" @gapTypeChanged="gapTypeChanged"/>
+            </div>
+            <div :class="'col-xl-' + Number(Math.round(9 / numberColumns))" class="text-center">
+                <GapInput :title="numberColumns > 2? 'Central Column' : 'Left Column'" :index="0" :imageFile="numberColumns > 2? '/images/columns/centralColumn.svg' : '/images/columns/leftColumn.svg'" :columnData="columnData[0]" @gapTypeChanged="gapTypeChanged"/>
+            </div>
+            <div :class="'col-xl-' + Number(Math.round(9 / numberColumns))" class="text-center">
+                <GapInput title="Right Lateral Column" :index="1" imageFile="/images/columns/rightColumn.svg" :columnData="columnData[1]" @gapTypeChanged="gapTypeChanged"/>
+            </div>
+            <div class="col-xl-3 text-center">
+                <GapModelInput />
             </div>
         </div>
     </div>
 </template>
+
+<style scoped>
+@media (min-width: 1200px) {
+    .columns-container {
+        background-size: contain; 
+        background-repeat: no-repeat;
+        background-position: center;
+        overflow: hidden;
+        overflow-y: auto; 
+    }
+}
+.custom-tooltip {
+    --bs-tooltip-bg: var(--bs-primary);
+}
+</style>

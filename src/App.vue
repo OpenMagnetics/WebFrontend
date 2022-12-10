@@ -2,22 +2,38 @@
     <router-view />
 </template>
 
+<script setup>
+import * as Defaults from '/src/assets/js/defaults.js'
+import axios from "axios";
+</script>
+
 <script>
 export default {
-  name: "App",
+    name: "App",
+    created() {
+        return axios.post(import.meta.env.VITE_API_ENDPOINT + '/get_constants', {})
+        .then(response => {
+            for (const [key, value] of Object.entries(response.data)) {
+                Defaults.engineConstants[key] = Number(value)
+            }
+        })
+        .catch(error => {
+                console.error("Could not read constants from MKF")
+        });
+    }
 };
 </script>
 
 <style scoped>
 .logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
+    height: 6em;
+    padding: 1.5em;
+    will-change: filter;
 }
 .logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
+    filter: drop-shadow(0 0 2em #646cffaa);
 }
 .logo.vue:hover {
-  filter: drop-shadow(0 0 2em #42b883aa);
+    filter: drop-shadow(0 0 2em #42b883aa);
 }
 </style>

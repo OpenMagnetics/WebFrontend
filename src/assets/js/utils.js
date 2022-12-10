@@ -216,9 +216,11 @@ export function getInstantaneousPower(currentDataPoints, voltageDataPoints) {
 }
 
 export function removeTrailingZeroes(value, maximumNumberDecimals=4) {
-    const split = value.toFixed(4).split(".")
+    const split = value.toFixed(5).split(".")
     const decimals = split[1]
-    if (decimals[3] != 0 && maximumNumberDecimals > 3)
+    if (decimals[4] != 0 && maximumNumberDecimals > 4)
+        value = value.toFixed(5)
+    else if (decimals[3] != 0 && maximumNumberDecimals > 3)
         value = value.toFixed(4)
     else if (decimals[2] != 0 && maximumNumberDecimals > 2)
         value = value.toFixed(3)

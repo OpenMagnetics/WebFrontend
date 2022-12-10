@@ -25,14 +25,14 @@ coreStore.$onAction((action) => {
 
 
 <template>
-    <div class="row">
-        <img v-if="posting" class="mx-auto d-block col-12" alt="loading" style="width: 100%; height: auto;" src="/images/loading.gif">
-        <div v-show="!posting" ref="topView" class="col-12" style="height: 100%;">
-
+    <div class="container-flex">
+        <div class="row">
+            <img v-if="posting" class="mx-auto d-block col-12" alt="loading" style="width: 100%; height: auto;" src="/images/loading.gif">
+            <div v-show="!posting" ref="topView" class="col-12" style="height: 100%;" />
         </div>
-        <img v-if="posting" class="mx-auto d-block col-12" alt="loading" style="width: 100%; height: auto;" src="/images/loading.gif">
-        <div v-show="!posting" ref="frontView" class="col-12" style="height: 100%;">
-
+        <div class="row">
+            <img v-if="posting" class="mx-auto d-block col-12" alt="loading" style="width: 100%; height: auto;" src="/images/loading.gif">
+            <div v-show="!posting" ref="frontView" class="col-12" style="height: 100%;" />
         </div>
     </div>
 </template>

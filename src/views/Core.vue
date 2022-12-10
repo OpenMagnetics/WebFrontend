@@ -51,33 +51,34 @@ export default {
 </script>
 
 <template>
-    <main role="main">
-        <Header />
-        <div class="container mx-auto">
-            <div class="row">
-                <div class="col-lg-12">
-                    <CoreHeader/>
+    <div class="d-flex flex-column min-vh-100">
+        <main role="main">
+            <Header />
+            <div class="container mx-auto ">
+                <div class="row">
+                    <div class="col-lg-12">
+                        <CoreHeader/>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-lg-2">
+                        <CoreToolMenu @tool_change="onToolChange"/>
+                    </div>
+                    <div class="col-lg-10">
+                        <CoreShapeArtisan class="scrollable-column" v-if="chosenTool == 'shapeArtisan'"/>
+                        <CoreCalculator class="scrollable-column" v-if="chosenTool == 'calculator'"/>
+                        <CoreGappingArtisan class="scrollable-column" v-if="chosenTool == 'gappingArtisan'"/>
+                        <CoreMaterialArtisan class="scrollable-column" v-if="chosenTool == 'materialArtisan'"/>
+                    </div>
                 </div>
             </div>
-            <div class="row">
-                <div class="col-lg-2">
-                    <CoreToolMenu @tool_change="onToolChange"/>
-                </div>
-                <div class="col-lg-10">
-                    <CoreShapeArtisan v-if="chosenTool == 'shapeArtisan'"/>
-                    <CoreCalculator v-if="chosenTool == 'calculator'"/>
-                    <CoreGappingArtisan v-if="chosenTool == 'gappingArtisan'"/>
-                    <CoreMaterialArtisan v-if="chosenTool == 'materialArtisan'"/>
-                </div>
-            </div>
-        </div>
-        <Footer />
-    </main>
+        </main>
+        <Footer class="mt-auto"/>
+    </div>
 </template>
 
-<style type="text/css">
+<style type="text/css" scoped>
 .scrollable-column {
-  max-height: 27vh;
   overflow: hidden;
   overflow-y: auto; 
 }

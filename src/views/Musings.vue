@@ -79,33 +79,36 @@ export default {
 </script>
 
 <template>
-    <Header />
-    <main role="main">
-        <div class="container">
-            <div class="jumbotron p-3 p-xl-5 text-white bg-light">
-                <div class="row mb-2">
-                    <div class="col-xl-6 px-0">
-                        <strong class="d-inline-block mb-2 text-info">Core losses</strong>
-                      <h1 class="display-4"><a href="http://www.how2power.com/pdf_view.php?url=/newsletters/2209/H2PowerToday2209_FocusOnMagnetics.pdf" class="   text-white">Alf's Musings 4</a></h1>
-                        <p class="lead my-3">Roshen’s Models Offer An Advanced Approach To Modeling Core Losses.</p>
-                      <p class="lead mb-0"><a href="http://www.how2power.com/pdf_view.php?url=/newsletters/2209/H2PowerToday2209_FocusOnMagnetics.pdf">Read it!</a>  </p>
-                    </div>
-                    <div class="col-xl-6">
-                  <img class=" ml-2 card-img-right flex-auto d-none d-xl-block" alt="Dowell's Curves" style="width: 500px;" src="/images/musings/4/loops.gif"  >
+    <div class="d-flex flex-column min-vh-100">
+        <Header />
+        <main role="main">
+            <div class="container">
+                <div class="jumbotron p-3 p-xl-5 text-white bg-light">
+                    <div class="row mb-2">
+                        <div class="col-xl-6 px-0">
+                            <strong class="d-inline-block mb-2 text-info">Core losses</strong>
+                          <h1 class="display-4"><a href="http://www.how2power.com/pdf_view.php?url=/newsletters/2209/H2PowerToday2209_FocusOnMagnetics.pdf" class="   text-white">Alf's Musings 4</a></h1>
+                            <p class="lead my-3">Roshen’s Models Offer An Advanced Approach To Modeling Core Losses.</p>
+                          <p class="lead mb-0"><a href="http://www.how2power.com/pdf_view.php?url=/newsletters/2209/H2PowerToday2209_FocusOnMagnetics.pdf">Read it!</a>  </p>
+                        </div>
+                        <div class="col-xl-6">
+                            <img class=" ml-2 card-img-right flex-auto d-none d-xl-block" alt="Dowell's Curves" style="width: 500px;" src="/images/musings/4/loops.gif"  >
+                        </div>
                     </div>
                 </div>
+                <div id="musing-container">
+                    <template v-for="musings_row, row_index in musings_by_column">
+                        <div class="row mb-2">
+                            <Musing v-for="item, index in musings_row"
+                                    :key="item.id"
+                                    v-bind="item"
+                            ></Musing>
+                        </div>
+                    </template>
+                </div>
             </div>
-            <div id="musing-container">
-                <template v-for="musings_row, row_index in musings_by_column">
-                    <div class="row mb-2">
-                        <Musing v-for="item, index in musings_row"
-                                :key="item.id"
-                                v-bind="item"
-                        ></Musing>
-                    </div>
-                </template>
-            </div>
-        </div>
-    </main>
-    <Footer />
+        </main>
+
+        <Footer class="mt-auto"/>
+    </div>
 </template>

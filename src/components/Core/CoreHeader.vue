@@ -92,7 +92,7 @@ function handleSubmit(params) {
 </script>
 
 <template>
-    <div class="container text-white mt-3 mb-3 pb-3 border-bottom">
+    <div class="container text-white mt-2 mb-2 pb-3 border-bottom">
         <div class="row gx-1">
             <div class="col-12 col-sm-2 col-md-2 col-lg-2 col-xl-2 ">
                 <div class="row gx-2">

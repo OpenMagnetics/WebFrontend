@@ -3,6 +3,7 @@ import Header from '/src/components/Header.vue'
 import Milestone from '/src/components/Milestone.vue'
 import Footer from '/src/components/Footer.vue'
 import * as Utils from '/src/assets/js/utils.js'
+import { useUserStore } from '/src/stores/user'
 </script>
 
 <script>
@@ -30,7 +31,11 @@ export default {
         Milestone
     },
     data() {
+        const userStore = useUserStore()
         return {
+            userStore,
+            numberVotes: [],
+            milestoneVotes: [],
             milestones: [
                 {
                     id: 0,
@@ -247,33 +252,70 @@ export default {
         })
         .catch(error => {
         });
+
+        fetch('https://api.ipify.org?format=json')
+        .then(x => x.json())
+        .then(({ ip }) => {
+            this.ipAddress = ip;
+            axios.post(import.meta.env.VITE_API_ENDPOINT + '/are_vote_casted', {
+                ip_address: ip,
+                user_id: this.userStore.getUsername.value,
+                milestone_id: null,
+            })
+            .then(response => {
+                response.data['voted_milestones'].forEach((item) => {
+                    this.milestoneVotes.push(item['milestone_id'])
+                })
+            })
+            .catch(error => {
+            });
+        });
+
+        axios.post(import.meta.env.VITE_API_ENDPOINT + '/get_number_votes', {
+            milestone_id: this.id,
+        })
+        .then(response => {
+            console.log("are_vote_casted")
+            console.log(response.data)
+
+            response.data['number_votes'].forEach((item) => {
+                this.numberVotes.push(item['count'])
+            })
+            console.log(this.numberVotes)
+        })
+        .catch(error => {
+        });
     }
 }
 </script>
 
 <template>
-    <Header />
-    <main role="main">
-        <div class="container mx-auto">
-                <div class="row mb-2">
-                    <div class="col-xl-12 px-0">
-                        <h1 class="display-4 text-center text-secondary">Open Magnetics Roadmap</h1>
-                        <p class="lead my-0 text-center text-white">We believe that a tool must be defined by its users, especially an Open-Source tool, in which the users can contribute.</p>
-                        <p class="lead my-0 text-center text-white">This roadmap is our first step toward that goal, so even users that cannot program and help us with the models, can contribute with their vision of what should be implemented in our tool.</p>
-                        <h3 class="my-2  text-center text-white">Feel free to vote those features your think we should implement first!</h3 >
-                    </div>
-                </div>
-
-                <div id="milestone-container">
+    <div class="d-flex flex-column min-vh-100">
+        <Header />
+        <main role="main">
+            <div class="container mx-auto">
                     <div class="row mb-2">
-                        <Milestone v-for="item, index in milestones"
-                                :key="item.id"
-                                :index="index"
-                                v-bind="item"
-                        ></Milestone>
+                        <div class="col-xl-12 px-0">
+                            <h1 class="display-4 text-center text-secondary">Open Magnetics Roadmap</h1>
+                            <p class="lead my-0 text-center text-white">We believe that a tool must be defined by its users, especially an Open-Source tool, in which the users can contribute.</p>
+                            <p class="lead my-0 text-center text-white">This roadmap is our first step toward that goal, so even users that cannot program and help us with the models, can contribute with their vision of what should be implemented in our tool.</p>
+                            <h3 class="my-2  text-center text-white">Feel free to vote those features your think we should implement first!</h3 >
+                        </div>
                     </div>
-                </div>
-        </div>
-    </main>
-    <Footer />
+
+                    <div id="milestone-container">
+                        <div class="row mb-2">
+                            <Milestone v-for="item, index in milestones"
+                                    :key="item.id"
+                                    :index="index"
+                                    v-bind="item"
+                                    :voted="milestoneVotes.includes(index)"
+                                    :numberVotes="numberVotes[index]"
+                            ></Milestone>
+                        </div>
+                    </div>
+            </div>
+        </main>
+        <Footer />
+    </div>
 </template>

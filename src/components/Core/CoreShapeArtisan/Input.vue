@@ -67,31 +67,31 @@ export default {
             }
             const url = import.meta.env.VITE_API_ENDPOINT + '/core_compute_technical_drawing'
 
-            console.log("get_technical_drawing send")
             axios.post(url, data)
             .then(response => {
-                console.log("get_technical_drawing")
-                console.log(response.data)
                 this.coreStore.setTechnicalDrawing(response.data)
             })
             .catch(error => { 
-                console.log(error.data)
+                console.error(error.data)
             });
         },
         get_core_parameters(dimensionsValueInM) {
             const url = import.meta.env.VITE_API_ENDPOINT + '/core_compute_core_parameters'
 
-            axios.post(url, this.userStore.globalCore)
+            const aux = Utils.deepCopy(this.userStore.globalCore)
+            aux['functionalDescription']['gapping']  = []
+            axios.post(url, aux)
             .then(response => {
-                console.log(response.data)
                 const globalCore = this.userStore.globalCore
+                globalCore['functionalDescription'] = response.data['functionalDescription']
                 globalCore['geometricalDescription'] = response.data['geometricalDescription']
                 globalCore['processedDescription'] = response.data['processedDescription']
                 this.userStore.setGlobalCore(globalCore)
+                console.log(this.userStore.globalCore)
 
             })
             .catch(error => { 
-                console.log(error.data)
+                console.error(error.data)
             });
         },
         compute_shape() {
@@ -127,13 +127,11 @@ export default {
                     this.get_core_parameters(dimensionsValueInM)
                 })
                 .catch(error => {
-                    console.log("Error")
                     this.posting = false
                     this.isDataDirty = false
                     this.hasFreeCADError = true
                 });
             }
-
         },
         onInvalidSubmit() {
         },
@@ -227,7 +225,6 @@ export default {
             }
         },
         errorMessages() {
-            console.log("Checking errors")
             const messages = {}
             this.dimensionsLabel.forEach((name) => {
                 this.errors[name] = false
@@ -318,7 +315,7 @@ export default {
                         }
                     }
 
-                    if (!(this.familyLabelSelected.toLowerCase() == "rm" && this.subtypeLabelSelected == 2) && !(this.familyLabelSelected.toLowerCase() == "p") && !(this.familyLabelSelected.toLowerCase() == "efd")) {
+                    if (!(this.familyLabelSelected.toLowerCase() == "rm" && this.subtypeLabelSelected == 2) && !(this.familyLabelSelected.toLowerCase() == "p") && !(this.familyLabelSelected.toLowerCase() == "efd") && !(this.familyLabelSelected.toLowerCase() == "ut")) {
                         var c_f_condition = false
                         if (this.familyLabelSelected.toLowerCase() != "er" && this.familyLabelSelected.toLowerCase() != "e" && this.familyLabelSelected.toLowerCase() != "etd" && this.familyLabelSelected.toLowerCase() != "ec") {
                             c_f_condition = this.dimensionsValueInMm['F'] >= this.dimensionsValueInMm['C']
@@ -373,13 +370,9 @@ export default {
     },
     mounted() {
 
-        console.log("posting")
-        console.log(this.posting)
         const url = import.meta.env.VITE_API_ENDPOINT + '/core_get_families'
-        console.log("send families")
         axios.post(url, {})
         .then(response => {
-            console.log("response families")
             this.familiesData = response.data["families"]
             this.familiesLabels = Object.keys(this.familiesData)
 
@@ -403,7 +396,7 @@ export default {
 
         })
         .catch(error => {
-            console.log("error families")
+            console.error("error families")
         });
 
     },

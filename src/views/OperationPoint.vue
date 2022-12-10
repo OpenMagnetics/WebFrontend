@@ -91,42 +91,44 @@ export default {
 </script>
 
 <template>
-    <main role="main">
-        <Header />
-        <div class="container mx-auto">
-            <div class="row">
-                <div class="col-lg-12">
-                    <OperationPointHeader @voltage-type-change="onVoltageChange" @current-type-change="onCurrentChange"/>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-lg-3 col-md-12">
-                    <WaveformInputCommon @switching-frequency-change="onSwitchingFrequencyChange" @duty-cycle-change="onDutyCycleChange"/>
-                    <div v-for="(value, key) in waveformTypes">
-                        <WaveformInputTriangular :electricalParameter="key" :isChartReady="isChartReady" v-if="value === 'Triangular'" class="scrollable-column"/>
-                        <WaveformInputCustom :electricalParameter="key" :isChartReady="isChartReady" v-if="value === 'Custom'" class="scrollable-column"/>
-                        <WaveformInputSquare :electricalParameter="key" :isChartReady="isChartReady" v-else-if="value === 'Square'" class="scrollable-column"/>
-                        <WaveformInputSinusoidal :electricalParameter="key" :isChartReady="isChartReady" v-else-if="value === 'Sinusoidal'" class="scrollable-column"/>
-                        <WaveformInputSquareWithDeadtime :electricalParameter="key" :isChartReady="isChartReady" v-else-if="value === 'Square with Dead-Time'" class="scrollable-column"/>
+    <div class="d-flex flex-column min-vh-100">
+        <main role="main">
+            <Header />
+            <div class="container mx-auto">
+                <div class="row">
+                    <div class="col-lg-12">
+                        <OperationPointHeader @voltage-type-change="onVoltageChange" @current-type-change="onCurrentChange"/>
                     </div>
                 </div>
-                <div class="col-lg-6 col-md-8">
-                    <WaveformGraph class="" :waveformTypes="waveformTypes" @chart-ready="onChartReady" style="height: 66%"/>
-                    <WaveformFourier class="mt-3" style="height: 30%"/>
-                </div>
-                <div class="col-lg-3 col-md-4">
-                    <div v-for="(value, key) in waveformTypes">
-                        <WaveformOutput :electricalParameter="key"/>
+                <div class="row">
+                    <div class="col-lg-3 col-md-12">
+                        <WaveformInputCommon @switching-frequency-change="onSwitchingFrequencyChange" @duty-cycle-change="onDutyCycleChange"/>
+                        <div v-for="(value, key) in waveformTypes">
+                            <WaveformInputTriangular :electricalParameter="key" :isChartReady="isChartReady" v-if="value === 'Triangular'" class="scrollable-column"/>
+                            <WaveformInputCustom :electricalParameter="key" :isChartReady="isChartReady" v-if="value === 'Custom'" class="scrollable-column"/>
+                            <WaveformInputSquare :electricalParameter="key" :isChartReady="isChartReady" v-else-if="value === 'Square'" class="scrollable-column"/>
+                            <WaveformInputSinusoidal :electricalParameter="key" :isChartReady="isChartReady" v-else-if="value === 'Sinusoidal'" class="scrollable-column"/>
+                            <WaveformInputSquareWithDeadtime :electricalParameter="key" :isChartReady="isChartReady" v-else-if="value === 'Square with Dead-Time'" class="scrollable-column"/>
+                        </div>
                     </div>
-                    <WaveformCombinedOutput/>
+                    <div class="col-lg-6 col-md-8">
+                        <WaveformGraph class="py-2" :waveformTypes="waveformTypes" @chart-ready="onChartReady"/>
+                        <WaveformFourier class="mt-3"/>
+                    </div>
+                    <div class="col-lg-3 col-md-4">
+                        <div v-for="(value, key) in waveformTypes">
+                            <WaveformOutput :electricalParameter="key"/>
+                        </div>
+                        <WaveformCombinedOutput/>
+                    </div>
                 </div>
             </div>
-        </div>
-        <Footer />
-    </main>
+        </main>
+    <Footer class="mt-auto"/>
+</div>
 </template>
 
-<style type="text/css">
+<style type="text/css" scoped>
 .scrollable-column {
   max-height: 27vh;
   overflow: hidden;

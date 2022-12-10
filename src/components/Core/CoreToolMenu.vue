@@ -11,7 +11,7 @@ const emit = defineEmits(['tool_change'])
 <div class="accordion" id="coreToolAccordion">
     <div class="accordion-item border-primary">
         <h2 class="accordion-header bg-light" id="headingOne">
-            <button class="fs-5 accordion-button bg-light text-primary border-primary" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne" @click="$emit('tool_change', 'calculator')">
+            <button :class="userStore.coreSubsection == 'calculator'? '' : 'collapsed'" class="fs-5 accordion-button bg-light text-primary border-primary" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne" @click="$emit('tool_change', 'calculator')">
                 Core Calculator
             </button>
         </h2>
@@ -23,7 +23,7 @@ const emit = defineEmits(['tool_change'])
     </div>
     <div class="accordion-item border-primary">
         <h2 class="accordion-header bg-light" id="headingTwo">
-            <button class="fs-5 accordion-button bg-light text-primary collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo" @click="$emit('tool_change', 'shapeArtisan')">
+            <button :class="userStore.coreSubsection == 'shapeArtisan'? '' : 'collapsed'" class="fs-5 accordion-button bg-light text-primary" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo" @click="$emit('tool_change', 'shapeArtisan')">
                 Shape Artisan
             </button>
         </h2>
@@ -35,7 +35,7 @@ const emit = defineEmits(['tool_change'])
     </div>
     <div class="accordion-item border-primary">
         <h2 class="accordion-header bg-light" id="headingThree">
-            <button class="fs-5 accordion-button bg-light text-primary collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree" @click="$emit('tool_change', 'gappingArtisan')">
+            <button :class="userStore.coreSubsection == 'gappingArtisan'? '' : 'collapsed'" class="fs-5 accordion-button bg-light text-primary" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree" @click="$emit('tool_change', 'gappingArtisan')">
                 Gapping Artisan
             </button>
         </h2>
@@ -47,7 +47,7 @@ const emit = defineEmits(['tool_change'])
     </div>
     <div class="accordion-item border-primary">
         <h2 class="accordion-header bg-light" id="headingFour">
-            <button class="fs-5 accordion-button bg-light text-primary collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFour" aria-expanded="false" aria-controls="collapseFour" @click="$emit('tool_change', 'materialArtisan')">
+            <button :class="userStore.coreSubsection == 'materialArtisan'? '' : 'collapsed'" class="fs-5 accordion-button bg-light text-primary" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFour" aria-expanded="false" aria-controls="collapseFour" @click="$emit('tool_change', 'materialArtisan')">
                 Material Artisan
             </button>
         </h2>

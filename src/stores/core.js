@@ -5,6 +5,7 @@ export const useCoreStore = defineStore("core", () => {
     const customizedShape = ref(false)
     const customizedMaterial = ref(false)
     const customizedGapping = ref(false)
+    const distributedGapAlreadyInUse = ref(false)
     const core = ref(null)
     const dataReadOnly = ref(false)
     const isCustomizedShape = computed(() => {
@@ -37,11 +38,18 @@ export const useCoreStore = defineStore("core", () => {
     function setDataReadOnly(dataReadOnly) {
         this.dataReadOnly = dataReadOnly
     }
+    function setDistributedGapAlreadyInUse(distributedGapAlreadyInUse) {
+        this.distributedGapAlreadyInUse = distributedGapAlreadyInUse
+    }
     function setStreamedObj(object) {
     }
     function setTechnicalDrawing(object) {
     }
     function requestingNewShape(object) {
+    }
+    function updateAllLengths(newValue) {
+    }
+    function gapReluctanceModelChanged(newValue) {
     }
     return {
         customizedShape,
@@ -62,5 +70,9 @@ export const useCoreStore = defineStore("core", () => {
         setStreamedObj,
         setTechnicalDrawing,
         requestingNewShape,
+        distributedGapAlreadyInUse,
+        setDistributedGapAlreadyInUse,
+        updateAllLengths,
+        gapReluctanceModelChanged,
     }
 })

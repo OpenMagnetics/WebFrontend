@@ -109,7 +109,7 @@ export default {
     mounted() {
         const url = import.meta.env.VITE_API_ENDPOINT + '/core_get_commercial_data'
         const core = this.userStore.getGlobalCore
-        axios.post(url, this.userStore.globalCore)
+        axios.post(url, {})
         .then(response => {
             this.commercialRawData = response.data["commercial_data"]
             response.data["commercial_data"].forEach((item) => {

@@ -11,6 +11,9 @@ export const useUserStore = defineStore("user", () => {
     const idToDelete = ref(null)
     const userSubsection = ref("operationPoints")
     const coreSubsection = ref("shapeArtisan")
+    const selectedModels = ref({
+        gapReluctance: "Zhang",
+    })
     const isLoggedIn = computed(() => {
         return loggedIn
     })
@@ -73,6 +76,9 @@ export const useUserStore = defineStore("user", () => {
     function setIdToDelete(idToDelete) {
         this.idToDelete = idToDelete
     }
+    function setSelectedModels(variable, model) {
+        this.selectedModels[variable] = model
+    }
     return {
         loggedIn,
         username,
@@ -98,6 +104,8 @@ export const useUserStore = defineStore("user", () => {
         getIdToDelete,
         setIdToDelete,
         resetGlobalOperationPoint,
+        setSelectedModels,
+        selectedModels,
         reset,
     }
 },

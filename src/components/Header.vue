@@ -109,7 +109,7 @@ export default {
 </script>
 
 <template>
-    <nav class="navbar navbar-expand-lg bg-light navbar-dark text-primary mb-2" id="header_wrapper">
+    <nav class="navbar navbar-expand-lg bg-light navbar-dark text-primary mb-1" id="header_wrapper">
         <div class="container-fluid">
             <a href="/">
                 <img src="/images/logo.svg" width="60" height="auto" href="/" class="d-inline-block align-top me-3" alt="">
@@ -195,12 +195,7 @@ export default {
       min-height: 100%;
       padding-bottom:160px;
     }
-    footer {
-      position: absolute;
-      bottom: 0;
-      width: 100%;
-      height: 100px;
-    }
+
 
     @media (max-width: 340px) {
         #title {
