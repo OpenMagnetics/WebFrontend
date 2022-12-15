@@ -29,7 +29,7 @@
     position: relative;
 }
 .data-v-tooltip::after {
-    z-index: 99999;
+    z-index: 2147483647;
     content: attr(data-v-tooltip);
     position: absolute;
     left: calc(var(--v-tooltip-left) - var(--v-tooltip-left-offset));
@@ -53,7 +53,7 @@
 }
 /* arrow */
 .data-v-tooltip::before {
-    z-index: 99999;
+    z-index: 2147483647;
     content: "";
     position: absolute;
     display: var(--v-tooltip-arrow-display);

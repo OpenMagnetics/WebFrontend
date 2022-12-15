@@ -56,7 +56,7 @@ export default {
         }
     },
     methods: {
-        get_technical_drawing(dimensionsValueInM) {
+        getTechnicalDrawing(dimensionsValueInM) {
             const data = {
                 'aliases': [],
                 'dimensions': dimensionsValueInM,
@@ -75,11 +75,12 @@ export default {
                 console.error(error.data)
             });
         },
-        get_core_parameters(dimensionsValueInM) {
+        getCoreParameters() {
             const url = import.meta.env.VITE_API_ENDPOINT + '/core_compute_core_parameters'
 
             const aux = Utils.deepCopy(this.userStore.globalCore)
-            aux['functionalDescription']['gapping']  = []
+            aux['geometricalDescription'] = null
+            aux['processedDescription'] = null
             axios.post(url, aux)
             .then(response => {
                 const globalCore = this.userStore.globalCore
@@ -94,7 +95,7 @@ export default {
                 console.error(error.data)
             });
         },
-        compute_shape() {
+        computePiece3DModel() {
             if (!this.posting) {
                 this.posting = true
                 this.fix_optional_missing()
@@ -123,14 +124,66 @@ export default {
                     this.posting = false
                     this.isDataDirty = false
                     this.coreStore.setStreamedObj(response.data)
-                    this.get_technical_drawing(dimensionsValueInM)
-                    this.get_core_parameters(dimensionsValueInM)
+                    this.getTechnicalDrawing(dimensionsValueInM)
+                    this.getCoreParameters()
                 })
                 .catch(error => {
                     this.posting = false
                     this.isDataDirty = false
                     this.hasFreeCADError = true
                 });
+            }
+        },
+        computeCore3DModel() {
+            if (!this.posting) {
+                this.posting = true
+                this.fix_optional_missing()
+                const dimensionsValueInM = {}
+                for (const [key, value] of Object.entries(this.dimensionsValueInMm)) {
+                    dimensionsValueInM[key] = value / 1000
+                }
+                const data = {
+                    'aliases': [],
+                    'dimensions': dimensionsValueInM,
+                    'family': this.familyLabelSelected,
+                    'familySubtype': this.subtypeLabelSelected,
+                    'name': 'Custom',
+                    'type': 'custom'
+                }
+                const url = import.meta.env.VITE_API_ENDPOINT + '/core_compute_core_3d_model'
+
+                this.hasFreeCADError = false
+                const globalCore = this.userStore.globalCore
+                globalCore['functionalDescription']['shape'] = data
+
+                console.warn(globalCore)
+                this.coreStore.requestingNewShape()
+                axios.post(url, globalCore)
+                .then(response => {
+                    const globalCore = this.userStore.globalCore
+                    globalCore['functionalDescription']['shape'] = data
+                    this.userStore.setGlobalCoreAlt(globalCore)
+                    this.posting = false
+                    this.isDataDirty = false
+                    this.coreStore.setStreamedObj(response.data)
+                    this.getTechnicalDrawing(dimensionsValueInM)
+                    this.getCoreParameters()
+                })
+                .catch(error => {
+                    this.posting = false
+                    this.isDataDirty = false
+                    this.hasFreeCADError = true
+                });
+            }
+        },
+        computeShape() {
+            console.log("this.coreStore.fullCoreModel")
+            console.log(this.coreStore.fullCoreModel)
+            if (this.coreStore.fullCoreModel) {
+                this.computeCore3DModel()
+            }
+            else {
+                this.computePiece3DModel()
             }
         },
         onInvalidSubmit() {
@@ -155,7 +208,7 @@ export default {
                         }
                         else {
                             this.tryingToSend = false
-                            this.compute_shape()
+                            this.computeShape()
                         }
                     }
                 }
@@ -399,6 +452,12 @@ export default {
             console.error("error families")
         });
 
+        this.coreStore.$onAction((action) => {
+            this.recentChange = true
+            if (action.name == "setFullCoreModel") {
+                 setTimeout(() => this.tryToSend(), 10);
+            }
+        })
     },
 }
 
@@ -406,7 +465,7 @@ export default {
 
 <template>
     <CoreLoadCommercialShape @onLoadCommercialShape="onLoadCommercialShape"/>
-    <Form ref=formRef @submit="compute_shape" @invalid-submit="onInvalidSubmit" class="pb-1">
+    <Form ref=formRef @submit="computeShape" @invalid-submit="onInvalidSubmit" class="pb-1">
         <Field name="familiesSelect" ref="familiesRef" as="select" style="width: 100%" @change="onFamilyChange" class= "small-text bg-light text-white rounded-2 mt-2 col-sm-8 col-md-8 col-lg-3 col-xl-3" v-model="familyLabelSelected">
             <option disabled value="">Please select one family</option>
             <option v-for="item, index in familiesLabels"

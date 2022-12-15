@@ -145,7 +145,7 @@ export default {
             }
         },
         onHeightUpdate(name, newValue, oldValue) {
-            this.gapHeightSelected = newValue
+            this.gapHeightSelected = Number(Utils.removeTrailingZeroes(Utils.roundWithDecimals(newValue, 0.00001), 5))
             if (this.validate(newValue, "gapHeight")) {
                 this.$emit("onGapHeightChange", newValue / 1000, this.gapIndex)
             }
@@ -161,7 +161,7 @@ export default {
         <div class="card-body">
             <div class="container px-0">
                 <Form ref="formRef" :validation-schema="schema" v-slot="{ errors }" class="form-inline row text-white" @submit="handleSubmit($event, onSubmit)">
-                    <label v-tooltip="lengthEnabled? 'Length of the gap, in mm' : 'Residual length cannot be changed'" class="small-text col-4 text-md-start">Length:</label>
+                    <label v-tooltip="lengthEnabled? 'Length of the gap, in mm' : 'Residual length cannot be changed'" class="small-text col-4 text-start">Length:</label>
                     <vue-number-input controls class=" col-6"  :class="{ 'is-invalid': errors.gapLength }" 
                         :modelValue="gapLengthSelected"
                         @update:model-value="onLengthUpdate"
@@ -173,9 +173,9 @@ export default {
                         :step="0.01"
                         :max="1000">
                         </vue-number-input>
-                    <label class="small-text col-2 text-md-end p-0">mm</label>
+                    <label class="small-text col-2 text-end p-0">mm</label>
 
-                    <label v-if="heightEnabled" v-tooltip="'Vertical position of gap, with origin in the center of the column, in mm'" class="small-text col-4 text-md-start mt-1">Height:</label>
+                    <label v-if="heightEnabled" v-tooltip="'Vertical position of gap, with origin in the center of the column, in mm'" class="small-text col-4 text-start mt-1">Height:</label>
                     <vue-number-input  v-if="heightEnabled" controls class=" col-6 mt-1"  :class="{ 'is-invalid': errors.gapHeight }" 
                         :modelValue="gapHeightSelected"
                         @update:model-value="onHeightUpdate"
@@ -186,7 +186,7 @@ export default {
                         :step="0.1"
                         :max="1000">
                         </vue-number-input>
-                    <label v-if="heightEnabled" class="small-text col-2 text-md-end p-0  mt-1">mm</label>
+                    <label v-if="heightEnabled" class="small-text col-2 text-end p-0  mt-1">mm</label>
 
 
                     <div class="card-footer border-primary p-0 mt-2 ">
@@ -195,21 +195,21 @@ export default {
                             <div class="accordion-item border-0 bg-transparent">
                                 <h2 class="accordion-header bg-transparent" :id="'headingGapOutput' + columnIndex + gapIndex">
                                     <button class="fs-6 p-1 accordion-button bg-transparent text-primary border-primary collapsed" type="button" data-bs-toggle="collapse" :data-bs-target="'#collapseGapOutput' + columnIndex + gapIndex" aria-expanded="true" :aria-controls="'collapseGapOutput' + columnIndex + gapIndex">
-                                        Electromagnetic Details
+                                        Advanced Details
                                     </button>
                                 </h2>
                                 <div :id="'collapseGapOutput' + columnIndex + gapIndex" class="accordion-collapse bg-transparent text-white collapse " :aria-labelledby="'headingGapOutput' + columnIndex + gapIndex" :data-bs-parent="'#gapOutputAccordion' + columnIndex + gapIndex">
                                     <div class="accordion-body p-1">
 
-                                        <label v-tooltip="'Magnetic reluctance of the gap, including fringing effect, calculated using TBD model'" class="small-text col-6 text-md-start">Reluctance:</label>
-                                        <label class="small-text bg-transparent text-white text-md-end float-end col-6"><slot name="reluctance"></slot></label>
-                                        <!-- <label class="small-text bg-transparent text-white text-md-end float-end col-6">{{4232 + " H⁻¹"}}</label> -->
+                                        <label v-tooltip="'Magnetic reluctance of the gap, including fringing effect, calculated using TBD model'" class="small-text col-6 text-start">Reluctance:</label>
+                                        <label class="small-text bg-transparent text-white text-end float-end col-6"><slot name="reluctance"></slot></label>
+                                        <!-- <label class="small-text bg-transparent text-white text-end float-end col-6">{{4232 + " H⁻¹"}}</label> -->
 
-                                        <label v-tooltip="'Energy that can be stored in this gap'" class="small-text col-7 text-md-start">Max. energy:</label>
-                                        <label class="small-text bg-transparent text-white text-md-end float-end col-5"><slot name="maximumEnergy"></slot></label>
+                                        <label v-tooltip="'Energy that can be stored in this gap'" class="small-text col-7 text-start">Max. energy:</label>
+                                        <label class="small-text bg-transparent text-white text-end float-end col-5"><slot name="maximumEnergy"></slot></label>
 
-                                        <label v-tooltip="'How much the fringing effect increases the volume of the gap, calculated using TBD model. More than 20% is not recommended'" class="small-text col-8 text-md-start">Fringing factor:</label>
-                                        <label :class="fringingColor" class="small-text bg-transparent text-md-end float-end col-4"><slot name="fringingFactor"></slot></label>
+                                        <label v-tooltip="'How much the fringing effect increases the volume of the gap, calculated using TBD model. More than 20% is not recommended'" class="small-text col-8 text-start">Fringing factor:</label>
+                                        <label :class="fringingColor" class="small-text bg-transparent text-end float-end col-4"><slot name="fringingFactor"></slot></label>
                                     </div>
                                 </div>
                             </div>

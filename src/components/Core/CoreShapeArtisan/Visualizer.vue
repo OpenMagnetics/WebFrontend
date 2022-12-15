@@ -406,9 +406,14 @@ export default {
             object.rotation.z = 0
             scene.add( object );
             this.current3dObject = object
-            this.fitCameraToCenteredObject(camera, object, 1)
+            if (this.coreStore.fullCoreModel) {
+                this.fitCameraToCenteredObject(camera, object, 1, 1.5)
+            }
+            else {
+                this.fitCameraToCenteredObject(camera, object, 1, 3)
+            }
         },
-        fitCameraToCenteredObject(camera, object, offset, orbitControls ) {
+        fitCameraToCenteredObject(camera, object, offset, offsetY, orbitControls) {
             const boundingBox = new Box3();
             boundingBox.setFromObject( object );
 
@@ -456,11 +461,13 @@ export default {
             let dx = size.z / 2 + Math.abs( size.x / 2 / Math.tan( fovh / 2 ) );
             let dy = size.z / 2 + Math.abs( size.y / 2 / Math.tan( fov / 2 ) );
             let cameraZ = Math.max(dx, dy);
+            let cameraY = size.y;
 
             // offset the camera, if desired (to avoid filling the whole canvas)
             if( offset !== undefined && offset !== 0 ) cameraZ *= offset;
+            if( offsetY !== undefined && offsetY !== 0 ) cameraY *= offsetY;
 
-            camera.position.set( 0, size.y * 3, cameraZ );
+            camera.position.set( 0, cameraY, cameraZ );
 
             // set the far plane of the camera so that it easily encompasses the whole object
             const minZ = boundingBox.min.z;

@@ -2,6 +2,7 @@
 import Visualizer from '/src/components/Core/CoreShapeArtisan/Visualizer.vue'
 import Input from '/src/components/Core/CoreShapeArtisan/Input.vue'
 import Output from '/src/components/Core/CoreShapeArtisan/Output.vue'
+import Options from '/src/components/Core/CoreShapeArtisan/Options.vue'
 import TechnicalDrawer from '/src/components/Core/CoreShapeArtisan/TechnicalDrawer.vue'
 
 </script>
@@ -10,7 +11,18 @@ import TechnicalDrawer from '/src/components/Core/CoreShapeArtisan/TechnicalDraw
     <div class="container">
         <div class="row">
             <div class="col-lg-2">
-                <Input/>
+                <div class="container p-0">
+                    <div class="row p-0">
+                        <div class="col-12">
+                            <Input/>
+                        </div>  
+                    </div>
+                    <div class="row p-0">
+                        <div class="col-12">
+                            <Options/>
+                        </div>
+                    </div>    
+                </div>  
             </div>
             <div class="col-lg-6 container">
                 <div class="row">

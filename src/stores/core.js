@@ -8,6 +8,7 @@ export const useCoreStore = defineStore("core", () => {
     const distributedGapAlreadyInUse = ref(false)
     const core = ref(null)
     const dataReadOnly = ref(false)
+    const fullCoreModel = ref(true)
     const isCustomizedShape = computed(() => {
         return customizedShape
     })
@@ -34,6 +35,9 @@ export const useCoreStore = defineStore("core", () => {
     }
     function setCore(core) {
         this.core = core
+    }
+    function setFullCoreModel(fullCoreModel) {
+        this.fullCoreModel = fullCoreModel
     }
     function setDataReadOnly(dataReadOnly) {
         this.dataReadOnly = dataReadOnly
@@ -74,5 +78,7 @@ export const useCoreStore = defineStore("core", () => {
         setDistributedGapAlreadyInUse,
         updateAllLengths,
         gapReluctanceModelChanged,
+        setFullCoreModel,
+        fullCoreModel,
     }
 })

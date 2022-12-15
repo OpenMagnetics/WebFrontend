@@ -4,6 +4,7 @@ import GapModelInput from '/src/components/Core/CoreGappingArtisan/GapModelInput
 import { useUserStore } from '/src/stores/user'
 import * as Defaults from '/src/assets/js/defaults.js'
 import * as Utils from '/src/assets/js/utils.js'
+import axios from "axios";
 </script>
 
 <script>
@@ -28,9 +29,36 @@ export default {
             numberColumns,
             userStore,
             columnData,
+            recentChange: false,
+            tryingToSend: false,
         }
     },
     computed: {
+        leftSideTitle() {
+            return "Left Lateral Column"
+        },
+        centralSideTitle() {
+            if (this.numberColumns > 2)
+                return "Central Column"
+            else if (this.userStore.globalCore['functionalDescription']['shape']['family'] == 'ep') 
+                return "Central Column"
+            else
+                return "Left Column"
+        },
+        rightSideTitle() {
+            if (this.numberColumns > 2)
+                return "Right Lateral Column"
+            else
+                return "Right Column"
+        },
+        centralSideBackgroundImage() {
+            if (this.numberColumns > 2)
+                return "'/images/columns/centralColumn.svg'"
+            else if (this.userStore.globalCore['functionalDescription']['shape']['family'] == 'ep') 
+                return "'/images/columns/centralColumn.svg'"
+            else
+                return "/images/columns/leftColumn.svg"
+        },
     },
     mounted () {
         this.getNumberColumns()
@@ -158,11 +186,8 @@ export default {
                         })
                     }
                 }
-
             }
 
-            console.log("columnData")
-            console.log(columnData)
             gapping.forEach((item, index) => {
                 var columnIndex = null;
                 var firstGuessGapTypeIndex = null;
@@ -243,23 +268,64 @@ export default {
                     this.columnData = Utils.deepCopy(this.columnData);
                 }
             }
-        }
+        },
+        getCoreParameters() {
+            const url = import.meta.env.VITE_API_ENDPOINT + '/core_compute_core_parameters'
+
+            const aux = Utils.deepCopy(this.userStore.globalCore)
+            aux['geometricalDescription'] = null
+            aux['processedDescription'] = null
+            axios.post(url, aux)
+            .then(response => {
+                const globalCore = this.userStore.globalCore
+                globalCore['functionalDescription'] = response.data['functionalDescription']
+                globalCore['geometricalDescription'] = response.data['geometricalDescription']
+                globalCore['processedDescription'] = response.data['processedDescription']
+                this.userStore.setGlobalCore(globalCore)
+
+            })
+            .catch(error => { 
+            });
+        },
+        tryToSend() {
+            if (!this.tryingToSend) {
+                this.recentChange = false
+                this.tryingToSend = true
+                setTimeout(() => {
+                    if (!this.hasError) {
+                        if (this.recentChange) {
+                            this.tryingToSend = false
+                            this.tryToSend()
+                        }
+                        else {
+                            this.tryingToSend = false
+                            this.getCoreParameters()
+                        }
+                    }
+                }
+                , 100);
+            }
+        },
+        onGappingChange() {
+            this.recentChange = true
+            this.tryToSend()
+        },
     }
 }
 </script>
 <template>
     <div class="container columns-container">
         <div class="row">
-            <div v-if="numberColumns > 2" :class="'col-xl-' + Number(Math.round(9 / numberColumns))" class="text-center">
-                <GapInput title="Left Lateral Column" :index="2" imageFile="/images/columns/leftColumn.svg" :columnData="columnData[2]" @gapTypeChanged="gapTypeChanged"/>
+            <div v-if="numberColumns > 2" :class="'col-xl-3'" class="text-center">
+                <GapInput :title="leftSideTitle" :index="2" imageFile="/images/columns/leftColumn.svg" :columnData="columnData[2]" @gapTypeChanged="gapTypeChanged" @onGappingChange="onGappingChange"/>
             </div>
-            <div :class="'col-xl-' + Number(Math.round(9 / numberColumns))" class="text-center">
-                <GapInput :title="numberColumns > 2? 'Central Column' : 'Left Column'" :index="0" :imageFile="numberColumns > 2? '/images/columns/centralColumn.svg' : '/images/columns/leftColumn.svg'" :columnData="columnData[0]" @gapTypeChanged="gapTypeChanged"/>
+            <div :class="'col-xl-3'" class="text-center">
+                <GapInput :title="centralSideTitle" :index="0" :imageFile="centralSideBackgroundImage" :columnData="columnData[0]" @gapTypeChanged="gapTypeChanged" @onGappingChange="onGappingChange"/>
             </div>
-            <div :class="'col-xl-' + Number(Math.round(9 / numberColumns))" class="text-center">
-                <GapInput title="Right Lateral Column" :index="1" imageFile="/images/columns/rightColumn.svg" :columnData="columnData[1]" @gapTypeChanged="gapTypeChanged"/>
+            <div :class="'col-xl-3'" class="text-center">
+                <GapInput :title="rightSideTitle" :index="1" imageFile="/images/columns/rightColumn.svg" :columnData="columnData[1]" @gapTypeChanged="gapTypeChanged" @onGappingChange="onGappingChange"/>
             </div>
-            <div class="col-xl-3 text-center">
+            <div :class="numberColumns > 2? '' : 'offset-3'" class="col-xl-3 text-center">
                 <GapModelInput />
             </div>
         </div>

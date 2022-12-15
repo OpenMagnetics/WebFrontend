@@ -81,7 +81,7 @@ export default {
         <label class="text-white fs-4 text-center ">Reluctance model</label>
 
         <Form ref="formRef" :validation-schema="schema" v-slot="{ errors }" class="form-inline row text-white" @submit="handleSubmit($event, onSubmit)">
-            <label class="small-text mt-2 col-sm-4 col-md-5 col-lg-5 col-xl-5 text-md-start">Gap type:</label>
+            <label class="small-text mt-2 col-sm-4 col-md-5 col-lg-5 col-xl-5 text-start">Gap type:</label>
             <Field name="gapModels" as="select" :class="{ 'is-invalid': errors.gapModels }" @change="onGapModelsChange" class= "small-text bg-light text-white rounded-2 mt-2 col-sm-8 col-md-7 col-lg-7 col-xl-7" v-model="gapModelSelected">
                 <option value="">Please select one</option>
                 <option v-for="model, index in modelNames"
@@ -89,9 +89,9 @@ export default {
                     :value="model">{{model}}
                 </option>
             </Field>
-            <p class="col-12 text-md-start">{{modelDescriptions[gapModelSelected]}}</p>
-            <p class="col-12 text-md-start">This error has an average error of <span class="text-info">{{getRoundedError}}</span> achieved in our evaluation tests, which can be found <a href="https://github.com/OpenMagnetics/MKF/blob/main/tests/TestReluctance.cpp">here</a></p>
-            <p class="col-12 text-md-start d-flex">                
+            <p class="col-12 text-start">{{modelDescriptions[gapModelSelected]}}</p>
+            <p class="col-12 text-start">This error has an average error of <span class="text-info">{{getRoundedError}}</span> achieved in our evaluation tests, which can be found <a href="https://github.com/OpenMagnetics/MKF/blob/main/tests/TestReluctance.cpp">here</a>.</p>
+            <p class="col-12 text-start d-flex">                
             <a class="mx-1 me-auto" :href="modelInternalLink[gapModelSelected]">Original Source</a>
             <a class="mx-1 ms-auto" :href="modelExternalLink[gapModelSelected]">OM article</a>
             </p>

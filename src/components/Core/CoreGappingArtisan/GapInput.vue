@@ -77,6 +77,8 @@ export default {
             this.gapTypeSelected = this.columnData['gapType']
             this.auxDataToDetectCollisions = Utils.deepCopy(this.columnData['gaps'])
             this.updateColumnData()
+            this.numberGaps = this.columnData['gaps'].length
+            this.numberGapsSelected = this.columnData['gaps'].length
             if (this.numberGaps != this.outputData.length) {
                 this.outputData = []
                 for (let i = 0; i < this.numberGaps; i++) {
@@ -92,6 +94,25 @@ export default {
         },
     },
     computed: {
+        styleTooltip() {
+            var relative_placement;
+            if (this.index == 0) {
+                relative_placement = 'bottom'
+            }
+            else if (this.index == 1) {
+                relative_placement = 'left'
+            }
+            else if (this.index == 2) {
+                relative_placement = 'right'
+            }
+            return {
+                    theme: {
+                        placement: relative_placement,
+                        width: '200px',
+                        "text-align": "center",
+                    },
+                }
+        },
         backgroundImage() {
             if (this.width < 1200) {
                 return {}
@@ -216,6 +237,8 @@ export default {
             if (this.numberGapsSelected > 1) {
                 this.numberGaps = this.numberGapsSelected
             }
+            this.gapErrors = this.checkCollisions()
+            this.tryToSend()
         },
         autoDistributeGaps(){
             var totalAvailableHeight = this.userStore.globalCore['processedDescription']['columns'][this.index]['height']
@@ -245,8 +268,6 @@ export default {
                 }
                 const gapsToRemove = this.columnData['gaps'].length - 1;
                 this.removeGaps(gapsToRemove)
-                this.numberGaps = 1
-                this.numberGapsSelected = 1
                 if (this.gapTypeSelected == "Residual") {
                     this.changeGlobalGapType('residual')
                     this.updateAllGapLengths(Defaults.engineConstants['residualGap'])
@@ -254,20 +275,42 @@ export default {
                 }
                 else if  (this.gapTypeSelected == "Spacer") {
                     this.changeGlobalGapType('additive')
-                    this.updateAllGapLengths(Defaults.engineConstants['minimumNonResidualGap'])
+                    if (this.previousGapType != null) {
+                        if (this.previousGapType == "Distributed") {
+                            this.numberGaps = 1
+                            this.numberGapsSelected = 1
+                        }
+                        else if (this.previousGapType == "Residual") {
+                            this.updateAllGapLengths(Defaults.engineConstants['minimumNonResidualGap'])
+                        }
+                    }
                     this.updateAllGapHeights(0)
                 }
                 else {
                     this.changeGlobalGapType('subtractive')
-                    this.updateAllGapLengths(Defaults.engineConstants['minimumNonResidualGap'])
+                    if (this.previousGapType != null) {
+                        if (this.previousGapType == "Distributed") {
+                            this.numberGaps = 1
+                            this.numberGapsSelected = 1
+                        }
+                        else if (this.previousGapType == "Residual") {
+                            this.updateAllGapLengths(Defaults.engineConstants['minimumNonResidualGap'])
+                        }
+                    }
                 }
             }
             else {
                 this.coreStore.setDistributedGapAlreadyInUse(true)
                 this.changeGlobalGapType('subtractive')
-                this.updateAllGapLengths(Defaults.engineConstants['minimumNonResidualGap'])
-                this.numberGaps = 3
-                this.numberGapsSelected = 3
+                if (this.previousGapType == "Residual") {
+                    this.updateAllGapLengths(Defaults.engineConstants['minimumNonResidualGap'])
+                }
+                if (this.previousGapType != null && this.previousGapType != "Distributed") {
+                    console.log("this.previousGapType")
+                    console.log(this.previousGapType)
+                    this.numberGaps = 3
+                    this.numberGapsSelected = 3
+                }
             }
             this.onNumberGapsChange()
             if (this.gapTypeSelected == "Distributed" && this.previousGapType != null){
@@ -329,7 +372,9 @@ export default {
             }
             if  (this.gapTypeSelected == "Spacer") {
                 this.coreStore.updateAllLengths(newValue)
+                    this.$emit("onGapLengthChange", newValue / 1000, this.gapIndex)
             }
+            this.$emit("onGappingChange")
         },
         onGapHeightChange(newValue, gapIndex) {
             this.auxDataToDetectCollisions[gapIndex]['height'] = newValue
@@ -337,19 +382,22 @@ export default {
             if (!this.hasError()) {
                 this.recentChange = true
                 this.userStore.globalCore['functionalDescription']['gapping'][this.columnData['gaps'][gapIndex]['globalGapIndex']]['coordinates'][1] = newValue
+                this.userStore.globalCore['functionalDescription']['gapping'][this.columnData['gaps'][gapIndex]['globalGapIndex']]['distanceClosestNormalSurface'] = this.userStore.globalCore['processedDescription']['columns'][this.index]['height'] / 2 - Math.abs(newValue)
                 this.tryToSend()
+                    this.$emit("onGapLengthChange", newValue / 1000, this.gapIndex)
             }
+            this.$emit("onGappingChange")
         },
     }
 }
 </script>
 
 <template>
-    <div class="container">
+    <div v-tooltip="styleTooltip" class="container">
         <label class="text-white fs-4 text-center ">{{title}}</label>
 
         <Form ref="formRef" :validation-schema="schema" v-slot="{ errors }" class="form-inline row text-white" @submit="handleSubmit($event, onSubmit)">
-            <label class="small-text mt-2 col-sm-4 col-md-5 col-lg-5 col-xl-5 text-md-start">Gap type:</label>
+            <label v-tooltip="'Type of the gaps in the column'" class="small-text mt-2 col-sm-4 col-md-5 col-lg-5 col-xl-5 text-start">Gap type:</label>
             <Field name="gapType" as="select" :class="{ 'is-invalid': errors.gapType }" @change="onGapTypeChange" class= "small-text bg-light text-white rounded-2 mt-2 col-sm-8 col-md-7 col-lg-7 col-xl-7" v-model="gapTypeSelected">
                 <option disabled value="">Please select one</option>
                 <option value="Residual">Residual</option>
@@ -357,7 +405,7 @@ export default {
                 <option value="Grinded">Grinded</option>
                 <option :disabled="coreStore.distributedGapAlreadyInUse && gapTypeSelected != 'Distributed'" value="Distributed">{{coreStore.distributedGapAlreadyInUse && gapTypeSelected != 'Distributed'? 'Distributed (only one allowed)' : 'Distributed'}}</option>
             </Field>
-            <label v-if="gapTypeSelected == 'Distributed'" class="small-text col-sm-4 col-md-5 col-lg-5 col-xl-5 text-md-start mt-2">No. gaps:</label>
+            <label v-if="gapTypeSelected == 'Distributed'" class="small-text col-sm-4 col-md-5 col-lg-5 col-xl-5 text-start mt-2">No. gaps:</label>
             <Field v-if="gapTypeSelected == 'Distributed'" name="numberGaps" type="number" @change="onNumberGapsChange" :class="{ 'is-invalid': errors.numberGaps }" class="rounded-2 bg-light text-white col-sm-8 col-md-4 col-lg-4 col-xl-4 float-end mt-2" value=3 v-model="numberGapsSelected"/>
 
             <button v-if="gapTypeSelected == 'Distributed'" v-tooltip="'Automatically distribute the gaps in this column'" :disabled="numberGaps < 2" :id="'autoPlaceGaps' + index" :ref="'autoPlaceGaps' + index" class="offset-1 col-2 py-0 mt-2 bg-primary submit-btn btn" type="button" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="custom-tooltip" data-bs-title="Auto place gaps" @click="updateAllGapHeights(autoDistributeGaps())">
