@@ -80,7 +80,7 @@ function handleSubmit(params) {
 
             <div></div>
 
-            <label class="fs-5 mx-3">Offset:</label>
+            <label class="fs-5 mx-3">DC Bias Offset:</label>
             <label class="fs-5 mx-1 float-end" style="width: 10px;">{{electricalParameter == "current"? 'A' : 'V'}}</label>
             <Field name="offsetValidator" type="number" :value="offset" @change="offsetChange" :class="{ 'is-invalid': errors.offsetValidator }" class="rounded-2 bg-light text-white float-end" style="width: 100%; max-width: 70px;"/>
 

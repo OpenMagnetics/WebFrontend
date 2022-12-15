@@ -218,7 +218,7 @@ export default {
 
                     <div class="invalid-feedback m-0">{{errors.gapLength}}</div>
                     <div class="invalid-feedback m-0">{{errors.gapHeight}}</div>
-                    <div v-if="this.$slots.overlappingError != ''" class="text-danger m-0" style="font-size: 0.9em"><slot name="overlappingError"></slot></div>
+                    <div v-if="$slots.overlappingError != ''" class="text-danger m-0" style="font-size: 0.9em"><slot name="overlappingError"></slot></div>
 
                 </Form>
             </div>
