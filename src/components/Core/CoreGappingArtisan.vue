@@ -1,7 +1,9 @@
 <script setup>
 import GapInput from '/src/components/Core/CoreGappingArtisan/GapInput.vue'
 import GapModelInput from '/src/components/Core/CoreGappingArtisan/GapModelInput.vue';
+import TechnicalDrawer from '/src/components/Core/CoreGappingArtisan/TechnicalDrawer.vue';
 import { useUserStore } from '/src/stores/user'
+import { useCoreStore } from '/src/stores/core'
 import * as Defaults from '/src/assets/js/defaults.js'
 import * as Utils from '/src/assets/js/utils.js'
 import axios from "axios";
@@ -24,10 +26,12 @@ export default {
                 }]
             })        
         }
+        const coreStore = useCoreStore();
 
         return {
             numberColumns,
             userStore,
+            coreStore,
             columnData,
             recentChange: false,
             tryingToSend: false,
@@ -70,12 +74,30 @@ export default {
                 this.columnData = this.decodeUserStoreGap()
             }
         })
+
+        this.coreStore.$onAction((action) => {
+            if (action.name == "requestGappingTechnicalDrawing") {
+                this.tryToSend()
+            }
+        })
     },
     methods: {
         getNumberColumns() {
             if ('processedDescription' in this.userStore.globalCore) {
                 this.numberColumns = this.userStore.globalCore['processedDescription']['columns'].length
             }
+        },
+        getClosestColumn(gap, columns) {
+            var currentDistance = Infinity
+            var closestColumn = -1
+            for (let i = 0; i < columns.length; i++) {
+                const distance = Math.pow(gap['coordinates'][0] - columns[i]['coordinates'][0], 2) + Math.pow(gap['coordinates'][2] - columns[i]['coordinates'][2], 2)
+                if (distance < currentDistance) {
+                    currentDistance = distance
+                    closestColumn = i;
+                }
+            }
+            return closestColumn
         },
         decodeUserStoreGap() {
 
@@ -221,7 +243,6 @@ export default {
 
             })
 
-
             return columnData
         },
         changeAllOtherGapTypes(newType, columnIndex) {
@@ -282,9 +303,22 @@ export default {
                 globalCore['geometricalDescription'] = response.data['geometricalDescription']
                 globalCore['processedDescription'] = response.data['processedDescription']
                 this.userStore.setGlobalCore(globalCore)
+                this.compute_gapping_technical_drawing()
 
             })
             .catch(error => { 
+            });
+        },
+        compute_gapping_technical_drawing() {
+            const url = import.meta.env.VITE_API_ENDPOINT + '/core_compute_gapping_technical_drawing'
+
+            this.coreStore.requestingGappingTechnicalDrawing()
+            axios.post(url, this.userStore.globalCore)
+            .then(response => {
+                this.coreStore.setGappingTechnicalDrawing(response.data)
+            })
+            .catch(error => {
+                console.error(error.data)
             });
         },
         tryToSend() {
@@ -327,6 +361,7 @@ export default {
             </div>
             <div :class="numberColumns > 2? '' : 'offset-3'" class="col-xl-3 text-center">
                 <GapModelInput />
+                <TechnicalDrawer />
             </div>
         </div>
     </div>

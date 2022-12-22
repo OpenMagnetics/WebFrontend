@@ -248,15 +248,18 @@ export default {
             })
 
             const coreChunkSize = totalAvailableHeight / (this.columnData['gaps'].length + 1)
-            var initialHeightPosition = -this.userStore.globalCore['processedDescription']['columns'][this.index]['height'] / 2
+            var initialHeightPosition = this.userStore.globalCore['processedDescription']['columns'][this.index]['height'] / 2
 
-            initialHeightPosition += coreChunkSize
+            initialHeightPosition -= coreChunkSize
             const aux = []
             this.columnData['gaps'].forEach((item) => {
-                initialHeightPosition += item['length'] / 2
+                initialHeightPosition -= item['length'] / 2
                 aux.push(Number(Utils.removeTrailingZeroes(Utils.roundWithDecimals(initialHeightPosition, 0.00001), 5)))
-                initialHeightPosition += item['length'] / 2 + coreChunkSize
+                initialHeightPosition -= item['length'] / 2 + coreChunkSize
             })
+
+            this.recentChange = true
+            this.tryToSend()
 
             return aux
 
@@ -306,8 +309,6 @@ export default {
                     this.updateAllGapLengths(Defaults.engineConstants['minimumNonResidualGap'])
                 }
                 if (this.previousGapType != null && this.previousGapType != "Distributed") {
-                    console.log("this.previousGapType")
-                    console.log(this.previousGapType)
                     this.numberGaps = 3
                     this.numberGapsSelected = 3
                 }

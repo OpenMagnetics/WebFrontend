@@ -92,7 +92,7 @@ export default {
                 {
                     id: 6,
                     title: 'Balakrishnan method',
-                    section: 'Gap Reluctance', 
+                    section: 'Gap Reluctance',
                     description: 'Implement Balakrishnan method for calculating the Reluctance of the gaps in the magnetic core, and therefore the Inductance of the final component.',
                     imgSrc: '/images/roadmap/balakrishnan.png',
                     imgAlt: 'Balakrishnan gap example',

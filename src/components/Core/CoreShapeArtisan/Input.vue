@@ -30,11 +30,13 @@ export default {
         const subtypeLabels = []
         const dimensionsValueInMm = {}
         const isDataDirty = false
+        const loadingStandardCore = false
         var errors = {}
         var hasError = false
         var hasFreeCADError = false
         var tryingToSend = false;
         var recentChange = false
+        var shapeName = "Custom"
 
         return {
             posting,
@@ -48,22 +50,30 @@ export default {
             subtypeLabels,
             dimensionsValueInMm,
             isDataDirty,
+            loadingStandardCore,
             errors,
             hasError,
             hasFreeCADError,
             recentChange,
             tryingToSend,
+            shapeName,
         }
     },
     methods: {
+        setCoreShapeName(name, override) {
+            if (!this.loadingStandardCore || override) {
+                this.shapeName = name
+                this.userStore.setGlobalCoreShapeName(name)
+            }
+        },
         getTechnicalDrawing(dimensionsValueInM) {
             const data = {
                 'aliases': [],
                 'dimensions': dimensionsValueInM,
                 'family': this.familyLabelSelected,
                 'familySubtype': this.subtypeLabelSelected,
-                'name': 'Custom',
-                'type': 'custom'
+                'name': this.shapeName,
+                'type': this.shapeName == "Custom"? 'custom' : 'standard'
             }
             const url = import.meta.env.VITE_API_ENDPOINT + '/core_compute_technical_drawing'
 
@@ -88,7 +98,7 @@ export default {
                 globalCore['geometricalDescription'] = response.data['geometricalDescription']
                 globalCore['processedDescription'] = response.data['processedDescription']
                 this.userStore.setGlobalCore(globalCore)
-                console.log(this.userStore.globalCore)
+                this.loadingStandardCore = false
 
             })
             .catch(error => { 
@@ -108,13 +118,12 @@ export default {
                     'dimensions': dimensionsValueInM,
                     'family': this.familyLabelSelected,
                     'familySubtype': this.subtypeLabelSelected,
-                    'name': 'Custom',
-                    'type': 'custom'
+                    'name': this.shapeName,
+                    'type': this.shapeName == "Custom"? 'custom' : 'standard'
                 }
                 const url = import.meta.env.VITE_API_ENDPOINT + '/core_compute_shape'
 
                 this.hasFreeCADError = false
-
                 this.coreStore.requestingNewShape()
                 axios.post(url, data)
                 .then(response => {
@@ -147,8 +156,8 @@ export default {
                     'dimensions': dimensionsValueInM,
                     'family': this.familyLabelSelected,
                     'familySubtype': this.subtypeLabelSelected,
-                    'name': 'Custom',
-                    'type': 'custom'
+                    'name': this.shapeName,
+                    'type': this.shapeName == "Custom"? 'custom' : 'standard'
                 }
                 const url = import.meta.env.VITE_API_ENDPOINT + '/core_compute_core_3d_model'
 
@@ -156,7 +165,6 @@ export default {
                 const globalCore = this.userStore.globalCore
                 globalCore['functionalDescription']['shape'] = data
 
-                console.warn(globalCore)
                 this.coreStore.requestingNewShape()
                 axios.post(url, globalCore)
                 .then(response => {
@@ -177,8 +185,6 @@ export default {
             }
         },
         computeShape() {
-            console.log("this.coreStore.fullCoreModel")
-            console.log(this.coreStore.fullCoreModel)
             if (this.coreStore.fullCoreModel) {
                 this.computeCore3DModel()
             }
@@ -192,6 +198,7 @@ export default {
             this.hasFreeCADError = false
             this.recentChange = true
             this.isDataDirty = true
+            this.setCoreShapeName("Custom")
             this.dimensionsValueInMm[name] = newValue
             this.tryToSend()
 
@@ -219,6 +226,7 @@ export default {
             this.errors = {}
             this.hasFreeCADError = false
             this.isDataDirty = true
+            this.setCoreShapeName("Custom")
             const family = event.target.value
             this.subtypeLabels = Object.keys(this.familiesData[family])
             if (this.subtypeLabels.length == 1) {
@@ -228,15 +236,19 @@ export default {
                 this.dimensionsLabel = null
             }
         },
-        onsubtypeChange(event) {
+        onSubtypeChange(event) {
             this.errors = {}
             this.hasFreeCADError = false
             this.isDataDirty = true
+            this.setCoreShapeName("Custom")
             this.dimensionsLabel = this.familiesData[this.familyLabelSelected][event.target.value]
         },
         onLoadCommercialShape(data) {
+            this.loadingStandardCore = true
             this.errors = {}
             this.familyLabelSelected = data['family'].toLowerCase()
+            const name = data['name']
+            
             this.subtypeLabels = Object.keys(this.familiesData[data['family'].toLowerCase()])
             if ('familySubtype' in data && data['familySubtype'] != null) {
                 this.subtypeLabelSelected = data['familySubtype']
@@ -253,6 +265,7 @@ export default {
                     this.dimensionsValueInMm[key] = Number(Utils.removeTrailingZeroes(value * 1000, 1))
                 }
             }
+            setTimeout(() => this.setCoreShapeName(name, true), 100);
         },
         fix_optional_missing() {
             if (this.dimensionsValueInMm['G'] == null || isNaN(this.dimensionsValueInMm['G'])) {
@@ -368,7 +381,7 @@ export default {
                         }
                     }
 
-                    if (!(this.familyLabelSelected.toLowerCase() == "rm" && this.subtypeLabelSelected == 2) && !(this.familyLabelSelected.toLowerCase() == "p") && !(this.familyLabelSelected.toLowerCase() == "efd") && !(this.familyLabelSelected.toLowerCase() == "ut")) {
+                    if (!(this.familyLabelSelected.toLowerCase() == "rm" && this.subtypeLabelSelected == 2) && !(this.familyLabelSelected.toLowerCase() == "p" && this.subtypeLabelSelected != 2) && !(this.familyLabelSelected.toLowerCase() == "efd") && !(this.familyLabelSelected.toLowerCase() == "ut") && this.dimensionsValueInMm['C'] > 0) {
                         var c_f_condition = false
                         if (this.familyLabelSelected.toLowerCase() != "er" && this.familyLabelSelected.toLowerCase() != "e" && this.familyLabelSelected.toLowerCase() != "etd" && this.familyLabelSelected.toLowerCase() != "ec") {
                             c_f_condition = this.dimensionsValueInMm['F'] >= this.dimensionsValueInMm['C']
@@ -458,6 +471,17 @@ export default {
                  setTimeout(() => this.tryToSend(), 10);
             }
         })
+
+        this.userStore.$onAction((action) => {
+            this.recentChange = true
+            if (action.name == "setGlobalCoreShapeFromSelector") {
+                 this.onLoadCommercialShape(action.args[0])
+            }
+        })
+        this.loadingStandardCore = true
+
+        const name = this.userStore.globalCore['functionalDescription']['shape']['name']
+        setTimeout(() => this.setCoreShapeName(name, true), 100);
     },
 }
 
@@ -472,7 +496,7 @@ export default {
                     :value="item"
             >{{item.toUpperCase()}}</option>
         </Field>
-        <Field v-if="subtypeLabels.length > 1" name="subtypeSelect" ref="subtypeRef" as="select" style="width: 100%" @change="onsubtypeChange" class= "small-text bg-light text-white rounded-2 mt-2 col-sm-8 col-md-8 col-lg-3 col-xl-3" v-model="subtypeLabelSelected">>
+        <Field v-if="subtypeLabels.length > 1" name="subtypeSelect" ref="subtypeRef" as="select" style="width: 100%" @change="onSubtypeChange" class= "small-text bg-light text-white rounded-2 mt-2 col-sm-8 col-md-8 col-lg-3 col-xl-3" v-model="subtypeLabelSelected">>
             <option disabled value="">Please select one sub type</option>
             <option v-for="item, index in subtypeLabels"
                     :value="item"

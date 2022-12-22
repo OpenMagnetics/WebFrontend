@@ -5,6 +5,7 @@ const emit = defineEmits(['onLoadCommercialShape'])
 import axios from "axios";
 import * as Utils from '/src/assets/js/utils.js'
 import { useUserStore } from '/src/stores/user'
+import { useCoreStore } from '/src/stores/core'
 
 </script>
 
@@ -60,14 +61,14 @@ export default {
             },
         ]
         const userStore = useUserStore();
+        const coreStore = useCoreStore();
         const commercialData = []
-        const commercialRawData = []
         const scaledColumns = []
         return {
             userStore,
+            coreStore,
             columns,
             commercialData,
-            commercialRawData,
             scaledColumns,
         }
     },
@@ -75,9 +76,9 @@ export default {
         onLoad(name) {
             var dataToLoad = null
 
-            for (let i = 0; i < this.commercialRawData.length; i++) {
-                if (this.commercialRawData[i]['functionalDescription']['shape']["name"] == name){
-                    dataToLoad = this.commercialRawData[i]
+            for (let i = 0; i < this.coreStore.commercialShapes.length; i++) {
+                if (this.coreStore.commercialShapes[i]['functionalDescription']['shape']["name"] == name){
+                    dataToLoad = this.coreStore.commercialShapes[i]
                     break
                 } 
             }
@@ -111,7 +112,8 @@ export default {
         const core = this.userStore.getGlobalCore
         axios.post(url, {})
         .then(response => {
-            this.commercialRawData = response.data["commercial_data"]
+            this.coreStore.commercialShapes = response.data["commercial_data"]
+            this.coreStore.commercialShapesLoaded()
             response.data["commercial_data"].forEach((item) => {
                 const datum = {
                     name: item['functionalDescription']['shape']['name'],
@@ -126,7 +128,7 @@ export default {
             this.scaleColumns()  // To avoid bug in vue-good-table-next
         })
         .catch(error => {
-            console.log(error.data)
+            console.error(error.data)
         });
         window.addEventListener('resize', () => {
             this.scaleColumns()

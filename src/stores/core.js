@@ -9,6 +9,8 @@ export const useCoreStore = defineStore("core", () => {
     const core = ref(null)
     const dataReadOnly = ref(false)
     const fullCoreModel = ref(true)
+    const commercialShapes = ref([])
+    const commercialMaterials = ref([])
     const isCustomizedShape = computed(() => {
         return customizedShape
     })
@@ -45,15 +47,28 @@ export const useCoreStore = defineStore("core", () => {
     function setDistributedGapAlreadyInUse(distributedGapAlreadyInUse) {
         this.distributedGapAlreadyInUse = distributedGapAlreadyInUse
     }
+    function commercialShapesLoaded() {
+    }
+    function setCommercialMaterials(commercialMaterials) {
+        this.commercialMaterials = commercialMaterials
+    }
     function setStreamedObj(object) {
     }
     function setTechnicalDrawing(object) {
+    }
+    function setGappingTechnicalDrawing(object) {
+    }
+    function requestGappingTechnicalDrawing(object) {
+    }
+    function requestingGappingTechnicalDrawing(object) {
     }
     function requestingNewShape(object) {
     }
     function updateAllLengths(newValue) {
     }
     function gapReluctanceModelChanged(newValue) {
+    }
+    function onLoadCommercialShape(data) {
     }
     return {
         customizedShape,
@@ -73,6 +88,9 @@ export const useCoreStore = defineStore("core", () => {
         setDataReadOnly,
         setStreamedObj,
         setTechnicalDrawing,
+        setGappingTechnicalDrawing,
+        requestGappingTechnicalDrawing,
+        requestingGappingTechnicalDrawing,
         requestingNewShape,
         distributedGapAlreadyInUse,
         setDistributedGapAlreadyInUse,
@@ -80,5 +98,10 @@ export const useCoreStore = defineStore("core", () => {
         gapReluctanceModelChanged,
         setFullCoreModel,
         fullCoreModel,
+        commercialShapesLoaded,
+        commercialShapes,
+        setCommercialMaterials,
+        commercialMaterials,
+        onLoadCommercialShape,
     }
 })

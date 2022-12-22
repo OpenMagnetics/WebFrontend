@@ -51,7 +51,6 @@ export default {
 
         axios.post(url, {})
         .then(response => {
-            console.log(response.data)
             this.modelNames = Object.keys(response.data["information"]);
             this.modelDescriptions = response.data["information"];
             this.modelErrors = response.data["errors"];
@@ -68,8 +67,6 @@ export default {
         },
         onGapModelsChange() {
             this.userStore.setSelectedModels('gapReluctance', this.gapModelSelected)
-            console.log("onGapModelsChange")
-            console.log(this.userStore.selectedModels['gapReluctance'])
             this.coreStore.gapReluctanceModelChanged()
         },
     }
@@ -83,7 +80,7 @@ export default {
         <Form ref="formRef" :validation-schema="schema" v-slot="{ errors }" class="form-inline row text-white" @submit="handleSubmit($event, onSubmit)">
             <label class="small-text mt-2 col-sm-4 col-md-5 col-lg-5 col-xl-5 text-start">Gap type:</label>
             <Field name="gapModels" as="select" :class="{ 'is-invalid': errors.gapModels }" @change="onGapModelsChange" class= "small-text bg-light text-white rounded-2 mt-2 col-sm-8 col-md-7 col-lg-7 col-xl-7" v-model="gapModelSelected">
-                <option value="">Please select one</option>
+                <option disabled value="">Please select one</option>
                 <option v-for="model, index in modelNames"
                     :key="index"
                     :value="model">{{model}}
