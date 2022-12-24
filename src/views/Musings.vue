@@ -59,6 +59,16 @@ export default {
                 },
                 {
                     id: 3, 
+                    link: '/musings/4', 
+                    title: 'Alf\'s Musings 4', 
+                    section: 'Core losses', 
+                    description: 'Article published in How2Power.com explaining Roshen\'s model for core losses .', 
+                    date:'Sep 2022', 
+                    imgSrc: '/images/musings/4/image10.gif', 
+                    imgAlt: 'Hysteresis Loop'
+                },
+                {
+                    id: 4, 
                     link: '/musings/5', 
                     title: 'Alf\'s Musings 5', 
                     section: 'Magnetics for dummies', 
@@ -87,12 +97,11 @@ export default {
                     <div class="row mb-2">
                         <div class="col-xl-6 px-0">
                             <strong class="d-inline-block mb-2 text-info">Core losses</strong>
-                          <h1 class="display-4"><a href="http://www.how2power.com/pdf_view.php?url=/newsletters/2209/H2PowerToday2209_FocusOnMagnetics.pdf" class="   text-white">Alf's Musings 4</a></h1>
-                            <p class="lead my-3">Roshen’s Models Offer An Advanced Approach To Modeling Core Losses.</p>
-                          <p class="lead mb-0"><a href="http://www.how2power.com/pdf_view.php?url=/newsletters/2209/H2PowerToday2209_FocusOnMagnetics.pdf">Read it!</a>  </p>
+                          <h1 class="display-4"><a href="/musings/9" class="   text-white">Alf's Musings 9</a></h1>
+                          <p class="lead mb-0"><a href="/musings/9">Read it!</a>  </p>
                         </div>
                         <div class="col-xl-6">
-                            <img class=" ml-2 card-img-right flex-auto d-none d-xl-block" alt="Dowell's Curves" style="width: 500px;" src="/images/musings/4/loops.gif"  >
+                            <img class=" ml-2 card-img-right flex-auto d-none d-xl-block" alt="Dowell's Curves" style="width: 500px;" src="/images/musings/9/image1.png"  >
                         </div>
                     </div>
                 </div>
