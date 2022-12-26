@@ -25,7 +25,7 @@ export default {
     },
     data() {
         return {
-            number_columns: 2,
+            number_columns: 3,
             musings: [
                 {
                     id: 0, 
@@ -75,7 +75,37 @@ export default {
                     description: 'First chapter of Magnetics for dummies, where we define what a Magnetic is.', 
                     date:'Jul 2022', 
                     imgSrc: '/images/musings/5/image5.png', 
-                    imgAlt: 'Dowell\'s Curves'
+                    imgAlt: 'Dummy'
+                },
+                {
+                    id: 5, 
+                    link: '/musings/6', 
+                    title: 'Alf\'s Musings 6', 
+                    section: 'Magnetics for dummies', 
+                    description: 'Second chapter of Magnetics for dummies, where we define what a Magnetic Core is.', 
+                    date:'Aug 2022', 
+                    imgSrc: '/images/musings/6/image0.png', 
+                    imgAlt: 'Dummy'
+                },
+                {
+                    id: 6, 
+                    link: '/musings/7', 
+                    title: 'Alf\'s Musings 7', 
+                    section: 'Magnetic core shapes', 
+                    description: 'First chapter of the series focused on the study of the shapes using in Magnetic Cores', 
+                    date:'Nov 2022', 
+                    imgSrc: '/images/musings/7/image6.png', 
+                    imgAlt: 'Dummy'
+                },
+                {
+                    id: 7, 
+                    link: '/musings/8', 
+                    title: 'Alf\'s Musings 8', 
+                    section: 'Magnetic core shapes', 
+                    description: 'Second chapter of the series focused on the study of the shapes using in Magnetic Cores', 
+                    date:'Dec 2022', 
+                    imgSrc: '/images/musings/8/image9.svg', 
+                    imgAlt: 'Dummy'
                 }
             ]
         }

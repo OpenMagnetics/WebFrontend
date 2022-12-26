@@ -39,7 +39,7 @@ export default {
 </script>
 
 <template>
-    <div class="col-lg-6">
+    <div class="col-lg-4">
         <div class="card flex-lg-row mt-4 box-shadow h-lg-250">
             <div class="card-body d-flex flex-column align-items-start bg-light">
                 <strong class="d-inline-block mb-2 text-info">{{section}}</strong>

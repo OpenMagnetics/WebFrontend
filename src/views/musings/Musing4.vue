@@ -75,7 +75,7 @@ import Footer from '/src/components/Footer.vue'
                         <p>
                         The sum of these losses is what many engineers know as core losses, though as has been analyzed this general term encompasses really different mechanisms. To be able to make an evaluation of these total losses, the Prussian Charles Proteus Steinmetz, proposed in the 19th century an analytical equation consisting of an exponential curve fit to empirical data which has to be measured for each material. This produces a series of power coefficients that scale the effects of the magnetic flux density, the switching frequency of the field and the material temperature in the total core losses, abstracting them from the physical mechanisms, using just measured data. Steinmetz’s equation for the volumetric losses Pv is
                         </p>
-                        <img src="/src/public/images/musings/4/image3.png" class="img-fluid bounce-little my-3 mx-auto d-block" alt="">
+                        <img src="/src/public/images/musings/4/image3.svg" class="img-fluid bounce-little my-3 mx-auto d-block" alt="" style="width: 200px">
                         <p>
 
                         where f is the switching frequency, B is the peak magnetic flux density, and k, a, and b are the Steinmetz coefficients, obtained by interpolating from measured data at a given temperature and for a given material.
@@ -89,11 +89,11 @@ import Footer from '/src/components/Footer.vue'
                         <p>
                         To take into account the effects of these triangular currents, many models inspired by Steinmetz were created, with the Improved Generalized Steinmetz Equation (iGSE)[1] being the most extended. This model breaks down the magnetic flux waveform into small pieces, calculating their energy, which then scales with the switching frequency, highly improving the accuracy for non-sinusoidal waveforms. The volumetric losses according to iGSE are 
                         </p>
-                        <img src="/src/public/images/musings/4/image4.png" class="img-fluid bounce-little my-3 mx-auto d-block" alt="">
+                        <img src="/src/public/images/musings/4/image4.svg" class="img-fluid bounce-little my-3 mx-auto d-block" alt="" style="width: 400px">
                         <p>
                         where T is the period, B is the magnetic flux density waveform, B is its peak-to-peak value, and ki is defined as
                         </p>
-                        <img src="/src/public/images/musings/4/image5.png" class="img-fluid bounce-little my-3 mx-auto d-block" alt="">
+                        <img src="/src/public/images/musings/4/image5.svg" class="img-fluid bounce-little my-3 mx-auto d-block" alt="" style="width: 400px">
                         <p>
                         where k, a, and b are the same Steinmetz coefficients as noted earlier. 
                         </p>
@@ -110,7 +110,7 @@ import Footer from '/src/components/Footer.vue'
                         “In this model, the major hysteresis loop is represented by two hyperbolas. The upper part (see Fig. 1) of the major loop is given by 
                         B = Fu(H)
                         </p>
-                        <img src="/src/public/images/musings/4/image6.png" class="img-fluid bounce-little my-3 mx-auto d-block" alt="">
+                        <img src="/src/public/images/musings/4/image6.png" class="img-fluid bounce-little my-3 mx-auto d-block" alt="" style="width: 600px">
 
                         <p>
                         ”[2]
