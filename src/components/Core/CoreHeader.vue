@@ -10,7 +10,6 @@ import { useCommonStore } from '/src/stores/waveform'
 import { useUserStore } from '/src/stores/user'
 import { useCoreStore } from '/src/stores/core'
 import CoreOperationPointTool from '/src/components/Core/CoreOperationPointTool.vue'
-import CoreOperationPointLoad from '/src/components/Core/CoreOperationPointLoad.vue'
 import CorePublish from '/src/components/Core/CorePublish.vue'
 import axios from "axios";
 
@@ -126,7 +125,6 @@ function handleSubmit(params) {
         </div>
     </div>
     <CoreOperationPointTool :key="updateOperationPointToolKey"/>
-    <CoreOperationPointLoad @onLoadOperationPoint="onLoadOperationPoint"/>
     <CorePublish :isLoggedIn="isLoggedIn" @published="onPublish"/>
 
 </template>

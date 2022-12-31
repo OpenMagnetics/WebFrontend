@@ -77,8 +77,11 @@ export const useUserStore = defineStore("user", () => {
         this.globalCore['functionalDescription']['shape']['name'] = name
         this.globalCore['functionalDescription']['shape']['type'] = name == "Custom"? 'custom' : 'standard'
     }
-    function setGlobalCoreShapeFromSelector(shape) {
+    function setGlobalCoreShape(shape) {
         this.globalCore['functionalDescription']['shape'] = shape
+    }
+    function setGlobalCoreMaterial(material) {
+        this.globalCore['functionalDescription']['material'] = material
     }
     function setIdToDelete(idToDelete) {
         this.idToDelete = idToDelete
@@ -108,7 +111,8 @@ export const useUserStore = defineStore("user", () => {
         setGlobalCore,
         setGlobalCoreAlt,
         setGlobalCoreShapeName,
-        setGlobalCoreShapeFromSelector,
+        setGlobalCoreShape,
+        setGlobalCoreMaterial,
         idToDelete,
         getIdToDelete,
         setIdToDelete,

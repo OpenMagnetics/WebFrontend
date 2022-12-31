@@ -53,8 +53,8 @@ export const defaultCore = {
                                   'H': 0.0},
                    'family': 'etd',
                    'familySubtype': '1',
-                   'name': 'Custom',
-                   'type': 'custom'},
+                   'name': 'ETD 39/20/13',
+                   'type': 'commercial'},
         "gapping": [{
             "type": "subtractive",
             "length": 0.001

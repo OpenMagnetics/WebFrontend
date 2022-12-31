@@ -77,16 +77,16 @@ export default {
             var dataToLoad = null
 
             for (let i = 0; i < this.coreStore.commercialShapes.length; i++) {
-                if (this.coreStore.commercialShapes[i]['functionalDescription']['shape']["name"] == name){
+                if (this.coreStore.commercialShapes[i]["name"] == name){
                     dataToLoad = this.coreStore.commercialShapes[i]
                     break
                 } 
             }
             const globalCore = this.userStore.globalCore
-            globalCore['functionalDescription']['shape'] = dataToLoad['functionalDescription']['shape']
+            globalCore['functionalDescription']['shape'] = dataToLoad
             this.userStore.setGlobalCore(globalCore)
 
-            this.$emit("onLoadCommercialShape", dataToLoad['functionalDescription']['shape'])
+            this.$emit("onLoadCommercialShape", dataToLoad)
         },
         scaleColumns() {
             this.scaledColumns = []
@@ -112,9 +112,12 @@ export default {
         const core = this.userStore.getGlobalCore
         axios.post(url, {})
         .then(response => {
-            this.coreStore.commercialShapes = response.data["commercial_data"]
+            console.warn(response.data)
+            response.data["commercial_cores"].forEach((item) => {
+                this.coreStore.commercialShapes.push(item['functionalDescription']['shape'])
+            })
             this.coreStore.commercialShapesLoaded()
-            response.data["commercial_data"].forEach((item) => {
+            response.data["commercial_cores"].forEach((item) => {
                 const datum = {
                     name: item['functionalDescription']['shape']['name'],
                     family: item['functionalDescription']['shape']['family'].toUpperCase(),

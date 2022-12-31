@@ -49,6 +49,8 @@ export const useCoreStore = defineStore("core", () => {
     }
     function commercialShapesLoaded() {
     }
+    function commercialMaterialsLoaded() {
+    }
     function setCommercialMaterials(commercialMaterials) {
         this.commercialMaterials = commercialMaterials
     }
@@ -69,6 +71,8 @@ export const useCoreStore = defineStore("core", () => {
     function gapReluctanceModelChanged(newValue) {
     }
     function onLoadCommercialShape(data) {
+    }
+    function quickGappingChanged() {
     }
     return {
         customizedShape,
@@ -99,9 +103,11 @@ export const useCoreStore = defineStore("core", () => {
         setFullCoreModel,
         fullCoreModel,
         commercialShapesLoaded,
+        commercialMaterialsLoaded,
         commercialShapes,
         setCommercialMaterials,
         commercialMaterials,
         onLoadCommercialShape,
+        quickGappingChanged,
     }
 })

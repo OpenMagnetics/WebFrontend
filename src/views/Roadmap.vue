@@ -78,7 +78,7 @@ export default {
                     description: 'Implement Zhang method for calculating the Reluctance of the gaps in the magnetic core, and therefore the Inductance of the final component.',
                     imgSrc: '/images/roadmap/zhang.png',
                     imgAlt: 'Zhang gap example',
-                    state: "To Do"
+                    state: "Done on December 2022"
                 },
                 {
                     id: 5,
@@ -87,7 +87,7 @@ export default {
                     description: 'Implement Stenglein method for calculating the Reluctance of the gaps in the magnetic core, and therefore the Inductance of the final component. Especial model for large gaps',
                     imgSrc: '/images/roadmap/stenglein.png',
                     imgAlt: 'Stenglein gap example',
-                    state: "To Do"
+                    state: "Done on December 2022"
                 },
                 {
                     id: 6,
@@ -96,7 +96,7 @@ export default {
                     description: 'Implement Balakrishnan method for calculating the Reluctance of the gaps in the magnetic core, and therefore the Inductance of the final component.',
                     imgSrc: '/images/roadmap/balakrishnan.png',
                     imgAlt: 'Balakrishnan gap example',
-                    state: "To Do"
+                    state: "Done on December 2022"
                 },
                 {
                     id: 7,
@@ -105,28 +105,28 @@ export default {
                     description: 'Implement Mühlethaler method for calculating the Reluctance of the gaps in the magnetic core, and therefore the Inductance of the final component.',
                     imgSrc: '/images/roadmap/muehlethaler.png',
                     imgAlt: 'Mühlethaler gap example',
-                    state: "To Do"
+                    state: "Done on December 2022"
                 },
                 {
                     id: 8,
                     title: 'Partridge method',
                     section: 'Gap Reluctance', 
                     description: 'Implement Partridge method for calculating the Reluctance of the gaps in the magnetic core, and therefore the Inductance of the final component.',
-                    state: "To Do"
+                    state: "Done on December 2022"
                 },
                 {
                     id: 9,
                     title: 'Effective Length method',
                     section: 'Gap Reluctance', 
                     description: 'Implement Effective Length method for calculating the Reluctance of the gaps in the magnetic core, and therefore the of the final component Inductance.',
-                    state: "To Do"
+                    state: "Done on December 2022"
                 },
                 {
                     id: 10,
                     title: 'Effective Area method',
                     section: 'Gap Reluctance', 
                     description: 'Implement Effective Area method for calculating the Reluctance of the gaps in the magnetic core, and therefore the Inductance of the final component.',
-                    state: "To Do"
+                    state: "Done on December 2022"
                 },
                 {
                     id: 11,
@@ -182,7 +182,7 @@ export default {
                     title: 'Automatic Technical Drawing',
                     section: 'Magnetic Design', 
                     description: 'Implement functionality to automatically create a Technical Drawing for any Commercial Off-The-Shelf or Custom core.',
-                    state: 'To Do'
+                    state: 'Done on December 2022'
                 },
                 {
                     id: 18,
@@ -203,7 +203,7 @@ export default {
                     title: 'Gapping Artisan',
                     section: 'Core Design', 
                     description: 'Add module to configure any number of gaps in any place of the core',
-                    state: 'To Do'
+                    state: 'Done on December 2022'
                 },
                 {
                     id: 21,

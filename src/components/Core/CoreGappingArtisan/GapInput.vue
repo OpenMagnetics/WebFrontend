@@ -90,6 +90,7 @@ export default {
                 }
             }
             this.gapErrors = this.checkCollisions()
+            this.recentChange = true
             this.tryToSend()
         },
     },
@@ -131,6 +132,7 @@ export default {
     mounted () {
         this.coreStore.$onAction((action) => {
             if (action.name == "gapReluctanceModelChanged") {
+                this.recentChange = true
                 this.tryToSend();
             }
         })
@@ -238,6 +240,7 @@ export default {
                 this.numberGaps = this.numberGapsSelected
             }
             this.gapErrors = this.checkCollisions()
+            this.recentChange = true
             this.tryToSend()
         },
         autoDistributeGaps(){
@@ -273,6 +276,10 @@ export default {
                 this.removeGaps(gapsToRemove)
                 if (this.gapTypeSelected == "Residual") {
                     this.changeGlobalGapType('residual')
+                    if (this.previousGapType == "Distributed") {
+                        this.numberGaps = 1
+                        this.numberGapsSelected = 1
+                    }
                     this.updateAllGapLengths(Defaults.engineConstants['residualGap'])
                     this.updateAllGapHeights(0)
                 }

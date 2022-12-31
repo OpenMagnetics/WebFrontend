@@ -3,6 +3,8 @@ import LoginModal from '/src/components/User/Login.vue'
 import { useUserStore } from '/src/stores/user'
 import { useUserDatabaseStore } from '/src/stores/userDatabase'
 import * as Utils from '/src/assets/js/utils.js'
+import CoreLoadCommercialShape from '/src/components/Core/CoreLoadCommercialShape.vue';
+import CoreLoadCommercialMaterial from '/src/components/Core/CoreLoadCommercialMaterial.vue';
 </script>
 
 <script>
@@ -60,6 +62,14 @@ export default {
             this.userStore.logout()
             this.userStore.setUsername(null)
         },
+        onLoadCommercialShape(data) {
+            console.log(data)
+            this.userStore.setGlobalCoreShape(data)
+        },
+        onLoadCommercialMaterial(data) {
+            console.log(data)
+            this.userStore.setGlobalCoreMaterial(data)
+        },
     },
     computed: {
         getOperationPointsLength() {
@@ -109,6 +119,8 @@ export default {
 </script>
 
 <template>
+    <CoreLoadCommercialMaterial @onLoadCommercialMaterial="onLoadCommercialMaterial"/>
+    <CoreLoadCommercialShape @onLoadCommercialShape="onLoadCommercialShape"/>
     <nav class="navbar navbar-expand-lg bg-light navbar-dark text-primary mb-1" id="header_wrapper">
         <div class="container-fluid">
             <a href="/">

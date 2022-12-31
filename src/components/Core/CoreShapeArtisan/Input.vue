@@ -7,7 +7,6 @@ import axios from "axios";
 import { useUserStore } from '/src/stores/user'
 import { useCoreStore } from '/src/stores/core'
 import VueNumberInput from '/src/components/VueNumberInput.vue';
-import CoreLoadCommercialShape from '/src/components/Core/CoreLoadCommercialShape.vue';
 import * as Utils from '/src/assets/js/utils.js'
 
 </script>
@@ -243,7 +242,7 @@ export default {
             this.setCoreShapeName("Custom")
             this.dimensionsLabel = this.familiesData[this.familyLabelSelected][event.target.value]
         },
-        onLoadCommercialShape(data) {
+        loadCommercialShape(data) {
             this.loadingStandardCore = true
             this.errors = {}
             this.familyLabelSelected = data['family'].toLowerCase()
@@ -278,6 +277,10 @@ export default {
                 this.dimensionsValueInMm['C'] = 0
             }
         },
+        onLoadCommercialShape(data) {
+            console.log("Ea")
+            console.log(data)
+        }
     },
     computed: {
         computeColor() {
@@ -470,12 +473,15 @@ export default {
             if (action.name == "setFullCoreModel") {
                  setTimeout(() => this.tryToSend(), 10);
             }
+            if (action.name == "quickGappingChanged") {
+                 setTimeout(() => this.tryToSend(), 10);
+            }
         })
 
         this.userStore.$onAction((action) => {
             this.recentChange = true
-            if (action.name == "setGlobalCoreShapeFromSelector") {
-                 this.onLoadCommercialShape(action.args[0])
+            if (action.name == "setGlobalCoreShape") {
+                 this.loadCommercialShape(action.args[0])
             }
         })
         this.loadingStandardCore = true
@@ -488,7 +494,6 @@ export default {
 </script>
 
 <template>
-    <CoreLoadCommercialShape @onLoadCommercialShape="onLoadCommercialShape"/>
     <Form ref=formRef @submit="computeShape" @invalid-submit="onInvalidSubmit" class="pb-1">
         <Field name="familiesSelect" ref="familiesRef" as="select" style="width: 100%" @change="onFamilyChange" class= "small-text bg-light text-white rounded-2 mt-2 col-sm-8 col-md-8 col-lg-3 col-xl-3" v-model="familyLabelSelected">
             <option disabled value="">Please select one family</option>

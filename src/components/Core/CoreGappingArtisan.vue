@@ -77,7 +77,12 @@ export default {
 
         this.coreStore.$onAction((action) => {
             if (action.name == "requestGappingTechnicalDrawing") {
+                this.recentChange = true
                 this.tryToSend()
+            }
+            if (action.name == "quickGappingChanged") {
+                this.getNumberColumns()
+                this.columnData = this.decodeUserStoreGap()
             }
         })
     },
@@ -101,6 +106,7 @@ export default {
         },
         decodeUserStoreGap() {
 
+            console.log("decodeUserStoreGap")
             const columnData = []
             const gapping = this.userStore.globalCore['functionalDescription']['gapping']
             const columns = this.userStore.globalCore['processedDescription']['columns']
@@ -289,6 +295,8 @@ export default {
                     this.columnData = Utils.deepCopy(this.columnData);
                 }
             }
+            this.recentChange = true
+            this.tryToSend()
         },
         getCoreParameters() {
             const url = import.meta.env.VITE_API_ENDPOINT + '/core_compute_core_parameters'
@@ -298,6 +306,7 @@ export default {
             aux['processedDescription'] = null
             axios.post(url, aux)
             .then(response => {
+                this.tryingToSend = false
                 const globalCore = this.userStore.globalCore
                 globalCore['functionalDescription'] = response.data['functionalDescription']
                 globalCore['geometricalDescription'] = response.data['geometricalDescription']
@@ -307,6 +316,7 @@ export default {
 
             })
             .catch(error => { 
+                this.tryingToSend = false
             });
         },
         compute_gapping_technical_drawing() {
@@ -332,7 +342,6 @@ export default {
                             this.tryToSend()
                         }
                         else {
-                            this.tryingToSend = false
                             this.getCoreParameters()
                         }
                     }
