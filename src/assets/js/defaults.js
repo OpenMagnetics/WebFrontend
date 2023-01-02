@@ -106,6 +106,7 @@ export const defaultCoreSaveConfiguration = {
     includeAdvancedGapData: false,
     includeAdvancedColumnData: false,
     includeAdvancedWindingWindowData: false,
+    downloadOnlyPiece: false,
 }
 
 export function titleColor(electricalParameter){

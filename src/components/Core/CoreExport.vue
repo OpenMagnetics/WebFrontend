@@ -26,6 +26,7 @@ export default {
         const includeAdvancedGapDataPicked = ref(0)
         const includeAdvancedColumnDataPicked = ref(0)
         const includeAdvancedWindingWindowDataPicked = ref(0)
+        const downloadOnlyPiecePicked = ref(0)
 
         return {
             userStore,
@@ -41,6 +42,7 @@ export default {
             includeAdvancedGapDataPicked,
             includeAdvancedColumnDataPicked,
             includeAdvancedWindingWindowDataPicked,
+            downloadOnlyPiecePicked,
         }
     },
     computed: {
@@ -56,11 +58,18 @@ export default {
     },
     methods: {
         onExportSTP(event) {
-            const url = import.meta.env.VITE_API_ENDPOINT + '/core_compute_core_3d_model_stp'
+            var url
+            var data
+            if (this.downloadOnlyPiecePicked == 1) {
+                url = import.meta.env.VITE_API_ENDPOINT + '/core_compute_shape_stp'
+                data = this.userStore.globalCore['functionalDescription']['shape']
+            }
+            else {
+                url = import.meta.env.VITE_API_ENDPOINT + '/core_compute_core_3d_model_stp'
+                data = this.userStore.globalCore
+            }
 
-            const globalCore = this.userStore.globalCore
-
-            axios.post(url, globalCore)
+            axios.post(url, data)
             .then(response => {
                 console.log(response.data)
                 const exportedData = Utils.getCoreData(this.userStore, Defaults.defaultCoreSaveConfiguration)
@@ -74,11 +83,18 @@ export default {
             });
         },
         onExportOBJ(event) {
-            const url = import.meta.env.VITE_API_ENDPOINT + '/core_compute_core_3d_model_obj'
+            var url
+            var data
+            if (this.downloadOnlyPiecePicked == 1) {
+                url = import.meta.env.VITE_API_ENDPOINT + '/core_compute_shape_obj'
+                data = this.userStore.globalCore['functionalDescription']['shape']
+            }
+            else {
+                url = import.meta.env.VITE_API_ENDPOINT + '/core_compute_core_3d_model_obj'
+                data = this.userStore.globalCore
+            }
 
-            const globalCore = this.userStore.globalCore
-
-            axios.post(url, globalCore)
+            axios.post(url, data)
             .then(response => {
                 console.log(response.data)
                 const exportedData = Utils.getCoreData(this.userStore, Defaults.defaultCoreSaveConfiguration)
@@ -101,6 +117,7 @@ export default {
                 includeAdvancedGapData: this.includeAdvancedGapDataPicked == 1,
                 includeAdvancedColumnData: this.includeAdvancedColumnDataPicked == 1,
                 includeAdvancedWindingWindowData: this.includeAdvancedWindingWindowDataPicked == 1,
+                downloadOnlyPiece: this.downloadOnlyPiecePicked == 1,
             }
             const exportedData = Utils.getCoreData(this.userStore, configuration)
             download(JSON.stringify(exportedData, null, 4), exportedData["functionalDescription"]["name"] + ".json", "text/plain");
@@ -147,7 +164,7 @@ export default {
                     <div class="container-flex bg-light text-white mt-2 mb-3 pb-3 me-2">
                         <div class="row">
                             <i class="fa-solid fa-xmark mt-2 pt-1 ps-2 text-danger offset-1 col-1 p-0"></i>
-                            <input v-model="includeMaterialDataPicked   " type="range" class="mt-2 form-range col-1" min="0" max="1" step="1" style="width: 30px">
+                            <input v-model="includeMaterialDataPicked" type="range" class="mt-2 form-range col-1" min="0" max="1" step="1" style="width: 30px">
                             <i class="fa-solid fa-check mt-2 pt-1 text-success col-1 ps-3"></i>
                             <label v-tooltip="'Add the material data to MAS file, not just the name'" class="fs-6 mt-2 p-0 ps-3 text-white col-7"> Add material data?</label>
                         </div>
@@ -155,7 +172,7 @@ export default {
                     <div class="container-flex bg-light text-white mt-2 mb-3 pb-3 me-2">
                         <div class="row">
                             <i class="fa-solid fa-xmark mt-2 pt-1 ps-2 text-danger offset-1 col-1 p-0"></i>
-                            <input v-model="includeGeometricalDataPicked    " type="range" class="mt-2 form-range col-1" min="0" max="1" step="1" style="width: 30px">
+                            <input v-model="includeGeometricalDataPicked" type="range" class="mt-2 form-range col-1" min="0" max="1" step="1" style="width: 30px">
                             <i class="fa-solid fa-check mt-2 pt-1 text-success col-1 ps-3"></i>
                             <label v-tooltip="'Add the geometrical description of each of the core parts to MAS file'" class="fs-6 mt-2 p-0 ps-3 text-white col-7"> Add geometrical data?</label>
                         </div>
@@ -163,7 +180,7 @@ export default {
                     <div class="container-flex bg-light text-white mt-2 mb-3 pb-3 me-2">
                         <div class="row">
                             <i class="fa-solid fa-xmark mt-2 pt-1 ps-2 text-danger offset-1 col-1 p-0"></i>
-                            <input v-model="includeMaximumDimensionsPicked  " type="range" class="mt-2 form-range col-1" min="0" max="1" step="1" style="width: 30px">
+                            <input v-model="includeMaximumDimensionsPicked" type="range" class="mt-2 form-range col-1" min="0" max="1" step="1" style="width: 30px">
                             <i class="fa-solid fa-check mt-2 pt-1 text-success col-1 ps-3"></i>
                             <label v-tooltip="'Add the maximum width, depth and height of the core to MAS file'" class="fs-6 mt-2 p-0 ps-3 text-white col-7"> Add maximum dimensions?</label>
                         </div>
@@ -171,7 +188,7 @@ export default {
                     <div class="container-flex bg-light text-white mt-2 mb-3 pb-3 me-2">
                         <div class="row">
                             <i class="fa-solid fa-xmark mt-2 pt-1 ps-2 text-danger offset-1 col-1 p-0"></i>
-                            <input v-model="includeAdvancedGapDataPicked    " type="range" class="mt-2 form-range col-1" min="0" max="1" step="1" style="width: 30px">
+                            <input v-model="includeAdvancedGapDataPicked" type="range" class="mt-2 form-range col-1" min="0" max="1" step="1" style="width: 30px">
                             <i class="fa-solid fa-check mt-2 pt-1 text-success col-1 ps-3"></i>
                             <label v-tooltip="'Add the advanced info for each gap, including anything necessary to calculate its reluctance, to MAS file'" class="fs-6 mt-2 p-0 ps-3 text-white col-7"> Add advanced info for gaps?</label>
                         </div>
@@ -179,7 +196,7 @@ export default {
                     <div class="container-flex bg-light text-white mt-2 mb-3 pb-3 me-2">
                         <div class="row">
                             <i class="fa-solid fa-xmark mt-2 pt-1 ps-2 text-danger offset-1 col-1 p-0"></i>
-                            <input v-model="includeAdvancedColumnDataPicked " type="range" class="mt-2 form-range col-1" min="0" max="1" step="1" style="width: 30px">
+                            <input v-model="includeAdvancedColumnDataPicked" type="range" class="mt-2 form-range col-1" min="0" max="1" step="1" style="width: 30px">
                             <i class="fa-solid fa-check mt-2 pt-1 text-success col-1 ps-3"></i>
                             <label v-tooltip="'Add the advanced info for each column to MAS file'" class="fs-6 mt-2 p-0 ps-3 text-white col-7"> Add advanced info for columns?</label>
                         </div>
@@ -187,9 +204,17 @@ export default {
                     <div class="container-flex bg-light text-white mt-2 mb-3 pb-3 me-2">
                         <div class="row">
                             <i class="fa-solid fa-xmark mt-2 pt-1 ps-2 text-danger offset-1 col-1 p-0"></i>
-                            <input v-model="includeAdvancedWindingWindowDataPicked  " type="range" class="mt-2 form-range col-1" min="0" max="1" step="1" style="width: 30px">
+                            <input v-model="includeAdvancedWindingWindowDataPicked" type="range" class="mt-2 form-range col-1" min="0" max="1" step="1" style="width: 30px">
                             <i class="fa-solid fa-check mt-2 pt-1 text-success col-1 ps-3"></i>
                             <label v-tooltip="'Add the advanced info for each winding window, to MAS file'" class="fs-6 mt-2 p-0 ps-3 text-white col-7"> Add advanced info for winding windows?</label>
+                        </div>
+                    </div>
+                    <div class="container-flex bg-light text-white mt-2 mb-3 pb-3 me-2">
+                        <div class="row">
+                            <i class="fa-solid fa-xmark mt-2 pt-1 ps-2 text-danger offset-1 col-1 p-0"></i>
+                            <input v-model="downloadOnlyPiecePicked" type="range" class="mt-2 form-range col-1" min="0" max="1" step="1" style="width: 30px">
+                            <i class="fa-solid fa-check mt-2 pt-1 text-success col-1 ps-3"></i>
+                            <label v-tooltip="'Add the advanced info for each winding window, to MAS file'" class="fs-6 mt-2 p-0 ps-3 text-white col-7"> Download just a piece instead of the full gapped core?</label>
                         </div>
                     </div>
                 </div>
