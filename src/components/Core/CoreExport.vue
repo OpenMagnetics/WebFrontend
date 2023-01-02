@@ -5,6 +5,7 @@ import * as Utils from '/src/assets/js/utils.js'
 import { useUserStore } from '/src/stores/user'
 import { useCoreStore } from '/src/stores/core'
 import * as download from 'downloadjs'
+import axios from "axios";
 
 </script>
 <script>
@@ -13,7 +14,9 @@ export default {
     data() {
         const userStore = useUserStore();
         const coreStore = useCoreStore();
-        const exported = ref(false)
+        const MASexported = ref(false)
+        const STPexported = ref(false)
+        const OBJexported = ref(false)
 
         const includeEffectiveParametersPicked = ref(0)
         const includeShapeDimensionsDataPicked = ref(0)
@@ -27,7 +30,9 @@ export default {
         return {
             userStore,
             coreStore,
-            exported,
+            MASexported,
+            STPexported,
+            OBJexported,
             includeEffectiveParametersPicked,
             includeShapeDimensionsDataPicked,
             includeMaterialDataPicked,
@@ -50,6 +55,42 @@ export default {
         },
     },
     methods: {
+        onExportSTP(event) {
+            const url = import.meta.env.VITE_API_ENDPOINT + '/core_compute_core_3d_model_stp'
+
+            const globalCore = this.userStore.globalCore
+
+            axios.post(url, globalCore)
+            .then(response => {
+                console.log(response.data)
+                const exportedData = Utils.getCoreData(this.userStore, Defaults.defaultCoreSaveConfiguration)
+                download(response.data, exportedData["functionalDescription"]["name"] + ".stp", "text/plain");
+                this.$emit("exported")
+                this.STPexported = true
+                setTimeout(() => this.STPexported = false, 2000);
+            })
+            .catch(error => {
+                console.error(error.data)
+            });
+        },
+        onExportOBJ(event) {
+            const url = import.meta.env.VITE_API_ENDPOINT + '/core_compute_core_3d_model_obj'
+
+            const globalCore = this.userStore.globalCore
+
+            axios.post(url, globalCore)
+            .then(response => {
+                console.log(response.data)
+                const exportedData = Utils.getCoreData(this.userStore, Defaults.defaultCoreSaveConfiguration)
+                download(response.data, exportedData["functionalDescription"]["name"] + ".obj", "text/plain");
+                this.$emit("exported")
+                this.OBJexported = true
+                setTimeout(() => this.OBJexported = false, 2000);
+            })
+            .catch(error => {
+                console.error(error.data)
+            });
+        },
         onExport(event) {
             const configuration = {
                 includeEffectiveParameters: this.includeEffectiveParametersPicked == 1,
@@ -62,10 +103,10 @@ export default {
                 includeAdvancedWindingWindowData: this.includeAdvancedWindingWindowDataPicked == 1,
             }
             const exportedData = Utils.getCoreData(this.userStore, configuration)
-            download(JSON.stringify(exportedData, null, 4), "ea" + ".json", "text/plain");
+            download(JSON.stringify(exportedData, null, 4), exportedData["functionalDescription"]["name"] + ".json", "text/plain");
             this.$emit("exported")
-            this.exported = true
-            setTimeout(() => this.exported = false, 2000);
+            this.MASexported = true
+            setTimeout(() => this.MASexported = false, 2000);
         }
 
     }
@@ -156,7 +197,14 @@ export default {
         </div>
 
 
-        <button class="mt-5 btn text-light bg-primary float-start fs-5 px-4" :disabled="exported" @click="onExport">{{exported? 'Exported' : 'Export'}}</button>
+        <div class="container">
+            <div class="row">
+                <button class="mt-5 btn text-light bg-primary float-start fs-5 px-4 col-12" :disabled="MASexported" @click="onExport">{{MASexported? 'Exported' : 'Export data (MAS format)'}}</button>
+                <button class="mt-3 btn text-light bg-primary float-start fs-5 px-4 col-12" :disabled="STPexported" @click="onExportSTP">{{STPexported? 'Exported' : 'Export 3D (STP format)'}}</button>
+                <button class="mt-3 btn text-light bg-primary float-start fs-5 px-4 col-12" :disabled="OBJexported" @click="onExportOBJ">{{OBJexported? 'Exported' : 'Export 3D (OBJ format)'}}</button>
+            
+            </div>
+        </div>
     </div>
 </div>
 

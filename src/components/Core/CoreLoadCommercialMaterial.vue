@@ -111,7 +111,6 @@ export default {
         const core = this.userStore.getGlobalCore
         axios.post(url, {})
         .then(response => {
-            console.warn(response.data)
             this.coreStore.commercialMaterials = response.data["commercial_materials"]
             this.coreStore.commercialMaterialsLoaded()
             response.data["commercial_materials"].forEach((item) => {
