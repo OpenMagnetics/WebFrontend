@@ -562,7 +562,7 @@ export default {
                             >
                             <template #table-row="props">
                                 <span v-if="props.column.field == 'load'">
-                                    <button type="button" class="btn btn-primary" :data-bs-dismiss="this.specificElement != null? 'modal' : ''" @click="onLoad(props.row.id)"><i class="fa-solid fa-upload"></i></button>
+                                    <button type="button" class="btn btn-primary" :data-bs-dismiss="specificElement != null? 'modal' : ''" @click="onLoad(props.row.id)"><i class="fa-solid fa-upload"></i></button>
                                 </span>
                                 <span v-else-if="props.column.field == 'delete'">
                                     <i class="fa-solid fa-file-xmark"></i>
