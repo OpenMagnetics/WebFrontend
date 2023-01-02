@@ -51,6 +51,11 @@ const routes = [
     name: 'Core',
     component: () => import('../views/Core.vue')
   },
+  {
+    path: '/core/:slug',
+    name: 'CoreSlug',
+    component: () => import('../views/SlugLoader.vue')
+  },
 ]
 const router = createRouter({
   history: createWebHistory(),

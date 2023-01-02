@@ -84,26 +84,6 @@ export default {
                 console.error(error.data)
             });
         },
-        getCoreParameters() {
-            const url = import.meta.env.VITE_API_ENDPOINT + '/core_compute_core_parameters'
-
-            const aux = Utils.deepCopy(this.userStore.globalCore)
-            aux['geometricalDescription'] = null
-            aux['processedDescription'] = null
-            axios.post(url, aux)
-            .then(response => {
-                const globalCore = this.userStore.globalCore
-                globalCore['functionalDescription'] = response.data['functionalDescription']
-                globalCore['geometricalDescription'] = response.data['geometricalDescription']
-                globalCore['processedDescription'] = response.data['processedDescription']
-                this.userStore.setGlobalCore(globalCore)
-                this.loadingStandardCore = false
-
-            })
-            .catch(error => { 
-                console.error(error.data)
-            });
-        },
         computePiece3DModel() {
             if (!this.posting) {
                 this.posting = true
@@ -133,7 +113,7 @@ export default {
                     this.isDataDirty = false
                     this.coreStore.setStreamedObj(response.data)
                     this.getTechnicalDrawing(dimensionsValueInM)
-                    this.getCoreParameters()
+                    Utils.getCoreParameters(this.userStore, () => {this.loadingStandardCore = false;}, () => {this.loadingStandardCore = false;})
                 })
                 .catch(error => {
                     this.posting = false
@@ -174,7 +154,7 @@ export default {
                     this.isDataDirty = false
                     this.coreStore.setStreamedObj(response.data)
                     this.getTechnicalDrawing(dimensionsValueInM)
-                    this.getCoreParameters()
+                    Utils.getCoreParameters(this.userStore, () => {this.loadingStandardCore = false;}, () => {this.loadingStandardCore = false;})
                 })
                 .catch(error => {
                     this.posting = false

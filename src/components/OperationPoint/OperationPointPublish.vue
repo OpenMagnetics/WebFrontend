@@ -40,6 +40,11 @@ export default {
             required: false,
             default: false,
         },
+        publishedSlug: {
+            type: String,
+            required: false,
+            default: null,
+        },
     },
     methods: {
         onPublish(event) {
@@ -80,6 +85,10 @@ export default {
         }
     },
     mounted() {
+        if (this.publishedSlug != null) {
+            this.isPublished = true
+            slug.value = this.publishedSlug
+        }
     }
 }
 </script>

@@ -25,9 +25,18 @@ export const useUserDatabaseStore = defineStore("userDatabase", () => {
         this.magnetics = magnetics
     }
 
-    function getOperationPointsById(id) {
+    function getOperationPointById(id) {
         var foundItem = null
         this.operationPoints.forEach((item) => {
+            if (item["_id"] == id) 
+                foundItem = Utils.deepCopy(item)
+        })
+        return foundItem
+    }
+
+    function getCoreById(id) {
+        var foundItem = null
+        this.cores.forEach((item) => {
             if (item["_id"] == id) 
                 foundItem = Utils.deepCopy(item)
         })
@@ -45,6 +54,7 @@ export const useUserDatabaseStore = defineStore("userDatabase", () => {
         setBobbins,
         setWires,
         setMagnetics,
-        getOperationPointsById,
+        getOperationPointById,
+        getCoreById,
     }
 })

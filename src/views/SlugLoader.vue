@@ -1,8 +1,10 @@
 <script setup>
 import OperationPoint from '/src/views/OperationPoint.vue'
+import Core from '/src/views/Core.vue'
 import axios from "axios"
 import { useUserStore } from '/src/stores/user'
 import { useCommonStore } from '/src/stores/waveform'
+import { useCoreStore } from '/src/stores/core'
 import * as Utils from '/src/assets/js/utils.js'
 
 </script>
@@ -12,10 +14,13 @@ export default {
     data() {
         const userStore = useUserStore()
         const operationPointCommonStore = useCommonStore()
+        const coreStore = useCoreStore()
         return {
             operationPointLoaded: false,
+            coreLoaded: false,
             userStore,
             operationPointCommonStore,
+            coreStore,
         }
     },
     methods: {
@@ -50,6 +55,30 @@ export default {
             }
         }
 
+        if (this.$route.fullPath.includes("core")){
+            if (slug != null) {
+                const url = import.meta.env.VITE_API_ENDPOINT + '/core_load/' + slug 
+                const data = {"username": null}
+                console.log(url)
+                console.log(data)
+                axios.post(url, data)
+                .then(response => {
+                    console.log(response.data)
+                    if (response.data == null)
+                        this.$router.push('/');
+                    else {
+                        this.userStore.globalCore = response.data["element"]
+                        Utils.getCoreParameters(this.userStore, () => {this.coreStore.setDataReadOnly(true); this.coreLoaded = true;}, () => {})
+                        
+                    }
+
+                })
+                .catch(error => {
+                    console.log(error.data)
+                });
+            }
+        }
+
     },
     created() {
     },
@@ -59,6 +88,7 @@ export default {
 
 <template>
     <OperationPoint v-if="operationPointLoaded"/>
+    <Core v-if="coreLoaded"/>
     <div v-else class="d-flex align-middle align-self-center">
         <img class="mx-auto my-auto" alt="loading" style="width: 35vw; height: auto;" src="/images/loading.gif">
     </div>

@@ -298,27 +298,6 @@ export default {
             this.recentChange = true
             this.tryToSend()
         },
-        getCoreParameters() {
-            const url = import.meta.env.VITE_API_ENDPOINT + '/core_compute_core_parameters'
-
-            const aux = Utils.deepCopy(this.userStore.globalCore)
-            aux['geometricalDescription'] = null
-            aux['processedDescription'] = null
-            axios.post(url, aux)
-            .then(response => {
-                this.tryingToSend = false
-                const globalCore = this.userStore.globalCore
-                globalCore['functionalDescription'] = response.data['functionalDescription']
-                globalCore['geometricalDescription'] = response.data['geometricalDescription']
-                globalCore['processedDescription'] = response.data['processedDescription']
-                this.userStore.setGlobalCore(globalCore)
-                this.compute_gapping_technical_drawing()
-
-            })
-            .catch(error => { 
-                this.tryingToSend = false
-            });
-        },
         compute_gapping_technical_drawing() {
             const url = import.meta.env.VITE_API_ENDPOINT + '/core_compute_gapping_technical_drawing'
 
@@ -342,7 +321,7 @@ export default {
                             this.tryToSend()
                         }
                         else {
-                            this.getCoreParameters()
+                            Utils.getCoreParameters(this.userStore, () => {this.tryingToSend = false; this.compute_gapping_technical_drawing()}, () => {this.tryingToSend = false;})
                         }
                     }
                 }

@@ -12,7 +12,7 @@ import axios from "axios";
 
 <script>
 const schema = Yup.object().shape({
-    quickGapLengthField: Yup.number().typeError('Target Inductance cannot be empty').required('Please, introduce a gap').min(0.0001).label("Gap"),
+    quickGapLengthField: Yup.number().typeError('Gap Length cannot be empty').required('Please, introduce a gap').min(0.0001).label("Gap"),
     quickGapTypeField: Yup.string().required('Please, introduce a gap type'),
     quickShapeField: Yup.string().required('Please, introduce a shape'),
     quickMaterialField: Yup.string().required('Please, introduce a material'),
@@ -149,24 +149,6 @@ export default {
 
     },
     methods: {
-        getCoreParameters() {
-            const url = import.meta.env.VITE_API_ENDPOINT + '/core_compute_core_parameters'
-
-            const aux = Utils.deepCopy(this.userStore.globalCore)
-            aux['geometricalDescription'] = null
-            aux['processedDescription'] = null
-            axios.post(url, aux)
-            .then(response => {
-                this.tryingToSend = false
-                this.userStore.globalCore['functionalDescription'] = response.data['functionalDescription']
-                this.userStore.globalCore['geometricalDescription'] = response.data['geometricalDescription']
-                this.userStore.globalCore['processedDescription'] = response.data['processedDescription']
-                this.coreStore.quickGappingChanged()
-            })
-            .catch(error => { 
-                this.tryingToSend = false
-            });
-        },
         tryToSend() {
             if (!this.tryingToSend) {
                 this.recentChange = false
@@ -178,7 +160,7 @@ export default {
                             this.tryToSend()
                         }
                         else {
-                            this.getCoreParameters()
+                            Utils.getCoreParameters(this.userStore, () => {this.tryingToSend = false; this.coreStore.quickGappingChanged();}, () => {this.tryingToSend = false;})
                         }
                     }
                 }
@@ -305,12 +287,58 @@ export default {
 
 
 <template>
-    <div class="container-flex text-primary mt-2 mb-3 pb-3 border-bottom">
-        <label class="fs-4 ms-1  mb-3 text-primary text-center">Core quick access</label>
-        <Form ref="formRef" :validation-schema="schema" v-slot="{ handleSubmit, errors }" class="form-inline" @submit="handleSubmit($event, onSubmit)">
+    <div class="container-flex text-primary pt-2">
+        <Form ref="formRef" :validation-schema="schema" v-slot="{ handleSubmit, errors }" class="form-inline row" @submit="handleSubmit($event, onSubmit)">
             <div class="mt-1"></div>
-            <label class="rounded-2 fs-5 col-5">Gap type</label>
-            <Field name="quickGapTypeField" ref="quickGapTypeFieldRef" as="select" :class="{'is-invalid': errors.quickGapTypeField }" @change="onGapTypeChange" class= "fs-6 bg-light text-white rounded-2 col-5" v-model="quickGapTypeSelected">
+
+
+            <label class="rounded-2 fs-5 col-xl-1 col-lg-5 col-sm-5 m-xl-0 p-0 m-0 text-sm-center">Shape</label>
+            <div class="col-xl-2 col-sm-5">
+                <div class="container-flex p-0 m-0">
+                    <div class="row">
+                        <Field name="quickShapeField" ref="quickShapeFieldRef" as="select" :class="{'is-invalid': errors.quickShapeField }" @change="onShapeChange" class= "fs-6 bg-light text-white rounded-2 col-8 m-0 p-0" v-model="quickShapeSelected">
+                            <option disabled value="">Please select one</option>
+                            <option disabled value="Custom">Custom</option>
+                            <option v-for="model, index in commercialShapesNames"
+                                :key="index"
+                                :value="model">{{model}}
+                            </option>
+                        </Field>
+                        <button v-tooltip="'Open information table for shapes'" class="btn btn-primary text-dark py-1 p-0 px-0 mx-1 offset-1 col-2" data-bs-toggle="modal" data-bs-target="#loadCommercialShapeModal" >
+                            <i class="fa-solid fs-6 fa-table-list m-0 p-0"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="invalid-feedback">{{errors.quickShapeField}}</div>
+
+
+            <label class="rounded-2 fs-5 col-xl-1 col-sm-5 m-xl-0 p-0 m-0 text-sm-center">Material</label>
+            <div class="col-xl-2 col-sm-5">
+                <div class="container-flex p-0 m-0">
+                    <div class="row">
+                        <Field name="quickMaterialField" ref="quickMaterialFieldRef" as="select" :class="{ 'is-invalid': errors.quickMaterialField }" @change="onMaterialChange" class= "fs-6 bg-light text-white rounded-2 col-8 m-0 p-0" v-model="quickMaterialSelected">
+                            <option disabled value="">Please select one</option>
+                            <option disabled value="Custom">Custom</option>
+                            <option v-for="model, index in commercialMaterialNames"
+                                :key="index"
+                                :value="model">{{model}}
+                            </option>
+                        </Field>
+                        <button v-tooltip="'Open information table for materials'" class="btn btn-primary text-dark py-1 p-0 px-0 mx-1 offset-1 col-2" data-bs-toggle="modal" data-bs-target="#loadCommercialMaterialModal" >
+                            <i class="fa-solid fs-6 fa-table-list m-0 p-0"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+
+            <label  class="rounded-2 fs-5 col-xl-1 col-lg-5 col-sm-5 text-xl-end pe-3 m-0 p-0 text-sm-center" >Gap</label>
+            <Field :disabled="quickGapTypeSelected == 'Ungapped'" v-if="quickGapTypeSelected != 'Custom'" ref="quickGapLengthFieldRef" name="quickGapLengthField" type="number" v-model="quickGapLengthSelected" @change="onGapLengthChange" :class="{'is-invalid': errors.quickGapLengthField }" class="rounded-2 bg-light text-white col-xl-1 col-lg-3 col-sm-3 text-end"/>
+            <label v-if="quickGapTypeSelected != 'Custom'" class="rounded-2 fs-5 text-start col-xl-1 col-lg-2 col-sm-2 p-0 m-0 ps-1" >{{"mm"}}</label>
+
+            <label class="rounded-2 fs-5 col-xl-1 col-sm-5 p-0 m-0 text-sm-center">Type</label>
+            <Field name="quickGapTypeField" ref="quickGapTypeFieldRef" as="select" :class="{'is-invalid': errors.quickGapTypeField }" @change="onGapTypeChange" class= "fs-6 bg-light text-white rounded-2 col-xl-2 col-sm-5" v-model="quickGapTypeSelected" >
                 <option disabled value="">Please select one</option>
                 <option value="Ungapped">Ungapped</option>
                 <option value="Grinded">Grinded</option>
@@ -318,43 +346,11 @@ export default {
                 <option value="Distributed">Distributed</option>
                 <option disabled value="Custom">Custom</option>
             </Field>
-            <div class="invalid-feedback">{{errors.quickGapTypeField}}</div>
 
-            <div v-if="quickGapTypeSelected != 'Custom'" class="mt-1"></div>
-            <label v-if="quickGapTypeSelected != 'Custom'" class="rounded-2 fs-5 col-5">Gap</label>
-            <Field :disabled="quickGapTypeSelected == 'Ungapped'" v-if="quickGapTypeSelected != 'Custom'" ref="quickGapLengthFieldRef" name="quickGapLengthField" type="number" v-model="quickGapLengthSelected" @change="onGapLengthChange" :class="{'is-invalid': errors.quickGapLengthField }" class="rounded-2 bg-light text-white offset-1 col-4 text-end"/>
-            <label v-if="quickGapTypeSelected != 'Custom'" class="rounded-2 fs-6 text-end col-2">{{"mm"}}</label>
-            <div v-if="quickGapTypeSelected != 'Custom'" class="invalid-feedback">{{errors.quickGapLengthField}}</div>
 
-            <div class="mt-1"></div>
-            <label class="rounded-2 fs-5 col-5">Shape</label>
-            <Field name="quickShapeField" ref="quickShapeFieldRef" as="select" :class="{'is-invalid': errors.quickShapeField }" @change="onShapeChange" class= "fs-6 bg-light text-white rounded-2 col-5" v-model="quickShapeSelected">
-                <option disabled value="">Please select one</option>
-                <option disabled value="Custom">Custom</option>
-                <option v-for="model, index in commercialShapesNames"
-                    :key="index"
-                    :value="model">{{model}}
-                </option>
-            </Field>
-            <button v-tooltip="'Open information table for shapes'" class="btn btn-primary text-dark ms-2 p-0 col-1 submit-btn" data-bs-toggle="modal" data-bs-target="#loadCommercialShapeModal">
-                <i class="fa-solid fs-6 fa-table-list m-0 p-0"></i>
-            </button>
-            <div class="invalid-feedback">{{errors.quickShapeField}}</div>
-
-            <div class="mt-1"></div>
-            <label class="rounded-2 fs-5 col-5">Material</label>
-            <Field name="quickMaterialField" ref="quickMaterialFieldRef" as="select" :class="{ 'is-invalid': errors.quickMaterialField }" @change="onMaterialChange" class= "fs-6 bg-light text-white rounded-2 offset 1 col-5" v-model="quickMaterialSelected">
-                <option disabled value="">Please select one</option>
-                <option disabled value="Custom">Custom</option>
-                <option v-for="model, index in commercialMaterialNames"
-                    :key="index"
-                    :value="model">{{model}}
-                </option>
-            </Field>
-            <button v-tooltip="'Open information table for materials'" class="btn btn-primary text-dark ms-2 p-0 col-1" data-bs-toggle="modal" data-bs-target="#loadCommercialMaterialModal">
-                <i class="fa-solid fs-6 fa-table-list m-0 p-0"></i>
-            </button>
             <div class="invalid-feedback">{{errors.quickMaterialField}}</div>
+            <div class="invalid-feedback">{{errors.quickGapTypeField}}</div>
+            <div v-if="quickGapTypeSelected != 'Custom'" class="invalid-feedback">{{errors.quickGapLengthField}}</div>
 
         </Form>
     </div>

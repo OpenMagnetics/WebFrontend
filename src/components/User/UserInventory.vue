@@ -2,6 +2,7 @@
 import Header from '/src/components/Header.vue'
 import Footer from '/src/components/Footer.vue'
 import { useUserStore } from '/src/stores/user'
+import { useCoreStore } from '/src/stores/core'
 import { useUserDatabaseStore } from '/src/stores/userDatabase'
 import axios from "axios"
 import '/src/assets/css/vue-good-table-next.css'
@@ -116,6 +117,18 @@ export default {
                     tdClass: 'text-center',
                     tooltip: 'Reference name give to Core',
                 },
+                {
+                    label: 'Shape',
+                    field: 'shape',
+                    tdClass: 'text-center',
+                    tooltip: 'Shape used in the core',
+                },
+                {
+                    label: 'Material',
+                    field: 'material',
+                    tdClass: 'text-center',
+                    tooltip: 'Material used in the core',
+                },
             ]
 
         },
@@ -160,6 +173,7 @@ export default {
     },
     data() {
         const userStore = useUserStore()
+        const coreStore = useCoreStore()
         const userDatabaseStore = useUserDatabaseStore()
         const operationPointCommonStore = useCommonStore()
         const operationPointsData = []
@@ -178,6 +192,7 @@ export default {
             idToDelete: null,
             userDatabaseStore,
             userStore,
+            coreStore,
             operationPointCommonStore,
             operationPointsColor: "bg-light text-primary",
             coresColor: "bg-light text-primary",
@@ -215,7 +230,6 @@ export default {
                 this.operationPointsData = []
             }
             else {
-                const processedData = []
                 this.userDatabaseStore.operationPoints.forEach((item, index) => {
                     const compressedCurrentData = Utils.packDataPoints(item["current"]["waveform"], item["frequency"])
                     const compressedVoltageData = Utils.packDataPoints(item["voltage"]["waveform"], item["frequency"])
@@ -257,11 +271,37 @@ export default {
                 this.coresData = []
             }
             else {
-                const processedData = []
                 this.userDatabaseStore.cores.forEach((item, index) => {
+                    const status = []
+                    var shapeName
+                    var materialName
+                    if (item['slug'] != null) {
+                        status.push("published")
+                        // status.push("shared")  // TODO
+                        // status.push("starred")  // TODO
+                    }
+
+                    if (typeof(item["functionalDescription"]['shape']) == 'string') {
+                        shapeName = item["functionalDescription"]['shape']
+                    }
+                    else {
+                        shapeName = item["functionalDescription"]['shape']['name']
+                    }
+
+                    if (typeof(item["functionalDescription"]['material']) == 'string') {
+                        materialName = item["functionalDescription"]['material']
+                    }
+                    else {
+                        materialName = item["functionalDescription"]['material']['name']
+                    }
+                    console.log(item)
                     this.coresData.push({
                         id: item["_id"],
-                        name: item["name"],
+                        name: item["functionalDescription"]["name"],
+                        shape: shapeName,
+                        material: materialName,
+                        status: status,
+                        url: item["slug"] == null? null : "https://openmagnetics.com/operation_point/" + item["slug"],
                     })
                 })
                 this.dataLoaded += 1
@@ -275,7 +315,6 @@ export default {
                 this.bobbinsData = []
             }
             else {
-                const processedData = []
                 this.userDatabaseStore.bobbins.forEach((item, index) => {
                     this.bobbinsData.push({
                         id: item["_id"],
@@ -293,7 +332,6 @@ export default {
                 this.wiresData = []
             }
             else {
-                const processedData = []
                 this.userDatabaseStore.wires.forEach((item, index) => {
                     this.wiresData.push({
                         id: item["_id"],
@@ -311,7 +349,6 @@ export default {
                 this.magneticsData = []
             }
             else {
-                const processedData = []
                 this.userDatabaseStore.magnetics.forEach((item, index) => {
                     this.magneticsData.push({
                         id: item["_id"],
@@ -389,17 +426,30 @@ export default {
         onLoad(id) {
             console.log("Load: " + id)
             var dataToLoad = null
+            if ((this.userStore.getUserSubsection.value == 'operationPoints' && this.specificElement == null) || this.specificElement == 'operationPoints' ) {
+                dataToLoad = this.userDatabaseStore.getOperationPointById(id)
+                console.log(dataToLoad)
+                this.userStore.setGlobalOperationPoint(dataToLoad)
+                this.operationPointCommonStore.setDataReadOnly(false)
+                if (this.specificElement == null) {
+                    // Because this means we are in the User menu
+                    this.$router.push('/operation_point');
+                }
 
-            dataToLoad = this.userDatabaseStore.getOperationPointsById(id)
-            console.log(dataToLoad)
-            this.userStore.setGlobalOperationPoint(dataToLoad)
-            this.operationPointCommonStore.setDataReadOnly(false)
-            if (this.specificElement == null) {
-                // Because this means we are in the User menu
-                this.$router.push('/operation_point');
+                this.$emit("onLoadOperationPoint")
             }
+            if ((this.userStore.getUserSubsection.value == 'cores' && this.specificElement == null) || this.specificElement == 'cores') {
+                dataToLoad = this.userDatabaseStore.getCoreById(id)
+                console.log(dataToLoad)
+                this.userStore.setGlobalCore(dataToLoad)
+                this.coreStore.setDataReadOnly(false)
+                if (this.specificElement == null) {
+                    // Because this means we are in the User menu
+                    Utils.getCoreParameters(this.userStore, () => {this.$router.push('/core');}, () => {})
+                }
 
-            this.$emit("onLoadOperationPoint")
+                this.$emit("onLoadCore")
+            }
 
         },
         onDelete(id) {
@@ -512,7 +562,7 @@ export default {
                             >
                             <template #table-row="props">
                                 <span v-if="props.column.field == 'load'">
-                                    <button type="button" class="btn btn-primary"  data-bs-dismiss="modal" @click="onLoad(props.row.id)"><i class="fa-solid fa-upload"></i></button>
+                                    <button type="button" class="btn btn-primary" :data-bs-dismiss="this.specificElement != null? 'modal' : ''" @click="onLoad(props.row.id)"><i class="fa-solid fa-upload"></i></button>
                                 </span>
                                 <span v-else-if="props.column.field == 'delete'">
                                     <i class="fa-solid fa-file-xmark"></i>

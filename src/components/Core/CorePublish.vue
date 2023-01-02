@@ -40,6 +40,11 @@ export default {
             required: false,
             default: false,
         },
+        publishedSlug: {
+            type: String,
+            required: false,
+            default: null,
+        },
     },
     methods: {
         onPublish(event) {
@@ -70,6 +75,7 @@ export default {
                 
             })
             .catch(error => {
+                console.error("Error in core publish")
                 this.posting = false
             });
         }
@@ -80,6 +86,10 @@ export default {
         }
     },
     mounted() {
+        if (this.publishedSlug != null) {
+            this.isPublished = true
+            slug.value = this.publishedSlug
+        }
     }
 }
 </script>

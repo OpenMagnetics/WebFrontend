@@ -514,6 +514,78 @@ export function getOperationPointData(commonStore, currentStore, voltageStore, c
     return exportedData
 }
 
+export function getCoreData(userStore, configuration) {
+    const exportedData = {};
+    exportedData['functionalDescription'] = {};
+    exportedData['functionalDescription']['name'] = userStore.globalCore['functionalDescription']['name']
+    exportedData['functionalDescription']['type'] = userStore.globalCore['functionalDescription']['type']
+
+    if (userStore.globalCore['functionalDescription']['material']['type'] == 'custom') {
+        exportedData['functionalDescription']['material'] = userStore.globalCore['functionalDescription']['material']
+    }
+    else {
+        exportedData['functionalDescription']['material'] = userStore.globalCore['functionalDescription']['material']['name']
+    }
+
+    if (userStore.globalCore['functionalDescription']['shape']['type'] == 'custom') {
+        exportedData['functionalDescription']['shape'] = userStore.globalCore['functionalDescription']['shape']
+    }
+    else {
+        exportedData['functionalDescription']['shape'] = userStore.globalCore['functionalDescription']['shape']['name']
+    }
+
+    exportedData['functionalDescription']['gapping'] = []
+    userStore.globalCore['functionalDescription']['gapping'].forEach((item) => {
+        const aux = {}
+        aux['length'] = item['length']
+        aux['type'] = item['type']
+        aux['coordinates'] = item['coordinates']
+        exportedData['functionalDescription']['gapping'].push(aux)
+    })
+    exportedData['functionalDescription']['numberStacks'] = userStore.globalCore['functionalDescription']['numberStacks']
+
+    if (configuration["includeEffectiveParameters"]){
+        if (!("processedDescription" in exportedData)) {
+            exportedData['processedDescription'] = {}
+        }
+        console.log("exportedData")
+        console.log(exportedData)
+        exportedData['processedDescription']['effectiveParameters'] = userStore.globalCore['processedDescription']['effectiveParameters']
+    }
+    if (configuration["includeShapeDimensionsData"]){
+        exportedData['functionalDescription']['shape'] = userStore.globalCore['functionalDescription']['shape']
+    }
+    if (configuration["includeMaterialData"]){
+        exportedData['functionalDescription']['material'] = userStore.globalCore['functionalDescription']['material']
+    }
+    if (configuration["includeGeometricalData"]){
+        exportedData['geometricalDescription'] = userStore.globalCore['geometricalDescription']
+    }
+    if (configuration["includeMaximumDimensions"]){
+        if (!("processedDescription" in exportedData)) {
+            exportedData['processedDescription'] = {}
+        }
+        exportedData['processedDescription']['width'] = userStore.globalCore['processedDescription']['width']
+        exportedData['processedDescription']['depth'] = userStore.globalCore['processedDescription']['depth']
+        exportedData['processedDescription']['height'] = userStore.globalCore['processedDescription']['height']
+    }
+    if (configuration["includeAdvancedGapData"]){
+        exportedData['functionalDescription']['gapping'] = userStore.globalCore['functionalDescription']['gapping']
+    }
+    if (configuration["includeAdvancedColumnData"]){
+        if (!("processedDescription" in exportedData)) {
+            exportedData['processedDescription'] = {}
+        }
+        exportedData['processedDescription']['columns'] = userStore.globalCore['processedDescription']['columns']
+    }
+    if (configuration["includeAdvancedWindingWindowData"]){
+        if (!("processedDescription" in exportedData)) {
+            exportedData['processedDescription'] = {}
+        }
+        exportedData['processedDescription']['windingWindows'] = userStore.globalCore['processedDescription']['windingWindows']
+    }
+    return exportedData
+}
 
 export function hexToRgb(hex) {
     var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
@@ -522,4 +594,25 @@ export function hexToRgb(hex) {
         g: parseInt(result[2], 16),
         b: parseInt(result[3], 16)
     } : null;
+}
+
+export function getCoreParameters(userStore, callback, errorCallback) {
+    const url = import.meta.env.VITE_API_ENDPOINT + '/core_compute_core_parameters'
+
+    const aux = deepCopy(userStore.globalCore)
+    aux['geometricalDescription'] = null
+    aux['processedDescription'] = null
+    axios.post(url, aux)
+    .then(response => {
+        const globalCore = userStore.globalCore
+        globalCore['functionalDescription'] = response.data['functionalDescription']
+        globalCore['geometricalDescription'] = response.data['geometricalDescription']
+        globalCore['processedDescription'] = response.data['processedDescription']
+        userStore.setGlobalCore(globalCore)
+        callback();
+    })
+    .catch(error => { 
+        console.error(error.data)
+        errorCallback()
+    });
 }

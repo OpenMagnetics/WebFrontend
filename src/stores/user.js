@@ -37,13 +37,18 @@ export const useUserStore = defineStore("user", () => {
     })
 
     function resetGlobalOperationPoint() {
-        this.globalOperationPoint = Defaults.defaultOperationPoint
+        this.globalOperationPoint = Utils.deepCopy(Defaults.defaultOperationPoint)
     }
+
+    function resetGlobalCore() {
+        this.globalCore = Utils.deepCopy(Defaults.defaultCore)
+    }
+
     function reset() {
         this.loggedIn = false
         this.username = null
         this.globalOperationPoint = Utils.deepCopy(Defaults.defaultOperationPoint)
-        this.globalCore = null
+        this.globalCore = Utils.deepCopy(Defaults.defaultCore)
         this.idToDelete = null
         this.userSubsection = "operationPoints"
         this.coreSubsection = "shapeArtisan"
@@ -117,6 +122,7 @@ export const useUserStore = defineStore("user", () => {
         getIdToDelete,
         setIdToDelete,
         resetGlobalOperationPoint,
+        resetGlobalCore,
         setSelectedModels,
         selectedModels,
         reset,

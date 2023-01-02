@@ -39,7 +39,7 @@ export const defaultOperationPoint = {
 
 export const defaultCore = {
     "functionalDescription": {
-        "name": "default",
+        "name": "My Core",
         "type": "two-piece set",
         "material": "3C97",
         "shape":  {'aliases': [],
@@ -98,6 +98,14 @@ export const defaultOperationPointSaveConfiguration = {
 }
 
 export const defaultCoreSaveConfiguration = {
+    includeEffectiveParameters: false,
+    includeShapeDimensionsData: false,
+    includeMaterialData: false,
+    includeGeometricalData: false,
+    includeMaximumDimensions: false,
+    includeAdvancedGapData: false,
+    includeAdvancedColumnData: false,
+    includeAdvancedWindingWindowData: false,
 }
 
 export function titleColor(electricalParameter){

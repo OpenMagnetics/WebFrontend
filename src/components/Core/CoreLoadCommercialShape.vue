@@ -112,7 +112,6 @@ export default {
         const core = this.userStore.getGlobalCore
         axios.post(url, {})
         .then(response => {
-            console.warn(response.data)
             response.data["commercial_cores"].forEach((item) => {
                 this.coreStore.commercialShapes.push(item['functionalDescription']['shape'])
             })

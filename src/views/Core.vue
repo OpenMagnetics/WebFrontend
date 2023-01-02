@@ -6,7 +6,6 @@ import CoreToolMenu from '/src/components/Core/CoreToolMenu.vue'
 import CoreShapeArtisan from '/src/components/Core/CoreShapeArtisan.vue'
 import CoreGappingArtisan from '/src/components/Core/CoreGappingArtisan.vue'
 import CoreMaterialArtisan from '/src/components/Core/CoreMaterialArtisan.vue'
-import CoreQuickAccess from '/src/components/Core/CoreQuickAccess.vue'
 
 import { useCurrentStore } from '/src/stores/waveform'
 import { useVoltageStore } from '/src/stores/waveform'
@@ -62,7 +61,6 @@ export default {
                 </div>
                 <div class="row">
                     <div class="col-lg-2">
-                        <CoreQuickAccess/>
                         <CoreToolMenu @tool_change="onToolChange"/>
                     </div>
                     <div class="col-lg-10">

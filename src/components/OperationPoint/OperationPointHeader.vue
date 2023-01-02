@@ -27,8 +27,12 @@ const operationPointNameSelected = ref(commonStore.getOperationPointName.value =
 const voltageRef = ref(null)
 const currentRef = ref(null)
 const isLoggedIn = ref(false)
+var publishedSlug = null
 const currentOperationPointId = ref(null)
 if (userStore.getGlobalOperationPoint.value != null) {
+    if ("slug" in userStore.getGlobalOperationPoint.value) {
+        publishedSlug = userStore.getGlobalOperationPoint.value["slug"]
+    }
     if (!commonStore.isDataReadOnly.value) {
         currentOperationPointId.value = userStore.getGlobalOperationPoint.value["_id"]
     }
@@ -36,7 +40,6 @@ if (userStore.getGlobalOperationPoint.value != null) {
 const saveMessage = ref(currentOperationPointId.value == null? "Create and add to library" : "Save changes")
 
 const $cookies = inject('$cookies');
-var publishedSlug = null
 
 const schema = Yup.object().shape({
     voltageType: Yup.string()
@@ -252,7 +255,7 @@ onMounted(()=> {
             <div class="col-12 col-sm-2 col-md-2 col-lg-2 col-xl-2 container">
                 <div class="row">
                     <button :class="colorSaveButton" class="btn text-white py-1 px-2 my-1 col-10 col-sm-12 col-md-12 col-lg-12 col-xl-12" :disabled="!isLoggedIn || (saveMessage != 'Save changes' && saveMessage != 'Create and add to library')" @click="onSaveToDB">{{saveMessage}}</button>
-                    <button class="btn text-white bg-secondary py-1 px-2 my-1 col-10 col-sm-12 col-md-12 col-lg-5 col-xl-5" data-bs-toggle="modal" data-bs-target="#publishOperationPointModal">Publish</button>
+                    <button class="btn text-white bg-secondary py-1 px-2 my-1 col-10 col-sm-12 col-md-12 col-lg-5 col-xl-5" data-bs-toggle="modal" data-bs-target="#publishOperationPointModal">{{publishedSlug == null? 'Publish' : 'Published'}}</button>
                     <div class="col-12 col-sm-2 col-md-2 col-lg-2 col-xl-2"> </div>
                     <button class="btn text-white bg-secondary py-1 px-2 my-1 col-10 col-sm-12 col-md-12 col-lg-5 col-xl-5" data-bs-toggle="offcanvas" data-bs-target="#ExportOffCanvas" aria-controls="ExportOffCanvas">Export</button>
 
@@ -263,6 +266,6 @@ onMounted(()=> {
     <OperationPointImport @voltage-type-change="onVoltageChangeFromImport" @current-type-change="onCurrentChangeFromImport"/>
     <OperationPointExport @exported="onExport"/>
     <OperationPointNew />
-    <OperationPointPublish :isLoggedIn="isLoggedIn" @published="onPublish"/>
+    <OperationPointPublish :isLoggedIn="isLoggedIn" :publishedSlug="publishedSlug" @published="onPublish"/>
 
 </template>
