@@ -25,7 +25,6 @@ export default {
         const subtypeLabelSelected = null
         const dimensionsLabel = null
         var familiesData = null
-        const familiesLabels = []
         const subtypeLabels = []
         const dimensionsValueInMm = {}
         const isDataDirty = false
@@ -45,7 +44,6 @@ export default {
             subtypeLabelSelected,
             dimensionsLabel,
             familiesData,
-            familiesLabels,
             subtypeLabels,
             dimensionsValueInMm,
             isDataDirty,
@@ -201,20 +199,20 @@ export default {
                 , 500);
             }
         },
-        onFamilyChange(event) {
-            this.errors = {}
-            this.hasFreeCADError = false
-            this.isDataDirty = true
-            this.setCoreShapeName("Custom")
-            const family = event.target.value
-            this.subtypeLabels = Object.keys(this.familiesData[family])
-            if (this.subtypeLabels.length == 1) {
-                this.dimensionsLabel = this.familiesData[family][this.subtypeLabels[0]]
-            }
-            else {
-                this.dimensionsLabel = null
-            }
-        },
+        // onFamilyChange(event) {
+        //     this.errors = {}
+        //     this.hasFreeCADError = false
+        //     this.isDataDirty = true
+        //     this.setCoreShapeName("Custom")
+        //     const family = event.target.value
+        //     this.subtypeLabels = Object.keys(this.familiesData[family])
+        //     if (this.subtypeLabels.length == 1) {
+        //         this.dimensionsLabel = this.familiesData[family][this.subtypeLabels[0]]
+        //     }
+        //     else {
+        //         this.dimensionsLabel = null
+        //     }
+        // },
         onSubtypeChange(event) {
             this.errors = {}
             this.hasFreeCADError = false
@@ -263,6 +261,29 @@ export default {
         }
     },
     computed: {
+        styleTopLabelTooltip() {
+            var relative_placement;
+            relative_placement = 'bottom'
+            return {
+                    text: "Select a commercial shape in order to start customizing",
+                    theme: {
+                        placement: relative_placement,
+                        width: '200px',
+                        "text-align": "center",
+                    },
+                }
+        },
+        styleRightTooltip() {
+            var relative_placement;
+            relative_placement = 'right'
+            return {
+                    theme: {
+                        placement: relative_placement,
+                        width: '200px',
+                        "text-align": "center",
+                    },
+                }
+        },
         computeColor() {
             if (this.isDataDirty) {
                 return "btn-success text-light"
@@ -423,7 +444,6 @@ export default {
         axios.post(url, {})
         .then(response => {
             this.familiesData = response.data["families"]
-            this.familiesLabels = Object.keys(this.familiesData)
 
             this.familyLabelSelected = this.userStore.globalCore['functionalDescription']['shape']['family']
             this.subtypeLabels = Object.keys(this.familiesData[this.familyLabelSelected.toLowerCase()])
@@ -474,40 +494,45 @@ export default {
 </script>
 
 <template>
-    <Form ref=formRef @submit="computeShape" @invalid-submit="onInvalidSubmit" class="pb-1">
-        <Field name="familiesSelect" ref="familiesRef" as="select" style="width: 100%" @change="onFamilyChange" class= "small-text bg-light text-white rounded-2 mt-2 col-sm-8 col-md-8 col-lg-3 col-xl-3" v-model="familyLabelSelected">
-            <option disabled value="">Please select one family</option>
-            <option v-for="item, index in familiesLabels"
-                    :value="item"
-            >{{item.toUpperCase()}}</option>
-        </Field>
-        <Field v-if="subtypeLabels.length > 1" name="subtypeSelect" ref="subtypeRef" as="select" style="width: 100%" @change="onSubtypeChange" class= "small-text bg-light text-white rounded-2 mt-2 col-sm-8 col-md-8 col-lg-3 col-xl-3" v-model="subtypeLabelSelected">>
-            <option disabled value="">Please select one sub type</option>
-            <option v-for="item, index in subtypeLabels"
-                    :value="item"
-            >{{item.toUpperCase()}}</option>
-        </Field>
-        <div v-for="value, key in dimensionsLabel" class="form-inline container">
-            <div class="row my-1">
-                <label class="text-white col-2 pt-1">{{value}}</label>
-                <vue-number-input inline controls class="offset-1 col-9 bg-dark text-primary"
-                    :modelValue="dimensionsValueInMm[value]"
-                    @update:model-value="onDimensionUpdate"
-                    :size="'small'"
-                    :name="value"
-                    :center="true"
-                    :min="0"
-                    :step="0.1"
-                    :max="1000">
-                    </vue-number-input>
-                <label class="text-danger col-12 pt-1" style="font-size: 0.7em">{{errorMessages[value]}}</label>
-            </div>
-        </div>
+    <div class="bg-light rounded-3 px-1 border border-primary">
+        <Form v-tooltip="styleRightTooltip" ref=formRef @submit="computeShape" @invalid-submit="onInvalidSubmit" class="pb-1">
+            <!--         <Field name="familiesSelect" ref="familiesRef" as="select" style="width: 100%" @change="onFamilyChange" class= "small-text bg-light text-white rounded-2 mt-2 col-sm-8 col-md-8 col-lg-3 col-xl-3" v-model="familyLabelSelected">
+                <option disabled value="">Please select one family</option>
+                <option v-for="item, index in familiesLabels"
+                        :value="item"
+                >{{item.toUpperCase()}}</option>
+            </Field> -->
+            <label v-tooltip="styleTopLabelTooltip" class="fs-5 mb-1 text-white text-center col-12">Customize shape</label> 
 
-        <button v-if="!posting" :disabled="hasError" :class="computeColor" class="submit-btn btn mt-2 fs-6" type="submit">Compute shape</button>
-        <button v-if="!posting" class="submit-btn btn btn-primary mt-2 fs-6" data-bs-toggle="modal" data-bs-target="#loadCommercialShapeModal">Load commercial shape</button>
-        <img v-if="posting" class="mx-auto d-block" alt="loading" style="width: 150px; height: auto;" src="/images/loading.gif">
-    </Form>
+            <label v-tooltip="'A subtype represents the different variations inside a family'" class="fs-6 mb-2 ps-2 text-white text-start col-8">Subtype </label>
+            <Field v-if="subtypeLabels.length > 1" name="subtypeSelect" ref="subtypeRef" as="select" style="width: 30%" @change="onSubtypeChange" class= "small-text bg-light text-white rounded-2 mt-2 col-sm-8 col-md-8 col-lg-3 col-xl-3" v-model="subtypeLabelSelected">>
+                <option disabled value="">Please select one sub type</option>
+                <option v-for="item, index in subtypeLabels"
+                        :value="item"
+                >{{item.toUpperCase()}}</option>
+            </Field>
+            <div v-for="value, key in dimensionsLabel" class="form-inline container">
+                <div class="row my-1">
+                    <label class="text-white col-2 pt-1">{{value}}</label>
+                    <vue-number-input inline controls class="offset-1 col-9 bg-dark text-primary"
+                        :modelValue="dimensionsValueInMm[value]"
+                        @update:model-value="onDimensionUpdate"
+                        :size="'small'"
+                        :name="value"
+                        :center="true"
+                        :min="0"
+                        :step="0.1"
+                        :max="1000">
+                        </vue-number-input>
+                    <label class="text-danger col-12 pt-1" style="font-size: 0.7em">{{errorMessages[value]}}</label>
+                </div>
+            </div>
+
+            <button v-tooltip="hasError || hasFreeCADError? 'There is an error in your dimensions and the shape cannot be computed. Please, fix it or reload a commercial shape to continue.' : 'Computes your dimensions'" v-if="!posting" :disabled="hasError" :class="computeColor" class="submit-btn btn mt-2 fs-6" type="submit">Compute shape</button>
+            <button v-tooltip="'Opens the commercial shape menu and allows you to choose a different family to modify.'" v-if="!posting" class="submit-btn btn btn-primary mt-2 fs-6" data-bs-toggle="modal" data-bs-target="#loadCommercialShapeModal">Load commercial shape</button>
+            <img v-if="posting" class="mx-auto d-block" alt="loading" style="width: 150px; height: auto;" src="/images/loading.gif">
+        </Form>
+    </div>
   <div>
   </div>
 </template>

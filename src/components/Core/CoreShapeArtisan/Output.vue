@@ -22,6 +22,19 @@ export default {
             minimumArea: null,
         }
     },
+    computed: {
+        styleTooltip() {
+            var relative_placement;
+            relative_placement = 'top'
+            return {
+                    theme: {
+                        placement: relative_placement,
+                        width: '400px',
+                        "text-align": "center",
+                    },
+                }
+        },
+    },
     mounted() {
 
         this.userStore.$onAction((action) => {
@@ -39,23 +52,23 @@ export default {
 
 
 <template>
-    <div class="container-flex text-white mt-2 mb-3 pb-3 border-bottom me-2">
+    <div v-tooltip="styleTooltip" class="container-flex text-white mt-2 mb-3 pb-3 border-bottom me-2">
         <div class="row">
             <label class="fs-4 ms-3 mb-3 text-white col-12"> Outputs for shape</label>
             <div class="col-xl-6 col-lg-12">
-                <label class="fs-5 ms-3">Eff. length:</label>
+                <label v-tooltip="'Effective length of the shape. Want to know more about it? Read our article: https://openmagnetics.com/musings/7'" class="fs-5 ms-3">Eff. length:</label>
                 <label class="fs-5 bg-dark text-white float-end" style=" text-align:right;">{{effectiveLength + ' mm'}}</label>
             </div>
             <div class="col-xl-6 col-lg-12">
-                <label class="fs-5 ms-3">Eff. area:</label>
+                <label v-tooltip="'Effective area of the shape. Want to know more about it? Read our article: https://openmagnetics.com/musings/7'" class="fs-5 ms-3">Eff. area:</label>
                 <label class="fs-5 bg-dark text-white float-end" style=" text-align:right;">{{effectiveArea + ' mm²'}}</label>
             </div>
             <div class="col-xl-6 col-lg-12">
-                <label class="fs-5 ms-3">Eff. volume:</label>
+                <label v-tooltip="'Effective volume of the shape. Want to know more about it? Read our article: https://openmagnetics.com/musings/7'" class="fs-5 ms-3">Eff. volume:</label>
                 <label class="fs-5 bg-dark text-white float-end" style=" text-align:right;">{{effectiveVolume + ' mm³'}}</label>
             </div>
             <div class="col-xl-6 col-lg-12">
-                <label class="fs-5 ms-3">Min. area:</label>
+                <label v-tooltip="'Minimum area of the shape. Want to know more about it? Read our article: https://openmagnetics.com/musings/7'" class="fs-5 ms-3">Min. area:</label>
                 <label class="fs-5 bg-dark text-white float-end" style=" text-align:right;">{{minimumArea + ' mm²'}}</label>
             </div>
         </div>

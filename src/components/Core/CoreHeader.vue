@@ -57,7 +57,18 @@ export default {
                 return "bg-danger"
             else
                 return "bg-secondary"
-        }
+        },
+        styleTooltip() {
+            var relative_placement;
+            relative_placement = 'bottom'
+            return {
+                theme: {
+                    placement: relative_placement,
+                    width: '100px',
+                    "text-align": "center",
+                },
+            }
+        },
     },
     mounted() {
         this.isLoggedIn = this.userStore.isLoggedIn
@@ -139,19 +150,19 @@ export default {
 </script>
 
 <template>
-    <div class="container text-white mt-2 mb-2 pb-3 border-bottom">
+    <div v-tooltip="styleTooltip" class="container text-white mt-2 mb-2 pb-3 border-bottom">
         <div class="row gx-1">
             <div class="col-12 col-sm-2 col-md-2 col-lg-2 col-xl-2 ">
                 <div class="row gx-2">
-                    <button class="btn text-white bg-secondary py-1 my-1 col-10 col-sm-12 col-md-12 col-lg-5 col-xl-5" data-bs-toggle="modal" data-bs-target="#newCoreModal">New</button>
+                    <button v-tooltip="'Create new core. All current unsaved changes will be lost'" class="btn text-white bg-secondary py-1 my-1 col-10 col-sm-12 col-md-12 col-lg-5 col-xl-5" data-bs-toggle="modal" data-bs-target="#newCoreModal">New</button>
                     <div class="col-12 col-sm-2 col-md-2 col-lg-2 col-xl-2"> </div>
-                    <button class="btn text-white bg-secondary py-1 my-1 col-10 col-sm-12 col-md-12 col-lg-5 col-xl-5" data-bs-toggle="offcanvas" data-bs-target="#CoreImportOffCanvas" aria-controls="CoreImportOffCanvas">Import</button>
+                    <button v-tooltip="'Import a core from a MAS file. All current unsaved changes will be lost'" class="btn text-white bg-secondary py-1 my-1 col-10 col-sm-12 col-md-12 col-lg-5 col-xl-5" data-bs-toggle="offcanvas" data-bs-target="#CoreImportOffCanvas" aria-controls="CoreImportOffCanvas">Import</button>
 
                 </div>
             </div>
             <div class="col-11 col-sm-8 col-md-8 col-lg-8 col-xl-8 pe-5 ps-3">
                 <Form :validation-schema="schema" v-slot="{ handleSubmit, errors }" class="form-inline row" @submit="handleSubmit($event, onSubmit)">
-                    <label class="medium-text col-sm-4 col-md-4 col-lg-3 col-xl-3 text-md-end">Core Name:</label>
+                    <label v-tooltip="'Name of the core, so it can de identified later in the simulation'" class="medium-text col-sm-4 col-md-4 col-lg-3 col-xl-3 text-md-end">Core Name:</label>
                     <Field name="coreName" type="text" :class="{ 'is-invalid': errors.coreName }" :placeholder="Defaults.defaultCoreNamePlaceHolder"  @change="onCoreName" :value="Defaults.defaultCoreName" class= "small-text bg-light text-white rounded-2 col-sm-8 col-md-8 col-lg-9 col-xl-9" v-model="coreNameSelected"/>
 
                     <div class="invalid-feedback">{{errors.coreName}}</div>
@@ -161,10 +172,10 @@ export default {
             </div>
             <div class="col-12 col-sm-2 col-md-2 col-lg-2 col-xl-2 container">
                 <div class="row">
-                    <button :class="colorSaveButton" class="btn text-white py-1 px-2 my-1 col-10 col-sm-12 col-md-12 col-lg-12 col-xl-12" :disabled="!isLoggedIn || (saveMessage != 'Save changes' && saveMessage != 'Create and add to library')" @click="onSaveToDB">{{saveMessage}}</button>
-                    <button class="btn text-white bg-secondary py-1 px-2 my-1 col-10 col-sm-12 col-md-12 col-lg-5 col-xl-5" data-bs-toggle="modal" data-bs-target="#publishCoreModal">{{publishedSlug == null? 'Publish' : 'Published'}}</button>
+                    <button v-tooltip="'Saves the core into your inventory'" :class="colorSaveButton" class="btn text-white py-1 px-2 my-1 col-10 col-sm-12 col-md-12 col-lg-12 col-xl-12" :disabled="!isLoggedIn || (saveMessage != 'Save changes' && saveMessage != 'Create and add to library')" @click="onSaveToDB">{{saveMessage}}</button>
+                    <button v-tooltip="'Publish your core under an unique URL and show it off!'" class="btn text-white bg-secondary py-1 px-2 my-1 col-10 col-sm-12 col-md-12 col-lg-5 col-xl-5" data-bs-toggle="modal" data-bs-target="#publishCoreModal">{{publishedSlug == null? 'Publish' : 'Published'}}</button>
                     <div class="col-12 col-sm-2 col-md-2 col-lg-2 col-xl-2"> </div>
-                    <button class="btn text-white bg-secondary py-1 px-2 my-1 col-10 col-sm-12 col-md-12 col-lg-5 col-xl-5" data-bs-toggle="offcanvas" data-bs-target="#CoreExportOffCanvas" aria-controls="CoreExportOffCanvas">Export</button>
+                    <button v-tooltip="'Export your core in MAS format, STP, or OBJ'" class="btn text-white bg-secondary py-1 px-2 my-1 col-10 col-sm-12 col-md-12 col-lg-5 col-xl-5" data-bs-toggle="offcanvas" data-bs-target="#CoreExportOffCanvas" aria-controls="CoreExportOffCanvas">Export</button>
 
                 </div>
             </div>
