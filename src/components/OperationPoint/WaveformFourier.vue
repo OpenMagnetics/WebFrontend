@@ -145,15 +145,15 @@ export default {
                                                                   commonStore.getSwitchingFrequency.value,
                                                                   Defaults.defaultSamplingNumberPoints)
 
-            if (currentSampledSignal.reduce((a, b) => a + b, 0) != sampledWaveform.reduce((a, b) => a + b, 0) || currentSampledSignal[0] != sampledWaveform[0] || currentSampledSignal.length == 0) {
+            if (currentSampledSignal.slice(0, currentSampledSignal.length / 2).reduce((a, b) => a + b, 0) != sampledWaveform.slice(0, sampledWaveform.length / 2).reduce((a, b) => a + b, 0) || currentSampledSignal[1] != sampledWaveform[1] || currentSampledSignal.length == 0) {
                 currentSampledSignal = sampledWaveform
                 commonStore.setHarmonicsFrequencies(harmonicsFrequencies)
                 currentStore.setHarmonicsAmplitude(harmonicsAmplitude)
                 commonStore.setSampledTimePoints(sampledTime)
                 currentStore.setSampledDataPoints(sampledWaveform)
             }
-            chart.data.datasets[0].data = harmonicsAmplitude
-            chart.data.labels = harmonicsFrequencies
+            chart.data.datasets[0].data = harmonicsAmplitude.slice(0, Defaults.defaultMaximumNumberHarmonicsShown)
+            chart.data.labels = harmonicsFrequencies.slice(0, Defaults.defaultMaximumNumberHarmonicsShown)
             chart.update()
         })
         voltageStore.$subscribe((mutation, state) => {
@@ -164,15 +164,15 @@ export default {
                    harmonicsFrequencies} = Utils.fourierTransform(aux,
                                                                   commonStore.getSwitchingFrequency.value,
                                                                   Defaults.defaultSamplingNumberPoints)
-            if (voltageSampledSignal.reduce((a, b) => a + b, 0) != sampledWaveform.reduce((a, b) => a + b, 0) || voltageSampledSignal[0] != sampledWaveform[0] || voltageSampledSignal.length == 0) {
+            if (voltageSampledSignal.slice(0, voltageSampledSignal.length / 2).reduce((a, b) => a + b, 0) != sampledWaveform.slice(0, sampledWaveform.length / 2).reduce((a, b) => a + b, 0) || voltageSampledSignal[1] != sampledWaveform[1] || voltageSampledSignal.length == 0) {
                 voltageSampledSignal = sampledWaveform
                 commonStore.setHarmonicsFrequencies(harmonicsFrequencies)
                 voltageStore.setHarmonicsAmplitude(harmonicsAmplitude)
                 commonStore.setSampledTimePoints(sampledTime)
                 voltageStore.setSampledDataPoints(sampledWaveform)
             }
-            chart.data.datasets[1].data = harmonicsAmplitude
-            chart.data.labels = harmonicsFrequencies
+            chart.data.datasets[1].data = harmonicsAmplitude.slice(0, Defaults.defaultMaximumNumberHarmonicsShown)
+            chart.data.labels = harmonicsFrequencies.slice(0, Defaults.defaultMaximumNumberHarmonicsShown)
             chart.update()
         })
         commonStore.$onAction((action) => {

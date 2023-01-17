@@ -1,4 +1,5 @@
 <script setup >
+import BugReporterModal from '/src/components/User/BugReporter.vue'
 import LoginModal from '/src/components/User/Login.vue'
 import { useUserStore } from '/src/stores/user'
 import { useUserDatabaseStore } from '/src/stores/userDatabase'
@@ -146,13 +147,21 @@ export default {
                         <ul class="dropdown-menu" style="margin: 0">
                             <li><a class="dropdown-item" href="/operation_point">Operation Point</a></li>
                             <li><a class="dropdown-item" href="/core">Core</a></li>
-                            <li><a class="dropdown-item disabled" href="#">Simulation</a></li>
+                            <li><a class="dropdown-item" href="/simulation">Simulation</a></li>
                         </ul>
                     </li>
                 </ul>
-            </div>
-            <div class="collapse navbar-collapse" id="navbarNavDropdown">
                 <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <span class="nav-item">
+                            <button class="btn me-4 nav-link text-danger border-dark"  data-bs-toggle="modal" data-bs-target="#reportBugModal">Report bug<i class="fa-solid fa-bug"></i> </button>
+                        </span>
+                    </li>
+                    <li class="nav-item">
+                        <span class="nav-item">
+                            <a class="btn me-4 nav-link text-success border-dark" href="https://github.com/OpenMagnetics/">Beta OMv0.1 <i class="fa-brands fa-github"></i> </a>
+                        </span>
+                    </li>
                     <li v-if="!loggedIn" class="nav-item">
                         <span class="nav-item">
                             <button class="btn nav-link text-primary" data-bs-toggle="modal" data-bs-target="#registerModal">Register</button>
@@ -192,6 +201,7 @@ export default {
     </div>
 
     <!-- Modal -->
+    <BugReporterModal/>
     <div class="modal fade" id="registerModal" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
         <LoginModal :isLogin="false" @onLoggedIn="onLoggedIn"/>
     </div>

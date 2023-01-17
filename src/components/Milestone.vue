@@ -1,5 +1,6 @@
 <script>
 import axios from "axios";
+import { useUserStore } from '/src/stores/user'
 export default {
     props: {
         id: {
@@ -49,11 +50,12 @@ export default {
         },
     },
     data() {
+        const userStore = useUserStore()
         return {
             backgroundColor: 'red',
             numberVotesTemp: 0,
-            ipAddress: 0,
-            alreadyVoted: true
+            alreadyVoted: true,
+            userStore,
         }
     },
     computed: {
@@ -82,6 +84,18 @@ export default {
             else if (this.section == "Core Design") {
                 return "background-color: Green; color: var(--bs-dark)";
             }
+            else if (this.section == "Wire design") {
+                return "background-color: Orange; color: var(--bs-dark)";
+            }
+            else if (this.section == "Winding design") {
+                return "background-color: Brown; color: var(--bs-dark)";
+            }
+            else if (this.section == "Winding losses") {
+                return "background-color: Aquamarine; color: var(--bs-dark)";
+            }
+            else if (this.section == "Magnetic Field") {
+                return "background-color: White; color: var(--bs-dark)";
+            }
 
         },
         card_class() {
@@ -109,11 +123,11 @@ export default {
     methods: {
         vote(event) {
             axios.post(import.meta.env.VITE_API_ENDPOINT + '/cast_vote', {
-                ip_address: this.ipAddress,
-                user_id: null,
+                ip_address: this.userStore.ipAddress,
                 milestone_id: this.id,
             })
             .then(response => {
+                console.log(response.data)
                 this.alreadyVoted |= response.data['voted'];
                 if (response.data['voted'])
                     this.numberVotesTemp += 1;

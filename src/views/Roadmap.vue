@@ -130,7 +130,7 @@ export default {
                 },
                 {
                     id: 11,
-                    title: 'Core Recommender',
+                    title: 'Core Adviser',
                     section: 'Magnetic Design', 
                     description: 'Implement an algorithm that is able to recommend a magnetic core from a given specifications. The recommendation can be from Commercial Off-The-Shelf cores, or Custom Core from any family.',
                     state: "To Do"
@@ -203,6 +203,8 @@ export default {
                     title: 'Gapping Artisan',
                     section: 'Core Design', 
                     description: 'Add module to configure any number of gaps in any place of the core',
+                    imgSrc: '/images/roadmap/gapping_artisan.png',
+                    imgAlt: 'Custom gapping example',
                     state: 'Done on December 2022'
                 },
                 {
@@ -212,9 +214,128 @@ export default {
                     description: 'Add module to configure and visualize any core material',
                     state: 'To Do'
                 },
+                {
+                    id: 22,
+                    title: 'Inductance calculator',
+                    section: 'Core Design', 
+                    description: 'Module that is able to calculate any combination of number of turns, gapping, and inductance that the user might need, for a given core',
+                    state: 'To Do'
+                },
+                {
+                    id: 23,
+                    title: 'Inductance temmperature graph',
+                    section: 'Core Design', 
+                    description: 'Module to to model and calculate the effect that temperature has on permeability, and therefore inductance',
+                    state: 'To Do'
+                },
+                {
+                    id: 24,
+                    title: 'FEA Core thermal model',
+                    section: 'Core Design', 
+                    description: 'Module to obtain the core temperature distribution for a given operation point',
+                    state: 'To Do'
+                },
+                {
+                    id: 25,
+                    title: 'Ziwei Ouyang\'s model',
+                    section: 'Core losses', 
+                    description: 'Implement Ziwei Ouyang\'s model for Core losses, as described in "Magnetic Core Losses under Square-wave Excitation and DC Bias in High Frequency Regime".',
+                    state: "To Do"
+                },
+                {
+                    id: 26,
+                    title: 'Wires',
+                    section: 'Wire design', 
+                    description: 'Implement a module that allows the user to design any possible wire in a user friendly fashion and use it in a simulation.',
+                    state: "To Do"
+                },
+                {
+                    id: 27,
+                    title: 'Winding',
+                    section: 'Winding design', 
+                    description: 'Implement a module that allows the user to design any possible winding in a user friendly fashion and use it in a simulation.',
+                    state: "To Do"
+                },
+                {
+                    id: 28,
+                    title: 'Wojda\'s model for winding losses',
+                    section: 'Winding losses', 
+                    description: 'Implement Rafal Wodja\'s model for Winding losses, as described in "Winding Resistance and Power Loss of Inductors With Litz and Solid-Round Wires"',
+                    state: "To Do"
+                },
+                {
+                    id: 29,
+                    title: 'Albach\'s model for winding losses',
+                    section: 'Winding losses', 
+                    description: 'Implement Manfred Albach\'s model for Winding losses, as described in "Induktivitäten in der Leistungselektronik: Spulen, Trafos und ihre parasitären Eigenschaften"',
+                    state: "To Do"
+                },
+                {
+                    id: 30,
+                    title: 'Payne\'s model for winding losses',
+                    section: 'Winding losses', 
+                    description: 'Implement Alan Payne\'s model for Winding losses, as described in "THE AC RESISTANCE OF RECTANGULAR CONDUCTORS"',
+                    state: "To Do"
+                },
+                {
+                    id: 31,
+                    title: 'Rossmanith\'s model for winding losses',
+                    section: 'Winding losses', 
+                    description: 'Implement Hans Rossmanith\'s model for Winding losses, as described in "Measurement and Characterization of High  Frequency Losses in Nonideal Litz Wires"',
+                    state: "To Do"
+                },
+                {
+                    id: 32,
+                    title: 'Wang\'s model for winding losses',
+                    section: 'Winding losses', 
+                    description: 'Implement Xiaohui Wang\'s model for Winding losses, as described in "Improved Analytical Calculation of High Frequency Winding Losses in Planar Inductors"',
+                    state: "To Do"
+                },
+                {
+                    id: 33,
+                    title: 'Ferreiras\'s model for winding losses',
+                    section: 'Winding losses', 
+                    description: 'Implement Ferreira\'s model for Winding losses, as described in "A New Approach to Analyse Conduction Losses in High Frequency Magnetic Components"',
+                    state: "To Do"
+                },
+                {
+                    id: 34,
+                    title: 'Dowell\'s model for magnetic field strength',
+                    section: 'Winding losses', 
+                    description: 'Implement Ferreira\'s model for Magnetic Field, as described in "Effects of eddy currents in transformer windings"',
+                    state: "To Do"
+                },
+                {
+                    id: 35,
+                    title: 'Muehlerthaler\'s model for magnetic field',
+                    section: 'Magnetic Field', 
+                    description: 'Implement Jonas Muehlerthaler\'s model for Magnetic Field, as described in "Loss Modeling of Inductive Components Employed in Power Electronic Systems"',
+                    state: "To Do"
+                },
+                {
+                    id: 36,
+                    title: 'Roshen\'s model for fringing magnetic field',
+                    section: 'Magnetic Field', 
+                    description: 'Implement Waseem Roshen\'s model for Fringing Magnetic Field, as described in "High-Frequency Fringing Fields Loss in Thick Rectangular and Round Wire Windings"',
+                    state: "To Do"
+                },
+                {
+                    id: 37,
+                    title: 'Albach\'s model for magnetic field',
+                    section: 'Magnetic Field', 
+                    description: 'Implement Manfred Albach\'s model for Magnetic Field, as described in "The influence of air gap size and winding position on the proximity losses in high frequency transformers"',
+                    state: "To Do"
+                },
+                {
+                    id: 38,
+                    title: 'Jabłoński\'s model for core eddy current losses',
+                    section: 'Core losses', 
+                    description: 'Implement Paweł Jabłoński \'s model for Core Eddy current losses, as described in "An Improved Approach to Calculate Eddy Current Loss in Soft Magnetic Materials Based on Measured Hysteresis Loops"',
+                    state: "To Do"
+                },
             ]
         }
-    },
+    }, 
     computed: {
         btn_class() {
             if (this.alreadyVoted) {
@@ -232,18 +353,25 @@ export default {
             var orderedMilestone = [];
             var existingIds = [];
 
+            console.log(this.milestones)
             this.milestones.forEach((item, index) => {
                 existingIds.push(item["id"])
             });
 
             votesList.forEach((item, index) => {
-                if (existingIds.includes(item["milestone_id"])) {
+                if (item["state"] == "To Do" && existingIds.includes(item["milestone_id"])) {
                     orderedMilestone.push(this.milestones[item["milestone_id"]])
                 }
             });
 
             this.milestones.forEach((item, index) => {
-                if (!orderedMilestone.includes(item)) {
+                if (item["state"] == "To Do" && !orderedMilestone.includes(item)) {
+                    orderedMilestone.push(item)
+                }
+            });
+
+            this.milestones.forEach((item, index) => {
+                if (item["state"] != "To Do" && !orderedMilestone.includes(item)) {
                     orderedMilestone.push(item)
                 }
             });
@@ -256,13 +384,18 @@ export default {
         fetch('https://api.ipify.org?format=json')
         .then(x => x.json())
         .then(({ ip }) => {
+            this.userStore.ipAddress = ip
             this.ipAddress = ip;
-            axios.post(import.meta.env.VITE_API_ENDPOINT + '/are_vote_casted', {
+            const data = {
                 ip_address: ip,
-                user_id: this.userStore.getUsername.value,
                 milestone_id: null,
-            })
+            }
+            console.log("data")
+            console.log(data)
+            axios.post(import.meta.env.VITE_API_ENDPOINT + '/are_vote_casted', data)
             .then(response => {
+            console.log("are_vote_casted")
+            console.log(response.data)
                 response.data['voted_milestones'].forEach((item) => {
                     this.milestoneVotes.push(item['milestone_id'])
                 })
@@ -275,7 +408,7 @@ export default {
             milestone_id: this.id,
         })
         .then(response => {
-            console.log("are_vote_casted")
+            console.log("get_number_votes")
             console.log(response.data)
 
             response.data['number_votes'].forEach((item) => {
@@ -309,7 +442,7 @@ export default {
                                     :key="item.id"
                                     :index="index"
                                     v-bind="item"
-                                    :voted="milestoneVotes.includes(index)"
+                                    :voted="milestoneVotes.length == 0? true : milestoneVotes.includes(index)"
                                     :numberVotes="numberVotes[index]"
                             ></Milestone>
                         </div>

@@ -5,12 +5,15 @@ import * as Defaults from '/src/assets/js/defaults.js'
 
 export const useUserStore = defineStore("user", () => {
     const loggedIn = ref(false)
+    const ipAddress = ref(0)
     const username = ref(null)
+    const readNotifications = ref([])
     const globalOperationPoint = ref(Utils.deepCopy(Defaults.defaultOperationPoint))
     const globalCore = ref(Utils.deepCopy(Defaults.defaultCore))
     const idToDelete = ref(null)
     const userSubsection = ref("operationPoints")
     const coreSubsection = ref("shapeArtisan")
+    const coreSimulationSubsection = ref("inductanceCalculator")
     const selectedModels = ref({
         gapReluctance: "Zhang",
     })
@@ -26,6 +29,9 @@ export const useUserStore = defineStore("user", () => {
     const getCoreSubsection = computed(() => {
         return coreSubsection
     })
+    const getCoreSimulationSubsection = computed(() => {
+        return coreSimulationSubsection
+    })
     const getGlobalOperationPoint = computed(() => {
         return globalOperationPoint
     })
@@ -34,6 +40,21 @@ export const useUserStore = defineStore("user", () => {
     })
     const getIdToDelete = computed(() => {
         return idToDelete
+    })
+
+    const dump = computed(() => {
+        return {
+            "loggedIn": loggedIn.value,
+            "ipAddress": ipAddress.value,
+            "username": username.value,
+            "readNotifications": readNotifications.value,
+            "globalOperationPoint": globalOperationPoint.value,
+            "globalCore": globalCore.value,
+            "userSubsection": userSubsection.value,
+            "coreSubsection": coreSubsection.value,
+            "coreSimulationSubsection": coreSimulationSubsection.value,
+            "selectedModels": selectedModels.value,
+        }
     })
 
     function resetGlobalOperationPoint() {
@@ -62,6 +83,9 @@ export const useUserStore = defineStore("user", () => {
     }
     function setCoreSubsection(coreSubsection) {
         this.coreSubsection = coreSubsection
+    }
+    function setCoreSimulationSubsection(coreSimulationSubsection) {
+        this.coreSimulationSubsection = coreSimulationSubsection
     }
     function login() {
         this.loggedIn = true
@@ -95,8 +119,11 @@ export const useUserStore = defineStore("user", () => {
         this.selectedModels[variable] = model
     }
     return {
+        dump,
         loggedIn,
+        ipAddress,
         username,
+        readNotifications,
         isLoggedIn,
         getUsername,
         setUsername,
@@ -108,6 +135,9 @@ export const useUserStore = defineStore("user", () => {
         coreSubsection,
         getCoreSubsection,
         setCoreSubsection,
+        coreSimulationSubsection,
+        getCoreSimulationSubsection,
+        setCoreSimulationSubsection,
         globalOperationPoint,
         getGlobalOperationPoint,
         setGlobalOperationPoint,

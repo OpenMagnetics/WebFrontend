@@ -71,7 +71,6 @@ export default {
 
             axios.post(url, data)
             .then(response => {
-                console.log(response.data)
                 const exportedData = Utils.getCoreData(this.userStore, Defaults.defaultCoreSaveConfiguration)
                 download(response.data, exportedData["functionalDescription"]["name"] + ".stp", "text/plain");
                 this.$emit("exported")
@@ -96,7 +95,6 @@ export default {
 
             axios.post(url, data)
             .then(response => {
-                console.log(response.data)
                 const exportedData = Utils.getCoreData(this.userStore, Defaults.defaultCoreSaveConfiguration)
                 download(response.data, exportedData["functionalDescription"]["name"] + ".obj", "text/plain");
                 this.$emit("exported")

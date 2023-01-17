@@ -164,7 +164,8 @@ export function fourierTransform(data, switchingFrequency, samplingNumberPoints)
         // Harmonic extraction
         const harmonicsAmplitude = []
         const harmonicsFrequencies = []
-        for(var i = 0; i < fourier.length / 2; i+=2) {
+        harmonicsAmplitude.push(Math.sqrt(Math.pow(fourier[0], 2) + Math.pow(fourier[0 + 1], 2)) / samplingNumberPoints)
+        for(var i = 2; i < fourier.length / 2; i+=2) {
             harmonicsAmplitude.push(2 * Math.sqrt(Math.pow(fourier[i], 2) + Math.pow(fourier[i + 1], 2)) / samplingNumberPoints)
         }
         for(var i = 0; i < samplingNumberPoints / 2; i++) {
@@ -548,8 +549,6 @@ export function getCoreData(userStore, configuration) {
         if (!("processedDescription" in exportedData)) {
             exportedData['processedDescription'] = {}
         }
-        console.log("exportedData")
-        console.log(exportedData)
         exportedData['processedDescription']['effectiveParameters'] = userStore.globalCore['processedDescription']['effectiveParameters']
     }
     if (configuration["includeShapeDimensionsData"]){

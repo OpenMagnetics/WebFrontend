@@ -82,6 +82,9 @@ export const defaultOperationName = "My Operation Point"
 export const defaultCoreNamePlaceHolder = "Core Identifier"
 export const defaultCoreName = "My Core"
 
+export const defaultSimulationNamePlaceHolder = "Core Identifier"
+export const defaultSimulationName = "My Core"
+
 export const defaultOffset = 0
 export const defaultPeakToPeak = 10
 export const defaultDutyCycle = 0.25
@@ -89,7 +92,8 @@ export const defaultSwitchingFrequency = 100000
 export const defaultTimeExponent = 5
 export const defaultSinusoidalNumberPoints = 120
 
-export const defaultSamplingNumberPoints = 32
+export const defaultSamplingNumberPoints = 128
+export const defaultMaximumNumberHarmonicsShown = 16
 export const defaultOperationPointSaveConfiguration = {
     numberPoints: 128,
     exportEquidistant: false,

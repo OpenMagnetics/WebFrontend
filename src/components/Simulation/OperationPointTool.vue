@@ -91,9 +91,6 @@ export default {
             setTimeout(() => {
                 currentStore.setDataPointsFromFile(compressedCurrentData)
                 voltageStore.setDataPointsFromFile(compressedVoltageData)
-                currentStore.setDataImported(true)
-                voltageStore.setDataImported(true)
-                commonStore.setDataImported(true)
                 commonStore.setOperationPointName(data["name"])
                 commonStore.setSwitchingFrequency(switchingFrequency)
                 commonStore.setDutyCycle(Utils.tryGuessDutyCycle(waveformTypes["current"] != "Custom"? compressedCurrentData : compressedVoltageData, data["frequency"]))
@@ -121,14 +118,14 @@ export default {
             <div class="row">
                 <div class="col-12">
                     <WaveformInputCommon @switching-frequency-change="onSwitchingFrequencyChange" @duty-cycle-change="onDutyCycleChange"/>
-                    <div v-for="(value, key) in waveformTypes">
-                        <WaveformInputTriangular :electricalParameter="key" :isChartReady="isChartReady" v-if="value === 'Triangular'" class="scrollable-column"/>
-                        <WaveformInputCustom :electricalParameter="key" :isChartReady="isChartReady" v-if="value === 'Custom'" class="scrollable-column"/>
-                        <WaveformInputSquare :electricalParameter="key" :isChartReady="isChartReady" v-else-if="value === 'Square'" class="scrollable-column"/>
-                        <WaveformInputSinusoidal :electricalParameter="key" :isChartReady="isChartReady" v-else-if="value === 'Sinusoidal'" class="scrollable-column"/>
-                        <WaveformInputSquareWithDeadtime :electricalParameter="key" :isChartReady="isChartReady" v-else-if="value === 'Square with Dead-Time'" class="scrollable-column"/>
+                    <div v-for="(value, electricalParameter) in waveformTypes">
+                        <WaveformInputTriangular :electricalParameter="electricalParameter" :isChartReady="isChartReady" v-if="value === 'Triangular'" class="scrollable-column"/>
+                        <WaveformInputCustom :electricalParameter="electricalParameter" :isChartReady="isChartReady" v-if="value === 'Custom'" class="scrollable-column"/>
+                        <WaveformInputSquare :electricalParameter="electricalParameter" :isChartReady="isChartReady" v-else-if="value === 'Square'" class="scrollable-column"/>
+                        <WaveformInputSinusoidal :electricalParameter="electricalParameter" :isChartReady="isChartReady" v-else-if="value === 'Sinusoidal'" class="scrollable-column"/>
+                        <WaveformInputSquareWithDeadtime :electricalParameter="electricalParameter" :isChartReady="isChartReady" v-else-if="value === 'Square with Dead-Time'" class="scrollable-column"/>
 
-                        <WaveformOutput :electricalParameter="key"/>
+                        <WaveformOutput :electricalParameter="electricalParameter"/>
                     </div>
                 </div>
                 <div class="col-12">

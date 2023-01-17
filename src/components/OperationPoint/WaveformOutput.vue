@@ -46,12 +46,19 @@ const rms = ref(null);
 const thd = ref(null);
 
 function getOutputs(data) {
+    console.log("Puetamierda")
+    console.log(props.electricalParameter)
+    const rawDataValues = []
+    store.getDataPoints.value.forEach((item) => {
+        rawDataValues.push(item.y)
+    })
     const sampledDataPoints = data
     const sampledTimePoints = commonStore.getSampledTimePoints.value
     const harmonicsFrequencies = commonStore.getHarmonicsFrequencies.value
     const harmonicsAmplitude = store.getHarmonicsAmplitude.value
     const maxMin = Utils.getMaxMinInPoints(sampledDataPoints)
-    const peakToPeakRaw = maxMin['max'] - maxMin['min']
+    const rawMaxMin = Utils.getMaxMinInPoints(rawDataValues)
+    const peakToPeakRaw = Math.max(maxMin['max'], rawMaxMin['max']) - Math.min(maxMin['min'], rawMaxMin['min'])
     peakToPeak.value = Utils.removeTrailingZeroes(Utils.roundWithDecimals(peakToPeakRaw, 0.01))
     const dcOffsetRaw = sampledDataPoints.reduce((a, b) => a + b, 0) / sampledDataPoints.length
     dcOffset.value = Utils.removeTrailingZeroes(Utils.roundWithDecimals(dcOffsetRaw, 0.01, true))
