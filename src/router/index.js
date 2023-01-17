@@ -78,6 +78,16 @@ const routes = [
         name: 'SimulationSlug',
         component: () => import('../views/SlugLoader.vue')
     },
+    {
+        path: '/simulation_core_adviser',
+        name: 'SimulationCoreAdviser',
+        component: () => import('../views/Simulation.vue')
+    },
+    {
+        path: '/simulation_inductance_calculator',
+        name: 'SimulationInductanceCalculator',
+        component: () => import('../views/Simulation.vue')
+    },
 ]
 const router = createRouter({
     history: createWebHistory(),
@@ -92,6 +102,14 @@ router.beforeEach((to, from, next) => {
     else if (to.name == "CoreShapeArtisan") {
         const userStore = useUserStore()
         userStore.coreSubsection = 'shapeArtisan';
+    }
+    else if (to.name == "SimulationCoreAdviser") {
+        const userStore = useUserStore()
+        userStore.coreSimulationSubsection = 'coreAdviser';
+    }
+    else if (to.name == "SimulationInductanceCalculator") {
+        const userStore = useUserStore()
+        userStore.coreSimulationSubsection = 'inductanceCalculator';
     }
     next()
 })

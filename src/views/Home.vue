@@ -1,12 +1,10 @@
 <script setup>
 import Header from '/src/components/Header.vue'
 import Footer from '/src/components/Footer.vue'
-import NotificationsModal from '/src/components/NotificationsModal.vue';
 
 </script>
 
 <template>
-    <NotificationsModal/>
     <div class="d-flex flex-column min-vh-100">
         <Header />
         <main role="main">
@@ -44,9 +42,9 @@ import NotificationsModal from '/src/components/NotificationsModal.vue';
                                     <p class="text-dark text-start fs-5">You are working on improving Magnetics? OpenMagnetics is for you:</p>
                                     <ul class="text-dark text-start fs-5">
                                         <li class="">Compare your models against the state of the art.</li>
-                                        <li class="">Have access to our cured datasets to create your own models</li>
+                                        <li class="">Have access to our cured datasets to create your own models.</li>
                                         <li class="">Your contribution is a place where it is used and not forgotten.</li>
-                                        <li class="">Help creating a community based on data, not on marketing.</li>
+                                        <li class="">Talk me data! Help creating a community based on validation, not on marketing.</li>
                                         <li class="">Have access to all our tools.</li>
                                     </ul>
                                 </div>
@@ -67,9 +65,9 @@ import NotificationsModal from '/src/components/NotificationsModal.vue';
                                     <p class="text-dark fs-5">You are creating Magnetics? OpenMagnetics is for you:</p>
                                     <ul class="text-dark text-start fs-5">
                                         <li class="">Have access to the latests and most accurate models.</li>
-                                        <li class="">All tools are accessible and all result can be exported without registration</li>
-                                        <li class="">No black magic, have access to the implementation of all the models and run them by yourself</li>
-                                        <li class="">Use our advanced advisers to help you design your magnetic</li>
+                                        <li class="">All tools are accessible and all results can be exported without registration.</li>
+                                        <li class="">No black magic, have access to the implementation of all the models and run them by yourself.</li>
+                                        <li class="">Use our advanced automatic <a class="text-secondary" href="/simulation_core_adviser">advisers</a> to help you design your magnetic.</li>
                                         <li class="">Use, compare and access all properties from any commercially available part:</li>
                                         <ul class="text-dark text-start fs-5">
                                             <li class="">Magnetic cores and bobbins: Ferroxcube, TDK, Magnetics, Fair-Rite, Micrometals, etc.</li>
@@ -98,7 +96,6 @@ import NotificationsModal from '/src/components/NotificationsModal.vue';
                                         <li class="">Have access to the best models to reduce iterations.</li>
                                         <li class="">Introduce your own stock and use let our advisers help you design something you can assembly today.</li>
                                         <li class="">Integrate your products in our Open Database, and let your users use them in our tools.</li>
-                                        <li class="">All tools and data, now and forever, for free.</li>
                                     </ul>
                                 </div>
                             </div>
@@ -109,7 +106,7 @@ import NotificationsModal from '/src/components/NotificationsModal.vue';
                 <div id="home-tools" class="row py-5 mx-1">
                     <div class="text-white my-1 py-4 offset-sm-0 offset-lg-2 col-sm-12 col-lg-8 text-center bg-light rounded-4">
                         <h1>Tools and Roadmap</h1>
-                        <p class="fs-5">OpenMagnetics is maintained and developed by volunteers, and we do it because we believe in what Open Source brings to the world. Each one of us makes their living by some other meaning and works on these in our free time, so there won't be any deadlines. Despite of that, we will do our best to make this tool as good as we are capable</p>
+                        <p class="fs-5">OpenMagnetics is maintained and developed by volunteers, and we do it because we believe in what Open Source brings to the world. Each one of us makes their living by some other meaning and works on these in our free time, so there won't be any deadlines. Despite of that, we will do our best to make this tool as good as we are capable.</p>
                         <p class="fs-5">If you want to support this project, consider joining our <a href="https://discord.gg/PawVFmW6">Discord server</a> and let us know what you enjoy doing the most!.</p>
                     </div>
                 </div>
@@ -129,9 +126,9 @@ import NotificationsModal from '/src/components/NotificationsModal.vue';
                             <li class="">Calculate the inductance of any customized shape, material, number of turns, and gapping.</li>
                             <li class="">Calculate the number of turns needed to achieve your inductance in a given core.</li>
                             <li class="">Calculate the needed gap(s) in order to get the desired inductance in your magnetic.</li>
-                            <li class="">Get the core losses of your core according to your favorite method, for a given excitation and ambient temperature</li>
+                            <li class="">Get the core losses of your core according to your favorite method, for a given excitation and ambient temperature.</li>
                             <li class="">Get the temperature rise for your core with everything else considered.</li>
-                            <li class="">And many many more feature, and <a href="/roadmap">you can help decide what to implement next.</a></li>
+                            <li class="">And many many more features, and <a href="/roadmap">you can help decide what to implement next.</a></li>
                         </ul>
                     </div>
                 </div>

@@ -6,6 +6,8 @@ import { useUserDatabaseStore } from '/src/stores/userDatabase'
 import * as Utils from '/src/assets/js/utils.js'
 import CoreLoadCommercialShape from '/src/components/Core/CoreLoadCommercialShape.vue';
 import CoreLoadCommercialMaterial from '/src/components/Core/CoreLoadCommercialMaterial.vue';
+import NotificationsModal from '/src/components/NotificationsModal.vue';
+
 </script>
 
 <script>
@@ -120,6 +122,7 @@ export default {
 </script>
 
 <template>
+    <NotificationsModal/>
     <CoreLoadCommercialMaterial @onLoadCommercialMaterial="onLoadCommercialMaterial"/>
     <CoreLoadCommercialShape @onLoadCommercialShape="onLoadCommercialShape"/>
     <nav class="navbar navbar-expand-lg bg-light navbar-dark text-primary mb-1" id="header_wrapper">
@@ -154,7 +157,7 @@ export default {
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
                         <span class="nav-item">
-                            <button class="btn me-4 nav-link text-danger border-dark"  data-bs-toggle="modal" data-bs-target="#reportBugModal">Report bug<i class="fa-solid fa-bug"></i> </button>
+                            <button class="btn me-4 nav-link text-danger border-dark"  data-bs-toggle="modal" data-bs-target="#reportBugModal">Report bug <i class="fa-solid fa-bug"></i> </button>
                         </span>
                     </li>
                     <li class="nav-item">
