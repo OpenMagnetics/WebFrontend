@@ -1,7 +1,9 @@
 <script setup >
 import { useUserStore } from '/src/stores/user'
+import { useDataCacheStore } from '/src/stores/dataCache'
 import axios from "axios";
 import { Modal } from "bootstrap";
+
 </script>
 
 <script>
@@ -9,10 +11,12 @@ import { Modal } from "bootstrap";
 export default {
     data() {
         const userStore = useUserStore()
+        const dataCacheStore = useDataCacheStore()
         const currentNotification = {}
         return {
             currentNotification,
             userStore,
+            dataCacheStore,
         }
     },
     methods: {
@@ -20,28 +24,19 @@ export default {
     computed: {
     },
     mounted() {
+        const notifications = this.dataCacheStore.notifications
+        for (let i = 0; i < notifications.length; i++) {
+            if (!(this.userStore.readNotifications.includes(notifications[i]["name"]))) {
+                this.currentNotification = notifications[i]
+                this.uniqueModal = new Modal(document.getElementById("notificationsModal"),{ keyboard: false });
+                this.uniqueModal.show();
+                this.$refs.notificationContent.innerHTML = this.currentNotification["content"]
+                this.userStore.readNotifications.push(this.currentNotification["name"])
+                break
+            }
+        }
     },
     created() {
-        const url = import.meta.env.VITE_API_ENDPOINT + '/get_notifications'
-        axios.post(url, {})
-        .then(response => {
-            console.log(response.data)
-            const notifications = response.data['notifications']
-            for (let i = 0; i < notifications.length; i++) {
-                if (!(this.userStore.readNotifications.includes(notifications[i]["name"]))) {
-                    this.currentNotification = notifications[i]
-                    this.uniqueModal = new Modal(document.getElementById("notificationsModal"),{ keyboard: false });
-                    this.uniqueModal.show();
-                    this.$refs.notificationContent.innerHTML = this.currentNotification["content"]
-                    this.userStore.readNotifications.push(this.currentNotification["name"])
-                    break
-                }
-            }
-        })
-        .catch(error => {
-            console.error("Error getting notifications")
-            console.error(error.data)
-        });
     }
 }
 </script>

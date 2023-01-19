@@ -3,6 +3,7 @@ import { ref, watch, computed, defineProps, onMounted } from 'vue'
 import { Form, Field, configure} from 'vee-validate';
 import * as Yup from 'yup';
 import { useUserStore } from '/src/stores/user'
+import { useDataCacheStore } from '/src/stores/dataCache'
 import { useCoreStore } from '/src/stores/core'
 import * as Utils from '/src/assets/js/utils.js'
 import * as Defaults from '/src/assets/js/defaults.js'
@@ -93,6 +94,7 @@ export default {
         const commercialMaterialNames = [];
         const userStore = useUserStore();
         const coreStore = useCoreStore();
+        const dataCacheStore = useDataCacheStore()
 
         if (userStore.globalCore['functionalDescription'] != null && userStore.globalCore['processedDescription'] != null) {
             quickShapeSelected = userStore.globalCore['functionalDescription']['shape']['name'];
@@ -106,6 +108,7 @@ export default {
             quickMaterialSelected,
             userStore,
             coreStore,
+            dataCacheStore,
             commercialShapesNames,
             commercialMaterialNames,
             defaultUngappedGapping,
@@ -118,24 +121,20 @@ export default {
     },
     mounted() {
         this.updateQuickGap()
+        this.loadShapesNames()
+        this.loadMaterialNames()
     },
     created() {
-        this.coreStore.$onAction((action) => {
+        this.dataCacheStore.$onAction((action) => {
             if (action.name == "commercialShapesLoaded") {
-                const shapeData = this.coreStore.commercialShapes
-                this.commercialShapesNames = []
-                shapeData.forEach((item) => {
-                    this.commercialShapesNames.push(item['name'])
-                })
+                this.loadShapesNames()
             }
             else if (action.name == "commercialMaterialsLoaded") {
-                const materialData = this.coreStore.commercialMaterials
-                this.commercialMaterialNames = []
-                materialData.forEach((item) => {
-                    this.commercialMaterialNames.push(item['name'])
-                })
+                this.loadMaterialNames()
             }
-            else if (action.name == "requestingGappingTechnicalDrawing") {
+        })
+        this.coreStore.$onAction((action) => {
+            if (action.name == "requestingGappingTechnicalDrawing") {
                 this.updateQuickGap()
             }
         })
@@ -162,6 +161,20 @@ export default {
         },
     },
     methods: {
+        loadShapesNames() {
+            const shapeData = this.dataCacheStore.commercialShapes
+            this.commercialShapesNames = []
+            shapeData.forEach((item) => {
+                this.commercialShapesNames.push(item['name'])
+            })
+        },
+        loadMaterialNames() {
+            const materialData = this.dataCacheStore.commercialMaterials
+            this.commercialMaterialNames = []
+            materialData.forEach((item) => {
+                this.commercialMaterialNames.push(item['name'])
+            })
+        },
         tryToSend() {
             if (!this.tryingToSend) {
                 this.recentChange = false
@@ -239,7 +252,7 @@ export default {
         },
         onShapeChange () {
             var shapeDataSelected = {}
-            this.coreStore.commercialShapes.forEach((item) => {
+            this.dataCacheStore.commercialShapes.forEach((item) => {
                 if (item['name'] == this.quickShapeSelected) {
                     shapeDataSelected = Utils.deepCopy(item)
                 }
@@ -282,7 +295,7 @@ export default {
             console.log("onMaterialChange")
             console.log(this.quickMaterialSelected)
             var materialDataSelected = {}
-            this.coreStore.commercialMaterials.forEach((item) => {
+            this.dataCacheStore.commercialMaterials.forEach((item) => {
                 if (item['name'] == this.quickMaterialSelected) {
                     materialDataSelected = Utils.deepCopy(item)
                 }

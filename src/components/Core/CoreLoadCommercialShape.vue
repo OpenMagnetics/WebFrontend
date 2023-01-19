@@ -5,7 +5,7 @@ const emit = defineEmits(['onLoadCommercialShape'])
 import axios from "axios";
 import * as Utils from '/src/assets/js/utils.js'
 import { useUserStore } from '/src/stores/user'
-import { useCoreStore } from '/src/stores/core'
+import { useDataCacheStore } from '/src/stores/dataCache'
 
 </script>
 
@@ -61,12 +61,12 @@ export default {
             },
         ]
         const userStore = useUserStore();
-        const coreStore = useCoreStore();
+        const dataCacheStore = useDataCacheStore()
         const commercialData = []
         const scaledColumns = []
         return {
             userStore,
-            coreStore,
+            dataCacheStore,
             columns,
             commercialData,
             scaledColumns,
@@ -76,9 +76,9 @@ export default {
         onLoad(name) {
             var dataToLoad = null
 
-            for (let i = 0; i < this.coreStore.commercialShapes.length; i++) {
-                if (this.coreStore.commercialShapes[i]["name"] == name){
-                    dataToLoad = this.coreStore.commercialShapes[i]
+            for (let i = 0; i < this.dataCacheStore.commercialShapes.length; i++) {
+                if (this.dataCacheStore.commercialShapes[i]["name"] == name){
+                    dataToLoad = this.dataCacheStore.commercialShapes[i]
                     break
                 } 
             }
@@ -106,32 +106,34 @@ export default {
                 this.scaledColumns.push(newItem)
             })
         },
+        loadTableData() {
+            this.dataCacheStore.commercialCores.forEach((item) => {
+            const datum = {
+                name: item['functionalDescription']['shape']['name'],
+                family: item['functionalDescription']['shape']['family'].toUpperCase(),
+                dimensions: Utils.removeTrailingZeroes(item['processedDescription']['width'], 4) + " x " + Utils.removeTrailingZeroes(item['processedDescription']['height'], 4) + " x " + Utils.removeTrailingZeroes(item['processedDescription']['depth'], 4) + " m",
+                effectiveLength: item['processedDescription']['effectiveParameters']['effectiveLength'] * 1000,
+                effectiveArea: item['processedDescription']['effectiveParameters']['effectiveArea'] * 1000000,
+                effectiveVolume: item['processedDescription']['effectiveParameters']['effectiveVolume'] * 1000000000,
+            }
+                this.commercialData.push(datum)
+            })
+            this.scaleColumns()  // To avoid bug in vue-good-table-next
+        },
     },
     mounted() {
         const url = import.meta.env.VITE_API_ENDPOINT + '/core_get_commercial_data'
         const core = this.userStore.getGlobalCore
-        axios.post(url, {})
-        .then(response => {
-            response.data["commercial_cores"].forEach((item) => {
-                this.coreStore.commercialShapes.push(item['functionalDescription']['shape'])
-            })
-            this.coreStore.commercialShapesLoaded()
-            response.data["commercial_cores"].forEach((item) => {
-                const datum = {
-                    name: item['functionalDescription']['shape']['name'],
-                    family: item['functionalDescription']['shape']['family'].toUpperCase(),
-                    dimensions: Utils.removeTrailingZeroes(item['processedDescription']['width'], 4) + " x " + Utils.removeTrailingZeroes(item['processedDescription']['height'], 4) + " x " + Utils.removeTrailingZeroes(item['processedDescription']['depth'], 4) + " m",
-                    effectiveLength: item['processedDescription']['effectiveParameters']['effectiveLength'] * 1000,
-                    effectiveArea: item['processedDescription']['effectiveParameters']['effectiveArea'] * 1000000,
-                    effectiveVolume: item['processedDescription']['effectiveParameters']['effectiveVolume'] * 1000000000,
-                }
-                this.commercialData.push(datum)
-            })
-            this.scaleColumns()  // To avoid bug in vue-good-table-next
+
+        this.dataCacheStore.$onAction((action) => {
+            if (action.name == "commercialShapesLoaded") {
+                console.log("this.dataCacheStore.commercialCores")
+                console.log(this.dataCacheStore.commercialCores)
+                this.loadTableData()
+            }
         })
-        .catch(error => {
-            console.error(error.data)
-        });
+
+        this.loadTableData()
         window.addEventListener('resize', () => {
             this.scaleColumns()
         })

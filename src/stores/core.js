@@ -9,8 +9,6 @@ export const useCoreStore = defineStore("core", () => {
     const core = ref(null)
     const dataReadOnly = ref(false)
     const fullCoreModel = ref(true)
-    const commercialShapes = ref([])
-    const commercialMaterials = ref([])
     const isCustomizedShape = computed(() => {
         return customizedShape
     })
@@ -46,13 +44,6 @@ export const useCoreStore = defineStore("core", () => {
     }
     function setDistributedGapAlreadyInUse(distributedGapAlreadyInUse) {
         this.distributedGapAlreadyInUse = distributedGapAlreadyInUse
-    }
-    function commercialShapesLoaded() {
-    }
-    function commercialMaterialsLoaded() {
-    }
-    function setCommercialMaterials(commercialMaterials) {
-        this.commercialMaterials = commercialMaterials
     }
     function setStreamedObj(object) {
     }
@@ -102,11 +93,6 @@ export const useCoreStore = defineStore("core", () => {
         gapReluctanceModelChanged,
         setFullCoreModel,
         fullCoreModel,
-        commercialShapesLoaded,
-        commercialMaterialsLoaded,
-        commercialShapes,
-        setCommercialMaterials,
-        commercialMaterials,
         onLoadCommercialShape,
         quickGappingChanged,
     }

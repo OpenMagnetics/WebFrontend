@@ -5,7 +5,7 @@ const emit = defineEmits(['onLoadCommercialMaterial'])
 import axios from "axios";
 import * as Utils from '/src/assets/js/utils.js'
 import { useUserStore } from '/src/stores/user'
-import { useCoreStore } from '/src/stores/core'
+import { useDataCacheStore } from '/src/stores/dataCache'
 
 </script>
 
@@ -60,12 +60,12 @@ export default {
             },
         ]
         const userStore = useUserStore();
-        const coreStore = useCoreStore();
+        const dataCacheStore = useDataCacheStore()
         const commercialData = []
         const scaledColumns = []
         return {
             userStore,
-            coreStore,
+            dataCacheStore,
             columns,
             commercialData,
             scaledColumns,
@@ -75,9 +75,9 @@ export default {
         onLoad(name) {
             var dataToLoad = null
 
-            for (let i = 0; i < this.coreStore.commercialMaterials.length; i++) {
-                if (this.coreStore.commercialMaterials[i]["name"] == name){
-                    dataToLoad = this.coreStore.commercialMaterials[i]
+            for (let i = 0; i < this.dataCacheStore.commercialMaterials.length; i++) {
+                if (this.dataCacheStore.commercialMaterials[i]["name"] == name){
+                    dataToLoad = this.dataCacheStore.commercialMaterials[i]
                     break
                 } 
             }
@@ -105,15 +105,10 @@ export default {
                 this.scaledColumns.push(newItem)
             })
         },
-    },
-    mounted() {
-        const url = import.meta.env.VITE_API_ENDPOINT + '/core_get_commercial_materials'
-        const core = this.userStore.getGlobalCore
-        axios.post(url, {})
-        .then(response => {
-            this.coreStore.commercialMaterials = response.data["commercial_materials"]
-            this.coreStore.commercialMaterialsLoaded()
-            response.data["commercial_materials"].forEach((item) => {
+        loadTableData() {
+            const materialData = this.dataCacheStore.commercialMaterials
+            this.commercialMaterialNames = []
+            materialData.forEach((item) => {
                 var initialPermeability;
                 var saturation100C;
                 if (typeof(item['permeability']['initial']['value']) == 'number') {
@@ -139,12 +134,20 @@ export default {
                 }
                 this.commercialData.push(datum)
             })
-
             this.scaleColumns()  // To avoid bug in vue-good-table-next
+        },
+    },
+    mounted() {
+        const url = import.meta.env.VITE_API_ENDPOINT + '/core_get_commercial_materials'
+        const core = this.userStore.getGlobalCore
+
+        this.dataCacheStore.$onAction((action) => {
+            if (action.name == "commercialMaterialsLoaded") {
+                this.loadTableData()
+            }
         })
-        .catch(error => {
-            console.error(error.data)
-        });
+        this.loadTableData()
+
         window.addEventListener('resize', () => {
             this.scaleColumns()
         })

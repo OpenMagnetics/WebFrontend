@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
+import viteCompression from 'vite-plugin-compression';
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -30,7 +31,10 @@ export default defineConfig({
         disabled: false,
     },
     publicDir: 'src/public',
-    plugins: [vue()],
+    plugins: [
+        vue(),
+        viteCompression({algorithm: 'brotliCompress'}),
+    ],
     server: {
         proxy: {
             '/api': {

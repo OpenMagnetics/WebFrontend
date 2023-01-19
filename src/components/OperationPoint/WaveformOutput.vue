@@ -46,8 +46,6 @@ const rms = ref(null);
 const thd = ref(null);
 
 function getOutputs(data) {
-    console.log("Puetamierda")
-    console.log(props.electricalParameter)
     const rawDataValues = []
     store.getDataPoints.value.forEach((item) => {
         rawDataValues.push(item.y)

@@ -3,7 +3,7 @@ import { ref, watch, computed, defineProps, onMounted } from 'vue'
 import { Form, Field, configure} from 'vee-validate';
 import * as Yup from 'yup';
 import { useUserStore } from '/src/stores/user'
-import { useCoreStore } from '/src/stores/core'
+import { useDataCacheStore } from '/src/stores/dataCache'
 import * as Utils from '/src/assets/js/utils.js'
 import * as Defaults from '/src/assets/js/defaults.js'
 
@@ -29,7 +29,7 @@ export default {
         const simpleMaterialSelected = 42;
         const commercialShapesNames = [];
         const userStore = useUserStore();
-        const coreStore = useCoreStore(); 
+        const dataCacheStore = useDataCacheStore()
         return {
             temperatureSelected,
             targetInductanceSelected,
@@ -38,14 +38,14 @@ export default {
             simpleShapeSelected,
             simpleMaterialSelected,
             userStore,
-            coreStore,
+            dataCacheStore,
             commercialShapesNames,
         }
     },
     created() {
-        this.coreStore.$onAction((action) => {
+        this.dataCacheStore.$onAction((action) => {
             if (action.name == "commercialShapesLoaded") {
-                const shapeData = this.coreStore.commercialShapes
+                const shapeData = this.dataCacheStore.commercialShapes
                 this.commercialShapesNames = []
                 shapeData.forEach((item) => {
                     this.commercialShapesNames.push(item['name'])
@@ -68,7 +68,7 @@ export default {
             console.log("onShapeChange")
             console.log(this.simpleShapeSelected)
             var shapeDataSelected = {}
-            this.coreStore.commercialShapes.forEach((item) => {
+            this.dataCacheStore.commercialShapes.forEach((item) => {
                 if (item['name'] == this.simpleShapeSelected) {
                     shapeDataSelected = Utils.deepCopy(item)
                 }
@@ -81,7 +81,7 @@ export default {
             console.log("onMaterialChange")
             console.log(this.simpleMaterialSelected)
             var materialDataSelected = {}
-            this.coreStore.commercialMaterials.forEach((item) => {
+            this.dataCacheStore.commercialMaterials.forEach((item) => {
                 if (item['name'] == this.simpleMaterialSelected) {
                     materialDataSelected = Utils.deepCopy(item)
                 }

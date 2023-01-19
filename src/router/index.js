@@ -1,6 +1,8 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import Home from '../views/Home.vue'
 import { useUserStore } from '/src/stores/user'
+import { useDataCacheStore } from '/src/stores/dataCache'
+import axios from "axios";
 
 const routes = [
     {
@@ -94,23 +96,77 @@ const router = createRouter({
     routes,
 });
 
+
+
 router.beforeEach((to, from, next) => {
+    const userStore = useUserStore()
+    const dataCacheStore = useDataCacheStore()
+
     if (to.name == "CoreGappingArtisan") {
-        const userStore = useUserStore()
         userStore.coreSubsection = 'gappingArtisan';
     }
     else if (to.name == "CoreShapeArtisan") {
-        const userStore = useUserStore()
         userStore.coreSubsection = 'shapeArtisan';
     }
     else if (to.name == "SimulationCoreAdviser") {
-        const userStore = useUserStore()
         userStore.coreSimulationSubsection = 'coreAdviser';
     }
     else if (to.name == "SimulationInductanceCalculator") {
-        const userStore = useUserStore()
         userStore.coreSimulationSubsection = 'inductanceCalculator';
     }
+
+    const nonDataViews = ['/', '/home', '/roadmap', '/musings']
+
+    if (dataCacheStore.notificationsTimestamp == null || (dataCacheStore.notificationsTimestamp + dataCacheStore.notificationsTtlInMilliseconds < Date.now())) {
+        dataCacheStore.notificationsTimestamp = Date.now()
+        console.warn("Reloading notifications")
+        const urlNotifications = import.meta.env.VITE_API_ENDPOINT + '/get_notifications'
+        axios.post(urlNotifications, {})
+        .then(response => {
+            console.log(response.data)
+            dataCacheStore.notifications = response.data["notifications"]
+        })
+        .catch(error => {
+            console.error("Error getting notifications")
+            console.error(error.data)
+        });
+    }
+    if (!nonDataViews.includes(to.path)) {
+        if (dataCacheStore.dataTimestamp == null || (dataCacheStore.dataTimestamp + dataCacheStore.dataTtlInMilliseconds < Date.now())) {
+            dataCacheStore.dataTimestamp = Date.now()
+            console.warn("Reloading data")
+
+            const urlMaterials = import.meta.env.VITE_API_ENDPOINT + '/core_get_commercial_materials'
+            const core = userStore.getGlobalCore
+            axios.post(urlMaterials, {})
+            .then(response => {
+                console.log(response.data)
+                dataCacheStore.commercialMaterials = response.data["commercial_materials"]
+                dataCacheStore.commercialMaterialsLoaded()
+            })
+            .catch(error => {
+                console.error("Error loading material library")
+                console.error(error.data)
+            });
+
+            const urlShapes = import.meta.env.VITE_API_ENDPOINT + '/core_get_commercial_data'
+            axios.post(urlShapes, {})
+            .then(response => {
+                console.log(response.data)
+                dataCacheStore.commercialCores = response.data["commercial_cores"]
+                response.data["commercial_cores"].forEach((item) => {
+                    dataCacheStore.commercialShapes.push(item['functionalDescription']['shape'])
+                })
+                dataCacheStore.commercialShapesLoaded()
+            })
+            .catch(error => {
+                console.error("Error loading shape library")
+                console.error(error.data)
+            });
+
+        }
+    }
+
     next()
 })
 export default router
