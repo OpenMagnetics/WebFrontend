@@ -1,35 +1,60 @@
 <script setup>
-import { ref } from 'vue'
-import * as Defaults from '/src/assets/js/defaults.js'
-import * as Utils from '/src/assets/js/utils.js'
-import { useCurrentStore } from '/src/stores/waveform'
-import { useVoltageStore } from '/src/stores/waveform'
-import { useCommonStore } from '/src/stores/waveform'
+import { getOperationPointData } from '/src/assets/js/utils.js'
+import { useCurrentStore,
+         useVoltageStore,
+         useCommonStore } from '/src/stores/waveform'
 import * as download from 'downloadjs'
+</script>
 
-const commonStore = useCommonStore()
-const currentStore = useCurrentStore()
-const voltageStore = useVoltageStore()
-const waveformTypeRadioRef = ref(null)
-const waveformTypePicked = ref("compressedWaveform")
-const numberEquidistantPointsPicked = ref(512)
-const waveformAndProcessedPicked = ref("onlyWaveform")
-const waveformAndFourierPicked = ref("withoutHarmonics")
-const exported = ref(false)
-const emit = defineEmits(['exported'])
+<script>
+export default {
+    emits: ['exported'],
+    components: {
+    },
+    props: {
+    },
+    data() {
 
-function onExport(event) {
-    const configuration = {
-        numberPoints: numberEquidistantPointsPicked.value,
-        exportEquidistant: waveformTypePicked.value == "equidistantWaveform",
-        includeProcessed: waveformAndProcessedPicked.value == "waveformAndProcessed",
-        includeHarmonics: waveformAndFourierPicked.value == "withHarmonics"
-    }
-    const exportedData = Utils.getOperationPointData(commonStore, currentStore, voltageStore, configuration)
-    download(JSON.stringify(exportedData, null, 4), commonStore.getOperationPointName.value + ".json", "text/plain");
-    emit("exported")
-    exported.value = true
-    setTimeout(() => exported.value = false, 2000);
+        const commonStore = useCommonStore()
+        const currentStore = useCurrentStore()
+        const voltageStore = useVoltageStore()
+        const waveformTypePicked = "compressedWaveform"
+        const numberEquidistantPointsPicked = 512
+        const waveformAndProcessedPicked = "onlyWaveform"
+        const waveformAndFourierPicked = "withoutHarmonics"
+        const exported = false
+        return {
+            commonStore,
+            currentStore,
+            voltageStore,
+            waveformTypePicked,
+            numberEquidistantPointsPicked,
+            waveformAndProcessedPicked,
+            waveformAndFourierPicked,
+            exported,
+        }
+    },
+    methods: {
+        onExport(event) {
+            const configuration = {
+                numberPoints: this.numberEquidistantPointsPicked,
+                exportEquidistant: this.waveformTypePicked == "equidistantWaveform",
+                includeProcessed: this.waveformAndProcessedPicked == "waveformAndProcessed",
+                includeHarmonics: this.waveformAndFourierPicked == "withHarmonics"
+            }
+            const exportedData = getOperationPointData(this.commonStore, this.currentStore, this.voltageStore, configuration)
+            download(JSON.stringify(exportedData, null, 4), this.commonStore.operationPointName + ".json", "text/plain");
+            this.$emit("exported")
+            this.exported = true
+            setTimeout(() => this.exported = false, 2000);
+        }
+
+    },
+    computed: {
+
+    },
+    mounted() {
+    },
 }
 
 </script>

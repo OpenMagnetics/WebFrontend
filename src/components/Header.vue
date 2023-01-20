@@ -1,9 +1,8 @@
 <script setup >
 import BugReporterModal from '/src/components/User/BugReporter.vue'
 import LoginModal from '/src/components/User/Login.vue'
-import { useUserStore } from '/src/stores/user'
 import { useUserDatabaseStore } from '/src/stores/userDatabase'
-import * as Utils from '/src/assets/js/utils.js'
+import { tryLoadElements } from '/src/assets/js/utils.js'
 import CoreLoadCommercialShape from '/src/components/Core/CoreLoadCommercialShape.vue';
 import CoreLoadCommercialMaterial from '/src/components/Core/CoreLoadCommercialMaterial.vue';
 import NotificationsModal from '/src/components/NotificationsModal.vue';
@@ -13,15 +12,13 @@ import NotificationsModal from '/src/components/NotificationsModal.vue';
 <script>
 
 export default {
-    components: { LoginModal },
+    components: {},
     data() {
-        const userStore = useUserStore()
         const userDatabaseStore = useUserDatabaseStore()
         return {
             showModal: false,
             loggedIn: false,
             username: null,
-            userStore,
             userDatabaseStore,
         }
     },
@@ -33,45 +30,45 @@ export default {
             this.loggedIn = this.$cookies.get('username') != null
             this.username = this.$cookies.get('username')
             if (this.loggedIn) {
-                this.userStore.login()
-                this.userStore.setUsername(this.username)
+                this.$userStore.login()
+                this.$userStore.setUsername(this.username)
             }
         },
         onClickNumberOperationPoints() {
-            this.userStore.setUserSubsection("operationPoints")
+            this.$userStore.setUserSubsection("operationPoints")
             this.$router.push('/user');
         },
         onClickNumberCores() {
-            this.userStore.setUserSubsection("cores")
+            this.$userStore.setUserSubsection("cores")
             this.$router.push('/user');
         },
         onClickNumberBobbins() {
-            this.userStore.setUserSubsection("bobbins")
+            this.$userStore.setUserSubsection("bobbins")
             this.$router.push('/user');
         },
         onClickNumberWires() {
-            this.userStore.setUserSubsection("wires")
+            this.$userStore.setUserSubsection("wires")
             this.$router.push('/user');
         },
         onClickNumberMagnetics() {
-            this.userStore.setUserSubsection("magnetics")
+            this.$userStore.setUserSubsection("magnetics")
             this.$router.push('/user');
         },
         onLoggedOut() {
             this.$cookies.remove("username");
             this.loggedIn = false
             this.username = null
-            this.userStore.reset()
-            this.userStore.logout()
-            this.userStore.setUsername(null)
+            this.$userStore.reset()
+            this.$userStore.logout()
+            this.$userStore.setUsername(null)
         },
         onLoadCommercialShape(data) {
             console.log(data)
-            this.userStore.setGlobalCoreShape(data)
+            this.$userStore.setGlobalCoreShape(data)
         },
         onLoadCommercialMaterial(data) {
             console.log(data)
-            this.userStore.setGlobalCoreMaterial(data)
+            this.$userStore.setGlobalCoreMaterial(data)
         },
     },
     computed: {
@@ -107,8 +104,8 @@ export default {
         },
     },
     created() {
-        if (this.userStore.isLoggedIn.value && this.$cookies.get('username') == null) {
-            this.userStore.reset()
+        if (this.$userStore.isLoggedIn.value && this.$cookies.get('username') == null) {
+            this.$userStore.reset()
         }
     },
     mounted() {
@@ -116,15 +113,15 @@ export default {
         fontawesome.setAttribute('src', 'https://kit.fontawesome.com/d5a40d6941.js')
         document.head.appendChild(fontawesome)
         this.onLoggedIn()
-        Utils.tryLoadElements(this.userDatabaseStore, this.userStore.getUsername.value)
+        tryLoadElements(this.userDatabaseStore, this.$userStore.getUsername.value)
     }
 }
 </script>
 
 <template>
     <NotificationsModal/>
-    <CoreLoadCommercialMaterial @onLoadCommercialMaterial="onLoadCommercialMaterial"/>
-    <CoreLoadCommercialShape @onLoadCommercialShape="onLoadCommercialShape"/>
+    <CoreLoadCommercialMaterial v-if="$dataCacheStore != null" @onLoadCommercialMaterial="onLoadCommercialMaterial"/>
+    <CoreLoadCommercialShape v-if="$dataCacheStore != null" @onLoadCommercialShape="onLoadCommercialShape"/>
     <nav class="navbar navbar-expand-lg bg-light navbar-dark text-primary mb-1" id="header_wrapper">
         <div class="container-fluid">
             <a href="/">

@@ -1,8 +1,6 @@
 <script setup>
 import OperationPoint from '/src/views/OperationPoint.vue'
 import Core from '/src/views/Core.vue'
-import axios from "axios"
-import { useUserStore } from '/src/stores/user'
 import { useCommonStore } from '/src/stores/waveform'
 import { useCoreStore } from '/src/stores/core'
 import * as Utils from '/src/assets/js/utils.js'
@@ -12,13 +10,11 @@ import * as Utils from '/src/assets/js/utils.js'
 
 export default {
     data() {
-        const userStore = useUserStore()
         const operationPointCommonStore = useCommonStore()
         const coreStore = useCoreStore()
         return {
             operationPointLoaded: false,
             coreLoaded: false,
-            userStore,
             operationPointCommonStore,
             coreStore,
         }
@@ -37,13 +33,13 @@ export default {
                 const data = {"username": null}
                 console.log(url)
                 console.log(data)
-                axios.post(url, data)
+                this.$axios.post(url, data)
                 .then(response => {
                     console.log(response.data)
                     if (response.data == null)
                         this.$router.push('/');
                     else {
-                        this.userStore.setGlobalOperationPoint(response.data["element"])
+                        this.$userStore.setGlobalOperationPoint(response.data["element"])
                         this.operationPointCommonStore.setDataReadOnly(true)
                         this.operationPointLoaded = true
                     }
@@ -61,7 +57,7 @@ export default {
                 const data = {"username": null}
                 console.log(url)
                 console.log(data)
-                axios.post(url, data)
+                this.$axios.post(url, data)
                 .then(response => {
                     console.log(response.data)
                     if (response.data == null)

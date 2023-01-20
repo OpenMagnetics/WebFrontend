@@ -2,7 +2,6 @@
 import ToolMenu from '/src/components/Simulation/CoreSimulation/ToolMenu.vue'
 import InductanceCalculator from '/src/components/Simulation/CoreSimulation/InductanceCalculator.vue'
 import CoreAdviser from '/src/components/Simulation/CoreSimulation/CoreAdviser.vue'
-import { useUserStore } from '/src/stores/user'
 import { useCoreStore } from '/src/stores/core'
 import * as Defaults from '/src/assets/js/defaults.js'
 import * as Utils from '/src/assets/js/utils.js'
@@ -11,12 +10,10 @@ import * as Utils from '/src/assets/js/utils.js'
 <script>
 export default {
     data() {
-        const userStore = useUserStore()
         const coreStore = useCoreStore()
-        var chosenTool = userStore.getCoreSimulationSubsection
+        var chosenTool = this.$userStore.getCoreSimulationSubsection
 
         return {
-            userStore,
             coreStore,
             chosenTool,
         }
@@ -24,7 +21,7 @@ export default {
     methods: {
         onToolChange(newTool) {
             console.log(newTool)
-            this.userStore.setCoreSimulationSubsection(newTool)
+            this.$userStore.setCoreSimulationSubsection(newTool)
             this.chosenTool = newTool
         },
     },

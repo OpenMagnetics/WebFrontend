@@ -7,8 +7,6 @@ import * as Utils from '/src/assets/js/utils.js'
 import { useCurrentStore } from '/src/stores/waveform'
 import { useVoltageStore } from '/src/stores/waveform'
 import { useCommonStore } from '/src/stores/waveform'
-import { useUserStore } from '/src/stores/user'
-import axios from "axios";
 
 </script>
 
@@ -17,7 +15,6 @@ import axios from "axios";
 const currentStore = useCurrentStore()
 const voltageStore = useVoltageStore()
 const commonStore = useCommonStore()
-const userStore = useUserStore()
 const formRef = ref(null)
 const slug = ref("example")
 
@@ -51,16 +48,16 @@ export default {
             this.posting = true
 
             const data = {}
-            if (userStore.getUsername.value == null) {
+            if (this.$userStore.getUsername.value == null) {
                 data["username"] = "anonymous"
             }
             else {
-                data["username"] = userStore.getUsername.value
+                data["username"] = this.$userStore.getUsername.value
             }
             data["slug"] = slug.value
             const url = import.meta.env.VITE_API_ENDPOINT + '/core_publish'
 
-            axios.post(url, data)
+            this.$axios.post(url, data)
             .then(response => {
                 if (response.data['status'] == 'slug exists'){
                     this.usedSlugs.push(response.data['slug'].toLowerCase())

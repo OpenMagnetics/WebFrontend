@@ -2,7 +2,6 @@
 import { ref, watch, computed, defineProps, onMounted } from 'vue'
 import { Form, Field, configure} from 'vee-validate';
 import * as Yup from 'yup';
-import { useUserStore } from '/src/stores/user'
 import { useDataCacheStore } from '/src/stores/dataCache'
 import * as Utils from '/src/assets/js/utils.js'
 import * as Defaults from '/src/assets/js/defaults.js'
@@ -28,7 +27,6 @@ export default {
         const simpleShapeSelected = 42;
         const simpleMaterialSelected = 42;
         const commercialShapesNames = [];
-        const userStore = useUserStore();
         const dataCacheStore = useDataCacheStore()
         return {
             temperatureSelected,
@@ -37,7 +35,6 @@ export default {
             simpleGapSelected,
             simpleShapeSelected,
             simpleMaterialSelected,
-            userStore,
             dataCacheStore,
             commercialShapesNames,
         }
@@ -53,7 +50,7 @@ export default {
                 console.log(this.commercialShapesNames)
             }
         })
-        this.userStore.$onAction((action) => {
+        this.$userStore.$onAction((action) => {
             if (action.name == "setGlobalCoreAlt") {
                 const coreData = action.args[0]
                 console.log("action.args[0]")
@@ -73,9 +70,9 @@ export default {
                     shapeDataSelected = Utils.deepCopy(item)
                 }
             })
-            this.userStore.setGlobalCoreShape(shapeDataSelected)
+            this.$userStore.setGlobalCoreShape(shapeDataSelected)
             console.log(shapeDataSelected)
-            console.log(this.userStore.globalCore)
+            console.log(this.$userStore.globalCore)
         },
         onMaterialChange () {
             console.log("onMaterialChange")
@@ -86,9 +83,9 @@ export default {
                     materialDataSelected = Utils.deepCopy(item)
                 }
             })
-            this.userStore.setGlobalCoreMaterial(materialDataSelected)
+            this.$userStore.setGlobalCoreMaterial(materialDataSelected)
             console.log(materialDataSelected)
-            console.log(this.userStore.globalCore)
+            console.log(this.$userStore.globalCore)
         },
         handleSubmit(params) {
         },

@@ -3,7 +3,6 @@ import Header from '/src/components/Header.vue'
 import Footer from '/src/components/Footer.vue'
 import SimulationHeader from '/src/components/Simulation/SimulationHeader.vue'
 import CoreSimulation from '/src/components/Simulation/CoreSimulation.vue'
-import { useUserStore } from '/src/stores/user'
 import { useCoreStore } from '/src/stores/core'
 import * as Defaults from '/src/assets/js/defaults.js'
 import * as Utils from '/src/assets/js/utils.js'
@@ -12,11 +11,9 @@ import * as Utils from '/src/assets/js/utils.js'
 <script>
 export default {
     data() {
-        const userStore = useUserStore()
         const coreStore = useCoreStore()
 
         return {
-            userStore,
             coreStore,
         }
     },

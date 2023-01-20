@@ -1,10 +1,6 @@
 <script setup >
-import Header from '/src/components/Header.vue'
-import Footer from '/src/components/Footer.vue'
-import { useUserStore } from '/src/stores/user'
 import { useCoreStore } from '/src/stores/core'
 import { useUserDatabaseStore } from '/src/stores/userDatabase'
-import axios from "axios"
 import '/src/assets/css/vue-good-table-next.css'
 import { VueGoodTable } from 'vue-good-table-next';
 import * as Utils from '/src/assets/js/utils.js'
@@ -172,7 +168,6 @@ export default {
         },
     },
     data() {
-        const userStore = useUserStore()
         const coreStore = useCoreStore()
         const userDatabaseStore = useUserDatabaseStore()
         const operationPointCommonStore = useCommonStore()
@@ -191,7 +186,6 @@ export default {
             typeToDelete: null,
             idToDelete: null,
             userDatabaseStore,
-            userStore,
             coreStore,
             operationPointCommonStore,
             operationPointsColor: "bg-light text-primary",
@@ -210,19 +204,19 @@ export default {
     },
     methods: {
         onClickOperationPoints() {
-            this.userStore.setUserSubsection("operationPoints")
+            this.$userStore.setUserSubsection("operationPoints")
         },
         onClickCores() {
-            this.userStore.setUserSubsection("cores")
+            this.$userStore.setUserSubsection("cores")
         },
         onClickBobbins() {
-            this.userStore.setUserSubsection("bobbins")
+            this.$userStore.setUserSubsection("bobbins")
         },
         onClickWires() {
-            this.userStore.setUserSubsection("wires")
+            this.$userStore.setUserSubsection("wires")
         },
         onClickMagnetics() {
-            this.userStore.setUserSubsection("magnetics")
+            this.$userStore.setUserSubsection("magnetics")
         },
         loadOperationPoints() {
             if (this.userDatabaseStore.operationPoints == null) {
@@ -364,15 +358,15 @@ export default {
             this.scaledColumns = []
             var selectedColumns = this.operationPointsColumns 
 
-            if ((this.userStore.getUserSubsection.value == 'operationPoints' && this.specificElement == null) || this.specificElement == 'operationPoints' )
+            if ((this.$userStore.getUserSubsection.value == 'operationPoints' && this.specificElement == null) || this.specificElement == 'operationPoints' )
                 selectedColumns = this.operationPointsColumns
-            if ((this.userStore.getUserSubsection.value == 'cores' && this.specificElement == null) || this.specificElement == 'cores')
+            if ((this.$userStore.getUserSubsection.value == 'cores' && this.specificElement == null) || this.specificElement == 'cores')
                 selectedColumns = this.coresColumns
-            if ((this.userStore.getUserSubsection.value == 'bobbins' && this.specificElement == null) || this.specificElement == 'bobbins')
+            if ((this.$userStore.getUserSubsection.value == 'bobbins' && this.specificElement == null) || this.specificElement == 'bobbins')
                 selectedColumns = this.bobbinsColumns
-            if ((this.userStore.getUserSubsection.value == 'wires' && this.specificElement == null) || this.specificElement == 'wires')
+            if ((this.$userStore.getUserSubsection.value == 'wires' && this.specificElement == null) || this.specificElement == 'wires')
                 selectedColumns = this.wiresColumns
-            if ((this.userStore.getUserSubsection.value == 'magnetics' && this.specificElement == null) || this.specificElement == 'magnetics')
+            if ((this.$userStore.getUserSubsection.value == 'magnetics' && this.specificElement == null) || this.specificElement == 'magnetics')
                 selectedColumns = this.magneticsColumns
 
             selectedColumns.forEach((item, index) => {
@@ -406,30 +400,30 @@ export default {
             })
         },
         changeSubsection() {
-            this.operationPointsColor = this.userStore.getUserSubsection.value == 'operationPoints'? 'bg-primary text-light' : 'bg-light text-primary'
-            this.coresColor = this.userStore.getUserSubsection.value == 'cores'? 'bg-primary text-light' : 'bg-light text-primary'
-            this.bobbinsColor = this.userStore.getUserSubsection.value == 'bobbins'? 'bg-primary text-light' : 'bg-light text-primary'
-            this.wiresColor = this.userStore.getUserSubsection.value == 'wires'? 'bg-primary text-light' : 'bg-light text-primary'
-            this.magneticsColor = this.userStore.getUserSubsection.value == 'magnetics'? 'bg-primary text-light' : 'bg-light text-primary'
-            if ((this.userStore.getUserSubsection.value == 'operationPoints' && this.specificElement == null) || this.specificElement == 'operationPoints' )
+            this.operationPointsColor = this.$userStore.getUserSubsection.value == 'operationPoints'? 'bg-primary text-light' : 'bg-light text-primary'
+            this.coresColor = this.$userStore.getUserSubsection.value == 'cores'? 'bg-primary text-light' : 'bg-light text-primary'
+            this.bobbinsColor = this.$userStore.getUserSubsection.value == 'bobbins'? 'bg-primary text-light' : 'bg-light text-primary'
+            this.wiresColor = this.$userStore.getUserSubsection.value == 'wires'? 'bg-primary text-light' : 'bg-light text-primary'
+            this.magneticsColor = this.$userStore.getUserSubsection.value == 'magnetics'? 'bg-primary text-light' : 'bg-light text-primary'
+            if ((this.$userStore.getUserSubsection.value == 'operationPoints' && this.specificElement == null) || this.specificElement == 'operationPoints' )
                 this.selectedData = this.operationPointsData
-            if ((this.userStore.getUserSubsection.value == 'cores' && this.specificElement == null) || this.specificElement == 'cores')
+            if ((this.$userStore.getUserSubsection.value == 'cores' && this.specificElement == null) || this.specificElement == 'cores')
                 this.selectedData = this.coresData
-            if ((this.userStore.getUserSubsection.value == 'bobbins' && this.specificElement == null) || this.specificElement == 'bobbins')
+            if ((this.$userStore.getUserSubsection.value == 'bobbins' && this.specificElement == null) || this.specificElement == 'bobbins')
                 this.selectedData = this.bobbinsData
-            if ((this.userStore.getUserSubsection.value == 'wires' && this.specificElement == null) || this.specificElement == 'wires')
+            if ((this.$userStore.getUserSubsection.value == 'wires' && this.specificElement == null) || this.specificElement == 'wires')
                 this.selectedData = this.wiresData
-            if ((this.userStore.getUserSubsection.value == 'magnetics' && this.specificElement == null) || this.specificElement == 'magnetics')
+            if ((this.$userStore.getUserSubsection.value == 'magnetics' && this.specificElement == null) || this.specificElement == 'magnetics')
                 this.selectedData = this.magneticsData
             this.scaleColumns()
         },
         onLoad(id) {
             console.log("Load: " + id)
             var dataToLoad = null
-            if ((this.userStore.getUserSubsection.value == 'operationPoints' && this.specificElement == null) || this.specificElement == 'operationPoints' ) {
+            if ((this.$userStore.getUserSubsection.value == 'operationPoints' && this.specificElement == null) || this.specificElement == 'operationPoints' ) {
                 dataToLoad = this.userDatabaseStore.getOperationPointById(id)
                 console.log(dataToLoad)
-                this.userStore.setGlobalOperationPoint(dataToLoad)
+                this.$userStore.setGlobalOperationPoint(dataToLoad)
                 this.operationPointCommonStore.setDataReadOnly(false)
                 if (this.specificElement == null) {
                     // Because this means we are in the User menu
@@ -438,14 +432,14 @@ export default {
 
                 this.$emit("onLoadOperationPoint")
             }
-            if ((this.userStore.getUserSubsection.value == 'cores' && this.specificElement == null) || this.specificElement == 'cores') {
+            if ((this.$userStore.getUserSubsection.value == 'cores' && this.specificElement == null) || this.specificElement == 'cores') {
                 dataToLoad = this.userDatabaseStore.getCoreById(id)
                 console.log(dataToLoad)
-                this.userStore.setGlobalCore(dataToLoad)
+                this.$userStore.setGlobalCore(dataToLoad)
                 this.coreStore.setDataReadOnly(false)
                 if (this.specificElement == null) {
                     // Because this means we are in the User menu
-                    Utils.getCoreParameters(this.userStore, () => {this.$router.push('/core');}, () => {})
+                    Utils.getCoreParameters(this.$userStore, () => {this.$router.push('/core');}, () => {})
                 }
 
                 this.$emit("onLoadCore")
@@ -453,17 +447,17 @@ export default {
 
         },
         onDelete(id) {
-            this.userStore.setIdToDelete(id)
+            this.$userStore.setIdToDelete(id)
 
-            if (this.userStore.getUserSubsection.value == 'operationPoints')
+            if (this.$userStore.getUserSubsection.value == 'operationPoints')
                 this.typeToDelete = "operation point"
-            if (this.userStore.getUserSubsection.value == 'cores')
+            if (this.$userStore.getUserSubsection.value == 'cores')
                 this.typeToDelete = "core"
-            if (this.userStore.getUserSubsection.value == 'bobbins')
+            if (this.$userStore.getUserSubsection.value == 'bobbins')
                 this.typeToDelete = "bobbin"
-            if (this.userStore.getUserSubsection.value == 'wires')
+            if (this.$userStore.getUserSubsection.value == 'wires')
                 this.typeToDelete = "wire"
-            if (this.userStore.getUserSubsection.value == 'magnetics')
+            if (this.$userStore.getUserSubsection.value == 'magnetics')
                 this.typeToDelete = "magnetic"
 
             this.selectedData.forEach((item) => {
@@ -487,7 +481,7 @@ export default {
     },
     computed: {
         getTitle() {
-            return this.userStore.getUsername.value + "'s section"
+            return this.$userStore.getUsername.value + "'s section"
         },
         getTableGridSize() {
             if (this.showMenu) 
@@ -500,8 +494,8 @@ export default {
         this.scaleColumns()
     },
     mounted() {
-        Utils.tryLoadElements(this.userDatabaseStore, this.userStore.getUsername.value)
-        if (this.userStore.getUsername.value == null && this.specificElement == null) {
+        Utils.tryLoadElements(this.userDatabaseStore, this.$userStore.getUsername.value)
+        if (this.$userStore.getUsername.value == null && this.specificElement == null) {
             this.$router.push('/');
         }
         this.loadOperationPoints()
@@ -515,7 +509,7 @@ export default {
         window.addEventListener('resize', () => {
             this.scaleColumns()
         })
-        this.userStore.$subscribe((mutation, state) => {
+        this.$userStore.$subscribe((mutation, state) => {
             this.changeSubsection()
         })
     }

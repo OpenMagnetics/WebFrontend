@@ -1,30 +1,45 @@
 <script setup>
-import { ref } from 'vue'
-import axios from "axios"
-import { useUserStore } from '/src/stores/user'
+</script>
 
-const emit = defineEmits(['delete_operation_point'])
-const userStore = useUserStore()
-var requestingDelete = false
-
-function onDeleteElement() {
-    if (userStore.getUserSubsection.value == 'operationPoints')
-        if (!requestingDelete) {
-            requestingDelete = true
-            const url = import.meta.env.VITE_API_ENDPOINT + '/operation_point_delete/' + userStore.getIdToDelete.value
-            const data = {"username": userStore.getUsername.value}
-            axios.post(url, data)
-            .then(response => {
-                requestingDelete = false
-                emit("delete_operation_point", response.data["id"])
-            })
-            .catch(error => {
-                requestingDelete = false
-                console.error("error.data")
-                console.error(error.data)
-            });
+<script>
+export default {
+    emits: [],
+    components: {
+    },
+    props: {
+    },
+    data() {
+        var requestingDelete = false
+        return {
+            requestingDelete
         }
-    // TODO add rest of cases 
+    },
+    methods: {
+        onDeleteElement() {
+            if (this.userStore.getUserSubsection.value == 'operationPoints')
+                if (!this.requestingDelete) {
+                    this.requestingDelete = true
+                    const url = import.meta.env.VITE_API_ENDPOINT + '/operation_point_delete/' + this.userStore.getIdToDelete.value
+                    const data = {"username": this.userStore.getUsername.value}
+                    this.$axios.post(url, data)
+                    .then(response => {
+                        this.requestingDelete = false
+                        this.$emit("delete_operation_point", response.data["id"])
+                    })
+                    .catch(error => {
+                        this.requestingDelete = false
+                        console.error("error.data")
+                        console.error(error.data)
+                    });
+                }
+            // TODO add rest of cases 
+        },
+    },
+    computed: {
+
+    },
+    mounted() {
+    },
 }
 
 </script>

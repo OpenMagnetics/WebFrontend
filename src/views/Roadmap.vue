@@ -3,11 +3,9 @@ import Header from '/src/components/Header.vue'
 import Milestone from '/src/components/Milestone.vue'
 import Footer from '/src/components/Footer.vue'
 import * as Utils from '/src/assets/js/utils.js'
-import { useUserStore } from '/src/stores/user'
 </script>
 
 <script>
-import axios from "axios";
 function getCookie(name) {
     var r = document.cookie.match("\\b" + name + "=([^;]*)\\b");
     return r ? r[1] : undefined;
@@ -31,9 +29,7 @@ export default {
         Milestone
     },
     data() {
-        const userStore = useUserStore()
         return {
-            userStore,
             numberVotes: [],
             milestoneVotes: [],
             milestones: [
@@ -347,7 +343,7 @@ export default {
         }
     },
     mounted() {
-        axios.post(import.meta.env.VITE_API_ENDPOINT + '/get_all_number_votes', {})
+        this.$axios.post(import.meta.env.VITE_API_ENDPOINT + '/get_all_number_votes', {})
         .then(response => {
             var votesList = response.data;
             var orderedMilestone = [];
@@ -384,7 +380,7 @@ export default {
         fetch('https://api.ipify.org?format=json')
         .then(x => x.json())
         .then(({ ip }) => {
-            this.userStore.ipAddress = ip
+            this.$userStore.ipAddress = ip
             this.ipAddress = ip;
             const data = {
                 ip_address: ip,
@@ -392,7 +388,7 @@ export default {
             }
             console.log("data")
             console.log(data)
-            axios.post(import.meta.env.VITE_API_ENDPOINT + '/are_vote_casted', data)
+            this.$axios.post(import.meta.env.VITE_API_ENDPOINT + '/are_vote_casted', data)
             .then(response => {
             console.log("are_vote_casted")
             console.log(response.data)
@@ -404,7 +400,7 @@ export default {
             });
         });
 
-        axios.post(import.meta.env.VITE_API_ENDPOINT + '/get_number_votes', {
+        this.$axios.post(import.meta.env.VITE_API_ENDPOINT + '/get_number_votes', {
             milestone_id: this.id,
         })
         .then(response => {

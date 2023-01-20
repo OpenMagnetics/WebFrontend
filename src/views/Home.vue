@@ -134,6 +134,6 @@ import Footer from '/src/components/Footer.vue'
                 </div>
             </div>
         </main>
-        <Footer class="mt-auto"/>
+        <!-- <Footer class="mt-auto"/> -->
     </div>
 </template>

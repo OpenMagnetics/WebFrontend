@@ -16,7 +16,6 @@ import WaveformCombinedOutput from '/src/components/OperationPoint/WaveformCombi
 import { useCurrentStore } from '/src/stores/waveform'
 import { useVoltageStore } from '/src/stores/waveform'
 import { useCommonStore } from '/src/stores/waveform'
-import { useUserStore } from '/src/stores/user'
 import * as Defaults from '/src/assets/js/defaults.js'
 import * as Utils from '/src/assets/js/utils.js'
 
@@ -25,14 +24,13 @@ import * as Utils from '/src/assets/js/utils.js'
 const currentStore = useCurrentStore()
 const voltageStore = useVoltageStore()
 const commonStore = useCommonStore()
-const userStore = useUserStore()
 
 export default {
     data() {
         var switchingFrequency
         var waveformTypes
 
-        const data = userStore.getGlobalOperationPoint.value
+        const data = this.$userStore.getGlobalOperationPoint.value
         console.log(data)
         const aux = this.loadOperationPoint(data)
         switchingFrequency = aux["switchingFrequency"]

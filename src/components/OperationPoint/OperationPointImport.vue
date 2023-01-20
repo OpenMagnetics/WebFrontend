@@ -1,103 +1,132 @@
 <script setup>
-import { ref, onMounted } from 'vue'
-import * as Defaults from '/src/assets/js/defaults.js'
+import { defaultCurrentType, defaultVoltageType } from '/src/assets/js/defaults.js'
 import * as Utils from '/src/assets/js/utils.js'
 import { useCurrentStore } from '/src/stores/waveform'
 import { useVoltageStore } from '/src/stores/waveform'
 import { useCommonStore } from '/src/stores/waveform'
 import * as download from 'downloadjs'
+</script>
 
-const emit = defineEmits(['voltage-type-change', 'current-type-change'])
-const commonStore = useCommonStore()
-const currentStore = useCurrentStore()
-const voltageStore = useVoltageStore()
-const fileType = ref(null)
-const tryCompressWaveformsPicked = ref("compressWaveforms")
-const masFileReader = ref(null)
-const isCompressed = ref(true)
-const importedCurrentWaveform = ref(true)
-const importedVoltageWaveform = ref(true)
-const importedFrequency = ref(true)
-var currentDataPoints = []
-var voltageDataPoints = []
-var waitingforCurrentMounted = false
-var waitingforVoltageMounted = false
-var currentCurrentType = currentStore.getType.value == null? Defaults.defaultCurrentType : currentStore.getType.value
-var currentVoltageType = voltageStore.getType.value == null? Defaults.defaultVoltageType : voltageStore.getType.value
+<script>
 
+export default {
+    emits: ['voltage-type-change', 'current-type-change', 'switching-frequency-change'],
+    components: {
+    },
+    props: {
+    },
+    data() {
 
-function onImport(event) {
-    currentDataPoints = Utils.packDataPoints(importedCurrentWaveform.value, importedFrequency.value, tryCompressWaveformsPicked.value == "compressWaveforms")
-    voltageDataPoints = Utils.packDataPoints(importedVoltageWaveform.value, importedFrequency.value, tryCompressWaveformsPicked.value == "compressWaveforms")
-    var voltageType
-    var currentType
+        const commonStore = useCommonStore()
+        const currentStore = useCurrentStore()
+        const voltageStore = useVoltageStore()
+        const fileType = null
+        const tryCompressWaveformsPicked = "compressWaveforms"
+        const isCompressed = true
+        const importedCurrentWaveform = true
+        const importedVoltageWaveform = true
+        const importedFrequency = true
+        var currentDataPoints = []
+        var voltageDataPoints = []
+        var waitingforCurrentMounted = false
+        var waitingforVoltageMounted = false
+        var currentCurrentType = currentStore.type == null? defaultCurrentType : currentStore.type
+        var currentVoltageType = voltageStore.type == null? defaultVoltageType : voltageStore.type
 
-    if ("ancillaryLabel" in importedVoltageWaveform.value) {
-        voltageType = importedVoltageWaveform.value["ancillaryLabel"]
-        emit("voltage-type-change", importedVoltageWaveform.value["ancillaryLabel"])
-    }
-    else {
-        voltageType = Utils.tryGuessType(voltageDataPoints, importedFrequency.value)
-        emit("voltage-type-change", voltageType)
-    }
-
-    if ("ancillaryLabel" in importedCurrentWaveform.value) {
-        currentType = importedCurrentWaveform.value["ancillaryLabel"]
-        emit("current-type-change", importedCurrentWaveform.value["ancillaryLabel"])
-    }
-    else {
-        currentType = Utils.tryGuessType(currentDataPoints, importedFrequency.value)
-        emit("current-type-change", currentType)
-    }
-    if (currentType != currentCurrentType) {
-        waitingforCurrentMounted = true
-        currentCurrentType = currentType
-    }
-    else {
-        currentStore.setDataPointsFromFile(currentDataPoints)
-    }
-    if (voltageType != currentVoltageType) {
-        waitingforVoltageMounted = true
-        currentVoltageType = voltageType
-    }
-    else {
-        voltageStore.setDataPointsFromFile(voltageDataPoints)
-    }
-}
-
-onMounted(() => {
-    currentStore.$onAction((action) => {
-        if (action.name == "setNewWaveformType" && waitingforCurrentMounted) {
-            waitingforCurrentMounted = false
-            setTimeout(() => currentStore.setDataPointsFromFile(currentDataPoints), 100);
+        return {
+            commonStore,
+            currentStore,
+            voltageStore,
+            fileType,
+            tryCompressWaveformsPicked,
+            isCompressed,
+            importedCurrentWaveform,
+            importedVoltageWaveform,
+            importedFrequency,
+            currentDataPoints,
+            voltageDataPoints,
+            waitingforCurrentMounted,
+            waitingforVoltageMounted,
+            currentCurrentType,
+            currentVoltageType,
         }
-    })
-    voltageStore.$onAction((action) => {
-        if (action.name == "setNewWaveformType" && waitingforVoltageMounted) {
-            waitingforVoltageMounted = false
-            setTimeout(() => voltageStore.setDataPointsFromFile(voltageDataPoints), 100);
-        }
-    })
-})
+    },
+    methods: {
+        onImport(event) {
+            this.currentDataPoints = Utils.packDataPoints(this.importedCurrentWaveform, this.importedFrequency, this.tryCompressWaveformsPicked == "compressWaveforms")
+            this.voltageDataPoints = Utils.packDataPoints(this.importedVoltageWaveform, this.importedFrequency, this.tryCompressWaveformsPicked == "compressWaveforms")
+            var voltageType
+            var currentType
 
+            this.commonStore.setSwitchingFrequencyFromImport(this.importedFrequency)
 
-function onFileTypeSelected(event) {
-    fileType.value = 'MAS'
-}
+            if ("ancillaryLabel" in this.importedVoltageWaveform) {
+                voltageType = this.importedVoltageWaveform["ancillaryLabel"]
+                this.$emit("voltage-type-change", this.importedVoltageWaveform["ancillaryLabel"])
+            }
+            else {
+                voltageType = Utils.tryGuessType(this.voltageDataPoints, this.importedFrequency)
+                this.$emit("voltage-type-change", voltageType)
+            }
 
-function readMASFile(event) {
-    fileType.value = 'MAS'
+            if ("ancillaryLabel" in this.importedCurrentWaveform) {
+                currentType = this.importedCurrentWaveform["ancillaryLabel"]
+                this.$emit("current-type-change", this.importedCurrentWaveform["ancillaryLabel"])
+            }
+            else {
+                currentType = Utils.tryGuessType(this.currentDataPoints, this.importedFrequency)
+                this.$emit("current-type-change", currentType)
+            }
+            if (currentType != this.currentCurrentType) {
+                this.waitingforCurrentMounted = true
+                this.currentCurrentType = currentType
+            }
+            else {
+                this.currentStore.setDataPointsFromFile(this.currentDataPoints)
+            }
+            if (voltageType != this.currentVoltageType) {
+                this.waitingforVoltageMounted = true
+                this.currentVoltageType = voltageType
+            }
+            else {
+                this.voltageStore.setDataPointsFromFile(this.voltageDataPoints)
+            }
+        },
+        onFileTypeSelected(event) {
+            this.fileType = 'MAS'
+        },
+        readMASFile(event) {
+            this.fileType = 'MAS'
 
-    const fr = new FileReader();
+            const fr = new FileReader();
 
-    fr.onload = e => {
-        const data = JSON.parse(e.target.result);
-        isCompressed.value = "time" in data["current"]["waveform"]
-        importedCurrentWaveform.value = data["current"]["waveform"]
-        importedVoltageWaveform.value = data["voltage"]["waveform"]
-        importedFrequency.value = data["frequency"]
-    }
-    fr.readAsText(masFileReader.value.files.item(0));
+            fr.onload = e => {
+                const data = JSON.parse(e.target.result);
+                this.isCompressed = "time" in data["current"]["waveform"]
+                this.importedCurrentWaveform = data["current"]["waveform"]
+                this.importedVoltageWaveform = data["voltage"]["waveform"]
+                this.importedFrequency = data["frequency"]
+            }
+            fr.readAsText(this.$refs.masFileReader.files.item(0));
+        },
+    },
+    computed: {
+
+    },
+    mounted() {
+        this.currentStore.$onAction((action) => {
+            if (action.name == "setNewWaveformType" && this.waitingforCurrentMounted) {
+                this.waitingforCurrentMounted = false
+                setTimeout(() => this.currentStore.setDataPointsFromFile(this.currentDataPoints), 100);
+            }
+        })
+        this.voltageStore.$onAction((action) => {
+            if (action.name == "setNewWaveformType" && this.waitingforVoltageMounted) {
+                this.waitingforVoltageMounted = false
+                setTimeout(() => this.voltageStore.setDataPointsFromFile(this.voltageDataPoints), 100);
+            }
+        })
+    },
 }
 
 </script>

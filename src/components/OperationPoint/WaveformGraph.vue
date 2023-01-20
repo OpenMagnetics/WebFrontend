@@ -1,9 +1,16 @@
 <script setup>
-import { useCurrentStore } from '/src/stores/waveform'
-import { useVoltageStore } from '/src/stores/waveform'
-import { useCommonStore } from '/src/stores/waveform'
-import { Chart, registerables } from 'chart.js'
-import * as Utils from '/src/assets/js/utils.js'
+import { useCurrentStore,
+         useVoltageStore,
+         useCommonStore } from '/src/stores/waveform'
+import { Chart,
+         registerables } from 'chart.js'
+import { roundValue,
+         updateVerticalLimits, 
+         removeTrailingZeroes,
+         setHorizontalLimits,
+         checkHorizontalLimits,
+         synchronizeExtremes,
+         getMaxMinInPoints } from '/src/assets/js/utils.js'
 import 'chartjs-plugin-dragdata'
 </script>
 
@@ -86,7 +93,7 @@ export default {
                         e.target.style.cursor = 'grabbing'
                         const originalValue = value
                         if (this.waveformTypes[this.getElectricalParameter(datasetIndex)] == "Sinusoidal") {
-                            Utils.roundValue(chart,
+                            roundValue(chart,
                                              datasetIndex,
                                              index,
                                              value,
@@ -101,7 +108,7 @@ export default {
                     },
                     onDragEnd: (e, datasetIndex, index, value) => {
                         e.target.style.cursor = 'default    '
-                        Utils.updateVerticalLimits(chart, datasetIndex);
+                        updateVerticalLimits(chart, datasetIndex);
                         chart.options.plugins.dragData.dragX = true
                         chart.options.plugins.dragData.dragY = true
                         chart.update()
@@ -136,7 +143,7 @@ export default {
                             size: 12
                         },
                         callback: function(value, index, values) {
-                            value = Utils.removeTrailingZeroes(value)
+                            value = removeTrailingZeroes(value)
                             return value + "A"
                         }
                     },
@@ -159,7 +166,7 @@ export default {
                             size: 12
                         },
                         callback: function(value, index, values) {
-                            value = Utils.removeTrailingZeroes(value)
+                            value = removeTrailingZeroes(value)
                             return value + "V"
                         }
                     },
@@ -183,7 +190,7 @@ export default {
                         callback: function(value, index, values) {
                             const exp = Math.floor(Math.log10(commonStore.getSwitchingFrequency.value))
                             const base = 10 ** exp
-                            value = Utils.removeTrailingZeroes(value * base * 10)
+                            value = removeTrailingZeroes(value * base * 10)
                             return value + "e-" + exp + "s";
                         }
                     },
@@ -205,21 +212,21 @@ export default {
         currentStore.$subscribe((mutation, state) => {
             chart.data.datasets[0].data = JSON.parse(JSON.stringify(currentStore.getDataPoints.value))
             chart.update()
-            Utils.setHorizontalLimits(chart, 1 / commonStore.getSwitchingFrequency.value / 10)
-            Utils.updateVerticalLimits(chart, 0);
+            setHorizontalLimits(chart, 1 / commonStore.getSwitchingFrequency.value / 10)
+            updateVerticalLimits(chart, 0);
             chart.update()
         })
         voltageStore.$subscribe((mutation, state) => {
             chart.data.datasets[1].data = JSON.parse(JSON.stringify(voltageStore.getDataPoints.value))
             chart.update()
-            Utils.setHorizontalLimits(chart, 1 / commonStore.getSwitchingFrequency.value / 10)
-            Utils.updateVerticalLimits(chart, 1);
+            setHorizontalLimits(chart, 1 / commonStore.getSwitchingFrequency.value / 10)
+            updateVerticalLimits(chart, 1);
             chart.update()
         })
         commonStore.$onAction((action) => {
             if (action.name == "setSwitchingFrequency") {
                 var switchingFrequency = action.args[0]
-                Utils.setHorizontalLimits(chart, 1 / switchingFrequency / 10)
+                setHorizontalLimits(chart, 1 / switchingFrequency / 10)
             }
         })
     },
@@ -236,9 +243,9 @@ export default {
             chart.data.datasets[1].data = [{x: 0, y: 0}]
 
             chart.data.datasets.forEach((item, datasetIndex) => {
-                Utils.updateVerticalLimits(chart, datasetIndex);
+                updateVerticalLimits(chart, datasetIndex);
             });
-            Utils.setHorizontalLimits(chart)
+            setHorizontalLimits(chart)
             chart.update()
             currentStore.setChartReady()
             voltageStore.setChartReady()
@@ -286,12 +293,12 @@ export default {
         processByType(datasetIndex, index, value) {
             const electricalParameter = this.getElectricalParameter(datasetIndex)
             if (this.waveformTypes[electricalParameter] == "Triangular") {
-                Utils.checkHorizontalLimits(chart.data.datasets[datasetIndex].data, index, value);
-                Utils.synchronizeExtremes(chart, datasetIndex, index, value);
+                checkHorizontalLimits(chart.data.datasets[datasetIndex].data, index, value);
+                synchronizeExtremes(chart, datasetIndex, index, value);
             }
             else if (this.waveformTypes[electricalParameter] == "Custom") {
-                Utils.checkHorizontalLimits(chart.data.datasets[datasetIndex].data, index, value);
-                Utils.synchronizeExtremes(chart, datasetIndex, index, value);
+                checkHorizontalLimits(chart.data.datasets[datasetIndex].data, index, value);
+                synchronizeExtremes(chart, datasetIndex, index, value);
             }
             else if (this.waveformTypes[electricalParameter] == "Square") {
                 const data = chart.data.datasets[datasetIndex].data
@@ -422,7 +429,7 @@ export default {
             else if (this.waveformTypes[electricalParameter] == "Sinusoidal") {
                 const numberPoints = chart.data.datasets[datasetIndex].data.length - 1
                 const indexAngle = index * 2 * Math.PI / numberPoints
-                const maxMin = Utils.getMaxMinInPoints(chart.data.datasets[datasetIndex].data, 'y')
+                const maxMin = getMaxMinInPoints(chart.data.datasets[datasetIndex].data, 'y')
                 const offset = chart.data.datasets[datasetIndex].data[0].y
                 const newAmplitude = (value.y - offset) / Math.sin(indexAngle) 
                 const data = []

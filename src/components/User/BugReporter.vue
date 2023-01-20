@@ -1,19 +1,14 @@
 <script setup>
-import { useUserStore } from '/src/stores/user'
-import axios from "axios";
-
 </script>
 
 <script>
 
 export default {
     data() {
-        const userStore = useUserStore()
         return {
             isReported: false,
             userInformation: "",
             posting: false,
-            userStore,
         }
     },
     methods: {
@@ -21,14 +16,14 @@ export default {
             this.posting = true
 
             const data = {
-                "userDataDump": this.userStore.dump,  
+                "userDataDump": this.$userStore.dump,  
                 "userInformation": this.userInformation,
-                "username": this.userStore.username,
+                "username": this.$userStore.username,
             }
             console.log(data)
             const url = import.meta.env.VITE_API_ENDPOINT + '/report_bug'
 
-            axios.post(url, data)
+            this.$axios.post(url, data)
             .then(response => {
                 this.posting = false
                 this.isReported = true

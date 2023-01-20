@@ -6,8 +6,6 @@ import * as Utils from '/src/assets/js/utils.js'
 import { useCurrentStore } from '/src/stores/waveform'
 import { useVoltageStore } from '/src/stores/waveform'
 import { useCommonStore } from '/src/stores/waveform'
-
-
 import { loadBase } from '/src/assets/js/WaveformInputBase.js'
 import WaveformInputCustomPoint from '/src/components/OperationPoint/WaveformInputCustomPoint.vue'
 import * as Defaults from '/src/assets/js/defaults.js'

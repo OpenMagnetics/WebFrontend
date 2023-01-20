@@ -1,6 +1,5 @@
 <script setup>
 import * as Utils from '/src/assets/js/utils.js'
-import { useUserStore } from '/src/stores/user'
 import { useCoreStore } from '/src/stores/core'
 import * as Defaults from '/src/assets/js/defaults.js'
 
@@ -10,11 +9,9 @@ import * as Defaults from '/src/assets/js/defaults.js'
 export default {
     data() {
         const posting = false;
-        const userStore = useUserStore();
         const coreStore = useCoreStore();
         return {
             posting,
-            userStore,
             coreStore,
             effectiveLength: null,
             effectiveArea: null,
@@ -37,7 +34,7 @@ export default {
     },
     mounted() {
 
-        this.userStore.$onAction((action) => {
+        this.$userStore.$onAction((action) => {
             if (action.name == "setGlobalCore") {
                 var globalCore = action.args[0]
                 this.effectiveLength = Utils.removeTrailingZeroes(globalCore['processedDescription']['effectiveParameters']['effectiveLength'] * 1000, 1)

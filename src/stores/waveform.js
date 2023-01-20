@@ -191,6 +191,11 @@ export const useCommonStore = defineStore("common", () => {
         this.switchingFrequency = switchingFrequency
         this.timePrecision = 1 / switchingFrequency / 100
     }
+    function setSwitchingFrequencyFromImport(switchingFrequency) {
+        userStore.globalOperationPoint["frequency"] = switchingFrequency
+        this.switchingFrequency = switchingFrequency
+        this.timePrecision = 1 / switchingFrequency / 100
+    }
     function setDutyCycle(dutyCycle) {
         this.dutyCycle = dutyCycle
     }
@@ -226,6 +231,7 @@ export const useCommonStore = defineStore("common", () => {
         getDutyCycle,
         setHarmonicsFrequencies,
         setSwitchingFrequency,
+        setSwitchingFrequencyFromImport,
         setDutyCycle,
         setDutyCycleFromPoints,
         setSampledTimePoints,

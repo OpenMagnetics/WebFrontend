@@ -1,6 +1,4 @@
 <script>
-import axios from "axios";
-import { useUserStore } from '/src/stores/user'
 export default {
     props: {
         id: {
@@ -50,12 +48,10 @@ export default {
         },
     },
     data() {
-        const userStore = useUserStore()
         return {
             backgroundColor: 'red',
             numberVotesTemp: 0,
             alreadyVoted: true,
-            userStore,
         }
     },
     computed: {
@@ -122,8 +118,8 @@ export default {
     },
     methods: {
         vote(event) {
-            axios.post(import.meta.env.VITE_API_ENDPOINT + '/cast_vote', {
-                ip_address: this.userStore.ipAddress,
+            this.$axios.post(import.meta.env.VITE_API_ENDPOINT + '/cast_vote', {
+                ip_address: this.$userStore.ipAddress,
                 milestone_id: this.id,
             })
             .then(response => {

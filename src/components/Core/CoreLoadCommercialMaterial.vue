@@ -2,10 +2,7 @@
 import '/src/assets/css/vue-good-table-next.css'
 import { VueGoodTable } from 'vue-good-table-next';
 const emit = defineEmits(['onLoadCommercialMaterial'])
-import axios from "axios";
 import * as Utils from '/src/assets/js/utils.js'
-import { useUserStore } from '/src/stores/user'
-import { useDataCacheStore } from '/src/stores/dataCache'
 
 </script>
 
@@ -59,13 +56,9 @@ export default {
                 tdClass: 'text-center',
             },
         ]
-        const userStore = useUserStore();
-        const dataCacheStore = useDataCacheStore()
         const commercialData = []
         const scaledColumns = []
         return {
-            userStore,
-            dataCacheStore,
             columns,
             commercialData,
             scaledColumns,
@@ -75,15 +68,15 @@ export default {
         onLoad(name) {
             var dataToLoad = null
 
-            for (let i = 0; i < this.dataCacheStore.commercialMaterials.length; i++) {
-                if (this.dataCacheStore.commercialMaterials[i]["name"] == name){
-                    dataToLoad = this.dataCacheStore.commercialMaterials[i]
+            for (let i = 0; i < this.$dataCacheStore.commercialMaterials.length; i++) {
+                if (this.$dataCacheStore.commercialMaterials[i]["name"] == name){
+                    dataToLoad = this.$dataCacheStore.commercialMaterials[i]
                     break
                 } 
             }
-            const globalCore = this.userStore.globalCore
+            const globalCore = this.$userStore.globalCore
             globalCore['functionalDescription']['material'] = dataToLoad
-            this.userStore.setGlobalCoreAlt(globalCore)
+            this.$userStore.setGlobalCoreAlt(globalCore)
 
             this.$emit("onLoadCommercialMaterial", dataToLoad)
         },
@@ -106,7 +99,7 @@ export default {
             })
         },
         loadTableData() {
-            const materialData = this.dataCacheStore.commercialMaterials
+            const materialData = this.$dataCacheStore.commercialMaterials
             this.commercialMaterialNames = []
             materialData.forEach((item) => {
                 var initialPermeability;
@@ -138,10 +131,7 @@ export default {
         },
     },
     mounted() {
-        const url = import.meta.env.VITE_API_ENDPOINT + '/core_get_commercial_materials'
-        const core = this.userStore.getGlobalCore
-
-        this.dataCacheStore.$onAction((action) => {
+        this.$dataCacheStore.$onAction((action) => {
             if (action.name == "commercialMaterialsLoaded") {
                 this.loadTableData()
             }

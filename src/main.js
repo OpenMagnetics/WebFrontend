@@ -1,5 +1,4 @@
 import { createApp } from 'vue'
-// import './style.css'
 import App from './App.vue'
 import './assets/css/custom.css'
 import 'bootstrap';
@@ -9,7 +8,11 @@ import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
 import VueCookies from 'vue-cookies'
 import tooltip from "./directives/tooltip.js";
 import "/src/assets/css/tooltip.css";
+import axios from "axios";
+import { useUserStore } from '/src/stores/user'
+import { useDataCacheStore } from '/src/stores/dataCache'
 
+const axiosInstance = axios.create()
 
 const pinia = createPinia()
 pinia.use(piniaPluginPersistedstate)
@@ -18,4 +21,68 @@ app.use(router);
 app.use(pinia)
 app.use(VueCookies, { expires: '7d'})
 app.directive("tooltip", tooltip);
+app.config.globalProperties.$axios = axiosInstance
+app.config.globalProperties.$userStore = useUserStore()
+app.config.globalProperties.$dataCacheStore = null
 app.mount("#app");
+
+
+router.beforeEach((to, from, next) => {
+    const nonDataViews = ['/', '/home', '/roadmap', '/musings']
+
+    if (!nonDataViews.includes(to.path)) {
+
+    	if (app.config.globalProperties.$dataCacheStore == null) {
+    		app.config.globalProperties.$dataCacheStore = useDataCacheStore()
+    	}
+
+	    if (to.name == "CoreGappingArtisan") {
+	        app.config.globalProperties.$userStore.coreSubsection = 'gappingArtisan';
+	    }
+	    else if (to.name == "CoreShapeArtisan") {
+	        app.config.globalProperties.$userStore.coreSubsection = 'shapeArtisan';
+	    }
+	    else if (to.name == "SimulationCoreAdviser") {
+	        app.config.globalProperties.$userStore.coreSimulationSubsection = 'coreAdviser';
+	    }
+	    else if (to.name == "SimulationInductanceCalculator") {
+	        app.config.globalProperties.$userStore.coreSimulationSubsection = 'inductanceCalculator';
+	    }
+
+        if (app.config.globalProperties.$dataCacheStore.timestamp == null || (app.config.globalProperties.$dataCacheStore.timestamp + app.config.globalProperties.$dataCacheStore.ttlInMilliseconds < Date.now())) {
+            app.config.globalProperties.$dataCacheStore.timestamp = Date.now()
+            console.warn("Reloading data")
+
+            const urlMaterials = import.meta.env.VITE_API_ENDPOINT + '/core_get_commercial_materials'
+            const core = app.config.globalProperties.$userStore.getGlobalCore
+            axiosInstance.post(urlMaterials, {})
+            .then(response => {
+                console.log(response.data)
+                app.config.globalProperties.$dataCacheStore.commercialMaterials = response.data["commercial_materials"]
+                app.config.globalProperties.$dataCacheStore.commercialMaterialsLoaded()
+            })
+            .catch(error => {
+                console.error("Error loading material library")
+                console.error(error.data)
+            });
+
+            const urlShapes = import.meta.env.VITE_API_ENDPOINT + '/core_get_commercial_data'
+            axiosInstance.post(urlShapes, {})
+            .then(response => {
+                console.log(response.data)
+                app.config.globalProperties.$dataCacheStore.commercialCores = response.data["commercial_cores"]
+                response.data["commercial_cores"].forEach((item) => {
+                    app.config.globalProperties.$dataCacheStore.commercialShapes.push(item['functionalDescription']['shape'])
+                })
+                app.config.globalProperties.$dataCacheStore.commercialShapesLoaded()
+            })
+            .catch(error => {
+                console.error("Error loading shape library")
+                console.error(error.data)
+            });
+
+        }
+    }
+
+    next()
+})

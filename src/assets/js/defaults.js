@@ -127,13 +127,13 @@ export function titleColor(electricalParameter){
 
 export var engineConstants = {}
 
-import axios from "axios";
-(function () {
-    axios.post(import.meta.env.VITE_API_ENDPOINT + '/get_constants', {})
-    .then(response => {
-        engineConstants = response.data
-    })
-    .catch(error => {
-        console.error("Could not load constants from MKF")
-    });
-})();
+// import axios from "axios";
+// (function () {
+//     axios.post(import.meta.env.VITE_API_ENDPOINT + '/get_constants', {})
+//     .then(response => {
+//         engineConstants = response.data
+//     })
+//     .catch(error => {
+//         console.error("Could not load constants from MKF")
+//     });
+// })();

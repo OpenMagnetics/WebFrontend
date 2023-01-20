@@ -3,10 +3,8 @@ import { ref, onMounted, computed, inject } from 'vue'
 import { Form, Field } from 'vee-validate';
 import VueNumberInput from '/src/components/VueNumberInput.vue';
 import * as Yup from 'yup';
-import axios from "axios";
 import * as Defaults from '/src/assets/js/defaults.js'
 import * as Utils from '/src/assets/js/utils.js'
-import { useUserStore } from '/src/stores/user'
 import { useCoreStore } from '/src/stores/core'
 </script>
 <script>
@@ -49,12 +47,10 @@ export default {
         },
     },
     data() {
-        const userStore = useUserStore();
         const coreStore = useCoreStore();
-        const gapLengthSelected = userStore.globalCore['functionalDescription']['gapping'][this.globalGapIndex]['length'] * 1000
-        const gapHeightSelected = userStore.globalCore['functionalDescription']['gapping'][this.globalGapIndex]['coordinates'][1] * 1000
+        const gapLengthSelected = this.$userStore.globalCore['functionalDescription']['gapping'][this.globalGapIndex]['length'] * 1000
+        const gapHeightSelected = this.$userStore.globalCore['functionalDescription']['gapping'][this.globalGapIndex]['coordinates'][1] * 1000
         return {
-            userStore,
             coreStore,
             gapLengthSelected,
             gapHeightSelected,
@@ -141,7 +137,7 @@ export default {
                     this.$emit("onGapLengthChange", newValue / 1000, this.gapIndex)
                 }
 
-                const gapping = this.userStore.globalCore['functionalDescription']['gapping']
+                const gapping = this.$userStore.globalCore['functionalDescription']['gapping']
             }
         },
         onHeightUpdate(name, newValue, oldValue) {

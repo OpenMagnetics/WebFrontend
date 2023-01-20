@@ -2,19 +2,16 @@
 import GapInput from '/src/components/Core/CoreGappingArtisan/GapInput.vue'
 import GapModelInput from '/src/components/Core/CoreGappingArtisan/GapModelInput.vue';
 import TechnicalDrawer from '/src/components/Core/CoreGappingArtisan/TechnicalDrawer.vue';
-import { useUserStore } from '/src/stores/user'
 import { useCoreStore } from '/src/stores/core'
 import * as Defaults from '/src/assets/js/defaults.js'
 import * as Utils from '/src/assets/js/utils.js'
-import axios from "axios";
 </script>
 
 <script>
 
 export default {
     data() {
-        const userStore = useUserStore();
-        const numberColumns = userStore.globalCore['processedDescription']['columns'].length
+        const numberColumns = this.$userStore.globalCore['processedDescription']['columns'].length
         const columnData = []
         for (let i = 0; i < numberColumns; i++) {
             columnData.push({
@@ -30,7 +27,6 @@ export default {
 
         return {
             numberColumns,
-            userStore,
             coreStore,
             columnData,
             recentChange: false,
@@ -44,7 +40,7 @@ export default {
         centralSideTitle() {
             if (this.numberColumns > 2)
                 return "Central Column"
-            else if (this.userStore.globalCore['functionalDescription']['shape']['family'] == 'ep') 
+            else if (this.$userStore.globalCore['functionalDescription']['shape']['family'] == 'ep') 
                 return "Central Column"
             else
                 return "Left Column"
@@ -58,7 +54,7 @@ export default {
         centralSideBackgroundImage() {
             if (this.numberColumns > 2)
                 return "'/images/columns/centralColumn.svg'"
-            else if (this.userStore.globalCore['functionalDescription']['shape']['family'] == 'ep') 
+            else if (this.$userStore.globalCore['functionalDescription']['shape']['family'] == 'ep') 
                 return "'/images/columns/centralColumn.svg'"
             else
                 return "/images/columns/leftColumn.svg"
@@ -66,12 +62,12 @@ export default {
     },
     mounted () {
         this.getNumberColumns()
-        this.columnData = this.decodeUserStoreGap()
+        this.columnData = this.decodeStoredGap()
 
-        this.userStore.$onAction((action) => {
+        this.$userStore.$onAction((action) => {
             if (action.name == "updateAllLengths") {
                 this.getNumberColumns()
-                this.columnData = this.decodeUserStoreGap()
+                this.columnData = this.decodeStoredGap()
             }
         })
 
@@ -82,14 +78,14 @@ export default {
             }
             if (action.name == "quickGappingChanged") {
                 this.getNumberColumns()
-                this.columnData = this.decodeUserStoreGap()
+                this.columnData = this.decodeStoredGap()
             }
         })
     },
     methods: {
         getNumberColumns() {
-            if ('processedDescription' in this.userStore.globalCore) {
-                this.numberColumns = this.userStore.globalCore['processedDescription']['columns'].length
+            if ('processedDescription' in this.$userStore.globalCore) {
+                this.numberColumns = this.$userStore.globalCore['processedDescription']['columns'].length
             }
         },
         getClosestColumn(gap, columns) {
@@ -104,12 +100,12 @@ export default {
             }
             return closestColumn
         },
-        decodeUserStoreGap() {
+        decodeStoredGap() {
 
-            console.log("decodeUserStoreGap")
+            console.log("decodeStoredGap")
             const columnData = []
-            const gapping = this.userStore.globalCore['functionalDescription']['gapping']
-            const columns = this.userStore.globalCore['processedDescription']['columns']
+            const gapping = this.$userStore.globalCore['functionalDescription']['gapping']
+            const columns = this.$userStore.globalCore['processedDescription']['columns']
             columns.forEach((item) => {
                 columnData.push ({
                     gapType: null,
@@ -263,7 +259,7 @@ export default {
             this.columnData[columnIndex]['gaps'].forEach((item, index) => {
                 gapIndexesInThisColumn.push(item['globalGapIndex'])
             })
-            this.userStore.globalCore['functionalDescription']['gapping'].forEach((item, index) => {
+            this.$userStore.globalCore['functionalDescription']['gapping'].forEach((item, index) => {
                 if (!gapIndexesInThisColumn.includes(index)) {
                     if (newType == "Spacer"){
                         item['type'] = "additive"
@@ -302,7 +298,7 @@ export default {
             const url = import.meta.env.VITE_API_ENDPOINT + '/core_compute_gapping_technical_drawing'
 
             this.coreStore.requestingGappingTechnicalDrawing()
-            axios.post(url, this.userStore.globalCore)
+            this.$axios.post(url, this.$userStore.globalCore)
             .then(response => {
                 this.coreStore.setGappingTechnicalDrawing(response.data)
             })
@@ -321,7 +317,7 @@ export default {
                             this.tryToSend()
                         }
                         else {
-                            Utils.getCoreParameters(this.userStore, () => {this.tryingToSend = false; this.compute_gapping_technical_drawing()}, () => {this.tryingToSend = false;})
+                            Utils.getCoreParameters(this.$userStore, () => {this.tryingToSend = false; this.compute_gapping_technical_drawing()}, () => {this.tryingToSend = false;})
                         }
                     }
                 }

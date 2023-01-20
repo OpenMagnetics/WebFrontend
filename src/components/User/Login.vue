@@ -3,117 +3,130 @@ import { defineProps, computed, ref, onMounted, inject } from 'vue';
 import { Form } from 'vee-validate';
 import * as Yup from 'yup';
 import TextInput from '/src/components/User/TextInput.vue';
-import axios from "axios";
-import { useUserStore } from '/src/stores/user'
 
-const props = defineProps({
-    isLogin: {
-        type: Boolean,
-        default: true,
+</script>
+<script>
+
+export default {
+    components: { },
+    props: {
+        isLogin: {
+            type: Boolean,
+            default: true,
+        },
     },
-});
-
-const $cookies = inject('$cookies');
-const userStore = useUserStore();
-
-const usedUsernames = []
-const usedEmails = []
-const formRef = ref(null)
-const testref = ref(null)
-const passwordRef = ref(null)
-const usernameRef = ref(null)
-const posting = ref(false)
-const done = ref(false)
-
-const isRegister = computed(() => {
-    return !props.isLogin
-})
-
-const emit = defineEmits(['onLoggedIn'])
-
-onMounted(() => {
-})
-
-function onSubmit(values) {
-    var url
-    var data
-    if (props.isLogin) {
-        url = import.meta.env.VITE_API_ENDPOINT + '/login'
-        data = {
-            username: values['loginUsername'],
-            password: values['loginPassword'],
+    data() {
+        const usedUsernames = []
+        const usedEmails = []
+        const formRef = null
+        const testref = null
+        const passwordRef = null
+        const usernameRef = null
+        const posting = false
+        const done = false
+        return {
+            usedUsernames,
+            usedEmails,
+            formRef,
+            testref,
+            passwordRef,
+            usernameRef,
+            posting,
+            done,
         }
+    },
+    methods: {
+        onSubmit(values) {
+            var url
+            var data
+            if (this.isLogin) {
+                url = import.meta.env.VITE_API_ENDPOINT + '/login'
+                data = {
+                    username: values['loginUsername'],
+                    password: values['loginPassword'],
+                }
+            }
+            else {
+                url = import.meta.env.VITE_API_ENDPOINT + '/register'
+                data = {
+                    username: values['registerUsername'],
+                    email: values['email'],
+                    password: values['registerPassword'],
+                }
+            }
+
+            this.posting = true
+
+            this.$axios.post(url, data)
+            .then(response => {
+                if (response.data['status'] == 'username exists'){
+                    this.usedUsernames.push(response.data['username'].toLowerCase())
+                    this.formRef.validate()
+                }
+                else if (response.data['status'] == 'email exists'){
+                    usedEmails.push(response.data['email'].toLowerCase())
+                    this.formRef.validate()
+                }
+                else if (response.data['status'] == 'registered'){
+                    this.done = true
+                    this.$cookies.set("username", response.data['username'], "1h")
+                    this.$emit("onLoggedIn")
+                }
+                else if (response.data['status'] == 'wrong password'){
+                    this.formRef.setFieldError('loginPassword', "Wrong password. Please try again")
+                }
+                else if (response.data['status'] == 'unknown username'){
+                    this.formRef.setFieldError('loginUsername', "Unknown username")
+                }
+                else if (response.data['status'] == 'logged in'){
+                    this.done = true
+                    this.$cookies.set("username", response.data['username'], "1h")
+                    this.$emit("onLoggedIn")
+                }
+                this.posting = false
+            })
+            .catch(error => {
+                this.posting = false
+            });
+        },
+        onInvalidSubmit() {
+          const submitBtn = document.querySelector('.submit-btn');
+          submitBtn.classList.add('invalid');
+          setTimeout(() => {
+            submitBtn.classList.remove('invalid');
+          }, 1000);
+        },
+    },
+    computed: {
+        isRegister() {
+            return !this.isLogin
+        },
+
+        schema() {
+            if (this.isLogin) {
+                const loginSchema = Yup.object().shape({
+                    loginUsername: Yup.string().required().label("Username"),
+                    loginPassword: Yup.string().min(6).required().label("Password"),
+                });
+                return loginSchema
+            }
+            else {
+                const registerSchema = Yup.object().shape({
+                    registerUsername: Yup.lazy(value => { return Yup.string().lowercase().trim().required().notOneOf(this.usedUsernames, 'Username is already in use').label("Username")}),
+                    email: Yup.lazy(value => { return Yup.string().email().lowercase().trim().required().notOneOf(this.usedEmails, 'Email is already in use').label("Email")}),
+                    registerPassword: Yup.string().min(6).required().label("Password"),
+                    confirmPassword: Yup.string().required().oneOf([Yup.ref('registerPassword')], 'Passwords do not match').label("Password"),
+                });
+                return registerSchema
+            }
+        }
+
+    },
+    created() {
+    },
+    mounted() {
     }
-    else {
-        url = import.meta.env.VITE_API_ENDPOINT + '/register'
-        data = {
-            username: values['registerUsername'],
-            email: values['email'],
-            password: values['registerPassword'],
-        }
-    }
-
-    posting.value = true
-
-    axios.post(url, data)
-    .then(response => {
-        if (response.data['status'] == 'username exists'){
-            usedUsernames.push(response.data['username'].toLowerCase())
-            formRef.value.validate()
-        }
-        else if (response.data['status'] == 'email exists'){
-            usedEmails.push(response.data['email'].toLowerCase())
-            formRef.value.validate()
-        }
-        else if (response.data['status'] == 'registered'){
-            done.value = true
-            $cookies.set("username", response.data['username'], "1h")
-            emit("onLoggedIn")
-        }
-        else if (response.data['status'] == 'wrong password'){
-            formRef.value.setFieldError('loginPassword', "Wrong password. Please try again")
-        }
-        else if (response.data['status'] == 'unknown username'){
-            formRef.value.setFieldError('loginUsername', "Unknown username")
-        }
-        else if (response.data['status'] == 'logged in'){
-            done.value = true
-            $cookies.set("username", response.data['username'], "1h")
-            emit("onLoggedIn")
-        }
-        posting.value = false
-    })
-    .catch(error => {
-        posting.value = false
-    });
 }
-
-function onInvalidSubmit() {
-  const submitBtn = document.querySelector('.submit-btn');
-  submitBtn.classList.add('invalid');
-  setTimeout(() => {
-    submitBtn.classList.remove('invalid');
-  }, 1000);
-}
-
-const schema = computed(() => {
-    if (props.isLogin) {
-        const loginSchema = Yup.object().shape({
-            loginUsername: Yup.string().required().label("Username"),
-            loginPassword: Yup.string().min(6).required().label("Password"),
-        });
-        return loginSchema
-    }
-    else {
-        const registerSchema = Yup.object().shape({
-            registerUsername: Yup.lazy(value => { return Yup.string().lowercase().trim().required().notOneOf(usedUsernames, 'Username is already in use').label("Username")}),
-            email: Yup.lazy(value => { return Yup.string().email().lowercase().trim().required().notOneOf(usedEmails, 'Email is already in use').label("Email")}),
-            registerPassword: Yup.string().min(6).required().label("Password"),
-            confirmPassword: Yup.string().required().oneOf([Yup.ref('registerPassword')], 'Passwords do not match').label("Password"),
-        });
-        return registerSchema
-    }
-})
 
 </script>
 

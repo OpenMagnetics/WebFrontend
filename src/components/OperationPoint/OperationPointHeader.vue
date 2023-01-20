@@ -1,214 +1,236 @@
 <script setup>
-import { ref, onMounted, computed, inject } from 'vue'
 import { Form, Field } from 'vee-validate';
 import * as Yup from 'yup';
-import * as Defaults from '/src/assets/js/defaults.js'
-import * as Utils from '/src/assets/js/utils.js'
-import { useCurrentStore } from '/src/stores/waveform'
-import { useVoltageStore } from '/src/stores/waveform'
-import { useCommonStore } from '/src/stores/waveform'
-import { useUserStore } from '/src/stores/user'
+import { defaultCurrentType, 
+         defaultVoltageType, 
+         defaultOperationName, 
+         defaultOperationPointSaveConfiguration, 
+         defaultOperationNamePlaceHolder } from '/src/assets/js/defaults.js'
+import { getOperationPointData } from '/src/assets/js/utils.js'
+import { useCurrentStore,
+         useVoltageStore,
+         useCommonStore } from '/src/stores/waveform'
 import OperationPointExport from '/src/components/OperationPoint/OperationPointExport.vue'
 import OperationPointImport from '/src/components/OperationPoint/OperationPointImport.vue'
 import OperationPointNew from '/src/components/OperationPoint/OperationPointNew.vue'
 import OperationPointPublish from '/src/components/OperationPoint/OperationPointPublish.vue'
-import axios from "axios";
+</script>
 
-const currentStore = useCurrentStore()
-const voltageStore = useVoltageStore()
-const commonStore = useCommonStore()
-const userStore = useUserStore()
-
-const selected = ref()
-const emit = defineEmits(['voltage-type-change', 'current-type-change'])
-const currentSelected = ref(currentStore.getType.value == null? Defaults.defaultCurrentType : currentStore.getType.value)
-const voltageSelected = ref(voltageStore.getType.value == null? Defaults.defaultVoltageType : voltageStore.getType.value)
-const operationPointNameSelected = ref(commonStore.getOperationPointName.value == null? Defaults.defaultOperationName : commonStore.getOperationPointName.value)
-const voltageRef = ref(null)
-const currentRef = ref(null)
-const isLoggedIn = ref(false)
-var publishedSlug = null
-const currentOperationPointId = ref(null)
-if (userStore.getGlobalOperationPoint.value != null) {
-    if ("slug" in userStore.getGlobalOperationPoint.value) {
-        publishedSlug = userStore.getGlobalOperationPoint.value["slug"]
-    }
-    if (!commonStore.isDataReadOnly.value) {
-        currentOperationPointId.value = userStore.getGlobalOperationPoint.value["_id"]
-    }
-}
-const saveMessage = ref(currentOperationPointId.value == null? "Create and add to library" : "Save changes")
-
-const $cookies = inject('$cookies');
-
-const schema = Yup.object().shape({
-    voltageType: Yup.string()
-        .required('Please, choose a Voltage waveform type'),
-    currentType: Yup.string()
-        .required('Please, choose a Current waveform type'),
-    operationPointName: Yup.string()
-        .required('Name cannot be empty').min(1),
-});
-
-const voltageCompatibilities = {
-    "Custom": {
-        "totally": ["Custom"],
-        "none": [],
+<script>
+export default {
+    emits: ["voltage-type-change", "current-type-change"],
+    components: {
     },
-    "Square": {
-        "totally": ["Triangular"],
-        "none": ["Triangular with Dead-Time"],
+    props: {
     },
-    "Square with Dead-Time": {
-        "totally": ["Triangular with Dead-Time"],
-        "none": ["Triangular"],
-    },
-    "Sinusoidal": {
-        "totally": ["Sinusoidal"],
-        "none": ["Triangular with Dead-Time"],
-    },
-}
+    data() {
+        const currentStore = useCurrentStore()
+        const voltageStore = useVoltageStore()
+        const commonStore = useCommonStore()
 
-const currentCompatibilities = {
-    "Custom": {
-        "totally": ["Custom"],
-        "none": [],
-    },
-    "Triangular": {
-        "totally": ["Square"],
-        "none": ["Square with Dead-Time"],
-    },
-    "Triangular with Dead-Time": {
-        "totally": ["Square with Dead-Time"],
-        "none": ["Square"],
-    },
-    "Sinusoidal": {
-        "totally": ["Sinusoidal"],
-        "none": ["Square with Dead-Time"],
-    },
-    "Square": {
-        "totally": ["Triangular"],
-        "none": ["Triangular with Dead-Time"],
-    },
-}
-
-function onVoltageChange(event) {
-    voltageStore.setType(event.target.value)
-    emit("voltage-type-change", event.target.value)
-    voltageStore.setOutput("label", voltageSelected.value)
-    if (voltageCompatibilities[event.target.value]['none'].includes(currentSelected.value)) {
-        const found = voltageCompatibilities[event.target.value]['none'].find(element => element == currentSelected.value);
-        currentRef.value.setErrors(["Voltage of type '" + found +"' is not recommended with current of type '" + currentSelected.value + "'. We recommend change the current to '" + voltageCompatibilities[event.target.value]['totally'][0] + "' instead."])
-    }
-    else {
-        currentRef.value.setErrors([])
-
-    }
-}
-
-function onCurrentChange(event) {
-    currentStore.setType(event.target.value)
-    emit("current-type-change", event.target.value)
-    currentStore.setOutput("label", currentSelected.value)
-    if (currentCompatibilities[event.target.value]['none'].includes(voltageSelected.value)) {
-        const found = currentCompatibilities[event.target.value]['none'].find(element => element == voltageSelected.value);
-        voltageRef.value.setErrors(["Current of type '" + found +"' is not recommended with voltage of type '" + voltageSelected.value + "'. We recommend change the current to '" + currentCompatibilities[event.target.value]['totally'][0] + "' instead."])
-    }
-    else {
-        voltageRef.value.setErrors([])
-    }
-}
-
-function onOperationPointName(event) {
-    commonStore.setOperationPointName(operationPointNameSelected.value)
-}
-
-function onVoltageChangeFromImport(newType) {
-    const event = {target: {value: newType}}
-    voltageSelected.value = newType
-    onVoltageChange(event)
-}
-
-function onCurrentChangeFromImport(newType) {
-    const event = {target: {value: newType}}
-    currentSelected.value = newType
-    onCurrentChange(event)
-}
-
-function onSaveToDB(event) {
-    const result = saveToDB(false)
-    saveMessage.value = result
-    console.log(saveMessage.value)
-
-} 
-
-function onExport(event) {
-    saveToDB(true)
-}
-
-function onPublish(slug) {
-    publishedSlug = slug
-    saveToDB(false)
-} 
-
-function onNewOperationPoint() {
-    console.log("currentOperationPointId")
-    currentOperationPointId.value = null
-    userStore.resetGlobalOperationPoint()
-} 
-
-function saveToDB(anonymousUser=false) {
-    const operationPointData = Utils.getOperationPointData(commonStore, currentStore, voltageStore, Defaults.defaultOperationPointSaveConfiguration)
-    if (anonymousUser) {
-        operationPointData["username"] = "anonymous"
-    }
-    else {
-        if (userStore.getUsername.value == null) {
-            operationPointData["username"] = "anonymous"
+        const selected = null
+        const currentSelected = currentStore.type == null? defaultCurrentType : currentStore.type
+        const voltageSelected = voltageStore.type == null? defaultVoltageType : voltageStore.type
+        const operationPointNameSelected = commonStore.getOperationPointName.value == null? defaultOperationName : commonStore.getOperationPointName.value
+        const voltageRef = null
+        const currentRef = null
+        const isLoggedIn = false
+        var publishedSlug = null
+        var currentOperationPointId = null
+        console.log(this.$userStore.globalOperationPoint)
+        if (this.$userStore.globalOperationPoint != null) {
+            if ("slug" in this.$userStore.globalOperationPoint) {
+                publishedSlug = this.$userStore.globalOperationPoint["slug"]
+            }
+            if (!commonStore.dataReadOnly) {
+                currentOperationPointId = this.$userStore.globalOperationPoint["_id"]
+            }
         }
-        else {
-            operationPointData["username"] = userStore.getUsername.value
+        const saveMessage = currentOperationPointId == null? "Create and add to library" : "Save changes"
+
+        const schema = Yup.object().shape({
+            voltageType: Yup.string()
+                .required('Please, choose a Voltage waveform type'),
+            currentType: Yup.string()
+                .required('Please, choose a Current waveform type'),
+            operationPointName: Yup.string()
+                .required('Name cannot be empty').min(1),
+        });
+
+        const voltageCompatibilities = {
+            "Custom": {
+                "totally": ["Custom"],
+                "none": [],
+            },
+            "Square": {
+                "totally": ["Triangular"],
+                "none": ["Triangular with Dead-Time"],
+            },
+            "Square with Dead-Time": {
+                "totally": ["Triangular with Dead-Time"],
+                "none": ["Triangular"],
+            },
+            "Sinusoidal": {
+                "totally": ["Sinusoidal"],
+                "none": ["Triangular with Dead-Time"],
+            },
         }
-    }
-    operationPointData["slug"] = publishedSlug
-    const url = import.meta.env.VITE_API_ENDPOINT + '/operation_point_save' + (currentOperationPointId.value == null? '' : ('/' + currentOperationPointId.value))
-    console.log(url)
-    console.log(currentOperationPointId.value)
-    axios.post(url, operationPointData)
-    .then(response => {
-        console.log(response.data);
-        if (response.data["id"] != null){
-            currentOperationPointId.value = response.data["id"]
+
+        const currentCompatibilities = {
+            "Custom": {
+                "totally": ["Custom"],
+                "none": [],
+            },
+            "Triangular": {
+                "totally": ["Square"],
+                "none": ["Square with Dead-Time"],
+            },
+            "Triangular with Dead-Time": {
+                "totally": ["Square with Dead-Time"],
+                "none": ["Square"],
+            },
+            "Sinusoidal": {
+                "totally": ["Sinusoidal"],
+                "none": ["Square with Dead-Time"],
+            },
+            "Square": {
+                "totally": ["Triangular"],
+                "none": ["Triangular with Dead-Time"],
+            },
         }
-        setTimeout(() => saveMessage.value = "Save changes", 1000);
-    })
-    .catch(error => {
-        console.log(error.data);
-        saveMessage.value = "Error, try against later"
-        setTimeout(() => saveMessage.value = "Save changes", 10000);
 
-    });
-    return "Saving"
-} 
+        return {
+            currentStore,
+            voltageStore,
+            commonStore,
+            selected,
+            currentSelected,
+            voltageSelected,
+            operationPointNameSelected,
+            voltageRef,
+            currentRef,
+            isLoggedIn,
+            publishedSlug,
+            currentOperationPointId,
+            saveMessage,
+            schema,
+            voltageCompatibilities,
+            currentCompatibilities,
+        }
+    },
+    methods: {
+        saveToDB(anonymousUser=false) {
+            const operationPointData = getOperationPointData(this.commonStore, this.currentStore, this.voltageStore, defaultOperationPointSaveConfiguration)
+            if (anonymousUser) {
+                operationPointData["username"] = "anonymous"
+            }
+            else {
+                if (this.$userStore.getUsername.value == null) {
+                    operationPointData["username"] = "anonymous"
+                }
+                else {
+                    operationPointData["username"] = this.$userStore.getUsername.value
+                }
+            }
+            operationPointData["slug"] = this.publishedSlug
+            const url = import.meta.env.VITE_API_ENDPOINT + '/operation_point_save' + (this.currentOperationPointId == null? '' : ('/' + this.currentOperationPointId))
+            console.log(url)
+            console.log(this.currentOperationPointId)
+            this.$axios.post(url, operationPointData)
+            .then(response => {
+                console.log(response.data);
+                if (response.data["id"] != null){
+                    this.currentOperationPointId = response.data["id"]
+                }
+                setTimeout(() => this.saveMessage = "Save changes", 1000);
+            })
+            .catch(error => {
+                console.log(error.data);
+                this.saveMessage = "Error, try against later"
+                setTimeout(() => this.saveMessage = "Save changes", 10000);
 
-const colorSaveButton = computed(() => {
-    if (saveMessage.value == "Error, try against later")
-        return "bg-danger"
-    else
-        return "bg-secondary"
-})
+            });
+            return "Saving"
+        },
+        onVoltageChange(event) {
+            this.voltageStore.setType(event.target.value)
+            this.$emit("voltage-type-change", event.target.value)
+            this.voltageStore.setOutput("label", this.voltageSelected)
+            if (this.voltageCompatibilities[event.target.value]['none'].includes(this.currentSelected)) {
+                const found = this.voltageCompatibilities[event.target.value]['none'].find(element => element == this.currentSelected);
+                this.$refs.currentRef.setErrors(["Voltage of type '" + found +"' is not recommended with current of type '" + this.currentSelected + "'. We recommend change the current to '" + this.voltageCompatibilities[event.target.value]['totally'][0] + "' instead."])
+            }
+            else {
+                this.$refs.currentRef.setErrors([])
 
-onMounted(()=> {
-    commonStore.setOperationPointName(operationPointNameSelected.value)
-    currentStore.setOutput("label", currentSelected.value)
-    voltageStore.setOutput("label", voltageSelected.value)
+            }
+        },
+        onCurrentChange(event) {
+            this.currentStore.setType(event.target.value)
+            this.$emit("current-type-change", event.target.value)
+            this.currentStore.setOutput("label", this.currentSelected)
+            if (this.currentCompatibilities[event.target.value]['none'].includes(this.voltageSelected)) {
+                const found = this.currentCompatibilities[event.target.value]['none'].find(element => element == this.voltageSelected);
+                this.$refs.voltageRef.setErrors(["Current of type '" + found +"' is not recommended with voltage of type '" + this.voltageSelected + "'. We recommend change the current to '" + this.currentCompatibilities[event.target.value]['totally'][0] + "' instead."])
+            }
+            else {
+                this.$refs.voltageRef.setErrors([])
+            }
+        },
+        onOperationPointName(event) {
+            this.commonStore.setOperationPointName(this.operationPointNameSelected)
+        },
+        onVoltageChangeFromImport(newType) {
+            const event = {target: {value: newType}}
+            this.voltageSelected = newType
+            this.onVoltageChange(event)
+        },
+        onCurrentChangeFromImport(newType) {
+            const event = {target: {value: newType}}
+            this.currentSelected = newType
+            this.onCurrentChange(event)
+        },
+        onSaveToDB(event) {
+            const result = this.saveToDB(false)
+            this.saveMessage = result
+            console.log(this.saveMessage)
 
-    isLoggedIn.value = userStore.isLoggedIn.value
+        },
 
-    userStore.$subscribe((mutation, state) => {
-        isLoggedIn.value = userStore.isLoggedIn.value
-    })
-})
+        onExport(event) {
+            this.saveToDB(true)
+        },
+        onPublish(slug) {
+            this.publishedSlug = slug
+            this.saveToDB(false)
+        },
+
+        onNewOperationPoint() {
+            console.log("currentOperationPointId")
+            this.currentOperationPointId = null
+            this.$userStore.resetGlobalOperationPoint()
+        },
+    },
+    computed: {
+        colorSaveButton() {
+            if (this.saveMessage == "Error, try against later")
+                return "bg-danger"
+            else
+                return "bg-secondary"
+        }
+    },
+    mounted() {
+        this.commonStore.setOperationPointName(this.operationPointNameSelected)
+        this.currentStore.setOutput("label", this.currentSelected)
+        this.voltageStore.setOutput("label", this.voltageSelected)
+
+        this.isLoggedIn = this.$userStore.isLoggedIn
+
+        this.$userStore.$subscribe((mutation, state) => {
+            this.isLoggedIn = this.$userStore.isLoggedIn
+        })
+    },
+}
 
 </script>
 
@@ -226,7 +248,7 @@ onMounted(()=> {
             <div class="col-11 col-sm-8 col-md-8 col-lg-8 col-xl-8 pe-5 ps-3">
                 <Form :validation-schema="schema" v-slot="{ errors }" class="form-inline row">
                     <label class="medium-text col-sm-4 col-md-4 col-lg-3 col-xl-3 text-md-end">Op. Point Name:</label>
-                    <Field name="operationPointName" type="text" :class="{ 'is-invalid': errors.operationPointName }" :placeholder="Defaults.defaultOperationNamePlaceHolder"  @change="onOperationPointName" :value="Defaults.defaultOperationName" class= "small-text bg-light text-white rounded-2 col-sm-8 col-md-8 col-lg-9 col-xl-9" v-model="operationPointNameSelected"/>
+                    <Field name="operationPointName" type="text" :class="{ 'is-invalid': errors.operationPointName }" :placeholder="defaultOperationNamePlaceHolder"  @change="onOperationPointName" :value="defaultOperationName" class= "small-text bg-light text-white rounded-2 col-sm-8 col-md-8 col-lg-9 col-xl-9" v-model="operationPointNameSelected"/>
 
                     <label class="medium-text mt-2 col-sm-4 col-md-4 col-lg-3 col-xl-3 text-md-end">Voltage type:</label>
                     <Field name="voltageType" ref="voltageRef" as="select" :class="{ 'is-invalid': errors.voltageType }" @change="onVoltageChange" :value="voltageSelected" class= "small-text bg-light text-white rounded-2 mt-2 col-sm-8 col-md-8 col-lg-3 col-xl-3" v-model="voltageSelected">

@@ -2,17 +2,14 @@
 import { ref } from 'vue'
 import * as Defaults from '/src/assets/js/defaults.js'
 import * as Utils from '/src/assets/js/utils.js'
-import { useUserStore } from '/src/stores/user'
 import { useCoreStore } from '/src/stores/core'
 import * as download from 'downloadjs'
-import axios from "axios";
 
 </script>
 <script>
 
 export default {
     data() {
-        const userStore = useUserStore();
         const coreStore = useCoreStore();
         const MASexported = ref(false)
         const STPexported = ref(false)
@@ -29,7 +26,6 @@ export default {
         const downloadOnlyPiecePicked = ref(0)
 
         return {
-            userStore,
             coreStore,
             MASexported,
             STPexported,
@@ -62,16 +58,16 @@ export default {
             var data
             if (this.downloadOnlyPiecePicked == 1) {
                 url = import.meta.env.VITE_API_ENDPOINT + '/core_compute_shape_stp'
-                data = this.userStore.globalCore['functionalDescription']['shape']
+                data = this.$userStore.globalCore['functionalDescription']['shape']
             }
             else {
                 url = import.meta.env.VITE_API_ENDPOINT + '/core_compute_core_3d_model_stp'
-                data = this.userStore.globalCore
+                data = this.$userStore.globalCore
             }
 
-            axios.post(url, data)
+            this.$axios.post(url, data)
             .then(response => {
-                const exportedData = Utils.getCoreData(this.userStore, Defaults.defaultCoreSaveConfiguration)
+                const exportedData = Utils.getCoreData(this.$userStore, Defaults.defaultCoreSaveConfiguration)
                 download(response.data, exportedData["functionalDescription"]["name"] + ".stp", "text/plain");
                 this.$emit("exported")
                 this.STPexported = true
@@ -86,16 +82,16 @@ export default {
             var data
             if (this.downloadOnlyPiecePicked == 1) {
                 url = import.meta.env.VITE_API_ENDPOINT + '/core_compute_shape_obj'
-                data = this.userStore.globalCore['functionalDescription']['shape']
+                data = this.$userStore.globalCore['functionalDescription']['shape']
             }
             else {
                 url = import.meta.env.VITE_API_ENDPOINT + '/core_compute_core_3d_model_obj'
-                data = this.userStore.globalCore
+                data = this.$userStore.globalCore
             }
 
-            axios.post(url, data)
+            this.$axios.post(url, data)
             .then(response => {
-                const exportedData = Utils.getCoreData(this.userStore, Defaults.defaultCoreSaveConfiguration)
+                const exportedData = Utils.getCoreData(this.$userStore, Defaults.defaultCoreSaveConfiguration)
                 download(response.data, exportedData["functionalDescription"]["name"] + ".obj", "text/plain");
                 this.$emit("exported")
                 this.OBJexported = true
@@ -117,7 +113,7 @@ export default {
                 includeAdvancedWindingWindowData: this.includeAdvancedWindingWindowDataPicked == 1,
                 downloadOnlyPiece: this.downloadOnlyPiecePicked == 1,
             }
-            const exportedData = Utils.getCoreData(this.userStore, configuration)
+            const exportedData = Utils.getCoreData(this.$userStore, configuration)
             download(JSON.stringify(exportedData, null, 4), exportedData["functionalDescription"]["name"] + ".json", "text/plain");
             this.$emit("exported")
             this.MASexported = true

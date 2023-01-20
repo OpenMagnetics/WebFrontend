@@ -4,32 +4,29 @@ import { Form, Field } from 'vee-validate';
 import * as Yup from 'yup';
 import * as Defaults from '/src/assets/js/defaults.js'
 import * as Utils from '/src/assets/js/utils.js'
-import { useUserStore } from '/src/stores/user'
 import { useCoreStore } from '/src/stores/core'
 import CoreImport from '/src/components/Core/CoreImport.vue'
 import CoreExport from '/src/components/Core/CoreExport.vue'
 import CorePublish from '/src/components/Core/CorePublish.vue'
 import CoreNew from '/src/components/Core/CoreNew.vue'
 import CoreQuickAccess from '/src/components/Core/CoreQuickAccess.vue'
-import axios from "axios";
 </script>
 
 <script>
 
 export default {
     data() {
-        const userStore = useUserStore();
         const coreStore = useCoreStore();
-        const coreNameSelected = userStore.globalCore == null? Defaults.defaultCoreName : userStore.globalCore['functionalDescription']['name'];
+        const coreNameSelected = this.$userStore.globalCore == null? Defaults.defaultCoreName : this.$userStore.globalCore['functionalDescription']['name'];
         const isLoggedIn = false
         var publishedSlug = null
         var currentCoreId = null
-        if (userStore.globalCore != null) {
-            if ("slug" in userStore.globalCore) {
-                publishedSlug = userStore.globalCore["slug"]
+        if (this.$userStore.globalCore != null) {
+            if ("slug" in this.$userStore.globalCore) {
+                publishedSlug = this.$userStore.globalCore["slug"]
             }
-            if (!coreStore.isDataReadOnly.value && "_id" in userStore.globalCore) {
-                currentCoreId = userStore.globalCore["_id"]
+            if (!coreStore.isDataReadOnly.value && "_id" in this.$userStore.globalCore) {
+                currentCoreId = this.$userStore.globalCore["_id"]
             }
         }
         var saveMessage = currentCoreId == null? "Create and add to library" : "Save changes"
@@ -41,7 +38,6 @@ export default {
 
 
         return {
-            userStore,
             coreStore,
             coreNameSelected,
             isLoggedIn,
@@ -71,31 +67,31 @@ export default {
         },
     },
     mounted() {
-        this.isLoggedIn = this.userStore.isLoggedIn
+        this.isLoggedIn = this.$userStore.isLoggedIn
         console.log("publishedSlug")
         console.log(this.publishedSlug)
 
-        this.userStore.$subscribe((mutation, state) => {
-            this.isLoggedIn = this.userStore.isLoggedIn
+        this.$userStore.$subscribe((mutation, state) => {
+            this.isLoggedIn = this.$userStore.isLoggedIn
         })
     },
     methods: {
         saveToDB(anonymousUser=false) {
             console.log("coreData")
-            const coreData = Utils.getCoreData(this.userStore, Defaults.defaultCoreSaveConfiguration)
+            const coreData = Utils.getCoreData(this.$userStore, Defaults.defaultCoreSaveConfiguration)
             console.log(coreData)
             console.log(anonymousUser)
-            console.log("this.userStore.getUsername")
-            console.log(this.userStore.getUsername.value)
+            console.log("this.$userStore.getUsername")
+            console.log(this.$userStore.getUsername.value)
             if (anonymousUser) {
                 coreData["username"] = "anonymous"
             }
             else {
-                if (this.userStore.getUsername.value == null) {
+                if (this.$userStore.getUsername.value == null) {
                     coreData["username"] = "anonymous"
                 }
                 else {
-                    coreData["username"] = this.userStore.getUsername.value
+                    coreData["username"] = this.$userStore.getUsername.value
                 }
             }
             coreData["slug"] = this.publishedSlug
@@ -104,7 +100,7 @@ export default {
             console.log(this.currentCoreId)
             console.log("coreData")
             console.log(coreData)
-            axios.post(url, coreData)
+            this.$axios.post(url, coreData)
             .then(response => {
                 console.log(response.data);
                 if (response.data["id"] != null){
@@ -121,7 +117,7 @@ export default {
             return "Saving"
         },
         onCoreName(event) {
-            this.userStore.globalCore['functionalDescription']['name'] = this.coreNameSelected
+            this.$userStore.globalCore['functionalDescription']['name'] = this.coreNameSelected
         },
         onSaveToDB(event) {
             const result = this.saveToDB(false)
@@ -138,7 +134,7 @@ export default {
         },
         onNewCore() {
             this.currentCoreId = null
-            this.userStore.resetGlobalCore()
+            this.$userStore.resetGlobalCore()
             this.$router.go();
         },
         onLoadCore() {

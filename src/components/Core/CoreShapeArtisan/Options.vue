@@ -1,6 +1,5 @@
 <script setup>
 import * as Utils from '/src/assets/js/utils.js'
-import { useUserStore } from '/src/stores/user'
 import { useCoreStore } from '/src/stores/core'
 import * as Defaults from '/src/assets/js/defaults.js'
 
@@ -9,12 +8,10 @@ import * as Defaults from '/src/assets/js/defaults.js'
 
 export default {
     data() {
-        const userStore = useUserStore();
         const coreStore = useCoreStore();
         const fullCoreModelSelected = coreStore.fullCoreModel;
         return {
             fullCoreModelSelected,
-            userStore,
             coreStore,
         }
     },

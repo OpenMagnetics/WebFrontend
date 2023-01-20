@@ -3,8 +3,6 @@ import { defineProps, computed, ref, onMounted, inject } from 'vue';
 import { Form, Field } from 'vee-validate';
 import * as Yup from 'yup';
 import TextInput from '/src/components/User/TextInput.vue';
-import axios from "axios";
-import { useUserStore } from '/src/stores/user'
 import { useCoreStore } from '/src/stores/core'
 import VueNumberInput from '/src/components/VueNumberInput.vue';
 import * as Utils from '/src/assets/js/utils.js'
@@ -19,7 +17,6 @@ export default {
     },
     data() {
         const posting = false;
-        const userStore = useUserStore();
         const coreStore = useCoreStore();
         const familyLabelSelected = null
         const subtypeLabelSelected = null
@@ -38,7 +35,6 @@ export default {
 
         return {
             posting,
-            userStore,
             coreStore,
             familyLabelSelected,
             subtypeLabelSelected,
@@ -60,7 +56,7 @@ export default {
         setCoreShapeName(name, override) {
             if (!this.loadingStandardCore || override) {
                 this.shapeName = name
-                this.userStore.setGlobalCoreShapeName(name)
+                this.$userStore.setGlobalCoreShapeName(name)
             }
         },
         getTechnicalDrawing(dimensionsValueInM) {
@@ -74,7 +70,7 @@ export default {
             }
             const url = import.meta.env.VITE_API_ENDPOINT + '/core_compute_technical_drawing'
 
-            axios.post(url, data)
+            this.$axios.post(url, data)
             .then(response => {
                 this.coreStore.setTechnicalDrawing(response.data)
             })
@@ -102,16 +98,16 @@ export default {
 
                 this.hasFreeCADError = false
                 this.coreStore.requestingNewShape()
-                axios.post(url, data)
+                this.$axios.post(url, data)
                 .then(response => {
-                    const globalCore = this.userStore.globalCore
+                    const globalCore = this.$userStore.globalCore
                     globalCore['functionalDescription']['shape'] = data
-                    this.userStore.setGlobalCoreAlt(globalCore)
+                    this.$userStore.setGlobalCoreAlt(globalCore)
                     this.posting = false
                     this.isDataDirty = false
                     this.coreStore.setStreamedObj(response.data)
                     this.getTechnicalDrawing(dimensionsValueInM)
-                    Utils.getCoreParameters(this.userStore, () => {this.loadingStandardCore = false;}, () => {this.loadingStandardCore = false;})
+                    Utils.getCoreParameters(this.$userStore, () => {this.loadingStandardCore = false;}, () => {this.loadingStandardCore = false;})
                 })
                 .catch(error => {
                     this.posting = false
@@ -139,20 +135,20 @@ export default {
                 const url = import.meta.env.VITE_API_ENDPOINT + '/core_compute_core_3d_model'
 
                 this.hasFreeCADError = false
-                const globalCore = this.userStore.globalCore
+                const globalCore = this.$userStore.globalCore
                 globalCore['functionalDescription']['shape'] = data
 
                 this.coreStore.requestingNewShape()
-                axios.post(url, globalCore)
+                this.$axios.post(url, globalCore)
                 .then(response => {
-                    const globalCore = this.userStore.globalCore
+                    const globalCore = this.$userStore.globalCore
                     globalCore['functionalDescription']['shape'] = data
-                    this.userStore.setGlobalCoreAlt(globalCore)
+                    this.$userStore.setGlobalCoreAlt(globalCore)
                     this.posting = false
                     this.isDataDirty = false
                     this.coreStore.setStreamedObj(response.data)
                     this.getTechnicalDrawing(dimensionsValueInM)
-                    Utils.getCoreParameters(this.userStore, () => {this.loadingStandardCore = false;}, () => {this.loadingStandardCore = false;})
+                    Utils.getCoreParameters(this.$userStore, () => {this.loadingStandardCore = false;}, () => {this.loadingStandardCore = false;})
                 })
                 .catch(error => {
                     this.posting = false
@@ -441,14 +437,14 @@ export default {
     mounted() {
 
         const url = import.meta.env.VITE_API_ENDPOINT + '/core_get_families'
-        axios.post(url, {})
+        this.$axios.post(url, {})
         .then(response => {
             this.familiesData = response.data["families"]
 
-            this.familyLabelSelected = this.userStore.globalCore['functionalDescription']['shape']['family']
+            this.familyLabelSelected = this.$userStore.globalCore['functionalDescription']['shape']['family']
             this.subtypeLabels = Object.keys(this.familiesData[this.familyLabelSelected.toLowerCase()])
-            if ('familySubtype' in this.userStore.globalCore['functionalDescription']['shape'] && this.userStore.globalCore['functionalDescription']['shape']['familySubtype'] != null) {
-                this.subtypeLabelSelected = this.userStore.globalCore['functionalDescription']['shape']['familySubtype']
+            if ('familySubtype' in this.$userStore.globalCore['functionalDescription']['shape'] && this.$userStore.globalCore['functionalDescription']['shape']['familySubtype'] != null) {
+                this.subtypeLabelSelected = this.$userStore.globalCore['functionalDescription']['shape']['familySubtype']
             }
             else {
                 this.subtypeLabelSelected = 1
@@ -457,7 +453,7 @@ export default {
             this.dimensionsLabel = Object.values(this.familiesData[this.familyLabelSelected][this.subtypeLabelSelected])
 
             this.dimensionsValueInMm = {}
-            for (const [key, value] of Object.entries(this.userStore.globalCore['functionalDescription']['shape']['dimensions'])) {
+            for (const [key, value] of Object.entries(this.$userStore.globalCore['functionalDescription']['shape']['dimensions'])) {
                 if (this.dimensionsLabel.includes(key)) {
                     this.dimensionsValueInMm[key] = Number(Utils.removeTrailingZeroes(value * 1000, 1))
                 }
@@ -478,7 +474,7 @@ export default {
             }
         })
 
-        this.userStore.$onAction((action) => {
+        this.$userStore.$onAction((action) => {
             this.recentChange = true
             if (action.name == "setGlobalCoreShape") {
                  this.loadCommercialShape(action.args[0])
@@ -486,7 +482,7 @@ export default {
         })
         this.loadingStandardCore = true
 
-        const name = this.userStore.globalCore['functionalDescription']['shape']['name']
+        const name = this.$userStore.globalCore['functionalDescription']['shape']['name']
         setTimeout(() => this.setCoreShapeName(name, true), 100);
     },
 }

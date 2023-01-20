@@ -2,8 +2,6 @@
 import { ref, onMounted, computed, inject } from 'vue'
 import { Form, Field } from 'vee-validate';
 import * as Yup from 'yup';
-import axios from "axios";
-import { useUserStore } from '/src/stores/user'
 import { useCoreStore } from '/src/stores/core'
 import * as Defaults from '/src/assets/js/defaults.js'
 import * as Utils from '/src/assets/js/utils.js'
@@ -18,16 +16,14 @@ export default {
     props: {
     },
     data() {
-        const userStore = useUserStore();
         const coreStore = useCoreStore();
-        const gapModelSelected = userStore.selectedModels['gapReluctance'];
+        const gapModelSelected = this.$userStore.selectedModels['gapReluctance'];
         const modelNames = []
         const modelDescriptions = []
         const modelErrors = []
         const modelInternalLink = []
         const modelExternalLink = []
         return {
-            userStore,
             coreStore,
             modelNames,
             modelDescriptions,
@@ -49,7 +45,7 @@ export default {
     created () {
         const url = import.meta.env.VITE_API_ENDPOINT + '/get_gap_reluctance_models'
 
-        axios.post(url, {})
+        this.$axios.post(url, {})
         .then(response => {
             this.modelNames = Object.keys(response.data["information"]);
             this.modelDescriptions = response.data["information"];
@@ -66,7 +62,7 @@ export default {
             console.log("handleSubmit")
         },
         onGapModelsChange() {
-            this.userStore.setSelectedModels('gapReluctance', this.gapModelSelected)
+            this.$userStore.setSelectedModels('gapReluctance', this.gapModelSelected)
             this.coreStore.gapReluctanceModelChanged()
         },
     }

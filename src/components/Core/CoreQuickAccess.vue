@@ -2,12 +2,9 @@
 import { ref, watch, computed, defineProps, onMounted } from 'vue'
 import { Form, Field, configure} from 'vee-validate';
 import * as Yup from 'yup';
-import { useUserStore } from '/src/stores/user'
-import { useDataCacheStore } from '/src/stores/dataCache'
 import { useCoreStore } from '/src/stores/core'
 import * as Utils from '/src/assets/js/utils.js'
 import * as Defaults from '/src/assets/js/defaults.js'
-import axios from "axios";
 
 </script>
 
@@ -92,13 +89,11 @@ export default {
         ]
         const commercialShapesNames = [];
         const commercialMaterialNames = [];
-        const userStore = useUserStore();
         const coreStore = useCoreStore();
-        const dataCacheStore = useDataCacheStore()
 
-        if (userStore.globalCore['functionalDescription'] != null && userStore.globalCore['processedDescription'] != null) {
-            quickShapeSelected = userStore.globalCore['functionalDescription']['shape']['name'];
-            quickMaterialSelected = userStore.globalCore['functionalDescription']['material']['name'];
+        if (this.$userStore.globalCore['functionalDescription'] != null && this.$userStore.globalCore['processedDescription'] != null) {
+            quickShapeSelected = this.$userStore.globalCore['functionalDescription']['shape']['name'];
+            quickMaterialSelected = this.$userStore.globalCore['functionalDescription']['material']['name'];
         }
 
         return {
@@ -106,9 +101,7 @@ export default {
             quickGapLengthSelected,
             quickShapeSelected,
             quickMaterialSelected,
-            userStore,
             coreStore,
-            dataCacheStore,
             commercialShapesNames,
             commercialMaterialNames,
             defaultUngappedGapping,
@@ -125,7 +118,7 @@ export default {
         this.loadMaterialNames()
     },
     created() {
-        this.dataCacheStore.$onAction((action) => {
+        this.$dataCacheStore.$onAction((action) => {
             if (action.name == "commercialShapesLoaded") {
                 this.loadShapesNames()
             }
@@ -138,7 +131,7 @@ export default {
                 this.updateQuickGap()
             }
         })
-        this.userStore.$onAction((action) => {
+        this.$userStore.$onAction((action) => {
             if (action.name == "setGlobalCoreAlt") {
                 const coreData = action.args[0]
                 this.quickShapeSelected = coreData['functionalDescription']['shape']['name']
@@ -162,14 +155,14 @@ export default {
     },
     methods: {
         loadShapesNames() {
-            const shapeData = this.dataCacheStore.commercialShapes
+            const shapeData = this.$dataCacheStore.commercialShapes
             this.commercialShapesNames = []
             shapeData.forEach((item) => {
                 this.commercialShapesNames.push(item['name'])
             })
         },
         loadMaterialNames() {
-            const materialData = this.dataCacheStore.commercialMaterials
+            const materialData = this.$dataCacheStore.commercialMaterials
             this.commercialMaterialNames = []
             materialData.forEach((item) => {
                 this.commercialMaterialNames.push(item['name'])
@@ -186,7 +179,7 @@ export default {
                             this.tryToSend()
                         }
                         else {
-                            Utils.getCoreParameters(this.userStore, () => {this.tryingToSend = false; this.coreStore.quickGappingChanged();}, () => {this.tryingToSend = false;})
+                            Utils.getCoreParameters(this.$userStore, () => {this.tryingToSend = false; this.coreStore.quickGappingChanged();}, () => {this.tryingToSend = false;})
                         }
                     }
                 }
@@ -194,50 +187,50 @@ export default {
             }
         },
         updateQuickGap () {
-            if (this.userStore.globalCore['functionalDescription'] != null && this.userStore.globalCore['processedDescription'] != null) {
-                if (this.userStore.globalCore['functionalDescription']['gapping'].length == this.userStore.globalCore['processedDescription']['columns'].length &&
-                    this.userStore.globalCore['functionalDescription']['gapping'][0]['type'] == 'subtractive' &&
-                    this.userStore.globalCore['functionalDescription']['gapping'][1]['type'] == 'residual' &&
-                    (this.userStore.globalCore['processedDescription']['columns'].length == 2 || this.userStore.globalCore['functionalDescription']['gapping'][2]['type'] == 'residual')) {
+            if (this.$userStore.globalCore['functionalDescription'] != null && this.$userStore.globalCore['processedDescription'] != null) {
+                if (this.$userStore.globalCore['functionalDescription']['gapping'].length == this.$userStore.globalCore['processedDescription']['columns'].length &&
+                    this.$userStore.globalCore['functionalDescription']['gapping'][0]['type'] == 'subtractive' &&
+                    this.$userStore.globalCore['functionalDescription']['gapping'][1]['type'] == 'residual' &&
+                    (this.$userStore.globalCore['processedDescription']['columns'].length == 2 || this.$userStore.globalCore['functionalDescription']['gapping'][2]['type'] == 'residual')) {
                     this.quickGapTypeSelected = "Grinded"
                 }
-                else if (this.userStore.globalCore['functionalDescription']['gapping'].length == this.userStore.globalCore['processedDescription']['columns'].length &&
-                    this.userStore.globalCore['functionalDescription']['gapping'][0]['type'] == 'additive' &&
-                    this.userStore.globalCore['functionalDescription']['gapping'][1]['type'] == 'additive' &&
-                    (this.userStore.globalCore['processedDescription']['columns'].length == 2 || this.userStore.globalCore['functionalDescription']['gapping'][2]['type'] == 'additive')) {
+                else if (this.$userStore.globalCore['functionalDescription']['gapping'].length == this.$userStore.globalCore['processedDescription']['columns'].length &&
+                    this.$userStore.globalCore['functionalDescription']['gapping'][0]['type'] == 'additive' &&
+                    this.$userStore.globalCore['functionalDescription']['gapping'][1]['type'] == 'additive' &&
+                    (this.$userStore.globalCore['processedDescription']['columns'].length == 2 || this.$userStore.globalCore['functionalDescription']['gapping'][2]['type'] == 'additive')) {
                     this.quickGapTypeSelected = "Spacer"
                 }
-                else if (this.userStore.globalCore['functionalDescription']['gapping'].length == this.userStore.globalCore['processedDescription']['columns'].length &&
-                    this.userStore.globalCore['functionalDescription']['gapping'][0]['type'] == 'residual' &&
-                    this.userStore.globalCore['functionalDescription']['gapping'][1]['type'] == 'residual' &&
-                    (this.userStore.globalCore['processedDescription']['columns'].length == 2 || this.userStore.globalCore['functionalDescription']['gapping'][2]['type'] == 'residual')) {
+                else if (this.$userStore.globalCore['functionalDescription']['gapping'].length == this.$userStore.globalCore['processedDescription']['columns'].length &&
+                    this.$userStore.globalCore['functionalDescription']['gapping'][0]['type'] == 'residual' &&
+                    this.$userStore.globalCore['functionalDescription']['gapping'][1]['type'] == 'residual' &&
+                    (this.$userStore.globalCore['processedDescription']['columns'].length == 2 || this.$userStore.globalCore['functionalDescription']['gapping'][2]['type'] == 'residual')) {
                     this.quickGapTypeSelected = "Ungapped"
                 }
-                else if (this.userStore.globalCore['functionalDescription']['gapping'].length > this.userStore.globalCore['processedDescription']['columns'].length &&
-                    this.userStore.globalCore['functionalDescription']['gapping'][0]['type'] == 'subtractive' &&
-                    this.userStore.globalCore['functionalDescription']['gapping'][1]['type'] == 'residual' &&
+                else if (this.$userStore.globalCore['functionalDescription']['gapping'].length > this.$userStore.globalCore['processedDescription']['columns'].length &&
+                    this.$userStore.globalCore['functionalDescription']['gapping'][0]['type'] == 'subtractive' &&
+                    this.$userStore.globalCore['functionalDescription']['gapping'][1]['type'] == 'residual' &&
                     (
-                        (this.userStore.globalCore['processedDescription']['columns'].length == 2 && this.userStore.globalCore['functionalDescription']['gapping'][2]['type'] == 'subtractive') ||
-                        (this.userStore.globalCore['processedDescription']['columns'].length == 3 && this.userStore.globalCore['functionalDescription']['gapping'][2]['type'] == 'residual') && 
-                        this.userStore.globalCore['functionalDescription']['gapping'][3]['type'] == 'subtractive'
+                        (this.$userStore.globalCore['processedDescription']['columns'].length == 2 && this.$userStore.globalCore['functionalDescription']['gapping'][2]['type'] == 'subtractive') ||
+                        (this.$userStore.globalCore['processedDescription']['columns'].length == 3 && this.$userStore.globalCore['functionalDescription']['gapping'][2]['type'] == 'residual') && 
+                        this.$userStore.globalCore['functionalDescription']['gapping'][3]['type'] == 'subtractive'
                     )) {
                     this.quickGapTypeSelected = "Distributed"
-                    for (let i = 0; i < this.userStore.globalCore['functionalDescription']['gapping'].length; i++) {
-                        if (this.userStore.globalCore['functionalDescription']['gapping'][i]['type'] == 'subtractive') {
-                            if (this.userStore.globalCore['functionalDescription']['gapping'][i]['length'] != this.userStore.globalCore['functionalDescription']['gapping'][0]['length']) {
+                    for (let i = 0; i < this.$userStore.globalCore['functionalDescription']['gapping'].length; i++) {
+                        if (this.$userStore.globalCore['functionalDescription']['gapping'][i]['type'] == 'subtractive') {
+                            if (this.$userStore.globalCore['functionalDescription']['gapping'][i]['length'] != this.$userStore.globalCore['functionalDescription']['gapping'][0]['length']) {
                                 this.quickGapTypeSelected = "Custom"
                             }
                         }
                     }
                 }
-                else if (this.userStore.globalCore['functionalDescription']['gapping'].length > this.userStore.globalCore['processedDescription']['columns'].length &&
-                    this.userStore.globalCore['functionalDescription']['gapping'][0]['type'] == 'subtractive' &&
-                    this.userStore.globalCore['functionalDescription']['gapping'][1]['type'] == 'subtractive' &&
-                    this.userStore.globalCore['functionalDescription']['gapping'][2]['type'] == 'subtractive') {
+                else if (this.$userStore.globalCore['functionalDescription']['gapping'].length > this.$userStore.globalCore['processedDescription']['columns'].length &&
+                    this.$userStore.globalCore['functionalDescription']['gapping'][0]['type'] == 'subtractive' &&
+                    this.$userStore.globalCore['functionalDescription']['gapping'][1]['type'] == 'subtractive' &&
+                    this.$userStore.globalCore['functionalDescription']['gapping'][2]['type'] == 'subtractive') {
                     this.quickGapTypeSelected = "Distributed"
-                    for (let i = 0; i < this.userStore.globalCore['functionalDescription']['gapping'].length; i++) {
-                        if (this.userStore.globalCore['functionalDescription']['gapping'][i]['type'] == 'subtractive') {
-                            if (this.userStore.globalCore['functionalDescription']['gapping'][i]['length'] != this.userStore.globalCore['functionalDescription']['gapping'][0]['length']) {
+                    for (let i = 0; i < this.$userStore.globalCore['functionalDescription']['gapping'].length; i++) {
+                        if (this.$userStore.globalCore['functionalDescription']['gapping'][i]['type'] == 'subtractive') {
+                            if (this.$userStore.globalCore['functionalDescription']['gapping'][i]['length'] != this.$userStore.globalCore['functionalDescription']['gapping'][0]['length']) {
                                 this.quickGapTypeSelected = "Custom"
                             }
                         }
@@ -247,33 +240,33 @@ export default {
                     this.quickGapTypeSelected = "Custom"
                 }
 
-                this.quickGapLengthSelected = this.userStore.globalCore['functionalDescription']['gapping'][0]['length'] * 1000;
+                this.quickGapLengthSelected = this.$userStore.globalCore['functionalDescription']['gapping'][0]['length'] * 1000;
             }
         },
         onShapeChange () {
             var shapeDataSelected = {}
-            this.dataCacheStore.commercialShapes.forEach((item) => {
+            this.$dataCacheStore.commercialShapes.forEach((item) => {
                 if (item['name'] == this.quickShapeSelected) {
                     shapeDataSelected = Utils.deepCopy(item)
                 }
             })
-            this.userStore.setGlobalCoreShape(shapeDataSelected)
+            this.$userStore.setGlobalCoreShape(shapeDataSelected)
         },
         onGapTypeChange () {
             if (this.quickGapTypeSelected == "Ungapped") {
-                this.userStore.globalCore['functionalDescription']['gapping'] = this.defaultUngappedGapping
+                this.$userStore.globalCore['functionalDescription']['gapping'] = this.defaultUngappedGapping
                 this.quickGapLengthSelected = Defaults.engineConstants['residualGap'] * 1000
             }
             else if (this.quickGapTypeSelected == "Grinded") {
-                this.userStore.globalCore['functionalDescription']['gapping'] = this.defaultGrindedGapping
+                this.$userStore.globalCore['functionalDescription']['gapping'] = this.defaultGrindedGapping
                 this.quickGapLengthSelected = Defaults.engineConstants['minimumNonResidualGap'] * 1000
             }
             else if (this.quickGapTypeSelected == "Spacer") {
-                this.userStore.globalCore['functionalDescription']['gapping'] = this.defaultSpacerGapping
+                this.$userStore.globalCore['functionalDescription']['gapping'] = this.defaultSpacerGapping
                 this.quickGapLengthSelected = Defaults.engineConstants['minimumNonResidualGap'] * 1000
             }
             else if (this.quickGapTypeSelected == "Distributed") {
-                this.userStore.globalCore['functionalDescription']['gapping'] = this.defaultDistributedGapping
+                this.$userStore.globalCore['functionalDescription']['gapping'] = this.defaultDistributedGapping
                 this.quickGapLengthSelected = Defaults.engineConstants['minimumNonResidualGap'] * 1000
             }
             this.recentChange = true
@@ -283,9 +276,9 @@ export default {
             this.hasError = this.quickGapLengthSelected <= 0
             this.recentChange = true
             if (!this.hasError) {
-                for (let i = 0; i < this.userStore.globalCore['functionalDescription']['gapping'].length; i++) {
-                    if (this.userStore.globalCore['functionalDescription']['gapping'][i]['type'] != 'residual') {
-                        this.userStore.globalCore['functionalDescription']['gapping'][i]['length'] = Number(Utils.removeTrailingZeroes(Utils.roundWithDecimals(this.quickGapLengthSelected / 1000, 0.00001), 5))
+                for (let i = 0; i < this.$userStore.globalCore['functionalDescription']['gapping'].length; i++) {
+                    if (this.$userStore.globalCore['functionalDescription']['gapping'][i]['type'] != 'residual') {
+                        this.$userStore.globalCore['functionalDescription']['gapping'][i]['length'] = Number(Utils.removeTrailingZeroes(Utils.roundWithDecimals(this.quickGapLengthSelected / 1000, 0.00001), 5))
                     }
                 }
                 this.tryToSend()
@@ -295,15 +288,15 @@ export default {
             console.log("onMaterialChange")
             console.log(this.quickMaterialSelected)
             var materialDataSelected = {}
-            this.dataCacheStore.commercialMaterials.forEach((item) => {
+            this.$dataCacheStore.commercialMaterials.forEach((item) => {
                 if (item['name'] == this.quickMaterialSelected) {
                     materialDataSelected = Utils.deepCopy(item)
                 }
             })
             if (materialDataSelected != {})
-                this.userStore.setGlobalCoreMaterial(materialDataSelected)
+                this.$userStore.setGlobalCoreMaterial(materialDataSelected)
             console.log(materialDataSelected)
-            console.log(this.userStore.globalCore)
+            console.log(this.$userStore.globalCore)
         },
         handleSubmit(params) {
         },

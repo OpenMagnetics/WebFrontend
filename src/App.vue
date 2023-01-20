@@ -3,19 +3,19 @@
 </template>
 
 <script setup>
-import * as Defaults from '/src/assets/js/defaults.js'
-import axios from "axios";
+import { engineConstants } from '/src/assets/js/defaults.js'
 </script>
 
 <script>
 export default {
     name: "App",
     created() {
-        return axios.post(import.meta.env.VITE_API_ENDPOINT + '/get_constants', {})
+        return this.$axios.post(import.meta.env.VITE_API_ENDPOINT + '/get_constants', {})
         .then(response => {
             for (const [key, value] of Object.entries(response.data)) {
-                Defaults.engineConstants[key] = Number(value)
+                engineConstants[key] = Number(value)
             }
+            console.log(engineConstants)
         })
         .catch(error => {
                 console.error("Could not read constants from MKF")

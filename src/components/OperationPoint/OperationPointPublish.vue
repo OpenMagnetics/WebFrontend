@@ -1,28 +1,13 @@
 <script setup>
-import { ref } from 'vue'
 import { Form, Field } from 'vee-validate';
 import * as Yup from 'yup';
-import * as Defaults from '/src/assets/js/defaults.js'
-import * as Utils from '/src/assets/js/utils.js'
-import { useCurrentStore } from '/src/stores/waveform'
-import { useVoltageStore } from '/src/stores/waveform'
-import { useCommonStore } from '/src/stores/waveform'
-import { useUserStore } from '/src/stores/user'
-import axios from "axios";
 
 </script>
 
 <script>
-
-const currentStore = useCurrentStore()
-const voltageStore = useVoltageStore()
-const commonStore = useCommonStore()
-const userStore = useUserStore()
-const formRef = ref(null)
-const slug = ref("example")
-
 export default {
     data() {
+        const slug = "example"
         const usedSlugs = []
         const schema = Yup.object().shape({
             slug: Yup.lazy(value => { return Yup.string().lowercase().trim().required().notOneOf(usedSlugs, 'Slug is already in use, please choose a different one').label("Slug")}),
@@ -31,6 +16,7 @@ export default {
             posting: false,
             usedSlugs,
             schema,
+            slug,
             isPublished: false,
         }
     },
@@ -51,20 +37,20 @@ export default {
             this.posting = true
 
             const data = {}
-            if (userStore.getUsername.value == null) {
+            if (this.$userStore.username == null) {
                 data["username"] = "anonymous"
             }
             else {
-                data["username"] = userStore.getUsername.value
+                data["username"] = this.$userStore.username
             }
-            data["slug"] = slug.value
+            data["slug"] = this.slug
             const url = import.meta.env.VITE_API_ENDPOINT + '/operation_point_publish'
 
-            axios.post(url, data)
+            this.$axios.post(url, data)
             .then(response => {
                 if (response.data['status'] == 'slug exists'){
                     this.usedSlugs.push(response.data['slug'].toLowerCase())
-                    formRef.value.validate()
+                    this.$refs.formRef.validate()
                     this.posting = false
                 }
                 else if (response.data['status'] == 'published'){
@@ -81,13 +67,13 @@ export default {
     },
     computed: {
         getURL() {
-            return window.location.href + "/" + slug.value
+            return window.location.href + "/" + this.slug
         }
     },
     mounted() {
         if (this.publishedSlug != null) {
             this.isPublished = true
-            slug.value = this.publishedSlug
+            this.slug = this.publishedSlug
         }
     }
 }

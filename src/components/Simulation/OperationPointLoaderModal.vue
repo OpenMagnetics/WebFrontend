@@ -1,8 +1,4 @@
 <script setup >
-import axios from "axios";
-import * as Utils from '/src/assets/js/utils.js'
-import { useUserStore } from '/src/stores/user'
-import { useCoreStore } from '/src/stores/core'
 import UserInventory from '/src/components/User/UserInventory.vue'
 
 </script>

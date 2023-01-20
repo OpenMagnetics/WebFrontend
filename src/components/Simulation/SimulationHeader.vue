@@ -7,20 +7,17 @@ import * as Utils from '/src/assets/js/utils.js'
 import { useCurrentStore } from '/src/stores/waveform'
 import { useVoltageStore } from '/src/stores/waveform'
 import { useCommonStore } from '/src/stores/waveform'
-import { useUserStore } from '/src/stores/user'
 import { useSimulationStore } from '/src/stores/simulation'
 import OperationPointTool from '/src/components/Simulation/OperationPointTool.vue'
 import OperationPointLoaderModal from '/src/components/Simulation/OperationPointLoaderModal.vue'
-import axios from "axios";
 </script>
 
 
 <script>
 export default {
     data() {
-        const userStore = useUserStore();
         const simulationStore = useSimulationStore();
-        const simulationNameSelected = userStore.globalSimulation == null? Defaults.defaultSimulationName : userStore.globalSimulation['name'];
+        const simulationNameSelected = this.$userStore.globalSimulation == null? Defaults.defaultSimulationName : this.$userStore.globalSimulation['name'];
         const isLoggedIn = false
         const schema = Yup.object().shape({
             simulationName: Yup.string()
@@ -31,17 +28,16 @@ export default {
         var updateOperationPointToolKey = 0
         var saveMessage = currentSimulationId == null? "Create and add to library" : "Save changes"
 
-        if (userStore.globalCore != null) {
-            if ("slug" in userStore.globalCore) {
-                publishedSlug = userStore.globalCore["slug"]
+        if (this.$userStore.globalCore != null) {
+            if ("slug" in this.$userStore.globalCore) {
+                publishedSlug = this.$userStore.globalCore["slug"]
             }
-            if (!simulationStore.isDataReadOnly.value && "_id" in userStore.globalCore) {
-                currentSimulationId = userStore.globalCore["_id"]
+            if (!simulationStore.isDataReadOnly.value && "_id" in this.$userStore.globalCore) {
+                currentSimulationId = this.$userStore.globalCore["_id"]
             }
         }
 
         return {
-            userStore,
             simulationStore,
             simulationNameSelected,
             isLoggedIn,
@@ -61,10 +57,10 @@ export default {
         }
     },
     mounted() {
-        this.isLoggedIn = this.userStore.isLoggedIn
+        this.isLoggedIn = this.$userStore.isLoggedIn
 
-        this.userStore.$subscribe((mutation, state) => {
-            this.isLoggedIn = this.userStore.isLoggedIn
+        this.$userStore.$subscribe((mutation, state) => {
+            this.isLoggedIn = this.$userStore.isLoggedIn
         })
     },
     methods: {

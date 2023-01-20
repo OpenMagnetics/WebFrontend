@@ -2,7 +2,6 @@
 import { ref, onMounted } from 'vue'
 import * as Defaults from '/src/assets/js/defaults.js'
 import * as Utils from '/src/assets/js/utils.js'
-import { useUserStore } from '/src/stores/user'
 import { useCoreStore } from '/src/stores/core'
 import * as download from 'downloadjs'
 
@@ -11,12 +10,10 @@ import * as download from 'downloadjs'
 <script>
 export default {
     data() {
-        const userStore = useUserStore();
         const coreStore = useCoreStore();
         const usedSlugs = []
         const importedCore = {}
         return {
-            userStore,
             coreStore,
             posting: false,
             usedSlugs,
@@ -32,8 +29,8 @@ export default {
     },
     methods: {
         onImport(event) {
-            this.userStore.globalCore = this.importedCore
-            Utils.getCoreParameters(this.userStore, () => {this.$router.go();}, () => {})
+            this.$userStore.globalCore = this.importedCore
+            Utils.getCoreParameters(this.$userStore, () => {this.$router.go();}, () => {})
 
         },
         readMASFile(event) {

@@ -10,7 +10,6 @@ import CoreMaterialArtisan from '/src/components/Core/CoreMaterialArtisan.vue'
 import { useCurrentStore } from '/src/stores/waveform'
 import { useVoltageStore } from '/src/stores/waveform'
 import { useCommonStore } from '/src/stores/waveform'
-import { useUserStore } from '/src/stores/user'
 import { useCoreStore } from '/src/stores/core'
 import * as Defaults from '/src/assets/js/defaults.js'
 import * as Utils from '/src/assets/js/utils.js'
@@ -22,15 +21,13 @@ export default {
         const currentStore = useCurrentStore()
         const voltageStore = useVoltageStore()
         const commonStore = useCommonStore()
-        const userStore = useUserStore()
         const coreStore = useCoreStore()
-        var chosenTool = userStore.getCoreSubsection
+        var chosenTool = this.$userStore.getCoreSubsection
 
         return {
             currentStore,
             voltageStore,
             commonStore,
-            userStore,
             coreStore,
             chosenTool,
         }
@@ -38,7 +35,7 @@ export default {
     methods: {
         onToolChange(newTool) {
             console.log(newTool)
-            this.userStore.setCoreSubsection(newTool)
+            this.$userStore.setCoreSubsection(newTool)
             this.chosenTool = newTool
         },
     },

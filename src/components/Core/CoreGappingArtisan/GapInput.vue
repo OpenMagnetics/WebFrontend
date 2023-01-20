@@ -4,8 +4,6 @@ import { Form, Field } from 'vee-validate';
 import VueNumberInput from '/src/components/VueNumberInput.vue';
 import GapElement from '/src/components/Core/CoreGappingArtisan/GapElement.vue';
 import * as Yup from 'yup';
-import axios from "axios";
-import { useUserStore } from '/src/stores/user'
 import { useCoreStore } from '/src/stores/core'
 import * as Defaults from '/src/assets/js/defaults.js'
 import * as Utils from '/src/assets/js/utils.js'
@@ -37,7 +35,6 @@ export default {
         },
     },
     data() {
-        const userStore = useUserStore();
         const coreStore = useCoreStore();
         const gapTypeSelected = this.columnData['gapType']
         coreStore.setDistributedGapAlreadyInUse(this.gapTypeSelected == 'Distributed' || coreStore.distributedGapAlreadyInUse)
@@ -58,7 +55,6 @@ export default {
             })
         }
         return {
-            userStore,
             coreStore,
             numberGapsSelected,
             gapTypeSelected,
@@ -141,10 +137,10 @@ export default {
         compute_gap_reluctances() {
             const url = import.meta.env.VITE_API_ENDPOINT + '/core_compute_gap_reluctances'
             const data = {}
-            data['gapping'] = this.userStore.globalCore['functionalDescription']['gapping'];
-            data['model'] = this.userStore.selectedModels['gapReluctance']
+            data['gapping'] = this.$userStore.globalCore['functionalDescription']['gapping'];
+            data['model'] = this.$userStore.selectedModels['gapReluctance']
 
-            axios.post(url, data)
+            this.$axios.post(url, data)
             .then(response => {
                 this.outputData = []
                 this.columnData['gaps'].forEach((item) => {
@@ -183,16 +179,16 @@ export default {
         },
         changeGlobalGapType(type) {
             this.columnData['gaps'].forEach((item) => {
-                this.userStore.globalCore['functionalDescription']['gapping'][item.globalGapIndex]['type'] = type
+                this.$userStore.globalCore['functionalDescription']['gapping'][item.globalGapIndex]['type'] = type
             })
         },
         addGaps(gapsToAdd) {
             for (let i = 0; i < gapsToAdd; i++) {
                 const localGap = Utils.deepCopy(this.columnData['gaps'].at(-1))
-                const globalGap = Utils.deepCopy(this.userStore.globalCore['functionalDescription']['gapping'][localGap.globalGapIndex])
-                localGap['globalGapIndex'] = this.userStore.globalCore['functionalDescription']['gapping'].length
+                const globalGap = Utils.deepCopy(this.$userStore.globalCore['functionalDescription']['gapping'][localGap.globalGapIndex])
+                localGap['globalGapIndex'] = this.$userStore.globalCore['functionalDescription']['gapping'].length
                 localGap['length'] = globalGap['length']
-                this.userStore.globalCore['functionalDescription']['gapping'].push(globalGap)  // TODO: change height
+                this.$userStore.globalCore['functionalDescription']['gapping'].push(globalGap)  // TODO: change height
                 this.columnData['gaps'].push(localGap)  // TODO: change height
                 this.outputData.push(this.outputData.at(-1))  // TODO: change height
                 this.auxDataToDetectCollisions.push(localGap)
@@ -205,13 +201,13 @@ export default {
                 this.columnData['gaps'].pop();
                 this.outputData.pop();
                 this.auxDataToDetectCollisions.pop();
-                this.userStore.globalCore['functionalDescription']['gapping'].splice(globalIndexToRemove, 1)
+                this.$userStore.globalCore['functionalDescription']['gapping'].splice(globalIndexToRemove, 1)
             }
         },
         updateAllGapLengths(newLength) {
             this.columnData['gaps'].forEach((item) => {
                 item['length'] = newLength
-                this.userStore.globalCore['functionalDescription']['gapping'][item['globalGapIndex']]['length'] = newLength
+                this.$userStore.globalCore['functionalDescription']['gapping'][item['globalGapIndex']]['length'] = newLength
             })
         },
         updateAllGapHeights(newHeight) {
@@ -222,7 +218,7 @@ export default {
                 else {
                     item['height'] = newHeight
                 }
-                this.userStore.globalCore['functionalDescription']['gapping'][item['globalGapIndex']]['height'] = item['height']
+                this.$userStore.globalCore['functionalDescription']['gapping'][item['globalGapIndex']]['height'] = item['height']
             })
         },
         onNumberGapsChange(event) {
@@ -244,14 +240,14 @@ export default {
             this.tryToSend()
         },
         autoDistributeGaps(){
-            var totalAvailableHeight = this.userStore.globalCore['processedDescription']['columns'][this.index]['height']
+            var totalAvailableHeight = this.$userStore.globalCore['processedDescription']['columns'][this.index]['height']
 
             this.columnData['gaps'].forEach((item) => {
                 totalAvailableHeight -= item['length']
             })
 
             const coreChunkSize = totalAvailableHeight / (this.columnData['gaps'].length + 1)
-            var initialHeightPosition = this.userStore.globalCore['processedDescription']['columns'][this.index]['height'] / 2
+            var initialHeightPosition = this.$userStore.globalCore['processedDescription']['columns'][this.index]['height'] / 2
 
             initialHeightPosition -= coreChunkSize
             const aux = []
@@ -330,7 +326,7 @@ export default {
             this.$emit("gapTypeChanged", this.gapTypeSelected, this.index)
         },
         checkCollisions() {
-            const columnHeight = this.userStore.globalCore['processedDescription']['columns'][this.index]['height']
+            const columnHeight = this.$userStore.globalCore['processedDescription']['columns'][this.index]['height']
 
             const gapLimits = []
             const gapErrors = []
@@ -375,7 +371,7 @@ export default {
             this.gapErrors = this.checkCollisions()
             if (!this.hasError()) {
                 this.recentChange = true
-                this.userStore.globalCore['functionalDescription']['gapping'][this.columnData['gaps'][gapIndex]['globalGapIndex']]['length'] = newValue
+                this.$userStore.globalCore['functionalDescription']['gapping'][this.columnData['gaps'][gapIndex]['globalGapIndex']]['length'] = newValue
                 this.tryToSend()
             }
             if  (this.gapTypeSelected == "Spacer") {
@@ -389,8 +385,8 @@ export default {
             this.gapErrors = this.checkCollisions()
             if (!this.hasError()) {
                 this.recentChange = true
-                this.userStore.globalCore['functionalDescription']['gapping'][this.columnData['gaps'][gapIndex]['globalGapIndex']]['coordinates'][1] = newValue
-                this.userStore.globalCore['functionalDescription']['gapping'][this.columnData['gaps'][gapIndex]['globalGapIndex']]['distanceClosestNormalSurface'] = this.userStore.globalCore['processedDescription']['columns'][this.index]['height'] / 2 - Math.abs(newValue)
+                this.$userStore.globalCore['functionalDescription']['gapping'][this.columnData['gaps'][gapIndex]['globalGapIndex']]['coordinates'][1] = newValue
+                this.$userStore.globalCore['functionalDescription']['gapping'][this.columnData['gaps'][gapIndex]['globalGapIndex']]['distanceClosestNormalSurface'] = this.$userStore.globalCore['processedDescription']['columns'][this.index]['height'] / 2 - Math.abs(newValue)
                 this.tryToSend()
                     this.$emit("onGapLengthChange", newValue / 1000, this.gapIndex)
             }
