@@ -16,11 +16,11 @@ export default {
     },
     methods: {
         onDeleteElement() {
-            if (this.userStore.getUserSubsection.value == 'operationPoints')
+            if (this.$userStore.getUserSubsection.value == 'operationPoints')
                 if (!this.requestingDelete) {
                     this.requestingDelete = true
-                    const url = import.meta.env.VITE_API_ENDPOINT + '/operation_point_delete/' + this.userStore.getIdToDelete.value
-                    const data = {"username": this.userStore.getUsername.value}
+                    const url = import.meta.env.VITE_API_ENDPOINT + '/operation_point_delete/' + this.$userStore.getIdToDelete.value
+                    const data = {"username": this.$userStore.getUsername.value}
                     this.$axios.post(url, data)
                     .then(response => {
                         this.requestingDelete = false

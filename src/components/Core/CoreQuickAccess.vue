@@ -92,8 +92,19 @@ export default {
         const coreStore = useCoreStore();
 
         if (this.$userStore.globalCore['functionalDescription'] != null && this.$userStore.globalCore['processedDescription'] != null) {
-            quickShapeSelected = this.$userStore.globalCore['functionalDescription']['shape']['name'];
-            quickMaterialSelected = this.$userStore.globalCore['functionalDescription']['material']['name'];
+            if (typeof(this.$userStore.globalCore['functionalDescription']['shape']) == 'string') {
+                quickShapeSelected = this.$userStore.globalCore['functionalDescription']['shape'];
+            }
+            else {
+                quickShapeSelected = this.$userStore.globalCore['functionalDescription']['shape']['name'];
+            }
+
+            if (typeof(this.$userStore.globalCore['functionalDescription']['material']) == 'string') {
+                quickMaterialSelected = this.$userStore.globalCore['functionalDescription']['material'];
+            }
+            else {
+                quickMaterialSelected = this.$userStore.globalCore['functionalDescription']['material']['name'];
+            }
         }
 
         return {
@@ -134,8 +145,20 @@ export default {
         this.$userStore.$onAction((action) => {
             if (action.name == "setGlobalCoreAlt") {
                 const coreData = action.args[0]
-                this.quickShapeSelected = coreData['functionalDescription']['shape']['name']
-                this.quickMaterialSelected = coreData['functionalDescription']['material']['name']
+
+                if (typeof(coreData['functionalDescription']['shape']) == 'string') {
+                    this.quickShapeSelected = coreData['functionalDescription']['shape'];
+                }
+                else {
+                    this.quickShapeSelected = coreData['functionalDescription']['shape']['name'];
+                }
+
+                if (typeof(coreData['functionalDescription']['material']) == 'string') {
+                    this.quickMaterialSelected = coreData['functionalDescription']['material'];
+                }
+                else {
+                    this.quickMaterialSelected = coreData['functionalDescription']['material']['name'];
+                }
             }
         })
 

@@ -521,11 +521,16 @@ export function getCoreData(userStore, configuration) {
     exportedData['functionalDescription']['name'] = userStore.globalCore['functionalDescription']['name']
     exportedData['functionalDescription']['type'] = userStore.globalCore['functionalDescription']['type']
 
-    if (userStore.globalCore['functionalDescription']['material']['type'] == 'custom') {
+    if (typeof(userStore.globalCore['functionalDescription']['material']) == 'string') {
         exportedData['functionalDescription']['material'] = userStore.globalCore['functionalDescription']['material']
     }
     else {
-        exportedData['functionalDescription']['material'] = userStore.globalCore['functionalDescription']['material']['name']
+        if (userStore.globalCore['functionalDescription']['material']['type'] == 'custom') {
+            exportedData['functionalDescription']['material'] = userStore.globalCore['functionalDescription']['material']
+        }
+        else {
+            exportedData['functionalDescription']['material'] = userStore.globalCore['functionalDescription']['material']['name']
+        }
     }
 
     if (userStore.globalCore['functionalDescription']['shape']['type'] == 'custom') {
@@ -601,6 +606,7 @@ export function getCoreParameters(userStore, callback, errorCallback) {
     const aux = deepCopy(userStore.globalCore)
     aux['geometricalDescription'] = null
     aux['processedDescription'] = null
+    console.log(userStore.globalCore)
     axios.post(url, aux)
     .then(response => {
         const globalCore = userStore.globalCore

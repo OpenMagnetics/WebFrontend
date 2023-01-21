@@ -31,8 +31,6 @@ export default {
             if (slug != null) {
                 const url = import.meta.env.VITE_API_ENDPOINT + '/operation_point_load/' + slug 
                 const data = {"username": null}
-                console.log(url)
-                console.log(data)
                 this.$axios.post(url, data)
                 .then(response => {
                     console.log(response.data)
@@ -46,7 +44,8 @@ export default {
 
                 })
                 .catch(error => {
-                    console.log(error.data)
+                    console.error("Error loading from slug")
+                    console.error(error.data)
                 });
             }
         }
@@ -55,22 +54,20 @@ export default {
             if (slug != null) {
                 const url = import.meta.env.VITE_API_ENDPOINT + '/core_load/' + slug 
                 const data = {"username": null}
-                console.log(url)
-                console.log(data)
                 this.$axios.post(url, data)
                 .then(response => {
-                    console.log(response.data)
                     if (response.data == null)
                         this.$router.push('/');
                     else {
-                        this.userStore.globalCore = response.data["element"]
-                        Utils.getCoreParameters(this.userStore, () => {this.coreStore.setDataReadOnly(true); this.coreLoaded = true;}, () => {})
+                        this.$userStore.globalCore = response.data["element"]
+                        Utils.getCoreParameters(this.$userStore, () => {this.coreStore.setDataReadOnly(true); this.coreLoaded = true;}, () => {})
                         
                     }
 
                 })
                 .catch(error => {
-                    console.log(error.data)
+                    console.error("Error loading from slug")
+                    console.error(error.data)
                 });
             }
         }

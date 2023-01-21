@@ -103,8 +103,13 @@ export const useUserStore = defineStore("user", () => {
         this.globalCore = globalCore
     }
     function setGlobalCoreShapeName(name) {
-        this.globalCore['functionalDescription']['shape']['name'] = name
-        this.globalCore['functionalDescription']['shape']['type'] = name == "Custom"? 'custom' : 'standard'
+        if (typeof(this.globalCore['functionalDescription']['shape']) == 'string') {
+            this.globalCore['functionalDescription']['shape'] = name
+        }
+        else {
+            this.globalCore['functionalDescription']['shape']['name'] = name
+            this.globalCore['functionalDescription']['shape']['type'] = name == "Custom"? 'custom' : 'standard'
+        }
     }
     function setGlobalCoreShape(shape) {
         this.globalCore['functionalDescription']['shape'] = shape

@@ -30,6 +30,8 @@ export default {
     methods: {
         onImport(event) {
             this.$userStore.globalCore = this.importedCore
+            console.log("this.$userStore.globalCore")
+            console.log(this.$userStore.globalCore)
             Utils.getCoreParameters(this.$userStore, () => {this.$router.go();}, () => {})
 
         },

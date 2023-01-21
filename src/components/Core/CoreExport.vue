@@ -53,6 +53,21 @@ export default {
         },
     },
     methods: {
+        requestedMaterialData(event) {
+            if (event.target.value == 1 && typeof(this.$userStore.globalCore['functionalDescription']['material']) == 'string') {
+                const url = import.meta.env.VITE_API_ENDPOINT + '/get_material_data'
+                const data = {name: this.$userStore.globalCore['functionalDescription']['material']}
+                this.$axios.post(url, data)
+                .then(response => {
+                    this.$userStore.globalCore['functionalDescription']['material'] = response.data
+                })
+                .catch(error => {
+                    console.error("Error getting material data")
+                    console.error(error.data)
+                });
+
+            }
+        },
         onExportSTP(event) {
             var url
             var data
@@ -158,7 +173,7 @@ export default {
                     <div class="container-flex bg-light text-white mt-2 mb-3 pb-3 me-2">
                         <div class="row">
                             <i class="fa-solid fa-xmark mt-2 pt-1 ps-2 text-danger offset-1 col-1 p-0"></i>
-                            <input v-model="includeMaterialDataPicked" type="range" class="mt-2 form-range col-1" min="0" max="1" step="1" style="width: 30px">
+                            <input v-model="includeMaterialDataPicked" type="range" class="mt-2 form-range col-1" min="0" max="1" step="1" style="width: 30px" @change="requestedMaterialData"> 
                             <i class="fa-solid fa-check mt-2 pt-1 text-success col-1 ps-3"></i>
                             <label v-tooltip="'Add the material data to MAS file, not just the name'" class="fs-6 mt-2 p-0 ps-3 text-white col-7"> Add material data?</label>
                         </div>
