@@ -33,7 +33,7 @@ function computeGapping() {
         <div class="modal-dialog modal-xl bg-light">
             <div class="modal-header text-white">
                 <h1 class="modal-title fs-5" id="GappingTechnicalDrawingSVGModalLabel">Gapping Technical Drawing</h1>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="GappingTechnicalDrawingSVGModalLabelClose"></button>
             </div>
             <div class="modal-body">
                 <div v-show="!posting" ref="modalFrontView" class="col-12" style="height: 100%;" />

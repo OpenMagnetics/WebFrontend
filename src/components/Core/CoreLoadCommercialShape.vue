@@ -135,12 +135,12 @@ export default {
 </script>
 
 <template>
-    <div class="modal fade" id="loadCommercialShapeModal" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+    <div class="modal fade" id="loadCommercialShapeModal" tabindex="-1" aria-labelledby="loadCommercialShapeModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-xl">
             <div class="modal-content bg-dark text-white">
                 <div class="modal-header">
-                    <h1 class="modal-title fs-5" id="modalLabel">Load a commercial shape</h1>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <h1 class="modal-title fs-5" id="loadCommercialShapeModalLabel">Load a commercial shape</h1>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="loadCommercialShapeModalClose"></button>
                 </div>
                 <vue-good-table
                     :columns="scaledColumns"

@@ -134,8 +134,8 @@ export default {
     <div class="modal-dialog">
         <div class="modal-content bg-dark text-white">
             <div class="modal-header">
-                <h1 class="modal-title fs-5" id="modalLabel">{{isLogin? "Login" : "Register"}}</h1>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                <h1 class="modal-title fs-5" id="LoginLabel">{{isLogin? "Login" : "Register"}}</h1>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="LoginClose"></button>
             </div>
             <div v-if="!done" class="modal-body">
                 <Form ref=formRef @submit="onSubmit" :validation-schema="schema" @invalid-submit="onInvalidSubmit">

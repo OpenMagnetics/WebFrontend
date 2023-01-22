@@ -1,5 +1,5 @@
 <script setup>
-import Header from '/src/components/Header.vue'
+import Header from '/src/components/BasicHeader.vue'
 import Footer from '/src/components/Footer.vue'
 </script>
 
@@ -20,7 +20,7 @@ import Footer from '/src/components/Footer.vue'
                     </div>
                     <!--//blog section-->
                     <div class="blog-section text-white">
-                        <h1 class="h2">The Etymology of the Shapes</h1>
+                        <h2 class="h2">The Etymology of the Shapes</h2>
                         <p>
                         There are few social studies that I enjoy more than Etymology. I always felt that learning why a word is written in a certain way can give us a dimension about the understanding of the things described by that word that cannot be reached by any other means, even if it is something we are experts on. And this is even more obvious for acronyms, which is the case we are discussing today.
                         </p>
@@ -75,9 +75,7 @@ import Footer from '/src/components/Footer.vue'
                         <p>
                         In general, cores with a round column have less winding losses, as any turn around their center column is approximately 11% shorter. But the square ones have the extra advantage that they can be stacked, so the total area for the magnetic flux density can be increased easily, while giving the option of controlling the eddy currents (yes, ferrite has a large resistivity, but not infinite. Sorry for those firm believers of Steinmetz loss curves).
                         </p>
-                        <h1 class="h2">Winding window area/shape</h1>
-
-                        <h1 class="h2">The economy of the Shapes</h1>
+                        <h2 class="h2">The economy of the Shapes</h2>
                         
                         <p>
                         I was taught at my University that Engineering is the art of solving a problem with limited resources. I thought it was true then, but now, especially in the last few years, with all the supply problems around the world in the Electronics sector, I think it is even truer.
@@ -102,12 +100,12 @@ import Footer from '/src/components/Footer.vue'
                         Yes, I know that some distributors charge more for a piece than it really costs, and I know that if you buy in volume you pay less. That's why the prices have been normalized over 1, which allows us to perceive the relative cost of a shape against another without getting picky on the exact prices.
                         </p>
                         <p>
-                        <img src="/src/public/images/musings/8/image1.gif" class="img-fluid bounce-little my-3 mx-auto d-block" alt="" style="height: 300px">
+                        <img src="/images/musings/8/image1.webp" class="img-fluid bounce-little my-3 mx-auto d-block" alt="Dilbert good data" width="800" height="auto">
 
                         About dimensions: the field size found here is the volume of the surrounding cube that would fit the core. It is not the volume of material of the core, and it is definitely not the effective volume, as we discussed in the previous number of Alf’ Musings. As a curiosity, here you can see the surrounding cube compared against the effective volume, where it can be appreciated that they don’t grow 1 to 1. So, as an addendum to the previous rules, never use the effective volume for anything geometrical or mechanical, especially don’t use it as the volume that it will occupy in your converter.
                         </p>
                         <p>
-                        <img src="/src/public/images/musings/8/image2.svg" class="img-fluid bounce-little my-3 mx-auto d-block" alt="" style="width: 800px">
+                        <img src="/images/musings/8/image2.svg" class="img-fluid bounce-little my-3 mx-auto d-block" alt="surrounding cube volume versus effective volume" width="800" height="auto">
 
                         Going back to the topic at hand, the last remark about the data that will be shown is that, although the data I had available is the stock on the distributors and not the real usage, and considering we live in a capitalist world, where the manufacturers are not going to have a larger stock of pieces of one type unless they are more oftenly used; I find that assuming that the available stock is a reflection of the real usage can give some useful insight. I am also aware that this is a picture in time, and the study should be done over time, but hey, beggars can’t be choosers. If somebody has data and not just an opinion to the contrary, please provide them and I happily will include them here.
                         </p>
@@ -115,12 +113,12 @@ import Footer from '/src/components/Footer.vue'
 
                         First I would like to analyze the usage online stock:
                         </p>
-                        <h2 class="h4">Stock versus size</h2>
-                        <img src="/src/public/images/musings/8/image3.svg" class="img-fluid bounce-little my-3 mx-auto d-block" alt="" style="width: 800px">
+                        <h3 class="h3">Stock versus size</h3>
+                        <img src="/images/musings/8/image3.svg" class="img-fluid bounce-little my-3 mx-auto d-block" alt="surrounding cube volume versus online stock" width="800" height="auto">
                         <p>There are no surprises here, at we can observe that the really small and rally large cores are seldomly used, and there is a tendency towards not using large cores (as they have more core losses due to longer eddy current)</p>
 
-                        <h2 class="h4">Stock per family</h2>
-                        <img src="/src/public/images/musings/8/image4.svg" class="img-fluid bounce-little my-3 mx-auto d-block" alt="" style="width: 800px">
+                        <h3 class="h3">Stock per family</h3>
+                        <img src="/images/musings/8/image4.svg" class="img-fluid bounce-little my-3 mx-auto d-block" alt="online stock per family" width="800" height="auto">
 
                         <p>
                         Due to the assumption I explained at the beginning this might be controversial. Here we can see large quantities in Es, which can be explained because it is one of the simplest shapes, and therefore cheaper to manufacture; plus it comes in a lot of sizes, which also helps with the numbers.
@@ -132,8 +130,8 @@ import Footer from '/src/components/Footer.vue'
                         We can see how there are many more RMs than PQs, two shapes that are quite used in modern magnetics, due to how compact they can be. Again, this can also be seen the other way around, many more people are using PQs, and that is why the stock is low.
                         </p>
 
-                        <h2 class="h4">Price versus Size</h2>
-                        <img src="/src/public/images/musings/8/image5.svg" class="img-fluid bounce-little my-3 mx-auto d-block" alt="" style="width: 800px">
+                        <h3 class="h3">Price versus Size</h3>
+                        <img src="/images/musings/8/image5.svg" class="img-fluid bounce-little my-3 mx-auto d-block" alt="price versus surrounding cube volume" width="800" height="auto">
                         <p>
                         Here we can appreciate how the price of a core evolves with its size. As can be seen it is not a linear relationship, as the price per unit of volume grows with the size. This can be interpreted as larger cores being more difficult to manufacture, as they need more time to sintere in their whole volume, plus their handling and transportation is more expensive, as they are more delicate than smaller, easier-to-handle shapes.
                         </p>
@@ -141,22 +139,22 @@ import Footer from '/src/components/Footer.vue'
                         But there is something more we extract from this graph. If we zoom in the area between 500 and 5000 mm³:
                         </p>
                         <p>
-                        <img src="/src/public/images/musings/8/image6.svg" class="img-fluid bounce-little my-3 mx-auto d-block" alt="" style="width: 800px">
+                        <img src="/images/musings/8/image6.svg" class="img-fluid bounce-little my-3 mx-auto d-block" alt="price versus surrounding cube volume detail" width="800" height="auto">
 
                         We can observe a large variation also for similar sizes, as is common knowledge among Magnetic designers, there are some shapes more expensive than others. In this zoom-in I have included the name of each point, and we can observe how in general, more complex shapes, like Ps, RMs, or EQs are more expensive than simpler ones, like Es.
                         </p>
                        
-                        <h2 class="h4"> Price per Size per family</h2>
+                        <h3 class="h3"> Price per Size per family</h3>
                         <p>
                         If we divide the price of each piece by its size, we can aggregate the cores per family, and the result will show the relative price per size of each shape, or how the complexity of a shape affects its price:
                         </p>
                         <p>
-                        <img src="/src/public/images/musings/8/image7.svg" class="img-fluid bounce-little my-3 mx-auto d-block" alt="" style="width: 800px">
+                        <img src="/images/musings/8/image7.svg" class="img-fluid bounce-little my-3 mx-auto d-block" alt="price per surrounding cube volume per family" width="800" height="auto">
 
                         Interestingly enough, the most expensive family of pieces is the RM, which makes sense as its shape is the one with more complexity.It is followed by the Ps, and in thor position the Es, which, although they are quite simple to manufacture, their variety and large sizes contribute to its  average price.
                         </p>
 
-                        <h2 class="h4">Price versus effective parameters</h2>
+                        <h3 class="h3">Price versus effective parameters</h3>
 
                         <p>
                         I have insisted a lot in not using the effective parameters for any calculation that needs a geometrical dimension, but that does not mean that we cannot analyze how they are related with our market parameters, price and stock.
@@ -170,12 +168,12 @@ import Footer from '/src/components/Footer.vue'
                         </p>
                         <p>
 
-                        <img src="/src/public/images/musings/8/image8.svg" class="img-fluid bounce-little my-3 mx-auto d-block" alt="" style="width: 800px">
+                        <img src="/images/musings/8/image8.svg" class="img-fluid bounce-little my-3 mx-auto d-block" alt="core constants c1 and c2 versus online stock" width="800" height="auto">
 
                         If we look at how much C1 and C2 costs, they both decrease with price. Does this mean that more expensive pieces have less losses?  Not really, it means they have smaller hysteresis loss, but as C2 grows with the size, it also does the eddy current and excess eddy current losses, which are not negligible for large cores (more information about that in <a href="/musings/4">Alf’s Musings #4</a>).
                         </p>
 
-                        <img src="/src/public/images/musings/8/image9.svg" class="img-fluid bounce-little my-3 mx-auto d-block" alt="" style="width: 800px">
+                        <img src="/images/musings/8/image9.svg" class="img-fluid bounce-little my-3 mx-auto d-block" alt="core constants c1 and c2 versus price" width="800" height="auto">
 
                         <p>
                         And to end of this really long chapter of Alf’s Musing, is the analysis of how C1 and C2 are distributed on average along the families. Why is this important? Because for example a larger C1 will give you smaller inductances in ungapped cores, while a smaller C2 would mean smaller losses at lower frequencies, as the eddy current losses are not predominant.
@@ -183,7 +181,7 @@ import Footer from '/src/components/Footer.vue'
                         <p>
                         With this in mind, we can see that the most cost efficient is the EFD family, but this is because they only come in small sizes. Also in this analysis it can be seen that the RMs and ETDs have comparatively low values, which matches the previous sections, where we saw they had one of the largest stocks, meaning they are commonly used.
                         </p>
-                        <img src="/src/public/images/musings/8/image10.svg" class="img-fluid bounce-little my-3 mx-auto d-block" alt="" style="width: 800px">
+                        <img src="/images/musings/8/image10.svg" class="img-fluid bounce-little my-3 mx-auto d-block" alt="price per core constants c1 and c2" width="800" height="auto">
                         <p>
                         And this would be all for this chapter of Alf’s Musings! I hope that the reading was not too hard (have mercy on me, analyzing data is not my forte), and that at least part of this information might be useful for you in the future. Of course, if you, dear reader, have any doubt or correction to my interpretation, or even better data, please contact me and I will add it here.
                         </p>

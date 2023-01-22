@@ -428,7 +428,7 @@ export default {
                             <h1 class="display-4 text-center text-secondary">Open Magnetics Roadmap</h1>
                             <p class="lead my-0 text-center text-white">We believe that a tool must be defined by its users, especially an Open-Source tool, in which the users can contribute.</p>
                             <p class="lead my-0 text-center text-white">This roadmap is our first step toward that goal, so even users that cannot program and help us with the models, can contribute with their vision of what should be implemented in our tool.</p>
-                            <h3 class="my-2  text-center text-white">Feel free to vote those features your think we should implement first!</h3 >
+                            <h2 class="my-2  text-center text-white">Feel free to vote those features your think we should implement first!</h2>
                         </div>
                     </div>
 

@@ -143,7 +143,7 @@ export default {
     <div class="offcanvas offcanvas-end bg-light" tabindex="-1" id="CoreExportOffCanvas" aria-labelledby="CoreExportOffCanvasLabel">
     <div class="offcanvas-header">
         <h5 class="offcanvas-title text-white fs-3" id="CoreExportOffCanvasLabel">Export options</h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="CoreExportOffCanvasLabelClose"></button>
     </div>
     <div v-tooltip="styleTooltip" class="offcanvas-body">
         <div class="accordion " id="accordionCoreExportAdvancedOptions">

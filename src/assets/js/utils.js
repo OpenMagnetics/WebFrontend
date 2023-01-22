@@ -606,7 +606,6 @@ export function getCoreParameters(userStore, callback, errorCallback) {
     const aux = deepCopy(userStore.globalCore)
     aux['geometricalDescription'] = null
     aux['processedDescription'] = null
-    console.log(userStore.globalCore)
     axios.post(url, aux)
     .then(response => {
         const globalCore = userStore.globalCore

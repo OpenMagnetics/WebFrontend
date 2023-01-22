@@ -1,5 +1,5 @@
 <script setup>
-import Header from '/src/components/Header.vue'
+import Header from '/src/components/BasicHeader.vue'
 import Footer from '/src/components/Footer.vue'
 </script>
 
@@ -26,7 +26,7 @@ import Footer from '/src/components/Footer.vue'
                         <p>
                         Now I want you to image the typical picture of a dipole magnet (or just the Earth) with its magnetic lines drawn. They are close, right? They always come back to the magnet.
                         </p>
-                        <img src="/src/public/images/musings/6/image1.png" class="img-fluid bounce-little my-3 mx-auto d-block" alt="" style="height: 300px">
+                        <img src="/images/musings/6/image1.webp" class="img-fluid bounce-little my-3 mx-auto d-block" alt="magnetic field magnet earth" width="500" height="auto">
                         <p>
                         And if we come back now to our magnetic core, probably you have imagined it as a shard, or when we went fashion, as kind of cylinder or column, right? But we just said that the magnetic field must come back, so if we have just a cylindrical core, as the classical magnet, the return path will  be through the air, and we said that air is devilish.
                         </p>

@@ -28,7 +28,11 @@ export default {
         },
         imgSrc: {
             type: String,
-            required: true
+            required: false
+        },
+        vidSrc: {
+            type: String,
+            required: false
         },
         imgAlt: {
             type: String,
@@ -43,14 +47,18 @@ export default {
         <div class="card flex-lg-row mt-4 box-shadow h-lg-250">
             <div class="card-body d-flex flex-column align-items-start bg-light">
                 <strong class="d-inline-block mb-2 text-info">{{section}}</strong>
-                <h3 class="mb-0">
+                <p class="mb-0 h3">
                     <a class="text-white" :href="link">{{title}}</a>
-                </h3>
+                </p>
                 <div class="mb-1 text-muted">{{date}}</div>
                 <p class="card-text text-start text-white mb-auto">{{description}}</p>
                 <a :href="link">Read it!</a>
             </div>
-            <img class="card-img-right flex-auto d-none d-lg-block" :alt="imgAlt" style="object-fit: cover; width: 150px; max-height: 150px;" :src="imgSrc">
+            <img v-if="imgSrc != null" class="card-img-right flex-auto d-none d-lg-block" :alt="imgAlt" style="object-fit: cover; width: 150px; max-height: 150px;" :src="imgSrc">
+
+            <video v-if="vidSrc != null" playsinline autoplay muted loop width="150" class="align-top card-img-right flex-auto d-none d-lg-block">
+                <source :src="vidSrc" type="video/webm">
+            </video>
         </div>
     </div>
 </template>

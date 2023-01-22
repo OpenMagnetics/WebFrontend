@@ -46,12 +46,12 @@ export default {
 
 
 <template>
-    <div class="modal fade" id="deleteElementModal" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+    <div class="modal fade" id="deleteElementModal" tabindex="-1" aria-labelledby="deleteElementModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content bg-dark text-white">
                 <div class="modal-header">
-                    <h1 class="modal-title fs-5" id="modalLabel">Deleting <slot name="elementType"></slot>: <br/> <slot name="elementName"></slot> </h1>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <h1 class="modal-title fs-5" id="deleteElementModalLabel">Deleting <slot name="elementType"></slot>: <br/> <slot name="elementName"></slot> </h1>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="deleteElementModalClose"></button>
                 </div>
                 <div class="modal-body row mt-2">
                     <h1 class="modal-title fs-5 text-center col-12" >Are you sure? All data will be lost</h1>

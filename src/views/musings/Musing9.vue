@@ -1,5 +1,5 @@
 <script setup>
-import Header from '/src/components/Header.vue'
+import Header from '/src/components/BasicHeader.vue'
 import Footer from '/src/components/Footer.vue'
 </script>
 
@@ -20,7 +20,7 @@ import Footer from '/src/components/Footer.vue'
                     </div>
                     <!--//blog section-->
                     <div class="blog-section text-white">
-                        <h1 class="h2">A bit out of context</h1>
+                        <h2 class="h2">A bit out of context</h2>
                         <p>
                         Magnetics are said to be getting fancy, or at least that is what people in magnetics say, which might be a little biased… but regardless, reality is that the latest advances in semiconductor devices are moving the bottleneck little by little to the magnetic components, where (and this is totally yours truly’s opinion) there have been comparable less exchange of ideas between academia, research centers, and industry. But I like to back my opinions with data, so I did a quick study over the publications in IEEE.
                         </p>
@@ -32,18 +32,18 @@ import Footer from '/src/components/Footer.vue'
 
                         The data I obtained and worked with is the following:
                         </p>
-                        <img src="/src/public/images/musings/9/image1.png" class="img-fluid bounce-little my-3 mx-auto d-block" alt="" style="height: 200px">
+                        <img src="/images/musings/9/image1.webp" class="img-fluid bounce-little my-3 mx-auto d-block" alt="Table with number of publications per topic per decade" width="600" height="auto">
                         <p>
 
                         We can easily observe how the number of publications regarding MOSFET and Semiconductors started to grow some decades before the ones regarding Magnetics, but in order to better ascertain it, I aggregated the data into two graphs. The first one represents the relative grow on each topic over that decade:
                         </p>
-                        <img src="/src/public/images/musings/9/image2.svg" class="img-fluid bounce-little my-3 mx-auto d-block" alt="">
+                        <img src="/images/musings/9/image2.svg" class="img-fluid bounce-little my-3 mx-auto d-block" alt="Increase in relative publications per decade" width="600" height="auto">
                         <p>
 
                         We can see how, even as the total number of publications has grown immensely in the last decades, it is in the last decade when the Power Transformers and Power Inductors have had the biggest growth.
                         In the second and last graph I have aggregated over the percentage of total publications of that decade:
                         </p>
-                        <img src="/src/public/images/musings/9/image3.svg" class="img-fluid bounce-little my-3 mx-auto d-block" alt="">
+                        <img src="/images/musings/9/image3.svg" class="img-fluid bounce-little my-3 mx-auto d-block" alt="Proportion of topic per decade" width="600" height="auto">
                         <p>
 
                         And we can easily observe how MOSFETs publications have passed from being almost 100% to being closer to 50% in the last decade, as the interest of research centers and academia is moving towards magnetic components.
@@ -53,7 +53,7 @@ import Footer from '/src/components/Footer.vue'
                         I don’t want to get further into this data analysis, as I believe it deserves a Musing (or more) for itself. I just wanted to bring forth some data about the common saying that “Magnetics are the bottleneck”. I cannot prove they are, but I can at least prove that they are gaining more and more attention, which might be correlated with being a bigger and bigger problem.
                         </p>
 
-                        <h1 class="h2">The Inductance problem</h1>
+                        <h2 class="h2">The Inductance problem</h2>
                         <p>
                         But I announced that this number (or series) of Alf’s Musings was going to be about Inductance. And it is.
                         </p>
@@ -74,12 +74,12 @@ import Footer from '/src/components/Footer.vue'
                         But as I stated in the introduction, let me back my opinions with data.
                         </p>
 
-                        <h2 class="h4">The AL Value or Inductance Factor method</h2>
+                        <h3 class="h3">The AL Value or Inductance Factor method</h3>
                         
                         <p>
                         The most extended method, and unsurprisingly the simplest, is to just use what is called the “AL value” or “Inductance factor” of a magnetic core, gapped or ungapped, which is nothing else than the bulk <a href="https://en.wikipedia.org/wiki/Permeance">permeance</a> of our core. To calculate the Inductance of a magnetic component from whose core we know the AL value we just have to multiply it by the square of the number of turns, and that’s it.
                         </p>
-                        <img src="/src/public/images/musings/9/image5.png" class="img-fluid bounce-little my-3 mx-auto d-block" alt="" >
+                        <img src="/images/musings/9/image5.webp" class="img-fluid bounce-little my-3 mx-auto d-block" alt="AL value method for inductance" width="200" height="auto">
                         <p>
                         The main advantage of this method is evidently its simplicity, it’s just a quick operation that can be even done by pen and paper.
                         The disadvantages are a bit more serious. These values are usually given by the manufacturers in their core datasheet, so this means they are only valid for the material and gapping that comes with the value. Do you want to modify the gap or use a spacer? Out of luck!
@@ -87,7 +87,7 @@ import Footer from '/src/components/Footer.vue'
                         <p>
                         A little bit more unknown caveat is that these values are obtained under strict conditions, that normally imply using the method sold by the same manufacturer to mechanically fix the core sets to each other. So that means that if you plan to put together your magnetic with tape or glue, the AL value will be different. This is due to the residual gaps, but we will talk about that later.
                         </p>
-                        <img src="/src/public/images/musings/9/image4.png" class="img-fluid bounce-little my-3 mx-auto d-block" alt="" >
+                        <img src="/images/musings/9/image4.webp" class="img-fluid bounce-little my-3 mx-auto d-block" alt="Inductance factor for different gaps" width="500" height="auto">
                         <p class="text-center">
                         Inductance factor table for different gaps from a manufacturer
                         </p>
@@ -97,19 +97,19 @@ import Footer from '/src/components/Footer.vue'
                         But our inductor never heats, right? 🙂
                         </p>
 
-                        <h2 class="h4">The Classical or “I will adjust it later” method</h2>
+                        <h3 class="h3">The Classical or “I will adjust it later” method</h3>
                         
                         <p>
                         Probably the single most used method when spacers are used, it relies on the classical equation that we are taught in Electromagnetism 101:
                         </p>
                         <p>
 
-                        <img src="/src/public/images/musings/9/image6.png" class="img-fluid bounce-little my-3 mx-auto d-block" alt=""  style="height: 100px">
+                        <img src="/images/musings/9/image6.webp" class="img-fluid bounce-little my-3 mx-auto d-block" alt="Classical equation for calculating inductance" width="200" height="auto">
                         Or if we assume that lc >>> lg (which is false in many cases) then the equation can be approximated to:
                         </p>
                         <p>
 
-                        <img src="/src/public/images/musings/9/image7.png" class="img-fluid bounce-little my-3 mx-auto d-block" alt=""  style="height: 100px">
+                        <img src="/images/musings/9/image7.webp" class="img-fluid bounce-little my-3 mx-auto d-block" alt="Classical approximated equation for calculating inductance" width="500" height="auto">
                         Which, let’s face it, it’s perfect for Excel, and it’s the reason why many Engineers use it, they don’t have to deal with god-forsaken software programming.
                         </p>
                         <p>
@@ -122,7 +122,7 @@ import Footer from '/src/components/Footer.vue'
                         Additionally, it suffers from the same problem as the previous one regarding temperature.
                         </p>
 
-                        <h2 class="h4">Finite Element method</h2>
+                        <h3 class="h3">Finite Element method</h3>
                         
                         <p>
                         I jumped directly to the most complex of all the methods, but I don’t want to spend too much time on it, as this is a really broad subject, worthy of many more pages.
@@ -134,7 +134,7 @@ import Footer from '/src/components/Footer.vue'
                         Although creating a complete Finite Elements model of a magnetic component can be a herculean task, if we just want to do it in order to extract the inductance value can reduce the amount of work necessary.
                         </p>
 
-                        <img src="/src/public/images/musings/9/image8.png" class="img-fluid bounce-little my-3 mx-auto d-block" alt=""  style="height: 400px">
+                        <img src="/images/musings/9/image8.webp" class="img-fluid bounce-little my-3 mx-auto d-block" alt="Magnetic flux density in FInite Element simulation" width="800" height="auto">
                         <p class="text-center">
                         3D vs 2D Magnetic Flux Density Field with FE simulation
                         </p>
@@ -150,7 +150,7 @@ import Footer from '/src/components/Footer.vue'
                         </p>
 
 
-                        <h2 class="h4">The Magnetic Circuit method</h2>
+                        <h3 class="h3">The Magnetic Circuit method</h3>
 
                         <p>
                         I might have intentionally left my favorite for the last one, but hey, it’s my article :)
@@ -163,7 +163,7 @@ import Footer from '/src/components/Footer.vue'
                         It is based on the <a href="https://en.wikipedia.org/wiki/Magnetic_circuit#Resistance%E2%80%93reluctance_model">Resistance-Reluctance model</a>, and applied to the inductance calculation it is reduced to calculating the Reluctance of our core. If you don’t know what the reluctance is, you can read more <a href="https://en.wikipedia.org/wiki/Magnetic_reluctance">here</a>. And once we have the reluctance (ℜ), as it is the inverse of the permeance/AL value, we just have to do:
                         </p>
                         <p>
-                        <img src="/src/public/images/musings/9/image9.png" class="img-fluid bounce-little my-3 mx-auto d-block" alt=""  style="height: 100px">
+                        <img src="/images/musings/9/image9.webp" class="img-fluid bounce-little my-3 mx-auto d-block" alt="Inductance from number of turns and reluctance" width="200" height="auto">
                         Of courses, the trick here is to get the right reluctance. For that we need to calculate two other reluctances, one for the core and one for the air gap(s).
                         </p>
                         <p>
@@ -184,7 +184,7 @@ import Footer from '/src/components/Footer.vue'
 
                         This increase in aig gap volume is usually called “Fringing Factor”, expressed in percentage, and it is a measure of how much extra energy is stored in a gap. It is a positive thing from the inductance point of view, but it is also detrimental for any wire in the vicinity, as it will generate extra losses and heating in any conductor.
                         </p>
-                        <img src="/src/public/images/musings/9/image10.png" class="img-fluid bounce-little my-3 mx-auto d-block" alt=""  style="height: 400px">
+                        <img src="/images/musings/9/image10.webp" class="img-fluid bounce-little my-3 mx-auto d-block" alt="distributed gaps in all columns in magnetic core shape ETD" width="600" height="auto">
                         <p class="text-center">
                         The reluctance method allows for any gapping configuration, no matter how crazy.
                         </p>
@@ -197,7 +197,7 @@ import Footer from '/src/components/Footer.vue'
 
                         To finally obtain the bulk reluctance that will give us our inductance, we have to place them in series and parallel, as if the magnetic flux were the current of a circuit, and solve using the same techniques as if the reluctances were resistances.
                         </p>
-                        <img src="/src/public/images/musings/9/image11.png" class="img-fluid bounce-little my-3 mx-auto d-block" alt=""  style="height: 200px">
+                        <img src="/images/musings/9/image11.webp" class="img-fluid bounce-little my-3 mx-auto d-block" alt="Example of magnetic reluctance circuit for transformer" width="600" height="auto">
                         <p class="text-center">
 
                         Example a magnetic circuit and its Resistance–reluctance model

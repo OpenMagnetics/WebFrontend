@@ -1,5 +1,5 @@
 <script setup>
-import Header from '/src/components/Header.vue'
+import Header from '/src/components/BasicHeader.vue'
 import Footer from '/src/components/Footer.vue'
 </script>
 
@@ -20,19 +20,20 @@ import Footer from '/src/components/Footer.vue'
                     </div>
                     <!--//blog section-->
                     <div class="blog-section text-white">
+                        <h2 class="h2 mt-3">A bit of context</h2>
                         <p>It is 1966. The Vietnam War is raging while the hippie movement grows. My beloved Doors record their <a href="https://www.youtube.com/watch?v=w6LiHXsBmmA">first album</a>, while Sinatra and Cash are collecting everything not taken by the Beach Boys. Walt Disney <s><a href="https://www.bbc.com/culture/article/20190426-was-walt-disney-frozen-after-death">gets cryogenized</a></s> dies. Electric appliances are arriving in American kitchens, and a weird series called Star Trek is debuting on TV. Europe looks worried at the 23rd Congress of the Communist Party of the Soviet Union, while in Berlin people can cross the Wall to celebrate Christmas.</p>
                         <p>But for us Engineers, something else happened in Denmark in 1966: P. L. Dowell published his famous paper “Effects of eddy currents in transformer windings”. And I can assure you I see more people infatuated as of today with his equations than with The Doors.</p>
                         <p>So I have decided to dedicate my first and only number (for now) in a series of Alf’s Musings to P. L. Dowell. Concretely to why you shouldn’t use Dowell’s method to design your transformers.</p>
                         <p>Let’s start at the beginning, we don’t know much about P.L. Dowell apart from his <s>being a time-traveller</s> papers, so let’s focus on it. In the introduction he clarifies how preceding engineers have developed equations for slot-wound-armature conductors, so he decides to apply the same principles to the windings of a transformer, a valiant effort and the first stone for all the work done in the decades. Since then it has been cited 1091 times (as of December 2021), included in any good book about magnetics, and used for most medium-high advanced magnetic designs.</p>
                         <p>Dowell's method consists of an easy-to-implement equation, that given a frequency, number of layers and conductor width it will give you the AC factor of a given inductor, which represents the proportion of the resistance the winding has at a certain frequency divided by its resistance at DC.</p>
-                        <img src="/src/public/images/musings/1/image3.png" class="img-fluid bounce-little my-3" alt="">
+                        <img src="/images/musings/1/image3.webp" class="img-fluid bounce-little my-3" alt="Dowell curves" width="394" height="333">
                         <p>At the time it was really an amazing solution, and the author even provided a series of graphs (Dowell’s curves) that quickly allow you to point out your AC factor depending on the diameter of your wire and the skin depth at your operating frequency. At a time when there were no calculators, no excel sheets, no personal computers, these curves were really good! So good that there are still people using them instead of the equations, which is quite <s>stupid</s> anachronic, since they are just adding the <a href="https://www.proquest.com/openview/7e3ada66539c829c90ebf8bf48ed1c63/1?pq-origsite=gscholar&cbl=1820938">thick point</a> error to Dowell’s error, and just gaining more dioptres.</p>
-                        <img src="/src/public/images/musings/1/image4.png" class="img-fluid bounce-little my-3" alt="">
+                        <img src="/images/musings/1/image4.webp" class="img-fluid bounce-little my-3" alt="Large dot method" width="169" height="321">
                         <p>I have divided my explanation into several pitfalls,let’s begin with the first!</p>
-                        <h1 class="h2">The first pitfall: singular, dual, plural</h1>
+                        <h2 class="h2">The first pitfall: singular, dual, plural</h2>
                         <p>Dowell’s method can be readily summarized: you calculate your DC resistance, calculate the AC factor given by his equation, you multiply and there you have your AC resistance and your winding losses. Easy peasy. And since the AC resistance is extremely difficult to measure, and extremely important at high frequencies, nobody questioned a method that gives you a simple solution to a difficult problem.</p>
                         <p>And here comes the first pitfall: since you have one DC resistance per winding, people expect to have one AC resistance per winding too. So how do they do it? They apply Dowell to each winding, with its own number of layers. And now they can multiple by the square of each current and there you have the winding losses! And they told me magnetics were difficult…</p>
-                        <img src="/src/public/images/musings/1/image2.png" class="img-fluid bounce-little my-3" alt="">
+                        <img src="/images/musings/1/image2.webp" class="img-fluid bounce-little my-3" alt="Dilbert power supply" width="600" height="187">
                         <p>Maybe this gets a bit on the realms of opinion, but the AC resistance is a virtual construct we engineers to have an equivalent model for the AC losses as we have for the DC losses. And this virtual AC resistance should be either a matrix or an unique value, not a value per winding. And the reason is simple, though the explanation is complex. The losses happening in an individual turn inside a transformer winding comes from three sources: </p>
                         <ol>
                             <li>The ohmic losses due to its own DC resistance and its DC current.</li>
@@ -63,7 +64,7 @@ import Footer from '/src/components/Footer.vue'
                         <p>His initial approach, where he calculates the leakage inductance and resistance, was done for a magnetic with any number of windings, and is a valid interpretation.</p>
                         <p>The problem comes in the second part, when he continues his reasoning trying to calculate the AC resistance of a magnetic. All the calculations in this section are based on a continuously increasing MMF (as in an inductor or non-interleaved transformer) to extract his famous equations. So the moment you have a different case, e. g. an uneven number of layers in one winding and even in the other, applying this method would be wrong.</p>
                         <p>Sure, that is not such a common case, but I haven’t finished yet, there are a few more pitfalls!</p>
-                        <img src="/src/public/images/musings/1/image1.png" class="img-fluid bounce-little my-3" alt="">
+                        <img src="/images/musings/1/image1.webp" class="img-fluid bounce-little my-3" alt="To be continued" width="384" height="216">
                         <p class="p">Regretfully originally published in https://drmolina.substack.com/p/4-deep-tech-projects-and-alfs-musings</p>
                     </div>
                 </div>

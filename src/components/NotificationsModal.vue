@@ -43,12 +43,12 @@ export default {
 
 
 <template>
-    <div class="modal fade" id="notificationsModal" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+    <div class="modal fade" id="notificationsModal" tabindex="-1" aria-labelledby="notificationsModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content bg-dark text-white">
                 <div class="modal-header">
-                    <h1 class="modal-title fs-5" id="modalLabel">{{currentNotification["name"]}}</h1>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <h1 class="modal-title fs-5" id="notificationsModalLabel">{{currentNotification["name"]}}</h1>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="notificationsModalClose"></button>
                 </div>
                 <div class="modal-body row mt-4">
                     <p ref="notificationContent" class="modal-title fs-5 text-center col-12" ></p>

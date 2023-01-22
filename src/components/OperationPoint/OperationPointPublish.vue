@@ -79,12 +79,12 @@ export default {
 }
 </script>
 <template>
-    <div class="modal fade" id="publishOperationPointModal" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+    <div class="modal fade" id="publishOperationPointModal" tabindex="-1" aria-labelledby="publishOperationPointModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content bg-dark text-white">
                 <div class="modal-header">
-                    <h1 class="modal-title fs-5" id="modalLabel">Publish operation point</h1>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <h1 class="modal-title fs-5" id="publishOperationPointModalLabel">Publish operation point</h1>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="publishOperationPointModalClose"></button>
                 </div>
                 <div class="modal-body row mt-4">
                     <h1 v-if="isLoggedIn" class="modal-title fs-6 text-center col-12" >Your operation point will be saved into your account and anybody with the following link will be able to access it</h1>

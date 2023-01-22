@@ -1,18 +1,19 @@
 <script setup >
-import BugReporterModal from '/src/components/User/BugReporter.vue'
-import LoginModal from '/src/components/User/Login.vue'
+import { defineAsyncComponent } from "vue";
 import { useUserDatabaseStore } from '/src/stores/userDatabase'
 import { tryLoadElements } from '/src/assets/js/utils.js'
-import CoreLoadCommercialShape from '/src/components/Core/CoreLoadCommercialShape.vue';
-import CoreLoadCommercialMaterial from '/src/components/Core/CoreLoadCommercialMaterial.vue';
-import NotificationsModal from '/src/components/NotificationsModal.vue';
-
 </script>
 
 <script>
 
 export default {
-    components: {},
+    components: {
+        BugReporterModal: defineAsyncComponent(() => import('/src/components/User/BugReporter.vue') ),
+        LoginModal: defineAsyncComponent(() => import('/src/components/User/Login.vue') ),
+        CoreLoadCommercialShape: defineAsyncComponent(() => import('/src/components/Core/CoreLoadCommercialShape.vue') ),
+        CoreLoadCommercialMaterial: defineAsyncComponent(() => import('/src/components/Core/CoreLoadCommercialMaterial.vue') ),
+        NotificationsModal: defineAsyncComponent(() => import('/src/components/NotificationsModal.vue') ),
+    },
     data() {
         const userDatabaseStore = useUserDatabaseStore()
         return {
@@ -124,8 +125,8 @@ export default {
     <CoreLoadCommercialShape v-if="$dataCacheStore != null" @onLoadCommercialShape="onLoadCommercialShape"/>
     <nav class="navbar navbar-expand-lg bg-light navbar-dark text-primary mb-1" id="header_wrapper">
         <div class="container-fluid">
-            <a href="/">
-                <img src="/images/logo.svg" width="60" height="auto" href="/" class="d-inline-block align-top me-3" alt="">
+            <a href="/" aria-label="Visit OpenMagnetics and Tear Down the Paywalls!">
+                <img src="/images/logo.svg" width="60" height="40" href="/" class="d-inline-block align-top me-3" alt="OpenMagnetics Logo">
             </a>
             <a class="navbar-brand text-primary" href="/">Open Magnetics</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
@@ -186,7 +187,7 @@ export default {
     <div class="offcanvas offcanvas-end bg-light" tabindex="-1" id="UserOffCanvas" aria-labelledby="UserOffCanvasLabel">
         <div class="offcanvas-header">
             <h5 class="offcanvas-title text-white fs-3" id="UserOffCanvasLabel">{{username}}</h5>
-            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="UserOffCanvasClose"></button>
         </div>
         <div class="offcanvas-body">
             <div class="list-group" style="margin: 0" >

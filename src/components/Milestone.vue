@@ -139,8 +139,8 @@ export default {
     <div class="col-md-6 col-lg-4 col-xl-3 d-flex align-items-stretch">
         <div class="card mt-4 box-shadow" :class=card_class>
             <div class="card-header bg-transparent row mb-2">
-                <h4 class="text-secondary col-2">{{index + 1}}</h4>
-                <h4 class="text-dark col-7 font-size-lg">{{title}}</h4>
+                <p class="text-secondary col-2">{{index + 1}}</p>
+                <h3 class="text-dark col-7 font-size-lg">{{title}}</h3>
                 <div class="col-3 ">
                     <span :style=badge_color_style class="badge rounded-pill text-wrap font-size-lg">{{section}}</span>
                 </div>

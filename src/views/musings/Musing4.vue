@@ -1,5 +1,5 @@
 <script setup>
-import Header from '/src/components/Header.vue'
+import Header from '/src/components/BasicHeader.vue'
 import Footer from '/src/components/Footer.vue'
 </script>
 
@@ -20,7 +20,7 @@ import Footer from '/src/components/Footer.vue'
                     </div>
                     <!--//blog section-->
                     <div class="blog-section text-white">
-                        <h1 class="h2">Roshen’s Models Offer An Advanced Approach To Modeling Core Losses</h1>
+                        <h2 class="h2">Roshen’s Models Offer An Advanced Approach To Modeling Core Losses</h2>
                         <p>Sometimes it is easy to admire famous scientists and engineers, especially if you are also a scientist, engineer or nerd. Everybody admires Tesla or Feynman, or going more to the topic at hand (magnetics), Steinmetz or Dowell. They were great engineers that tried to comprehend their professional world, to model and tame it. And a monument to their success is how much their models are still used today, and how many subsequent models were based on their original work.
                         </p>
                         <p>Because of the vicissitudes of my professional life, I have ended up in a curious position where, for reasons not pertaining to this article, my duties include finding, understanding, implementing, and comparing models for magnetic components. And along this path I came across the work of Waseem Roshen. What did he model, you may wonder? Core losses like Steinmetz? Winding losses like Dowell? Well, both, which made it really easy for me to admire him.
@@ -30,7 +30,7 @@ import Footer from '/src/components/Footer.vue'
                         <p>But before we get into Roshen’s work on core losses, and in case some readers are not familiar with the core losses in magnetic components (or worse, they only know how to use the coefficients given by the core manufacturers), I would like to give a little introduction on the what and why of core losses as I understand them.
                         </p>
 
-                        <h1 class="h2">The Physics Of Core Losses</h1>
+                        <h2 class="h2">The Physics Of Core Losses</h2>
                         <p>The core losses are a bulk term used to encompass the losses due to the different mechanisms happening inside a ferromagnetic core when we excite it with an alternating magnetic field. In the classical literature these mechanisms are usually listed as the following three types: hysteresis losses, eddy current losses, and excess eddy current losses.  
                         </p>
                         <p>
@@ -45,7 +45,7 @@ import Footer from '/src/components/Footer.vue'
                         <p>
                         This process can be repeated iteratively, and in each loop the number of grains that get aligned as we get farther from zero magnetic flux will be greater than the number aligning on the return when the magnetic flux nears zero. This produces a hysteresis effect and depicts a closed loop, were we to draw a graph with the magnetic field strength on one axis and the magnetic flux on the other axis as shown in the example B-H curve in Fig. 1.
                         </p>
-                        <img src="/src/public/images/musings/4/image1.png" class="img-fluid bounce-little my-3 mx-auto d-block" alt="" style="width: 400px">
+                        <img src="/images/musings/4/image1.webp" class="img-fluid bounce-little my-3 mx-auto d-block" alt="3C90 BH loop saturation" width="400" height="auto" >
                         <p class="text-center">Fig. 1. B-H loop for Ferroxcube’s 3C90 core material, as presented in its datasheet.</p>
 
                         <p>
@@ -58,9 +58,8 @@ import Footer from '/src/components/Footer.vue'
                         A side effect of the circulation of the magnetic field through the magnetic material is that, as a result of magnetic materials not having an infinite resistivity, electrical eddy currents will be induced within the volume of the core. The boundaries between the grains that comprise (as can be seen in Fig. 2) the ferromagnetic material have an amount of capacitance. So at low frequencies these induced eddy currents will exist only in the grains, circulating inside, therefore restricting the losses produced by them (eddy current losses are proportional to the area which they circle).
                         </p>
 
-                        <img src="/src/public/images/musings/4/image2.png" class="img-fluid bounce-little my-3 mx-auto d-block" alt="" style="width: 400px">
+                        <img src="/images/musings/4/image2.webp" class="img-fluid bounce-little my-3 mx-auto d-block" alt="microprah polychristalline metal" width="400" height="auto">
                         <p class="text-center">Fig. 2. Micrograph of a polycrystalline metal (courtesy of the University of Cambridge).</p>
-
 
                         <p>
                         As the switching frequency of the magnetic field increases, the alternating frequency of the induced eddy currents also rises, and the capacitance of the grain boundaries starts preventing their flow. Longer eddy currents start spreading through the whole extent of the ferromagnetic core, escaping out of the grains, and producing increasing ohmic losses, and thus heat.
@@ -75,7 +74,7 @@ import Footer from '/src/components/Footer.vue'
                         <p>
                         The sum of these losses is what many engineers know as core losses, though as has been analyzed this general term encompasses really different mechanisms. To be able to make an evaluation of these total losses, the Prussian Charles Proteus Steinmetz, proposed in the 19th century an analytical equation consisting of an exponential curve fit to empirical data which has to be measured for each material. This produces a series of power coefficients that scale the effects of the magnetic flux density, the switching frequency of the field and the material temperature in the total core losses, abstracting them from the physical mechanisms, using just measured data. Steinmetz’s equation for the volumetric losses Pv is
                         </p>
-                        <img src="/src/public/images/musings/4/image3.svg" class="img-fluid bounce-little my-3 mx-auto d-block" alt="" style="width: 200px">
+                        <img src="/images/musings/4/image3.svg" class="img-fluid bounce-little my-3 mx-auto d-block" alt="Steinmetz equation" width="200" height="auto">
                         <p>
 
                         where f is the switching frequency, B is the peak magnetic flux density, and k, a, and b are the Steinmetz coefficients, obtained by interpolating from measured data at a given temperature and for a given material.
@@ -89,11 +88,11 @@ import Footer from '/src/components/Footer.vue'
                         <p>
                         To take into account the effects of these triangular currents, many models inspired by Steinmetz were created, with the Improved Generalized Steinmetz Equation (iGSE)[1] being the most extended. This model breaks down the magnetic flux waveform into small pieces, calculating their energy, which then scales with the switching frequency, highly improving the accuracy for non-sinusoidal waveforms. The volumetric losses according to iGSE are 
                         </p>
-                        <img src="/src/public/images/musings/4/image4.svg" class="img-fluid bounce-little my-3 mx-auto d-block" alt="" style="width: 400px">
+                        <img src="/images/musings/4/image4.svg" class="img-fluid bounce-little my-3 mx-auto d-block" alt="Improved Generalized Steinmetz Equation" width="400" height="auto">
                         <p>
                         where T is the period, B is the magnetic flux density waveform, B is its peak-to-peak value, and ki is defined as
                         </p>
-                        <img src="/src/public/images/musings/4/image5.svg" class="img-fluid bounce-little my-3 mx-auto d-block" alt="" style="width: 400px">
+                        <img src="/images/musings/4/image5.svg" class="img-fluid bounce-little my-3 mx-auto d-block" alt="Improved Generalized Steinmetz Equation ki coeff" width="400" height="auto">
                         <p>
                         where k, a, and b are the same Steinmetz coefficients as noted earlier. 
                         </p>
@@ -110,7 +109,7 @@ import Footer from '/src/components/Footer.vue'
                         “In this model, the major hysteresis loop is represented by two hyperbolas. The upper part (see Fig. 1) of the major loop is given by 
                         B = Fu(H)
                         </p>
-                        <img src="/src/public/images/musings/4/image6.png" class="img-fluid bounce-little my-3 mx-auto d-block" alt="" style="width: 600px">
+                        <img src="/images/musings/4/image6.webp" class="img-fluid bounce-little my-3 mx-auto d-block" alt="Roshen major loop" width="600" height="auto">
 
                         <p>
                         ”[2]
@@ -128,11 +127,16 @@ import Footer from '/src/components/Footer.vue'
                         <p>
                         From this major loop, the model extracts what is called the minor loop: the behavior at the amplitude of the excitation for which we want to know the losses. To achieve this, Roshen suggests that both parts of the major loops be moved together iteratively until the crossing point equals our input amplitude. The images in Figs. 3, 4 and 5 show this process for Ferroxcube 3C90, at 25ºC, 0.1 and 0.2 T respectively
                         </p>
-                        <img src="/src/public/images/musings/4/image7.jpg" class="img-fluid bounce-little my-3 mx-auto d-block" alt="">
+                        <img src="/images/musings/4/image7.webp" class="img-fluid bounce-little my-3 mx-auto d-block" alt="Major loop Ferroxcube 3C90" width="513" height="auto">
                         <p class="text-center">Fig. 3. Major loop for Ferroxcube 3C90 at 25°C. </p>
-                        <img src="/src/public/images/musings/4/image8.gif" class="img-fluid bounce-little my-3 mx-auto d-block" alt="">
+                        <video playsinline autoplay muted loop width="640" class="img-fluid bounce-little my-3 mx-auto d-block">
+                            <source src="/images/musings/4/image8.webm" type="video/webm">
+                        </video>
+
                         <p class="text-center">Fig. 4. Loop approximation for 0.1 T</p>
-                        <img src="/src/public/images/musings/4/image9.gif" class="img-fluid bounce-little my-3 mx-auto d-block" alt="">
+                        <video playsinline autoplay muted loop width="640" class="img-fluid bounce-little my-3 mx-auto d-block">
+                            <source src="/images/musings/4/image9.webm" type="video/webm">
+                        </video>
                         <p class="text-center">Fig. 5. Loop approximation for 0.2 T</p>
 
                         <p>
@@ -144,12 +148,14 @@ import Footer from '/src/components/Footer.vue'
                         <p>
                         The final result is a model that is able to model the parabolic nature of the B-H loop at low excitation while keeping the hyperbolic nature as the material approaches saturation, and keeping it synchronized with the parameters measured for the material.
                         </p>
-                        <img src="/src/public/images/musings/4/image10.gif" class="img-fluid bounce-little my-3 mx-auto d-block" alt="">
+                        <video playsinline autoplay muted loop width="640" class="img-fluid bounce-little my-3 mx-auto d-block">
+                            <source src="/images/musings/4/image10.webm" type="video/webm">
+                        </video>
                         <p class="text-center">Fig. 6. BH loop for Ferroxcube 3C90 from 380 to 10 mT</p>
                         <p>
                         Before continuing to other losses, it must be mentioned that Roshen’s hysteresis model can be applied in its current form to any ungapped shape, with no dc bias; although I believe it could be properly extended to cover these cases, especially gapped cores, where the slope of the B-H loop would be modified according to the effective reluctance of the magnetic circuit.
                         </p>
-                        <h1 class="h2">Classical And Excess Eddy Current Losses</h1>
+                        <h2 class="h2">Classical And Excess Eddy Current Losses</h2>
                         <p>
                         We already know how to calculate the hysteresis losses for a given material and excitation, but we said that there were three terms in the total loss equation. Let’s talk about the two remaining ones as analyzed by Roshen.
                         </p>
@@ -162,7 +168,7 @@ import Footer from '/src/components/Footer.vue'
                         <p>
                         He analyzes how this ratio always depends on the square of the magnetic flux density and frequency product (see Fig. 7), so when this product is small (low frequency or low magnetic flux density, or a low combination of both), the excess eddy current losses are dominant over the classical/bulk eddy current losses. This means a lower Steinmetz coefficient for the frequency in this area (explained by the fact that the classical losses have a squared dependence on the frequency while the excess has only 3/2). And vice versa, at high frequency-magnetic flux density products, the classical losses have a higher weight, which increments the coefficients in Steinmetz’s equation.
                         </p>
-                        <img src="/src/public/images/musings/4/image11.png" class="img-fluid bounce-little my-3 mx-auto d-block" alt="">
+                        <img src="/images/musings/4/image11.webp" class="img-fluid bounce-little my-3 mx-auto d-block" alt="Classical eddy current variation with the priduct of frequency and mangetic flux density" width="500" height="auto">
 
                         <p class="text-center">
                         Fig. 7. Variation of the ratio of classical eddy current loss to excess eddy current loss with the product of frequency and flux density.
@@ -183,7 +189,7 @@ import Footer from '/src/components/Footer.vue'
                         To conclude this article on Roshen’s core loss model, I must mention that, though the model can be daunting to implement without advanced knowledge of software, the benefit it provides—the ability to calculate core losses taking into account the shape of the ferrite core, and for any given excitation waveform—outweighs the difficulties and makes this model a fair rival to any Steinmetz-derived model.
                         </p>
 
-                        <h1 class="h2">References</h1>
+                        <h2 class="h2">References</h2>
                         
                         <p>
                         1. "Accurate prediction of ferrite core loss with non-sinusoidal waveforms using only Steinmetz parameters" by K. Venkatachalam, C. R. Sullivan, T. Abdallah and H. Tacca, 2002 IEEE Workshop on Computers in Power Electronics, 2002. Proceedings, 2002, pp. 36-41, doi: 10.1109/CIPE.2002.1196712.). 

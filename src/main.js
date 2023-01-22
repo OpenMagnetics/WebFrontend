@@ -28,9 +28,17 @@ app.mount("#app");
 
 
 router.beforeEach((to, from, next) => {
-    const nonDataViews = ['/', '/home', '/roadmap', '/musings']
+    const nonDataViews = ['/', '/home', '/roadmap', '/musings', '/musing']
+    const nonDataStrings = ['musing']
 
-    if (!nonDataViews.includes(to.path)) {
+    var loadData = !nonDataViews.includes(to.path)
+    nonDataStrings.forEach((item) => {
+        if (to.path.includes(item)) {
+            loadData = false
+        } 
+    })
+
+    if (loadData) {
 
     	if (app.config.globalProperties.$dataCacheStore == null) {
     		app.config.globalProperties.$dataCacheStore = useDataCacheStore()

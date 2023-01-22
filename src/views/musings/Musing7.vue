@@ -1,5 +1,5 @@
 <script setup>
-import Header from '/src/components/Header.vue'
+import Header from '/src/components/BasicHeader.vue'
 import Footer from '/src/components/Footer.vue'
 </script>
 
@@ -30,9 +30,9 @@ import Footer from '/src/components/Footer.vue'
 
                         I would like to start with the basic parameters of a shape
                         </p>
-                        <h1 class="h2">Shape parameters</h1>
+                        <h2 class="h2">Shape parameters</h2>
                         
-                        <h2 class="h4">Effective parameters</h2>
+                        <h3 class="h3">Effective parameters</h3>
                         
                         <p>
                         The effective parameters of a shape, length, area, and volume; are the dimensional values as seen by the magnetic flux as it traverses our shape. They can be also seen as the parameters of the toroid equivalent to our shape.
@@ -70,7 +70,7 @@ import Footer from '/src/components/Footer.vue'
                                 </ul>
 
                             </li>
-                            <img src="/src/public/images/musings/7/image1.png" class="img-fluid bounce-little my-3 mx-auto d-block" alt="" style="height: 400px">
+                            <img src="/images/musings/7/image1.webp" class="img-fluid bounce-little my-3 mx-auto d-block" alt="areas and length of magnetic core RM" width="800" height="auto">
                             <p class="text-center">Areas and length for an RM</p>
 
                             <li>
@@ -79,18 +79,18 @@ import Footer from '/src/components/Footer.vue'
                             <li>
                             We calculate two intermediate parameters, called core constants C1 and C2, as the sum of the division of each length by its area, and each length by its area squared.
                             </li>
-                            <img src="/src/public/images/musings/7/image2.png" class="img-fluid bounce-little my-3 mx-auto d-block" alt="" style="height: 100px">
+                            <img src="/images/musings/7/image2.webp" class="img-fluid bounce-little my-3 mx-auto d-block" alt="core coefficients calculation" width="250" height="auto">
                             <li>
                             We calculate our effective parameters from this core constants like this:
                             </li>
-                            <img src="/src/public/images/musings/7/image3.png" class="img-fluid bounce-little my-3 mx-auto d-block" alt="" style="height: 80px">
+                            <img src="/images/musings/7/image3.webp" class="img-fluid bounce-little my-3 mx-auto d-block" alt="effective parameters calculationfor magnetic cores" width="600" height="auto">
                         </ol>
                         <p>
                         Now we can finally use our effective parameters. But, do we know how? Let’s see
                         </p>
 
                         
-                        <h2 class="h4">Effective length</h2>
+                        <h3 class="h3">Effective length</h3>
                         <p>
                         Let’s start with the simplest one, the effective length. As explained before, this is the mean length of the path traversed by the magnetic flux inside our core. 
                         </p>
@@ -102,7 +102,7 @@ import Footer from '/src/components/Footer.vue'
                         <b>When NOT to use it:</b> In any calculation where geometrical length is expected, like in the Leakage Inductance or the Winding Losses.
                         </p>
 
-                        <h2 class="h4">Effective area</h2>
+                        <h3 class="h3">Effective area</h3>
                         <p>
                         The effective area is the area of the mean section that the magnetic flux sees as it travels through our core. 
                         </p>
@@ -115,10 +115,10 @@ import Footer from '/src/components/Footer.vue'
                         <b>When NOT to use it:</b> In any calculation where a geometrical area is expected. The most common misuse of this parameter is in the calculation of the Reluctance of the gap, being used instead of the geometrical cross-sectional area of the column where the gap is. Another common misconception is to use the effective area for the calculation of the saturation magnetic flux density, which is wrong as it will be explained in the section for the minimum area.
                         </p>
 
-                        <img src="/src/public/images/musings/7/image4.png" class="img-fluid bounce-little my-3 mx-auto d-block" alt="" style="height: 400px">
+                        <img src="/images/musings/7/image4.webp" class="img-fluid bounce-little my-3 mx-auto d-block" alt="Geometrical diamensions of a square gap" width="500" height="auto">
                         <p class="text-center">The geometrical dimensions must be used in the calculation of the gap reluctance</p>
 
-                        <h2 class="h4">Effective volume</h2>
+                        <h3 class="h3">Effective volume</h3>
                         <p>
                         The effective volume is the product of the effective area by the effective length, and it can be interpreted as the volume “filled” with magnetic flux.
                         </p>
@@ -127,25 +127,25 @@ import Footer from '/src/components/Footer.vue'
                         <b>When to use it:</b> Probably the most common use of this parameter is the calculation of the total losses from the volumetric losses, given by material loss estimation models (Steinmetz, Roshen, iGSE)
                         </p>
                         <p>
-                        <img src="/src/public/images/musings/7/image5.png" class="img-fluid bounce-little my-3 mx-auto d-block" alt="" style="height: 100px">
+                        <img src="/images/musings/7/image5.webp" class="img-fluid bounce-little my-3 mx-auto d-block" alt="core losses from volumetric core losses" width="300" height="auto">
 
                         <b>When NOT to use it:</b> In any calculation where a geometrical volume is expected. It must not be confused with the real volume, or with the volume of the cube containing our core, and most definitely must not be used to calculate the total weight from the ferrite density. The intuitive reason for this is that there is volume of our core where none or little of the magnetic flux circulates (e.g.: the exterior corners of an E shape), but still has material and weight.
                         </p>
 
-                        <h1 class="h2">Important geometrical parameters</h1>
+                        <h2 class="h2">Important geometrical parameters</h2>
                         
                         <p>
                         There are a few other parameters in our magnetic core that deserve to be mentioned in this guide, as they can really affect a design. The parameters in this section also affect the calculation of the magnetic behavior, though they are geometrical.
                         </p>
 
 
-                        <h2 class="h4">Minimum area</h2>
+                        <h3 class="h3">Minimum area</h3>
                         
                         <p>
                         The minimum area, as it name says, is the minimum cross sectional area traversed by the magnetic flux. It is used to calculate the saturation magnetic flux density, and not the effective area, as it is through this minimum area where the saturation of our core will begin, equivalent to a bottleneck.
                         </p>
 
-                        <h2 class="h4">Gap perimeter</h2>
+                        <h3 class="h3">Gap perimeter</h3>
                         
                         <p>
                         The gap perimeter is the perimeter of the area of the core where our gap is placed. It is used in the calculation of the Reluctance of the gap if we want to take into account the effect of the fringing field, although many formulas directly use the area enclosed by this perimeter.
@@ -157,7 +157,7 @@ import Footer from '/src/components/Footer.vue'
                         Using methods that use the area instead of the perimeter is fine as long as the shape of the gap is square or round, because the models were developed for those, but this is not true for some shapes like the EPX or the lateral legs of complex shapes, like PQ or RM.
                         </p>
 
-                        <h2 class="h4">Lateral leg area/perimeter</h2>
+                        <h3 class="h3">Lateral leg area/perimeter</h3>
                         
                         <p>
                         And now that we have mentioned the lateral legs, I would like to highlight a common misconception when gapping all three legs: Many designers assume that the Reluctance of a lateral leg is the double of the Reluctance of the central leg, which is true for simple shapes like Es or Us.
@@ -169,10 +169,10 @@ import Footer from '/src/components/Footer.vue'
                         This effect is especially large in the case of P and PM shapes with gaps in the three legs, leading to a worst-case error of near 50% in the inductance calculation.
                         </p>
 
-                        <img src="/src/public/images/musings/7/image6.png" class="img-fluid bounce-little my-3 mx-auto d-block" alt="" style="height: 400px">
+                        <img src="/images/musings/7/image6.webp" class="img-fluid bounce-little my-3 mx-auto d-block" alt="Different gap areas in a PM magnetic core" width="500" height="auto">
                         <p class="text-center">Lateral gap area and perimeter (purple) much larger than central ones (green)</p>
 
-                        <h2 class="h4">Winding window area/shape</h2>
+                        <h3 class="h3">Winding window area/shape</h3>
                         
                         <p>
                         This area is the one between the winding column, the lateral column, and the top and bottom plates. It is the part of the core where we place the turns of our inductor/transformer. 

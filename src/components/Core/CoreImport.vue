@@ -57,7 +57,7 @@ export default {
     <div class="offcanvas offcanvas-start bg-light" tabindex="-1" id="CoreImportOffCanvas" aria-labelledby="CoreImportOffCanvasLabel">
     <div class="offcanvas-header">
         <h5 class="offcanvas-title text-white fs-3" id="CoreImportOffCanvasLabel">Import options</h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="CoreImportOffCanvasLabelClose"></button>
     </div>
     <div class="offcanvas-body">
         <input type="file" ref="masFileReader" @change="readMASFile()" class="btn btn-primary mt-1 rounded-3"/>
