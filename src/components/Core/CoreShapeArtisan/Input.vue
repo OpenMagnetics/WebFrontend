@@ -516,7 +516,7 @@ export default {
                         :size="'small'"
                         :name="value"
                         :center="true"
-                        :min="0"
+                        :min="value != 'K'? 0: -1000"
                         :step="0.1"
                         :max="1000">
                         </vue-number-input>
