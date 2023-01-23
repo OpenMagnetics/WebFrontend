@@ -349,7 +349,6 @@ export default {
             var orderedMilestone = [];
             var existingIds = [];
 
-            console.log(this.milestones)
             this.milestones.forEach((item, index) => {
                 existingIds.push(item["id"])
             });
@@ -386,12 +385,8 @@ export default {
                 ip_address: ip,
                 milestone_id: null,
             }
-            console.log("data")
-            console.log(data)
             this.$axios.post(import.meta.env.VITE_API_ENDPOINT + '/are_vote_casted', data)
             .then(response => {
-            console.log("are_vote_casted")
-            console.log(response.data)
                 response.data['voted_milestones'].forEach((item) => {
                     this.milestoneVotes.push(item['milestone_id'])
                 })
@@ -404,13 +399,10 @@ export default {
             milestone_id: this.id,
         })
         .then(response => {
-            console.log("get_number_votes")
-            console.log(response.data)
 
             response.data['number_votes'].forEach((item) => {
                 this.numberVotes.push(item['count'])
             })
-            console.log(this.numberVotes)
         })
         .catch(error => {
         });

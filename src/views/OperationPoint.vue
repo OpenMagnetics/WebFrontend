@@ -31,7 +31,6 @@ export default {
         var waveformTypes
 
         const data = this.$userStore.getGlobalOperationPoint.value
-        console.log(data)
         const aux = this.loadOperationPoint(data)
         switchingFrequency = aux["switchingFrequency"]
         waveformTypes = aux["waveformTypes"]

@@ -65,7 +65,6 @@ router.beforeEach((to, from, next) => {
             const core = app.config.globalProperties.$userStore.getGlobalCore
             axiosInstance.post(urlMaterials, {})
             .then(response => {
-                console.log(response.data)
                 app.config.globalProperties.$dataCacheStore.commercialMaterials = response.data["commercial_materials"]
                 app.config.globalProperties.$dataCacheStore.commercialMaterialsLoaded()
             })
@@ -77,7 +76,6 @@ router.beforeEach((to, from, next) => {
             const urlShapes = import.meta.env.VITE_API_ENDPOINT + '/core_get_commercial_data'
             axiosInstance.post(urlShapes, {})
             .then(response => {
-                console.log(response.data)
                 app.config.globalProperties.$dataCacheStore.commercialCores = response.data["commercial_cores"]
                 response.data["commercial_cores"].forEach((item) => {
                     app.config.globalProperties.$dataCacheStore.commercialShapes.push(item['functionalDescription']['shape'])

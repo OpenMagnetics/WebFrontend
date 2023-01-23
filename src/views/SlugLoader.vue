@@ -33,7 +33,6 @@ export default {
                 const data = {"username": null}
                 this.$axios.post(url, data)
                 .then(response => {
-                    console.log(response.data)
                     if (response.data == null)
                         this.$router.push('/');
                     else {

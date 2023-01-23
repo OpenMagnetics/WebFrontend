@@ -117,8 +117,6 @@ export default {
     mounted() {
         this.$dataCacheStore.$onAction((action) => {
             if (action.name == "commercialShapesLoaded") {
-                console.log("this.$dataCacheStore.commercialCores")
-                console.log(this.$dataCacheStore.commercialCores)
                 this.loadTableData()
             }
         })
