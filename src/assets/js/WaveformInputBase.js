@@ -1,4 +1,4 @@
-import { ref, watch, computed, defineProps, onMounted } from 'vue'
+import { ref, watch, computed, onMounted } from 'vue'
 import { Form, Field, configure} from 'vee-validate';
 import * as Yup from 'yup';
 import * as Utils from '/src/assets/js/utils.js'

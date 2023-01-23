@@ -1,5 +1,5 @@
 <script setup>
-import { ref, watch, computed, defineProps, onMounted } from 'vue'
+import { ref, watch, computed, onMounted } from 'vue'
 import { Form, Field, configure} from 'vee-validate';
 import * as Yup from 'yup';
 import { useDataCacheStore } from '/src/stores/dataCache'

@@ -1,5 +1,5 @@
 <script setup>
-import { defineProps, computed, ref, onMounted, inject } from 'vue';
+import { computed, ref, onMounted, inject } from 'vue';
 import { Form, Field } from 'vee-validate';
 import * as Yup from 'yup';
 import TextInput from '/src/components/User/TextInput.vue';

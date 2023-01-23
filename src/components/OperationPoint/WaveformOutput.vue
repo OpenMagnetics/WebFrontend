@@ -1,5 +1,5 @@
 <script setup>
-import { ref, watch, computed, defineProps } from 'vue'
+import { ref, watch, computed } from 'vue'
 import { Form, Field, configure} from 'vee-validate';
 import * as Yup from 'yup';
 import * as Utils from '/src/assets/js/utils.js'

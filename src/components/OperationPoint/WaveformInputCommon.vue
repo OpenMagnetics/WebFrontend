@@ -1,5 +1,5 @@
 <script setup>
-import { ref, watch, computed, defineProps, onMounted } from 'vue'
+import { ref, watch, computed, onMounted } from 'vue'
 import { Form, Field, configure} from 'vee-validate';
 import * as Yup from 'yup';
 import { removeTrailingZeroes } from '/src/assets/js/utils.js'
@@ -20,8 +20,6 @@ const theme = {
   dark: style.getPropertyValue('--bs-dark'),
   white: style.getPropertyValue('--bs-white'),
 }
-const props = defineProps({
-})
 
 const schema = Yup.object().shape({
     switchingFrequencyValidator: Yup.number().required().typeError("The value for frequency must be a number").label("Switching Frequency").test(
