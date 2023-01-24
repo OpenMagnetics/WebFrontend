@@ -17,12 +17,15 @@ coreStore.$onAction((action) => {
     }
     else if (action.name == "requestingGappingTechnicalDrawing") {
         posting.value = true
+        setTimeout(() => {posting.value = false}, 10000);
     }
 })
 
 function computeGapping() {
     coreStore.requestGappingTechnicalDrawing()
 }
+
+setTimeout(() => {coreStore.requestGappingTechnicalDrawing()}, 5000);
 
 </script>
 
