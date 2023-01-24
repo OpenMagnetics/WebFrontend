@@ -11,7 +11,8 @@ import * as Utils from '/src/assets/js/utils.js'
 
 export default {
     data() {
-        const numberColumns = this.$userStore.globalCore['processedDescription']['columns'].length
+        var numberColumns = 3;
+        Utils.getCoreParameters(this.$userStore, () => {this.numberColumns = this.$userStore.globalCore['processedDescription']['columns'].length;}, () => {})
         const columnData = []
         for (let i = 0; i < numberColumns; i++) {
             columnData.push({
@@ -61,8 +62,13 @@ export default {
         },
     },
     mounted () {
-        this.getNumberColumns()
-        this.columnData = this.decodeStoredGap()
+        if (this.$userStore.globalCore['processedDescription'] != null){
+            this.getNumberColumns()
+            this.columnData = this.decodeStoredGap()
+        }
+        else {
+            Utils.getCoreParameters(this.$userStore, () => {this.getNumberColumns(); this.columnData = this.decodeStoredGap();}, () => {})
+        }
 
         this.$userStore.$onAction((action) => {
             if (action.name == "updateAllLengths") {
@@ -84,7 +90,7 @@ export default {
     },
     methods: {
         getNumberColumns() {
-            if ('processedDescription' in this.$userStore.globalCore) {
+            if ('processedDescription' in this.$userStore.globalCore && this.$userStore.globalCore['processedDescription'] != null) {
                 this.numberColumns = this.$userStore.globalCore['processedDescription']['columns'].length
             }
         },
@@ -101,8 +107,6 @@ export default {
             return closestColumn
         },
         decodeStoredGap() {
-
-            console.log("decodeStoredGap")
             const columnData = []
             const gapping = this.$userStore.globalCore['functionalDescription']['gapping']
             const columns = this.$userStore.globalCore['processedDescription']['columns']
@@ -333,7 +337,7 @@ export default {
 </script>
 <template>
     <div class="container columns-container">
-        <div class="row">
+        <div v-if="$userStore.globalCore['processedDescription'] != null" class="row">
             <div v-if="numberColumns > 2" :class="'col-xl-3'" class="text-center">
                 <GapInput :title="leftSideTitle" :index="2" imageFile="/images/columns/leftColumn.svg" :columnData="columnData[2]" @gapTypeChanged="gapTypeChanged" @onGappingChange="onGappingChange"/>
             </div>

@@ -616,6 +616,7 @@ export function getCoreParameters(userStore, callback, errorCallback) {
         callback();
     })
     .catch(error => { 
+        console.error("Error getting core parameters")
         console.error(error.data)
         errorCallback()
     });
