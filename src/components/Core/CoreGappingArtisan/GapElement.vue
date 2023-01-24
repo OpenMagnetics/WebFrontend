@@ -196,11 +196,11 @@ export default {
                         <div class="accordion bg-transparent" :id="'gapOutputAccordion' + columnIndex + gapIndex">
                             <div class="accordion-item border-0 bg-transparent">
                                 <h2 class="accordion-header bg-transparent" :id="'headingGapOutput' + columnIndex + gapIndex">
-                                    <button class="fs-6 p-1 accordion-button bg-transparent text-primary border-primary collapsed" type="button" data-bs-toggle="collapse" :data-bs-target="'#collapseGapOutput' + columnIndex + gapIndex" aria-expanded="true" :aria-controls="'collapseGapOutput' + columnIndex + gapIndex">
+                                    <button class="fs-6 p-1 accordion-button bg-transparent text-primary border-primary" type="button" data-bs-toggle="collapse" :data-bs-target="'#collapseGapOutput' + columnIndex + gapIndex" aria-expanded="true" :aria-controls="'collapseGapOutput' + columnIndex + gapIndex">
                                         Advanced Details
                                     </button>
                                 </h2>
-                                <div :id="'collapseGapOutput' + columnIndex + gapIndex" class="accordion-collapse bg-transparent text-white collapse " :aria-labelledby="'headingGapOutput' + columnIndex + gapIndex" :data-bs-parent="'#gapOutputAccordion' + columnIndex + gapIndex">
+                                <div :id="'collapseGapOutput' + columnIndex + gapIndex" class="accordion-collapse bg-transparent text-white " :aria-labelledby="'headingGapOutput' + columnIndex + gapIndex" :data-bs-parent="'#gapOutputAccordion' + columnIndex + gapIndex">
                                     <div class="accordion-body p-1">
 
                                         <label v-tooltip="'Magnetic reluctance of the gap, including fringing effect, calculated using TBD model'" class="small-text col-6 text-start">Reluctance:</label>
