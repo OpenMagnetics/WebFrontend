@@ -219,7 +219,7 @@ export default {
                 },
                 {
                     id: 23,
-                    title: 'Inductance temmperature graph',
+                    title: 'Inductance temperature graph',
                     section: 'Core Design', 
                     description: 'Module to to model and calculate the effect that temperature has on permeability, and therefore inductance',
                     state: 'To Do'
@@ -354,20 +354,23 @@ export default {
             });
 
             votesList.forEach((item, index) => {
-                if (item["state"] == "To Do" && existingIds.includes(item["milestone_id"])) {
+                if (this.milestones[item["milestone_id"]]["state"] == "To Do" && existingIds.includes(item["milestone_id"])) {
                     orderedMilestone.push(this.milestones[item["milestone_id"]])
+                    this.numberVotes.push(item['count'])
                 }
             });
 
             this.milestones.forEach((item, index) => {
                 if (item["state"] == "To Do" && !orderedMilestone.includes(item)) {
                     orderedMilestone.push(item)
+                    this.numberVotes.push(item['count'])
                 }
             });
 
             this.milestones.forEach((item, index) => {
                 if (item["state"] != "To Do" && !orderedMilestone.includes(item)) {
                     orderedMilestone.push(item)
+                    this.numberVotes.push(item['count'])
                 }
             });
 
@@ -394,18 +397,6 @@ export default {
             .catch(error => {
             });
         });
-
-        this.$axios.post(import.meta.env.VITE_API_ENDPOINT + '/get_number_votes', {
-            milestone_id: this.id,
-        })
-        .then(response => {
-
-            response.data['number_votes'].forEach((item) => {
-                this.numberVotes.push(item['count'])
-            })
-        })
-        .catch(error => {
-        });
     }
 }
 </script>
@@ -430,7 +421,7 @@ export default {
                                     :key="item.id"
                                     :index="index"
                                     v-bind="item"
-                                    :voted="milestoneVotes.length == 0? true : milestoneVotes.includes(index)"
+                                    :voted="milestoneVotes.length == 0? true : milestoneVotes.includes(item.id)"
                                     :numberVotes="numberVotes[index]"
                             ></Milestone>
                         </div>
