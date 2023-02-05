@@ -1,4 +1,7 @@
 User-agent: *
 Allow: /
+Disallow: /core/*
+Disallow: /operation_point/*
+Disallow: /simulation/*
 
 Sitemap: https://openmagnetics.com/sitemap.xml
