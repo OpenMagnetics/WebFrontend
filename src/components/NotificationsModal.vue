@@ -47,7 +47,7 @@ export default {
         <div class="modal-dialog modal-lg">
             <div class="modal-content bg-dark text-white">
                 <div class="modal-header">
-                    <h1 class="modal-title fs-5" id="notificationsModalLabel">{{currentNotification["name"]}}</h1>
+                    <p class="modal-title fs-5" id="notificationsModalLabel">{{currentNotification["name"]}}</p>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="notificationsModalClose"></button>
                 </div>
                 <div class="modal-body row mt-4">

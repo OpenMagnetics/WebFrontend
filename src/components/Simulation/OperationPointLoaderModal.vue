@@ -15,7 +15,7 @@ export default {
         <div class="modal-dialog modal-xl">
             <div class="modal-content bg-dark text-white">
                 <div class="modal-header">
-                    <h1 class="modal-title fs-5" id="loadOperationPointModalLabel">Load a predefined operation point</h1>
+                    <p class="modal-title fs-5" id="loadOperationPointModalLabel">Load a predefined operation point</p>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="loadOperationPointModalClose"></button>
                 </div>
                 <UserInventory :specificElement="'operationPoints'" :showTitle="false" :showMenu="false" :showLegend="false" @onLoadOperationPoint="$emit('onLoadOperationPoint')"/>

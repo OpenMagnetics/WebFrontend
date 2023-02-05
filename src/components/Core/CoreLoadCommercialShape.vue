@@ -137,7 +137,7 @@ export default {
         <div class="modal-dialog modal-xl">
             <div class="modal-content bg-dark text-white">
                 <div class="modal-header">
-                    <h1 class="modal-title fs-5" id="loadCommercialShapeModalLabel">Load a commercial shape</h1>
+                    <p class="modal-title fs-5" id="loadCommercialShapeModalLabel">Load a commercial shape</p>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="loadCommercialShapeModalClose"></button>
                 </div>
                 <vue-good-table

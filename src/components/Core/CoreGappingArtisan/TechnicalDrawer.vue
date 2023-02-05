@@ -35,7 +35,7 @@ setTimeout(() => {coreStore.requestGappingTechnicalDrawing()}, 5000);
     <div class="modal fade" id="GappingTechnicalDrawingSVGModal" tabindex="-1" aria-labelledby="GappingTechnicalDrawingSVGModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-xl bg-light">
             <div class="modal-header text-white">
-                <h1 class="modal-title fs-5" id="GappingTechnicalDrawingSVGModalLabel">Gapping Technical Drawing</h1>
+                <p class="modal-title fs-5" id="GappingTechnicalDrawingSVGModalLabel">Gapping Technical Drawing</p>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="GappingTechnicalDrawingSVGModalLabelClose"></button>
             </div>
             <div class="modal-body">

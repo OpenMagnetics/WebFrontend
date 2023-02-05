@@ -44,7 +44,7 @@ export default {
         <div class="modal-dialog">
             <div class="modal-content bg-dark text-white">
                 <div class="modal-header">
-                    <h1 class="modal-title fs-5" id="reportBugModalLabel">Report bug</h1>
+                    <p class="modal-title fs-5" id="reportBugModalLabel">Report bug</p>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="reportBugModalClose"></button>
                 </div>
                 <div class="modal-body row mt-1 px-4">

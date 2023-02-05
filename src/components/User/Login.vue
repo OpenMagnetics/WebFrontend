@@ -134,7 +134,7 @@ export default {
     <div class="modal-dialog">
         <div class="modal-content bg-dark text-white">
             <div class="modal-header">
-                <h1 class="modal-title fs-5" id="LoginLabel">{{isLogin? "Login" : "Register"}}</h1>
+                <p class="modal-title fs-5" id="LoginLabel">{{isLogin? "Login" : "Register"}}</p>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="LoginClose"></button>
             </div>
             <div v-if="!done" class="modal-body">
@@ -181,7 +181,7 @@ export default {
                 </Form>
             </div>
             <div v-if="done" class="modal-body">
-                <h1 class="modal-title fs-5 text-center" >{{isLogin? "Welcome back, " + $cookies.get("username") : "Welcome to Open Magnetics!"}}</h1>
+                <p class="modal-title fs-5 text-center" >{{isLogin? "Welcome back, " + $cookies.get("username") : "Welcome to Open Magnetics!"}}</p>
                 <button class="btn btn-primary mx-auto d-block mt-5" data-bs-dismiss="modal" >{{"Go back"}}</button>
             </div>
         </div>
