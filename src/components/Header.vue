@@ -160,7 +160,7 @@ export default {
                     </li>
                     <li class="nav-item">
                         <span class="nav-item">
-                            <a class="btn me-4 nav-link text-success border-dark" href="https://github.com/OpenMagnetics/">Beta OMv0.1 <i class="fa-brands fa-github"></i> </a>
+                            <a class="btn me-4 nav-link text-success border-dark" href="https://github.com/OpenMagnetics/" target="_blank" rel="noopener noreferrer">Beta OMv0.1 <i class="fa-brands fa-github"></i> </a>
                         </span>
                     </li>
                     <li v-if="!loggedIn" class="nav-item">
@@ -289,7 +289,7 @@ export default {
        font-size: calc(1rem + 0.5vw);
     }
 
-    .accordion-button:not(.collapsed) {
+/*    .accordion-button:not(.collapsed) {
         color: var(--bs-primary)  !important;
         background-color: var(--bs-light) !important;
         border-color: var(--bs-primary) !important;
@@ -301,13 +301,13 @@ export default {
         background-color: var(--bs-light) !important;
         border-color: var(--bs-primary) !important;
     }
-
+*/
     .accordion-button:focus {
         border-color: var(--bs-primary) !important;
         outline: 0  !important;
         box-shadow: none  !important;
     }
-    .accordion-body {
+/*    .accordion-body {
         border-bottom: none !important;
     }
 
@@ -321,5 +321,5 @@ export default {
 
           
     }
-
+*/
 </style>

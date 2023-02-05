@@ -120,6 +120,10 @@ export function formatFrequency(frequency) {
     return formatUnit(frequency, "Hz")
 }
 
+export function formatInductance(inductance) {
+    return formatUnit(inductance, "H")
+}
+
 export function formatPower(power) {
     return formatUnit(power, "W")
 }
@@ -620,4 +624,138 @@ export function getCoreParameters(userStore, callback, errorCallback) {
         console.error(error.data)
         errorCallback()
     });
+}
+
+export function getSimulationParameters(userStore, callback, errorCallback) {
+    const url = import.meta.env.VITE_API_ENDPOINT + '/core_compute_core_parameters'
+
+    const aux = deepCopy(userStore.globalSimulation['magnetic']['core'])
+    aux['geometricalDescription'] = null
+    aux['processedDescription'] = null
+    axios.post(url, aux)
+    .then(response => {
+        const globalSimulation = userStore.globalSimulation
+        globalSimulation['magnetic']['core']['functionalDescription'] = response.data['functionalDescription']
+        globalSimulation['magnetic']['core']['geometricalDescription'] = response.data['geometricalDescription']
+        globalSimulation['magnetic']['core']['processedDescription'] = response.data['processedDescription']
+        userStore.setGlobalSimulation(globalSimulation)
+        callback();
+    })
+    .catch(error => { 
+        console.error("Error getting simulation core parameters")
+        console.error(error.data)
+        errorCallback()
+    });
+}
+ 
+export function guessBasicGappingParameters(core) {
+    var gapType;
+    var gapLength;
+    var numberGaps;
+    if (core['functionalDescription'] != null && core['processedDescription'] != null) {
+        if (core['functionalDescription']['gapping'].length == core['processedDescription']['columns'].length &&
+            core['functionalDescription']['gapping'][0]['type'] == 'subtractive' &&
+            core['functionalDescription']['gapping'][1]['type'] == 'residual' &&
+            (core['processedDescription']['columns'].length == 2 || core['functionalDescription']['gapping'][2]['type'] == 'residual')) {
+            gapType = "Grinded"
+            gapLength = core['functionalDescription']['gapping'][0]['length'] * 1000;
+            numberGaps = 1;
+        }
+        else if (core['functionalDescription']['gapping'].length == core['processedDescription']['columns'].length &&
+            core['functionalDescription']['gapping'][0]['type'] == 'additive' &&
+            core['functionalDescription']['gapping'][1]['type'] == 'additive' &&
+            (core['processedDescription']['columns'].length == 2 || core['functionalDescription']['gapping'][2]['type'] == 'additive')) {
+            gapType = "Spacer"
+            gapLength = core['functionalDescription']['gapping'][0]['length'] * 1000;
+            numberGaps = 1;
+        }
+        else if (core['functionalDescription']['gapping'].length == core['processedDescription']['columns'].length &&
+            core['functionalDescription']['gapping'][0]['type'] == 'residual' &&
+            core['functionalDescription']['gapping'][1]['type'] == 'residual' &&
+            (core['processedDescription']['columns'].length == 2 || core['functionalDescription']['gapping'][2]['type'] == 'residual')) {
+            gapType = "Ungapped"
+            gapLength = core['functionalDescription']['gapping'][0]['length'] * 1000;
+            numberGaps = 1;
+        }
+        else if (core['functionalDescription']['gapping'].length > core['processedDescription']['columns'].length &&
+            core['functionalDescription']['gapping'][0]['type'] == 'subtractive' &&
+            core['functionalDescription']['gapping'][1]['type'] == 'residual' &&
+            (
+                (core['processedDescription']['columns'].length == 2 && core['functionalDescription']['gapping'][2]['type'] == 'subtractive') ||
+                (core['processedDescription']['columns'].length == 3 && core['functionalDescription']['gapping'][2]['type'] == 'residual') && 
+                core['functionalDescription']['gapping'][3]['type'] == 'subtractive'
+            )) {
+            gapType = "Distributed"
+            gapLength = core['functionalDescription']['gapping'][0]['length'] * 1000;
+            numberGaps = core['functionalDescription']['gapping'].length - core['processedDescription']['columns'].length + 1;
+            for (let i = 0; i < core['functionalDescription']['gapping'].length; i++) {
+                if (core['functionalDescription']['gapping'][i]['type'] == 'subtractive') {
+                    if (core['functionalDescription']['gapping'][i]['length'] != core['functionalDescription']['gapping'][0]['length']) {
+                        gapType = "Custom"
+                    }
+                }
+            }
+        }
+        else if (core['functionalDescription']['gapping'].length > core['processedDescription']['columns'].length &&
+            core['functionalDescription']['gapping'][0]['type'] == 'subtractive' &&
+            core['functionalDescription']['gapping'][1]['type'] == 'subtractive' &&
+            core['functionalDescription']['gapping'][2]['type'] == 'subtractive') {
+            gapType = "Distributed"
+            gapLength = core['functionalDescription']['gapping'][0]['length'] * 1000;
+            numberGaps = core['functionalDescription']['gapping'].length - core['processedDescription']['columns'].length + 1;
+            for (let i = 0; i < core['functionalDescription']['gapping'].length; i++) {
+                if (core['functionalDescription']['gapping'][i]['type'] == 'subtractive') {
+                    if (core['functionalDescription']['gapping'][i]['length'] != core['functionalDescription']['gapping'][0]['length']) {
+                        gapType = "Custom"
+                    }
+                }
+            }
+        }
+        else {
+            gapType = "Custom"
+        }
+    }
+    return {gapType, gapLength, numberGaps}
+}
+
+export function isNumber(n) { 
+    return !isNaN(parseFloat(n)) && !isNaN(n - 0)
+}
+
+export function resolveDimensionalValues(dimensionValue, preferredValue='nominal'){
+    var doubleValue = 0;
+    if (!isNumber(dimensionValue)) {
+        switch (preferredValue) {
+            case "maximum":
+                if ('maximum' in dimensionValue && dimensionValue['maximum'] != null)
+                    doubleValue = dimensionValue['maximum'];
+                else if ('nominal' in dimensionValue && dimensionValue['nominal'] != null)
+                    doubleValue = dimensionValue['nominal'];
+                else if ('minimum' in dimensionValue && dimensionValue['minimum'] != null)
+                    doubleValue = dimensionValue['minimum'];
+                break;
+            case 'nominal':
+                if ('nominal' in dimensionValue && dimensionValue['nominal'] != null)
+                    doubleValue = dimensionValue['nominal'];
+                else if ('maximum' in dimensionValue && dimensionValue['maximum'] != null && 'minimum' in dimensionValue && dimensionValue['minimum'] != null)
+                    doubleValue = (dimensionValue['maximum'] + dimensionValue['minimum']) / 2;
+                else if ('maximum' in dimensionValue && dimensionValue['maximum'] != null)
+                    doubleValue = dimensionValue['maximum'];
+                else if ('minimum' in dimensionValue && dimensionValue['minimum'] != null)
+                    doubleValue = dimensionValue['minimum'];
+                break;
+            case 'minimum':
+                if ('minimum' in dimensionValue && dimensionValue['minimum'] != null)
+                    doubleValue = dimensionValue['minimum'];
+                else if ('nominal' in dimensionValue && dimensionValue['nominal'] != null)
+                    doubleValue = dimensionValue['nominal'];
+                else if ('maximum' in dimensionValue && dimensionValue['maximum'] != null)
+                    doubleValue = dimensionValue['maximum'];
+                break;
+        }
+    }
+    else {
+        doubleValue = dimensionValue;
+    }
+    return doubleValue;
 }

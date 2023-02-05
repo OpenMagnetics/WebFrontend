@@ -38,6 +38,7 @@ router.beforeEach((to, from, next) => {
         } 
     })
 
+
     if (loadData) {
 
     	if (app.config.globalProperties.$dataCacheStore == null) {

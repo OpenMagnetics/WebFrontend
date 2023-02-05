@@ -228,8 +228,8 @@ export default {
                     const compressedCurrentData = Utils.packDataPoints(item["current"]["waveform"], item["frequency"])
                     const compressedVoltageData = Utils.packDataPoints(item["voltage"]["waveform"], item["frequency"])
 
-                    const currentAux = Utils.sampleWaveform(compressedCurrentData, item["frequency"], Defaults.defaultOperationPointSaveConfiguration["numberPoints"])
-                    const voltageAux = Utils.sampleWaveform(compressedVoltageData, item["frequency"], Defaults.defaultOperationPointSaveConfiguration["numberPoints"])
+                    const currentAux = Utils.sampleWaveform(compressedCurrentData, item["frequency"], Defaults.defaultOperationPointExcitationSaveConfiguration["numberPoints"])
+                    const voltageAux = Utils.sampleWaveform(compressedVoltageData, item["frequency"], Defaults.defaultOperationPointExcitationSaveConfiguration["numberPoints"])
 
                     const status = []
                     if (item['slug'] != null) {

@@ -98,7 +98,7 @@ export default {
         <div class="row gx-1">
             <div class="col-12 col-sm-2 col-md-2 col-lg-2 col-xl-2 ">
                 <div class="row gx-2">
-                    <button class="btn text-white bg-secondary py-1 my-1 col-10 col-sm-12 col-md-12 col-lg-5 col-xl-5" data-bs-toggle="modal" data-bs-target="#newSimulationModal" @new_core="onNewSimulation">New</button>
+                    <button disabled class="btn text-white bg-secondary py-1 my-1 col-10 col-sm-12 col-md-12 col-lg-5 col-xl-5" data-bs-toggle="modal" data-bs-target="#newSimulationModal" @new_core="onNewSimulation">New</button>
                     <div class="col-12 col-sm-2 col-md-2 col-lg-2 col-xl-2"> </div>
                     <button class="btn text-white bg-secondary py-1 my-1 col-10 col-sm-12 col-md-12 col-lg-5 col-xl-5 disabled">Import</button>
 
@@ -118,8 +118,8 @@ export default {
             </div>
             <div class="col-12 col-sm-2 col-md-2 col-lg-2 col-xl-2 container">
                 <div class="row">
-                    <button :class="colorSaveButton" class="btn text-white py-1 px-2 my-1 col-10 col-sm-12 col-md-12 col-lg-12 col-xl-12" :disabled="!isLoggedIn || (saveMessage != 'Save changes' && saveMessage != 'Create and add to library')" @click="onSaveToDB">{{saveMessage}}</button>
-                    <button class="btn text-white bg-secondary py-1 px-2 my-1 col-10 col-sm-12 col-md-12 col-lg-5 col-xl-5" data-bs-toggle="modal" data-bs-target="#publishSimujlationModal">Publish</button>
+                    <button disabled :class="colorSaveButton" class="btn text-white py-1 px-2 my-1 col-10 col-sm-12 col-md-12 col-lg-12 col-xl-12" :disabled="!isLoggedIn || (saveMessage != 'Save changes' && saveMessage != 'Create and add to library')" @click="onSaveToDB">{{saveMessage}}</button>
+                    <button disabled class="btn text-white bg-secondary py-1 px-2 my-1 col-10 col-sm-12 col-md-12 col-lg-5 col-xl-5" data-bs-toggle="modal" data-bs-target="#publishSimujlationModal">Publish</button>
                     <div class="col-12 col-sm-2 col-md-2 col-lg-2 col-xl-2"> </div>
                     <button class="btn text-white bg-secondary py-1 px-2 my-1 col-10 col-sm-12 col-md-12 col-lg-5 col-xl-5 disabled" data-bs-toggle="offcanvas" data-bs-target="#ExportOffCanvas" aria-controls="ExportOffCanvas">Export</button>
 

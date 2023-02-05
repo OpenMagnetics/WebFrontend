@@ -8,11 +8,11 @@ const emit = defineEmits(['tool_change'])
 <div class="accordion" id="coreSimulationToolAccordion">
     <div class="accordion-item border-primary">
         <h2 class="accordion-header bg-light" id="headingTwo">
-            <button :class="$userStore.coreSimulationSubsection == 'inductanceCalculator'? '' : 'collapsed'" class="fs-5 accordion-button bg-light text-primary" type="button" data-bs-toggle="collapse" data-bs-target="#coreSimulationToolAccordioncollapseOne" aria-expanded="false" aria-controls="coreSimulationToolAccordioncollapseOne" @click="$emit('tool_change', 'inductanceCalculator')">
-                Inductance Calculator
+            <button :class="$userStore.coreSimulationSubsection == 'coreCalculator'? '' : 'collapsed'" class="fs-5 accordion-button bg-light text-primary" type="button" data-bs-toggle="collapse" data-bs-target="#coreSimulationToolAccordioncollapseOne" aria-expanded="false" aria-controls="coreSimulationToolAccordioncollapseOne" @click="$emit('tool_change', 'coreCalculator')">
+                Core Calculator
             </button>
         </h2>
-        <div id="coreSimulationToolAccordioncollapseOne" :class="$userStore.coreSimulationSubsection == 'inductanceCalculator'? 'show' : ''" class="accordion-collapse bg-light text-white collapse " aria-labelledby="headingTwo" data-bs-parent="#coreSimulationToolAccordion">
+        <div id="coreSimulationToolAccordioncollapseOne" :class="$userStore.coreSimulationSubsection == 'coreCalculator'? 'show' : ''" class="accordion-collapse bg-light text-white collapse " aria-labelledby="headingTwo" data-bs-parent="#coreSimulationToolAccordion">
             <div class="accordion-body">
                 Tool for finding the right combination of inductance, core, number of turns or gaps for your design.
             </div>

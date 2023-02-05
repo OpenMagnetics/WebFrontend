@@ -22,71 +22,6 @@ export default {
         var quickGapLengthSelected = Defaults.engineConstants['minimumNonResidualGap'] * 1000;
         var quickShapeSelected = "ETD 39/20/13";
         var quickMaterialSelected = "3C97";
-        const defaultUngappedGapping = [
-            {
-                "length": 0.000005,
-                "type": "residual"
-            },
-            {
-                "length": 0.000005,
-                "type": "residual"
-            },
-            {
-                "length": 0.000005,
-                "type": "residual"
-            }
-        ]
-        const defaultGrindedGapping = [
-            {
-                "length": 0.001,
-                "type": "subtractive"
-            },
-            {
-                "length": 0.000005,
-                "type": "residual"
-            },
-            {
-                "length": 0.000005,
-                "type": "residual"
-            }
-        ]
-        const defaultSpacerGapping = [
-            {
-                "length": 0.001,
-                "type": "additive"
-            },
-            {
-                "length": 0.001,
-                "type": "additive"
-            },
-            {
-                "length": 0.001,
-                "type": "additive"
-            }
-        ]
-        const defaultDistributedGapping = [
-            {
-                "length": 0.0001,
-                "type": "subtractive"
-            },
-            {
-                "length": 0.000005,
-                "type": "residual"
-            },
-            {
-                "length": 0.000005,
-
-                "type": "residual"
-            },
-            {
-                "length": 0.0001,
-                "type": "subtractive"
-            },
-            {
-                "length": 0.0001,
-                "type": "subtractive"
-            }
-        ]
         const commercialShapesNames = [];
         const commercialMaterialNames = [];
         const coreStore = useCoreStore();
@@ -115,18 +50,22 @@ export default {
             coreStore,
             commercialShapesNames,
             commercialMaterialNames,
-            defaultUngappedGapping,
-            defaultGrindedGapping,
-            defaultSpacerGapping,
-            defaultDistributedGapping,
             recentChange: false,
             tryingToSend: false,
         }
     },
     mounted() {
+        console.log("this.quickGapTypeSelected")
+        console.log(this.quickGapTypeSelected)
+        console.log("this.quickGapLengthSelected")
+        console.log(this.quickGapLengthSelected)
         this.updateQuickGap()
         this.loadShapesNames()
         this.loadMaterialNames()
+        console.log("this.quickGapTypeSelected")
+        console.log(this.quickGapTypeSelected)
+        console.log("this.quickGapLengthSelected")
+        console.log(this.quickGapLengthSelected)
     },
     created() {
         this.$dataCacheStore.$onAction((action) => {
@@ -210,60 +149,12 @@ export default {
             }
         },
         updateQuickGap () {
-            if (this.$userStore.globalCore['functionalDescription'] != null && this.$userStore.globalCore['processedDescription'] != null) {
-                if (this.$userStore.globalCore['functionalDescription']['gapping'].length == this.$userStore.globalCore['processedDescription']['columns'].length &&
-                    this.$userStore.globalCore['functionalDescription']['gapping'][0]['type'] == 'subtractive' &&
-                    this.$userStore.globalCore['functionalDescription']['gapping'][1]['type'] == 'residual' &&
-                    (this.$userStore.globalCore['processedDescription']['columns'].length == 2 || this.$userStore.globalCore['functionalDescription']['gapping'][2]['type'] == 'residual')) {
-                    this.quickGapTypeSelected = "Grinded"
-                }
-                else if (this.$userStore.globalCore['functionalDescription']['gapping'].length == this.$userStore.globalCore['processedDescription']['columns'].length &&
-                    this.$userStore.globalCore['functionalDescription']['gapping'][0]['type'] == 'additive' &&
-                    this.$userStore.globalCore['functionalDescription']['gapping'][1]['type'] == 'additive' &&
-                    (this.$userStore.globalCore['processedDescription']['columns'].length == 2 || this.$userStore.globalCore['functionalDescription']['gapping'][2]['type'] == 'additive')) {
-                    this.quickGapTypeSelected = "Spacer"
-                }
-                else if (this.$userStore.globalCore['functionalDescription']['gapping'].length == this.$userStore.globalCore['processedDescription']['columns'].length &&
-                    this.$userStore.globalCore['functionalDescription']['gapping'][0]['type'] == 'residual' &&
-                    this.$userStore.globalCore['functionalDescription']['gapping'][1]['type'] == 'residual' &&
-                    (this.$userStore.globalCore['processedDescription']['columns'].length == 2 || this.$userStore.globalCore['functionalDescription']['gapping'][2]['type'] == 'residual')) {
-                    this.quickGapTypeSelected = "Ungapped"
-                }
-                else if (this.$userStore.globalCore['functionalDescription']['gapping'].length > this.$userStore.globalCore['processedDescription']['columns'].length &&
-                    this.$userStore.globalCore['functionalDescription']['gapping'][0]['type'] == 'subtractive' &&
-                    this.$userStore.globalCore['functionalDescription']['gapping'][1]['type'] == 'residual' &&
-                    (
-                        (this.$userStore.globalCore['processedDescription']['columns'].length == 2 && this.$userStore.globalCore['functionalDescription']['gapping'][2]['type'] == 'subtractive') ||
-                        (this.$userStore.globalCore['processedDescription']['columns'].length == 3 && this.$userStore.globalCore['functionalDescription']['gapping'][2]['type'] == 'residual') && 
-                        this.$userStore.globalCore['functionalDescription']['gapping'][3]['type'] == 'subtractive'
-                    )) {
-                    this.quickGapTypeSelected = "Distributed"
-                    for (let i = 0; i < this.$userStore.globalCore['functionalDescription']['gapping'].length; i++) {
-                        if (this.$userStore.globalCore['functionalDescription']['gapping'][i]['type'] == 'subtractive') {
-                            if (this.$userStore.globalCore['functionalDescription']['gapping'][i]['length'] != this.$userStore.globalCore['functionalDescription']['gapping'][0]['length']) {
-                                this.quickGapTypeSelected = "Custom"
-                            }
-                        }
-                    }
-                }
-                else if (this.$userStore.globalCore['functionalDescription']['gapping'].length > this.$userStore.globalCore['processedDescription']['columns'].length &&
-                    this.$userStore.globalCore['functionalDescription']['gapping'][0]['type'] == 'subtractive' &&
-                    this.$userStore.globalCore['functionalDescription']['gapping'][1]['type'] == 'subtractive' &&
-                    this.$userStore.globalCore['functionalDescription']['gapping'][2]['type'] == 'subtractive') {
-                    this.quickGapTypeSelected = "Distributed"
-                    for (let i = 0; i < this.$userStore.globalCore['functionalDescription']['gapping'].length; i++) {
-                        if (this.$userStore.globalCore['functionalDescription']['gapping'][i]['type'] == 'subtractive') {
-                            if (this.$userStore.globalCore['functionalDescription']['gapping'][i]['length'] != this.$userStore.globalCore['functionalDescription']['gapping'][0]['length']) {
-                                this.quickGapTypeSelected = "Custom"
-                            }
-                        }
-                    }
-                }
-                else {
-                    this.quickGapTypeSelected = "Custom"
-                }
-
-                this.quickGapLengthSelected = this.$userStore.globalCore['functionalDescription']['gapping'][0]['length'] * 1000;
+            const aux = Utils.guessBasicGappingParameters(this.$userStore.globalCore)
+            if (aux['gapType'] != null) {
+                this.quickGapTypeSelected = aux['gapType']
+            }
+            if (aux['gapLength'] != null) {
+                this.quickGapLengthSelected = aux['gapLength']
             }
         },
         onShapeChange () {
@@ -277,21 +168,18 @@ export default {
         },
         onGapTypeChange () {
             if (this.quickGapTypeSelected == "Ungapped") {
-                this.$userStore.globalCore['functionalDescription']['gapping'] = this.defaultUngappedGapping
-                this.quickGapLengthSelected = Defaults.engineConstants['residualGap'] * 1000
+                this.$userStore.globalCore['functionalDescription']['gapping'] = Defaults.defaultUngappedGapping
             }
             else if (this.quickGapTypeSelected == "Grinded") {
-                this.$userStore.globalCore['functionalDescription']['gapping'] = this.defaultGrindedGapping
-                this.quickGapLengthSelected = Defaults.engineConstants['minimumNonResidualGap'] * 1000
+                this.$userStore.globalCore['functionalDescription']['gapping'] = Defaults.defaultGrindedGapping
             }
             else if (this.quickGapTypeSelected == "Spacer") {
-                this.$userStore.globalCore['functionalDescription']['gapping'] = this.defaultSpacerGapping
-                this.quickGapLengthSelected = Defaults.engineConstants['minimumNonResidualGap'] * 1000
+                this.$userStore.globalCore['functionalDescription']['gapping'] = Defaults.defaultSpacerGapping
             }
             else if (this.quickGapTypeSelected == "Distributed") {
-                this.$userStore.globalCore['functionalDescription']['gapping'] = this.defaultDistributedGapping
-                this.quickGapLengthSelected = Defaults.engineConstants['minimumNonResidualGap'] * 1000
+                this.$userStore.globalCore['functionalDescription']['gapping'] = Defaults.defaultDistributedGapping
             }
+            this.updateQuickGap();
             this.recentChange = true
             this.tryToSend()
         },
@@ -308,8 +196,6 @@ export default {
             }
         },
         onMaterialChange () {
-            console.log("onMaterialChange")
-            console.log(this.quickMaterialSelected)
             var materialDataSelected = {}
             this.$dataCacheStore.commercialMaterials.forEach((item) => {
                 if (item['name'] == this.quickMaterialSelected) {
@@ -318,8 +204,6 @@ export default {
             })
             if (materialDataSelected != {})
                 this.$userStore.setGlobalCoreMaterial(materialDataSelected)
-            console.log(materialDataSelected)
-            console.log(this.$userStore.globalCore)
         },
         handleSubmit(params) {
         },
@@ -376,11 +260,11 @@ export default {
 
 
             <label v-tooltip="'Basic gap length of the central column. Go to Gaping Artisan for advanced customization.'" class="rounded-2 fs-5 col-xl-1 col-lg-5 col-sm-5 text-xl-end pe-3 m-0 p-0 text-sm-center" >Gap</label>
-            <Field :disabled="quickGapTypeSelected == 'Ungapped'" v-if="quickGapTypeSelected != 'Custom'" ref="quickGapLengthFieldRef" name="quickGapLengthField" type="number" v-model="quickGapLengthSelected" @change="onGapLengthChange" :class="{'is-invalid': errors.quickGapLengthField }" class="rounded-2 bg-light text-white col-xl-1 col-lg-3 col-sm-3 text-end"/>
+            <Field @keydown.enter.prevent :disabled="quickGapTypeSelected == 'Ungapped'" v-if="quickGapTypeSelected != 'Custom'" ref="quickGapLengthFieldRef" name="quickGapLengthField" type="number" v-model="quickGapLengthSelected" @change="onGapLengthChange" :class="{'is-invalid': errors.quickGapLengthField }" class="rounded-2 bg-light text-white col-xl-1 col-lg-3 col-sm-3 text-end"/>
             <label v-if="quickGapTypeSelected != 'Custom'" class="rounded-2 fs-5 text-start col-xl-1 col-lg-2 col-sm-2 p-0 m-0 ps-1" >{{"mm"}}</label>
 
             <label v-tooltip="'Type of gap. Go to Gaping Artisan for advanced customization.'" class="rounded-2 fs-5 col-xl-1 col-sm-5 p-0 m-0 text-sm-center">Type</label>
-            <Field name="quickGapTypeField" ref="quickGapTypeFieldRef" as="select" :class="{'is-invalid': errors.quickGapTypeField }" @change="onGapTypeChange" class= "fs-6 bg-light text-white rounded-2 col-xl-2 col-sm-5" v-model="quickGapTypeSelected" >
+            <Field @keydown.enter.prevent name="quickGapTypeField" ref="quickGapTypeFieldRef" as="select" :class="{'is-invalid': errors.quickGapTypeField }" @change="onGapTypeChange" class= "fs-6 bg-light text-white rounded-2 col-xl-2 col-sm-5" v-model="quickGapTypeSelected" >
                 <option disabled value="">Please select one</option>
                 <option value="Ungapped">Ungapped</option>
                 <option value="Grinded">Grinded</option>

@@ -449,13 +449,12 @@ export default {
             else {
                 this.subtypeLabelSelected = 1
             }
-
             this.dimensionsLabel = Object.values(this.familiesData[this.familyLabelSelected][this.subtypeLabelSelected])
 
             this.dimensionsValueInMm = {}
             for (const [key, value] of Object.entries(this.$userStore.globalCore['functionalDescription']['shape']['dimensions'])) {
                 if (this.dimensionsLabel.includes(key)) {
-                    this.dimensionsValueInMm[key] = Number(Utils.removeTrailingZeroes(value * 1000, 1))
+                    this.dimensionsValueInMm[key] = Number(Utils.removeTrailingZeroes(Utils.resolveDimensionalValues(value) * 1000, 1))
                 }
             }
 

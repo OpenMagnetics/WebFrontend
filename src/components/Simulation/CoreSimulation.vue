@@ -1,6 +1,6 @@
 <script setup>
 import ToolMenu from '/src/components/Simulation/CoreSimulation/ToolMenu.vue'
-import InductanceCalculator from '/src/components/Simulation/CoreSimulation/InductanceCalculator.vue'
+import CoreCalculator from '/src/components/Simulation/CoreSimulation/CoreCalculator.vue'
 import CoreAdviser from '/src/components/Simulation/CoreSimulation/CoreAdviser.vue'
 import { useCoreStore } from '/src/stores/core'
 import * as Defaults from '/src/assets/js/defaults.js'
@@ -39,7 +39,7 @@ export default {
                 <ToolMenu @tool_change="onToolChange"/>
             </div>
             <div class="col-lg-10">
-                <InductanceCalculator class="scrollable-column" v-if="chosenTool == 'inductanceCalculator'"/>
+                <CoreCalculator class="scrollable-column" v-if="chosenTool == 'coreCalculator'"/>
                 <CoreAdviser class="scrollable-column" v-if="chosenTool == 'coreAdviser'"/>
             </div>
         </div>

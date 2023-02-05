@@ -85,6 +85,11 @@ export default {
                     })
                 }
             }
+            const aux = []
+            this.columnData['gaps'].forEach((item) => {
+                aux.push(item['height'])
+            })
+            this.updateAllGapHeights(aux)
             this.gapErrors = this.checkCollisions()
             this.recentChange = true
             this.tryToSend()
@@ -211,6 +216,7 @@ export default {
             })
         },
         updateAllGapHeights(newHeight) {
+            const gapping = Utils.deepCopy(this.$userStore.globalCore['functionalDescription']['gapping'])
             this.columnData['gaps'].forEach((item, index) => {
                 if (Array.isArray(newHeight)) {
                     item['height'] = newHeight[index]
@@ -218,8 +224,9 @@ export default {
                 else {
                     item['height'] = newHeight
                 }
-                this.$userStore.globalCore['functionalDescription']['gapping'][item['globalGapIndex']]['height'] = item['height']
+                gapping[item['globalGapIndex']]['coordinates'][1] = item['height']
             })
+            this.$userStore.setGlobalCoreGapping(gapping)
         },
         onNumberGapsChange(event) {
             this.numberGapsSelected = Math.max(1, this.numberGapsSelected)

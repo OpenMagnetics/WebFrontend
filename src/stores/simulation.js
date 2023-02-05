@@ -9,9 +9,12 @@ export const useSimulationStore = defineStore("simulation", () => {
     function setDataReadOnly(dataReadOnly) {
         this.dataReadOnly = dataReadOnly
     }
+    function calculateInductance() {
+    }
     return {
         dataReadOnly,
         isDataReadOnly,
-        setDataReadOnly
+        setDataReadOnly,
+        calculateInductance,
     }
 })

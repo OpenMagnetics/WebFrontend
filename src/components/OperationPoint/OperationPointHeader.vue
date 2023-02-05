@@ -4,7 +4,7 @@ import * as Yup from 'yup';
 import { defaultCurrentType, 
          defaultVoltageType, 
          defaultOperationName, 
-         defaultOperationPointSaveConfiguration, 
+         defaultOperationPointExcitationSaveConfiguration, 
          defaultOperationNamePlaceHolder } from '/src/assets/js/defaults.js'
 import { getOperationPointData } from '/src/assets/js/utils.js'
 import { useCurrentStore,
@@ -120,7 +120,7 @@ export default {
     },
     methods: {
         saveToDB(anonymousUser=false) {
-            const operationPointData = getOperationPointData(this.commonStore, this.currentStore, this.voltageStore, defaultOperationPointSaveConfiguration)
+            const operationPointData = getOperationPointData(this.commonStore, this.currentStore, this.voltageStore, defaultOperationPointExcitationSaveConfiguration)
             if (anonymousUser) {
                 operationPointData["username"] = "anonymous"
             }

@@ -8,12 +8,14 @@ export const useUserStore = defineStore("user", () => {
     const ipAddress = ref(0)
     const username = ref(null)
     const readNotifications = ref([])
-    const globalOperationPoint = ref(Utils.deepCopy(Defaults.defaultOperationPoint))
+    const globalOperationPoint = ref(Utils.deepCopy(Defaults.defaultOperationPointExcitation))
     const globalCore = ref(Utils.deepCopy(Defaults.defaultCore))
+    const globalSimulation = ref(Utils.deepCopy(Defaults.defaultSimulation))
     const idToDelete = ref(null)
     const userSubsection = ref("operationPoints")
     const coreSubsection = ref("shapeArtisan")
-    const coreSimulationSubsection = ref("inductanceCalculator")
+    const coreSimulationSubsection = ref("coreCalculator")
+    const simulationCoreCalculatorSubsection = ref("inductanceCalculator")
     const selectedModels = ref({
         gapReluctance: "Zhang",
     })
@@ -53,12 +55,13 @@ export const useUserStore = defineStore("user", () => {
             "userSubsection": userSubsection.value,
             "coreSubsection": coreSubsection.value,
             "coreSimulationSubsection": coreSimulationSubsection.value,
+            "simulationCoreCalculatorSubsection": simulationCoreCalculatorSubsection.value,
             "selectedModels": selectedModels.value,
         }
     })
 
     function resetGlobalOperationPoint() {
-        this.globalOperationPoint = Utils.deepCopy(Defaults.defaultOperationPoint)
+        this.globalOperationPoint = Utils.deepCopy(Defaults.defaultOperationPointExcitation)
     }
 
     function resetGlobalCore() {
@@ -68,7 +71,7 @@ export const useUserStore = defineStore("user", () => {
     function reset() {
         this.loggedIn = false
         this.username = null
-        this.globalOperationPoint = Utils.deepCopy(Defaults.defaultOperationPoint)
+        this.globalOperationPoint = Utils.deepCopy(Defaults.defaultOperationPointExcitation)
         this.globalCore = Utils.deepCopy(Defaults.defaultCore)
         this.idToDelete = null
         this.userSubsection = "operationPoints"
@@ -99,6 +102,9 @@ export const useUserStore = defineStore("user", () => {
     function setGlobalCore(globalCore) {
         this.globalCore = globalCore
     }
+    function setGlobalSimulation(globalSimulation) {
+        this.globalSimulation = globalSimulation
+    }
     function setGlobalCoreAlt(globalCore) {
         this.globalCore = globalCore
     }
@@ -116,6 +122,29 @@ export const useUserStore = defineStore("user", () => {
     }
     function setGlobalCoreMaterial(material) {
         this.globalCore['functionalDescription']['material'] = material
+    }
+    function setGlobalCoreGapping(gapping) {
+        this.globalCore['functionalDescription']['gapping'] = gapping
+    }
+    function setGlobalSimulationCoreMaterial(material) {
+        this.globalSimulation['magnetic']['core']['functionalDescription']['material'] = material
+    }
+    function setGlobalSimulationCoreShape(shape) {
+        this.globalSimulation['magnetic']['core']['functionalDescription']['shape'] = shape
+    }
+    function setGlobalSimulationCoreGapping(gapping) {
+        this.globalSimulation['magnetic']['core']['functionalDescription']['gapping'] = gapping
+    }
+    function setGlobalSimulationCoreNumberStacks(numberStacks) {
+        this.globalSimulation['magnetic']['core']['functionalDescription']['numberStacks'] = numberStacks
+    }
+    function setGlobalSimulationOperationPointByIndex(index, operationPoint) {
+        this.globalSimulation['inputs']['operationPoints'][0] = operationPoint
+    }
+    function loadGlobalOperationPointIntoSimulation(index, operationPoint) {
+        this.globalSimulation['inputs']['operationPoints'][0]['excitationsPerWinding'][0] = Utils.deepCopy(this.globalOperationPoint)
+        console.log(this.globalSimulation['inputs']['operationPoints'][0]['excitationsPerWinding'][0])
+        console.log(this.globalOperationPoint)
     }
     function setIdToDelete(idToDelete) {
         this.idToDelete = idToDelete
@@ -140,6 +169,7 @@ export const useUserStore = defineStore("user", () => {
         coreSubsection,
         getCoreSubsection,
         setCoreSubsection,
+        simulationCoreCalculatorSubsection,
         coreSimulationSubsection,
         getCoreSimulationSubsection,
         setCoreSimulationSubsection,
@@ -153,6 +183,15 @@ export const useUserStore = defineStore("user", () => {
         setGlobalCoreShapeName,
         setGlobalCoreShape,
         setGlobalCoreMaterial,
+        setGlobalCoreGapping,
+        globalSimulation,
+        setGlobalSimulation,
+        setGlobalSimulationCoreMaterial,
+        setGlobalSimulationCoreShape,
+        setGlobalSimulationCoreGapping,
+        setGlobalSimulationCoreNumberStacks,
+        setGlobalSimulationOperationPointByIndex,
+        loadGlobalOperationPointIntoSimulation,
         idToDelete,
         getIdToDelete,
         setIdToDelete,

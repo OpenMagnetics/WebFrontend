@@ -1,4 +1,70 @@
-export const defaultOperationPoint = {  
+export const defaultUngappedGapping = [
+    {
+        "length": 0.000005,
+        "type": "residual"
+    },
+    {
+        "length": 0.000005,
+        "type": "residual"
+    },
+    {
+        "length": 0.000005,
+        "type": "residual"
+    }
+]
+export const defaultGrindedGapping = [
+    {
+        "length": 0.001,
+        "type": "subtractive"
+    },
+    {
+        "length": 0.000005,
+        "type": "residual"
+    },
+    {
+        "length": 0.000005,
+        "type": "residual"
+    }
+]
+export const defaultSpacerGapping = [
+    {
+        "length": 0.001,
+        "type": "additive"
+    },
+    {
+        "length": 0.001,
+        "type": "additive"
+    },
+    {
+        "length": 0.001,
+        "type": "additive"
+    }
+]
+export const defaultDistributedGapping = [
+    {
+        "length": 0.0003,
+        "type": "subtractive"
+    },
+    {
+        "length": 0.000005,
+        "type": "residual"
+    },
+    {
+        "length": 0.000005,
+
+        "type": "residual"
+    },
+    {
+        "length": 0.0003,
+        "type": "subtractive"
+    },
+    {
+        "length": 0.0003,
+        "type": "subtractive"
+    }
+]
+
+export const defaultOperationPointExcitation = {  
     "name": "My Operation Point",
     "frequency": 100000,
     "current": {
@@ -71,6 +137,50 @@ export const defaultCore = {
     "processedDescription": null,
 }
 
+export const defaultOperationConditions = {
+    "ambientTemperature": 25,
+}
+
+export const defaultDesignRequirements = {
+    "magnetizingInductance": {"nominal": 1e-6},
+    "turnsRatios": [],
+}
+
+export const defaultExcitationsPerWinding = {
+    "magnetizingInductance": 1e-6,
+    "turnsRatios": [],
+}
+
+export const defaultOperationPoint = {
+    "conditions": defaultOperationConditions,
+    "excitationsPerWinding": [defaultOperationPointExcitation],
+}
+
+export const defaultInputs = {
+    "designRequirements": defaultDesignRequirements,
+    "operationPoints": [defaultOperationPoint],
+}
+
+export const defaultWinding = {
+    "functionalDescription": [{
+        "isolationSide": "primary",
+        "name": "Primary",
+        "numberParallels": 1,
+        "numberTurns": 1,
+        "wire": "Dummy"
+    }],
+}
+
+export const defaultMagnetic = {
+    "core": defaultCore,
+    "winding": defaultWinding,
+}
+
+export const defaultSimulation = {
+    "inputs": defaultInputs,
+    "magnetic": defaultMagnetic,
+}
+
 export const defaultVoltageType = "Square"
 export const defaultCurrentType = "Triangular"
 export const defaultPrecision = -2
@@ -83,7 +193,7 @@ export const defaultCoreNamePlaceHolder = "Core Identifier"
 export const defaultCoreName = "My Core"
 
 export const defaultSimulationNamePlaceHolder = "Core Identifier"
-export const defaultSimulationName = "My Core"
+export const defaultSimulationName = "My Simulation"
 
 export const defaultOffset = 0
 export const defaultPeakToPeak = 10
@@ -94,7 +204,7 @@ export const defaultSinusoidalNumberPoints = 120
 
 export const defaultSamplingNumberPoints = 128
 export const defaultMaximumNumberHarmonicsShown = 16
-export const defaultOperationPointSaveConfiguration = {
+export const defaultOperationPointExcitationSaveConfiguration = {
     numberPoints: 128,
     exportEquidistant: false,
     includeProcessed: false,
@@ -126,6 +236,7 @@ export function titleColor(electricalParameter){
 }
 
 export var engineConstants = {}
+
 
 // import axios from "axios";
 // (function () {
