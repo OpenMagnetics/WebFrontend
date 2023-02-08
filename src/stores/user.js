@@ -133,6 +133,10 @@ export const useUserStore = defineStore("user", () => {
         this.globalSimulation['magnetic']['core']['functionalDescription']['shape'] = shape
     }
     function setGlobalSimulationCoreGapping(gapping) {
+        console.log("gapping")
+        console.log("gapping")
+        console.log("gapping")
+        console.log(gapping)
         this.globalSimulation['magnetic']['core']['functionalDescription']['gapping'] = gapping
     }
     function setGlobalSimulationCoreNumberStacks(numberStacks) {
@@ -152,6 +156,9 @@ export const useUserStore = defineStore("user", () => {
     function setSelectedModels(variable, model) {
         this.selectedModels[variable] = model
     }
+    function setSimulationCoreCalculatorSubsection(simulationCoreCalculatorSubsection) {
+        this.simulationCoreCalculatorSubsection = simulationCoreCalculatorSubsection
+    }
     return {
         dump,
         loggedIn,
@@ -170,6 +177,7 @@ export const useUserStore = defineStore("user", () => {
         getCoreSubsection,
         setCoreSubsection,
         simulationCoreCalculatorSubsection,
+        setSimulationCoreCalculatorSubsection,
         coreSimulationSubsection,
         getCoreSimulationSubsection,
         setCoreSimulationSubsection,

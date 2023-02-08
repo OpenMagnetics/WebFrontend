@@ -117,7 +117,12 @@ store.$onAction((action) => {
 })
 
 const getExponentLabel = computed(() => {
-    return 'e-' + timeExponent.value
+    if (timeExponent.value > 0){
+        return 'e-' + (timeExponent.value - 1)
+    }
+    else {
+        return 'e+' + (-timeExponent.value + 1)
+    }
 })
 </script>
 

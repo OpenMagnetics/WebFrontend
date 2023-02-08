@@ -146,11 +146,6 @@ export const defaultDesignRequirements = {
     "turnsRatios": [],
 }
 
-export const defaultExcitationsPerWinding = {
-    "magnetizingInductance": 1e-6,
-    "turnsRatios": [],
-}
-
 export const defaultOperationPoint = {
     "conditions": defaultOperationConditions,
     "excitationsPerWinding": [defaultOperationPointExcitation],

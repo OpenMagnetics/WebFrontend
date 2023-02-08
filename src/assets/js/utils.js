@@ -132,6 +132,14 @@ export function formatDimension(dimension) {
     return formatUnit(dimension, "m")
 }
 
+export function formatCurrent(current) {
+    return formatUnit(current, "A")
+}
+
+export function formatVoltage(voltage) {
+    return formatUnit(voltage, "V")
+}
+
 export function deepCopy(data) {
     return JSON.parse(JSON.stringify(data))
 }
@@ -758,4 +766,23 @@ export function resolveDimensionalValues(dimensionValue, preferredValue='nominal
         doubleValue = dimensionValue;
     }
     return doubleValue;
+}
+
+export function cleanSimulation(data, cleanGap=false) {
+
+    if (typeof(data['magnetic']['core']['functionalDescription']['material']) != 'string') {
+        data['magnetic']['core']['functionalDescription']['material'] = data['magnetic']['core']['functionalDescription']['material']['name']
+    }
+    data['magnetic']['core']['geometricalDescription'] = null
+    data['magnetic']['core']['processedDescription'] = null
+
+    if (cleanGap) {
+        const cleanGapping = []
+        data['magnetic']['core']['functionalDescription']['gapping'].forEach((item) => {
+            cleanGapping.push({length: item['length'], type: item['type']})
+        })
+        data['magnetic']['core']['functionalDescription']['gapping'] = cleanGapping
+    }
+
+    return data
 }

@@ -67,6 +67,43 @@ export default {
                         color: theme['white'],
                     }
                 },
+                tooltip: {
+                    callbacks: {
+                        label: (val) => {
+                            var peakLabel;
+                            var peakUnit;
+                            var rmsLabel;
+                            var rmsUnit;
+                            if (val.datasetIndex == 0) {
+                                var peakAux = Utils.formatCurrent(val.raw)
+                                peakLabel = Utils.removeTrailingZeroes(peakAux.label, 3)
+                                peakUnit = peakAux.unit
+
+                                var rmsAux = Utils.formatCurrent(val.raw / Math.sqrt(2))
+                                rmsLabel = Utils.removeTrailingZeroes(rmsAux.label, 3)
+                                rmsUnit = rmsAux.unit
+                            }
+                            else {
+                                var peakAux = Utils.formatVoltage(val.raw)
+                                peakLabel = Utils.removeTrailingZeroes(peakAux.label, 3)
+                                peakUnit = peakAux.unit
+
+                                var rmsAux = Utils.formatVoltage(val.raw / Math.sqrt(2))
+                                rmsLabel = Utils.removeTrailingZeroes(rmsAux.label, 3)
+                                rmsUnit = rmsAux.unit
+                            }
+                            const multistringText = ["Peak: " + peakLabel + " " + peakUnit]
+                            multistringText.push("RMS: " + rmsLabel + " " + rmsUnit);
+                            return multistringText
+                        },
+                        title: (val) => {
+                            const aux = Utils.formatFrequency(val[0].label)
+                            const label = Utils.removeTrailingZeroes(aux.label)
+                            const unit = aux.unit
+                            return "Freq: " + label + " " + unit
+                        },
+                    }
+                },
             },
             scales: {
                 current: {

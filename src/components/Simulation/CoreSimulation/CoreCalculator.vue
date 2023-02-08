@@ -25,7 +25,7 @@ export default {
     methods: {
         subSectionChanged(newValue) {
             console.log(newValue)
-            this.$userStore.simulationCoreCalculatorSubsection = newValue
+            this.$userStore.setSimulationCoreCalculatorSubsection(newValue)
         }
     }
 }  
