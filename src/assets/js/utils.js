@@ -92,11 +92,11 @@ export function formatUnit(value, unitValue) {
     var base
     var unit
     var label
-    if (value < 0.001) {
+    if (value < 0.001 && value != 0) {
         base = 0.000001
         unit = "μ" + unitValue
     }
-    else if (value < 0.1) {
+    else if (value < 0.1 && value != 0) {
         base = 0.001
         unit = "m" + unitValue
     }
