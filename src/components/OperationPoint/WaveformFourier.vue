@@ -93,7 +93,9 @@ export default {
                                 rmsUnit = rmsAux.unit
                             }
                             const multistringText = ["Peak: " + peakLabel + " " + peakUnit]
-                            multistringText.push("RMS: " + rmsLabel + " " + rmsUnit);
+                            if (val.label != "0"){
+                                multistringText.push("RMS: " + rmsLabel + " " + rmsUnit);
+                            }
                             return multistringText
                         },
                         title: (val) => {
