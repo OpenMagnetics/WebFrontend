@@ -110,7 +110,7 @@ import Footer from '/src/components/Footer.vue'
                         <div class="text-white my-1 py-4 offset-sm-0 offset-lg-2 col-sm-12 col-lg-8 text-center bg-light rounded-4">
                             <h3>Tools and Roadmap</h3>
                             <p class="fs-5">OpenMagnetics is maintained and developed by volunteers, and we do it because we believe in what Open Source brings to the world. Each one of us makes their living by some other meaning and works on these in our free time, so there won't be any deadlines. Despite of that, we will do our best to make this tool as good as we are capable.</p>
-                            <p class="fs-5">If you want to support this project, consider joining our <a href="https://discord.gg/PawVFmW6" target="_blank" rel="noopener noreferrer">Discord server</a> and let us know what you enjoy doing the most!.</p>
+                            <p class="fs-5">If you want to support this project, consider joining our <a href="https://discord.gg/ADKTnYhXDU" target="_blank" rel="noopener noreferrer">Discord server</a> and let us know what you enjoy doing the most!.</p>
                         </div>
                     </div>
                     <div id="home-roadmap" class="row bg-light border-top">
