@@ -85,7 +85,7 @@ export default {
                         <router-link class="nav-link text-primary" to="/roadmap">Roadmap</router-link>
                     </li>
                     <li class="nav-item">
-                        <router-link class="nav-link text-primary me-3" to="/musings">Alf's Musings</router-link>
+                        <router-link class="nav-link text-primary me-3" to="/musings">Knowledge</router-link>
                     </li>
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle rounded-3 text-light bg-primary ps-3" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
