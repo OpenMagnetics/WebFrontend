@@ -415,7 +415,7 @@ export default {
                             messages[name] = 'E must smaller than J'
                         }
                     }
-                    if (this.familyLabelSelected.toLowerCase() !== "efd") {
+                    if (this.familyLabelSelected.toLowerCase() !== "efd" && this.familyLabelSelected.toLowerCase() !== "epx") {
                         if (name == 'K'){
                             if (this.dimensionsValueInMm['F'] / 2 > this.dimensionsValueInMm['K']){
                                 this.errors[name] = true
