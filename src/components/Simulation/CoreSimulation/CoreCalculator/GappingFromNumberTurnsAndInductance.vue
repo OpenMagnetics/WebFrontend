@@ -147,16 +147,7 @@ export default {
 
 
 <template>
-    <div v-if="true" class="container">
-        <div class="row">
-            <div class="offset-1 col-lg-10 text-center">
-                <p class="text-white fs-4 my-3">We are working on this</p>
-                <i class="fa-solid fa-person-digging fa-7x bd-placeholder-img rounded-circle text-primary" width="100" height="100" xmlns="http://www.w3.org/2000/svg" role="img" focusable="false"></i>
-                <p class="text-white fs-4 my-3">Coming soon</p>
-            </div>
-        </div>
-    </div>
-    <div v-else class="container-flex text-primary mt-2">
+    <div class="container-flex text-primary mt-2">
         <Form ref="formRef" :validation-schema="schema" v-slot="{ handleSubmit, errors }" class="form-inline row" @submit="handleSubmit($event, onSubmit)">
 
             <div class="mt-1"></div>

@@ -308,59 +308,59 @@ export default {
                         (name != 'G') &&
                         (name == 'C' && this.familyLabelSelected.toLowerCase() != 'p')) {
                         this.errors[name] = true
-                        messages[name] = name + ' must greater than 0'
+                        messages[name] = name + ' must be greater than 0'
                     }
                 }
                 else {
                     if (name == 'B'){
                         if (this.dimensionsValueInMm['D'] >= this.dimensionsValueInMm['B']){
                             this.errors[name] = true
-                            messages[name] = 'B must greater than D'
+                            messages[name] = 'B must be greater than D'
                         }
                     }
                     else if (name == 'D'){
                         if (this.dimensionsValueInMm['D'] >= this.dimensionsValueInMm['B']){
                             this.errors[name] = true
-                            messages[name] = 'D must smaller than B'
+                            messages[name] = 'D must be smaller than B'
                         }
                     }
 
                     if (name == 'A'){
                         if (this.dimensionsValueInMm['E'] >= this.dimensionsValueInMm['A']){
                             this.errors[name] = true
-                            messages[name] = 'A must greater than E'
+                            messages[name] = 'A must be greater than E'
                         }
                     }
                     else if (name == 'E'){
                         if (this.dimensionsValueInMm['E'] >= this.dimensionsValueInMm['A']){
                             this.errors[name] = true
-                            messages[name] = 'E must smaller than A'
+                            messages[name] = 'E must be smaller than A'
                         }
                     }
 
                     if (name == 'E'){
                         if (this.dimensionsValueInMm['F'] >= this.dimensionsValueInMm['E']){
                             this.errors[name] = true
-                            messages[name] = 'E must greater than F'
+                            messages[name] = 'E must be greater than F'
                         }
                     }
                     else if (name == 'F'){
                         if (this.dimensionsValueInMm['F'] >= this.dimensionsValueInMm['E']){
                             this.errors[name] = true
-                            messages[name] = 'F must smaller than E'
+                            messages[name] = 'F must be smaller than E'
                         }
                     }
 
                     if (name == 'E'){
                         if (this.dimensionsValueInMm['G'] >= this.dimensionsValueInMm['E']){
                             this.errors[name] = true
-                            messages[name] = 'E must greater than G'
+                            messages[name] = 'E must be greater than G'
                         }
                     }
                     else if (name == 'G'){
                         if (this.dimensionsValueInMm['G'] >= this.dimensionsValueInMm['E']){
                             this.errors[name] = true
-                            messages[name] = 'G must smaller than E'
+                            messages[name] = 'G must be smaller than E'
                         }
                     }
 
@@ -369,13 +369,13 @@ export default {
                             if (name == 'F'){
                                 if (this.dimensionsValueInMm['G'] < this.dimensionsValueInMm['F']){
                                     this.errors[name] = true
-                                    messages[name] = 'F must smaller than G'
+                                    messages[name] = 'F must be smaller than G'
                                 }
                             }
                             else if (name == 'G'){
                                 if (this.dimensionsValueInMm['G'] < this.dimensionsValueInMm['F']){
                                     this.errors[name] = true
-                                    messages[name] = 'G must greater than F'
+                                    messages[name] = 'G must be greater than F'
                                 }
                             }
                         }
@@ -392,13 +392,13 @@ export default {
                         if (name == 'C'){
                             if (c_f_condition){
                                 this.errors[name] = true
-                                messages[name] = 'C must greater than F'
+                                messages[name] = 'C must be greater than F'
                             }
                         }
                         else if (name == 'F'){
                             if (c_f_condition){
                                 this.errors[name] = true
-                                messages[name] = 'F must smaller than C'
+                                messages[name] = 'F must be smaller than C'
                             }
                         }
                     }
@@ -406,24 +406,24 @@ export default {
                     if (name == 'J'){
                         if (this.dimensionsValueInMm['E'] > this.dimensionsValueInMm['J']){
                             this.errors[name] = true
-                            messages[name] = 'J must greater than E'
+                            messages[name] = 'J must be greater than E'
                         }
                     }
                     else if (name == 'E'){
                         if (this.dimensionsValueInMm['E'] > this.dimensionsValueInMm['J']){
                             this.errors[name] = true
-                            messages[name] = 'E must smaller than J'
+                            messages[name] = 'E must be smaller than J'
                         }
                     }
                     if (this.familyLabelSelected.toLowerCase() !== "efd" && this.familyLabelSelected.toLowerCase() !== "epx") {
                         if (name == 'K'){
                             if (this.dimensionsValueInMm['F'] / 2 > this.dimensionsValueInMm['K']){
                                 this.errors[name] = true
-                                messages[name] = 'K must greater than F/2'
+                                messages[name] = 'K must be greater than F/2'
                             }
                             else if (this.dimensionsValueInMm['F'] / 2 + this.dimensionsValueInMm['K'] > this.dimensionsValueInMm['C'] ){
                                 this.errors[name] = true
-                                messages[name] = 'C must greater than F/2 + K'
+                                messages[name] = 'C must be greater than F/2 + K'
                             }
                         }
                     }
