@@ -379,9 +379,12 @@ export default {
         .catch(error => {
         });
 
+        console.log("Getting IP")
         fetch('https://api.ipify.org?format=json')
         .then(x => x.json())
         .then(({ ip }) => {
+            console.log("IP")
+            console.log(ip)
             this.$userStore.ipAddress = ip
             this.ipAddress = ip;
             const data = {
@@ -395,8 +398,12 @@ export default {
                 })
             })
             .catch(error => {
+                console.error("Error getting IP")
             });
-        });
+        })
+        .catch(error => {
+            console.error("Error getting IP")
+        });;
     }
 }
 </script>
