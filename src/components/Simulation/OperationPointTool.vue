@@ -45,7 +45,7 @@ export default {
             switchingFrequency = commonStore.getSwitchingFrequency.value
             waveformTypes = {
                 current: currentStore.getType.value == null? Defaults.defaultCurrentType : currentStore.getType.value,
-                voltage: voltageStore.getType.value == null? Defaults.defaultVoltageType : voltageStore.getType.value,
+                // voltage: voltageStore.getType.value == null? Defaults.defaultVoltageType : voltageStore.getType.value,
             }
         }
         else {
@@ -73,22 +73,23 @@ export default {
         },
         loadOperationPoint(data) {
             const compressedCurrentData = Utils.packDataPoints(data["current"]["waveform"], data["frequency"])
-            const compressedVoltageData = Utils.packDataPoints(data["voltage"]["waveform"], data["frequency"])
+            // const compressedVoltageData = Utils.packDataPoints(data["voltage"]["waveform"], data["frequency"])
 
             const switchingFrequency = data["frequency"]
             const waveformTypes = {
                 current: Utils.tryGuessType(compressedCurrentData, data["frequency"]),
-                voltage: Utils.tryGuessType(compressedVoltageData, data["frequency"]),
+                // voltage: Utils.tryGuessType(compressedVoltageData, data["frequency"]),
             }
             currentStore.setType(waveformTypes["current"])
-            voltageStore.setType(waveformTypes["voltage"])
+            // voltageStore.setType(waveformTypes["voltage"])
 
             setTimeout(() => {
                 currentStore.setDataPointsFromFile(compressedCurrentData)
-                voltageStore.setDataPointsFromFile(compressedVoltageData)
+                // voltageStore.setDataPointsFromFile(compressedVoltageData)
                 commonStore.setOperationPointName(data["name"])
                 commonStore.setSwitchingFrequency(switchingFrequency)
-                commonStore.setDutyCycle(Utils.tryGuessDutyCycle(waveformTypes["current"] != "Custom"? compressedCurrentData : compressedVoltageData, data["frequency"]))
+                // commonStore.setDutyCycle(Utils.tryGuessDutyCycle(waveformTypes["current"] != "Custom"? compressedCurrentData : compressedVoltageData, data["frequency"]))
+                commonStore.setDutyCycle(Utils.tryGuessDutyCycle(compressedCurrentData, data["frequency"]))
             }, 1000);
 
             return {switchingFrequency, waveformTypes}
@@ -111,20 +112,20 @@ export default {
             simulationStore.calculateInductance()
         })
 
-        voltageStore.$subscribe((mutation, state) => {
-            const data = []
-            const time = []
-            voltageStore.dataPoints.forEach((item) => {
-                time.push(item['x'])
-                data.push(item['y'])
-            })
-            const operationPoint = this.$userStore.globalSimulation['inputs']['operationPoints'][0]
-            operationPoint['excitationsPerWinding'][0]['voltage']['type'] = voltageStore.type
-            operationPoint['excitationsPerWinding'][0]['voltage']['waveform']['data'] = data
-            operationPoint['excitationsPerWinding'][0]['voltage']['waveform']['time'] = time
-            this.$userStore.setGlobalSimulationOperationPointByIndex(0, operationPoint)
-            simulationStore.calculateInductance()
-        })
+        // voltageStore.$subscribe((mutation, state) => {
+        //     const data = []
+        //     const time = []
+        //     voltageStore.dataPoints.forEach((item) => {
+        //         time.push(item['x'])
+        //         data.push(item['y'])
+        //     })
+        //     const operationPoint = this.$userStore.globalSimulation['inputs']['operationPoints'][0]
+        //     operationPoint['excitationsPerWinding'][0]['voltage']['type'] = voltageStore.type
+        //     operationPoint['excitationsPerWinding'][0]['voltage']['waveform']['data'] = data
+        //     operationPoint['excitationsPerWinding'][0]['voltage']['waveform']['time'] = time
+        //     this.$userStore.setGlobalSimulationOperationPointByIndex(0, operationPoint)
+        //     simulationStore.calculateInductance()
+        // })
 
         commonStore.$subscribe((mutation, state) => {
             const operationPoint = this.$userStore.globalSimulation['inputs']['operationPoints'][0]

@@ -17,7 +17,7 @@ import CoreQuickAccess from '/src/components/Core/CoreQuickAccess.vue'
 export default {
     data() {
         const coreStore = useCoreStore();
-        const coreNameSelected = this.$userStore.globalCore == null? Defaults.defaultCoreName : this.$userStore.globalCore['functionalDescription']['name'];
+        const coreNameSelected = this.$userStore.globalCore == null? Defaults.defaultCoreName : this.$userStore.globalCore['name'];
         const isLoggedIn = false
         var publishedSlug = null
         var currentCoreId = null
@@ -117,7 +117,7 @@ export default {
             return "Saving"
         },
         onCoreName(event) {
-            this.$userStore.globalCore['functionalDescription']['name'] = this.coreNameSelected
+            this.$userStore.globalCore['name'] = this.coreNameSelected
         },
         onSaveToDB(event) {
             const result = this.saveToDB(false)

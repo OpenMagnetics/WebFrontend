@@ -18,6 +18,7 @@ export const useUserStore = defineStore("user", () => {
     const simulationCoreCalculatorSubsection = ref("inductanceCalculator")
     const selectedModels = ref({
         gapReluctance: "Zhang",
+        coreLosses: "Roshen",
     })
     const isLoggedIn = computed(() => {
         return loggedIn

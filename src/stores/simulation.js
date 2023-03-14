@@ -11,10 +11,16 @@ export const useSimulationStore = defineStore("simulation", () => {
     }
     function calculateInductance() {
     }
+    function calculateCoreLosses() {
+    }
+    function loadCoreLossesModels() {
+    }
     return {
         dataReadOnly,
         isDataReadOnly,
         setDataReadOnly,
         calculateInductance,
+        calculateCoreLosses,
+        loadCoreLossesModels,
     }
 })

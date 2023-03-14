@@ -46,6 +46,7 @@ export default {
         this.simulationStore.$onAction((action) => {
             if (action.name == "calculateInductance" && this.$userStore.simulationCoreCalculatorSubsection == 'numberTurnsCalculator') {
                  setTimeout(() => this.tryToSend(), 10);
+                 setTimeout(() => this.simulationStore.calculateCoreLosses(), 10);
             }
         })
         this.$userStore.$onAction((action) => {
@@ -61,6 +62,7 @@ export default {
                     this.numberTurns = this.$userStore.globalSimulation['magnetic']['winding']['functionalDescription'][0]['numberTurns']
                     this.recentChange = true
                     this.tryToSend()
+                    this.simulationStore.calculateCoreLosses()
                 }
             }
         })
@@ -70,6 +72,7 @@ export default {
             this.numberTurns =  value
         },
         computeNumberTurns() {
+            this.simulationStore.calculateCoreLosses()
             const url = import.meta.env.VITE_API_ENDPOINT + '/get_number_turns_from_gapping_and_inductance'
 
             const globalSimulation = Utils.deepCopy(this.$userStore.globalSimulation)
@@ -89,7 +92,7 @@ export default {
             })
             .catch(error => {
                 this.computing = false
-                console.error("Error getting inductance")
+                console.error("Error getting number of turns")
                 console.error(error.data)
             });
         },
@@ -120,6 +123,7 @@ export default {
             this.numberGapsSelected = aux['numberGaps']
             this.recentChange = true
             this.tryToSend()
+            this.simulationStore.calculateCoreLosses()
         },
         onGapTypeChange() {
             if (this.gapTypeSelected == "Ungapped") {
@@ -153,6 +157,7 @@ export default {
                 this.$userStore.globalSimulation['magnetic']['core']['functionalDescription']['gapping'] = gapping
                 this.recentChange = true
                 this.tryToSend()
+                this.simulationStore.calculateCoreLosses()
             }
         },
         onInductanceUpdate(name, newValue, oldValue) {
@@ -161,6 +166,7 @@ export default {
                 this.$userStore.globalSimulation['inputs']['designRequirements']['magnetizingInductance']['nominal'] = newValue / 1000000
                 this.recentChange = true
                 this.tryToSend()
+                this.simulationStore.calculateCoreLosses()
             }
         },
         onNumberGapsUpdate(name, newValue, oldValue) {
@@ -180,6 +186,7 @@ export default {
                 this.numberGapsSelected = newValue
                 this.recentChange = true
                 this.tryToSend()
+                this.simulationStore.calculateCoreLosses()
             }
         },
 

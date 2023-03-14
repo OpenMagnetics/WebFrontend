@@ -82,30 +82,30 @@ export const defaultOperationPointExcitation = {
         },
         "type": "Triangular"
     },
-    "voltage": {
-        "waveform": {
-            "data": [
-                7.5,
-                7.5,
-                -2.5,
-                -2.5,
-                7.5
-            ],
-            "time": [
-                0,
-                0.0000025,
-                0.0000025,
-                0.00001,
-                0.00001
-            ]
-        },
-        "type": "Square"
-    }
+    // "voltage": {
+    //     "waveform": {
+    //         "data": [
+    //             7.5,
+    //             7.5,
+    //             -2.5,
+    //             -2.5,
+    //             7.5
+    //         ],
+    //         "time": [
+    //             0,
+    //             0.0000025,
+    //             0.0000025,
+    //             0.00001,
+    //             0.00001
+    //         ]
+    //     },
+    //     "type": "Square"
+    // }
 }
 
 export const defaultCore = {
+    "name": "My Core",
     "functionalDescription": {
-        "name": "My Core",
         "type": "two-piece set",
         "material": "3C97",
         "shape":  {'aliases': [],

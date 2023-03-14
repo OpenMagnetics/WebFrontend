@@ -2,6 +2,7 @@
 import * as Utils from '/src/assets/js/utils.js'
 import { useCoreStore } from '/src/stores/core'
 import * as Defaults from '/src/assets/js/defaults.js'
+import { useSimulationStore } from '/src/stores/simulation'
 
 </script>
 <script>
@@ -10,15 +11,34 @@ export default {
     data() {
         const posting = false;
         const coreStore = useCoreStore();
+        const simulationStore = useSimulationStore();
         return {
             posting,
+            simulationStore,
             coreStore,
-            totalCoreLosses: "Soon",
             maximumCoreTemperatureRise: "Soon",
-            EddyCurrentLosses: "Soon",
-            HysteresisLosses: "Soon",
-            magneticFluxDensityMaximum: "Soon",
-            magneticFluxDensityPeakToPeak: "Soon",
+            eddyCurrentLosses: "",
+            hysteresisLosses: "",
+            magneticFluxDensityPeak: "",
+            magneticFluxDensityAcPeak: "",
+            totalCoreLosses: "",
+            totalCoreLossesUnit: '',
+            volumetricCoreLosses: "",
+            volumetricCoreLossesUnit: '',
+            apparentPower: "",
+            apparentPowerUnit: '',
+            voltageRms: "",
+            voltageRmsUnit: '',
+            currentRms: "",
+            currentRmsUnit: '',
+            maximumCoreTemperatureRiseUnit: '',
+            eddyCurrentLossesUnit: '',
+            hysteresisLossesUnit: '',
+            magneticFluxDensityPeakUnit: '',
+            magneticFluxDensityAcPeakUnit: '',
+            tryingToSend: false,
+            recentChange: false,
+            hasError: false,
         }
     },
     computed: {
@@ -34,9 +54,103 @@ export default {
                 }
         },
     },
-    mounted() {
+    methods: {
+        formatOutputs(value) {
+            var aux = Utils.formatPower(value['totalLosses'])
+            this.totalCoreLosses = Utils.removeTrailingZeroes(aux['label'], 2)
+            this.totalCoreLossesUnit = aux['unit']
+            var aux = Utils.formatPowerDensity(value['totalVolumetricLosses'])
+            this.volumetricCoreLosses = Utils.removeTrailingZeroes(aux['label'], 2)
+            this.volumetricCoreLossesUnit = aux['unit']
+            if ('eddyCurrentLosses' in value) {
+                aux = Utils.formatPower(value['eddyCurrentLosses'])
+                this.eddyCurrentLosses = Utils.removeTrailingZeroes(aux['label'], 2)
+                this.eddyCurrentLossesUnit = aux['unit']
+            }
+            else{
+                this.eddyCurrentLosses = 'N/A'
+                this.eddyCurrentLossesUnit = ''
+            }
+            if ('hysteresisLosses' in value) {
+                aux = Utils.formatPower(value['hysteresisLosses'])
+                this.hysteresisLosses = Utils.removeTrailingZeroes(aux['label'], 2)
+                this.hysteresisLossesUnit = aux['unit']
+            }
+            else{
+                this.hysteresisLosses = 'N/A'
+                this.hysteresisLossesUnit = ''
+            }
 
-        this.$userStore.$onAction((action) => {
+            aux = Utils.formatMagneticFluxDensity(value['magneticFluxDensityPeak'])
+            this.magneticFluxDensityPeak = Utils.removeTrailingZeroes(aux['label'], 2)
+            this.magneticFluxDensityPeakUnit = aux['unit']
+
+            aux = Utils.formatMagneticFluxDensity(value['magneticFluxDensityAcPeak'])
+            this.magneticFluxDensityAcPeak = Utils.removeTrailingZeroes(aux['label'], 2)
+            this.magneticFluxDensityAcPeakUnit = aux['unit']
+
+            aux = Utils.formatVoltage(value['voltageRms'])
+            this.voltageRms = Utils.removeTrailingZeroes(aux['label'], 2)
+            this.voltageRmsUnit = aux['unit']
+
+            aux = Utils.formatCurrent(value['currentRms'])
+            this.currentRms = Utils.removeTrailingZeroes(aux['label'], 2)
+            this.currentRmsUnit = aux['unit']
+
+            aux = Utils.formatApparentPower(value['apparentPower'])
+            this.apparentPower = Utils.removeTrailingZeroes(aux['label'], 2)
+            this.apparentPowerUnit = aux['unit']
+
+        },
+        computeCoreLosses() {
+            console.log("computeCoreLosses")
+            const url = import.meta.env.VITE_API_ENDPOINT + '/get_core_losses'
+
+            const globalSimulation = Utils.deepCopy(this.$userStore.globalSimulation)
+
+            if (typeof(globalSimulation['magnetic']['core']['functionalDescription']['material']) != 'string') {
+                globalSimulation['magnetic']['core']['functionalDescription']['material'] = globalSimulation['magnetic']['core']['functionalDescription']['material']['name']
+            }
+            const data = {}
+            data['simulation'] = globalSimulation
+            data['models'] = {coreLosses: this.$userStore.selectedModels['coreLosses'].toUpperCase(),
+                              gapReluctance: this.$userStore.selectedModels['gapReluctance'].toUpperCase()}
+            this.$axios.post(url, data)
+            .then(response => {
+                // console.log(response.data)
+                this.tryingToSend = false
+                this.formatOutputs(response.data)
+            })
+            .catch(error => {
+                this.tryingToSend = false
+                console.error("Error getting core losses")
+                console.error(error.data)
+            });
+        },
+        tryToSend() {
+            if (!this.tryingToSend) {
+                this.recentChange = false
+                this.tryingToSend = true
+                setTimeout(() => {
+                    if (!this.hasError) {
+                        if (this.recentChange) {
+                            this.tryingToSend = false
+                            this.tryToSend()
+                        }
+                        else {
+                            this.computeCoreLosses()
+                        }
+                    }
+                }
+                , 500);
+            }
+        },
+    },
+    mounted() {
+        this.simulationStore.$onAction((action) => {
+            if (action.name == "calculateCoreLosses") {
+                setTimeout(() => this.tryToSend(), 10);
+            }
         })
     }
 }
@@ -44,42 +158,54 @@ export default {
 
 
 <template>
-    <div v-tooltip="styleTooltip" class="container-flex text-white mt-2 mb-3 pb-3 border-bottom me-2">
-        <div class="row">
-            <label class="fs-4 ms-3 mb-3 text-white col-12"> Outputs for shape</label>
-            <div class="col-xl-4 col-lg-12">
+    <div v-tooltip="styleTooltip" class="container-flex text-white mt-4 mb-3 pb-3 border-bottom me-2">
+        <div class="row gx-5">
+            <label class="fs-4 ms-3 mb-3 text-white col-12 text-center"> Outputs for core</label>
+            <div class="col-xl-6 col-lg-12">
                 <div class="container">
                     <div class="row">
                         <label v-tooltip="'Total losses of the magnetic core'" class="m-0 p-0 fs-5 col-8">Total core losses:</label>
-                        <label class="fs-5 bg-dark text-white float-end m-0 p-0 col-4" style=" text-align:right;">{{totalCoreLosses + ' W'}}</label>
+                        <label class="fs-5 bg-dark text-white float-end m-0 p-0 col-4" style=" text-align:right;">{{totalCoreLosses + ' ' + totalCoreLossesUnit}}</label>
                     </div>
                     <div class="row">
-                        <label v-tooltip="'Maximum temperature rise in the magnetic core'" class="m-0 p-0 fs-5 col-8">Max. Temp Rise:</label>
-                        <label class="fs-5 bg-dark text-white float-end m-0 p-0 col-4" style=" text-align:right;">{{maximumCoreTemperatureRise + ' W'}}</label>
+                        <label v-tooltip="'Volumetric losses of the magnetic core'" class="m-0 p-0 fs-5 col-8">Volumetric core losses:</label>
+                        <label class="fs-5 bg-dark text-white float-end m-0 p-0 col-4" style=" text-align:right;">{{volumetricCoreLosses + ' ' + volumetricCoreLossesUnit}}</label>
                     </div>
-                </div>
-            </div>
-            <div class="col-xl-4 col-lg-12">
-                <div class="container">
                     <div class="row">
                         <label v-tooltip="'Losses of the magnetic core due to eddy currents'" class="m-0 p-0 fs-5 col-8">Eddy Curr. losses:</label>
-                        <label class="fs-5 bg-dark text-white float-end m-0 p-0 col-4" style=" text-align:right;">{{EddyCurrentLosses + ' W'}}</label>
+                        <label class="fs-5 bg-dark text-white float-end m-0 p-0 col-4" style=" text-align:right;">{{eddyCurrentLosses + ' ' + eddyCurrentLossesUnit}}</label>
                     </div>
                     <div class="row">
                         <label v-tooltip="'Losses of the magnetic core due to hysteresis'" class="m-0 p-0 fs-5 col-8">Hysteresis losses:</label>
-                        <label class="fs-5 bg-dark text-white float-end m-0 p-0 col-4" style=" text-align:right;">{{HysteresisLosses + ' W'}}</label>
+                        <label class="fs-5 bg-dark text-white float-end m-0 p-0 col-4" style=" text-align:right;">{{hysteresisLosses + ' ' + hysteresisLossesUnit}}</label>
+                    </div>
+                    <div class="row">
+                        <label v-tooltip="'Maximum temperature rise in the magnetic core'" class="m-0 p-0 fs-5 col-8">Max. Temp Rise:</label>
+                        <label class="fs-5 bg-dark text-white float-end m-0 p-0 col-4" style=" text-align:right;">{{maximumCoreTemperatureRise + ' ' + maximumCoreTemperatureRiseUnit}}</label>
                     </div>
                 </div>
             </div>
-            <div class="col-xl-4 col-lg-12">
+            <div class="col-xl-6 col-lg-12">
                 <div class="container">
                     <div class="row">
                         <label v-tooltip="'Maximum value that of the magnetic flux density inside the core'" class="m-0 p-0 fs-5 col-8">Peak B (Bmax):</label>
-                        <label class="fs-5 bg-dark text-white float-end m-0 p-0 col-4" style=" text-align:right;">{{magneticFluxDensityMaximum + ' T'}}</label>
+                        <label class="fs-5 bg-dark text-white float-end m-0 p-0 col-4" style=" text-align:right;">{{magneticFluxDensityPeak + ' ' + magneticFluxDensityPeakUnit}}</label>
                     </div>
                     <div class="row">
-                        <label v-tooltip="'Peak to peak value of the magnetic flux density'" class="m-0 p-0 fs-5 col-8">Peak to Peak B (ΔB):</label>
-                        <label class="fs-5 bg-dark text-white float-end m-0 p-0 col-4" style=" text-align:right;">{{magneticFluxDensityPeakToPeak + ' T'}}</label>
+                        <label v-tooltip="'AC peak value of the magnetic flux density, without taking into account the DC bias'" class="m-0 p-0 fs-5 col-8">AC peak B:</label>
+                        <label class="fs-5 bg-dark text-white float-end m-0 p-0 col-4" style=" text-align:right;">{{magneticFluxDensityAcPeak + ' ' + magneticFluxDensityAcPeakUnit}}</label>
+                    </div>
+                    <div class="row">
+                        <label v-tooltip="'Power that is falling in the magnetic'" class="m-0 p-0 fs-5 col-8">Apparent Power:</label>
+                        <label class="fs-5 bg-dark text-white float-end m-0 p-0 col-4" style=" text-align:right;">{{apparentPower + ' ' + apparentPowerUnit}}</label>
+                    </div>
+                    <div class="row">
+                        <label v-tooltip="'RMS voltage that is falling in the magnetic'" class="m-0 p-0 fs-5 col-8">Voltage RMS:</label>
+                        <label class="fs-5 bg-dark text-white float-end m-0 p-0 col-4" style=" text-align:right;">{{voltageRms + ' ' + voltageRmsUnit}}</label>
+                    </div>
+                    <div class="row">
+                        <label v-tooltip="'RMS current that is falling in the magnetic'" class="m-0 p-0 fs-5 col-8">Current RMS:</label>
+                        <label class="fs-5 bg-dark text-white float-end m-0 p-0 col-4" style=" text-align:right;">{{currentRms + ' ' + currentRmsUnit}}</label>
                     </div>
                 </div>
             </div>

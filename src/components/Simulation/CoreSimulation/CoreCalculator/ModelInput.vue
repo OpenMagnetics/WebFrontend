@@ -23,8 +23,8 @@ export default {
         const gapReluctanceModelErrors = []
         const gapReluctanceModelInternalLink = []
         const gapReluctanceModelExternalLink = []
-        const coreLossesModelSelected = "ComingSoon";
-        const coreLossesModelNames = ["ComingSoon"]
+        const coreLossesModelSelected = this.$userStore.selectedModels['coreLosses'];
+        const coreLossesModelNames = []
         const coreLossesModelDescriptions = []
         const coreLossesModelErrors = []
         const coreLossesModelInternalLink = []
@@ -43,6 +43,9 @@ export default {
             coreLossesModelInternalLink,
             coreLossesModelExternalLink,
             coreLossesModelSelected,
+            recentChange: false,
+            tryingToSend: false,
+            hasError: false,
         }
     },
     watch: {},
@@ -54,39 +57,97 @@ export default {
             return 'NaN %'
         },
         getCoreLossesRoundedError() {
-            if (this.coreLossesModelErrors[this.gapReluctanceModelSelected] != null) {
-                return Utils.removeTrailingZeroes(this.coreLossesModelErrors[this.gapReluctanceModelSelected] * 100, 2) + ' %'
+            if (this.coreLossesModelErrors[this.coreLossesModelSelected] != null) {
+                return Utils.removeTrailingZeroes(this.coreLossesModelErrors[this.coreLossesModelSelected] * 100, 2) + ' %'
             }
             return 'NaN %'
         }
     },
     created () {
-        const url = import.meta.env.VITE_API_ENDPOINT + '/get_gap_reluctance_models'
-
-        this.$axios.post(url, {})
-        .then(response => {
-            console.log(response.data)
-            this.gapReluctanceModelNames = Object.keys(response.data["information"]);
-            this.gapReluctanceModelDescriptions = response.data["information"];
-            this.gapReluctanceModelErrors = response.data["errors"];
-            this.gapReluctanceModelInternalLink = response.data["internal_links"];
-            this.gapReluctanceModelExternalLink = response.data["external_links"];
+        this.tryToSend();
+        this.simulationStore.$onAction((action) => {
+            if (action.name == "loadCoreLossesModels") {
+                this.tryToSend();
+            }
         })
-        .catch(error => {
-            console.error(error.data)
-        });
+
     },
     methods: {
+        getModels() {
+            var url = import.meta.env.VITE_API_ENDPOINT + '/get_gap_reluctance_models'
+
+            this.$axios.post(url, {})
+            .then(response => {
+                this.gapReluctanceModelNames = Object.keys(response.data["information"]);
+                this.gapReluctanceModelDescriptions = response.data["information"];
+                this.gapReluctanceModelErrors = response.data["errors"];
+                this.gapReluctanceModelInternalLink = response.data["internal_links"];
+                this.gapReluctanceModelExternalLink = response.data["external_links"];
+            })
+            .catch(error => {
+                console.error(error.data)
+            });
+
+            url = import.meta.env.VITE_API_ENDPOINT + '/get_core_losses_models'
+
+            var materialSelected;
+            if (typeof(this.$userStore.globalSimulation['magnetic']['core']['functionalDescription']['material']) == 'string') {
+                materialSelected = this.$userStore.globalSimulation['magnetic']['core']['functionalDescription']['material'];
+            }
+            else {
+                materialSelected = this.$userStore.globalSimulation['magnetic']['core']['functionalDescription']['material']['name'];
+            }
+
+            this.$axios.post(url, {materialName: materialSelected })
+            .then(response => {
+                this.tryingToSend = false
+                this.coreLossesModelNames = response.data["available_models"];
+                this.coreLossesModelDescriptions = response.data["information"];
+                this.coreLossesModelErrors = response.data["errors"];
+                this.coreLossesModelInternalLink = response.data["internal_links"];
+                this.coreLossesModelExternalLink = response.data["external_links"];
+
+                if (!this.coreLossesModelNames.includes(this.coreLossesModelSelected)) {
+                    this.coreLossesModelSelected = this.coreLossesModelNames[0]
+                    this.$userStore.setSelectedModels('coreLosses', this.coreLossesModelSelected)
+                }
+                this.simulationStore.calculateCoreLosses()
+            })
+            .catch(error => {
+                this.tryingToSend = false
+                console.error(error.data)
+            });
+        },
+        tryToSend() {
+            if (!this.tryingToSend) {
+                this.recentChange = false
+                this.tryingToSend = true
+                setTimeout(() => {
+                    if (!this.hasError) {
+                        if (this.recentChange) {
+                            this.tryingToSend = false
+                            this.tryToSend()
+                        }
+                        else {
+                            this.getModels()
+                        }
+                    }
+                }
+                , 500);
+            }
+        },
         handleSubmit() {
             console.log("handleSubmit")
         },
         onGapReluctanceModelsChange() {
             this.$userStore.setSelectedModels('gapReluctance', this.gapReluctanceModelSelected)
             this.simulationStore.calculateInductance()
+            this.simulationStore.calculateCoreLosses()
         },
         onCoreLossesModelsChange() {
-            // this.$userStore.setSelectedModels('gapReluctance', this.gapReluctanceModelSelected)
-            // this.simulationStore.calculateInductance()
+            this.$userStore.setSelectedModels('coreLosses', this.coreLossesModelSelected)
+            this.simulationStore.calculateInductance()
+            this.simulationStore.calculateCoreLosses()
         },
     }
 }
@@ -118,19 +179,19 @@ export default {
 
         <Form ref="formRef" :validation-schema="schema" v-slot="{ errors }" class="form-inline row text-white" @submit="handleSubmit($event, onSubmit)">
             <label class="small-text mt-2 col-sm-4 col-md-5 col-lg-5 col-xl-5 text-start">Model:</label>
-            <Field disabled name="coreLossesModels" as="select" :class="{ 'is-invalid': errors.coreLossesModels }" @change="onCoreLossesModelsChange" class= "small-text bg-light text-white rounded-2 mt-2 col-sm-8 col-md-7 col-lg-7 col-xl-7" v-model="coreLossesModelSelected">
+            <Field name="coreLossesModels" as="select" :class="{ 'is-invalid': errors.coreLossesModels }" @change="onCoreLossesModelsChange" class= "small-text bg-light text-white rounded-2 mt-2 col-sm-8 col-md-7 col-lg-7 col-xl-7" v-model="coreLossesModelSelected">
                 <option disabled value="">Please select one</option>
                 <option v-for="model, index in coreLossesModelNames"
                     :key="index"
                     :value="model">{{model}}
                 </option>
             </Field>
-<!--             <p class="col-12 text-start">{{coreLossesModelDescriptions[coreLossesModelSelected]}}</p>
-            <p class="col-12 text-start">This error has an average error of <span class="text-info">{{getCoreLossesRoundedError}}</span> achieved in our evaluation tests, which can be found <a href="https://github.com/OpenMagnetics/MKF/blob/main/tests/TestReluctance.cpp">here</a>.</p>
+            <p class="col-12 text-start">{{coreLossesModelDescriptions[coreLossesModelSelected]}}</p>
+            <p class="col-12 text-start">This error has an average error of <span class="text-info">{{getCoreLossesRoundedError}}</span> achieved in our evaluation tests, which can be found <a href="https://github.com/OpenMagnetics/MKF/blob/main/tests/TestCoreLosses.cpp">here</a>.</p>
             <p class="col-12 text-start d-flex">                
             <a class="mx-1 me-auto" :href="coreLossesModelInternalLink[coreLossesModelSelected]">Original Source</a>
             <a class="mx-1 ms-auto" :href="coreLossesModelExternalLink[coreLossesModelSelected]">OM article</a>
-            </p> -->
+            </p>
         </Form>
     </div>
 </template>

@@ -112,6 +112,10 @@ export function formatUnit(value, unitValue) {
         base = 1000000
         unit = "M" + unitValue
     }
+    else if (value >= 1000000000 && value < 1000000000000) {
+        base = 1000000000
+        unit = "G" + unitValue
+    }
     label = value / base
     return {label, unit}
 }
@@ -126,6 +130,18 @@ export function formatInductance(inductance) {
 
 export function formatPower(power) {
     return formatUnit(power, "W")
+}
+
+export function formatApparentPower(power) {
+    return formatUnit(power, "VA")
+}
+
+export function formatPowerDensity(powerDensity) {
+    return formatUnit(powerDensity, "W/m³")
+}
+
+export function formatMagneticFluxDensity(magneticFluxDensity) {
+    return formatUnit(magneticFluxDensity, "T")
 }
 
 export function formatDimension(dimension) {
@@ -530,7 +546,7 @@ export function getOperationPointData(commonStore, currentStore, voltageStore, c
 export function getCoreData(userStore, configuration) {
     const exportedData = {};
     exportedData['functionalDescription'] = {};
-    exportedData['functionalDescription']['name'] = userStore.globalCore['functionalDescription']['name']
+    exportedData['name'] = userStore.globalCore['name']
     exportedData['functionalDescription']['type'] = userStore.globalCore['functionalDescription']['type']
 
     if (typeof(userStore.globalCore['functionalDescription']['material']) == 'string') {

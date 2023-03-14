@@ -27,7 +27,6 @@ export default {
         const commercialMaterialNames = [];
         const simulationStore = useSimulationStore();
 
-        console.log(this.$userStore.globalSimulation['inputs']['operationPoints'][0]['conditions'])
         if (this.$userStore.globalSimulation['inputs']['operationPoints'] != null) {
             if (this.$userStore.globalSimulation['inputs']['operationPoints'][0]['conditions'] != null) {
                 quickTemperatureSelected = this.$userStore.globalSimulation['inputs']['operationPoints'][0]['conditions']['ambientTemperature']
@@ -139,11 +138,10 @@ export default {
                 this.$userStore.setGlobalSimulationCoreShape(shapeDataSelected)
                 this.$userStore.setGlobalSimulationCoreNumberStacks(1)
                 this.simulationStore.calculateInductance()
+                this.simulationStore.calculateCoreLosses()
             }
         },
         onMaterialChange () {
-            console.log("onMaterialChange")
-            console.log(this.quickMaterialSelected)
             var materialDataSelected = {}
             this.$dataCacheStore.commercialMaterials.forEach((item) => {
                 if (item['name'] == this.quickMaterialSelected) {
@@ -152,28 +150,23 @@ export default {
             })
             if (materialDataSelected != {}) {
                 this.$userStore.setGlobalSimulationCoreMaterial(materialDataSelected)
-                console.log(this.$userStore.globalSimulation['magnetic']['core'])
-                this.simulationStore.calculateInductance()
+                this.simulationStore.loadCoreLossesModels()
             }
         },
         onTemperatureChange () {
-            console.log("onTemperatureChange")
-            console.log(this.quickTemperatureSelected)
-            if (this.stackable & this.quickStacksSelected > 0) {
-                const operationPoint = this.$userStore.globalSimulation['inputs']['operationPoints'][0]
-                operationPoint['conditions']['ambientTemperature'] = this.quickTemperatureSelected
+            const operationPoint = this.$userStore.globalSimulation['inputs']['operationPoints'][0]
+            operationPoint['conditions']['ambientTemperature'] = this.quickTemperatureSelected
 
-                this.$userStore.setGlobalSimulationOperationPointByIndex(0, operationPoint)
-                this.simulationStore.calculateInductance()
-            }
+            this.$userStore.setGlobalSimulationOperationPointByIndex(0, operationPoint)
+            this.simulationStore.calculateInductance()
+            this.simulationStore.calculateCoreLosses()
 
         },
         onStacksChange() {
-            console.log("onStacksChange")
-            console.log(this.quickStacksSelected)
             if (this.stackable & this.quickStacksSelected > 0) {
                 this.$userStore.setGlobalSimulationCoreNumberStacks(this.quickStacksSelected)
                 this.simulationStore.calculateInductance()
+                this.simulationStore.calculateCoreLosses()
             }
 
         },

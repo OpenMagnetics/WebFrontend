@@ -51,6 +51,7 @@ export default {
         this.simulationStore.$onAction((action) => {
             if (action.name == "calculateInductance" && this.$userStore.simulationCoreCalculatorSubsection == 'inductanceCalculator') {
                  setTimeout(() => this.tryToSend(), 10);
+                 setTimeout(() => this.simulationStore.calculateCoreLosses(), 10);
             }
         })
         this.$userStore.$onAction((action) => {
@@ -67,6 +68,7 @@ export default {
                     this.magnetizingInductanceUnit = aux['unit']
                     this.recentChange = true
                     this.tryToSend()
+                    this.simulationStore.calculateCoreLosses()
                 }
             }
         })
@@ -130,6 +132,7 @@ export default {
             this.numberGapsSelected = aux['numberGaps']
             this.recentChange = true
             this.tryToSend()
+            this.simulationStore.calculateCoreLosses()
         },
         onLengthUpdate(name, newValue, oldValue) {
             if (newValue != oldValue && newValue) {
@@ -143,6 +146,7 @@ export default {
                 this.$userStore.globalSimulation['magnetic']['core']['functionalDescription']['gapping'] = gapping
                 this.recentChange = true
                 this.tryToSend()
+                this.simulationStore.calculateCoreLosses()
             }
         },
         onGapTypeChange() {
@@ -174,6 +178,7 @@ export default {
                 this.$userStore.globalSimulation['magnetic']['winding']['functionalDescription'][0]['numberTurns'] = newValue
                 this.recentChange = true
                 this.tryToSend()
+                this.simulationStore.calculateCoreLosses()
             }
         },
         onNumberGapsUpdate(name, newValue, oldValue) {
@@ -193,6 +198,7 @@ export default {
                 this.numberGapsSelected = newValue
                 this.recentChange = true
                 this.tryToSend()
+                this.simulationStore.calculateCoreLosses()
             }
         },
 

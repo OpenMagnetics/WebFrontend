@@ -45,6 +45,7 @@ export default {
         this.simulationStore.$onAction((action) => {
             if (action.name == "calculateInductance" && this.$userStore.simulationCoreCalculatorSubsection == 'gappingCalculator') {
                  setTimeout(() => this.tryToSend(), 10);
+                 setTimeout(() => this.simulationStore.calculateCoreLosses(), 10);
             }
         })
         this.$userStore.$onAction((action) => {
@@ -60,6 +61,7 @@ export default {
                     this.numberTurnsSelected = this.$userStore.globalSimulation['magnetic']['winding']['functionalDescription'][0]['numberTurns']
                     this.recentChange = true
                     this.tryToSend()
+                    this.simulationStore.calculateCoreLosses()
                 }
             }
         })
@@ -94,7 +96,7 @@ export default {
             })
             .catch(error => {
                 this.computing = false
-                console.error("Error getting inductance")
+                console.error("Error getting gapping")
                 console.error(error.data)
             });
         },
@@ -124,11 +126,13 @@ export default {
                 this.$userStore.globalSimulation['inputs']['designRequirements']['magnetizingInductance']['nominal'] = newValue / 1000000
                 this.recentChange = true
                 this.tryToSend()
+                this.simulationStore.calculateCoreLosses()
             }
         },
         onGapTypeChange() {
             this.recentChange = true
             this.tryToSend()
+            this.simulationStore.calculateCoreLosses()
         },
         onNumberTurnsUpdate(name, newValue, oldValue) {
             if (newValue != oldValue && newValue) {
@@ -136,6 +140,7 @@ export default {
                 this.$userStore.globalSimulation['magnetic']['winding']['functionalDescription'][0]['numberTurns'] = newValue
                 this.recentChange = true
                 this.tryToSend()
+                this.simulationStore.calculateCoreLosses()
             }
         },
 
