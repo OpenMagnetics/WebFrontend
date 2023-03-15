@@ -161,7 +161,7 @@ export const defaultWinding = {
         "isolationSide": "primary",
         "name": "Primary",
         "numberParallels": 1,
-        "numberTurns": 1,
+        "numberTurns": 42,
         "wire": "Dummy"
     }],
 }
@@ -217,6 +217,11 @@ export const defaultCoreSaveConfiguration = {
     includeAdvancedWindingWindowData: false,
     downloadOnlyPiece: false,
 }
+
+export const defaultGapType = "Grinded";
+export const defaultGapLength = 1;
+export const defaultNumberGaps = 1;
+
 
 export function titleColor(electricalParameter){
     if (electricalParameter == "current") {

@@ -69,11 +69,16 @@ export const useUserStore = defineStore("user", () => {
         this.globalCore = Utils.deepCopy(Defaults.defaultCore)
     }
 
+    function resetGlobalSimulation() {
+        this.globalSimulation = Utils.deepCopy(Defaults.defaultSimulation)
+    }
+
     function reset() {
         this.loggedIn = false
         this.username = null
         this.globalOperationPoint = Utils.deepCopy(Defaults.defaultOperationPointExcitation)
         this.globalCore = Utils.deepCopy(Defaults.defaultCore)
+        this.globalSimulation = Utils.deepCopy(Defaults.defaultSimulation)
         this.idToDelete = null
         this.userSubsection = "operationPoints"
         this.coreSubsection = "shapeArtisan"
@@ -206,6 +211,7 @@ export const useUserStore = defineStore("user", () => {
         setIdToDelete,
         resetGlobalOperationPoint,
         resetGlobalCore,
+        resetGlobalSimulation,
         setSelectedModels,
         selectedModels,
         reset,

@@ -9,6 +9,7 @@ import { useVoltageStore } from '/src/stores/waveform'
 import { useCommonStore } from '/src/stores/waveform'
 import { useSimulationStore } from '/src/stores/simulation'
 import OperationPointTool from '/src/components/Simulation/OperationPointTool.vue'
+import SimulationNew from '/src/components/Simulation/SimulationNew.vue'
 import OperationPointLoaderModal from '/src/components/Simulation/OperationPointLoaderModal.vue'
 </script>
 
@@ -85,6 +86,9 @@ export default {
         },
         onNewSimulation() {
             this.currentSimulationId = null
+            this.$userStore.resetGlobalSimulation()
+            this.$userStore.setSimulationCoreCalculatorSubsection('inductanceCalculator')
+            this.$router.go();
         },
         saveToDB(anonymousUser=false) {
             return "Saving"
@@ -98,7 +102,7 @@ export default {
         <div class="row gx-1">
             <div class="col-12 col-sm-2 col-md-2 col-lg-2 col-xl-2 ">
                 <div class="row gx-2">
-                    <button disabled class="btn text-white bg-secondary py-1 my-1 col-10 col-sm-12 col-md-12 col-lg-5 col-xl-5" data-bs-toggle="modal" data-bs-target="#newSimulationModal" @new_core="onNewSimulation">New</button>
+                    <button v-tooltip="'Create new simulation. All current unsaved changes will be lost'" class="btn text-white bg-secondary py-1 my-1 col-10 col-sm-12 col-md-12 col-lg-5 col-xl-5" data-bs-toggle="modal" data-bs-target="#newSimulationModal">New</button>
                     <div class="col-12 col-sm-2 col-md-2 col-lg-2 col-xl-2"> </div>
                     <button class="btn text-white bg-secondary py-1 my-1 col-10 col-sm-12 col-md-12 col-lg-5 col-xl-5 disabled">Import</button>
 
@@ -127,6 +131,7 @@ export default {
             </div>
         </div>
     </div>
+    <SimulationNew @onNewSimulation="onNewSimulation"/>
     <OperationPointTool :key="updateOperationPointToolKey"/>
     <OperationPointLoaderModal @onLoadOperationPoint="onLoadOperationPoint"/>
     <!-- <CorePublish :isLoggedIn="isLoggedIn" @published="onPublish"/> -->

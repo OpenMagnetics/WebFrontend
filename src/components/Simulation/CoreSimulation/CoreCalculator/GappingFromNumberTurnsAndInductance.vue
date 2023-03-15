@@ -44,8 +44,8 @@ export default {
     created() {
         this.simulationStore.$onAction((action) => {
             if (action.name == "calculateInductance" && this.$userStore.simulationCoreCalculatorSubsection == 'gappingCalculator') {
-                 setTimeout(() => this.tryToSend(), 10);
-                 setTimeout(() => this.simulationStore.calculateCoreLosses(), 10);
+                setTimeout(() => this.tryToSend(), 10);
+                setTimeout(() => this.simulationStore.calculateCoreLosses(), 10);
             }
         })
         this.$userStore.$onAction((action) => {
@@ -68,10 +68,7 @@ export default {
     },
     methods: {
         formatGapping(value) {
-            console.log("value")
-            console.log(value)
             const aux = Utils.guessBasicGappingParameters(value)
-            console.log(aux)
             this.gapTypeSelected = aux['gapType']
             this.gapLength = aux['gapLength']
             this.numberGaps = aux['numberGaps']
@@ -87,11 +84,9 @@ export default {
             data['models'] = {gapReluctance: this.$userStore.selectedModels['gapReluctance'].toUpperCase()}
             this.$axios.post(url, data)
             .then(response => {
-                console.warn(response.data)
                 this.computing = false
                 this.formatGapping(response.data)
                 this.$userStore.setGlobalSimulationCoreGapping(response.data['functionalDescription']['gapping'])
-                console.log(this.$userStore.globalSimulation['magnetic']['core']['functionalDescription']['gapping'])
 
             })
             .catch(error => {
@@ -105,7 +100,7 @@ export default {
                 this.recentChange = false
                 this.tryingToSend = true
                 setTimeout(() => {
-                    if (!this.hasError) {
+                    if (this.$userStore.simulationCoreCalculatorSubsection == 'gappingCalculator') {
                         if (this.recentChange) {
                             this.tryingToSend = false
                             this.tryToSend()
@@ -115,6 +110,9 @@ export default {
                             this.computing = true
                             this.computeGapping()
                         }
+                    }
+                    else {
+                        this.tryingToSend = false
                     }
                 }
                 , 500);

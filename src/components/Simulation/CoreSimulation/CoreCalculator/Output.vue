@@ -103,7 +103,6 @@ export default {
 
         },
         computeCoreLosses() {
-            console.log("computeCoreLosses")
             const url = import.meta.env.VITE_API_ENDPOINT + '/get_core_losses'
 
             const globalSimulation = Utils.deepCopy(this.$userStore.globalSimulation)
@@ -117,7 +116,6 @@ export default {
                               gapReluctance: this.$userStore.selectedModels['gapReluctance'].toUpperCase()}
             this.$axios.post(url, data)
             .then(response => {
-                // console.log(response.data)
                 this.tryingToSend = false
                 this.formatOutputs(response.data)
             })

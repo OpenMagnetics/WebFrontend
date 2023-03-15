@@ -24,8 +24,6 @@ export default {
         var gapTypeSelected = aux['gapType']
         var gapLengthSelected = aux['gapLength']
         var numberGapsSelected = aux['numberGaps']
-        console.warn(this.$userStore.globalSimulation['magnetic']['core']['functionalDescription']['gapping'])
-        console.warn(aux)
         const numberTurnsSelected = this.$userStore.globalSimulation['magnetic']['winding']['functionalDescription'][0]['numberTurns']
         const magnetizingInductance = this.$userStore.globalSimulation['inputs']['designRequirements']['magnetizingInductance']['nominal'] * 1000000;
 
@@ -94,7 +92,6 @@ export default {
             data['models'] = {gapReluctance: this.$userStore.selectedModels['gapReluctance'].toUpperCase()}
             this.$axios.post(url, data)
             .then(response => {
-                console.log(response.data)
                 this.computing = false
                 this.formatInductance(response.data)
                 this.$userStore.globalSimulation['inputs']['designRequirements']['magnetizingInductance']['nominal'] = response.data
@@ -110,7 +107,7 @@ export default {
                 this.recentChange = false
                 this.tryingToSend = true
                 setTimeout(() => {
-                    if (!this.hasError) {
+                    if (this.$userStore.simulationCoreCalculatorSubsection == 'inductanceCalculator') {
                         if (this.recentChange) {
                             this.tryingToSend = false
                             this.tryToSend()
@@ -120,6 +117,9 @@ export default {
                             this.computing = true
                             this.computeInductance()
                         }
+                    }
+                    else {
+                        this.tryingToSend = false
                     }
                 }
                 , 500);

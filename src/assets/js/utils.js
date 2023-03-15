@@ -673,9 +673,9 @@ export function getSimulationParameters(userStore, callback, errorCallback) {
 }
  
 export function guessBasicGappingParameters(core) {
-    var gapType;
-    var gapLength;
-    var numberGaps;
+    var gapType = Defaults.defaultGapType;
+    var gapLength = Defaults.defaultGapLength;
+    var numberGaps = Defaults.defaultNumberGaps;
     if (core['functionalDescription'] != null && core['processedDescription'] != null) {
         if (core['functionalDescription']['gapping'].length == core['processedDescription']['columns'].length &&
             core['functionalDescription']['gapping'][0]['type'] == 'subtractive' &&

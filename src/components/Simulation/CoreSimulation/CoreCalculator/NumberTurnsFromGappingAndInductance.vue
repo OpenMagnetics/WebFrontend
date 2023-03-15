@@ -85,7 +85,6 @@ export default {
             data['models'] = {gapReluctance: this.$userStore.selectedModels['gapReluctance'].toUpperCase()}
             this.$axios.post(url, data)
             .then(response => {
-                console.log(response.data)
                 this.computing = false
                 this.formatNumberTurns(response.data)
                 this.$userStore.globalSimulation['magnetic']['winding']['functionalDescription'][0]['numberTurns'] = response.data
@@ -97,11 +96,13 @@ export default {
             });
         },
         tryToSend() {
+            console.log("this.$userStore.simulationCoreCalculatorSubsection")
+            console.log(this.$userStore.simulationCoreCalculatorSubsection)
             if (!this.tryingToSend) {
                 this.recentChange = false
                 this.tryingToSend = true
                 setTimeout(() => {
-                    if (!this.hasError) {
+                    if (this.$userStore.simulationCoreCalculatorSubsection == 'numberTurnsCalculator') {
                         if (this.recentChange) {
                             this.tryingToSend = false
                             this.tryToSend()
@@ -111,6 +112,9 @@ export default {
                             this.computing = true
                             this.computeNumberTurns()
                         }
+                    }
+                    else {
+                        this.tryingToSend = false
                     }
                 }
                 , 500);
