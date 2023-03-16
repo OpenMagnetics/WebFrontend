@@ -41,6 +41,9 @@ export default {
 
 
         const operationPoint = this.$userStore.globalSimulation['inputs']['operationPoints'][0]['excitationsPerWinding'][0]
+        if ('voltage' in operationPoint) {
+            delete operationPoint['voltage'];
+        }
         if (operationPoint == null) {
             switchingFrequency = commonStore.getSwitchingFrequency.value
             waveformTypes = {
