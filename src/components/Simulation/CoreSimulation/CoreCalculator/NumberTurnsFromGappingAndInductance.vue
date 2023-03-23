@@ -75,7 +75,8 @@ export default {
             this.simulationStore.calculateCoreLosses()
             const url = import.meta.env.VITE_API_ENDPOINT + '/get_number_turns_from_gapping_and_inductance'
 
-            const globalSimulation = Utils.deepCopy(this.$userStore.globalSimulation)
+            var globalSimulation = Utils.deepCopy(this.$userStore.globalSimulation)
+            globalSimulation = Utils.cleanSimulation(globalSimulation, false, this.$userStore.simulationUseCurrentAsInput)
 
             if (typeof(globalSimulation['magnetic']['core']['functionalDescription']['material']) != 'string') {
                 globalSimulation['magnetic']['core']['functionalDescription']['material'] = globalSimulation['magnetic']['core']['functionalDescription']['material']['name']

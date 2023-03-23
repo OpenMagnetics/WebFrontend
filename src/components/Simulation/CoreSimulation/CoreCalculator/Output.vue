@@ -16,7 +16,7 @@ export default {
             posting,
             simulationStore,
             coreStore,
-            maximumCoreTemperatureRise: "Soon",
+            maximumCoreTemperatureRise: "",
             eddyCurrentLosses: "",
             hysteresisLosses: "",
             magneticFluxDensityPeak: "",
@@ -62,6 +62,7 @@ export default {
             var aux = Utils.formatPowerDensity(value['totalVolumetricLosses'])
             this.volumetricCoreLosses = Utils.removeTrailingZeroes(aux['label'], 2)
             this.volumetricCoreLossesUnit = aux['unit']
+
             if ('eddyCurrentLosses' in value) {
                 aux = Utils.formatPower(value['eddyCurrentLosses'])
                 this.eddyCurrentLosses = Utils.removeTrailingZeroes(aux['label'], 2)
@@ -101,18 +102,41 @@ export default {
             this.apparentPower = Utils.removeTrailingZeroes(aux['label'], 2)
             this.apparentPowerUnit = aux['unit']
 
+            aux = Utils.formatTemperature(value['maximumCoreTemperatureRise'])
+            this.maximumCoreTemperatureRise = Utils.removeTrailingZeroes(aux['label'], 2)
+            this.maximumCoreTemperatureRiseUnit = aux['unit']
+
         },
         computeCoreLosses() {
             const url = import.meta.env.VITE_API_ENDPOINT + '/get_core_losses'
 
             const globalSimulation = Utils.deepCopy(this.$userStore.globalSimulation)
 
+            const operationPoint = globalSimulation['inputs']['operationPoints'][0]['excitationsPerWinding'][0]
+            if ('voltage' in operationPoint && this.$userStore.simulationUseCurrentAsInput == 1) {
+                delete operationPoint['voltage'];
+            }
+
+            if ('current' in operationPoint && this.$userStore.simulationUseCurrentAsInput == 0) {
+                delete operationPoint['current'];
+            }
+
             if (typeof(globalSimulation['magnetic']['core']['functionalDescription']['material']) != 'string') {
                 globalSimulation['magnetic']['core']['functionalDescription']['material'] = globalSimulation['magnetic']['core']['functionalDescription']['material']['name']
             }
             const data = {}
             data['simulation'] = globalSimulation
+            if (!('gapReluctance' in this.$userStore.selectedModels)) {
+                this.$userStore.selectedModels['gapReluctance'] = Defaults.reluctanceModelDefault
+            }
+            if (!('coreLosses' in this.$userStore.selectedModels)) {
+                this.$userStore.selectedModels['coreLosses'] = Defaults.coreLossesModelDefault
+            }
+            if (!('coreTemperature' in this.$userStore.selectedModels)) {
+                this.$userStore.selectedModels['coreTemperature'] = Defaults.coreTemperatureModelDefault
+            }
             data['models'] = {coreLosses: this.$userStore.selectedModels['coreLosses'].toUpperCase(),
+                              coreTemperature: this.$userStore.selectedModels['coreTemperature'].toUpperCase(),
                               gapReluctance: this.$userStore.selectedModels['gapReluctance'].toUpperCase()}
             this.$axios.post(url, data)
             .then(response => {

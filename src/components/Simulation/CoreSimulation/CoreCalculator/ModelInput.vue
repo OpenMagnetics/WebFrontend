@@ -29,6 +29,12 @@ export default {
         const coreLossesModelErrors = []
         const coreLossesModelInternalLink = []
         const coreLossesModelExternalLink = []
+        const coreTemperatureModelSelected = this.$userStore.selectedModels['coreTemperature'];
+        const coreTemperatureModelNames = []
+        const coreTemperatureModelDescriptions = []
+        const coreTemperatureModelErrors = []
+        const coreTemperatureModelInternalLink = []
+        const coreTemperatureModelExternalLink = []
         return {
             simulationStore,
             gapReluctanceModelNames,
@@ -43,6 +49,12 @@ export default {
             coreLossesModelInternalLink,
             coreLossesModelExternalLink,
             coreLossesModelSelected,
+            coreTemperatureModelSelected,
+            coreTemperatureModelNames,
+            coreTemperatureModelDescriptions,
+            coreTemperatureModelErrors,
+            coreTemperatureModelInternalLink,
+            coreTemperatureModelExternalLink,
             recentChange: false,
             tryingToSend: false,
             hasError: false,
@@ -61,12 +73,21 @@ export default {
                 return Utils.removeTrailingZeroes(this.coreLossesModelErrors[this.coreLossesModelSelected] * 100, 2) + ' %'
             }
             return 'NaN %'
-        }
+        },
+        getCoreTemperatureRoundedError() {
+            if (this.coreTemperatureModelErrors[this.coreTemperatureModelSelected] != null) {
+                return Utils.removeTrailingZeroes(this.coreTemperatureModelErrors[this.coreTemperatureModelSelected] * 100, 2) + ' %'
+            }
+            return 'NaN %'
+        },
     },
     created () {
         this.tryToSend();
         this.simulationStore.$onAction((action) => {
             if (action.name == "loadCoreLossesModels") {
+                this.tryToSend();
+            }
+            if (action.name == "loadCoreTemperatureModels") {
                 this.tryToSend();
             }
         })
@@ -117,6 +138,23 @@ export default {
                 this.tryingToSend = false
                 console.error(error.data)
             });
+
+            url = import.meta.env.VITE_API_ENDPOINT + '/get_core_temperature_models'
+            this.$axios.post(url, {})
+            .then(response => {
+                console.log("response.data")
+                console.log(response.data)
+                this.tryingToSend = false
+                this.coreTemperatureModelNames = Object.keys(response.data["information"]);
+                this.coreTemperatureModelDescriptions = response.data["information"];
+                this.coreTemperatureModelErrors = response.data["errors"];
+                this.coreTemperatureModelInternalLink = response.data["internal_links"];
+                this.coreTemperatureModelExternalLink = response.data["external_links"];
+            })
+            .catch(error => {
+                this.tryingToSend = false
+                console.error(error.data)
+            });
         },
         tryToSend() {
             if (!this.tryingToSend) {
@@ -146,6 +184,11 @@ export default {
         },
         onCoreLossesModelsChange() {
             this.$userStore.setSelectedModels('coreLosses', this.coreLossesModelSelected)
+            this.simulationStore.calculateInductance()
+            this.simulationStore.calculateCoreLosses()
+        },
+        onCoreTemperatureModelsChange() {
+            this.$userStore.setSelectedModels('coreTemperature', this.coreTemperatureModelSelected)
             this.simulationStore.calculateInductance()
             this.simulationStore.calculateCoreLosses()
         },
@@ -191,6 +234,26 @@ export default {
             <p class="col-12 text-start d-flex">                
             <a class="mx-1 me-auto" :href="coreLossesModelInternalLink[coreLossesModelSelected]">Original Source</a>
             <a class="mx-1 ms-auto" :href="coreLossesModelExternalLink[coreLossesModelSelected]">OM article</a>
+            </p>
+        </Form>
+    </div>
+    <div class="container">
+        <label class="text-white fs-4 text-center ">Core temperature model</label>
+
+        <Form ref="formRef" :validation-schema="schema" v-slot="{ errors }" class="form-inline row text-white" @submit="handleSubmit($event, onSubmit)">
+            <label class="small-text mt-2 col-sm-4 col-md-5 col-lg-5 col-xl-5 text-start">Model:</label>
+            <Field name="coreTemperatureModels" as="select" :class="{ 'is-invalid': errors.coreTemperatureModels }" @change="onCoreTemperatureModelsChange" class= "small-text bg-light text-white rounded-2 mt-2 col-sm-8 col-md-7 col-lg-7 col-xl-7" v-model="coreTemperatureModelSelected">
+                <option disabled value="">Please select one</option>
+                <option v-for="model, index in coreTemperatureModelNames"
+                    :key="index"
+                    :value="model">{{model}}
+                </option>
+            </Field>
+            <p class="col-12 text-start">{{coreTemperatureModelDescriptions[coreTemperatureModelSelected]}}</p>
+            <p class="col-12 text-start">This error has an average error of <span class="text-info">{{getCoreTemperatureRoundedError}}</span> achieved in our evaluation tests, which can be found <a href="https://github.com/OpenMagnetics/MKF/blob/main/tests/TestCoreTemperature.cpp">here</a>.</p>
+            <p class="col-12 text-start d-flex">                
+            <a class="mx-1 me-auto" :href="coreTemperatureModelInternalLink[coreTemperatureModelSelected]">Original Source</a>
+            <a class="mx-1 ms-auto" :href="coreTemperatureModelExternalLink[coreTemperatureModelSelected]">OM article</a>
             </p>
         </Form>
     </div>

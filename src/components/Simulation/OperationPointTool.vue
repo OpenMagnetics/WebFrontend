@@ -38,35 +38,61 @@ export default {
     data() {
         var switchingFrequency
         var waveformTypes
-
+        var currentAsInput = this.$userStore.simulationUseCurrentAsInput
+        console.log("OnCurrentAsInputChanged")
+        console.log(currentAsInput)
 
         const operationPoint = this.$userStore.globalSimulation['inputs']['operationPoints'][0]['excitationsPerWinding'][0]
-        if ('voltage' in operationPoint) {
-            delete operationPoint['voltage'];
-        }
+
         if (operationPoint == null) {
             switchingFrequency = commonStore.getSwitchingFrequency.value
             waveformTypes = {
                 current: currentStore.getType.value == null? Defaults.defaultCurrentType : currentStore.getType.value,
-                // voltage: voltageStore.getType.value == null? Defaults.defaultVoltageType : voltageStore.getType.value,
+                voltage: voltageStore.getType.value == null? Defaults.defaultVoltageType : voltageStore.getType.value,
             }
         }
         else {
             const data = operationPoint
-            const aux = this.loadOperationPoint(data)
+            var aux;
+            if (currentAsInput == 1) {
+                aux = this.loadOperationPointCurrent(data)
+            }
+            else {
+                aux = this.loadOperationPointCurrent(data)
+            }
             switchingFrequency = aux["switchingFrequency"]
             waveformTypes = aux["waveformTypes"]
         }
+
+        console.warn(waveformTypes)
 
         return {
             switchingFrequency,
             isChartReady: false,
             waveformTypes,
+            currentAsInput,
         }
     },
     methods: {
         onChartReady() {
             this.isChartReady = true
+        },
+        OnCurrentAsInputChanged(event) {
+            console.log("OnCurrentAsInputChanged")
+            console.log(event.target.value)
+            console.log(this.currentAsInput)
+            this.$userStore.setSimulationUseCurrentAsInput(this.currentAsInput)
+            const operationPoint = Utils.deepCopy(this.$userStore.globalSimulation['inputs']['operationPoints'][0]['excitationsPerWinding'][0])
+            console.log(operationPoint)
+            var aux;
+            if (this.$userStore.simulationUseCurrentAsInput == 1) {
+                aux = this.loadOperationPointCurrent(operationPoint)
+            }
+            else {
+                aux = this.loadOperationPointCurrent(operationPoint)
+            }
+            this.switchingFrequency = aux["switchingFrequency"]
+            this.waveformTypes = aux["waveformTypes"]
         },
         onSwitchingFrequencyChange(newValue) {
             commonStore.setSwitchingFrequency(newValue * 1000)
@@ -74,25 +100,42 @@ export default {
         onDutyCycleChange(newValue) {
             commonStore.setDutyCycle(newValue / 100)
         },
-        loadOperationPoint(data) {
+        loadOperationPointCurrent(data) {
             const compressedCurrentData = Utils.packDataPoints(data["current"]["waveform"], data["frequency"])
-            // const compressedVoltageData = Utils.packDataPoints(data["voltage"]["waveform"], data["frequency"])
+            const compressedVoltageData = Utils.packDataPoints(data["voltage"]["waveform"], data["frequency"])
 
             const switchingFrequency = data["frequency"]
             const waveformTypes = {
                 current: Utils.tryGuessType(compressedCurrentData, data["frequency"]),
-                // voltage: Utils.tryGuessType(compressedVoltageData, data["frequency"]),
+                voltage: Utils.tryGuessType(compressedVoltageData, data["frequency"]),
             }
             currentStore.setType(waveformTypes["current"])
-            // voltageStore.setType(waveformTypes["voltage"])
+            voltageStore.setType(waveformTypes["voltage"])
 
             setTimeout(() => {
                 currentStore.setDataPointsFromFile(compressedCurrentData)
-                // voltageStore.setDataPointsFromFile(compressedVoltageData)
+                voltageStore.setDataPointsFromFile(compressedVoltageData)
                 commonStore.setOperationPointName(data["name"])
                 commonStore.setSwitchingFrequency(switchingFrequency)
-                // commonStore.setDutyCycle(Utils.tryGuessDutyCycle(waveformTypes["current"] != "Custom"? compressedCurrentData : compressedVoltageData, data["frequency"]))
-                commonStore.setDutyCycle(Utils.tryGuessDutyCycle(compressedCurrentData, data["frequency"]))
+                commonStore.setDutyCycle(Utils.tryGuessDutyCycle(waveformTypes["current"] != "Custom"? compressedCurrentData : compressedVoltageData, data["frequency"]))
+            }, 1000);
+
+            return {switchingFrequency, waveformTypes}
+        },
+        loadOperationPointVoltage(data) {
+            const compressedVoltageData = Utils.packDataPoints(data["voltage"]["waveform"], data["frequency"])
+
+            const switchingFrequency = data["frequency"]
+            const waveformTypes = {
+                voltage: Utils.tryGuessType(compressedVoltageData, data["frequency"]),
+            }
+            voltageStore.setType(waveformTypes["voltage"])
+
+            setTimeout(() => {
+                voltageStore.setDataPointsFromFile(compressedVoltageData)
+                commonStore.setOperationPointName(data["name"])
+                commonStore.setSwitchingFrequency(switchingFrequency)
+                commonStore.setDutyCycle(Utils.tryGuessDutyCycle(compressedVoltageData, data["frequency"]))
             }, 1000);
 
             return {switchingFrequency, waveformTypes}
@@ -101,34 +144,38 @@ export default {
     mounted() {
 
         currentStore.$subscribe((mutation, state) => {
-            const data = []
-            const time = []
-            currentStore.dataPoints.forEach((item) => {
-                time.push(item['x'])
-                data.push(item['y'])
-            })
-            const operationPoint = this.$userStore.globalSimulation['inputs']['operationPoints'][0]
-            operationPoint['excitationsPerWinding'][0]['current']['type'] = currentStore.type
-            operationPoint['excitationsPerWinding'][0]['current']['waveform']['data'] = data
-            operationPoint['excitationsPerWinding'][0]['current']['waveform']['time'] = time
-            this.$userStore.setGlobalSimulationOperationPointByIndex(0, operationPoint)
-            simulationStore.calculateInductance()
+            if (this.currentAsInput == 1) {
+                const data = []
+                const time = []
+                currentStore.dataPoints.forEach((item) => {
+                    time.push(item['x'])
+                    data.push(item['y'])
+                })
+                const operationPoint = this.$userStore.globalSimulation['inputs']['operationPoints'][0]
+                operationPoint['excitationsPerWinding'][0]['current']['type'] = currentStore.type
+                operationPoint['excitationsPerWinding'][0]['current']['waveform']['data'] = data
+                operationPoint['excitationsPerWinding'][0]['current']['waveform']['time'] = time
+                this.$userStore.setGlobalSimulationOperationPointByIndex(0, operationPoint)
+                simulationStore.calculateInductance()
+            }
         })
 
-        // voltageStore.$subscribe((mutation, state) => {
-        //     const data = []
-        //     const time = []
-        //     voltageStore.dataPoints.forEach((item) => {
-        //         time.push(item['x'])
-        //         data.push(item['y'])
-        //     })
-        //     const operationPoint = this.$userStore.globalSimulation['inputs']['operationPoints'][0]
-        //     operationPoint['excitationsPerWinding'][0]['voltage']['type'] = voltageStore.type
-        //     operationPoint['excitationsPerWinding'][0]['voltage']['waveform']['data'] = data
-        //     operationPoint['excitationsPerWinding'][0]['voltage']['waveform']['time'] = time
-        //     this.$userStore.setGlobalSimulationOperationPointByIndex(0, operationPoint)
-        //     simulationStore.calculateInductance()
-        // })
+        voltageStore.$subscribe((mutation, state) => {
+            if (this.currentAsInput == 0) {
+                const data = []
+                const time = []
+                voltageStore.dataPoints.forEach((item) => {
+                    time.push(item['x'])
+                    data.push(item['y'])
+                })
+                const operationPoint = this.$userStore.globalSimulation['inputs']['operationPoints'][0]
+                operationPoint['excitationsPerWinding'][0]['voltage']['type'] = voltageStore.type
+                operationPoint['excitationsPerWinding'][0]['voltage']['waveform']['data'] = data
+                operationPoint['excitationsPerWinding'][0]['voltage']['waveform']['time'] = time
+                this.$userStore.setGlobalSimulationOperationPointByIndex(0, operationPoint)
+                simulationStore.calculateInductance()
+            }
+        })
 
         commonStore.$subscribe((mutation, state) => {
             const operationPoint = this.$userStore.globalSimulation['inputs']['operationPoints'][0]
@@ -151,6 +198,12 @@ export default {
     </div>
     <div class="offcanvas-body">
         <div class="container mx-auto">
+            <div class="row">
+                <label class="fs-4 mt-2 ms-3 text-success col-7"> Use current?</label>
+                <i class="fa-solid fa-xmark mt-3 pt-1 ps-2 text-danger col-1 p-0"></i>
+                <input v-model="currentAsInput" @change="OnCurrentAsInputChanged" type="range" class="mt-3 form-range col-1 ms-1" min="0" max="1" step="1" style="width: 30px">
+                <i class="fa-solid fa-check mt-3 pt-1 ms-2 text-success col-1 p-0"></i>
+            </div>
             <div class="row">
                 <div class="col-12">
                     <WaveformInputCommon @switching-frequency-change="onSwitchingFrequencyChange" @duty-cycle-change="onDutyCycleChange"/>

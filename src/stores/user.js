@@ -16,9 +16,11 @@ export const useUserStore = defineStore("user", () => {
     const coreSubsection = ref("shapeArtisan")
     const coreSimulationSubsection = ref("coreCalculator")
     const simulationCoreCalculatorSubsection = ref("inductanceCalculator")
+    const simulationUseCurrentAsInput = ref(0)
     const selectedModels = ref({
-        gapReluctance: "Zhang",
-        coreLosses: "Roshen",
+        gapReluctance: Defaults.reluctanceModelDefault,
+        coreLosses: Defaults.coreLossesModelDefault,
+        coreTemperature: Defaults.coreTemperatureModelDefault,
     })
     const isLoggedIn = computed(() => {
         return loggedIn
@@ -57,6 +59,7 @@ export const useUserStore = defineStore("user", () => {
             "coreSubsection": coreSubsection.value,
             "coreSimulationSubsection": coreSimulationSubsection.value,
             "simulationCoreCalculatorSubsection": simulationCoreCalculatorSubsection.value,
+            "simulationUseCurrentAsInput": simulationUseCurrentAsInput.value,
             "selectedModels": selectedModels.value,
         }
     })
@@ -165,6 +168,9 @@ export const useUserStore = defineStore("user", () => {
     function setSimulationCoreCalculatorSubsection(simulationCoreCalculatorSubsection) {
         this.simulationCoreCalculatorSubsection = simulationCoreCalculatorSubsection
     }
+    function setSimulationUseCurrentAsInput(simulationUseCurrentAsInput) {
+        this.simulationUseCurrentAsInput = simulationUseCurrentAsInput
+    }
     return {
         dump,
         loggedIn,
@@ -184,6 +190,8 @@ export const useUserStore = defineStore("user", () => {
         setCoreSubsection,
         simulationCoreCalculatorSubsection,
         setSimulationCoreCalculatorSubsection,
+        simulationUseCurrentAsInput,
+        setSimulationUseCurrentAsInput,
         coreSimulationSubsection,
         getCoreSimulationSubsection,
         setCoreSimulationSubsection,

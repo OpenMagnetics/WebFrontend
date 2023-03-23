@@ -151,6 +151,8 @@ export default {
             if (materialDataSelected != {}) {
                 this.$userStore.setGlobalSimulationCoreMaterial(materialDataSelected)
                 this.simulationStore.loadCoreLossesModels()
+                this.simulationStore.calculateInductance()
+                this.simulationStore.calculateCoreLosses()
             }
         },
         onTemperatureChange () {

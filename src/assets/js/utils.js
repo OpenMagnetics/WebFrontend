@@ -156,6 +156,10 @@ export function formatVoltage(voltage) {
     return formatUnit(voltage, "V")
 }
 
+export function formatTemperature(temperature) {
+    return formatUnit(temperature, "°C")
+}
+
 export function deepCopy(data) {
     return JSON.parse(JSON.stringify(data))
 }
@@ -784,7 +788,7 @@ export function resolveDimensionalValues(dimensionValue, preferredValue='nominal
     return doubleValue;
 }
 
-export function cleanSimulation(data, cleanGap=false) {
+export function cleanSimulation(data, cleanGap=false, removeVoltage=true) {
 
     if (typeof(data['magnetic']['core']['functionalDescription']['material']) != 'string') {
         data['magnetic']['core']['functionalDescription']['material'] = data['magnetic']['core']['functionalDescription']['material']['name']
@@ -799,6 +803,18 @@ export function cleanSimulation(data, cleanGap=false) {
         })
         data['magnetic']['core']['functionalDescription']['gapping'] = cleanGapping
     }
+
+
+
+    const operationPoint = data['inputs']['operationPoints'][0]['excitationsPerWinding'][0]
+    if ('voltage' in operationPoint && removeVoltage) {
+        delete operationPoint['voltage'];
+    }
+
+    if ('current' in operationPoint && !removeVoltage) {
+        delete operationPoint['current'];
+    }
+
 
     return data
 }

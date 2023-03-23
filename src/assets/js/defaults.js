@@ -237,6 +237,10 @@ export function titleColor(electricalParameter){
 
 export var engineConstants = {}
 
+export const coreLossesModelDefault = 'Roshen';
+export const coreTemperatureModelDefault = 'Maniktala';
+export const reluctanceModelDefault = 'Zhang';
+
 
 // import axios from "axios";
 // (function () {

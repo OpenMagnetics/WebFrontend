@@ -77,7 +77,8 @@ export default {
             const url = import.meta.env.VITE_API_ENDPOINT + '/get_gapping_from_number_turns_and_inductance'
 
             var globalSimulation = Utils.deepCopy(this.$userStore.globalSimulation)
-            globalSimulation = Utils.cleanSimulation(globalSimulation, true)
+            globalSimulation = Utils.cleanSimulation(globalSimulation, true, this.$userStore.simulationUseCurrentAsInput)
+
             const data = {}
             data['simulation'] = globalSimulation
             data['gappingType'] = this.gapTypeSelected.toUpperCase()
