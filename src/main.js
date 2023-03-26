@@ -78,6 +78,7 @@ router.beforeEach((to, from, next) => {
             axiosInstance.post(urlShapes, {})
             .then(response => {
                 app.config.globalProperties.$dataCacheStore.commercialCores = response.data["commercial_cores"]
+                app.config.globalProperties.$dataCacheStore.commercialShapes = []
                 response.data["commercial_cores"].forEach((item) => {
                     app.config.globalProperties.$dataCacheStore.commercialShapes.push(item['functionalDescription']['shape'])
                 })
