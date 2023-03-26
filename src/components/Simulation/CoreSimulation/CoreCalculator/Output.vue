@@ -145,8 +145,9 @@ export default {
             })
             .catch(error => {
                 this.tryingToSend = false
-                console.error("Error getting core losses")
+                console.error("Error getting core losses, resetting store")
                 console.error(error.data)
+                this.$userStore.reset()
             });
         },
         tryToSend() {
