@@ -74,6 +74,14 @@ export const useUserStore = defineStore("user", () => {
 
     function resetGlobalSimulation() {
         this.globalSimulation = Utils.deepCopy(Defaults.defaultSimulation)
+        this.coreSimulationSubsection = "coreCalculator"
+        this.simulationCoreCalculatorSubsection = "inductanceCalculator"
+        this.simulationUseCurrentAsInput = 1
+        this.selectedModels = {
+            gapReluctance: Defaults.reluctanceModelDefault,
+            coreLosses: Defaults.coreLossesModelDefault,
+            coreTemperature: Defaults.coreTemperatureModelDefault,
+        }
     }
 
     function reset() {
