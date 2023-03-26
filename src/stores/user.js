@@ -16,7 +16,7 @@ export const useUserStore = defineStore("user", () => {
     const coreSubsection = ref("shapeArtisan")
     const coreSimulationSubsection = ref("coreCalculator")
     const simulationCoreCalculatorSubsection = ref("inductanceCalculator")
-    const simulationUseCurrentAsInput = ref(0)
+    const simulationUseCurrentAsInput = ref(1)
     const selectedModels = ref({
         gapReluctance: Defaults.reluctanceModelDefault,
         coreLosses: Defaults.coreLossesModelDefault,
@@ -85,6 +85,24 @@ export const useUserStore = defineStore("user", () => {
         this.idToDelete = null
         this.userSubsection = "operationPoints"
         this.coreSubsection = "shapeArtisan"
+
+        this.loggedIn = false
+        this.ipAddress = 0
+        this.username = null
+        this.globalOperationPoint = Utils.deepCopy(Defaults.defaultOperationPointExcitation)
+        this.globalCore = Utils.deepCopy(Defaults.defaultCore)
+        this.globalSimulation = Utils.deepCopy(Defaults.defaultSimulation)
+        this.idToDelete = null
+        this.userSubsection = "operationPoints"
+        this.coreSubsection = "shapeArtisan"
+        this.coreSimulationSubsection = "coreCalculator"
+        this.simulationCoreCalculatorSubsection = "inductanceCalculator"
+        this.simulationUseCurrentAsInput = 1
+        this.selectedModels = {
+            gapReluctance: Defaults.reluctanceModelDefault,
+            coreLosses: Defaults.coreLossesModelDefault,
+            coreTemperature: Defaults.coreTemperatureModelDefault,
+        }
     }
 
     function setUsername(username) {

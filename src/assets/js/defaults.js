@@ -161,7 +161,7 @@ export const defaultWinding = {
         "isolationSide": "primary",
         "name": "Primary",
         "numberParallels": 1,
-        "numberTurns": 42,
+        "numberTurns": 23,
         "wire": "Dummy"
     }],
 }
