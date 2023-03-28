@@ -82,7 +82,7 @@ export default {
             const data = {}
             data['simulation'] = globalSimulation
             data['gappingType'] = this.gapTypeSelected.toUpperCase()
-            data['models'] = {gapReluctance: this.$userStore.selectedModels['gapReluctance'].toUpperCase()}
+            data['models'] = {gapReluctance: this.$userStore.selectedModels['gapReluctance'].toUpperCase().replace(" ", "_")}
             this.$axios.post(url, data)
             .then(response => {
                 this.computing = false

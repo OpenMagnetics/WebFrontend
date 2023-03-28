@@ -424,6 +424,8 @@ export default {
                 dataToLoad = this.userDatabaseStore.getOperationPointById(id)
                 console.log(dataToLoad)
                 this.$userStore.setGlobalOperationPoint(dataToLoad)
+                this.$userStore.loadGlobalOperationPointIntoSimulation(0, dataToLoad)
+
                 this.operationPointCommonStore.setDataReadOnly(false)
                 if (this.specificElement == null) {
                     // Because this means we are in the User menu

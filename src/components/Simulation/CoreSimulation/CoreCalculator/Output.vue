@@ -137,7 +137,7 @@ export default {
             }
             data['models'] = {coreLosses: this.$userStore.selectedModels['coreLosses'].toUpperCase(),
                               coreTemperature: this.$userStore.selectedModels['coreTemperature'].toUpperCase(),
-                              gapReluctance: this.$userStore.selectedModels['gapReluctance'].toUpperCase()}
+                              gapReluctance: this.$userStore.selectedModels['gapReluctance'].toUpperCase().replace(" ", "_")}
             this.$axios.post(url, data)
             .then(response => {
                 this.tryingToSend = false
@@ -147,7 +147,7 @@ export default {
                 this.tryingToSend = false
                 console.error("Error getting core losses, resetting store")
                 console.error(error.data)
-                this.$userStore.reset()
+                // this.$userStore.reset()
             });
         },
         tryToSend() {

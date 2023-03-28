@@ -178,10 +178,10 @@ export const useUserStore = defineStore("user", () => {
         this.globalSimulation['magnetic']['core']['functionalDescription']['numberStacks'] = numberStacks
     }
     function setGlobalSimulationOperationPointByIndex(index, operationPoint) {
-        this.globalSimulation['inputs']['operationPoints'][0] = operationPoint
+        this.globalSimulation['inputs']['operationPoints'][index] = operationPoint
     }
     function loadGlobalOperationPointIntoSimulation(index, operationPoint) {
-        this.globalSimulation['inputs']['operationPoints'][0]['excitationsPerWinding'][0] = Utils.deepCopy(this.globalOperationPoint)
+        this.globalSimulation['inputs']['operationPoints'][index]['excitationsPerWinding'][0] = Utils.deepCopy(operationPoint)
         console.log(this.globalSimulation['inputs']['operationPoints'][0]['excitationsPerWinding'][0])
         console.log(this.globalOperationPoint)
     }
