@@ -514,6 +514,31 @@ export default {
         this.$userStore.$subscribe((mutation, state) => {
             this.changeSubsection()
         })
+        this.$userStore.$onAction((action) => {
+            if (action.name == "login") {
+                setTimeout(() => Utils.tryLoadElements(this.userDatabaseStore, this.$userStore.getUsername.value), 50);
+            }
+
+            if (action.name == "setOperationPoints") {
+                setTimeout(() => this.loadOperationPoints(), 50);
+            }
+
+            if (action.name == "setCores") {
+                setTimeout(() => this.loadCores(), 50);
+            }
+
+            if (action.name == "setBobbins") {
+                setTimeout(() => this.loadBobbins(), 50);
+            }
+
+            if (action.name == "setWires") {
+                setTimeout(() => this.loadWires(), 50);
+            }
+
+            if (action.name == "setMagnetics") {
+                setTimeout(() => this.loadMagnetics(), 50);
+            }
+        })
     }
 }
 </script>

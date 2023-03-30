@@ -142,8 +142,6 @@ export default {
             url = import.meta.env.VITE_API_ENDPOINT + '/get_core_temperature_models'
             this.$axios.post(url, {})
             .then(response => {
-                console.log("response.data")
-                console.log(response.data)
                 this.tryingToSend = false
                 this.coreTemperatureModelNames = Object.keys(response.data["information"]);
                 this.coreTemperatureModelDescriptions = response.data["information"];

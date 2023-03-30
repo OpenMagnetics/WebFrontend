@@ -64,7 +64,6 @@ export default {
             waveformTypes = aux["waveformTypes"]
         }
 
-        console.warn(waveformTypes)
 
         return {
             switchingFrequency,
@@ -105,8 +104,6 @@ export default {
             const compressedVoltageData = Utils.packDataPoints(data["voltage"]["waveform"], data["frequency"])
 
             const switchingFrequency = data["frequency"]
-            console.warn("switchingFrequency")
-            console.warn(switchingFrequency)
             const waveformTypes = {
                 current: Utils.tryGuessType(compressedCurrentData, data["frequency"]),
                 voltage: Utils.tryGuessType(compressedVoltageData, data["frequency"]),
@@ -120,10 +117,6 @@ export default {
             setTimeout(() => {
                 currentStore.setDataPointsFromFile(compressedCurrentData)
                 voltageStore.setDataPointsFromFile(compressedVoltageData)
-            console.warn("commonStore.getwitchingFrequency")
-            console.warn(commonStore.getwitchingFrequency)
-            console.warn("commonStore.getDutyCycle")
-            console.warn(commonStore.getDutyCycle)
             }, 1000);
 
             return {switchingFrequency, waveformTypes}

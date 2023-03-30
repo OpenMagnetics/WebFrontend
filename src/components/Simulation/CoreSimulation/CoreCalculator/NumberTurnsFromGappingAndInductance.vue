@@ -97,8 +97,6 @@ export default {
             });
         },
         tryToSend() {
-            console.log("this.$userStore.simulationCoreCalculatorSubsection")
-            console.log(this.$userStore.simulationCoreCalculatorSubsection)
             if (!this.tryingToSend) {
                 this.recentChange = false
                 this.tryingToSend = true
