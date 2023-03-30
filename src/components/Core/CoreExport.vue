@@ -83,7 +83,7 @@ export default {
             this.$axios.post(url, data)
             .then(response => {
                 const exportedData = Utils.getCoreData(this.$userStore, Defaults.defaultCoreSaveConfiguration)
-                download(response.data, exportedData["functionalDescription"]["name"] + ".stp", "text/plain");
+                download(response.data, exportedData["name"] + ".stp", "text/plain");
                 this.$emit("exported")
                 this.STPexported = true
                 setTimeout(() => this.STPexported = false, 2000);
@@ -107,7 +107,7 @@ export default {
             this.$axios.post(url, data)
             .then(response => {
                 const exportedData = Utils.getCoreData(this.$userStore, Defaults.defaultCoreSaveConfiguration)
-                download(response.data, exportedData["functionalDescription"]["name"] + ".obj", "text/plain");
+                download(response.data, exportedData["name"] + ".obj", "text/plain");
                 this.$emit("exported")
                 this.OBJexported = true
                 setTimeout(() => this.OBJexported = false, 2000);
@@ -129,7 +129,7 @@ export default {
                 downloadOnlyPiece: this.downloadOnlyPiecePicked == 1,
             }
             const exportedData = Utils.getCoreData(this.$userStore, configuration)
-            download(JSON.stringify(exportedData, null, 4), exportedData["functionalDescription"]["name"] + ".json", "text/plain");
+            download(JSON.stringify(exportedData, null, 4), exportedData["name"] + ".json", "text/plain");
             this.$emit("exported")
             this.MASexported = true
             setTimeout(() => this.MASexported = false, 2000);
