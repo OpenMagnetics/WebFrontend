@@ -36,12 +36,25 @@ export default {
     },
     data() {
         const coreStore = useCoreStore();
-        const gapTypeSelected = this.columnData['gapType']
+        // console.log(Utils.deepCopy(this.columnData))
+        var gapTypeSelected;
+        var numberGapsSelected;
+        var numberGaps;
+        var auxDataToDetectCollisions;
+        if (this.columnData == null || this.columnData['gapType'] == null) {
+            gapTypeSelected = 'Residual'
+            numberGapsSelected = 0
+            numberGaps = 0
+            auxDataToDetectCollisions = []
+        }
+        else {
+            gapTypeSelected = this.columnData['gapType']
+            numberGapsSelected = this.columnData['gaps'].length
+            numberGaps = this.columnData['gaps'].length
+            auxDataToDetectCollisions = Utils.deepCopy(this.columnData['gaps'])
+        }
         coreStore.setDistributedGapAlreadyInUse(this.gapTypeSelected == 'Distributed' || coreStore.distributedGapAlreadyInUse)
-        const numberGapsSelected = this.columnData['gaps'].length
-        const numberGaps = this.columnData['gaps'].length
         const previousGapType = null
-        const auxDataToDetectCollisions = Utils.deepCopy(this.columnData['gaps'])
         const gapErrors = ""
         const width = window.innerWidth;
         const recentChange = false;
@@ -128,7 +141,7 @@ export default {
     },
     created () {
         window.addEventListener('resize', this.handleResize);
-        this.gapTypeSelected = this.columnData['gapType']
+        // this.gapTypeSelected = this.columnData['gapType']
     },
     mounted () {
         this.coreStore.$onAction((action) => {
@@ -157,6 +170,7 @@ export default {
                 })
             })
             .catch(error => {
+                console.error("error in core_compute_gap_reluctances")
                 console.error(error.data)
             });
         },
@@ -376,7 +390,7 @@ export default {
         onGapLengthChange(newValue, gapIndex) {
             this.auxDataToDetectCollisions[gapIndex]['length'] = newValue
             this.gapErrors = this.checkCollisions()
-            if (!this.hasError()) {
+            if (!this.hasError() && this.$userStore.globalCore['functionalDescription']['gapping'].length > 0) {
                 this.recentChange = true
                 this.$userStore.globalCore['functionalDescription']['gapping'][this.columnData['gaps'][gapIndex]['globalGapIndex']]['length'] = newValue
                 this.tryToSend()
@@ -390,7 +404,7 @@ export default {
         onGapHeightChange(newValue, gapIndex) {
             this.auxDataToDetectCollisions[gapIndex]['height'] = newValue
             this.gapErrors = this.checkCollisions()
-            if (!this.hasError()) {
+            if (!this.hasError() && this.$userStore.globalCore['functionalDescription']['gapping'].length > 0) {
                 this.recentChange = true
                 this.$userStore.globalCore['functionalDescription']['gapping'][this.columnData['gaps'][gapIndex]['globalGapIndex']]['coordinates'][1] = newValue
                 this.$userStore.globalCore['functionalDescription']['gapping'][this.columnData['gaps'][gapIndex]['globalGapIndex']]['distanceClosestNormalSurface'] = this.$userStore.globalCore['processedDescription']['columns'][this.index]['height'] / 2 - Math.abs(newValue)

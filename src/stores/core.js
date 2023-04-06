@@ -65,6 +65,8 @@ export const useCoreStore = defineStore("core", () => {
     }
     function quickGappingChanged() {
     }
+    function quickShapeChanged() {
+    }
     return {
         customizedShape,
         customizedMaterial,
@@ -95,5 +97,6 @@ export const useCoreStore = defineStore("core", () => {
         fullCoreModel,
         onLoadCommercialShape,
         quickGappingChanged,
+        quickShapeChanged,
     }
 })

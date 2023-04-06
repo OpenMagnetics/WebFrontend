@@ -60,6 +60,9 @@ export default {
             this.totalCoreLosses = Utils.removeTrailingZeroes(aux['label'], 2)
             this.totalCoreLossesUnit = aux['unit']
             var aux = Utils.formatPowerDensity(value['totalVolumetricLosses'])
+            console.log("Ea")
+            console.log(aux)
+            console.log(value['totalVolumetricLosses'])
             this.volumetricCoreLosses = Utils.removeTrailingZeroes(aux['label'], 2)
             this.volumetricCoreLossesUnit = aux['unit']
 

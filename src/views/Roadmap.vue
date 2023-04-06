@@ -40,14 +40,14 @@ export default {
                     description: 'Implement Steinmetz Equation, the first and simplest of method for calculating the Core Losses of a magnetic core from a few coefficients provided by the manufacturer.',
                     imgSrc: '/images/roadmap/steinmetz.png',
                     imgAlt: 'Charles Proteus Steinmetz',
-                    state: "To Do"
+                    state: "Done on February 2023"
                 },
                 {
                     id: 1,
                     title: 'Improved Generalized Steinmetz Equation',
                     section: 'Core losses', 
                     description: 'Implement Steinmetz Equation, an extension to the Steinmetz equation that enables estimation of losses in magnetic core materials with nonsinusoidal flux waveforms.',
-                    state: "To Do"
+                    state: "Done on February 2023"
                 },
                 {
                     id: 2,
@@ -56,7 +56,7 @@ export default {
                     description: 'Implement Barg\'s model for Core losses, as described in "Core Loss Calculation of Symmetric Trapezoidal Magnetic Flux Density Waveform".',
                     imgSrc: '/images/roadmap/barg.png',
                     imgAlt: 'Flux density waveform',
-                    state: "To Do"
+                    state: "Done on February 2023"
                 },
                 {
                     id: 3,
@@ -65,7 +65,7 @@ export default {
                     description: 'Implement Roshen\'s model for Core losses, as described in "Ferrite Core Loss for Power Magnetic Components Design" and "A Practical, Accurate and Very General Core Loss Model for Nonsinusoidal Waveforms".',
                     imgSrc: '/images/roadmap/roshen.png',
                     imgAlt: 'Roshen minor loop',
-                    state: "To Do"
+                    state: "Done on February 2023"
                 },
                 {
                     id: 4,
@@ -215,7 +215,7 @@ export default {
                     title: 'Inductance calculator',
                     section: 'Core Design', 
                     description: 'Module that is able to calculate any combination of number of turns, gapping, and inductance that the user might need, for a given core',
-                    state: 'To Do'
+                    state: 'Done on January 2023'
                 },
                 {
                     id: 23,
@@ -327,6 +327,13 @@ export default {
                     title: 'Jabłoński\'s model for core eddy current losses',
                     section: 'Core losses', 
                     description: 'Implement Paweł Jabłoński \'s model for Core Eddy current losses, as described in "An Improved Approach to Calculate Eddy Current Loss in Soft Magnetic Materials Based on Measured Hysteresis Loops"',
+                    state: "To Do"
+                },
+                {
+                    id: 39,
+                    title: 'Gapped toroidal cores',
+                    section: 'Core Design', 
+                    description: 'Implement the functionality to have gapped toroidal cores',
                     state: "To Do"
                 },
             ]

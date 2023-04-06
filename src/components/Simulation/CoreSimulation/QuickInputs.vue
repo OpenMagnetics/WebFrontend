@@ -89,7 +89,12 @@ export default {
         },
         handleSubmit(params) {
         },
-    },
+    },,
+    computed: {
+        isNotToroid() {
+            return this.$userStore.globalSimulation['magnetic']['core']['functionalDescription']['shape']['family'] != 't'
+        }
+    }
 }
 </script>
 

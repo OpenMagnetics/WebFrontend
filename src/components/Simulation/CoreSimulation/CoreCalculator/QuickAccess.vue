@@ -135,6 +135,7 @@ export default {
                     this.stackable = false
                     this.quickStacksSelected = 1
                 }
+
                 this.$userStore.setGlobalSimulationCoreShape(shapeDataSelected)
                 this.$userStore.setGlobalSimulationCoreNumberStacks(1)
                 this.simulationStore.calculateInductance()

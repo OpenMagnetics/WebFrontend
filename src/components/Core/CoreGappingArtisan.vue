@@ -14,15 +14,25 @@ export default {
         var numberColumns = 3;
         Utils.getCoreParameters(this.$userStore, () => {this.numberColumns = this.$userStore.globalCore['processedDescription']['columns'].length;}, () => {})
         const columnData = []
-        for (let i = 0; i < numberColumns; i++) {
-            columnData.push({
-                gapType: 'Residual',
-                gaps: [{
-                    length: Defaults.engineConstants['residualGap'],
-                    height: 0,
-                    globalGapIndex: i,
-                }]
-            })        
+        if (this.$userStore.globalCore['functionalDescription']['gapping'].length > 0) {
+            for (let i = 0; i < numberColumns; i++) {
+                columnData.push({
+                    gapType: 'Residual',
+                    gaps: [{
+                        length: Defaults.engineConstants['residualGap'],
+                        height: 0,
+                        globalGapIndex: i,
+                    }]
+                })        
+            }
+        }
+        else {
+            for (let i = 0; i < numberColumns; i++) {
+                columnData.push({
+                    gapType: 'Residual',
+                    gaps: []
+                })        
+            }
         }
         const coreStore = useCoreStore();
 
@@ -35,6 +45,9 @@ export default {
         }
     },
     computed: {
+        columnDataLengthGreaterThanZero() {
+            return this.columnData.length > 0
+        },
         leftSideTitle() {
             return "Left Lateral Column"
         },
@@ -73,6 +86,7 @@ export default {
         this.$userStore.$onAction((action) => {
             if (action.name == "updateAllLengths") {
                 this.getNumberColumns()
+                console.log("this.columnData called from updateAllLengths")
                 this.columnData = this.decodeStoredGap()
             }
         })
@@ -84,7 +98,19 @@ export default {
             }
             if (action.name == "quickGappingChanged") {
                 this.getNumberColumns()
+                console.log("this.columnData called from quickGappingChanged")
                 this.columnData = this.decodeStoredGap()
+            }
+            if (action.name == "quickShapeChanged") {
+                Utils.getCoreParameters(this.$userStore, () => {
+                        this.getNumberColumns();
+                        console.log("this.columnData called from quickShapeChanged")
+                        this.columnData = this.decodeStoredGap();
+                        console.log("this.columnData")
+                        console.log(this.columnData)
+                        this.recentChange = true;
+                        this.tryToSend()
+                    }, () => {})
             }
         })
     },
@@ -335,9 +361,20 @@ export default {
     }
 }
 </script>
-<template>
-    <div class="container columns-container">
-        <div v-if="$userStore.globalCore['processedDescription'] != null" class="row">
+<template> 
+    <div v-if="$userStore.globalCore['functionalDescription']['shape']['family'] == 't'" class="container">
+        <div class="row">
+            <div class="offset-1 col-lg-10 text-center">
+                <p class="text-white fs-4 mt-5">We have decided to leave the implementation of gapped toroids for the future</p>
+                <p class="text-white fs-4 my-3">If you really want a gapped toroid, you can vote for this feature in our roadmap!</p>
+                <p> <router-link class="fs-4 text-primary" to="/roadmap">Roadmap</router-link> </p>
+                <p> <router-link class="text-primary" to="/roadmap"><i class="fa-solid fa-road fa-4x bd-placeholder-img rounded-circle text-primary" width="40" height="40" xmlns="http://www.w3.org/2000/svg" role="img" focusable="false"></i></router-link> </p>
+                
+            </div>
+        </div>
+    </div>
+    <div v-else class="container columns-container">
+        <div v-if="$userStore.globalCore['processedDescription'] != null && columnDataLengthGreaterThanZero" class="row">
             <div v-if="numberColumns > 2" :class="'col-xl-3'" class="text-center">
                 <GapInput :title="leftSideTitle" :index="2" imageFile="/images/columns/leftColumn.svg" :columnData="columnData[2]" @gapTypeChanged="gapTypeChanged" @onGappingChange="onGappingChange"/>
             </div>

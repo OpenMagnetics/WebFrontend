@@ -55,17 +55,9 @@ export default {
         }
     },
     mounted() {
-        console.log("this.quickGapTypeSelected")
-        console.log(this.quickGapTypeSelected)
-        console.log("this.quickGapLengthSelected")
-        console.log(this.quickGapLengthSelected)
         this.updateQuickGap()
         this.loadShapesNames()
         this.loadMaterialNames()
-        console.log("this.quickGapTypeSelected")
-        console.log(this.quickGapTypeSelected)
-        console.log("this.quickGapLengthSelected")
-        console.log(this.quickGapLengthSelected)
     },
     created() {
         this.$dataCacheStore.$onAction((action) => {
@@ -159,12 +151,14 @@ export default {
         },
         onShapeChange () {
             var shapeDataSelected = {}
+            console.log("On shape change")
             this.$dataCacheStore.commercialShapes.forEach((item) => {
                 if (item['name'] == this.quickShapeSelected) {
                     shapeDataSelected = Utils.deepCopy(item)
                 }
             })
             this.$userStore.setGlobalCoreShape(shapeDataSelected)
+            this.coreStore.quickShapeChanged()
         },
         onGapTypeChange () {
             if (this.quickGapTypeSelected == "Ungapped") {
@@ -259,12 +253,12 @@ export default {
             </div>
 
 
-            <label v-tooltip="'Basic gap length of the central column. Go to Gaping Artisan for advanced customization.'" class="rounded-2 fs-5 col-xl-1 col-lg-5 col-sm-5 text-xl-end pe-3 m-0 p-0 text-sm-center" >Gap</label>
-            <Field @keydown.enter.prevent :disabled="quickGapTypeSelected == 'Ungapped'" v-if="quickGapTypeSelected != 'Custom'" ref="quickGapLengthFieldRef" name="quickGapLengthField" type="number" v-model="quickGapLengthSelected" @change="onGapLengthChange" :class="{'is-invalid': errors.quickGapLengthField }" class="rounded-2 bg-light text-white col-xl-1 col-lg-3 col-sm-3 text-end"/>
-            <label v-if="quickGapTypeSelected != 'Custom'" class="rounded-2 fs-5 text-start col-xl-1 col-lg-2 col-sm-2 p-0 m-0 ps-1" >{{"mm"}}</label>
+            <label v-if="$userStore.globalCore['functionalDescription']['shape']['family'] != 't'" v-tooltip="'Basic gap length of the central column. Go to Gaping Artisan for advanced customization.'" class="rounded-2 fs-5 col-xl-1 col-lg-5 col-sm-5 text-xl-end pe-3 m-0 p-0 text-sm-center" >Gap</label>
+            <Field v-if="$userStore.globalCore['functionalDescription']['shape']['family'] != 't'" @keydown.enter.prevent :disabled="quickGapTypeSelected == 'Ungapped' && quickGapTypeSelected != 'Custom'" ref="quickGapLengthFieldRef" name="quickGapLengthField" type="number" v-model="quickGapLengthSelected" @change="onGapLengthChange" :class="{'is-invalid': errors.quickGapLengthField }" class="rounded-2 bg-light text-white col-xl-1 col-lg-3 col-sm-3 text-end"/>
+            <label v-if="$userStore.globalCore['functionalDescription']['shape']['family'] != 't' && quickGapTypeSelected != 'Custom'" class="rounded-2 fs-5 text-start col-xl-1 col-lg-2 col-sm-2 p-0 m-0 ps-1" >{{"mm"}}</label>
 
-            <label v-tooltip="'Type of gap. Go to Gaping Artisan for advanced customization.'" class="rounded-2 fs-5 col-xl-1 col-sm-5 p-0 m-0 text-sm-center">Type</label>
-            <Field @keydown.enter.prevent name="quickGapTypeField" ref="quickGapTypeFieldRef" as="select" :class="{'is-invalid': errors.quickGapTypeField }" @change="onGapTypeChange" class= "fs-6 bg-light text-white rounded-2 col-xl-2 col-sm-5" v-model="quickGapTypeSelected" >
+            <label v-if="$userStore.globalCore['functionalDescription']['shape']['family'] != 't'" v-tooltip="'Type of gap. Go to Gaping Artisan for advanced customization.'" class="rounded-2 fs-5 col-xl-1 col-sm-5 p-0 m-0 text-sm-center">Type</label>
+            <Field v-if="$userStore.globalCore['functionalDescription']['shape']['family'] != 't'" @keydown.enter.prevent name="quickGapTypeField" ref="quickGapTypeFieldRef" as="select" :class="{'is-invalid': errors.quickGapTypeField }" @change="onGapTypeChange" class= "fs-6 bg-light text-white rounded-2 col-xl-2 col-sm-5" v-model="quickGapTypeSelected" >
                 <option disabled value="">Please select one</option>
                 <option value="Ungapped">Ungapped</option>
                 <option value="Grinded">Grinded</option>

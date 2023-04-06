@@ -252,8 +252,6 @@ export default {
             }
         },
         onLoadCommercialShape(data) {
-            console.log("Ea")
-            console.log(data)
         }
     },
     computed: {

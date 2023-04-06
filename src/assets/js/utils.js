@@ -116,6 +116,14 @@ export function formatUnit(value, unitValue) {
         base = 1000000000
         unit = "G" + unitValue
     }
+    else if (value >= 1000000000000 && value < 1000000000000000) {
+        base = 1000000000000
+        unit = "T" + unitValue
+    }
+    else if (value >= 1000000000000000 && value < 1000000000000000000) {
+        base = 1000000000000000
+        unit = "P" + unitValue
+    }
     label = value / base
     return {label, unit}
 }

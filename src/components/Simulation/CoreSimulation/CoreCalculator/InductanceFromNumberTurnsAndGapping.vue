@@ -88,6 +88,9 @@ export default {
             if (typeof(globalSimulation['magnetic']['core']['functionalDescription']['material']) != 'string') {
                 globalSimulation['magnetic']['core']['functionalDescription']['material'] = globalSimulation['magnetic']['core']['functionalDescription']['material']['name']
             }
+
+            console.log("globalSimulation")
+            console.log(globalSimulation)
             const data = {}
             data['simulation'] = globalSimulation
             data['models'] = {gapReluctance: this.$userStore.selectedModels['gapReluctance'].toUpperCase().replace(" ", "_")}
@@ -205,6 +208,9 @@ export default {
 
     },
     computed: {
+        isNotToroid() {
+            return this.$userStore.globalSimulation['magnetic']['core']['functionalDescription']['shape']['family'] != 't'
+        }
     },
 }
 </script>
@@ -231,10 +237,10 @@ export default {
 
 
             <div class="mt-1"></div>
-            <label class="rounded-2 fs-5 col-12">Gap info</label>
+            <label v-if="isNotToroid" class="rounded-2 fs-5 col-12">Gap info</label>
 
-            <label v-tooltip="'Type of gap. Go to Gaping Artisan for advanced customization.'" class="rounded-2 fs-6 text-white offset-1 col-4">Type:</label>
-            <Field name="quickGapTypeField" ref="quickGapTypeFieldRef" as="select" :class="{'is-invalid': errors.quickGapTypeField }" @change="onGapTypeChange" class= "rounded-2 bg-light text-white  col-6" v-model="gapTypeSelected" >
+            <label v-if="isNotToroid" v-tooltip="'Type of gap. Go to Gaping Artisan for advanced customization.'" class="rounded-2 fs-6 text-white offset-1 col-4">Type:</label>
+            <Field v-if="isNotToroid" name="quickGapTypeField" ref="quickGapTypeFieldRef" as="select" :class="{'is-invalid': errors.quickGapTypeField }" @change="onGapTypeChange" class= "rounded-2 bg-light text-white  col-6" v-model="gapTypeSelected" >
                 <option disabled value="">Please select one</option>
                 <option value="Ungapped">Ungapped</option>
                 <option value="Grinded">Grinded</option>
@@ -242,11 +248,11 @@ export default {
                 <option value="Distributed">Distributed</option>
                 <option disabled value="Custom">Custom</option>
             </Field>
-            <div class="invalid-feedback">{{errors.quickGapTypeField}}</div>
+            <div v-if="isNotToroid" class="invalid-feedback">{{errors.quickGapTypeField}}</div>
 
 
-            <label v-tooltip="gapTypeSelected!='Residual'? 'Length of the gap, in mm' : 'Residual length cannot be changed'" class="rounded-2 fs-6 text-white offset-1 col-4 mt-3">Length:</label>
-            <vue-number-input :disabled="gapTypeSelected == 'Ungapped'" controls class="col-5 mt-2"  :class="{ 'is-invalid': errors.gapLengthField }" 
+            <label v-if="isNotToroid" v-tooltip="gapTypeSelected!='Residual'? 'Length of the gap, in mm' : 'Residual length cannot be changed'" class="rounded-2 fs-6 text-white offset-1 col-4 mt-3">Length:</label>
+            <vue-number-input v-if="isNotToroid" :disabled="gapTypeSelected == 'Ungapped'" controls class="col-5 mt-2"  :class="{ 'is-invalid': errors.gapLengthField }" 
                 :modelValue="gapLengthSelected"
                 @update:model-value="onLengthUpdate"
                 :size="'small'"
@@ -257,11 +263,11 @@ export default {
                 :step="0.1"
                 :max="1000">
                 </vue-number-input>
-            <label class="small-text col-1 text-start mt-3 fs-6">mm</label>
+            <label v-if="isNotToroid" class="small-text col-1 text-start mt-3 fs-6">mm</label>
 
 
-            <label v-tooltip="gapTypeSelected!='Residual'? 'Length of the gap, in mm' : 'Residual length cannot be changed'" class="rounded-2 fs-6 text-white offset-1 col-4 mt-3">No. gaps:</label>
-            <vue-number-input  :disabled="gapTypeSelected != 'Distributed'" controls class="col-5 mt-2"  :class="{ 'is-invalid': errors.numberGapsField }" 
+            <label v-if="isNotToroid" v-tooltip="gapTypeSelected!='Residual'? 'Length of the gap, in mm' : 'Residual length cannot be changed'" class="rounded-2 fs-6 text-white offset-1 col-4 mt-3">No. gaps:</label>
+            <vue-number-input v-if="isNotToroid" :disabled="gapTypeSelected != 'Distributed'" controls class="col-5 mt-2"  :class="{ 'is-invalid': errors.numberGapsField }" 
                 :modelValue="numberGapsSelected"
                 @update:model-value="onNumberGapsUpdate"
                 :size="'small'"

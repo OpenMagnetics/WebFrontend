@@ -48,13 +48,15 @@ export default {
     },
     data() {
         const coreStore = useCoreStore();
-        var gapLengthSelected;
-        if (this.$userStore.globalCore['functionalDescription']['gapping'][this.globalGapIndex]['length'] != null){
-            gapLengthSelected = this.$userStore.globalCore['functionalDescription']['gapping'][this.globalGapIndex]['length'] * 1000
-        }
-        var gapHeightSelected;
-        if (this.$userStore.globalCore['functionalDescription']['gapping'][this.globalGapIndex]['coordinates'] != null){
-            gapHeightSelected = this.$userStore.globalCore['functionalDescription']['gapping'][this.globalGapIndex]['coordinates'][1] * 1000
+        var gapLengthSelected = 0;
+        var gapHeightSelected = 0;
+        if (this.$userStore.globalCore['functionalDescription']['gapping'].length > 0 && this.$userStore.globalCore['functionalDescription']['gapping'].length > this.globalGapIndex ){
+            if (this.$userStore.globalCore['functionalDescription']['gapping'][this.globalGapIndex]['length'] != null){
+                gapLengthSelected = this.$userStore.globalCore['functionalDescription']['gapping'][this.globalGapIndex]['length'] * 1000
+            }
+            if (this.$userStore.globalCore['functionalDescription']['gapping'][this.globalGapIndex]['coordinates'] != null){
+                gapHeightSelected = this.$userStore.globalCore['functionalDescription']['gapping'][this.globalGapIndex]['coordinates'][1] * 1000
+            }
         }
         return {
             coreStore,

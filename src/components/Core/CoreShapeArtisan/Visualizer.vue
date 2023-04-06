@@ -401,16 +401,33 @@ export default {
                 }
 
             } );
+
             object.rotation.x = -Math.PI / 2
             object.rotation.y = 0
             object.rotation.z = 0
+            // if (this.$userStore.globalCore['functionalDescription']['shape']['family'] == 't') {
+            //     const boundingBox = new Box3();
+            //     boundingBox.setFromObject( object );
+            //     var size = new Vector3();
+            //     boundingBox.getSize(size);
+
+            //     console.log("size")
+            //     console.log(size)
+            //     // object.position.y = -size.y
+            // }
             scene.add( object );
             this.current3dObject = object
             if (this.coreStore.fullCoreModel) {
                 this.fitCameraToCenteredObject(camera, object, 1, 1.5)
             }
             else {
-                this.fitCameraToCenteredObject(camera, object, 1, 3)
+
+                if (this.$userStore.globalCore['functionalDescription']['shape']['family'] == 't') {
+                    this.fitCameraToCenteredObject(camera, object, 1, 1.5)
+                }
+                else {
+                    this.fitCameraToCenteredObject(camera, object, 1, 3)
+                }
             }
         },
         fitCameraToCenteredObject(camera, object, offset, offsetY, orbitControls) {
@@ -473,7 +490,7 @@ export default {
             const minZ = boundingBox.min.z;
             const cameraToFarEdge = ( minZ < 0 ) ? -minZ + cameraZ : cameraZ - minZ;
 
-            camera.far = cameraToFarEdge * 3;
+            camera.far = cameraToFarEdge * 30;
             camera.updateProjectionMatrix();
 
             if ( orbitControls !== undefined ) {
@@ -481,7 +498,7 @@ export default {
                 orbitControls.target = new THREE.Vector3(0, 0, 0);
 
                 // prevent camera from zooming out far enough to create far plane cutoff
-                orbitControls.maxDistance = cameraToFarEdge * 2;
+                orbitControls.maxDistance = cameraToFarEdge * 20;
             }
         }
 

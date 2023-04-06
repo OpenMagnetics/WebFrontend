@@ -154,6 +154,14 @@ export const useUserStore = defineStore("user", () => {
     }
     function setGlobalCoreShape(shape) {
         this.globalCore['functionalDescription']['shape'] = shape
+
+        if (shape['family'] == 't') {
+            this.globalCore['functionalDescription']['gapping'] = []
+            this.globalCore['functionalDescription']['type'] = 'toroidal'
+        }
+        else {
+            this.globalCore['functionalDescription']['type'] = 'two-piece set'
+        }
     }
     function setGlobalCoreMaterial(material) {
         this.globalCore['functionalDescription']['material'] = material
@@ -166,6 +174,13 @@ export const useUserStore = defineStore("user", () => {
     }
     function setGlobalSimulationCoreShape(shape) {
         this.globalSimulation['magnetic']['core']['functionalDescription']['shape'] = shape
+        if (shape['family'] == 't') {
+            this.globalSimulation['magnetic']['core']['functionalDescription']['type'] = "toroidal"
+            this.globalSimulation['magnetic']['core']['functionalDescription']['gapping'] = []
+        }
+        else {
+            this.globalSimulation['magnetic']['core']['functionalDescription']['type'] = "two-piece set"
+        }
     }
     function setGlobalSimulationCoreGapping(gapping) {
         console.log("gapping")

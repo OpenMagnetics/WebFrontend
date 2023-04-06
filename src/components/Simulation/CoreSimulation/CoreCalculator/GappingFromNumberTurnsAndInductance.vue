@@ -97,7 +97,7 @@ export default {
             });
         },
         tryToSend() {
-            if (!this.tryingToSend) {
+            if (!this.tryingToSend && this.isNotToroid) {
                 this.recentChange = false
                 this.tryingToSend = true
                 setTimeout(() => {
@@ -145,13 +145,16 @@ export default {
 
     },
     computed: {
+        isNotToroid() {
+            return this.$userStore.globalSimulation['magnetic']['core']['functionalDescription']['shape']['family'] != 't'
+        }
     },
 }
 </script>
 
 
-<template>
-    <div class="container-flex text-primary mt-2">
+<template>    
+    <div v-if="isNotToroid" class="container-flex text-primary mt-2">
         <Form ref="formRef" :validation-schema="schema" v-slot="{ handleSubmit, errors }" class="form-inline row" @submit="handleSubmit($event, onSubmit)">
 
             <div class="mt-1"></div>
@@ -211,6 +214,16 @@ export default {
             <label v-if="!computing" class="fs-5 bg-light text-white col-5 text-end">{{numberGaps}}</label>
 
         </Form>
+    </div>
+    <div v-else class="container mx-0 p-0">
+        <div class="row">
+            <div class="offset-1 col-lg-10 text-center">
+                <p class="text-white fs-6 mt-1 mx-0">We have decided to leave the implementation of gapped toroids for the future</p>
+                <p class="text-white fs-6 my-1 mx-0">If you really want a gapped toroid, you can vote for this feature in our roadmap!</p>
+                <p> <router-link class="fs-4 text-primary" to="/roadmap">Roadmap</router-link> </p>
+                
+            </div>
+        </div>
     </div>
 </template>
 
