@@ -94,6 +94,7 @@ export const useUserStore = defineStore("user", () => {
         this.userSubsection = "operationPoints"
         this.coreSubsection = "shapeArtisan"
 
+        this.readNotifications = []
         this.loggedIn = false
         this.ipAddress = 0
         this.username = null
@@ -212,8 +213,14 @@ export const useUserStore = defineStore("user", () => {
     function setSimulationUseCurrentAsInput(simulationUseCurrentAsInput) {
         this.simulationUseCurrentAsInput = simulationUseCurrentAsInput
     }
+    function armDeadManSwitch() {
+    }
+    function disarmDeadManSwitch() {
+    }
     return {
         dump,
+        armDeadManSwitch,
+        disarmDeadManSwitch,
         loggedIn,
         ipAddress,
         username,

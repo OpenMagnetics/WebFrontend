@@ -9,6 +9,7 @@ import { tryLoadElements } from '/src/assets/js/utils.js'
 export default {
     components: {
         BugReporterModal: defineAsyncComponent(() => import('/src/components/User/BugReporter.vue') ),
+        DeadManSwitch: defineAsyncComponent(() => import('/src/components/User/DeadManSwitch.vue') ),
         LoginModal: defineAsyncComponent(() => import('/src/components/User/Login.vue') ),
         CoreLoadCommercialShape: defineAsyncComponent(() => import('/src/components/Core/CoreLoadCommercialShape.vue') ),
         CoreLoadCommercialMaterial: defineAsyncComponent(() => import('/src/components/Core/CoreLoadCommercialMaterial.vue') ),
@@ -203,6 +204,7 @@ export default {
 
     <!-- Modal -->
     <BugReporterModal/>
+    <DeadManSwitch/>
     <div class="modal fade" id="registerModal" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
         <LoginModal :isLogin="false" @onLoggedIn="onLoggedIn"/>
     </div>

@@ -205,8 +205,10 @@ export default {
                                 <div :id="'collapseGapOutput' + columnIndex + gapIndex" class="accordion-collapse bg-transparent text-white " :aria-labelledby="'headingGapOutput' + columnIndex + gapIndex" :data-bs-parent="'#gapOutputAccordion' + columnIndex + gapIndex">
                                     <div class="accordion-body p-1">
 
-                                        <label v-tooltip="'Magnetic reluctance of the gap, including fringing effect, calculated using TBD model'" class="small-text col-6 text-start">Reluctance:</label>
+                                        <label v-tooltip="'Magnetic reluctance of the gap, including fringing effect, calculated using the selected model'" class="small-text col-6 text-start">Reluctance:</label>
                                         <label class="small-text bg-transparent text-white text-end float-end col-6"><slot name="reluctance"></slot></label>
+                                        <label v-tooltip="'Magnetic permeance of the gap, including fringing effect. Also known as AL value'" class="small-text col-6 text-start">Permeance:</label>
+                                        <label class="small-text bg-transparent text-white text-end float-end col-6"><slot name="permeance"></slot></label>
                                         <!-- <label class="small-text bg-transparent text-white text-end float-end col-6">{{4232 + " H⁻¹"}}</label> -->
 
                                         <label v-tooltip="'Energy that can be stored in this gap'" class="small-text col-7 text-start">Max. energy:</label>

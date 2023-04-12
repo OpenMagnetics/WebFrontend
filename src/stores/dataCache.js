@@ -13,7 +13,15 @@ export const useDataCacheStore = defineStore("dataCache", () => {
     function commercialMaterialsLoaded() {
     }
 
+    function reset() {
+        this.timestamp = null
+        this.commercialCores = []
+        this.commercialShapes = []
+        this.commercialMaterials = []
+    }
+
     return {
+        reset,
         timestamp,
         ttlInMilliseconds,
         commercialCores,
@@ -24,5 +32,5 @@ export const useDataCacheStore = defineStore("dataCache", () => {
     }
 },
 {
-    persist: true,
+    persist: false,
 })

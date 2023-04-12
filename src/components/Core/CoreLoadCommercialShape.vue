@@ -100,6 +100,7 @@ export default {
             })
         },
         loadTableData() {
+            this.$userStore.armDeadManSwitch()
             this.$dataCacheStore.commercialCores.forEach((item) => {
             const datum = {
                 name: item['functionalDescription']['shape']['name'],
@@ -112,6 +113,7 @@ export default {
                 this.commercialData.push(datum)
             })
             this.scaleColumns()  // To avoid bug in vue-good-table-next
+            this.$userStore.disarmDeadManSwitch()
         },
     },
     mounted() {

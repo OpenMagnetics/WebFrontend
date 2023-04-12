@@ -64,10 +64,14 @@ router.beforeEach((to, from, next) => {
 
             const urlMaterials = import.meta.env.VITE_API_ENDPOINT + '/core_get_commercial_materials'
             const core = app.config.globalProperties.$userStore.getGlobalCore
+            setTimeout(() => {console.warn("Arming2"); app.config.globalProperties.$userStore.armDeadManSwitch()}, 1000);
+            
+            console.warn("Arming")
             axiosInstance.post(urlMaterials, {})
             .then(response => {
                 app.config.globalProperties.$dataCacheStore.commercialMaterials = response.data["commercial_materials"]
                 app.config.globalProperties.$dataCacheStore.commercialMaterialsLoaded()
+                setTimeout(() => app.config.globalProperties.$userStore.disarmDeadManSwitch(), 1000);
             })
             .catch(error => {
                 console.error("Error loading material library")
@@ -83,6 +87,7 @@ router.beforeEach((to, from, next) => {
                     app.config.globalProperties.$dataCacheStore.commercialShapes.push(item['functionalDescription']['shape'])
                 })
                 app.config.globalProperties.$dataCacheStore.commercialShapesLoaded()
+                setTimeout(() => app.config.globalProperties.$userStore.disarmDeadManSwitch(), 1000);
             })
             .catch(error => {
                 console.error("Error loading shape library")

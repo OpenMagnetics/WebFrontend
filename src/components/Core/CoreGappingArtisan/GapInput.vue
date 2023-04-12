@@ -60,11 +60,19 @@ export default {
         const recentChange = false;
         const tryingToSend = false;
         const outputData = [];
+        const outputDataUnits = [];
         for (let i = 0; i < numberGaps; i++) {
             outputData.push({
+                "permeance": null,
                 "reluctance": null,
                 "maximum_storable_energy": null,
                 "fringing_factor": null
+            })
+            outputDataUnits.push({
+                "permeance": "H",
+                "reluctance": "H⁻¹",
+                "maximum_storable_energy": "J",
+                "fringing_factor": "%"
             })
         }
         return {
@@ -79,6 +87,7 @@ export default {
             recentChange,
             tryingToSend,
             outputData,
+            outputDataUnits,
         }
     },
     watch: { 
@@ -90,11 +99,19 @@ export default {
             this.numberGapsSelected = this.columnData['gaps'].length
             if (this.numberGaps != this.outputData.length) {
                 this.outputData = []
+                this.outputDataUnits = []
                 for (let i = 0; i < this.numberGaps; i++) {
                     this.outputData.push({
+                        "permeance": null,
                         "reluctance": null,
                         "maximum_storable_energy": null,
                         "fringing_factor": null
+                    })
+                    this.outputDataUnits.push({
+                        "permeance": "H",
+                        "reluctance": "H⁻¹",
+                        "maximum_storable_energy": "J",
+                        "fringing_factor": "%"
                     })
                 }
             }
@@ -161,11 +178,29 @@ export default {
             this.$axios.post(url, data)
             .then(response => {
                 this.outputData = []
+                this.outputDataUnits = []
                 this.columnData['gaps'].forEach((item) => {
+                    const datum = response.data[item['globalGapIndex']]
+                    var aux = Utils.formatPermeance(datum['permeance'])
+                    const permeance = Utils.removeTrailingZeroes(aux['label'], 2)
+                    const permeanceUnit = aux['unit']
+                    aux = Utils.formatReluctance(datum['reluctance'])
+                    const reluctance = Utils.removeTrailingZeroes(aux['label'], 2)
+                    const reluctanceUnit = aux['unit']
+                    aux = Utils.formatEnergy(datum['maximum_storable_energy'])
+                    const maximum_storable_energy = Utils.removeTrailingZeroes(aux['label'], 2)
+                    const maximum_storable_energyUnit = aux['unit']
                     this.outputData.push({
-                        "reluctance": Utils.removeTrailingZeroes(response.data[item['globalGapIndex']]["reluctance"], 0),
-                        "maximum_storable_energy": Utils.removeTrailingZeroes(response.data[item['globalGapIndex']]["maximum_storable_energy"] * 1e3, 2),
+                        "permeance": permeance,
+                        "reluctance": reluctance,
+                        "maximum_storable_energy": maximum_storable_energy,
                         "fringing_factor": Utils.removeTrailingZeroes((response.data[item['globalGapIndex']]["fringing_factor"] - 1) * 100, 1)
+                    })
+                    this.outputDataUnits.push({
+                        "permeance": permeanceUnit,
+                        "reluctance": reluctanceUnit,
+                        "maximum_storable_energy": maximum_storable_energyUnit,
+                        "fringing_factor": "%"
                     })
                 })
             })
@@ -210,6 +245,7 @@ export default {
                 this.$userStore.globalCore['functionalDescription']['gapping'].push(globalGap)  // TODO: change height
                 this.columnData['gaps'].push(localGap)  // TODO: change height
                 this.outputData.push(this.outputData.at(-1))  // TODO: change height
+                this.outputDataUnits.push(this.outputDataUnits.at(-1))  // TODO: change height
                 this.auxDataToDetectCollisions.push(localGap)
 
             }
@@ -219,6 +255,7 @@ export default {
                 const globalIndexToRemove = this.columnData['gaps'].at(-1)['globalGapIndex']
                 this.columnData['gaps'].pop();
                 this.outputData.pop();
+                this.outputDataUnits.pop();
                 this.auxDataToDetectCollisions.pop();
                 this.$userStore.globalCore['functionalDescription']['gapping'].splice(globalIndexToRemove, 1)
             }
@@ -456,13 +493,16 @@ export default {
                     {{gapErrors[gapIndex - 1]}}
                 </template>
                 <template #reluctance>
-                    {{outputData[gapIndex - 1]['reluctance'] + " H⁻¹"}}
+                    {{outputData[gapIndex - 1]['reluctance'] + " " + outputDataUnits[gapIndex - 1]['reluctance']}}
+                </template>
+                <template #permeance>
+                    {{outputData[gapIndex - 1]['permeance'] + " " + outputDataUnits[gapIndex - 1]['permeance']}}
                 </template>
                 <template #maximumEnergy>
-                    {{outputData[gapIndex - 1]['maximum_storable_energy'] + " mJ"}}
+                    {{outputData[gapIndex - 1]['maximum_storable_energy'] + " " + outputDataUnits[gapIndex - 1]['maximum_storable_energy']}}
                 </template>
                 <template #fringingFactor>
-                    {{outputData[gapIndex - 1]['fringing_factor'] + " %"}}
+                    {{outputData[gapIndex - 1]['fringing_factor'] + " " + outputDataUnits[gapIndex - 1]['fringing_factor']}}
                 </template>
             </GapElement>
             </div>

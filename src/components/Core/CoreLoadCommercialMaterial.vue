@@ -99,6 +99,7 @@ export default {
             })
         },
         loadTableData() {
+            this.$userStore.armDeadManSwitch()
             const materialData = this.$dataCacheStore.commercialMaterials
             this.commercialMaterialNames = []
             materialData.forEach((item) => {
@@ -128,6 +129,7 @@ export default {
                 this.commercialData.push(datum)
             })
             this.scaleColumns()  // To avoid bug in vue-good-table-next
+            this.$userStore.disarmDeadManSwitch()
         },
     },
     mounted() {

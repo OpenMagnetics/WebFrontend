@@ -136,6 +136,18 @@ export function formatInductance(inductance) {
     return formatUnit(inductance, "H")
 }
 
+export function formatPermeance(permeance) {
+    return formatUnit(permeance, "H")
+}
+
+export function formatReluctance(reluctance) {
+    return formatUnit(reluctance, "H⁻¹")
+}
+
+export function formatEnergy(energy) {
+    return formatUnit(energy, "J")
+}
+
 export function formatPower(power) {
     return formatUnit(power, "W")
 }
