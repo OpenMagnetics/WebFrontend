@@ -235,7 +235,8 @@ export default {
             this.dimensionsValueInMm = {}
             for (const [key, value] of Object.entries(data['dimensions'])) {
                 if (this.dimensionsLabel.includes(key)) {
-                    this.dimensionsValueInMm[key] = Number(Utils.removeTrailingZeroes(value * 1000, 1))
+                    const aux_value = Utils.resolveDimensionalValues(value)
+                    this.dimensionsValueInMm[key] = Number(Utils.removeTrailingZeroes(aux_value * 1000, 1))
                 }
             }
             setTimeout(() => this.setCoreShapeName(name, true), 100);
