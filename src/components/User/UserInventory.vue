@@ -291,7 +291,7 @@ export default {
                     console.log(item)
                     this.coresData.push({
                         id: item["_id"],
-                        name: item["functionalDescription"]["name"],
+                        name: item["name"],
                         shape: shapeName,
                         material: materialName,
                         status: status,
