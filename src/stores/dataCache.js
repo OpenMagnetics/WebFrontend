@@ -32,5 +32,5 @@ export const useDataCacheStore = defineStore("dataCache", () => {
     }
 },
 {
-    persist: false,
+    persist: true,
 })
