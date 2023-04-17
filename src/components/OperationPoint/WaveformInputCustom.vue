@@ -119,7 +119,13 @@ const orderedData = computed(() => {
         <label class="fs-4 mx-3 mb-3" :class="Defaults.titleColor(electricalParameter)"> Waveform for {{electricalParameter}}</label>
         <div></div>
         <div v-for="(value, key) in data">
-            <WaveformInputCustomPoint :index="key" :electricalParameter="electricalParameter" :time="value.x" :value="value.y" @time-change="onTimeChange" @value-change="onValueChange" @add-point-below="onAddPointBelow" @remove-point="onRemovePoint"/>
+            <WaveformInputCustomPoint @time-change="onTimeChange" @value-change="onValueChange" @add-point-below="onAddPointBelow" @remove-point="onRemovePoint"
+                :index="key"
+                :dataTestLabel="'WaveformInputCustomPoint-' + electricalParameter + '-' + key"
+                :electricalParameter="electricalParameter"
+                :time="value.x"
+                :value="value.y" 
+                />
         </div>
     </div>
 </template>

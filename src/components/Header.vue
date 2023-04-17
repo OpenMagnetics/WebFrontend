@@ -126,56 +126,53 @@ export default {
     <CoreLoadCommercialShape v-if="$dataCacheStore != null" @onLoadCommercialShape="onLoadCommercialShape"/>
     <nav class="navbar navbar-expand-lg bg-light navbar-dark text-primary mb-1" id="header_wrapper">
         <div class="container-fluid">
-            <a href="/" aria-label="Visit OpenMagnetics and Tear Down the Paywalls!">
+            <a data-test="Header-logo-home-link" href="/" aria-label="Visit OpenMagnetics and Tear Down the Paywalls!">
                 <img src="/images/logo.svg" width="60" height="40" href="/" class="d-inline-block align-top me-3" alt="OpenMagnetics Logo">
             </a>
-            <a class="navbar-brand text-primary" href="/">Open Magnetics</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon navbar-primary"></span>
-            </button>
+            <a  data-test="Header-brand-home-link" class="navbar-brand text-primary" href="/">Open Magnetics</a>
 
             <div class="collapse navbar-collapse" id="navbarNavDropdown">
                 <ul class="navbar-nav">
                     <li class="nav-item">
-                        <router-link class="nav-link text-primary" to="/roadmap">Roadmap</router-link>
+                        <router-link data-test="Header-roadmap-link" class="nav-link text-primary" to="/roadmap">Roadmap</router-link>
                     </li>
                     <li class="nav-item">
-                        <router-link class="nav-link text-primary me-3" to="/musings">Knowledge</router-link>
+                        <router-link data-test="Header-roadmap-knowledge-link" class="nav-link text-primary me-3" to="/musings">Knowledge</router-link>
                     </li>
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle rounded-3 text-light bg-primary ps-3" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <a data-test="Header-tools-menu-button" class="nav-link dropdown-toggle rounded-3 text-light bg-primary ps-3" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             Create Element
                         </a>
                         <ul class="dropdown-menu" style="margin: 0">
-                            <li><a class="dropdown-item" href="/operation_point">Operation Point</a></li>
-                            <li><a class="dropdown-item" href="/core">Core</a></li>
-                            <li><a class="dropdown-item" href="/simulation">Simulation</a></li>
+                            <li><a data-test="Header-tool-operation-point-link" class="dropdown-item" href="/operation_point">Operation Point</a></li>
+                            <li><a data-test="Header-tool-core-link" class="dropdown-item" href="/core">Core</a></li>
+                            <li><a data-test="Header-tool-simulation-link" class="dropdown-item" href="/simulation">Simulation</a></li>
                         </ul>
                     </li>
                 </ul>
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
                         <span class="nav-item">
-                            <button class="btn me-4 nav-link text-danger border-dark"  data-bs-toggle="modal" data-bs-target="#reportBugModal">Report bug <i class="fa-solid fa-bug"></i> </button>
+                            <button data-test="Header-report-bug-modal-button" class="btn me-4 nav-link text-danger border-dark"  data-bs-toggle="modal" data-bs-target="#reportBugModal">Report bug <i class="fa-solid fa-bug"></i> </button>
                         </span>
                     </li>
                     <li class="nav-item">
                         <span class="nav-item">
-                            <a class="btn me-4 nav-link text-success border-dark" href="https://github.com/OpenMagnetics/" target="_blank" rel="noopener noreferrer">Beta OMv0.1 <i class="fa-brands fa-github"></i> </a>
+                            <a data-test="Header-repository-link" class="btn me-4 nav-link text-success border-dark" href="https://github.com/OpenMagnetics/" target="_blank" rel="noopener noreferrer">Beta OMv0.1 <i class="fa-brands fa-github"></i> </a>
                         </span>
                     </li>
                     <li v-if="!loggedIn" class="nav-item">
                         <span class="nav-item">
-                            <button class="btn nav-link text-primary" data-bs-toggle="modal" data-bs-target="#registerModal">Register</button>
+                            <button data-test="Header-register-modal-button" class="btn nav-link text-primary" data-bs-toggle="modal" data-bs-target="#registerModal">Register</button>
                         </span>
                     </li>
                     <li v-if="!loggedIn" class="nav-item">
                         <span class="nav-item">
-                            <button class="btn nav-link text-primary" data-bs-toggle="modal" data-bs-target="#loginModal">Login</button>
+                            <button data-test="Header-login-modal-button" class="btn nav-link text-primary" data-bs-toggle="modal" data-bs-target="#loginModal">Login</button>
                         </span>
                     </li>
                     <li v-if="loggedIn" class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle rounded-3 ps-1 text-light bg-primary ps-3 pe-3" href="#" role="button" data-bs-toggle="offcanvas" data-bs-target="#UserOffCanvas" aria-controls="UserOffCanvas">
+                        <a data-test="Header-user-menu-button" class="nav-link dropdown-toggle rounded-3 ps-1 text-light bg-primary ps-3 pe-3" href="#" role="button" data-bs-toggle="offcanvas" data-bs-target="#UserOffCanvas" aria-controls="UserOffCanvas">
                             {{username}}
                         </a>
                     </li>
@@ -192,13 +189,13 @@ export default {
         </div>
         <div class="offcanvas-body">
             <div class="list-group" style="margin: 0" >
-                <button class="list-group-item list-group-item-action bg-light text-primary border-primary border-opacity-50" data-bs-dismiss="offcanvas" @click="onClickNumberOperationPoints">My operation points <span class="badge text-bg-secondary opacity-80">{{getOperationPointsLength}}</span> </button>
-                <button class="list-group-item list-group-item-action bg-light text-primary border-primary border-opacity-50" data-bs-dismiss="offcanvas" @click="onClickNumberCores">My cores <span class="badge text-bg-secondary opacity-80">{{getCoresLength}}</span> </button>
-                <button class="list-group-item list-group-item-action bg-light text-primary border-primary border-opacity-50" data-bs-dismiss="offcanvas" @click="onClickNumberBobbins">My bobbins <span class="badge text-bg-secondary opacity-80">{{getBobbinsLength}}</span> </button>
-                <button class="list-group-item list-group-item-action bg-light text-primary border-primary border-opacity-50" data-bs-dismiss="offcanvas" @click="onClickNumberWires">My wires <span class="badge text-bg-secondary opacity-80">{{getWiresLength}}</span> </button>
-                <button class="list-group-item list-group-item-action bg-light text-primary border-primary border-opacity-50" data-bs-dismiss="offcanvas" @click="onClickNumberMagnetics">My magnetics <span class="badge text-bg-secondary opacity-80">{{getMagneticsLength}}</span> </button>
+                <button data-test="Header-inventory-operation-points-link" class="list-group-item list-group-item-action bg-light text-primary border-primary border-opacity-50" data-bs-dismiss="offcanvas" @click="onClickNumberOperationPoints">My operation points <span class="badge text-bg-secondary opacity-80">{{getOperationPointsLength}}</span> </button>
+                <button data-test="Header-inventory-cores-link" class="list-group-item list-group-item-action bg-light text-primary border-primary border-opacity-50" data-bs-dismiss="offcanvas" @click="onClickNumberCores">My cores <span class="badge text-bg-secondary opacity-80">{{getCoresLength}}</span> </button>
+                <button data-test="Header-inventory-bobbins-link" class="list-group-item list-group-item-action bg-light text-primary border-primary border-opacity-50" data-bs-dismiss="offcanvas" @click="onClickNumberBobbins">My bobbins <span class="badge text-bg-secondary opacity-80">{{getBobbinsLength}}</span> </button>
+                <button data-test="Header-inventory-wires-link" class="list-group-item list-group-item-action bg-light text-primary border-primary border-opacity-50" data-bs-dismiss="offcanvas" @click="onClickNumberWires">My wires <span class="badge text-bg-secondary opacity-80">{{getWiresLength}}</span> </button>
+                <button data-test="Header-inventory-magnetics-link" class="list-group-item list-group-item-action bg-light text-primary border-primary border-opacity-50" data-bs-dismiss="offcanvas" @click="onClickNumberMagnetics">My magnetics <span class="badge text-bg-secondary opacity-80">{{getMagneticsLength}}</span> </button>
             </div>
-            <button class="btn mt-5 text-dark bg-primary fs-5" data-bs-dismiss="offcanvas" @click="onLoggedOut">Logout</button>
+            <button data-test="Header-logout-button" class="btn mt-5 text-dark bg-primary fs-5" data-bs-dismiss="offcanvas" @click="onLoggedOut">Logout</button>
         </div>
     </div>
 

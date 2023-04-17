@@ -47,12 +47,12 @@ export default {
         <div class="modal-dialog modal-lg">
             <div class="modal-content bg-dark text-white">
                 <div class="modal-header">
-                    <p class="modal-title fs-5" id="notificationsModalLabel">{{currentNotification["name"]}}</p>
+                    <p data-test="NotificationsModal-notification-text" class="modal-title fs-5" id="notificationsModalLabel">{{currentNotification["name"]}}</p>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="notificationsModalClose"></button>
                 </div>
                 <div class="modal-body row mt-4">
                     <p ref="notificationContent" class="modal-title fs-5 text-center col-12" ></p>
-                    <button class="btn btn-primary mx-auto d-block mt-5 offset-1 col-5" data-bs-dismiss="modal" >Understood</button>
+                    <button data-test="NotificationsModal-accept-button" class="btn btn-primary mx-auto d-block mt-5 offset-1 col-5" data-bs-dismiss="modal" >Understood</button>
                 </div>
             </div>
         </div>

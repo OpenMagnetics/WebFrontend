@@ -200,7 +200,7 @@ export default {
             <div class="row">
                 <label class="fs-4 mt-2 ms-3 text-success col-7"> Use current?</label>
                 <i class="fa-solid fa-xmark mt-3 pt-1 ps-2 text-danger col-1 p-0"></i>
-                <input v-model="currentAsInput" @change="OnCurrentAsInputChanged" type="range" class="mt-3 form-range col-1 ms-1" min="0" max="1" step="1" style="width: 30px">
+                <input data-test="SimulationOperationPointTool-select-current-as-input-button" v-model="currentAsInput" @change="OnCurrentAsInputChanged" type="range" class="mt-3 form-range col-1 ms-1" min="0" max="1" step="1" style="width: 30px">
                 <i class="fa-solid fa-check mt-3 pt-1 ms-2 text-success col-1 p-0"></i>
             </div>
             <div class="row">

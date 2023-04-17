@@ -460,17 +460,17 @@ export default {
 
         <Form ref="formRef" :validation-schema="schema" v-slot="{ errors }" class="form-inline row text-white" @submit="handleSubmit($event, onSubmit)">
             <label v-tooltip="'Type of the gaps in the column'" class="small-text mt-2 col-sm-4 col-md-5 col-lg-5 col-xl-5 text-start">Gap type:</label>
-            <Field name="gapType" as="select" :class="{ 'is-invalid': errors.gapType }" @change="onGapTypeChange" class= "small-text bg-light text-white rounded-2 mt-2 col-sm-8 col-md-7 col-lg-7 col-xl-7" v-model="gapTypeSelected">
-                <option disabled value="">Please select one</option>
-                <option value="Residual">Residual</option>
-                <option value="Spacer">Spacer</option>
-                <option value="Grinded">Grinded</option>
-                <option :disabled="coreStore.distributedGapAlreadyInUse && gapTypeSelected != 'Distributed'" value="Distributed">{{coreStore.distributedGapAlreadyInUse && gapTypeSelected != 'Distributed'? 'Distributed (only one allowed)' : 'Distributed'}}</option>
+            <Field :data-test="'CoreGappingArtisanGapInput-column-' + index + '-gap-type-select-input'" name="gapType" as="select" :class="{ 'is-invalid': errors.gapType }" @change="onGapTypeChange" class= "small-text bg-light text-white rounded-2 mt-2 col-sm-8 col-md-7 col-lg-7 col-xl-7" v-model="gapTypeSelected">
+                <option :data-test="'CoreGappingArtisanGapInput-column-' + index + '-gap-type-NA-option-input'" disabled value="">Please select one</option>
+                <option :data-test="'CoreGappingArtisanGapInput-column-' + index + '-gap-type-residual-option-input'" value="Residual">Residual</option>
+                <option :data-test="'CoreGappingArtisanGapInput-column-' + index + '-gap-type-spacer-option-input'" value="Spacer">Spacer</option>
+                <option :data-test="'CoreGappingArtisanGapInput-column-' + index + '-gap-type-grinded-option-input'" value="Grinded">Grinded</option>
+                <option :data-test="'CoreGappingArtisanGapInput-column-' + index + '-gap-type-distributed-option-input'" :disabled="coreStore.distributedGapAlreadyInUse && gapTypeSelected != 'Distributed'" value="Distributed">{{coreStore.distributedGapAlreadyInUse && gapTypeSelected != 'Distributed'? 'Distributed (only one allowed)' : 'Distributed'}}</option>
             </Field>
             <label v-if="gapTypeSelected == 'Distributed'" class="small-text col-sm-4 col-md-5 col-lg-5 col-xl-5 text-start mt-2">No. gaps:</label>
-            <Field v-if="gapTypeSelected == 'Distributed'" name="numberGaps" type="number" @change="onNumberGapsChange" :class="{ 'is-invalid': errors.numberGaps }" class="rounded-2 bg-light text-white col-sm-8 col-md-4 col-lg-4 col-xl-4 float-end mt-2" value=3 v-model="numberGapsSelected"/>
+            <Field :data-test="'CoreGappingArtisanGapInput-column-' + index + '-number-gaps-input'" v-if="gapTypeSelected == 'Distributed'" name="numberGaps" type="number" @change="onNumberGapsChange" :class="{ 'is-invalid': errors.numberGaps }" class="rounded-2 bg-light text-white col-sm-8 col-md-4 col-lg-4 col-xl-4 float-end mt-2" value=3 v-model="numberGapsSelected"/>
 
-            <button v-if="gapTypeSelected == 'Distributed'" v-tooltip="'Automatically distribute the gaps in this column'" :disabled="numberGaps < 2" :id="'autoPlaceGaps' + index" :ref="'autoPlaceGaps' + index" class="offset-1 col-2 py-0 mt-2 bg-primary submit-btn btn" type="button" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="custom-tooltip" data-bs-title="Auto place gaps" @click="updateAllGapHeights(autoDistributeGaps())">
+            <button :data-test="'CoreGappingArtisanGapInput-column-' + index + '-auto-place-gaps-button'" v-if="gapTypeSelected == 'Distributed'" v-tooltip="'Automatically distribute the gaps in this column'" :disabled="numberGaps < 2" :id="'autoPlaceGaps' + index" :ref="'autoPlaceGaps' + index" class="offset-1 col-2 py-0 mt-2 bg-primary submit-btn btn" type="button" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="custom-tooltip" data-bs-title="Auto place gaps" @click="updateAllGapHeights(autoDistributeGaps())">
                 <i class="fa-solid fa-wand-sparkles"></i></button>
             <div v-else style="height: 38px;" ></div>
             <div></div>

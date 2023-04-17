@@ -18,6 +18,7 @@
         />
         <input
             ref="input"
+            :data-test="dataTestLabel"
             class="vue-number-input__input"
             v-bind="attrs"
             type="number"
@@ -110,6 +111,11 @@ export default defineComponent({
         modelValue: {
             type: Number,
             default: NaN,
+        },
+
+        dataTestLabel: {
+            type: String,
+            default: '',
         },
     },
 

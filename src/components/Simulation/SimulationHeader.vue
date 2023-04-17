@@ -102,30 +102,30 @@ export default {
         <div class="row gx-1">
             <div class="col-12 col-sm-2 col-md-2 col-lg-2 col-xl-2 ">
                 <div class="row gx-2">
-                    <button v-tooltip="'Create new simulation. All current unsaved changes will be lost'" class="btn text-white bg-secondary py-1 my-1 col-10 col-sm-12 col-md-12 col-lg-5 col-xl-5" data-bs-toggle="modal" data-bs-target="#newSimulationModal">New</button>
+                    <button data-test="SimulationHeader-new-modal-button" v-tooltip="'Create new simulation. All current unsaved changes will be lost'" class="btn text-white bg-secondary py-1 my-1 col-10 col-sm-12 col-md-12 col-lg-5 col-xl-5" data-bs-toggle="modal" data-bs-target="#newSimulationModal">New</button>
                     <div class="col-12 col-sm-2 col-md-2 col-lg-2 col-xl-2"> </div>
-                    <button class="btn text-white bg-secondary py-1 my-1 col-10 col-sm-12 col-md-12 col-lg-5 col-xl-5 disabled">Import</button>
+                    <button data-test="SimulationHeader-import-modal-button" class="btn text-white bg-secondary py-1 my-1 col-10 col-sm-12 col-md-12 col-lg-5 col-xl-5 disabled">Import</button>
 
                 </div>
             </div>
             <div class="col-11 col-sm-8 col-md-8 col-lg-8 col-xl-8 pe-5 ps-3">
                 <Form :validation-schema="schema" v-slot="{ handleSubmit, errors }" class="form-inline row" @submit="handleSubmit($event, onSubmit)">
                     <label class="medium-text col-sm-4 col-md-4 col-lg-3 col-xl-3 text-md-end">Simulation Name:</label>
-                    <Field name="simulationName" type="text" :class="{ 'is-invalid': errors.simulationName }" :placeholder="Defaults.defaultSimulationNamePlaceHolder"  @change="onSimulationName" :value="Defaults.defaultSimulationName" class= "small-text bg-light text-white rounded-2 col-sm-8 col-md-8 col-lg-9 col-xl-9" v-model="simulationNameSelected"/>
+                    <Field data-test="SimulationHeader-simulation-name-input" name="simulationName" type="text" :class="{ 'is-invalid': errors.simulationName }" :placeholder="Defaults.defaultSimulationNamePlaceHolder"  @change="onSimulationName" :value="Defaults.defaultSimulationName" class= "small-text bg-light text-white rounded-2 col-sm-8 col-md-8 col-lg-9 col-xl-9" v-model="simulationNameSelected"/>
 
                     <div class="invalid-feedback">{{errors.simulationName}}</div>
                 </Form>
-                <button class="btn text-white bg-secondary xt mt-2 col-sm-4 col-md-4 col-lg-3 col-xl-3 offset-lg-1" data-bs-toggle="offcanvas" data-bs-target="#OperationPointOffCanvas" aria-controls="OperationPointOffCanvas">View/Edit excitation</button>
+                <button data-test="SimulationHeader-view-edit-excitation-modal-button" class="btn text-white bg-secondary xt mt-2 col-sm-4 col-md-4 col-lg-3 col-xl-3 offset-lg-1" data-bs-toggle="offcanvas" data-bs-target="#OperationPointOffCanvas" aria-controls="OperationPointOffCanvas">View/Edit excitation</button>
 
-                <button :disabled="!isLoggedIn" class="btn text-white bg-secondary xt mt-2 col-sm-4 col-md-4 col-lg-3 col-xl-3 offset-lg-1" data-bs-toggle="modal" data-bs-target="#loadOperationPointModal">Load new excitation</button>
+                <button data-test="SimulationHeader-load-excitation-modal-button" :disabled="!isLoggedIn" class="btn text-white bg-secondary xt mt-2 col-sm-4 col-md-4 col-lg-3 col-xl-3 offset-lg-1" data-bs-toggle="modal" data-bs-target="#loadOperationPointModal">Load new excitation</button>
 
             </div>
             <div class="col-12 col-sm-2 col-md-2 col-lg-2 col-xl-2 container">
                 <div class="row">
-                    <button disabled :class="colorSaveButton" class="btn text-white py-1 px-2 my-1 col-10 col-sm-12 col-md-12 col-lg-12 col-xl-12" :disabled="!isLoggedIn || (saveMessage != 'Save changes' && saveMessage != 'Create and add to library')" @click="onSaveToDB">{{saveMessage}}</button>
-                    <button disabled class="btn text-white bg-secondary py-1 px-2 my-1 col-10 col-sm-12 col-md-12 col-lg-5 col-xl-5" data-bs-toggle="modal" data-bs-target="#publishSimujlationModal">Publish</button>
+                    <button data-test="SimulationHeader-create-save-button" disabled :class="colorSaveButton" class="btn text-white py-1 px-2 my-1 col-10 col-sm-12 col-md-12 col-lg-12 col-xl-12" :disabled="!isLoggedIn || (saveMessage != 'Save changes' && saveMessage != 'Create and add to library')" @click="onSaveToDB">{{saveMessage}}</button>
+                    <button data-test="SimulationHeader-publish-modal-button" disabled class="btn text-white bg-secondary py-1 px-2 my-1 col-10 col-sm-12 col-md-12 col-lg-5 col-xl-5" data-bs-toggle="modal" data-bs-target="#publishSimujlationModal">Publish</button>
                     <div class="col-12 col-sm-2 col-md-2 col-lg-2 col-xl-2"> </div>
-                    <button class="btn text-white bg-secondary py-1 px-2 my-1 col-10 col-sm-12 col-md-12 col-lg-5 col-xl-5 disabled" data-bs-toggle="offcanvas" data-bs-target="#ExportOffCanvas" aria-controls="ExportOffCanvas">Export</button>
+                    <button data-test="SimulationHeader-export-modal-button" class="btn text-white bg-secondary py-1 px-2 my-1 col-10 col-sm-12 col-md-12 col-lg-5 col-xl-5 disabled" data-bs-toggle="offcanvas" data-bs-target="#ExportOffCanvas" aria-controls="ExportOffCanvas">Export</button>
 
                 </div>
             </div>

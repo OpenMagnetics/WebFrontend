@@ -27,12 +27,12 @@ coreStore.$onAction((action) => {
 <template>
     <div class="container-flex">
         <div class="row">
-            <img v-if="posting" class="mx-auto d-block col-12" alt="loading" style="width: 100%; height: auto;" src="/images/loading.gif">
-            <div v-show="!posting" ref="topView" class="col-12" style="height: 100%;" />
+            <img data-test="CoreShapeArtisanTechnicalDrawer-top-loading" v-if="posting" class="mx-auto d-block col-12" alt="loading" style="width: 100%; height: auto;" src="/images/loading.gif">
+            <div data-test="CoreShapeArtisanTechnicalDrawer-top-view-image" v-show="!posting" ref="topView" class="col-12" style="height: 100%;" />
         </div>
         <div class="row">
-            <img v-if="posting" class="mx-auto d-block col-12" alt="loading" style="width: 100%; height: auto;" src="/images/loading.gif">
-            <div v-show="!posting" ref="frontView" class="col-12" style="height: 100%;" />
+            <img data-test="CoreShapeArtisanTechnicalDrawer-front-loading" v-if="posting" class="mx-auto d-block col-12" alt="loading" style="width: 100%; height: auto;" src="/images/loading.gif">
+            <div data-test="CoreShapeArtisanTechnicalDrawer-front-view-image" v-show="!posting" ref="frontView" class="col-12" style="height: 100%;" />
         </div>
     </div>
 </template>

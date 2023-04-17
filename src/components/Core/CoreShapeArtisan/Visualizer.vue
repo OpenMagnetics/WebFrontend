@@ -525,8 +525,8 @@ export default {
 </script>
 
 <template>
-    <img v-if="posting" class="mx-auto d-block col-12" alt="loading" style="width: 60%; height: auto;" src="/images/loading.gif">
-    <Renderer ref="renderer" resize=true :orbit-ctrl="{ enableDamping: true, dampingFactor: 0.05, autoRotate : true }" shadow>
+    <img data-test="CoreShapeArtisanVisualizer-loading" v-if="posting" class="mx-auto d-block col-12" alt="loading" style="width: 60%; height: auto;" src="/images/loading.gif">
+    <Renderer data-test="CoreShapeArtisanVisualizer-canvas" ref="renderer" resize=true :orbit-ctrl="{ enableDamping: true, dampingFactor: 0.05, autoRotate : true }" shadow>
         <Camera ref="camera" />
         <Scene ref="scene" :background="'#1a1a1a'">
             <SpotLight color="#539796" :intensity="1" :position="{ y: 150, z: 100 }" :cast-shadow="true" :shadow-map-size="{ width: 1024, height: 1024 }" />

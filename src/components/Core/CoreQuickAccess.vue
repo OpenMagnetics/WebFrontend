@@ -216,15 +216,16 @@ export default {
             <div class="col-xl-2 col-sm-5">
                 <div class="container-flex p-0 m-0">
                     <div class="row">
-                        <Field name="quickShapeField" ref="quickShapeFieldRef" as="select" :class="{'is-invalid': errors.quickShapeField }" @change="onShapeChange" class= "fs-6 bg-light text-white rounded-2 col-8 m-0 p-0" v-model="quickShapeSelected">
-                            <option disabled value="">Please select one</option>
-                            <option disabled value="Custom">Custom</option>
+                        <Field data-test="CoreQuickAccess-shape-select-input" name="quickShapeField" ref="quickShapeFieldRef" as="select" :class="{'is-invalid': errors.quickShapeField }" @change="onShapeChange" class= "fs-6 bg-light text-white rounded-2 col-8 m-0 p-0" v-model="quickShapeSelected">
+                            <option data-test="CoreQuickAccess-shape-NA-option-input" disabled value="">Please select one</option>
+                            <option data-test="CoreQuickAccess-shape-custom-option-input" disabled value="Custom">Custom</option>
                             <option v-for="model, index in commercialShapesNames"
+                                :data-test="'CoreQuickAccess-shape-' + model + '-option-input'"
                                 :key="index"
                                 :value="model">{{model}}
                             </option>
                         </Field>
-                        <button v-tooltip="'Open information table for shapes'" class="btn btn-primary text-dark py-1 p-0 px-0 mx-1 offset-1 col-2" data-bs-toggle="modal" data-bs-target="#loadCommercialShapeModal" >
+                        <button data-test="CoreQuickAccess-shape-table-modal-button" v-tooltip="'Open information table for shapes'" class="btn btn-primary text-dark py-1 p-0 px-0 mx-1 offset-1 col-2" data-bs-toggle="modal" data-bs-target="#loadCommercialShapeModal" >
                             <i class="fa-solid fs-6 fa-table-list m-0 p-0"></i>
                         </button>
                     </div>
@@ -237,15 +238,16 @@ export default {
             <div class="col-xl-2 col-sm-5">
                 <div class="container-flex p-0 m-0">
                     <div class="row">
-                        <Field name="quickMaterialField" ref="quickMaterialFieldRef" as="select" :class="{ 'is-invalid': errors.quickMaterialField }" @change="onMaterialChange" class= "fs-6 bg-light text-white rounded-2 col-8 m-0 p-0" v-model="quickMaterialSelected">
-                            <option disabled value="">Please select one</option>
-                            <option disabled value="Custom">Custom</option>
+                        <Field data-test="CoreQuickAccess-material-select-input" name="quickMaterialField" ref="quickMaterialFieldRef" as="select" :class="{ 'is-invalid': errors.quickMaterialField }" @change="onMaterialChange" class= "fs-6 bg-light text-white rounded-2 col-8 m-0 p-0" v-model="quickMaterialSelected">
+                            <option data-test="CoreQuickAccess-material-NA-option-input" disabled value="">Please select one</option>
+                            <option data-test="CoreQuickAccess-material-custom-option-input" disabled value="Custom">Custom</option>
                             <option v-for="model, index in commercialMaterialNames"
+                                :data-test="'CoreQuickAccess-material-' + model + '-option-input'"
                                 :key="index"
                                 :value="model">{{model}}
                             </option>
                         </Field>
-                        <button v-tooltip="'Open information table for materials'" class="btn btn-primary text-dark py-1 p-0 px-0 mx-1 offset-1 col-2" data-bs-toggle="modal" data-bs-target="#loadCommercialMaterialModal" >
+                        <button data-test="CoreQuickAccess-material-table-modal-button" v-tooltip="'Open information table for materials'" class="btn btn-primary text-dark py-1 p-0 px-0 mx-1 offset-1 col-2" data-bs-toggle="modal" data-bs-target="#loadCommercialMaterialModal" >
                             <i class="fa-solid fs-6 fa-table-list m-0 p-0"></i>
                         </button>
                     </div>
@@ -254,17 +256,17 @@ export default {
 
 
             <label v-if="$userStore.globalCore['functionalDescription']['shape']['family'] != 't'" v-tooltip="'Basic gap length of the central column. Go to Gaping Artisan for advanced customization.'" class="rounded-2 fs-5 col-xl-1 col-lg-5 col-sm-5 text-xl-end pe-3 m-0 p-0 text-sm-center" >Gap</label>
-            <Field v-if="$userStore.globalCore['functionalDescription']['shape']['family'] != 't'" @keydown.enter.prevent :disabled="quickGapTypeSelected == 'Ungapped' && quickGapTypeSelected != 'Custom'" ref="quickGapLengthFieldRef" name="quickGapLengthField" type="number" v-model="quickGapLengthSelected" @change="onGapLengthChange" :class="{'is-invalid': errors.quickGapLengthField }" class="rounded-2 bg-light text-white col-xl-1 col-lg-3 col-sm-3 text-end"/>
+            <Field data-test="CoreQuickAccess-gap-length-input" v-if="$userStore.globalCore['functionalDescription']['shape']['family'] != 't'" @keydown.enter.prevent :disabled="quickGapTypeSelected == 'Ungapped' && quickGapTypeSelected != 'Custom'" ref="quickGapLengthFieldRef" name="quickGapLengthField" type="number" v-model="quickGapLengthSelected" @change="onGapLengthChange" :class="{'is-invalid': errors.quickGapLengthField }" class="rounded-2 bg-light text-white col-xl-1 col-lg-3 col-sm-3 text-end"/>
             <label v-if="$userStore.globalCore['functionalDescription']['shape']['family'] != 't' && quickGapTypeSelected != 'Custom'" class="rounded-2 fs-5 text-start col-xl-1 col-lg-2 col-sm-2 p-0 m-0 ps-1" >{{"mm"}}</label>
 
             <label v-if="$userStore.globalCore['functionalDescription']['shape']['family'] != 't'" v-tooltip="'Type of gap. Go to Gaping Artisan for advanced customization.'" class="rounded-2 fs-5 col-xl-1 col-sm-5 p-0 m-0 text-sm-center">Type</label>
-            <Field v-if="$userStore.globalCore['functionalDescription']['shape']['family'] != 't'" @keydown.enter.prevent name="quickGapTypeField" ref="quickGapTypeFieldRef" as="select" :class="{'is-invalid': errors.quickGapTypeField }" @change="onGapTypeChange" class= "fs-6 bg-light text-white rounded-2 col-xl-2 col-sm-5" v-model="quickGapTypeSelected" >
-                <option disabled value="">Please select one</option>
-                <option value="Ungapped">Ungapped</option>
-                <option value="Grinded">Grinded</option>
-                <option value="Spacer">Spacer</option>
-                <option value="Distributed">Distributed</option>
-                <option disabled value="Custom">Custom</option>
+            <Field data-test="CoreQuickAccess-gap-type-select-input" v-if="$userStore.globalCore['functionalDescription']['shape']['family'] != 't'" @keydown.enter.prevent name="quickGapTypeField" ref="quickGapTypeFieldRef" as="select" :class="{'is-invalid': errors.quickGapTypeField }" @change="onGapTypeChange" class= "fs-6 bg-light text-white rounded-2 col-xl-2 col-sm-5" v-model="quickGapTypeSelected" >
+                <option data-test="CoreQuickAccess-gap-type-NA-option-input" disabled value="">Please select one</option>
+                <option data-test="CoreQuickAccess-gap-type-ungapped-option-input" value="Ungapped">Ungapped</option>
+                <option data-test="CoreQuickAccess-gap-type-grinded-option-input" value="Grinded">Grinded</option>
+                <option data-test="CoreQuickAccess-gap-type-spacer-option-input" value="Spacer">Spacer</option>
+                <option data-test="CoreQuickAccess-gap-type-distributed-option-input" value="Distributed">Distributed</option>
+                <option data-test="CoreQuickAccess-gap-type-custom-option-input" disabled value="Custom">Custom</option>
             </Field>
 
 

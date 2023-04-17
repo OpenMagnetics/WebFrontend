@@ -160,12 +160,12 @@ export default {
                     </div>
                     <div class="row mb-2">
                         <div class="col-xl-6 px-0">
-                            <strong class="d-inline-block mb-2 text-info">Core Permeability</strong>
-                          <h1 class="display-4"><a href="/musings/12_reluctance_magnetic_core_permeability_dependencies" class=" text-white">Alf's Musings 12</a></h1>
-                          <p class="lead mb-0"><a href="/musings/12_reluctance_magnetic_core_permeability_dependencies">Read it!</a>  </p>
+                            <strong data-test="Musings-latest-section-text" class="d-inline-block mb-2 text-info">Core Permeability</strong>
+                          <h1 class="display-4"><a data-test="Musings-latest-title-link" href="/musings/12_reluctance_magnetic_core_permeability_dependencies" class=" text-white">Alf's Musings 12</a></h1>
+                          <p class="lead mb-0"><a data-test="Musings-latest-read-it-link" href="/musings/12_reluctance_magnetic_core_permeability_dependencies">Read it!</a>  </p>
                         </div>
                         <div class="col-xl-6">
-                            <img class=" ml-2 card-img-right flex-auto d-none d-xl-block" alt="Table paper per topic in IEEE" style="width: 500px;" src="/images/musings/12/image7.webp"  >
+                            <img data-test="Musings-latest-image" class=" ml-2 card-img-right flex-auto d-none d-xl-block" alt="Table paper per topic in IEEE" style="width: 500px;" src="/images/musings/12/image7.webp"  >
                         </div>
                     </div>
                 </div>
@@ -174,6 +174,7 @@ export default {
                         <div class="row mb-2">
                             <Musing v-for="item, index in musings_row"
                                     :key="item.id"
+                                    :dataTestLabel="'Musing-' + index"
                                     v-bind="item"
                             ></Musing>
                         </div>

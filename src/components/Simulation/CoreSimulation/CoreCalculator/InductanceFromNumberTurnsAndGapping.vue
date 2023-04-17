@@ -232,7 +232,9 @@ export default {
                 :readonly="false"
                 :min="1"
                 :step="1"
-                :max="10000">
+                :max="10000"
+                :dataTestLabel="'SimulationCoreCalculatorInductanceFromNumberTurnsAndGapping-number-turns-input'"
+                >
             </vue-number-input>
 
 
@@ -240,13 +242,13 @@ export default {
             <label v-if="isNotToroid" class="rounded-2 fs-5 col-12">Gap info</label>
 
             <label v-if="isNotToroid" v-tooltip="'Type of gap. Go to Gaping Artisan for advanced customization.'" class="rounded-2 fs-6 text-white offset-1 col-4">Type:</label>
-            <Field v-if="isNotToroid" name="quickGapTypeField" ref="quickGapTypeFieldRef" as="select" :class="{'is-invalid': errors.quickGapTypeField }" @change="onGapTypeChange" class= "rounded-2 bg-light text-white  col-6" v-model="gapTypeSelected" >
-                <option disabled value="">Please select one</option>
-                <option value="Ungapped">Ungapped</option>
-                <option value="Grinded">Grinded</option>
-                <option value="Spacer">Spacer</option>
-                <option value="Distributed">Distributed</option>
-                <option disabled value="Custom">Custom</option>
+            <Field data-test="SimulationCoreCalculatorInductanceFromNumberTurnsAndGapping-gap-type-select-input" v-if="isNotToroid" name="quickGapTypeField" ref="quickGapTypeFieldRef" as="select" :class="{'is-invalid': errors.quickGapTypeField }" @change="onGapTypeChange" class= "rounded-2 bg-light text-white  col-6" v-model="gapTypeSelected" >
+                <option data-test="SimulationCoreCalculatorInductanceFromNumberTurnsAndGapping-gap-type-NA-option-input" disabled value="">Please select one</option>
+                <option data-test="SimulationCoreCalculatorInductanceFromNumberTurnsAndGapping-gap-type-ungapped-option-input" value="Ungapped">Ungapped</option>
+                <option data-test="SimulationCoreCalculatorInductanceFromNumberTurnsAndGapping-gap-type-grinded-option-input" value="Grinded">Grinded</option>
+                <option data-test="SimulationCoreCalculatorInductanceFromNumberTurnsAndGapping-gap-type-spacer-option-input" value="Spacer">Spacer</option>
+                <option data-test="SimulationCoreCalculatorInductanceFromNumberTurnsAndGapping-gap-type-distributed-option-input" value="Distributed">Distributed</option>
+                <option data-test="SimulationCoreCalculatorInductanceFromNumberTurnsAndGapping-gap-type-custom-option-input" disabled value="Custom">Custom</option>
             </Field>
             <div v-if="isNotToroid" class="invalid-feedback">{{errors.quickGapTypeField}}</div>
 
@@ -261,7 +263,9 @@ export default {
                 :readonly="gapTypeSelected=='Residual'"
                 :min="0.001"
                 :step="0.1"
-                :max="1000">
+                :max="1000"
+                :dataTestLabel="'SimulationCoreCalculatorInductanceFromNumberTurnsAndGapping-gap-length-input'"
+                >
                 </vue-number-input>
             <label v-if="isNotToroid" class="small-text col-1 text-start mt-3 fs-6">mm</label>
 
@@ -276,15 +280,17 @@ export default {
                 :readonly="gapTypeSelected=='Residual'"
                 :min="1"
                 :step="1"
-                :max="100">
+                :max="100"
+                :dataTestLabel="'SimulationCoreCalculatorInductanceFromNumberTurnsAndGapping-number-gaps-input'"
+                >
             </vue-number-input>
 
             <div class="mt-4"></div>
             <div class="border-top mb-3"></div>
 
-            <img id="svg" v-if="computing" class="mx-auto d-block col-12" alt="loading" style="width: 25%; height: auto;" src="/images/loading.gif">
+            <img dataTestLabel="SimulationCoreCalculatorInductanceFromNumberTurnsAndGapping-loading" id="svg" v-if="computing" class="mx-auto d-block col-12" alt="loading" style="width: 25%; height: auto;" src="/images/loading.gif">
             <label v-if="!computing" class="fs-5 col-6 text-start text-info">Inductance:</label>
-            <label v-if="!computing" class="fs-5 bg-light text-white col-3 text-end">{{magnetizingInductance}}</label>
+            <label dataTestLabel="SimulationCoreCalculatorInductanceFromNumberTurnsAndGapping-magnetizing-inductance-text" v-if="!computing" class="fs-5 bg-light text-white col-3 text-end">{{magnetizingInductance}}</label>
             <label v-if="!computing" class="fs-5 col-3 text-end" >{{magnetizingInductanceUnit}}</label>
 
 

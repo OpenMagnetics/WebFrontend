@@ -562,11 +562,11 @@ export default {
             <div class="row mt-2">
                 <div v-if="showMenu" class="col-lg-3 text-center">
                     <div class="list-group" style="margin: 0" >
-                        <button :class="operationPointsColor" class="py-3 list-group-item list-group-item-action border-primary border-opacity-50 fs-5 text-start" @click="onClickOperationPoints">My operation points<span class="badge text-bg-secondary opacity-80 float-end">{{operationPointsData.length}}</span> </button>
-                        <button :class="coresColor" class="py-3 list-group-item list-group-item-action border-primary border-opacity-50 fs-5 text-start" @click="onClickCores">My cores (soon)<span class="badge text-bg-secondary opacity-80 float-end">{{coresData.length}}</span> </button>
-                        <button :class="bobbinsColor" class="py-3 list-group-item list-group-item-action border-primary border-opacity-50 fs-5 text-start" @click="onClickBobbins">My bobbins (soon)<span class="badge text-bg-secondary opacity-80 float-end">{{bobbinsData.length}}</span> </button>
-                        <button :class="wiresColor" class="py-3 list-group-item list-group-item-action border-primary border-opacity-50 fs-5 text-start" @click="onClickWires">My wires (soon)<span class="badge text-bg-secondary opacity-80 float-end">{{wiresData.length}}</span> </button>
-                        <button :class="magneticsColor" class="py-3 list-group-item list-group-item-action border-primary border-opacity-50 fs-5 text-start" @click="onClickMagnetics">My magnetics (soon)<span class="badge text-bg-secondary opacity-80 float-end">{{magneticsData.length}}</span> </button>
+                        <button data-test="UserInventory-operation-points-button" :class="operationPointsColor" class="py-3 list-group-item list-group-item-action border-primary border-opacity-50 fs-5 text-start" @click="onClickOperationPoints">My operation points<span class="badge text-bg-secondary opacity-80 float-end">{{operationPointsData.length}}</span> </button>
+                        <button data-test="UserInventory-cores-button" :class="coresColor" class="py-3 list-group-item list-group-item-action border-primary border-opacity-50 fs-5 text-start" @click="onClickCores">My cores (soon)<span class="badge text-bg-secondary opacity-80 float-end">{{coresData.length}}</span> </button>
+                        <button data-test="UserInventory-bobbins-button" :class="bobbinsColor" class="py-3 list-group-item list-group-item-action border-primary border-opacity-50 fs-5 text-start" @click="onClickBobbins">My bobbins (soon)<span class="badge text-bg-secondary opacity-80 float-end">{{bobbinsData.length}}</span> </button>
+                        <button data-test="UserInventory-wires-button" :class="wiresColor" class="py-3 list-group-item list-group-item-action border-primary border-opacity-50 fs-5 text-start" @click="onClickWires">My wires (soon)<span class="badge text-bg-secondary opacity-80 float-end">{{wiresData.length}}</span> </button>
+                        <button data-test="UserInventory-magnetics-button" :class="magneticsColor" class="py-3 list-group-item list-group-item-action border-primary border-opacity-50 fs-5 text-start" @click="onClickMagnetics">My magnetics (soon)<span class="badge text-bg-secondary opacity-80 float-end">{{magneticsData.length}}</span> </button>
                     </div>
                 </div>
                 <div :class="getTableGridSize" class="container">
@@ -583,11 +583,11 @@ export default {
                             >
                             <template #table-row="props">
                                 <span v-if="props.column.field == 'load'">
-                                    <button type="button" class="btn btn-primary" :data-bs-dismiss="specificElement != null? 'modal' : ''" @click="onLoad(props.row.id)"><i class="fa-solid fa-upload"></i></button>
+                                    <button :data-test="'UserInventory-'+ $userStore.userSubsection + '-load-button'" type="button" class="btn btn-primary" :data-bs-dismiss="specificElement != null? 'modal' : ''" @click="onLoad(props.row.id)"><i class="fa-solid fa-upload"></i></button>
                                 </span>
                                 <span v-else-if="props.column.field == 'delete'">
                                     <i class="fa-solid fa-file-xmark"></i>
-                                    <button type="button" class="btn btn-primary" @click="onDelete(props.row.id)" data-bs-toggle="modal" data-bs-target="#deleteElementModal" ><i class="fa-solid fa-trash-can"></i></button>
+                                    <button :data-test="'UserInventory-'+ $userStore.userSubsection + '-delete-button'" type="button" class="btn btn-primary" @click="onDelete(props.row.id)" data-bs-toggle="modal" data-bs-target="#deleteElementModal" ><i class="fa-solid fa-trash-can"></i></button>
                                 </span>
                                 <span v-else-if="props.column.field == 'status'">
                                     <span v-for="item, index in props.row.status">
@@ -597,7 +597,7 @@ export default {
                                     </span> 
                                 </span>
                                 <span v-else-if="props.column.field == 'url'">
-                                    <a v-if="props.row.url != null" class="text-success" :href="props.row.url">Link</a>
+                                    <a :data-test="'UserInventory-'+ $userStore.userSubsection + '-url-link'" v-if="props.row.url != null" class="text-success" :href="props.row.url">Link</a>
                                 </span>
                                 <span v-else>
                                     {{props.formattedRow[props.column.field]}}

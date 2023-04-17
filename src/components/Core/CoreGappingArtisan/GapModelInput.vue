@@ -75,18 +75,19 @@ export default {
 
         <Form ref="formRef" :validation-schema="schema" v-slot="{ errors }" class="form-inline row text-white" @submit="handleSubmit($event, onSubmit)">
             <label class="small-text mt-2 col-sm-4 col-md-5 col-lg-5 col-xl-5 text-start">Model:</label>
-            <Field name="gapModels" as="select" :class="{ 'is-invalid': errors.gapModels }" @change="onGapModelsChange" class= "small-text bg-light text-white rounded-2 mt-2 col-sm-8 col-md-7 col-lg-7 col-xl-7" v-model="gapModelSelected">
-                <option disabled value="">Please select one</option>
+            <Field dataTestLabel="CoreGappingArtisanGapModelInput-model-select-input" name="gapModels" as="select" :class="{ 'is-invalid': errors.gapModels }" @change="onGapModelsChange" class= "small-text bg-light text-white rounded-2 mt-2 col-sm-8 col-md-7 col-lg-7 col-xl-7" v-model="gapModelSelected">
+                <option dataTestLabel="CoreGappingArtisanGapModelInput-model-NA-option-input" disabled value="">Please select one</option>
                 <option v-for="model, index in modelNames"
+                    :dataTestLabel="'CoreGappingArtisanGapModelInput-model-' + model + '-option-input'"
                     :key="index"
                     :value="model">{{model}}
                 </option>
             </Field>
-            <p class="col-12 text-start">{{modelDescriptions[gapModelSelected]}}</p>
-            <p class="col-12 text-start">This error has an average error of <span class="text-info">{{getRoundedError}}</span> achieved in our evaluation tests, which can be found <a href="https://github.com/OpenMagnetics/MKF/blob/main/tests/TestReluctance.cpp">here</a>.</p>
+            <p dataTestLabel="CoreGappingArtisanGapModelInput-model-text" class="col-12 text-start">{{modelDescriptions[gapModelSelected]}}</p>
+            <p dataTestLabel="CoreGappingArtisanGapModelInput-average-error-text" class="col-12 text-start">This error has an average error of <span class="text-info">{{getRoundedError}}</span> achieved in our evaluation tests, which can be found <a href="https://github.com/OpenMagnetics/MKF/blob/main/tests/TestReluctance.cpp">here</a>.</p>
             <p class="col-12 text-start d-flex">                
-            <a class="mx-1 me-auto" :href="modelInternalLink[gapModelSelected]">Original Source</a>
-            <a class="mx-1 ms-auto" :href="modelExternalLink[gapModelSelected]">OM article</a>
+            <a dataTestLabel="CoreGappingArtisanGapModelInput-external-source-link" class="mx-1 me-auto" :href="modelExternalLink[gapModelSelected]">Original Source</a>
+            <a dataTestLabel="CoreGappingArtisanGapModelInput-internal-source-link" class="mx-1 ms-auto" :href="modelInternalLink[gapModelSelected]">OM article</a>
             </p>
         </Form>
     </div>

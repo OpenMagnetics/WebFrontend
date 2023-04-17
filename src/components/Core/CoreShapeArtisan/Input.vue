@@ -499,9 +499,10 @@ export default {
             <label v-tooltip="styleTopLabelTooltip" class="fs-5 mb-1 text-white text-center col-12">Customize shape</label> 
 
             <label v-tooltip="'A subtype represents the different variations inside a family'" class="fs-6 mb-2 ps-2 text-white text-start col-8">Subtype </label>
-            <Field v-if="subtypeLabels.length > 1" name="subtypeSelect" ref="subtypeRef" as="select" style="width: 30%" @change="onSubtypeChange" class= "small-text bg-light text-white rounded-2 mt-2 col-sm-8 col-md-8 col-lg-3 col-xl-3" v-model="subtypeLabelSelected">>
+            <Field data-test="CoreShapeArtisanInput-subtype-select-input" v-if="subtypeLabels.length > 1" name="subtypeSelect" ref="subtypeRef" as="select" style="width: 30%" @change="onSubtypeChange" class= "small-text bg-light text-white rounded-2 mt-2 col-sm-8 col-md-8 col-lg-3 col-xl-3" v-model="subtypeLabelSelected">>
                 <option disabled value="">Please select one sub type</option>
                 <option v-for="item, index in subtypeLabels"
+                        :data-test="'CoreShapeArtisanInput-subtype-' + item + '-option-input'"
                         :value="item"
                 >{{item.toUpperCase()}}</option>
             </Field>
@@ -516,15 +517,16 @@ export default {
                         :center="true"
                         :min="value != 'K'? 0: -1000"
                         :step="0.1"
-                        :max="1000">
+                        :max="1000"
+                        :dataTestLabel="'CoreShapeArtisanInput-dimension-' + value + '-input'">
                         </vue-number-input>
                     <label class="text-danger col-12 pt-1" style="font-size: 0.7em">{{errorMessages[value]}}</label>
                 </div>
             </div>
 
-            <button v-tooltip="hasError || hasFreeCADError? 'There is an error in your dimensions and the shape cannot be computed. Please, fix it or reload a commercial shape to continue.' : 'Computes your dimensions'" v-if="!posting" :disabled="hasError" :class="computeColor" class="submit-btn btn mt-2 fs-6" type="submit">Compute shape</button>
-            <button v-tooltip="'Opens the commercial shape menu and allows you to choose a different family to modify.'" v-if="!posting" class="submit-btn btn btn-primary mt-2 fs-6" data-bs-toggle="modal" data-bs-target="#loadCommercialShapeModal">Load commercial shape</button>
-            <img v-if="posting" class="mx-auto d-block" alt="loading" style="width: 150px; height: auto;" src="/images/loading.gif">
+            <button data-test="CoreShapeArtisanInput-compute-button" v-tooltip="hasError || hasFreeCADError? 'There is an error in your dimensions and the shape cannot be computed. Please, fix it or reload a commercial shape to continue.' : 'Computes your dimensions'" v-if="!posting" :disabled="hasError" :class="computeColor" class="submit-btn btn mt-2 fs-6" type="submit">Compute shape</button>
+            <button data-test="CoreShapeArtisanInput-load-commercial-modal-button" v-tooltip="'Opens the commercial shape menu and allows you to choose a different family to modify.'" v-if="!posting" class="submit-btn btn btn-primary mt-2 fs-6" data-bs-toggle="modal" data-bs-target="#loadCommercialShapeModal">Load commercial shape</button>
+            <img data-test="CoreShapeArtisanInput-loading" v-if="posting" class="mx-auto d-block" alt="loading" style="width: 150px; height: auto;" src="/images/loading.gif">
         </Form>
     </div>
   <div>

@@ -432,6 +432,7 @@ export default {
                     <div id="milestone-container">
                         <div class="row mb-2">
                             <Milestone v-for="item, index in milestones"
+                                    :dataTestLabel="'Roadmap-' + index"
                                     :key="item.id"
                                     :index="index"
                                     v-bind="item"

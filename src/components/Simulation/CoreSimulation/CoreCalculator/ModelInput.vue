@@ -200,18 +200,19 @@ export default {
 
         <Form ref="formRef" :validation-schema="schema" v-slot="{ errors }" class="form-inline row text-white" @submit="handleSubmit($event, onSubmit)">
             <label class="small-text mt-2 col-sm-4 col-md-5 col-lg-5 col-xl-5 text-start">Model:</label>
-            <Field name="gapReluctanceModels" as="select" :class="{ 'is-invalid': errors.gapReluctanceModels }" @change="onGapReluctanceModelsChange" class= "small-text bg-light text-white rounded-2 mt-2 col-sm-8 col-md-7 col-lg-7 col-xl-7" v-model="gapReluctanceModelSelected">
-                <option disabled value="">Please select one</option>
+            <Field dataTestLabel="CoreSimulationCoreCalculatorModelInput-reluctance-model-select-input" name="gapReluctanceModels" as="select" :class="{ 'is-invalid': errors.gapReluctanceModels }" @change="onGapReluctanceModelsChange" class= "small-text bg-light text-white rounded-2 mt-2 col-sm-8 col-md-7 col-lg-7 col-xl-7" v-model="gapReluctanceModelSelected">
+                <option dataTestLabel="CoreSimulationCoreCalculatorModelInput-reluctance-model-NA-option-input" disabled value="">Please select one</option>
                 <option v-for="model, index in gapReluctanceModelNames"
+                    :dataTestLabel="'CoreSimulationCoreCalculatorModelInput-reluctance-model-' + model + '-option-input'"
                     :key="index"
                     :value="model">{{model}}
                 </option>
             </Field>
-            <p class="col-12 text-start">{{gapReluctanceModelDescriptions[gapReluctanceModelSelected]}}</p>
-            <p class="col-12 text-start">This error has an average error of <span class="text-info">{{getGapReluctanceRoundedError}}</span> achieved in our evaluation tests, which can be found <a href="https://github.com/OpenMagnetics/MKF/blob/main/tests/TestReluctance.cpp" target="_blank" rel="noopener noreferrer">here</a>.</p>
+            <p dataTestLabel="CoreSimulationCoreCalculatorModelInput-reluctance-model-text" class="col-12 text-start">{{gapReluctanceModelDescriptions[gapReluctanceModelSelected]}}</p>
+            <p dataTestLabel="CoreSimulationCoreCalculatorModelInput-reluctance-average-error-text" class="col-12 text-start">This error has an average error of <span class="text-info">{{getGapReluctanceRoundedError}}</span> achieved in our evaluation tests, which can be found <a href="https://github.com/OpenMagnetics/MKF/blob/main/tests/TestReluctance.cpp" target="_blank" rel="noopener noreferrer">here</a>.</p>
             <p class="col-12 text-start d-flex">                
-            <a class="mx-1 me-auto" :href="gapReluctanceModelExternalLink[gapReluctanceModelSelected]" target="_blank" rel="noopener noreferrer">Original Source</a>
-            <a class="mx-1 ms-auto" :href="gapReluctanceModelInternalLink[gapReluctanceModelSelected]" target="_blank" rel="noopener noreferrer">OM article</a>
+            <a dataTestLabel="CoreSimulationCoreCalculatorModelInput-reluctance-external-source-link" class="mx-1 me-auto" :href="gapReluctanceModelExternalLink[gapReluctanceModelSelected]" target="_blank" rel="noopener noreferrer">Original Source</a>
+            <a dataTestLabel="CoreSimulationCoreCalculatorModelInput-reluctance-internal-source-link" class="mx-1 ms-auto" :href="gapReluctanceModelInternalLink[gapReluctanceModelSelected]" target="_blank" rel="noopener noreferrer">OM article</a>
             </p>
         </Form>
     </div>
@@ -220,18 +221,19 @@ export default {
 
         <Form ref="formRef" :validation-schema="schema" v-slot="{ errors }" class="form-inline row text-white" @submit="handleSubmit($event, onSubmit)">
             <label class="small-text mt-2 col-sm-4 col-md-5 col-lg-5 col-xl-5 text-start">Model:</label>
-            <Field name="coreLossesModels" as="select" :class="{ 'is-invalid': errors.coreLossesModels }" @change="onCoreLossesModelsChange" class= "small-text bg-light text-white rounded-2 mt-2 col-sm-8 col-md-7 col-lg-7 col-xl-7" v-model="coreLossesModelSelected">
-                <option disabled value="">Please select one</option>
+            <Field dataTestLabel="CoreSimulationCoreCalculatorModelInput-core-losses-model-select-input" name="coreLossesModels" as="select" :class="{ 'is-invalid': errors.coreLossesModels }" @change="onCoreLossesModelsChange" class= "small-text bg-light text-white rounded-2 mt-2 col-sm-8 col-md-7 col-lg-7 col-xl-7" v-model="coreLossesModelSelected">
+                <option dataTestLabel="CoreSimulationCoreCalculatorModelInput-core-losses-model-NA-option-input" disabled value="">Please select one</option>
                 <option v-for="model, index in coreLossesModelNames"
+                    :dataTestLabel="'CoreSimulationCoreCalculatorModelInput-core-losses-model-' + model + '-option-input'"
                     :key="index"
                     :value="model">{{model}}
                 </option>
             </Field>
-            <p class="col-12 text-start">{{coreLossesModelDescriptions[coreLossesModelSelected]}}</p>
-            <p class="col-12 text-start">This error has an average error of <span class="text-info">{{getCoreLossesRoundedError}}</span> achieved in our evaluation tests, which can be found <a href="https://github.com/OpenMagnetics/MKF/blob/main/tests/TestCoreLosses.cpp">here</a>.</p>
+            <p dataTestLabel="CoreSimulationCoreCalculatorModelInput-core-losses-model-text" class="col-12 text-start">{{coreLossesModelDescriptions[coreLossesModelSelected]}}</p>
+            <p dataTestLabel="CoreSimulationCoreCalculatorModelInput-core-losses-average-error-text" class="col-12 text-start">This error has an average error of <span class="text-info">{{getCoreLossesRoundedError}}</span> achieved in our evaluation tests, which can be found <a href="https://github.com/OpenMagnetics/MKF/blob/main/tests/TestCoreLosses.cpp">here</a>.</p>
             <p class="col-12 text-start d-flex">                
-            <a class="mx-1 me-auto" :href="coreLossesModelInternalLink[coreLossesModelSelected]">Original Source</a>
-            <a class="mx-1 ms-auto" :href="coreLossesModelExternalLink[coreLossesModelSelected]">OM article</a>
+            <a dataTestLabel="CoreSimulationCoreCalculatorModelInput-core-losses-external-source-link" class="mx-1 me-auto" :href="coreLossesModelInternalLink[coreLossesModelSelected]">Original Source</a>
+            <a dataTestLabel="CoreSimulationCoreCalculatorModelInput-core-losses-internal-source-link" class="mx-1 ms-auto" :href="coreLossesModelExternalLink[coreLossesModelSelected]">OM article</a>
             </p>
         </Form>
     </div>
@@ -240,18 +242,19 @@ export default {
 
         <Form ref="formRef" :validation-schema="schema" v-slot="{ errors }" class="form-inline row text-white" @submit="handleSubmit($event, onSubmit)">
             <label class="small-text mt-2 col-sm-4 col-md-5 col-lg-5 col-xl-5 text-start">Model:</label>
-            <Field name="coreTemperatureModels" as="select" :class="{ 'is-invalid': errors.coreTemperatureModels }" @change="onCoreTemperatureModelsChange" class= "small-text bg-light text-white rounded-2 mt-2 col-sm-8 col-md-7 col-lg-7 col-xl-7" v-model="coreTemperatureModelSelected">
-                <option disabled value="">Please select one</option>
+            <Field dataTestLabel="CoreSimulationCoreCalculatorModelInput-core-temperature-model-select-input" name="coreTemperatureModels" as="select" :class="{ 'is-invalid': errors.coreTemperatureModels }" @change="onCoreTemperatureModelsChange" class= "small-text bg-light text-white rounded-2 mt-2 col-sm-8 col-md-7 col-lg-7 col-xl-7" v-model="coreTemperatureModelSelected">
+                <option dataTestLabel="CoreSimulationCoreCalculatorModelInput-core-temperature-model-NA-option-input" disabled value="">Please select one</option>
                 <option v-for="model, index in coreTemperatureModelNames"
+                    :dataTestLabel="'CoreSimulationCoreCalculatorModelInput-core-temperature-model-' + model + '-option-input'"
                     :key="index"
                     :value="model">{{model}}
                 </option>
             </Field>
-            <p class="col-12 text-start">{{coreTemperatureModelDescriptions[coreTemperatureModelSelected]}}</p>
-            <p class="col-12 text-start">This error has an average error of <span class="text-info">{{getCoreTemperatureRoundedError}}</span> achieved in our evaluation tests, which can be found <a href="https://github.com/OpenMagnetics/MKF/blob/main/tests/TestCoreTemperature.cpp">here</a>.</p>
+            <p dataTestLabel="CoreSimulationCoreCalculatorModelInput-core-temperature-model-text" class="col-12 text-start">{{coreTemperatureModelDescriptions[coreTemperatureModelSelected]}}</p>
+            <p dataTestLabel="CoreSimulationCoreCalculatorModelInput-core-temperature-average-error-text" class="col-12 text-start">This error has an average error of <span class="text-info">{{getCoreTemperatureRoundedError}}</span> achieved in our evaluation tests, which can be found <a href="https://github.com/OpenMagnetics/MKF/blob/main/tests/TestCoreTemperature.cpp">here</a>.</p>
             <p class="col-12 text-start d-flex">                
-            <a class="mx-1 me-auto" :href="coreTemperatureModelInternalLink[coreTemperatureModelSelected]">Original Source</a>
-            <a class="mx-1 ms-auto" :href="coreTemperatureModelExternalLink[coreTemperatureModelSelected]">OM article</a>
+            <a dataTestLabel="CoreSimulationCoreCalculatorModelInput-core-temperature-external-source-link" class="mx-1 me-auto" :href="coreTemperatureModelInternalLink[coreTemperatureModelSelected]">Original Source</a>
+            <a dataTestLabel="CoreSimulationCoreCalculatorModelInput-core-temperature-internal-source-link" class="mx-1 ms-auto" :href="coreTemperatureModelExternalLink[coreTemperatureModelSelected]">OM article</a>
             </p>
         </Form>
     </div>

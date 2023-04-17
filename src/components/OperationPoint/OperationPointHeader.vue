@@ -239,48 +239,47 @@ export default {
         <div class="row gx-1">
             <div class="col-12 col-sm-2 col-md-2 col-lg-2 col-xl-2 ">
                 <div class="row gx-2">
-                    <button class="btn text-white bg-secondary py-1 my-1 col-10 col-sm-12 col-md-12 col-lg-5 col-xl-5" data-bs-toggle="modal" data-bs-target="#newOperationPointModal" @click="onNewOperationPoint">New</button>
+                    <button data-test="OperationPointHeader-new-modal-button" class="btn text-white bg-secondary py-1 my-1 col-10 col-sm-12 col-md-12 col-lg-5 col-xl-5" data-bs-toggle="modal" data-bs-target="#newOperationPointModal" @click="onNewOperationPoint">New</button>
                     <div class="col-12 col-sm-2 col-md-2 col-lg-2 col-xl-2"> </div>
-                    <button class="btn text-white bg-secondary py-1 my-1 col-10 col-sm-12 col-md-12 col-lg-5 col-xl-5" data-bs-toggle="offcanvas" data-bs-target="#ImportOffCanvas" aria-controls="ImportOffCanvas">Import</button>
+                    <button data-test="OperationPointHeader-import-modal-button" class="btn text-white bg-secondary py-1 my-1 col-10 col-sm-12 col-md-12 col-lg-5 col-xl-5" data-bs-toggle="offcanvas" data-bs-target="#ImportOffCanvas" aria-controls="ImportOffCanvas">Import</button>
 
                 </div>
             </div>
             <div class="col-11 col-sm-8 col-md-8 col-lg-8 col-xl-8 pe-5 ps-3">
                 <Form :validation-schema="schema" v-slot="{ errors }" class="form-inline row">
                     <label class="medium-text col-sm-4 col-md-4 col-lg-3 col-xl-3 text-md-end">Op. Point Name:</label>
-                    <Field name="operationPointName" type="text" :class="{ 'is-invalid': errors.operationPointName }" :placeholder="defaultOperationNamePlaceHolder"  @change="onOperationPointName" :value="defaultOperationName" class= "small-text bg-light text-white rounded-2 col-sm-8 col-md-8 col-lg-9 col-xl-9" v-model="operationPointNameSelected"/>
+                    <Field data-test="OperationPointHeader-name-input" name="operationPointName" type="text" :class="{ 'is-invalid': errors.operationPointName }" :placeholder="defaultOperationNamePlaceHolder"  @change="onOperationPointName" :value="defaultOperationName" class= "small-text bg-light text-white rounded-2 col-sm-8 col-md-8 col-lg-9 col-xl-9" v-model="operationPointNameSelected"/>
 
                     <label class="medium-text mt-2 col-sm-4 col-md-4 col-lg-3 col-xl-3 text-md-end">Voltage type:</label>
-                    <Field name="voltageType" ref="voltageRef" as="select" :class="{ 'is-invalid': errors.voltageType }" @change="onVoltageChange" :value="voltageSelected" class= "small-text bg-light text-white rounded-2 mt-2 col-sm-8 col-md-8 col-lg-3 col-xl-3" v-model="voltageSelected">
-                        <option disabled value="">Please select one</option>
-                        <option value="Custom">Custom</option>
-                        <option value="Square">Square</option>
-                        <option value="Square with Dead-Time">Square with Dead-Time</option>
-                        <option value="Sinusoidal">Sinusoidal</option>
+                    <Field data-test="OperationPointHeader-voltage-type-select-input" name="voltageType" ref="voltageRef" as="select" :class="{ 'is-invalid': errors.voltageType }" @change="onVoltageChange" :value="voltageSelected" class= "small-text bg-light text-white rounded-2 mt-2 col-sm-8 col-md-8 col-lg-3 col-xl-3" v-model="voltageSelected">
+                        <option data-test="OperationPointHeader-voltage-type-NA-option-input" disabled value="">Please select one</option>
+                        <option data-test="OperationPointHeader-voltage-type-custom-option-input" value="Custom">Custom</option>
+                        <option data-test="OperationPointHeader-voltage-type-square-option-input" value="Square">Square</option>
+                        <option data-test="OperationPointHeader-voltage-type-square-with-dead-time-option-input" value="Square with Dead-Time">Square with Dead-Time</option>
+                        <option data-test="OperationPointHeader-voltage-type-sinusoidal-option-input" value="Sinusoidal">Sinusoidal</option>
                     </Field>
 
                     <label class="medium-text  mt-2 col-sm-4 col-md-4 col-lg-3 col-xl-3 text-md-end">Current type:</label>
-                    <Field name="currentType" ref="currentRef" as="select" :class="{ 'is-invalid': errors.currentType }" @change="onCurrentChange" :value="currentSelected" class= "small-text bg-light text-white rounded-2 mt-2 col-sm-8 col-md-8 col-lg-3 col-xl-3" v-model="currentSelected">
-                        <option disabled value="">Please select one</option>
-                        <option value="Custom">Custom</option>
-                        <option value="Triangular">Triangular</option>
-                        <option value="Sinusoidal">Sinusoidal</option>
-                        <option disabled value="Sinusoidal">Flyback (coming soon)</option>
-                        <option disabled value="Sinusoidal">PS Full Bridge (coming soon)</option>
+                    <Field data-test="OperationPointHeader-current-type-select-input" name="currentType" ref="currentRef" as="select" :class="{ 'is-invalid': errors.currentType }" @change="onCurrentChange" :value="currentSelected" class= "small-text bg-light text-white rounded-2 mt-2 col-sm-8 col-md-8 col-lg-3 col-xl-3" v-model="currentSelected">
+                        <option data-test="OperationPointHeader-current-type-NA-option-input" disabled value="">Please select one</option>
+                        <option data-test="OperationPointHeader-current-type-custom-option-input" value="Custom">Custom</option>
+                        <option data-test="OperationPointHeader-current-type-triangular-option-input" value="Triangular">Triangular</option>
+                        <option data-test="OperationPointHeader-current-type-sinusoidal-option-input" value="Sinusoidal">Sinusoidal</option>
+                        <option data-test="OperationPointHeader-current-type-flyback-option-input" disabled value="Sinusoidal">Flyback (coming soon)</option>
+                        <option data-test="OperationPointHeader-current-type-PSFB-option-input" disabled value="Sinusoidal">PS Full Bridge (coming soon)</option>
                     </Field>
 
-                    <div class="invalid-feedback">{{errors.operationPointName}}</div>
-                    <div class="invalid-feedback">{{errors.voltageType}}</div>
-                    <div class="invalid-feedback">{{errors.currentType}}</div>
+                    <div data-test="OperationPointHeader-name-error-text" class="invalid-feedback">{{errors.operationPointName}}</div>
+                    <div data-test="OperationPointHeader-voltage-type-error-text" class="invalid-feedback">{{errors.voltageType}}</div>
+                    <div data-test="OperationPointHeader-current-type-error-text" class="invalid-feedback">{{errors.currentType}}</div>
                 </Form>
             </div>
             <div class="col-12 col-sm-2 col-md-2 col-lg-2 col-xl-2 container">
                 <div class="row">
-                    <button :class="colorSaveButton" class="btn text-white py-1 px-2 my-1 col-10 col-sm-12 col-md-12 col-lg-12 col-xl-12" :disabled="!isLoggedIn || (saveMessage != 'Save changes' && saveMessage != 'Create and add to library')" @click="onSaveToDB">{{saveMessage}}</button>
-                    <button class="btn text-white bg-secondary py-1 px-2 my-1 col-10 col-sm-12 col-md-12 col-lg-5 col-xl-5" data-bs-toggle="modal" data-bs-target="#publishOperationPointModal">{{publishedSlug == null? 'Publish' : 'Published'}}</button>
+                    <button data-test="OperationPointHeader-create-save-button" :class="colorSaveButton" class="btn text-white py-1 px-2 my-1 col-10 col-sm-12 col-md-12 col-lg-12 col-xl-12" :disabled="!isLoggedIn || (saveMessage != 'Save changes' && saveMessage != 'Create and add to library')" @click="onSaveToDB">{{saveMessage}}</button>
+                    <button data-test="OperationPointHeader-publish-modal-button" class="btn text-white bg-secondary py-1 px-2 my-1 col-10 col-sm-12 col-md-12 col-lg-5 col-xl-5" data-bs-toggle="modal" data-bs-target="#publishOperationPointModal">{{publishedSlug == null? 'Publish' : 'Published'}}</button>
                     <div class="col-12 col-sm-2 col-md-2 col-lg-2 col-xl-2"> </div>
-                    <button class="btn text-white bg-secondary py-1 px-2 my-1 col-10 col-sm-12 col-md-12 col-lg-5 col-xl-5" data-bs-toggle="offcanvas" data-bs-target="#ExportOffCanvas" aria-controls="ExportOffCanvas">Export</button>
-
+                    <button data-test="OperationPointHeader-export-modal-button" class="btn text-white bg-secondary py-1 px-2 my-1 col-10 col-sm-12 col-md-12 col-lg-5 col-xl-5" data-bs-toggle="offcanvas" data-bs-target="#ExportOffCanvas" aria-controls="ExportOffCanvas">Export</button>
                 </div>
             </div>
         </div>

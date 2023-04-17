@@ -175,7 +175,8 @@ export default {
                         :readonly="!lengthEnabled"
                         :min="0"
                         :step="0.01"
-                        :max="1000">
+                        :max="1000"
+                        :dataTestLabel="'CoreGappingArtisanGapElement-column-' + columnIndex + '-gap-' + gapIndex + '-gap-length-input'">
                         </vue-number-input>
                     <label class="small-text col-2 text-end p-0">mm</label>
 
@@ -188,7 +189,8 @@ export default {
                         :center="true"
                         :min="-1000"
                         :step="0.1"
-                        :max="1000">
+                        :max="1000"
+                        :dataTestLabel="'CoreGappingArtisanGapElement-column-' + columnIndex + '-gap-' + gapIndex + '-gap-height-input'">
                         </vue-number-input>
                     <label v-if="heightEnabled" class="small-text col-2 text-end p-0  mt-1">mm</label>
 
@@ -206,16 +208,16 @@ export default {
                                     <div class="accordion-body p-1">
 
                                         <label v-tooltip="'Magnetic reluctance of the gap, including fringing effect, calculated using the selected model'" class="small-text col-6 text-start">Reluctance:</label>
-                                        <label class="small-text bg-transparent text-white text-end float-end col-6"><slot name="reluctance"></slot></label>
+                                        <label :dataTestLabel="'CoreGappingArtisanGapElement-column-' + columnIndex + '-gap-' + gapIndex + '-reluctance-text'" class="small-text bg-transparent text-white text-end float-end col-6"><slot name="reluctance"></slot></label>
                                         <label v-tooltip="'Magnetic permeance of the gap, including fringing effect. Also known as AL value'" class="small-text col-6 text-start">Permeance:</label>
-                                        <label class="small-text bg-transparent text-white text-end float-end col-6"><slot name="permeance"></slot></label>
+                                        <label :dataTestLabel="'CoreGappingArtisanGapElement-column-' + columnIndex + '-gap-' + gapIndex + '-permeance-text'" class="small-text bg-transparent text-white text-end float-end col-6"><slot name="permeance"></slot></label>
                                         <!-- <label class="small-text bg-transparent text-white text-end float-end col-6">{{4232 + " H⁻¹"}}</label> -->
 
                                         <label v-tooltip="'Energy that can be stored in this gap'" class="small-text col-7 text-start">Max. energy:</label>
-                                        <label class="small-text bg-transparent text-white text-end float-end col-5"><slot name="maximumEnergy"></slot></label>
+                                        <label :dataTestLabel="'CoreGappingArtisanGapElement-column-' + columnIndex + '-gap-' + gapIndex + '-maximum-energy-text'" class="small-text bg-transparent text-white text-end float-end col-5"><slot name="maximumEnergy"></slot></label>
 
                                         <label v-tooltip="'How much the fringing effect increases the volume of the gap, calculated using TBD model. More than 20% is not recommended'" class="small-text col-8 text-start">Fringing factor:</label>
-                                        <label :class="fringingColor" class="small-text bg-transparent text-end float-end col-4"><slot name="fringingFactor"></slot></label>
+                                        <label :dataTestLabel="'CoreGappingArtisanGapElement-column-' + columnIndex + '-gap-' + gapIndex + '-fringing-factor-text'" :class="fringingColor" class="small-text bg-transparent text-end float-end col-4"><slot name="fringingFactor"></slot></label>
                                     </div>
                                 </div>
                             </div>
@@ -224,7 +226,7 @@ export default {
 
                     <div class="invalid-feedback m-0">{{errors.gapLength}}</div>
                     <div class="invalid-feedback m-0">{{errors.gapHeight}}</div>
-                    <div v-if="$slots.overlappingError != ''" class="text-danger m-0" style="font-size: 0.9em"><slot name="overlappingError"></slot></div>
+                    <div :dataTestLabel="'CoreGappingArtisanGapElement-column-' + columnIndex + '-gap-' + gapIndex + '-overlapping-error-text'" v-if="$slots.overlappingError != ''" class="text-danger m-0" style="font-size: 0.9em"><slot name="overlappingError"></slot></div>
 
                 </Form>
             </div>

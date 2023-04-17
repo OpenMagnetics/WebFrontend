@@ -190,15 +190,16 @@ export default {
             <div class="col-xl-3 col-sm-5">
                 <div class="container-flex p-0 m-0">
                     <div class="row">
-                        <Field name="quickShapeField" ref="quickShapeFieldRef" as="select" :class="{'is-invalid': errors.quickShapeField }" @change="onShapeChange" class= "fs-6 bg-light text-white rounded-2 col-8 m-0 p-0" v-model="quickShapeSelected">
-                            <option disabled value="">Please select one</option>
-                            <option disabled value="Custom">Custom</option>
+                        <Field data-test="SimulationCoreCalculatorQuickAccess-shape-select-input" name="quickShapeField" ref="quickShapeFieldRef" as="select" :class="{'is-invalid': errors.quickShapeField }" @change="onShapeChange" class= "fs-6 bg-light text-white rounded-2 col-8 m-0 p-0" v-model="quickShapeSelected">
+                            <option data-test="SimulationCoreCalculatorQuickAccess-shape-NA-option-input" disabled value="">Please select one</option>
+                            <option data-test="SimulationCoreCalculatorQuickAccess-shape-custom-option-input" disabled value="Custom">Custom</option>
                             <option v-for="model, index in commercialShapesNames"
+                                :data-test="'SimulationCoreCalculatorQuickAccess-shape-' + model + '-option-input'"
                                 :key="index"
                                 :value="model">{{model}}
                             </option>
                         </Field>
-                        <button v-tooltip="'Open information table for shapes'" class="btn btn-primary text-dark py-1 p-0 px-0 mx-1 offset-1 col-2" data-bs-toggle="modal" data-bs-target="#loadCommercialShapeModal" >
+                        <button data-test="SimulationCoreCalculatorQuickAccess-shape-table-modal-button" v-tooltip="'Open information table for shapes'" class="btn btn-primary text-dark py-1 p-0 px-0 mx-1 offset-1 col-2" data-bs-toggle="modal" data-bs-target="#loadCommercialShapeModal" >
                             <i class="fa-solid fs-6 fa-table-list m-0 p-0"></i>
                         </button>
                     </div>
@@ -211,15 +212,16 @@ export default {
             <div class="col-xl-2 col-sm-5">
                 <div class="container-flex p-0 m-0">
                     <div class="row">
-                        <Field name="quickMaterialField" ref="quickMaterialFieldRef" as="select" :class="{ 'is-invalid': errors.quickMaterialField }" @change="onMaterialChange" class= "fs-6 bg-light text-white rounded-2 col-8 m-0 p-0" v-model="quickMaterialSelected">
-                            <option disabled value="">Please select one</option>
-                            <option disabled value="Custom">Custom</option>
+                        <Field data-test="SimulationCoreCalculatorQuickAccess-material-select-input" name="quickMaterialField" ref="quickMaterialFieldRef" as="select" :class="{ 'is-invalid': errors.quickMaterialField }" @change="onMaterialChange" class= "fs-6 bg-light text-white rounded-2 col-8 m-0 p-0" v-model="quickMaterialSelected">
+                            <option data-test="SimulationCoreCalculatorQuickAccess-material-NA-option-input" disabled value="">Please select one</option>
+                            <option data-test="SimulationCoreCalculatorQuickAccess-material-custom-option-input" disabled value="Custom">Custom</option>
                             <option v-for="model, index in commercialMaterialNames"
+                                :data-test="'SimulationCoreCalculatorQuickAccess-material-' + model + '-option-input'"
                                 :key="index"
                                 :value="model">{{model}}
                             </option>
                         </Field>
-                        <button v-tooltip="'Open information table for materials'" class="btn btn-primary text-dark py-1 p-0 px-0 mx-1 offset-1 col-2" data-bs-toggle="modal" data-bs-target="#loadCommercialMaterialModal" >
+                        <button data-test="SimulationCoreCalculatorQuickAccess-material-table-modal-button" v-tooltip="'Open information table for materials'" class="btn btn-primary text-dark py-1 p-0 px-0 mx-1 offset-1 col-2" data-bs-toggle="modal" data-bs-target="#loadCommercialMaterialModal" >
                             <i class="fa-solid fs-6 fa-table-list m-0 p-0"></i>
                         </button>
                     </div>
@@ -228,12 +230,12 @@ export default {
             <div class="invalid-feedback">{{errors.quickMaterialField}}</div>
 
             <label class="rounded-2 fs-5 text-start col-xl-1 col-lg-2 col-sm-2 p-0 m-0 ps-1" >Stacks</label>
-            <Field :disabled="!stackable" name="quickStacksField" type="number" v-model="quickStacksSelected" @change="onStacksChange" 
+            <Field data-test="SimulationCoreCalculatorQuickAccess-number-stacks-input" :disabled="!stackable" name="quickStacksField" type="number" v-model="quickStacksSelected" @change="onStacksChange" 
             @keydown.enter.prevent :class="{'is-invalid': errors.quickStacksField }" class="rounded-2 bg-light text-white col-xl-1 col-lg-3 col-sm-3 text-end"/>
             <div class="invalid-feedback">{{errors.quickStacksField}}</div>
 
             <label class="rounded-2 fs-5 text-center col-xl-1 col-lg-2 col-sm-2 p-0 m-0 ps-1"> Temp.</label>
-            <Field name="quickTemperatureField" type="number" v-model="quickTemperatureSelected" @change="onTemperatureChange" 
+            <Field data-test="SimulationCoreCalculatorQuickAccess-temperature-input" name="quickTemperatureField" type="number" v-model="quickTemperatureSelected" @change="onTemperatureChange" 
             @keydown.enter.prevent :class="{'is-invalid': errors.quickTemperatureField }" class="rounded-2 bg-light text-white col-xl-1 col-lg-3 col-sm-3 text-end"/>
             <label class="rounded-2 fs-5 text-start col-xl-1 col-lg-2 col-sm-2 p-0 m-0 ps-1" >{{"°C"}}</label>
             <div class="invalid-feedback">{{errors.quickTemperatureField}}</div>

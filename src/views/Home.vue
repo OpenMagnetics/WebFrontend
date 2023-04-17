@@ -23,7 +23,7 @@ import Footer from '/src/components/Footer.vue'
                 </div>
                 <div id="home-welcome" class="row pb-5 pt-2 mx-1">
                     <div class="text-white my-1 py-4 offset-sm-0 offset-lg-2 col-sm-12 col-lg-8 text-center bg-light rounded-4">
-                        <h1 class="">Welcome to OpenMagnetics!</h1>
+                        <h1 data-test="Home-title-text" class="">Welcome to OpenMagnetics!</h1>
                         <p class="fs-5">Open Magnetics (OM) is a set of online tools for designing and simulating magnetics components, based on public scientific research and knowledge, stemming from the idea that all scientific knowledge is a fundamental right and should be accessible to the whole human race.</p>
                         <p class="fs-5">OpenMagnetics is fully Open Source, which means that any code used in the models or calculations is available to the community, all data about shapes, materials, wires, stocks or properties will be downloadable. Any information about models, electromagnetism theory or design procedure will be there. And most importantly, anybody can contribute.</p>
                         <p class="fs-5">OpenMagnetics is and will always be free, not even requiring user registration. Even so, users that register will gain the opportunity to store their libraries in the server, for their private use or for sharing with the community.</p>

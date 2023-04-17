@@ -27,6 +27,10 @@ const props = defineProps({
         type: String,
         default: '',
     },
+    dataTestLabel: {
+        type: String,
+        default: '',
+    },
 });
 
 const name = toRef(props, 'name');
@@ -50,6 +54,7 @@ const {
         <label :for="name">{{ label }}</label>
         <input
             class="bg-light"
+            :data-test="dataTestLabel"
             :name="name"
             :id="name"
             :type="type"

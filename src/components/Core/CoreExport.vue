@@ -149,7 +149,7 @@ export default {
         <div class="accordion " id="accordionCoreExportAdvancedOptions">
             <div class="border-primary accordion-item bg-light">
                 <h2 class="accordion-header bg-light" id="headingOne">
-                    <button class="accordion-button bg-light text-primary border-primary collapsed fs-5" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                    <button data-test="CoreExport-configuration-button" class="accordion-button bg-light text-primary border-primary collapsed fs-5" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
                         Configuration
                     </button>
                 </h2>
@@ -157,7 +157,7 @@ export default {
                     <div class="container-flex bg-light text-white mt-2 mb-3 pb-3 me-2">
                         <div class="row">
                             <i class="fa-solid fa-xmark mt-2 pt-1 ps-2 text-danger offset-1 col-1 p-0"></i>
-                            <input v-model="includeEffectiveParametersPicked" type="range" class="mt-2 form-range col-1" min="0" max="1" step="1" style="width: 30px">
+                            <input data-test="CoreExport-configuration-includeEffectiveParameters-button" v-model="includeEffectiveParametersPicked" type="range" class="mt-2 form-range col-1" min="0" max="1" step="1" style="width: 30px">
                             <i class="fa-solid fa-check mt-2 pt-1 text-success col-1 ps-3"></i>
                             <label v-tooltip="'Add the effective parameters of the shape to MAS file. More info: https://openmagnetics.com/musings/7'" class="fs-6 mt-2 p-0 ps-3 text-white col-7"> Add effective parameters?</label>
                         </div>
@@ -165,7 +165,7 @@ export default {
                     <div class="container-flex bg-light text-white mt-2 mb-3 pb-3 me-2">
                         <div class="row">
                             <i class="fa-solid fa-xmark mt-2 pt-1 ps-2 text-danger offset-1 col-1 p-0"></i>
-                            <input v-model="includeShapeDimensionsDataPicked" type="range" class="mt-2 form-range col-1" min="0" max="1" step="1" style="width: 30px">
+                            <input data-test="CoreExport-configuration-includeShapeDimensionsData-button" v-model="includeShapeDimensionsDataPicked" type="range" class="mt-2 form-range col-1" min="0" max="1" step="1" style="width: 30px">
                             <i class="fa-solid fa-check mt-2 pt-1 text-success col-1 ps-3"></i>
                             <label v-tooltip="'Add the dimensions that define this shape to MAS file, according to IEC 60401'" class="fs-6 mt-2 p-0 ps-3 text-white col-7"> Add shape dimensions?</label>
                         </div>
@@ -173,7 +173,7 @@ export default {
                     <div class="container-flex bg-light text-white mt-2 mb-3 pb-3 me-2">
                         <div class="row">
                             <i class="fa-solid fa-xmark mt-2 pt-1 ps-2 text-danger offset-1 col-1 p-0"></i>
-                            <input v-model="includeMaterialDataPicked" type="range" class="mt-2 form-range col-1" min="0" max="1" step="1" style="width: 30px" @change="requestedMaterialData"> 
+                            <input data-test="CoreExport-configuration-includeMaterialData-button" v-model="includeMaterialDataPicked" type="range" class="mt-2 form-range col-1" min="0" max="1" step="1" style="width: 30px" @change="requestedMaterialData"> 
                             <i class="fa-solid fa-check mt-2 pt-1 text-success col-1 ps-3"></i>
                             <label v-tooltip="'Add the material data to MAS file, not just the name'" class="fs-6 mt-2 p-0 ps-3 text-white col-7"> Add material data?</label>
                         </div>
@@ -181,7 +181,7 @@ export default {
                     <div class="container-flex bg-light text-white mt-2 mb-3 pb-3 me-2">
                         <div class="row">
                             <i class="fa-solid fa-xmark mt-2 pt-1 ps-2 text-danger offset-1 col-1 p-0"></i>
-                            <input v-model="includeGeometricalDataPicked" type="range" class="mt-2 form-range col-1" min="0" max="1" step="1" style="width: 30px">
+                            <input data-test="CoreExport-configuration-includeGeometricalData-button" v-model="includeGeometricalDataPicked" type="range" class="mt-2 form-range col-1" min="0" max="1" step="1" style="width: 30px">
                             <i class="fa-solid fa-check mt-2 pt-1 text-success col-1 ps-3"></i>
                             <label v-tooltip="'Add the geometrical description of each of the core parts to MAS file'" class="fs-6 mt-2 p-0 ps-3 text-white col-7"> Add geometrical data?</label>
                         </div>
@@ -189,7 +189,7 @@ export default {
                     <div class="container-flex bg-light text-white mt-2 mb-3 pb-3 me-2">
                         <div class="row">
                             <i class="fa-solid fa-xmark mt-2 pt-1 ps-2 text-danger offset-1 col-1 p-0"></i>
-                            <input v-model="includeMaximumDimensionsPicked" type="range" class="mt-2 form-range col-1" min="0" max="1" step="1" style="width: 30px">
+                            <input data-test="CoreExport-configuration-includeMaximumDimensions-button" v-model="includeMaximumDimensionsPicked" type="range" class="mt-2 form-range col-1" min="0" max="1" step="1" style="width: 30px">
                             <i class="fa-solid fa-check mt-2 pt-1 text-success col-1 ps-3"></i>
                             <label v-tooltip="'Add the maximum width, depth and height of the core to MAS file'" class="fs-6 mt-2 p-0 ps-3 text-white col-7"> Add maximum dimensions?</label>
                         </div>
@@ -197,7 +197,7 @@ export default {
                     <div class="container-flex bg-light text-white mt-2 mb-3 pb-3 me-2">
                         <div class="row">
                             <i class="fa-solid fa-xmark mt-2 pt-1 ps-2 text-danger offset-1 col-1 p-0"></i>
-                            <input v-model="includeAdvancedGapDataPicked" type="range" class="mt-2 form-range col-1" min="0" max="1" step="1" style="width: 30px">
+                            <input data-test="CoreExport-configuration-includeAdvancedGapData-button" v-model="includeAdvancedGapDataPicked" type="range" class="mt-2 form-range col-1" min="0" max="1" step="1" style="width: 30px">
                             <i class="fa-solid fa-check mt-2 pt-1 text-success col-1 ps-3"></i>
                             <label v-tooltip="'Add the advanced info for each gap, including anything necessary to calculate its reluctance, to MAS file'" class="fs-6 mt-2 p-0 ps-3 text-white col-7"> Add advanced info for gaps?</label>
                         </div>
@@ -205,7 +205,7 @@ export default {
                     <div class="container-flex bg-light text-white mt-2 mb-3 pb-3 me-2">
                         <div class="row">
                             <i class="fa-solid fa-xmark mt-2 pt-1 ps-2 text-danger offset-1 col-1 p-0"></i>
-                            <input v-model="includeAdvancedColumnDataPicked" type="range" class="mt-2 form-range col-1" min="0" max="1" step="1" style="width: 30px">
+                            <input data-test="CoreExport-configuration-includeAdvancedColumnData-button" v-model="includeAdvancedColumnDataPicked" type="range" class="mt-2 form-range col-1" min="0" max="1" step="1" style="width: 30px">
                             <i class="fa-solid fa-check mt-2 pt-1 text-success col-1 ps-3"></i>
                             <label v-tooltip="'Add the advanced info for each column to MAS file'" class="fs-6 mt-2 p-0 ps-3 text-white col-7"> Add advanced info for columns?</label>
                         </div>
@@ -213,7 +213,7 @@ export default {
                     <div class="container-flex bg-light text-white mt-2 mb-3 pb-3 me-2">
                         <div class="row">
                             <i class="fa-solid fa-xmark mt-2 pt-1 ps-2 text-danger offset-1 col-1 p-0"></i>
-                            <input v-model="includeAdvancedWindingWindowDataPicked" type="range" class="mt-2 form-range col-1" min="0" max="1" step="1" style="width: 30px">
+                            <input data-test="CoreExport-configuration-includeAdvancedWindingWindowData-button" v-model="includeAdvancedWindingWindowDataPicked" type="range" class="mt-2 form-range col-1" min="0" max="1" step="1" style="width: 30px">
                             <i class="fa-solid fa-check mt-2 pt-1 text-success col-1 ps-3"></i>
                             <label v-tooltip="'Add the advanced info for each winding window, to MAS file'" class="fs-6 mt-2 p-0 ps-3 text-white col-7"> Add advanced info for winding windows?</label>
                         </div>
@@ -221,7 +221,7 @@ export default {
                     <div class="container-flex bg-light text-white mt-2 mb-3 pb-3 me-2">
                         <div class="row">
                             <i class="fa-solid fa-xmark mt-2 pt-1 ps-2 text-danger offset-1 col-1 p-0"></i>
-                            <input v-model="downloadOnlyPiecePicked" type="range" class="mt-2 form-range col-1" min="0" max="1" step="1" style="width: 30px">
+                            <input data-test="CoreExport-configuration-downloadOnlyPiece-button" v-model="downloadOnlyPiecePicked" type="range" class="mt-2 form-range col-1" min="0" max="1" step="1" style="width: 30px">
                             <i class="fa-solid fa-check mt-2 pt-1 text-success col-1 ps-3"></i>
                             <label v-tooltip="'Add the advanced info for each winding window, to MAS file'" class="fs-6 mt-2 p-0 ps-3 text-white col-7"> Download just a piece instead of the full gapped core?</label>
                         </div>
@@ -233,9 +233,9 @@ export default {
 
         <div class="container">
             <div class="row">
-                <button class="mt-5 btn text-light bg-primary float-start fs-5 px-4 col-12" :disabled="MASexported" @click="onExport">{{MASexported? 'Exported' : 'Export data (MAS format)'}}</button>
-                <button class="mt-3 btn text-light bg-primary float-start fs-5 px-4 col-12" :disabled="STPexported" @click="onExportSTP">{{STPexported? 'Exported' : 'Export 3D (STP format)'}}</button>
-                <button class="mt-3 btn text-light bg-primary float-start fs-5 px-4 col-12" :disabled="OBJexported" @click="onExportOBJ">{{OBJexported? 'Exported' : 'Export 3D (OBJ format)'}}</button>
+                <button data-test="CoreExport-export-MAS-button" class="mt-5 btn text-light bg-primary float-start fs-5 px-4 col-12" :disabled="MASexported" @click="onExport">{{MASexported? 'Exported' : 'Export data (MAS format)'}}</button>
+                <button data-test="CoreExport-export-STP-button" class="mt-3 btn text-light bg-primary float-start fs-5 px-4 col-12" :disabled="STPexported" @click="onExportSTP">{{STPexported? 'Exported' : 'Export 3D (STP format)'}}</button>
+                <button data-test="CoreExport-export-OBJ-button" class="mt-3 btn text-light bg-primary float-start fs-5 px-4 col-12" :disabled="OBJexported" @click="onExportOBJ">{{OBJexported? 'Exported' : 'Export 3D (OBJ format)'}}</button>
             
             </div>
         </div>

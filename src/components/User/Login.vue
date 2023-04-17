@@ -135,12 +135,13 @@ export default {
         <div class="modal-content bg-dark text-white">
             <div class="modal-header">
                 <p class="modal-title fs-5" id="LoginLabel">{{isLogin? "Login" : "Register"}}</p>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="LoginClose"></button>
+                <button data-test="login-close-button" type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="LoginClose"></button>
             </div>
             <div v-if="!done" class="modal-body">
                 <Form ref=formRef @submit="onSubmit" :validation-schema="schema" @invalid-submit="onInvalidSubmit">
                     <TextInput
                         ref="usernameRef"
+                        dataTestLabel="Login-form-username-input"
                         class="text-white bg-dark"
                         :name="isLogin? 'loginUsername' : 'registerUsername'"
                         type="text"
@@ -151,6 +152,7 @@ export default {
                     <TextInput
                         v-if="isRegister"
                         class="text-white bg-dark"
+                        dataTestLabel="Login-form-email-input"
                         name="email"
                         type="email"
                         label="E-mail"
@@ -160,6 +162,7 @@ export default {
                     <TextInput
                         ref="passwordRef"
                         class="text-white bg-dark"
+                        dataTestLabel="Login-form-password-input"
                         :name="isLogin? 'loginPassword' : 'registerPassword'"
                         type="password"
                         label="Password"
@@ -169,6 +172,7 @@ export default {
                     <TextInput
                         v-if="isRegister"
                         class="text-white bg-dark"
+                        dataTestLabel="Login-form-confirm-password-input"
                         name="confirmPassword"
                         type="password"
                         label="Confirm Password"
@@ -176,13 +180,13 @@ export default {
                         success-message="Glad you remembered it!"
                     />
 
-                    <button v-if="!posting" class="submit-btn btn btn-primary" type="submit">{{isLogin? "Login" : "Register"}}</button>
-                    <img v-if="posting" class="mx-auto d-block" alt="loading" style="width: 150px; height: auto;" src="/images/loading.gif">
+                    <button v-if="!posting" data-test="login-login-register-button" class="submit-btn btn btn-primary" type="submit">{{isLogin? "Login" : "Register"}}</button>
+                    <img v-if="posting" data-test="login-login-register-loading" class="mx-auto d-block" alt="loading" style="width: 150px; height: auto;" src="/images/loading.gif">
                 </Form>
             </div>
             <div v-if="done" class="modal-body">
                 <p class="modal-title fs-5 text-center" >{{isLogin? "Welcome back, " + $cookies.get("username") : "Welcome to Open Magnetics!"}}</p>
-                <button class="btn btn-primary mx-auto d-block mt-5" data-bs-dismiss="modal" >{{"Go back"}}</button>
+                <button data-test="login-back-button" class="btn btn-primary mx-auto d-block mt-5" data-bs-dismiss="modal" >{{"Go back"}}</button>
             </div>
         </div>
     </div>
