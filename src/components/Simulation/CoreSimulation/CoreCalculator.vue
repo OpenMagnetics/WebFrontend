@@ -35,7 +35,7 @@ export default {
 <template>
     <div class="container text-white">
         <div class="row">
-            <div class="col-9">
+            <div class="col-xl-9">
                 <div class="container">
                     <div class="row">
                         <div class="col-12 border-bottom pb-3">
@@ -44,7 +44,7 @@ export default {
                     </div>
 
                     <div class="accordion row" id="coreCalculatorAccordion bg-dark">
-                        <div class="accordion-item border-0 col-4 m-0 p-0 bg-dark">
+                        <div class="accordion-item border-0 col-lg-4 m-0 p-0 bg-dark">
                             <h2 class="accordion-header" id="coreCalculatorheadingOne">
                                 <button :class="$userStore.simulationCoreCalculatorSubsection == 'inductanceCalculator'? '' : 'collapsed'" class="fs-5 accordion-button text-info bg-light" type="button" data-bs-toggle="collapse" aria-expanded="false" aria-controls="coreCalculatorAccordioncollapseOne" @click="subSectionChanged('inductanceCalculator')">
                                     Inductance calculator
@@ -56,7 +56,7 @@ export default {
                                 </div>
                             </div>
                         </div>
-                        <div class="accordion-item border-0 col-4 m-0 p-0 bg-dark">
+                        <div class="accordion-item border-0 col-lg-4 m-0 p-0 bg-dark">
                             <h2 class="accordion-header" id="coreCalculatorheadingTwo">
                                 <button :class="$userStore.simulationCoreCalculatorSubsection == 'gappingCalculator'? '' : 'collapsed'" class="fs-5 accordion-button text-info bg-light" type="button" data-bs-toggle="collapse" aria-expanded="false" aria-controls="coreCalculatorAccordionCollapseTwo" @click="subSectionChanged('gappingCalculator')">
                                     Gapping calculator
@@ -68,7 +68,7 @@ export default {
                                 </div>
                             </div>
                         </div>
-                        <div class="accordion-item border-0 col-4 m-0 p-0 bg-dark">
+                        <div class="accordion-item border-0 col-lg-4 m-0 p-0 bg-dark">
                             <h2 class="accordion-header" id="coreCalculatorheadingThree">
                                 <button :class="$userStore.simulationCoreCalculatorSubsection == 'numberTurnsCalculator'? '' : 'collapsed'" class="fs-5 accordion-button text-info bg-light" type="button" data-bs-toggle="collapse" aria-expanded="false" aria-controls="coreCalculatorAccordionCollapseThree" @click="subSectionChanged('numberTurnsCalculator')">
                                     No. turns calculator
@@ -91,7 +91,7 @@ export default {
 
             </div>
 
-            <div class="col-3">
+            <div class="col-xl-3">
                 <ModelInput/>
             </div>
         </div>

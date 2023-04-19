@@ -98,8 +98,11 @@ export default {
 </script>
 
 <template>
-    <div class="container text-white mt-2 mb-2 pb-3 border-bottom">
-        <div class="row gx-1">
+    <div class="container text-white mt-2 mb-2 pb-3 border-bottom navbar navbar-expand-md">
+        <button class="navbar-toggler text-primary bg-primary" type="button" data-bs-toggle="collapse" data-bs-target="#simulationHeader" aria-controls="simulationHeader" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon text-white"></span>
+        </button>
+        <div class="row gx-1 collapse navbar-collapse" id="simulationHeader">
             <div class="col-12 col-sm-2 col-md-2 col-lg-2 col-xl-2 ">
                 <div class="row gx-2">
                     <button data-test="SimulationHeader-new-modal-button" v-tooltip="'Create new simulation. All current unsaved changes will be lost'" class="btn text-white bg-secondary py-1 my-1 col-10 col-sm-12 col-md-12 col-lg-5 col-xl-5" data-bs-toggle="modal" data-bs-target="#newSimulationModal">New</button>

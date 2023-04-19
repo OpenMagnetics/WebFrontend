@@ -221,7 +221,7 @@ export default {
         <Form ref="formRef" :validation-schema="schema" v-slot="{ handleSubmit, errors }" class="form-inline row" @submit="handleSubmit($event, onSubmit)">
 
             <div class="mt-1"></div>
-            <label class="rounded-2 fs-5 col-5 pt-2">No. turns</label>
+            <label class="rounded-2 fs-5 col-5 pt-2 text-nowrap">No. turns</label>
 
             <vue-number-input controls class="col-5 mt-2"  :class="{ 'is-invalid': errors.numberTurnsField }" 
                 :modelValue="numberTurnsSelected"
@@ -270,7 +270,7 @@ export default {
             <label v-if="isNotToroid" class="small-text col-1 text-start mt-3 fs-6">mm</label>
 
 
-            <label v-if="isNotToroid" v-tooltip="gapTypeSelected!='Residual'? 'Length of the gap, in mm' : 'Residual length cannot be changed'" class="rounded-2 fs-6 text-white offset-1 col-4 mt-3">No. gaps:</label>
+            <label v-if="isNotToroid" v-tooltip="gapTypeSelected!='Residual'? 'Length of the gap, in mm' : 'Residual length cannot be changed'" class="rounded-2 fs-6 text-white offset-1 col-4 mt-3 text-nowrap">No. gaps:</label>
             <vue-number-input v-if="isNotToroid" :disabled="gapTypeSelected != 'Distributed'" controls class="col-5 mt-2"  :class="{ 'is-invalid': errors.numberGapsField }" 
                 :modelValue="numberGapsSelected"
                 @update:model-value="onNumberGapsUpdate"

@@ -186,8 +186,8 @@ export default {
             <div class="mt-1"></div>
 
 
-            <label v-tooltip="'Shape of the core, to be selected among all available commercial ones. Go to shape artisan for advanced customization.'" class="rounded-2 fs-5 col-xl-1 col-lg-5 col-sm-5 m-xl-0 p-0 m-0 text-sm-center">Shape</label>
-            <div class="col-xl-3 col-sm-5">
+            <label v-tooltip="'Shape of the core, to be selected among all available commercial ones. Go to shape artisan for advanced customization.'" class="rounded-2 fs-5 col-xl-1 col-sm-3 m-xl-0 p-0 m-0 text-sm-center">Shape</label>
+            <div class="col-xl-3 col-sm-3 col-xs-12">
                 <div class="container-flex p-0 m-0">
                     <div class="row">
                         <Field data-test="SimulationCoreCalculatorQuickAccess-shape-select-input" name="quickShapeField" ref="quickShapeFieldRef" as="select" :class="{'is-invalid': errors.quickShapeField }" @change="onShapeChange" class= "fs-6 bg-light text-white rounded-2 col-8 m-0 p-0" v-model="quickShapeSelected">
@@ -208,8 +208,8 @@ export default {
             <div class="invalid-feedback">{{errors.quickShapeField}}</div>
 
 
-            <label v-tooltip="'Material of the core, it can only be commercial for now'" class="rounded-2 fs-5 col-xl-1 col-sm-5 m-xl-0 p-0 m-0 text-sm-center">Material</label>
-            <div class="col-xl-2 col-sm-5">
+            <label v-tooltip="'Material of the core, it can only be commercial for now'" class="rounded-2 fs-5 col-xl-1 col-sm-3 m-xl-0 p-0 m-0 text-sm-center">Material</label>
+            <div class="col-xl-2 col-sm-3 col-xs-12">
                 <div class="container-flex p-0 m-0">
                     <div class="row">
                         <Field data-test="SimulationCoreCalculatorQuickAccess-material-select-input" name="quickMaterialField" ref="quickMaterialFieldRef" as="select" :class="{ 'is-invalid': errors.quickMaterialField }" @change="onMaterialChange" class= "fs-6 bg-light text-white rounded-2 col-8 m-0 p-0" v-model="quickMaterialSelected">
@@ -229,15 +229,15 @@ export default {
             </div>
             <div class="invalid-feedback">{{errors.quickMaterialField}}</div>
 
-            <label class="rounded-2 fs-5 text-start col-xl-1 col-lg-2 col-sm-2 p-0 m-0 ps-1" >Stacks</label>
+            <label class="rounded-2 fs-5 text-center col-xl-1 col-lg-1 col-sm-3 col-xs-12 col-6 p-0 m-0 ps-1" >Stacks</label>
             <Field data-test="SimulationCoreCalculatorQuickAccess-number-stacks-input" :disabled="!stackable" name="quickStacksField" type="number" v-model="quickStacksSelected" @change="onStacksChange" 
-            @keydown.enter.prevent :class="{'is-invalid': errors.quickStacksField }" class="rounded-2 bg-light text-white col-xl-1 col-lg-3 col-sm-3 text-end"/>
+            @keydown.enter.prevent :class="{'is-invalid': errors.quickStacksField }" class="rounded-2 bg-light text-white col-xl-1 col-lg-1  col-sm-3 col-xs-12 col-6 text-end"/>
             <div class="invalid-feedback">{{errors.quickStacksField}}</div>
 
-            <label class="rounded-2 fs-5 text-center col-xl-1 col-lg-2 col-sm-2 p-0 m-0 ps-1"> Temp.</label>
+            <label class="rounded-2 fs-5 text-center col-xl-1 col-lg-1 col-sm-3 col-xs-6 col-6 p-0 m-0 ps-1"> Temp.</label>
             <Field data-test="SimulationCoreCalculatorQuickAccess-temperature-input" name="quickTemperatureField" type="number" v-model="quickTemperatureSelected" @change="onTemperatureChange" 
-            @keydown.enter.prevent :class="{'is-invalid': errors.quickTemperatureField }" class="rounded-2 bg-light text-white col-xl-1 col-lg-3 col-sm-3 text-end"/>
-            <label class="rounded-2 fs-5 text-start col-xl-1 col-lg-2 col-sm-2 p-0 m-0 ps-1" >{{"°C"}}</label>
+            @keydown.enter.prevent :class="{'is-invalid': errors.quickTemperatureField }" class="rounded-2 bg-light text-white col-xl-1 col-lg-1  col-sm-2 col-xs-9 col-5 text-end"/>
+            <label class="rounded-2 fs-5 text-start col-1 p-0 m-0 ps-1" >{{"°C"}}</label>
             <div class="invalid-feedback">{{errors.quickTemperatureField}}</div>
 
 

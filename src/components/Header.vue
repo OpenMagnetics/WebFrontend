@@ -153,12 +153,17 @@ export default {
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
                         <span class="nav-item">
+                            <a data-test="Header-donate-link" href="https://en.liberapay.com/OpenMagnetics/" target="_blank" rel="noopener noreferrer" class="btn me-4 nav-link text-info border-dark" >Donate to OM <i class="fa-solid fa-circle-dollar-to-slot"></i> </a>
+                        </span>
+                    </li>
+                    <li class="nav-item">
+                        <span class="nav-item">
                             <button data-test="Header-report-bug-modal-button" class="btn me-4 nav-link text-danger border-dark"  data-bs-toggle="modal" data-bs-target="#reportBugModal">Report bug <i class="fa-solid fa-bug"></i> </button>
                         </span>
                     </li>
                     <li class="nav-item">
                         <span class="nav-item">
-                            <a data-test="Header-repository-link" class="btn me-4 nav-link text-success border-dark" href="https://github.com/OpenMagnetics/" target="_blank" rel="noopener noreferrer">Beta OMv0.1 <i class="fa-brands fa-github"></i> </a>
+                            <a data-test="Header-repository-link" class="btn me-4 nav-link text-success border-dark" href="https://github.com/OpenMagnetics/" target="_blank" rel="noopener noreferrer">Beta OMv0.2 <i class="fa-brands fa-github"></i> </a>
                         </span>
                     </li>
                     <li v-if="!loggedIn" class="nav-item">

@@ -176,7 +176,7 @@ export default {
             <label class="small-text col-1 text-start mt-3 fs-6">μH</label>
 
             <div class="mt-1"></div>
-            <label class="rounded-2 fs-5 col-5 pt-2">No. turns</label>
+            <label class="rounded-2 fs-5 col-5 pt-2 text-nowrap">No. turns</label>
 
             <vue-number-input controls class="col-5 mt-2"  :class="{ 'is-invalid': errors.numberTurnsField }" 
                 :modelValue="numberTurnsSelected"
@@ -192,7 +192,7 @@ export default {
                 >
             </vue-number-input>
 
-            <label v-tooltip="'Type of gap. Go to Gaping Artisan for advanced customization.'" class="rounded-2 fs-5 text-primary col-5 mt-1">Gap type:</label>
+            <label v-tooltip="'Type of gap. Go to Gaping Artisan for advanced customization.'" class="rounded-2 fs-5 text-primary col-5 mt-1 text-nowrap">Gap type:</label>
             <Field data-test="SimulationCoreCalculatorGappingFromNumberTurnsAndInductance-gap-type-select-input" name="quickGapTypeField" ref="quickGapTypeFieldRef" as="select" :class="{'is-invalid': errors.quickGapTypeField }" @change="onGapTypeChange" class= "rounded-2 bg-light text-white col-5 mt-2" v-model="gapTypeSelected" >
                 <option data-test="SimulationCoreCalculatorGappingFromNumberTurnsAndInductance-gap-type-NA-option-input" disabled value="">Please select one</option>
                 <option data-test="SimulationCoreCalculatorGappingFromNumberTurnsAndInductance-gap-type-ungapped-option-input" value="Ungapped">Ungapped</option>
@@ -214,7 +214,7 @@ export default {
             <label data-test="SimulationCoreCalculatorGappingFromNumberTurnsAndInductance-gap-length-text" v-if="!computing" class="fs-5 bg-light text-white col-5 text-end">{{gapLength}}</label>
             <label v-if="!computing" class="small-text col-2 text-start pt-1 fs-6">mm</label>
 
-            <label v-if="!computing"  v-tooltip="gapTypeSelected!='Residual'? 'Length of the gap, in mm' : 'Residual length cannot be changed'" class="rounded-2 fs-6 text-info offset-1 col-4 pt-1">No. gaps:</label>
+            <label v-if="!computing"  v-tooltip="gapTypeSelected!='Residual'? 'Length of the gap, in mm' : 'Residual length cannot be changed'" class="rounded-2 fs-6 text-info offset-1 col-4 pt-1 text-nowrap">No. gaps:</label>
             <label data-test="SimulationCoreCalculatorGappingFromNumberTurnsAndInductance-number-gaps-text" v-if="!computing" class="fs-5 bg-light text-white col-5 text-end">{{numberGaps}}</label>
 
         </Form>
