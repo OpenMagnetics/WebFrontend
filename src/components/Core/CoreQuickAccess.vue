@@ -5,6 +5,8 @@ import * as Yup from 'yup';
 import { useCoreStore } from '/src/stores/core'
 import * as Utils from '/src/assets/js/utils.js'
 import * as Defaults from '/src/assets/js/defaults.js'
+import CoreMaterialSelector from '/src/components/Common/CoreMaterialSelector.vue'
+import CoreShapeSelector from '/src/components/Common/CoreShapeSelector.vue'
 
 </script>
 
@@ -149,11 +151,11 @@ export default {
                 this.quickGapLengthSelected = aux['gapLength']
             }
         },
-        onShapeChange () {
+        onShapeChange (newValue) {
             var shapeDataSelected = {}
             console.log("On shape change")
             this.$dataCacheStore.commercialShapes.forEach((item) => {
-                if (item['name'] == this.quickShapeSelected) {
+                if (item['name'] == newValue) {
                     shapeDataSelected = Utils.deepCopy(item)
                 }
             })
@@ -189,10 +191,10 @@ export default {
                 this.tryToSend()
             }
         },
-        onMaterialChange () {
+        onMaterialChange (newValue) {
             var materialDataSelected = {}
             this.$dataCacheStore.commercialMaterials.forEach((item) => {
-                if (item['name'] == this.quickMaterialSelected) {
+                if (item['name'] == newValue) {
                     materialDataSelected = Utils.deepCopy(item)
                 }
             })
@@ -211,49 +213,8 @@ export default {
         <Form ref="formRef" :validation-schema="schema" v-slot="{ handleSubmit, errors }" class="form-inline row" @submit="handleSubmit($event, onSubmit)">
             <div class="mt-1"></div>
 
-
-            <label v-tooltip="'Shape of the core, to be selected among all available commercial ones. Go to shape artisan for advanced customization.'" class="rounded-2 fs-5 col-xl-1 col-lg-5 col-sm-5 m-xl-0 p-0 m-0 text-sm-center">Shape</label>
-            <div class="col-xl-2 col-sm-5">
-                <div class="container-flex p-0 m-0">
-                    <div class="row">
-                        <Field data-test="CoreQuickAccess-shape-select-input" name="quickShapeField" ref="quickShapeFieldRef" as="select" :class="{'is-invalid': errors.quickShapeField }" @change="onShapeChange" class= "fs-6 bg-light text-white rounded-2 col-8 m-0 p-0" v-model="quickShapeSelected">
-                            <option data-test="CoreQuickAccess-shape-NA-option-input" disabled value="">Please select one</option>
-                            <option data-test="CoreQuickAccess-shape-custom-option-input" disabled value="Custom">Custom</option>
-                            <option v-for="model, index in commercialShapesNames"
-                                :data-test="'CoreQuickAccess-shape-' + model + '-option-input'"
-                                :key="index"
-                                :value="model">{{model}}
-                            </option>
-                        </Field>
-                        <button data-test="CoreQuickAccess-shape-table-modal-button" v-tooltip="'Open information table for shapes'" class="btn btn-primary text-dark py-1 p-0 px-0 mx-1 offset-1 col-2" data-bs-toggle="modal" data-bs-target="#loadCommercialShapeModal" >
-                            <i class="fa-solid fs-6 fa-table-list m-0 p-0"></i>
-                        </button>
-                    </div>
-                </div>
-            </div>
-            <div class="invalid-feedback">{{errors.quickShapeField}}</div>
-
-
-            <label v-tooltip="'Material of the core, it can only be commercial for now'" class="rounded-2 fs-5 col-xl-1 col-sm-5 m-xl-0 p-0 m-0 text-sm-center">Material</label>
-            <div class="col-xl-2 col-sm-5">
-                <div class="container-flex p-0 m-0">
-                    <div class="row">
-                        <Field data-test="CoreQuickAccess-material-select-input" name="quickMaterialField" ref="quickMaterialFieldRef" as="select" :class="{ 'is-invalid': errors.quickMaterialField }" @change="onMaterialChange" class= "fs-6 bg-light text-white rounded-2 col-8 m-0 p-0" v-model="quickMaterialSelected">
-                            <option data-test="CoreQuickAccess-material-NA-option-input" disabled value="">Please select one</option>
-                            <option data-test="CoreQuickAccess-material-custom-option-input" disabled value="Custom">Custom</option>
-                            <option v-for="model, index in commercialMaterialNames"
-                                :data-test="'CoreQuickAccess-material-' + model + '-option-input'"
-                                :key="index"
-                                :value="model">{{model}}
-                            </option>
-                        </Field>
-                        <button data-test="CoreQuickAccess-material-table-modal-button" v-tooltip="'Open information table for materials'" class="btn btn-primary text-dark py-1 p-0 px-0 mx-1 offset-1 col-2" data-bs-toggle="modal" data-bs-target="#loadCommercialMaterialModal" >
-                            <i class="fa-solid fs-6 fa-table-list m-0 p-0"></i>
-                        </button>
-                    </div>
-                </div>
-            </div>
-
+            <CoreShapeSelector class="col-xl-3 col-sm-3" :dataTestLabel="'SimulationCoreCalculatorQuickAccess'" :initialShapeSelected="quickShapeSelected" @onShapeChange="onShapeChange"/>
+            <CoreMaterialSelector class="col-xl-3 col-sm-3" :dataTestLabel="'SimulationCoreCalculatorQuickAccess'" :initialMaterialSelected="quickMaterialSelected" @onMaterialChange="onMaterialChange"/>
 
             <label v-if="$userStore.globalCore['functionalDescription']['shape']['family'] != 't'" v-tooltip="'Basic gap length of the central column. Go to Gaping Artisan for advanced customization.'" class="rounded-2 fs-5 col-xl-1 col-lg-5 col-sm-5 text-xl-end pe-3 m-0 p-0 text-sm-center" >Gap</label>
             <Field data-test="CoreQuickAccess-gap-length-input" v-if="$userStore.globalCore['functionalDescription']['shape']['family'] != 't'" @keydown.enter.prevent :disabled="quickGapTypeSelected == 'Ungapped' && quickGapTypeSelected != 'Custom'" ref="quickGapLengthFieldRef" name="quickGapLengthField" type="number" v-model="quickGapLengthSelected" @change="onGapLengthChange" :class="{'is-invalid': errors.quickGapLengthField }" class="rounded-2 bg-light text-white col-xl-1 col-lg-3 col-sm-3 text-end"/>

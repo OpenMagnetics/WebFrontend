@@ -158,7 +158,7 @@ export default {
         <Form ref="formRef" :validation-schema="schema" v-slot="{ handleSubmit, errors }" class="form-inline row" @submit="handleSubmit($event, onSubmit)">
 
             <div class="mt-1"></div>
-            <label class="rounded-2 fs-5 col-5 pt-2">Mag. Ind.</label>
+            <label class="rounded-2 fs-5 col-5 pt-2 text-nowrap">Mag. Ind.</label>
 
             <vue-number-input controls class="col-5 mt-2"  :class="{ 'is-invalid': errors.magnetizingInductanceField }" 
                 :modelValue="magnetizingInductanceSelected"

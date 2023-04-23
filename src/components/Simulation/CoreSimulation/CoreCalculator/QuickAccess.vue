@@ -5,6 +5,8 @@ import * as Yup from 'yup';
 import { useSimulationStore } from '/src/stores/simulation'
 import * as Utils from '/src/assets/js/utils.js'
 import * as Defaults from '/src/assets/js/defaults.js'
+import CoreMaterialSelector from '/src/components/Common/CoreMaterialSelector.vue'
+import CoreShapeSelector from '/src/components/Common/CoreShapeSelector.vue'
 
 </script>
 
@@ -26,6 +28,7 @@ export default {
         const commercialShapesNames = [];
         const commercialMaterialNames = [];
         const simulationStore = useSimulationStore();
+        const materialManufacturers = []
 
         if (this.$userStore.globalSimulation['inputs']['operationPoints'] != null) {
             if (this.$userStore.globalSimulation['inputs']['operationPoints'][0]['conditions'] != null) {
@@ -74,6 +77,7 @@ export default {
             commercialShapesNames,
             commercialMaterialNames,
             stackable,
+            materialManufacturers,
             recentChange: false,
             tryingToSend: false,
         }
@@ -116,14 +120,26 @@ export default {
         loadMaterialNames() {
             const materialData = this.$dataCacheStore.commercialMaterials
             this.commercialMaterialNames = []
+            this.materialManufacturers = ["Magnetics"]
             materialData.forEach((item) => {
-                this.commercialMaterialNames.push(item['name'])
+                if (!this.materialManufacturers.includes(item['manufacturerInfo']['name'])) {
+                    this.materialManufacturers.push(item['manufacturerInfo']['name'])
+                }
+            })
+            console.log(this.materialManufacturers)
+            this.materialManufacturers.forEach((itemManufacturer) => {
+                this.commercialMaterialNames.push(itemManufacturer)
+                materialData.forEach((item) => {
+                    if (item['manufacturerInfo']['name'] == itemManufacturer) {
+                        this.commercialMaterialNames.push(item['name'])
+                    }
+                })
             })
         },
-        onShapeChange() {
+        onShapeChange(newValue) {
             var shapeDataSelected = {}
             this.$dataCacheStore.commercialShapes.forEach((item) => {
-                if (item['name'] == this.quickShapeSelected) {
+                if (item['name'] == newValue) {
                     shapeDataSelected = Utils.deepCopy(item)
                 }
             })
@@ -142,10 +158,10 @@ export default {
                 this.simulationStore.calculateCoreLosses()
             }
         },
-        onMaterialChange () {
+        onMaterialChange (newValue) {
             var materialDataSelected = {}
             this.$dataCacheStore.commercialMaterials.forEach((item) => {
-                if (item['name'] == this.quickMaterialSelected) {
+                if (item['name'] == newValue) {
                     materialDataSelected = Utils.deepCopy(item)
                 }
             })
@@ -185,49 +201,8 @@ export default {
         <Form ref="formRef" :validation-schema="schema" v-slot="{ handleSubmit, errors }" class="form-inline row" @submit="handleSubmit($event, onSubmit)">
             <div class="mt-1"></div>
 
-
-            <label v-tooltip="'Shape of the core, to be selected among all available commercial ones. Go to shape artisan for advanced customization.'" class="rounded-2 fs-5 col-xl-1 col-sm-3 m-xl-0 p-0 m-0 text-sm-center">Shape</label>
-            <div class="col-xl-3 col-sm-3 col-xs-12">
-                <div class="container-flex p-0 m-0">
-                    <div class="row">
-                        <Field data-test="SimulationCoreCalculatorQuickAccess-shape-select-input" name="quickShapeField" ref="quickShapeFieldRef" as="select" :class="{'is-invalid': errors.quickShapeField }" @change="onShapeChange" class= "fs-6 bg-light text-white rounded-2 col-8 m-0 p-0" v-model="quickShapeSelected">
-                            <option data-test="SimulationCoreCalculatorQuickAccess-shape-NA-option-input" disabled value="">Please select one</option>
-                            <option data-test="SimulationCoreCalculatorQuickAccess-shape-custom-option-input" disabled value="Custom">Custom</option>
-                            <option v-for="model, index in commercialShapesNames"
-                                :data-test="'SimulationCoreCalculatorQuickAccess-shape-' + model + '-option-input'"
-                                :key="index"
-                                :value="model">{{model}}
-                            </option>
-                        </Field>
-                        <button data-test="SimulationCoreCalculatorQuickAccess-shape-table-modal-button" v-tooltip="'Open information table for shapes'" class="btn btn-primary text-dark py-1 p-0 px-0 mx-1 offset-1 col-2" data-bs-toggle="modal" data-bs-target="#loadCommercialShapeModal" >
-                            <i class="fa-solid fs-6 fa-table-list m-0 p-0"></i>
-                        </button>
-                    </div>
-                </div>
-            </div>
-            <div class="invalid-feedback">{{errors.quickShapeField}}</div>
-
-
-            <label v-tooltip="'Material of the core, it can only be commercial for now'" class="rounded-2 fs-5 col-xl-1 col-sm-3 m-xl-0 p-0 m-0 text-sm-center">Material</label>
-            <div class="col-xl-2 col-sm-3 col-xs-12">
-                <div class="container-flex p-0 m-0">
-                    <div class="row">
-                        <Field data-test="SimulationCoreCalculatorQuickAccess-material-select-input" name="quickMaterialField" ref="quickMaterialFieldRef" as="select" :class="{ 'is-invalid': errors.quickMaterialField }" @change="onMaterialChange" class= "fs-6 bg-light text-white rounded-2 col-8 m-0 p-0" v-model="quickMaterialSelected">
-                            <option data-test="SimulationCoreCalculatorQuickAccess-material-NA-option-input" disabled value="">Please select one</option>
-                            <option data-test="SimulationCoreCalculatorQuickAccess-material-custom-option-input" disabled value="Custom">Custom</option>
-                            <option v-for="model, index in commercialMaterialNames"
-                                :data-test="'SimulationCoreCalculatorQuickAccess-material-' + model + '-option-input'"
-                                :key="index"
-                                :value="model">{{model}}
-                            </option>
-                        </Field>
-                        <button data-test="SimulationCoreCalculatorQuickAccess-material-table-modal-button" v-tooltip="'Open information table for materials'" class="btn btn-primary text-dark py-1 p-0 px-0 mx-1 offset-1 col-2" data-bs-toggle="modal" data-bs-target="#loadCommercialMaterialModal" >
-                            <i class="fa-solid fs-6 fa-table-list m-0 p-0"></i>
-                        </button>
-                    </div>
-                </div>
-            </div>
-            <div class="invalid-feedback">{{errors.quickMaterialField}}</div>
+            <CoreShapeSelector class="col-xl-4 col-sm-4" :dataTestLabel="'SimulationCoreCalculatorQuickAccess'" :initialShapeSelected="quickShapeSelected" @onShapeChange="onShapeChange"/>
+            <CoreMaterialSelector class="col-xl-3 col-sm-3" :dataTestLabel="'SimulationCoreCalculatorQuickAccess'" :initialMaterialSelected="quickMaterialSelected" @onMaterialChange="onMaterialChange"/>
 
             <label class="rounded-2 fs-5 text-center col-xl-1 col-lg-1 col-sm-3 col-xs-12 col-6 p-0 m-0 ps-1" >Stacks</label>
             <Field data-test="SimulationCoreCalculatorQuickAccess-number-stacks-input" :disabled="!stackable" name="quickStacksField" type="number" v-model="quickStacksSelected" @change="onStacksChange" 
