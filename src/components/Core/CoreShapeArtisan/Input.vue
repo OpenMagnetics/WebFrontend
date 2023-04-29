@@ -351,13 +351,13 @@ export default {
                     }
 
                     if (name == 'E'){
-                        if (this.dimensionsValueInMm['G'] >= this.dimensionsValueInMm['E']){
+                        if (this.dimensionsValueInMm['G'] > this.dimensionsValueInMm['E']){
                             this.errors[name] = true
                             messages[name] = 'E must be greater than G'
                         }
                     }
                     else if (name == 'G'){
-                        if (this.dimensionsValueInMm['G'] >= this.dimensionsValueInMm['E']){
+                        if (this.dimensionsValueInMm['G'] > this.dimensionsValueInMm['E']){
                             this.errors[name] = true
                             messages[name] = 'G must be smaller than E'
                         }
@@ -380,7 +380,7 @@ export default {
                         }
                     }
 
-                    if (!(this.familyLabelSelected.toLowerCase() == "rm" && this.subtypeLabelSelected == 2) && !(this.familyLabelSelected.toLowerCase() == "p" && this.subtypeLabelSelected != 2) && !(this.familyLabelSelected.toLowerCase() == "efd") && !(this.familyLabelSelected.toLowerCase() == "ut") && this.dimensionsValueInMm['C'] > 0) {
+                    if (!(this.familyLabelSelected.toLowerCase() == "rm" && this.subtypeLabelSelected == 2) && !(this.familyLabelSelected.toLowerCase() == "p" && this.subtypeLabelSelected != 2) && !(this.familyLabelSelected.toLowerCase() == "efd") && !(this.familyLabelSelected.toLowerCase() == "planar er") && !(this.familyLabelSelected.toLowerCase() == "ut") && this.dimensionsValueInMm['C'] > 0) {
                         var c_f_condition = false
                         if (this.familyLabelSelected.toLowerCase() != "er" && this.familyLabelSelected.toLowerCase() != "e" && this.familyLabelSelected.toLowerCase() != "etd" && this.familyLabelSelected.toLowerCase() != "ec") {
                             c_f_condition = this.dimensionsValueInMm['F'] >= this.dimensionsValueInMm['C']
@@ -465,10 +465,12 @@ export default {
         this.coreStore.$onAction((action) => {
             this.recentChange = true
             if (action.name == "setFullCoreModel") {
-                 setTimeout(() => this.tryToSend(), 10);
+                this.hasError = false
+                setTimeout(() => this.tryToSend(), 10);
             }
             if (action.name == "quickGappingChanged") {
-                 setTimeout(() => this.tryToSend(), 10);
+                this.hasError = false
+                setTimeout(() => this.tryToSend(), 10);
             }
         })
 
