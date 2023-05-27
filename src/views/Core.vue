@@ -3,6 +3,7 @@ import Header from '/src/components/Header.vue'
 import Footer from '/src/components/Footer.vue'
 import CoreHeader from '/src/components/Core/CoreHeader.vue'
 import CoreToolMenu from '/src/components/Core/CoreToolMenu.vue'
+import CoreProviders from '/src/components/Core/CoreProviders.vue'
 import CoreShapeArtisan from '/src/components/Core/CoreShapeArtisan.vue'
 import CoreGappingArtisan from '/src/components/Core/CoreGappingArtisan.vue'
 import CoreMaterialArtisan from '/src/components/Core/CoreMaterialArtisan.vue'
@@ -59,6 +60,7 @@ export default {
                 <div class="row">
                     <div class="col-lg-2">
                         <CoreToolMenu @tool_change="onToolChange"/>
+                        <CoreProviders />
                     </div>
                     <div class="col-lg-10">
                         <CoreShapeArtisan class="scrollable-column" v-if="chosenTool == 'shapeArtisan'"/>

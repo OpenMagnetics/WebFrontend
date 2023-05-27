@@ -151,7 +151,7 @@ export default {
                 this.quickGapLengthSelected = aux['gapLength']
             }
         },
-        onShapeChange (newValue) {
+        onShapeChange(newValue) {
             var shapeDataSelected = {}
             console.log("On shape change")
             this.$dataCacheStore.commercialShapes.forEach((item) => {
