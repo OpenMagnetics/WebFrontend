@@ -143,6 +143,16 @@ const routes = [
         name: 'Musings12',
         component: () => import('../views/musings/Musing12.vue')
     },
+    {
+        path: '/tool_selection',
+        name: 'ToolSelection',
+        component: () => import('../views/ToolSelection.vue')
+    },
+    {
+        path: '/magnetic_synthesis',
+        name: 'MagneticSynthesis',
+        component: () => import('../views/MagneticSynthesis.vue')
+    },
 ]
 const router = createRouter({
     history: createWebHistory(),

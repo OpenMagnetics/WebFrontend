@@ -5,7 +5,7 @@ import Footer from '/src/components/Footer.vue'
 
 <template>
     <Header />
-    <main role="main">
+    <main role="main" class="main">
         <div class="container" >
             <div class="row justify-content-center">
                 <div class="col-md-9 ">

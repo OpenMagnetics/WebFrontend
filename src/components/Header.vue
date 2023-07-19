@@ -124,7 +124,7 @@ export default {
     <NotificationsModal/>
     <CoreLoadCommercialMaterial v-if="$dataCacheStore != null" @onLoadCommercialMaterial="onLoadCommercialMaterial"/>
     <CoreLoadCommercialShape v-if="$dataCacheStore != null" @onLoadCommercialShape="onLoadCommercialShape"/>
-    <nav class="navbar navbar-expand-lg bg-light navbar-dark text-primary mb-1" id="header_wrapper">
+    <nav class="navbar navbar-expand-lg bg-light navbar-dark text-primary mb-1 om-header" id="header_wrapper">
         <div class="container-fluid">
             <a data-test="Header-logo-home-link" href="/" aria-label="Visit OpenMagnetics and Tear Down the Paywalls!">
                 <img src="/images/logo.svg" width="60" height="40" href="/" class="d-inline-block align-top me-3" alt="OpenMagnetics Logo">
@@ -225,6 +225,12 @@ export default {
       padding-bottom:160px;
     }
 
+    .om-header {
+        min-width: 100%;
+        position: fixed;
+        z-index: 99999;
+    }
+
 
     @media (max-width: 340px) {
         #title {
@@ -278,6 +284,9 @@ export default {
         align-items: center;
     }
 
+    .main {
+      margin-top: 60px;
+    }
     ::-webkit-scrollbar { height: 3px;}
     ::-webkit-scrollbar-button {  background-color: var(--bs-light); }
     ::-webkit-scrollbar-track {  background-color: var(--bs-light);}
@@ -295,37 +304,10 @@ export default {
        font-size: calc(1rem + 0.5vw);
     }
 
-/*    .accordion-button:not(.collapsed) {
-        color: var(--bs-primary)  !important;
-        background-color: var(--bs-light) !important;
-        border-color: var(--bs-primary) !important;
-    }
-
-
-    .accordion-button {
-        color: var(--bs-primary)  !important;
-        background-color: var(--bs-light) !important;
-        border-color: var(--bs-primary) !important;
-    }
-*/
     .accordion-button:focus {
         border-color: var(--bs-primary) !important;
         outline: 0  !important;
         box-shadow: none  !important;
     }
-/*    .accordion-body {
-        border-bottom: none !important;
-    }
 
-    .accordion-button:link, .accordion-button:visited, .accordion-button:hover, .accordion-button:active  {
-        background-color: var(--bs-secondary) !important;
-        color: var(--bs-primary) !important;
-        text-decoration: none !important;
-        border: hidden !important;
-        border-color: var(--bs-primary) !important;
-        box-shadow: 0px !important;
-
-          
-    }
-*/
 </style>

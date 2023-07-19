@@ -418,7 +418,7 @@ export default {
 <template>
     <div class="d-flex flex-column min-vh-100">
         <Header />
-        <main role="main">
+        <main role="main" class="main">
             <div class="container mx-auto">
                     <div class="row mb-2">
                         <div class="col-xl-12 px-0">

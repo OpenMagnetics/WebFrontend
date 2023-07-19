@@ -11,7 +11,8 @@ import "/src/assets/css/tooltip.css";
 import axios from "axios";
 import { useUserStore } from '/src/stores/user'
 import { useDataCacheStore } from '/src/stores/dataCache'
-
+import VueResizeText from "vue3-resize-text"
+ 
 const axiosInstance = axios.create()
 
 const pinia = createPinia()
@@ -20,10 +21,12 @@ const app = createApp(App);
 app.use(router);
 app.use(pinia)
 app.use(VueCookies, { expires: '7d'})
+app.use(VueResizeText)
 app.directive("tooltip", tooltip);
 app.config.globalProperties.$axios = axiosInstance
 app.config.globalProperties.$userStore = useUserStore()
 app.config.globalProperties.$dataCacheStore = null
+
 app.mount("#app");
 
 

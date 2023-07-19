@@ -151,7 +151,7 @@ export default {
 <template>
     <div class="d-flex flex-column min-vh-100">
         <Header />
-        <main role="main">
+        <main role="main" class="main">
             <div class="container">
                 <div class="jumbotron p-3 p-xl-5 pt-1 pt-xl-2 text-white bg-light">
                     <div class="row my-2">

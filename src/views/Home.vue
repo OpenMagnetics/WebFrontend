@@ -7,7 +7,7 @@ import Footer from '/src/components/Footer.vue'
 <template>
     <div class="d-flex flex-column min-vh-100">
         <Header />
-        <main role="main">
+        <main role="main" class="main">
             <div class="container">
                 <div id="home-welcome" class="row">
                     <div class="col-12">

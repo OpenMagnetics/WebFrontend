@@ -544,7 +544,7 @@ export default {
 </script>
 
 <template>
-    <main role="main">
+    <main role="main" class="main">
         <ElementDelete @delete_operation_point="onDeleteElement">
             <template #elementType>
                 {{typeToDelete}}

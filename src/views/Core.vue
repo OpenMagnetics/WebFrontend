@@ -49,8 +49,8 @@ export default {
 
 <template>
     <div class="d-flex flex-column min-vh-100">
-        <main role="main">
-            <Header />
+        <Header />
+        <main role="main" class="main">
             <div class="container mx-auto ">
                 <div class="row">
                     <div class="col-lg-12">
