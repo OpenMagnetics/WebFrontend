@@ -5,6 +5,16 @@ import axios from "axios"
 
 var requesting = 0
 
+
+export function toTitleCase(str) {
+    const result = str.replace(/([A-Z])/g, " $1");
+    const finalResult = result.charAt(0).toUpperCase() + result.slice(1);
+    return finalResult;
+}
+export function toDashCase(str) {
+    return str.replace(/\s+/g, '-').toLowerCase();
+}
+
 export function roundWithDecimals(value, precision, trunc=false) {
     if (trunc)
         return Math.trunc(value / precision) * precision;
@@ -126,6 +136,43 @@ export function formatUnit(value, unitValue) {
     }
     label = value / base
     return {label, unit}
+}
+
+export function getMultiplier(value, precision=0.001) {
+    var multiplier;
+    var scaledValue;
+    if (value < 0.000000001 && value != 0) {
+        multiplier = 0.0000000000001;
+    }
+    if (value < 0.000001 && value != 0) {
+        multiplier = 0.0000000001;
+    }
+    if (value < 0.001 && value != 0) {
+        multiplier = 0.000001;
+    }
+    else if (value < 0.1 && value != 0) {
+        multiplier = 0.001;
+    }
+    else if (value < 1000) {
+        multiplier = 1;
+    }
+    else if (value >= 1000 && value < 1000000) {
+        multiplier = 1000;
+    }
+    else if (value >= 1000000 && value < 1000000000) {
+        multiplier = 1000000;
+    }
+    else if (value >= 1000000000 && value < 1000000000000) {
+        multiplier = 1000000000;
+    }
+    else if (value >= 1000000000000 && value < 1000000000000000) {
+        multiplier = 1000000000000;
+    }
+    else if (value >= 1000000000000000 && value < 1000000000000000000) {
+        multiplier = 1000000000000000;
+    }
+    scaledValue = roundWithDecimals(value / multiplier, precision);
+    return {scaledValue, multiplier};
 }
 
 export function formatFrequency(frequency) {

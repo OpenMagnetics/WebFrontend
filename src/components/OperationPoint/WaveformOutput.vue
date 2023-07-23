@@ -93,31 +93,31 @@ store.$onAction((action) => {
             <div></div>
             <label class="fs-5 ms-3">Peak To Peak:</label>
             <label class="fs-5 ms-2 me-4 float-end" style="width: 10px;">{{electricalParameter == "current"? 'A' : 'V'}}</label>
-            <label :data-test="'WaveformOutput-' + electricalParameter + '-peakToPeak-text'" class="fs-5 bg-dark text-white float-end" style="width: 100%; max-width: 60px; text-align:right;">{{peakToPeak}}</label>
+            <label :data-test-id="'WaveformOutput-' + electricalParameter + '-peakToPeak-text'" class="fs-5 bg-dark text-white float-end" style="width: 100%; max-width: 60px; text-align:right;">{{peakToPeak}}</label>
 
             <div></div>
 
             <label class="fs-5 ms-3">DC Offset:</label>
             <label class="fs-5 ms-2 me-4 float-end" style="width: 10px;">{{electricalParameter == "current"? 'A' : 'V'}}</label>
-            <label :data-test="'WaveformOutput-' + electricalParameter + '-dcOffset-text'" class="fs-5 bg-dark text-white float-end" style="width: 100%; max-width: 60px; text-align:right;">{{dcOffset}}</label>
+            <label :data-test-id="'WaveformOutput-' + electricalParameter + '-dcOffset-text'" class="fs-5 bg-dark text-white float-end" style="width: 100%; max-width: 60px; text-align:right;">{{dcOffset}}</label>
 
             <div></div>
 
             <label class="fs-5 ms-3">RMS:</label>
             <label class="fs-5 ms-2 me-4 float-end" style="width: 10px;">{{electricalParameter == "current"? 'A' : 'V'}}</label>
-            <label :data-test="'WaveformOutput-' + electricalParameter + '-rms-text'" class="fs-5 bg-dark text-white float-end" style="width: 100%; max-width: 60px; text-align:right;">{{rms}}</label>
+            <label :data-test-id="'WaveformOutput-' + electricalParameter + '-rms-text'" class="fs-5 bg-dark text-white float-end" style="width: 100%; max-width: 60px; text-align:right;">{{rms}}</label>
 
             <div></div>
 
             <label class="fs-5 ms-3">Eff. Frequency:</label>
             <label class="fs-5 ms-2 me-4 float-end" style="width: 10px;">{{effectiveSwitchingFrequencyUnit}}</label>
-            <label :data-test="'WaveformOutput-' + electricalParameter + '-effectiveSwitchingFrequency-text'" class="fs-5 bg-dark text-white float-end" style="width: 100%; max-width: 60px; text-align:right;">{{effectiveSwitchingFrequency}}</label>
+            <label :data-test-id="'WaveformOutput-' + electricalParameter + '-effectiveSwitchingFrequency-text'" class="fs-5 bg-dark text-white float-end" style="width: 100%; max-width: 60px; text-align:right;">{{effectiveSwitchingFrequency}}</label>
 
             <div></div>
 
             <label class="fs-5 ms-3">THD:</label>
             <label class="fs-5 ms-2 me-4 float-end" style="width: 10px;">%</label>
-            <label :data-test="'WaveformOutput-' + electricalParameter + '-thd-text'" class="fs-5 bg-dark text-white float-end" style="width: 100%; max-width: 60px; text-align:right;">{{thd}}</label>
+            <label :data-test-id="'WaveformOutput-' + electricalParameter + '-thd-text'" class="fs-5 bg-dark text-white float-end" style="width: 100%; max-width: 60px; text-align:right;">{{thd}}</label>
 
             <div></div>
 

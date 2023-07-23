@@ -103,13 +103,13 @@ export default {
             <label class="fs-4 ms-3 mb-3" :class="titleColor('power')"> Outputs for Power</label>
             <div></div>
             <label class="fs-5 ms-3">RMS power:</label>
-            <label data-test="OperationPointCombinedOutput-rms-power-text" class="fs-5 ms-2 me-4 float-end" style="width: 10px;">{{rmsPowerUnit}}</label>
-            <label data-test="OperationPointCombinedOutput-rms-power-unit-text" class="fs-5 bg-dark text-white float-end" style="width: 100%; max-width: 60px; text-align:right;">{{rmsPower}}</label>
+            <label data-test-id="OperationPointCombinedOutput-rms-power-text" class="fs-5 ms-2 me-4 float-end" style="width: 10px;">{{rmsPowerUnit}}</label>
+            <label data-test-id="OperationPointCombinedOutput-rms-power-unit-text" class="fs-5 bg-dark text-white float-end" style="width: 100%; max-width: 60px; text-align:right;">{{rmsPower}}</label>
 
             <div></div>
             <label class="fs-5 ms-3">Instantaneous power:</label>
-            <label data-test="OperationPointCombinedOutput-instantaeous-power-text" class="fs-5 ms-2 me-4 float-end" style="width: 10px;">{{instantaneousPowerUnit}}</label>
-            <label data-test="OperationPointCombinedOutput-instantaeous-power-unit-text" class="fs-5 bg-dark text-white float-end" style="width: 100%; max-width: 60px; text-align:right;">{{instantaneousPower}}</label>
+            <label data-test-id="OperationPointCombinedOutput-instantaeous-power-text" class="fs-5 ms-2 me-4 float-end" style="width: 10px;">{{instantaneousPowerUnit}}</label>
+            <label data-test-id="OperationPointCombinedOutput-instantaeous-power-unit-text" class="fs-5 bg-dark text-white float-end" style="width: 100%; max-width: 60px; text-align:right;">{{instantaneousPower}}</label>
 
     </div>
 </template>

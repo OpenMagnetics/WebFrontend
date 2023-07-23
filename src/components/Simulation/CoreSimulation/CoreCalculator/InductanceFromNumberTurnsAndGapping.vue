@@ -242,13 +242,13 @@ export default {
             <label v-if="isNotToroid" class="rounded-2 fs-5 col-12">Gap info</label>
 
             <label v-if="isNotToroid" v-tooltip="'Type of gap. Go to Gaping Artisan for advanced customization.'" class="rounded-2 fs-6 text-white offset-1 col-4">Type:</label>
-            <Field data-test="SimulationCoreCalculatorInductanceFromNumberTurnsAndGapping-gap-type-select-input" v-if="isNotToroid" name="quickGapTypeField" ref="quickGapTypeFieldRef" as="select" :class="{'is-invalid': errors.quickGapTypeField }" @change="onGapTypeChange" class= "rounded-2 bg-light text-white  col-6" v-model="gapTypeSelected" >
-                <option data-test="SimulationCoreCalculatorInductanceFromNumberTurnsAndGapping-gap-type-NA-option-input" disabled value="">Please select one</option>
-                <option data-test="SimulationCoreCalculatorInductanceFromNumberTurnsAndGapping-gap-type-ungapped-option-input" value="Ungapped">Ungapped</option>
-                <option data-test="SimulationCoreCalculatorInductanceFromNumberTurnsAndGapping-gap-type-grinded-option-input" value="Grinded">Grinded</option>
-                <option data-test="SimulationCoreCalculatorInductanceFromNumberTurnsAndGapping-gap-type-spacer-option-input" value="Spacer">Spacer</option>
-                <option data-test="SimulationCoreCalculatorInductanceFromNumberTurnsAndGapping-gap-type-distributed-option-input" value="Distributed">Distributed</option>
-                <option data-test="SimulationCoreCalculatorInductanceFromNumberTurnsAndGapping-gap-type-custom-option-input" disabled value="Custom">Custom</option>
+            <Field data-test-id="SimulationCoreCalculatorInductanceFromNumberTurnsAndGapping-gap-type-select-input" v-if="isNotToroid" name="quickGapTypeField" ref="quickGapTypeFieldRef" as="select" :class="{'is-invalid': errors.quickGapTypeField }" @change="onGapTypeChange" class= "rounded-2 bg-light text-white  col-6" v-model="gapTypeSelected" >
+                <option data-test-id="SimulationCoreCalculatorInductanceFromNumberTurnsAndGapping-gap-type-NA-option-input" disabled value="">Please select one</option>
+                <option data-test-id="SimulationCoreCalculatorInductanceFromNumberTurnsAndGapping-gap-type-ungapped-option-input" value="Ungapped">Ungapped</option>
+                <option data-test-id="SimulationCoreCalculatorInductanceFromNumberTurnsAndGapping-gap-type-grinded-option-input" value="Grinded">Grinded</option>
+                <option data-test-id="SimulationCoreCalculatorInductanceFromNumberTurnsAndGapping-gap-type-spacer-option-input" value="Spacer">Spacer</option>
+                <option data-test-id="SimulationCoreCalculatorInductanceFromNumberTurnsAndGapping-gap-type-distributed-option-input" value="Distributed">Distributed</option>
+                <option data-test-id="SimulationCoreCalculatorInductanceFromNumberTurnsAndGapping-gap-type-custom-option-input" disabled value="Custom">Custom</option>
             </Field>
             <div v-if="isNotToroid" class="invalid-feedback">{{errors.quickGapTypeField}}</div>
 

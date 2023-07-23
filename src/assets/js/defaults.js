@@ -1,3 +1,91 @@
+export const mas = {
+    "inputs": {
+        "designRequirements": {
+            "magnetizingInductance": {
+                "nominal": 10e-6
+            },
+            "turnsRatios": [],
+        },
+        "operatingPoints": [],
+    },
+    "magnetic": {
+        "coil": {
+            "bobbin": "Dummy",
+            "functionalDescription": [
+                {
+                    "name": "DummyWinding",
+                    "numberTurns": 1,
+                    "numberParallels": 1,
+                    "isolationSide": "primary",
+                    "wire": "Dummy"
+                }
+            ],
+        },
+        "core": {
+            "name": "DummyCore",
+            "functionalDescription": {
+                "type": "two-piece set",
+                "material": "dummy",
+                "shape": "ETD44",
+                "gapping": [],
+                "numberStacks": 1
+            }
+        },
+    },
+    "outputs": []
+}
+
+export const isolationSideOrdered = [
+    "Primary",
+    "Secondary",
+    "Tertiary",
+    "Quaternary",
+    "Quinary",
+    "Senary",
+    "Septenary",
+    "Octonary",
+    "Nonary",
+    "Denary",
+    "Undenary",
+    "Duodenary",
+]
+
+export const defaultDesignRequirements = {
+    "magnetizingInductance": {
+        "minimum": 42e-6
+    },
+    "turnsRatios": [],
+    "leakageInductance": [
+        {"maximum": 2e-6}
+    ],
+    "strayCapacitance": [
+        {"maximum": 100e-9}
+    ],
+    "operatingTemperature": {
+        "maximum": 123
+    },
+    "insulation": {
+        "altitude": {
+            "maximum": 3000,
+            "minimum": -50
+        },
+        "cti": "Group II",
+        "pollutionDegree": "P3",
+        "overvoltageCategory": "OVC-III",
+        "insulationType": "Double"
+    },
+    "market": "Military",
+    "topology": "Flyback",
+    "maximumWeight": 3,
+    "maximumDimensions": [0.1, 0.05, 0.04],
+    "terminalType": ["SMT", "Flyind Lead"]
+}
+
+
+
+
+
+
 export const defaultUngappedGapping = [
     {
         "length": 0.000005,
@@ -139,11 +227,6 @@ export const defaultCore = {
 
 export const defaultOperationConditions = {
     "ambientTemperature": 25,
-}
-
-export const defaultDesignRequirements = {
-    "magnetizingInductance": {"nominal": 1e-6},
-    "turnsRatios": [],
 }
 
 export const defaultOperationPoint = {

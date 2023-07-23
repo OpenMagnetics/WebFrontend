@@ -2,6 +2,7 @@
 import Header from '/src/components/Header.vue'
 import Footer from '/src/components/Footer.vue'
 import Storyline from '/src/components/Storyline.vue'
+import { toTitleCase } from '/src/assets/js/utils.js'
 
 import DesignRequirements from '/src/components/Synthesis/DesignRequirements.vue'
 import OperatingPoints from '/src/components/Synthesis/OperatingPoints.vue'
@@ -17,11 +18,12 @@ import MagneticFinalizer from '/src/components/Synthesis/MagneticFinalizer.vue'
 <script>
 export default {
     data() {
-        var activeVecticalIndex = 0;
+        var activeVerticalIndex = 0;
         var activeHorizontalIndex = 0;
+        // var selectedTool = "";
         const currentStoryline= [
                 {
-                    title: "Design Req."
+                    title: "Design Requirements"
                 },
                 {
                     title: "Operation Points"
@@ -51,24 +53,25 @@ export default {
             'MagneticFinalizer': [5, 0],
         }
         return {
-            activeVecticalIndex,
+            activeVerticalIndex,
             activeHorizontalIndex,
             currentStoryline,
             storylineCoordinates,
+            // selectedTool,
         }
     },
     methods: {
-        decreaseVecticalIndex(event) {
-            console.log('decreaseVecticalIndex')
-            if (this.activeVecticalIndex > 0) {
-                this.activeVecticalIndex -= 1;
+        decreaseVerticalIndex(event) {
+            console.log('decreaseVerticalIndex')
+            if (this.activeVerticalIndex > 0) {
+                this.activeVerticalIndex -= 1;
                 this.activeHorizontalIndex = 0;
             }
         },
         increaseVerticalIndex(event) {
             console.log('increaseVerticalIndex')
-            if (this.activeVecticalIndex < this.currentStoryline.length - 1) {
-                this.activeVecticalIndex += 1;
+            if (this.activeVerticalIndex < this.currentStoryline.length - 1) {
+                this.activeVerticalIndex += 1;
                 this.activeHorizontalIndex = 0;
             }
         },
@@ -79,7 +82,7 @@ export default {
             this.activeHorizontalIndex -= 1;
         },
         checkCoordinates(tool) {
-            if (this.storylineCoordinates[tool][0] == this.activeVecticalIndex &&
+            if (this.storylineCoordinates[tool][0] == this.activeVerticalIndex &&
                 this.storylineCoordinates[tool][1] == this.activeHorizontalIndex) {
                 return true
             }
@@ -90,7 +93,7 @@ export default {
         traversableRight() {
             var traversableRight = false;
             for (const [key, value] of Object.entries(this.storylineCoordinates)) {
-                if (value[0] == this.activeVecticalIndex && value[1] == (this.activeHorizontalIndex + 1)){
+                if (value[0] == this.activeVerticalIndex && value[1] == (this.activeHorizontalIndex + 1)){
                     traversableRight = true;
                 }
             };
@@ -100,13 +103,23 @@ export default {
         traversableLeft() {
             var traversableLeft = false;
             for (const [key, value] of Object.entries(this.storylineCoordinates)) {
-                if (value[0] == this.activeVecticalIndex && value[1] == (this.activeHorizontalIndex - 1)){
+                if (value[0] == this.activeVerticalIndex && value[1] == (this.activeHorizontalIndex - 1)){
                     traversableLeft = true;
                 }
             };
 
             return traversableLeft;
         },
+    },
+    computed: {
+        selectedTool() {
+            for (const [key, value] of Object.entries(this.storylineCoordinates)) {
+                if (value[0] == this.activeVerticalIndex && value[1] == this.activeHorizontalIndex){
+                    return key;
+                }
+            };
+            return "Me he perdio"
+        }
     },
     mounted() {
     },
@@ -123,11 +136,16 @@ export default {
                 <div class="row">
                     <div class="storyline text-white text-center col-1 bg-light border border-primary m-0 p-1">
                         <h4 class="text-center">Story line</h4>
-                        <Storyline :activeVecticalIndex="activeVecticalIndex" :storyline="currentStoryline"/>
+                        <Storyline :activeVerticalIndex="activeVerticalIndex" :storyline="currentStoryline"/>
                     </div>
                     <div class="tool text-white bg-dark text-center offset-1 col-11 bg-light" >
-                        <h2 class="">Tools</h2>
-                        <button class="btn btn-outline-primary float-start" @click="decreaseVecticalIndex"> Previous tool</button>
+                        <h2 class="">
+                            {{toTitleCase(selectedTool)}}
+                            <span>
+                                <button data-test-id="magnetic-synthesis-previous-tool-button" class="btn btn-outline-primary float-start" @click="decreaseVerticalIndex"> Previous tool</button>
+                            </span>
+                        </h2>
+                            
                         <DesignRequirements v-if="checkCoordinates('DesignRequirements')"/>
                         <OperatingPoints v-if="checkCoordinates('OperatingPoints')"/>
                         <CoreAdviser v-if="checkCoordinates('CoreAdviser')"/>
@@ -136,9 +154,9 @@ export default {
                         <WireCustomizer v-if="checkCoordinates('WireCustomizer')"/>
                         <CoilAdviser v-if="checkCoordinates('CoilAdviser')"/>
                         <MagneticFinalizer v-if="checkCoordinates('MagneticFinalizer')"/>
-                        <button class="asd btn btn-outline-primary float-start" @click="increaseVerticalIndex"> Next tool</button>
-                        <button v-if="traversableRight()" class="btn btn-outline-primary float-end" @click="increaseHorizontalIndex"> Customize tool</button>
-                        <button v-if="traversableLeft()" class="btn btn-outline-primary float-end" @click="decreaseHorizontalIndex"> Back to main tool</button>
+                        <button data-test-id="magnetic-synthesis-next-tool-button" class="btn btn-outline-primary float-start" @click="increaseVerticalIndex"> Next tool</button>
+                        <button data-test-id="magnetic-synthesis-customize-tool-button" v-if="traversableRight()" class="btn btn-outline-primary float-end" @click="increaseHorizontalIndex"> Customize tool</button>
+                        <button data-test-id="magnetic-synthesis-commercial-tool-button" v-if="traversableLeft()" class="btn btn-outline-primary float-end" @click="decreaseHorizontalIndex"> Back to main tool</button>
                     </div>
                 </div>
             </div>

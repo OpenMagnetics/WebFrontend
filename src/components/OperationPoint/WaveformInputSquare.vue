@@ -69,7 +69,7 @@ function handleSubmit(params) {
             <div></div>
             <label class="fs-5 mx-3">Peak to peak:</label>
             <label class="fs-5 mx-1 float-end" style="width: 10px;">{{electricalParameter == "current"? 'A' : 'V'}}</label>
-            <Field :data-test="'WaveformInputSquare-' + electricalParameter + '-peakToPeak-input'" name="peakToPeakField" type="number" :value="peakToPeak" @change="peakToPeakChange" :class="{ 'is-invalid': errors.peakToPeakField }" class="rounded-2 bg-light text-white float-end" style="width: 100%; max-width: 70px;"/>
+            <Field :data-test-id="'WaveformInputSquare-' + electricalParameter + '-peakToPeak-input'" name="peakToPeakField" type="number" :value="peakToPeak" @change="peakToPeakChange" :class="{ 'is-invalid': errors.peakToPeakField }" class="rounded-2 bg-light text-white float-end" style="width: 100%; max-width: 70px;"/>
 
             <div></div>
 

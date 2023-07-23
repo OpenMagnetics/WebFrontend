@@ -193,29 +193,29 @@ export default {
             </vue-number-input>
 
             <label v-tooltip="'Type of gap. Go to Gaping Artisan for advanced customization.'" class="rounded-2 fs-5 text-primary col-5 mt-1 text-nowrap">Gap type:</label>
-            <Field data-test="SimulationCoreCalculatorGappingFromNumberTurnsAndInductance-gap-type-select-input" name="quickGapTypeField" ref="quickGapTypeFieldRef" as="select" :class="{'is-invalid': errors.quickGapTypeField }" @change="onGapTypeChange" class= "rounded-2 bg-light text-white col-5 mt-2" v-model="gapTypeSelected" >
-                <option data-test="SimulationCoreCalculatorGappingFromNumberTurnsAndInductance-gap-type-NA-option-input" disabled value="">Please select one</option>
-                <option data-test="SimulationCoreCalculatorGappingFromNumberTurnsAndInductance-gap-type-ungapped-option-input" value="Ungapped">Ungapped</option>
-                <option data-test="SimulationCoreCalculatorGappingFromNumberTurnsAndInductance-gap-type-grinded-option-input" value="Grinded">Grinded</option>
-                <option data-test="SimulationCoreCalculatorGappingFromNumberTurnsAndInductance-gap-type-spacer-option-input" value="Spacer">Spacer</option>
-                <option data-test="SimulationCoreCalculatorGappingFromNumberTurnsAndInductance-gap-type-distributed-option-input" value="Distributed">Distributed</option>
-                <option data-test="SimulationCoreCalculatorGappingFromNumberTurnsAndInductance-gap-type-custom-option-input" disabled value="Custom">Custom</option>
+            <Field data-test-id="SimulationCoreCalculatorGappingFromNumberTurnsAndInductance-gap-type-select-input" name="quickGapTypeField" ref="quickGapTypeFieldRef" as="select" :class="{'is-invalid': errors.quickGapTypeField }" @change="onGapTypeChange" class= "rounded-2 bg-light text-white col-5 mt-2" v-model="gapTypeSelected" >
+                <option data-test-id="SimulationCoreCalculatorGappingFromNumberTurnsAndInductance-gap-type-NA-option-input" disabled value="">Please select one</option>
+                <option data-test-id="SimulationCoreCalculatorGappingFromNumberTurnsAndInductance-gap-type-ungapped-option-input" value="Ungapped">Ungapped</option>
+                <option data-test-id="SimulationCoreCalculatorGappingFromNumberTurnsAndInductance-gap-type-grinded-option-input" value="Grinded">Grinded</option>
+                <option data-test-id="SimulationCoreCalculatorGappingFromNumberTurnsAndInductance-gap-type-spacer-option-input" value="Spacer">Spacer</option>
+                <option data-test-id="SimulationCoreCalculatorGappingFromNumberTurnsAndInductance-gap-type-distributed-option-input" value="Distributed">Distributed</option>
+                <option data-test-id="SimulationCoreCalculatorGappingFromNumberTurnsAndInductance-gap-type-custom-option-input" disabled value="Custom">Custom</option>
             </Field>
             <div class="invalid-feedback">{{errors.quickGapTypeField}}</div>
             <div class="border-top my-3"></div>
 
-            <img data-test="SimulationCoreCalculatorGappingFromNumberTurnsAndInductance-loading" id="svg" v-if="computing" class="mx-auto d-block col-12" alt="loading" style="width: 25%; height: auto;" src="/images/loading.gif">
+            <img data-test-id="SimulationCoreCalculatorGappingFromNumberTurnsAndInductance-loading" id="svg" v-if="computing" class="mx-auto d-block col-12" alt="loading" style="width: 25%; height: auto;" src="/images/loading.gif">
 
             <div class="mt-1"></div>
             <label v-if="!computing" class="rounded-2 fs-5 col-12 text-info">Gap info</label>
 
             <label v-if="!computing" v-tooltip="gapTypeSelected!='Residual'? 'Length of the gap, in mm' : 'Residual length cannot be changed'" class="rounded-2 fs-6 text-info offset-1 col-4 pt-1">Length:</label>
 
-            <label data-test="SimulationCoreCalculatorGappingFromNumberTurnsAndInductance-gap-length-text" v-if="!computing" class="fs-5 bg-light text-white col-5 text-end">{{gapLength}}</label>
+            <label data-test-id="SimulationCoreCalculatorGappingFromNumberTurnsAndInductance-gap-length-text" v-if="!computing" class="fs-5 bg-light text-white col-5 text-end">{{gapLength}}</label>
             <label v-if="!computing" class="small-text col-2 text-start pt-1 fs-6">mm</label>
 
             <label v-if="!computing"  v-tooltip="gapTypeSelected!='Residual'? 'Length of the gap, in mm' : 'Residual length cannot be changed'" class="rounded-2 fs-6 text-info offset-1 col-4 pt-1 text-nowrap">No. gaps:</label>
-            <label data-test="SimulationCoreCalculatorGappingFromNumberTurnsAndInductance-number-gaps-text" v-if="!computing" class="fs-5 bg-light text-white col-5 text-end">{{numberGaps}}</label>
+            <label data-test-id="SimulationCoreCalculatorGappingFromNumberTurnsAndInductance-number-gaps-text" v-if="!computing" class="fs-5 bg-light text-white col-5 text-end">{{numberGaps}}</label>
 
         </Form>
     </div>

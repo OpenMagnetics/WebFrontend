@@ -193,14 +193,14 @@ export default {
     <div class="offcanvas offcanvas-start bg-dark" tabindex="-1" id="OperationPointOffCanvas" aria-labelledby="OperationPointOffCanvasLabel">
     <div class="offcanvas-header">
         <h5 class="offcanvas-title text-white fs-3" id="OperationPointOffCanvasLabel">Edit Operation Point</h5>
-        <button data-test="SimulationOperationPointTool-corner-close-button" type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="OperationPointOffCanvasClose"></button>
+        <button data-test-id="SimulationOperationPointTool-corner-close-button" type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="OperationPointOffCanvasClose"></button>
     </div>
     <div class="offcanvas-body">
         <div class="container mx-auto">
             <div class="row">
                 <label class="fs-4 mt-2 ms-3 text-success col-7"> Use current?</label>
                 <i class="fa-solid fa-xmark mt-3 pt-1 ps-2 text-danger col-1 p-0"></i>
-                <input data-test="SimulationOperationPointTool-select-current-as-input-button" v-model="currentAsInput" @change="OnCurrentAsInputChanged" type="range" class="mt-3 form-range col-1 ms-1" min="0" max="1" step="1" style="width: 30px">
+                <input data-test-id="SimulationOperationPointTool-select-current-as-input-button" v-model="currentAsInput" @change="OnCurrentAsInputChanged" type="range" class="mt-3 form-range col-1 ms-1" min="0" max="1" step="1" style="width: 30px">
                 <i class="fa-solid fa-check mt-3 pt-1 ms-2 text-success col-1 p-0"></i>
             </div>
             <div class="row">

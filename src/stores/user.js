@@ -4,6 +4,7 @@ import * as Utils from '/src/assets/js/utils.js'
 import * as Defaults from '/src/assets/js/defaults.js'
 
 export const useUserStore = defineStore("user", () => {
+
     const loggedIn = ref(false)
     const ipAddress = ref(0)
     const username = ref(null)

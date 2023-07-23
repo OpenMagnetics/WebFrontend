@@ -59,8 +59,8 @@ export default {
 
             <div v-for="provider, index in providers">
                 <h2 class="accordion-header bg-light mt-1" id="CoreProvidersMenu">
-                    <button :data-test="'CoreProvidersMenu-' + index + '-button'" class="fs-5 accordion-button bg-light text-primary collapsed border-primary" type="button" data-bs-toggle="collapse" :data-bs-target="'#coreProvidersCollapse-' + index" aria-expanded="false" :aria-controls="'coreProvidersCollapse-' + index">
-                    <img :data-test="'coreProvidersOne-image'" v-if="provider.image != null" class="flex-auto d-lg-block" style="object-fit: contain; max-height: 40px;" :src="provider.image">
+                    <button :data-test-id="'CoreProvidersMenu-' + index + '-button'" class="fs-5 accordion-button bg-light text-primary collapsed border-primary" type="button" data-bs-toggle="collapse" :data-bs-target="'#coreProvidersCollapse-' + index" aria-expanded="false" :aria-controls="'coreProvidersCollapse-' + index">
+                    <img :data-test-id="'coreProvidersOne-image'" v-if="provider.image != null" class="flex-auto d-lg-block" style="object-fit: contain; max-height: 40px;" :src="provider.image">
                     <label class="ms-4"> {{provider.name}} </label>
                     </button>
                 </h2>

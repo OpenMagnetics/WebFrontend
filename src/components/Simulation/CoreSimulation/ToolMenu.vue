@@ -8,7 +8,7 @@ const emit = defineEmits(['tool_change'])
 <div class="accordion" id="coreSimulationToolAccordion">
     <div class="accordion-item border-primary">
         <h2 class="accordion-header bg-light" id="SimulationToolMenuHeadingCoreCalculator">
-            <button data-test="SimulationToolMenu-coreCalculator-button" :class="$userStore.coreSimulationSubsection == 'coreCalculator'? '' : 'collapsed'" class="fs-5 accordion-button bg-light text-primary" type="button" data-bs-toggle="collapse" data-bs-target="#coreSimulationToolAccordioncollapseOne" aria-expanded="false" aria-controls="coreSimulationToolAccordioncollapseOne" @click="$emit('tool_change', 'coreCalculator')">
+            <button data-test-id="SimulationToolMenu-coreCalculator-button" :class="$userStore.coreSimulationSubsection == 'coreCalculator'? '' : 'collapsed'" class="fs-5 accordion-button bg-light text-primary" type="button" data-bs-toggle="collapse" data-bs-target="#coreSimulationToolAccordioncollapseOne" aria-expanded="false" aria-controls="coreSimulationToolAccordioncollapseOne" @click="$emit('tool_change', 'coreCalculator')">
                 Core Calculator
             </button>
         </h2>
@@ -20,7 +20,7 @@ const emit = defineEmits(['tool_change'])
     </div>
     <div class="accordion-item border-primary">
         <h2 class="accordion-header bg-light" id="SimulationToolMenuHeadingCoreAdviser">
-            <button data-test="SimulationToolMenu-coreAdviser-button" :class="$userStore.coreSimulationSubsection == 'coreAdviser'? '' : 'collapsed'" class="fs-5 accordion-button bg-light text-primary" type="button" data-bs-toggle="collapse" data-bs-target="#coreSimulationToolAccordionCollapseTwo" aria-expanded="false" aria-controls="coreSimulationToolAccordionCollapseTwo" @click="$emit('tool_change', 'coreAdviser')">
+            <button data-test-id="SimulationToolMenu-coreAdviser-button" :class="$userStore.coreSimulationSubsection == 'coreAdviser'? '' : 'collapsed'" class="fs-5 accordion-button bg-light text-primary" type="button" data-bs-toggle="collapse" data-bs-target="#coreSimulationToolAccordionCollapseTwo" aria-expanded="false" aria-controls="coreSimulationToolAccordionCollapseTwo" @click="$emit('tool_change', 'coreAdviser')">
                 Core Adviser
             </button>
         </h2>

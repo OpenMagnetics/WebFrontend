@@ -129,16 +129,16 @@ const getExponentLabel = computed(() => {
     <div class="container-flex text-white mt-2 mb-1">
         <Form ref="formRef" :validation-schema="schema" v-slot="{ handleSubmit, errors }" class="form-inline"  @submit="handleSubmit($event, onSubmit)">
             <label class="fs-5 ms-3 me-1">x: </label>
-            <Field :data-test="dataTestLabel + '-time-input'" name="timeValidator" type="number" :disabled="index == 0 || index == (store.getDataPoints.value.length - 1)" :value="timeVar" @change="onTimeChange" :class="{ 'is-invalid': errors.timeValidator }" class="rounded-2 bg-light text-white" style="width: 100%; max-width: 50px;"/>
+            <Field :data-test-id="dataTestLabel + '-time-input'" name="timeValidator" type="number" :disabled="index == 0 || index == (store.getDataPoints.value.length - 1)" :value="timeVar" @change="onTimeChange" :class="{ 'is-invalid': errors.timeValidator }" class="rounded-2 bg-light text-white" style="width: 100%; max-width: 50px;"/>
             <input class="fs-6 ms-1 bg-light text-white bg-dark border-0" style="width: 30px;" :value="getExponentLabel" disabled/>
             <label class="fs-5 me-2" style="width: 10px;">{{'s'}}</label>
 
             <label class="fs-5 ms-1 me-1">y: </label>
-            <Field :data-test="dataTestLabel + '-value-input'" name="valueValidator" type="number" :value="valueVar" @change="onValueChange" :class="{ 'is-invalid': errors.valueValidator }" class=" rounded-2 bg-light text-white" style="width: 100%; max-width: 60px;"/>
+            <Field :data-test-id="dataTestLabel + '-value-input'" name="valueValidator" type="number" :value="valueVar" @change="onValueChange" :class="{ 'is-invalid': errors.valueValidator }" class=" rounded-2 bg-light text-white" style="width: 100%; max-width: 60px;"/>
             <label class="fs-5 mx-1" style="width: 10px;">{{electricalParameter == "current"? 'A' : 'V'}}</label>
             <span class="ms-2">
-                <button :data-test="dataTestLabel + '-add-point-below-button'" v-if="index != (store.getDataPoints.value.length - 1)" type="button" class="btn btn-default btn-circle bg-dark mb-1 me-1" @click="onAddPointBelow"><i class="fa-solid fa-circle-plus text-secondary"></i> </button>
-                <button :data-test="dataTestLabel + '-remove-point-button'" v-if="index != 0 && index != (store.getDataPoints.value.length - 1)" type="button" class="btn btn-default btn-circle bg-dark mb-1" @click="onRemovePoint"><i class="fa-solid fa-circle-minus text-danger"></i> </button>
+                <button :data-test-id="dataTestLabel + '-add-point-below-button'" v-if="index != (store.getDataPoints.value.length - 1)" type="button" class="btn btn-default btn-circle bg-dark mb-1 me-1" @click="onAddPointBelow"><i class="fa-solid fa-circle-plus text-secondary"></i> </button>
+                <button :data-test-id="dataTestLabel + '-remove-point-button'" v-if="index != 0 && index != (store.getDataPoints.value.length - 1)" type="button" class="btn btn-default btn-circle bg-dark mb-1" @click="onRemovePoint"><i class="fa-solid fa-circle-minus text-danger"></i> </button>
             </span>
             <div class="invalid-feedback">{{errors.timeValidator}}</div>
             <div class="invalid-feedback">{{errors.valueValidator}}</div>

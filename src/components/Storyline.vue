@@ -1,7 +1,11 @@
+<script setup>
+import { toDashCase } from '/src/assets/js/utils.js'
+</script>
+
 <script>
 export default {
     props: {
-        activeVecticalIndex: {
+        activeVerticalIndex: {
             type: Number,
             required: true
         },
@@ -19,7 +23,6 @@ export default {
             const shortenedLabels = []
             this.storyline.forEach((item, index) => {
                 var label = item.title;
-                console.log(window.innerWidth)
                 if (window.innerWidth < 1200) {
                     var slice = 8
                     if (window.innerWidth < 1100)
@@ -45,8 +48,8 @@ export default {
         }
     },
     watch: { 
-        activeVecticalIndex: function(newVal, oldVal) { // watch it
-            console.log('activeVecticalIndex changed: ', newVal, ' | was: ', oldVal)
+        activeVerticalIndex: function(newVal, oldVal) { // watch it
+            console.log('activeVerticalIndex changed: ', newVal, ' | was: ', oldVal)
         }
     },
     mounted () {
@@ -60,14 +63,12 @@ export default {
             else {
                 btn_class += "rounded-0 "
             }
-            if (index == this.activeVecticalIndex) {
+            if (index == this.activeVerticalIndex) {
                 btn_class += "bg-primary text-dark"
             }
             else {
                 btn_class += "bg-dark text-primary"
             }
-            console.log('index: ', index)
-            console.log('btn_class: ', btn_class)
             return btn_class
         }
     }
@@ -77,10 +78,9 @@ export default {
 <template>
     <div class=" py-2 p-0 m-0" role="group" aria-label="Vertical button group ">
         <div v-for="adventure, index in storyline" class=""> 
-            <div v-resize-text="{ratio:1, minFontSize: '14px', maxFontSize: '100px', delay: 20}" class="border border-primary btn-outline-primary m-0 px-1 py-2" :class="btn_class(index)"> 
+            <button :data-test-id="'storyline-' + toDashCase(adventure.title) + '-button'" v-resize-text="{ratio:1, minFontSize: '14px', maxFontSize: '100px', delay: 20}" class="border border-primary btn-outline-primary m-0 px-1 py-2" :class="btn_class(index)" disabled> 
                 {{shortenedLabels[index]}}
-
-            </div>
+            </button>
             <div v-if="index != storyline.length-1" class="vr m-0 p-0"></div>
         </div>
     </div>
