@@ -101,7 +101,7 @@ export default {
     <div class="container-flex border-bottom">
         <div class="row">
             <label class="rounded-2 fs-5 ms-3" :class="maximumNumberElements != null? 'col-sm-6 col-sm-6 col-md-3' : 'col-12'">{{toTitleCase(name)}}</label>
-            <select v-if="maximumNumberElements != null" class="form-select bg-light text-white m-0 col-sm-4 col-sm-4 col-md-4 mt-1"  @change="changeNumberElements" style="width:auto; max-height: 3em;" :value="this.masStore.mas.inputs.designRequirements[this.name].length" >
+            <select v-if="maximumNumberElements != null" class="form-select bg-light text-white m-0 col-sm-4 col-sm-4 col-md-4 mt-1"  @change="changeNumberElements" style="width:auto; max-height: 3em;" :value="masStore.mas.inputs.designRequirements[name].length" >
                 <option v-for="index in Number(maximumNumberElements) + 1">
                     {{index - 1}}
                 </option>
