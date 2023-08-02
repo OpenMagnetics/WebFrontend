@@ -165,7 +165,7 @@ export default {
                     </li>
                     <li class="nav-item">
                         <span class="nav-item">
-                            <a data-test-id="Header-repository-link" class="btn me-4 nav-link text-success border-dark" href="https://github.com/OpenMagnetics/" target="_blank" rel="noopener noreferrer">Beta OMv0.2 <i class="fa-brands fa-github"></i> </a>
+                            <a data-test-id="Header-repository-link" class="btn me-4 nav-link text-success border-dark" href="https://github.com/OpenMagnetics/" target="_blank" rel="noopener noreferrer">Beta <i class="fa-brands fa-github"></i> </a>
                         </span>
                     </li>
                     <li v-if="!loggedIn" class="nav-item">

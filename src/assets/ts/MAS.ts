@@ -87,7 +87,7 @@ export interface DesignRequirements {
     /**
      * Topology that will use the magnetic
      */
-    topology?: string;
+    topology?: Topology;
     /**
      * Required turns ratios between primary and the rest of windings
      */
@@ -109,6 +109,10 @@ export interface InsulationRequirements {
      */
     insulationType?: InsulationType;
     /**
+     * Voltage RMS of the main supply to which this transformer is connected to.
+     */
+    mainSupplyVoltage?: number;
+    /**
      * Required overvoltage category
      */
     overvoltageCategory?: OvervoltageCategory;
@@ -116,6 +120,10 @@ export interface InsulationRequirements {
      * Required pollution for the magnetic to work under
      */
     pollutionDegree?: PollutionDegree;
+    /**
+     * VList of standards that will be taken into account for insulation.
+     */
+    standards?: Standard[];
     [property: string]: any;
 }
 
@@ -220,6 +228,14 @@ export enum PollutionDegree {
     P3 = "P3",
 }
 
+export enum Standard {
+    Iec603351 = "IEC 60335-1",
+    Iec606641 = "IEC 60664-1",
+    Iec606645 = "IEC 60664-5",
+    Iec615581 = "IEC 61558-1",
+    Iec623681 = "IEC 62368-1",
+}
+
 /**
  * Market where the magnetic will end up being used
  */
@@ -236,6 +252,28 @@ export enum TerminalType {
     Pin = "Pin",
     Screw = "Screw",
     Smt = "SMT",
+}
+
+/**
+ * Topology that will use the magnetic
+ */
+export enum Topology {
+    ActiveClampForwardConverter = "Active Clamp Forward Converter",
+    BoostConverter = "Boost Converter",
+    BuckConverter = "Buck Converter",
+    CukConverter = "Cuk Converter",
+    FlybackConverter = "Flyback Converter",
+    FullBridgeConverter = "Full-Bridge Converter",
+    HalfBridgeConverter = "Half-Bridge Converter",
+    InvertingBuckBoostConverter = "Inverting Buck-Boost Converter",
+    PhaseShiftedFullBridgeConverter = "Phase-Shifted Full-Bridge Converter",
+    PushPullConverter = "Push-Pull Converter",
+    Sepic = "SEPIC",
+    SingleSwitchForwardConverter = "Single Switch Forward Converter",
+    TwoSwitchFlybackConverter = "Two Switch Flyback Converter",
+    TwoSwitchForwardConverter = "Two Switch Forward Converter",
+    WeinbergConverter = "Weinberg Converter",
+    ZetaConverter = "Zeta Converter",
 }
 
 /**
@@ -1843,9 +1881,12 @@ export interface CoreShape {
  * The family of a magnetic shape
  */
 export enum CoreShapeFamily {
+    C = "c",
+    Drum = "drum",
     E = "e",
     Ec = "ec",
     Efd = "efd",
+    Ei = "ei",
     El = "el",
     Elp = "elp",
     Ep = "ep",
@@ -1853,6 +1894,7 @@ export enum CoreShapeFamily {
     Eq = "eq",
     Er = "er",
     Etd = "etd",
+    H = "h",
     Lp = "lp",
     P = "p",
     PlanarE = "planar e",
@@ -1862,6 +1904,7 @@ export enum CoreShapeFamily {
     Pq = "pq",
     Pqi = "pqi",
     Rm = "rm",
+    Rod = "rod",
     T = "t",
     U = "u",
     Ui = "ui",
@@ -2103,6 +2146,14 @@ export interface MagneticManufacturerRecommendations {
      * The manufacturer's rated magnetic flux or volt-seconds for this part
      */
     ratedMagneticFlux?: number;
+    /**
+     * The manufacturer's saturation current for this part
+     */
+    saturationCurrent?: number;
+    /**
+     * Percentage of inductance drop at saturation current
+     */
+    saturationCurrentInductanceDrop?: number;
     [property: string]: any;
 }
 
@@ -2114,6 +2165,10 @@ export interface Outputs {
      * Data describing the output core losses
      */
     coreLosses?: CoreLossesOutput;
+    /**
+     * Data describing the output insulation that the magnetic has
+     */
+    insulation?: DielectricVoltage[];
     /**
      * Data describing the output magnetic strength field
      */
@@ -2187,6 +2242,44 @@ export enum ResultOrigin {
     Manufacturer = "manufacturer",
     Measurement = "measurement",
     Simulation = "simulation",
+}
+
+/**
+ * Data describing the output insulation that the magnetic has
+ *
+ * List of voltages that the magnetic can withstand
+ */
+export interface DielectricVoltage {
+    /**
+     * Duration of the voltate, or undefined if the field is not present
+     */
+    duration?: number;
+    /**
+     * Model used to calculate the voltage in the case of simulation, or method used to measure
+     * it
+     */
+    methodUsed?: string;
+    /**
+     * Origin of the value of the result
+     */
+    origin: ResultOrigin;
+    /**
+     * Voltage that the magnetic withstands
+     */
+    voltage: number;
+    /**
+     * Type of the voltage
+     */
+    voltageType: VoltageType;
+    [property: string]: any;
+}
+
+/**
+ * Type of the voltage
+ */
+export enum VoltageType {
+    Ac = "AC",
+    Dc = "DC",
 }
 
 /**
@@ -2975,6 +3068,14 @@ export class Convert {
         return JSON.stringify(uncast(value, r("CoreLossesOutput")), null, 2);
     }
 
+    public static toDielectricVoltage(json: string): DielectricVoltage {
+        return cast(JSON.parse(json), r("DielectricVoltage"));
+    }
+
+    public static dielectricVoltageToJson(value: DielectricVoltage): string {
+        return JSON.stringify(uncast(value, r("DielectricVoltage")), null, 2);
+    }
+
     public static toLeakageInductanceOutput(json: string): LeakageInductanceOutput {
         return cast(JSON.parse(json), r("LeakageInductanceOutput"));
     }
@@ -3261,15 +3362,17 @@ const typeMap: any = {
         { json: "operatingTemperature", js: "operatingTemperature", typ: u(undefined, r("DimensionWithTolerance")) },
         { json: "strayCapacitance", js: "strayCapacitance", typ: u(undefined, a(r("DimensionWithTolerance"))) },
         { json: "terminalType", js: "terminalType", typ: u(undefined, a(r("TerminalType"))) },
-        { json: "topology", js: "topology", typ: u(undefined, "") },
+        { json: "topology", js: "topology", typ: u(undefined, r("Topology")) },
         { json: "turnsRatios", js: "turnsRatios", typ: a(r("DimensionWithTolerance")) },
     ], "any"),
     "InsulationRequirements": o([
         { json: "altitude", js: "altitude", typ: u(undefined, r("DimensionWithTolerance")) },
         { json: "cti", js: "cti", typ: u(undefined, r("Cti")) },
         { json: "insulationType", js: "insulationType", typ: u(undefined, r("InsulationType")) },
+        { json: "mainSupplyVoltage", js: "mainSupplyVoltage", typ: u(undefined, 3.14) },
         { json: "overvoltageCategory", js: "overvoltageCategory", typ: u(undefined, r("OvervoltageCategory")) },
         { json: "pollutionDegree", js: "pollutionDegree", typ: u(undefined, r("PollutionDegree")) },
+        { json: "standards", js: "standards", typ: u(undefined, a(r("Standard"))) },
     ], "any"),
     "DimensionWithTolerance": o([
         { json: "excludeMaximum", js: "excludeMaximum", typ: u(undefined, true) },
@@ -3414,7 +3517,7 @@ const typeMap: any = {
         { json: "manufacturerInfo", js: "manufacturerInfo", typ: u(undefined, r("ManufacturerInfo")) },
         { json: "material", js: "material", typ: u(undefined, u(r("WireMaterial"), "")) },
         { json: "name", js: "name", typ: u(undefined, "") },
-        { json: "numberConductors", js: "numberConductors", typ: u(undefined, 3.14) },
+        { json: "numberConductors", js: "numberConductors", typ: u(undefined, 0) },
         { json: "outerDiameter", js: "outerDiameter", typ: u(undefined, r("DimensionWithTolerance")) },
         { json: "outerHeight", js: "outerHeight", typ: u(undefined, r("DimensionWithTolerance")) },
         { json: "outerWidth", js: "outerWidth", typ: u(undefined, r("DimensionWithTolerance")) },
@@ -3478,7 +3581,7 @@ const typeMap: any = {
         { json: "manufacturerInfo", js: "manufacturerInfo", typ: u(undefined, r("ManufacturerInfo")) },
         { json: "material", js: "material", typ: u(undefined, u(r("WireMaterial"), "")) },
         { json: "name", js: "name", typ: u(undefined, "") },
-        { json: "numberConductors", js: "numberConductors", typ: u(undefined, 3.14) },
+        { json: "numberConductors", js: "numberConductors", typ: u(undefined, 0) },
         { json: "outerDiameter", js: "outerDiameter", typ: u(undefined, r("DimensionWithTolerance")) },
         { json: "outerHeight", js: "outerHeight", typ: u(undefined, r("DimensionWithTolerance")) },
         { json: "outerWidth", js: "outerWidth", typ: u(undefined, r("DimensionWithTolerance")) },
@@ -3717,9 +3820,12 @@ const typeMap: any = {
         { json: "ratedCurrent", js: "ratedCurrent", typ: u(undefined, 3.14) },
         { json: "ratedCurrentTemperatureRise", js: "ratedCurrentTemperatureRise", typ: u(undefined, 3.14) },
         { json: "ratedMagneticFlux", js: "ratedMagneticFlux", typ: u(undefined, 3.14) },
+        { json: "saturationCurrent", js: "saturationCurrent", typ: u(undefined, 3.14) },
+        { json: "saturationCurrentInductanceDrop", js: "saturationCurrentInductanceDrop", typ: u(undefined, 3.14) },
     ], "any"),
     "Outputs": o([
         { json: "coreLosses", js: "coreLosses", typ: u(undefined, r("CoreLossesOutput")) },
+        { json: "insulation", js: "insulation", typ: u(undefined, a(r("DielectricVoltage"))) },
         { json: "leakageInductance", js: "leakageInductance", typ: u(undefined, r("LeakageInductanceOutput")) },
         { json: "magnetizingInductance", js: "magnetizingInductance", typ: u(undefined, r("MagnetizingInductanceOutput")) },
         { json: "strayCapacitance", js: "strayCapacitance", typ: u(undefined, a(r("StrayCapacitanceOutput"))) },
@@ -3736,6 +3842,13 @@ const typeMap: any = {
         { json: "origin", js: "origin", typ: r("ResultOrigin") },
         { json: "temperature", js: "temperature", typ: u(undefined, 3.14) },
         { json: "volumetricLosses", js: "volumetricLosses", typ: u(undefined, 3.14) },
+    ], "any"),
+    "DielectricVoltage": o([
+        { json: "duration", js: "duration", typ: u(undefined, 3.14) },
+        { json: "methodUsed", js: "methodUsed", typ: u(undefined, "") },
+        { json: "origin", js: "origin", typ: r("ResultOrigin") },
+        { json: "voltage", js: "voltage", typ: 3.14 },
+        { json: "voltageType", js: "voltageType", typ: r("VoltageType") },
     ], "any"),
     "LeakageInductanceOutput": o([
         { json: "leakageInductancePerWinding", js: "leakageInductancePerWinding", typ: a(r("DimensionWithTolerance")) },
@@ -3849,6 +3962,13 @@ const typeMap: any = {
         "P2",
         "P3",
     ],
+    "Standard": [
+        "IEC 60335-1",
+        "IEC 60664-1",
+        "IEC 60664-5",
+        "IEC 61558-1",
+        "IEC 62368-1",
+    ],
     "Market": [
         "Commercial",
         "Industrial",
@@ -3861,6 +3981,24 @@ const typeMap: any = {
         "Pin",
         "Screw",
         "SMT",
+    ],
+    "Topology": [
+        "Active Clamp Forward Converter",
+        "Boost Converter",
+        "Buck Converter",
+        "Cuk Converter",
+        "Flyback Converter",
+        "Full-Bridge Converter",
+        "Half-Bridge Converter",
+        "Inverting Buck-Boost Converter",
+        "Phase-Shifted Full-Bridge Converter",
+        "Push-Pull Converter",
+        "SEPIC",
+        "Single Switch Forward Converter",
+        "Two Switch Flyback Converter",
+        "Two Switch Forward Converter",
+        "Weinberg Converter",
+        "Zeta Converter",
     ],
     "WaveformLabel": [
         "custom",
@@ -3975,9 +4113,12 @@ const typeMap: any = {
         "custom",
     ],
     "CoreShapeFamily": [
+        "c",
+        "drum",
         "e",
         "ec",
         "efd",
+        "ei",
         "el",
         "elp",
         "ep",
@@ -3985,6 +4126,7 @@ const typeMap: any = {
         "eq",
         "er",
         "etd",
+        "h",
         "lp",
         "p",
         "planar e",
@@ -3994,6 +4136,7 @@ const typeMap: any = {
         "pq",
         "pqi",
         "rm",
+        "rod",
         "t",
         "u",
         "ui",
@@ -4026,5 +4169,9 @@ const typeMap: any = {
         "manufacturer",
         "measurement",
         "simulation",
+    ],
+    "VoltageType": [
+        "AC",
+        "DC",
     ],
 };

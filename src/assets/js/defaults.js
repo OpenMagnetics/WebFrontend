@@ -50,35 +50,58 @@ export const isolationSideOrdered = [
     "Duodenary",
 ]
 
+export const designRequirementsOrdered = [
+    "numberWindings",
+    "magnetizingInductance",
+    "turnsRatios",
+    "insulation",
+    "leakageInductance",
+    "strayCapacitance",
+    "operatingTemperature",
+    "maximumWeight",
+    "maximumDimensions",
+    "terminalType",
+    "topology",
+    "market",
+]
+
 export const defaultDesignRequirements = {
+    "name": "My Design Requirements",
     "magnetizingInductance": {
         "minimum": 42e-6
     },
     "turnsRatios": [],
     "leakageInductance": [
-        {"maximum": 2e-6}
+        {"maximum": 3e-6}
     ],
     "strayCapacitance": [
-        {"maximum": 100e-9}
+        {"maximum": 50e-12}
     ],
     "operatingTemperature": {
         "maximum": 123
     },
     "insulation": {
         "altitude": {
-            "maximum": 3000,
+            "maximum": 2000,
+            "nominal": 1500,
             "minimum": -50
         },
         "cti": "Group II",
         "pollutionDegree": "P3",
         "overvoltageCategory": "OVC-III",
-        "insulationType": "Double"
+        "insulationType": "Double",
+        "mainSupplyVoltage": {
+            "maximum": 340,
+            "nominal": 220,
+            "minimum": 90
+        },
+        "standards": ["IEC 60664-1"]
     },
     "market": "Military",
-    "topology": "Flyback",
-    "maximumWeight": 3,
-    "maximumDimensions": [0.1, 0.05, 0.04],
-    "terminalType": ["SMT", "Flyind Lead"]
+    "topology": "Buck Converter",
+    "maximumWeight": 300,
+    "maximumDimensions": [null, null, null],
+    "terminalType": ["Flyind Lead"]
 }
 
 

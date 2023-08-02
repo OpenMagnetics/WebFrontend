@@ -1,7 +1,7 @@
 <script setup>
 import { useMasStore } from '/src/stores/mas'
 import { isNumber, toTitleCase, getMultiplier } from '/src/assets/js/utils.js'
-import DimensionWithTolerance from '/src/components/Synthesis/DesignRequirements/DimensionWithTolerance.vue'
+import ElementFromList from '/src/components/Synthesis/DesignRequirements/ElementFromList.vue'
 import { isolationSideOrdered } from '/src/assets/js/defaults.js'
 </script>
 
@@ -22,12 +22,13 @@ export default {
         fixedNumberElements:{
             type: Number
         },
-        defaultField:{
-            type: String,
-            default: "nominal"
+        options:{
+            type: Object,
+            required: true
         },
-        defaultValue:{
-            type: Object
+        defaultValue: {
+            type: String,
+            default: '',
         },
         dataTestLabel: {
             type: String,
@@ -55,10 +56,9 @@ export default {
             this.resizeArray(this.fixedNumberElements);
         }
 
-
         this.masStore.$onAction((action) => {
             if (action.name == "updatedTurnsRatios") {
-                this.resizeArray(this.masStore.mas.inputs.designRequirements.turnsRatios.length);
+                this.resizeArray(this.masStore.mas.inputs.designRequirements.turnsRatios.length + 1);
             }
         })
     },
@@ -70,23 +70,17 @@ export default {
                     newElements.push(this.masStore.mas.inputs.designRequirements[this.name][i]);
                 }
                 else {
-                    const newElement = {};
-                    newElement[this.defaultField] = this.defaultValue[this.defaultField];
-                    newElements.push(newElement);
+                    newElements.push(this.defaultValue);
                 }
             }
             this.masStore.mas.inputs.designRequirements[this.name] = newElements;
         },
         addElementBelow(index) {
-            const newElement = {};
-            newElement[this.defaultField] = this.defaultValue[this.defaultField];
-            console.log(this.masStore.mas.inputs.designRequirements[this.name]);
-            this.masStore.mas.inputs.designRequirements[this.name].splice(index + 1, 0, newElement);
+            this.masStore.mas.inputs.designRequirements[this.name].splice(index + 1, 0, this.defaultValue);
         },
         removeElement(index) {
             this.masStore.mas.inputs.designRequirements[this.name].splice(index, 1)
-            console.log(this.masStore.mas.inputs.designRequirements[this.name]);
-        },
+        }
     }
 }
 </script>
@@ -97,8 +91,8 @@ export default {
         <div class="row">
             <label class="rounded-2 fs-5 ms-3" :class="maximumNumberElements != null? 'col-sm-6 col-md-3' : 'col-12'">{{toTitleCase(name)}}</label>
         </div>
-        <div class="row" v-for="requirement, requirementIndex in masStore.mas.inputs.designRequirements[name]">
-            <DimensionWithTolerance :defaultValue="defaultValue" :name="isolationSideOrdered[requirementIndex + 1]" :unit="unit" v-model="masStore.mas.inputs.designRequirements[name][requirementIndex]" class="offset-1 col-11"/>
+        <div class="row">
+            <ElementFromList v-for="requirementIndex in masStore.mas.inputs.designRequirements[name].length" :defaultValue="defaultValue" class="py-2 col-3" :name="requirementIndex - 1" v-model="masStore.mas.inputs.designRequirements[name]" :options="options" :replaceTitle="isolationSideOrdered[requirementIndex - 1]"/>
         </div>
         <div class="row">
             <label class="text-danger text-center col-12 pt-1" style="font-size: 0.9em; white-space: pre-wrap;">{{errorMessages}}</label>

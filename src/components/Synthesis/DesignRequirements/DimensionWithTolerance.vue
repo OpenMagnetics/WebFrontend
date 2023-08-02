@@ -22,7 +22,12 @@ export default {
             default: "nominal"
         },
         defaultValue:{
-            type: Number
+            type: Object,
+            default: 0
+        },
+        halfSize:{
+            type: Boolean,
+            default: false    
         },
     },
     data() {
@@ -53,7 +58,7 @@ export default {
             this.modelValue.maximum == null &&
             this.defaultField != null &&
             this.defaultValue != null) {
-            const aux = getMultiplier(this.defaultValue);
+            const aux = getMultiplier(this.defaultValue[this.defaultField]);
             localData[this.defaultField].scaledValue = aux.scaledValue;
             localData[this.defaultField].multiplier = aux.multiplier;
         }
@@ -84,7 +89,8 @@ export default {
             const shortenedButtonLabels = {}
             for (let [key, value] of Object.entries(this.buttonLabels)) {
                 var label = value;
-                if (window.innerWidth > 768 && window.innerWidth < 1005) {
+                if (window.innerWidth > 768 && window.innerWidth < 1005 && !this.halfSize ||
+                    window.innerWidth > 768 && window.innerWidth < 2000 && this.halfSize) {
                     var slice = 3;
 
                     label = label.split(' ')
@@ -100,6 +106,7 @@ export default {
     watch: { 
     },
     mounted () {
+        this.checkErrors();
     },
     methods: {
         checkErrors() {
@@ -158,6 +165,10 @@ export default {
         },
         update(field, actualValue) {
             const aux = getMultiplier(actualValue, 0.001);
+            console.log("actualValue");
+            console.log(actualValue);
+            console.log("aux");
+            console.log(aux);
             this.localData[field].scaledValue = aux.scaledValue;
             this.localData[field].multiplier = aux.multiplier;
             const hasError = this.checkErrors();
@@ -171,7 +182,7 @@ export default {
             this.update(field, actualValue);
         },
         add(field) {
-            var newValue = 0;
+            var newValue = this.defaultValue[field];
             if (field == 'minimum') {
                 if (this.localData.nominal.scaledValue != null) {
                     newValue = this.localData.nominal.scaledValue / 2;
@@ -237,33 +248,32 @@ export default {
             <label class="rounded-2 fs-5 ms-3">{{toTitleCase(name)}}</label>
         <div class="row">
         </div>
-            <div class=" col-sm-0 col-md-2">
-            </div>
-            <div v-if="localData.minimum.scaledValue != null" class="col-xs-12 col-md-3 row m-0 px-0">
-                <label :for="name + 'minimum-input'" class="m-0 px-0 col-4 col-form-label text-center"> Min.</label>
+            <div v-if="!halfSize" class=" col-sm-0 col-md-2"></div>
+            <div v-if="localData.minimum.scaledValue != null" :class="halfSize? 'ms-sm-4 col-md-4' : 'col-md-3 '" class=" col-xs-12 row m-0 px-0">
+                <button :for="name + 'nominal-input'" class="remove-button m-0 px-0 col-4 col-form-label text-center btn text-white" @click="removeField('minimum')" style="max-height: 2.3em;"> <span class="normal-text" >Min.</span> <i class="fa-solid fa-xmark icon" ></i>  </button>
                 <input type="number" class="m-0 px-0 col-4 bg-light text-white" :id="name + 'minimum-input'" @change="changeScaledValue($event.target.value, 'minimum')" :value="localData.minimum.scaledValue">
                 <DimensionUnit v-if="unit != null" :unit="unit" v-model="localData.minimum.multiplier" class="m-0 ms-1 px-0 col-4" @update:modelValue="changeMultiplier('minimum')"/>
             </div>
             <div v-if="localData.minimum.scaledValue == null" class="col-md-3 row m-0 px-xl-3 px-md-0">
-                <button class="btn btn-primary float-end" @click="add('minimum')">{{shortenedButtonLabels.minimum}}</button>
+                <button :class="halfSize? 'mx-0 px-0' : ''" class="btn btn-primary float-end" @click="add('minimum')">{{shortenedButtonLabels.minimum}}</button>
             </div>
 
-            <div v-if="localData.nominal.scaledValue != null" class="col-xs-12 col-md-3 row m-0 px-0">
-                <label :for="name + 'nominal-input'" class="m-0 px-0 col-4 col-form-label text-center"> Nom.</label>
+            <div v-if="localData.nominal.scaledValue != null" :class="halfSize? 'col-md-4' : 'col-md-3 '" class="col-xs-12 row m-0 px-0">
+                <button :for="name + 'nominal-input'" class="remove-button m-0 px-0 col-4 col-form-label text-center btn text-white" @click="removeField('nominal')" style="max-height: 2.3em;"> <span class="normal-text" >Nom.</span> <i class="fa-solid fa-xmark icon" ></i>  </button>
                 <input type="number" class="m-0 px-0 col-4 bg-light text-white" :id="name + 'nominal-input'" @change="changeScaledValue($event.target.value, 'nominal')"  :value="localData.nominal.scaledValue">
                 <DimensionUnit v-if="unit != null" :unit="unit" v-model="localData.nominal.multiplier" class="m-0 ms-1 px-0 col-4" @update:modelValue="changeMultiplier('nominal')"/>
             </div>
             <div v-if="localData.nominal.scaledValue == null" class="col-md-3 row m-0 px-xl-3 px-md-0">
-                <button class="btn btn-primary float-end" @click="add('nominal')">{{shortenedButtonLabels.nominal}}</button>
+                <button :class="halfSize? 'mx-0 px-0' : ''" class="btn btn-primary float-end" @click="add('nominal')">{{shortenedButtonLabels.nominal}}</button>
             </div>
 
-            <div v-if="localData.maximum.scaledValue != null" class="col-xs-12 col-md-3 row m-0 px-0">
-                <label :for="name + 'maximum-input'" class="m-0 px-0 col-4 col-form-label text-center"> Max.</label>
+            <div v-if="localData.maximum.scaledValue != null" :class="halfSize? 'col-md-4' : 'col-md-3 '" class="col-xs-12 row m-0 px-0">
+                <button :for="name + 'nominal-input'" class="remove-button m-0 px-0 col-4 col-form-label text-center btn text-white" @click="removeField('maximum')" style="max-height: 2.3em;"> <span class="normal-text">Max.</span> <i class="fa-solid fa-xmark icon" ></i>  </button>
                 <input type="number" class="m-0 px-0 col-4 bg-light text-white" :id="name + 'maximum-input'" @change="changeScaledValue($event.target.value, 'maximum')" :value="localData.maximum.scaledValue">
                 <DimensionUnit v-if="unit != null" :unit="unit" v-model="localData.maximum.multiplier" class="m-0 ms-1 px-0 col-4" @update:modelValue="changeMultiplier('maximum')"/>
             </div>
             <div v-if="localData.maximum.scaledValue == null" class="col-md-3 row m-0 px-xl-3 px-md-0">
-                <button class="btn btn-primary float-end" @click="add('maximum')">{{shortenedButtonLabels.maximum}}</button>
+                <button :class="halfSize? 'mx-0 px-0' : ''" class="btn btn-primary float-end " @click="add('maximum')">{{shortenedButtonLabels.maximum}}</button>
             </div>
         </div>
         <div class="row">
@@ -272,4 +282,18 @@ export default {
     </div>
 </template>
 
+<style type="text/css">
+.remove-button {
+  display: block;
+}
 
+.remove-button:hover .normal-text {
+  display: none;
+}
+.remove-button:hover {
+  background-color: var(--bs-danger);
+}
+
+.remove-button .icon {opacity:0;}
+.remove-button:hover .icon {opacity:1;}
+</style>

@@ -40,7 +40,6 @@ export default {
                     label = label.split(' ')
                         .map(item => item.length < slice? item + ' ' : item.slice(0, slice) + '. ')
                         .join('')
-                    // label = label.slice(0, slice) + '.'
                 }
                 shortenedLabels.push(label)
             })
@@ -76,9 +75,9 @@ export default {
 </script>
 
 <template>
-    <div class=" py-2 p-0 m-0" role="group" aria-label="Vertical button group ">
+    <div class="py-2 p-0 m-0" role="group" aria-label="Storyline button group ">
         <div v-for="adventure, index in storyline" class=""> 
-            <button :data-test-id="'storyline-' + toDashCase(adventure.title) + '-button'" v-resize-text="{ratio:1, minFontSize: '14px', maxFontSize: '100px', delay: 20}" class="border border-primary btn-outline-primary m-0 px-1 py-2" :class="btn_class(index)" disabled> 
+            <button :data-test-id="'storyline-' + toDashCase(adventure.title) + '-button'" v-resize-text="{ratio:1, minFontSize: '14px', maxFontSize: '100px', delay: 20}" class="border border-primary btn-outline-primary col-12 m-0 px-1 py-2" :class="btn_class(index)" disabled> 
                 {{shortenedLabels[index]}}
             </button>
             <div v-if="index != storyline.length-1" class="vr m-0 p-0"></div>

@@ -9,7 +9,7 @@ var requesting = 0
 export function toTitleCase(str) {
     const result = str.replace(/([A-Z])/g, " $1");
     const finalResult = result.charAt(0).toUpperCase() + result.slice(1);
-    return finalResult;
+    return finalResult.trim();
 }
 export function toDashCase(str) {
     return str.replace(/\s+/g, '-').toLowerCase();
@@ -102,6 +102,14 @@ export function formatUnit(value, unitValue) {
     var base
     var unit
     var label
+    if (value < 0.000000001 && value != 0) {
+        base = 0.000000000001
+        unit = "p" + unitValue
+    }
+    if (value < 0.000001 && value != 0) {
+        base = 0.000000001
+        unit = "n" + unitValue
+    }
     if (value < 0.001 && value != 0) {
         base = 0.000001
         unit = "μ" + unitValue
@@ -141,14 +149,17 @@ export function formatUnit(value, unitValue) {
 export function getMultiplier(value, precision=0.001) {
     var multiplier;
     var scaledValue;
-    if (value < 0.000000001 && value != 0) {
-        multiplier = 0.0000000000001;
+    if (value < 1e-12 && value != 0) {
+        multiplier = 1e-15;
     }
-    if (value < 0.000001 && value != 0) {
-        multiplier = 0.0000000001;
+    if (value < 1e-9 && value != 0) {
+        multiplier = 1e-12;
     }
-    if (value < 0.001 && value != 0) {
-        multiplier = 0.000001;
+    else if (value < 1e-6 && value != 0) {
+        multiplier = 1e-9;
+    }
+    else if (value < 1e-3 && value != 0) {
+        multiplier = 1e-6;
     }
     else if (value < 0.1 && value != 0) {
         multiplier = 0.001;

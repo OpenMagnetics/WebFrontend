@@ -35,7 +35,7 @@ export default {
                     title: "Wire Selection"
                 },
                 {
-                    title: "Winding Selection"
+                    title: "Coil Selection"
                 },
                 {
                     title: "Magnetic Finalizer"
@@ -135,16 +135,16 @@ export default {
             <div class="container mx-auto ">
                 <div class="row">
                     <div class="storyline text-white text-center col-1 bg-light border border-primary m-0 p-1">
-                        <h4 class="text-center">Story line</h4>
+                        <h4 class="text-center">Storyline</h4>
                         <Storyline :activeVerticalIndex="activeVerticalIndex" :storyline="currentStoryline"/>
                     </div>
                     <div class="tool text-white bg-dark text-center offset-1 col-11 bg-light" >
-                        <h2 class="">
-                            {{toTitleCase(selectedTool)}}
-                            <span>
-                                <button data-test-id="magnetic-synthesis-previous-tool-button" class="btn btn-outline-primary float-start" @click="decreaseVerticalIndex"> Previous tool</button>
-                            </span>
-                        </h2>
+                        <div>
+                            <button data-test-id="magnetic-synthesis-previous-tool-button" class="btn btn-outline-primary float-start mb-2" @click="decreaseVerticalIndex"> Previous tool</button>
+                            <h2 data-test-id="magnetic-synthesis-title-text" class="">
+                                {{toTitleCase(selectedTool)}}
+                            </h2>
+                        </div>
                             
                         <DesignRequirements v-if="checkCoordinates('DesignRequirements')"/>
                         <OperatingPoints v-if="checkCoordinates('OperatingPoints')"/>
@@ -154,9 +154,9 @@ export default {
                         <WireCustomizer v-if="checkCoordinates('WireCustomizer')"/>
                         <CoilAdviser v-if="checkCoordinates('CoilAdviser')"/>
                         <MagneticFinalizer v-if="checkCoordinates('MagneticFinalizer')"/>
-                        <button data-test-id="magnetic-synthesis-next-tool-button" class="btn btn-outline-primary float-start" @click="increaseVerticalIndex"> Next tool</button>
-                        <button data-test-id="magnetic-synthesis-customize-tool-button" v-if="traversableRight()" class="btn btn-outline-primary float-end" @click="increaseHorizontalIndex"> Customize tool</button>
-                        <button data-test-id="magnetic-synthesis-commercial-tool-button" v-if="traversableLeft()" class="btn btn-outline-primary float-end" @click="decreaseHorizontalIndex"> Back to main tool</button>
+                        <button data-test-id="magnetic-synthesis-next-tool-button" class="btn btn-outline-primary float-start mt-2" @click="increaseVerticalIndex"> Next tool</button>
+                        <button data-test-id="magnetic-synthesis-customize-tool-button" v-if="traversableRight()" class="btn btn-outline-primary float-end mt-2" @click="increaseHorizontalIndex"> Customize tool</button>
+                        <button data-test-id="magnetic-synthesis-main-tool-button" v-if="traversableLeft()" class="btn btn-outline-primary float-end mt-2" @click="decreaseHorizontalIndex"> Back to main tool</button>
                     </div>
                 </div>
             </div>
