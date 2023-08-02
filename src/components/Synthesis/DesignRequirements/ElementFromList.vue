@@ -36,8 +36,6 @@ export default {
     watch: { 
     },
     mounted () {
-        console.log(this.modelValue)
-        console.log(this.modelValue[this.name])
     },
     methods: {
         changeOption(event) {

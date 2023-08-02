@@ -86,12 +86,6 @@ export default {
             this.localData.scaledValue = aux.scaledValue;
             this.localData.multiplier = aux.multiplier;
             const hasError = this.checkErrors();
-            console.log("actualValue");
-            console.log(actualValue);
-            console.log("hasError");
-            console.log(hasError);
-            console.log("this.modelValue['maximumWeight']");
-            console.log(this.modelValue['maximumWeight']);
             if (!hasError) {
                 this.modelValue['maximumWeight'] = actualValue;
                 this.$emit("update", actualValue);

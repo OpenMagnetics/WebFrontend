@@ -24,9 +24,6 @@ export default {
         const compulsoryRequirements = ["numberWindings", "magnetizingInductance", "turnsRatios", "name"];
         const masStore = useMasStore();
         var numberWindings = 1;
-        console.log("masStore.mas.inputs.designRequirements.turnsRatios");
-        console.log(masStore.mas.inputs.designRequirements.turnsRatios);
-        console.log(masStore.mas.inputs.designRequirements.turnsRatios);
         if (masStore.mas.inputs.designRequirements.turnsRatios != null) {
             numberWindings = masStore.mas.inputs.designRequirements.turnsRatios.length + 1;
         }
@@ -50,10 +47,6 @@ export default {
     },
     computed: {
         shortenedLabels() {
-            console.log(window.innerWidth)
-            console.log(window.innerWidth)
-            console.log(window.innerWidth)
-            console.log(window.innerWidth)
             const shortenedLabels = {"numberWindings": "No. Windings"};
             for (let [key, value] of Object.entries(this.masStore.mas.inputs.designRequirements)) {
                 var label = key;
@@ -104,8 +97,6 @@ export default {
             else {
                 this.masStore.mas.inputs.designRequirements[requirementName] = null;
             }
-            console.log(requirementName);
-            console.log(this.masStore.mas.inputs.designRequirements[requirementName]);
         },
         updatedNumberElements(newLength, name) {
             if (name == 'numberWindings') {

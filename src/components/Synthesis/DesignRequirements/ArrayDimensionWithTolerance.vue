@@ -80,12 +80,10 @@ export default {
         addElementBelow(index) {
             const newElement = {};
             newElement[this.defaultField] = this.defaultValue[this.defaultField];
-            console.log(this.masStore.mas.inputs.designRequirements[this.name]);
             this.masStore.mas.inputs.designRequirements[this.name].splice(index + 1, 0, newElement);
         },
         removeElement(index) {
             this.masStore.mas.inputs.designRequirements[this.name].splice(index, 1)
-            console.log(this.masStore.mas.inputs.designRequirements[this.name]);
         },
     }
 }

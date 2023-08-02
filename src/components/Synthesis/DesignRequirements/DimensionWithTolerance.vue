@@ -165,10 +165,6 @@ export default {
         },
         update(field, actualValue) {
             const aux = getMultiplier(actualValue, 0.001);
-            console.log("actualValue");
-            console.log(actualValue);
-            console.log("aux");
-            console.log(aux);
             this.localData[field].scaledValue = aux.scaledValue;
             this.localData[field].multiplier = aux.multiplier;
             const hasError = this.checkErrors();
