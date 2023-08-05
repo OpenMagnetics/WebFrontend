@@ -135,7 +135,7 @@ export default {
         <div class="modal-content bg-dark text-white">
             <div class="modal-header">
                 <p class="modal-title fs-5" id="LoginLabel">{{isLogin? "Login" : "Register"}}</p>
-                <button data-test-id="login-close-button" type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="LoginClose"></button>
+                <button data-cy="login-close-button" type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="LoginClose"></button>
             </div>
             <div v-if="!done" class="modal-body">
                 <Form ref=formRef @submit="onSubmit" :validation-schema="schema" @invalid-submit="onInvalidSubmit">
@@ -180,13 +180,13 @@ export default {
                         success-message="Glad you remembered it!"
                     />
 
-                    <button v-if="!posting" data-test-id="login-login-register-button" class="submit-btn btn btn-primary" type="submit">{{isLogin? "Login" : "Register"}}</button>
-                    <img v-if="posting" data-test-id="login-login-register-loading" class="mx-auto d-block" alt="loading" style="width: 150px; height: auto;" src="/images/loading.gif">
+                    <button v-if="!posting" data-cy="login-login-register-button" class="submit-btn btn btn-primary" type="submit">{{isLogin? "Login" : "Register"}}</button>
+                    <img v-if="posting" data-cy="login-login-register-loading" class="mx-auto d-block" alt="loading" style="width: 150px; height: auto;" src="/images/loading.gif">
                 </Form>
             </div>
             <div v-if="done" class="modal-body">
                 <p class="modal-title fs-5 text-center" >{{isLogin? "Welcome back, " + $cookies.get("username") : "Welcome to Open Magnetics!"}}</p>
-                <button data-test-id="login-back-button" class="btn btn-primary mx-auto d-block mt-5" data-bs-dismiss="modal" >{{"Go back"}}</button>
+                <button data-cy="login-back-button" class="btn btn-primary mx-auto d-block mt-5" data-bs-dismiss="modal" >{{"Go back"}}</button>
             </div>
         </div>
     </div>

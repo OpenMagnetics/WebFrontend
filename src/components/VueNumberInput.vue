@@ -18,7 +18,7 @@
         />
         <input
             ref="input"
-            :data-test-id="dataTestLabel"
+            :data-cy="dataTestLabel"
             class="vue-number-input__input"
             v-bind="attrs"
             type="number"

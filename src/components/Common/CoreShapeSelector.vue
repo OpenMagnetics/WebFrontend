@@ -74,16 +74,16 @@ export default {
             <div class="col-8">
                 <div class="container-flex p-0 m-0">
                     <div class="row">
-                        <select :data-test-id="dataTestLabel + '-shape-select-input'" name="quickShapeselect" ref="quickShapeFieldRef" @change="$emit('onShapeChange', $event.target.value)" class= "fs-6 bg-light text-white rounded-2 col-8 m-0 p-0" v-model="shapeSelected">
-                            <option :data-test-id="dataTestLabel + '-shape-NA-option-input'" disabled value="">Please select one</option>
-                            <option :data-test-id="dataTestLabel + '-shape-custom-option-input'" disabled value="Custom">Custom</option>
+                        <select :data-cy="dataTestLabel + '-shape-select-input'" name="quickShapeselect" ref="quickShapeFieldRef" @change="$emit('onShapeChange', $event.target.value)" class= "fs-6 bg-light text-white rounded-2 col-8 m-0 p-0" v-model="shapeSelected">
+                            <option :data-cy="dataTestLabel + '-shape-NA-option-input'" disabled value="">Please select one</option>
+                            <option :data-cy="dataTestLabel + '-shape-custom-option-input'" disabled value="Custom">Custom</option>
                             <option v-for="model, index in commercialShapesNames"
-                                :data-test-id="dataTestLabel + '-shape-' + model + '-option-input'"
+                                :data-cy="dataTestLabel + '-shape-' + model + '-option-input'"
                                 :key="index"
                                 :value="model">{{model}}
                             </option>
                         </select>
-                        <button :data-test-id="dataTestLabel + '-shape-table-modal-button'" v-tooltip="'Open information table for shapes'" class="btn btn-primary text-dark py-1 p-0 px-0 mx-1 offset-1 col-2" data-bs-toggle="modal" data-bs-target="#loadCommercialShapeModal" >
+                        <button :data-cy="dataTestLabel + '-shape-table-modal-button'" v-tooltip="'Open information table for shapes'" class="btn btn-primary text-dark py-1 p-0 px-0 mx-1 offset-1 col-2" data-bs-toggle="modal" data-bs-target="#loadCommercialShapeModal" >
                             <i class="fa-solid fs-6 fa-table-list m-0 p-0"></i>
                         </button>
                     </div>

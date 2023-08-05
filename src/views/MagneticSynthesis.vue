@@ -140,8 +140,8 @@ export default {
                     </div>
                     <div class="tool text-white bg-dark text-center offset-1 col-11 bg-light" >
                         <div>
-                            <button data-test-id="magnetic-synthesis-previous-tool-button" class="btn btn-outline-primary float-start mb-2" @click="decreaseVerticalIndex"> Previous tool</button>
-                            <h2 data-test-id="magnetic-synthesis-title-text" class="">
+                            <button data-cy="magnetic-synthesis-previous-tool-button" class="btn btn-outline-primary float-start mb-2" @click="decreaseVerticalIndex"> Previous tool</button>
+                            <h2 data-cy="magnetic-synthesis-title-text" class="">
                                 {{toTitleCase(selectedTool)}}
                             </h2>
                         </div>
@@ -154,9 +154,9 @@ export default {
                         <WireCustomizer v-if="checkCoordinates('WireCustomizer')"/>
                         <CoilAdviser v-if="checkCoordinates('CoilAdviser')"/>
                         <MagneticFinalizer v-if="checkCoordinates('MagneticFinalizer')"/>
-                        <button data-test-id="magnetic-synthesis-next-tool-button" class="btn btn-outline-primary float-start mt-2" @click="increaseVerticalIndex"> Next tool</button>
-                        <button data-test-id="magnetic-synthesis-customize-tool-button" v-if="traversableRight()" class="btn btn-outline-primary float-end mt-2" @click="increaseHorizontalIndex"> Customize tool</button>
-                        <button data-test-id="magnetic-synthesis-main-tool-button" v-if="traversableLeft()" class="btn btn-outline-primary float-end mt-2" @click="decreaseHorizontalIndex"> Back to main tool</button>
+                        <button data-cy="magnetic-synthesis-next-tool-button" class="btn btn-outline-primary float-start mt-2" @click="increaseVerticalIndex"> Next tool</button>
+                        <button data-cy="magnetic-synthesis-customize-tool-button" v-if="traversableRight()" class="btn btn-outline-primary float-end mt-2" @click="increaseHorizontalIndex"> Customize tool</button>
+                        <button data-cy="magnetic-synthesis-main-tool-button" v-if="traversableLeft()" class="btn btn-outline-primary float-end mt-2" @click="decreaseHorizontalIndex"> Back to main tool</button>
                     </div>
                 </div>
             </div>

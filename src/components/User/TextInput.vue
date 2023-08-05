@@ -54,7 +54,7 @@ const {
         <label :for="name">{{ label }}</label>
         <input
             class="bg-light"
-            :data-test-id="dataTestLabel"
+            :data-cy="dataTestLabel"
             :name="name"
             :id="name"
             :type="type"

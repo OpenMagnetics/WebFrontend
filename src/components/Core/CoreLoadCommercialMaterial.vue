@@ -170,7 +170,7 @@ export default {
                     >
                     <template #table-row="props">
                         <span v-if="props.column.field == 'load'">
-                            <button :data-test-id="'CoreLoadCommercialMaterial-' + props.row.name + '-load-button'" type="button" class="btn btn-primary"  data-bs-dismiss="modal" @click="onLoad(props.row.name)"><i class="fa-solid fa-upload"></i></button>
+                            <button :data-cy="'CoreLoadCommercialMaterial-' + props.row.name + '-load-button'" type="button" class="btn btn-primary"  data-bs-dismiss="modal" @click="onLoad(props.row.name)"><i class="fa-solid fa-upload"></i></button>
                         </span>
                     </template>
                 </vue-good-table>

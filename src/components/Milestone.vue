@@ -143,24 +143,24 @@ export default {
     <div class="col-md-6 col-lg-4 col-xl-3 d-flex align-items-stretch">
         <div class="card mt-4 box-shadow" :class=card_class>
             <div class="card-header bg-transparent row mb-2">
-                <p :data-test-id="dataTestLabel + '-index-text'" class="text-secondary col-2">{{index + 1}}</p>
-                <h3 :data-test-id="dataTestLabel + '-title-text'" class="text-dark col-7 font-size-lg">{{title}}</h3>
+                <p :data-cy="dataTestLabel + '-index-text'" class="text-secondary col-2">{{index + 1}}</p>
+                <h3 :data-cy="dataTestLabel + '-title-text'" class="text-dark col-7 font-size-lg">{{title}}</h3>
                 <div class="col-3 ">
-                    <span :data-test-id="dataTestLabel + '-section-text'" :style=badge_color_style class="badge rounded-pill text-wrap font-size-lg">{{section}}</span>
+                    <span :data-cy="dataTestLabel + '-section-text'" :style=badge_color_style class="badge rounded-pill text-wrap font-size-lg">{{section}}</span>
                 </div>
             </div>
 
-            <div :data-test-id="dataTestLabel + '-description-text'" class="card-body" style="display: flex; justify-content: space-between; p-0 m-0">
+            <div :data-cy="dataTestLabel + '-description-text'" class="card-body" style="display: flex; justify-content: space-between; p-0 m-0">
                 <p class="card-text text-start text-dark mb-auto mx-2">{{description}}</p>
-                <img :data-test-id="dataTestLabel + '-image'" v-if="imgSrc != null" class="card-img-right flex-auto d-none d-lg-block" :alt="imgAlt" style="object-fit: cover; width: 150px; max-height: 150px;" :src="imgSrc">
+                <img :data-cy="dataTestLabel + '-image'" v-if="imgSrc != null" class="card-img-right flex-auto d-none d-lg-block" :alt="imgAlt" style="object-fit: cover; width: 150px; max-height: 150px;" :src="imgSrc">
             </div>
             <div v-if="state == 'To Do'" class="card-footer bg-transparent">
-                <p :data-test-id="dataTestLabel + '-votes-text'" class="text-end text-dark my-0">Current votes: {{numberVotesTemp}}
-                    <button :data-test-id="dataTestLabel + '-vote-button'" :disabled="alreadyVoted" :class=btn_class @click="vote">{{alreadyVoted? "Already voted" : "Vote feature!"}}</button>
+                <p :data-cy="dataTestLabel + '-votes-text'" class="text-end text-dark my-0">Current votes: {{numberVotesTemp}}
+                    <button :data-cy="dataTestLabel + '-vote-button'" :disabled="alreadyVoted" :class=btn_class @click="vote">{{alreadyVoted? "Already voted" : "Vote feature!"}}</button>
                 </p>
             </div>
             <div v-else class="card-footer bg-transparent">
-                <span :data-test-id="dataTestLabel + '-state-text'" style="background-color: var(--bs-info); color: var(--bs-secondary); font-size: 20px" class="badge rounded-pill text-wrap ">{{state}}</span>
+                <span :data-cy="dataTestLabel + '-state-text'" style="background-color: var(--bs-info); color: var(--bs-secondary); font-size: 20px" class="badge rounded-pill text-wrap ">{{state}}</span>
             </div>
         </div>
     </div>

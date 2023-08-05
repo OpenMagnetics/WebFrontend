@@ -16,7 +16,7 @@ export default {
             <div class="modal-content bg-dark text-white">
                 <div class="modal-header">
                     <p class="modal-title fs-5" id="loadOperationPointModalLabel">Load a predefined operation point</p>
-                    <button data-test-id="SimulationOperationPointLoaderModal-corner-close-button" type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="loadOperationPointModalClose"></button>
+                    <button data-cy="SimulationOperationPointLoaderModal-corner-close-button" type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="loadOperationPointModalClose"></button>
                 </div>
                 <UserInventory :specificElement="'operationPoints'" :showTitle="false" :showMenu="false" :showLegend="false" @onLoadOperationPoint="$emit('onLoadOperationPoint')"/>
             </div>

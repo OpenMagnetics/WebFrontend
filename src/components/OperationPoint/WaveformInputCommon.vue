@@ -68,16 +68,16 @@ commonStore.$onAction((action) => {
             <div></div>
             <label class="rounded-2 fs-5 ms-3">Switching Freq.:</label>
             <label class="rounded-2 fs-6 mx-1 float-end" style="width: 10px;">{{"kHz"}}</label>
-            <Field data-test-id="OperationPointInputCommon-switching-frequency-input" ref="switchingFrequencyRef" name="switchingFrequencyValidator" type="number" :value="switchingFrequency" @change="$emit('switching-frequency-change', $event.target.value)" :class="{ 'is-invalid': errors.switchingFrequencyValidator }" class="rounded-2 bg-light text-white float-end" style="width: 100%; max-width: 70px;"/>
+            <Field data-cy="OperationPointInputCommon-switching-frequency-input" ref="switchingFrequencyRef" name="switchingFrequencyValidator" type="number" :value="switchingFrequency" @change="$emit('switching-frequency-change', $event.target.value)" :class="{ 'is-invalid': errors.switchingFrequencyValidator }" class="rounded-2 bg-light text-white float-end" style="width: 100%; max-width: 70px;"/>
 
             <div></div>
 
             <label class="rounded-2 fs-5 ms-3">Duty Cycle:</label>
             <label class="rounded-2 fs-5 mx-1 float-end" style="width: 10px;">{{'%'}}</label>
-            <Field data-test-id="OperationPointInputCommon-duty-cycle-input" name="dutyCycleValidator" type="number" :value="dutyCycle" @change="$emit('duty-cycle-change', $event.target.value)" :class="{ 'is-invalid': errors.dutyCycleValidator }" class="rounded-2 bg-light text-white float-end" style="width: 100%; max-width: 70px;"/>
+            <Field data-cy="OperationPointInputCommon-duty-cycle-input" name="dutyCycleValidator" type="number" :value="dutyCycle" @change="$emit('duty-cycle-change', $event.target.value)" :class="{ 'is-invalid': errors.dutyCycleValidator }" class="rounded-2 bg-light text-white float-end" style="width: 100%; max-width: 70px;"/>
 
-            <div data-test-id="OperationPointInputCommon-switching-frequency-error-text" class="invalid-feedback">{{errors.switchingFrequencyValidator}}</div>
-            <div data-test-id="OperationPointInputCommon-duty-cycle-error-text" class="invalid-feedback">{{errors.dutyCycleValidator}}</div>
+            <div data-cy="OperationPointInputCommon-switching-frequency-error-text" class="invalid-feedback">{{errors.switchingFrequencyValidator}}</div>
+            <div data-cy="OperationPointInputCommon-duty-cycle-error-text" class="invalid-feedback">{{errors.dutyCycleValidator}}</div>
 
         </Form>
     </div>

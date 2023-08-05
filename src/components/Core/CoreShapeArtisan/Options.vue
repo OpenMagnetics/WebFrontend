@@ -47,7 +47,7 @@ export default {
         <div class="row">
             <label v-tooltip="'Show the full gapped core or just the ungapped original piece?'" class="fs-6 mt-2 p-0 ps-3 text-white col-6"> Full core?</label>
             <i class="fa-solid fa-xmark mt-2 pt-1 ps-2 text-danger col-1 p-0"></i>
-            <input data-test-id="CoreShapeArtisanOptions-full-core-button" v-model="fullCoreModelSelected" @change="OnChange" type="range" class="mt-2 form-range offset-1 col-1" min="0" max="1" step="1" style="width: 30px">
+            <input data-cy="CoreShapeArtisanOptions-full-core-button" v-model="fullCoreModelSelected" @change="OnChange" type="range" class="mt-2 form-range offset-1 col-1" min="0" max="1" step="1" style="width: 30px">
             <i class="fa-solid fa-check mt-2 pt-1 text-success offset-1 col-1 p-0"></i>
         </div>
     </div>

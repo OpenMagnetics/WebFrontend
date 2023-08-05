@@ -63,13 +63,11 @@ router.beforeEach((to, from, next) => {
 
         if (app.config.globalProperties.$dataCacheStore.timestamp == null || (app.config.globalProperties.$dataCacheStore.timestamp + app.config.globalProperties.$dataCacheStore.ttlInMilliseconds < Date.now())) {
             app.config.globalProperties.$dataCacheStore.timestamp = Date.now()
-            console.warn("Reloading data")
 
             const urlMaterials = import.meta.env.VITE_API_ENDPOINT + '/core_get_commercial_materials'
             const core = app.config.globalProperties.$userStore.getGlobalCore
-            setTimeout(() => {console.warn("Arming2"); app.config.globalProperties.$userStore.armDeadManSwitch()}, 1000);
+            setTimeout(() => {app.config.globalProperties.$userStore.armDeadManSwitch()}, 1000);
             
-            console.warn("Arming")
             axiosInstance.post(urlMaterials, {})
             .then(response => {
                 app.config.globalProperties.$dataCacheStore.commercialMaterials = response.data["commercial_materials"]

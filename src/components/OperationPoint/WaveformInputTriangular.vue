@@ -64,13 +64,13 @@ function handleSubmit(params) {
             <div></div>
             <label class="fs-5 mx-3">Peak to peak:</label>
             <label class="fs-5 mx-1 float-end" style="width: 10px;">{{electricalParameter == "current"? 'A' : 'V'}}</label>
-            <Field :data-test-id="'WaveformInputTriangular-' + electricalParameter + '-peakToPeak-input'" name="peakToPeakValidator" type="number" :value="peakToPeak" @change="peakToPeakChange" :class="{ 'is-invalid': errors.peakToPeakValidator }" class="rounded-2 bg-light text-white float-end" style="width: 100%; max-width: 70px;"/>
+            <Field :data-cy="'WaveformInputTriangular-' + electricalParameter + '-peakToPeak-input'" name="peakToPeakValidator" type="number" :value="peakToPeak" @change="peakToPeakChange" :class="{ 'is-invalid': errors.peakToPeakValidator }" class="rounded-2 bg-light text-white float-end" style="width: 100%; max-width: 70px;"/>
 
             <div></div>
 
             <label class="fs-5 mx-3">DC Bias/Offset:</label>
             <label class="fs-5 mx-1 float-end" style="width: 10px;">{{electricalParameter == "current"? 'A' : 'V'}}</label>
-            <Field :data-test-id="'WaveformInputTriangular-' + electricalParameter + '-offset-input'" name="offsetValidator" type="number" :value="offset" @change="offsetChange" :class="{ 'is-invalid': errors.offsetValidator }" class="rounded-2 bg-light text-white float-end" style="width: 100%; max-width: 70px;"/>
+            <Field :data-cy="'WaveformInputTriangular-' + electricalParameter + '-offset-input'" name="offsetValidator" type="number" :value="offset" @change="offsetChange" :class="{ 'is-invalid': errors.offsetValidator }" class="rounded-2 bg-light text-white float-end" style="width: 100%; max-width: 70px;"/>
 
             <div class="invalid-feedback">{{errors.peakToPeakValidator}}</div>
             <div class="invalid-feedback">{{errors.dutyCycleValidator}}</div>

@@ -191,23 +191,23 @@ export default {
                 <div class="container">
                     <div class="row">
                         <label v-tooltip="'Total losses of the magnetic core'" class="m-0 p-0 fs-5 col-8">Total core losses:</label>
-                        <label data-test-id="SimulationCoreCalculatorOutput-totalCoreLosses-text" class="fs-5 bg-dark text-white float-end m-0 p-0 col-4" style=" text-align:right;">{{totalCoreLosses + ' ' + totalCoreLossesUnit}}</label>
+                        <label data-cy="SimulationCoreCalculatorOutput-totalCoreLosses-text" class="fs-5 bg-dark text-white float-end m-0 p-0 col-4" style=" text-align:right;">{{totalCoreLosses + ' ' + totalCoreLossesUnit}}</label>
                     </div>
                     <div class="row">
                         <label v-tooltip="'Volumetric losses of the magnetic core'" class="m-0 p-0 fs-5 col-8">Volumetric core losses:</label>
-                        <label data-test-id="SimulationCoreCalculatorOutput-volumetricCoreLosses-text" class="fs-5 bg-dark text-white float-end m-0 p-0 col-4" style=" text-align:right;">{{volumetricCoreLosses + ' ' + volumetricCoreLossesUnit}}</label>
+                        <label data-cy="SimulationCoreCalculatorOutput-volumetricCoreLosses-text" class="fs-5 bg-dark text-white float-end m-0 p-0 col-4" style=" text-align:right;">{{volumetricCoreLosses + ' ' + volumetricCoreLossesUnit}}</label>
                     </div>
                     <div class="row">
                         <label v-tooltip="'Losses of the magnetic core due to eddy currents'" class="m-0 p-0 fs-5 col-8">Eddy Curr. losses:</label>
-                        <label data-test-id="SimulationCoreCalculatorOutput-eddyCurrentLosses-text" class="fs-5 bg-dark text-white float-end m-0 p-0 col-4" style=" text-align:right;">{{eddyCurrentLosses + ' ' + eddyCurrentLossesUnit}}</label>
+                        <label data-cy="SimulationCoreCalculatorOutput-eddyCurrentLosses-text" class="fs-5 bg-dark text-white float-end m-0 p-0 col-4" style=" text-align:right;">{{eddyCurrentLosses + ' ' + eddyCurrentLossesUnit}}</label>
                     </div>
                     <div class="row">
                         <label v-tooltip="'Losses of the magnetic core due to hysteresis'" class="m-0 p-0 fs-5 col-8">Hysteresis losses:</label>
-                        <label data-test-id="SimulationCoreCalculatorOutput-hysteresisLosses-text" class="fs-5 bg-dark text-white float-end m-0 p-0 col-4" style=" text-align:right;">{{hysteresisLosses + ' ' + hysteresisLossesUnit}}</label>
+                        <label data-cy="SimulationCoreCalculatorOutput-hysteresisLosses-text" class="fs-5 bg-dark text-white float-end m-0 p-0 col-4" style=" text-align:right;">{{hysteresisLosses + ' ' + hysteresisLossesUnit}}</label>
                     </div>
                     <div class="row">
                         <label v-tooltip="'Maximum temperature rise in the magnetic core'" class="m-0 p-0 fs-5 col-8">Max. Temp Rise:</label>
-                        <label data-test-id="SimulationCoreCalculatorOutput-maximumCoreTemperatureRise-text" class="fs-5 bg-dark text-white float-end m-0 p-0 col-4" style=" text-align:right;">{{maximumCoreTemperatureRise + ' ' + maximumCoreTemperatureRiseUnit}}</label>
+                        <label data-cy="SimulationCoreCalculatorOutput-maximumCoreTemperatureRise-text" class="fs-5 bg-dark text-white float-end m-0 p-0 col-4" style=" text-align:right;">{{maximumCoreTemperatureRise + ' ' + maximumCoreTemperatureRiseUnit}}</label>
                     </div>
                 </div>
             </div>
@@ -215,23 +215,23 @@ export default {
                 <div class="container">
                     <div class="row">
                         <label v-tooltip="'Maximum value that of the magnetic flux density inside the core'" class="m-0 p-0 fs-5 col-8">Peak B (Bmax):</label>
-                        <label data-test-id="SimulationCoreCalculatorOutput-magneticFluxDensityPeak-text" class="fs-5 bg-dark text-white float-end m-0 p-0 col-4" style=" text-align:right;">{{magneticFluxDensityPeak + ' ' + magneticFluxDensityPeakUnit}}</label>
+                        <label data-cy="SimulationCoreCalculatorOutput-magneticFluxDensityPeak-text" class="fs-5 bg-dark text-white float-end m-0 p-0 col-4" style=" text-align:right;">{{magneticFluxDensityPeak + ' ' + magneticFluxDensityPeakUnit}}</label>
                     </div>
                     <div class="row">
                         <label v-tooltip="'AC peak value of the magnetic flux density, without taking into account the DC bias'" class="m-0 p-0 fs-5 col-8">AC peak B:</label>
-                        <label data-test-id="SimulationCoreCalculatorOutput-magneticFluxDensityAcPeak-text" class="fs-5 bg-dark text-white float-end m-0 p-0 col-4" style=" text-align:right;">{{magneticFluxDensityAcPeak + ' ' + magneticFluxDensityAcPeakUnit}}</label>
+                        <label data-cy="SimulationCoreCalculatorOutput-magneticFluxDensityAcPeak-text" class="fs-5 bg-dark text-white float-end m-0 p-0 col-4" style=" text-align:right;">{{magneticFluxDensityAcPeak + ' ' + magneticFluxDensityAcPeakUnit}}</label>
                     </div>
                     <div class="row">
                         <label v-tooltip="'Power that is falling in the magnetic'" class="m-0 p-0 fs-5 col-8">Apparent Power:</label>
-                        <label data-test-id="SimulationCoreCalculatorOutput-apparentPower-text" class="fs-5 bg-dark text-white float-end m-0 p-0 col-4" style=" text-align:right;">{{apparentPower + ' ' + apparentPowerUnit}}</label>
+                        <label data-cy="SimulationCoreCalculatorOutput-apparentPower-text" class="fs-5 bg-dark text-white float-end m-0 p-0 col-4" style=" text-align:right;">{{apparentPower + ' ' + apparentPowerUnit}}</label>
                     </div>
                     <div class="row">
                         <label v-tooltip="'RMS voltage that is falling in the magnetic'" class="m-0 p-0 fs-5 col-8">Voltage RMS:</label>
-                        <label data-test-id="SimulationCoreCalculatorOutput-voltageRms-text" class="fs-5 bg-dark text-white float-end m-0 p-0 col-4" style=" text-align:right;">{{voltageRms + ' ' + voltageRmsUnit}}</label>
+                        <label data-cy="SimulationCoreCalculatorOutput-voltageRms-text" class="fs-5 bg-dark text-white float-end m-0 p-0 col-4" style=" text-align:right;">{{voltageRms + ' ' + voltageRmsUnit}}</label>
                     </div>
                     <div class="row">
                         <label v-tooltip="'RMS current that is falling in the magnetic'" class="m-0 p-0 fs-5 col-8">Current RMS:</label>
-                        <label data-test-id="SimulationCoreCalculatorOutput-currentRms-text" class="fs-5 bg-dark text-white float-end m-0 p-0 col-4" style=" text-align:right;">{{currentRms + ' ' + currentRmsUnit}}</label>
+                        <label data-cy="SimulationCoreCalculatorOutput-currentRms-text" class="fs-5 bg-dark text-white float-end m-0 p-0 col-4" style=" text-align:right;">{{currentRms + ' ' + currentRmsUnit}}</label>
                     </div>
                 </div>
             </div>
