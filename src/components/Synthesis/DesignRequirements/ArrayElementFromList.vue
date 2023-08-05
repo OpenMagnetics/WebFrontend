@@ -34,6 +34,14 @@ export default {
             type: String,
             default: '',
         },
+        min:{
+            type: Number,
+            default: 1e-12
+        },
+        max:{
+            type: Number,
+            default: 1e+9
+        },
     },
     data() {
         const masStore = useMasStore();
@@ -80,7 +88,16 @@ export default {
         },
         removeElement(index) {
             this.masStore.mas.inputs.designRequirements[this.name].splice(index, 1)
-        }
+        },
+        changeText(value, index) {
+            if (value != '') {
+                this.errorMessages = '';
+                this.masStore.mas.magnetic.coil.functionalDescription[index].name = value;
+            }
+            else {
+                this.errorMessages = "Winding name cannot be empty";
+            }
+        },
     }
 }
 </script>
@@ -92,7 +109,7 @@ export default {
             <label class="rounded-2 fs-5 ms-3" :class="maximumNumberElements != null? 'col-sm-6 col-md-3' : 'col-12'">{{toTitleCase(name)}}</label>
         </div>
         <div class="row">
-            <ElementFromList v-for="requirementIndex in masStore.mas.inputs.designRequirements[name].length" :defaultValue="defaultValue" class="py-2 col-3" :name="requirementIndex - 1" v-model="masStore.mas.inputs.designRequirements[name]" :options="options" :replaceTitle="isolationSideOrdered[requirementIndex - 1]"/>
+            <ElementFromList :min="min" :max="max" v-for="requirementIndex in masStore.mas.inputs.designRequirements[name].length" :altText="masStore.mas.magnetic.coil.functionalDescription[requirementIndex - 1].name" :defaultValue="defaultValue" class="py-2 col-3" :name="requirementIndex - 1" v-model="masStore.mas.inputs.designRequirements[name]" :options="options" :replaceTitle="isolationSideOrdered[requirementIndex - 1]" @changeText="changeText($event, requirementIndex - 1)" />
         </div>
         <div class="row">
             <label class="text-danger text-center col-12 pt-1" style="font-size: 0.9em; white-space: pre-wrap;">{{errorMessages}}</label>

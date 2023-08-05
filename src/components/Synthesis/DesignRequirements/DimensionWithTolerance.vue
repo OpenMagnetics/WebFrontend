@@ -1,6 +1,7 @@
 <script setup>
 import { isNumber, toTitleCase, getMultiplier } from '/src/assets/js/utils.js'
 import DimensionUnit from '/src/components/Synthesis/DesignRequirements/DimensionUnit.vue'
+import { tooltipsMagneticSynthesisDesignRequirements } from '/src/assets/js/texts.js'
 </script>
 <script>
 export default {
@@ -28,6 +29,26 @@ export default {
         halfSize:{
             type: Boolean,
             default: false    
+        },
+        varText:{
+            type: Boolean,
+            default: false    
+        },
+        min:{
+            type: Number,
+            default: 1e-12
+        },
+        max:{
+            type: Number,
+            default: 1e+9
+        },
+        allowNegative:{
+            type: Boolean,
+            default: false
+        },
+        allowAllNull:{
+            type: Boolean,
+            default: false
         },
     },
     data() {
@@ -93,15 +114,30 @@ export default {
                     window.innerWidth > 768 && window.innerWidth < 2000 && this.halfSize) {
                     var slice = 3;
 
+                    if (window.innerWidth < 1500 && this.halfSize){
+                        slice = 2;
+                    }
+
                     label = label.split(' ')
-                        .map(item => item.length < slice? item + ' ' : item.slice(0, slice) + '. ')
+                        .map(item => (item.length <= slice)? item + ' ' : item.slice(0, slice) + '. ')
                         .join('')
                     // label = label.slice(0, slice) + '.'
                 }
                 shortenedButtonLabels[key] = label;
             }
             return shortenedButtonLabels
-        }
+        },
+        styleTooltip() {
+            var relative_placement;
+            relative_placement = 'top'
+            return {
+                theme: {
+                    placement: relative_placement,
+                    width: '400px',
+                    "text-align": "start",
+                },
+            }
+        },
     },
     watch: { 
     },
@@ -112,27 +148,27 @@ export default {
         checkErrors() {
             var hasError = false;
             this.errorMessages = "";
-            if (this.localData.minimum.scaledValue == null && this.localData.nominal.scaledValue == null && this.localData.maximum.scaledValue == null) {
+            if (this.localData.minimum.scaledValue == null && this.localData.nominal.scaledValue == null && this.localData.maximum.scaledValue == null && !this.allowAllNull) {
                 hasError = true;
                 this.errorMessages += "At least one value must be set. Set one or remove the requirement from the menu.\n"
             }
             if (this.localData.nominal.scaledValue != null) {
                 const nominalActualValue = this.localData.nominal.scaledValue * this.localData.nominal.multiplier;
-                if (nominalActualValue <= 0) {
+                if (nominalActualValue <= 0 && !this.allowNegative) {
                     hasError = true;
                     this.errorMessages += "Nominal value must be greater or equal than 0.\n"
                 }
             }
             if (this.localData.minimum.scaledValue != null) {
                 const minimumActualValue = this.localData.minimum.scaledValue * this.localData.minimum.multiplier;
-                if (minimumActualValue <= 0) {
+                if (minimumActualValue <= 0 && !this.allowNegative) {
                     hasError = true;
                     this.errorMessages += "Minimum value must be greater or equal than 0.\n"
                 }
             }
             if (this.localData.maximum.scaledValue != null) {
                 const maximumActualValue = this.localData.maximum.scaledValue * this.localData.maximum.multiplier;
-                if (maximumActualValue <= 0) {
+                if (maximumActualValue <= 0 && !this.allowNegative) {
                     hasError = true;
                     this.errorMessages += "Maximum value must be greater or equal than 0.\n"
                 }
@@ -225,7 +261,7 @@ export default {
             }
         },
         changeScaledValue(value, field) {
-            if (value == '' || value < 0) {
+            if (value == '' || (value < 0 && ! this.allowNegative)) {
                 this.removeField(field);
             }
             else {
@@ -239,37 +275,38 @@ export default {
 
 
 <template>
-    <div class="container-flex">
+    <div v-tooltip="styleTooltip" class="container-flex">
         <div class="row">
-            <label class="rounded-2 fs-5 ms-3">{{toTitleCase(name)}}</label>
+            <input v-tooltip="tooltipsMagneticSynthesisDesignRequirements['changeNameWindings']" v-if="varText" type="text" class="rounded-2 fs-5 ms-3 bg-dark text-white col-6 p-0 mb-2 border-0"  @change="$emit('changeText', $event.target.value)" :value="name">
+            <label v-if="!varText" class="rounded-2 fs-5 ms-3">{{toTitleCase(name)}}</label> 
         <div class="row">
         </div>
             <div v-if="!halfSize" class=" col-sm-0 col-md-2"></div>
             <div v-if="localData.minimum.scaledValue != null" :class="halfSize? 'ms-sm-4 col-md-4' : 'col-md-3 '" class=" col-xs-12 row m-0 px-0">
                 <button :for="name + 'nominal-input'" class="remove-button m-0 px-0 col-4 col-form-label text-center btn text-white" @click="removeField('minimum')" style="max-height: 2.3em;"> <span class="normal-text" >Min.</span> <i class="fa-solid fa-xmark icon" ></i>  </button>
                 <input type="number" class="m-0 px-0 col-4 bg-light text-white" :id="name + 'minimum-input'" @change="changeScaledValue($event.target.value, 'minimum')" :value="localData.minimum.scaledValue">
-                <DimensionUnit v-if="unit != null" :unit="unit" v-model="localData.minimum.multiplier" class="m-0 ms-1 px-0 col-4" @update:modelValue="changeMultiplier('minimum')"/>
+                <DimensionUnit :min="min" :max="max" v-if="unit != null" :unit="unit" v-model="localData.minimum.multiplier" class="m-0 ms-1 px-0 col-4" @update:modelValue="changeMultiplier('minimum')"/>
             </div>
             <div v-if="localData.minimum.scaledValue == null" class="col-md-3 row m-0 px-xl-3 px-md-0">
-                <button :class="halfSize? 'mx-0 px-0' : ''" class="btn btn-primary float-end" @click="add('minimum')">{{shortenedButtonLabels.minimum}}</button>
+                <button :class="halfSize? 'mx-0 px-0' : ''" class="btn btn-primary float-end"  style="max-height: 2.5em" @click="add('minimum')">{{shortenedButtonLabels.minimum}}</button>
             </div>
 
             <div v-if="localData.nominal.scaledValue != null" :class="halfSize? 'col-md-4' : 'col-md-3 '" class="col-xs-12 row m-0 px-0">
                 <button :for="name + 'nominal-input'" class="remove-button m-0 px-0 col-4 col-form-label text-center btn text-white" @click="removeField('nominal')" style="max-height: 2.3em;"> <span class="normal-text" >Nom.</span> <i class="fa-solid fa-xmark icon" ></i>  </button>
                 <input type="number" class="m-0 px-0 col-4 bg-light text-white" :id="name + 'nominal-input'" @change="changeScaledValue($event.target.value, 'nominal')"  :value="localData.nominal.scaledValue">
-                <DimensionUnit v-if="unit != null" :unit="unit" v-model="localData.nominal.multiplier" class="m-0 ms-1 px-0 col-4" @update:modelValue="changeMultiplier('nominal')"/>
+                <DimensionUnit :min="min" :max="max" v-if="unit != null" :unit="unit" v-model="localData.nominal.multiplier" class="m-0 ms-1 px-0 col-4" @update:modelValue="changeMultiplier('nominal')"/>
             </div>
             <div v-if="localData.nominal.scaledValue == null" class="col-md-3 row m-0 px-xl-3 px-md-0">
-                <button :class="halfSize? 'mx-0 px-0' : ''" class="btn btn-primary float-end" @click="add('nominal')">{{shortenedButtonLabels.nominal}}</button>
+                <button :class="halfSize? 'mx-0 px-0' : ''" class="btn btn-primary float-end" style="max-height: 2.5em" @click="add('nominal')">{{shortenedButtonLabels.nominal}}</button>
             </div>
 
             <div v-if="localData.maximum.scaledValue != null" :class="halfSize? 'col-md-4' : 'col-md-3 '" class="col-xs-12 row m-0 px-0">
                 <button :for="name + 'nominal-input'" class="remove-button m-0 px-0 col-4 col-form-label text-center btn text-white" @click="removeField('maximum')" style="max-height: 2.3em;"> <span class="normal-text">Max.</span> <i class="fa-solid fa-xmark icon" ></i>  </button>
                 <input type="number" class="m-0 px-0 col-4 bg-light text-white" :id="name + 'maximum-input'" @change="changeScaledValue($event.target.value, 'maximum')" :value="localData.maximum.scaledValue">
-                <DimensionUnit v-if="unit != null" :unit="unit" v-model="localData.maximum.multiplier" class="m-0 ms-1 px-0 col-4" @update:modelValue="changeMultiplier('maximum')"/>
+                <DimensionUnit :min="min" :max="max" v-if="unit != null" :unit="unit" v-model="localData.maximum.multiplier" class="m-0 ms-1 px-0 col-4" @update:modelValue="changeMultiplier('maximum')"/>
             </div>
             <div v-if="localData.maximum.scaledValue == null" class="col-md-3 row m-0 px-xl-3 px-md-0">
-                <button :class="halfSize? 'mx-0 px-0' : ''" class="btn btn-primary float-end " @click="add('maximum')">{{shortenedButtonLabels.maximum}}</button>
+                <button :class="halfSize? 'mx-0 px-0' : ''" class="btn btn-primary float-end " style="max-height: 2.5em" @click="add('maximum')">{{shortenedButtonLabels.maximum}}</button>
             </div>
         </div>
         <div class="row">

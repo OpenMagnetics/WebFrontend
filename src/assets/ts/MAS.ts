@@ -248,7 +248,7 @@ export enum Market {
 }
 
 export enum TerminalType {
-    FlyindLead = "Flyind Lead",
+    FlyingLead = "Flying Lead",
     Pin = "Pin",
     Screw = "Screw",
     Smt = "SMT",

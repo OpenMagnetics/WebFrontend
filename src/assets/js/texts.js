@@ -12,4 +12,5 @@ export const tooltipsMagneticSynthesisDesignRequirements = {
     "maximumWeight": "Maximum weight that the magnetic componenet can weight, including all parts",
     "maximumDimensions": "Maximum dimensions that the magnetic componenet can occupy, including all parts",
     "terminalType": "Termination required for our magnetic, one per winding",
+    "changeNameWindings": "Here you can change the reference for this winding",
 }

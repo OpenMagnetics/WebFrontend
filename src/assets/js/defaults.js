@@ -78,16 +78,16 @@ export const defaultDesignRequirements = {
         {"maximum": 50e-12}
     ],
     "operatingTemperature": {
-        "maximum": 123
+        "maximum": 85
     },
     "insulation": {
         "altitude": {
             "maximum": 2000,
-            "nominal": 1500,
+            "nominal": 2000,
             "minimum": -50
         },
-        "cti": "Group II",
-        "pollutionDegree": "P3",
+        "cti": "Group IIIb",
+        "pollutionDegree": "P2",
         "overvoltageCategory": "OVC-III",
         "insulationType": "Double",
         "mainSupplyVoltage": {
@@ -97,13 +97,24 @@ export const defaultDesignRequirements = {
         },
         "standards": ["IEC 60664-1"]
     },
-    "market": "Military",
+    "market": "Industrial",
     "topology": "Buck Converter",
     "maximumWeight": 300,
-    "maximumDimensions": [null, null, null],
-    "terminalType": ["Flyind Lead"]
+    "maximumDimensions": [null, 0.05, null],
+    "terminalType": ["Flying Lead"]
 }
 
+export const minimumMaximumScalePerParameter = {
+    "dimension": {"min": 0.001, "max":1},
+    "weight": {"min": 0.001, "max": 1e6},
+    "altitude": {"min": 1, "max": 10000},
+    "inductance": {"min": 1e-9, "max": 1},
+    "leakageInductance": {"min": 1e-9, "max": 1e-6},
+    "strayCapacitance": {"min": 1e-12, "max": 1e-6},
+    "voltage": {"min": 1e-6, "max": 1e5},
+    "current": {"min": 1e-6, "max": 1e3},
+    "temperature": {"min": 1, "max": 1},
+}
 
 
 

@@ -16,6 +16,14 @@ export default {
         defaultValue:{
             type: Number
         },
+        min:{
+            type: Number,
+            default: 1e-12
+        },
+        max:{
+            type: Number,
+            default: 1e+9
+        },
     },
     data() {
         var localData = {
@@ -26,7 +34,7 @@ export default {
         const errorMessages = "";
         if (this.modelValue['maximumWeight'] == null &&
             this.defaultValue != null) {
-            const aux = getMultiplier(this.defaultValue);
+            console.log(this.defaultValue);
             localData.scaledValue = aux.scaledValue;
             localData.multiplier = aux.multiplier;
         }
@@ -110,7 +118,7 @@ export default {
             <label class="rounded-2 fs-5 ms-3 col-xs-4 col-md-4 ">{{'Maximum Weight'}}</label>
             <div v-if="localData.scaledValue != null" class="col-xs-5 col-md-5 row m-0 px-0">
                 <input type="number" class="m-0 px-0 col-4 bg-light text-white" :id="'design-requirements-maximum-weight-input'" @change="changeScaledValue($event.target.value)" :value="localData.scaledValue">
-                <DimensionUnit v-if="unit != null" :unit="unit" v-model="localData.multiplier" class="m-0 ms-1 px-0 col-4" @update:modelValue="changeMultiplier"/>
+                <DimensionUnit :min="min" :max="max" v-if="unit != null" :unit="unit" v-model="localData.multiplier" class="m-0 ms-1 px-0 col-4" @update:modelValue="changeMultiplier"/>
             </div>
         </div>
         <div class="row">

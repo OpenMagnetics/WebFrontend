@@ -1,6 +1,7 @@
 <script setup>
 import { isNumber, toTitleCase, getMultiplier } from '/src/assets/js/utils.js'
 import DimensionUnit from '/src/components/Synthesis/DesignRequirements/DimensionUnit.vue'
+import { tooltipsMagneticSynthesisDesignRequirements } from '/src/assets/js/texts.js'
 
 </script>
 <script>
@@ -24,6 +25,9 @@ export default {
             type: Boolean,
             default: false
         },
+        altText:{
+            type: String
+        },
     },
     data() {
         return {
@@ -31,7 +35,18 @@ export default {
     },
     computed: {
         selectedLabel() {
-        }
+        },
+        styleTooltip() {
+            var relative_placement;
+            relative_placement = 'top'
+            return {
+                theme: {
+                    placement: relative_placement,
+                    width: '400px',
+                    "text-align": "start",
+                },
+            }
+        },
     },
     watch: { 
     },
@@ -56,9 +71,10 @@ export default {
 
 
 <template>
-    <div class="container-flex">
-        <div class="row">
-            <label v-if="!titleSameRow" class="rounded-2 fs-5 ms-3">{{replaceTitle == null? toTitleCase(name) : toTitleCase(replaceTitle)}}</label>
+    <div v-tooltip="styleTooltip" class="container-flex">
+        <div v-tooltip="tooltipsMagneticSynthesisDesignRequirements['changeNameWindings']" class="row">
+            <input  v-if="altText != null && !titleSameRow" type="text" class="rounded-2 fs-5 ms-3 bg-dark text-white col-11 p-0 mb-2 border-0" @change="$emit('changeText', $event.target.value)" :value="altText">
+            <label v-if="altText == null && !titleSameRow" class="rounded-2 fs-5 ms-3">{{replaceTitle == null? toTitleCase(name) : toTitleCase(replaceTitle)}}</label>
         </div>
         <div class="row">
             <label v-if="titleSameRow" class="rounded-2 fs-5 ms-3 col-7">{{replaceTitle == null? toTitleCase(name) : toTitleCase(replaceTitle)}}</label>

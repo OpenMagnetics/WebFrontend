@@ -102,43 +102,43 @@ export function formatUnit(value, unitValue) {
     var base
     var unit
     var label
-    if (value < 0.000000001 && value != 0) {
+    if (Math.abs(value) < 0.000000001 && Math.abs(value) != 0) {
         base = 0.000000000001
         unit = "p" + unitValue
     }
-    if (value < 0.000001 && value != 0) {
+    else if (Math.abs(value) < 0.000001 && Math.abs(value) != 0) {
         base = 0.000000001
         unit = "n" + unitValue
     }
-    if (value < 0.001 && value != 0) {
+    else if (Math.abs(value) < 0.001 && Math.abs(value) != 0) {
         base = 0.000001
         unit = "μ" + unitValue
     }
-    else if (value < 0.1 && value != 0) {
+    else if (Math.abs(value) < 0.1 && Math.abs(value) != 0) {
         base = 0.001
         unit = "m" + unitValue
     }
-    else if (value < 1000) {
+    else if (Math.abs(value) < 1000) {
         base = 1
         unit = unitValue
     }
-    else if (value >= 1000 && value < 1000000) {
+    else if (Math.abs(value) >= 1000 && Math.abs(value) < 1000000) {
         base = 1000
         unit = "k" + unitValue
     }
-    else if (value >= 1000000 && value < 1000000000) {
+    else if (Math.abs(value) >= 1000000 && Math.abs(value) < 1000000000) {
         base = 1000000
         unit = "M" + unitValue
     }
-    else if (value >= 1000000000 && value < 1000000000000) {
+    else if (Math.abs(value) >= 1000000000 && Math.abs(value) < 1000000000000) {
         base = 1000000000
         unit = "G" + unitValue
     }
-    else if (value >= 1000000000000 && value < 1000000000000000) {
+    else if (Math.abs(value) >= 1000000000000 && Math.abs(value) < 1000000000000000) {
         base = 1000000000000
         unit = "T" + unitValue
     }
-    else if (value >= 1000000000000000 && value < 1000000000000000000) {
+    else if (Math.abs(value) >= 1000000000000000 && Math.abs(value) < 1000000000000000000) {
         base = 1000000000000000
         unit = "P" + unitValue
     }
@@ -149,37 +149,37 @@ export function formatUnit(value, unitValue) {
 export function getMultiplier(value, precision=0.001) {
     var multiplier;
     var scaledValue;
-    if (value < 1e-12 && value != 0) {
+    if (Math.abs(value) < 1e-12 && Math.abs(value) != 0) {
         multiplier = 1e-15;
     }
-    if (value < 1e-9 && value != 0) {
+    if (Math.abs(value) < 1e-9 && Math.abs(value) != 0) {
         multiplier = 1e-12;
     }
-    else if (value < 1e-6 && value != 0) {
+    else if (Math.abs(value) < 1e-6 && Math.abs(value) != 0) {
         multiplier = 1e-9;
     }
-    else if (value < 1e-3 && value != 0) {
+    else if (Math.abs(value) < 1e-3 && Math.abs(value) != 0) {
         multiplier = 1e-6;
     }
-    else if (value < 0.1 && value != 0) {
+    else if (Math.abs(value) < 0.1 && Math.abs(value) != 0) {
         multiplier = 0.001;
     }
-    else if (value < 1000) {
+    else if (Math.abs(value) < 1000) {
         multiplier = 1;
     }
-    else if (value >= 1000 && value < 1000000) {
+    else if (Math.abs(value) >= 1000 && Math.abs(value) < 1000000) {
         multiplier = 1000;
     }
-    else if (value >= 1000000 && value < 1000000000) {
+    else if (Math.abs(value) >= 1000000 && Math.abs(value) < 1000000000) {
         multiplier = 1000000;
     }
-    else if (value >= 1000000000 && value < 1000000000000) {
+    else if (Math.abs(value) >= 1000000000 && Math.abs(value) < 1000000000000) {
         multiplier = 1000000000;
     }
-    else if (value >= 1000000000000 && value < 1000000000000000) {
+    else if (Math.abs(value) >= 1000000000000 && Math.abs(value) < 1000000000000000) {
         multiplier = 1000000000000;
     }
-    else if (value >= 1000000000000000 && value < 1000000000000000000) {
+    else if (Math.abs(value) >= 1000000000000000 && Math.abs(value) < 1000000000000000000) {
         multiplier = 1000000000000000;
     }
     scaledValue = roundWithDecimals(value / multiplier, precision);

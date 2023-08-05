@@ -3,6 +3,7 @@ import { isNumber, toTitleCase, getMultiplier } from '/src/assets/js/utils.js'
 import DimensionWithTolerance from '/src/components/Synthesis/DesignRequirements/DimensionWithTolerance.vue'
 import ElementFromList from '/src/components/Synthesis/DesignRequirements/ElementFromList.vue'
 import SeveralElementsFromList from '/src/components/Synthesis/DesignRequirements/SeveralElementsFromList.vue'
+import { minimumMaximumScalePerParameter} from '/src/assets/js/defaults.js'
 import { Cti, InsulationType, OvervoltageCategory, PollutionDegree, Standard } from '/src/assets/ts/MAS.ts'
 import * as Utils from '/src/assets/js/utils.js'
 </script>
@@ -38,8 +39,8 @@ export default {
 <template>
     <div class="container-flex">
         <div class="row ms-2">
-            <DimensionWithTolerance :defaultValue="Utils.deepCopy(defaultValue['altitude'])" :halfSize="true" :name="'altitude'" :unit="'m'" v-model="modelValue['insulation']" class="col-6 border-end"/>
-            <DimensionWithTolerance :defaultValue="Utils.deepCopy(defaultValue['mainSupplyVoltage'])" :halfSize="true" :name="'mainSupplyVoltage'" :unit="'V'" v-model="modelValue['insulation']" class="col-6"/>
+            <DimensionWithTolerance :allowNegative="true" :min="minimumMaximumScalePerParameter['altitude']['min']" :max="minimumMaximumScalePerParameter['altitude']['max']" :defaultValue="Utils.deepCopy(defaultValue['altitude'])" :halfSize="true" :name="'altitude'" :unit="'m'" v-model="modelValue['insulation']" class="col-6 border-end"/>
+            <DimensionWithTolerance :min="minimumMaximumScalePerParameter['voltage']['min']" :max="minimumMaximumScalePerParameter['voltage']['max']" :defaultValue="Utils.deepCopy(defaultValue['mainSupplyVoltage'])" :halfSize="true" :name="'mainSupplyVoltage'" :unit="'V'" v-model="modelValue['insulation']" class="col-6"/>
 
             <ElementFromList :name="'cti'" v-model="modelValue['insulation']" :options="Cti" class="col-lg-6 col-xl-2"/>
             <ElementFromList :name="'insulationType'" v-model="modelValue['insulation']" :options="InsulationType" class="col-lg-6 col-xl-3"/>
