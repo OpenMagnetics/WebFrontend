@@ -121,7 +121,6 @@ export default {
                 this.masStore.mas.inputs.designRequirements.turnsRatios = newElementsTurnsRatios;
                 this.masStore.mas.magnetic.coil.functionalDescription = newElementsCoil;
                 this.masStore.updatedTurnsRatios();
-                console.log(this.masStore.mas.magnetic.coil.functionalDescription)
             }
         },
     }
