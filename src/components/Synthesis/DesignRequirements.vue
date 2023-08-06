@@ -19,6 +19,10 @@ import Name from '/src/components/Synthesis/DesignRequirements/Name.vue'
 <script>
 export default {
     props: {
+        dataTestLabel: {
+            type: String,
+            default: '',
+        },
     },
     data() {
         const compulsoryRequirements = ["numberWindings", "magnetizingInductance", "turnsRatios", "name"];
@@ -87,6 +91,16 @@ export default {
     },
     watch: { 
     },
+    created () {
+        for (var i = 0; i < this.masStore.mas.inputs.designRequirements.turnsRatios[i] + 1; i++) {
+            if (i < this.masStore.mas.magnetic.coil.functionalDescription.length) {
+                newElementsCoil.push(this.masStore.mas.magnetic.coil.functionalDescription[i]);
+            }
+            else {
+                newElementsCoil.push({'name': toTitleCase(isolationSideOrdered[i])});
+            }
+        }
+    },
     mounted () {
     },
     methods: {
@@ -135,40 +149,141 @@ export default {
                 <div class="my-2 row px-2" v-for="requirementName in designRequirementsOrdered" >
                     <label v-tooltip="tooltipsMagneticSynthesisDesignRequirements[requirementName]"  class="rounded-2 fs-5 col-8">{{toTitleCase(shortenedLabels[requirementName])}}</label>
                 
-                    <button v-if="!compulsoryRequirements.includes(requirementName)" :class="masStore.mas.inputs.designRequirements[requirementName]==null? 'btn-info' : 'btn-danger'" class="btn float-end col-4" :style="'filter: brightness(70%)'" @click="requirementButtonClicked(requirementName)">
+                    <button :data-cy="dataTestLabel + '-' + requirementName + '-add-remove-button'" v-if="!compulsoryRequirements.includes(requirementName)" :class="masStore.mas.inputs.designRequirements[requirementName]==null? 'btn-info' : 'btn-danger'" class="btn float-end col-4" :style="'filter: brightness(70%)'" @click="requirementButtonClicked(requirementName)">
                         {{masStore.mas.inputs.designRequirements[requirementName]==null? 'Add Req.' : 'Remove'}}
                     </button>
-                    <button v-if="compulsoryRequirements.includes(requirementName)" class="btn btn-light float-end disabled col-4">
+                    <button :data-cy="dataTestLabel + '-' + requirementName + '-required-button'" v-if="compulsoryRequirements.includes(requirementName)" class="btn btn-light float-end disabled col-4">
                         Required
                     </button>
                 </div>
             </div>
             <div class="col-sm-12 col-md-8 text-start pe-0">
-                <Name :defaultValue="defaultDesignRequirements.name" class="border-bottom border-top py-2" :name="'name'" v-model="masStore.mas.inputs.designRequirements"/>
+                <Name class="border-bottom border-top py-2" 
+                    :name="'name'"
+                    :dataTestLabel="dataTestLabel + '-Name'"
+                    :defaultValue="defaultDesignRequirements.name"
+                    v-model="masStore.mas.inputs.designRequirements"
+                />
 
-                <ElementFromList class="border-bottom py-2" :name="'numberWindings'" v-model="numberWindingsAux" :options="Array.from({length: 12}, (_, i) => i + 1)" @updatedNumberElements="updatedNumberElements" :titleSameRow="true"/>
+                <ElementFromList class="border-bottom py-2"
+                    :name="'numberWindings'"
+                    :dataTestLabel="dataTestLabel + '-NumberWindings'"
+                    :options="Array.from({length: 12}, (_, i) => i + 1)"
+                    :titleSameRow="true"
+                    v-model="numberWindingsAux"
+                    @updatedNumberElements="updatedNumberElements"
+                />
 
-                <DimensionWithTolerance :min="minimumMaximumScalePerParameter['inductance']['min']" :max="minimumMaximumScalePerParameter['inductance']['max']" class="border-bottom py-2" :name="'magnetizingInductance'" v-if="masStore.mas.inputs.designRequirements.magnetizingInductance != null" :defaultValue="defaultDesignRequirements.magnetizingInductance" v-model="masStore.mas.inputs.designRequirements.magnetizingInductance" unit="H"/>
+                <DimensionWithTolerance class="border-bottom py-2"
+                    v-if="masStore.mas.inputs.designRequirements.magnetizingInductance != null"
+                    :name="'magnetizingInductance'"
+                    unit="H"
+                    :dataTestLabel="dataTestLabel + '-MagnetizingInductance'"
+                    :defaultValue="defaultDesignRequirements.magnetizingInductance" 
+                    :min="minimumMaximumScalePerParameter['inductance']['min']"
+                    :max="minimumMaximumScalePerParameter['inductance']['max']"
+                    v-model="masStore.mas.inputs.designRequirements.magnetizingInductance"
+                />
 
-                <ArrayDimensionWithTolerance class="border-bottom py-2" :name="'turnsRatios'" v-if="masStore.mas.inputs.designRequirements.turnsRatios != null" defaultField="nominal" :defaultValue="{'nominal': 1}" :maximumNumberElements="12"/>
+                <ArrayDimensionWithTolerance class="border-bottom py-2"
+                    v-if="masStore.mas.inputs.designRequirements.turnsRatios != null"
+                    :name="'turnsRatios'"
+                    :dataTestLabel="dataTestLabel + '-TurnsRatios'"
+                    :defaultField="'nominal'"
+                    :defaultValue="{'nominal': 1}"
+                    :maximumNumberElements="12"
+                />
 
-                <Insulation :defaultValue="defaultDesignRequirements.insulation" class="border-bottom py-2" v-if="masStore.mas.inputs.designRequirements.insulation != null" v-model="masStore.mas.inputs.designRequirements"/>
+                <Insulation class="border-bottom py-2"
+                    v-if="masStore.mas.inputs.designRequirements.insulation != null"
+                    :dataTestLabel="dataTestLabel + '-Insulation'"
+                    :defaultValue="defaultDesignRequirements.insulation"
+                    v-model="masStore.mas.inputs.designRequirements"
+                />
 
-                <ArrayDimensionWithTolerance :allowAllNull="true" :min="minimumMaximumScalePerParameter['leakageInductance']['min']" :max="minimumMaximumScalePerParameter['leakageInductance']['max']" class="border-bottom py-2" :name="'leakageInductance'" v-if="masStore.mas.inputs.designRequirements.leakageInductance != null" defaultField="maximum" :defaultValue="defaultDesignRequirements.leakageInductance[0]" unit="H" :fixedNumberElements="masStore.mas.inputs.designRequirements.turnsRatios.length"/>
+                <ArrayDimensionWithTolerance class="border-bottom py-2"
+                    v-if="masStore.mas.inputs.designRequirements.leakageInductance != null"
+                    :name="'leakageInductance'"
+                    unit="H"
+                    :dataTestLabel="dataTestLabel + '-LeakageInductance'"
+                    :defaultField="'maximum'"
+                    :defaultValue="defaultDesignRequirements.leakageInductance[0]"
+                    :allowAllNull="true"
+                    :fixedNumberElements="masStore.mas.inputs.designRequirements.turnsRatios.length"
+                    :min="minimumMaximumScalePerParameter['leakageInductance']['min']"
+                    :max="minimumMaximumScalePerParameter['leakageInductance']['max']"
+                />
 
-                <ArrayDimensionWithTolerance :allowAllNull="true" :min="minimumMaximumScalePerParameter['strayCapacitance']['min']" :max="minimumMaximumScalePerParameter['strayCapacitance']['max']" class="border-bottom py-2" :name="'strayCapacitance'" v-if="masStore.mas.inputs.designRequirements.strayCapacitance != null" defaultField="maximum" :defaultValue="defaultDesignRequirements.strayCapacitance[0]" unit="F" :fixedNumberElements="masStore.mas.inputs.designRequirements.turnsRatios.length"/>
+                <ArrayDimensionWithTolerance class="border-bottom py-2"
+                    v-if="masStore.mas.inputs.designRequirements.strayCapacitance != null"
+                    :name="'strayCapacitance'"
+                    unit="F"
+                    :dataTestLabel="dataTestLabel + '-StrayCapacitance'"
+                    :defaultField="'maximum'"
+                    :defaultValue="defaultDesignRequirements.strayCapacitance[0]"
+                    :allowAllNull="true"
+                    :fixedNumberElements="masStore.mas.inputs.designRequirements.turnsRatios.length"
+                    :min="minimumMaximumScalePerParameter['strayCapacitance']['min']"
+                    :max="minimumMaximumScalePerParameter['strayCapacitance']['max']"
+                />
 
-                <DimensionWithTolerance :allowNegative="true" :min="minimumMaximumScalePerParameter['temperature']['min']" :max="minimumMaximumScalePerParameter['temperature']['max']" class="border-bottom py-2" :name="'operatingTemperature'" v-if="masStore.mas.inputs.designRequirements.operatingTemperature != null" :defaultValue="defaultDesignRequirements.operatingTemperature" v-model="masStore.mas.inputs.designRequirements.operatingTemperature" unit="°C"/>
+                <DimensionWithTolerance class="border-bottom py-2"
+                    v-if="masStore.mas.inputs.designRequirements.operatingTemperature != null"
+                    :name="'operatingTemperature'"
+                    unit="°C"
+                    :dataTestLabel="dataTestLabel + '-OperatingTemperature'"
+                    :allowNegative="true"
+                    :min="minimumMaximumScalePerParameter['temperature']['min']"
+                    :max="minimumMaximumScalePerParameter['temperature']['max']"
+                    :defaultValue="defaultDesignRequirements.operatingTemperature"
+                    v-model="masStore.mas.inputs.designRequirements.operatingTemperature"
+                />
               
-                <MaximumWeight :min="minimumMaximumScalePerParameter['weight']['min']" :max="minimumMaximumScalePerParameter['weight']['max']" class="border-bottom py-2" v-model="masStore.mas.inputs.designRequirements" v-if="masStore.mas.inputs.designRequirements.maximumWeight != null" :defaultValue="300" unit="g"/>
+                <MaximumWeight class="border-bottom py-2"
+                    v-if="masStore.mas.inputs.designRequirements.maximumWeight != null"
+                    unit="g"
+                    :dataTestLabel="dataTestLabel + '-MaximumWeight'"
+                    :min="minimumMaximumScalePerParameter['weight']['min']"
+                    :max="minimumMaximumScalePerParameter['weight']['max']"
+                    :defaultValue="300"
+                    v-model="masStore.mas.inputs.designRequirements"
+                />
 
-                <MaximumDimensions :min="minimumMaximumScalePerParameter['dimension']['min']" :max="minimumMaximumScalePerParameter['dimension']['max']" class="border-bottom py-2" v-if="masStore.mas.inputs.designRequirements.maximumDimensions != null" :defaultValue="defaultDesignRequirements.maximumDimensions" unit="m" v-model="masStore.mas.inputs.designRequirements.maximumDimensions"/>
+                <MaximumDimensions class="border-bottom py-2"
+                    v-if="masStore.mas.inputs.designRequirements.maximumDimensions != null"
+                    unit="m"
+                    :dataTestLabel="dataTestLabel + '-MaximumDimensions'"
+                    :min="minimumMaximumScalePerParameter['dimension']['min']"
+                    :max="minimumMaximumScalePerParameter['dimension']['max']"
+                    :defaultValue="defaultDesignRequirements.maximumDimensions"
+                    v-model="masStore.mas.inputs.designRequirements.maximumDimensions"
+                />
 
-                <ArrayElementFromList :defaultValue="defaultDesignRequirements.terminalType[0]" class="border-bottom py-2" :name="'terminalType'" v-model="masStore.mas.inputs.designRequirements" v-if="masStore.mas.inputs.designRequirements.terminalType != null" :options="TerminalType"  :fixedNumberElements="masStore.mas.inputs.designRequirements.turnsRatios.length + 1"/>
+                <ArrayElementFromList class="border-bottom py-2"
+                    v-if="masStore.mas.inputs.designRequirements.terminalType != null"
+                    :name="'terminalType'"
+                    :dataTestLabel="dataTestLabel + '-TerminalType'"
+                    :defaultValue="defaultDesignRequirements.terminalType[0]"
+                    :options="TerminalType" 
+                    :fixedNumberElements="masStore.mas.inputs.designRequirements.turnsRatios.length + 1"
+                    v-model="masStore.mas.inputs.designRequirements"
+                />
 
-                <ElementFromList class="border-bottom py-2" :name="'topology'" v-model="masStore.mas.inputs.designRequirements" v-if="masStore.mas.inputs.designRequirements.topology != null" :options="Topology" />
+                <ElementFromList class="border-bottom py-2"
+                    v-if="masStore.mas.inputs.designRequirements.topology != null"
+                    :name="'topology'"
+                    :dataTestLabel="dataTestLabel + '-Topology'"
+                    :options="Topology"
+                    v-model="masStore.mas.inputs.designRequirements"
+                />
 
-                <ElementFromList class="border-bottom py-2" :name="'market'" v-model="masStore.mas.inputs.designRequirements" v-if="masStore.mas.inputs.designRequirements.market != null" :options="Market"/>
+                <ElementFromList class="border-bottom py-2"
+                    :name="'market'"
+                    v-if="masStore.mas.inputs.designRequirements.market != null"
+                    :dataTestLabel="dataTestLabel + '-Market'"
+                    :options="Market"
+                    v-model="masStore.mas.inputs.designRequirements"
+                />
 
             </div>
         </div>

@@ -26,7 +26,7 @@ import { h } from 'vue'
 import '/src/assets/css/custom.css'
 import 'bootstrap';
 
-Cypress.Commands.add('mount', (component, ...args) => {
+Cypress.Commands.add('mount', (component, args = {}) => {
   args.global = args.global || {}
   args.global.plugins = args.global.plugins || []
   args.global.plugins.push(createPinia())

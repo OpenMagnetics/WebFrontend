@@ -30,10 +30,6 @@ export default {
             type: String,
             default: '',
         },
-        dataTestLabel: {
-            type: String,
-            default: '',
-        },
         min:{
             type: Number,
             default: 1e-12
@@ -41,6 +37,10 @@ export default {
         max:{
             type: Number,
             default: 1e+9
+        },
+        dataTestLabel: {
+            type: String,
+            default: '',
         },
     },
     data() {

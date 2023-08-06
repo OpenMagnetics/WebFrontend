@@ -2,6 +2,7 @@ import { defineConfig } from "cypress";
 
 export default defineConfig({
   projectId: "nc85hh",
+  video: false,
   component: {
     devServer: {
       framework: "vue",

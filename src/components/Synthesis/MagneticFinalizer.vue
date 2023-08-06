@@ -1,6 +1,29 @@
 <script setup>
 </script>
 
+<script>
+export default {
+    props: {
+        dataTestLabel: {
+            type: String,
+            default: '',
+        },
+    },
+    data() {
+        return {
+        }
+    },
+    computed: {
+    },
+    watch: { 
+    },
+    mounted () {
+    },
+    methods: {
+    }
+}
+</script>
+
 <template>
     <div class="container">
         <div class="row">

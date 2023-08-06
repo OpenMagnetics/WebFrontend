@@ -28,6 +28,10 @@ export default {
         altText:{
             type: String
         },
+        dataTestLabel: {
+            type: String,
+            default: '',
+        },
     },
     data() {
         return {
@@ -73,14 +77,14 @@ export default {
 <template>
     <div v-tooltip="styleTooltip" class="container-flex">
         <div v-tooltip="tooltipsMagneticSynthesisDesignRequirements['changeNameWindings']" class="row">
-            <input  v-if="altText != null && !titleSameRow" type="text" class="rounded-2 fs-5 ms-3 bg-dark text-white col-11 p-0 mb-2 border-0" @change="$emit('changeText', $event.target.value)" :value="altText">
-            <label v-if="altText == null && !titleSameRow" class="rounded-2 fs-5 ms-3">{{replaceTitle == null? toTitleCase(name) : toTitleCase(replaceTitle)}}</label>
+            <input :data-cy="dataTestLabel + '-alt-title-label'" v-if="altText != null && !titleSameRow" type="text" class="rounded-2 fs-5 ms-3 bg-dark text-white col-11 p-0 mb-2 border-0" @change="$emit('changeText', $event.target.value)" :value="altText">
+            <label :data-cy="dataTestLabel + '-different-row-label'" v-if="altText == null && !titleSameRow" class="rounded-2 fs-5 ms-3">{{replaceTitle == null? toTitleCase(name) : toTitleCase(replaceTitle)}}</label>
         </div>
         <div class="row">
-            <label v-if="titleSameRow" class="rounded-2 fs-5 ms-3 col-7">{{replaceTitle == null? toTitleCase(name) : toTitleCase(replaceTitle)}}</label>
+            <label :data-cy="dataTestLabel + '-same-row-label'" v-if="titleSameRow" class="rounded-2 fs-5 ms-3 col-7">{{replaceTitle == null? toTitleCase(name) : toTitleCase(replaceTitle)}}</label>
             <div  v-if="!titleSameRow" class=" col-sm-0 col-md-2">
             </div>
-            <select class="form-select bg-light text-white m-0 col-9 mt-1"  @change="changeOption" style="width:auto; max-height: 3em;" :value="modelValue[name]" >
+            <select :data-cy="dataTestLabel + '-select'"  class="form-select bg-light text-white m-0 col-9 mt-1"  @change="changeOption" style="width:auto; max-height: 3em;" :value="modelValue[name]" >
                 <option v-for="[key, value] in Object.entries(options)">
                     {{value}}
                 </option>

@@ -17,6 +17,10 @@ export default {
             type: Object,
             required: true
         },
+        dataTestLabel: {
+            type: String,
+            default: '',
+        },
     },
     data() {
         return {
@@ -62,7 +66,7 @@ export default {
         <div class="row">
         </div>
             <div class="form-check ms-4 col-lg-6 col-xl-2" v-for="[key, value] in Object.entries(options)">
-                <input :ref="key" class="form-check-input" type="checkbox" :checked="modelValue[name].includes(value)"  :id="name + '-checkbox-input'" @change="changedCheckedValue(value)">
+                <input :data-cy="dataTestLabel + '-' + value + '-checkbox-input'" :ref="key" class="form-check-input" type="checkbox" :checked="modelValue[name].includes(value)"  :id="name + '-checkbox-input'" @change="changedCheckedValue(value)">
                 <label class="form-check-label" :for="name + '-checkbox-input'">
                     {{value}}
                 </label>

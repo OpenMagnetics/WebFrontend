@@ -146,14 +146,14 @@ export default {
                             </h2>
                         </div>
                             
-                        <DesignRequirements v-if="checkCoordinates('DesignRequirements')"/>
-                        <OperatingPoints v-if="checkCoordinates('OperatingPoints')"/>
-                        <CoreAdviser v-if="checkCoordinates('CoreAdviser')"/>
-                        <CoreCustomizer v-if="checkCoordinates('CoreCustomizer')"/>
-                        <WireAdviser v-if="checkCoordinates('WireAdviser')"/>
-                        <WireCustomizer v-if="checkCoordinates('WireCustomizer')"/>
-                        <CoilAdviser v-if="checkCoordinates('CoilAdviser')"/>
-                        <MagneticFinalizer v-if="checkCoordinates('MagneticFinalizer')"/>
+                        <DesignRequirements :dataTestLabel="'MagneticSynthesis-DesignRequirements'" v-if="checkCoordinates('DesignRequirements')"/>
+                        <OperatingPoints :dataTestLabel="'MagneticSynthesis-OperatingPoints'" v-if="checkCoordinates('OperatingPoints')"/>
+                        <CoreAdviser :dataTestLabel="'MagneticSynthesis-CoreAdviser'" v-if="checkCoordinates('CoreAdviser')"/>
+                        <CoreCustomizer :dataTestLabel="'MagneticSynthesis-CoreCustomizer'" v-if="checkCoordinates('CoreCustomizer')"/>
+                        <WireAdviser :dataTestLabel="'MagneticSynthesis-WireAdviser'" v-if="checkCoordinates('WireAdviser')"/>
+                        <WireCustomizer :dataTestLabel="'MagneticSynthesis-WireCustomizer'" v-if="checkCoordinates('WireCustomizer')"/>
+                        <CoilAdviser :dataTestLabel="'MagneticSynthesis-CoilAdviser'" v-if="checkCoordinates('CoilAdviser')"/>
+                        <MagneticFinalizer :dataTestLabel="'MagneticSynthesis-MagneticFinalizer'" v-if="checkCoordinates('MagneticFinalizer')"/>
                         <button data-cy="magnetic-synthesis-next-tool-button" class="btn btn-outline-primary float-start mt-2" @click="increaseVerticalIndex"> Next tool</button>
                         <button data-cy="magnetic-synthesis-customize-tool-button" v-if="traversableRight()" class="btn btn-outline-primary float-end mt-2" @click="increaseHorizontalIndex"> Customize tool</button>
                         <button data-cy="magnetic-synthesis-main-tool-button" v-if="traversableLeft()" class="btn btn-outline-primary float-end mt-2" @click="decreaseHorizontalIndex"> Back to main tool</button>

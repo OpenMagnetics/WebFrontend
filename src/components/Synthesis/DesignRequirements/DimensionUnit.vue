@@ -5,7 +5,7 @@ export default {
     props: {
         unit:{
             type: String,
-            required: false
+            required: true
         },
         modelValue:{
             type: Number,
