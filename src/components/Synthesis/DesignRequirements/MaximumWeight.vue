@@ -24,6 +24,10 @@ export default {
             type: Number,
             default: 1e+9
         },
+        dataTestLabel: {
+            type: String,
+            default: '',
+        },
     },
     data() {
         var localData = {
@@ -34,7 +38,6 @@ export default {
         const errorMessages = "";
         if (this.modelValue['maximumWeight'] == null &&
             this.defaultValue != null) {
-            console.log(this.defaultValue);
             localData.scaledValue = aux.scaledValue;
             localData.multiplier = aux.multiplier;
         }
@@ -113,11 +116,11 @@ export default {
 
 
 <template>
-    <div class="container-flex">
+    <div :data-cy="dataTestLabel + '-container'" class="container-flex">
         <div class="row">
-            <label class="rounded-2 fs-5 ms-3 col-xs-4 col-md-4 ">{{'Maximum Weight'}}</label>
+            <label :data-cy="dataTestLabel + '-title'" class="rounded-2 fs-5 ms-3 col-xs-4 col-md-4 ">{{'Maximum Weight'}}</label>
             <div v-if="localData.scaledValue != null" class="col-xs-5 col-md-5 row m-0 px-0">
-                <input type="number" class="m-0 px-0 col-4 bg-light text-white" :id="'design-requirements-maximum-weight-input'" @change="changeScaledValue($event.target.value)" :value="localData.scaledValue">
+                <input :data-cy="dataTestLabel + '-number-input'" type="number" class="m-0 px-0 col-4 bg-light text-white" :id="'design-requirements-maximum-weight-input'" @change="changeScaledValue($event.target.value)" :value="localData.scaledValue">
                 <DimensionUnit :min="min" :max="max" v-if="unit != null" :unit="unit" v-model="localData.multiplier" class="m-0 ms-1 px-0 col-4" @update:modelValue="changeMultiplier"/>
             </div>
         </div>

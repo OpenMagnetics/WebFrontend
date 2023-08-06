@@ -3,7 +3,7 @@ import { ref } from 'vue'
 import { useMasStore } from '/src/stores/mas'
 import { Form, Field, configure} from 'vee-validate';
 import * as Yup from 'yup';
-import { toTitleCase } from '/src/assets/js/utils.js'
+import { toTitleCase, toPascalCase } from '/src/assets/js/utils.js'
 import { tooltipsMagneticSynthesisDesignRequirements } from '/src/assets/js/texts.js'
 import { defaultDesignRequirements, designRequirementsOrdered, isolationSideOrdered, minimumMaximumScalePerParameter} from '/src/assets/js/defaults.js'
 import { Market, TerminalType, Topology } from '/src/assets/ts/MAS.ts'
@@ -149,10 +149,10 @@ export default {
                 <div class="my-2 row px-2" v-for="requirementName in designRequirementsOrdered" >
                     <label v-tooltip="tooltipsMagneticSynthesisDesignRequirements[requirementName]"  class="rounded-2 fs-5 col-8">{{toTitleCase(shortenedLabels[requirementName])}}</label>
                 
-                    <button :data-cy="dataTestLabel + '-' + requirementName + '-add-remove-button'" v-if="!compulsoryRequirements.includes(requirementName)" :class="masStore.mas.inputs.designRequirements[requirementName]==null? 'btn-info' : 'btn-danger'" class="btn float-end col-4" :style="'filter: brightness(70%)'" @click="requirementButtonClicked(requirementName)">
+                    <button :data-cy="dataTestLabel + '-' + toPascalCase(requirementName) + '-add-remove-button'" v-if="!compulsoryRequirements.includes(requirementName)" :class="masStore.mas.inputs.designRequirements[requirementName]==null? 'btn-info' : 'btn-danger'" class="btn float-end col-4" :style="'filter: brightness(70%)'" @click="requirementButtonClicked(requirementName)">
                         {{masStore.mas.inputs.designRequirements[requirementName]==null? 'Add Req.' : 'Remove'}}
                     </button>
-                    <button :data-cy="dataTestLabel + '-' + requirementName + '-required-button'" v-if="compulsoryRequirements.includes(requirementName)" class="btn btn-light float-end disabled col-4">
+                    <button :data-cy="dataTestLabel + '-' + toPascalCase(requirementName) + '-required-button'" v-if="compulsoryRequirements.includes(requirementName)" class="btn btn-light float-end disabled col-4">
                         Required
                     </button>
                 </div>

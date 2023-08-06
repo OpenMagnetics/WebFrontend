@@ -75,10 +75,10 @@ export default {
 
 
 <template>
-    <div v-tooltip="styleTooltip" class="container-flex">
+    <div :data-cy="dataTestLabel + '-container'" v-tooltip="styleTooltip" class="container-flex">
         <div v-tooltip="tooltipsMagneticSynthesisDesignRequirements['changeNameWindings']" class="row">
             <input :data-cy="dataTestLabel + '-alt-title-label'" v-if="altText != null && !titleSameRow" type="text" class="rounded-2 fs-5 ms-3 bg-dark text-white col-11 p-0 mb-2 border-0" @change="$emit('changeText', $event.target.value)" :value="altText">
-            <label :data-cy="dataTestLabel + '-different-row-label'" v-if="altText == null && !titleSameRow" class="rounded-2 fs-5 ms-3">{{replaceTitle == null? toTitleCase(name) : toTitleCase(replaceTitle)}}</label>
+            <label :data-cy="dataTestLabel + '-title'" v-if="altText == null && !titleSameRow" class="rounded-2 fs-5 ms-3">{{replaceTitle == null? toTitleCase(name) : toTitleCase(replaceTitle)}}</label>
         </div>
         <div class="row">
             <label :data-cy="dataTestLabel + '-same-row-label'" v-if="titleSameRow" class="rounded-2 fs-5 ms-3 col-7">{{replaceTitle == null? toTitleCase(name) : toTitleCase(replaceTitle)}}</label>

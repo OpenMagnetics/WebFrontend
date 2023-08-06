@@ -6,11 +6,17 @@ import axios from "axios"
 var requesting = 0
 
 
+export function toPascalCase(str) {
+    const finalResult = str.charAt(0).toUpperCase() + str.slice(1);
+    return finalResult.trim();
+}
+
 export function toTitleCase(str) {
     const result = str.replace(/([A-Z])/g, " $1");
     const finalResult = result.charAt(0).toUpperCase() + result.slice(1);
     return finalResult.trim();
 }
+
 export function toDashCase(str) {
     return str.replace(/\s+/g, '-').toLowerCase();
 }

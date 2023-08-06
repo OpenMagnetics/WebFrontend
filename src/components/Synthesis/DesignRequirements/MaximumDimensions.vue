@@ -19,10 +19,6 @@ export default {
         defaultValue:{
             type: Array
         },
-        dataTestLabel: {
-            type: String,
-            default: '',
-        },
         min:{
             type: Number,
             default: 1e-12
@@ -30,6 +26,10 @@ export default {
         max:{
             type: Number,
             default: 1e+9
+        },
+        dataTestLabel: {
+            type: String,
+            default: '',
         },
     },
     data() {
@@ -48,10 +48,6 @@ export default {
                 scaledValue: null
             },
         };
-
-
-        console.log("this.defaultValue");
-        console.log(this.defaultValue);
 
         if (this.modelValue[0] != null) {
             const aux = getMultiplier(this.modelValue[0], 0.001);
@@ -131,9 +127,9 @@ export default {
 
 
 <template>
-    <div class="container-flex border-bottom">
+    <div :data-cy="dataTestLabel + '-container'" class="container-flex border-bottom">
         <div class="row">
-            <label class="rounded-2 fs-5 ms-3" :class="'col-sm-6 col-md-5'">{{'Maximum Dimensions'}}</label>
+            <label :data-cy="dataTestLabel + '-title'" class="rounded-2 fs-5 ms-3" :class="'col-sm-6 col-md-5'">{{'Maximum Dimensions'}}</label>
         </div>
         <div class="row">
             <label v-if="localData[0].scaledValue != null" for="design-requirements-width-input" class="m-0 px-0 col-2 col-form-label text-center">Width</label>

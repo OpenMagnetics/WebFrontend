@@ -265,14 +265,6 @@ export default {
             }
         },
         changeScaledValue(value, field) {
-            console.log(field)
-            console.log(field)
-            console.log(field)
-            console.log(field)
-            console.log(value)
-            console.log(value)
-            console.log(this.localData[field])
-            console.log(this.localData[field])
             if (value == '' || (value < 0 && ! this.allowNegative)) {
                 this.removeField(field);
             }
@@ -289,8 +281,8 @@ export default {
 <template>
     <div v-tooltip="styleTooltip" class="container-flex">
         <div class="row">
-            <input v-tooltip="tooltipsMagneticSynthesisDesignRequirements['changeNameWindings']" v-if="varText" type="text" class="rounded-2 fs-5 ms-3 bg-dark text-white col-6 p-0 mb-2 border-0"  @change="$emit('changeText', $event.target.value)" :value="name">
-            <label v-if="!varText" class="rounded-2 fs-5 ms-3">{{toTitleCase(name)}}</label> 
+            <input :data-cy="dataTestLabel + '-title'" v-tooltip="tooltipsMagneticSynthesisDesignRequirements['changeNameWindings']" v-if="varText" type="text" class="rounded-2 fs-5 ms-3 bg-dark text-white col-6 p-0 mb-2 border-0"  @change="$emit('changeText', $event.target.value)" :value="name">
+            <label :data-cy="dataTestLabel + '-title'" v-if="!varText" class="rounded-2 fs-5 ms-3">{{toTitleCase(name)}}</label> 
         <div class="row">
         </div>
             <div v-if="!halfSize" class=" col-sm-0 col-md-2"></div>

@@ -17,7 +17,11 @@ export default {
         defaultValue:{
             type: String,
             required: true
-        }
+        },
+        dataTestLabel: {
+            type: String,
+            default: '',
+        },
     },
     data() {
         var localData = "";
@@ -51,10 +55,10 @@ export default {
 
 
 <template>
-    <div class="container-flex">
+    <div :data-cy="dataTestLabel + '-container'" class="container-flex">
         <div class="row">
-            <label :for="name + '-text-input'" class="rounded-2 fs-5 ms-3 col-3">Reference</label>
-            <input type="text" class="m-0 px-0 col-8 bg-light text-white" :id="name + '-text-input'" @change="changeText($event.target.value)" :value="localData">
+            <label :data-cy="dataTestLabel + '-title'" :for="name + '-text-input'" class="rounded-2 fs-5 ms-3 col-3">Reference</label>
+            <input :data-cy="dataTestLabel + '-text-input'" type="text" class="m-0 px-0 col-8 bg-light text-white" :id="name + '-text-input'" @change="changeText($event.target.value)" :value="localData">
         </div>
     </div>
 </template>

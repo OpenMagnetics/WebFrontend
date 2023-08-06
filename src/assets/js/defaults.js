@@ -13,7 +13,7 @@ export const mas = {
             "bobbin": "Dummy",
             "functionalDescription": [
                 {
-                    "name": "DummyWinding",
+                    "name": "Primary",
                     "numberTurns": 1,
                     "numberParallels": 1,
                     "isolationSide": "primary",

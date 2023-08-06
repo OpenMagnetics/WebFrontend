@@ -60,9 +60,9 @@ export default {
 
 
 <template>
-    <div class="container-flex">
+    <div :data-cy="dataTestLabel + '-container'" class="container-flex">
         <div class="row">
-            <label class="rounded-2 fs-5 ms-3">{{toTitleCase(name)}}</label>
+            <label :data-cy="dataTestLabel + '-title'" class="rounded-2 fs-5 ms-3">{{toTitleCase(name)}}</label>
         <div class="row">
         </div>
             <div class="form-check ms-4 col-lg-6 col-xl-2" v-for="[key, value] in Object.entries(options)">

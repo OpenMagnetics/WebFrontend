@@ -51,7 +51,7 @@ describe('ElementFromList.cy.js', () => {
         })
 
         cy.get(`[data-cy=${dataTestLabel}-alt-title-label]`).should('not.exist')
-        cy.get(`[data-cy=${dataTestLabel}-different-row-label]`).should('not.exist')
+        cy.get(`[data-cy=${dataTestLabel}-title]`).should('not.exist')
         cy.get(`[data-cy=${dataTestLabel}-same-row-label]`).should('exist').should('have.text', name)
 
     })
@@ -79,7 +79,7 @@ describe('ElementFromList.cy.js', () => {
         })
 
         cy.get(`[data-cy=${dataTestLabel}-alt-title-label]`).should('exist').should('have.value', altText)
-        cy.get(`[data-cy=${dataTestLabel}-different-row-label]`).should('not.exist')
+        cy.get(`[data-cy=${dataTestLabel}-title]`).should('not.exist')
         cy.get(`[data-cy=${dataTestLabel}-same-row-label]`).should('not.exist')
 
     })
@@ -105,7 +105,7 @@ describe('ElementFromList.cy.js', () => {
         })
 
         cy.get(`[data-cy=${dataTestLabel}-alt-title-label]`).should('not.exist')
-        cy.get(`[data-cy=${dataTestLabel}-different-row-label]`).should('exist').should('have.text', name)
+        cy.get(`[data-cy=${dataTestLabel}-title]`).should('exist').should('have.text', name)
         cy.get(`[data-cy=${dataTestLabel}-same-row-label]`).should('not.exist')
 
     })
