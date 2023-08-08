@@ -35,8 +35,11 @@ export default {
             localData = this.modelValue[this.name];
         }
 
+        const errorMessages = ''
+
         return {
-            localData
+            localData,
+            errorMessages
         }
     },
     computed: {
@@ -47,7 +50,14 @@ export default {
     },
     methods: {
         changeText(newValue) {
-            this.modelValue[this.name] = newValue;
+            if (newValue == '') {
+                this.errorMessages = "Reference cannot be empty. Please write a name."
+                this.$emit("hasError")
+            }
+            else {
+                this.errorMessages = ""
+                this.modelValue[this.name] = newValue;
+            }
         }
     }
 }
@@ -59,6 +69,7 @@ export default {
         <div class="row">
             <label :data-cy="dataTestLabel + '-title'" :for="name + '-text-input'" class="rounded-2 fs-5 ms-3 col-3">Reference</label>
             <input :data-cy="dataTestLabel + '-text-input'" type="text" class="m-0 px-0 col-8 bg-light text-white" :id="name + '-text-input'" @change="changeText($event.target.value)" :value="localData">
+            <label class="text-danger text-center col-12 pt-1" style="font-size: 0.9em; white-space: pre-wrap;">{{errorMessages}}</label>
         </div>
     </div>
 </template>

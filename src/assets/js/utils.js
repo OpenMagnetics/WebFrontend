@@ -5,10 +5,16 @@ import axios from "axios"
 
 var requesting = 0
 
+function toCamelCase(str) {
+    return str.replace(/(?:^\w|[A-Z]|\b\w)/g, function(word, index) {
+        return index === 0 ? word.toLowerCase() : word.toUpperCase();
+    }).replace(/\s+/g, '');
+}
 
-export function toPascalCase(str) {
-    const finalResult = str.charAt(0).toUpperCase() + str.slice(1);
-    return finalResult.trim();
+export function toPascalCase(string) {
+    var result = toCamelCase(string);
+    const finalResult = result.charAt(0).toUpperCase() + result.slice(1);
+    return finalResult;
 }
 
 export function toTitleCase(str) {
@@ -402,6 +408,36 @@ export function packDataPoints(waveform, frequency, compress) {
 }
 
 export function tryGuessType(dataPoints, frequency) {
+    if (dataPoints.length == 3) {
+        if (roundWithDecimals(1 / (dataPoints[2].x - dataPoints[0].x), 0.001) == frequency)
+        if (dataPoints[0].y == dataPoints[2].y)
+            return "Triangular"
+    }
+    else if (dataPoints.length == 5) {
+        if (roundWithDecimals(1 / (dataPoints[4].x - dataPoints[0].x), 0.001) == frequency)
+        if (dataPoints[0].y == dataPoints[1].y)
+        if (dataPoints[1].x == dataPoints[2].x)
+        if (dataPoints[2].y == dataPoints[3].y)
+        if (dataPoints[0].y == dataPoints[4].y)
+            return "Rectangular"
+    }
+    else if (dataPoints.length == 10) {
+        if (roundWithDecimals(1 / (dataPoints[9].x - dataPoints[0].x), 0.001) == frequency)
+        if (dataPoints[0].y == dataPoints[1].y)
+        if (dataPoints[1].x == dataPoints[2].x)
+        if (dataPoints[2].y == dataPoints[3].y)
+        if (dataPoints[3].x == dataPoints[4].x)
+        if (dataPoints[4].y == dataPoints[5].y)
+        if (dataPoints[5].x == dataPoints[6].x)
+        if (dataPoints[6].y == dataPoints[7].y)
+        if (dataPoints[7].x == dataPoints[8].x)
+        if (dataPoints[8].y == dataPoints[9].y)
+        if (dataPoints[0].y == dataPoints[9].y)
+            return "Rectangular with Dead-Time"
+    }
+    return "Custom"
+}
+export function tryGuessTypeOld(dataPoints, frequency) {
     if (dataPoints.length == 3) {
         if (roundWithDecimals(1 / (dataPoints[2].x - dataPoints[0].x), 0.001) == frequency)
         if (dataPoints[0].y == dataPoints[2].y)

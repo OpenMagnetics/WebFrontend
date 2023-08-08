@@ -8,7 +8,7 @@ import { tooltipsMagneticSynthesisDesignRequirements } from '/src/assets/js/text
 import { defaultDesignRequirements, designRequirementsOrdered, isolationSideOrdered, minimumMaximumScalePerParameter} from '/src/assets/js/defaults.js'
 import { Market, TerminalType, Topology } from '/src/assets/ts/MAS.ts'
 import Insulation from '/src/components/Synthesis/DesignRequirements/Insulation.vue'
-import MaximumWeight from '/src/components/Synthesis/DesignRequirements/MaximumWeight.vue'
+import Dimension from '/src/components/Synthesis/DesignRequirements/Dimension.vue'
 import MaximumDimensions from '/src/components/Synthesis/DesignRequirements/MaximumDimensions.vue'
 import DimensionWithTolerance from '/src/components/Synthesis/DesignRequirements/DimensionWithTolerance.vue'
 import ArrayDimensionWithTolerance from '/src/components/Synthesis/DesignRequirements/ArrayDimensionWithTolerance.vue'
@@ -102,8 +102,26 @@ export default {
         }
     },
     mounted () {
+        this.masStore.$subscribe((mutation, state) => {
+            this.$emit("canContinue", this.canContinue(state));
+        })
+        this.$emit("canContinue", this.canContinue(this.masStore));
     },
     methods: {
+        canContinue(store){
+            var canContinue = store.mas.inputs.designRequirements.magnetizingInductance != null;
+            canContinue &= store.mas.inputs.designRequirements.name != '';
+            canContinue &= store.mas.inputs.designRequirements.magnetizingInductance.minimum != null ||
+                           store.mas.inputs.designRequirements.magnetizingInductance.nominal != null ||
+                           store.mas.inputs.designRequirements.magnetizingInductance.maximum != null;
+            for (var index in store.mas.inputs.designRequirements.turnsRatios) {
+                canContinue &= store.mas.inputs.designRequirements.turnsRatios[index].minimum != null ||
+                               store.mas.inputs.designRequirements.turnsRatios[index].nominal != null ||
+                               store.mas.inputs.designRequirements.turnsRatios[index].maximum != null;
+
+            }
+            return Boolean(canContinue);
+        },
         requirementButtonClicked(requirementName) {
             if (this.masStore.mas.inputs.designRequirements[requirementName] == null) {
                 this.masStore.mas.inputs.designRequirements[requirementName] = defaultDesignRequirements[requirementName];
@@ -137,6 +155,9 @@ export default {
                 this.masStore.updatedTurnsRatios();
             }
         },
+        hasError() {
+            this.$emit("canContinue", false);
+        },
     }
 }
 </script>
@@ -163,6 +184,7 @@ export default {
                     :dataTestLabel="dataTestLabel + '-Name'"
                     :defaultValue="defaultDesignRequirements.name"
                     v-model="masStore.mas.inputs.designRequirements"
+                    @hasError="hasError"
                 />
 
                 <ElementFromList class="border-bottom py-2"
@@ -180,9 +202,11 @@ export default {
                     unit="H"
                     :dataTestLabel="dataTestLabel + '-MagnetizingInductance'"
                     :defaultValue="defaultDesignRequirements.magnetizingInductance" 
+                    :defaultField="'minimum'"
                     :min="minimumMaximumScalePerParameter['inductance']['min']"
                     :max="minimumMaximumScalePerParameter['inductance']['max']"
                     v-model="masStore.mas.inputs.designRequirements.magnetizingInductance"
+                    @hasError="hasError"
                 />
 
                 <ArrayDimensionWithTolerance class="border-bottom py-2"
@@ -192,6 +216,7 @@ export default {
                     :defaultField="'nominal'"
                     :defaultValue="{'nominal': 1}"
                     :maximumNumberElements="12"
+                    @hasError="hasError"
                 />
 
                 <Insulation class="border-bottom py-2"
@@ -212,6 +237,7 @@ export default {
                     :fixedNumberElements="masStore.mas.inputs.designRequirements.turnsRatios.length"
                     :min="minimumMaximumScalePerParameter['leakageInductance']['min']"
                     :max="minimumMaximumScalePerParameter['leakageInductance']['max']"
+                    @hasError="hasError"
                 />
 
                 <ArrayDimensionWithTolerance class="border-bottom py-2"
@@ -225,6 +251,7 @@ export default {
                     :fixedNumberElements="masStore.mas.inputs.designRequirements.turnsRatios.length"
                     :min="minimumMaximumScalePerParameter['strayCapacitance']['min']"
                     :max="minimumMaximumScalePerParameter['strayCapacitance']['max']"
+                    @hasError="hasError"
                 />
 
                 <DimensionWithTolerance class="border-bottom py-2"
@@ -237,10 +264,12 @@ export default {
                     :max="minimumMaximumScalePerParameter['temperature']['max']"
                     :defaultValue="defaultDesignRequirements.operatingTemperature"
                     v-model="masStore.mas.inputs.designRequirements.operatingTemperature"
+                    @hasError="hasError"
                 />
               
-                <MaximumWeight class="border-bottom py-2"
+                <Dimension class="border-bottom py-2"
                     v-if="masStore.mas.inputs.designRequirements.maximumWeight != null"
+                    :name="'maximumWeight'"
                     unit="g"
                     :dataTestLabel="dataTestLabel + '-MaximumWeight'"
                     :min="minimumMaximumScalePerParameter['weight']['min']"

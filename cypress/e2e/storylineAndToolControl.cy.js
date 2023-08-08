@@ -20,13 +20,13 @@ describe('Storyline', {
 
         cy.nextTool();
 
-        cy.checkStorylineAdventureVisible('operationPoints')
+        cy.checkStorylineAdventureVisible('operatingPoints')
         cy.checkTitle("Operating Points")
 
         cy.nextTool();
 
         cy.checkTitle("Core Adviser");
-        cy.checkStorylineAdventureVisible("coreSelection");
+        cy.checkStorylineAdventureVisible("coreAdviser");
 
         cy.previousTool();
         cy.previousTool();
@@ -42,12 +42,12 @@ describe('Storyline', {
         cy.nextTool();
 
         cy.checkTitle("Wire Adviser");
-        cy.checkStorylineAdventureVisible("wireSelection");
+        cy.checkStorylineAdventureVisible("wireAdviser");
 
         cy.nextTool();
 
         cy.checkTitle("Coil Adviser");
-        cy.checkStorylineAdventureVisible("coilSelection");
+        cy.checkStorylineAdventureVisible("coilAdviser");
 
         cy.nextTool();
 
@@ -64,28 +64,38 @@ describe('Storyline', {
         cy.checkStorylineAdventureVisible("magneticFinalizer");
     })
 
-    it('Go to core, customize and back', () => {
+    it.only('Go to core, customize and back', () => {
         cy.checkTitle("Design Requirements");
         cy.checkStorylineAdventureVisible("designRequirements");
 
         cy.nextTool();
 
         cy.checkTitle("Operating Points");
-        cy.checkStorylineAdventureVisible("operationPoints");
+        cy.checkStorylineAdventureVisible("operatingPoints");
 
         cy.nextTool();
 
         cy.checkTitle("Core Adviser");
-        cy.checkStorylineAdventureVisible("coreSelection");
+        cy.checkStorylineAdventureVisible("coreAdviser");
 
         cy.customizationTool();
 
-        cy.checkTitle("Core Customizer");
-        cy.checkStorylineAdventureVisible("coreSelection");
+        cy.checkTitle("Core Simulation");
+        cy.checkStorylineAdventureVisible("coreAdviser");
+
+        cy.customizationTool();
+
+        cy.checkTitle("Core Customization");
+        cy.checkStorylineAdventureVisible("coreAdviser");
+
+        cy.mainTool();
+
+        cy.checkTitle("Core Simulation");
+        cy.checkStorylineAdventureVisible("coreAdviser");
 
         cy.mainTool();
 
         cy.checkTitle("Core Adviser");
-        cy.checkStorylineAdventureVisible("coreSelection");
+        cy.checkStorylineAdventureVisible("coreAdviser");
     })
 })

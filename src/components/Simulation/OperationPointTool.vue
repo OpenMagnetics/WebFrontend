@@ -105,8 +105,8 @@ export default {
 
             const switchingFrequency = data["frequency"]
             const waveformTypes = {
-                current: Utils.tryGuessType(compressedCurrentData, data["frequency"]),
-                voltage: Utils.tryGuessType(compressedVoltageData, data["frequency"]),
+                current: Utils.tryGuessTypeOld(compressedCurrentData, data["frequency"]),
+                voltage: Utils.tryGuessTypeOld(compressedVoltageData, data["frequency"]),
             }
             currentStore.setType(waveformTypes["current"])
             voltageStore.setType(waveformTypes["voltage"])
@@ -126,7 +126,7 @@ export default {
 
             const switchingFrequency = data["frequency"]
             const waveformTypes = {
-                voltage: Utils.tryGuessType(compressedVoltageData, data["frequency"]),
+                voltage: Utils.tryGuessTypeOld(compressedVoltageData, data["frequency"]),
             }
             voltageStore.setType(waveformTypes["voltage"])
 

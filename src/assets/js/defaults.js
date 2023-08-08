@@ -104,6 +104,55 @@ export const defaultDesignRequirements = {
     "terminalType": ["Flying Lead"]
 }
 
+export const defaultOperatingPointExcitation = {  
+    "name": "My Operation Point",
+    "frequency": 100000,
+    "current": {
+        "waveform": {
+            "data": [
+                -5,
+                5,
+                -5
+            ],
+            "time": [
+                0,
+                0.0000025,
+                0.00001
+            ],
+            "ancillaryLabel": "Triangular"
+        },
+        "processed": {
+            "dutyCycle" : 0.25,
+            "peakToPeak" : 10,
+            "offset" : 0,
+        },
+        "type": "Triangular"
+    },
+    "voltage": {
+        "waveform": {
+            "data": [
+                7.5,
+                7.5,
+                -2.5,
+                -2.5,
+                7.5
+            ],
+            "time": [
+                0,
+                0.0000025,
+                0.0000025,
+                0.00001,
+                0.00001
+            ],
+            "ancillaryLabel": "Rectangular"
+        },
+        "processed": {
+            "dutyCycle" : 0.25
+        },
+        "type": "Rectangular"
+    }
+}
+
 export const minimumMaximumScalePerParameter = {
     "dimension": {"min": 0.001, "max":1},
     "weight": {"min": 0.001, "max": 1e6},
@@ -114,6 +163,8 @@ export const minimumMaximumScalePerParameter = {
     "voltage": {"min": 1e-6, "max": 1e5},
     "current": {"min": 1e-6, "max": 1e3},
     "temperature": {"min": 1, "max": 1},
+    "frequency": {"min": 1, "max": 1e9},
+    "percentage": {"min": 0.0001, "max": 0.9999},
 }
 
 
@@ -221,7 +272,7 @@ export const defaultOperationPointExcitation = {
                 0.00001
             ]
         },
-        "type": "Square"
+        "type": "Rectangular"
     }
 }
 
@@ -293,7 +344,7 @@ export const defaultSimulation = {
     "magnetic": defaultMagnetic,
 }
 
-export const defaultVoltageType = "Square"
+export const defaultVoltageType = "Rectangular"
 export const defaultCurrentType = "Triangular"
 export const defaultPrecision = -2
 export const defaultMinimumNumberForms = 0.01

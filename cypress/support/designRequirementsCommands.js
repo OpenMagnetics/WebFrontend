@@ -4,15 +4,24 @@ Cypress.Commands.add('addField', (dataTestLabel, field) => {
 })
 
 Cypress.Commands.add('setField', (dataTestLabel, field, value) => {
-    cy.get(`[data-cy=${dataTestLabel}-${field}-text-input]`).clear().type(value).type("{enter}")
+    if (field == null)
+        cy.get(`[data-cy=${dataTestLabel}-number-input]`).clear().type(value).type("{enter}")
+    else
+        cy.get(`[data-cy=${dataTestLabel}-${field}-number-input]`).clear().type(value).type("{enter}")
 })
 
 Cypress.Commands.add('selectUnit', (dataTestLabel, field, value) => {
-    cy.get(`[data-cy=${dataTestLabel}-${field}-DimensionUnit-input]`).select(value)
+    if (field == null)
+        cy.get(`[data-cy=${dataTestLabel}-DimensionUnit-input]`).select(value)
+    else
+        cy.get(`[data-cy=${dataTestLabel}-${field}-DimensionUnit-input]`).select(value)
 })
 
 Cypress.Commands.add('checkUnit', (dataTestLabel, field, value) => {
-    cy.get(`[data-cy=${dataTestLabel}-${field}-DimensionUnit-input] option:selected`).should('have.text', value)
+    if (field == null)
+        cy.get(`[data-cy=${dataTestLabel}-DimensionUnit-input] option:selected`).should('have.text', value)
+    else
+        cy.get(`[data-cy=${dataTestLabel}-${field}-DimensionUnit-input] option:selected`).should('have.text', value)
 })
 
 Cypress.Commands.add('removeField', (dataTestLabel, field) => {
@@ -22,11 +31,14 @@ Cypress.Commands.add('removeField', (dataTestLabel, field) => {
 Cypress.Commands.add('checkIfRemoved', (dataTestLabel, field) => {
     cy.get(`[data-cy=${dataTestLabel}-${field}-add-button]`).should('be.visible')
     cy.get(`[data-cy=${dataTestLabel}-${field}-remove-button]`).should('not.exist')
-    cy.get(`[data-cy=${dataTestLabel}-${field}-text-input]`).should('not.exist')
+    cy.get(`[data-cy=${dataTestLabel}-${field}-number-input]`).should('not.exist')
 })
 
 Cypress.Commands.add('checkValue', (dataTestLabel, field, value) => {
-    cy.get(`[data-cy=${dataTestLabel}-${field}-text-input]`).should('have.value', value)
+    if (field == null)
+        cy.get(`[data-cy=${dataTestLabel}-number-input]`).should('have.value', value)
+    else
+        cy.get(`[data-cy=${dataTestLabel}-${field}-number-input]`).should('have.value', value)
 })
 
 Cypress.Commands.add('checkError', (dataTestLabel, text) => {

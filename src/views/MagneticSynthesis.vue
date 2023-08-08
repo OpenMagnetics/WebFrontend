@@ -18,107 +18,114 @@ import MagneticFinalizer from '/src/components/Synthesis/MagneticFinalizer.vue'
 <script>
 export default {
     data() {
-        var activeVerticalIndex = 0;
-        var activeHorizontalIndex = 0;
-        // var selectedTool = "";
-        const currentStoryline= [
-                {
-                    title: "Design Requirements"
-                },
-                {
-                    title: "Operation Points"
-                },
-                {
-                    title: "Core Selection"
-                },
-                {
-                    title: "Wire Selection"
-                },
-                {
-                    title: "Coil Selection"
-                },
-                {
-                    title: "Magnetic Finalizer"
-                }
-            ];
-        const storylineCoordinates = {
-            'DesignRequirements': [0, 0],
-            'DesignRequirementsAdv': [0, 1],
-            'OperatingPoints': [1, 0],
-            'CoreAdviser': [2, 0],
-            'CoreCustomizer': [2, 1],
-            'WireAdviser': [3, 0],
-            'WireCustomizer': [3, 1],
-            'CoilAdviser': [4, 0],
-            'MagneticFinalizer': [5, 0],
+        const currentStoryline = {
+            "designRequirements": {
+                title: "Design Requirements",
+                nextTool: "operatingPoints"
+            },
+            "operatingPoints": {
+                title: "Operating Points",
+                prevTool: "designRequirements",
+                nextTool: "coreAdviser",
+            },
+            "coreAdviser": {
+                title: "Core Adviser",
+                prevTool: "operatingPoints",
+                nextTool: "wireAdviser",
+                advancedTool: "coreSimulation",
+            },
+            "coreSimulation": {
+                title: "Core Simulation",
+                prevTool: "operatingPoints",
+                nextTool: "wireAdviser",
+                basicTool: "coreAdviser",
+                advancedTool: "coreCustomization",
+            },
+            "coreCustomization": {
+                title: "Core Customization",
+                prevTool: "operatingPoints",
+                nextTool: "wireAdviser",
+                basicTool: "coreSimulation",
+            },
+            "wireAdviser": {
+                title: "Wire Adviser",
+                prevTool: "coreAdviser",
+                nextTool: "coilAdviser",
+            },
+            "wireCustomization": {
+                title: "Wire Customization",
+                prevTool: "coreAdviser",
+                nextTool: "coilAdviser",
+                basicTool: "wireAdviser",
+            },
+            "coilAdviser": {
+                title: "Coil Adviser",
+                prevTool: "wireAdviser",
+                nextTool: "magneticFinalizer",
+                advancedTool: "coilCustomizer",
+            },
+            "coilCustomizer": {
+                title: "Coil Adviser",
+                prevTool: "wireAdviser",
+                nextTool: "magneticFinalizer",
+                basicTool: "coilAdviser",
+            },
+            "magneticFinalizer": {
+                title: "Magnetic Finalizer",
+                prevTool: "coilAdviser",
+            },
+        };
+        var selectedTool = "operatingPoints";
+
+        const canContinue = {
+            'designRequirements': true,
+            'operatingPoints': true,
+            'coreAdviser': true,
+            'coreSimulation': true,
+            'coreCustomization': true,
+            'wireAdviser': true,
+            'wireCustomization': true,
+            'coilAdviser': true,
+            'magneticFinalizer': true,
         }
         return {
-            activeVerticalIndex,
-            activeHorizontalIndex,
             currentStoryline,
-            storylineCoordinates,
-            // selectedTool,
+            canContinue,
+            selectedTool,
         }
     },
     methods: {
-        decreaseVerticalIndex(event) {
-            console.log('decreaseVerticalIndex')
-            if (this.activeVerticalIndex > 0) {
-                this.activeVerticalIndex -= 1;
-                this.activeHorizontalIndex = 0;
+        prevTool(event) {
+            if (this.currentStoryline[this.selectedTool].prevTool != null) {
+                this.selectedTool = this.currentStoryline[this.selectedTool].prevTool;
             }
         },
-        increaseVerticalIndex(event) {
-            console.log('increaseVerticalIndex')
-            if (this.activeVerticalIndex < this.currentStoryline.length - 1) {
-                this.activeVerticalIndex += 1;
-                this.activeHorizontalIndex = 0;
+        nextTool(event) {
+            if (this.currentStoryline[this.selectedTool].nextTool != null) {
+                this.selectedTool = this.currentStoryline[this.selectedTool].nextTool;
             }
         },
-        increaseHorizontalIndex(event) {
-            this.activeHorizontalIndex += 1;
-        },
-        decreaseHorizontalIndex(event) {
-            this.activeHorizontalIndex -= 1;
-        },
-        checkCoordinates(tool) {
-            if (this.storylineCoordinates[tool][0] == this.activeVerticalIndex &&
-                this.storylineCoordinates[tool][1] == this.activeHorizontalIndex) {
-                return true
+        advancedTool(event) {
+            if (this.currentStoryline[this.selectedTool].advancedTool != null) {
+                this.selectedTool = this.currentStoryline[this.selectedTool].advancedTool;
             }
-            else {
-                return false
+        },
+        basicTool(event) {
+            if (this.currentStoryline[this.selectedTool].basicTool != null) {
+                this.selectedTool = this.currentStoryline[this.selectedTool].basicTool;
             }
         },
         traversableRight() {
-            var traversableRight = false;
-            for (const [key, value] of Object.entries(this.storylineCoordinates)) {
-                if (value[0] == this.activeVerticalIndex && value[1] == (this.activeHorizontalIndex + 1)){
-                    traversableRight = true;
-                }
-            };
-
-            return traversableRight;
+            return this.currentStoryline[this.selectedTool].advancedTool != null;
         },
         traversableLeft() {
-            var traversableLeft = false;
-            for (const [key, value] of Object.entries(this.storylineCoordinates)) {
-                if (value[0] == this.activeVerticalIndex && value[1] == (this.activeHorizontalIndex - 1)){
-                    traversableLeft = true;
-                }
-            };
-
-            return traversableLeft;
+            return this.currentStoryline[this.selectedTool].basicTool != null;
         },
-    },
-    computed: {
-        selectedTool() {
-            for (const [key, value] of Object.entries(this.storylineCoordinates)) {
-                if (value[0] == this.activeVerticalIndex && value[1] == this.activeHorizontalIndex){
-                    return key;
-                }
-            };
-            return "Me he perdio"
+        updateCanContinue(tool, value) {
+            this.canContinue[tool] = value;
+        },
+        changeTool(tool) {
+            this.selectedTool = tool;
         }
     },
     mounted() {
@@ -136,27 +143,27 @@ export default {
                 <div class="row">
                     <div class="storyline text-white text-center col-1 bg-light border border-primary m-0 p-1">
                         <h4 class="text-center">Storyline</h4>
-                        <Storyline :activeVerticalIndex="activeVerticalIndex" :storyline="currentStoryline"/>
+                        <Storyline :selectedTool="selectedTool" :storyline="currentStoryline" :canContinue="canContinue" @changeTool="changeTool"/>
                     </div>
                     <div class="tool text-white bg-dark text-center offset-1 col-11 bg-light" >
                         <div>
-                            <button data-cy="magnetic-synthesis-previous-tool-button" class="btn btn-outline-primary float-start mb-2" @click="decreaseVerticalIndex"> Previous tool</button>
+                            <button data-cy="magnetic-synthesis-previous-tool-button" class="btn btn-outline-primary float-start mb-2" @click="prevTool"> Previous tool</button>
                             <h2 data-cy="magnetic-synthesis-title-text" class="">
                                 {{toTitleCase(selectedTool)}}
                             </h2>
                         </div>
                             
-                        <DesignRequirements :dataTestLabel="'MagneticSynthesis-DesignRequirements'" v-if="checkCoordinates('DesignRequirements')"/>
-                        <OperatingPoints :dataTestLabel="'MagneticSynthesis-OperatingPoints'" v-if="checkCoordinates('OperatingPoints')"/>
-                        <CoreAdviser :dataTestLabel="'MagneticSynthesis-CoreAdviser'" v-if="checkCoordinates('CoreAdviser')"/>
-                        <CoreCustomizer :dataTestLabel="'MagneticSynthesis-CoreCustomizer'" v-if="checkCoordinates('CoreCustomizer')"/>
-                        <WireAdviser :dataTestLabel="'MagneticSynthesis-WireAdviser'" v-if="checkCoordinates('WireAdviser')"/>
-                        <WireCustomizer :dataTestLabel="'MagneticSynthesis-WireCustomizer'" v-if="checkCoordinates('WireCustomizer')"/>
-                        <CoilAdviser :dataTestLabel="'MagneticSynthesis-CoilAdviser'" v-if="checkCoordinates('CoilAdviser')"/>
-                        <MagneticFinalizer :dataTestLabel="'MagneticSynthesis-MagneticFinalizer'" v-if="checkCoordinates('MagneticFinalizer')"/>
-                        <button data-cy="magnetic-synthesis-next-tool-button" class="btn btn-outline-primary float-start mt-2" @click="increaseVerticalIndex"> Next tool</button>
-                        <button data-cy="magnetic-synthesis-customize-tool-button" v-if="traversableRight()" class="btn btn-outline-primary float-end mt-2" @click="increaseHorizontalIndex"> Customize tool</button>
-                        <button data-cy="magnetic-synthesis-main-tool-button" v-if="traversableLeft()" class="btn btn-outline-primary float-end mt-2" @click="decreaseHorizontalIndex"> Back to main tool</button>
+                        <DesignRequirements @canContinue="updateCanContinue('designRequirements', $event)" :dataTestLabel="'MagneticSynthesis-DesignRequirements'" v-if="selectedTool == 'designRequirements'"/>
+                        <OperatingPoints :dataTestLabel="'MagneticSynthesis-OperatingPoints'" v-if="selectedTool == 'operatingPoints'"/>
+                        <CoreAdviser :dataTestLabel="'MagneticSynthesis-CoreAdviser'" v-if="selectedTool == 'coreAdviser'"/>
+                        <CoreCustomizer :dataTestLabel="'MagneticSynthesis-CoreCustomizer'" v-if="selectedTool == 'coreCustomizer'"/>
+                        <WireAdviser :dataTestLabel="'MagneticSynthesis-WireAdviser'" v-if="selectedTool == 'wireAdviser'"/>
+                        <WireCustomizer :dataTestLabel="'MagneticSynthesis-WireCustomizer'" v-if="selectedTool == 'wireCustomizer'"/>
+                        <CoilAdviser :dataTestLabel="'MagneticSynthesis-CoilAdviser'" v-if="selectedTool == 'coilAdviser'"/>
+                        <MagneticFinalizer :dataTestLabel="'MagneticSynthesis-MagneticFinalizer'" v-if="selectedTool == 'magneticFinalizer'"/>
+                        <button :disabled="!canContinue[selectedTool]" data-cy="magnetic-synthesis-next-tool-button" class="btn btn-outline-primary float-start mt-2" @click="nextTool">{{canContinue[selectedTool]? 'Next tool' : 'Errors must be fixed'}}</button>
+                        <button data-cy="magnetic-synthesis-customize-tool-button" v-if="traversableRight()" class="btn btn-outline-primary float-end mt-2" @click="advancedTool"> Customize tool</button>
+                        <button data-cy="magnetic-synthesis-main-tool-button" v-if="traversableLeft()" class="btn btn-outline-primary float-end mt-2" @click="basicTool"> Back to main tool</button>
                     </div>
                 </div>
             </div>

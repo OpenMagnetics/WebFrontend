@@ -156,6 +156,15 @@ export default {
                 hasError = true;
                 this.errorMessages += "At least one value must be set. Set one or remove the requirement from the menu.\n"
             }
+            if (isNaN(this.localData.nominal.scaledValue)) {
+                this.errorMessages += "Nominal value cannot be empty.\n"
+            }
+            if (isNaN(this.localData.minimum.scaledValue)) {
+                this.errorMessages += "Minimum value cannot be empty.\n"
+            }
+            if (isNaN(this.localData.maximum.scaledValue)) {
+                this.errorMessages += "Maximum value cannot be empty.\n"
+            }
             if (this.localData.nominal.scaledValue != null) {
                 const nominalActualValue = this.localData.nominal.scaledValue * this.localData.nominal.multiplier;
                 if (nominalActualValue <= 0 && !this.allowNegative) {
@@ -214,6 +223,10 @@ export default {
             }
         },
         changeMultiplier(field) {
+            if (isNaN(this.localData[field].scaledValue)) {
+                const aux = getMultiplier(this.defaultValue[this.defaultField]);
+                this.localData[field].scaledValue = aux.scaledValue;
+            }
             const actualValue = this.localData[field].scaledValue * this.localData[field].multiplier;
             this.update(field, actualValue);
         },
@@ -263,8 +276,15 @@ export default {
             if (!hasError) {
                 this.modelValue[field] = null;
             }
+            else {
+                this.$emit("hasError")
+            }
         },
         changeScaledValue(value, field) {
+            if (isNaN(this.localData[field].multiplier)) {
+                const aux = getMultiplier(this.defaultValue[this.defaultField]);
+                this.localData[field].multiplier = aux.multiplier;
+            }
             if (value == '' || (value < 0 && ! this.allowNegative)) {
                 this.removeField(field);
             }
@@ -288,7 +308,7 @@ export default {
             <div v-if="!halfSize" class=" col-sm-0 col-md-2"></div>
             <div v-if="localData.minimum.scaledValue != null" :class="halfSize? 'ms-sm-4 col-md-4' : 'col-md-3 '" class=" col-xs-12 row m-0 px-0">
                 <button :data-cy="dataTestLabel + '-minimum-remove-button'" :for="name + 'minimum-input'" class="remove-button m-0 px-0 col-4 col-form-label text-center btn text-white" @click="removeField('minimum')" style="max-height: 2.3em;"> <span class="normal-text" >Min.</span> <i class="fa-solid fa-xmark icon" ></i>  </button>
-                <input :data-cy="dataTestLabel + '-minimum-text-input'" type="number" class="m-0 px-0 col-4 bg-light text-white" :id="name + 'minimum-input'" @change="changeScaledValue($event.target.value, 'minimum')" :value="localData.minimum.scaledValue">
+                <input :data-cy="dataTestLabel + '-minimum-number-input'" type="number" class="m-0 px-0 col-4 bg-light text-white" :id="name + 'minimum-input'" @change="changeScaledValue($event.target.value, 'minimum')" :value="localData.minimum.scaledValue">
                 <DimensionUnit :data-cy="dataTestLabel + '-minimum-DimensionUnit-input'" :min="min" :max="max" v-if="unit != null" :unit="unit" v-model="localData.minimum.multiplier" class="m-0 ms-1 px-0 col-4" @update:modelValue="changeMultiplier('minimum')"/>
             </div>
             <div v-if="localData.minimum.scaledValue == null" class="col-md-3 row m-0 px-xl-3 px-md-0">
@@ -297,7 +317,7 @@ export default {
 
             <div v-if="localData.nominal.scaledValue != null" :class="halfSize? 'col-md-4' : 'col-md-3 '" class="col-xs-12 row m-0 px-0">
                 <button :data-cy="dataTestLabel + '-nominal-remove-button'" :for="name + 'nominal-input'" class="remove-button m-0 px-0 col-4 col-form-label text-center btn text-white" @click="removeField('nominal')" style="max-height: 2.3em;"> <span class="normal-text" >Nom.</span> <i class="fa-solid fa-xmark icon" ></i>  </button>
-                <input :data-cy="dataTestLabel + '-nominal-text-input'" type="number" class="m-0 px-0 col-4 bg-light text-white" :id="name + 'nominal-input'" @change="changeScaledValue($event.target.value, 'nominal')"  :value="localData.nominal.scaledValue">
+                <input :data-cy="dataTestLabel + '-nominal-number-input'" type="number" class="m-0 px-0 col-4 bg-light text-white" :id="name + 'nominal-input'" @change="changeScaledValue($event.target.value, 'nominal')"  :value="localData.nominal.scaledValue">
                 <DimensionUnit :data-cy="dataTestLabel + '-nominal-DimensionUnit-input'" :min="min" :max="max" v-if="unit != null" :unit="unit" v-model="localData.nominal.multiplier" class="m-0 ms-1 px-0 col-4" @update:modelValue="changeMultiplier('nominal')"/>
             </div>
             <div v-if="localData.nominal.scaledValue == null" class="col-md-3 row m-0 px-xl-3 px-md-0">
@@ -306,7 +326,7 @@ export default {
 
             <div v-if="localData.maximum.scaledValue != null" :class="halfSize? 'col-md-4' : 'col-md-3 '" class="col-xs-12 row m-0 px-0">
                 <button :data-cy="dataTestLabel + '-maximum-remove-button'" :for="name + 'maximum-input'" class="remove-button m-0 px-0 col-4 col-form-label text-center btn text-white" @click="removeField('maximum')" style="max-height: 2.3em;"> <span class="normal-text">Max.</span> <i class="fa-solid fa-xmark icon" ></i>  </button>
-                <input :data-cy="dataTestLabel + '-maximum-text-input'" type="number" class="m-0 px-0 col-4 bg-light text-white" :id="name + 'maximum-input'" @change="changeScaledValue($event.target.value, 'maximum')" :value="localData.maximum.scaledValue">
+                <input :data-cy="dataTestLabel + '-maximum-number-input'" type="number" class="m-0 px-0 col-4 bg-light text-white" :id="name + 'maximum-input'" @change="changeScaledValue($event.target.value, 'maximum')" :value="localData.maximum.scaledValue">
                 <DimensionUnit :data-cy="dataTestLabel + '-maximum-DimensionUnit-input'" :min="min" :max="max" v-if="unit != null" :unit="unit" v-model="localData.maximum.multiplier" class="m-0 ms-1 px-0 col-4" @update:modelValue="changeMultiplier('maximum')"/>
             </div>
             <div v-if="localData.maximum.scaledValue == null" class="col-md-3 row m-0 px-xl-3 px-md-0">

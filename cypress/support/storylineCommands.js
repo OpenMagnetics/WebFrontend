@@ -1,19 +1,19 @@
 import { hexToRgb, colors } from '/cypress/support/utils.js'
 
 const storylineAdventures = {
-    designRequirements: 'storyline-design-requirements-button',
-    operationPoints: 'storyline-operation-points-button',
-    coreSelection: 'storyline-core-selection-button',
-    wireSelection: 'storyline-wire-selection-button',
-    coilSelection: 'storyline-coil-selection-button',
-    magneticFinalizer: 'storyline-magnetic-finalizer-button',
+    designRequirements: 'DesignRequirements',
+    operatingPoints: 'OperatingPoints',
+    coreAdviser: 'CoreAdviser',
+    wireAdviser: 'WireAdviser',
+    coilAdviser: 'CoilAdviser',
+    magneticFinalizer: 'MagneticFinalizer',
 }
 
 Cypress.Commands.add('checkStorylineAdventureVisible', (adventure) => {
-    cy.get(`[data-cy=${storylineAdventures[adventure]}]`).should('be.visible').should('have.css', 'background-color', hexToRgb(colors.primary)).should('be.disabled')
+    cy.get(`[data-cy=storyline-${storylineAdventures[adventure]}-button]`).should('be.visible').should('have.css', 'background-color', hexToRgb(colors.primary))
     for (var [key, value] of Object.entries(storylineAdventures)) {
         if (key != adventure) {
-            cy.get(`[data-cy=${value}]`).should('be.visible').should('have.css', 'background-color', hexToRgb(colors.dark)).should('be.disabled')
+            cy.get(`[data-cy=storyline-${value}-button]`).should('be.visible').should('have.css', 'background-color', hexToRgb(colors.dark))
         }
     }
 })

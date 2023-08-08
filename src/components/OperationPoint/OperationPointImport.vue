@@ -74,7 +74,7 @@ export default {
                 this.$emit("current-type-change", this.importedCurrentWaveform["ancillaryLabel"])
             }
             else {
-                currentType = Utils.tryGuessType(this.currentDataPoints, this.importedFrequency)
+                currentType = Utils.tryGuessTypeOld(this.currentDataPoints, this.importedFrequency)
                 this.$emit("current-type-change", currentType)
             }
             if (currentType != this.currentCurrentType) {
