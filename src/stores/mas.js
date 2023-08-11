@@ -9,21 +9,18 @@ export const useMasStore = defineStore("mas", () => {
 
     function updatedTurnsRatios() {
     }
-    function updatedInputExcitationSwitchingFrequency(operationPoint) {
+    function updatedInputExcitationWaveformUpdatedFromGraph(signalDescriptor) {
     }
-    function updatedInputExcitationDutyCycle(operationPoint) {
+    function updatedInputExcitationWaveformUpdatedFromProcessed(signalDescriptor) {
     }
-    function updatedInputExcitationPeakToPeak(operationPoint, windingIndex, signalDescriptor) {
-    }
-    function updatedInputExcitationOffset(operationPoint, windingIndex, signalDescriptor) {
+    function updatedInputExcitationProcessed(signalDescriptor) {
     }
     return {
         mas,
         updatedTurnsRatios,
-        updatedInputExcitationSwitchingFrequency,
-        updatedInputExcitationDutyCycle,
-        updatedInputExcitationPeakToPeak,
-        updatedInputExcitationOffset,
+        updatedInputExcitationWaveformUpdatedFromGraph,
+        updatedInputExcitationWaveformUpdatedFromProcessed,
+        updatedInputExcitationProcessed,
     }
 },
 {

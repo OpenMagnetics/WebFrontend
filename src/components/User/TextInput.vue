@@ -58,6 +58,7 @@ const {
             :name="name"
             :id="name"
             :type="type"
+            :autocomplete="type == 'password'? 'on' : ''"
             :value="inputValue"
             :placeholder="placeholder"
             @input="handleChange"

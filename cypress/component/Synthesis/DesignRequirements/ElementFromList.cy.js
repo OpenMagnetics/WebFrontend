@@ -1,4 +1,4 @@
-import ElementFromList from '/src/components/Synthesis/DesignRequirements/ElementFromList.vue'
+import ElementFromList from '/src/components/DataInput/ElementFromList.vue'
 import '/cypress/support/designRequirementsCommands'
 
 describe('ElementFromList.cy.js', () => {

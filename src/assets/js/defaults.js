@@ -118,15 +118,14 @@ export const defaultOperatingPointExcitation = {
                 0,
                 0.0000025,
                 0.00001
-            ],
-            "ancillaryLabel": "Triangular"
+            ]
         },
         "processed": {
             "dutyCycle" : 0.25,
             "peakToPeak" : 10,
             "offset" : 0,
-        },
-        "type": "Triangular"
+            "label": "Triangular"
+        }
     },
     "voltage": {
         "waveform": {
@@ -143,13 +142,14 @@ export const defaultOperatingPointExcitation = {
                 0.0000025,
                 0.00001,
                 0.00001
-            ],
-            "ancillaryLabel": "Rectangular"
+            ]
         },
         "processed": {
-            "dutyCycle" : 0.25
-        },
-        "type": "Rectangular"
+            "dutyCycle" : 0.25,
+            "peakToPeak" : 10,
+            "offset" : 0,
+            "label": "Rectangular"
+        }
     }
 }
 
@@ -166,8 +166,6 @@ export const minimumMaximumScalePerParameter = {
     "frequency": {"min": 1, "max": 1e9},
     "percentage": {"min": 0.0001, "max": 0.9999},
 }
-
-
 
 
 

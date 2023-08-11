@@ -1,9 +1,11 @@
 import '/cypress/support/designRequirementsCommands'
+import '/cypress/support/storylineCommands'
 
 describe('DesignRequirements', () => {
     beforeEach(() => {
         cy.viewport(1800, 1200)
         cy.visit('http://localhost:5173/magnetic_synthesis')
+        cy.selectStorylineAdventure('designRequirements')
     })
 
     it('enable and disable all requirements', () => {

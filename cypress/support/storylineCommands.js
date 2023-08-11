@@ -17,3 +17,8 @@ Cypress.Commands.add('checkStorylineAdventureVisible', (adventure) => {
         }
     }
 })
+
+
+Cypress.Commands.add('selectStorylineAdventure', (adventure) => {
+    cy.get(`[data-cy=storyline-${storylineAdventures[adventure]}-button]`).click()
+})

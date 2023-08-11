@@ -1,8 +1,8 @@
 <script setup>
 import { isNumber, toTitleCase, getMultiplier } from '/src/assets/js/utils.js'
-import DimensionWithTolerance from '/src/components/Synthesis/DesignRequirements/DimensionWithTolerance.vue'
-import ElementFromList from '/src/components/Synthesis/DesignRequirements/ElementFromList.vue'
-import SeveralElementsFromList from '/src/components/Synthesis/DesignRequirements/SeveralElementsFromList.vue'
+import DimensionWithTolerance from '/src/components/DataInput/DimensionWithTolerance.vue'
+import ElementFromList from '/src/components/DataInput/ElementFromList.vue'
+import SeveralElementsFromList from '/src/components/DataInput/SeveralElementsFromList.vue'
 import { minimumMaximumScalePerParameter} from '/src/assets/js/defaults.js'
 import { Cti, InsulationType, OvervoltageCategory, PollutionDegree, Standard } from '/src/assets/ts/MAS.ts'
 import * as Utils from '/src/assets/js/utils.js'
@@ -43,7 +43,7 @@ export default {
 <template>
     <div :data-cy="dataTestLabel + '-container'" class="container-flex">
         <div class="row">
-            <label :data-cy="dataTestLabel + '-title'" :for="name + '-text-input'" class="rounded-2 fs-5 ms-3 col-12">Insulation</label>
+            <label :data-cy="dataTestLabel + '-title'"  class="rounded-2 fs-5 ms-3 col-12">Insulation</label>
         </div>
         <div class="row ms-2">
             <DimensionWithTolerance :dataTestLabel="dataTestLabel + '-Altitude'" :allowNegative="true" :min="minimumMaximumScalePerParameter['altitude']['min']" :max="minimumMaximumScalePerParameter['altitude']['max']" :defaultValue="Utils.deepCopy(defaultValue['altitude'])" :halfSize="true" :name="'altitude'" :unit="'m'" v-model="modelValue['insulation']" class="col-6 border-end"/>

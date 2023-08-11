@@ -75,6 +75,7 @@ export default {
                 prevTool: "coilAdviser",
             },
         };
+        // var selectedTool = "designRequirements";
         var selectedTool = "operatingPoints";
 
         const canContinue = {

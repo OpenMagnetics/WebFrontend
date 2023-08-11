@@ -27,6 +27,10 @@ export function toDashCase(str) {
     return str.replace(/\s+/g, '-').toLowerCase();
 }
 
+export function isString(x) {
+    return Object.prototype.toString.call(x) === "[object String]"
+}
+
 export function roundWithDecimals(value, precision, trunc=false) {
     if (trunc)
         return Math.trunc(value / precision) * precision;

@@ -1,6 +1,6 @@
 <script setup>
 import { isNumber, toTitleCase, getMultiplier } from '/src/assets/js/utils.js'
-import DimensionUnit from '/src/components/Synthesis/DesignRequirements/DimensionUnit.vue'
+import DimensionUnit from '/src/components/DataInput/DimensionUnit.vue'
 import { tooltipsMagneticSynthesisDesignRequirements } from '/src/assets/js/texts.js'
 </script>
 <script>

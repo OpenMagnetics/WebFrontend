@@ -1,6 +1,6 @@
 <script setup>
 import { isNumber, toTitleCase, getMultiplier, removeTrailingZeroes } from '/src/assets/js/utils.js'
-import DimensionUnit from '/src/components/Synthesis/DesignRequirements/DimensionUnit.vue'
+import DimensionUnit from '/src/components/DataInput/DimensionUnit.vue'
 </script>
 <script>
 export default {
@@ -75,7 +75,18 @@ export default {
     },
     computed: {
     },
-    watch: { 
+    watch: {
+        modelValue(newValue, oldValue) {
+            if (newValue[this.name] != null)
+                this.update(newValue[this.name]);
+        },
+        'modelValue.dutyCycle'(newValue, oldValue) {
+            if (this.name == 'dutyCycle'){
+                if (newValue != null)
+                    if (newValue[this.name] != null)
+                        this.update(newValue);
+            }
+        },
     },
     mounted () {    
         this.shortenedName = this.shortenName();
@@ -86,7 +97,7 @@ export default {
                 return this.name
 
             var shortenName = toTitleCase(this.name);
-            if (this.$refs.container.clientWidth < 350) {
+            if (this.$refs.container.clientWidth < 400 && this.name.length > 10) {
                 var slice = 7;
                 if (this.$refs.container.clientWidth < 310)
                     slice = 6;
@@ -120,12 +131,26 @@ export default {
             return hasError;
         },
         update(actualValue) {
-            if (this.max != null)
-                if (actualValue > this.max)
-                    actualValue = this.max;
-            if (this.min != null)
-                if (actualValue < this.min)
-                    actualValue = this.min;
+            if (this.max != null) {
+                if (this.allowNegative){
+                    if (Math.abs(actualValue) > this.max)
+                        actualValue = this.max * Math.sign(actualValue);
+                }
+                else {
+                    if (actualValue > this.max)
+                        actualValue = this.max;
+                }
+            }
+            if (this.min != null) {
+                if (this.allowNegative) {
+                    if (Math.abs(actualValue) < this.min)
+                        actualValue = this.min * Math.sign(actualValue);
+                }
+                else{
+                    if (actualValue < this.min)
+                        actualValue = this.min;
+                }
+            }
 
             if (this.unit != null) {
                 const aux = getMultiplier(actualValue, 0.001);

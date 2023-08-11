@@ -1,4 +1,4 @@
-import Dimension from '/src/components/Synthesis/DesignRequirements/Dimension.vue'
+import Dimension from '/src/components/DataInput/Dimension.vue'
 import '/cypress/support/designRequirementsCommands'
 
 describe('Dimension.cy.js', () => {

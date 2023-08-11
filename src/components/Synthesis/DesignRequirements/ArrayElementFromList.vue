@@ -1,7 +1,7 @@
 <script setup>
 import { useMasStore } from '/src/stores/mas'
 import { isNumber, toTitleCase, getMultiplier } from '/src/assets/js/utils.js'
-import ElementFromList from '/src/components/Synthesis/DesignRequirements/ElementFromList.vue'
+import ElementFromList from '/src/components/DataInput/ElementFromList.vue'
 import { isolationSideOrdered } from '/src/assets/js/defaults.js'
 </script>
 
@@ -106,7 +106,7 @@ export default {
 <template>
     <div :data-cy="dataTestLabel + '-container'" class="container-flex border-bottom">
         <div class="row">
-            <label :data-cy="dataTestLabel + '-title'" v-if="!varText" class="rounded-2 fs-5 ms-3" :class="maximumNumberElements != null? 'col-sm-6 col-md-3' : 'col-12'">{{toTitleCase(name)}}</label>
+            <label :data-cy="dataTestLabel + '-title'"  class="rounded-2 fs-5 ms-3" :class="maximumNumberElements != null? 'col-sm-6 col-md-3' : 'col-12'">{{toTitleCase(name)}}</label>
         </div>
         <div class="row">
             <ElementFromList :data-cy="dataTestLabel + '-' + (requirementIndex - 1) + '-container'" :dataTestLabel="dataTestLabel + '-' + (requirementIndex - 1)" :min="min" :max="max" v-for="requirementIndex in masStore.mas.inputs.designRequirements[name].length" :altText="masStore.mas.magnetic.coil.functionalDescription[requirementIndex - 1].name" :defaultValue="defaultValue" class="py-2 col-3" :name="requirementIndex - 1" v-model="masStore.mas.inputs.designRequirements[name]" :options="options" :replaceTitle="isolationSideOrdered[requirementIndex - 1]" @changeText="changeText($event, requirementIndex - 1)" />

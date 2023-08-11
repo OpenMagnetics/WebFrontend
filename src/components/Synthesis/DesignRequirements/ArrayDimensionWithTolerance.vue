@@ -1,7 +1,7 @@
 <script setup>
 import { useMasStore } from '/src/stores/mas'
 import { isNumber, toTitleCase, getMultiplier } from '/src/assets/js/utils.js'
-import DimensionWithTolerance from '/src/components/Synthesis/DesignRequirements/DimensionWithTolerance.vue'
+import DimensionWithTolerance from '/src/components/DataInput/DimensionWithTolerance.vue'
 import { isolationSideOrdered } from '/src/assets/js/defaults.js'
 </script>
 

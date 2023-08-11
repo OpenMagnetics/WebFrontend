@@ -1,4 +1,4 @@
-import DimensionUnit from '/src/components/Synthesis/DesignRequirements/DimensionUnit.vue'
+import DimensionUnit from '/src/components/DataInput/DimensionUnit.vue'
 
 const dimensionUnitValuesAll = [
     "pAlf",

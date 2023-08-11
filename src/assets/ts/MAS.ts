@@ -475,13 +475,15 @@ export interface Processed {
  * Label of the waveform, if applicable. Used for common waveforms
  */
 export enum WaveformLabel {
-    Custom = "custom",
-    Flyback = "flyback",
-    PhaseShiftedFullBridge = "phase-shifted full bridge",
-    Sinusoidal = "sinusoidal",
-    Square = "square",
-    SquareWithDeadTime = "square with dead time",
-    Triangular = "triangular",
+    Custom = "Custom",
+    Flyback = "Flyback",
+    PhaseShiftedFullBridge = "Phase-Shifted Full Bridge",
+    Sinusoidal = "Sinusoidal",
+    Rectangular = "Rectangular",
+    BipolarRectangular = "Bipolar Rectangular",
+    Triangular = "Triangular",
+    UnipolarRectangular = "Unipolar Rectangular",
+    UnipolarTriangular = "Unipolar Triangular",
 }
 
 /**

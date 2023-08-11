@@ -15,7 +15,6 @@ export default {
             for (const [key, value] of Object.entries(response.data)) {
                 engineConstants[key] = Number(value)
             }
-            console.log(engineConstants)
         })
         .catch(error => {
                 console.error("Could not read constants from MKF")

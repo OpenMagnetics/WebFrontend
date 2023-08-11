@@ -1,4 +1,4 @@
-import DimensionWithTolerance from '/src/components/Synthesis/DesignRequirements/DimensionWithTolerance.vue'
+import DimensionWithTolerance from '/src/components/DataInput/DimensionWithTolerance.vue'
 import '/cypress/support/designRequirementsCommands'
 
 describe('DimensionWithTolerance.cy.js', () => {

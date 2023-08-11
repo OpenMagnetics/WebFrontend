@@ -1,6 +1,6 @@
 <script setup>
-import { isNumber, toTitleCase, getMultiplier } from '/src/assets/js/utils.js'
-import DimensionUnit from '/src/components/Synthesis/DesignRequirements/DimensionUnit.vue'
+import { isNumber, toTitleCase, getMultiplier, isString } from '/src/assets/js/utils.js'
+import DimensionUnit from '/src/components/DataInput/DimensionUnit.vue'
 import { tooltipsMagneticSynthesisDesignRequirements } from '/src/assets/js/texts.js'
 
 </script>
@@ -81,10 +81,10 @@ export default {
             <label :data-cy="dataTestLabel + '-title'" v-if="altText == null && !titleSameRow" class="rounded-2 fs-5 ms-3">{{replaceTitle == null? toTitleCase(name) : toTitleCase(replaceTitle)}}</label>
         </div>
         <div class="row">
-            <label :data-cy="dataTestLabel + '-same-row-label'" v-if="titleSameRow" class="rounded-2 fs-5 ms-3 col-7">{{replaceTitle == null? toTitleCase(name) : toTitleCase(replaceTitle)}}</label>
+            <label :data-cy="dataTestLabel + '-same-row-label'" v-if="titleSameRow" class="rounded-2 fs-5 col-4">{{replaceTitle == null? toTitleCase(name) : toTitleCase(replaceTitle)}}</label>
             <div  v-if="!titleSameRow" class=" col-sm-0 col-md-2">
             </div>
-            <select :data-cy="dataTestLabel + '-select'"  class="form-select bg-light text-white m-0 col-9 mt-1"  @change="changeOption" style="width:auto; max-height: 3em;" :value="modelValue[name]" >
+            <select :data-cy="dataTestLabel + '-select'"  class="form-select bg-light text-white m-0 col-8 mt-1"  @change="changeOption" style="width:auto; max-height: 3em;" :value="modelValue[name]" >
                 <option v-for="[key, value] in Object.entries(options)">
                     {{value}}
                 </option>
