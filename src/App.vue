@@ -3,22 +3,12 @@
 </template>
 
 <script setup>
-import { engineConstants } from '/src/assets/js/defaults.js'
 </script>
 
 <script>
 export default {
     name: "App",
     created() {
-        return this.$axios.post(import.meta.env.VITE_API_ENDPOINT + '/get_constants', {})
-        .then(response => {
-            for (const [key, value] of Object.entries(response.data)) {
-                engineConstants[key] = Number(value)
-            }
-        })
-        .catch(error => {
-                console.error("Could not read constants from MKF")
-        });
     }
 };
 </script>

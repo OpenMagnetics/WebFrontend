@@ -12,7 +12,10 @@ import axios from "axios";
 import { useUserStore } from '/src/stores/user'
 import { useDataCacheStore } from '/src/stores/dataCache'
 import VueResizeText from "vue3-resize-text"
- 
+import Module from '/src/assets/js/libMKF.wasm.js';
+import { removeEmpty } from '/src/assets/js/utils.js';
+
+
 const axiosInstance = axios.create()
 
 const pinia = createPinia()
@@ -26,7 +29,6 @@ app.directive("tooltip", tooltip);
 app.config.globalProperties.$axios = axiosInstance
 app.config.globalProperties.$userStore = useUserStore()
 app.config.globalProperties.$dataCacheStore = null
-
 app.mount("#app");
 
 
@@ -43,6 +45,19 @@ router.beforeEach((to, from, next) => {
 
 
     if (loadData) {
+        
+        app.config.globalProperties.$mkf = {
+            ready: new Promise(resolve => {
+                Module({
+                    onRuntimeInitialized () {
+                        app.config.globalProperties.$mkf = Object.assign(this, {
+                            ready: Promise.resolve()
+                        });
+                        resolve();
+                    }
+                });
+            })
+        };
 
     	if (app.config.globalProperties.$dataCacheStore == null) {
     		app.config.globalProperties.$dataCacheStore = useDataCacheStore()
@@ -64,37 +79,30 @@ router.beforeEach((to, from, next) => {
         if (app.config.globalProperties.$dataCacheStore.timestamp == null || (app.config.globalProperties.$dataCacheStore.timestamp + app.config.globalProperties.$dataCacheStore.ttlInMilliseconds < Date.now())) {
             app.config.globalProperties.$dataCacheStore.timestamp = Date.now()
 
-            const urlMaterials = import.meta.env.VITE_API_ENDPOINT + '/core_get_commercial_materials'
-            const core = app.config.globalProperties.$userStore.getGlobalCore
+            const url = import.meta.env.VITE_API_ENDPOINT + '/read_mas_database'
             setTimeout(() => {app.config.globalProperties.$userStore.armDeadManSwitch()}, 1000);
-            
-            axiosInstance.post(urlMaterials, {})
+            axiosInstance.post(url, {})
             .then(response => {
-                app.config.globalProperties.$dataCacheStore.commercialMaterials = response.data["commercial_materials"]
-                app.config.globalProperties.$dataCacheStore.commercialMaterialsLoaded()
-                setTimeout(() => app.config.globalProperties.$userStore.disarmDeadManSwitch(), 1000);
-            })
-            .catch(error => {
-                console.error("Error loading material library")
-                console.error(error.data)
-            });
+                var data = response.data;
+                data = removeEmpty(data);
 
-            const urlShapes = import.meta.env.VITE_API_ENDPOINT + '/core_get_commercial_data'
-            axiosInstance.post(urlShapes, {})
-            .then(response => {
-                app.config.globalProperties.$dataCacheStore.commercialCores = response.data["commercial_cores"]
-                app.config.globalProperties.$dataCacheStore.commercialShapes = []
-                response.data["commercial_cores"].forEach((item) => {
-                    app.config.globalProperties.$dataCacheStore.commercialShapes.push(item['functionalDescription']['shape'])
-                })
-                app.config.globalProperties.$dataCacheStore.commercialShapesLoaded()
+                console.log("data")
+                console.log("data")
+                console.log("data")
+                console.log("data")
+                console.log("data")
+                console.log("data")
+                console.log(data)
+
+                app.config.globalProperties.$dataCacheStore.masData = data;
+                app.config.globalProperties.$dataCacheStore.commercialMaterialsLoaded();
+                app.config.globalProperties.$dataCacheStore.commercialShapesLoaded();
                 setTimeout(() => app.config.globalProperties.$userStore.disarmDeadManSwitch(), 1000);
             })
             .catch(error => {
                 console.error("Error loading shape library")
                 console.error(error.data)
             });
-
         }
     }
 

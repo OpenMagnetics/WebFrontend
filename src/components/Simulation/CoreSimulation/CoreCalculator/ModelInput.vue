@@ -95,21 +95,19 @@ export default {
     },
     methods: {
         getModels() {
-            var url = import.meta.env.VITE_API_ENDPOINT + '/get_gap_reluctance_models'
+            this.$mkf.ready.then(_ => {
+                this.tryingToSend = false
+                var aux = JSON.parse(this.$mkf.get_gap_reluctance_model_information());
+                this.gapReluctanceModelNames = Object.keys(aux["information"]);
+                this.gapReluctanceModelDescriptions = aux["information"];
+                this.gapReluctanceModelErrors = aux["errors"];
+                this.gapReluctanceModelInternalLink = aux["internal_links"];
+                this.gapReluctanceModelExternalLink = aux["external_links"];
 
-            this.$axios.post(url, {})
-            .then(response => {
-                this.gapReluctanceModelNames = Object.keys(response.data["information"]);
-                this.gapReluctanceModelDescriptions = response.data["information"];
-                this.gapReluctanceModelErrors = response.data["errors"];
-                this.gapReluctanceModelInternalLink = response.data["internal_links"];
-                this.gapReluctanceModelExternalLink = response.data["external_links"];
-            })
-            .catch(error => {
-                console.error(error.data)
+            }).catch(error => { 
+                this.tryingToSend = false
+                console.error(error)
             });
-
-            url = import.meta.env.VITE_API_ENDPOINT + '/get_core_losses_models'
 
             var materialSelected;
             if (typeof(this.$userStore.globalSimulation['magnetic']['core']['functionalDescription']['material']) == 'string') {
@@ -119,39 +117,37 @@ export default {
                 materialSelected = this.$userStore.globalSimulation['magnetic']['core']['functionalDescription']['material']['name'];
             }
 
-            this.$axios.post(url, {materialName: materialSelected })
-            .then(response => {
-                this.tryingToSend = false
-                this.coreLossesModelNames = response.data["available_models"];
-                this.coreLossesModelDescriptions = response.data["information"];
-                this.coreLossesModelErrors = response.data["errors"];
-                this.coreLossesModelInternalLink = response.data["internal_links"];
-                this.coreLossesModelExternalLink = response.data["external_links"];
-
+            this.$mkf.ready.then(_ => {
+                console.log(materialSelected)
+                var aux = JSON.parse(this.$mkf.get_core_losses_model_information(materialSelected, JSON.stringify(this.$dataCacheStore.masData['coreMaterials'])));
+                console.log(aux)
+                this.coreLossesModelNames = aux["available_models"];
+                this.coreLossesModelDescriptions = aux["information"];
+                this.coreLossesModelErrors = aux["errors"];
+                this.coreLossesModelInternalLink = aux["internal_links"];
+                this.coreLossesModelExternalLink = aux["external_links"];
                 if (!this.coreLossesModelNames.includes(this.coreLossesModelSelected)) {
                     this.coreLossesModelSelected = this.coreLossesModelNames[0]
                     this.$userStore.setSelectedModels('coreLosses', this.coreLossesModelSelected)
                 }
                 this.simulationStore.calculateCoreLosses()
-            })
-            .catch(error => {
-                this.tryingToSend = false
-                console.error(error.data)
+
+            }).catch(error => { 
+                console.error(error)
             });
 
-            url = import.meta.env.VITE_API_ENDPOINT + '/get_core_temperature_models'
-            this.$axios.post(url, {})
-            .then(response => {
+            this.$mkf.ready.then(_ => {
                 this.tryingToSend = false
-                this.coreTemperatureModelNames = Object.keys(response.data["information"]);
-                this.coreTemperatureModelDescriptions = response.data["information"];
-                this.coreTemperatureModelErrors = response.data["errors"];
-                this.coreTemperatureModelInternalLink = response.data["internal_links"];
-                this.coreTemperatureModelExternalLink = response.data["external_links"];
-            })
-            .catch(error => {
+                var aux = JSON.parse(this.$mkf.get_core_temperature_model_information());
+                this.coreTemperatureModelNames = Object.keys(aux["information"]);
+                this.coreTemperatureModelDescriptions = aux["information"];
+                this.coreTemperatureModelErrors = aux["errors"];
+                this.coreTemperatureModelInternalLink = aux["internal_links"];
+                this.coreTemperatureModelExternalLink = aux["external_links"];
+
+            }).catch(error => { 
                 this.tryingToSend = false
-                console.error(error.data)
+                console.error(error)
             });
         },
         tryToSend() {

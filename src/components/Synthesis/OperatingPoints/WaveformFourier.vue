@@ -2,8 +2,7 @@
 import { Chart, registerables } from 'chart.js'
 import { formatCurrent, removeTrailingZeroes, formatFrequency, formatVoltage } from '/src/assets/js/utils.js'
 import { defaultSamplingNumberPoints, defaultMaximumNumberHarmonicsShown } from '/src/assets/js/defaults.js'
-import * as Everpolate from 'everpolate'
-import * as FFT from 'fft.js'
+import Module from '/src/assets/js/libMKF.wasm.js';
 </script>
 
 <script>
@@ -11,70 +10,6 @@ import * as FFT from 'fft.js'
 var options = {};
 var chart = null;
 var harmonicsFrequencies = [];
-
-// export default {
-//     data() {
-//         return {
-//         }
-//     },
-//     mounted() {
-
-//     },
-//     created() {
-//         currentStore.$subscribe((mutation, state) => {
-//             const aux = JSON.parse(JSON.stringify(currentStore.getDataPoints.value))
-            
-//             const {sampledTime,
-//                    sampledWaveform,
-//                    harmonicsAmplitudes,
-//                    harmonicsFrequencies} = Utils.fourierTransform(aux,
-//                                                                   commonStore.getSwitchingFrequency.value,
-//                                                                   Defaults.defaultSamplingNumberPoints)
-
-//             if (currentSampledSignal.slice(0, currentSampledSignal.length / 2).reduce((a, b) => a + b, 0) != sampledWaveform.slice(0, sampledWaveform.length / 2).reduce((a, b) => a + b, 0) || currentSampledSignal[1] != sampledWaveform[1] || currentSampledSignal.length == 0) {
-//                 currentSampledSignal = sampledWaveform
-//                 commonStore.setHarmonicsFrequencies(harmonicsFrequencies)
-//                 currentStore.setHarmonicsAmplitudes(harmonicsAmplitudes)
-//                 commonStore.setSampledTimePoints(sampledTime)
-//                 currentStore.setSampledDataPoints(sampledWaveform)
-//             }
-//             chart.data.datasets[0].data = harmonicsAmplitudes.slice(0, Defaults.defaultMaximumNumberHarmonicsShown)
-//             chart.data.labels = harmonicsFrequencies.slice(0, Defaults.defaultMaximumNumberHarmonicsShown)
-//             chart.update()
-//         })
-//         voltageStore.$subscribe((mutation, state) => {
-//             const aux = JSON.parse(JSON.stringify(voltageStore.getDataPoints.value))
-//             const {sampledTime,
-//                    sampledWaveform,
-//                    harmonicsAmplitudes,
-//                    harmonicsFrequencies} = Utils.fourierTransform(aux,
-//                                                                   commonStore.getSwitchingFrequency.value,
-//                                                                   Defaults.defaultSamplingNumberPoints)
-//             if (voltageSampledSignal.slice(0, voltageSampledSignal.length / 2).reduce((a, b) => a + b, 0) != sampledWaveform.slice(0, sampledWaveform.length / 2).reduce((a, b) => a + b, 0) || voltageSampledSignal[1] != sampledWaveform[1] || voltageSampledSignal.length == 0) {
-//                 voltageSampledSignal = sampledWaveform
-//                 commonStore.setHarmonicsFrequencies(harmonicsFrequencies)
-//                 voltageStore.setHarmonicsAmplitudes(harmonicsAmplitudes)
-//                 commonStore.setSampledTimePoints(sampledTime)
-//                 voltageStore.setSampledDataPoints(sampledWaveform)
-//             }
-//             chart.data.datasets[1].data = harmonicsAmplitudes.slice(0, Defaults.defaultMaximumNumberHarmonicsShown)
-//             chart.data.labels = harmonicsFrequencies.slice(0, Defaults.defaultMaximumNumberHarmonicsShown)
-//             chart.update()
-//         })
-//         commonStore.$onAction((action) => {
-//             if (action.name == "setSwitchingFrequency") {
-//                 const switchingFrequency = action.args[0]
-//                 harmonicsFrequencies = []
-//                 for(var i = 0; i < Defaults.defaultSamplingNumberPoints / 2; i++) {
-//                     harmonicsFrequencies.push(switchingFrequency * i)
-//                 }
-//                 chart.update()
-//             }
-//         })
-//     },
-//     methods: {
-//     }
-// }
 
 export default {
     props: {
@@ -251,6 +186,7 @@ export default {
             },
         }
 
+
         Chart.register(...registerables)
         this.createChart('chartFourier', options)
 
@@ -269,52 +205,14 @@ export default {
             return datasetIndex
         },
         runFFT(signalDescriptor){
-            const {sampledTime,
-                   sampledWaveform,
-                   harmonicsAmplitudes,
-                   harmonicsFrequencies} = this.fourierTransform(this.modelValue[signalDescriptor].waveform,
-                                                              this.modelValue.frequency,
-                                                              defaultSamplingNumberPoints)
-            // this.harmonicsFrequencies = harmonicsFrequencies;
-            this.modelValue[signalDescriptor].harmonics = {};
-            this.modelValue[signalDescriptor].harmonics.amplitudes = harmonicsAmplitudes;
-            this.modelValue[signalDescriptor].harmonics.frequencies = harmonicsFrequencies;
-            if (chart != null) {
-                chart.data.datasets[this.getDatasetIndex(signalDescriptor)].data = harmonicsAmplitudes.slice(0, defaultMaximumNumberHarmonicsShown);
-                chart.data.labels = harmonicsFrequencies.slice(0, defaultMaximumNumberHarmonicsShown);
-                chart.update();
-            }
-        },
-        sampleWaveform(waveform, frequency, samplingNumberPoints) {
-            const sampledTime = [];
-            for(var i = 0; i < samplingNumberPoints; i++) {
-                sampledTime.push(i / frequency / samplingNumberPoints);
-            }
-            var linear = Everpolate.linear;
-            var sampledWaveform = linear(sampledTime, waveform.time, waveform.data);
-
-            return {sampledTime, sampledWaveform};
-        },
-        fourierTransform(waveform, frequency, samplingNumberPoints) {
-            const {sampledTime, sampledWaveform} = this.sampleWaveform(waveform, frequency, samplingNumberPoints)
-
-            // Fourier Transform
-            const fft = new FFT(samplingNumberPoints);
-            const fourier = fft.createComplexArray();
-            fft.realTransform(fourier, sampledWaveform);            
-            fft.completeSpectrum(fourier);
-
-            // Harmonic extraction
-            const harmonicsAmplitudes = []
-            const harmonicsFrequencies = []
-            harmonicsAmplitudes.push(Math.sqrt(Math.pow(fourier[0], 2) + Math.pow(fourier[0 + 1], 2)) / samplingNumberPoints)
-            for(var i = 2; i < fourier.length / 2; i+=2) {
-                harmonicsAmplitudes.push(2 * Math.sqrt(Math.pow(fourier[i], 2) + Math.pow(fourier[i + 1], 2)) / samplingNumberPoints)
-            }
-            for(var i = 0; i < samplingNumberPoints / 2; i++) {
-                harmonicsFrequencies.push(frequency * i)
-            }
-            return {sampledTime, sampledWaveform, harmonicsAmplitudes, harmonicsFrequencies}
+            this.$mkf.ready.then(_ => {
+                this.modelValue[signalDescriptor].harmonics = JSON.parse(this.$mkf.calculate_harmonics(JSON.stringify(this.modelValue[signalDescriptor].waveform), this.modelValue.frequency));
+                if (chart != null) {
+                    chart.data.datasets[this.getDatasetIndex(signalDescriptor)].data = this.modelValue[signalDescriptor].harmonics.amplitudes.slice(0, defaultMaximumNumberHarmonicsShown);
+                    chart.data.labels = this.modelValue[signalDescriptor].harmonics.frequencies.slice(0, defaultMaximumNumberHarmonicsShown);
+                    chart.update();
+                }
+            });
         },
         createChart(chartId, options) {
             const ctx = document.getElementById(chartId)

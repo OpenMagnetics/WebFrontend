@@ -24,7 +24,7 @@ export default {
         var gapLength = aux['gapLength']
         var numberGaps = aux['numberGaps']
         const magnetizingInductanceSelected = this.$userStore.globalSimulation['inputs']['designRequirements']['magnetizingInductance']['nominal'] * 1000000;
-        const numberTurnsSelected = this.$userStore.globalSimulation['magnetic']['winding']['functionalDescription'][0]['numberTurns']
+        const numberTurnsSelected = this.$userStore.globalSimulation['magnetic']['coil']['functionalDescription'][0]['numberTurns']
         const dataCacheStore = useDataCacheStore()
         const simulationStore = useSimulationStore();
         return {
@@ -58,7 +58,7 @@ export default {
                     this.numberGaps = aux['numberGaps']
                     this.magnetizingInductanceSelected = this.$userStore.globalSimulation['inputs']['designRequirements']['magnetizingInductance']['nominal'] * 1000000;
                     this.magnetizingInductanceSelected = Number(Utils.removeTrailingZeroes(this.magnetizingInductanceSelected, 2))
-                    this.numberTurnsSelected = this.$userStore.globalSimulation['magnetic']['winding']['functionalDescription'][0]['numberTurns']
+                    this.numberTurnsSelected = this.$userStore.globalSimulation['magnetic']['coil']['functionalDescription'][0]['numberTurns']
                     this.recentChange = true
                     this.tryToSend()
                     this.simulationStore.calculateCoreLosses()
@@ -74,26 +74,37 @@ export default {
             this.numberGaps = aux['numberGaps']
         },
         computeGapping() {
-            const url = import.meta.env.VITE_API_ENDPOINT + '/get_gapping_from_number_turns_and_inductance'
+            this.$mkf.ready.then(_ => {
+                var globalSimulation = Utils.deepCopy(this.$userStore.globalSimulation)
+                globalSimulation = Utils.cleanSimulation(globalSimulation, true, this.$userStore.simulationUseCurrentAsInput)
 
-            var globalSimulation = Utils.deepCopy(this.$userStore.globalSimulation)
-            globalSimulation = Utils.cleanSimulation(globalSimulation, true, this.$userStore.simulationUseCurrentAsInput)
+                var gappingTypeString = this.gapTypeSelected.toUpperCase();
+                if (gappingTypeString == "UNGAPPED") {
+                    gappingTypeString = "RESIDUAL"; // TODO hardcoded
+                }
+                const modelsData = {gapReluctance: this.$userStore.selectedModels['gapReluctance'].toUpperCase().replace(" ", "_")};
+                var coreData = globalSimulation['magnetic']['core'];
+                const coilData = globalSimulation['magnetic']['coil'];
+                const inputsData = globalSimulation['inputs'];
 
-            const data = {}
-            data['simulation'] = globalSimulation
-            data['gappingType'] = this.gapTypeSelected.toUpperCase()
-            data['models'] = {gapReluctance: this.$userStore.selectedModels['gapReluctance'].toUpperCase().replace(" ", "_")}
-            this.$axios.post(url, data)
-            .then(response => {
+                console.log(coreData);
+                console.log(gappingTypeString);
+                var coreData = JSON.parse(this.$mkf.calculate_gapping_from_number_turns_and_inductance(JSON.stringify(coreData),
+                                                                                                      JSON.stringify(coilData),
+                                                                                                      JSON.stringify(inputsData),
+                                                                                                      gappingTypeString,
+                                                                                                      4,
+                                                                                                      JSON.stringify(modelsData),
+                                                                                                      JSON.stringify(this.$dataCacheStore.masData['coreMaterials'])));
                 this.computing = false
-                this.formatGapping(response.data)
-                this.$userStore.setGlobalSimulationCoreGapping(response.data['functionalDescription']['gapping'])
+                this.formatGapping(coreData)
+                this.$userStore.setGlobalSimulationCoreGapping(coreData['functionalDescription']['gapping'])
 
             })
             .catch(error => {
                 this.computing = false
                 console.error("Error getting gapping")
-                console.error(error.data)
+                console.error(error)
             });
         },
         tryToSend() {
@@ -116,7 +127,7 @@ export default {
                         this.tryingToSend = false
                     }
                 }
-                , 500);
+                , 5);
             }
         },
         onInductanceUpdate(name, newValue, oldValue) {
@@ -136,7 +147,7 @@ export default {
         onNumberTurnsUpdate(name, newValue, oldValue) {
             if (newValue != oldValue && newValue) {
                 this.numberTurnsSelected = newValue
-                this.$userStore.globalSimulation['magnetic']['winding']['functionalDescription'][0]['numberTurns'] = newValue
+                this.$userStore.globalSimulation['magnetic']['coil']['functionalDescription'][0]['numberTurns'] = newValue
                 this.recentChange = true
                 this.tryToSend()
                 this.simulationStore.calculateCoreLosses()
@@ -195,11 +206,9 @@ export default {
             <label v-tooltip="'Type of gap. Go to Gaping Artisan for advanced customization.'" class="rounded-2 fs-5 text-primary col-5 mt-1 text-nowrap">Gap type:</label>
             <Field data-cy="SimulationCoreCalculatorGappingFromNumberTurnsAndInductance-gap-type-select-input" name="quickGapTypeField" ref="quickGapTypeFieldRef" as="select" :class="{'is-invalid': errors.quickGapTypeField }" @change="onGapTypeChange" class= "rounded-2 bg-light text-white col-5 mt-2" v-model="gapTypeSelected" >
                 <option data-cy="SimulationCoreCalculatorGappingFromNumberTurnsAndInductance-gap-type-NA-option-input" disabled value="">Please select one</option>
-                <option data-cy="SimulationCoreCalculatorGappingFromNumberTurnsAndInductance-gap-type-ungapped-option-input" value="Ungapped">Ungapped</option>
                 <option data-cy="SimulationCoreCalculatorGappingFromNumberTurnsAndInductance-gap-type-grinded-option-input" value="Grinded">Grinded</option>
                 <option data-cy="SimulationCoreCalculatorGappingFromNumberTurnsAndInductance-gap-type-spacer-option-input" value="Spacer">Spacer</option>
                 <option data-cy="SimulationCoreCalculatorGappingFromNumberTurnsAndInductance-gap-type-distributed-option-input" value="Distributed">Distributed</option>
-                <option data-cy="SimulationCoreCalculatorGappingFromNumberTurnsAndInductance-gap-type-custom-option-input" disabled value="Custom">Custom</option>
             </Field>
             <div class="invalid-feedback">{{errors.quickGapTypeField}}</div>
             <div class="border-top my-3"></div>

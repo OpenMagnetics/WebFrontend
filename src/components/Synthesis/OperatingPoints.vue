@@ -7,12 +7,27 @@ import WaveformInput from '/src/components/Synthesis/OperatingPoints/WaveformInp
 import WaveformInputCommon from '/src/components/Synthesis/OperatingPoints/WaveformInputCommon.vue'
 import WaveformOutput from '/src/components/Synthesis/OperatingPoints/WaveformOutput.vue'
 import WaveformCombinedOutput from '/src/components/Synthesis/OperatingPoints/WaveformCombinedOutput.vue'
-import { tryGuessType, roundWithDecimals } from '/src/assets/js/utils.js'
+import { tryGuessType, roundWithDecimals, deepCopy } from '/src/assets/js/utils.js'
 
 import { defaultOperatingPointExcitation, defaultPrecision, defaultSinusoidalNumberPoints } from '/src/assets/js/defaults.js'
 
 </script>
 <script>
+
+// import Module from '/src/assets/js/libMKF.wasm.js';
+// let instance = {
+//   ready: new Promise(resolve => {
+//     Module({
+//       onRuntimeInitialized () {
+//         instance = Object.assign(this, {
+//           ready: Promise.resolve()
+//         });
+//         resolve();
+//       }
+//     });
+//   })
+// };
+
 export default {
     props: {
         dataTestLabel: {
@@ -29,13 +44,21 @@ export default {
         console.log(masStore.mas.inputs)
 
         if (masStore.mas.inputs.operatingPoints.length == 0) {
-            masStore.mas.inputs.operatingPoints.push({excitationsPerWinding: [defaultOperatingPointExcitation]});
+            masStore.mas.inputs.operatingPoints.push(
+                {
+                    conditions: {ambientTemperature: 42},
+                    excitationsPerWinding: [defaultOperatingPointExcitation]
+                }
+            );
         }
+
+        var processedOperationPoint = "Mierda";
 
         return {
             masStore,
             currentOperatingPointIndex,
             currentWindingIndex,
+            processedOperationPoint,
         }
     },
     computed: {
@@ -181,6 +204,32 @@ export default {
                 this.convertFromProcessedToWaveform(operatingPointIndex, windingIndex, "current");
             }
         },
+        addNewOperatingPoint() {
+            var newOperatingPoint = deepCopy(this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex]);
+            this.masStore.mas.inputs.operatingPoints.push(newOperatingPoint);
+        },
+        removePoint(index) {
+            if (index < this.currentOperatingPointIndex) {
+                this.currentOperatingPointIndex -= 1;
+            }
+            this.masStore.mas.inputs.operatingPoints.splice(index, 1);
+        },
+        changeWinding(windingIndex) {
+            console.log(this.currentOperatingPointIndex)
+            console.log(this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex])
+
+            if (this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[windingIndex] == null) {
+                this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[windingIndex] = deepCopy(defaultOperatingPointExcitation);
+            }
+            var tempExcitation = this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[windingIndex];
+            this.currentWindingIndex = windingIndex;
+            this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[windingIndex] = tempExcitation;
+            // this.masStore.updatedInputExcitationWaveformUpdatedFromProcessed('current');
+            console.log("this.currentWindingIndex")
+            console.log(this.currentWindingIndex)
+            console.log(this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[windingIndex].current.waveform.data.length)
+            console.log(this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[windingIndex].current.processed.label)
+        },
     }
 }
 </script>
@@ -188,7 +237,25 @@ export default {
 <template>
     <div class="container">
         <div class="row">
-            <div class="col-sm-12 col-md-2 text-start border border-primary" style="max-width: 360px; min-height: 700px;">
+            <div class="col-sm-12 col-md-2 text-start border border-primary m-0 px-1">
+                <div class="col-12 row m-0 p-0 border-bottom pb-2" v-for="operationPoint, operationPointIndex in masStore.mas.inputs.operatingPoints">
+                    <label class="col-12 mt-2">Operating Point</label>
+                    <input type="text" class="m-0 px-0 col-12 bg-dark text-white" 
+                        v-model="masStore.mas.inputs.operatingPoints[operationPointIndex].name"
+                        placeholder="My operating point"/>
+                    <div v-if="currentOperatingPointIndex == operationPointIndex" class="col-12 row m-0 p-0" v-for="winding, windingIndex in masStore.mas.magnetic.coil.functionalDescription">
+                        <input class="rounded-2 fs-5 ms-3 bg-dark text-white col-6 p-0 mb-2 border-0" v-model="winding.name">
+                        <!-- <label class="col-12 mt-2">{{winding.name}} </label> -->
+                        <button class="btn btn-info fs-6 col-6 mt-2 pt-0" style="max-height: 1.7em">Reflect </button>
+                        <button class="btn btn-primary fs-6 col-6 mt-2 pt-0" @click="changeWinding(windingIndex)" style="max-height: 1.7em">Edit </button>
+                    </div>
+                    <div v-else class="col-12 row m-0 p-0">
+                        <button class="btn btn-danger fs-6 col-6 mt-2" @click="removePoint(operationPointIndex)">Remove </button>
+                        <button class="btn btn-primary fs-6 col-6 mt-2" @click="currentOperatingPointIndex = operationPointIndex">Select </button>
+                    </div>
+                </div>
+                {{processedOperationPoint}}
+                <button class="btn btn-info col-12 mt-2" @click="addNewOperatingPoint">Add New OP </button>
 
             </div>
             <div class="col-sm-12 col-md-10 text-start pe-0 ">
@@ -236,19 +303,29 @@ export default {
                             />
                         </div>
 
-                        <div class="col-lg-8 col-md-12">
-                            <WaveformGraph class="py-2" 
+                        <div class="col-lg-8 col-md-12 row m-0 p-0">
+                            <WaveformGraph class=" col-12 py-2" 
                                 :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex]"
                                 :dataTestLabel="'OperatingPoints-WaveformGraph'"
                                 @updatedWaveform="updatedWaveform"
                             />
-                            <WaveformFourier class="mt-3"
+                            <WaveformFourier class="col-12 mt-3"
                                 :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex]"
                                 :dataTestLabel="'OperatingPoints-WaveformGraph'"
                             />
-                        </div>
 
-                        <button class="btn btn-danger col-1" @click="masStore.mas.inputs.operatingPoints = [{excitationsPerWinding: [defaultOperatingPointExcitation]}] && $router.go();">Reset </button>
+                            <WaveformOutput class="col-lg-6 col-md-6 m-0 p-0"
+                                :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex]"
+                                :signalDescriptor="'current'"
+                            />
+                            <WaveformOutput class="col-lg-6 col-md-6 m-0 p-0"
+                                :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex]"
+                                :signalDescriptor="'voltage'"
+                            />
+                        </div>
+                                <!-- <WaveformCombinedOutput/> -->
+
+                        <button class="btn btn-danger col-1 mt-2" @click="masStore.mas.inputs.operatingPoints = [{excitationsPerWinding: [defaultOperatingPointExcitation]}] && $router.go();">Reset </button>
                     </div>
                 </div>
 

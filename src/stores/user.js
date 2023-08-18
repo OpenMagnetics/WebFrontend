@@ -185,21 +185,17 @@ export const useUserStore = defineStore("user", () => {
         }
     }
     function setGlobalSimulationCoreGapping(gapping) {
-        console.log("gapping")
-        console.log("gapping")
-        console.log("gapping")
-        console.log(gapping)
         this.globalSimulation['magnetic']['core']['functionalDescription']['gapping'] = gapping
     }
     function setGlobalSimulationCoreNumberStacks(numberStacks) {
         this.globalSimulation['magnetic']['core']['functionalDescription']['numberStacks'] = numberStacks
     }
     function setGlobalSimulationOperationPointByIndex(index, operationPoint) {
-        this.globalSimulation['inputs']['operationPoints'][index] = operationPoint
+        this.globalSimulation['inputs']['operatingPoints'][index] = operationPoint
     }
     function loadGlobalOperationPointIntoSimulation(index, operationPoint) {
-        this.globalSimulation['inputs']['operationPoints'][index]['excitationsPerWinding'][0] = Utils.deepCopy(operationPoint)
-        console.log(this.globalSimulation['inputs']['operationPoints'][0]['excitationsPerWinding'][0])
+        this.globalSimulation['inputs']['operatingPoints'][index]['excitationsPerWinding'][0] = Utils.deepCopy(operationPoint)
+        console.log(this.globalSimulation['inputs']['operatingPoints'][0]['excitationsPerWinding'][0])
         console.log(this.globalOperationPoint)
     }
     function setIdToDelete(idToDelete) {

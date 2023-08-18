@@ -69,9 +69,9 @@ export default {
         onLoad(name) {
             var dataToLoad = null
 
-            for (let i = 0; i < this.$dataCacheStore.commercialShapes.length; i++) {
-                if (this.$dataCacheStore.commercialShapes[i]["name"] == name){
-                    dataToLoad = this.$dataCacheStore.commercialShapes[i]
+            for (let i = 0; i < this.$dataCacheStore.masData['coreShapes'].length; i++) {
+                if (this.$dataCacheStore.masData['coreShapes'][i]["name"] == name){
+                    dataToLoad = this.$dataCacheStore.masData['coreShapes'][i]
                     break
                 } 
             }

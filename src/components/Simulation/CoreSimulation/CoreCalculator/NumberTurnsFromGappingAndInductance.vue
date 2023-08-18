@@ -25,7 +25,7 @@ export default {
         var gapLengthSelected = aux['gapLength']
         var numberGapsSelected = aux['numberGaps']
         const magnetizingInductanceSelected = this.$userStore.globalSimulation['inputs']['designRequirements']['magnetizingInductance']['nominal'] * 1000000;
-        const numberTurns = this.$userStore.globalSimulation['magnetic']['winding']['functionalDescription'][0]['numberTurns']
+        const numberTurns = this.$userStore.globalSimulation['magnetic']['coil']['functionalDescription'][0]['numberTurns']
         const dataCacheStore = useDataCacheStore()
         const simulationStore = useSimulationStore();
         return {
@@ -59,7 +59,7 @@ export default {
                     this.numberGapsSelected = aux['numberGaps']
                     this.magnetizingInductanceSelected = this.$userStore.globalSimulation['inputs']['designRequirements']['magnetizingInductance']['nominal'] * 1000000;
                     this.magnetizingInductanceSelected =  Number(Utils.removeTrailingZeroes(this.magnetizingInductanceSelected, 2))
-                    this.numberTurns = this.$userStore.globalSimulation['magnetic']['winding']['functionalDescription'][0]['numberTurns']
+                    this.numberTurns = this.$userStore.globalSimulation['magnetic']['coil']['functionalDescription'][0]['numberTurns']
                     this.recentChange = true
                     this.tryToSend()
                     this.simulationStore.calculateCoreLosses()
@@ -72,28 +72,30 @@ export default {
             this.numberTurns =  value
         },
         computeNumberTurns() {
-            this.simulationStore.calculateCoreLosses()
-            const url = import.meta.env.VITE_API_ENDPOINT + '/get_number_turns_from_gapping_and_inductance'
+            this.$mkf.ready.then(_ => {
+                var globalSimulation = Utils.deepCopy(this.$userStore.globalSimulation)
+                globalSimulation = Utils.cleanSimulation(globalSimulation, false, this.$userStore.simulationUseCurrentAsInput)
 
-            var globalSimulation = Utils.deepCopy(this.$userStore.globalSimulation)
-            globalSimulation = Utils.cleanSimulation(globalSimulation, false, this.$userStore.simulationUseCurrentAsInput)
+                if (typeof(globalSimulation['magnetic']['core']['functionalDescription']['material']) != 'string') {
+                    globalSimulation['magnetic']['core']['functionalDescription']['material'] = globalSimulation['magnetic']['core']['functionalDescription']['material']['name']
+                }
 
-            if (typeof(globalSimulation['magnetic']['core']['functionalDescription']['material']) != 'string') {
-                globalSimulation['magnetic']['core']['functionalDescription']['material'] = globalSimulation['magnetic']['core']['functionalDescription']['material']['name']
-            }
-            const data = {}
-            data['simulation'] = globalSimulation
-            data['models'] = {gapReluctance: this.$userStore.selectedModels['gapReluctance'].toUpperCase().replace(" ", "_")}
-            this.$axios.post(url, data)
-            .then(response => {
-                this.computing = false
-                this.formatNumberTurns(response.data)
-                this.$userStore.globalSimulation['magnetic']['winding']['functionalDescription'][0]['numberTurns'] = response.data
+                const modelsData = {gapReluctance: this.$userStore.selectedModels['gapReluctance'].toUpperCase().replace(" ", "_")};
+                var coreData = globalSimulation['magnetic']['core'];
+                const inputsData = globalSimulation['inputs'];
+                var numberTurns = JSON.parse(this.$mkf.calculate_number_turns_from_gapping_and_inductance(JSON.stringify(coreData),
+                                                                                                          JSON.stringify(inputsData),
+                                                                                                          JSON.stringify(modelsData),
+                                                                                                          JSON.stringify(this.$dataCacheStore.masData['coreMaterials'])));
+                this.computing = false;
+                this.formatNumberTurns(numberTurns);
+                this.$userStore.globalSimulation['magnetic']['coil']['functionalDescription'][0]['numberTurns'] = numberTurns;
+
             })
             .catch(error => {
                 this.computing = false
                 console.error("Error getting number of turns")
-                console.error(error.data)
+                console.error(error)
             });
         },
         tryToSend() {
@@ -116,7 +118,7 @@ export default {
                         this.tryingToSend = false
                     }
                 }
-                , 500);
+                , 5);
             }
         },
         loadGapParameters() {
@@ -142,7 +144,19 @@ export default {
                 this.$userStore.globalSimulation['magnetic']['core']['functionalDescription']['gapping'] = Defaults.defaultDistributedGapping
             }
             if (this.$userStore.globalSimulation['magnetic']['core']['processedDescription'] == null) {
-                Utils.getSimulationParameters(this.$userStore, () => {this.loadGapParameters();}, () => {})
+                this.$mkf.ready.then(_ => {
+                    const aux = Utils.deepCopy(this.$userStore.globalSimulation['magnetic']['core'])
+                    aux['geometricalDescription'] = null;
+                    aux['processedDescription'] = null;
+
+                    var core = JSON.parse(this.$mkf.calculate_core_data(JSON.stringify(aux), false));
+
+                    this.$userStore.globalSimulation['magnetic']['core'] = core;
+                    this.loadGapParameters();
+
+                }).catch(error => {
+                    console.error(error)
+                });
             }
             else {
                 this.loadGapParameters();

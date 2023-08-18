@@ -42,7 +42,7 @@ export default {
         console.log("OnCurrentAsInputChanged")
         console.log(currentAsInput)
 
-        const operationPoint = this.$userStore.globalSimulation['inputs']['operationPoints'][0]['excitationsPerWinding'][0]
+        const operationPoint = this.$userStore.globalSimulation['inputs']['operatingPoints'][0]['excitationsPerWinding'][0]
 
         if (operationPoint == null) {
             switchingFrequency = commonStore.getSwitchingFrequency.value
@@ -81,7 +81,7 @@ export default {
             console.log(event.target.value)
             console.log(this.currentAsInput)
             this.$userStore.setSimulationUseCurrentAsInput(this.currentAsInput)
-            const operationPoint = Utils.deepCopy(this.$userStore.globalSimulation['inputs']['operationPoints'][0]['excitationsPerWinding'][0])
+            const operationPoint = Utils.deepCopy(this.$userStore.globalSimulation['inputs']['operatingPoints'][0]['excitationsPerWinding'][0])
             console.log(operationPoint)
             var aux;
             if (this.$userStore.simulationUseCurrentAsInput == 1) {
@@ -150,7 +150,7 @@ export default {
                     time.push(item['x'])
                     data.push(item['y'])
                 })
-                const operationPoint = this.$userStore.globalSimulation['inputs']['operationPoints'][0]
+                const operationPoint = this.$userStore.globalSimulation['inputs']['operatingPoints'][0]
                 operationPoint['excitationsPerWinding'][0]['current']['type'] = currentStore.type
                 operationPoint['excitationsPerWinding'][0]['current']['waveform']['data'] = data
                 operationPoint['excitationsPerWinding'][0]['current']['waveform']['time'] = time
@@ -167,7 +167,7 @@ export default {
                     time.push(item['x'])
                     data.push(item['y'])
                 })
-                const operationPoint = this.$userStore.globalSimulation['inputs']['operationPoints'][0]
+                const operationPoint = this.$userStore.globalSimulation['inputs']['operatingPoints'][0]
                 operationPoint['excitationsPerWinding'][0]['voltage']['type'] = voltageStore.type
                 operationPoint['excitationsPerWinding'][0]['voltage']['waveform']['data'] = data
                 operationPoint['excitationsPerWinding'][0]['voltage']['waveform']['time'] = time
@@ -177,7 +177,7 @@ export default {
         })
 
         commonStore.$subscribe((mutation, state) => {
-            const operationPoint = this.$userStore.globalSimulation['inputs']['operationPoints'][0]
+            const operationPoint = this.$userStore.globalSimulation['inputs']['operatingPoints'][0]
             operationPoint['excitationsPerWinding'][0]['frequency'] = commonStore.switchingFrequency
             this.$userStore.setGlobalSimulationOperationPointByIndex(0, operationPoint)
             simulationStore.calculateInductance()

@@ -19,6 +19,10 @@ export default {
             type: Number,
             default: 1e+9
         },
+        readOnly:{
+            type: Boolean,
+            default: false
+        },
     },
     data() {
         const multipliersLabel = {
@@ -58,11 +62,16 @@ export default {
 
 
 <template>
-    <select class="form-select bg-light text-white m-0 px-1 text-center" :value="modelValue" @change="$emit('update:modelValue', Number($event.target.value))" style="width:auto;">
+    <select class="form-select bg-light text-white m-0 px-1 text-center unit-select" :value="modelValue" @change="$emit('update:modelValue', Number($event.target.value))" style="width:auto;" :disabled="readOnly">
         <option v-for="value, label in multipliersLabel" :value="value">
             {{label + unit}}
         </option>
     </select>
 </template>
 
+<style type="text/css">
+    .unit-select {
+        background-image: none;
+    }
+</style>
 

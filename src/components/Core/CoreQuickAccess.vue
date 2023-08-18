@@ -21,7 +21,7 @@ const schema = Yup.object().shape({
 export default {
     data() {
         var quickGapTypeSelected = "Grinded";
-        var quickGapLengthSelected = Defaults.engineConstants['minimumNonResidualGap'] * 1000;
+        var quickGapLengthSelected = 0;
         var quickShapeSelected = "ETD 39/20/13";
         var quickMaterialSelected = "3C97";
         const commercialShapesNames = [];
@@ -110,15 +110,20 @@ export default {
         },
     },
     methods: {
+        async loadResidualGap() {
+            await this.$mkf.ready.then(_ => {
+                this.quickGapLengthSelected = this.$mkf.get_constants().get('residualGap') * 1000;
+            });
+        },
         loadShapesNames() {
-            const shapeData = this.$dataCacheStore.commercialShapes
+            const shapeData = this.$dataCacheStore.masData['coreShapes']
             this.commercialShapesNames = []
             shapeData.forEach((item) => {
                 this.commercialShapesNames.push(item['name'])
             })
         },
         loadMaterialNames() {
-            const materialData = this.$dataCacheStore.commercialMaterials
+            const materialData = this.$dataCacheStore.masData['coreMaterials']
             this.commercialMaterialNames = []
             materialData.forEach((item) => {
                 this.commercialMaterialNames.push(item['name'])
@@ -135,7 +140,20 @@ export default {
                             this.tryToSend()
                         }
                         else {
-                            Utils.getCoreParameters(this.$userStore, () => {this.tryingToSend = false; this.coreStore.quickGappingChanged();}, () => {this.tryingToSend = false;})
+                            this.$mkf.ready.then(_ => {
+                                const aux = Utils.deepCopy(this.$userStore.globalCore);
+                                aux['geometricalDescription'] = null;
+                                aux['processedDescription'] = null;
+
+                                var core = JSON.parse(this.$mkf.calculate_core_data(JSON.stringify(aux), false));
+
+                                this.$userStore.globalCore = core;
+                                this.$userStore.setGlobalCore(core)
+                                this.tryingToSend = false;
+                                this.coreStore.quickGappingChanged();
+                            }).catch(error => { 
+                                this.tryingToSend = false;
+                            });
                         }
                     }
                 }
@@ -154,7 +172,7 @@ export default {
         onShapeChange(newValue) {
             var shapeDataSelected = {}
             console.log("On shape change")
-            this.$dataCacheStore.commercialShapes.forEach((item) => {
+            this.$dataCacheStore.masData['coreShapes'].forEach((item) => {
                 if (item['name'] == newValue) {
                     shapeDataSelected = Utils.deepCopy(item)
                 }
@@ -193,7 +211,7 @@ export default {
         },
         onMaterialChange (newValue) {
             var materialDataSelected = {}
-            this.$dataCacheStore.commercialMaterials.forEach((item) => {
+            this.$dataCacheStore.masData['coreMaterials'].forEach((item) => {
                 if (item['name'] == newValue) {
                     materialDataSelected = Utils.deepCopy(item)
                 }

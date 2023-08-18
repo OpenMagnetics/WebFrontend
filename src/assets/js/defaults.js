@@ -100,12 +100,12 @@ export const defaultDesignRequirements = {
     "market": "Industrial",
     "topology": "Buck Converter",
     "maximumWeight": 300,
-    "maximumDimensions": [null, 0.05, null],
+    "maximumDimensions": {"width": null, "height": 0.05, "depth": null},
     "terminalType": ["Flying Lead"]
 }
 
 export const defaultOperatingPointExcitation = {  
-    "name": "My Operation Point",
+    "name": "My Winding Excitation",
     "frequency": 100000,
     "current": {
         "waveform": {
@@ -236,7 +236,7 @@ export const defaultDistributedGapping = [
 ]
 
 export const defaultOperationPointExcitation = {  
-    "name": "My Operation Point",
+    "name": "My Operating Point",
     "frequency": 100000,
     "current": {
         "waveform": {
@@ -308,21 +308,22 @@ export const defaultCore = {
     "processedDescription": null,
 }
 
-export const defaultOperationConditions = {
+export const defaultOperatingConditions = {
     "ambientTemperature": 25,
 }
 
-export const defaultOperationPoint = {
-    "conditions": defaultOperationConditions,
+export const defaultOperatingPoint = {
+    "conditions": defaultOperatingConditions,
     "excitationsPerWinding": [defaultOperationPointExcitation],
 }
 
 export const defaultInputs = {
     "designRequirements": defaultDesignRequirements,
-    "operationPoints": [defaultOperationPoint],
+    "operatingPoints": [defaultOperatingPoint],
 }
 
-export const defaultWinding = {
+export const defaultCoil = {
+    "bobbin": "Dummy",
     "functionalDescription": [{
         "isolationSide": "primary",
         "name": "Primary",
@@ -334,12 +335,13 @@ export const defaultWinding = {
 
 export const defaultMagnetic = {
     "core": defaultCore,
-    "winding": defaultWinding,
+    "coil": defaultCoil,
 }
 
 export const defaultSimulation = {
     "inputs": defaultInputs,
     "magnetic": defaultMagnetic,
+    "outputs": [],
 }
 
 export const defaultVoltageType = "Rectangular"
@@ -347,8 +349,8 @@ export const defaultCurrentType = "Triangular"
 export const defaultPrecision = -2
 export const defaultMinimumNumberForms = 0.01
 
-export const defaultOperationNamePlaceHolder = "Operation Point Identifier"
-export const defaultOperationName = "My Operation Point"
+export const defaultOperationName = "My Operating Point"
+export const defaultOperationNamePlaceHolder = "Operating Point Identifier"
 
 export const defaultCoreNamePlaceHolder = "Core Identifier"
 export const defaultCoreName = "My Core"
@@ -401,20 +403,6 @@ export function titleColor(electricalParameter){
     }
 }
 
-export var engineConstants = {}
-
 export const coreLossesModelDefault = 'iGSE';
 export const coreTemperatureModelDefault = 'Maniktala';
 export const reluctanceModelDefault = 'Zhang';
-
-
-// import axios from "axios";
-// (function () {
-//     axios.post(import.meta.env.VITE_API_ENDPOINT + '/get_constants', {})
-//     .then(response => {
-//         engineConstants = response.data
-//     })
-//     .catch(error => {
-//         console.error("Could not load constants from MKF")
-//     });
-// })();

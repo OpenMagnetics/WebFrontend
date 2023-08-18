@@ -111,14 +111,14 @@ export default {
     },
     methods: {
         loadShapesNames() {
-            const shapeData = this.$dataCacheStore.commercialShapes
+            const shapeData = this.$dataCacheStore.masData['coreShapes']
             this.commercialShapesNames = []
             shapeData.forEach((item) => {
                 this.commercialShapesNames.push(item['name'])
             })
         },
         loadMaterialNames() {
-            const materialData = this.$dataCacheStore.commercialMaterials
+            const materialData = this.$dataCacheStore.masData['coreMaterials']
             this.commercialMaterialNames = []
             this.materialManufacturers = ["Magnetics"]
             materialData.forEach((item) => {
@@ -138,7 +138,7 @@ export default {
         },
         onShapeChange(newValue) {
             var shapeDataSelected = {}
-            this.$dataCacheStore.commercialShapes.forEach((item) => {
+            this.$dataCacheStore.masData['coreShapes'].forEach((item) => {
                 if (item['name'] == newValue) {
                     shapeDataSelected = Utils.deepCopy(item)
                 }
@@ -160,7 +160,7 @@ export default {
         },
         onMaterialChange (newValue) {
             var materialDataSelected = {}
-            this.$dataCacheStore.commercialMaterials.forEach((item) => {
+            this.$dataCacheStore.masData['coreMaterials'].forEach((item) => {
                 if (item['name'] == newValue) {
                     materialDataSelected = Utils.deepCopy(item)
                 }

@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import * as Defaults from '/src/assets/js/defaults.js'
-import * as Utils from '/src/assets/js/utils.js'
+import { findCoreShape, deepCopy } from '/src/assets/js/utils.js'
 import { useCoreStore } from '/src/stores/core'
 import * as download from 'downloadjs'
 
@@ -30,9 +30,26 @@ export default {
     methods: {
         onImport(event) {
             this.$userStore.globalCore = this.importedCore
-            console.log("this.$userStore.globalCore")
-            console.log(this.$userStore.globalCore)
-            Utils.getCoreParameters(this.$userStore, () => {this.$router.go();}, () => {})
+            this.$mkf.ready.then(_ => {
+                const aux = deepCopy(this.$userStore.globalCore);
+                aux['geometricalDescription'] = null;
+                aux['processedDescription'] = null;
+
+                if (typeof aux['functionalDescription']['shape'] === 'string' || aux['functionalDescription']['shape'] instanceof String) {
+                    aux['functionalDescription']['shape'] = findCoreShape(this.$dataCacheStore, aux['functionalDescription']['shape']);
+                }
+
+                console.log(aux['functionalDescription']['shape'])
+
+                var core = JSON.parse(this.$mkf.calculate_core_data(JSON.stringify(aux), false));
+
+                this.$userStore.globalCore = core;
+                this.$userStore.setGlobalCore(core)
+                this.$router.go();
+            }).catch(error => { 
+                console.error(error)
+                this.tryingToSend = false;
+            });
 
         },
         readMASFile(event) {

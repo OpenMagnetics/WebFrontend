@@ -60,9 +60,6 @@ export default {
             this.totalCoreLosses = Utils.removeTrailingZeroes(aux['label'], 2)
             this.totalCoreLossesUnit = aux['unit']
             var aux = Utils.formatPowerDensity(value['totalVolumetricLosses'])
-            console.log("Ea")
-            console.log(aux)
-            console.log(value['totalVolumetricLosses'])
             this.volumetricCoreLosses = Utils.removeTrailingZeroes(aux['label'], 2)
             this.volumetricCoreLossesUnit = aux['unit']
 
@@ -111,46 +108,50 @@ export default {
 
         },
         computeCoreLosses() {
-            const url = import.meta.env.VITE_API_ENDPOINT + '/get_core_losses'
+            this.$mkf.ready.then(_ => {
+                const globalSimulation = Utils.deepCopy(this.$userStore.globalSimulation)
 
-            const globalSimulation = Utils.deepCopy(this.$userStore.globalSimulation)
+                const operationPoint = globalSimulation['inputs']['operatingPoints'][0]['excitationsPerWinding'][0]
+                if ('voltage' in operationPoint && this.$userStore.simulationUseCurrentAsInput == 1) {
+                    delete operationPoint['voltage'];
+                }
 
-            const operationPoint = globalSimulation['inputs']['operationPoints'][0]['excitationsPerWinding'][0]
-            if ('voltage' in operationPoint && this.$userStore.simulationUseCurrentAsInput == 1) {
-                delete operationPoint['voltage'];
-            }
+                if ('current' in operationPoint && this.$userStore.simulationUseCurrentAsInput == 0) {
+                    delete operationPoint['current'];
+                }
 
-            if ('current' in operationPoint && this.$userStore.simulationUseCurrentAsInput == 0) {
-                delete operationPoint['current'];
-            }
+                if (typeof(globalSimulation['magnetic']['core']['functionalDescription']['material']) != 'string') {
+                    globalSimulation['magnetic']['core']['functionalDescription']['material'] = globalSimulation['magnetic']['core']['functionalDescription']['material']['name']
+                }
 
-            if (typeof(globalSimulation['magnetic']['core']['functionalDescription']['material']) != 'string') {
-                globalSimulation['magnetic']['core']['functionalDescription']['material'] = globalSimulation['magnetic']['core']['functionalDescription']['material']['name']
-            }
-            const data = {}
-            data['simulation'] = globalSimulation
-            if (!('gapReluctance' in this.$userStore.selectedModels)) {
-                this.$userStore.selectedModels['gapReluctance'] = Defaults.reluctanceModelDefault
-            }
-            if (!('coreLosses' in this.$userStore.selectedModels)) {
-                this.$userStore.selectedModels['coreLosses'] = Defaults.coreLossesModelDefault
-            }
-            if (!('coreTemperature' in this.$userStore.selectedModels)) {
-                this.$userStore.selectedModels['coreTemperature'] = Defaults.coreTemperatureModelDefault
-            }
-            data['models'] = {coreLosses: this.$userStore.selectedModels['coreLosses'].toUpperCase(),
+                if (!('gapReluctance' in this.$userStore.selectedModels)) {
+                    this.$userStore.selectedModels['gapReluctance'] = Defaults.reluctanceModelDefault
+                }
+                if (!('coreLosses' in this.$userStore.selectedModels)) {
+                    this.$userStore.selectedModels['coreLosses'] = Defaults.coreLossesModelDefault
+                }
+                if (!('coreTemperature' in this.$userStore.selectedModels)) {
+                    this.$userStore.selectedModels['coreTemperature'] = Defaults.coreTemperatureModelDefault
+                }
+                const modelsData = {coreLosses: this.$userStore.selectedModels['coreLosses'].toUpperCase(),
                               coreTemperature: this.$userStore.selectedModels['coreTemperature'].toUpperCase(),
-                              gapReluctance: this.$userStore.selectedModels['gapReluctance'].toUpperCase().replace(" ", "_")}
-            this.$axios.post(url, data)
-            .then(response => {
-                this.tryingToSend = false
-                this.formatOutputs(response.data)
+                              gapReluctance: this.$userStore.selectedModels['gapReluctance'].toUpperCase().replace(" ", "_")};
+                var coreData = globalSimulation['magnetic']['core'];
+                const coilData = globalSimulation['magnetic']['coil'];
+                const inputsData = globalSimulation['inputs'];
+                var coreLosses = JSON.parse(this.$mkf.calculate_core_losses(JSON.stringify(coreData),
+                                                                            JSON.stringify(coilData),
+                                                                            JSON.stringify(inputsData),
+                                                                            JSON.stringify(modelsData),
+                                                                            JSON.stringify(this.$dataCacheStore.masData['coreMaterials'])));
+                this.tryingToSend = false;
+                this.formatOutputs(coreLosses);
+
             })
             .catch(error => {
-                this.tryingToSend = false
-                console.error("Error getting core losses, resetting store")
-                console.error(error.data)
-                // this.$userStore.reset()
+                this.computing = false
+                console.error("Error getting core losses")
+                console.error(error)
             });
         },
         tryToSend() {
@@ -168,7 +169,7 @@ export default {
                         }
                     }
                 }
-                , 500);
+                , 5);
             }
         },
     },

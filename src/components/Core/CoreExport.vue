@@ -1,7 +1,7 @@
 <script setup>
 import { ref } from 'vue'
 import * as Defaults from '/src/assets/js/defaults.js'
-import * as Utils from '/src/assets/js/utils.js'
+import { findCoreMaterial, getCoreData } from '/src/assets/js/utils.js'
 import { useCoreStore } from '/src/stores/core'
 import * as download from 'downloadjs'
 
@@ -55,17 +55,7 @@ export default {
     methods: {
         requestedMaterialData(event) {
             if (event.target.value == 1 && typeof(this.$userStore.globalCore['functionalDescription']['material']) == 'string') {
-                const url = import.meta.env.VITE_API_ENDPOINT + '/get_material_data'
-                const data = {name: this.$userStore.globalCore['functionalDescription']['material']}
-                this.$axios.post(url, data)
-                .then(response => {
-                    this.$userStore.globalCore['functionalDescription']['material'] = response.data
-                })
-                .catch(error => {
-                    console.error("Error getting material data")
-                    console.error(error.data)
-                });
-
+                this.$userStore.globalCore['functionalDescription']['material'] = findCoreMaterial(this.$dataCacheStore, this.$userStore.globalCore['functionalDescription']['material']);
             }
         },
         onExportSTP(event) {
@@ -82,7 +72,7 @@ export default {
 
             this.$axios.post(url, data)
             .then(response => {
-                const exportedData = Utils.getCoreData(this.$userStore, Defaults.defaultCoreSaveConfiguration)
+                const exportedData = getCoreData(this.$userStore, Defaults.defaultCoreSaveConfiguration)
                 download(response.data, exportedData["name"] + ".stp", "text/plain");
                 this.$emit("exported")
                 this.STPexported = true
@@ -106,7 +96,7 @@ export default {
 
             this.$axios.post(url, data)
             .then(response => {
-                const exportedData = Utils.getCoreData(this.$userStore, Defaults.defaultCoreSaveConfiguration)
+                const exportedData = getCoreData(this.$userStore, Defaults.defaultCoreSaveConfiguration)
                 download(response.data, exportedData["name"] + ".obj", "text/plain");
                 this.$emit("exported")
                 this.OBJexported = true
@@ -128,7 +118,7 @@ export default {
                 includeAdvancedWindingWindowData: this.includeAdvancedWindingWindowDataPicked == 1,
                 downloadOnlyPiece: this.downloadOnlyPiecePicked == 1,
             }
-            const exportedData = Utils.getCoreData(this.$userStore, configuration)
+            const exportedData = getCoreData(this.$userStore, configuration)
             download(JSON.stringify(exportedData, null, 4), exportedData["name"] + ".json", "text/plain");
             this.$emit("exported")
             this.MASexported = true

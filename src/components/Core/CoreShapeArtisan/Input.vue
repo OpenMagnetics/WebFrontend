@@ -53,6 +53,19 @@ export default {
         }
     },
     methods: {
+        updateCoreData() {
+            this.$mkf.ready.then(_ => {
+                const aux = Utils.deepCopy(this.$userStore.globalCore);
+                aux['geometricalDescription'] = null;
+                aux['processedDescription'] = null;
+
+                var core = JSON.parse(this.$mkf.calculate_core_data(JSON.stringify(aux), false));
+
+                this.$userStore.globalCore = core;
+                this.$userStore.setGlobalCore(core)
+            }).catch(error => { 
+            });
+        },
         setCoreShapeName(name, override) {
             if (!this.loadingStandardCore || override) {
                 this.shapeName = name
@@ -96,18 +109,21 @@ export default {
                 }
                 const url = import.meta.env.VITE_API_ENDPOINT + '/core_compute_shape'
 
+                const globalCore = this.$userStore.globalCore
+                globalCore['functionalDescription']['shape'] = data
+                this.$userStore.setGlobalCoreAlt(globalCore)
+
+                this.updateCoreData();
+
                 this.hasFreeCADError = false
                 this.coreStore.requestingNewShape()
                 this.$axios.post(url, data)
                 .then(response => {
-                    const globalCore = this.$userStore.globalCore
-                    globalCore['functionalDescription']['shape'] = data
-                    this.$userStore.setGlobalCoreAlt(globalCore)
                     this.posting = false
                     this.isDataDirty = false
                     this.coreStore.setStreamedObj(response.data)
                     this.getTechnicalDrawing(dimensionsValueInM)
-                    Utils.getCoreParameters(this.$userStore, () => {this.loadingStandardCore = false;}, () => {this.loadingStandardCore = false;})
+                    this.loadingStandardCore = false;
                 })
                 .catch(error => {
                     this.posting = false
@@ -137,18 +153,18 @@ export default {
                 this.hasFreeCADError = false
                 const globalCore = this.$userStore.globalCore
                 globalCore['functionalDescription']['shape'] = data
+                this.$userStore.setGlobalCoreAlt(globalCore)
+
+                this.updateCoreData();
 
                 this.coreStore.requestingNewShape()
                 this.$axios.post(url, globalCore)
                 .then(response => {
-                    const globalCore = this.$userStore.globalCore
-                    globalCore['functionalDescription']['shape'] = data
-                    this.$userStore.setGlobalCoreAlt(globalCore)
                     this.posting = false
                     this.isDataDirty = false
                     this.coreStore.setStreamedObj(response.data)
                     this.getTechnicalDrawing(dimensionsValueInM)
-                    Utils.getCoreParameters(this.$userStore, () => {this.loadingStandardCore = false;}, () => {this.loadingStandardCore = false;})
+                    this.loadingStandardCore = false;
                 })
                 .catch(error => {
                     this.posting = false
@@ -227,7 +243,7 @@ export default {
                 this.subtypeLabelSelected = data['familySubtype']
             }
             else {
-                this.subtypeLabelSelected = 1
+                this.subtypeLabelSelected = "1"
             }
 
             this.dimensionsLabel = Object.values(this.familiesData[this.familyLabelSelected][this.subtypeLabelSelected])
@@ -446,7 +462,7 @@ export default {
                 this.subtypeLabelSelected = this.$userStore.globalCore['functionalDescription']['shape']['familySubtype']
             }
             else {
-                this.subtypeLabelSelected = 1
+                this.subtypeLabelSelected = "1"
             }
             this.dimensionsLabel = Object.values(this.familiesData[this.familyLabelSelected][this.subtypeLabelSelected])
 

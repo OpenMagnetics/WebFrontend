@@ -56,7 +56,7 @@ export default {
     },
     methods: {
         loadMaterialNames() {
-            const materialData = this.$dataCacheStore.commercialMaterials
+            const materialData = this.$dataCacheStore.masData['coreMaterials']
             this.commercialMaterialNames = []
             this.materialManufacturers = ["Magnetics"]
             materialData.forEach((item) => {

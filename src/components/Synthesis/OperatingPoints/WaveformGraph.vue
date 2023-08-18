@@ -76,6 +76,12 @@ export default {
             },
             masStore
         }
+    }, 
+    watch: { 
+        modelValue(newValue, oldValue) {
+            this.updateSignal('current', newValue);
+            this.updateSignal('voltage', newValue);
+        },
     },
     mounted() {
         const modelValue = this.modelValue;
@@ -208,11 +214,7 @@ export default {
         this.masStore.$onAction((action) => {
             if (action.name == "updatedInputExcitationWaveformUpdatedFromProcessed") {
                 var signalDescriptor = action.args[0];
-                chart.data.datasets[this.getDatasetIndex(signalDescriptor)].data = this.convertMasToChartjs(this.modelValue[signalDescriptor].waveform, this.modelValue.frequency);
-                chart.update();
-                this.setHorizontalLimits(1 / this.modelValue.frequency / 10);
-                this.updateVerticalLimits(this.getDatasetIndex(signalDescriptor));
-                chart.update();
+                this.updateSignal(signalDescriptor, this.modelValue);
             }
         })
     },
@@ -319,7 +321,6 @@ export default {
 
             chart.options.scales[chart.data.datasets[datasetIndex].yAxisID].max = newPadding
             chart.options.scales[chart.data.datasets[datasetIndex].yAxisID].min = -newPadding
-
         },
         createChart(chartId, options) {
             const ctx = document.getElementById(chartId)
@@ -538,8 +539,14 @@ export default {
                 }
                 chart.data.datasets[datasetIndex].data = data
             }
-
-        }
+        },
+        updateSignal(signalDescriptor, excitation){
+            chart.data.datasets[this.getDatasetIndex(signalDescriptor)].data = this.convertMasToChartjs(excitation[signalDescriptor].waveform, excitation.frequency);
+            chart.update();
+            this.setHorizontalLimits(1 / excitation.frequency / 10);
+            this.updateVerticalLimits(this.getDatasetIndex(signalDescriptor));
+            chart.update();
+        },
     }
 }
 </script>

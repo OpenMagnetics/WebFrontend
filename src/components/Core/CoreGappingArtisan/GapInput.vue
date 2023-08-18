@@ -61,6 +61,13 @@ export default {
         const tryingToSend = false;
         const outputData = [];
         const outputDataUnits = [];
+        const engineConstants = {};
+
+        this.$mkf.ready.then(_ => {
+            var aux = this.$mkf.get_constants();
+            this.engineConstants['residualGap'] = aux.get('residualGap')
+            this.engineConstants['minimumNonResidualGap'] = aux.get('minimumNonResidualGap')
+        });
         for (let i = 0; i < numberGaps; i++) {
             outputData.push({
                 "permeance": null,
@@ -76,6 +83,7 @@ export default {
             })
         }
         return {
+            engineConstants,
             coreStore,
             numberGapsSelected,
             gapTypeSelected,
@@ -161,6 +169,9 @@ export default {
         // this.gapTypeSelected = this.columnData['gapType']
     },
     mounted () {
+        this.recentChange = true
+        this.tryToSend();
+
         this.coreStore.$onAction((action) => {
             if (action.name == "gapReluctanceModelChanged") {
                 this.recentChange = true
@@ -170,31 +181,26 @@ export default {
     },
     methods: {
         compute_gap_reluctances() {
-            const url = import.meta.env.VITE_API_ENDPOINT + '/core_compute_gap_reluctances'
-            const data = {}
-            data['gapping'] = this.$userStore.globalCore['functionalDescription']['gapping'];
-            data['model'] = this.$userStore.selectedModels['gapReluctance']
-
-            this.$axios.post(url, data)
-            .then(response => {
+            this.$mkf.ready.then(_ => {
                 this.outputData = []
                 this.outputDataUnits = []
                 this.columnData['gaps'].forEach((item) => {
-                    const datum = response.data[item['globalGapIndex']]
-                    var aux = Utils.formatPermeance(datum['permeance'])
+                    var datum = this.$userStore.globalCore['functionalDescription']['gapping'][item['globalGapIndex']];
+                    var gapReluctance = this.$mkf.calculate_gap_reluctance(JSON.stringify(datum), this.$userStore.selectedModels['gapReluctance']);
+                    var aux = Utils.formatPermeance(gapReluctance.get('permeance'))
                     const permeance = Utils.removeTrailingZeroes(aux['label'], 2)
                     const permeanceUnit = aux['unit']
-                    aux = Utils.formatReluctance(datum['reluctance'])
+                    aux = Utils.formatReluctance(gapReluctance.get('reluctance'))
                     const reluctance = Utils.removeTrailingZeroes(aux['label'], 2)
                     const reluctanceUnit = aux['unit']
-                    aux = Utils.formatEnergy(datum['maximum_storable_energy'])
+                    aux = Utils.formatEnergy(gapReluctance.get('maximum_storable_energy'))
                     const maximum_storable_energy = Utils.removeTrailingZeroes(aux['label'], 2)
                     const maximum_storable_energyUnit = aux['unit']
                     this.outputData.push({
                         "permeance": permeance,
                         "reluctance": reluctance,
                         "maximum_storable_energy": maximum_storable_energy,
-                        "fringing_factor": Utils.removeTrailingZeroes((response.data[item['globalGapIndex']]["fringing_factor"] - 1) * 100, 1)
+                        "fringing_factor": Utils.removeTrailingZeroes((gapReluctance.get("fringing_factor") - 1) * 100, 1)
                     })
                     this.outputDataUnits.push({
                         "permeance": permeanceUnit,
@@ -203,8 +209,8 @@ export default {
                         "fringing_factor": "%"
                     })
                 })
-            })
-            .catch(error => {
+
+            }).catch(error => { 
                 console.error("error in core_compute_gap_reluctances")
                 console.error(error.data)
             });
@@ -225,7 +231,7 @@ export default {
                         }
                     }
                 }
-                , 500);
+                , 5);
             }
         },
         handleResize() {
@@ -334,7 +340,7 @@ export default {
                         this.numberGaps = 1
                         this.numberGapsSelected = 1
                     }
-                    this.updateAllGapLengths(Defaults.engineConstants['residualGap'])
+                    this.updateAllGapLengths(this.engineConstants['residualGap'])
                     this.updateAllGapHeights(0)
                 }
                 else if  (this.gapTypeSelected == "Spacer") {
@@ -345,7 +351,7 @@ export default {
                             this.numberGapsSelected = 1
                         }
                         else if (this.previousGapType == "Residual") {
-                            this.updateAllGapLengths(Defaults.engineConstants['minimumNonResidualGap'])
+                            this.updateAllGapLengths(this.engineConstants['minimumNonResidualGap'])
                         }
                     }
                     this.updateAllGapHeights(0)
@@ -358,7 +364,7 @@ export default {
                             this.numberGapsSelected = 1
                         }
                         else if (this.previousGapType == "Residual") {
-                            this.updateAllGapLengths(Defaults.engineConstants['minimumNonResidualGap'])
+                            this.updateAllGapLengths(this.engineConstants['minimumNonResidualGap'])
                         }
                     }
                 }
@@ -367,7 +373,7 @@ export default {
                 this.coreStore.setDistributedGapAlreadyInUse(true)
                 this.changeGlobalGapType('subtractive')
                 if (this.previousGapType == "Residual") {
-                    this.updateAllGapLengths(Defaults.engineConstants['minimumNonResidualGap'])
+                    this.updateAllGapLengths(this.engineConstants['minimumNonResidualGap'])
                 }
                 if (this.previousGapType != null && this.previousGapType != "Distributed") {
                     this.numberGaps = 3

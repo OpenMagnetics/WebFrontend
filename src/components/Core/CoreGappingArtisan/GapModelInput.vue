@@ -43,17 +43,15 @@ export default {
         }
     },
     created () {
-        const url = import.meta.env.VITE_API_ENDPOINT + '/get_gap_reluctance_models'
+        this.$mkf.ready.then(_ => {
+            var aux = JSON.parse(this.$mkf.get_gap_reluctance_model_information());
+            this.modelNames = Object.keys(aux["information"]);
+            this.modelDescriptions = aux["information"];
+            this.modelErrors = aux["errors"];
+            this.modelInternalLink = aux["internal_links"];
+            this.modelExternalLink = aux["external_links"];
 
-        this.$axios.post(url, {})
-        .then(response => {
-            this.modelNames = Object.keys(response.data["information"]);
-            this.modelDescriptions = response.data["information"];
-            this.modelErrors = response.data["errors"];
-            this.modelInternalLink = response.data["internal_links"];
-            this.modelExternalLink = response.data["external_links"];
-        })
-        .catch(error => {
+        }).catch(error => { 
             console.error(error.data)
         });
     },

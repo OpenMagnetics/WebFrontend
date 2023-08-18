@@ -12,34 +12,51 @@ import * as Utils from '/src/assets/js/utils.js'
 export default {
     data() {
         var numberColumns = 3;
-        Utils.getCoreParameters(this.$userStore, () => {this.numberColumns = this.$userStore.globalCore['processedDescription']['columns'].length;}, () => {})
-        const columnData = []
-        if (this.$userStore.globalCore['functionalDescription']['gapping'].length > 0) {
-            for (let i = 0; i < numberColumns; i++) {
-                columnData.push({
-                    gapType: 'Residual',
-                    gaps: [{
-                        length: Defaults.engineConstants['residualGap'],
-                        height: 0,
-                        globalGapIndex: i,
-                    }]
-                })        
+
+        const columnData = [];
+        const residualGap = null;
+
+        this.$mkf.ready.then(_ => {
+            const aux = Utils.deepCopy(this.$userStore.globalCore);
+            aux['geometricalDescription'] = null;
+            aux['processedDescription'] = null;
+
+            var core = JSON.parse(this.$mkf.calculate_core_data(JSON.stringify(aux), false));
+
+            this.$userStore.globalCore = core;
+            this.numberColumns = core['processedDescription']['columns'].length;
+            this.residualGap = this.$mkf.get_constants().get('residualGap');
+
+            if (this.$userStore.globalCore['functionalDescription']['gapping'].length > 0) {
+                for (let i = 0; i < numberColumns; i++) {
+                    this.columnData.push({
+                        gapType: 'Residual',
+                        gaps: [{
+                            length: this.residualGap,
+                            height: 0,
+                            globalGapIndex: i,
+                        }]
+                    })        
+                }
             }
-        }
-        else {
-            for (let i = 0; i < numberColumns; i++) {
-                columnData.push({
-                    gapType: 'Residual',
-                    gaps: []
-                })        
+            else {
+                for (let i = 0; i < numberColumns; i++) {
+                    this.columnData.push({
+                        gapType: 'Residual',
+                        gaps: []
+                    })        
+                }
             }
-        }
+
+        });
+
         const coreStore = useCoreStore();
 
         return {
             numberColumns,
             coreStore,
             columnData,
+            residualGap,
             recentChange: false,
             tryingToSend: false,
         }
@@ -80,7 +97,19 @@ export default {
             this.columnData = this.decodeStoredGap()
         }
         else {
-            Utils.getCoreParameters(this.$userStore, () => {this.getNumberColumns(); this.columnData = this.decodeStoredGap();}, () => {})
+            this.$mkf.ready.then(_ => {
+                const aux = Utils.deepCopy(this.$userStore.globalCore);
+                aux['geometricalDescription'] = null;
+                aux['processedDescription'] = null;
+
+                var core = JSON.parse(this.$mkf.calculate_core_data(JSON.stringify(aux), false));
+
+                this.$userStore.globalCore = core;
+                this.getNumberColumns();
+                this.columnData = this.decodeStoredGap();
+
+            }).catch(error => {
+            });
         }
 
         this.$userStore.$onAction((action) => {
@@ -102,15 +131,22 @@ export default {
                 this.columnData = this.decodeStoredGap()
             }
             if (action.name == "quickShapeChanged") {
-                Utils.getCoreParameters(this.$userStore, () => {
-                        this.getNumberColumns();
-                        console.log("this.columnData called from quickShapeChanged")
-                        this.columnData = this.decodeStoredGap();
-                        console.log("this.columnData")
-                        console.log(this.columnData)
-                        this.recentChange = true;
-                        this.tryToSend()
-                    }, () => {})
+                this.$mkf.ready.then(_ => {
+                    const aux = Utils.deepCopy(this.$userStore.globalCore);
+                    aux['geometricalDescription'] = null;
+                    aux['processedDescription'] = null;
+
+                console.warn(aux)
+                    var core = JSON.parse(this.$mkf.calculate_core_data(JSON.stringify(aux), false));
+
+                    this.$userStore.globalCore = core;
+                    this.getNumberColumns();
+                    this.columnData = this.decodeStoredGap();
+                    this.recentChange = true;
+                    this.tryToSend();
+
+                }).catch(error => {
+                });
             }
         })
     },
@@ -189,7 +225,7 @@ export default {
                     }
 
                     if (haveGapEqualLength) {
-                        if (gapping[0]['length'] != Defaults.engineConstants['residualGap']) {
+                        if (gapping[0]['length'] != this.residualGap) {
                             for (let i = 0; i < this.numberColumns; i++) {
                                 firstGuessGapType.push({
                                     gapType: "Spacer",
@@ -227,7 +263,7 @@ export default {
                             sampleLengthInColumn = item['length']
                         }
                     })
-                    if ((numberGapsInColumn == 1) && (sampleLengthInColumn == Defaults.engineConstants['residualGap'])) {
+                    if ((numberGapsInColumn == 1) && (sampleLengthInColumn == this.residualGap)) {
                         firstGuessGapType.push({
                             gapType: "Residual",
                             coordinates: columns[i]['coordinates']
@@ -347,7 +383,21 @@ export default {
                             this.tryToSend()
                         }
                         else {
-                            Utils.getCoreParameters(this.$userStore, () => {this.tryingToSend = false; this.compute_gapping_technical_drawing()}, () => {this.tryingToSend = false;})
+                            this.$mkf.ready.then(_ => {
+                                const aux = Utils.deepCopy(this.$userStore.globalCore);
+                                aux['geometricalDescription'] = null;
+                                aux['processedDescription'] = null;
+
+                                var core = JSON.parse(this.$mkf.calculate_core_data(JSON.stringify(aux), false));
+
+                                this.$userStore.globalCore = core;
+                                this.tryingToSend = false;
+                                this.compute_gapping_technical_drawing();
+
+                            }).catch(error => { 
+                                this.tryingToSend = false;
+                            });
+
                         }
                     }
                 }

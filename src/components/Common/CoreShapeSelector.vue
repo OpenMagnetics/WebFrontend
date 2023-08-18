@@ -54,7 +54,7 @@ export default {
     },
     methods: {
         loadShapesNames() {
-            const shapeData = this.$dataCacheStore.commercialShapes
+            const shapeData = this.$dataCacheStore.masData['coreShapes']
             this.commercialShapesNames = []
             shapeData.forEach((item) => {
                 this.commercialShapesNames.push(item['name'])

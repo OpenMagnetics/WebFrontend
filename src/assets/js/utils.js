@@ -5,7 +5,34 @@ import axios from "axios"
 
 var requesting = 0
 
-function toCamelCase(str) {
+export function findCoreMaterial(dataCacheStore, materialName) {
+    var foundMaterial;
+    dataCacheStore.masData.coreMaterials.forEach((material) => {
+        if (material.name == materialName) {
+            foundMaterial = material;
+        }
+    })
+    return foundMaterial;
+}
+export function findCoreShape(dataCacheStore, shapeName) {
+    var foundShape;
+    dataCacheStore.masData.coreShapes.forEach((shape) => {
+        if (shape.name == shapeName) {
+            foundShape = shape;
+        }
+    })
+    return foundShape;
+}
+
+export function removeEmpty(obj) {
+    Object.entries(obj).forEach(([key, val])  =>
+        (val && typeof val === 'object') && removeEmpty(val) ||
+        (val === null || val === "") && delete obj[key]
+    );
+    return obj;
+};
+
+export function toCamelCase(str) {
     return str.replace(/(?:^\w|[A-Z]|\b\w)/g, function(word, index) {
         return index === 0 ? word.toLowerCase() : word.toUpperCase();
     }).replace(/\s+/g, '');
@@ -756,49 +783,49 @@ export function hexToRgb(hex) {
     } : null;
 }
 
-export function getCoreParameters(userStore, callback, errorCallback) {
-    const url = import.meta.env.VITE_API_ENDPOINT + '/core_compute_core_parameters'
+// export function getCoreParameters(userStore, callback, errorCallback) {
+//     const url = import.meta.env.VITE_API_ENDPOINT + '/core_compute_core_parameters'
 
-    const aux = deepCopy(userStore.globalCore)
-    aux['geometricalDescription'] = null
-    aux['processedDescription'] = null
-    axios.post(url, aux)
-    .then(response => {
-        const globalCore = userStore.globalCore
-        globalCore['functionalDescription'] = response.data['functionalDescription']
-        globalCore['geometricalDescription'] = response.data['geometricalDescription']
-        globalCore['processedDescription'] = response.data['processedDescription']
-        userStore.setGlobalCore(globalCore)
-        callback();
-    })
-    .catch(error => { 
-        console.error("Error getting core parameters")
-        console.error(error.data)
-        errorCallback()
-    });
-}
+//     const aux = deepCopy(userStore.globalCore)
+//     aux['geometricalDescription'] = null
+//     aux['processedDescription'] = null
+//     axios.post(url, aux)
+//     .then(response => {
+//         const globalCore = userStore.globalCore
+//         globalCore['functionalDescription'] = response.data['functionalDescription']
+//         globalCore['geometricalDescription'] = response.data['geometricalDescription']
+//         globalCore['processedDescription'] = response.data['processedDescription']
+//         userStore.setGlobalCore(globalCore)
+//         callback();
+//     })
+//     .catch(error => { 
+//         console.error("Error getting core parameters")
+//         console.error(error.data)
+//         errorCallback()
+//     });
+// }
 
-export function getSimulationParameters(userStore, callback, errorCallback) {
-    const url = import.meta.env.VITE_API_ENDPOINT + '/core_compute_core_parameters'
+// export function getSimulationParameters(userStore, callback, errorCallback) {
+//     const url = import.meta.env.VITE_API_ENDPOINT + '/core_compute_core_parameters'
 
-    const aux = deepCopy(userStore.globalSimulation['magnetic']['core'])
-    aux['geometricalDescription'] = null
-    aux['processedDescription'] = null
-    axios.post(url, aux)
-    .then(response => {
-        const globalSimulation = userStore.globalSimulation
-        globalSimulation['magnetic']['core']['functionalDescription'] = response.data['functionalDescription']
-        globalSimulation['magnetic']['core']['geometricalDescription'] = response.data['geometricalDescription']
-        globalSimulation['magnetic']['core']['processedDescription'] = response.data['processedDescription']
-        userStore.setGlobalSimulation(globalSimulation)
-        callback();
-    })
-    .catch(error => { 
-        console.error("Error getting simulation core parameters")
-        console.error(error.data)
-        errorCallback()
-    });
-}
+//     const aux = deepCopy(userStore.globalSimulation['magnetic']['core'])
+//     aux['geometricalDescription'] = null
+//     aux['processedDescription'] = null
+//     axios.post(url, aux)
+//     .then(response => {
+//         const globalSimulation = userStore.globalSimulation
+//         globalSimulation['magnetic']['core']['functionalDescription'] = response.data['functionalDescription']
+//         globalSimulation['magnetic']['core']['geometricalDescription'] = response.data['geometricalDescription']
+//         globalSimulation['magnetic']['core']['processedDescription'] = response.data['processedDescription']
+//         userStore.setGlobalSimulation(globalSimulation)
+//         callback();
+//     })
+//     .catch(error => { 
+//         console.error("Error getting simulation core parameters")
+//         console.error(error.data)
+//         errorCallback()
+//     });
+// }
  
 export function guessBasicGappingParameters(core) {
     var gapType = Defaults.defaultGapType;
@@ -930,7 +957,7 @@ export function cleanSimulation(data, cleanGap=false, removeVoltage=true) {
 
 
 
-    const operationPoint = data['inputs']['operationPoints'][0]['excitationsPerWinding'][0]
+    const operationPoint = data['inputs']['operatingPoints'][0]['excitationsPerWinding'][0]
     if ('voltage' in operationPoint && removeVoltage) {
         delete operationPoint['voltage'];
     }

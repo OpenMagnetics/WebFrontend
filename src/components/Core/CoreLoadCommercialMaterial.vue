@@ -68,9 +68,9 @@ export default {
         onLoad(name) {
             var dataToLoad = null
 
-            for (let i = 0; i < this.$dataCacheStore.commercialMaterials.length; i++) {
-                if (this.$dataCacheStore.commercialMaterials[i]["name"] == name){
-                    dataToLoad = this.$dataCacheStore.commercialMaterials[i]
+            for (let i = 0; i < this.$dataCacheStore.masData['coreMaterials'].length; i++) {
+                if (this.$dataCacheStore.masData['coreMaterials'][i]["name"] == name){
+                    dataToLoad = this.$dataCacheStore.masData['coreMaterials'][i]
                     break
                 } 
             }
@@ -100,7 +100,7 @@ export default {
         },
         loadTableData() {
             this.$userStore.armDeadManSwitch()
-            const materialData = this.$dataCacheStore.commercialMaterials
+            const materialData = this.$dataCacheStore.masData['coreMaterials']
             this.commercialMaterialNames = []
             materialData.forEach((item) => {
                 var initialPermeability;

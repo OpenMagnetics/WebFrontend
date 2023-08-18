@@ -35,36 +35,36 @@ export default {
     data() {
         const masStore = useMasStore();
         var localData = {
-            0: {
+            'width': {
                 multiplier: null,
                 scaledValue: null
             },
-            1: {
+            'height': {
                 multiplier: null,
                 scaledValue: null
             },
-            2: {
+            'depth': {
                 multiplier: null,
                 scaledValue: null
             },
         };
 
-        if (this.modelValue[0] != null) {
-            const aux = getMultiplier(this.modelValue[0], 0.001);
-            localData[0].scaledValue = aux.scaledValue;
-            localData[0].multiplier = aux.multiplier;
+        if (this.modelValue.width != null) {
+            const aux = getMultiplier(this.modelValue.width, 0.001);
+            localData.width.scaledValue = aux.scaledValue;
+            localData.width.multiplier = aux.multiplier;
         }
 
-        if (this.modelValue[1] != null) {
-            const aux = getMultiplier(this.modelValue[1], 0.001);
-            localData[1].scaledValue = aux.scaledValue;
-            localData[1].multiplier = aux.multiplier;
+        if (this.modelValue.height != null) {
+            const aux = getMultiplier(this.modelValue.height, 0.001);
+            localData.height.scaledValue = aux.scaledValue;
+            localData.height.multiplier = aux.multiplier;
         }
 
-        if (this.modelValue[2] != null) {
-            const aux = getMultiplier(this.modelValue[2], 0.001);
-            localData[2].scaledValue = aux.scaledValue;
-            localData[2].multiplier = aux.multiplier;
+        if (this.modelValue.depth != null) {
+            const aux = getMultiplier(this.modelValue.depth, 0.001);
+            localData.depth.scaledValue = aux.scaledValue;
+            localData.depth.multiplier = aux.multiplier;
         }
 
         const errorMessages = "";
@@ -125,27 +125,26 @@ export default {
 }
 </script>
 
-
 <template>
     <div :data-cy="dataTestLabel + '-container'" class="container-flex border-bottom">
         <div class="row">
             <label :data-cy="dataTestLabel + '-title'" class="rounded-2 fs-5 ms-3" :class="'col-sm-6 col-md-5'">{{'Maximum Dimensions'}}</label>
         </div>
         <div class="row">
-            <label v-if="localData[0].scaledValue != null" for="design-requirements-width-input" class="m-0 px-0 col-2 col-form-label text-center">Width</label>
-            <input v-if="localData[0].scaledValue != null" type="number" class="m-0 px-0 col-1 bg-light text-white" id="design-requirements-width-input'" @change="changeScaledValue($event.target.value, 0)" :value="localData[0].scaledValue">
-            <DimensionUnit :min="min" :max="max" v-if="unit != null && localData[0].scaledValue != null" :unit="unit" v-model="localData[0].multiplier" class="m-0 ms-1 px-0 col-1" @update:modelValue="changeMultiplier(0)"/>
-            <button v-if="localData[0].scaledValue == null" class="col-3 m-0 px-xl-3 px-md-0 btn btn-primary mx-4" @click="add(0)">{{'Add Width'}}</button>
+            <label v-if="localData.width.scaledValue != null" for="design-requirements-width-input" class="m-0 px-0 col-2 col-form-label text-center">Width</label>
+            <input v-if="localData.width.scaledValue != null" type="number" class="m-0 px-0 col-1 bg-light text-white" id="design-requirements-width-input'" @change="changeScaledValue($event.target.value, 'width')" :value="localData.width.scaledValue">
+            <DimensionUnit :min="min" :max="max" v-if="unit != null && localData.width.scaledValue != null" :unit="unit" v-model="localData.width.multiplier" class="m-0 ms-1 px-0 col-1" @update:modelValue="changeMultiplier('width')"/>
+            <button v-if="localData.width.scaledValue == null" class="col-3 m-0 px-xl-3 px-md-0 btn btn-primary mx-4" @click="add('width')">{{'Add Width'}}</button>
 
-            <label v-if="localData[1].scaledValue != null" for="design-requirements-width-input" class="m-0 px-0 col-2 col-form-label text-center">Height</label>
-            <input v-if="localData[1].scaledValue != null" type="number" class="m-0 px-0 col-1 bg-light text-white" id="design-requirements-width-input'" @change="changeScaledValue($event.target.value, 1)" :value="localData[1].scaledValue">
-            <DimensionUnit :min="min" :max="max" v-if="unit != null && localData[1].scaledValue != null" :unit="unit" v-model="localData[1].multiplier" class="m-0 ms-1 px-0 col-1" @update:modelValue="changeMultiplier(1)"/>
-            <button v-if="localData[1].scaledValue == null" class="col-3 m-0 px-xl-3 px-md-0 btn btn-primary mx-4" @click="add(1)">{{'Add Heigth'}}</button>
+            <label v-if="localData.height.scaledValue != null" for="design-requirements-width-input" class="m-0 px-0 col-2 col-form-label text-center">Height</label>
+            <input v-if="localData.height.scaledValue != null" type="number" class="m-0 px-0 col-1 bg-light text-white" id="design-requirements-width-input'" @change="changeScaledValue($event.target.value, 'height')" :value="localData.height.scaledValue">
+            <DimensionUnit :min="min" :max="max" v-if="unit != null && localData.height.scaledValue != null" :unit="unit" v-model="localData.height.multiplier" class="m-0 ms-1 px-0 col-1" @update:modelValue="changeMultiplier('height')"/>
+            <button v-if="localData.height.scaledValue == null" class="col-3 m-0 px-xl-3 px-md-0 btn btn-primary mx-4" @click="add('height')">{{'Add Heigth'}}</button>
 
-            <label v-if="localData[2].scaledValue != null" for="design-requirements-width-input" class="m-0 px-0 col-2 col-form-label text-center">Depth</label>
-            <input v-if="localData[2].scaledValue != null" type="number" class="m-0 px-0 col-1 bg-light text-white" id="design-requirements-width-input'" @change="changeScaledValue($event.target.value, 2)" :value="localData[2].scaledValue">
-            <DimensionUnit :min="min" :max="max" v-if="unit != null && localData[2].scaledValue != null" :unit="unit" v-model="localData[2].multiplier" class="m-0 ms-1 px-0 col-1" @update:modelValue="changeMultiplier(2)"/>
-            <button v-if="localData[2].scaledValue == null" class="col-3 m-0 px-xl-3 px-md-0 btn btn-primary mx-4" @click="add(2)">{{'Add Depth'}}</button>
+            <label v-if="localData.depth.scaledValue != null" for="design-requirements-width-input" class="m-0 px-0 col-2 col-form-label text-center">Depth</label>
+            <input v-if="localData.depth.scaledValue != null" type="number" class="m-0 px-0 col-1 bg-light text-white" id="design-requirements-width-input'" @change="changeScaledValue($event.target.value, 'depth')" :value="localData.depth.scaledValue">
+            <DimensionUnit :min="min" :max="max" v-if="unit != null && localData.depth.scaledValue != null" :unit="unit" v-model="localData.depth.multiplier" class="m-0 ms-1 px-0 col-1" @update:modelValue="changeMultiplier('depth')"/>
+            <button v-if="localData.depth.scaledValue == null" class="col-3 m-0 px-xl-3 px-md-0 btn btn-primary mx-4" @click="add('depth')">{{'Add Depth'}}</button>
         </div>
         <div class="row">
             <label class="text-danger text-center col-12 pt-1" style="font-size: 0.9em; white-space: pre-wrap;">{{errorMessages}}</label>
