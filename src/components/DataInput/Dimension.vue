@@ -44,9 +44,9 @@ export default {
             type: Number,
             default: 1
         },
-        readOnly:{
-            type: Boolean,
-            default: false
+        forceUpdate:{
+            type: Number,
+            default: 0
         },
     },
     data() {
@@ -80,16 +80,9 @@ export default {
     computed: {
     },
     watch: {
-        modelValue(newValue, oldValue) {
-            if (newValue[this.name] != null)
-                this.update(newValue[this.name]);
-        },
-        'modelValue.dutyCycle'(newValue, oldValue) {
-            if (this.name == 'dutyCycle'){
-                if (newValue != null)
-                    if (newValue[this.name] != null)
-                        this.update(newValue);
-            }
+        forceUpdate(newValue, oldValue) {
+            if (!isNaN(this.modelValue[this.name]))
+                this.update(this.modelValue[this.name]);
         },
     },
     mounted () {    
@@ -156,6 +149,8 @@ export default {
                 }
             }
 
+            actualValue = Number(actualValue);
+
             if (this.unit != null) {
                 const aux = getMultiplier(actualValue, 0.001);
                 this.$refs.inputRef.value = removeTrailingZeroes(aux.scaledValue)
@@ -192,8 +187,8 @@ export default {
         <div class="row">
             <label :data-cy="dataTestLabel + '-title'" class="rounded-2 fs-5 col-xs-12 col-md-7 ">{{shortenedName}}</label>
             <div v-if="localData.scaledValue != null" class="col-xs-8 col-md-5 row m-0 px-0">
-                <input :disabled="readOnly" :data-cy="dataTestLabel + '-number-input'" type="number" class="m-0 px-0 col-6 bg-light text-white" @change="changeScaledValue($event.target.value)" :value="localData.scaledValue * visualScale" ref="inputRef">
-                <DimensionUnit :readOnly="readOnly" :data-cy="dataTestLabel + '-DimensionUnit-input'" :min="min" :max="max" v-if="unit != null" :unit="unit" v-model="localData.multiplier" class="m-0 px-0 col-3" @update:modelValue="changeMultiplier"/>
+                <input :data-cy="dataTestLabel + '-number-input'" type="number" class="m-0 px-0 col-6 bg-light text-white" @change="changeScaledValue($event.target.value)" :value="removeTrailingZeroes(localData.scaledValue * visualScale)" ref="inputRef">
+                <DimensionUnit :data-cy="dataTestLabel + '-DimensionUnit-input'" :min="min" :max="max" v-if="unit != null" :unit="unit" v-model="localData.multiplier" class="m-0 px-0 col-3" @update:modelValue="changeMultiplier"/>
                 <label :data-cy="dataTestLabel + '-DimensionUnit-text'" v-if="unit == null" class="ms-2 pt-1 px-0 col-3" >{{altUnit}}</label>
             </div>
         </div>

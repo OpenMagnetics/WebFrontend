@@ -103,6 +103,7 @@ export default {
                 this.gapReluctanceModelErrors = aux["errors"];
                 this.gapReluctanceModelInternalLink = aux["internal_links"];
                 this.gapReluctanceModelExternalLink = aux["external_links"];
+                this.simulationStore.calculateInductance()
 
             }).catch(error => { 
                 this.tryingToSend = false
@@ -165,7 +166,7 @@ export default {
                         }
                     }
                 }
-                , 500);
+                , 5);
             }
         },
         handleSubmit() {

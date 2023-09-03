@@ -370,6 +370,9 @@ export function getInstantaneousPower(currentDataPoints, voltageDataPoints) {
 }
 
 export function removeTrailingZeroes(value, maximumNumberDecimals=4) {
+    if (isNaN(value) || !isFinite(value)) {
+        return value;
+    }
     const split = value.toFixed(5).split(".")
     const decimals = split[1]
     if (decimals[4] != 0 && maximumNumberDecimals > 4)
@@ -443,6 +446,14 @@ export function tryGuessType(dataPoints, frequency) {
         if (roundWithDecimals(1 / (dataPoints[2].x - dataPoints[0].x), 0.001) == frequency)
         if (dataPoints[0].y == dataPoints[2].y)
             return "Triangular"
+    }
+    else if (dataPoints.length == 4) {
+        if (roundWithDecimals(1 / (dataPoints[3].x - dataPoints[0].x), 0.001) == frequency)
+        if (dataPoints[0].y == dataPoints[1].y)
+        if (dataPoints[1].x == dataPoints[2].x)
+        if (dataPoints[2].y == dataPoints[3].y)
+        if (dataPoints[0].y == dataPoints[4].y)
+            return "Rectangular"
     }
     else if (dataPoints.length == 5) {
         if (roundWithDecimals(1 / (dataPoints[4].x - dataPoints[0].x), 0.001) == frequency)

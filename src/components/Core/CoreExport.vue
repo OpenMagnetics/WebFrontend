@@ -59,52 +59,77 @@ export default {
             }
         },
         onExportSTP(event) {
-            var url
-            var data
-            if (this.downloadOnlyPiecePicked == 1) {
-                url = import.meta.env.VITE_API_ENDPOINT + '/core_compute_shape_stp'
-                data = this.$userStore.globalCore['functionalDescription']['shape']
-            }
-            else {
-                url = import.meta.env.VITE_API_ENDPOINT + '/core_compute_core_3d_model_stp'
-                data = this.$userStore.globalCore
-            }
 
-            this.$axios.post(url, data)
-            .then(response => {
-                const exportedData = getCoreData(this.$userStore, Defaults.defaultCoreSaveConfiguration)
-                download(response.data, exportedData["name"] + ".stp", "text/plain");
-                this.$emit("exported")
-                this.STPexported = true
-                setTimeout(() => this.STPexported = false, 2000);
-            })
-            .catch(error => {
-                console.error(error.data)
+            this.$mkf.ready.then(_ => {
+                const aux = Utils.deepCopy(this.$userStore.globalCore);
+                aux['geometricalDescription'] = null;
+                aux['processedDescription'] = null;
+
+                var core = JSON.parse(this.$mkf.calculate_core_data(JSON.stringify(aux), false));
+                this.$userStore.globalCore = core;
+                var url
+                var data
+                if (this.downloadOnlyPiecePicked == 1) {
+                    url = import.meta.env.VITE_API_ENDPOINT + '/core_compute_shape_stp'
+                    data = this.$userStore.globalCore['functionalDescription']['shape']
+                }
+                else {
+                    url = import.meta.env.VITE_API_ENDPOINT + '/core_compute_core_3d_model_stp'
+                    data = this.$userStore.globalCore
+                }
+
+                this.$axios.post(url, data)
+                .then(response => {
+                    const exportedData = getCoreData(this.$userStore, Defaults.defaultCoreSaveConfiguration)
+                    download(response.data, exportedData["name"] + ".stp", "text/plain");
+                    this.$emit("exported")
+                    this.STPexported = true
+                    setTimeout(() => this.STPexported = false, 2000);
+                })
+                .catch(error => {
+                    console.error(error.data)
+                });
+
+            }).catch(error => {
+                console.error(error);
             });
+
         },
         onExportOBJ(event) {
-            var url
-            var data
-            if (this.downloadOnlyPiecePicked == 1) {
-                url = import.meta.env.VITE_API_ENDPOINT + '/core_compute_shape_obj'
-                data = this.$userStore.globalCore['functionalDescription']['shape']
-            }
-            else {
-                url = import.meta.env.VITE_API_ENDPOINT + '/core_compute_core_3d_model_obj'
-                data = this.$userStore.globalCore
-            }
+            this.$mkf.ready.then(_ => {
+                const aux = Utils.deepCopy(this.$userStore.globalCore);
+                aux['geometricalDescription'] = null;
+                aux['processedDescription'] = null;
 
-            this.$axios.post(url, data)
-            .then(response => {
-                const exportedData = getCoreData(this.$userStore, Defaults.defaultCoreSaveConfiguration)
-                download(response.data, exportedData["name"] + ".obj", "text/plain");
-                this.$emit("exported")
-                this.OBJexported = true
-                setTimeout(() => this.OBJexported = false, 2000);
-            })
-            .catch(error => {
-                console.error(error.data)
+                var core = JSON.parse(this.$mkf.calculate_core_data(JSON.stringify(aux), false));
+                this.$userStore.globalCore = core;
+
+                var url
+                var data
+                if (this.downloadOnlyPiecePicked == 1) {
+                    url = import.meta.env.VITE_API_ENDPOINT + '/core_compute_shape_obj'
+                    data = this.$userStore.globalCore['functionalDescription']['shape']
+                }
+                else {
+                    url = import.meta.env.VITE_API_ENDPOINT + '/core_compute_core_3d_model_obj'
+                    data = this.$userStore.globalCore
+                }
+
+                this.$axios.post(url, data)
+                .then(response => {
+                    const exportedData = getCoreData(this.$userStore, Defaults.defaultCoreSaveConfiguration)
+                    download(response.data, exportedData["name"] + ".obj", "text/plain");
+                    this.$emit("exported")
+                    this.OBJexported = true
+                    setTimeout(() => this.OBJexported = false, 2000);
+                })
+                .catch(error => {
+                    console.error(error.data)
+                });
+            }).catch(error => {
+                console.error(error);
             });
+
         },
         onExport(event) {
             const configuration = {

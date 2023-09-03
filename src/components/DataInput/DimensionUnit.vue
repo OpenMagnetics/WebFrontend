@@ -23,6 +23,10 @@ export default {
             type: Boolean,
             default: false
         },
+        styleClass:{
+            type: String,
+            default: ''
+        },
     },
     data() {
         const multipliersLabel = {
@@ -62,7 +66,7 @@ export default {
 
 
 <template>
-    <select class="form-select bg-light text-white m-0 px-1 text-center unit-select" :value="modelValue" @change="$emit('update:modelValue', Number($event.target.value))" style="width:auto;" :disabled="readOnly">
+    <select class="form-select bg-light text-white m-0 px-1 text-center unit-select" :class="styleClass" :value="modelValue" @change="$emit('update:modelValue', Number($event.target.value))" style="width:auto;" :disabled="readOnly">
         <option v-for="value, label in multipliersLabel" :value="value">
             {{label + unit}}
         </option>

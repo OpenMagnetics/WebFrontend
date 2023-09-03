@@ -63,7 +63,7 @@ export interface DesignRequirements {
     /**
      * Maximum dimensions, width, height, and depth, for the designed magnetic, in m
      */
-    maximumDimensions?: number[];
+    maximumDimensions?: MaximumDimensions;
     /**
      * Maximum weight for the designed magnetic, in Kg
      */
@@ -111,7 +111,7 @@ export interface InsulationRequirements {
     /**
      * Voltage RMS of the main supply to which this transformer is connected to.
      */
-    mainSupplyVoltage?: number;
+    mainSupplyVoltage?: DimensionWithTolerance;
     /**
      * Required overvoltage category
      */
@@ -129,6 +129,8 @@ export interface InsulationRequirements {
 
 /**
  * Required values for the altitude
+ *
+ * Voltage RMS of the main supply to which this transformer is connected to.
  *
  * Required values for the magnetizing inductance
  *
@@ -245,6 +247,16 @@ export enum Market {
     Medical = "Medical",
     Military = "Military",
     Space = "Space",
+}
+
+/**
+ * Maximum dimensions, width, height, and depth, for the designed magnetic, in m
+ */
+export interface MaximumDimensions {
+    depth?:  number;
+    height?: number;
+    width?:  number;
+    [property: string]: any;
 }
 
 export enum TerminalType {
@@ -435,6 +447,10 @@ export interface Processed {
      */
     acEffectiveFrequency?: number;
     /**
+     * The average value of the waveform, referred to 0
+     */
+    average?: number;
+    /**
      * The duty cycle of the waveform, if applicable
      */
     dutyCycle?: number;
@@ -475,12 +491,13 @@ export interface Processed {
  * Label of the waveform, if applicable. Used for common waveforms
  */
 export enum WaveformLabel {
-    Custom = "Custom",
-    Flyback = "Flyback",
-    PhaseShiftedFullBridge = "Phase-Shifted Full Bridge",
-    Sinusoidal = "Sinusoidal",
-    Rectangular = "Rectangular",
     BipolarRectangular = "Bipolar Rectangular",
+    BipolarTriangular = "Bipolar Triangular",
+    Custom = "Custom",
+    FlybackPrimary = "Flyback Primary",
+    FlybackSecondary = "Flyback Secondary",
+    Rectangular = "Rectangular",
+    Sinusoidal = "Sinusoidal",
     Triangular = "Triangular",
     UnipolarRectangular = "Unipolar Rectangular",
     UnipolarTriangular = "Unipolar Triangular",
@@ -2441,9 +2458,17 @@ export interface TemperaturePoint {
  */
 export interface WindingLossesOutput {
     /**
+     * Excitation of the current per physical turn that produced the winding losses
+     */
+    currentDividerPerTurn?: number[];
+    /**
      * Excitation of the current per winding that produced the winding losses
      */
     currentPerWinding?: OperatingPoint;
+    /**
+     * List of DC resistance per turn
+     */
+    dcResistancePerTurn?: number[];
     /**
      * Model used to calculate the winding losses in the case of simulation, or method used to
      * measure it
@@ -2620,6 +2645,14 @@ export class Convert {
 
     public static dimensionWithToleranceToJson(value: DimensionWithTolerance): string {
         return JSON.stringify(uncast(value, r("DimensionWithTolerance")), null, 2);
+    }
+
+    public static toMaximumDimensions(json: string): MaximumDimensions {
+        return cast(JSON.parse(json), r("MaximumDimensions"));
+    }
+
+    public static maximumDimensionsToJson(value: MaximumDimensions): string {
+        return JSON.stringify(uncast(value, r("MaximumDimensions")), null, 2);
     }
 
     public static toOperatingPoint(json: string): OperatingPoint {
@@ -3358,7 +3391,7 @@ const typeMap: any = {
         { json: "leakageInductance", js: "leakageInductance", typ: u(undefined, a(r("DimensionWithTolerance"))) },
         { json: "magnetizingInductance", js: "magnetizingInductance", typ: r("DimensionWithTolerance") },
         { json: "market", js: "market", typ: u(undefined, r("Market")) },
-        { json: "maximumDimensions", js: "maximumDimensions", typ: u(undefined, a(3.14)) },
+        { json: "maximumDimensions", js: "maximumDimensions", typ: u(undefined, r("MaximumDimensions")) },
         { json: "maximumWeight", js: "maximumWeight", typ: u(undefined, 3.14) },
         { json: "name", js: "name", typ: u(undefined, "") },
         { json: "operatingTemperature", js: "operatingTemperature", typ: u(undefined, r("DimensionWithTolerance")) },
@@ -3371,7 +3404,7 @@ const typeMap: any = {
         { json: "altitude", js: "altitude", typ: u(undefined, r("DimensionWithTolerance")) },
         { json: "cti", js: "cti", typ: u(undefined, r("Cti")) },
         { json: "insulationType", js: "insulationType", typ: u(undefined, r("InsulationType")) },
-        { json: "mainSupplyVoltage", js: "mainSupplyVoltage", typ: u(undefined, 3.14) },
+        { json: "mainSupplyVoltage", js: "mainSupplyVoltage", typ: u(undefined, r("DimensionWithTolerance")) },
         { json: "overvoltageCategory", js: "overvoltageCategory", typ: u(undefined, r("OvervoltageCategory")) },
         { json: "pollutionDegree", js: "pollutionDegree", typ: u(undefined, r("PollutionDegree")) },
         { json: "standards", js: "standards", typ: u(undefined, a(r("Standard"))) },
@@ -3382,6 +3415,11 @@ const typeMap: any = {
         { json: "maximum", js: "maximum", typ: u(undefined, 3.14) },
         { json: "minimum", js: "minimum", typ: u(undefined, 3.14) },
         { json: "nominal", js: "nominal", typ: u(undefined, 3.14) },
+    ], "any"),
+    "MaximumDimensions": o([
+        { json: "depth", js: "depth", typ: u(undefined, 3.14) },
+        { json: "height", js: "height", typ: u(undefined, 3.14) },
+        { json: "width", js: "width", typ: u(undefined, 3.14) },
     ], "any"),
     "OperatingPoint": o([
         { json: "conditions", js: "conditions", typ: r("OperatingConditions") },
@@ -3425,6 +3463,7 @@ const typeMap: any = {
     ], "any"),
     "Processed": o([
         { json: "acEffectiveFrequency", js: "acEffectiveFrequency", typ: u(undefined, 3.14) },
+        { json: "average", js: "average", typ: u(undefined, 3.14) },
         { json: "dutyCycle", js: "dutyCycle", typ: u(undefined, 3.14) },
         { json: "effectiveFrequency", js: "effectiveFrequency", typ: u(undefined, 3.14) },
         { json: "label", js: "label", typ: r("WaveformLabel") },
@@ -3899,7 +3938,9 @@ const typeMap: any = {
         { json: "value", js: "value", typ: 3.14 },
     ], "any"),
     "WindingLossesOutput": o([
+        { json: "currentDividerPerTurn", js: "currentDividerPerTurn", typ: u(undefined, a(3.14)) },
         { json: "currentPerWinding", js: "currentPerWinding", typ: u(undefined, r("OperatingPoint")) },
+        { json: "dcResistancePerTurn", js: "dcResistancePerTurn", typ: u(undefined, a(3.14)) },
         { json: "methodUsed", js: "methodUsed", typ: "" },
         { json: "origin", js: "origin", typ: r("ResultOrigin") },
         { json: "resistanceMatrix", js: "resistanceMatrix", typ: u(undefined, a(r("ResistanceMatrixAtFrequency"))) },
@@ -3979,7 +4020,7 @@ const typeMap: any = {
         "Space",
     ],
     "TerminalType": [
-        "Flyind Lead",
+        "Flying Lead",
         "Pin",
         "Screw",
         "SMT",
@@ -4003,13 +4044,16 @@ const typeMap: any = {
         "Zeta Converter",
     ],
     "WaveformLabel": [
-        "custom",
-        "flyback",
-        "phase-shifted full bridge",
-        "sinusoidal",
-        "square",
-        "square with dead time",
-        "triangular",
+        "Bipolar Rectangular",
+        "Bipolar Triangular",
+        "Custom",
+        "Flyback Primary",
+        "Flyback Secondary",
+        "Rectangular",
+        "Sinusoidal",
+        "Triangular",
+        "Unipolar Rectangular",
+        "Unipolar Triangular",
     ],
     "BobbinFamily": [
         "e",

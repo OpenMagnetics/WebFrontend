@@ -361,15 +361,26 @@ export default {
             this.tryToSend()
         },
         compute_gapping_technical_drawing() {
-            const url = import.meta.env.VITE_API_ENDPOINT + '/core_compute_gapping_technical_drawing'
+            this.$mkf.ready.then(_ => {
+                const aux = Utils.deepCopy(this.$userStore.globalCore);
+                aux['geometricalDescription'] = null;
+                aux['processedDescription'] = null;
 
-            this.coreStore.requestingGappingTechnicalDrawing()
-            this.$axios.post(url, this.$userStore.globalCore)
-            .then(response => {
-                this.coreStore.setGappingTechnicalDrawing(response.data)
-            })
-            .catch(error => {
-                console.error(error.data)
+                var core = JSON.parse(this.$mkf.calculate_core_data(JSON.stringify(aux), false));
+                this.$userStore.globalCore = core;
+                const url = import.meta.env.VITE_API_ENDPOINT + '/core_compute_gapping_technical_drawing'
+
+                this.coreStore.requestingGappingTechnicalDrawing()
+                this.$axios.post(url, this.$userStore.globalCore)
+                .then(response => {
+                    this.coreStore.setGappingTechnicalDrawing(response.data)
+                })
+                .catch(error => {
+                    console.error(error.data)
+                });
+
+            }).catch(error => {
+                console.error(error);
             });
         },
         tryToSend() {

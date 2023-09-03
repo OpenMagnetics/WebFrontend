@@ -9,9 +9,9 @@ describe('DesignRequirements', () => {
     })
 
     it('enable and disable all requirements', () => {
-        cy.checkDesignRequirementEnabled('Name')
-        cy.checkDesignRequirementEnabled('MagnetizingInductance')
-        cy.checkDesignRequirementEnabled('TurnsRatios')
+        cy.checkDesignRequirementEnabled('Name', true)
+        cy.checkDesignRequirementEnabled('MagnetizingInductance', true)
+        cy.checkDesignRequirementEnabled('TurnsRatios', true)
 
         cy.enableDesignRequirement('Insulation')
         cy.enableDesignRequirement('LeakageInductance')

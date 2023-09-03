@@ -14,3 +14,9 @@ export const tooltipsMagneticSynthesisDesignRequirements = {
     "terminalType": "Termination required for our magnetic, one per winding",
     "changeNameWindings": "Here you can change the reference for this winding",
 }
+
+export const tooltipsMagneticSynthesisOperatingPoints = {
+    "reflectPrimary": "Reflect waveform from the first secondary",
+    "reflectSecondaries": "Reflect waveform from primary",
+    "editWindingWaveform": "Edit the current and voltage for this winding ",
+}

@@ -211,7 +211,7 @@ export default {
                 })
 
             }).catch(error => { 
-                console.error("error in core_compute_gap_reluctances")
+                console.error("error in compute_gap_reluctances")
                 console.error(error.data)
             });
         },

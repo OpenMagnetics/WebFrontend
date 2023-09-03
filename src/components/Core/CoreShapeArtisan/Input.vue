@@ -73,32 +73,13 @@ export default {
             }
         },
         getTechnicalDrawing(dimensionsValueInM) {
-            const data = {
-                'aliases': [],
-                'dimensions': dimensionsValueInM,
-                'family': this.familyLabelSelected,
-                'familySubtype': this.subtypeLabelSelected,
-                'name': this.shapeName,
-                'type': this.shapeName == "Custom"? 'custom' : 'standard'
-            }
-            const url = import.meta.env.VITE_API_ENDPOINT + '/core_compute_technical_drawing'
+            this.$mkf.ready.then(_ => {
+                const aux = Utils.deepCopy(this.$userStore.globalCore);
+                aux['geometricalDescription'] = null;
+                aux['processedDescription'] = null;
 
-            this.$axios.post(url, data)
-            .then(response => {
-                this.coreStore.setTechnicalDrawing(response.data)
-            })
-            .catch(error => { 
-                console.error(error.data)
-            });
-        },
-        computePiece3DModel() {
-            if (!this.posting) {
-                this.posting = true
-                this.fix_optional_missing()
-                const dimensionsValueInM = {}
-                for (const [key, value] of Object.entries(this.dimensionsValueInMm)) {
-                    dimensionsValueInM[key] = value / 1000
-                }
+                var core = JSON.parse(this.$mkf.calculate_core_data(JSON.stringify(aux), false));
+                this.$userStore.globalCore = core;
                 const data = {
                     'aliases': [],
                     'dimensions': dimensionsValueInM,
@@ -107,69 +88,124 @@ export default {
                     'name': this.shapeName,
                     'type': this.shapeName == "Custom"? 'custom' : 'standard'
                 }
-                const url = import.meta.env.VITE_API_ENDPOINT + '/core_compute_shape'
+                const url = import.meta.env.VITE_API_ENDPOINT + '/core_compute_technical_drawing'
 
-                const globalCore = this.$userStore.globalCore
-                globalCore['functionalDescription']['shape'] = data
-                this.$userStore.setGlobalCoreAlt(globalCore)
-
-                this.updateCoreData();
-
-                this.hasFreeCADError = false
-                this.coreStore.requestingNewShape()
                 this.$axios.post(url, data)
                 .then(response => {
-                    this.posting = false
-                    this.isDataDirty = false
-                    this.coreStore.setStreamedObj(response.data)
-                    this.getTechnicalDrawing(dimensionsValueInM)
-                    this.loadingStandardCore = false;
+                    this.coreStore.setTechnicalDrawing(response.data)
                 })
-                .catch(error => {
-                    this.posting = false
-                    this.isDataDirty = false
-                    this.hasFreeCADError = true
+                .catch(error => { 
+                    console.error(error.data)
+                });
+
+            }).catch(error => {
+                console.error(error);
+            });
+        },
+        computePiece3DModel() {
+            if (!this.posting) {
+                this.$mkf.ready.then(_ => {
+                    const aux = Utils.deepCopy(this.$userStore.globalCore);
+                    aux['geometricalDescription'] = null;
+                    aux['processedDescription'] = null;
+
+                    var core = JSON.parse(this.$mkf.calculate_core_data(JSON.stringify(aux), false));
+                    this.$userStore.globalCore = core;
+
+                    this.posting = true
+                    this.fix_optional_missing()
+                    const dimensionsValueInM = {}
+                    for (const [key, value] of Object.entries(this.dimensionsValueInMm)) {
+                        dimensionsValueInM[key] = value / 1000
+                    }
+                    const data = {
+                        'aliases': [],
+                        'dimensions': dimensionsValueInM,
+                        'family': this.familyLabelSelected,
+                        'familySubtype': this.subtypeLabelSelected,
+                        'name': this.shapeName,
+                        'type': this.shapeName == "Custom"? 'custom' : 'standard'
+                    }
+                    const url = import.meta.env.VITE_API_ENDPOINT + '/core_compute_shape'
+
+                    const globalCore = this.$userStore.globalCore
+                    globalCore['functionalDescription']['shape'] = data
+                    this.$userStore.setGlobalCoreAlt(globalCore)
+
+                    this.updateCoreData();
+
+                    this.hasFreeCADError = false
+                    this.coreStore.requestingNewShape()
+                    this.$axios.post(url, data)
+                    .then(response => {
+                        this.posting = false
+                        this.isDataDirty = false
+                        this.coreStore.setStreamedObj(response.data)
+                        this.getTechnicalDrawing(dimensionsValueInM)
+                        this.loadingStandardCore = false;
+                    })
+                    .catch(error => {
+                        this.posting = false
+                        this.isDataDirty = false
+                        this.hasFreeCADError = true
+                    });
+
+                }).catch(error => {
+                    console.error(error);
                 });
             }
         },
         computeCore3DModel() {
             if (!this.posting) {
-                this.posting = true
-                this.fix_optional_missing()
-                const dimensionsValueInM = {}
-                for (const [key, value] of Object.entries(this.dimensionsValueInMm)) {
-                    dimensionsValueInM[key] = value / 1000
-                }
-                const data = {
-                    'aliases': [],
-                    'dimensions': dimensionsValueInM,
-                    'family': this.familyLabelSelected,
-                    'familySubtype': this.subtypeLabelSelected,
-                    'name': this.shapeName,
-                    'type': this.shapeName == "Custom"? 'custom' : 'standard'
-                }
-                const url = import.meta.env.VITE_API_ENDPOINT + '/core_compute_core_3d_model'
 
-                this.hasFreeCADError = false
-                const globalCore = this.$userStore.globalCore
-                globalCore['functionalDescription']['shape'] = data
-                this.$userStore.setGlobalCoreAlt(globalCore)
+                this.$mkf.ready.then(_ => {
+                    const aux = Utils.deepCopy(this.$userStore.globalCore);
+                    aux['geometricalDescription'] = null;
+                    aux['processedDescription'] = null;
 
-                this.updateCoreData();
+                    var core = JSON.parse(this.$mkf.calculate_core_data(JSON.stringify(aux), false));
+                    this.$userStore.globalCore = core;
 
-                this.coreStore.requestingNewShape()
-                this.$axios.post(url, globalCore)
-                .then(response => {
-                    this.posting = false
-                    this.isDataDirty = false
-                    this.coreStore.setStreamedObj(response.data)
-                    this.getTechnicalDrawing(dimensionsValueInM)
-                    this.loadingStandardCore = false;
-                })
-                .catch(error => {
-                    this.posting = false
-                    this.isDataDirty = false
-                    this.hasFreeCADError = true
+                    this.posting = true
+                    this.fix_optional_missing()
+                    const dimensionsValueInM = {}
+                    for (const [key, value] of Object.entries(this.dimensionsValueInMm)) {
+                        dimensionsValueInM[key] = value / 1000
+                    }
+                    const data = {
+                        'aliases': [],
+                        'dimensions': dimensionsValueInM,
+                        'family': this.familyLabelSelected,
+                        'familySubtype': this.subtypeLabelSelected,
+                        'name': this.shapeName,
+                        'type': this.shapeName == "Custom"? 'custom' : 'standard'
+                    }
+                    const url = import.meta.env.VITE_API_ENDPOINT + '/core_compute_core_3d_model'
+
+                    this.hasFreeCADError = false
+                    const globalCore = this.$userStore.globalCore
+                    globalCore['functionalDescription']['shape'] = data
+                    this.$userStore.setGlobalCoreAlt(globalCore)
+
+                    this.updateCoreData();
+
+                    this.coreStore.requestingNewShape()
+                    this.$axios.post(url, globalCore)
+                    .then(response => {
+                        this.posting = false
+                        this.isDataDirty = false
+                        this.coreStore.setStreamedObj(response.data)
+                        this.getTechnicalDrawing(dimensionsValueInM)
+                        this.loadingStandardCore = false;
+                    })
+                    .catch(error => {
+                        this.posting = false
+                        this.isDataDirty = false
+                        this.hasFreeCADError = true
+                    });
+
+                }).catch(error => {
+                    console.error(error);
                 });
             }
         },

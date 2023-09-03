@@ -25,9 +25,6 @@ const theme = {
   dark: style.getPropertyValue('--bs-dark'),
   white: style.getPropertyValue('--bs-white'),
 };
-const currentStore = useCurrentStore()
-const voltageStore = useVoltageStore()
-const commonStore = useCommonStore()
 
 var options = {};
 var chart = null;
@@ -324,21 +321,20 @@ export default {
         },
         createChart(chartId, options) {
             const ctx = document.getElementById(chartId)
-            chart = new Chart(ctx, {
-                type: 'line',
-                data: this.data,
-                options: options,
-            })
+            if (ctx != null) {
+                chart = new Chart(ctx, {
+                    type: 'line',
+                    data: this.data,
+                    options: options,
+                })
 
 
-            chart.data.datasets.forEach((item, datasetIndex) => {
-                this.updateVerticalLimits(datasetIndex);
-            });
-            this.setHorizontalLimits()
-            chart.update()
-            // currentStore.setChartReady()
-            // voltageStore.setChartReady()
-            // this.$emit('chart-ready')
+                chart.data.datasets.forEach((item, datasetIndex) => {
+                    this.updateVerticalLimits(datasetIndex);
+                });
+                this.setHorizontalLimits()
+                chart.update()
+            }
         },
         getSignalDescriptor(datasetIndex) {
             var signalDescriptor = null
@@ -367,7 +363,22 @@ export default {
                     chart.options.plugins.dragData.dragX = false
                 }
             }
-            else if (this.modelValue[signalDescriptor].processed.label == "Rectangular") {
+            else if (this.modelValue[signalDescriptor].processed.label == "Rectangular" ) {
+                if (index == 0 || index == 1 || index == 4) {
+                    chart.options.plugins.dragData.dragX = false
+                }
+            }
+            else if (this.modelValue[signalDescriptor].processed.label == "Unipolar Triangular") {
+                if (index == 0 || index == 4) {
+                    chart.options.plugins.dragData.dragX = false
+                }
+            }
+            else if (this.modelValue[signalDescriptor].processed.label == "Unipolar Rectangular" || this.modelValue[signalDescriptor].processed.label == "Flyback Primary") {
+                if (index == 0 || index == 1 || index == 4) {
+                    chart.options.plugins.dragData.dragX = false
+                }
+            }
+            else if (this.modelValue[signalDescriptor].processed.label == "Flyback Secondary") {
                 if (index == 0 || index == 3 || index == 4) {
                     chart.options.plugins.dragData.dragX = false
                 }
@@ -403,44 +414,134 @@ export default {
                 const data = chart.data.datasets[datasetIndex].data
                 switch (index) {
                     case 0:
-                        data[1].y = data[0].y
+                        data[1].x = data[0].x
                         data[4].y = data[0].y
                     break;
                     case 1:
-                        data[0].y = data[1].y
-                        data[4].y = data[1].y
-                        data[2].x = data[1].x
+                        data[0].x = data[1].x
+                        data[2].y = data[1].y
                     break;
                     case 2:
-                        data[3].y = data[2].y
-                        data[1].x = data[2].x
+                        data[1].y = data[2].y
+                        data[3].x = data[2].x
                     break;
                     case 3:
-                        data[2].y = data[3].y
+                        data[2].x = data[3].x
+                        data[0].y = data[3].y
+                        data[4].y = data[3].y
                     break;
                     case 4:
                         data[0].y = data[4].y
-                        data[1].y = data[4].y
                     break;
                 }
 
-                const peakToPeakValue = data[2].y - data[1].y
+                const peakToPeakValue = data[2].y - data[3].y
                 const offsetValue = 0
-                const dc = (data[1].x - data[0].x) / (data[4].x - data[0].x)
+                const dc = (data[2].x - data[1].x) / (data[4].x - data[0].x)
                 const max = Number(offsetValue) + Number(peakToPeakValue * dc)
                 const min = Number(offsetValue) - Number(peakToPeakValue * (1 - dc))
                 switch (index) {
                     case 0:
                     case 1:
                     case 4:
+                        data[1].y = max
                         data[2].y = max
-                        data[3].y = max
                     break;
                     case 2:
                     case 3:
                         data[0].y = min
                         data[4].y = min
-                        data[1].y = min
+                        data[3].y = min
+                    break;
+                }
+            }
+            else if (this.modelValue[signalDescriptor].processed.label == "Unipolar Rectangular") {
+                const data = chart.data.datasets[datasetIndex].data
+                switch (index) {
+                    case 0:
+                        data[1].x = data[0].x;
+                        data[3].y = data[0].y;
+                        data[4].y = data[0].y;
+                    break;
+                    case 1:
+                        data[2].y = data[1].y;
+                    break;
+                    case 2:
+                        data[3].x = data[2].x;
+                        data[1].y = data[2].y;
+                    break;
+                    case 3:
+                        data[2].x = data[3].x;
+                        data[0].y = data[3].y;
+                        data[4].y = data[3].y;
+                    break;
+                    case 4:
+                        data[0].y = data[4].y;
+                        data[3].y = data[4].y;
+                    break;
+                }
+            }
+            else if (this.modelValue[signalDescriptor].processed.label == "Flyback Primary") {
+                const data = chart.data.datasets[datasetIndex].data
+                switch (index) {
+                    case 0:
+                        data[1].x = data[0].x;
+                        data[3].y = data[0].y;
+                        data[4].y = data[0].y;
+                    break;
+                    case 2:
+                        data[3].x = data[2].x;
+                    break;
+                    case 3:
+                        data[2].x = data[3].x;
+                        data[0].y = data[3].y;
+                        data[4].y = data[3].y;
+                    break;
+                    case 4:
+                        data[0].y = data[4].y;
+                        data[3].y = data[4].y;
+                    break;
+                }
+            }
+            else if (this.modelValue[signalDescriptor].processed.label == "Flyback Secondary") {
+                const data = chart.data.datasets[datasetIndex].data
+                switch (index) {
+                    case 0:
+                        data[1].y = data[0].y;
+                        data[4].y = data[0].y;
+                    break;
+                    case 1:
+                        data[2].x = data[1].x;
+                        data[0].y = data[1].y;
+                        data[4].y = data[1].y;
+                    break;
+                    case 2:
+                        data[1].x = data[2].x;
+                    break;
+                    case 4:
+                        data[0].y = data[4].y;
+                        data[3].y = data[4].y;
+                    break;
+                }
+            }
+            else if (this.modelValue[signalDescriptor].processed.label == "Unipolar Triangular") {
+                const data = chart.data.datasets[datasetIndex].data
+                switch (index) {
+                    case 0:
+                        data[2].y = data[0].y;
+                        data[3].y = data[0].y;
+                    break;
+                    case 1:
+                        data[2].x = data[1].x;
+                    break;
+                    case 2:
+                        data[0].y = data[2].y;
+                        data[3].y = data[2].y;
+                        data[1].x = data[2].x;
+                    break;
+                    case 3:
+                        data[2].y = data[3].y;
+                        data[0].y = data[3].y;
                     break;
                 }
             }

@@ -152,6 +152,10 @@ export default {
                     this.quickStacksSelected = 1
                 }
 
+                if ('familySubtype' in shapeDataSelected) {
+                    shapeDataSelected['familySubtype'] = shapeDataSelected['familySubtype'].toString();
+                }
+
                 this.$userStore.setGlobalSimulationCoreShape(shapeDataSelected)
                 this.$userStore.setGlobalSimulationCoreNumberStacks(1)
                 this.simulationStore.calculateInductance()
@@ -168,8 +172,8 @@ export default {
             if (materialDataSelected != {}) {
                 this.$userStore.setGlobalSimulationCoreMaterial(materialDataSelected)
                 this.simulationStore.loadCoreLossesModels()
-                this.simulationStore.calculateInductance()
-                this.simulationStore.calculateCoreLosses()
+                // this.simulationStore.calculateInductance()
+                // this.simulationStore.calculateCoreLosses()
             }
         },
         onTemperatureChange () {

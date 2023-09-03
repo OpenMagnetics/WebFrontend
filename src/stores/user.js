@@ -5,6 +5,9 @@ import * as Defaults from '/src/assets/js/defaults.js'
 
 export const useUserStore = defineStore("user", () => {
 
+    const magneticSynthesisSubsection = ref("designRequirements")
+
+
     const loggedIn = ref(false)
     const ipAddress = ref(0)
     const username = ref(null)
@@ -50,6 +53,10 @@ export const useUserStore = defineStore("user", () => {
 
     const dump = computed(() => {
         return {
+            "magneticSynthesisSubsection": magneticSynthesisSubsection.value,
+
+
+
             "loggedIn": loggedIn.value,
             "ipAddress": ipAddress.value,
             "username": username.value,
@@ -86,6 +93,9 @@ export const useUserStore = defineStore("user", () => {
     }
 
     function reset() {
+        this.magneticSynthesisSubsection = false
+
+
         this.loggedIn = false
         this.username = null
         this.globalOperationPoint = Utils.deepCopy(Defaults.defaultOperationPointExcitation)
@@ -215,6 +225,9 @@ export const useUserStore = defineStore("user", () => {
     function disarmDeadManSwitch() {
     }
     return {
+        magneticSynthesisSubsection,
+
+
         dump,
         armDeadManSwitch,
         disarmDeadManSwitch,

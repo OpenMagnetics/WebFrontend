@@ -114,6 +114,7 @@ export default {
             canContinue &= store.mas.inputs.designRequirements.magnetizingInductance.minimum != null ||
                            store.mas.inputs.designRequirements.magnetizingInductance.nominal != null ||
                            store.mas.inputs.designRequirements.magnetizingInductance.maximum != null;
+            console.log(store.mas.inputs.designRequirements.turnsRatios)
             for (var index in store.mas.inputs.designRequirements.turnsRatios) {
                 canContinue &= store.mas.inputs.designRequirements.turnsRatios[index].minimum != null ||
                                store.mas.inputs.designRequirements.turnsRatios[index].nominal != null ||
@@ -150,6 +151,20 @@ export default {
                         newElementsCoil.push({'name': toTitleCase(isolationSideOrdered[i])});
                     }
                 }
+                for (var operationPointIndex = 0; operationPointIndex < this.masStore.mas.inputs.operatingPoints.length; operationPointIndex++) {
+                    const newExcitationsPerWinding = [];
+
+                    for (var i = 0; i < newLength; i++) {
+                        if (i < this.masStore.mas.inputs.operatingPoints[operationPointIndex].excitationsPerWinding.length) {
+                            newExcitationsPerWinding.push(this.masStore.mas.inputs.operatingPoints[operationPointIndex].excitationsPerWinding[i]);
+                        }
+                        else {
+                            newExcitationsPerWinding.push(null);
+                        }
+                    }
+                    this.masStore.mas.inputs.operatingPoints[operationPointIndex].excitationsPerWinding = newExcitationsPerWinding;
+                }
+
                 this.masStore.mas.inputs.designRequirements.turnsRatios = newElementsTurnsRatios;
                 this.masStore.mas.magnetic.coil.functionalDescription = newElementsCoil;
                 this.masStore.updatedTurnsRatios();

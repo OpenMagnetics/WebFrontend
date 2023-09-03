@@ -2,11 +2,10 @@ import '/cypress/support/toolsCommands'
 import '/cypress/support/storylineCommands'
 
 
-describe('Storyline', {
-    viewportWidth: 1800,
-    viewportHeight: 1200}, () => {
+describe('Storyline', () => {
     beforeEach(() => {
-        cy.visit('http://localhost:5173/magnetic_synthesis')
+        cy.viewport(1800, 1200)
+        cy.visit('http://localhost:5173/magnetic_synthesis')    
     })
 
     it('initial state', () => {
@@ -64,7 +63,7 @@ describe('Storyline', {
         cy.checkStorylineAdventureVisible("magneticFinalizer");
     })
 
-    it.only('Go to core, customize and back', () => {
+    it('Go to core, customize and back', () => {
         cy.checkTitle("Design Requirements");
         cy.checkStorylineAdventureVisible("designRequirements");
 

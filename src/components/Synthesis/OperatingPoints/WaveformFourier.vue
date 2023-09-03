@@ -1,4 +1,5 @@
 <script setup>
+import { useMasStore } from '/src/stores/mas'
 import { Chart, registerables } from 'chart.js'
 import { formatCurrent, removeTrailingZeroes, formatFrequency, formatVoltage } from '/src/assets/js/utils.js'
 import { defaultSamplingNumberPoints, defaultMaximumNumberHarmonicsShown } from '/src/assets/js/defaults.js'
@@ -23,6 +24,7 @@ export default {
         },
     },
     data() {
+        const masStore = useMasStore();
         const style = getComputedStyle(document.body);
         const theme = {
           primary: style.getPropertyValue('--bs-primary'),
@@ -59,19 +61,24 @@ export default {
         return {
             theme,
             data,
+            masStore,
         }
     },
     computed: {
     },
     watch: { 
-        'modelValue.current.waveform'(newValue, oldValue) {
-            this.runFFT('current');
-            this.runFFT('voltage');
-        },
-        'modelValue.voltage.waveform'(newValue, oldValue) {
-            this.runFFT('current');
-            this.runFFT('voltage');
-        },
+    },
+    created () {
+        this.masStore.$onAction((action) => {
+            if (action.name == "updatedInputExcitationWaveformUpdatedFromProcessed") {
+                this.runFFT('current');
+                this.runFFT('voltage');
+            }
+            if (action.name == "updatedInputExcitationWaveformUpdatedFromGraph") {
+                this.runFFT('current');
+                this.runFFT('voltage');
+            }
+        })
     },
     mounted () {
         options = {
@@ -216,17 +223,19 @@ export default {
         },
         createChart(chartId, options) {
             const ctx = document.getElementById(chartId)
-            chart = new Chart(ctx, {
-                type: 'bar',
-                data: this.data,
-                options: options,
-            })
+            if (ctx != null) {
+                chart = new Chart(ctx, {
+                    type: 'bar',
+                    data: this.data,
+                    options: options,
+                })
 
-            harmonicsFrequencies = []
-            for(var i = 0; i < defaultSamplingNumberPoints / 2; i++) {
-                harmonicsFrequencies.push(this.modelValue.frequency * i)
+                harmonicsFrequencies = []
+                for(var i = 0; i < defaultSamplingNumberPoints / 2; i++) {
+                    harmonicsFrequencies.push(this.modelValue.frequency * i)
+                }
+                chart.update()
             }
-            chart.update()
         },
     }
 }

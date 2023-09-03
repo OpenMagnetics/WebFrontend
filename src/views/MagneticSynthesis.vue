@@ -75,8 +75,9 @@ export default {
                 prevTool: "coilAdviser",
             },
         };
+        // var selectedTool = this.$userStore.magneticSynthesisSubsection;
         // var selectedTool = "designRequirements";
-        var selectedTool = "operatingPoints";
+        // var selectedTool = "operatingPoints";
 
         const canContinue = {
             'designRequirements': true,
@@ -92,41 +93,41 @@ export default {
         return {
             currentStoryline,
             canContinue,
-            selectedTool,
+            // selectedTool,
         }
     },
     methods: {
         prevTool(event) {
-            if (this.currentStoryline[this.selectedTool].prevTool != null) {
-                this.selectedTool = this.currentStoryline[this.selectedTool].prevTool;
+            if (this.currentStoryline[this.$userStore.magneticSynthesisSubsection].prevTool != null) {
+                this.$userStore.magneticSynthesisSubsection = this.currentStoryline[this.$userStore.magneticSynthesisSubsection].prevTool;
             }
         },
         nextTool(event) {
-            if (this.currentStoryline[this.selectedTool].nextTool != null) {
-                this.selectedTool = this.currentStoryline[this.selectedTool].nextTool;
+            if (this.currentStoryline[this.$userStore.magneticSynthesisSubsection].nextTool != null) {
+                this.$userStore.magneticSynthesisSubsection = this.currentStoryline[this.$userStore.magneticSynthesisSubsection].nextTool;
             }
         },
         advancedTool(event) {
-            if (this.currentStoryline[this.selectedTool].advancedTool != null) {
-                this.selectedTool = this.currentStoryline[this.selectedTool].advancedTool;
+            if (this.currentStoryline[this.$userStore.magneticSynthesisSubsection].advancedTool != null) {
+                this.$userStore.magneticSynthesisSubsection = this.currentStoryline[this.$userStore.magneticSynthesisSubsection].advancedTool;
             }
         },
         basicTool(event) {
-            if (this.currentStoryline[this.selectedTool].basicTool != null) {
-                this.selectedTool = this.currentStoryline[this.selectedTool].basicTool;
+            if (this.currentStoryline[this.$userStore.magneticSynthesisSubsection].basicTool != null) {
+                this.$userStore.magneticSynthesisSubsection = this.currentStoryline[this.$userStore.magneticSynthesisSubsection].basicTool;
             }
         },
         traversableRight() {
-            return this.currentStoryline[this.selectedTool].advancedTool != null;
+            return this.currentStoryline[this.$userStore.magneticSynthesisSubsection].advancedTool != null;
         },
         traversableLeft() {
-            return this.currentStoryline[this.selectedTool].basicTool != null;
+            return this.currentStoryline[this.$userStore.magneticSynthesisSubsection].basicTool != null;
         },
         updateCanContinue(tool, value) {
             this.canContinue[tool] = value;
         },
         changeTool(tool) {
-            this.selectedTool = tool;
+            this.$userStore.magneticSynthesisSubsection = tool;
         }
     },
     mounted() {
@@ -141,30 +142,30 @@ export default {
         <Header />
         <main role="main" class="main">
             <div class="container mx-auto ">
-                <div class="row">
+                <div class="row ">
                     <div class="storyline text-white text-center col-1 bg-light border border-primary m-0 p-1">
                         <h4 class="text-center">Storyline</h4>
-                        <Storyline :selectedTool="selectedTool" :storyline="currentStoryline" :canContinue="canContinue" @changeTool="changeTool"/>
+                        <Storyline :selectedTool="$userStore.magneticSynthesisSubsection" :storyline="currentStoryline" :canContinue="canContinue" @changeTool="changeTool"/>
                     </div>
-                    <div class="tool text-white bg-dark text-center offset-1 col-11 bg-light" >
-                        <div>
-                            <button data-cy="magnetic-synthesis-previous-tool-button" class="btn btn-outline-primary float-start mb-2" @click="prevTool"> Previous tool</button>
-                            <h2 data-cy="magnetic-synthesis-title-text" class="">
-                                {{toTitleCase(selectedTool)}}
+                    <div class="tool text-white bg-dark text-center offset-1 col-11 bg-light row " >
+                        <div class="mb-2 row" >
+                            <button data-cy="magnetic-synthesis-previous-tool-button" class="btn btn-outline-primary col-sm-12 col-md-2 mt-1" style="max-height: 50px;" @click="prevTool"> Previous tool</button>
+                            <h2 data-cy="magnetic-synthesis-title-text" class="col-sm-12 col-md-9">
+                                {{toTitleCase($userStore.magneticSynthesisSubsection)}}
                             </h2>
                         </div>
                             
-                        <DesignRequirements @canContinue="updateCanContinue('designRequirements', $event)" :dataTestLabel="'MagneticSynthesis-DesignRequirements'" v-if="selectedTool == 'designRequirements'"/>
-                        <OperatingPoints :dataTestLabel="'MagneticSynthesis-OperatingPoints'" v-if="selectedTool == 'operatingPoints'"/>
-                        <CoreAdviser :dataTestLabel="'MagneticSynthesis-CoreAdviser'" v-if="selectedTool == 'coreAdviser'"/>
-                        <CoreCustomizer :dataTestLabel="'MagneticSynthesis-CoreCustomizer'" v-if="selectedTool == 'coreCustomizer'"/>
-                        <WireAdviser :dataTestLabel="'MagneticSynthesis-WireAdviser'" v-if="selectedTool == 'wireAdviser'"/>
-                        <WireCustomizer :dataTestLabel="'MagneticSynthesis-WireCustomizer'" v-if="selectedTool == 'wireCustomizer'"/>
-                        <CoilAdviser :dataTestLabel="'MagneticSynthesis-CoilAdviser'" v-if="selectedTool == 'coilAdviser'"/>
-                        <MagneticFinalizer :dataTestLabel="'MagneticSynthesis-MagneticFinalizer'" v-if="selectedTool == 'magneticFinalizer'"/>
-                        <button :disabled="!canContinue[selectedTool]" data-cy="magnetic-synthesis-next-tool-button" class="btn btn-outline-primary float-start mt-2" @click="nextTool">{{canContinue[selectedTool]? 'Next tool' : 'Errors must be fixed'}}</button>
-                        <button data-cy="magnetic-synthesis-customize-tool-button" v-if="traversableRight()" class="btn btn-outline-primary float-end mt-2" @click="advancedTool"> Customize tool</button>
-                        <button data-cy="magnetic-synthesis-main-tool-button" v-if="traversableLeft()" class="btn btn-outline-primary float-end mt-2" @click="basicTool"> Back to main tool</button>
+                        <DesignRequirements @canContinue="updateCanContinue('designRequirements', $event)" :dataTestLabel="'MagneticSynthesis-DesignRequirements'" v-if="$userStore.magneticSynthesisSubsection == 'designRequirements'"/>
+                        <OperatingPoints @canContinue="updateCanContinue('operatingPoints', $event)" @changeTool="changeTool" :dataTestLabel="'MagneticSynthesis-OperatingPoints'" v-if="$userStore.magneticSynthesisSubsection == 'operatingPoints'"/>
+                        <CoreAdviser :dataTestLabel="'MagneticSynthesis-CoreAdviser'" v-if="$userStore.magneticSynthesisSubsection == 'coreAdviser'"/>
+                        <CoreCustomizer :dataTestLabel="'MagneticSynthesis-CoreCustomizer'" v-if="$userStore.magneticSynthesisSubsection == 'coreCustomizer'"/>
+                        <WireAdviser :dataTestLabel="'MagneticSynthesis-WireAdviser'" v-if="$userStore.magneticSynthesisSubsection == 'wireAdviser'"/>
+                        <WireCustomizer :dataTestLabel="'MagneticSynthesis-WireCustomizer'" v-if="$userStore.magneticSynthesisSubsection == 'wireCustomizer'"/>
+                        <CoilAdviser :dataTestLabel="'MagneticSynthesis-CoilAdviser'" v-if="$userStore.magneticSynthesisSubsection == 'coilAdviser'"/>
+                        <MagneticFinalizer :dataTestLabel="'MagneticSynthesis-MagneticFinalizer'" v-if="$userStore.magneticSynthesisSubsection == 'magneticFinalizer'"/>
+                        <button  style="max-height: 50px;" :disabled="!canContinue[$userStore.magneticSynthesisSubsection]" data-cy="magnetic-synthesis-next-tool-button" class="btn btn-outline-primary  mt-2 col-sm-12 col-md-2 " @click="nextTool">{{canContinue[$userStore.magneticSynthesisSubsection]? 'Next tool' : 'Errors must be fixed'}}</button>
+                        <button data-cy="magnetic-synthesis-main-tool-button" v-if="traversableLeft()" class="btn btn-outline-primary mt-2 offset-6 col-2" @click="basicTool"> Back  style="max-height: 50px;" to main tool</button>
+                        <button  style="max-height: 50px;" data-cy="magnetic-synthesis-customize-tool-button" v-if="traversableRight()" class="btn btn-outline-primary mt-2 col-2" :class="traversableLeft()? '' : 'offset-8'" @click="advancedTool"> Customize tool</button>
                     </div>
                 </div>
             </div>

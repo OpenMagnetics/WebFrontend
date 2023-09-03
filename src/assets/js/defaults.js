@@ -105,7 +105,7 @@ export const defaultDesignRequirements = {
 }
 
 export const defaultOperatingPointExcitation = {  
-    "name": "My Winding Excitation",
+    "name": "Primary winding excitation",
     "frequency": 100000,
     "current": {
         "waveform": {
@@ -130,17 +130,17 @@ export const defaultOperatingPointExcitation = {
     "voltage": {
         "waveform": {
             "data": [
+                -2.5,
                 7.5,
                 7.5,
                 -2.5,
-                -2.5,
-                7.5
+                -2.5
             ],
             "time": [
                 0,
+                0,
                 0.0000025,
                 0.0000025,
-                0.00001,
                 0.00001
             ]
         },
@@ -162,6 +162,7 @@ export const minimumMaximumScalePerParameter = {
     "strayCapacitance": {"min": 1e-12, "max": 1e-6},
     "voltage": {"min": 1e-6, "max": 1e5},
     "current": {"min": 1e-6, "max": 1e3},
+    "power": {"min": 1e-3, "max": 1e9},
     "temperature": {"min": 1, "max": 1},
     "frequency": {"min": 1, "max": 1e9},
     "percentage": {"min": 0.0001, "max": 0.9999},

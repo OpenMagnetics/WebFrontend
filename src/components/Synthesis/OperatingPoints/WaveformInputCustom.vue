@@ -36,6 +36,14 @@ export default {
         }
     },
     computed: {
+        induceableSignal() {
+            if (this.signalDescriptor == 'current') {
+                return true;
+            }
+            else {
+                return this.modelValue.current.processed.label != "Rectangular" && this.modelValue.current.processed.label != "Bipolar Rectangular" && this.modelValue.current.processed.label != "Unipolar Rectangular";
+            }
+        }
     },
     watch: { 
     },
@@ -60,20 +68,21 @@ export default {
         <label class="fs-4 row" :class="titleColor(signalDescriptor)">Waveform for {{signalDescriptor}}</label>
         <div></div>
         <ElementFromList class="border-bottom pb-2 mb-1"
+            v-if="modelValue[signalDescriptor] != null"
             :name="'label'"
             :dataTestLabel="dataTestLabel + '-Label'"
             :options="WaveformLabel"
             :titleSameRow="true"
             :replaceTitle="'Waveform'"
-            v-model="this.modelValue[signalDescriptor].processed"
+            v-model="modelValue[signalDescriptor].processed"
             @updatedNumberElements="labelChanged"
         />
-        <div v-for="(value, key) in modelValue[signalDescriptor].waveform.data">
+        <div v-if="modelValue[signalDescriptor] != null" v-for="(value, key) in modelValue[signalDescriptor].waveform.data">
             <WaveformInputCustomPoint
                 v-if="!resettingPoints || addedOrRemovedIndex>=key"
                 :modelValue="modelValue[signalDescriptor].waveform"
                 :name="key"
-                :dataTestLabel="dataTestLabel + '-WaveformInputCustomPoint-' + signalDescriptor + '-' + key"
+                :dataTestLabel="dataTestLabel + '-WaveformInputCustomPoint-' + key"
                 :signalDescriptor="signalDescriptor"
                 @updatedTime="$emit('updatedTime')"
                 @updatedData="$emit('updatedData')"
@@ -81,6 +90,11 @@ export default {
                 />
                 <div v-else style="height: 40px;"></div>
         </div>
+        <button v-if="induceableSignal" class="btn btn-secondary fs-6 offset-2 col-8 mt-2 p-0" @click="$emit('induce')" style="max-height: 1.7em">
+            {{'Induce from ' + (signalDescriptor == 'current'? 'voltage' : 'current')}}
+            <i class="fa-solid fa-bolt"></i>
+            <i class="fa-solid fa-magnet"></i>
+        </button>
     </div>
 </template>
 

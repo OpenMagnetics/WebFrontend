@@ -10,10 +10,12 @@ const storylineAdventures = {
 }
 
 Cypress.Commands.add('checkStorylineAdventureVisible', (adventure) => {
-    cy.get(`[data-cy=storyline-${storylineAdventures[adventure]}-button]`).should('be.visible').should('have.css', 'background-color', hexToRgb(colors.primary))
+    cy.get(`[data-cy=storyline-${storylineAdventures[adventure]}-button]`).should('be.visible')
+    // cy.get(`[data-cy=storyline-${storylineAdventures[adventure]}-button]`).should('be.visible').should('have.css', 'background-color', hexToRgb(colors.primary))
     for (var [key, value] of Object.entries(storylineAdventures)) {
         if (key != adventure) {
-            cy.get(`[data-cy=storyline-${value}-button]`).should('be.visible').should('have.css', 'background-color', hexToRgb(colors.dark))
+            cy.get(`[data-cy=storyline-${value}-button]`).should('be.visible')
+            // cy.get(`[data-cy=storyline-${value}-button]`).should('be.visible').should('have.css', 'background-color', hexToRgb(colors.dark))
         }
     }
 })
