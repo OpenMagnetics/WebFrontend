@@ -133,6 +133,7 @@ export default {
     mounted() {
     },
     created() {
+        console.warn(this.$userStore.magneticSynthesisSubsection)
     },
 }
 </script>

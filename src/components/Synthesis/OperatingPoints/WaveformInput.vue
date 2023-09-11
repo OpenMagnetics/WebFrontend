@@ -48,7 +48,7 @@ export default {
             }
         }
     },
-    watch: { 
+    watch: {
         'modelValue.current.processed'(newValue, oldValue) {
             if (this.signalDescriptor == 'current'){
                 this.forceUpdate += 1

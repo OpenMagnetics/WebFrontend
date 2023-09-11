@@ -77,7 +77,6 @@ router.beforeEach((to, from, next) => {
 	    }
 
         if (app.config.globalProperties.$dataCacheStore.timestamp == null || (app.config.globalProperties.$dataCacheStore.timestamp + app.config.globalProperties.$dataCacheStore.ttlInMilliseconds < Date.now())) {
-            app.config.globalProperties.$dataCacheStore.timestamp = Date.now()
 
             const url = import.meta.env.VITE_API_ENDPOINT + '/read_mas_database'
             setTimeout(() => {app.config.globalProperties.$userStore.armDeadManSwitch()}, 1000);
@@ -86,17 +85,10 @@ router.beforeEach((to, from, next) => {
                 var data = response.data;
                 data = removeEmpty(data);
 
-                console.log("data")
-                console.log("data")
-                console.log("data")
-                console.log("data")
-                console.log("data")
-                console.log("data")
-                console.log(data)
-
                 app.config.globalProperties.$dataCacheStore.masData = data;
                 app.config.globalProperties.$dataCacheStore.commercialMaterialsLoaded();
                 app.config.globalProperties.$dataCacheStore.commercialShapesLoaded();
+                app.config.globalProperties.$dataCacheStore.timestamp = Date.now()
                 setTimeout(() => app.config.globalProperties.$userStore.disarmDeadManSwitch(), 1000);
             })
             .catch(error => {

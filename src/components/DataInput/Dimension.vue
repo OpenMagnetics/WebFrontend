@@ -48,6 +48,9 @@ export default {
             type: Number,
             default: 0
         },
+        replaceTitle:{
+            type: String
+        },
     },
     data() {
         const localData = {
@@ -185,7 +188,8 @@ export default {
 <template>
     <div :data-cy="dataTestLabel + '-container'" class="container-flex" ref="container">
         <div class="row">
-            <label :data-cy="dataTestLabel + '-title'" class="rounded-2 fs-5 col-xs-12 col-md-7 ">{{shortenedName}}</label>
+            <label v-if="replaceTitle == null" :data-cy="dataTestLabel + '-title'" class="rounded-2 fs-5 col-xs-12 col-md-7 ">{{shortenedName}}</label>
+            <label v-if="replaceTitle != null && replaceTitle != ''"  :data-cy="dataTestLabel + '-title'" class="rounded-2 fs-5 col-xs-12 col-md-7 ">{{replaceTitle}}</label>
             <div v-if="localData.scaledValue != null" class="col-xs-8 col-md-5 row m-0 px-0">
                 <input :data-cy="dataTestLabel + '-number-input'" type="number" class="m-0 px-0 col-6 bg-light text-white" @change="changeScaledValue($event.target.value)" :value="removeTrailingZeroes(localData.scaledValue * visualScale)" ref="inputRef">
                 <DimensionUnit :data-cy="dataTestLabel + '-DimensionUnit-input'" :min="min" :max="max" v-if="unit != null" :unit="unit" v-model="localData.multiplier" class="m-0 px-0 col-3" @update:modelValue="changeMultiplier"/>
