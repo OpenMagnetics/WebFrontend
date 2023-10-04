@@ -3,7 +3,7 @@ import { useCoreStore } from '/src/stores/core'
 import { useUserDatabaseStore } from '/src/stores/userDatabase'
 import '/src/assets/css/vue-good-table-next.css'
 import { VueGoodTable } from 'vue-good-table-next';
-import * as Utils from '/src/assets/js/utils.js'
+import { deepCopy, packDataPoints, sampleWaveform, getRootMeanSquare, formatPower, tryLoadElements, formatFrequency, tryGuessTypeOld, removeTrailingZeroes, findCoreShape } from '/src/assets/js/utils.js'
 import { useCommonStore } from '/src/stores/waveform'
 import * as Defaults from '/src/assets/js/defaults.js'
 
@@ -225,11 +225,11 @@ export default {
             }
             else {
                 this.userDatabaseStore.operationPoints.forEach((item, index) => {
-                    const compressedCurrentData = Utils.packDataPoints(item["current"]["waveform"], item["frequency"])
-                    const compressedVoltageData = Utils.packDataPoints(item["voltage"]["waveform"], item["frequency"])
+                    const compressedCurrentData =packDataPoints(item["current"]["waveform"], item["frequency"])
+                    const compressedVoltageData =packDataPoints(item["voltage"]["waveform"], item["frequency"])
 
-                    const currentAux = Utils.sampleWaveform(compressedCurrentData, item["frequency"], Defaults.defaultOperationPointExcitationSaveConfiguration["numberPoints"])
-                    const voltageAux = Utils.sampleWaveform(compressedVoltageData, item["frequency"], Defaults.defaultOperationPointExcitationSaveConfiguration["numberPoints"])
+                    const currentAux =sampleWaveform(compressedCurrentData, item["frequency"], Defaults.defaultOperationPointExcitationSaveConfiguration["numberPoints"])
+                    const voltageAux =sampleWaveform(compressedVoltageData, item["frequency"], Defaults.defaultOperationPointExcitationSaveConfiguration["numberPoints"])
 
                     const status = []
                     if (item['slug'] != null) {
@@ -237,19 +237,19 @@ export default {
                         // status.push("shared")  // TODO
                         // status.push("starred")  // TODO
                     }
-                    const frequencyAux = Utils.formatFrequency(item["frequency"])
+                    const frequencyAux =formatFrequency(item["frequency"])
 
-                    const powerRaw = Utils.getRootMeanSquare(currentAux["sampledWaveform"]) * Utils.getRootMeanSquare(voltageAux["sampledWaveform"])
-                    const powerAux = Utils.formatPower(powerRaw)
+                    const powerRaw =getRootMeanSquare(currentAux["sampledWaveform"]) *getRootMeanSquare(voltageAux["sampledWaveform"])
+                    const powerAux =formatPower(powerRaw)
 
 
                     this.operationPointsData.push({
                         id: item["_id"],
                         name: item["name"],
                         switchingFrequency: frequencyAux["label"] + " " + frequencyAux["unit"],
-                        currentType: Utils.tryGuessTypeOld(compressedCurrentData, item["frequency"]),
-                        voltageType: Utils.tryGuessTypeOld(compressedVoltageData, item["frequency"]),
-                        power: Utils.removeTrailingZeroes(powerAux["label"], 2) + " " + powerAux["unit"],
+                        currentType:tryGuessTypeOld(compressedCurrentData, item["frequency"]),
+                        voltageType:tryGuessTypeOld(compressedVoltageData, item["frequency"]),
+                        power:removeTrailingZeroes(powerAux["label"], 2) + " " + powerAux["unit"],
                         status: status,
                         url: item["slug"] == null? null : "https://openmagnetics.com/operation_point/" + item["slug"],
                     })
@@ -288,7 +288,6 @@ export default {
                     else {
                         materialName = item["functionalDescription"]['material']['name']
                     }
-                    console.log(item)
                     this.coresData.push({
                         id: item["_id"],
                         name: item["name"],
@@ -370,7 +369,7 @@ export default {
                 selectedColumns = this.magneticsColumns
 
             selectedColumns.forEach((item, index) => {
-                const newItem = Utils.deepCopy(item)
+                const newItem =deepCopy(item)
                 if (window.innerWidth < 700) {
                     var slice = 4
                     if (window.innerWidth < 400)
@@ -385,7 +384,7 @@ export default {
             })
 
             this.commonColumns.forEach((item, index) => {
-                const newItem = Utils.deepCopy(item)
+                const newItem =deepCopy(item)
                 if (window.innerWidth < 700) {
                     var slice = 4
                     if (window.innerWidth < 400)
@@ -418,11 +417,9 @@ export default {
             this.scaleColumns()
         },
         onLoad(id) {
-            console.log("Load: " + id)
             var dataToLoad = null
             if ((this.$userStore.getUserSubsection.value == 'operationPoints' && this.specificElement == null) || this.specificElement == 'operationPoints' ) {
                 dataToLoad = this.userDatabaseStore.getOperationPointById(id)
-                console.log(dataToLoad)
                 this.$userStore.setGlobalOperationPoint(dataToLoad)
                 this.$userStore.loadGlobalOperationPointIntoSimulation(0, dataToLoad)
 
@@ -436,12 +433,28 @@ export default {
             }
             if ((this.$userStore.getUserSubsection.value == 'cores' && this.specificElement == null) || this.specificElement == 'cores') {
                 dataToLoad = this.userDatabaseStore.getCoreById(id)
-                console.log(dataToLoad)
                 this.$userStore.setGlobalCore(dataToLoad)
                 this.coreStore.setDataReadOnly(false)
                 if (this.specificElement == null) {
                     // Because this means we are in the User menu
-                    Utils.getCoreParameters(this.$userStore, () => {this.$router.push('/core');}, () => {})
+                    this.$mkf.ready.then(_ => {
+                        const aux = deepCopy(this.$userStore.globalCore);
+                        aux['geometricalDescription'] = null;
+                        aux['processedDescription'] = null;
+
+                        if (typeof aux['functionalDescription']['shape'] === 'string' || aux['functionalDescription']['shape'] instanceof String) {
+                            aux['functionalDescription']['shape'] = findCoreShape(this.$dataCacheStore, aux['functionalDescription']['shape']);
+                        }
+
+
+                        var core = JSON.parse(this.$mkf.calculate_core_data(JSON.stringify(aux), false));
+
+                        this.$userStore.globalCore = core;
+                        this.$userStore.setGlobalCore(core)
+                        this.$router.push('/core');
+                    }).catch(error => { 
+                        console.error(error)
+                    });
                 }
 
                 this.$emit("onLoadCore")
@@ -467,18 +480,14 @@ export default {
                     this.nameToDelete = item["name"]
             })
 
-            console.log("Delete: " + id)
         },
         onDeleteElement(id) {
-            console.log("To Delete: " + id)
             this.selectedData.forEach((item, index) => {
                 if (item["id"] == id){
-                    console.log(index)
                     this.selectedData.splice(index, 1);
                 }
             })
 
-            console.log("Deleted: " + id)
         },
     },
     computed: {
@@ -496,7 +505,7 @@ export default {
         this.scaleColumns()
     },
     mounted() {
-        Utils.tryLoadElements(this.userDatabaseStore, this.$userStore.getUsername.value)
+       tryLoadElements(this.userDatabaseStore, this.$userStore.getUsername.value)
         if (this.$userStore.getUsername.value == null && this.specificElement == null) {
             this.$router.push('/');
         }
@@ -516,7 +525,7 @@ export default {
         })
         this.$userStore.$onAction((action) => {
             if (action.name == "login") {
-                setTimeout(() => Utils.tryLoadElements(this.userDatabaseStore, this.$userStore.getUsername.value), 50);
+                setTimeout(() =>tryLoadElements(this.userDatabaseStore, this.$userStore.getUsername.value), 50);
             }
 
             if (action.name == "setOperationPoints") {

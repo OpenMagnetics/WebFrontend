@@ -153,6 +153,11 @@ const routes = [
         name: 'MagneticSynthesis',
         component: () => import('../views/MagneticSynthesis.vue')
     },
+    {
+        path: '/magnetic_specification',
+        name: 'MagneticSpecification',
+        component: () => import('../views/MagneticSpecification.vue')
+    },
 ]
 const router = createRouter({
     history: createWebHistory(),

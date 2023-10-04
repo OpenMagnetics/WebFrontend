@@ -171,51 +171,51 @@ export function scaleData(points, switchingFrequency) {
     return points
 }
 
-export function formatUnit(value, unitValue) {
+export function formatUnit(valueRaw, unitRaw) {
     var base
     var unit
     var label
-    if (Math.abs(value) < 0.000000001 && Math.abs(value) != 0) {
+    if (Math.abs(valueRaw) < 0.000000001 && Math.abs(valueRaw) != 0) {
         base = 0.000000000001
-        unit = "p" + unitValue
+        unit = "p" + unitRaw
     }
-    else if (Math.abs(value) < 0.000001 && Math.abs(value) != 0) {
+    else if (Math.abs(valueRaw) < 0.000001 && Math.abs(valueRaw) != 0) {
         base = 0.000000001
-        unit = "n" + unitValue
+        unit = "n" + unitRaw
     }
-    else if (Math.abs(value) < 0.001 && Math.abs(value) != 0) {
+    else if (Math.abs(valueRaw) < 0.001 && Math.abs(valueRaw) != 0) {
         base = 0.000001
-        unit = "μ" + unitValue
+        unit = "μ" + unitRaw
     }
-    else if (Math.abs(value) < 0.1 && Math.abs(value) != 0) {
+    else if (Math.abs(valueRaw) < 0.1 && Math.abs(valueRaw) != 0) {
         base = 0.001
-        unit = "m" + unitValue
+        unit = "m" + unitRaw
     }
-    else if (Math.abs(value) < 1000) {
+    else if (Math.abs(valueRaw) < 1000) {
         base = 1
-        unit = unitValue
+        unit = unitRaw
     }
-    else if (Math.abs(value) >= 1000 && Math.abs(value) < 1000000) {
+    else if (Math.abs(valueRaw) >= 1000 && Math.abs(valueRaw) < 1000000) {
         base = 1000
-        unit = "k" + unitValue
+        unit = "k" + unitRaw
     }
-    else if (Math.abs(value) >= 1000000 && Math.abs(value) < 1000000000) {
+    else if (Math.abs(valueRaw) >= 1000000 && Math.abs(valueRaw) < 1000000000) {
         base = 1000000
-        unit = "M" + unitValue
+        unit = "M" + unitRaw
     }
-    else if (Math.abs(value) >= 1000000000 && Math.abs(value) < 1000000000000) {
+    else if (Math.abs(valueRaw) >= 1000000000 && Math.abs(valueRaw) < 1000000000000) {
         base = 1000000000
-        unit = "G" + unitValue
+        unit = "G" + unitRaw
     }
-    else if (Math.abs(value) >= 1000000000000 && Math.abs(value) < 1000000000000000) {
+    else if (Math.abs(valueRaw) >= 1000000000000 && Math.abs(valueRaw) < 1000000000000000) {
         base = 1000000000000
-        unit = "T" + unitValue
+        unit = "T" + unitRaw
     }
-    else if (Math.abs(value) >= 1000000000000000 && Math.abs(value) < 1000000000000000000) {
+    else if (Math.abs(valueRaw) >= 1000000000000000 && Math.abs(valueRaw) < 1000000000000000000) {
         base = 1000000000000000
-        unit = "P" + unitValue
+        unit = "P" + unitRaw
     }
-    label = value / base
+    label = valueRaw / base
     return {label, unit}
 }
 
@@ -309,6 +309,10 @@ export function formatVoltage(voltage) {
 
 export function formatTemperature(temperature) {
     return formatUnit(temperature, "°C")
+}
+
+export function formatResistance(resistance) {
+    return formatUnit(resistance, "Ω")
 }
 
 export function deepCopy(data) {

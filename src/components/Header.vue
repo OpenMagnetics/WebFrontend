@@ -141,15 +141,10 @@ export default {
                     <li class="nav-item">
                         <router-link data-cy="Header-roadmap-knowledge-link" class="nav-link text-primary me-3" to="/musings">Knowledge</router-link>
                     </li>
-                    <li class="nav-item dropdown">
-                        <a data-cy="Header-tools-menu-button" class="nav-link dropdown-toggle rounded-3 text-light bg-primary ps-3" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            Create Element
-                        </a>
-                        <ul class="dropdown-menu" style="margin: 0">
-                            <li><a data-cy="Header-tool-operation-point-link" class="dropdown-item" href="/operation_point">Operation Point</a></li>
-                            <li><a data-cy="Header-tool-core-link" class="dropdown-item" href="/core">Core</a></li>
-                            <li><a data-cy="Header-tool-simulation-link" class="dropdown-item" href="/simulation">Simulation</a></li>
-                        </ul>
+                    <li class="nav-item">
+                        <span class="nav-item">
+                            <a data-cy="Header-donate-link" href="/tool_selection" class="btn me-4 nav-link text-dark bg-info border-dark">Design toolbox<i class="ms-2 fa-solid fa-toolbox"></i> </a>
+                        </span>
                     </li>
                 </ul>
                 <ul class="navbar-nav ms-auto">

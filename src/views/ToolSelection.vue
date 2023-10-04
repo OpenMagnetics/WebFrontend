@@ -1,16 +1,25 @@
 <script setup>
 import Header from '/src/components/Header.vue'
 import Footer from '/src/components/Footer.vue'
+import { useMasStore } from '/src/stores/mas'
 
 
 </script>
 <script>
 export default {
     data() {
+        const masStore = useMasStore();
+
         return {
+            masStore,
         }
     },
     methods: {
+        createNewMagneticSpecification() {
+            this.$userStore.resetMagneticSpecification();
+            this.masStore.resetMas();
+            this.$router.push('/magnetic_specification');
+        }
     },
     mounted() {
     },
@@ -23,21 +32,23 @@ export default {
     <div class="d-flex flex-column min-vh-100">
         <Header />
         <main role="main" class="main">
-            <div class="container mx-auto ">
+            <div class="container mx-5">
                 <div class="row">
                     <div class="text-white my-5 text-center offset-2 col-8 bg-light rounded-4">
-                        <h1 class="">Choose your path</h1>
+                        <h1 class="">What do you need?</h1>
                     </div>
                 </div>
                 <div class="row">
-                    <div class="text-white my-5 p-2 text-center offset-1 col-sm-10 col-2-md col-lg-2 bg-light rounded-4">
-                        <h2 class="">Synthesis tools</h2>
+                    <div class="text-white my-5 p-2 text-center col-sm-10 col-2-md col-lg-3 bg-light rounded-4">
+                        <h2 class="">A complete magnetic</h2>
                         <div class="" aria-label="Group with synthesis button">
-                            <a v-resize-text="{ratio:0.7, minFontSize: '14px', maxFontSize: '20px', delay: 20}" data-cy="ToolSelection-magnetic-synthesis-button" class="m-2 btn btn-primary" href="/magnetic_synthesis">Magnetic synthesis</a>
+                            <buttom v-resize-text="{ratio:0.7, minFontSize: '14px', maxFontSize: '20px', delay: 20}" data-cy="ToolSelection-magnetic-synthesis-button" class="m-2 btn btn-primary" @click="createNewMagneticSpecification">Specify a magnetic</buttom>
+                            <button disabled v-resize-text="{ratio:0.7, minFontSize: '14px', maxFontSize: '20px', delay: 20}" data-cy="ToolSelection-magnetic-synthesis-button" class="m-2 btn btn-primary" href="/magnetic_insulation">Calculate insulation</button>
+                            <button disabled v-resize-text="{ratio:0.7, minFontSize: '14px', maxFontSize: '20px', delay: 20}" data-cy="ToolSelection-magnetic-synthesis-button" class="m-2 btn btn-primary" href="/magnetic_synthesis">Design a magnetic</button>
                         </div>
                     </div>
                     <div class="text-white my-5 p-2 text-center offset-1 col-sm-10 col-3-md col-lg-3 bg-light rounded-4">
-                        <h2 class="">Core tools</h2>
+                        <h2 class="">A magnetic core</h2>
                         <div class="" aria-label="Group with core button">
                             <button v-resize-text="{ratio:0.7, minFontSize: '14px', maxFontSize: '20px', delay: 20}" data-cy="ToolSelection-find-cots-core-button" class="m-2 btn btn-primary disabled">Find COTS core</button>
                             <button v-resize-text="{ratio:0.7, minFontSize: '14px', maxFontSize: '20px', delay: 20}" data-cy="ToolSelection-cross-reference-core-button" class="m-2 btn btn-primary disabled">Cross reference core</button>
@@ -45,11 +56,21 @@ export default {
                         </div>
                     </div>
                     <div class="text-white my-5 p-2 text-center offset-1 col-sm-10 col-3-md col-lg-3 bg-light rounded-4">
-                        <h2 class="">Wire tools</h2>
+                        <h2 class="">Some wire</h2>
                         <div class="" aria-label="Group with wire button">
                             <button v-resize-text="{ratio:0.7, minFontSize: '14px', maxFontSize: '20px', delay: 20}" data-cy="ToolSelection-find-cots-wire-button" class="m-2 btn btn-primary disabled">Find COTS wire</button>
                             <button v-resize-text="{ratio:0.7, minFontSize: '14px', maxFontSize: '20px', delay: 20}" data-cy="ToolSelection-cross-reference-wire-button" class="m-2 btn btn-primary disabled">Cross reference wire</button>
                             <button v-resize-text="{ratio:0.7, minFontSize: '14px', maxFontSize: '20px', delay: 20}" data-cy="ToolSelection-customize-wire-button" class="m-2 btn btn-primary disabled">Customize wire</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="text-white my-5 p-2 text-center offset-1 col-10  bg-light rounded-4">
+                        <h2 class="">Old tools (soon to be integrated into other tools)</h2>
+                        <div class="" aria-label="Group with wire button">
+                            <a href="/operation_point" v-resize-text="{ratio:0.7, minFontSize: '20px', maxFontSize: '20px', delay: 20}" data-cy="ToolSelection-find-cots-wire-button" class="m-2 btn btn-primary">Create Operating Point</a>
+                            <a href="/core" v-resize-text="{ratio:0.7, minFontSize: '20px', maxFontSize: '20px', delay: 20}" data-cy="ToolSelection-cross-reference-wire-button" class="m-2 btn btn-primary">Create core</a>
+                            <a href="/simulation" v-resize-text="{ratio:0.7, minFontSize: '20px', maxFontSize: '20px', delay: 20}" data-cy="ToolSelection-customize-wire-button" class="m-2 btn btn-primary">Simulation</a>
                         </div>
                     </div>
                 </div>

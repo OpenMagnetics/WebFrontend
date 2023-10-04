@@ -17,9 +17,15 @@ export default {
             type: Object,
             required: false
         },
+        forceUpdate: {
+            type: Number,
+            default: 0
+        },
     },
     data() {
+        var enabledAdventures = {};
         return {
+            enabledAdventures
         }
     },
     computed: {
@@ -65,25 +71,33 @@ export default {
         }
     },
     watch: { 
+        forceUpdate: function(newVal, oldVal) { // watch it
+            this.calculateDisabled();
+        },
         selectedTool: function(newVal, oldVal) { // watch it
-            // console.log('selectedTool changed: ', newVal, ' | was: ', oldVal)
-        }
+            this.calculateDisabled();
+        },
     },
     mounted () {
+        this.calculateDisabled();
     },
     methods: {
-        disabled(currentKey) {
+        calculateDisabled() {
+            this.enabledAdventures = {}
             var enabled = true;
             const lastKey = Object.keys(this.storyline)[Object.keys(this.storyline).length - 1];
+            const firstKey = Object.keys(this.storyline)[0];
             for (var key in this.storyline) {
-                if (key == currentKey && key != lastKey) {
-                    break;
+                if (key == firstKey) {
+                    this.enabledAdventures[key] = true
+                    continue;
                 }
-                if (key in this.canContinue) {
-                    enabled &= this.canContinue[key]
+                if (this.storyline[key].prevTool in this.canContinue) {
+                    enabled &= this.canContinue[this.storyline[key].prevTool]
                 }
+                this.enabledAdventures[key] = Boolean(enabled)
             }
-            return !enabled;
+
         },
         btn_class(index) {
             var btn_class = "";
@@ -101,7 +115,7 @@ export default {
             if (children.includes(this.selectedTool)) {
                 btn_class += "bg-primary text-dark"
             }
-            else if (!this.disabled(index)) {
+            else if (this.enabledAdventures[index]) {
                 btn_class += "bg-secondary text-white"
             }
             else {
@@ -116,7 +130,7 @@ export default {
 <template>
     <div class="py-2 p-0 m-0" role="group" aria-label="Storyline button group ">
         <div v-for="adventure, index in basicStoryline" class=""> 
-            <button :data-cy="'storyline-' + toPascalCase(adventure.title) + '-button'" v-resize-text="{ratio:1, minFontSize: '14px', maxFontSize: '100px', delay: 20}" class="border border-primary btn-outline-primary col-12 m-0 px-1 py-2" :class="btn_class(index)" :disabled="disabled(index)" @click="$emit('changeTool', index)"> 
+            <button :data-cy="'storyline-' + toPascalCase(adventure.title) + '-button'" v-resize-text="{ratio:1, minFontSize: '14px', maxFontSize: '100px', delay: 20}" class="border border-primary btn-outline-primary col-12 m-0 px-1 py-2" :class="btn_class(index)" :disabled="!enabledAdventures[index]" @click="$emit('changeTool', index)"> 
                 {{shortenedLabels[index]}}
             </button>
             <div v-if="adventure.nextTool != null" class="vr m-0 p-0"></div>

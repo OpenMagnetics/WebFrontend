@@ -6,6 +6,33 @@ import * as Defaults from '/src/assets/js/defaults.js'
 export const useUserStore = defineStore("user", () => {
 
     const magneticSynthesisSubsection = ref("designRequirements")
+    const magneticSynthesisCanContinue = ref({
+        'designRequirements': false,
+        'operatingPoints': false,
+        'coreAdviser': false,
+        'coreSimulation': false,
+        'coreCustomization': false,
+        'wireAdviser': false,
+        'wireCustomization': false,
+        'coilAdviser': false,
+        'magneticFinalizer': false,
+    })
+    const magneticSpecificationSubsection = ref("designRequirements")
+    const magneticSpecificationCanContinue = ref({
+        'designRequirements': false,
+        'operatingPoints': false,
+        'magneticFinalizer': false,
+    })
+
+    function resetMagneticSpecification() {
+        this.magneticSpecificationSubsection = "designRequirements";
+        this.magneticSpecificationCanContinue = {
+            'designRequirements': false,
+            'operatingPoints': false,
+            'magneticFinalizer': false,
+        };
+    }
+
 
 
     const loggedIn = ref(false)
@@ -226,7 +253,10 @@ export const useUserStore = defineStore("user", () => {
     }
     return {
         magneticSynthesisSubsection,
-
+        magneticSynthesisCanContinue,
+        magneticSpecificationSubsection,
+        magneticSpecificationCanContinue,
+        resetMagneticSpecification,
 
         dump,
         armDeadManSwitch,

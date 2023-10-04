@@ -56,15 +56,18 @@ export default {
     },
     methods: {
         formatOutputs(value) {
-            var aux = Utils.formatPower(value['totalLosses'])
+            console.log(value)
+            console.log(value)
+            console.log(value)
+            var aux = Utils.formatPower(value['coreLosses'])
             this.totalCoreLosses = Utils.removeTrailingZeroes(aux['label'], 2)
             this.totalCoreLossesUnit = aux['unit']
-            var aux = Utils.formatPowerDensity(value['totalVolumetricLosses'])
+            var aux = Utils.formatPowerDensity(value['volumetricLosses'])
             this.volumetricCoreLosses = Utils.removeTrailingZeroes(aux['label'], 2)
             this.volumetricCoreLossesUnit = aux['unit']
 
-            if ('eddyCurrentLosses' in value) {
-                aux = Utils.formatPower(value['eddyCurrentLosses'])
+            if ('eddyCurrentCoreLosses' in value) {
+                aux = Utils.formatPower(value['eddyCurrentCoreLosses'])
                 this.eddyCurrentLosses = Utils.removeTrailingZeroes(aux['label'], 2)
                 this.eddyCurrentLossesUnit = aux['unit']
             }
@@ -72,8 +75,8 @@ export default {
                 this.eddyCurrentLosses = 'N/A'
                 this.eddyCurrentLossesUnit = ''
             }
-            if ('hysteresisLosses' in value) {
-                aux = Utils.formatPower(value['hysteresisLosses'])
+            if ('hysteresisCoreLosses' in value) {
+                aux = Utils.formatPower(value['hysteresisCoreLosses'])
                 this.hysteresisLosses = Utils.removeTrailingZeroes(aux['label'], 2)
                 this.hysteresisLossesUnit = aux['unit']
             }

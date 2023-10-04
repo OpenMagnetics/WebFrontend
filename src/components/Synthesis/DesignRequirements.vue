@@ -114,7 +114,6 @@ export default {
             canContinue &= store.mas.inputs.designRequirements.magnetizingInductance.minimum != null ||
                            store.mas.inputs.designRequirements.magnetizingInductance.nominal != null ||
                            store.mas.inputs.designRequirements.magnetizingInductance.maximum != null;
-            console.log(store.mas.inputs.designRequirements.turnsRatios)
             for (var index in store.mas.inputs.designRequirements.turnsRatios) {
                 canContinue &= store.mas.inputs.designRequirements.turnsRatios[index].minimum != null ||
                                store.mas.inputs.designRequirements.turnsRatios[index].nominal != null ||

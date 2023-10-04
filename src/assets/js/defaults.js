@@ -1,3 +1,12 @@
+export const coreAdviserWeights = {
+    "AREA_PRODUCT": 1,
+    "CORE_LOSSES": 1,
+    "CORE_TEMPERATURE": 1,
+    "DIMENSIONS": 1,
+    "ENERGY_STORED": 1,
+    "WINDING_WINDOW_AREA": 1,
+}
+
 export const mas = {
     "inputs": {
         "designRequirements": {
@@ -163,7 +172,7 @@ export const minimumMaximumScalePerParameter = {
     "voltage": {"min": 1e-6, "max": 1e5},
     "current": {"min": 1e-6, "max": 1e3},
     "power": {"min": 1e-3, "max": 1e9},
-    "temperature": {"min": 1, "max": 1},
+    "temperature": {"min": 1, "max": 300},
     "frequency": {"min": 1, "max": 1e9},
     "percentage": {"min": 0.0001, "max": 0.9999},
 }
@@ -271,7 +280,7 @@ export const defaultOperationPointExcitation = {
                 0.00001
             ]
         },
-        "type": "Rectangular"
+        "type": "Square"
     }
 }
 
@@ -345,7 +354,7 @@ export const defaultSimulation = {
     "outputs": [],
 }
 
-export const defaultVoltageType = "Rectangular"
+export const defaultVoltageType = "Square"
 export const defaultCurrentType = "Triangular"
 export const defaultPrecision = -2
 export const defaultMinimumNumberForms = 0.01
