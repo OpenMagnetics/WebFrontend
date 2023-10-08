@@ -5,6 +5,14 @@ import axios from "axios"
 
 var requesting = 0
 
+export function downloadBase64asPDF(pdfBase64, fileName) {
+    const linkSource = `data:application/pdf;base64,${pdfBase64}`;
+    const downloadLink = document.createElement("a");
+    downloadLink.href = linkSource;
+    downloadLink.download = fileName;
+    downloadLink.click();
+}
+
 export function calculateObjectSize(obj) {
     // This function takes an object as a parameter and returns the size of data in bytes
     // Initialize a variable to store the total size
@@ -75,9 +83,14 @@ export function toPascalCase(string) {
 }
 
 export function toTitleCase(str) {
-    const result = str.replace(/([A-Z])/g, " $1");
-    const finalResult = result.charAt(0).toUpperCase() + result.slice(1);
-    return finalResult.trim();
+    if (typeof str === "string") {
+        const result = str.replace(/([A-Z])/g, " $1");
+        const finalResult = result.charAt(0).toUpperCase() + result.slice(1);
+        return finalResult.trim();
+    }
+    else {
+        return str;
+    }
 }
 
 export function toDashCase(str) {

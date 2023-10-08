@@ -17,7 +17,7 @@ export default {
             required: true
         },
         defaultValue:{
-            type: Array
+            type: Object
         },
         min:{
             type: Number,

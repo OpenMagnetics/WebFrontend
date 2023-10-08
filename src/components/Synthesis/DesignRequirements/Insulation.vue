@@ -46,8 +46,8 @@ export default {
             <label :data-cy="dataTestLabel + '-title'"  class="rounded-2 fs-5 ms-3 col-12">Insulation</label>
         </div>
         <div class="row ms-2">
-            <DimensionWithTolerance :dataTestLabel="dataTestLabel + '-Altitude'" :allowNegative="true" :min="minimumMaximumScalePerParameter['altitude']['min']" :max="minimumMaximumScalePerParameter['altitude']['max']" :defaultValue="Utils.deepCopy(defaultValue['altitude'])" :halfSize="true" :name="'altitude'" :unit="'m'" v-model="modelValue['insulation']" class="col-6 border-end"/>
-            <DimensionWithTolerance :dataTestLabel="dataTestLabel + '-MainSupplyVoltage'" :min="minimumMaximumScalePerParameter['voltage']['min']" :max="minimumMaximumScalePerParameter['voltage']['max']" :defaultValue="Utils.deepCopy(defaultValue['mainSupplyVoltage'])" :halfSize="true" :name="'mainSupplyVoltage'" :unit="'V'" v-model="modelValue['insulation']" class="col-6"/>
+            <DimensionWithTolerance :dataTestLabel="dataTestLabel + '-Altitude'" :allowNegative="true" :min="minimumMaximumScalePerParameter['altitude']['min']" :max="minimumMaximumScalePerParameter['altitude']['max']" :defaultValue="Utils.deepCopy(defaultValue['altitude'])" :halfSize="true" :name="'altitude'" :unit="'m'" v-model="modelValue['insulation']['altitude']" class="col-6 border-end"/>
+            <DimensionWithTolerance :dataTestLabel="dataTestLabel + '-MainSupplyVoltage'" :min="minimumMaximumScalePerParameter['voltage']['min']" :max="minimumMaximumScalePerParameter['voltage']['max']" :defaultValue="Utils.deepCopy(defaultValue['mainSupplyVoltage'])" :halfSize="true" :name="'mainSupplyVoltage'" :unit="'V'" v-model="modelValue['insulation']['mainSupplyVoltage']" class="col-6"/>
 
             <ElementFromList :dataTestLabel="dataTestLabel + '-Cti'" :name="'cti'" v-model="modelValue['insulation']" :options="Cti" class="col-lg-6 col-xl-2"/>
             <ElementFromList :dataTestLabel="dataTestLabel + '-InsulationType'" :name="'insulationType'" v-model="modelValue['insulation']" :options="InsulationType" class="col-lg-6 col-xl-3"/>

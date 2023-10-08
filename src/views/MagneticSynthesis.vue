@@ -105,6 +105,8 @@ export default {
             return this.currentStoryline[this.$userStore.magneticSynthesisSubsection].advancedTool != null;
         },
         traversableLeft() {
+            console.log(this.currentStoryline)
+            console.log(this.$userStore.magneticSynthesisSubsection)
             return this.currentStoryline[this.$userStore.magneticSynthesisSubsection].basicTool != null;
         },
         updateCanContinue(tool, value) {

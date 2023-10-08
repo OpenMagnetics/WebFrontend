@@ -120,8 +120,6 @@ export const useUserStore = defineStore("user", () => {
     }
 
     function reset() {
-        this.magneticSynthesisSubsection = false
-
 
         this.loggedIn = false
         this.username = null

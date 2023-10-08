@@ -10,6 +10,7 @@ export const coreAdviserWeights = {
 export const mas = {
     "inputs": {
         "designRequirements": {
+            "name": "My Design Requirements",
             "magnetizingInductance": {
                 "nominal": 10e-6
             },
@@ -92,15 +93,12 @@ export const defaultDesignRequirements = {
     "insulation": {
         "altitude": {
             "maximum": 2000,
-            "nominal": 2000,
-            "minimum": -50
         },
         "cti": "Group IIIb",
         "pollutionDegree": "P2",
         "overvoltageCategory": "OVC-III",
         "insulationType": "Double",
         "mainSupplyVoltage": {
-            "maximum": 340,
             "nominal": 220,
             "minimum": 90
         },

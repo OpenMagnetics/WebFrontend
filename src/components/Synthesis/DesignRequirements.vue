@@ -180,7 +180,7 @@ export default {
 <template>
     <div class="container">
         <div v-tooltip="styleTooltip" class="row">
-            <div class="col-sm-12 col-md-4 text-start border border-primary" style="max-width: 360px;">
+            <div class="col-sm-12 col-md-4 text-start border border-primary" style="max-width: 360px; height: 75vh">
                 <div class="my-2 row px-2" v-for="requirementName in designRequirementsOrdered" >
                     <label v-tooltip="tooltipsMagneticSynthesisDesignRequirements[requirementName]"  class="rounded-2 fs-5 col-8">{{toTitleCase(shortenedLabels[requirementName])}}</label>
                 
