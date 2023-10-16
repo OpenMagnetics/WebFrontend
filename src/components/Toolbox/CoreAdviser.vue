@@ -287,7 +287,7 @@ export default {
 </script>
 
 <template>
-    <AdviseDetails :modelValue="this.masStore.mas"/>
+    <AdviseDetails :modelValue="masStore.mas"/>
     <div class="container" >
         <div class="row">
             <div class="col-sm-12 col-md-2 text-start border border-primary m-0 px-2 py-1 ">
