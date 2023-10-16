@@ -87,15 +87,10 @@ export default {
                     <li class="nav-item">
                         <router-link class="nav-link text-primary me-3" to="/musings">Knowledge</router-link>
                     </li>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle rounded-3 text-light bg-primary ps-3" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            Create Element
-                        </a>
-                        <ul class="dropdown-menu" style="margin: 0">
-                            <li><a class="dropdown-item" href="/operation_point">Operation Point</a></li>
-                            <li><a class="dropdown-item" href="/core">Core</a></li>
-                            <li><a class="dropdown-item" href="/simulation">Simulation</a></li>
-                        </ul>
+                    <li class="nav-item">
+                        <span class="nav-item">
+                            <a data-cy="Header-donate-link" href="/tool_selection" class="btn me-4 nav-link text-dark bg-primary border-dark">Design toolbox<i class="ms-2 fa-solid fa-toolbox"></i> </a>
+                        </span>
                     </li>
                 </ul>
                 <ul class="navbar-nav ms-auto">
@@ -111,7 +106,7 @@ export default {
                     </li>
                     <li class="nav-item">
                         <span class="nav-item">
-                            <a class="btn me-4 nav-link text-success border-dark" href="https://github.com/OpenMagnetics/">Beta OMv0.1 <i class="fa-brands fa-github"></i> </a>
+                            <a class="btn me-4 nav-link text-success border-dark" href="https://github.com/OpenMagnetics/">Beta <i class="fa-brands fa-github"></i> </a>
                         </span>
                     </li>
                     <li v-if="!loggedIn" class="nav-item">
