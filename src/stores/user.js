@@ -17,12 +17,23 @@ export const useUserStore = defineStore("user", () => {
         'coilAdviser': false,
         'magneticFinalizer': false,
     })
+
     const magneticSpecificationSubsection = ref("designRequirements")
     const magneticSpecificationCanContinue = ref({
         'designRequirements': false,
         'operatingPoints': false,
         'magneticFinalizer': false,
     })
+
+    const magneticCoreAdviserSubsection = ref("designRequirements")
+    const magneticCoreAdviserCanContinue = ref({
+        'designRequirements': false,
+        'operatingPoints': false,
+        'coreAdviser': false,
+        'magneticFinalizer': false,
+    })
+    const coreAdviserSpiderBarChartNotBar = ref('0')
+    const coreAdviserSelectedAdvise = ref(0)
 
     function resetMagneticSpecification() {
         this.magneticSpecificationSubsection = "designRequirements";
@@ -33,7 +44,15 @@ export const useUserStore = defineStore("user", () => {
         };
     }
 
-
+    function resetMagneticCoreAdviser() {
+        this.magneticCoreAdviserSubsection = "designRequirements";
+        this.magneticCoreAdviserCanContinue = {
+            'designRequirements': false,
+            'operatingPoints': false,
+            'coreAdviser': false,
+            'magneticFinalizer': false,
+        };
+    }
 
     const loggedIn = ref(false)
     const ipAddress = ref(0)
@@ -81,6 +100,8 @@ export const useUserStore = defineStore("user", () => {
     const dump = computed(() => {
         return {
             "magneticSynthesisSubsection": magneticSynthesisSubsection.value,
+            "coreAdviserSpiderBarChartNotBar": coreAdviserSpiderBarChartNotBar.value,
+            "coreAdviserSelectedAdvise": coreAdviserSelectedAdvise.value,
 
 
 
@@ -250,11 +271,16 @@ export const useUserStore = defineStore("user", () => {
     function disarmDeadManSwitch() {
     }
     return {
+        coreAdviserSpiderBarChartNotBar,
+        coreAdviserSelectedAdvise,
         magneticSynthesisSubsection,
         magneticSynthesisCanContinue,
         magneticSpecificationSubsection,
         magneticSpecificationCanContinue,
         resetMagneticSpecification,
+        magneticCoreAdviserSubsection,
+        magneticCoreAdviserCanContinue,
+        resetMagneticCoreAdviser,
 
         dump,
         armDeadManSwitch,

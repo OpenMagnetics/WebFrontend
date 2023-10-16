@@ -32,11 +32,21 @@ export const useMasStore = defineStore("mas", () => {
 
     function resetMas() {
         this.mas = MAS.Convert.toMas(JSON.stringify(Defaults.mas));
+        console.log("Resetting!!!!!!!!!!!!!")
+    }
+
+
+    function resetCache() {
+        this.coreAdvisesCache = {};
+        this.coreAdvises = null;
+        this.coreAdvisesTimestamp = null;
+        console.log("Resetting cache!!!!!!!!!!!!!")
     }
 
     return {
         mas,
         resetMas,
+        resetCache,
         coreAdviserWeights,
         coreAdvises,
         coreAdvisesCache,

@@ -143,7 +143,7 @@ export default {
                     </li>
                     <li class="nav-item">
                         <span class="nav-item">
-                            <a data-cy="Header-donate-link" href="/tool_selection" class="btn me-4 nav-link text-dark bg-info border-dark">Design toolbox<i class="ms-2 fa-solid fa-toolbox"></i> </a>
+                            <a data-cy="Header-donate-link" href="/tool_selection" class="btn me-4 nav-link text-dark bg-primary border-dark">Design toolbox<i class="ms-2 fa-solid fa-toolbox"></i> </a>
                         </span>
                     </li>
                 </ul>
