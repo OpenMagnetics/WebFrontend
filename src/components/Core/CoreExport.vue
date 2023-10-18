@@ -1,7 +1,7 @@
 <script setup>
 import { ref } from 'vue'
 import * as Defaults from '/src/assets/js/defaults.js'
-import { findCoreMaterial, getCoreData } from '/src/assets/js/utils.js'
+import { findCoreMaterial, getCoreData, deepCopy } from '/src/assets/js/utils.js'
 import { useCoreStore } from '/src/stores/core'
 import * as download from 'downloadjs'
 
@@ -61,7 +61,7 @@ export default {
         onExportSTP(event) {
 
             this.$mkf.ready.then(_ => {
-                const aux = Utils.deepCopy(this.$userStore.globalCore);
+                const aux = deepCopy(this.$userStore.globalCore);
                 aux['geometricalDescription'] = null;
                 aux['processedDescription'] = null;
 
@@ -97,7 +97,7 @@ export default {
         },
         onExportOBJ(event) {
             this.$mkf.ready.then(_ => {
-                const aux = Utils.deepCopy(this.$userStore.globalCore);
+                const aux = deepCopy(this.$userStore.globalCore);
                 aux['geometricalDescription'] = null;
                 aux['processedDescription'] = null;
 
