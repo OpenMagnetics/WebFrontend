@@ -1149,7 +1149,7 @@ export function processCoreTexts(data) {
             localTexts.magneticFluxDensitySaturationTable.value_100 = `${removeTrailingZeroes(aux.label, 2)} ${aux.unit}`;
         }
         {
-            var aux = formatUnit(data.magnetic.core.functionalDescription.material.density, "g/m³");
+            var aux = formatUnit(data.magnetic.core.functionalDescription.material.density * 1000, "g/m³");  // Because the unit is kg
             localTexts.coreMaterialDensityTable = {};
             localTexts.coreMaterialDensityTable.text = 'Density';
             localTexts.coreMaterialDensityTable.value = `${removeTrailingZeroes(aux.label, 2)} ${aux.unit}`;
