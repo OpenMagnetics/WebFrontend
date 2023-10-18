@@ -3,7 +3,7 @@ import OperationPoint from '/src/views/OperationPoint.vue'
 import Core from '/src/views/Core.vue'
 import { useCommonStore } from '/src/stores/waveform'
 import { useCoreStore } from '/src/stores/core'
-import * as Utils from '/src/assets/js/utils.js'
+import { deepCopy } from '/src/assets/js/utils.js'
 
 </script>
 <script>
@@ -58,9 +58,26 @@ export default {
                     if (response.data == null)
                         this.$router.push('/');
                     else {
+
                         this.$userStore.globalCore = response.data["element"]
-                        Utils.getCoreParameters(this.$userStore, () => {this.coreStore.setDataReadOnly(true); this.coreLoaded = true;}, () => {})
-                        
+                        this.$mkf.ready.then(_ => {
+                            const aux = deepCopy(this.$userStore.globalCore);
+                            aux['geometricalDescription'] = null;
+                            aux['processedDescription'] = null;
+
+                            if (typeof aux['functionalDescription']['shape'] === 'string' || aux['functionalDescription']['shape'] instanceof String) {
+                                aux['functionalDescription']['shape'] = findCoreShape(this.$dataCacheStore, aux['functionalDescription']['shape']);
+                            }
+
+                            var core = JSON.parse(this.$mkf.calculate_core_data(JSON.stringify(aux), false));
+
+                            this.$userStore.globalCore = core;
+                            this.coreStore.setDataReadOnly(true);
+                            this.coreLoaded = true;
+                        }).catch(error => { 
+                            console.error(error)
+                        });
+
                     }
 
                 })
