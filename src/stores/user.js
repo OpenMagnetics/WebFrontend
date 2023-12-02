@@ -35,6 +35,11 @@ export const useUserStore = defineStore("user", () => {
     const coreAdviserSpiderBarChartNotBar = ref('0')
     const coreAdviserSelectedAdvise = ref(0)
 
+    const insulationAdviserSubsection = ref("insulationRequirements")
+    const insulationAdviserCanContinue = ref({
+        'insulationRequirements': false
+    })
+
     function resetMagneticSpecification() {
         this.magneticSpecificationSubsection = "designRequirements";
         this.magneticSpecificationCanContinue = {
@@ -280,6 +285,8 @@ export const useUserStore = defineStore("user", () => {
         resetMagneticSpecification,
         magneticCoreAdviserSubsection,
         magneticCoreAdviserCanContinue,
+        insulationAdviserSubsection,
+        insulationAdviserCanContinue,
         resetMagneticCoreAdviser,
 
         dump,

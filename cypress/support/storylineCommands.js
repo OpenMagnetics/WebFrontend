@@ -6,7 +6,7 @@ const storylineAdventures = {
     coreAdviser: 'CoreAdviser',
     wireAdviser: 'WireAdviser',
     coilAdviser: 'CoilAdviser',
-    magneticFinalizer: 'MagneticFinalizer',
+    summary: 'Summary',
 }
 
 Cypress.Commands.add('checkStorylineAdventureVisible', (adventure) => {
@@ -22,5 +22,5 @@ Cypress.Commands.add('checkStorylineAdventureVisible', (adventure) => {
 
 
 Cypress.Commands.add('selectStorylineAdventure', (adventure) => {
-    cy.get(`[data-cy=storyline-${storylineAdventures[adventure]}-button]`).click()
+    cy.get(`[data-cy=storyline-${storylineAdventures[adventure]}-button]`).click({ timeout: 10000 })
 })

@@ -56,9 +56,6 @@ export default {
     },
     methods: {
         formatOutputs(value) {
-            console.log(value)
-            console.log(value)
-            console.log(value)
             var aux = Utils.formatPower(value['coreLosses'])
             this.totalCoreLosses = Utils.removeTrailingZeroes(aux['label'], 2)
             this.totalCoreLossesUnit = aux['unit']

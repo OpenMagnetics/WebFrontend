@@ -1,12 +1,10 @@
 <script setup>
 import { ref } from 'vue'
 import { useMasStore } from '/src/stores/mas'
-import { Form, Field, configure} from 'vee-validate';
-import * as Yup from 'yup';
 import { toTitleCase, toPascalCase } from '/src/assets/js/utils.js'
 import { tooltipsMagneticSynthesisDesignRequirements } from '/src/assets/js/texts.js'
 import { defaultDesignRequirements, designRequirementsOrdered, isolationSideOrdered, minimumMaximumScalePerParameter} from '/src/assets/js/defaults.js'
-import { Market, TerminalType, Topology } from '/src/assets/ts/MAS.ts'
+import { Market, ConnectionType, Topology } from '/src/assets/ts/MAS.ts'
 import Insulation from '/src/components/Toolbox/DesignRequirements/Insulation.vue'
 import Dimension from '/src/components/DataInput/Dimension.vue'
 import MaximumDimensions from '/src/components/Toolbox/DesignRequirements/MaximumDimensions.vue'
@@ -34,17 +32,8 @@ export default {
         const numberWindingsAux = {
             numberWindings: numberWindings
         }
-        const schema = Yup.object().shape({
-            switchingFrequencyValidator: Yup.number().required().typeError("The value for frequency must be a number").label("Switching Frequency").test(
-                'Is positive?', 
-                'Switching Frequency must be greater than 0!', 
-                (value) => value > 0
-            ),
-            dutyCycleValidator: Yup.number().required().typeError("The value for duty cycle must be a number").min(0.01).max(99.99),
-        });
         return {
             compulsoryRequirements,
-            schema,
             numberWindingsAux,
             masStore
         }
@@ -308,7 +297,7 @@ export default {
                     :name="'terminalType'"
                     :dataTestLabel="dataTestLabel + '-TerminalType'"
                     :defaultValue="defaultDesignRequirements.terminalType[0]"
-                    :options="TerminalType" 
+                    :options="ConnectionType" 
                     :fixedNumberElements="masStore.mas.inputs.designRequirements.turnsRatios.length + 1"
                     v-model="masStore.mas.inputs.designRequirements"
                 />

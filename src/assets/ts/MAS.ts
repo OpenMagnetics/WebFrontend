@@ -83,7 +83,7 @@ export interface DesignRequirements {
     /**
      * Type of the terminal that must be used, per winding
      */
-    terminalType?: TerminalType[];
+    terminalType?: ConnectionType[];
     /**
      * Topology that will use the magnetic
      */
@@ -92,6 +92,10 @@ export interface DesignRequirements {
      * Required turns ratios between primary and the rest of windings
      */
     turnsRatios: DimensionWithTolerance[];
+    /**
+     * Technology that must be used to create the wiring
+     */
+    wiringTechnology?: WiringTechnology;
     [property: string]: any;
 }
 
@@ -123,7 +127,7 @@ export interface InsulationRequirements {
     /**
      * VList of standards that will be taken into account for insulation.
      */
-    standards?: Standard[];
+    standards?: InsulationStandards[];
     [property: string]: any;
 }
 
@@ -138,17 +142,22 @@ export interface InsulationRequirements {
  *
  * The maximum thickness of the insulation around the wire, in m
  *
+ * The conducting area of the wire, in m². Used for some rectangular shapes where the area
+ * is smaller than expected due to rounded corners
+ *
  * The conducting diameter of the wire, in m
+ *
+ * The outer diameter of the wire, in m
  *
  * The conducting height of the wire, in m
  *
  * The conducting width of the wire, in m
  *
- * The outer diameter of the wire, in m
- *
  * The outer height of the wire, in m
  *
  * The outer width of the wire, in m
+ *
+ * The radius of the edge, in case of rectangular wire, in m
  *
  * Heat capacity value according to manufacturer, in J/Kg/K
  *
@@ -158,8 +167,6 @@ export interface InsulationRequirements {
  * position in the array
  *
  * Value of the magnetizing inductance
- *
- * Value of the reluctance of the core
  *
  * Data a two dimensional matrix, created as an array of array, where the first coordinate
  * in the X and the second the Y
@@ -196,8 +203,8 @@ export interface DimensionWithTolerance {
 export enum Cti {
     GroupI = "Group I",
     GroupIi = "Group II",
-    GroupIiIa = "Group IIIa",
-    GroupIiIb = "Group IIIb",
+    GroupIiia = "Group IIIA",
+    GroupIiib = "Group IIIB",
 }
 
 /**
@@ -230,7 +237,7 @@ export enum PollutionDegree {
     P3 = "P3",
 }
 
-export enum Standard {
+export enum InsulationStandards {
     Iec603351 = "IEC 60335-1",
     Iec606641 = "IEC 60664-1",
     Iec606645 = "IEC 60664-5",
@@ -259,7 +266,10 @@ export interface MaximumDimensions {
     [property: string]: any;
 }
 
-export enum TerminalType {
+/**
+ * Type of the terminal
+ */
+export enum ConnectionType {
     FlyingLead = "Flying Lead",
     Pin = "Pin",
     Screw = "Screw",
@@ -286,6 +296,15 @@ export enum Topology {
     TwoSwitchForwardConverter = "Two Switch Forward Converter",
     WeinbergConverter = "Weinberg Converter",
     ZetaConverter = "Zeta Converter",
+}
+
+/**
+ * Technology that must be used to create the wiring
+ */
+export enum WiringTechnology {
+    Deposition = "Deposition",
+    Printed = "Printed",
+    Wound = "Wound",
 }
 
 /**
@@ -388,8 +407,6 @@ export interface Cooling {
 /**
  * Data describing the excitation of the winding
  *
- * Excitation of the B field that produced the core losses
- *
  * The description of a magnetic operating point
  */
 export interface OperatingPointExcitation {
@@ -410,6 +427,8 @@ export interface OperatingPointExcitation {
 }
 
 /**
+ * Excitation of the B field that produced the core losses
+ *
  * Structure definining one electromagnetic parameters: current, voltage, magnetic flux
  * density
  */
@@ -540,6 +559,10 @@ export interface Magnetic {
      */
     distributorsInfo?: DistributorInfo[];
     manufacturerInfo?: MagneticManufacturerInfo;
+    /**
+     * The rotation of the magnetic, by default the winding column goes vertical
+     */
+    rotation?: number[];
     [property: string]: any;
 }
 
@@ -648,6 +671,10 @@ export interface DistributorInfo {
  */
 export interface BobbinFunctionalDescription {
     /**
+     * List of connections between windings and pins
+     */
+    connections?: PinWIndingConnection[];
+    /**
      * The dimensions of a bobbin, keys must be as defined in EN 62317
      */
     dimensions: { [key: string]: number | DimensionWithTolerance };
@@ -659,6 +686,7 @@ export interface BobbinFunctionalDescription {
      * The subtype of the shape, in case there are more than one
      */
     familySubtype?: string;
+    pinout?:        Pinout;
     /**
      * The name of a bobbin that this bobbin belongs to
      */
@@ -667,6 +695,18 @@ export interface BobbinFunctionalDescription {
      * The type of a bobbin
      */
     type: FunctionalDescriptionType;
+    [property: string]: any;
+}
+
+export interface PinWIndingConnection {
+    /**
+     * The name of the connected pin
+     */
+    pin?: string;
+    /**
+     * The name of the connected winding
+     */
+    winding?: string;
     [property: string]: any;
 }
 
@@ -686,6 +726,77 @@ export enum BobbinFamily {
     Pq = "pq",
     Rm = "rm",
     U = "u",
+}
+
+/**
+ * Data describing the pinout of a bobbin
+ */
+export interface Pinout {
+    /**
+     * The distance between pins
+     */
+    numberPins: number;
+    /**
+     * The number of rows of a bobbin, typically 2
+     */
+    numberRows?:    number;
+    pinDescription: Pin;
+    /**
+     * The distance between pits
+     */
+    pitch: number;
+    /**
+     * The distance between a row of pins and the center of the bobbin
+     */
+    rowDistance: number;
+    [property: string]: any;
+}
+
+/**
+ * Data describing one pin in a bobbin
+ */
+export interface Pin {
+    /**
+     * The coordinates of the center of the pin, referred to the center of the main column
+     */
+    coordinates?: number[];
+    /**
+     * Dimensions of the rectangle defining the pin
+     */
+    dimensions: number[];
+    /**
+     * Name given to the pin
+     */
+    name: string;
+    /**
+     * The rotation of the pin, default is vertical
+     */
+    rotation?: number[];
+    /**
+     * The shape of the pin
+     */
+    shape: Shape;
+    /**
+     * Type of pin
+     */
+    type: PinDescriptionType;
+    [property: string]: any;
+}
+
+/**
+ * The shape of the pin
+ */
+export enum Shape {
+    Rectangular = "rectangular",
+    Round = "round",
+}
+
+/**
+ * Type of pin
+ */
+export enum PinDescriptionType {
+    Smd = "smd",
+    Tht = "tht",
 }
 
 /**
@@ -757,6 +868,10 @@ export interface CoreBobbinProcessedDescription {
      * referred to the center of the main column.
      */
     coordinates?: number[];
+    /**
+     * List of pins, geometrically defining how and where it is
+     */
+    pins?: Pin[];
     /**
      * The thicknes of the walls that hold the wire on both sides of the column
      */
@@ -832,6 +947,10 @@ export interface WindingWindowElement {
  */
 export interface CoilFunctionalDescription {
     /**
+     * Array on elements, representing the all the pins this winding is connected to
+     */
+    connections?: ConnectionElement[];
+    /**
      * Tag to identify windings that are sharing the same ground
      */
     isolationSide: IsolationSide;
@@ -847,7 +966,27 @@ export interface CoilFunctionalDescription {
      * Number of turns in winding
      */
     numberTurns: number;
-    wire:        WireS | string;
+    wire:        Wire | string;
+    [property: string]: any;
+}
+
+/**
+ * Data describing the connection of the a wire
+ */
+export interface ConnectionElement {
+    /**
+     * Length of the connection, counted from the exit of the last turn until the terminal, in m
+     */
+    length?: number;
+    /**
+     * Metric of the terminal, if applicable
+     */
+    metric?: number;
+    /**
+     * Name of the pin where it is connected, if applicable
+     */
+    pinName?: string;
+    type?:    ConnectionType;
     [property: string]: any;
 }
 
@@ -870,26 +1009,33 @@ export enum IsolationSide {
 }
 
 /**
- * The description of a solid magnet wire
+ * The description of a solid round magnet wire
  *
- * The description of a strand magnet wire
+ * The description of a basic magnet wire
+ *
+ * The description of a solid foil magnet wire
+ *
+ * The description of a solid rectangular magnet wire
+ *
+ * The description of a stranded litz magnet wire
  */
-export interface WireS {
-    coating?: InsulationWireCoating | string;
+export interface Wire {
     /**
      * The conducting diameter of the wire, in m
      */
     conductingDiameter?: DimensionWithTolerance;
+    material?:           WireMaterial | string;
     /**
-     * The conducting height of the wire, in m
+     * The outer diameter of the wire, in m
      */
-    conductingHeight?: DimensionWithTolerance;
+    outerDiameter?: DimensionWithTolerance;
+    coating?:       InsulationWireCoating | string;
     /**
-     * The conducting width of the wire, in m
+     * The conducting area of the wire, in m². Used for some rectangular shapes where the area
+     * is smaller than expected due to rounded corners
      */
-    conductingWidth?:  DimensionWithTolerance;
+    conductingArea?:   DimensionWithTolerance;
     manufacturerInfo?: ManufacturerInfo;
-    material?:         WireMaterial | string;
     /**
      * The name of wire
      */
@@ -899,9 +1045,22 @@ export interface WireS {
      */
     numberConductors?: number;
     /**
-     * The outer diameter of the wire, in m
+     * The standard of wire
      */
-    outerDiameter?: DimensionWithTolerance;
+    standard?: WireStandard;
+    /**
+     * Name according to the standard of wire
+     */
+    standardName?: string;
+    type:          WireType;
+    /**
+     * The conducting height of the wire, in m
+     */
+    conductingHeight?: DimensionWithTolerance;
+    /**
+     * The conducting width of the wire, in m
+     */
+    conductingWidth?: DimensionWithTolerance;
     /**
      * The outer height of the wire, in m
      */
@@ -911,21 +1070,13 @@ export interface WireS {
      */
     outerWidth?: DimensionWithTolerance;
     /**
-     * The standard of wire
+     * The radius of the edge, in case of rectangular wire, in m
      */
-    standard?: WireStandard;
-    /**
-     * Name according to the standard of wire
-     */
-    standardName?: string;
-    /**
-     * The type of wire
-     */
-    type?: string;
+    edgeRadius?: DimensionWithTolerance;
     /**
      * The wire used as strands
      */
-    strand?: WireSolid | string;
+    strand?: WireRound | string;
     [property: string]: any;
 }
 
@@ -947,6 +1098,10 @@ export interface InsulationWireCoating {
      * The number of layers of the insulation around the wire
      */
     numberLayers?: number;
+    /**
+     * The maximum temperature that the wire coating can withstand
+     */
+    temperatureRating?: number;
     /**
      * The maximum thickness of the insulation around the wire, in m
      */
@@ -1121,24 +1276,27 @@ export enum WireStandard {
 }
 
 /**
- * The description of a solid magnet wire
+ * The description of a solid round magnet wire
+ *
+ * The description of a basic magnet wire
  */
-export interface WireSolid {
-    coating?: InsulationWireCoating | string;
+export interface WireRound {
     /**
      * The conducting diameter of the wire, in m
      */
-    conductingDiameter?: DimensionWithTolerance;
+    conductingDiameter: DimensionWithTolerance;
+    material?:          WireMaterial | string;
     /**
-     * The conducting height of the wire, in m
+     * The outer diameter of the wire, in m
      */
-    conductingHeight?: DimensionWithTolerance;
+    outerDiameter?: DimensionWithTolerance;
+    coating?:       InsulationWireCoating | string;
     /**
-     * The conducting width of the wire, in m
+     * The conducting area of the wire, in m². Used for some rectangular shapes where the area
+     * is smaller than expected due to rounded corners
      */
-    conductingWidth?:  DimensionWithTolerance;
+    conductingArea?:   DimensionWithTolerance;
     manufacturerInfo?: ManufacturerInfo;
-    material?:         WireMaterial | string;
     /**
      * The name of wire
      */
@@ -1148,18 +1306,6 @@ export interface WireSolid {
      */
     numberConductors?: number;
     /**
-     * The outer diameter of the wire, in m
-     */
-    outerDiameter?: DimensionWithTolerance;
-    /**
-     * The outer height of the wire, in m
-     */
-    outerHeight?: DimensionWithTolerance;
-    /**
-     * The outer width of the wire, in m
-     */
-    outerWidth?: DimensionWithTolerance;
-    /**
      * The standard of wire
      */
     standard?: WireStandard;
@@ -1167,18 +1313,16 @@ export interface WireSolid {
      * Name according to the standard of wire
      */
     standardName?: string;
-    /**
-     * The type of wire
-     */
-    type?: WireSolidType;
+    type:          WireType;
     [property: string]: any;
 }
 
 /**
  * The type of wire
  */
-export enum WireSolidType {
+export enum WireType {
     Foil = "foil",
+    Litz = "litz",
     Rectangular = "rectangular",
     Round = "round",
 }
@@ -1251,6 +1395,11 @@ export enum WindingOrientation {
  */
 export interface PartialWinding {
     /**
+     * Array on two elements, representing the input and output connection for this partial
+     * winding
+     */
+    connections?: ConnectionElement[];
+    /**
      * Number of parallels in winding
      */
     parallelsProportion: number[];
@@ -1279,6 +1428,7 @@ export enum CoilAlignment {
 export enum ElectricalType {
     Conduction = "conduction",
     Insulation = "insulation",
+    Shielding = "shielding",
 }
 
 /**
@@ -1452,6 +1602,7 @@ export interface CoreFunctionalDescription {
  */
 export enum Coating {
     Epoxy = "epoxy",
+    Parylene = "parylene",
 }
 
 /**
@@ -2209,6 +2360,14 @@ export interface Outputs {
      */
     windingLosses?: WindingLossesOutput;
     /**
+     * Data describing the output current field
+     */
+    windingWindowCurrentDensityField?: WindingWindowCurrentFieldOutput;
+    /**
+     * Data describing the output current field
+     */
+    windingWindowCurrentField?: WindingWindowCurrentFieldOutput;
+    /**
      * Data describing the output magnetic strength field
      */
     windingWindowMagneticStrengthField?: WindingWindowMagneticStrengthFieldOutput;
@@ -2236,7 +2395,7 @@ export interface CoreLossesOutput {
     /**
      * Excitation of the B field that produced the core losses
      */
-    magneticFluxDensity?: OperatingPointExcitation;
+    magneticFluxDensity?: SignalDescriptor;
     /**
      * Model used to calculate the core losses in the case of simulation, or method used to
      * measure it
@@ -2325,9 +2484,21 @@ export interface LeakageInductanceOutput {
  */
 export interface MagnetizingInductanceOutput {
     /**
+     * Value of the reluctance of the core
+     */
+    coreReluctance: number;
+    /**
+     * Value of the reluctance of the gaps
+     */
+    gappingReluctance?: number;
+    /**
      * Value of the magnetizing inductance
      */
     magnetizingInductance: DimensionWithTolerance;
+    /**
+     * Maximum value of the fringing of the gaps
+     */
+    maximumFringingFactor?: number;
     /**
      * Value of the maximum magnetic energy storable in the core
      */
@@ -2335,7 +2506,7 @@ export interface MagnetizingInductanceOutput {
     /**
      * Value of the maximum magnetic energy storable in the gaps
      */
-    maximumMagneticEnergyGapping?: number[];
+    maximumStorableMagneticEnergyGapping?: number;
     /**
      * Model used to calculate the magnetizing inductance in the case of simulation, or method
      * used to measure it
@@ -2343,17 +2514,38 @@ export interface MagnetizingInductanceOutput {
     methodUsed: string;
     origin:     ResultOrigin;
     /**
-     * Value of the reluctance of the core
+     * Value of the maximum magnetic energy storable in the gaps
      */
-    reluctanceCore?: DimensionWithTolerance;
-    /**
-     * Value of the reluctance of the gaps
-     */
-    reluctanceGapping?: DimensionWithTolerance[];
+    reluctancePerGap?: AirGapReluctanceOutput[];
     /**
      * Value of the reluctance of the core
      */
-    reluctanceTotal?: DimensionWithTolerance;
+    ungappedCoreReluctance?: number;
+    [property: string]: any;
+}
+
+/**
+ * Data describing the reluctance of an air gap
+ */
+export interface AirGapReluctanceOutput {
+    /**
+     * Value of the Fringing Factor
+     */
+    fringingFactor: number;
+    /**
+     * Value of the maximum magnetic energy storable in the gap
+     */
+    maximumStorableMagneticEnergy: number;
+    /**
+     * Model used to calculate the magnetizing inductance in the case of simulation, or method
+     * used to measure it
+     */
+    methodUsed: string;
+    origin:     ResultOrigin;
+    /**
+     * Value of the reluctance of the gap
+     */
+    reluctance: number;
     [property: string]: any;
 }
 
@@ -2470,6 +2662,10 @@ export interface WindingLossesOutput {
      */
     dcResistancePerTurn?: number[];
     /**
+     * List of DC resistance per winding
+     */
+    dcResistancePerWinding?: number[];
+    /**
      * Model used to calculate the winding losses in the case of simulation, or method used to
      * measure it
      */
@@ -2566,11 +2762,24 @@ export interface WindingLossElement {
 }
 
 /**
- * Data describing the output magnetic strength field
+ * Data describing the output current field
  *
- * Data describing the magnetic strengtg field inside the winding window
+ * Data describing the curren in the different chunks used in field calculation
  */
-export interface WindingWindowMagneticStrengthFieldOutput {
+export interface WindingWindowCurrentFieldOutput {
+    fieldPerFrequency: Field[];
+    /**
+     * Model used to calculate the current field
+     */
+    methodUsed: string;
+    origin:     ResultOrigin;
+    [property: string]: any;
+}
+
+/**
+ * Data describing a field in a 2D or 3D space
+ */
+export interface Field {
     /**
      * Value of the magnetizing inductance
      */
@@ -2579,9 +2788,43 @@ export interface WindingWindowMagneticStrengthFieldOutput {
      * Value of the field at this point
      */
     frequency: number;
+    [property: string]: any;
+}
+
+/**
+ * Data describing the value of a field in a 2D or 3D space
+ */
+export interface FieldPoint {
     /**
-     * Model used to calculate the magnetizing inductance in the case of simulation, or method
-     * used to measure it
+     * If this point has some special significance, can be identified with this label
+     */
+    label?: string;
+    /**
+     * The coordinates of the point of the field
+     */
+    point: number[];
+    /**
+     * If this field point is inside of a wire, this is the index of the turn
+     */
+    turnIndex?: number;
+    /**
+     * If this field point is inside of a wire, this is the length of the turn
+     */
+    turnLength?: number;
+    /**
+     * Value of the field at this point
+     */
+    value: number;
+    [property: string]: any;
+}
+
+/**
+ * Data describing the output magnetic strength field
+ */
+export interface WindingWindowMagneticStrengthFieldOutput {
+    fieldPerFrequency: ComplexField[];
+    /**
+     * Model used to calculate the magnetic strength field
      */
     methodUsed: string;
     origin:     ResultOrigin;
@@ -2589,18 +2832,48 @@ export interface WindingWindowMagneticStrengthFieldOutput {
 }
 
 /**
- * Data describing the magnetizing inductance and the intermediate inputs used to calculate
- * them
+ * Data describing a field in a 2D or 3D space
  */
-export interface FieldPoint {
+export interface ComplexField {
+    /**
+     * Value of the magnetizing inductance
+     */
+    data: ComplexFieldPoint[];
+    /**
+     * Value of the field at this point
+     */
+    frequency: number;
+    [property: string]: any;
+}
+
+/**
+ * Data describing the complex value of a field in a 2D or 3D space
+ */
+export interface ComplexFieldPoint {
+    /**
+     * Imaginary value of the field at this point
+     */
+    imaginary: number;
+    /**
+     * If this point has some special significance, can be identified with this label
+     */
+    label?: string;
     /**
      * The coordinates of the point of the field
      */
     point: number[];
     /**
-     * Value of the field at this point
+     * Real value of the field at this point
      */
-    value: number;
+    real: number;
+    /**
+     * If this field point is inside of a wire, this is the index of the turn
+     */
+    turnIndex?: number;
+    /**
+     * If this field point is inside of a wire, this is the length of the turn
+     */
+    turnLength?: number;
     [property: string]: any;
 }
 
@@ -2759,6 +3032,30 @@ export class Convert {
         return JSON.stringify(uncast(value, r("BobbinFunctionalDescription")), null, 2);
     }
 
+    public static toPinWIndingConnection(json: string): PinWIndingConnection {
+        return cast(JSON.parse(json), r("PinWIndingConnection"));
+    }
+
+    public static pinWIndingConnectionToJson(value: PinWIndingConnection): string {
+        return JSON.stringify(uncast(value, r("PinWIndingConnection")), null, 2);
+    }
+
+    public static toPinout(json: string): Pinout {
+        return cast(JSON.parse(json), r("Pinout"));
+    }
+
+    public static pinoutToJson(value: Pinout): string {
+        return JSON.stringify(uncast(value, r("Pinout")), null, 2);
+    }
+
+    public static toPin(json: string): Pin {
+        return cast(JSON.parse(json), r("Pin"));
+    }
+
+    public static pinToJson(value: Pin): string {
+        return JSON.stringify(uncast(value, r("Pin")), null, 2);
+    }
+
     public static toManufacturerInfo(json: string): ManufacturerInfo {
         return cast(JSON.parse(json), r("ManufacturerInfo"));
     }
@@ -2791,12 +3088,20 @@ export class Convert {
         return JSON.stringify(uncast(value, r("CoilFunctionalDescription")), null, 2);
     }
 
-    public static toWireS(json: string): WireS {
-        return cast(JSON.parse(json), r("WireS"));
+    public static toConnectionElement(json: string): ConnectionElement {
+        return cast(JSON.parse(json), r("ConnectionElement"));
     }
 
-    public static wireSToJson(value: WireS): string {
-        return JSON.stringify(uncast(value, r("WireS")), null, 2);
+    public static connectionElementToJson(value: ConnectionElement): string {
+        return JSON.stringify(uncast(value, r("ConnectionElement")), null, 2);
+    }
+
+    public static toWire(json: string): Wire {
+        return cast(JSON.parse(json), r("Wire"));
+    }
+
+    public static wireToJson(value: Wire): string {
+        return JSON.stringify(uncast(value, r("Wire")), null, 2);
     }
 
     public static toInsulationWireCoating(json: string): InsulationWireCoating {
@@ -2855,12 +3160,12 @@ export class Convert {
         return JSON.stringify(uncast(value, r("ThermalConductivityElement")), null, 2);
     }
 
-    public static toWireSolid(json: string): WireSolid {
-        return cast(JSON.parse(json), r("WireSolid"));
+    public static toWireRound(json: string): WireRound {
+        return cast(JSON.parse(json), r("WireRound"));
     }
 
-    public static wireSolidToJson(value: WireSolid): string {
-        return JSON.stringify(uncast(value, r("WireSolid")), null, 2);
+    public static wireRoundToJson(value: WireRound): string {
+        return JSON.stringify(uncast(value, r("WireRound")), null, 2);
     }
 
     public static toLayer(json: string): Layer {
@@ -3127,6 +3432,14 @@ export class Convert {
         return JSON.stringify(uncast(value, r("MagnetizingInductanceOutput")), null, 2);
     }
 
+    public static toAirGapReluctanceOutput(json: string): AirGapReluctanceOutput {
+        return cast(JSON.parse(json), r("AirGapReluctanceOutput"));
+    }
+
+    public static airGapReluctanceOutputToJson(value: AirGapReluctanceOutput): string {
+        return JSON.stringify(uncast(value, r("AirGapReluctanceOutput")), null, 2);
+    }
+
     public static toStrayCapacitanceOutput(json: string): StrayCapacitanceOutput {
         return cast(JSON.parse(json), r("StrayCapacitanceOutput"));
     }
@@ -3207,12 +3520,20 @@ export class Convert {
         return JSON.stringify(uncast(value, r("WindingLossElement")), null, 2);
     }
 
-    public static toWindingWindowMagneticStrengthFieldOutput(json: string): WindingWindowMagneticStrengthFieldOutput {
-        return cast(JSON.parse(json), r("WindingWindowMagneticStrengthFieldOutput"));
+    public static toWindingWindowCurrentFieldOutput(json: string): WindingWindowCurrentFieldOutput {
+        return cast(JSON.parse(json), r("WindingWindowCurrentFieldOutput"));
     }
 
-    public static windingWindowMagneticStrengthFieldOutputToJson(value: WindingWindowMagneticStrengthFieldOutput): string {
-        return JSON.stringify(uncast(value, r("WindingWindowMagneticStrengthFieldOutput")), null, 2);
+    public static windingWindowCurrentFieldOutputToJson(value: WindingWindowCurrentFieldOutput): string {
+        return JSON.stringify(uncast(value, r("WindingWindowCurrentFieldOutput")), null, 2);
+    }
+
+    public static toField(json: string): Field {
+        return cast(JSON.parse(json), r("Field"));
+    }
+
+    public static fieldToJson(value: Field): string {
+        return JSON.stringify(uncast(value, r("Field")), null, 2);
     }
 
     public static toFieldPoint(json: string): FieldPoint {
@@ -3221,6 +3542,30 @@ export class Convert {
 
     public static fieldPointToJson(value: FieldPoint): string {
         return JSON.stringify(uncast(value, r("FieldPoint")), null, 2);
+    }
+
+    public static toWindingWindowMagneticStrengthFieldOutput(json: string): WindingWindowMagneticStrengthFieldOutput {
+        return cast(JSON.parse(json), r("WindingWindowMagneticStrengthFieldOutput"));
+    }
+
+    public static windingWindowMagneticStrengthFieldOutputToJson(value: WindingWindowMagneticStrengthFieldOutput): string {
+        return JSON.stringify(uncast(value, r("WindingWindowMagneticStrengthFieldOutput")), null, 2);
+    }
+
+    public static toComplexField(json: string): ComplexField {
+        return cast(JSON.parse(json), r("ComplexField"));
+    }
+
+    public static complexFieldToJson(value: ComplexField): string {
+        return JSON.stringify(uncast(value, r("ComplexField")), null, 2);
+    }
+
+    public static toComplexFieldPoint(json: string): ComplexFieldPoint {
+        return cast(JSON.parse(json), r("ComplexFieldPoint"));
+    }
+
+    public static complexFieldPointToJson(value: ComplexFieldPoint): string {
+        return JSON.stringify(uncast(value, r("ComplexFieldPoint")), null, 2);
     }
 }
 
@@ -3396,9 +3741,10 @@ const typeMap: any = {
         { json: "name", js: "name", typ: u(undefined, "") },
         { json: "operatingTemperature", js: "operatingTemperature", typ: u(undefined, r("DimensionWithTolerance")) },
         { json: "strayCapacitance", js: "strayCapacitance", typ: u(undefined, a(r("DimensionWithTolerance"))) },
-        { json: "terminalType", js: "terminalType", typ: u(undefined, a(r("TerminalType"))) },
+        { json: "terminalType", js: "terminalType", typ: u(undefined, a(r("ConnectionType"))) },
         { json: "topology", js: "topology", typ: u(undefined, r("Topology")) },
         { json: "turnsRatios", js: "turnsRatios", typ: a(r("DimensionWithTolerance")) },
+        { json: "wiringTechnology", js: "wiringTechnology", typ: u(undefined, r("WiringTechnology")) },
     ], "any"),
     "InsulationRequirements": o([
         { json: "altitude", js: "altitude", typ: u(undefined, r("DimensionWithTolerance")) },
@@ -3407,7 +3753,7 @@ const typeMap: any = {
         { json: "mainSupplyVoltage", js: "mainSupplyVoltage", typ: u(undefined, r("DimensionWithTolerance")) },
         { json: "overvoltageCategory", js: "overvoltageCategory", typ: u(undefined, r("OvervoltageCategory")) },
         { json: "pollutionDegree", js: "pollutionDegree", typ: u(undefined, r("PollutionDegree")) },
-        { json: "standards", js: "standards", typ: u(undefined, a(r("Standard"))) },
+        { json: "standards", js: "standards", typ: u(undefined, a(r("InsulationStandards"))) },
     ], "any"),
     "DimensionWithTolerance": o([
         { json: "excludeMaximum", js: "excludeMaximum", typ: u(undefined, true) },
@@ -3484,6 +3830,7 @@ const typeMap: any = {
         { json: "core", js: "core", typ: r("MagneticCore") },
         { json: "distributorsInfo", js: "distributorsInfo", typ: u(undefined, a(r("DistributorInfo"))) },
         { json: "manufacturerInfo", js: "manufacturerInfo", typ: u(undefined, r("MagneticManufacturerInfo")) },
+        { json: "rotation", js: "rotation", typ: u(undefined, a(3.14)) },
     ], "any"),
     "Coil": o([
         { json: "bobbin", js: "bobbin", typ: u(r("Bobbin"), "") },
@@ -3512,11 +3859,32 @@ const typeMap: any = {
         { json: "updatedAt", js: "updatedAt", typ: u(undefined, "") },
     ], "any"),
     "BobbinFunctionalDescription": o([
+        { json: "connections", js: "connections", typ: u(undefined, a(r("PinWIndingConnection"))) },
         { json: "dimensions", js: "dimensions", typ: m(u(3.14, r("DimensionWithTolerance"))) },
         { json: "family", js: "family", typ: r("BobbinFamily") },
         { json: "familySubtype", js: "familySubtype", typ: u(undefined, "") },
+        { json: "pinout", js: "pinout", typ: u(undefined, r("Pinout")) },
         { json: "shape", js: "shape", typ: "" },
         { json: "type", js: "type", typ: r("FunctionalDescriptionType") },
+    ], "any"),
+    "PinWIndingConnection": o([
+        { json: "pin", js: "pin", typ: u(undefined, "") },
+        { json: "winding", js: "winding", typ: u(undefined, "") },
+    ], "any"),
+    "Pinout": o([
+        { json: "numberPins", js: "numberPins", typ: 0 },
+        { json: "numberRows", js: "numberRows", typ: u(undefined, 0) },
+        { json: "pinDescription", js: "pinDescription", typ: r("Pin") },
+        { json: "pitch", js: "pitch", typ: 3.14 },
+        { json: "rowDistance", js: "rowDistance", typ: 3.14 },
+    ], "any"),
+    "Pin": o([
+        { json: "coordinates", js: "coordinates", typ: u(undefined, a(3.14)) },
+        { json: "dimensions", js: "dimensions", typ: a(3.14) },
+        { json: "name", js: "name", typ: "" },
+        { json: "rotation", js: "rotation", typ: u(undefined, a(3.14)) },
+        { json: "shape", js: "shape", typ: r("Shape") },
+        { json: "type", js: "type", typ: r("PinDescriptionType") },
     ], "any"),
     "ManufacturerInfo": o([
         { json: "cost", js: "cost", typ: u(undefined, "") },
@@ -3532,6 +3900,7 @@ const typeMap: any = {
         { json: "columnThickness", js: "columnThickness", typ: 3.14 },
         { json: "columnWidth", js: "columnWidth", typ: u(undefined, 3.14) },
         { json: "coordinates", js: "coordinates", typ: u(undefined, a(3.14)) },
+        { json: "pins", js: "pins", typ: u(undefined, a(r("Pin"))) },
         { json: "wallThickness", js: "wallThickness", typ: 3.14 },
         { json: "windingWindows", js: "windingWindows", typ: a(r("WindingWindowElement")) },
     ], "any"),
@@ -3544,34 +3913,44 @@ const typeMap: any = {
         { json: "radialHeight", js: "radialHeight", typ: u(undefined, 3.14) },
     ], "any"),
     "CoilFunctionalDescription": o([
+        { json: "connections", js: "connections", typ: u(undefined, a(r("ConnectionElement"))) },
         { json: "isolationSide", js: "isolationSide", typ: r("IsolationSide") },
         { json: "name", js: "name", typ: "" },
         { json: "numberParallels", js: "numberParallels", typ: 0 },
         { json: "numberTurns", js: "numberTurns", typ: 0 },
-        { json: "wire", js: "wire", typ: u(r("WireS"), "") },
+        { json: "wire", js: "wire", typ: u(r("Wire"), "") },
     ], "any"),
-    "WireS": o([
-        { json: "coating", js: "coating", typ: u(undefined, u(r("InsulationWireCoating"), "")) },
+    "ConnectionElement": o([
+        { json: "length", js: "length", typ: u(undefined, 3.14) },
+        { json: "metric", js: "metric", typ: u(undefined, 0) },
+        { json: "pinName", js: "pinName", typ: u(undefined, "") },
+        { json: "type", js: "type", typ: u(undefined, r("ConnectionType")) },
+    ], "any"),
+    "Wire": o([
         { json: "conductingDiameter", js: "conductingDiameter", typ: u(undefined, r("DimensionWithTolerance")) },
-        { json: "conductingHeight", js: "conductingHeight", typ: u(undefined, r("DimensionWithTolerance")) },
-        { json: "conductingWidth", js: "conductingWidth", typ: u(undefined, r("DimensionWithTolerance")) },
-        { json: "manufacturerInfo", js: "manufacturerInfo", typ: u(undefined, r("ManufacturerInfo")) },
         { json: "material", js: "material", typ: u(undefined, u(r("WireMaterial"), "")) },
+        { json: "outerDiameter", js: "outerDiameter", typ: u(undefined, r("DimensionWithTolerance")) },
+        { json: "coating", js: "coating", typ: u(undefined, u(r("InsulationWireCoating"), "")) },
+        { json: "conductingArea", js: "conductingArea", typ: u(undefined, r("DimensionWithTolerance")) },
+        { json: "manufacturerInfo", js: "manufacturerInfo", typ: u(undefined, r("ManufacturerInfo")) },
         { json: "name", js: "name", typ: u(undefined, "") },
         { json: "numberConductors", js: "numberConductors", typ: u(undefined, 0) },
-        { json: "outerDiameter", js: "outerDiameter", typ: u(undefined, r("DimensionWithTolerance")) },
-        { json: "outerHeight", js: "outerHeight", typ: u(undefined, r("DimensionWithTolerance")) },
-        { json: "outerWidth", js: "outerWidth", typ: u(undefined, r("DimensionWithTolerance")) },
         { json: "standard", js: "standard", typ: u(undefined, r("WireStandard")) },
         { json: "standardName", js: "standardName", typ: u(undefined, "") },
-        { json: "type", js: "type", typ: u(undefined, "") },
-        { json: "strand", js: "strand", typ: u(undefined, u(r("WireSolid"), "")) },
+        { json: "type", js: "type", typ: r("WireType") },
+        { json: "conductingHeight", js: "conductingHeight", typ: u(undefined, r("DimensionWithTolerance")) },
+        { json: "conductingWidth", js: "conductingWidth", typ: u(undefined, r("DimensionWithTolerance")) },
+        { json: "outerHeight", js: "outerHeight", typ: u(undefined, r("DimensionWithTolerance")) },
+        { json: "outerWidth", js: "outerWidth", typ: u(undefined, r("DimensionWithTolerance")) },
+        { json: "edgeRadius", js: "edgeRadius", typ: u(undefined, r("DimensionWithTolerance")) },
+        { json: "strand", js: "strand", typ: u(undefined, u(r("WireRound"), "")) },
     ], "any"),
     "InsulationWireCoating": o([
         { json: "breakdownVoltage", js: "breakdownVoltage", typ: u(undefined, 3.14) },
         { json: "grade", js: "grade", typ: u(undefined, 0) },
         { json: "material", js: "material", typ: u(undefined, u(r("InsulationMaterial"), "")) },
         { json: "numberLayers", js: "numberLayers", typ: u(undefined, 0) },
+        { json: "temperatureRating", js: "temperatureRating", typ: u(undefined, 3.14) },
         { json: "thickness", js: "thickness", typ: u(undefined, r("DimensionWithTolerance")) },
         { json: "thicknessLayers", js: "thicknessLayers", typ: u(undefined, 3.14) },
         { json: "type", js: "type", typ: u(undefined, r("InsulationWireCoatingType")) },
@@ -3614,21 +3993,18 @@ const typeMap: any = {
         { json: "temperature", js: "temperature", typ: 3.14 },
         { json: "value", js: "value", typ: 3.14 },
     ], "any"),
-    "WireSolid": o([
-        { json: "coating", js: "coating", typ: u(undefined, u(r("InsulationWireCoating"), "")) },
-        { json: "conductingDiameter", js: "conductingDiameter", typ: u(undefined, r("DimensionWithTolerance")) },
-        { json: "conductingHeight", js: "conductingHeight", typ: u(undefined, r("DimensionWithTolerance")) },
-        { json: "conductingWidth", js: "conductingWidth", typ: u(undefined, r("DimensionWithTolerance")) },
-        { json: "manufacturerInfo", js: "manufacturerInfo", typ: u(undefined, r("ManufacturerInfo")) },
+    "WireRound": o([
+        { json: "conductingDiameter", js: "conductingDiameter", typ: r("DimensionWithTolerance") },
         { json: "material", js: "material", typ: u(undefined, u(r("WireMaterial"), "")) },
+        { json: "outerDiameter", js: "outerDiameter", typ: u(undefined, r("DimensionWithTolerance")) },
+        { json: "coating", js: "coating", typ: u(undefined, u(r("InsulationWireCoating"), "")) },
+        { json: "conductingArea", js: "conductingArea", typ: u(undefined, r("DimensionWithTolerance")) },
+        { json: "manufacturerInfo", js: "manufacturerInfo", typ: u(undefined, r("ManufacturerInfo")) },
         { json: "name", js: "name", typ: u(undefined, "") },
         { json: "numberConductors", js: "numberConductors", typ: u(undefined, 0) },
-        { json: "outerDiameter", js: "outerDiameter", typ: u(undefined, r("DimensionWithTolerance")) },
-        { json: "outerHeight", js: "outerHeight", typ: u(undefined, r("DimensionWithTolerance")) },
-        { json: "outerWidth", js: "outerWidth", typ: u(undefined, r("DimensionWithTolerance")) },
         { json: "standard", js: "standard", typ: u(undefined, r("WireStandard")) },
         { json: "standardName", js: "standardName", typ: u(undefined, "") },
-        { json: "type", js: "type", typ: u(undefined, r("WireSolidType")) },
+        { json: "type", js: "type", typ: r("WireType") },
     ], "any"),
     "Layer": o([
         { json: "coordinates", js: "coordinates", typ: a(3.14) },
@@ -3644,6 +4020,7 @@ const typeMap: any = {
         { json: "windingStyle", js: "windingStyle", typ: u(undefined, r("WindingStyle")) },
     ], "any"),
     "PartialWinding": o([
+        { json: "connections", js: "connections", typ: u(undefined, a(r("ConnectionElement"))) },
         { json: "parallelsProportion", js: "parallelsProportion", typ: a(3.14) },
         { json: "winding", js: "winding", typ: "" },
     ], "any"),
@@ -3872,13 +4249,15 @@ const typeMap: any = {
         { json: "strayCapacitance", js: "strayCapacitance", typ: u(undefined, a(r("StrayCapacitanceOutput"))) },
         { json: "temperature", js: "temperature", typ: u(undefined, r("TemperatureOutput")) },
         { json: "windingLosses", js: "windingLosses", typ: u(undefined, r("WindingLossesOutput")) },
+        { json: "windingWindowCurrentDensityField", js: "windingWindowCurrentDensityField", typ: u(undefined, r("WindingWindowCurrentFieldOutput")) },
+        { json: "windingWindowCurrentField", js: "windingWindowCurrentField", typ: u(undefined, r("WindingWindowCurrentFieldOutput")) },
         { json: "windingWindowMagneticStrengthField", js: "windingWindowMagneticStrengthField", typ: u(undefined, r("WindingWindowMagneticStrengthFieldOutput")) },
     ], "any"),
     "CoreLossesOutput": o([
         { json: "coreLosses", js: "coreLosses", typ: 3.14 },
         { json: "eddyCurrentCoreLosses", js: "eddyCurrentCoreLosses", typ: u(undefined, 3.14) },
         { json: "hysteresisCoreLosses", js: "hysteresisCoreLosses", typ: u(undefined, 3.14) },
-        { json: "magneticFluxDensity", js: "magneticFluxDensity", typ: u(undefined, r("OperatingPointExcitation")) },
+        { json: "magneticFluxDensity", js: "magneticFluxDensity", typ: u(undefined, r("SignalDescriptor")) },
         { json: "methodUsed", js: "methodUsed", typ: "" },
         { json: "origin", js: "origin", typ: r("ResultOrigin") },
         { json: "temperature", js: "temperature", typ: u(undefined, 3.14) },
@@ -3897,14 +4276,23 @@ const typeMap: any = {
         { json: "origin", js: "origin", typ: r("ResultOrigin") },
     ], "any"),
     "MagnetizingInductanceOutput": o([
+        { json: "coreReluctance", js: "coreReluctance", typ: 3.14 },
+        { json: "gappingReluctance", js: "gappingReluctance", typ: u(undefined, 3.14) },
         { json: "magnetizingInductance", js: "magnetizingInductance", typ: r("DimensionWithTolerance") },
+        { json: "maximumFringingFactor", js: "maximumFringingFactor", typ: u(undefined, 3.14) },
         { json: "maximumMagneticEnergyCore", js: "maximumMagneticEnergyCore", typ: u(undefined, 3.14) },
-        { json: "maximumMagneticEnergyGapping", js: "maximumMagneticEnergyGapping", typ: u(undefined, a(3.14)) },
+        { json: "maximumStorableMagneticEnergyGapping", js: "maximumStorableMagneticEnergyGapping", typ: u(undefined, 3.14) },
         { json: "methodUsed", js: "methodUsed", typ: "" },
         { json: "origin", js: "origin", typ: r("ResultOrigin") },
-        { json: "reluctanceCore", js: "reluctanceCore", typ: u(undefined, r("DimensionWithTolerance")) },
-        { json: "reluctanceGapping", js: "reluctanceGapping", typ: u(undefined, a(r("DimensionWithTolerance"))) },
-        { json: "reluctanceTotal", js: "reluctanceTotal", typ: u(undefined, r("DimensionWithTolerance")) },
+        { json: "reluctancePerGap", js: "reluctancePerGap", typ: u(undefined, a(r("AirGapReluctanceOutput"))) },
+        { json: "ungappedCoreReluctance", js: "ungappedCoreReluctance", typ: u(undefined, 3.14) },
+    ], "any"),
+    "AirGapReluctanceOutput": o([
+        { json: "fringingFactor", js: "fringingFactor", typ: 3.14 },
+        { json: "maximumStorableMagneticEnergy", js: "maximumStorableMagneticEnergy", typ: 3.14 },
+        { json: "methodUsed", js: "methodUsed", typ: "" },
+        { json: "origin", js: "origin", typ: r("ResultOrigin") },
+        { json: "reluctance", js: "reluctance", typ: 3.14 },
     ], "any"),
     "StrayCapacitanceOutput": o([
         { json: "methodUsed", js: "methodUsed", typ: "" },
@@ -3941,6 +4329,7 @@ const typeMap: any = {
         { json: "currentDividerPerTurn", js: "currentDividerPerTurn", typ: u(undefined, a(3.14)) },
         { json: "currentPerWinding", js: "currentPerWinding", typ: u(undefined, r("OperatingPoint")) },
         { json: "dcResistancePerTurn", js: "dcResistancePerTurn", typ: u(undefined, a(3.14)) },
+        { json: "dcResistancePerWinding", js: "dcResistancePerWinding", typ: u(undefined, a(3.14)) },
         { json: "methodUsed", js: "methodUsed", typ: "" },
         { json: "origin", js: "origin", typ: r("ResultOrigin") },
         { json: "resistanceMatrix", js: "resistanceMatrix", typ: u(undefined, a(r("ResistanceMatrixAtFrequency"))) },
@@ -3971,21 +4360,44 @@ const typeMap: any = {
         { json: "methodUsed", js: "methodUsed", typ: "" },
         { json: "origin", js: "origin", typ: r("ResultOrigin") },
     ], "any"),
-    "WindingWindowMagneticStrengthFieldOutput": o([
-        { json: "data", js: "data", typ: a(r("FieldPoint")) },
-        { json: "frequency", js: "frequency", typ: 3.14 },
+    "WindingWindowCurrentFieldOutput": o([
+        { json: "fieldPerFrequency", js: "fieldPerFrequency", typ: a(r("Field")) },
         { json: "methodUsed", js: "methodUsed", typ: "" },
         { json: "origin", js: "origin", typ: r("ResultOrigin") },
     ], "any"),
+    "Field": o([
+        { json: "data", js: "data", typ: a(r("FieldPoint")) },
+        { json: "frequency", js: "frequency", typ: 3.14 },
+    ], "any"),
     "FieldPoint": o([
+        { json: "label", js: "label", typ: u(undefined, "") },
         { json: "point", js: "point", typ: a(3.14) },
+        { json: "turnIndex", js: "turnIndex", typ: u(undefined, 0) },
+        { json: "turnLength", js: "turnLength", typ: u(undefined, 3.14) },
         { json: "value", js: "value", typ: 3.14 },
+    ], "any"),
+    "WindingWindowMagneticStrengthFieldOutput": o([
+        { json: "fieldPerFrequency", js: "fieldPerFrequency", typ: a(r("ComplexField")) },
+        { json: "methodUsed", js: "methodUsed", typ: "" },
+        { json: "origin", js: "origin", typ: r("ResultOrigin") },
+    ], "any"),
+    "ComplexField": o([
+        { json: "data", js: "data", typ: a(r("ComplexFieldPoint")) },
+        { json: "frequency", js: "frequency", typ: 3.14 },
+    ], "any"),
+    "ComplexFieldPoint": o([
+        { json: "imaginary", js: "imaginary", typ: 3.14 },
+        { json: "label", js: "label", typ: u(undefined, "") },
+        { json: "point", js: "point", typ: a(3.14) },
+        { json: "real", js: "real", typ: 3.14 },
+        { json: "turnIndex", js: "turnIndex", typ: u(undefined, 0) },
+        { json: "turnLength", js: "turnLength", typ: u(undefined, 3.14) },
     ], "any"),
     "Cti": [
         "Group I",
         "Group II",
-        "Group IIIa",
-        "Group IIIb",
+        "Group IIIA",
+        "Group IIIB",
     ],
     "InsulationType": [
         "Basic",
@@ -4005,7 +4417,7 @@ const typeMap: any = {
         "P2",
         "P3",
     ],
-    "Standard": [
+    "InsulationStandards": [
         "IEC 60335-1",
         "IEC 60664-1",
         "IEC 60664-5",
@@ -4019,7 +4431,7 @@ const typeMap: any = {
         "Military",
         "Space",
     ],
-    "TerminalType": [
+    "ConnectionType": [
         "Flying Lead",
         "Pin",
         "Screw",
@@ -4042,6 +4454,11 @@ const typeMap: any = {
         "Two Switch Forward Converter",
         "Weinberg Converter",
         "Zeta Converter",
+    ],
+    "WiringTechnology": [
+        "Deposition",
+        "Printed",
+        "Wound",
     ],
     "WaveformLabel": [
         "Bipolar Rectangular",
@@ -4068,6 +4485,14 @@ const typeMap: any = {
         "pq",
         "rm",
         "u",
+    ],
+    "Shape": [
+        "rectangular",
+        "round",
+    ],
+    "PinDescriptionType": [
+        "smd",
+        "tht",
     ],
     "FunctionalDescriptionType": [
         "custom",
@@ -4111,8 +4536,9 @@ const typeMap: any = {
         "JIS C3202",
         "NEMA MW 1000 C",
     ],
-    "WireSolidType": [
+    "WireType": [
         "foil",
+        "litz",
         "rectangular",
         "round",
     ],
@@ -4130,6 +4556,7 @@ const typeMap: any = {
     "ElectricalType": [
         "conduction",
         "insulation",
+        "shielding",
     ],
     "WindingStyle": [
         "windByConsecutiveParallels",
@@ -4141,6 +4568,7 @@ const typeMap: any = {
     ],
     "Coating": [
         "epoxy",
+        "parylene",
     ],
     "GapType": [
         "additive",

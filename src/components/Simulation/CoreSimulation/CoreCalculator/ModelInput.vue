@@ -119,9 +119,7 @@ export default {
             }
 
             this.$mkf.ready.then(_ => {
-                console.log(materialSelected)
                 var aux = JSON.parse(this.$mkf.get_core_losses_model_information(materialSelected, JSON.stringify(this.$dataCacheStore.masData['coreMaterials'])));
-                console.log(aux)
                 this.coreLossesModelNames = aux["available_models"];
                 this.coreLossesModelDescriptions = aux["information"];
                 this.coreLossesModelErrors = aux["errors"];
@@ -170,7 +168,6 @@ export default {
             }
         },
         handleSubmit() {
-            console.log("handleSubmit")
         },
         onGapReluctanceModelsChange() {
             this.$userStore.setSelectedModels('gapReluctance', this.gapReluctanceModelSelected)

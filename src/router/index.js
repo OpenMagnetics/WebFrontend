@@ -163,6 +163,11 @@ const routes = [
         name: 'MagneticCoreAdviser',
         component: () => import('../views/MagneticCoreAdviser.vue')
     },
+    {
+        path: '/insulation_adviser',
+        name: 'InsulationAdviser',
+        component: () => import('../views/InsulationAdviser.vue')
+    },
 ]
 const router = createRouter({
     history: createWebHistory(),

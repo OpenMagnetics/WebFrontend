@@ -11,6 +11,7 @@ import CoreCustomizer from '/src/components/Toolbox/CoreCustomizer.vue'
 import WireAdviser from '/src/components/Toolbox/WireAdviser.vue'
 import WireCustomizer from '/src/components/Toolbox/WireCustomizer.vue'
 import CoilAdviser from '/src/components/Toolbox/CoilAdviser.vue'
+import InsulationAdviser from '/src/components/Toolbox/InsulationAdviser.vue'
 import MagneticSynthesisFinalizer from '/src/components/Toolbox/MagneticSynthesisFinalizer.vue'
 import MagneticCoreFinalizer from '/src/components/Toolbox/MagneticCoreFinalizer.vue'
 import MagneticSpecificationFinalizer from '/src/components/Toolbox/MagneticSpecificationFinalizer.vue'
@@ -63,6 +64,8 @@ export default {
             return this.currentStoryline[this.$userStore[`${this.toolLabel}Subsection`]].advancedTool != null;
         },
         traversableLeft() {
+            console.log(`${this.toolLabel}Subsection`)
+
             return this.currentStoryline[this.$userStore[`${this.toolLabel}Subsection`]].basicTool != null;
         },
         updateCanContinue(tool, value) {
@@ -92,7 +95,8 @@ export default {
                     </div>
                     <div class="tool text-white bg-dark text-center offset-1 col-11 bg-light px-3 container" >
                         <div class="mb-2 row" >
-                            <button data-cy="magnetic-synthesis-previous-tool-button" class="btn btn-outline-primary col-sm-12 col-md-2 mt-1"  @click="prevTool"> Previous tool</button>
+                            <button v-if="currentStoryline[$userStore[`${toolLabel}Subsection`]].prevTool != null" data-cy="magnetic-synthesis-previous-tool-button" class="btn btn-outline-primary col-sm-12 col-md-2 mt-1"  @click="prevTool"> Previous tool</button>
+                            <div v-else data-cy="magnetic-synthesis-previous-tool-button-placeholder" class=" col-sm-12 col-md-2 mt-1"></div>
                             <h2 data-cy="magnetic-synthesis-title-text" class="col-sm-12 col-md-9" >
                                 {{toTitleCase($userStore[`${toolLabel}Subsection`])}}
                             </h2>
@@ -106,12 +110,14 @@ export default {
                             <WireAdviser :dataTestLabel="`${dataTestLabel}-WireAdviser`" v-if="$userStore[`${toolLabel}Subsection`] == 'wireAdviser'"/>
                             <WireCustomizer :dataTestLabel="`${dataTestLabel}-WireCustomizer`" v-if="$userStore[`${toolLabel}Subsection`] == 'wireCustomizer'"/>
                             <CoilAdviser :dataTestLabel="`${dataTestLabel}-CoilAdviser`" v-if="$userStore[`${toolLabel}Subsection`] == 'coilAdviser'"/>
+                            <InsulationAdviser :dataTestLabel="`${dataTestLabel}-InsulationAdviser`" v-if="$userStore[`${toolLabel}Subsection`] == 'insulationRequirements'"/>
                             <MagneticSynthesisFinalizer :dataTestLabel="`${dataTestLabel}-MagneticFinalizer`" v-if="$userStore[`${toolLabel}Subsection`] == 'magneticSynthesisFinalizer'"/>
                             <MagneticCoreFinalizer :dataTestLabel="`${dataTestLabel}-MagneticFinalizer`" v-if="$userStore[`${toolLabel}Subsection`] == 'magneticCoreAdviserFinalizer'"/>
                             <MagneticSpecificationFinalizer :dataTestLabel="`${dataTestLabel}-MagneticFinalizer`" v-if="$userStore[`${toolLabel}Subsection`] == 'magneticSpecificationFinalizer'"/>
                         </div>
                         <div class="row">
-                            <button v-if="!$userStore[`${toolLabel}Subsection`].includes('Finalizer')"  :disabled="!$userStore[`${toolLabel}CanContinue`][$userStore[`${toolLabel}Subsection`]]" data-cy="magnetic-synthesis-next-tool-button" class="btn btn-outline-primary  mt-2 col-sm-12 col-md-2 " @click="nextTool">{{$userStore[`${toolLabel}CanContinue`][$userStore[`${toolLabel}Subsection`]]? 'Next tool' : 'Errors must be fixed'}}</button>
+                            {{}}
+                            <button v-if="!$userStore[`${toolLabel}Subsection`].includes('Finalizer') && currentStoryline[$userStore[`${toolLabel}Subsection`]].nextTool != null"  :disabled="!$userStore[`${toolLabel}CanContinue`][$userStore[`${toolLabel}Subsection`]]" data-cy="magnetic-synthesis-next-tool-button" class="btn btn-outline-primary  mt-2 col-sm-12 col-md-2 " @click="nextTool">{{$userStore[`${toolLabel}CanContinue`][$userStore[`${toolLabel}Subsection`]]? 'Next tool' : 'Errors must be fixed'}}</button>
                             <button  data-cy="magnetic-synthesis-main-tool-button" v-if="traversableLeft()" class="btn btn-outline-primary mt-2 offset-6 col-2" @click="basicTool"> Back to main tool</button>
                             <button  data-cy="magnetic-synthesis-customize-tool-button" v-if="traversableRight()" class="btn btn-outline-primary mt-2 col-2" :class="traversableLeft()? '' : 'offset-8'" @click="advancedTool"> Customize tool</button>
                         </div>

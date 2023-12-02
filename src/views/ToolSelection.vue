@@ -25,6 +25,11 @@ export default {
             this.masStore.resetMas();
             this.$router.push('/magnetic_core_adviser');
         },
+        createNewInsulationAdviser() {
+            // this.$userStore.resetInsulationAdviser();
+            this.masStore.resetMas();
+            this.$router.push('/insulation_adviser');
+        },
     },
     mounted() {
     },
@@ -48,7 +53,7 @@ export default {
                         <h2 class="">A complete magnetic</h2>
                         <div class="" aria-label="Group with synthesis button">
                             <button v-resize-text="{ratio: 0.7, minFontSize: '14px', maxFontSize: '20px', delay: 20}" data-cy="ToolSelection-magnetic-specification-button" class="m-2 btn btn-primary" @click="createNewMagneticSpecification">Specify a magnetic</button>
-                            <button disabled v-resize-text="{ratio: 0.7, minFontSize: '14px', maxFontSize: '20px', delay: 20}" data-cy="ToolSelection-insulation-button" class="m-2 btn btn-primary">Calculate insulation</button>
+                            <button v-resize-text="{ratio: 0.7, minFontSize: '14px', maxFontSize: '20px', delay: 20}" data-cy="ToolSelection-insulation-button" class="m-2 btn btn-primary" @click="createNewInsulationAdviser">Calculate insulation</button>
                             <button disabled v-resize-text="{ratio: 0.7, minFontSize: '14px', maxFontSize: '20px', delay: 20}" data-cy="ToolSelection-magnetic-synthesis-button" class="m-2 btn btn-primary">Design a magnetic</button>
                         </div>
                     </div>

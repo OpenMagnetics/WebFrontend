@@ -72,14 +72,14 @@ export default {
             outputData.push({
                 "permeance": null,
                 "reluctance": null,
-                "maximum_storable_energy": null,
-                "fringing_factor": null
+                "maximumStorableMagneticEnergy": null,
+                "fringingFactor": null
             })
             outputDataUnits.push({
                 "permeance": "H",
                 "reluctance": "H⁻¹",
-                "maximum_storable_energy": "J",
-                "fringing_factor": "%"
+                "maximumStorableMagneticEnergy": "J",
+                "fringingFactor": "%"
             })
         }
         return {
@@ -112,14 +112,14 @@ export default {
                     this.outputData.push({
                         "permeance": null,
                         "reluctance": null,
-                        "maximum_storable_energy": null,
-                        "fringing_factor": null
+                        "maximumStorableMagneticEnergy": null,
+                        "fringingFactor": null
                     })
                     this.outputDataUnits.push({
                         "permeance": "H",
                         "reluctance": "H⁻¹",
-                        "maximum_storable_energy": "J",
-                        "fringing_factor": "%"
+                        "maximumStorableMagneticEnergy": "J",
+                        "fringingFactor": "%"
                     })
                 }
             }
@@ -186,33 +186,34 @@ export default {
                 this.outputDataUnits = []
                 this.columnData['gaps'].forEach((item) => {
                     var datum = this.$userStore.globalCore['functionalDescription']['gapping'][item['globalGapIndex']];
-                    var gapReluctance = this.$mkf.calculate_gap_reluctance(JSON.stringify(datum), this.$userStore.selectedModels['gapReluctance']);
-                    var aux = Utils.formatPermeance(gapReluctance.get('permeance'))
+                    var gapReluctance = JSON.parse(this.$mkf.calculate_gap_reluctance(JSON.stringify(datum), this.$userStore.selectedModels['gapReluctance']));
+                    var aux = Utils.formatPermeance(1.0 / gapReluctance['reluctance'])
                     const permeance = Utils.removeTrailingZeroes(aux['label'], 2)
                     const permeanceUnit = aux['unit']
-                    aux = Utils.formatReluctance(gapReluctance.get('reluctance'))
+                    aux = Utils.formatReluctance(gapReluctance['reluctance'])
                     const reluctance = Utils.removeTrailingZeroes(aux['label'], 2)
                     const reluctanceUnit = aux['unit']
-                    aux = Utils.formatEnergy(gapReluctance.get('maximum_storable_energy'))
-                    const maximum_storable_energy = Utils.removeTrailingZeroes(aux['label'], 2)
-                    const maximum_storable_energyUnit = aux['unit']
+                    aux = Utils.formatEnergy(gapReluctance['maximumStorableMagneticEnergy'])
+                    const maximumStorableMagneticEnergy = Utils.removeTrailingZeroes(aux['label'], 2)
+                    const maximumStorableMagneticEnergyUnit = aux['unit']
                     this.outputData.push({
                         "permeance": permeance,
                         "reluctance": reluctance,
-                        "maximum_storable_energy": maximum_storable_energy,
-                        "fringing_factor": Utils.removeTrailingZeroes((gapReluctance.get("fringing_factor") - 1) * 100, 1)
+                        "maximumStorableMagneticEnergy": maximumStorableMagneticEnergy,
+                        "fringingFactor": Utils.removeTrailingZeroes((gapReluctance["fringingFactor"] - 1) * 100, 1)
                     })
                     this.outputDataUnits.push({
                         "permeance": permeanceUnit,
                         "reluctance": reluctanceUnit,
-                        "maximum_storable_energy": maximum_storable_energyUnit,
-                        "fringing_factor": "%"
+                        "maximumStorableMagneticEnergy": maximumStorableMagneticEnergyUnit,
+                        "fringingFactor": "%"
                     })
+
                 })
 
             }).catch(error => { 
                 console.error("error in compute_gap_reluctances")
-                console.error(error.data)
+                console.error(error)
             });
         },
         tryToSend() {
@@ -505,10 +506,10 @@ export default {
                     {{outputData[gapIndex - 1]['permeance'] + " " + outputDataUnits[gapIndex - 1]['permeance']}}
                 </template>
                 <template #maximumEnergy>
-                    {{outputData[gapIndex - 1]['maximum_storable_energy'] + " " + outputDataUnits[gapIndex - 1]['maximum_storable_energy']}}
+                    {{outputData[gapIndex - 1]['maximumStorableMagneticEnergy'] + " " + outputDataUnits[gapIndex - 1]['maximumStorableMagneticEnergy']}}
                 </template>
                 <template #fringingFactor>
-                    {{outputData[gapIndex - 1]['fringing_factor'] + " " + outputDataUnits[gapIndex - 1]['fringing_factor']}}
+                    {{outputData[gapIndex - 1]['fringingFactor'] + " " + outputDataUnits[gapIndex - 1]['fringingFactor']}}
                 </template>
             </GapElement>
             </div>

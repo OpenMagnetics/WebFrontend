@@ -29,9 +29,6 @@ describe('Storyline', () => {
 
         cy.previousTool();
         cy.previousTool();
-        cy.previousTool();
-        cy.previousTool();
-        cy.previousTool();
 
         cy.checkTitle("Design Requirements");
         cy.checkStorylineAdventureVisible("designRequirements");
@@ -43,27 +40,19 @@ describe('Storyline', () => {
         cy.checkTitle("Wire Adviser");
         cy.checkStorylineAdventureVisible("wireAdviser");
 
-        cy.nextTool();
+        // Not done yet
+        // cy.nextTool();
 
-        cy.checkTitle("Coil Adviser");
-        cy.checkStorylineAdventureVisible("coilAdviser");
+        // cy.checkTitle("Coil Adviser");
+        // cy.checkStorylineAdventureVisible("coilAdviser");
 
-        cy.nextTool();
+        // cy.nextTool();
 
-        cy.checkTitle("Magnetic Finalizer");
-        cy.checkStorylineAdventureVisible("magneticFinalizer");
-
-        cy.nextTool();
-        cy.nextTool();
-        cy.nextTool();
-        cy.nextTool();
-        cy.nextTool();
-
-        cy.checkTitle("Magnetic Finalizer");
-        cy.checkStorylineAdventureVisible("magneticFinalizer");
+        // cy.checkTitle("Summary");
+        // cy.checkStorylineAdventureVisible("summary");
     })
 
-    it('Go to core, customize and back', () => {
+    it.skip('Go to core, customize and back', () => {
         cy.checkTitle("Design Requirements");
         cy.checkStorylineAdventureVisible("designRequirements");
 

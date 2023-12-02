@@ -7,7 +7,8 @@ export const useDataCacheStore = defineStore("dataCache", () => {
     const commercialCores = ref([])
     const commercialShapes = ref([])
     const commercialMaterials = ref([])
-    var masData = ref({coreMaterials: [], coreShapes: []})
+    const standards = ref({})
+    var masData = ref({coreMaterials: [], coreShapes: [], wireMaterials: []})
 
     function commercialShapesLoaded() {
     }
@@ -19,6 +20,7 @@ export const useDataCacheStore = defineStore("dataCache", () => {
         this.commercialCores = []
         this.commercialShapes = []
         this.commercialMaterials = []
+        this.standards = {}
     }
 
     return {
@@ -30,6 +32,7 @@ export const useDataCacheStore = defineStore("dataCache", () => {
         commercialMaterials,
         commercialShapesLoaded,
         commercialMaterialsLoaded,
+        standards,
         masData,
     }
 },

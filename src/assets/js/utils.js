@@ -1101,7 +1101,7 @@ export function processCoreTexts(data) {
         }
     }
     {
-        const aux = formatUnit(1 / data.outputs[0].magnetizingInductance.reluctanceCore.nominal, "H/turn");
+        const aux = formatUnit(1 / data.outputs[0].magnetizingInductance.coreReluctance.nominal, "H/turn");
         localTexts.coreMaterial = `It has a permeance (AL value) of ${removeTrailingZeroes(aux.label, 1)} ${aux.unit}.`
     }
     if ('temp' in data.magnetic.core) {

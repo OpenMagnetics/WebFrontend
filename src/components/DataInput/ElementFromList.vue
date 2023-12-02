@@ -32,6 +32,10 @@ export default {
             type: String,
             default: '',
         },
+        optionsToDisable: {
+            type: Array,
+            default: [],
+        },
     },
     data() {
         return {
@@ -68,6 +72,7 @@ export default {
             }
             this.modelValue[this.name] = chosen;
             this.$emit("updatedNumberElements", event.target.value, this.name);
+            this.$emit("update", event.target.value, this.name);
         },
     }
 }
@@ -85,7 +90,7 @@ export default {
             <div  v-if="!titleSameRow" class=" col-sm-0 col-md-2">
             </div>
             <select :data-cy="dataTestLabel + '-select'"  class="form-select bg-light text-white m-0 col-8 mt-1"  @change="changeOption" style="width:auto; max-height: 3em;" :value="modelValue[name]" >
-                <option v-for="[key, value] in Object.entries(options)">
+                <option :disabled="optionsToDisable.includes(value)" v-for="[key, value] in Object.entries(options)">
                     {{value}}
                 </option>
             </select>

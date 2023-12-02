@@ -26,8 +26,6 @@ export default {
     },
     watch: {
         modelValue(newValue, oldValue) {
-            console.log("Checking details");
-            console.log(newValue);
             this.processLocalTexts()
             // if (!isNaN(this.modelValue[this.name]))
             //     this.update(this.modelValue[this.name]);

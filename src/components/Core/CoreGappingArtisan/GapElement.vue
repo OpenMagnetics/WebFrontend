@@ -211,7 +211,6 @@ export default {
                                         <label :dataTestLabel="'CoreGappingArtisanGapElement-column-' + columnIndex + '-gap-' + gapIndex + '-reluctance-text'" class="small-text bg-transparent text-white text-end float-end col-6"><slot name="reluctance"></slot></label>
                                         <label v-tooltip="'Magnetic permeance of the gap, including fringing effect. Also known as AL value'" class="small-text col-6 text-start">Permeance:</label>
                                         <label :dataTestLabel="'CoreGappingArtisanGapElement-column-' + columnIndex + '-gap-' + gapIndex + '-permeance-text'" class="small-text bg-transparent text-white text-end float-end col-6"><slot name="permeance"></slot></label>
-                                        <!-- <label class="small-text bg-transparent text-white text-end float-end col-6">{{4232 + " H⁻¹"}}</label> -->
 
                                         <label v-tooltip="'Energy that can be stored in this gap'" class="small-text col-7 text-start">Max. energy:</label>
                                         <label :dataTestLabel="'CoreGappingArtisanGapElement-column-' + columnIndex + '-gap-' + gapIndex + '-maximum-energy-text'" class="small-text bg-transparent text-white text-end float-end col-5"><slot name="maximumEnergy"></slot></label>

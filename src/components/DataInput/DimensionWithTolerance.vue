@@ -88,11 +88,6 @@ export default {
             localData[this.defaultField].multiplier = aux.multiplier;
         }
 
-        if (this.name == 'altitude') {
-            console.log(this.modelValue)
-            console.log(this.modelValue)
-            console.log(this.modelValue)
-        }
         if (this.modelValue.minimum != null) {
             const aux = getMultiplier(this.modelValue.minimum, 0.001);
             localData.minimum.scaledValue = aux.scaledValue;

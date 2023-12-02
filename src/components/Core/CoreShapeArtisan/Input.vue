@@ -59,6 +59,7 @@ export default {
                 aux['geometricalDescription'] = null;
                 aux['processedDescription'] = null;
 
+                aux['functionalDescription']['shape']['familySubtype'] = String(aux['functionalDescription']['shape']['familySubtype'])
                 var core = JSON.parse(this.$mkf.calculate_core_data(JSON.stringify(aux), false));
 
                 this.$userStore.globalCore = core;
@@ -77,6 +78,7 @@ export default {
                 const aux = Utils.deepCopy(this.$userStore.globalCore);
                 aux['geometricalDescription'] = null;
                 aux['processedDescription'] = null;
+                aux['functionalDescription']['shape']['familySubtype'] = String(aux['functionalDescription']['shape']['familySubtype'])
 
                 var core = JSON.parse(this.$mkf.calculate_core_data(JSON.stringify(aux), false));
                 this.$userStore.globalCore = core;
@@ -108,7 +110,7 @@ export default {
                     const aux = Utils.deepCopy(this.$userStore.globalCore);
                     aux['geometricalDescription'] = null;
                     aux['processedDescription'] = null;
-
+                    aux['functionalDescription']['shape']['familySubtype'] = String(aux['functionalDescription']['shape']['familySubtype'])
                     var core = JSON.parse(this.$mkf.calculate_core_data(JSON.stringify(aux), false));
                     this.$userStore.globalCore = core;
 
@@ -163,6 +165,7 @@ export default {
                     aux['geometricalDescription'] = null;
                     aux['processedDescription'] = null;
 
+                    aux['functionalDescription']['shape']['familySubtype'] = String(aux['functionalDescription']['shape']['familySubtype'])
                     var core = JSON.parse(this.$mkf.calculate_core_data(JSON.stringify(aux), false));
                     this.$userStore.globalCore = core;
 

@@ -94,13 +94,12 @@ export const defaultDesignRequirements = {
         "altitude": {
             "maximum": 2000,
         },
-        "cti": "Group IIIb",
+        "cti": "Group IIIB",
         "pollutionDegree": "P2",
         "overvoltageCategory": "OVC-III",
         "insulationType": "Double",
         "mainSupplyVoltage": {
-            "nominal": 220,
-            "minimum": 90
+            "maximum": 400
         },
         "standards": ["IEC 60664-1"]
     },
@@ -108,7 +107,22 @@ export const defaultDesignRequirements = {
     "topology": "Buck Converter",
     "maximumWeight": 300,
     "maximumDimensions": {"width": null, "height": 0.05, "depth": null},
-    "terminalType": ["Flying Lead"]
+    "terminalType": ["Flying Lead"],
+    "wiringTechnology": "Wound"
+}
+
+export const defaultOperatingPointExcitationForInsulation = {  
+    "frequency": 100000,
+    "voltage": {
+        "processed": {
+            "dutyCycle" : 0.5,
+            "peak" : 800,
+            "peakToPeak" : 1600,
+            "rms" : 400,
+            "offset" : 0,
+            "label": "Rectangular"
+        }
+    }
 }
 
 export const defaultOperatingPointExcitation = {  
