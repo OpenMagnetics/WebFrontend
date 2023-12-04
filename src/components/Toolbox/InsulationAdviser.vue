@@ -3,11 +3,10 @@ import { ref } from 'vue'
 import { useMasStore } from '/src/stores/mas'
 import { toTitleCase, toPascalCase } from '/src/assets/js/utils.js'
 import { defaultDesignRequirements, defaultOperatingPointExcitationForInsulation, defaultOperatingPoint, defaultOperatingConditions } from '/src/assets/js/defaults.js'
-import Insulation from '/src/components/Toolbox/DesignRequirements/Insulation.vue'
+import InsulationSimple from '/src/components/Toolbox/InsulationAdviser/InsulationSimple.vue'
 import ElementFromListRadio from '/src/components/DataInput/ElementFromListRadio.vue'
 import DimensionReadOnly from '/src/components/DataInput/DimensionReadOnly.vue'
 import InsulationExtraInputs from '/src/components/Toolbox/InsulationAdviser/InsulationExtraInputs.vue'
-import { WiringTechnology } from '/src/assets/ts/MAS.ts'
 </script>
 <script>
 export default {
@@ -44,13 +43,11 @@ export default {
                                     "IEC 62368-1"]
 
 
-        const wiringTechnologyToDisable = ["Deposition"]
         const insulation = {}
 
         return {
             masStore,
             standardsToDisable,
-            wiringTechnologyToDisable,
             insulation
         }
     },
@@ -107,22 +104,13 @@ export default {
     <div class="container">
         <div v-tooltip="styleTooltip" class="row">
             <div class="col-xl-12 col-md-12 col-sm-12 text-start pe-0">
-                <InsulationExtraInputs class="border-bottom py-2"
+                <InsulationExtraInputs class="border-bottom pb-2 mt-3"
                     :dataTestLabel="dataTestLabel + '-Insulation'"
                     :defaultValue="defaultOperatingPointExcitationForInsulation"
                     v-model="masStore.mas.inputs.operatingPoints[0].excitationsPerWinding[0]"
                     @update="onChange"
                 />
-                <ElementFromListRadio class="border-bottom py-2"
-                    :name="'wiringTechnology'"
-                    :dataTestLabel="dataTestLabel + '-WiringTechnology'"
-                    :options="WiringTechnology"
-                    :titleSameRow="false"
-                    :optionsToDisable="wiringTechnologyToDisable"
-                    v-model="masStore.mas.inputs.designRequirements"
-                    @update="onChange"
-                />
-                <Insulation class="border-bottom py-2 mt-2"
+                <InsulationSimple class="border-bottom py-2 mt-2"
                     :dataTestLabel="dataTestLabel + '-Insulation'"
                     :defaultValue="defaultDesignRequirements.insulation"
                     :showTitle="false"
