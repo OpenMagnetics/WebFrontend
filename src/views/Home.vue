@@ -15,10 +15,10 @@ import Footer from '/src/components/Footer.vue'
                         <h2 >The Free Open-Source platform for Magnetics</h2>
                     </div>
                 </div>
-                <div id="home-roadmap" class="row bg-light border-top mb-4">
-                    <div class="col-lg-12 text-center ">
-                        <h3 class="text-success my-2">What you can do right now</h3>
-                        <ul class="text-white text-start fs-5">
+                <div id="home-roadmap" class="row mx-1 mb-4">
+                    <div class="offset-sm-0 col-sm-12 offset-lg-2 col-lg-8 bg-white text-center  rounded-4">
+                        <h3 class="text-dark my-2">What you can do right now</h3>
+                        <ul class="text-light text-start fs-5">
                             <li class="mt-2"><a href="/tool_selection">Specify a magnetic design</a> and download the report in MAS or PDF format.</li>
                             <li class="mt-2"><a href="/tool_selection">Calculate the insulation</a> needed to comply with a given requirements according to IEC 60664 and/or IEC 62368.</li>
                             <li class="mt-2"><a href="/tool_selection">Find the in-stock COTS core</a> perfect for your application, along with the number of turns, core losses, and the link to buy it right now!</li>
@@ -29,8 +29,8 @@ import Footer from '/src/components/Footer.vue'
                         </ul>
                     </div>
                 </div>
-                <div id="home-roadmap" class="row bg-light border-top mb-4">
-                    <div class="col-lg-12 text-center">
+                <div id="home-roadmap" class="row mx-1 mb-4">
+                    <div class="offset-sm-0 col-sm-12 offset-lg-2 col-lg-8 bg-light text-center  rounded-4">
                         <h3 class="text-white my-2">What you'll be able to do soon</h3>
                         <ul class="text-white text-start fs-5">
                             <li class="">Synthesize a full magnetic component directly from a given specifications.</li>
