@@ -9,28 +9,41 @@ import Footer from '/src/components/Footer.vue'
         <Header />
         <main role="main" class="main">
             <div class="container">
-                <div id="home-welcome-menu" class="row">
-                    <div class="col-12">
-                        <nav id="home-navbar-scrollspy" class="">
-                          <nav class="nav nav-pills justify-content-md-end fs-5">
-                            <a class="nav-link" href="#home-welcome">Welcome</a>
-                            <a class="nav-link" href="#home-how-whom">For whom OM is</a>
-                            <a class="nav-link" href="#home-tools">Who makes OM</a>
-                            <a class="nav-link" href="#home-roadmap">Nearby Roadmap</a>
-                          </nav>
-                        </nav>
+                <div id="home-welcome" class="row pb-5 pt-2 mx-1 my-5">
+                    <div class="text-white my-1 py-4 offset-sm-0 offset-lg-1 col-sm-12 col-lg-10 text-center bg-light rounded-4">
+                        <h1 data-cy="Home-title-text" class="">Welcome to OpenMagnetics!</h1>
+                        <h2 >The Free Open-Source platform for Magnetics</h2>
                     </div>
                 </div>
-                <div id="home-welcome" class="row pb-5 pt-2 mx-1">
-                    <div class="text-white my-1 py-4 offset-sm-0 offset-lg-2 col-sm-12 col-lg-8 text-center bg-light rounded-4">
-                        <h1 data-cy="Home-title-text" class="">Welcome to OpenMagnetics!</h1>
-                        <p class="fs-5">Open Magnetics (OM) is a set of online tools for designing and simulating magnetics components, based on public scientific research and knowledge, stemming from the idea that all scientific knowledge is a fundamental right and should be accessible to the whole human race.</p>
-                        <p class="fs-5">OpenMagnetics is fully Open Source, which means that any code used in the models or calculations is available to the community, all data about shapes, materials, wires, stocks or properties will be downloadable. Any information about models, electromagnetism theory or design procedure will be there. And most importantly, anybody can contribute.</p>
-                        <p class="fs-5">OpenMagnetics is and will always be free, not even requiring user registration. Even so, users that register will gain the opportunity to store their libraries in the server, for their private use or for sharing with the community.</p>
+                <div id="home-roadmap" class="row bg-light border-top mb-4">
+                    <div class="col-lg-12 text-center ">
+                        <h3 class="text-success my-2">What you can do right now</h3>
+                        <ul class="text-white text-start fs-5">
+                            <li class="mt-2"><a href="/tool_selection">Specify a magnetic design</a> and download the report in MAS or PDF format.</li>
+                            <li class="mt-2"><a href="/tool_selection">Calculate the insulation</a> needed to comply with a given requirements according to IEC 60664 and/or IEC 62368.</li>
+                            <li class="mt-2"><a href="/tool_selection">Find the in-stock COTS core</a> perfect for your application, along with the number of turns, core losses, and the link to buy it right now!</li>
+                            <li class="mt-2"><a href="/operation_point">Introduce any waveform</a> (even by hand!) and get its harmonics, effective frequency, RMS and THD.</li>
+                            <li class="mt-2"><a href="/core_shape_artisan">Customize any magnetic core</a> shape as you like, and get its effective parameters.</li>
+                            <li class="mt-2"><a href="/core_gapping_artisan">Add gapping to your core</a>, distributed, spacer, grinded, in any column, at any position; and get its reluctance and storable energy.</li>
+                            <li class="mt-2">Download the 3D model or technical drawing of your customized or commercial gapped core!</li>
+                        </ul>
+                    </div>
+                </div>
+                <div id="home-roadmap" class="row bg-light border-top mb-4">
+                    <div class="col-lg-12 text-center">
+                        <h3 class="text-white my-2">What you'll be able to do soon</h3>
+                        <ul class="text-white text-start fs-5">
+                            <li class="">Synthesize a full magnetic component directly from a given specifications.</li>
+                            <li class="">Cross reference any magnetic core and find a in-stock replacement.</li>
+                            <li class="">Cross reference any wire and find a in-stock replacement.</li>
+                            <li class="">Analyze in magnetic in your browser and find its core and winding losses, leakage inductance, capacitance, etc. with accuracy equivalent to 3D FEA.</li>
+                            <li class="">Customize your magnetic as you want: Custom core shape, custom gapping, custom wire, custom bobbin, custom coil.</li>
+                        </ul>
                     </div>
                 </div>
                 <h2>
-                    <div id="home-how-whom" class="row py-5 border-bottom border-top bg-light">
+                    <div id="home-how-whom" class="row pb-5 pt-3 border-bottom border-top bg-light text-center">
+                        <h2 class="text-white">OpenMagnetics is for everyone</h2>
                         <div class="col-lg-4 text-center my-2">
                             <div class="card box-shadow bg-primary">
                                 <div class="card-header bg-transparent">
@@ -111,28 +124,6 @@ import Footer from '/src/components/Footer.vue'
                             <h3>Tools and Roadmap</h3>
                             <p class="fs-5">OpenMagnetics is maintained and developed by volunteers, and we do it because we believe in what Open Source brings to the world. Each one of us makes their living by some other meaning and works on these in our free time, so there won't be any deadlines. Despite of that, we will do our best to make this tool as good as we are capable.</p>
                             <p class="fs-5">If you want to support this project, consider joining our <a href="https://discord.gg/ADKTnYhXDU" target="_blank" rel="noopener noreferrer">Discord server</a> and let us know what you enjoy doing the most!.</p>
-                        </div>
-                    </div>
-                    <div id="home-roadmap" class="row bg-light border-top">
-                        <div class="col-lg-6 text-center ">
-                            <h3 class="text-white my-5">What you can do right now</h3>
-                            <ul class="text-white text-start fs-5">
-                                <li class="mt-2"><a href="/operation_point">Introduce any waveform</a> (even by hand!) and get its harmonics, effective frequency, RMS and THD.</li>
-                                <li class="mt-2"><a href="/core_shape_artisan">Customize any magnetic core</a> shape as you like, and get its effective parameters.</li>
-                                <li class="mt-2"><a href="/core_gapping_artisan">Add gapping to your core</a>, distributed, spacer, grinded, in any column, at any position; and get its reluctance and storable energy.</li>
-                                <li class="mt-2">Download the 3D model or technical drawing of your customized or commercial gapped core!</li>
-                            </ul>
-                        </div>
-                        <div class="col-lg-6 text-center">
-                            <h3 class="text-white my-5">What you'll be able to do soon</h3>
-                            <ul class="text-white text-start fs-5">
-                                <li class="">Calculate the inductance of any customized shape, material, number of turns, and gapping.</li>
-                                <li class="">Calculate the number of turns needed to achieve your inductance in a given core.</li>
-                                <li class="">Calculate the needed gap(s) in order to get the desired inductance in your magnetic.</li>
-                                <li class="">Get the core losses of your core according to your favorite method, for a given excitation and ambient temperature.</li>
-                                <li class="">Get the temperature rise for your core with everything else considered.</li>
-                                <li class="">And many many more features, and <a href="/roadmap">you can help decide what to implement next.</a></li>
-                            </ul>
                         </div>
                     </div>
                 </h2>
