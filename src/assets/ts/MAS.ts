@@ -240,7 +240,6 @@ export enum PollutionDegree {
 export enum InsulationStandards {
     Iec603351 = "IEC 60335-1",
     Iec606641 = "IEC 60664-1",
-    Iec606645 = "IEC 60664-5",
     Iec615581 = "IEC 61558-1",
     Iec623681 = "IEC 62368-1",
 }
@@ -4420,7 +4419,6 @@ const typeMap: any = {
     "InsulationStandards": [
         "IEC 60335-1",
         "IEC 60664-1",
-        "IEC 60664-5",
         "IEC 61558-1",
         "IEC 62368-1",
     ],

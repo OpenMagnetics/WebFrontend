@@ -38,9 +38,8 @@ export default {
         }
 
         const standardsToDisable = ["IEC 60335-1",
-                                    "IEC 60664-5",
-                                    "IEC 61558-1",
-                                    "IEC 62368-1"]
+                                    "IEC 61558-1"
+                                    ]
 
 
         const insulation = {}
@@ -88,8 +87,6 @@ export default {
             this.$mkf.ready.then(_ => {
                 this.masStore.mas.inputs.operatingPoints[0].excitationsPerWinding[0].voltage.processed.peakToPeak = 2 * this.masStore.mas.inputs.operatingPoints[0].excitationsPerWinding[0].voltage.processed.peak;
                 this.insulation = JSON.parse(this.$mkf.calculate_insulation(JSON.stringify(this.masStore.mas.inputs), JSON.stringify(this.$dataCacheStore.standards), JSON.stringify(this.$dataCacheStore.masData['wireMaterials'])));
-                console.log(this.insulation);
-
             });
         },
         onChange() {
@@ -138,10 +135,18 @@ export default {
                     :styleClass="'fs-5 text-primary'"
                 />
                 <DimensionReadOnly class="col-sm-12 col-md-4 offset-md-4"
-                    :name="'solidInsulation'"
+                    :name="'withstandVoltage'"
                     :unit="'V'"
-                    :dataTestLabel="dataTestLabel + '-SolidInsulation'"
-                    :value="insulation.solidInsulation"
+                    :dataTestLabel="dataTestLabel + '-WithstandVoltage'"
+                    :value="insulation.withstandVoltage"
+                    :disableShortenLabels="true"
+                    :styleClass="'fs-5 text-primary'"
+                />
+                <DimensionReadOnly class="col-sm-12 col-md-4 offset-md-4"
+                    :name="'distanceThroughInsulation'"
+                    :unit="'m'"
+                    :dataTestLabel="dataTestLabel + '-DistanceThroughInsulation'"
+                    :value="insulation.distanceThroughInsulation"
                     :disableShortenLabels="true"
                     :styleClass="'fs-5 text-primary'"
                 />
