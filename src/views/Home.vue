@@ -16,15 +16,15 @@ import Footer from '/src/components/Footer.vue'
                     </div>
                 </div>
                 <div id="home-roadmap" class="row mx-1 mb-4">
-                    <div class="offset-sm-0 col-sm-12 offset-lg-2 col-lg-8 bg-white text-center  rounded-4">
+                    <div class="offset-sm-0 col-sm-12 offset-lg-2 col-lg-8 bg-info text-center  rounded-4">
                         <h3 class="text-dark my-2">What you can do right now</h3>
                         <ul class="text-light text-start fs-5">
-                            <li class="mt-2"><a href="/tool_selection">Specify a magnetic design</a> and download the report in MAS or PDF format.</li>
-                            <li class="mt-2"><a href="/tool_selection">Calculate the insulation</a> needed to comply with a given requirements according to IEC 60664 and/or IEC 62368.</li>
-                            <li class="mt-2"><a href="/tool_selection">Find the in-stock COTS core</a> perfect for your application, along with the number of turns, core losses, and the link to buy it right now!</li>
-                            <li class="mt-2"><a href="/operation_point">Introduce any waveform</a> (even by hand!) and get its harmonics, effective frequency, RMS and THD.</li>
-                            <li class="mt-2"><a href="/core_shape_artisan">Customize any magnetic core</a> shape as you like, and get its effective parameters.</li>
-                            <li class="mt-2"><a href="/core_gapping_artisan">Add gapping to your core</a>, distributed, spacer, grinded, in any column, at any position; and get its reluctance and storable energy.</li>
+                            <li class="mt-2"><a href="/tool_selection" class="text-secondary">Specify a magnetic design</a> and download the report in MAS or PDF format.</li>
+                            <li class="mt-2"><a href="/tool_selection" class="text-secondary">Calculate the insulation</a> needed to comply with a given requirements according to IEC 60664 and/or IEC 62368.</li>
+                            <li class="mt-2"><a href="/tool_selection" class="text-secondary">Find the in-stock COTS core</a> perfect for your application, along with the number of turns, core losses, and the link to buy it right now!</li>
+                            <li class="mt-2"><a href="/operation_point" class="text-secondary">Introduce any waveform</a> (even by hand!) and get its harmonics, effective frequency, RMS and THD.</li>
+                            <li class="mt-2"><a href="/core_shape_artisan" class="text-secondary">Customize any magnetic core</a> shape as you like, and get its effective parameters.</li>
+                            <li class="mt-2"><a href="/core_gapping_artisan" class="text-secondary">Add gapping to your core</a>, distributed, spacer, grinded, in any column, at any position; and get its reluctance and storable energy.</li>
                             <li class="mt-2">Download the 3D model or technical drawing of your customized or commercial gapped core!</li>
                         </ul>
                     </div>
