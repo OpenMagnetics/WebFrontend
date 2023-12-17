@@ -37,9 +37,7 @@ export default {
             masStore.mas.inputs.operatingPoints[0].excitationsPerWinding[0] = defaultOperatingPointExcitationForInsulation;
         }
 
-        const standardsToDisable = ["IEC 60335-1",
-                                    "IEC 61558-1"
-                                    ]
+        const standardsToDisable = []
 
 
         const insulation = {}
