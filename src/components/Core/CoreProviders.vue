@@ -13,6 +13,12 @@ export default {
                 url: 'https://gatewaycando.com/ferrite-gapping-solutions'
             },
             {
+                name: 'Fair-Rite',
+                image: '/images/providers/fair-rite/logo.jpg',
+                description: 'Fair-Rite’s state-of-the-art equipment gives the ability to machine ferrites for quick-turn prototypes for proof of concept prior to production tooling equipment. This allows our customers to quickly evaluate their designs, while experimenting with variations of materials, shapes, sizes all within development schedule & budget. Machining parts significantly reduces lead-times, and it is much more cost-effective. Fair-Rite prioritizes the quality of our material before it reaches prototyping, resulting in fewer defects and a superior end result. Once your design is final, the transition from machined to tooled part will be smooth and seamless. For those designs that are not able to be tooled Fair-Rite also can support volume production machining. Fair-Rite will also work to best determine mechanical and electrical specifications to ensure meaningful testing for our customer’s application. We also offer value added service such as winding.',
+                url: 'https://fair-rite.com/prototyping/'
+            },
+            {
                 name: 'Join our providers!',
                 image: null,
                 description: 'Do you want your company name to appear here? If you work with custom cores and gapping and want to advertise here, contact us! \n It is totally free!',
