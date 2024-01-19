@@ -41,8 +41,8 @@ export default {
     },
     created() {
         this.dataCacheStore.$onAction((action) => {
-            if (action.name == "commercialShapesLoaded") {
-                const shapeData = this.dataCacheStore.commercialShapes
+            if (action.name == "dataLoaded") {
+                const shapeData = this.dataCacheStore.masData['coreShapes']
                 this.commercialShapesNames = []
                 shapeData.forEach((item) => {
                     this.commercialShapesNames.push(item['name'])
@@ -65,7 +65,7 @@ export default {
             console.log("onShapeChange")
             console.log(this.simpleShapeSelected)
             var shapeDataSelected = {}
-            this.dataCacheStore.commercialShapes.forEach((item) => {
+            this.dataCacheStore.masData['coreShapes'].forEach((item) => {
                 if (item['name'] == this.simpleShapeSelected) {
                     shapeDataSelected = Utils.deepCopy(item)
                 }
@@ -78,7 +78,7 @@ export default {
             console.log("onMaterialChange")
             console.log(this.simpleMaterialSelected)
             var materialDataSelected = {}
-            this.dataCacheStore.commercialMaterials.forEach((item) => {
+            this.dataCacheStore.masData['coreMaterials'].forEach((item) => {
                 if (item['name'] == this.simpleMaterialSelected) {
                     materialDataSelected = Utils.deepCopy(item)
                 }

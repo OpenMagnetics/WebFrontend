@@ -34,7 +34,7 @@ export default {
     },
     created() {
         this.$dataCacheStore.$onAction((action) => {
-            if (action.name == "commercialShapesLoaded") {
+            if (action.name == "dataLoaded") {
                 this.loadShapesNames()
             }
         })

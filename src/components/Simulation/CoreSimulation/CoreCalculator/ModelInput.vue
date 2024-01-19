@@ -119,8 +119,11 @@ export default {
             }
 
             this.$mkf.ready.then(_ => {
-                var aux = JSON.parse(this.$mkf.get_core_losses_model_information(materialSelected, JSON.stringify(this.$dataCacheStore.masData['coreMaterials'])));
-                this.coreLossesModelNames = aux["available_models"];
+                var aux = JSON.parse(this.$mkf.get_core_losses_model_information(materialSelected));
+                this.coreLossesModelNames = [];
+                aux["available_models"].forEach((model) => {
+                    this.coreLossesModelNames.push(Utils.toTitleCase(model));
+                })
                 this.coreLossesModelDescriptions = aux["information"];
                 this.coreLossesModelErrors = aux["errors"];
                 this.coreLossesModelInternalLink = aux["internal_links"];

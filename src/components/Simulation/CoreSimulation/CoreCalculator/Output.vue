@@ -142,8 +142,7 @@ export default {
                 var coreLosses = JSON.parse(this.$mkf.calculate_core_losses(JSON.stringify(coreData),
                                                                             JSON.stringify(coilData),
                                                                             JSON.stringify(inputsData),
-                                                                            JSON.stringify(modelsData),
-                                                                            JSON.stringify(this.$dataCacheStore.masData['coreMaterials'])));
+                                                                            JSON.stringify(modelsData)));
                 this.tryingToSend = false;
                 this.formatOutputs(coreLosses);
 

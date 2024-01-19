@@ -95,8 +95,7 @@ export default {
                 var inductance = JSON.parse(this.$mkf.calculate_inductance_from_number_turns_and_gapping(JSON.stringify(coreData),
                                                                                                          JSON.stringify(coilData),
                                                                                                          JSON.stringify(operatingPointData),
-                                                                                                         JSON.stringify(modelsData),
-                                                                                                         JSON.stringify(this.$dataCacheStore.masData['coreMaterials'])));
+                                                                                                         JSON.stringify(modelsData)));
                 this.computing = false;
                 this.formatInductance(inductance);
                 this.$userStore.globalSimulation['inputs']['designRequirements']['magnetizingInductance']['nominal'] = inductance;

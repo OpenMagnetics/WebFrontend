@@ -84,7 +84,7 @@ export default {
         calculateInsulation() {
             this.$mkf.ready.then(_ => {
                 this.masStore.mas.inputs.operatingPoints[0].excitationsPerWinding[0].voltage.processed.peakToPeak = 2 * this.masStore.mas.inputs.operatingPoints[0].excitationsPerWinding[0].voltage.processed.peak;
-                this.insulation = JSON.parse(this.$mkf.calculate_insulation(JSON.stringify(this.masStore.mas.inputs), JSON.stringify(this.$dataCacheStore.standards), JSON.stringify(this.$dataCacheStore.masData['wireMaterials'])));
+                this.insulation = JSON.parse(this.$mkf.calculate_insulation(JSON.stringify(this.masStore.mas.inputs)));
             });
         },
         onChange() {

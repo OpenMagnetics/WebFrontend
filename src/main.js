@@ -46,6 +46,7 @@ router.beforeEach((to, from, next) => {
 
     if (loadData) {
         
+            console.log("Loading");
         app.config.globalProperties.$mkf = {
             ready: new Promise(resolve => {
                 Module({
@@ -84,19 +85,34 @@ router.beforeEach((to, from, next) => {
             .then(response => {
                 var data = response.data;
                 data = removeEmpty(data);
+                
 
-                app.config.globalProperties.$dataCacheStore.masData = data;
-                app.config.globalProperties.$dataCacheStore.commercialMaterialsLoaded();
-                app.config.globalProperties.$dataCacheStore.commercialShapesLoaded();
-                app.config.globalProperties.$dataCacheStore.timestamp = Date.now()
-                setTimeout(() => app.config.globalProperties.$userStore.disarmDeadManSwitch(), 1000);
+                app.config.globalProperties.$mkf.ready.then(_ => {
+                    const processedCores = []
+                    data['coreShapes'].forEach((shape) => {
+                        shape['familySubtype'] = String(shape['familySubtype'])
+                        var processedCore = JSON.parse(app.config.globalProperties.$mkf.calculate_shape_data(JSON.stringify(shape)));
+                        processedCores.push(processedCore)
+                    })
+                    data['processedCores'] = processedCores
+
+                    app.config.globalProperties.$dataCacheStore.masData = data;
+                    app.config.globalProperties.$dataCacheStore.dataLoaded();
+                    setTimeout(() => app.config.globalProperties.$dataCacheStore.dataLoaded(), 1000);
+                    app.config.globalProperties.$dataCacheStore.timestamp = Date.now()
+                    setTimeout(() => app.config.globalProperties.$userStore.disarmDeadManSwitch(), 1000);
+                }).catch(error => { 
+                    console.error("Error processing shapes");
+                });
+
             })
             .catch(error => {
-                console.error("Error loading shape library")
+                console.error("Error loading data")
                 console.error(error.data)
             });
         }
     }
 
+    console.log("Loaded");
     next()
 })

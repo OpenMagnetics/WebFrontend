@@ -24,8 +24,6 @@ export default {
         var quickGapLengthSelected = 0;
         var quickShapeSelected = "ETD 39/20/13";
         var quickMaterialSelected = "3C97";
-        const commercialShapesNames = [];
-        const commercialMaterialNames = [];
         const coreStore = useCoreStore();
 
         if (this.$userStore.globalCore['functionalDescription'] != null && this.$userStore.globalCore['processedDescription'] != null) {
@@ -50,26 +48,14 @@ export default {
             quickShapeSelected,
             quickMaterialSelected,
             coreStore,
-            commercialShapesNames,
-            commercialMaterialNames,
             recentChange: false,
             tryingToSend: false,
         }
     },
     mounted() {
         this.updateQuickGap()
-        this.loadShapesNames()
-        this.loadMaterialNames()
     },
     created() {
-        this.$dataCacheStore.$onAction((action) => {
-            if (action.name == "commercialShapesLoaded") {
-                this.loadShapesNames()
-            }
-            else if (action.name == "commercialMaterialsLoaded") {
-                this.loadMaterialNames()
-            }
-        })
         this.coreStore.$onAction((action) => {
             if (action.name == "requestingGappingTechnicalDrawing") {
                 this.updateQuickGap()
@@ -114,20 +100,6 @@ export default {
             await this.$mkf.ready.then(_ => {
                 this.quickGapLengthSelected = this.$mkf.get_constants().get('residualGap') * 1000;
             });
-        },
-        loadShapesNames() {
-            const shapeData = this.$dataCacheStore.masData['coreShapes']
-            this.commercialShapesNames = []
-            shapeData.forEach((item) => {
-                this.commercialShapesNames.push(item['name'])
-            })
-        },
-        loadMaterialNames() {
-            const materialData = this.$dataCacheStore.masData['coreMaterials']
-            this.commercialMaterialNames = []
-            materialData.forEach((item) => {
-                this.commercialMaterialNames.push(item['name'])
-            })
         },
         tryToSend() {
             if (!this.tryingToSend) {

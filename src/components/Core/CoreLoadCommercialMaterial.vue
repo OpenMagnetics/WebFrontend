@@ -101,7 +101,6 @@ export default {
         loadTableData() {
             this.$userStore.armDeadManSwitch()
             const materialData = this.$dataCacheStore.masData['coreMaterials']
-            this.commercialMaterialNames = []
             materialData.forEach((item) => {
                 var initialPermeability;
                 var saturation100C;

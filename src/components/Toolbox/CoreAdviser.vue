@@ -194,7 +194,7 @@ export default {
                 if (this.masStore.mas.inputs.operatingPoints.length > 0) {
                     console.time('Execution Time');
 
-                    const aux = JSON.parse(mkf.calculate_advised_cores(JSON.stringify(this.masStore.mas.inputs), JSON.stringify(this.masStore.coreAdviserWeights), JSON.stringify(this.inventoryCacheStore.coreInventory), JSON.stringify(this.$dataCacheStore.masData), 20));
+                    const aux = JSON.parse(mkf.calculate_advised_cores(JSON.stringify(this.masStore.mas.inputs), JSON.stringify(this.masStore.coreAdviserWeights), JSON.stringify(this.inventoryCacheStore.coreInventory), 20));
 
                     var log = aux["log"];
                     var data = aux["data"];

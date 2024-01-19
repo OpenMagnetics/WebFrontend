@@ -49,6 +49,10 @@ export interface Inputs {
 export interface DesignRequirements {
     insulation?: InsulationRequirements;
     /**
+     * Isolation side where each winding is connected to.
+     */
+    isolationSides?: IsolationSide[];
+    /**
      * Required values for the leakage inductance
      */
     leakageInductance?: DimensionWithTolerance[];
@@ -242,6 +246,24 @@ export enum InsulationStandards {
     Iec606641 = "IEC 60664-1",
     Iec615581 = "IEC 61558-1",
     Iec623681 = "IEC 62368-1",
+}
+
+/**
+ * Tag to identify windings that are sharing the same ground
+ */
+export enum IsolationSide {
+    Denary = "denary",
+    Duodenary = "duodenary",
+    Nonary = "nonary",
+    Octonary = "octonary",
+    Primary = "primary",
+    Quaternary = "quaternary",
+    Quinary = "quinary",
+    Secondary = "secondary",
+    Senary = "senary",
+    Septenary = "septenary",
+    Tertiary = "tertiary",
+    Undenary = "undenary",
 }
 
 /**
@@ -927,6 +949,10 @@ export interface WindingWindowElement {
      */
     height?: number;
     /**
+     * Way in which the sections are oriented inside the winding window
+     */
+    sectionsOrientation?: WindingOrientation;
+    /**
      * Horizontal width of the winding window
      */
     width?: number;
@@ -942,16 +968,26 @@ export interface WindingWindowElement {
 }
 
 /**
+ * Way in which the sections are oriented inside the winding window
+ *
+ * Way in which the layer is oriented inside the section
+ *
+ * Way in which the layers are oriented inside the section
+ */
+export enum WindingOrientation {
+    Horizontal = "horizontal",
+    Radial = "radial",
+    Vertical = "vertical",
+}
+
+/**
  * Data describing one winding associated with a magnetic
  */
 export interface CoilFunctionalDescription {
     /**
      * Array on elements, representing the all the pins this winding is connected to
      */
-    connections?: ConnectionElement[];
-    /**
-     * Tag to identify windings that are sharing the same ground
-     */
+    connections?:  ConnectionElement[];
     isolationSide: IsolationSide;
     /**
      * Name given to the winding
@@ -987,24 +1023,6 @@ export interface ConnectionElement {
     pinName?: string;
     type?:    ConnectionType;
     [property: string]: any;
-}
-
-/**
- * Tag to identify windings that are sharing the same ground
- */
-export enum IsolationSide {
-    Denary = "denary",
-    Duodenary = "duodenary",
-    Nonary = "nonary",
-    Octonary = "octonary",
-    Primary = "primary",
-    Quaternary = "quaternary",
-    Quinary = "quinary",
-    Secondary = "secondary",
-    Senary = "senary",
-    Septenary = "septenary",
-    Tertiary = "tertiary",
-    Undenary = "undenary",
 }
 
 /**
@@ -1378,17 +1396,6 @@ export interface Layer {
 }
 
 /**
- * Way in which the layer is oriented inside the section
- *
- * Way in which the layers are oriented inside the section
- */
-export enum WindingOrientation {
-    Horizontal = "horizontal",
-    Radial = "radial",
-    Vertical = "vertical",
-}
-
-/**
  * Data describing one part of winding, described by a list with the proportion of each
  * parallel in the winding that is contained here
  */
@@ -1464,6 +1471,11 @@ export interface Section {
      * Way in which the layers are oriented inside the section
      */
     layersOrientation: WindingOrientation;
+    /**
+     * Defines the distance in extremes of the section that is reserved to be filled with margin
+     * tape. It is an array os two elements from inner or top, to outer or bottom
+     */
+    margin?: number[];
     /**
      * Name given to the winding
      */
@@ -1819,7 +1831,7 @@ export interface InitialPermeabilitModifier {
     /**
      * Name of this method
      */
-    method?: string;
+    method?: InitialPermeabilitModifierMethod;
     /**
      * Field with the coefficients used to calculate how much the permeability decreases with
      * the temperature, as factor = a + b * T + c * pow(T, 2) + d * pow(T, 3) + e * pow(T, 4)
@@ -1880,6 +1892,11 @@ export interface MagneticFluxDensityFactor {
     e: number;
     f: number;
     [property: string]: any;
+}
+
+export enum InitialPermeabilitModifierMethod {
+    Magnetics = "magnetics",
+    Micrometals = "micrometals",
 }
 
 /**
@@ -1943,7 +1960,7 @@ export interface CoreLossesMethodData {
     /**
      * Name of this method
      */
-    method:  string;
+    method:  CoreLossesMethodType;
     ranges?: SteinmetzCoreLossesMethodRangeDatum[];
     /**
      * List of coefficients for taking into account the excess losses and the dependencies of
@@ -1972,6 +1989,13 @@ export interface RoshenAdditionalCoefficients {
     resistivityOffset:                         number;
     resistivityTemperatureCoefficient:         number;
     [property: string]: any;
+}
+
+export enum CoreLossesMethodType {
+    Magnetics = "magnetics",
+    Micrometals = "micrometals",
+    Roshen = "roshen",
+    Steinmetz = "steinmetz",
 }
 
 export interface SteinmetzCoreLossesMethodRangeDatum {
@@ -2339,6 +2363,10 @@ export interface Outputs {
      */
     insulation?: DielectricVoltage[];
     /**
+     * Data describing the output insulation coordination that the magnetic has
+     */
+    insulationCoordination?: InsulationCoordinationOutput;
+    /**
      * Data describing the output magnetic strength field
      */
     leakageInductance?: LeakageInductanceOutput;
@@ -2457,6 +2485,39 @@ export interface DielectricVoltage {
 export enum VoltageType {
     Ac = "AC",
     Dc = "DC",
+}
+
+/**
+ * Data describing the output insulation coordination that the magnetic has
+ *
+ * List of voltages that the magnetic can withstand
+ */
+export interface InsulationCoordinationOutput {
+    /**
+     * Clearance required for this magnetic
+     */
+    clearance: number;
+    /**
+     * Creepage distance required for this magnetic
+     */
+    creepageDistance: number;
+    /**
+     * Distance through insulation required for this magnetic
+     */
+    distanceThroughInsulation: number;
+    /**
+     * Voltage that the magnetic withstands
+     */
+    withstandVoltage: number;
+    /**
+     * Duration of the voltate, or undefined if the field is not present
+     */
+    withstandVoltageDuration?: number;
+    /**
+     * Type of the voltage
+     */
+    withstandVoltageType?: VoltageType;
+    [property: string]: any;
 }
 
 /**
@@ -3415,6 +3476,14 @@ export class Convert {
         return JSON.stringify(uncast(value, r("DielectricVoltage")), null, 2);
     }
 
+    public static toInsulationCoordinationOutput(json: string): InsulationCoordinationOutput {
+        return cast(JSON.parse(json), r("InsulationCoordinationOutput"));
+    }
+
+    public static insulationCoordinationOutputToJson(value: InsulationCoordinationOutput): string {
+        return JSON.stringify(uncast(value, r("InsulationCoordinationOutput")), null, 2);
+    }
+
     public static toLeakageInductanceOutput(json: string): LeakageInductanceOutput {
         return cast(JSON.parse(json), r("LeakageInductanceOutput"));
     }
@@ -3732,6 +3801,7 @@ const typeMap: any = {
     ], "any"),
     "DesignRequirements": o([
         { json: "insulation", js: "insulation", typ: u(undefined, r("InsulationRequirements")) },
+        { json: "isolationSides", js: "isolationSides", typ: u(undefined, a(r("IsolationSide"))) },
         { json: "leakageInductance", js: "leakageInductance", typ: u(undefined, a(r("DimensionWithTolerance"))) },
         { json: "magnetizingInductance", js: "magnetizingInductance", typ: r("DimensionWithTolerance") },
         { json: "market", js: "market", typ: u(undefined, r("Market")) },
@@ -3907,6 +3977,7 @@ const typeMap: any = {
         { json: "area", js: "area", typ: u(undefined, 3.14) },
         { json: "coordinates", js: "coordinates", typ: u(undefined, a(3.14)) },
         { json: "height", js: "height", typ: u(undefined, 3.14) },
+        { json: "sectionsOrientation", js: "sectionsOrientation", typ: u(undefined, r("WindingOrientation")) },
         { json: "width", js: "width", typ: u(undefined, 3.14) },
         { json: "angle", js: "angle", typ: u(undefined, 3.14) },
         { json: "radialHeight", js: "radialHeight", typ: u(undefined, 3.14) },
@@ -4029,6 +4100,7 @@ const typeMap: any = {
         { json: "fillingFactor", js: "fillingFactor", typ: u(undefined, 3.14) },
         { json: "layersAlignment", js: "layersAlignment", typ: u(undefined, r("CoilAlignment")) },
         { json: "layersOrientation", js: "layersOrientation", typ: r("WindingOrientation") },
+        { json: "margin", js: "margin", typ: u(undefined, a(3.14)) },
         { json: "name", js: "name", typ: "" },
         { json: "partialWindings", js: "partialWindings", typ: a(r("PartialWinding")) },
         { json: "type", js: "type", typ: r("ElectricalType") },
@@ -4111,7 +4183,7 @@ const typeMap: any = {
     "InitialPermeabilitModifier": o([
         { json: "frequencyFactor", js: "frequencyFactor", typ: u(undefined, r("FrequencyFactor")) },
         { json: "magneticFieldDcBiasFactor", js: "magneticFieldDcBiasFactor", typ: r("MagneticFieldDcBiasFactor") },
-        { json: "method", js: "method", typ: u(undefined, "") },
+        { json: "method", js: "method", typ: u(undefined, r("InitialPermeabilitModifierMethod")) },
         { json: "temperatureFactor", js: "temperatureFactor", typ: u(undefined, r("TemperatureFactor")) },
         { json: "magneticFluxDensityFactor", js: "magneticFluxDensityFactor", typ: u(undefined, r("MagneticFluxDensityFactor")) },
     ], "any"),
@@ -4150,7 +4222,7 @@ const typeMap: any = {
         { json: "value", js: "value", typ: 3.14 },
     ], "any"),
     "CoreLossesMethodData": o([
-        { json: "method", js: "method", typ: "" },
+        { json: "method", js: "method", typ: r("CoreLossesMethodType") },
         { json: "ranges", js: "ranges", typ: u(undefined, a(r("SteinmetzCoreLossesMethodRangeDatum"))) },
         { json: "coefficients", js: "coefficients", typ: u(undefined, r("RoshenAdditionalCoefficients")) },
         { json: "referenceVolumetricLosses", js: "referenceVolumetricLosses", typ: u(undefined, a(r("VolumetricLossesPoint"))) },
@@ -4243,6 +4315,7 @@ const typeMap: any = {
     "Outputs": o([
         { json: "coreLosses", js: "coreLosses", typ: u(undefined, r("CoreLossesOutput")) },
         { json: "insulation", js: "insulation", typ: u(undefined, a(r("DielectricVoltage"))) },
+        { json: "insulationCoordination", js: "insulationCoordination", typ: u(undefined, r("InsulationCoordinationOutput")) },
         { json: "leakageInductance", js: "leakageInductance", typ: u(undefined, r("LeakageInductanceOutput")) },
         { json: "magnetizingInductance", js: "magnetizingInductance", typ: u(undefined, r("MagnetizingInductanceOutput")) },
         { json: "strayCapacitance", js: "strayCapacitance", typ: u(undefined, a(r("StrayCapacitanceOutput"))) },
@@ -4268,6 +4341,14 @@ const typeMap: any = {
         { json: "origin", js: "origin", typ: r("ResultOrigin") },
         { json: "voltage", js: "voltage", typ: 3.14 },
         { json: "voltageType", js: "voltageType", typ: r("VoltageType") },
+    ], "any"),
+    "InsulationCoordinationOutput": o([
+        { json: "clearance", js: "clearance", typ: 3.14 },
+        { json: "creepageDistance", js: "creepageDistance", typ: 3.14 },
+        { json: "distanceThroughInsulation", js: "distanceThroughInsulation", typ: 3.14 },
+        { json: "withstandVoltage", js: "withstandVoltage", typ: 3.14 },
+        { json: "withstandVoltageDuration", js: "withstandVoltageDuration", typ: u(undefined, 3.14) },
+        { json: "withstandVoltageType", js: "withstandVoltageType", typ: u(undefined, r("VoltageType")) },
     ], "any"),
     "LeakageInductanceOutput": o([
         { json: "leakageInductancePerWinding", js: "leakageInductancePerWinding", typ: a(r("DimensionWithTolerance")) },
@@ -4422,6 +4503,20 @@ const typeMap: any = {
         "IEC 61558-1",
         "IEC 62368-1",
     ],
+    "IsolationSide": [
+        "denary",
+        "duodenary",
+        "nonary",
+        "octonary",
+        "primary",
+        "quaternary",
+        "quinary",
+        "secondary",
+        "senary",
+        "septenary",
+        "tertiary",
+        "undenary",
+    ],
     "Market": [
         "Commercial",
         "Industrial",
@@ -4507,19 +4602,10 @@ const typeMap: any = {
         "rectangular",
         "round",
     ],
-    "IsolationSide": [
-        "denary",
-        "duodenary",
-        "nonary",
-        "octonary",
-        "primary",
-        "quaternary",
-        "quinary",
-        "secondary",
-        "senary",
-        "septenary",
-        "tertiary",
-        "undenary",
+    "WindingOrientation": [
+        "horizontal",
+        "radial",
+        "vertical",
     ],
     "InsulationWireCoatingType": [
         "bare",
@@ -4539,11 +4625,6 @@ const typeMap: any = {
         "litz",
         "rectangular",
         "round",
-    ],
-    "WindingOrientation": [
-        "horizontal",
-        "radial",
-        "vertical",
     ],
     "CoilAlignment": [
         "centered",
@@ -4580,9 +4661,19 @@ const typeMap: any = {
         "nanocrystalline",
         "powder",
     ],
+    "InitialPermeabilitModifierMethod": [
+        "magnetics",
+        "micrometals",
+    ],
     "CoreMaterialType": [
         "commercial",
         "custom",
+    ],
+    "CoreLossesMethodType": [
+        "magnetics",
+        "micrometals",
+        "roshen",
+        "steinmetz",
     ],
     "CoreShapeFamily": [
         "c",

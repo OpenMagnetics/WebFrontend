@@ -85,8 +85,7 @@ export default {
                 const inputsData = globalSimulation['inputs'];
                 var numberTurns = JSON.parse(this.$mkf.calculate_number_turns_from_gapping_and_inductance(JSON.stringify(coreData),
                                                                                                           JSON.stringify(inputsData),
-                                                                                                          JSON.stringify(modelsData),
-                                                                                                          JSON.stringify(this.$dataCacheStore.masData['coreMaterials'])));
+                                                                                                          JSON.stringify(modelsData)));
                 this.computing = false;
                 this.formatNumberTurns(numberTurns);
                 this.$userStore.globalSimulation['magnetic']['coil']['functionalDescription'][0]['numberTurns'] = numberTurns;

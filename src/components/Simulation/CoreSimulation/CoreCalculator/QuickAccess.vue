@@ -88,10 +88,10 @@ export default {
     },
     created() {
         this.$dataCacheStore.$onAction((action) => {
-            if (action.name == "commercialShapesLoaded") {
+            if (action.name == "dataLoaded") {
                 this.loadShapesNames()
             }
-            else if (action.name == "commercialMaterialsLoaded") {
+            else if (action.name == "dataLoaded") {
                 this.loadMaterialNames()
             }
         })

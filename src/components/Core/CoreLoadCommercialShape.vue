@@ -101,24 +101,26 @@ export default {
         },
         loadTableData() {
             this.$userStore.armDeadManSwitch()
-            this.$dataCacheStore.commercialCores.forEach((item) => {
-            const datum = {
-                name: item['functionalDescription']['shape']['name'],
-                family: item['functionalDescription']['shape']['family'].toUpperCase(),
-                dimensions: Utils.removeTrailingZeroes(item['processedDescription']['width'], 4) + " x " + Utils.removeTrailingZeroes(item['processedDescription']['height'], 4) + " x " + Utils.removeTrailingZeroes(item['processedDescription']['depth'], 4) + " m",
-                effectiveLength: item['processedDescription']['effectiveParameters']['effectiveLength'] * 1000,
-                effectiveArea: item['processedDescription']['effectiveParameters']['effectiveArea'] * 1000000,
-                effectiveVolume: item['processedDescription']['effectiveParameters']['effectiveVolume'] * 1000000000,
+            if ('processedCores' in this.$dataCacheStore.masData) {
+                this.$dataCacheStore.masData['processedCores'].forEach((item) => { 
+                    const datum = {
+                        name: item['functionalDescription']['shape']['name'],
+                        family: item['functionalDescription']['shape']['family'].toUpperCase(),
+                        dimensions: Utils.removeTrailingZeroes(item['processedDescription']['width'], 4) + " x " + Utils.removeTrailingZeroes(item['processedDescription']['height'], 4) + " x " + Utils.removeTrailingZeroes(item['processedDescription']['depth'], 4) + " m",
+                        effectiveLength: item['processedDescription']['effectiveParameters']['effectiveLength'] * 1000,
+                        effectiveArea: item['processedDescription']['effectiveParameters']['effectiveArea'] * 1000000,
+                        effectiveVolume: item['processedDescription']['effectiveParameters']['effectiveVolume'] * 1000000000,
+                    }
+                    this.commercialData.push(datum)
+                })
+                this.scaleColumns()  // To avoid bug in vue-good-table-next
+                this.$userStore.disarmDeadManSwitch()
             }
-                this.commercialData.push(datum)
-            })
-            this.scaleColumns()  // To avoid bug in vue-good-table-next
-            this.$userStore.disarmDeadManSwitch()
         },
     },
     mounted() {
         this.$dataCacheStore.$onAction((action) => {
-            if (action.name == "commercialShapesLoaded") {
+            if (action.name == "dataLoaded") {
                 this.loadTableData()
             }
         })
