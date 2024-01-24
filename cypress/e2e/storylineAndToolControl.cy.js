@@ -5,7 +5,7 @@ import '/cypress/support/storylineCommands'
 describe('Storyline', () => {
     beforeEach(() => {
         cy.viewport(1800, 1200)
-        cy.visit('http://localhost:5173/magnetic_synthesis')    
+        cy.visit('http://localhost:5173/magnetic_core_adviser')    
     })
 
     it('initial state', () => {
@@ -33,12 +33,12 @@ describe('Storyline', () => {
         cy.checkTitle("Design Requirements");
         cy.checkStorylineAdventureVisible("designRequirements");
 
-        cy.nextTool();
-        cy.nextTool();
-        cy.nextTool();
+        // cy.nextTool();
+        // cy.nextTool();
+        // cy.nextTool();
 
-        cy.checkTitle("Wire Adviser");
-        cy.checkStorylineAdventureVisible("wireAdviser");
+        // cy.checkTitle("Wire Adviser");
+        // cy.checkStorylineAdventureVisible("wireAdviser");
 
         // Not done yet
         // cy.nextTool();

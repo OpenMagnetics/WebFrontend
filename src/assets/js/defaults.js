@@ -1,7 +1,7 @@
 export const coreAdviserWeights = {
-    "EFFICIENCY": 1,
-    "DIMENSIONS": 1,
-    "COST": 1,
+    "EFFICIENCY": 0.4,
+    "DIMENSIONS": 0.3,
+    "COST": 0.3,
 }
 
 export const mas = {

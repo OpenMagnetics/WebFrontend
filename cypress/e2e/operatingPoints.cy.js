@@ -78,7 +78,7 @@ describe('OperatingPoints', () => {
 describe('Data persistence', () => {
     beforeEach(() => {
         cy.viewport(1800, 1200)
-        cy.visit('http://localhost:5173/magnetic_synthesis')
+        cy.visit('http://localhost:5173/magnetic_specification')
         cy.selectStorylineAdventure('operatingPoints')
     })
 
@@ -137,7 +137,7 @@ describe('Data persistence', () => {
 describe('Data change', () => {
     beforeEach(() => {
         cy.viewport(1800, 1200)
-        cy.visit('http://localhost:5173/magnetic_synthesis')
+        cy.visit('http://localhost:5173/magnetic_specification')
         cy.selectStorylineAdventure('operatingPoints')
     })
 
