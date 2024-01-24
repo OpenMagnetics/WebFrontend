@@ -1076,6 +1076,7 @@ export function processCoreTexts(data) {
     if (data.magnetic.manufacturerInfo == null) {
         return null;
     }
+    const numberTurnsPrimary = data.magnetic.coil.functionalDescription[0].numberTurns;
     {
         var materialName;
         if (typeof data.magnetic.core.functionalDescription.material === 'string' || data.magnetic.core.functionalDescription.material instanceof String) {
@@ -1097,11 +1098,11 @@ export function processCoreTexts(data) {
             }
         }
         else if (data.magnetic.core.functionalDescription.gapping.length > data.magnetic.core.processedDescription.columns.length) {
-            localTexts.coreDescription += `, with a disitrbuted gap of ${removeTrailingZeroes(data.magnetic.core.functionalDescription.gapping[0].length * 1000, 5)} mm.`
+            localTexts.coreDescription += `, with a distributed gap of ${removeTrailingZeroes(data.magnetic.core.functionalDescription.gapping[0].length * 1000, 5)} mm.`
         }
     }
     {
-        const aux = formatUnit(1 / data.outputs[0].magnetizingInductance.coreReluctance.nominal, "H/turn");
+        const aux = formatUnit(1 / data.outputs[0].magnetizingInductance.coreReluctance / numberTurnsPrimary, "H/turn");
         localTexts.coreMaterial = `It has a permeance (AL value) of ${removeTrailingZeroes(aux.label, 1)} ${aux.unit}.`
     }
     if ('temp' in data.magnetic.core) {

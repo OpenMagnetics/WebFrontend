@@ -187,7 +187,7 @@ export default {
                 for (let [key, value] of Object.entries(this.scoring)) {
                     masScore += value;
                 }
-                masScore /= 6;
+                masScore /= 3;
                 masScore *= 100;
                 this.masScore = `${removeTrailingZeroes(masScore, 1)}`
             }   

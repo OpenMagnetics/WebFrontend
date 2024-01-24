@@ -6,11 +6,23 @@ import { removeTrailingZeroes, toTitleCase, toCamelCase, calculateObjectSize, de
 import { coreAdviserWeights } from '/src/assets/js/defaults.js'
 import Advise from '/src/components/Toolbox/CoreAdviser/Advise.vue'
 import AdviseDetails from '/src/components/Toolbox/CoreAdviser/AdviseDetails.vue'
-import Module from '/src/assets/js/libMKF.wasm.js';
-
+import Module from '/src/assets/js/libCoreAdviser.wasm.js'
 </script>
 
 <script>
+var coreAdviser = {
+    ready: new Promise(resolve => {
+        Module({
+            onRuntimeInitialized () {
+                coreAdviser = Object.assign(this, {
+                    ready: Promise.resolve()
+                });
+                resolve();
+            }
+        });
+    })
+};
+
 const style = getComputedStyle(document.body);
 const theme = {
   primary: style.getPropertyValue('--bs-primary'),
@@ -82,31 +94,41 @@ export default {
     created () {
     },
     mounted () {
-        this.$userStore.coreAdviserSelectedAdvise = -1;
-        const url = import.meta.env.VITE_API_ENDPOINT + '/read_mas_inventory'
+        // this.$userStore.coreAdviserSelectedAdvise = -1;
+        // const url = import.meta.env.VITE_API_ENDPOINT + '/read_mas_inventory'
 
-        this.$axios.post(url, {})
-        .then(response => {
-            this.inventoryCacheStore.coreInventory = response.data['cores'];
-            // if (this.masStore.areCoreAdvisesValid()) {
-            //     console.log("Cache valid!")
-            //     this.advises = this.masStore.coreAdvises;
-            //     this.addCurrentAdvisesToCache();
-            //     this.$userStore.coreAdviserSelectedAdvise = 0;
-            //     if (this.advises.length > 0) {
-            //         this.masStore.mas = this.advises[this.$userStore.coreAdviserSelectedAdvise].mas;
-            //         this.$emit("canContinue", true);
-            //     }
-            // }
-            // else {
-            //     console.log("Cache not valid!")
-                this.calculateAdvisedCores();
-            // }
-        })
-        .catch(error => {
-            console.error("Error loading inventory")
-            console.error(error)
-        });
+        // this.$axios.post(url, {})
+        // .then(response => {
+        //     this.inventoryCacheStore.coreInventory = response.data['cores'];
+        //     // if (this.masStore.areCoreAdvisesValid()) {
+        //     //     console.log("Cache valid!")
+        //     //     this.advises = this.masStore.coreAdvises;
+        //     //     this.addCurrentAdvisesToCache();
+        //     //     this.$userStore.coreAdviserSelectedAdvise = 0;
+        //     //     if (this.advises.length > 0) {
+        //     //         this.masStore.mas = this.advises[this.$userStore.coreAdviserSelectedAdvise].mas;
+        //     //         this.$emit("canContinue", true);
+        //     //     }
+        //     // }
+        //     // else {
+        //     //     console.log("Cache not valid!")
+        //         this.calculateAdvisedCores();
+        //     // }
+        // })
+        // .catch(error => {
+        //     console.error("Error loading inventory")
+        //     console.error(error)
+        // });
+        setTimeout(() => {this.calculateAdvisedCores();}, 200);
+
+
+        // coreAdviser.ready.then(_ => {
+        //     console.log('Starting Execution Time Loading');
+        //     console.time('Execution Time Loading');
+        //     coreAdviser.clear_loaded_cores();
+        //     coreAdviser.load_cores(false, true);
+        //     console.timeEnd('Execution Time Loading');
+        // });
     },
     methods: {
         getKeyToCache() {
@@ -177,30 +199,21 @@ export default {
                 return;
             }
 
-            var mkf = {
-                ready: new Promise(resolve => {
-                    Module({
-                        onRuntimeInitialized () {
-                            mkf = Object.assign(this, {
-                                ready: Promise.resolve()
-                            });
-                            resolve();
-                        }
-                    });
-                })
-            };
-
-            mkf.ready.then(_ => {
+            coreAdviser.ready.then(_ => {
                 if (this.masStore.mas.inputs.operatingPoints.length > 0) {
                     console.time('Execution Time');
 
-                    const aux = JSON.parse(mkf.calculate_advised_cores(JSON.stringify(this.masStore.mas.inputs), JSON.stringify(this.masStore.coreAdviserWeights), JSON.stringify(this.inventoryCacheStore.coreInventory), 20));
+                    console.log("Boolean(this.$userStore.coreAdviserUseOnlyCoresInStock)")
+                    console.log(this.$userStore.coreAdviserUseOnlyCoresInStock)
+                    const aux = JSON.parse(coreAdviser.calculate_advised_cores(JSON.stringify(this.masStore.mas.inputs), JSON.stringify(this.masStore.coreAdviserWeights), 20, this.$userStore.coreAdviserUseOnlyCoresInStock == 1));
 
                     var log = aux["log"];
                     var data = aux["data"];
                     data.forEach((datum) => {
                         datum.mas.inputs = deepCopy(this.masStore.mas.inputs);
                     })
+
+                    console.log(aux)
 
 
                     var orderedWeights = [];
@@ -263,8 +276,21 @@ export default {
             this.recentChange = true;
             this.tryToSend();
         },
-        changedSliderValue() {
+        changedSliderValue(newkey, newValue) {
+            const remainingValue = 1 - newValue;
+            var valueInOthers = 0;
+            for (let [key, value] of Object.entries(this.masStore.coreAdviserWeights)) {
+                if (key != newkey) {
+                    valueInOthers += value;
+                }
+            }
+            for (let [key, value] of Object.entries(this.masStore.coreAdviserWeights)) {
+                if (key != newkey) {
+                    this.masStore.coreAdviserWeights[key] = value / valueInOthers * remainingValue;
+                }
+            }
             this.recentChange = true;
+
             this.tryToSend();
         },
         selectedMas(index) {
@@ -281,6 +307,11 @@ export default {
         onChangeBarOrSpider(event) {
             this.$router.go();
         },
+        onChangeWithOrWithoutStock(event) {
+            console.log(this.$userStore.coreAdviserUseOnlyCoresInStock)
+            this.masStore.resetCache();
+            this.$router.go();
+        },
 
     }
 }
@@ -294,7 +325,7 @@ export default {
                 <div class="row" v-for="value, key in masStore.coreAdviserWeights">
                     <label class="form-label col-12 py-0 my-0">{{titledFilters[key]}}</label>
                     <div class=" col-7 me-2 pt-2">
-                        <vue3-slider v-model="masStore.coreAdviserWeights[key]" :disabled="loading" class="col-2 text-primary" :height="10" :min="0.1" :max="1" :step="0.1"  id="core-adviser-weight-area-product" :color="theme.primary" :handleScale="2" :alwaysShowHandle="true" @drag-end="changedSliderValue"/>
+                        <vue3-slider v-model="masStore.coreAdviserWeights[key]" :disabled="loading" class="col-2 text-primary" :height="10" :min="0.1" :max="1" :step="0.1"  id="core-adviser-weight-area-product" :color="theme.primary" :handleScale="2" :alwaysShowHandle="true" @drag-end="changedSliderValue(key, $event)"/>
                     </div>
 
                 <input :disabled="loading" :data-cy="dataTestLabel + '-number-input'" type="number" class="m-0 mb-2 px-0 col-3 bg-light text-white" :min="10" :step="10" @change="changedInputValue(key, $event.target.value)" :value="removeTrailingZeroes(masStore.coreAdviserWeights[key] * 100)" ref="inputRef">
@@ -307,6 +338,13 @@ export default {
                     <input :disabled="loading" :data-cy="dataTestLabel + '-bar-spider-button'" v-model="$userStore.coreAdviserSpiderBarChartNotBar" @change="onChangeBarOrSpider" type="range" class="mt-2 form-range col-1" min="0" max="1" step="1" style="width: 30px">
                     <label v-tooltip="'Choose between spider or bar charts'" class="fs-6 mt-2 p-0 ps-3 text-white col-7">Spider chart</label>
                 </div>
+                <p class="mt-5">Choose between using all available cores or only those in stock.</p>
+                <div class="row">
+                    <label v-tooltip="'Choose between using all available cores or only those in stock'" class="fs-6 mt-2 p-0 ps-3 text-white col-3 ">All</label>
+                    <input :disabled="loading" :data-cy="dataTestLabel + '-with-without-stock-button'" v-model="$userStore.coreAdviserUseOnlyCoresInStock" @change="onChangeWithOrWithoutStock" type="range" class="mt-2 form-range col-1" min="0" max="1" step="1" style="width: 30px">
+                    <label v-tooltip="'Choose between using all available cores or only those in stock'" class="fs-6 mt-2 p-0 ps-3 text-white col-7">Only in stock</label>
+                </div>
+                <p class="mt-1 text-danger">Warning: Using all cores will take a longer time.</p>
             </div>
             <div class="col-sm-12 col-md-10 text-start pe-0 container-fluid"  style="height: 70vh">
                 <div class="row" v-if="loading" >

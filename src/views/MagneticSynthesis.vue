@@ -12,19 +12,17 @@ import GenericTool from '/src/components/Toolbox/GenericTool.vue'
 export default {
     data() {
         const currentStoryline = {
-            "designRequirements": {
-                title: "Design Requirements",
-                nextTool: "operatingPoints"
-            },
-            "operatingPoints": {
-                title: "Operating Points",
-                prevTool: "designRequirements",
-                nextTool: "coreAdviser",
-            },
-            "coreAdviser": {
-                title: "Core Adviser",
-                prevTool: "operatingPoints",
-                nextTool: "wireAdviser",
+            // "designRequirements": {
+            //     title: "Design Requirements",
+            //     nextTool: "operatingPoints"
+            // },
+            // "operatingPoints": {
+            //     title: "Operating Points",
+            //     prevTool: "designRequirements",
+            //     nextTool: "coreAdviser",
+            // },
+            "magneticAdviser": {
+                title: "Magnetic Adviser"
                 // advancedTool: "coreSimulation",
             },
             // "coreSimulation": {
@@ -40,33 +38,33 @@ export default {
             //     nextTool: "wireAdviser",
             //     basicTool: "coreSimulation",
             // },
-            "wireAdviser": {
-                title: "Wire Adviser",
-                prevTool: "coreAdviser",
-                nextTool: "coilAdviser",
-            },
-            "wireCustomization": {
-                title: "Wire Customization",
-                prevTool: "coreAdviser",
-                nextTool: "coilAdviser",
-                basicTool: "wireAdviser",
-            },
-            "coilAdviser": {
-                title: "Coil Adviser",
-                prevTool: "wireAdviser",
-                nextTool: "magneticSynthesisFinalizer",
-                advancedTool: "coilCustomizer",
-            },
-            "coilCustomizer": {
-                title: "Coil Adviser",
-                prevTool: "wireAdviser",
-                nextTool: "magneticSynthesisFinalizer",
-                basicTool: "coilAdviser",
-            },
-            "magneticSynthesisFinalizer": {
-                title: "Summary",
-                prevTool: "coilAdviser",
-            },
+            // "wireAdviser": {
+            //     title: "Wire Adviser",
+            //     prevTool: "coreAdviser",
+            //     nextTool: "coilAdviser",
+            // },
+            // "wireCustomization": {
+            //     title: "Wire Customization",
+            //     prevTool: "coreAdviser",
+            //     nextTool: "coilAdviser",
+            //     basicTool: "wireAdviser",
+            // },
+            // "coilAdviser": {
+            //     title: "Coil Adviser",
+            //     prevTool: "wireAdviser",
+            //     nextTool: "magneticSynthesisFinalizer",
+            //     advancedTool: "coilCustomizer",
+            // },
+            // "coilCustomizer": {
+            //     title: "Coil Adviser",
+            //     prevTool: "wireAdviser",
+            //     nextTool: "magneticSynthesisFinalizer",
+            //     basicTool: "coilAdviser",
+            // },
+            // "magneticSynthesisFinalizer": {
+            //     title: "Summary",
+            //     prevTool: "coilAdviser",
+            // },
         };
 
         return {
@@ -84,9 +82,9 @@ export default {
 
 <template>
     <GenericTool
-        :toolLabel="'magneticSpecification'"
+        :toolLabel="'magneticAdviser'"
         :currentStoryline="currentStoryline"
-        :dataTestLabel="'MagneticSpecification'"
+        :dataTestLabel="'MagneticAdviser'"
     />
 </template>
 

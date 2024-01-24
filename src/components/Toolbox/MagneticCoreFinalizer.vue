@@ -229,7 +229,7 @@ export default {
             this.$mkf.ready.then(_ => {
                 const materialName = this.masStore.mas.magnetic.core.functionalDescription.material;
                 if (typeof materialName === 'string' || materialName instanceof String) {
-                    var materialData = JSON.parse(this.$mkf.get_material_data(materialName, JSON.stringify(this.$dataCacheStore.masData.coreMaterials)));
+                    var materialData = JSON.parse(this.$mkf.get_material_data(materialName));
                     this.masStore.mas.magnetic.core.functionalDescription.material = materialData;
                 }
                 var temperatureDependantData25 = JSON.parse(this.$mkf.get_core_temperature_dependant_parameters(JSON.stringify(this.masStore.mas.magnetic.core), 25));

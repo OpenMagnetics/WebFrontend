@@ -7,8 +7,23 @@ import InsulationSimple from '/src/components/Toolbox/InsulationAdviser/Insulati
 import ElementFromListRadio from '/src/components/DataInput/ElementFromListRadio.vue'
 import DimensionReadOnly from '/src/components/DataInput/DimensionReadOnly.vue'
 import InsulationExtraInputs from '/src/components/Toolbox/InsulationAdviser/InsulationExtraInputs.vue'
+import Module from '/src/assets/js/libInsulationCoordinator.wasm.js'
 </script>
+
 <script>
+
+var insulationCoordinator = {
+    ready: new Promise(resolve => {
+        Module({
+            onRuntimeInitialized () {
+                insulationCoordinator = Object.assign(this, {
+                    ready: Promise.resolve()
+                });
+                resolve();
+            }
+        });
+    })
+};
 export default {
     props: {
         dataTestLabel: {
@@ -68,23 +83,13 @@ export default {
     mounted () {
         this.masStore.resetCache();
 
-        const url = import.meta.env.VITE_API_ENDPOINT + '/read_insulation_standards'
-
-        this.$axios.post(url, {})
-        .then(response => {
-            this.$dataCacheStore.standards = response.data;
-            this.calculateInsulation();
-        })
-        .catch(error => {
-            console.error("Error loading standards")
-            console.error(error)
-        });
+        this.calculateInsulation();
     },
     methods: {
         calculateInsulation() {
-            this.$mkf.ready.then(_ => {
+            insulationCoordinator.ready.then(_ => {
                 this.masStore.mas.inputs.operatingPoints[0].excitationsPerWinding[0].voltage.processed.peakToPeak = 2 * this.masStore.mas.inputs.operatingPoints[0].excitationsPerWinding[0].voltage.processed.peak;
-                this.insulation = JSON.parse(this.$mkf.calculate_insulation(JSON.stringify(this.masStore.mas.inputs)));
+                this.insulation = JSON.parse(insulationCoordinator.calculate_insulation(JSON.stringify(this.masStore.mas.inputs)));
             });
         },
         onChange() {

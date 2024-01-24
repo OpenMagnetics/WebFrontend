@@ -1,10 +1,7 @@
 export const coreAdviserWeights = {
-    "AREA_PRODUCT": 1,
-    "CORE_LOSSES": 1,
-    "CORE_TEMPERATURE": 1,
+    "EFFICIENCY": 1,
     "DIMENSIONS": 1,
-    "ENERGY_STORED": 1,
-    "WINDING_WINDOW_AREA": 1,
+    "COST": 1,
 }
 
 export const mas = {

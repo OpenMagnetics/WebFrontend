@@ -25,6 +25,11 @@ export const useUserStore = defineStore("user", () => {
         'magneticFinalizer': false,
     })
 
+    const magneticAdviserSubsection = ref("magneticAdviser")
+    const magneticAdviserCanContinue = ref({
+        'magneticAdviser': false
+    })
+
     const magneticCoreAdviserSubsection = ref("designRequirements")
     const magneticCoreAdviserCanContinue = ref({
         'designRequirements': false,
@@ -33,6 +38,7 @@ export const useUserStore = defineStore("user", () => {
         'magneticFinalizer': false,
     })
     const coreAdviserSpiderBarChartNotBar = ref('0')
+    const coreAdviserUseOnlyCoresInStock = ref('1')
     const coreAdviserSelectedAdvise = ref(0)
 
     const insulationAdviserSubsection = ref("insulationRequirements")
@@ -106,6 +112,7 @@ export const useUserStore = defineStore("user", () => {
         return {
             "magneticSynthesisSubsection": magneticSynthesisSubsection.value,
             "coreAdviserSpiderBarChartNotBar": coreAdviserSpiderBarChartNotBar.value,
+            "coreAdviserUseOnlyCoresInStock": coreAdviserUseOnlyCoresInStock.value,
             "coreAdviserSelectedAdvise": coreAdviserSelectedAdvise.value,
 
 
@@ -277,6 +284,7 @@ export const useUserStore = defineStore("user", () => {
     }
     return {
         coreAdviserSpiderBarChartNotBar,
+        coreAdviserUseOnlyCoresInStock,
         coreAdviserSelectedAdvise,
         magneticSynthesisSubsection,
         magneticSynthesisCanContinue,
@@ -287,6 +295,8 @@ export const useUserStore = defineStore("user", () => {
         magneticCoreAdviserCanContinue,
         insulationAdviserSubsection,
         insulationAdviserCanContinue,
+        magneticAdviserSubsection,
+        magneticAdviserCanContinue,
         resetMagneticCoreAdviser,
 
         dump,

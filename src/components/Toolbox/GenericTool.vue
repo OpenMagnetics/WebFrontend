@@ -9,6 +9,7 @@ import OperatingPoints from '/src/components/Toolbox/OperatingPoints.vue'
 import CoreAdviser from '/src/components/Toolbox/CoreAdviser.vue'
 import CoreCustomizer from '/src/components/Toolbox/CoreCustomizer.vue'
 import WireAdviser from '/src/components/Toolbox/WireAdviser.vue'
+import MagneticAdviser from '/src/components/Toolbox/MagneticAdviser.vue'
 import WireCustomizer from '/src/components/Toolbox/WireCustomizer.vue'
 import CoilAdviser from '/src/components/Toolbox/CoilAdviser.vue'
 import InsulationAdviser from '/src/components/Toolbox/InsulationAdviser.vue'
@@ -107,6 +108,7 @@ export default {
                             <OperatingPoints @canContinue="updateCanContinue('operatingPoints', $event)" @changeTool="changeTool" :dataTestLabel="`${dataTestLabel}-OperatingPoints`" v-if="$userStore[`${toolLabel}Subsection`] == 'operatingPoints'"/>
                             <CoreAdviser @canContinue="updateCanContinue('coreAdviser', $event)" :dataTestLabel="`${dataTestLabel}-CoreAdviser`" v-if="$userStore[`${toolLabel}Subsection`] == 'coreAdviser'"/>
                             <CoreCustomizer :dataTestLabel="`${dataTestLabel}-CoreCustomizer`" v-if="$userStore[`${toolLabel}Subsection`] == 'coreCustomizer'"/>
+                            <MagneticAdviser :dataTestLabel="`${dataTestLabel}-MagneticAdviser`" v-if="$userStore[`${toolLabel}Subsection`] == 'magneticAdviser'"/>
                             <WireAdviser :dataTestLabel="`${dataTestLabel}-WireAdviser`" v-if="$userStore[`${toolLabel}Subsection`] == 'wireAdviser'"/>
                             <WireCustomizer :dataTestLabel="`${dataTestLabel}-WireCustomizer`" v-if="$userStore[`${toolLabel}Subsection`] == 'wireCustomizer'"/>
                             <CoilAdviser :dataTestLabel="`${dataTestLabel}-CoilAdviser`" v-if="$userStore[`${toolLabel}Subsection`] == 'coilAdviser'"/>

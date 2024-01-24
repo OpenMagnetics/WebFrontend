@@ -3,7 +3,6 @@ import { useMasStore } from '/src/stores/mas'
 import { Chart, registerables } from 'chart.js'
 import { formatCurrent, removeTrailingZeroes, formatFrequency, formatVoltage } from '/src/assets/js/utils.js'
 import { defaultSamplingNumberPoints, defaultMaximumNumberHarmonicsShown } from '/src/assets/js/defaults.js'
-import Module from '/src/assets/js/libMKF.wasm.js';
 </script>
 
 <script>
