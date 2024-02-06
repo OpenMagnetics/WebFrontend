@@ -201,7 +201,7 @@ import Footer from '/src/components/Footer.vue'
       height: 100%;
       opacity: 1;
       background-image: linear-gradient(to bottom, rgba(26, 26, 26, 0.8), rgba(26, 26, 26, 1)),
-    url('images/background_home2.png');
+    url('images/background_home.png');
       background-repeat: no-repeat;
       background-position: 50% 0;
       background-size: cover;
