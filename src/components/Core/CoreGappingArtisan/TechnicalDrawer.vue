@@ -54,7 +54,7 @@ setTimeout(() => {coreStore.requestGappingTechnicalDrawing()}, 5000);
 
             <img id="svg" v-if="posting" class="mx-auto d-block col-12" alt="loading" style="width: 100%; height: auto;" src="/images/loading.gif">
             <div v-show="!posting" ref="frontView" class="col-12" style="height: 100%;" />
-            <label class="col-12 text-info" v-show="!posting">Clink on image to enlarge</label>
+            <label class="col-12 text-info" v-show="!posting">Click on image to enlarge</label>
             </button>
 
         </div>

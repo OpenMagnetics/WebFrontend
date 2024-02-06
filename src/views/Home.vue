@@ -11,11 +11,8 @@ import Footer from '/src/components/Footer.vue'
             <div class="container-fluid wrap px-0">
                 <div class="container content">
                     <div id="home-welcome" class="row pt-2 mx-1 mt-5">
-                        <div class="text-white my-1 mt-5 py-4 offset-sm-2 offset-lg-3 col-sm-8 col-lg-6 text-center rounded-4">
-                            <h1 data-cy="Home-title-text" class=" fw-bolder fs-1">The free open source platform for magnetics design and simulation.</h1>
-                        </div>
-                        <div class="text-white offset-sm-3 offset-lg-4 col-sm-6 col-lg-4 text-center rounded-4">
-                            <h4 data-cy="Home-title-text" class="text-white">OpenMagnetics is a open-source, community-driven alternative to the existing for-profit tools.</h4>
+                        <div class="text-white my-1 mt-5 pt-4 pb-2 offset-sm-2 offset-lg-3 col-sm-8 col-lg-6 text-center rounded-4">
+                            <h1 data-cy="Home-title-text" class=" fw-bolder fs-1">The free open-source platform for magnetics design and simulation.</h1>
                         </div>
                         <div class="text-white offset-sm-2 offset-lg-3 col-sm-8 col-lg-6 text-center rounded-4">
                             <h5 data-cy="Home-title-text" class="text-white fw-light">We believe that the access to knowledge and tools are a right, not a privilege, so we offer the best tools in the market for free, so the whole of humanity can benefit.</h5>
@@ -201,7 +198,7 @@ import Footer from '/src/components/Footer.vue'
       height: 100%;
       opacity: 1;
       background-image: linear-gradient(to bottom, rgba(26, 26, 26, 0.8), rgba(26, 26, 26, 1)),
-    url('images/background_home.png');
+    url('/images/background_home.png');
       background-repeat: no-repeat;
       background-position: 50% 0;
       background-size: cover;

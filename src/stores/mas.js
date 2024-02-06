@@ -12,6 +12,9 @@ export const useMasStore = defineStore("mas", () => {
     const coreAdvisesTimestamp = ref(null)
     const coreAdvisesTtlInMilliseconds = 24 * 60 * 60 * 1000 // 24 hours
 
+    const magneticAdviserWeights = ref(null);
+    const magneticAdviserMaximumNumberResults = ref(6);
+
     function areCoreAdvisesValid() {
         if (this.coreAdvisesTimestamp == null || (this.coreAdvisesTimestamp + this.coreAdvisesTtlInMilliseconds < Date.now())) {
             Object.keys(this.coreAdvisesCache).forEach(function(k) { delete this.coreAdvisesCache[k]})
@@ -56,6 +59,8 @@ export const useMasStore = defineStore("mas", () => {
         updatedInputExcitationWaveformUpdatedFromGraph,
         updatedInputExcitationWaveformUpdatedFromProcessed,
         updatedInputExcitationProcessed,
+        magneticAdviserWeights,
+        magneticAdviserMaximumNumberResults,
     }
 },
 {

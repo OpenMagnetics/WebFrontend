@@ -40,21 +40,13 @@ export default {
         return {
             localTexts,
             masStore,
+            posting: false,
+            zoomingPlot: false,
         }
     },
     watch: {
         modelValue(newValue, oldValue) {
             this.processLocalTexts()
-            // if (!isNaN(this.modelValue[this.name]))
-            //     this.update(this.modelValue[this.name]);
-            magneticAdviser.ready.then(_ => {
-
-                const leakageInductaceOutput = JSON.parse(magneticAdviser.calculate_leakage_inductance(JSON.stringify(this.modelValue.inputs.operatingPoints[0]), JSON.stringify(this.modelValue.magnetic)));
-
-                const aux = formatInductance(leakageInductaceOutput.leakageInductancePerWinding[0].nominal);
-                this.localTexts.leakageInductaceTable[1].value = `${removeTrailingZeroes(aux.label, 1)} ${aux.unit}`;
-            })
-
             setTimeout(() => {this.calculaLeakageInductance();}, 10);
             setTimeout(() => {this.calculaCoreAndFieldPlot();}, 10);
 
@@ -62,23 +54,26 @@ export default {
     },
     methods: {
         calculaLeakageInductance() {
-            magneticAdviser.ready.then(_ => {
+            if (this.modelValue.magnetic.coil.functionalDescription.length > 1) {
+                magneticAdviser.ready.then(_ => {
 
-                const leakageInductaceOutput = JSON.parse(magneticAdviser.calculate_leakage_inductance(JSON.stringify(this.modelValue.inputs.operatingPoints[0]), JSON.stringify(this.modelValue.magnetic)));
+                    const leakageInductaceOutput = JSON.parse(magneticAdviser.calculate_leakage_inductance(JSON.stringify(this.modelValue.inputs.operatingPoints[0]), JSON.stringify(this.modelValue.magnetic)));
 
-                const aux = formatInductance(leakageInductaceOutput.leakageInductancePerWinding[0].nominal);
-                this.localTexts.leakageInductaceTable[1].value = `${removeTrailingZeroes(aux.label, 1)} ${aux.unit}`;
-            })
+                    const aux = formatInductance(leakageInductaceOutput.leakageInductancePerWinding[0].nominal);
+                    this.localTexts.leakageInductaceTable[1].value = `${removeTrailingZeroes(aux.label, 1)} ${aux.unit}`;
+                })
+            }   
         },
         calculaCoreAndFieldPlot() {
             const url = import.meta.env.VITE_API_ENDPOINT + '/plot_core_and_fields'
 
             this.$refs.plotView.innerHTML = ""
+            this.$refs.zoomPlotView.innerHTML = ""
             this.$axios.post(url, {magnetic: this.modelValue.magnetic, operatingPoint: this.modelValue.inputs.operatingPoints[0]})
             .then(response => {
-                console.log("response")
-                console.log(response)
                 this.$refs.plotView.innerHTML = response.data
+                this.$refs.zoomPlotView.innerHTML = response.data
+                this.$refs.zoomPlotView.innerHTML = this.$refs.zoomPlotView.innerHTML.replace(`<svg`, `<svg class="h-75 w-100"`);
             })
             .catch(error => {
                 console.error("Error loading inventory")
@@ -278,13 +273,25 @@ export default {
 
             return localTexts;
         },
-
         processLocalTexts() {
             this.localTexts = this.processMagneticTexts(this.modelValue);
         },
+        zoomIn() {
+            this.zoomingPlot = true;
+        },
+        zoomOut() {
+            this.zoomingPlot = false;
+        },
     },
     computed: {
-
+        offcanvasPosition() {
+            if (window.innerWidth < 600) {
+                return "offcanvas-bottom"
+            }
+            else {
+                return "offcanvas-end"
+            }
+        }
     },
     mounted() {
         this.processLocalTexts();
@@ -294,70 +301,86 @@ export default {
 </script>
 
 <template>
-    <div class="offcanvas offcanvas-end bg-light offcanvas-size-xl" tabindex="-1" id="CoreAdviserDetailOffCanvas" aria-labelledby="CoreAdviserDetailOffCanvasLabel">
+
+    <div :class="offcanvasPosition" class="offcanvas  bg-light offcanvas-size-xl" tabindex="-1" id="CoreAdviserDetailOffCanvas" aria-labelledby="CoreAdviserDetailOffCanvasLabel">
     <div class="offcanvas-header">
         <button data-cy="CoreAdviseDetail-corner-close-modal-button" type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="CoreAdviserDetailOffCanvasCanvasClose"></button>
     </div>
+
     <div class="offcanvas-body">
-        <div v-if="modelValue.magnetic.manufacturerInfo != null" class="row mx-1">
+        <div v-show="zoomingPlot" class="row mx-1" style="height: 100%;">
+            <button class="btn" @click="zoomOut()">
+                <label class="col-12 text-info fw-lighter" >(Click on image to go back)</label>
+                <div data-cy="MagneticAdvise-core-field-plot-zoom-image" ref="zoomPlotView" class="mt-2" style="width: 100%; height: 100%" />
+            </button>
+        </div>
+
+        <div v-show="!zoomingPlot" v-if="modelValue.magnetic.manufacturerInfo != null" class="row mx-1">
             <h3 class="col-12 p-0 m-0">{{modelValue.magnetic.manufacturerInfo.reference}}</h3>
             <div class="col-12 fs-5 p-0 m-0 mt-2 text-start">{{localTexts.coreDescription}}</div>
             <div class="col-12 fs-5 p-0 m-0 mt-2 text-start">{{localTexts.coreMaterial}}</div>
+            <div class="col-7">
 
-            <div class="col-12 fs-5 p-0 m-0 mt-2 text-center">Number turns</div>
+                <div class="col-12 fs-5 p-0 m-0 mt-2 text-center">Number turns</div>
 
-            <div class="row" v-for="winding, windingIndex in modelValue.magnetic.coil.functionalDescription">
-
-                <div v-if="windingIndex == 0" class="col-3 p-0 m-0 border">Windings</div>
-                <div v-if="windingIndex == 0" class="col-3 p-0 m-0 border">No. turns</div>
-                <div v-if="windingIndex == 0" class="col-3 p-0 m-0 border">No. parallels</div>
-                <div v-if="windingIndex == 0" class="col-3 p-0 m-0 border">Turns ratio</div>
-
-                <div v-if="'numberTurnsTable' in localTexts" class="col-3 p-0 m-0 border">{{localTexts.numberTurnsTable[windingIndex].text}}</div>
-                <div v-if="'numberTurnsTable' in localTexts" class="col-3 p-0 m-0 border">{{localTexts.numberTurnsTable[windingIndex].value}}</div>
-                <div v-if="'numberParallelsTable' in localTexts" class="col-3 p-0 m-0 border">{{localTexts.numberParallelsTable[windingIndex].value}}</div>
-                <div v-if="'turnsRatioTable' in localTexts" class="col-3 p-0 m-0 border">{{localTexts.turnsRatioTable[windingIndex].value}}</div>
-            </div>
-
-            <div class="row mt-F mb-2" v-for="operationPoint, operationPointIndex in modelValue.inputs.operatingPoints">
-                <div class="col-12 fs-5 p-0 m-0 my-1">{{operationPoint.name}}</div>
-                <div class="col-12 fs-5 p-0 m-0 mt-2 text-center">Core</div>
-                <div v-if="'magnetizingInductanceTable' in localTexts" class="col-6 p-0 m-0 border">{{localTexts.magnetizingInductanceTable[operationPointIndex].text}}</div>
-                <div v-if="'magnetizingInductanceTable' in localTexts" class="col-6 p-0 m-0 border">{{localTexts.magnetizingInductanceTable[operationPointIndex].value}}</div>
-                <div v-if="'coreLossesTable' in localTexts" class="col-6 p-0 m-0 border">{{localTexts.coreLossesTable[operationPointIndex].text}}</div>
-                <div v-if="'coreLossesTable' in localTexts" class="col-6 p-0 m-0 border">{{localTexts.coreLossesTable[operationPointIndex].value}}</div>
-                <div v-if="'coreTemperatureTable' in localTexts" class="col-6 p-0 m-0 border">{{localTexts.coreTemperatureTable[operationPointIndex].text}}</div>
-                <div v-if="'coreTemperatureTable' in localTexts" class="col-6 p-0 m-0 border">{{localTexts.coreTemperatureTable[operationPointIndex].value}}</div>
-                <div class="col-12 fs-5 p-0 m-0 mt-2 text-center">Coil</div>
                 <div class="row" v-for="winding, windingIndex in modelValue.magnetic.coil.functionalDescription">
 
                     <div v-if="windingIndex == 0" class="col-3 p-0 m-0 border">Windings</div>
-                    <div v-if="windingIndex == 0" class="col-3 p-0 m-0 border">DC Res.</div>
-                    <div v-if="windingIndex == 0" class="col-3 p-0 m-0 border">Wind. Loss</div>
-                    <div v-if="windingIndex == 0" class="col-3 p-0 m-0 border">Leak. Ind.</div>
+                    <div v-if="windingIndex == 0" class="col-3 p-0 m-0 border">No. turns</div>
+                    <div v-if="windingIndex == 0" class="col-3 p-0 m-0 border">No. parallels</div>
+                    <div v-if="windingIndex == 0" class="col-3 p-0 m-0 border">Turns ratio</div>
 
-                    <div v-if="'windingLossesTable' in localTexts" class="col-3 p-0 m-0 border">{{localTexts.windingLossesTable[operationPointIndex][windingIndex].text}}</div>
-                    <div v-if="'dcResistanceTable' in localTexts" class="col-3 p-0 m-0 border">{{localTexts.dcResistanceTable[operationPointIndex][windingIndex].value}}</div>
-                    <div v-if="'windingLossesTable' in localTexts" class="col-3 p-0 m-0 border">{{localTexts.windingLossesTable[operationPointIndex][windingIndex].value}}</div>
-                    <div v-if="'leakageInductaceTable' in localTexts" class="col-3 p-0 m-0 border">{{localTexts.leakageInductaceTable[windingIndex].value}}</div>
+                    <div v-if="'numberTurnsTable' in localTexts" class="col-3 p-0 m-0 border">{{localTexts.numberTurnsTable[windingIndex].text}}</div>
+                    <div v-if="'numberTurnsTable' in localTexts" class="col-3 p-0 m-0 border">{{localTexts.numberTurnsTable[windingIndex].value}}</div>
+                    <div v-if="'numberParallelsTable' in localTexts" class="col-3 p-0 m-0 border">{{localTexts.numberParallelsTable[windingIndex].value}}</div>
+                    <div v-if="'turnsRatioTable' in localTexts" class="col-3 p-0 m-0 border">{{localTexts.turnsRatioTable[windingIndex].value}}</div>
                 </div>
-                <div class="col-12 fs-5 p-0 m-0 mt-2 text-center">Windings Losses Breakdown</div>
-                <div class="row" v-for="winding, windingIndex in modelValue.magnetic.coil.functionalDescription">
 
-                    <div v-if="windingIndex == 0" class="col-3 p-0 m-0 border">Windings</div>
-                    <div v-if="windingIndex == 0" class="col-3 p-0 m-0 border">Ohmic Loss</div>
-                    <div v-if="windingIndex == 0" class="col-3 p-0 m-0 border">Skin Loss</div>
-                    <div v-if="windingIndex == 0" class="col-3 p-0 m-0 border">Prox. Loss</div>
+                <div class="row mt-F mb-2" v-for="operationPoint, operationPointIndex in modelValue.inputs.operatingPoints">
+                    <div class="col-12 fs-5 p-0 m-0 my-1">{{operationPoint.name}}</div>
+                    <div class="col-12 fs-5 p-0 m-0 mt-2 text-center">Core</div>
+                    <div v-if="'magnetizingInductanceTable' in localTexts" class="col-6 p-0 m-0 border">{{localTexts.magnetizingInductanceTable[operationPointIndex].text}}</div>
+                    <div v-if="'magnetizingInductanceTable' in localTexts" class="col-6 p-0 m-0 border">{{localTexts.magnetizingInductanceTable[operationPointIndex].value}}</div>
+                    <div v-if="'coreLossesTable' in localTexts" class="col-6 p-0 m-0 border">{{localTexts.coreLossesTable[operationPointIndex].text}}</div>
+                    <div v-if="'coreLossesTable' in localTexts" class="col-6 p-0 m-0 border">{{localTexts.coreLossesTable[operationPointIndex].value}}</div>
+                    <div v-if="'coreTemperatureTable' in localTexts" class="col-6 p-0 m-0 border">{{localTexts.coreTemperatureTable[operationPointIndex].text}}</div>
+                    <div v-if="'coreTemperatureTable' in localTexts" class="col-6 p-0 m-0 border">{{localTexts.coreTemperatureTable[operationPointIndex].value}}</div>
+                    <div class="col-12 fs-5 p-0 m-0 mt-2 text-center">Coil</div>
+                    <div class="row" v-for="winding, windingIndex in modelValue.magnetic.coil.functionalDescription">
 
-                    <div v-if="'windingOhmicLossesTable' in localTexts" class="col-3 p-0 m-0 border">{{localTexts.windingOhmicLossesTable[operationPointIndex][windingIndex].text}}</div>
-                    <div v-if="'windingOhmicLossesTable' in localTexts" class="col-3 p-0 m-0 border">{{localTexts.windingOhmicLossesTable[operationPointIndex][windingIndex].value}}</div>
-                    <div v-if="'windingSkinLossesTable' in localTexts" class="col-3 p-0 m-0 border">{{localTexts.windingSkinLossesTable[operationPointIndex][windingIndex].value}}</div>
-                    <div v-if="'windingProximityLossesTable' in localTexts" class="col-3 p-0 m-0 border">{{localTexts.windingProximityLossesTable[operationPointIndex][windingIndex].value}}</div>
+                        <div v-if="windingIndex == 0" class="col-3 p-0 m-0 border">Windings</div>
+                        <div v-if="windingIndex == 0" class="col-3 p-0 m-0 border">DC Res.</div>
+                        <div v-if="windingIndex == 0" class="col-3 p-0 m-0 border">Wind. Loss</div>
+                        <div v-if="windingIndex == 0" class="col-3 p-0 m-0 border">Leak. Ind.</div>
+
+                        <div v-if="'windingLossesTable' in localTexts" class="col-3 p-0 m-0 border">{{localTexts.windingLossesTable[operationPointIndex][windingIndex].text}}</div>
+                        <div v-if="'dcResistanceTable' in localTexts" class="col-3 p-0 m-0 border">{{localTexts.dcResistanceTable[operationPointIndex][windingIndex].value}}</div>
+                        <div v-if="'windingLossesTable' in localTexts" class="col-3 p-0 m-0 border">{{localTexts.windingLossesTable[operationPointIndex][windingIndex].value}}</div>
+                        <div v-if="'leakageInductaceTable' in localTexts" class="col-3 p-0 m-0 border">{{localTexts.leakageInductaceTable[windingIndex].value}}</div>
+                    </div>
+                    <div class="col-12 fs-5 p-0 m-0 mt-2 text-center">Windings Losses Breakdown</div>
+                    <div class="row" v-for="winding, windingIndex in modelValue.magnetic.coil.functionalDescription">
+
+                        <div v-if="windingIndex == 0" class="col-3 p-0 m-0 border">Windings</div>
+                        <div v-if="windingIndex == 0" class="col-3 p-0 m-0 border">Ohmic Loss</div>
+                        <div v-if="windingIndex == 0" class="col-3 p-0 m-0 border">Skin Loss</div>
+                        <div v-if="windingIndex == 0" class="col-3 p-0 m-0 border">Prox. Loss</div>
+
+                        <div v-if="'windingOhmicLossesTable' in localTexts" class="col-3 p-0 m-0 border">{{localTexts.windingOhmicLossesTable[operationPointIndex][windingIndex].text}}</div>
+                        <div v-if="'windingOhmicLossesTable' in localTexts" class="col-3 p-0 m-0 border">{{localTexts.windingOhmicLossesTable[operationPointIndex][windingIndex].value}}</div>
+                        <div v-if="'windingSkinLossesTable' in localTexts" class="col-3 p-0 m-0 border">{{localTexts.windingSkinLossesTable[operationPointIndex][windingIndex].value}}</div>
+                        <div v-if="'windingProximityLossesTable' in localTexts" class="col-3 p-0 m-0 border">{{localTexts.windingProximityLossesTable[operationPointIndex][windingIndex].value}}</div>
+                    </div>
                 </div>
             </div>
-            
-            <div class="col-12 fs-5 p-0 m-0 mt-2 text-center">Core Coil and H Field</div>
-            <div data-cy="MagneticAdvise-core-field-plot-image" ref="plotView" class="col-12 mt-2" style="height: 100%;" />
+                
+            <div class="col-5">
+                <div class="col-12 fs-5 p-0 m-0 mt-2 text-center">Core Coil and H Field</div>
+                <button class="btn" @click="zoomIn()">
+                    <label class="col-12 text-info fw-lighter" v-show="!posting">(Click on image to zoom out)</label>
+                    <div data-cy="MagneticAdvise-core-field-plot-image" ref="plotView" class="col-12 mt-2" style="height: 100%;" />
+                </button>
+            </div>
         </div>
     </div>
 </div>
@@ -365,16 +388,31 @@ export default {
 </template>
 
 <style>
-.offcanvas-size-xl {
-    --bs-offcanvas-width: min(95vw, 600px) !important;
-}
 .offcanvas-size-xxl {
-    --bs-offcanvas-width: min(95vw, 90vw) !important;
+    --bs-offcanvas-width: 50vw !important;
+}
+.offcanvas-size-xl {
+    --bs-offcanvas-width: 50vw !important;
+    --bs-offcanvas-height: 60vh !important;
+}
+.offcanvas-size-lg {
+    --bs-offcanvas-width: 50vw !important;
+    --bs-offcanvas-height: 60vh !important;
 }
 .offcanvas-size-md { /* add Responsivenes to default offcanvas */
-    --bs-offcanvas-width: min(95vw, 400px) !important;
+    --bs-offcanvas-width: 50vw !important;
+    --bs-offcanvas-height: 60vh !important;
 }
 .offcanvas-size-sm {
-    --bs-offcanvas-width: min(95vw, 250px) !important;
+    --bs-offcanvas-width: 50vw !important;
+    --bs-offcanvas-height: 60vh !important;
+}
+.offcanvas-size-xs {
+    --bs-offcanvas-width: 50vw !important;
+    --bs-offcanvas-height: 60vh !important;
+}
+.offcanvas-size-xxs {
+    --bs-offcanvas-width: 50vw !important;
+    --bs-offcanvas-height: 60vh !important;
 }
 </style>

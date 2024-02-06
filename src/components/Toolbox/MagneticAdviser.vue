@@ -94,41 +94,7 @@ export default {
     created () {
     },
     mounted () {
-        // this.$userStore.magneticAdviserSelectedAdvise = -1;
-        // const url = import.meta.env.VITE_API_ENDPOINT + '/read_mas_inventory'
-
-        // this.$axios.post(url, {})
-        // .then(response => {
-        //     this.inventoryCacheStore.coreInventory = response.data['cores'];
-        //     // if (this.masStore.areCoreAdvisesValid()) {
-        //     //     console.log("Cache valid!")
-        //     //     this.advises = this.masStore.coreAdvises;
-        //     //     this.addCurrentAdvisesToCache();
-        //     //     this.$userStore.magneticAdviserSelectedAdvise = 0;
-        //     //     if (this.advises.length > 0) {
-        //     //         this.masStore.mas = this.advises[this.$userStore.magneticAdviserSelectedAdvise].mas;
-        //     //         this.$emit("canContinue", true);
-        //     //     }
-        //     // }
-        //     // else {
-        //     //     console.log("Cache not valid!")
-        //         this.calculateAdvisedCores();
-        //     // }
-        // })
-        // .catch(error => {
-        //     console.error("Error loading inventory")
-        //     console.error(error)
-        // });
-        setTimeout(() => {this.calculateAdvisedCores();}, 200);
-
-
-        // magneticAdviser.ready.then(_ => {
-        //     console.log('Starting Execution Time Loading');
-        //     console.time('Execution Time Loading');
-        //     magneticAdviser.clear_loaded_cores();
-        //     magneticAdviser.load_cores(false, true);
-        //     console.timeEnd('Execution Time Loading');
-        // });
+        setTimeout(() => {this.calculateAdvisedMagnetics();}, 200);
     },
     methods: {
         getKeyToCache() {
@@ -190,7 +156,7 @@ export default {
               data.splice(index, 1); // 2nd parameter means remove one item only
             }
         },
-        calculateAdvisedCores() {
+        calculateAdvisedMagnetics() {
             this.loading = true;
             this.currentAdviseToShow = 0;
 
@@ -203,19 +169,9 @@ export default {
                 if (this.masStore.mas.inputs.operatingPoints.length > 0) {
                     console.time('Execution Time');
 
-                    console.log("Boolean(this.$userStore.magneticAdviserUseOnlyCoresInStock)")
-                    console.log(this.$userStore.magneticAdviserUseOnlyCoresInStock)
-                    const aux = JSON.parse(magneticAdviser.calculate_advised_magnetics(JSON.stringify(this.masStore.mas.inputs), JSON.stringify(this.masStore.magneticAdviserWeights), 7, this.$userStore.magneticAdviserUseOnlyCoresInStock == 1));
+                    const aux = JSON.parse(magneticAdviser.calculate_advised_magnetics(JSON.stringify(this.masStore.mas.inputs), JSON.stringify(this.masStore.magneticAdviserWeights), this.masStore.magneticAdviserMaximumNumberResults, this.$userStore.magneticAdviserUseOnlyCoresInStock == 1));
 
-                    console.log(aux)
-                    // var log = aux["log"];
                     var data = aux["data"];
-                    // data.forEach((datum) => {
-                    //     datum.mas.inputs = deepCopy(this.masStore.mas.inputs);
-                    // })
-
-                    // console.log(aux)
-
 
                     var orderedWeights = [];
                     for (let [key, value] of Object.entries(this.masStore.magneticAdviserWeights)) {
@@ -266,7 +222,7 @@ export default {
                     }
                     else {
                         this.tryingToSend = false
-                        this.calculateAdvisedCores()
+                        this.calculateAdvisedMagnetics()
                     }
                 }
                 , 500);
@@ -275,6 +231,11 @@ export default {
         changedInputValue(key, value) {
             this.masStore.magneticAdviserWeights[key] = value / 100;
             this.recentChange = true;
+            this.tryToSend();
+        },
+        maximumNumberResultsChangedInputValue(value) {
+            this.recentChange = true;
+            this.masStore.resetCache();
             this.tryToSend();
         },
         changedSliderValue(newkey, newValue) {
@@ -292,6 +253,11 @@ export default {
             }
             this.recentChange = true;
 
+            this.tryToSend();
+        },
+        maximumNumberResultsChangedSliderValue(newValue) {
+            this.recentChange = true;
+            this.masStore.resetCache();
             this.tryToSend();
         },
         selectedMas(index) {
@@ -326,14 +292,22 @@ export default {
                 <div class="row" v-for="value, key in masStore.magneticAdviserWeights">
                     <label class="form-label col-12 py-0 my-0">{{titledFilters[key]}}</label>
                     <div class=" col-7 me-2 pt-2">
-                        <vue3-slider v-model="masStore.magneticAdviserWeights[key]" :disabled="loading" class="col-2 text-primary" :height="10" :min="0.1" :max="1" :step="0.1"  id="core-adviser-weight-area-product" :color="theme.primary" :handleScale="2" :alwaysShowHandle="true" @drag-end="changedSliderValue(key, $event)"/>
+                        <vue3-slider v-model="masStore.magneticAdviserWeights[key]" :disabled="loading" class="col-2 text-primary" :height="10" :min="0.1" :max="1" :step="0.1" :color="theme.primary" :handleScale="2" :alwaysShowHandle="true" @drag-end="changedSliderValue(key, $event)"/>
                     </div>
 
                 <input :disabled="loading" :data-cy="dataTestLabel + '-number-input'" type="number" class="m-0 mb-2 px-0 col-3 bg-light text-white" :min="10" :step="10" @change="changedInputValue(key, $event.target.value)" :value="removeTrailingZeroes(masStore.magneticAdviserWeights[key] * 100)" ref="inputRef">
 
                 </div>
-                <p class="mt-2">Our algorithm ranks the cores based on how they score on the above criteria.</p>
                 <p>The sliders are designed to transmit your preferences into which criterion is most important for the design.</p>
+                <div class="row">
+                    <label class="form-label col-12 py-0 my-0">Max. No results</label>
+                    <div class=" col-7 me-2 pt-2">
+                        <vue3-slider v-model="masStore.magneticAdviserMaximumNumberResults" :disabled="loading" class="col-2 text-primary" :height="10" :min="1" :max="20" :step="1"  :color="theme.primary" :handleScale="2" :alwaysShowHandle="true" @drag-end="maximumNumberResultsChangedSliderValue($event)"/>
+                    </div>
+
+                    <input :disabled="loading" :data-cy="dataTestLabel + '-number-input'" type="number" class="m-0 mb-2 px-0 col-3 bg-light text-white" :min="10" :step="10" @change="maximumNumberResultsChangedInputValue($event.target.value)" :value="removeTrailingZeroes(masStore.magneticAdviserMaximumNumberResults)" ref="inputRef">
+                </div>
+
                 <div class="row">
                     <label v-tooltip="'Choose between spider or bar charts'" class="fs-6 mt-2 p-0 ps-3 text-white col-3 ">Bar</label>
                     <input :disabled="loading" :data-cy="dataTestLabel + '-bar-spider-button'" v-model="$userStore.magneticAdviserSpiderBarChartNotBar" @change="onChangeBarOrSpider" type="range" class="mt-2 form-range col-1" min="0" max="1" step="1" style="width: 30px">

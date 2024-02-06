@@ -169,8 +169,8 @@ export default {
         },
         processLocalTexts() {
             {
-                const aux = formatPower(this.masData.outputs[0].coreLosses.coreLosses);
-                this.localTexts.coreLosses = `Core losses: ${removeTrailingZeroes(aux.label, 2)} ${aux.unit}`
+                const aux = formatPower(this.masData.outputs[0].coreLosses.coreLosses + this.masData.outputs[0].windingLosses.windingLosses);
+                this.localTexts.losses = `Losses:\n${removeTrailingZeroes(aux.label, 2)} ${aux.unit}`
             }
 
             this.$mkf.ready.then(_ => {
@@ -180,7 +180,7 @@ export default {
                                this.masData.magnetic.core.processedDescription.depth * 
                                this.masData.magnetic.core.processedDescription.height;
                 const aux = formatPowerDensity(rmsPower / volume);
-                this.localTexts.powerDensity = `P. dens.: ${removeTrailingZeroes(aux.label, 1)} ${aux.unit}`;
+                this.localTexts.powerDensity = `Power dens.:\n${removeTrailingZeroes(aux.label, 1)} ${aux.unit}`;
             }); 
             {
                 var masScore = 0;
@@ -193,14 +193,8 @@ export default {
             }   
             {
                 const aux = formatInductance(this.masData.outputs[0].magnetizingInductance.magnetizingInductance.nominal);
-                this.localTexts.magnetizingInductance = `Mag. Ind.: ${removeTrailingZeroes(aux.label, 1)} ${aux.unit}`
+                this.localTexts.magnetizingInductance = `Mag. Ind.:\n${removeTrailingZeroes(aux.label, 1)} ${aux.unit}`
             }  
-            {
-                // if (this.masData.outputs[0].coreLosses.temperature == null)
-                    // console.log(this.masData)
-                const aux = formatTemperature(this.masData.outputs[0].coreLosses.temperature);
-                this.localTexts.coreTemperature = `Core Temp.: ${removeTrailingZeroes(aux.label, 1)} ${aux.unit}`
-            }
         }
     }
 }
@@ -214,12 +208,12 @@ export default {
                 <p class="fs-4 col-2 p-0 m-0 text-success">{{masScore}}</p>
                 <!-- <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p> -->
             </div>
-            <canvas :id="'chartSpiderAdvise-' + adviseIndex" style="max-height: 50%"></canvas>
-            <div class="row mx-1">
-                <div class="col-6 p-0 m-0">{{localTexts.coreLosses}}</div>
-                <div class="col-6 p-0 m-0">{{localTexts.coreTemperature}}</div>
-                <div class="col-6 p-0 m-0">{{localTexts.powerDensity}}</div>
-                <div class="col-6 p-0 m-0">{{localTexts.magnetizingInductance}}</div>
+            <div class="row py-3">
+                <div class="col-5 mx-2 text-start px-4">
+                    <div class="col-12 p-0 m-0" style="white-space: pre-line">{{localTexts.losses}}</div>
+                    <div class="col-12 p-0 m-0" style="white-space: pre-line">{{localTexts.powerDensity}}</div>
+                </div>
+                <canvas class="col-9" :id="'chartSpiderAdvise-' + adviseIndex" style="max-width: 50%; max-height: 90%;"></canvas>
             </div>
             <div class="card-body">
                 <button :data-cy="dataTestLabel + '-advise-' + adviseIndex + '-details-button'" class="btn btn-primary col-4" data-bs-toggle="offcanvas" data-bs-target="#CoreAdviserDetailOffCanvas" @click="$emit('selectedMas')"> Details </button>
