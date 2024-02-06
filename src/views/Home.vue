@@ -189,32 +189,25 @@ import Footer from '/src/components/Footer.vue'
 </template>
 
 <style>
-    .bg {
-        background-image: url("images/background_home.png");
-        background-repeat: no-repeat;
-        background-size: contain;
-        opacity: 0.5;
+    .wrap {
+      position: relative;
     }
 
-.wrap {
-  position: relative;
-}
+    .wrap:before {
+      content: ' ';
+      display: block;
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      opacity: 1;
+      background-image: linear-gradient(to bottom, rgba(26, 26, 26, 0.8), rgba(26, 26, 26, 1)),
+    url('images/background_home2.png');
+      background-repeat: no-repeat;
+      background-position: 50% 0;
+      background-size: cover;
+    }
 
-.wrap:before {
-  content: ' ';
-  display: block;
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  opacity: 1;
-  background-image: linear-gradient(to bottom, rgba(26, 26, 26, 0.8), rgba(26, 26, 26, 1)),
-url('images/background_home2.png');
-  background-repeat: no-repeat;
-  background-position: 50% 0;
-  background-size: cover;
-}
-
-.content {
-  position: relative;
-}
+    .content {
+      position: relative;
+    }
 </style>

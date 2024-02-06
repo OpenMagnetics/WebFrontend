@@ -288,8 +288,6 @@ export default {
     },
     mounted() {
         this.processLocalTexts();
-        console.log("this.$refs.plotView.innerHTML")
-        console.log(this.$refs.plotView.innerHTML)
     },
 }
 
