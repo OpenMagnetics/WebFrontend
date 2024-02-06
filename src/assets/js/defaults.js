@@ -4,6 +4,12 @@ export const coreAdviserWeights = {
     "COST": 0.3,
 }
 
+export const magneticAdviserWeights = {
+    "EFFICIENCY": 0.4,
+    "DIMENSIONS": 0.3,
+    "COST": 0.3,
+}
+
 export const mas = {
     "inputs": {
         "designRequirements": {

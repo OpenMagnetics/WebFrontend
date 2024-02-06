@@ -1239,6 +1239,217 @@ export function processCoreTexts(data) {
     return localTexts;
 }
 
+
+export function processMagneticTexts(data) {
+    const localTexts = {
+        coreDescription: null,
+        coreMaterial: null,
+
+        coreGapping: null,
+        effectiveParametersTable: null,
+
+        numberTurns: null,
+        numberEstimatedLayers: null,
+
+        coreLossesTable: [
+            {
+                text: null,
+                value: null,
+            }
+        ],
+        dcResistanceTable: [
+            {
+                text: null,
+                value: null,
+            }
+        ],
+        magnetizingInductanceTable: [
+            {
+                text: null,
+                value: null,
+            }
+        ],
+        windingLossesTable: [
+            {
+                text: null,
+                value: null,
+            }
+        ],
+        coreTemperatureTable: [
+            {
+                text: null,
+                value: null,
+            }
+        ],
+
+        manufacturer: null,
+    };
+    if (data.magnetic.manufacturerInfo == null) {
+        return null;
+    }
+    const numberTurnsPrimary = data.magnetic.coil.functionalDescription[0].numberTurns;
+    {
+        var materialName;
+        if (typeof data.magnetic.core.functionalDescription.material === 'string' || data.magnetic.core.functionalDescription.material instanceof String) {
+            materialName = data.magnetic.core.functionalDescription.material;
+        }
+        else {
+            materialName = data.magnetic.core.functionalDescription.material.name;
+        }
+        localTexts.coreDescription = `Magnetic with a ${data.magnetic.core.functionalDescription.shape.name} material ${materialName} core`
+        if (data.magnetic.core.functionalDescription.gapping.length == 0) {
+            localTexts.coreDescription += ', ungapped.'
+        }
+        else if (data.magnetic.core.functionalDescription.gapping.length == data.magnetic.core.processedDescription.columns.length) {
+            if (data.magnetic.core.functionalDescription.gapping[0].type == 'residual') {
+                localTexts.coreDescription += ', ungapped.'
+            }
+            else {
+                localTexts.coreDescription += `, with a grinded gap of ${removeTrailingZeroes(data.magnetic.core.functionalDescription.gapping[0].length * 1000, 5)} mm.`
+            }
+        }
+        else if (data.magnetic.core.functionalDescription.gapping.length > data.magnetic.core.processedDescription.columns.length) {
+            localTexts.coreDescription += `, with a distributed gap of ${removeTrailingZeroes(data.magnetic.core.functionalDescription.gapping[0].length * 1000, 5)} mm.`
+        }
+    }
+    {
+        const aux = formatUnit(1 / data.outputs[0].magnetizingInductance.coreReluctance / numberTurnsPrimary, "H/turn");
+        localTexts.coreMaterial = `It has a permeance (AL value) of ${removeTrailingZeroes(aux.label, 1)} ${aux.unit}.`
+    }
+    if ('temp' in data.magnetic.core) {
+        {
+            var aux = formatUnit(1 / data.magnetic.core.temp["25"].reluctance, "H/tu.");
+            localTexts.coreMaterialPermeanceTable = {};
+            localTexts.coreMaterialPermeanceTable.text = 'Permeance (AL value)';
+            localTexts.coreMaterialPermeanceTable.value_25 = `${removeTrailingZeroes(aux.label, 2)} ${aux.unit}`;
+            aux = formatUnit(1 / data.magnetic.core.temp["100"].reluctance, "H/tu.");
+            localTexts.coreMaterialPermeanceTable.value_100 = `${removeTrailingZeroes(aux.label, 2)} ${aux.unit}`;
+        }
+        {
+            localTexts.coreMaterialInitialPermeabilityTable = {};
+            localTexts.coreMaterialInitialPermeabilityTable.text = 'Initial Permeability (µᵢ)';
+            localTexts.coreMaterialInitialPermeabilityTable.value_25 = `${removeTrailingZeroes(data.magnetic.core.temp["25"].initialPermeability, 0)}`;
+            localTexts.coreMaterialInitialPermeabilityTable.value_100 = `${removeTrailingZeroes(data.magnetic.core.temp["100"].initialPermeability, 0)}`;
+        }
+        {
+            localTexts.coreMaterialEffectivePermeabilityTable = {};
+            localTexts.coreMaterialEffectivePermeabilityTable.text = 'Eff. Permeability (µₑ)';
+            localTexts.coreMaterialEffectivePermeabilityTable.value_25 = `${removeTrailingZeroes(data.magnetic.core.temp["25"].effectivePermeability, 0)}`;
+            localTexts.coreMaterialEffectivePermeabilityTable.value_100 = `${removeTrailingZeroes(data.magnetic.core.temp["100"].effectivePermeability, 0)}`;
+        }
+        {
+            var aux = formatTemperature(data.magnetic.core.functionalDescription.material.curieTemperature);
+
+            localTexts.coreMaterialCurieTemperatureTable = {};
+            localTexts.coreMaterialCurieTemperatureTable.text = 'Curie Temperature';
+            localTexts.coreMaterialCurieTemperatureTable.value = `${removeTrailingZeroes(aux.label, 2)} ${aux.unit}`;
+        }
+        {
+            var aux = formatUnit(data.magnetic.core.temp["25"].resistivity, "Ωm");
+            localTexts.coreMaterialResistivityTable = {};
+            localTexts.coreMaterialResistivityTable.text = 'Resistivity';
+            localTexts.coreMaterialResistivityTable.value_25 = `${removeTrailingZeroes(aux.label, 2)} ${aux.unit}`;
+            aux = formatUnit(data.magnetic.core.temp["100"].resistivity, "Ωm");
+            localTexts.coreMaterialResistivityTable.value_100 = `${removeTrailingZeroes(aux.label, 2)} ${aux.unit}`;
+        }
+        {
+            var aux = formatUnit(data.magnetic.core.temp["25"].magneticFluxDensitySaturation, "T");
+            localTexts.magneticFluxDensitySaturationTable = {};
+            localTexts.magneticFluxDensitySaturationTable.text = 'Saturation B Field';
+            localTexts.magneticFluxDensitySaturationTable.value_25 = `${removeTrailingZeroes(aux.label, 2)} ${aux.unit}`;
+            aux = formatUnit(data.magnetic.core.temp["100"].magneticFluxDensitySaturation, "T");
+            localTexts.magneticFluxDensitySaturationTable.value_100 = `${removeTrailingZeroes(aux.label, 2)} ${aux.unit}`;
+        }
+        {
+            var aux = formatUnit(data.magnetic.core.functionalDescription.material.density * 1000, "g/m³");  // Because the unit is kg
+            localTexts.coreMaterialDensityTable = {};
+            localTexts.coreMaterialDensityTable.text = 'Density';
+            localTexts.coreMaterialDensityTable.value = `${removeTrailingZeroes(aux.label, 2)} ${aux.unit}`;
+        }
+    }
+    {
+        localTexts.numberTurns = `Using ${removeTrailingZeroes(data.magnetic.coil.functionalDescription[0].numberTurns)} turns will produce a magnetic with the following estimated output per operating point:`
+    }
+    {
+        localTexts.effectiveParametersTable = {}
+        {
+            const aux = formatUnit(data.magnetic.core.processedDescription.effectiveParameters.effectiveLength, 'm');
+            localTexts.effectiveParametersTable['effectiveLength'] = {}
+            localTexts.effectiveParametersTable['effectiveLength'].text = 'Effective length';
+            localTexts.effectiveParametersTable['effectiveLength'].value = `${removeTrailingZeroes(aux.label, 2)} ${aux.unit}`;
+        }
+        {
+            const aux = formatUnit(data.magnetic.core.processedDescription.effectiveParameters.effectiveArea, 'm²');
+            localTexts.effectiveParametersTable['effectiveArea'] = {}
+            localTexts.effectiveParametersTable['effectiveArea'].text = 'Effective area';
+            localTexts.effectiveParametersTable['effectiveArea'].value = `${removeTrailingZeroes(aux.label, 2)} ${aux.unit}`;
+        }
+        {
+            const aux = formatUnit(data.magnetic.core.processedDescription.effectiveParameters.effectiveVolume, 'm³');
+            localTexts.effectiveParametersTable['effectiveVolume'] = {}
+            localTexts.effectiveParametersTable['effectiveVolume'].text = 'Effective volume';
+            localTexts.effectiveParametersTable['effectiveVolume'].value = `${removeTrailingZeroes(aux.label, 2)} ${aux.unit}`;
+        }
+        {
+            const aux = formatUnit(data.magnetic.core.processedDescription.effectiveParameters.minimumArea, 'm²');
+            localTexts.effectiveParametersTable['minimumArea'] = {}
+            localTexts.effectiveParametersTable['minimumArea'].text = 'Minimum Area';
+            localTexts.effectiveParametersTable['minimumArea'].value = `${removeTrailingZeroes(aux.label, 2)} ${aux.unit}`;
+        }
+    }
+
+    localTexts.magnetizingInductanceTable = [];
+    localTexts.coreLossesTable = [];
+    localTexts.coreTemperatureTable = [];
+    localTexts.dcResistanceTable = [];
+    localTexts.windingLossesTable = [];
+
+
+    for (var operatingPointIndex = 0; operatingPointIndex < data.inputs.operatingPoints.length; operatingPointIndex++) {
+        localTexts.magnetizingInductanceTable.push({text: null, value: null});
+        localTexts.coreLossesTable.push({text: null, value: null});
+        localTexts.coreTemperatureTable.push({text: null, value: null});
+        localTexts.dcResistanceTable.push({text: null, value: null});
+        localTexts.windingLossesTable.push({text: null, value: null});
+        if (operatingPointIndex < data.outputs.length) {
+
+            if (data.outputs[operatingPointIndex].magnetizingInductance != null)
+            {
+                const aux = formatInductance(data.outputs[operatingPointIndex].magnetizingInductance.magnetizingInductance.nominal);
+                localTexts.magnetizingInductanceTable[operatingPointIndex].text = 'Mag. Ind.';
+                localTexts.magnetizingInductanceTable[operatingPointIndex].value = `${removeTrailingZeroes(aux.label, 1)} ${aux.unit}`;
+            }
+            if (data.outputs[operatingPointIndex].coreLosses != null)
+            {
+                const aux = formatPower(data.outputs[operatingPointIndex].coreLosses.coreLosses);
+                localTexts.coreLossesTable[operatingPointIndex].text = 'Core losses';
+                localTexts.coreLossesTable[operatingPointIndex].value = `${removeTrailingZeroes(aux.label, 2)} ${aux.unit}`;
+            }
+            if (data.outputs[operatingPointIndex].coreLosses != null)
+            {
+                const aux = formatTemperature(data.outputs[operatingPointIndex].coreLosses.temperature);
+                localTexts.coreTemperatureTable[operatingPointIndex].text = 'Core temp.';
+                localTexts.coreTemperatureTable[operatingPointIndex].value = `${removeTrailingZeroes(aux.label, 2)} ${aux.unit}`;
+            }
+            if (data.outputs[operatingPointIndex].windingLosses != null & data.outputs[operatingPointIndex].windingLosses.dcResistancePerWinding != null)
+            {
+                const aux = formatResistance(data.outputs[operatingPointIndex].windingLosses.dcResistancePerWinding[0]);
+                localTexts.dcResistanceTable[operatingPointIndex].text = 'Pri. DC Resis.';
+                localTexts.dcResistanceTable[operatingPointIndex].value = `${removeTrailingZeroes(aux.label, 2)} ${aux.unit}`;
+            }
+            if (data.outputs[operatingPointIndex].windingLosses != null)
+            {
+                const aux = formatPower(data.outputs[operatingPointIndex].windingLosses.windingLosses);
+                localTexts.windingLossesTable[operatingPointIndex].text = 'Wind. losses';
+                localTexts.windingLossesTable[operatingPointIndex].value = `${removeTrailingZeroes(aux.label, 2)} ${aux.unit}`;
+            }
+        }
+    }
+
+
+    return localTexts;
+}
+
 export function clean(object) {
     Object
         .entries(object)

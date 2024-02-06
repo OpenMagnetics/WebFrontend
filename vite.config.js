@@ -33,7 +33,7 @@ export default defineConfig({
     publicDir: 'src/public',
     plugins: [
         vue(),
-        viteCompression({algorithm: 'brotliCompress'}),
+        viteCompression({filter: '/\.(js|mjs|json|css|html|wasm)$/i'}),
     ],
     server: {
         proxy: {

@@ -187,7 +187,7 @@ export default {
         },
         onStacksChange() {
             if (this.stackable & this.quickStacksSelected > 0) {
-                this.$userStore.setGlobalSimulationCoreNumberStacks(this.quickStacksSelected)
+                this.$userStore.setGlobalSimulationCoreNumberStacks(Number(this.quickStacksSelected))
                 this.simulationStore.calculateInductance()
                 this.simulationStore.calculateCoreLosses()
             }

@@ -6,7 +6,7 @@ import { removeTrailingZeroes, toTitleCase, toCamelCase, calculateObjectSize, de
 import { coreAdviserWeights } from '/src/assets/js/defaults.js'
 import Advise from '/src/components/Toolbox/CoreAdviser/Advise.vue'
 import AdviseDetails from '/src/components/Toolbox/CoreAdviser/AdviseDetails.vue'
-import Module from '/src/assets/js/libCoreAdviser.wasm.js'
+import Module from '/src/assets/js/libAdvisers.wasm.js'
 </script>
 
 <script>

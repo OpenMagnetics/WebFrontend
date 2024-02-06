@@ -69,7 +69,7 @@ export default {
 </script>
 
 <template>
-    <nav class="navbar navbar-expand-lg bg-light navbar-dark text-primary mb-1" id="header_wrapper">
+    <nav class="navbar navbar-expand-lg bg-dark navbar-dark text-primary mb-1" id="header_wrapper">
         <div class="container-fluid">
             <a href="/" aria-label="Visit OpenMagnetics and Tear Down the Paywalls!">
                 <img src="/images/logo.svg" width="60" height="40" href="/" class="d-inline-block align-top me-3" alt="OpenMagnetics Logo">

@@ -124,7 +124,7 @@ export default {
     <NotificationsModal/>
     <CoreLoadCommercialMaterial v-if="$dataCacheStore != null" @onLoadCommercialMaterial="onLoadCommercialMaterial"/>
     <CoreLoadCommercialShape v-if="$dataCacheStore != null" @onLoadCommercialShape="onLoadCommercialShape"/>
-    <nav class="navbar navbar-expand-lg bg-light navbar-dark text-primary mb-1 om-header" id="header_wrapper">
+    <nav class="navbar navbar-expand-lg bg-dark navbar-dark text-primary mb-1 om-header" id="header_wrapper">
         <div class="container-fluid">
             <a data-cy="Header-logo-home-link" href="/" aria-label="Visit OpenMagnetics and Tear Down the Paywalls!">
                 <img src="/images/logo.svg" width="60" height="40" href="/" class="d-inline-block align-top me-3" alt="OpenMagnetics Logo">
