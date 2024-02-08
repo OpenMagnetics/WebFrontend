@@ -1,6 +1,7 @@
 <script setup>
 import Header from '/src/components/Header.vue'
 import Footer from '/src/components/Footer.vue'
+import CreateOrContinueModal from '/src/components/Toolbox/CreateOrContinueModal.vue'
 import { useMasStore } from '/src/stores/mas'
 
 
@@ -12,28 +13,66 @@ export default {
 
         return {
             masStore,
+            selectedTool: "",
         }
     },
     methods: {
-        createNewMagneticSpecification() {
+        createNewMagneticSpecification(reset) {
             this.$userStore.resetMagneticSpecification();
-            this.masStore.resetMas();
+            if (reset) {
+                this.masStore.resetMas();
+            }
             this.$router.push('/magnetic_specification');
         },
-        createNewMagneticCoreAdviser() {
+        createNewMagneticCoreAdviser(reset) {
             this.$userStore.resetMagneticCoreAdviser();
-            this.masStore.resetMas();
+            if (reset) {
+                this.masStore.resetMas();
+            }
             this.$router.push('/magnetic_core_adviser');
         },
-        createNewMagneticAdviser() {
+        createNewMagneticAdviser(reset) {
             this.$userStore.resetMagneticAdviser();
-            this.masStore.resetMas();
+            if (reset) {
+                this.masStore.resetMas();
+            }
             this.$router.push('/magnetic_synthesis');
         },
-        createNewInsulationAdviser() {
+        createNewInsulationAdviser(reset) {
             // this.$userStore.resetInsulationAdviser();
-            this.masStore.resetMas();
+            if (reset) {
+                this.masStore.resetMas();
+            }
             this.$router.push('/insulation_adviser');
+        },
+        onCreate() {
+            if (this.selectedTool == "magneticSpecification") {
+                this.createNewMagneticSpecification(true);
+            }
+            if (this.selectedTool == "coreAdviser") {
+                this.createNewMagneticCoreAdviser(true);
+            }
+            if (this.selectedTool == "magneticAdviser") {
+                this.createNewMagneticAdviser(true);
+            }
+            if (this.selectedTool == "insulationAdviser") {
+                this.createNewInsulationAdviser(true);
+            }
+        },
+        onContinue() {
+            if (this.selectedTool == "magneticSpecification") {
+                this.createNewMagneticSpecification(false);
+            }
+            if (this.selectedTool == "coreAdviser") {
+                this.createNewMagneticCoreAdviser(false);
+            }
+            if (this.selectedTool == "magneticAdviser") {
+                this.createNewMagneticAdviser(false);
+            }
+            if (this.selectedTool == "insulationAdviser") {
+                this.createNewInsulationAdviser(false);
+            }
+
         },
     },
     mounted() {
@@ -44,6 +83,7 @@ export default {
 </script>
 
 <template>
+    <CreateOrContinueModal @onCreate="onCreate()" @onContinue="onContinue()"/>
     <div class="d-flex flex-column min-vh-100">
         <Header />
         <main role="main" class="main p-0 m-0">
@@ -63,15 +103,15 @@ export default {
                     <div class="text-white my-5 p-2 text-center col-sm-10 col-2-md col-lg-3 rounded-4">
                         <h2 class="">A complete magnetic</h2>
                         <div class="" aria-label="Group with synthesis button">
-                            <button v-resize-text="{ratio: 0.7, minFontSize: '14px', maxFontSize: '20px', delay: 20}" data-cy="ToolSelection-magnetic-specification-button" class="m-2 btn btn-primary" @click="createNewMagneticSpecification">Specify a magnetic</button>
-                            <button v-resize-text="{ratio: 0.7, minFontSize: '14px', maxFontSize: '20px', delay: 20}" data-cy="ToolSelection-insulation-button" class="m-2 btn btn-primary" @click="createNewInsulationAdviser">Calculate insulation</button>
-                            <button v-resize-text="{ratio: 0.7, minFontSize: '14px', maxFontSize: '20px', delay: 20}" data-cy="ToolSelection-magnetic-synthesis-button" class="m-2 btn btn-danger" @click="createNewMagneticAdviser">Design a magnetic <i class="fa-solid fa-fire"></i> </button>
+                            <button v-resize-text="{ratio: 0.7, minFontSize: '14px', maxFontSize: '20px', delay: 20}" data-cy="ToolSelection-magnetic-specification-button" class="m-2 btn btn-primary" data-bs-toggle="modal" data-bs-target="#createOrContinueModal" @click="selectedTool = 'magneticSpecification'">Specify a magnetic</button>
+                            <button v-resize-text="{ratio: 0.7, minFontSize: '14px', maxFontSize: '20px', delay: 20}" data-cy="ToolSelection-insulation-button" class="m-2 btn btn-primary" data-bs-toggle="modal" data-bs-target="#createOrContinueModal" @click="selectedTool = 'insulationAdviser'">Calculate insulation</button>
+                            <button v-resize-text="{ratio: 0.7, minFontSize: '14px', maxFontSize: '20px', delay: 20}" data-cy="ToolSelection-magnetic-synthesis-button" class="m-2 btn btn-danger" data-bs-toggle="modal" data-bs-target="#createOrContinueModal" @click="selectedTool = 'magneticAdviser'">Design a magnetic <i class="fa-solid fa-fire"></i> </button>
                         </div>
                     </div>
                     <div class="text-white my-5 p-2 text-center offset-1 col-sm-10 col-3-md col-lg-3 rounded-4">
                         <h2 class="">A magnetic core</h2>
                         <div class="" aria-label="Group with core button">
-                            <button v-resize-text="{ratio: 0.7, minFontSize: '14px', maxFontSize: '20px', delay: 20}" data-cy="ToolSelection-find-cots-core-button" class="m-2 btn btn-primary" @click="createNewMagneticCoreAdviser">Find COTS core</button>
+                            <button v-resize-text="{ratio: 0.7, minFontSize: '14px', maxFontSize: '20px', delay: 20}" data-cy="ToolSelection-find-cots-core-button" class="m-2 btn btn-primary" data-bs-toggle="modal" data-bs-target="#createOrContinueModal" @click="selectedTool = 'coreAdviser'">Find COTS core</button>
                             <button v-resize-text="{ratio: 0.7, minFontSize: '14px', maxFontSize: '20px', delay: 20}" data-cy="ToolSelection-cross-reference-core-button" class="m-2 btn btn-primary disabled">Cross reference core</button>
                             <button v-resize-text="{ratio: 0.7, minFontSize: '14px', maxFontSize: '20px', delay: 20}" data-cy="ToolSelection-customize-core-button" class="m-2 btn btn-primary disabled">Customize core</button>
                         </div>

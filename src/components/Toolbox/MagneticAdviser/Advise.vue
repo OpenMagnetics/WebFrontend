@@ -204,7 +204,7 @@ export default {
     <div class="container">
         <div class="card p-0 m-0">
             <div class="card-header row p-0 m-0 mt-2 pb-2">
-                <p class="fs-5 col-10 p-0 px-1 ">{{fixedMagneticName}}</p>
+                <p class="fs-6 col-10 p-0 px-1 fw-bold">{{fixedMagneticName}}</p>
                 <p class="fs-4 col-2 p-0 m-0 text-success">{{masScore}}</p>
                 <!-- <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p> -->
             </div>
@@ -213,7 +213,7 @@ export default {
                     <div class="col-12 p-0 m-0" style="white-space: pre-line">{{localTexts.losses}}</div>
                     <div class="col-12 p-0 m-0" style="white-space: pre-line">{{localTexts.powerDensity}}</div>
                 </div>
-                <canvas class="col-9" :id="'chartSpiderAdvise-' + adviseIndex" style="max-width: 50%; max-height: 90%;"></canvas>
+                <canvas class="col-9" :id="'chartSpiderAdvise-' + adviseIndex" style="max-width: 50%; max-height: 70%;"></canvas>
             </div>
             <div class="card-body">
                 <button :data-cy="dataTestLabel + '-advise-' + adviseIndex + '-details-button'" class="btn btn-primary col-4" data-bs-toggle="offcanvas" data-bs-target="#CoreAdviserDetailOffCanvas" @click="$emit('selectedMas')"> Details </button>

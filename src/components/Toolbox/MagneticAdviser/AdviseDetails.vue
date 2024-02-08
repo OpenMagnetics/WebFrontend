@@ -50,7 +50,7 @@ export default {
             this.posting = true;
             this.processLocalTexts()
             setTimeout(() => {this.calculaLeakageInductance();}, 10);
-            setTimeout(() => {this.calculaCoreAndFieldPlot();}, 10);
+            setTimeout(() => {this.calculaCorePlot();}, 10);
 
         },
     },
@@ -309,10 +309,10 @@ export default {
         swapFieldPlot() {
             this.showFieldPlot = !this.showFieldPlot;
             if (this.showFieldPlot) {
-                this.calculaCorePlot();
+                this.calculaCoreAndFieldPlot();
             }
             else {
-                this.calculaCoreAndFieldPlot();
+                this.calculaCorePlot();
             }
         },
     },
