@@ -65,7 +65,7 @@ export default {
                         <div class="" aria-label="Group with synthesis button">
                             <button v-resize-text="{ratio: 0.7, minFontSize: '14px', maxFontSize: '20px', delay: 20}" data-cy="ToolSelection-magnetic-specification-button" class="m-2 btn btn-primary" @click="createNewMagneticSpecification">Specify a magnetic</button>
                             <button v-resize-text="{ratio: 0.7, minFontSize: '14px', maxFontSize: '20px', delay: 20}" data-cy="ToolSelection-insulation-button" class="m-2 btn btn-primary" @click="createNewInsulationAdviser">Calculate insulation</button>
-                            <button v-resize-text="{ratio: 0.7, minFontSize: '14px', maxFontSize: '20px', delay: 20}" data-cy="ToolSelection-magnetic-synthesis-button" class="m-2 btn btn-primary" @click="createNewMagneticAdviser">Design a magnetic</button>
+                            <button v-resize-text="{ratio: 0.7, minFontSize: '14px', maxFontSize: '20px', delay: 20}" data-cy="ToolSelection-magnetic-synthesis-button" class="m-2 btn btn-danger" @click="createNewMagneticAdviser">Design a magnetic <i class="fa-solid fa-fire"></i> </button>
                         </div>
                     </div>
                     <div class="text-white my-5 p-2 text-center offset-1 col-sm-10 col-3-md col-lg-3 rounded-4">

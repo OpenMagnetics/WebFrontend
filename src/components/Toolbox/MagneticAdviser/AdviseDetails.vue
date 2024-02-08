@@ -42,10 +42,12 @@ export default {
             masStore,
             posting: false,
             zoomingPlot: false,
+            showFieldPlot: false,
         }
     },
     watch: {
         modelValue(newValue, oldValue) {
+            this.posting = true;
             this.processLocalTexts()
             setTimeout(() => {this.calculaLeakageInductance();}, 10);
             setTimeout(() => {this.calculaCoreAndFieldPlot();}, 10);
@@ -65,6 +67,7 @@ export default {
             }   
         },
         calculaCoreAndFieldPlot() {
+            this.posting = true;
             const url = import.meta.env.VITE_API_ENDPOINT + '/plot_core_and_fields'
 
             this.$refs.plotView.innerHTML = ""
@@ -74,8 +77,29 @@ export default {
                 this.$refs.plotView.innerHTML = response.data
                 this.$refs.zoomPlotView.innerHTML = response.data
                 this.$refs.zoomPlotView.innerHTML = this.$refs.zoomPlotView.innerHTML.replace(`<svg`, `<svg class="h-75 w-100"`);
+                this.posting = false;
             })
             .catch(error => {
+                this.posting = false;
+                console.error("Error loading inventory")
+                console.error(error)
+            });
+        },
+        calculaCorePlot() {
+            this.posting = true;
+            const url = import.meta.env.VITE_API_ENDPOINT + '/plot_core'
+
+            this.$refs.plotView.innerHTML = ""
+            this.$refs.zoomPlotView.innerHTML = ""
+            this.$axios.post(url, {magnetic: this.modelValue.magnetic, operatingPoint: this.modelValue.inputs.operatingPoints[0]})
+            .then(response => {
+                this.$refs.plotView.innerHTML = response.data
+                this.$refs.zoomPlotView.innerHTML = response.data
+                this.$refs.zoomPlotView.innerHTML = this.$refs.zoomPlotView.innerHTML.replace(`<svg`, `<svg class="h-75 w-100"`);
+                this.posting = false;
+            })
+            .catch(error => {
+                this.posting = false;
                 console.error("Error loading inventory")
                 console.error(error)
             });
@@ -282,6 +306,15 @@ export default {
         zoomOut() {
             this.zoomingPlot = false;
         },
+        swapFieldPlot() {
+            this.showFieldPlot = !this.showFieldPlot;
+            if (this.showFieldPlot) {
+                this.calculaCorePlot();
+            }
+            else {
+                this.calculaCoreAndFieldPlot();
+            }
+        },
     },
     computed: {
         offcanvasPosition() {
@@ -375,11 +408,16 @@ export default {
             </div>
                 
             <div class="col-5">
-                <div class="col-12 fs-5 p-0 m-0 mt-2 text-center">Core Coil and H Field</div>
-                <button class="btn" @click="zoomIn()">
-                    <label class="col-12 text-info fw-lighter" v-show="!posting">(Click on image to zoom out)</label>
-                    <div data-cy="MagneticAdvise-core-field-plot-image" ref="plotView" class="col-12 mt-2" style="height: 100%;" />
-                </button>
+                <img data-cy="CorePublish-loading" v-if="posting" class="mx-auto d-block" alt="loading" style="width: 150px; height: auto;" src="/images/loading.gif">
+
+                <div v-show="!posting">
+                    <div class="col-12 fs-5 p-0 m-0 mt-2 text-center">Core Coil and H Field</div>
+                    <button class="btn" @click="zoomIn()">
+                        <label class="col-12 text-info fw-lighter">(Click on image to zoom out)</label>
+                        <div data-cy="MagneticAdvise-core-field-plot-image" ref="plotView" class="col-12 mt-2" style="height: 100%;" />
+                    </button>
+                    <button class="btn btn-primary" @click="swapFieldPlot()">{{showFieldPlot? 'Hide H field' : 'Show H field'}}</button>
+                </div>
             </div>
         </div>
     </div>

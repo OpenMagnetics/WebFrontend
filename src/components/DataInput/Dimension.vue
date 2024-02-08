@@ -168,10 +168,6 @@ export default {
 
             const hasError = this.checkErrors();
             if (!hasError) {
-                console.log("actualValue")
-                console.log(actualValue)
-                console.log(this.name)
-                console.log(this.modelValue)
                 this.modelValue[this.name] = actualValue;
                 this.$emit("update", actualValue);
             }
