@@ -33,6 +33,8 @@ export default {
     },
     methods: {
         processLocalTexts() {
+            console.log("this.modelValue")
+            console.log(this.modelValue)
             this.localTexts = processCoreTexts(this.modelValue);
         },
     },

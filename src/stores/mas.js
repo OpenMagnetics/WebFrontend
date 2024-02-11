@@ -43,6 +43,7 @@ export const useMasStore = defineStore("mas", () => {
     }
 
     function resetMas() {
+        this.coreAdviserWeights = null;
         this.mas = MAS.Convert.toMas(JSON.stringify(Defaults.mas));
         console.log("Resetting!!!!!!!!!!!!!")
     }

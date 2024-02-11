@@ -1220,14 +1220,13 @@ export function processCoreTexts(data) {
                 localTexts.coreTemperatureTable[operatingPointIndex].text = 'Core temp.';
                 localTexts.coreTemperatureTable[operatingPointIndex].value = `${removeTrailingZeroes(aux.label, 2)} ${aux.unit}`;
             }
-            if (data.outputs[operatingPointIndex].windingLosses != null & data.outputs[operatingPointIndex].windingLosses.dcResistancePerWinding != null)
-            {
-                const aux = formatResistance(data.outputs[operatingPointIndex].windingLosses.dcResistancePerWinding[0]);
-                localTexts.dcResistanceTable[operatingPointIndex].text = 'Pri. DC Resis.';
-                localTexts.dcResistanceTable[operatingPointIndex].value = `${removeTrailingZeroes(aux.label, 2)} ${aux.unit}`;
-            }
-            if (data.outputs[operatingPointIndex].windingLosses != null)
-            {
+
+            if (data.outputs[operatingPointIndex].windingLosses != null) {
+                if (data.outputs[operatingPointIndex].windingLosses.dcResistancePerWinding != null) {
+                    const aux = formatResistance(data.outputs[operatingPointIndex].windingLosses.dcResistancePerWinding[0]);
+                    localTexts.dcResistanceTable[operatingPointIndex].text = 'Pri. DC Resis.';
+                    localTexts.dcResistanceTable[operatingPointIndex].value = `${removeTrailingZeroes(aux.label, 2)} ${aux.unit}`;
+                }
                 const aux = formatPower(data.outputs[operatingPointIndex].windingLosses.windingLosses);
                 localTexts.windingLossesTable[operatingPointIndex].text = 'Wind. losses';
                 localTexts.windingLossesTable[operatingPointIndex].value = `${removeTrailingZeroes(aux.label, 2)} ${aux.unit}`;

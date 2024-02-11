@@ -203,8 +203,6 @@ export default {
                 if (this.masStore.mas.inputs.operatingPoints.length > 0) {
                     console.time('Execution Time');
 
-                    console.log("Boolean(this.$userStore.coreAdviserUseOnlyCoresInStock)")
-                    console.log(this.$userStore.coreAdviserUseOnlyCoresInStock)
                     const aux = JSON.parse(coreAdviser.calculate_advised_cores(JSON.stringify(this.masStore.mas.inputs), JSON.stringify(this.masStore.coreAdviserWeights), 20, this.$userStore.coreAdviserUseOnlyCoresInStock == 1));
 
                     var log = aux["log"];
@@ -212,9 +210,6 @@ export default {
                     data.forEach((datum) => {
                         datum.mas.inputs = deepCopy(this.masStore.mas.inputs);
                     })
-
-                    console.log(aux)
-
 
                     var orderedWeights = [];
                     for (let [key, value] of Object.entries(this.masStore.coreAdviserWeights)) {
@@ -277,16 +272,27 @@ export default {
             this.tryToSend();
         },
         changedSliderValue(newkey, newValue) {
-            const remainingValue = 1 - newValue;
+            const remainingValue = 100 - newValue;
             var valueInOthers = 0;
             for (let [key, value] of Object.entries(this.masStore.coreAdviserWeights)) {
+                if (isNaN(value)) {
+                    value = 0;
+                }
                 if (key != newkey) {
                     valueInOthers += value;
                 }
             }
             for (let [key, value] of Object.entries(this.masStore.coreAdviserWeights)) {
+                if (isNaN(value)) {
+                    value = 0;
+                }
                 if (key != newkey) {
-                    this.masStore.coreAdviserWeights[key] = value / valueInOthers * remainingValue;
+                    if (value == 0) {
+                        this.masStore.coreAdviserWeights[key] = remainingValue / 2;
+                    }
+                    else {
+                        this.masStore.coreAdviserWeights[key] = value / valueInOthers * remainingValue;
+                    }
                 }
             }
             this.recentChange = true;
@@ -308,7 +314,6 @@ export default {
             this.$router.go();
         },
         onChangeWithOrWithoutStock(event) {
-            console.log(this.$userStore.coreAdviserUseOnlyCoresInStock)
             this.masStore.resetCache();
             this.$router.go();
         },
@@ -325,10 +330,10 @@ export default {
                 <div class="row" v-for="value, key in masStore.coreAdviserWeights">
                     <label class="form-label col-12 py-0 my-0">{{titledFilters[key]}}</label>
                     <div class=" col-7 me-2 pt-2">
-                        <Slider v-model="masStore.coreAdviserWeights[key]" :disabled="loading" class="col-2 text-primary" :height="10" :min="0.1" :max="1" :step="0.1"  id="core-adviser-weight-area-product" :color="theme.primary" :handleScale="2" :alwaysShowHandle="true" @drag-end="changedSliderValue(key, $event)"/>
+                        <Slider v-model="masStore.coreAdviserWeights[key]" :disabled="loading" class="col-12 text-primary slider" :height="10" :min="10" :max="80" :step="10"  id="core-adviser-weight-area-product" :tooltips="false" @change="changedSliderValue(key, $event)"/>
                     </div>
 
-                <input :disabled="loading" :data-cy="dataTestLabel + '-number-input'" type="number" class="m-0 mb-2 px-0 col-3 bg-light text-white" :min="10" :step="10" @change="changedInputValue(key, $event.target.value)" :value="removeTrailingZeroes(masStore.coreAdviserWeights[key] * 100)" ref="inputRef">
+                <input :disabled="loading" :data-cy="dataTestLabel + '-number-input'" type="number" class="m-0 mb-2 px-0 col-3 bg-light text-white" :min="10" :step="10" @change="changedInputValue(key, $event.target.value)" :value="removeTrailingZeroes(masStore.coreAdviserWeights[key])" ref="inputRef">
 
                 </div>
                 <p class="mt-2">Our algorithm ranks the cores based on how they score on the above criteria.</p>
@@ -384,4 +389,9 @@ export default {
     text-align: center;
     overflow-y: auto; 
 }
+.slider {
+  --slider-connect-bg: var(--bs-primary);
+  --slider-handle-bg: var(--bs-primary);
+}
+
 </style>

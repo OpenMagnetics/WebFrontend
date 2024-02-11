@@ -315,7 +315,7 @@ export default {
                 <div class="row" v-for="value, key in masStore.magneticAdviserWeights">
                     <label class="form-label col-12 py-0 my-0">{{titledFilters[key]}}</label>
                     <div class=" col-7 me-2 pt-2">
-                        <Slider v-model="masStore.magneticAdviserWeights[key]" :disabled="loading" class="col-12 text-primary slider" :height="10" :min="0" :max="100" :step="10" :color="theme.primary" :tooltips="false" @change="changedSliderValue(key, $event)"/>
+                        <Slider v-model="masStore.magneticAdviserWeights[key]" :disabled="loading" class="col-12 text-primary slider" :height="10" :min="10" :max="80" :step="10" :color="theme.primary" :tooltips="false" @change="changedSliderValue(key, $event)"/>
                     </div>
 
                 <input :disabled="loading" :data-cy="dataTestLabel + '-number-input'" type="number" class="m-0 mb-2 px-0 col-3 bg-light text-white" :min="10" :step="10" @change="changedInputValue(key, $event.target.value)" :value="removeTrailingZeroes(masStore.magneticAdviserWeights[key])" ref="inputRef">

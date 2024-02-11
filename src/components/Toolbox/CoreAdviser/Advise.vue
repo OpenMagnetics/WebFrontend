@@ -168,6 +168,11 @@ export default {
             }
         },
         processLocalTexts() {
+            if (this.masData.outputs[0].coreLosses == null) {
+                this.localTexts = {}
+                return
+            }
+
             {
                 const aux = formatPower(this.masData.outputs[0].coreLosses.coreLosses);
                 this.localTexts.coreLosses = `Core losses: ${removeTrailingZeroes(aux.label, 2)} ${aux.unit}`
