@@ -1,7 +1,7 @@
 <script setup>
 import { useMasStore } from '/src/stores/mas'
 import { useInventoryCacheStore } from '/src/stores/inventoryCache'
-import slider from "vue3-slider"
+import Slider from '@vueform/slider'
 import { removeTrailingZeroes, toTitleCase, toCamelCase, calculateObjectSize, deepCopy, cyrb53 } from '/src/assets/js/utils.js'
 import { coreAdviserWeights } from '/src/assets/js/defaults.js'
 import Advise from '/src/components/Toolbox/CoreAdviser/Advise.vue'
@@ -39,7 +39,7 @@ const theme = {
 export default {
     emits: ["canContinue"],
     components: {
-        "vue3-slider": slider
+        Slider
     },
     props: {
         dataTestLabel: {
@@ -325,7 +325,7 @@ export default {
                 <div class="row" v-for="value, key in masStore.coreAdviserWeights">
                     <label class="form-label col-12 py-0 my-0">{{titledFilters[key]}}</label>
                     <div class=" col-7 me-2 pt-2">
-                        <vue3-slider v-model="masStore.coreAdviserWeights[key]" :disabled="loading" class="col-2 text-primary" :height="10" :min="0.1" :max="1" :step="0.1"  id="core-adviser-weight-area-product" :color="theme.primary" :handleScale="2" :alwaysShowHandle="true" @drag-end="changedSliderValue(key, $event)"/>
+                        <Slider v-model="masStore.coreAdviserWeights[key]" :disabled="loading" class="col-2 text-primary" :height="10" :min="0.1" :max="1" :step="0.1"  id="core-adviser-weight-area-product" :color="theme.primary" :handleScale="2" :alwaysShowHandle="true" @drag-end="changedSliderValue(key, $event)"/>
                     </div>
 
                 <input :disabled="loading" :data-cy="dataTestLabel + '-number-input'" type="number" class="m-0 mb-2 px-0 col-3 bg-light text-white" :min="10" :step="10" @change="changedInputValue(key, $event.target.value)" :value="removeTrailingZeroes(masStore.coreAdviserWeights[key] * 100)" ref="inputRef">

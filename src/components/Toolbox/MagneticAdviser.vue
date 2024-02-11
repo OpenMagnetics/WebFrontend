@@ -1,7 +1,7 @@
 <script setup>
 import { useMasStore } from '/src/stores/mas'
 import { useInventoryCacheStore } from '/src/stores/inventoryCache'
-import slider from "vue3-slider"
+import Slider from '@vueform/slider'
 import { removeTrailingZeroes, toTitleCase, toCamelCase, calculateObjectSize, deepCopy, cyrb53 } from '/src/assets/js/utils.js'
 import { magneticAdviserWeights } from '/src/assets/js/defaults.js'
 import Advise from '/src/components/Toolbox/MagneticAdviser/Advise.vue'
@@ -39,7 +39,7 @@ const theme = {
 export default {
     emits: ["canContinue"],
     components: {
-        "vue3-slider": slider
+        Slider,
     },
     props: {
         dataTestLabel: {
@@ -242,16 +242,27 @@ export default {
             this.tryToSend();
         },
         changedSliderValue(newkey, newValue) {
-            const remainingValue = 1 - newValue;
+            const remainingValue = 100 - newValue;
             var valueInOthers = 0;
             for (let [key, value] of Object.entries(this.masStore.magneticAdviserWeights)) {
+                if (isNaN(value)) {
+                    value = 0;
+                }
                 if (key != newkey) {
                     valueInOthers += value;
                 }
             }
             for (let [key, value] of Object.entries(this.masStore.magneticAdviserWeights)) {
+                if (isNaN(value)) {
+                    value = 0;
+                }
                 if (key != newkey) {
-                    this.masStore.magneticAdviserWeights[key] = value / valueInOthers * remainingValue;
+                    if (value == 0) {
+                        this.masStore.magneticAdviserWeights[key] = remainingValue / 2;
+                    }
+                    else {
+                        this.masStore.magneticAdviserWeights[key] = value / valueInOthers * remainingValue;
+                    }
                 }
             }
             this.recentChange = true;
@@ -264,8 +275,17 @@ export default {
             this.tryToSend();
         },
         selectedMas(index) {
-            this.masStore.mas = this.advises[index].mas;
+            this.masStore.mas = null;
+            // console.log("this.masStore.mas")
+            // console.log(this.masStore.mas)
+            this.masStore.mas = deepCopy(this.advises[index].mas);
+            this.masStore.setMas(deepCopy(this.advises[index].mas));
+            console.log("this.masStore.mas")
+            console.log(this.masStore.mas)
+            console.log("this.advises[index].mas")
+            console.log(this.advises[index].mas)
             this.$userStore.magneticAdviserSelectedAdvise = index;
+            console.log("canContinue")
             this.$emit("canContinue", true);
 
         },
@@ -295,17 +315,17 @@ export default {
                 <div class="row" v-for="value, key in masStore.magneticAdviserWeights">
                     <label class="form-label col-12 py-0 my-0">{{titledFilters[key]}}</label>
                     <div class=" col-7 me-2 pt-2">
-                        <vue3-slider v-model="masStore.magneticAdviserWeights[key]" :disabled="loading" class="col-2 text-primary" :height="10" :min="0" :max="1" :step="0.1" :color="theme.primary" :handleScale="2" :alwaysShowHandle="true" @drag-end="changedSliderValue(key, $event)"/>
+                        <Slider v-model="masStore.magneticAdviserWeights[key]" :disabled="loading" class="col-12 text-primary slider" :height="10" :min="0" :max="100" :step="10" :color="theme.primary" :tooltips="false" @change="changedSliderValue(key, $event)"/>
                     </div>
 
-                <input :disabled="loading" :data-cy="dataTestLabel + '-number-input'" type="number" class="m-0 mb-2 px-0 col-3 bg-light text-white" :min="10" :step="10" @change="changedInputValue(key, $event.target.value)" :value="removeTrailingZeroes(masStore.magneticAdviserWeights[key] * 100)" ref="inputRef">
+                <input :disabled="loading" :data-cy="dataTestLabel + '-number-input'" type="number" class="m-0 mb-2 px-0 col-3 bg-light text-white" :min="10" :step="10" @change="changedInputValue(key, $event.target.value)" :value="removeTrailingZeroes(masStore.magneticAdviserWeights[key])" ref="inputRef">
 
                 </div>
                 <p>The sliders are designed to transmit your preferences into which criterion is most important for the design.</p>
                 <div class="row">
                     <label class="form-label col-12 py-0 my-0">Max. No results</label>
                     <div class=" col-7 me-2 pt-2">
-                        <vue3-slider v-model="masStore.magneticAdviserMaximumNumberResults" :disabled="loading" class="col-2 text-primary" :height="10" :min="1" :max="20" :step="1"  :color="theme.primary" :handleScale="2" :alwaysShowHandle="true" @drag-end="maximumNumberResultsChangedSliderValue($event)"/>
+                        <Slider v-model="masStore.magneticAdviserMaximumNumberResults" :disabled="loading" class="col-12 text-primary  slider" :height="10" :min="1" :max="20" :step="1"  :color="theme.primary"  :tooltips="false" @change="maximumNumberResultsChangedSliderValue($event)"/>
                     </div>
 
                     <input :disabled="loading" :data-cy="dataTestLabel + '-number-input'" type="number" class="m-0 mb-2 px-0 col-3 bg-light text-white" :min="10" :step="10" @change="maximumNumberResultsChangedInputValue($event.target.value)" :value="removeTrailingZeroes(masStore.magneticAdviserMaximumNumberResults)" ref="inputRef">
@@ -362,4 +382,12 @@ export default {
     text-align: center;
     overflow-y: auto; 
 }
+
+.slider {
+  --slider-connect-bg: var(--bs-primary);
+  --slider-handle-bg: var(--bs-primary);
+}
+
 </style>
+
+<style src="@vueform/slider/themes/default.css"></style>

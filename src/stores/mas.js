@@ -33,6 +33,15 @@ export const useMasStore = defineStore("mas", () => {
     function updatedInputExcitationProcessed(signalDescriptor) {
     }
 
+    function setMas(mas) {
+        console.log("Inside mas")
+        console.log(mas)
+
+        this.mas = mas;
+        console.log("Inside this.mas")
+        console.log(this.mas)
+    }
+
     function resetMas() {
         this.mas = MAS.Convert.toMas(JSON.stringify(Defaults.mas));
         console.log("Resetting!!!!!!!!!!!!!")
@@ -47,6 +56,7 @@ export const useMasStore = defineStore("mas", () => {
     }
 
     return {
+        setMas,
         mas,
         resetMas,
         resetCache,

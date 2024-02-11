@@ -2,6 +2,7 @@
 import { useMasStore } from '/src/stores/mas'
 import { toTitleCase, removeTrailingZeroes, formatInductance, formatPower, formatTemperature, formatResistance} from '/src/assets/js/utils.js'
 import Module from '/src/assets/js/libAdvisers.wasm.js'
+import Magnetic2DPlotter from '/src/components/Toolbox/MagneticAdviser/Magnetic2DPlotter.vue'
 </script>
 
 <script>
@@ -50,7 +51,6 @@ export default {
             this.posting = true;
             this.processLocalTexts()
             setTimeout(() => {this.calculaLeakageInductance();}, 10);
-            setTimeout(() => {this.calculaCorePlot();}, 10);
 
         },
     },
@@ -58,53 +58,19 @@ export default {
         calculaLeakageInductance() {
             if (this.modelValue.magnetic.coil.functionalDescription.length > 1) {
                 magneticAdviser.ready.then(_ => {
+                    const leakageInductaceOutput = JSON.parse(magneticAdviser.calculate_leakage_inductance(JSON.stringify(this.masStore.mas.magnetic), this.masStore.mas.inputs.operatingPoints[0].excitationsPerWinding[0].frequency, 0));
 
-                    const leakageInductaceOutput = JSON.parse(magneticAdviser.calculate_leakage_inductance(JSON.stringify(this.modelValue.inputs.operatingPoints[0]), JSON.stringify(this.modelValue.magnetic)));
 
-                    const aux = formatInductance(leakageInductaceOutput.leakageInductancePerWinding[0].nominal);
-                    this.localTexts.leakageInductaceTable[1].value = `${removeTrailingZeroes(aux.label, 1)} ${aux.unit}`;
+                    for (var windingIndex = 1; windingIndex < this.masStore.mas.magnetic.coil.functionalDescription.length; windingIndex++) {
+
+                        const aux = formatInductance(leakageInductaceOutput.leakageInductancePerWinding[windingIndex].nominal);
+
+                        this.localTexts.leakageInductaceTable[windingIndex].value = `${removeTrailingZeroes(aux.label, 1)} ${aux.unit}`;
+                    }
+
                 })
             }   
         },
-        calculaCoreAndFieldPlot() {
-            this.posting = true;
-            const url = import.meta.env.VITE_API_ENDPOINT + '/plot_core_and_fields'
-
-            this.$refs.plotView.innerHTML = ""
-            this.$refs.zoomPlotView.innerHTML = ""
-            this.$axios.post(url, {magnetic: this.modelValue.magnetic, operatingPoint: this.modelValue.inputs.operatingPoints[0]})
-            .then(response => {
-                this.$refs.plotView.innerHTML = response.data
-                this.$refs.zoomPlotView.innerHTML = response.data
-                this.$refs.zoomPlotView.innerHTML = this.$refs.zoomPlotView.innerHTML.replace(`<svg`, `<svg class="h-75 w-100"`);
-                this.posting = false;
-            })
-            .catch(error => {
-                this.posting = false;
-                console.error("Error loading inventory")
-                console.error(error)
-            });
-        },
-        calculaCorePlot() {
-            this.posting = true;
-            const url = import.meta.env.VITE_API_ENDPOINT + '/plot_core'
-
-            this.$refs.plotView.innerHTML = ""
-            this.$refs.zoomPlotView.innerHTML = ""
-            this.$axios.post(url, {magnetic: this.modelValue.magnetic, operatingPoint: this.modelValue.inputs.operatingPoints[0]})
-            .then(response => {
-                this.$refs.plotView.innerHTML = response.data
-                this.$refs.zoomPlotView.innerHTML = response.data
-                this.$refs.zoomPlotView.innerHTML = this.$refs.zoomPlotView.innerHTML.replace(`<svg`, `<svg class="h-75 w-100"`);
-                this.posting = false;
-            })
-            .catch(error => {
-                this.posting = false;
-                console.error("Error loading inventory")
-                console.error(error)
-            });
-        },
-
         processMagneticTexts(data) {
             const localTexts = {
                 coreDescription: null,
@@ -308,12 +274,6 @@ export default {
         },
         swapFieldPlot() {
             this.showFieldPlot = !this.showFieldPlot;
-            if (this.showFieldPlot) {
-                this.calculaCoreAndFieldPlot();
-            }
-            else {
-                this.calculaCorePlot();
-            }
         },
     },
     computed: {
@@ -341,18 +301,11 @@ export default {
     </div>
 
     <div class="offcanvas-body">
-        <div v-show="zoomingPlot" class="row mx-1" style="height: 100%;">
-            <button class="btn" @click="zoomOut()">
-                <label class="col-12 text-info fw-lighter" >(Click on image to go back)</label>
-                <div data-cy="MagneticAdvise-core-field-plot-zoom-image" ref="zoomPlotView" class="mt-2" style="width: 100%; height: 100%" />
-            </button>
-        </div>
-
-        <div v-show="!zoomingPlot" v-if="modelValue.magnetic.manufacturerInfo != null" class="row mx-1">
+        <div v-if="modelValue.magnetic.manufacturerInfo != null" class="row mx-1">
             <h3 class="col-12 p-0 m-0">{{modelValue.magnetic.manufacturerInfo.reference}}</h3>
             <div class="col-12 fs-5 p-0 m-0 mt-2 text-start">{{localTexts.coreDescription}}</div>
             <div class="col-12 fs-5 p-0 m-0 mt-2 text-start">{{localTexts.coreMaterial}}</div>
-            <div class="col-7">
+            <div  v-show="!zoomingPlot" class="col-7">
 
                 <div class="col-12 fs-5 p-0 m-0 mt-2 text-center">Number turns</div>
 
@@ -369,7 +322,7 @@ export default {
                     <div v-if="'turnsRatioTable' in localTexts" class="col-3 p-0 m-0 border">{{localTexts.turnsRatioTable[windingIndex].value}}</div>
                 </div>
 
-                <div class="row mt-F mb-2" v-for="operationPoint, operationPointIndex in modelValue.inputs.operatingPoints">
+                <div class="row mb-2" v-for="operationPoint, operationPointIndex in modelValue.inputs.operatingPoints">
                     <div class="col-12 fs-5 p-0 m-0 my-1">{{operationPoint.name}}</div>
                     <div class="col-12 fs-5 p-0 m-0 mt-2 text-center">Core</div>
                     <div v-if="'magnetizingInductanceTable' in localTexts" class="col-6 p-0 m-0 border">{{localTexts.magnetizingInductanceTable[operationPointIndex].text}}</div>
@@ -386,7 +339,7 @@ export default {
                         <div v-if="windingIndex == 0" class="col-3 p-0 m-0 border">Wind. Loss</div>
                         <div v-if="windingIndex == 0" class="col-3 p-0 m-0 border">Leak. Ind.</div>
 
-                        <div v-if="'windingLossesTable' in localTexts" class="col-3 p-0 m-0 border">{{localTexts.windingLossesTable[operationPointIndex][windingIndex].text}}</div>
+                        <div v-if="'windingLossesTable' in localTexts" class="col-3 p-0 m-0 border">{{toTitleCase(localTexts.windingLossesTable[operationPointIndex][windingIndex].text.toLowerCase())}}</div>
                         <div v-if="'dcResistanceTable' in localTexts" class="col-3 p-0 m-0 border">{{localTexts.dcResistanceTable[operationPointIndex][windingIndex].value}}</div>
                         <div v-if="'windingLossesTable' in localTexts" class="col-3 p-0 m-0 border">{{localTexts.windingLossesTable[operationPointIndex][windingIndex].value}}</div>
                         <div v-if="'leakageInductaceTable' in localTexts" class="col-3 p-0 m-0 border">{{localTexts.leakageInductaceTable[windingIndex].value}}</div>
@@ -399,7 +352,7 @@ export default {
                         <div v-if="windingIndex == 0" class="col-3 p-0 m-0 border">Skin Loss</div>
                         <div v-if="windingIndex == 0" class="col-3 p-0 m-0 border">Prox. Loss</div>
 
-                        <div v-if="'windingOhmicLossesTable' in localTexts" class="col-3 p-0 m-0 border">{{localTexts.windingOhmicLossesTable[operationPointIndex][windingIndex].text}}</div>
+                        <div v-if="'windingOhmicLossesTable' in localTexts" class="col-3 p-0 m-0 border">{{toTitleCase(localTexts.windingOhmicLossesTable[operationPointIndex][windingIndex].text.toLowerCase())}}</div>
                         <div v-if="'windingOhmicLossesTable' in localTexts" class="col-3 p-0 m-0 border">{{localTexts.windingOhmicLossesTable[operationPointIndex][windingIndex].value}}</div>
                         <div v-if="'windingSkinLossesTable' in localTexts" class="col-3 p-0 m-0 border">{{localTexts.windingSkinLossesTable[operationPointIndex][windingIndex].value}}</div>
                         <div v-if="'windingProximityLossesTable' in localTexts" class="col-3 p-0 m-0 border">{{localTexts.windingProximityLossesTable[operationPointIndex][windingIndex].value}}</div>
@@ -407,17 +360,9 @@ export default {
                 </div>
             </div>
                 
-            <div class="col-5">
-                <img data-cy="CorePublish-loading" v-if="posting" class="mx-auto d-block" alt="loading" style="width: 150px; height: auto;" src="/images/loading.gif">
-
-                <div v-show="!posting">
-                    <div class="col-12 fs-5 p-0 m-0 mt-2 text-center">Core Coil and H Field</div>
-                    <button class="btn" @click="zoomIn()">
-                        <label class="col-12 text-info fw-lighter">(Click on image to zoom out)</label>
-                        <div data-cy="MagneticAdvise-core-field-plot-image" ref="plotView" class="col-12 mt-2" style="height: 100%;" />
-                    </button>
-                    <button class="btn btn-primary" @click="swapFieldPlot()">{{showFieldPlot? 'Hide H field' : 'Show H field'}}</button>
-                </div>
+            <div :class="zoomingPlot? 'col-12' : 'col-5'">
+                <div class="col-12 fs-5 p-0 m-0 mt-2 text-center">{{showFieldPlot? 'Core Coil and H Field' : 'Core Coil'}}</div>
+                <Magnetic2DPlotter  :modelValue="modelValue" @zoomIn="zoomIn" @zoomOut="zoomOut" @swapFieldPlot="swapFieldPlot"/>
             </div>
         </div>
     </div>

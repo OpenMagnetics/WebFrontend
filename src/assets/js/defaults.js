@@ -1,13 +1,13 @@
 export const coreAdviserWeights = {
-    "EFFICIENCY": 0.4,
-    "DIMENSIONS": 0.3,
-    "COST": 0.3,
+    "EFFICIENCY": 40,
+    "DIMENSIONS": 30,
+    "COST": 30,
 }
 
 export const magneticAdviserWeights = {
-    "EFFICIENCY": 0.4,
-    "DIMENSIONS": 0.3,
-    "COST": 0.3,
+    "EFFICIENCY": 40,
+    "DIMENSIONS": 30,
+    "COST": 30,
 }
 
 export const mas = {

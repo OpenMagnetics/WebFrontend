@@ -149,9 +149,9 @@ const routes = [
         component: () => import('../views/ToolSelection.vue')
     },
     {
-        path: '/magnetic_synthesis',
-        name: 'MagneticSynthesis',
-        component: () => import('../views/MagneticSynthesis.vue')
+        path: '/magnetic_adviser',
+        name: 'MagneticAdviser',
+        component: () => import('../views/MagneticAdviser.vue')
     },
     {
         path: '/magnetic_specification',

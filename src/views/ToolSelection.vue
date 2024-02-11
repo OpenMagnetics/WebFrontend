@@ -36,7 +36,7 @@ export default {
             if (reset) {
                 this.masStore.resetMas();
             }
-            this.$router.push('/magnetic_synthesis');
+            this.$router.push('/magnetic_adviser');
         },
         createNewInsulationAdviser(reset) {
             // this.$userStore.resetInsulationAdviser();
@@ -105,7 +105,7 @@ export default {
                         <div class="" aria-label="Group with synthesis button">
                             <button v-resize-text="{ratio: 0.7, minFontSize: '14px', maxFontSize: '20px', delay: 20}" data-cy="ToolSelection-magnetic-specification-button" class="m-2 btn btn-primary" data-bs-toggle="modal" data-bs-target="#createOrContinueModal" @click="selectedTool = 'magneticSpecification'">Specify a magnetic</button>
                             <button v-resize-text="{ratio: 0.7, minFontSize: '14px', maxFontSize: '20px', delay: 20}" data-cy="ToolSelection-insulation-button" class="m-2 btn btn-primary" data-bs-toggle="modal" data-bs-target="#createOrContinueModal" @click="selectedTool = 'insulationAdviser'">Calculate insulation</button>
-                            <button v-resize-text="{ratio: 0.7, minFontSize: '14px', maxFontSize: '20px', delay: 20}" data-cy="ToolSelection-magnetic-synthesis-button" class="m-2 btn btn-danger" data-bs-toggle="modal" data-bs-target="#createOrContinueModal" @click="selectedTool = 'magneticAdviser'">Design a magnetic <i class="fa-solid fa-fire"></i> </button>
+                            <button v-resize-text="{ratio: 0.7, minFontSize: '14px', maxFontSize: '20px', delay: 20}" data-cy="ToolSelection-magnetic-adviser-button" class="m-2 btn btn-danger" data-bs-toggle="modal" data-bs-target="#createOrContinueModal" @click="selectedTool = 'magneticAdviser'">Design a magnetic <i class="fa-solid fa-fire"></i> </button>
                         </div>
                     </div>
                     <div class="text-white my-5 p-2 text-center offset-1 col-sm-10 col-3-md col-lg-3 rounded-4">
