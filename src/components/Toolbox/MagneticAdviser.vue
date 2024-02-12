@@ -276,14 +276,8 @@ export default {
         },
         selectedMas(index) {
             this.masStore.mas = null;
-            // console.log("this.masStore.mas")
-            // console.log(this.masStore.mas)
             this.masStore.mas = deepCopy(this.advises[index].mas);
             this.masStore.setMas(deepCopy(this.advises[index].mas));
-            console.log("this.masStore.mas")
-            console.log(this.masStore.mas)
-            console.log("this.advises[index].mas")
-            console.log(this.advises[index].mas)
             this.$userStore.magneticAdviserSelectedAdvise = index;
             console.log("canContinue")
             this.$emit("canContinue", true);
@@ -298,7 +292,6 @@ export default {
             this.$router.go();
         },
         onChangeWithOrWithoutStock(event) {
-            console.log(this.$userStore.magneticAdviserUseOnlyCoresInStock)
             this.masStore.resetCache();
             this.$router.go();
         },
