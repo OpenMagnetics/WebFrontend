@@ -53,6 +53,7 @@ export default {
             MagneticSectionPlotExported: false,
             MagneticSectionAndFieldPlotExported: false,
             showFieldPlot: false,
+            includeFringing: true,
         }
     },
     computed: {
@@ -65,6 +66,9 @@ export default {
     methods: {
         swapFieldPlot() {
             this.showFieldPlot = !this.showFieldPlot;
+        },
+        swapIncludeFringing() {
+            this.includeFringing = !this.includeFringing;
         },
         exportMAS() {
             var mas = deepCopy(this.masStore.mas);
@@ -144,7 +148,7 @@ export default {
         exportMagneticSectionAndFieldPlot() {
             const url = import.meta.env.VITE_API_ENDPOINT + '/plot_core_and_fields'
 
-            this.$axios.post(url, {magnetic: this.masStore.mas.magnetic, operatingPoint: this.masStore.mas.inputs.operatingPoints[0]})
+            this.$axios.post(url, {magnetic: this.masStore.mas.magnetic, operatingPoint: this.masStore.mas.inputs.operatingPoints[0], includeFringing: this.includeFringing})
             .then(response => {
                 download(response.data, this.masStore.mas.magnetic.manufacturerInfo.reference + "_Magnetic_Section_And_H_Field.svg", "image/svg+xml");
                 this.MagneticSectionAndFieldPlotExported = true
@@ -658,6 +662,7 @@ export default {
                         :modelValue="masStore.mas"
                         :enableZoom="false"
                         @swapFieldPlot="swapFieldPlot"
+                        @swapIncludeFringing="swapIncludeFringing"
                     />
                 </div>
             </div>

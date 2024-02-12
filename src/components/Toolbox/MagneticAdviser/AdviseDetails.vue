@@ -168,7 +168,7 @@ export default {
                                                   value: data.magnetic.coil.functionalDescription[windingIndex].numberParallels});
                 if (windingIndex != 0) {
                     localTexts.turnsRatioTable.push({text: data.magnetic.coil.functionalDescription[windingIndex].name,
-                                                     value: data.magnetic.coil.functionalDescription[0].numberTurns / data.magnetic.coil.functionalDescription[windingIndex].numberTurns});
+                                                     value: removeTrailingZeroes(data.magnetic.coil.functionalDescription[0].numberTurns / data.magnetic.coil.functionalDescription[windingIndex].numberTurns)});
                 }
                 else {
                     localTexts.turnsRatioTable.push({text: data.magnetic.coil.functionalDescription[windingIndex].name,

@@ -20,7 +20,7 @@ var magneticAdviser = {
 };
 
 export default {
-    emits: ["zoomIn", "zoomOut", "swapFieldPlot"],
+    emits: ["zoomIn", "zoomOut", "swapFieldPlot", "swapIncludeFringing"],
     components: {
     },
     props: {
@@ -48,6 +48,7 @@ export default {
             posting: false,
             zoomingPlot: false,
             showFieldPlot: false,
+            includeFringing: true,
         }
     },
     watch: {
@@ -65,7 +66,7 @@ export default {
                 this.$refs.plotView.innerHTML = ""
             }
             this.$refs.zoomPlotView.innerHTML = ""
-            this.$axios.post(url, {magnetic: this.modelValue.magnetic, operatingPoint: this.modelValue.inputs.operatingPoints[0]})
+            this.$axios.post(url, {magnetic: this.modelValue.magnetic, operatingPoint: this.modelValue.inputs.operatingPoints[0], includeFringing: this.includeFringing})
             .then(response => {
                 if (this.enableZoom) {
                     this.$refs.plotView.innerHTML = response.data
@@ -122,6 +123,11 @@ export default {
             }
             this.$emit("swapFieldPlot");
         },
+        swapIncludeFringing() {
+            this.includeFringing = !this.includeFringing;
+            this.calculateMagneticSectionAndFieldPlot();
+            this.$emit("swapIncludeFringing");
+        },
     },
     computed: {
     },
@@ -153,6 +159,7 @@ export default {
             </div>
             <div class="text-center">
                 <button class="btn btn-primary mt-1" @click="swapFieldPlot()">{{showFieldPlot? 'Hide H field' : 'Show H field'}}</button>
+                <button v-if="showFieldPlot" class="btn btn-primary ms-1 mt-1" @click="swapIncludeFringing()">{{includeFringing? 'Exclude Fringing H field' : 'Include Fringing H field'}}</button>
             </div>
         </div>
     </div>
