@@ -62,6 +62,7 @@ export default {
     },
     mounted () {
         this.computeTexts();
+        setTimeout(() => this.insertMas(), 2000);
     },
     methods: {
         swapFieldPlot() {
@@ -500,6 +501,20 @@ export default {
                 setTimeout(() => {this.calculateLeakageInductance();}, 10);
             }).catch(error => { 
                 console.error("Error reading material data")
+                console.error(error)
+            });
+        },
+        insertMas() {
+            const url = import.meta.env.VITE_API_ENDPOINT + '/insert_mas'
+
+            console.log("Inserting Mas")
+            this.$axios.post(url, this.masStore.mas)
+            .then(response => {
+                console.log("response.data")
+                console.log(response.data)
+            })
+            .catch(error => {
+                console.error("Error inserting")
                 console.error(error)
             });
         },
