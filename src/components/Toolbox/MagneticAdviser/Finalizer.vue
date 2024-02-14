@@ -418,7 +418,7 @@ export default {
                 if (data.outputs[operatingPointIndex].coreLosses != null)
                 {
                     coreLossRow.magneticFluxDensityPeak = {}
-                    const aux = formatTemperature(data.outputs[operatingPointIndex].coreLosses.magneticFluxDensity.processed.peak);
+                    const aux = formatUnit(data.outputs[operatingPointIndex].coreLosses.magneticFluxDensity.processed.peak, "T");
                     coreLossRow.magneticFluxDensityPeak.text = 'B peak';
                     coreLossRow.magneticFluxDensityPeak.value = `${removeTrailingZeroes(aux.label, 2)} ${aux.unit}`;
                 }

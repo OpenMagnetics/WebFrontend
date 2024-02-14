@@ -209,7 +209,7 @@ export default {
                     settings["coreIncludeStacks"] = this.$settingsStore.adviserAllowStacks == "1";
                     coreAdviser.set_settings(JSON.stringify(settings));
 
-                    const aux = JSON.parse(coreAdviser.calculate_advised_cores(JSON.stringify(this.masStore.mas.inputs), JSON.stringify(this.masStore.coreAdviserWeights), 20, this.$userStore.coreAdviserUseOnlyCoresInStock == 1));
+                    const aux = JSON.parse(coreAdviser.calculate_advised_cores(JSON.stringify(this.masStore.mas.inputs), JSON.stringify(this.masStore.coreAdviserWeights), 20, this.$settingsStore.coreAdviserUseOnlyCoresInStock == 1));
 
                     var log = aux["log"];
                     var data = aux["data"];
@@ -360,7 +360,7 @@ export default {
                             :adviseIndex="adviseIndex"
                             :masData="advise.mas"
                             :scoring="advise.scoringPerFilter"
-                            :selected="$settingsStore.adviserSelectedAdvise == adviseIndex"
+                            :selected="$userStore.coreAdviserSelectedAdvise == adviseIndex"
                             :graphType="$settingsStore.adviserSpiderBarChartNotBar == '1'? 'radar' : 'bar'"
                             @selectedMas="selectedMas(adviseIndex)"
                             @adviseReady="adviseReady(adviseIndex)"

@@ -177,7 +177,7 @@ export default {
                         settings["coreIncludeStacks"] = this.$settingsStore.adviserAllowStacks == "1";
                         magneticAdviser.set_settings(JSON.stringify(settings));
 
-                        const aux = JSON.parse(magneticAdviser.calculate_advised_magnetics(JSON.stringify(this.masStore.mas.inputs), JSON.stringify(this.masStore.magneticAdviserWeights), this.masStore.magneticAdviserMaximumNumberResults, this.$userStore.magneticAdviserUseOnlyCoresInStock == 1));
+                        const aux = JSON.parse(magneticAdviser.calculate_advised_magnetics(JSON.stringify(this.masStore.mas.inputs), JSON.stringify(this.masStore.magneticAdviserWeights), this.masStore.magneticAdviserMaximumNumberResults, this.$settingsStore.magneticAdviserUseOnlyCoresInStock == 1));
 
                         var data = aux["data"];
 
@@ -347,7 +347,7 @@ export default {
                             :adviseIndex="adviseIndex"
                             :masData="advise.mas"
                             :scoring="advise.scoringPerFilter"
-                            :selected="$settingsStore.adviserSelectedAdvise == adviseIndex"
+                            :selected="$userStore.magneticAdviserSelectedAdvise == adviseIndex"
                             :graphType="$settingsStore.adviserSpiderBarChartNotBar == '1'? 'radar' : 'bar'"
                             @selectedMas="selectedMas(adviseIndex)"
                             @adviseReady="adviseReady(adviseIndex)"
