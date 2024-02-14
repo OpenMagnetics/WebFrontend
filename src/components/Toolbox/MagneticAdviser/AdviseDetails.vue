@@ -305,7 +305,7 @@ export default {
             <h3 class="col-12 p-0 m-0">{{modelValue.magnetic.manufacturerInfo.reference}}</h3>
             <div class="col-12 fs-5 p-0 m-0 mt-2 text-start">{{localTexts.coreDescription}}</div>
             <div class="col-12 fs-5 p-0 m-0 mt-2 text-start">{{localTexts.coreMaterial}}</div>
-            <div  v-show="!zoomingPlot" class="col-7">
+            <div  v-show="!zoomingPlot" class="col-7" style="max-width: 450px;">
 
                 <div class="col-12 fs-5 p-0 m-0 mt-2 text-center">Number turns</div>
 
@@ -372,30 +372,30 @@ export default {
 
 <style>
 .offcanvas-size-xxl {
-    --bs-offcanvas-width: 50vw !important;
+    --bs-offcanvas-width: 65vw !important;
 }
 .offcanvas-size-xl {
-    --bs-offcanvas-width: 50vw !important;
+    --bs-offcanvas-width: 65vw !important;
     --bs-offcanvas-height: 60vh !important;
 }
 .offcanvas-size-lg {
-    --bs-offcanvas-width: 50vw !important;
+    --bs-offcanvas-width: 65vw !important;
     --bs-offcanvas-height: 60vh !important;
 }
 .offcanvas-size-md { /* add Responsivenes to default offcanvas */
-    --bs-offcanvas-width: 50vw !important;
+    --bs-offcanvas-width: 65vw !important;
     --bs-offcanvas-height: 60vh !important;
 }
 .offcanvas-size-sm {
-    --bs-offcanvas-width: 50vw !important;
+    --bs-offcanvas-width: 65vw !important;
     --bs-offcanvas-height: 60vh !important;
 }
 .offcanvas-size-xs {
-    --bs-offcanvas-width: 50vw !important;
+    --bs-offcanvas-width: 65vw !important;
     --bs-offcanvas-height: 60vh !important;
 }
 .offcanvas-size-xxs {
-    --bs-offcanvas-width: 50vw !important;
+    --bs-offcanvas-width: 65vw !important;
     --bs-offcanvas-height: 60vh !important;
 }
 </style>

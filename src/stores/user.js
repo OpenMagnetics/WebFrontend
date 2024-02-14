@@ -40,11 +40,7 @@ export const useUserStore = defineStore("user", () => {
         'coreAdviser': false,
         'magneticFinalizer': false,
     })
-    const coreAdviserSpiderBarChartNotBar = ref('0')
-    const coreAdviserUseOnlyCoresInStock = ref('1')
     const coreAdviserSelectedAdvise = ref(0)
-    const magneticAdviserSpiderBarChartNotBar = ref('0')
-    const magneticAdviserUseOnlyCoresInStock = ref('1')
     const magneticAdviserSelectedAdvise = ref(0)
 
     const insulationAdviserSubsection = ref("insulationRequirements")
@@ -127,11 +123,7 @@ export const useUserStore = defineStore("user", () => {
     const dump = computed(() => {
         return {
             "magneticSynthesisSubsection": magneticSynthesisSubsection.value,
-            "coreAdviserSpiderBarChartNotBar": coreAdviserSpiderBarChartNotBar.value,
-            "coreAdviserUseOnlyCoresInStock": coreAdviserUseOnlyCoresInStock.value,
             "coreAdviserSelectedAdvise": coreAdviserSelectedAdvise.value,
-            "magneticAdviserSpiderBarChartNotBar": magneticAdviserSpiderBarChartNotBar.value,
-            "magneticAdviserUseOnlyCoresInStock": magneticAdviserUseOnlyCoresInStock.value,
             "magneticAdviserSelectedAdvise": magneticAdviserSelectedAdvise.value,
 
 
@@ -302,8 +294,6 @@ export const useUserStore = defineStore("user", () => {
     function disarmDeadManSwitch() {
     }
     return {
-        coreAdviserSpiderBarChartNotBar,
-        coreAdviserUseOnlyCoresInStock,
         coreAdviserSelectedAdvise,
         magneticSynthesisSubsection,
         magneticSynthesisCanContinue,
@@ -313,8 +303,6 @@ export const useUserStore = defineStore("user", () => {
         magneticCoreAdviserCanContinue,
         insulationAdviserSubsection,
         insulationAdviserCanContinue,
-        magneticAdviserSpiderBarChartNotBar,
-        magneticAdviserUseOnlyCoresInStock,
         magneticAdviserSelectedAdvise,
         magneticAdviserSubsection,
         magneticAdviserCanContinue,

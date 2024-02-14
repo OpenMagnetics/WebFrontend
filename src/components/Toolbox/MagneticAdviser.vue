@@ -6,6 +6,7 @@ import { removeTrailingZeroes, toTitleCase, toCamelCase, calculateObjectSize, de
 import { magneticAdviserWeights } from '/src/assets/js/defaults.js'
 import Advise from '/src/components/Toolbox/MagneticAdviser/Advise.vue'
 import AdviseDetails from '/src/components/Toolbox/MagneticAdviser/AdviseDetails.vue'
+import Settings from '/src/components/Toolbox/Settings.vue'
 import Module from '/src/assets/js/libAdvisers.wasm.js'
 </script>
 
@@ -171,6 +172,11 @@ export default {
                     if (this.masStore.mas.inputs.operatingPoints.length > 0) {
                         console.time('Execution Time');
 
+                        const settings = JSON.parse(magneticAdviser.get_settings());
+                        settings["coreIncludeDistributedGaps"] = this.$settingsStore.adviserAllowDistributedGaps == "1";
+                        settings["coreIncludeStacks"] = this.$settingsStore.adviserAllowStacks == "1";
+                        magneticAdviser.set_settings(JSON.stringify(settings));
+
                         const aux = JSON.parse(magneticAdviser.calculate_advised_magnetics(JSON.stringify(this.masStore.mas.inputs), JSON.stringify(this.masStore.magneticAdviserWeights), this.masStore.magneticAdviserMaximumNumberResults, this.$userStore.magneticAdviserUseOnlyCoresInStock == 1));
 
                         var data = aux["data"];
@@ -302,6 +308,10 @@ export default {
 
 <template>
     <AdviseDetails :modelValue="masStore.mas"/>
+    <Settings
+        @onChangeBarOrSpider="onChangeBarOrSpider"
+        @onChangeWithOrWithoutStock="onChangeWithOrWithoutStock"
+    />
     <div class="container" >
         <div class="row">
             <div class="col-sm-12 col-md-2 text-start border border-primary m-0 px-2 py-1 ">
@@ -323,19 +333,7 @@ export default {
 
                     <input :disabled="loading" :data-cy="dataTestLabel + '-number-input'" type="number" class="m-0 mb-2 px-0 col-3 bg-light text-white" :min="10" :step="10" @change="maximumNumberResultsChangedInputValue($event.target.value)" :value="removeTrailingZeroes(masStore.magneticAdviserMaximumNumberResults)" ref="inputRef">
                 </div>
-
-                <div class="row">
-                    <label v-tooltip="'Choose between spider or bar charts'" class="fs-6 mt-2 p-0 ps-3 text-white col-3 ">Bar</label>
-                    <input :disabled="loading" :data-cy="dataTestLabel + '-bar-spider-button'" v-model="$userStore.magneticAdviserSpiderBarChartNotBar" @change="onChangeBarOrSpider" type="range" class="mt-2 form-range col-1" min="0" max="1" step="1" style="width: 30px">
-                    <label v-tooltip="'Choose between spider or bar charts'" class="fs-6 mt-2 p-0 ps-3 text-white col-7">Spider chart</label>
-                </div>
-                <p class="mt-5">Choose between using all available cores or only those in stock.</p>
-                <div class="row">
-                    <label v-tooltip="'Choose between using all available cores or only those in stock'" class="fs-6 mt-2 p-0 ps-3 text-white col-3 ">All</label>
-                    <input :disabled="loading" :data-cy="dataTestLabel + '-with-without-stock-button'" v-model="$userStore.magneticAdviserUseOnlyCoresInStock" @change="onChangeWithOrWithoutStock" type="range" class="mt-2 form-range col-1" min="0" max="1" step="1" style="width: 30px">
-                    <label v-tooltip="'Choose between using all available cores or only those in stock'" class="fs-6 mt-2 p-0 ps-3 text-white col-7">Only in stock</label>
-                </div>
-                <p class="mt-1 text-danger">Warning: Using all cores will take a longer time.</p>
+                <button :disabled="loading" :data-cy="dataTestLabel + '-settings-modal-button'" class="btn btn-info mx-auto d-block mt-4" data-bs-toggle="modal" data-bs-target="#settingsModal">Settings</button>
             </div>
             <div class="col-sm-12 col-md-10 text-start pe-0 container-fluid"  style="height: 70vh">
                 <div class="row" v-if="loading" >
@@ -349,8 +347,8 @@ export default {
                             :adviseIndex="adviseIndex"
                             :masData="advise.mas"
                             :scoring="advise.scoringPerFilter"
-                            :selected="$userStore.magneticAdviserSelectedAdvise == adviseIndex"
-                            :graphType="$userStore.magneticAdviserSpiderBarChartNotBar == '1'? 'radar' : 'bar'"
+                            :selected="$settingsStore.adviserSelectedAdvise == adviseIndex"
+                            :graphType="$settingsStore.adviserSpiderBarChartNotBar == '1'? 'radar' : 'bar'"
                             @selectedMas="selectedMas(adviseIndex)"
                             @adviseReady="adviseReady(adviseIndex)"
                         />

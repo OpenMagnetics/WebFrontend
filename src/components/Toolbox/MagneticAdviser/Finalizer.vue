@@ -415,6 +415,13 @@ export default {
                     coreLossRow.coreTemperature.text = 'Core temp.';
                     coreLossRow.coreTemperature.value = `${removeTrailingZeroes(aux.label, 2)} ${aux.unit}`;
                 }
+                if (data.outputs[operatingPointIndex].coreLosses != null)
+                {
+                    coreLossRow.magneticFluxDensityPeak = {}
+                    const aux = formatTemperature(data.outputs[operatingPointIndex].coreLosses.magneticFluxDensity.processed.peak);
+                    coreLossRow.magneticFluxDensityPeak.text = 'B peak';
+                    coreLossRow.magneticFluxDensityPeak.value = `${removeTrailingZeroes(aux.label, 2)} ${aux.unit}`;
+                }
                 outputsTable.core.push(coreLossRow)
 
                 const coilLossRow = []
@@ -426,6 +433,16 @@ export default {
                         coilLossCell.dcResistance = {}
                         coilLossCell.dcResistance.text = toTitleCase(data.magnetic.coil.functionalDescription[windingIndex].name.toLowerCase());
                         coilLossCell.dcResistance.value = `${removeTrailingZeroes(aux.label, 2)} ${aux.unit}`;
+                    }
+                    {
+                        const currentRms = data.inputs.operatingPoints[operatingPointIndex].excitationsPerWinding[windingIndex].current.processed.rms;
+                        const conductingAreaWire = data.magnetic.coil.functionalDescription[windingIndex].wire.conductingArea.nominal;
+                        const numberParallels = data.magnetic.coil.functionalDescription[windingIndex].numberParallels;
+                        const currentDensity = currentRms / numberParallels / conductingAreaWire;
+                        const aux = formatUnit(currentDensity / 1000000, "A/mm²");
+                        coilLossCell.currentDensity = {}
+                        coilLossCell.currentDensity.text = toTitleCase(data.magnetic.coil.functionalDescription[windingIndex].name.toLowerCase());
+                        coilLossCell.currentDensity.value = `${removeTrailingZeroes(aux.label, 2)} ${aux.unit}`;
                     }
                     {
                         const aux = formatResistance(data.outputs[operatingPointIndex].windingLosses.dcResistancePerWinding[windingIndex]);
@@ -637,6 +654,8 @@ export default {
                                 <div v-if="'outputsTable' in localTexts" class="col-6 p-0 m-0 border text-end pe-1">{{localTexts.outputsTable.core[operationPointIndex].coreLosses.value}}</div>
                                 <div v-if="'outputsTable' in localTexts" class="col-6 p-0 m-0 border text-start ps-2">{{localTexts.outputsTable.core[operationPointIndex].coreTemperature.text}}</div>
                                 <div v-if="'outputsTable' in localTexts" class="col-6 p-0 m-0 border text-end pe-1">{{localTexts.outputsTable.core[operationPointIndex].coreTemperature.value}}</div>
+                                <div v-if="'outputsTable' in localTexts" class="col-6 p-0 m-0 border text-start ps-2">{{localTexts.outputsTable.core[operationPointIndex].magneticFluxDensityPeak.text}}</div>
+                                <div v-if="'outputsTable' in localTexts" class="col-6 p-0 m-0 border text-end pe-1">{{localTexts.outputsTable.core[operationPointIndex].magneticFluxDensityPeak.value}}</div>
                             </div>
                         </div>
                         <div class="col-12 fs-5 p-0 m-0 mt-2 text-center">Coil</div>
@@ -644,14 +663,16 @@ export default {
                             <div class="row" v-for="winding, windingIndex in masStore.mas.magnetic.coil.functionalDescription">
 
                                 <div v-if="windingIndex == 0" class="col-3 p-0 m-0 border text-start ps-2">Winding</div>
-                                <div v-if="windingIndex == 0" class="col-3 p-0 m-0 border text-start ps-2">DC Res.</div>
-                                <div v-if="windingIndex == 0" class="col-3 p-0 m-0 border text-start ps-2">Wind. Loss</div>
-                                <div v-if="windingIndex == 0" class="col-3 p-0 m-0 border text-start ps-2">Leak. Ind.</div>
+                                <div v-if="windingIndex == 0" class="col-2 p-0 m-0 border text-center ps-2">DC Res.</div>
+                                <div v-if="windingIndex == 0" class="col-3 p-0 m-0 border text-center ps-2">Curr. Density</div>
+                                <div v-if="windingIndex == 0" class="col-2 p-0 m-0 border text-center ps-2">Wind. Loss</div>
+                                <div v-if="windingIndex == 0" class="col-2 p-0 m-0 border text-center ps-2">Leak. Ind.</div>
 
-                                <div v-if="'outputsTable' in localTexts" class="col-3 p-0 m-0 border text-start ps-2">{{localTexts.outputsTable.coil[operationPointIndex][windingIndex].dcResistance.text}}</div>
-                                <div v-if="'outputsTable' in localTexts" class="col-3 p-0 m-0 border">{{localTexts.outputsTable.coil[operationPointIndex][windingIndex].dcResistance.value}}</div>
-                                <div v-if="'outputsTable' in localTexts" class="col-3 p-0 m-0 border">{{localTexts.outputsTable.coil[operationPointIndex][windingIndex].windingLosses.value}}</div>
-                                <div v-if="'outputsTable' in localTexts" class="col-3 p-0 m-0 border">{{localTexts.outputsTable.coil[operationPointIndex][windingIndex].leakageInductance.value}}</div>
+                                <div v-if="'outputsTable' in localTexts" class="col-3 p-0 m-0 border  text-start ps-2">{{localTexts.outputsTable.coil[operationPointIndex][windingIndex].dcResistance.text}}</div>
+                                <div v-if="'outputsTable' in localTexts" class="col-2 p-0 m-0 border text-center">{{localTexts.outputsTable.coil[operationPointIndex][windingIndex].dcResistance.value}}</div>
+                                <div v-if="'outputsTable' in localTexts" class="col-3 p-0 m-0 border text-center">{{localTexts.outputsTable.coil[operationPointIndex][windingIndex].currentDensity.value}}</div>
+                                <div v-if="'outputsTable' in localTexts" class="col-2 p-0 m-0 border text-center">{{localTexts.outputsTable.coil[operationPointIndex][windingIndex].windingLosses.value}}</div>
+                                <div v-if="'outputsTable' in localTexts" class="col-2 p-0 m-0 border text-center">{{localTexts.outputsTable.coil[operationPointIndex][windingIndex].leakageInductance.value}}</div>
                             </div>
                         </div>
                         <div class="col-12 fs-5 p-0 m-0 mt-2 text-center">Coil Losses Breakdown</div>
@@ -659,14 +680,14 @@ export default {
                             <div class="row " v-for="winding, windingIndex in masStore.mas.magnetic.coil.functionalDescription">
 
                                 <div v-if="windingIndex == 0" class="col-3 p-0 m-0 border text-start ps-2">Winding</div>
-                                <div v-if="windingIndex == 0" class="col-3 p-0 m-0 border text-start ps-2">Ohmic Loss</div>
-                                <div v-if="windingIndex == 0" class="col-3 p-0 m-0 border text-start ps-2">Skin Loss</div>
-                                <div v-if="windingIndex == 0" class="col-3 p-0 m-0 border text-start ps-2">Prox. Loss</div>
+                                <div v-if="windingIndex == 0" class="col-3 p-0 m-0 border text-center ps-2">Ohmic Loss</div>
+                                <div v-if="windingIndex == 0" class="col-3 p-0 m-0 border text-center ps-2">Skin Loss</div>
+                                <div v-if="windingIndex == 0" class="col-3 p-0 m-0 border text-center ps-2">Prox. Loss</div>
 
                                 <div v-if="'outputsTable' in localTexts" class="col-3 p-0 m-0 border text-start ps-2">{{localTexts.outputsTable.coil[operationPointIndex][windingIndex].ohmicLosses.text}}</div>
-                                <div v-if="'outputsTable' in localTexts" class="col-3 p-0 m-0 border">{{localTexts.outputsTable.coil[operationPointIndex][windingIndex].ohmicLosses.value}}</div>
-                                <div v-if="'outputsTable' in localTexts" class="col-3 p-0 m-0 border">{{localTexts.outputsTable.coil[operationPointIndex][windingIndex].skinLosses.value}}</div>
-                                <div v-if="'outputsTable' in localTexts" class="col-3 p-0 m-0 border">{{localTexts.outputsTable.coil[operationPointIndex][windingIndex].proximityLosses.value}}</div>
+                                <div v-if="'outputsTable' in localTexts" class="col-3 p-0 m-0 border text-center">{{localTexts.outputsTable.coil[operationPointIndex][windingIndex].ohmicLosses.value}}</div>
+                                <div v-if="'outputsTable' in localTexts" class="col-3 p-0 m-0 border text-center">{{localTexts.outputsTable.coil[operationPointIndex][windingIndex].skinLosses.value}}</div>
+                                <div v-if="'outputsTable' in localTexts" class="col-3 p-0 m-0 border text-center">{{localTexts.outputsTable.coil[operationPointIndex][windingIndex].proximityLosses.value}}</div>
                             </div>
                         </div>
                     </div>
