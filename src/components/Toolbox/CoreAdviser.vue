@@ -1,5 +1,6 @@
 <script setup>
 import { useMasStore } from '/src/stores/mas'
+import { useAdviseCacheStore } from '/src/stores/adviseCache'
 import { useInventoryCacheStore } from '/src/stores/inventoryCache'
 import Slider from '@vueform/slider'
 import { removeTrailingZeroes, toTitleCase, toCamelCase, calculateObjectSize, deepCopy, cyrb53 } from '/src/assets/js/utils.js'
@@ -49,6 +50,7 @@ export default {
         },
     },
     data() {
+        const adviseCacheStore = useAdviseCacheStore();
         const masStore = useMasStore();
         const inventoryCacheStore = useInventoryCacheStore();
 
@@ -63,9 +65,10 @@ export default {
         const recentChange = false;
 
         return {
+            adviseCacheStore,
             masStore,
-            loading,
             inventoryCacheStore,
+            loading,
             advises,
             tryingToSend,
             recentChange,
@@ -103,7 +106,7 @@ export default {
         //     this.inventoryCacheStore.coreInventory = response.data['cores'];
         //     // if (this.masStore.areCoreAdvisesValid()) {
         //     //     console.log("Cache valid!")
-        //     //     this.advises = this.masStore.coreAdvises;
+        //     //     this.advises = this.adviseCacheStore.advises;
         //     //     this.addCurrentAdvisesToCache();
         //     //     this.$userStore.coreAdviserSelectedAdvise = 0;
         //     //     if (this.advises.length > 0) {
@@ -145,15 +148,15 @@ export default {
         },
         addCurrentAdvisesToCache() {
             var cacheKey = this.getKeyToCache();
-            this.masStore.coreAdvisesCache[cacheKey] = this.advises;
+            this.adviseCacheStore.advisesCache[cacheKey] = this.advises;
         },
         tryLoadAdvisesfromCache() {
-            if (this.masStore.areCoreAdvisesValid()) {
+            if (this.adviseCacheStore.areAdvisesValid()) {
                 var cacheKey = this.getKeyToCache();
-                console.log(Object.keys(this.masStore.coreAdvisesCache))
-                if (cacheKey in this.masStore.coreAdvisesCache) {
+                console.log(Object.keys(this.adviseCacheStore.advisesCache))
+                if (cacheKey in this.adviseCacheStore.advisesCache) {
                     console.log("Cache hit!")
-                    this.advises = this.masStore.coreAdvisesCache[cacheKey];
+                    this.advises = this.adviseCacheStore.advisesCache[cacheKey];
                     this.$userStore.coreAdviserSelectedAdvise = 0;
                     if (this.advises.length > 0) {
                         this.masStore.mas = this.advises[this.$userStore.coreAdviserSelectedAdvise].mas;
@@ -237,8 +240,8 @@ export default {
                         this.advises.push(datum);
                     })
                     console.timeEnd('Execution Time');
-                    this.masStore.coreAdvises = this.advises;
-                    this.masStore.coreAdvisesTimestamp = Date.now();
+                    this.adviseCacheStore.advises = this.advises;
+                    this.adviseCacheStore.advisesTimestamp = Date.now();
                     this.addCurrentAdvisesToCache();
                     this.$userStore.coreAdviserSelectedAdvise = 0;
                     if (this.advises.length > 0) {

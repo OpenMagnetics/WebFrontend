@@ -168,11 +168,11 @@ const routes = [
         name: 'InsulationAdviser',
         component: () => import('../views/InsulationAdviser.vue')
     },
-    {
-        path: '/dune',
-        name: 'Dune',
-        component: () => import('../views/Dune.vue')
-    },
+    // {
+    //     path: '/dune',
+    //     name: 'Dune',
+    //     component: () => import('../views/Dune.vue')
+    // },
 ]
 const router = createRouter({
     history: createWebHistory(),
