@@ -62,6 +62,7 @@ export default {
             this.posting = true;
             const url = import.meta.env.VITE_API_ENDPOINT + '/plot_core_and_fields'
 
+                console.log("calculateMagneticSectionAndFieldPlot")
             if (this.enableZoom) {
                 this.$refs.plotView.innerHTML = ""
             }
@@ -71,13 +72,14 @@ export default {
                 if (this.enableZoom) {
                     this.$refs.plotView.innerHTML = response.data
                 }
+                console.log(response)
                 this.$refs.zoomPlotView.innerHTML = response.data
                 this.$refs.zoomPlotView.innerHTML = this.$refs.zoomPlotView.innerHTML.replace(`<svg`, `<svg class="h-75 w-100"`);
                 this.posting = false;
             })
             .catch(error => {
                 this.posting = false;
-                console.error("Error loading inventory")
+                console.error("Error plotting")
                 console.error(error)
             });
         },
@@ -85,6 +87,7 @@ export default {
             this.posting = true;
             const url = import.meta.env.VITE_API_ENDPOINT + '/plot_core'
 
+                console.log("calculateMagneticSectionPlot")
             if (this.enableZoom) {
                 this.$refs.plotView.innerHTML = ""
             }
@@ -94,13 +97,14 @@ export default {
                 if (this.enableZoom) {
                     this.$refs.plotView.innerHTML = response.data
                 }
+                console.log(response)
                 this.$refs.zoomPlotView.innerHTML = response.data
                 this.$refs.zoomPlotView.innerHTML = this.$refs.zoomPlotView.innerHTML.replace(`<svg`, `<svg class="h-75 w-100"`);
                 this.posting = false;
             })
             .catch(error => {
                 this.posting = false;
-                console.error("Error loading inventory")
+                console.error("Error plotting")
                 console.error(error)
             });
         },

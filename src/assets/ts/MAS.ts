@@ -754,18 +754,26 @@ export enum BobbinFamily {
  */
 export interface Pinout {
     /**
-     * The distance between pins
+     * The distance between central pins
+     */
+    centralPitch?: number;
+    /**
+     * The number of pins
      */
     numberPins: number;
+    /**
+     * List of pins per row
+     */
+    numberPinsPerRow?: number[];
     /**
      * The number of rows of a bobbin, typically 2
      */
     numberRows?:    number;
     pinDescription: Pin;
     /**
-     * The distance between pits
+     * The distance between pins, per row, by pin order
      */
-    pitch: number;
+    pitch: number[];
     /**
      * The distance between a row of pins and the center of the bobbin
      */
@@ -788,7 +796,7 @@ export interface Pin {
     /**
      * Name given to the pin
      */
-    name: string;
+    name?: string;
     /**
      * The rotation of the pin, default is vertical
      */
@@ -796,7 +804,7 @@ export interface Pin {
     /**
      * The shape of the pin
      */
-    shape: Shape;
+    shape: PinShape;
     /**
      * Type of pin
      */
@@ -807,7 +815,8 @@ export interface Pin {
 /**
  * The shape of the pin
  */
-export enum Shape {
+export enum PinShape {
+    Irregular = "irregular",
     Rectangular = "rectangular",
     Round = "round",
 }
@@ -850,6 +859,10 @@ export interface ManufacturerInfo {
      * The name of the manufacturer of the part
      */
     name: string;
+    /**
+     * The manufacturer's order code of this part
+     */
+    orderCode?: string;
     /**
      * The manufacturer's reference of this part
      */
@@ -953,6 +966,10 @@ export interface WindingWindowElement {
      */
     sectionsOrientation?: WindingOrientation;
     /**
+     * Shape of the winding window
+     */
+    shape?: WindingWindowShape;
+    /**
      * Horizontal width of the winding window
      */
     width?: number;
@@ -975,9 +992,13 @@ export interface WindingWindowElement {
  * Way in which the layers are oriented inside the section
  */
 export enum WindingOrientation {
-    Horizontal = "horizontal",
-    Radial = "radial",
-    Vertical = "vertical",
+    Contiguous = "contiguous",
+    Overlapping = "overlapping",
+}
+
+export enum WindingWindowShape {
+    Rectangular = "rectangular",
+    Round = "round",
 }
 
 /**
@@ -1349,9 +1370,18 @@ export enum WireType {
  */
 export interface Layer {
     /**
+     * List of additional coordinates of the center of the layer, referred to the center of the
+     * main column, in case the layer is not symmetrical, as in toroids
+     */
+    additionalCoordinates?: Array<number[]>;
+    /**
      * The coordinates of the center of the layer, referred to the center of the main column
      */
     coordinates: number[];
+    /**
+     * System in which dimension and coordinates are in
+     */
+    coordinateSystem?: CoordinateSystem;
     /**
      * Dimensions of the rectangle defining the layer
      */
@@ -1393,6 +1423,14 @@ export interface Layer {
      */
     windingStyle?: WindingStyle;
     [property: string]: any;
+}
+
+/**
+ * System in which dimension and coordinates are in
+ */
+export enum CoordinateSystem {
+    Cartesian = "cartesian",
+    Polar = "polar",
 }
 
 /**
@@ -1456,6 +1494,10 @@ export interface Section {
      */
     coordinates: number[];
     /**
+     * System in which dimension and coordinates are in
+     */
+    coordinateSystem?: CoordinateSystem;
+    /**
      * Dimensions of the rectangle defining the section
      */
     dimensions: number[];
@@ -1500,6 +1542,11 @@ export interface Section {
  */
 export interface Turn {
     /**
+     * List of additional coordinates of the center of the turn, referred to the center of the
+     * main column, in case the turn is not symmetrical, as in toroids
+     */
+    additionalCoordinates?: Array<number[]>;
+    /**
      * The angle that the turn does, useful for partial turns, in degrees
      */
     angle?: number;
@@ -1507,6 +1554,10 @@ export interface Turn {
      * The coordinates of the center of the turn, referred to the center of the main column
      */
     coordinates: number[];
+    /**
+     * System in which dimension and coordinates are in
+     */
+    coordinateSystem?: CoordinateSystem;
     /**
      * Dimensions of the rectangle defining the turn
      */
@@ -1531,6 +1582,10 @@ export interface Turn {
      * The index of the parallel that this turn belongs to
      */
     parallel: number;
+    /**
+     * Rotation of the rectangle defining the turn, in degrees
+     */
+    rotation?: number;
     /**
      * The name of the section that this turn belongs to
      */
@@ -2864,6 +2919,10 @@ export interface FieldPoint {
      */
     point: number[];
     /**
+     * Rotation of the rectangle defining the turn, in degrees
+     */
+    rotation?: number;
+    /**
      * If this field point is inside of a wire, this is the index of the turn
      */
     turnIndex?: number;
@@ -3941,18 +4000,20 @@ const typeMap: any = {
         { json: "winding", js: "winding", typ: u(undefined, "") },
     ], "any"),
     "Pinout": o([
+        { json: "centralPitch", js: "centralPitch", typ: u(undefined, 3.14) },
         { json: "numberPins", js: "numberPins", typ: 0 },
+        { json: "numberPinsPerRow", js: "numberPinsPerRow", typ: u(undefined, a(0)) },
         { json: "numberRows", js: "numberRows", typ: u(undefined, 0) },
         { json: "pinDescription", js: "pinDescription", typ: r("Pin") },
-        { json: "pitch", js: "pitch", typ: 3.14 },
+        { json: "pitch", js: "pitch", typ: a(3.14) },
         { json: "rowDistance", js: "rowDistance", typ: 3.14 },
     ], "any"),
     "Pin": o([
         { json: "coordinates", js: "coordinates", typ: u(undefined, a(3.14)) },
         { json: "dimensions", js: "dimensions", typ: a(3.14) },
-        { json: "name", js: "name", typ: "" },
+        { json: "name", js: "name", typ: u(undefined, "") },
         { json: "rotation", js: "rotation", typ: u(undefined, a(3.14)) },
-        { json: "shape", js: "shape", typ: r("Shape") },
+        { json: "shape", js: "shape", typ: r("PinShape") },
         { json: "type", js: "type", typ: r("PinDescriptionType") },
     ], "any"),
     "ManufacturerInfo": o([
@@ -3960,6 +4021,7 @@ const typeMap: any = {
         { json: "datasheetUrl", js: "datasheetUrl", typ: u(undefined, "") },
         { json: "family", js: "family", typ: u(undefined, "") },
         { json: "name", js: "name", typ: "" },
+        { json: "orderCode", js: "orderCode", typ: u(undefined, "") },
         { json: "reference", js: "reference", typ: u(undefined, "") },
         { json: "status", js: "status", typ: u(undefined, r("Status")) },
     ], "any"),
@@ -3978,6 +4040,7 @@ const typeMap: any = {
         { json: "coordinates", js: "coordinates", typ: u(undefined, a(3.14)) },
         { json: "height", js: "height", typ: u(undefined, 3.14) },
         { json: "sectionsOrientation", js: "sectionsOrientation", typ: u(undefined, r("WindingOrientation")) },
+        { json: "shape", js: "shape", typ: u(undefined, r("WindingWindowShape")) },
         { json: "width", js: "width", typ: u(undefined, 3.14) },
         { json: "angle", js: "angle", typ: u(undefined, 3.14) },
         { json: "radialHeight", js: "radialHeight", typ: u(undefined, 3.14) },
@@ -4077,7 +4140,9 @@ const typeMap: any = {
         { json: "type", js: "type", typ: r("WireType") },
     ], "any"),
     "Layer": o([
+        { json: "additionalCoordinates", js: "additionalCoordinates", typ: u(undefined, a(a(3.14))) },
         { json: "coordinates", js: "coordinates", typ: a(3.14) },
+        { json: "coordinateSystem", js: "coordinateSystem", typ: u(undefined, r("CoordinateSystem")) },
         { json: "dimensions", js: "dimensions", typ: a(3.14) },
         { json: "fillingFactor", js: "fillingFactor", typ: u(undefined, 3.14) },
         { json: "insulationMaterial", js: "insulationMaterial", typ: u(undefined, u(r("InsulationMaterial"), "")) },
@@ -4096,6 +4161,7 @@ const typeMap: any = {
     ], "any"),
     "Section": o([
         { json: "coordinates", js: "coordinates", typ: a(3.14) },
+        { json: "coordinateSystem", js: "coordinateSystem", typ: u(undefined, r("CoordinateSystem")) },
         { json: "dimensions", js: "dimensions", typ: a(3.14) },
         { json: "fillingFactor", js: "fillingFactor", typ: u(undefined, 3.14) },
         { json: "layersAlignment", js: "layersAlignment", typ: u(undefined, r("CoilAlignment")) },
@@ -4107,14 +4173,17 @@ const typeMap: any = {
         { json: "windingStyle", js: "windingStyle", typ: u(undefined, r("WindingStyle")) },
     ], "any"),
     "Turn": o([
+        { json: "additionalCoordinates", js: "additionalCoordinates", typ: u(undefined, a(a(3.14))) },
         { json: "angle", js: "angle", typ: u(undefined, 3.14) },
         { json: "coordinates", js: "coordinates", typ: a(3.14) },
+        { json: "coordinateSystem", js: "coordinateSystem", typ: u(undefined, r("CoordinateSystem")) },
         { json: "dimensions", js: "dimensions", typ: u(undefined, a(3.14)) },
         { json: "layer", js: "layer", typ: u(undefined, "") },
         { json: "length", js: "length", typ: 3.14 },
         { json: "name", js: "name", typ: "" },
         { json: "orientation", js: "orientation", typ: u(undefined, r("TurnOrientation")) },
         { json: "parallel", js: "parallel", typ: 0 },
+        { json: "rotation", js: "rotation", typ: u(undefined, 3.14) },
         { json: "section", js: "section", typ: u(undefined, "") },
         { json: "winding", js: "winding", typ: "" },
     ], "any"),
@@ -4452,6 +4521,7 @@ const typeMap: any = {
     "FieldPoint": o([
         { json: "label", js: "label", typ: u(undefined, "") },
         { json: "point", js: "point", typ: a(3.14) },
+        { json: "rotation", js: "rotation", typ: u(undefined, 3.14) },
         { json: "turnIndex", js: "turnIndex", typ: u(undefined, 0) },
         { json: "turnLength", js: "turnLength", typ: u(undefined, 3.14) },
         { json: "value", js: "value", typ: 3.14 },
@@ -4579,7 +4649,8 @@ const typeMap: any = {
         "rm",
         "u",
     ],
-    "Shape": [
+    "PinShape": [
+        "irregular",
         "rectangular",
         "round",
     ],
@@ -4603,9 +4674,12 @@ const typeMap: any = {
         "round",
     ],
     "WindingOrientation": [
-        "horizontal",
-        "radial",
-        "vertical",
+        "contiguous",
+        "overlapping",
+    ],
+    "WindingWindowShape": [
+        "rectangular",
+        "round",
     ],
     "InsulationWireCoatingType": [
         "bare",
@@ -4625,6 +4699,10 @@ const typeMap: any = {
         "litz",
         "rectangular",
         "round",
+    ],
+    "CoordinateSystem": [
+        "cartesian",
+        "polar",
     ],
     "CoilAlignment": [
         "centered",

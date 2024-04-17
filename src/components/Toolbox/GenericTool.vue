@@ -120,7 +120,15 @@ export default {
                         </div>
                         <div class="row">
                             {{}}
-                            <button v-if="!$userStore[`${toolLabel}Subsection`].includes('Finalizer') && currentStoryline[$userStore[`${toolLabel}Subsection`]].nextTool != null"  :disabled="!$userStore[`${toolLabel}CanContinue`][$userStore[`${toolLabel}Subsection`]]" data-cy="magnetic-synthesis-next-tool-button" class="btn btn-outline-primary  mt-2 col-sm-12 col-md-2 " @click="nextTool">{{$userStore[`${toolLabel}CanContinue`][$userStore[`${toolLabel}Subsection`]]? 'Next tool' : 'Errors must be fixed'}}</button>
+                            <button 
+                                v-if="!$userStore[`${toolLabel}Subsection`].includes('Finalizer') && currentStoryline[$userStore[`${toolLabel}Subsection`]].nextTool != null"  
+                                :disabled="!$userStore[`${toolLabel}CanContinue`][$userStore[`${toolLabel}Subsection`]]" 
+                                data-cy="magnetic-synthesis-next-tool-button" 
+                                class="btn  mt-2 col-sm-12 col-md-2"
+                                :class="$userStore[`${toolLabel}CanContinue`][$userStore[`${toolLabel}Subsection`]]? 'btn-success' : 'btn-outline-primary'"
+                                @click="nextTool">
+                                {{$userStore[`${toolLabel}CanContinue`][$userStore[`${toolLabel}Subsection`]]? 'Continue' : 'Errors must be fixed'}}
+                            </button>
                             <button  data-cy="magnetic-synthesis-main-tool-button" v-if="traversableLeft()" class="btn btn-outline-primary mt-2 offset-6 col-2" @click="basicTool"> Back to main tool</button>
                             <button  data-cy="magnetic-synthesis-customize-tool-button" v-if="traversableRight()" class="btn btn-outline-primary mt-2 col-2" :class="traversableLeft()? '' : 'offset-8'" @click="advancedTool"> Customize tool</button>
                         </div>

@@ -1,5 +1,6 @@
 <script setup>
 import { useMasStore } from '/src/stores/mas'
+import { useAdviseCacheStore } from '/src/stores/adviseCache'
 import { useInventoryCacheStore } from '/src/stores/inventoryCache'
 import Slider from '@vueform/slider'
 import { removeTrailingZeroes, toTitleCase, toCamelCase, calculateObjectSize, deepCopy, cyrb53 } from '/src/assets/js/utils.js'
@@ -49,6 +50,7 @@ export default {
         },
     },
     data() {
+        const adviseCacheStore = useAdviseCacheStore();
         const masStore = useMasStore();
         const inventoryCacheStore = useInventoryCacheStore();
 
@@ -63,9 +65,10 @@ export default {
         const recentChange = false;
 
         return {
+            adviseCacheStore,
             masStore,
-            loading,
             inventoryCacheStore,
+            loading,
             advises,
             tryingToSend,
             recentChange,
@@ -103,23 +106,21 @@ export default {
             for (let [key, value] of Object.entries(this.masStore.magneticAdviserWeights)) {
                 cacheKeyString += value;
             }
-
             const cacheKey = cyrb53(cacheKeyString);
-
             console.log(cacheKey)
             return cacheKey;
         },
         addCurrentAdvisesToCache() {
             var cacheKey = this.getKeyToCache();
-            this.masStore.coreAdvisesCache[cacheKey] = this.advises;
+            this.adviseCacheStore.advisesCache[cacheKey] = this.advises;
         },
         tryLoadAdvisesfromCache() {
-            if (this.masStore.areCoreAdvisesValid()) {
+            if (this.adviseCacheStore.areAdvisesValid()) {
                 var cacheKey = this.getKeyToCache();
-                console.log(Object.keys(this.masStore.coreAdvisesCache))
-                if (cacheKey in this.masStore.coreAdvisesCache) {
+                console.log(Object.keys(this.adviseCacheStore.advisesCache))
+                if (cacheKey in this.adviseCacheStore.advisesCache) {
                     console.log("Cache hit!")
-                    this.advises = this.masStore.coreAdvisesCache[cacheKey];
+                    this.advises = this.adviseCacheStore.advisesCache[cacheKey];
                     this.$userStore.magneticAdviserSelectedAdvise = 0;
                     if (this.advises.length > 0) {
                         this.masStore.mas = this.advises[this.$userStore.magneticAdviserSelectedAdvise].mas;
@@ -177,7 +178,7 @@ export default {
                         settings["coreIncludeStacks"] = this.$settingsStore.adviserAllowStacks == "1";
                         magneticAdviser.set_settings(JSON.stringify(settings));
 
-                        const aux = JSON.parse(magneticAdviser.calculate_advised_magnetics(JSON.stringify(this.masStore.mas.inputs), JSON.stringify(this.masStore.magneticAdviserWeights), this.masStore.magneticAdviserMaximumNumberResults, this.$settingsStore.magneticAdviserUseOnlyCoresInStock == 1));
+                        const aux = JSON.parse(magneticAdviser.calculate_advised_magnetics(JSON.stringify(this.masStore.mas.inputs), JSON.stringify(this.masStore.magneticAdviserWeights), this.masStore.magneticAdviserMaximumNumberResults, this.$settingsStore.adviserUseOnlyCoresInStock == "1" || this.$settingsStore.adviserUseOnlyCoresInStock == 1));
 
                         var data = aux["data"];
 
@@ -201,8 +202,8 @@ export default {
                             this.advises.push(datum);
                         })
                         console.timeEnd('Execution Time');
-                        this.masStore.coreAdvises = this.advises;
-                        this.masStore.coreAdvisesTimestamp = Date.now();
+                        this.adviseCacheStore.advises = this.advises;
+                        this.adviseCacheStore.advisesTimestamp = Date.now();
                         this.addCurrentAdvisesToCache();
                         this.$userStore.magneticAdviserSelectedAdvise = 0;
                         if (this.advises.length > 0) {

@@ -7,23 +7,10 @@ export const useMasStore = defineStore("mas", () => {
 
     const mas = ref(MAS.Convert.toMas(JSON.stringify(Defaults.mas)));
     const coreAdviserWeights = ref(null);
-    const coreAdvises = ref(null);
-    const coreAdvisesCache = ref({});
-    const coreAdvisesTimestamp = ref(null)
-    const coreAdvisesTtlInMilliseconds = 24 * 60 * 60 * 1000 // 24 hours
 
     const magneticAdviserWeights = ref(null);
     const magneticAdviserMaximumNumberResults = ref(6);
 
-    function areCoreAdvisesValid() {
-        if (this.coreAdvisesTimestamp == null || (this.coreAdvisesTimestamp + this.coreAdvisesTtlInMilliseconds < Date.now())) {
-            Object.keys(this.coreAdvisesCache).forEach(function(k) { delete this.coreAdvisesCache[k]})
-            return false;
-        }
-        else {
-            return true;
-        }
-    }
     function updatedTurnsRatios() {
     }
     function updatedInputExcitationWaveformUpdatedFromGraph(signalDescriptor) {
@@ -62,10 +49,6 @@ export const useMasStore = defineStore("mas", () => {
         resetMas,
         resetCache,
         coreAdviserWeights,
-        coreAdvises,
-        coreAdvisesCache,
-        coreAdvisesTimestamp,
-        areCoreAdvisesValid,
         updatedTurnsRatios,
         updatedInputExcitationWaveformUpdatedFromGraph,
         updatedInputExcitationWaveformUpdatedFromProcessed,
