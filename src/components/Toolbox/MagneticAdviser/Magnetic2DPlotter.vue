@@ -54,6 +54,9 @@ export default {
     watch: {
         modelValue(newValue, oldValue) {
             this.posting = true;
+            this.zoomingPlot = false;
+            this.showFieldPlot = false;
+            this.includeFringing = true;
             setTimeout(() => {this.calculateMagneticSectionPlot();}, 10);
         },
     },
@@ -146,7 +149,7 @@ export default {
     <div v-if="enableZoom" v-show="zoomingPlot" class="row mx-1" style="height: 100%;">
         <button class="btn" @click="zoomOut()">
             <label class="col-12 text-info fw-lighter" >(Click on image to go back)</label>
-            <div data-cy="MagneticAdvise-core-field-plot-zoom-image" ref="zoomPlotView" class="mt-2" style="width: 100%; height: 100%" />
+            <div data-cy="MagneticAdvise-core-field-plot-zoom-image" ref="zoomPlotView" :class="showFieldPlot? 'bg-white' : ''" class="mt-2" style="width: 100%;" />
         </button>
     </div>
 
@@ -157,9 +160,9 @@ export default {
             <div>
                 <button v-if="enableZoom" class="btn" @click="zoomIn()">
                     <label  class="col-12 text-info fw-lighter">(Click on image to zoom in)</label>
-                    <div data-cy="MagneticAdvise-core-field-plot-image" ref="plotView" class="col-12 mt-2" style="height: 100%;" />
+                    <div data-cy="MagneticAdvise-core-field-plot-image" ref="plotView" :class="showFieldPlot? 'bg-white' : ''" class="col-12 mt-2" style="height: 100%;" />
                 </button>
-                <div v-else data-cy="MagneticAdvise-core-field-plot-zoom-image" ref="zoomPlotView" class="mt-2" style="width: 100%; height: 100%" />
+                <div v-else data-cy="MagneticAdvise-core-field-plot-zoom-image" ref="zoomPlotView" :class="showFieldPlot? 'bg-white' : ''" class="mt-2 " style="width: 100%; height: 100%" />
             </div>
             <div class="text-center">
                 <button class="btn btn-primary mt-1" @click="swapFieldPlot()">{{showFieldPlot? 'Hide H field' : 'Show H field'}}</button>
