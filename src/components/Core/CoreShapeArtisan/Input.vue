@@ -250,20 +250,6 @@ export default {
                 , 500);
             }
         },
-        // onFamilyChange(event) {
-        //     this.errors = {}
-        //     this.hasFreeCADError = false
-        //     this.isDataDirty = true
-        //     this.setCoreShapeName("Custom")
-        //     const family = event.target.value
-        //     this.subtypeLabels = Object.keys(this.familiesData[family])
-        //     if (this.subtypeLabels.length == 1) {
-        //         this.dimensionsLabel = this.familiesData[family][this.subtypeLabels[0]]
-        //     }
-        //     else {
-        //         this.dimensionsLabel = null
-        //     }
-        // },
         onSubtypeChange(event) {
             this.errors = {}
             this.hasFreeCADError = false

@@ -136,7 +136,7 @@ export default {
                         localTexts.coreDescription += ', ungapped.'
                     }
                     else {
-                        localTexts.coreDescription += `, with a grinded gap of ${removeTrailingZeroes(data.magnetic.core.functionalDescription.gapping[0].length * 1000, 5)} mm.`
+                        localTexts.coreDescription += `, with a ground gap of ${removeTrailingZeroes(data.magnetic.core.functionalDescription.gapping[0].length * 1000, 5)} mm.`
                     }
                 }
                 else if (data.magnetic.core.functionalDescription.gapping.length > data.magnetic.core.processedDescription.columns.length) {

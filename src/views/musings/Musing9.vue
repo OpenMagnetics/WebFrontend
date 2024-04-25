@@ -207,7 +207,7 @@ import Footer from '/src/components/Footer.vue'
                         The disadvantage of this method is that we have to calculate one reluctance per each distinct gap we have, and then solve the circuit. Simple as this is, we are forced to think in terms of the magnetic flux and knowing how the magnetic field will behave. This might also be an advantage, as we learn.
                         </p>
                         <p>
-                        The real advantage of this model is that it allows us to calculate any possible gap configuration: grinded in a column, with a shaper that separates the piece, distributed along a column or even take into account the residual gap that always exists between two pieces put together.
+                        The real advantage of this model is that it allows us to calculate any possible gap configuration: ground in a column, with a shaper that separates the piece, distributed along a column or even take into account the residual gap that always exists between two pieces put together.
                         </p>
                         <p>
 

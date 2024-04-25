@@ -203,7 +203,7 @@ export default {
             <label v-tooltip="'Type of gap. Go to Gaping Artisan for advanced customization.'" class="rounded-2 fs-5 text-primary col-5 mt-1 text-nowrap">Gap type:</label>
             <Field data-cy="SimulationCoreCalculatorGappingFromNumberTurnsAndInductance-gap-type-select-input" name="quickGapTypeField" ref="quickGapTypeFieldRef" as="select" :class="{'is-invalid': errors.quickGapTypeField }" @change="onGapTypeChange" class= "rounded-2 bg-light text-white col-5 mt-2" v-model="gapTypeSelected" >
                 <option data-cy="SimulationCoreCalculatorGappingFromNumberTurnsAndInductance-gap-type-NA-option-input" disabled value="">Please select one</option>
-                <option data-cy="SimulationCoreCalculatorGappingFromNumberTurnsAndInductance-gap-type-grinded-option-input" value="Grinded">Grinded</option>
+                <option data-cy="SimulationCoreCalculatorGappingFromNumberTurnsAndInductance-gap-type-ground-option-input" value="Ground">Ground</option>
                 <option data-cy="SimulationCoreCalculatorGappingFromNumberTurnsAndInductance-gap-type-spacer-option-input" value="Spacer">Spacer</option>
                 <option data-cy="SimulationCoreCalculatorGappingFromNumberTurnsAndInductance-gap-type-distributed-option-input" value="Distributed">Distributed</option>
             </Field>

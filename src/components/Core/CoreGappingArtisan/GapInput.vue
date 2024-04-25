@@ -471,7 +471,7 @@ export default {
                 <option :data-cy="'CoreGappingArtisanGapInput-column-' + index + '-gap-type-NA-option-input'" disabled value="">Please select one</option>
                 <option :data-cy="'CoreGappingArtisanGapInput-column-' + index + '-gap-type-residual-option-input'" value="Residual">Residual</option>
                 <option :data-cy="'CoreGappingArtisanGapInput-column-' + index + '-gap-type-spacer-option-input'" value="Spacer">Spacer</option>
-                <option :data-cy="'CoreGappingArtisanGapInput-column-' + index + '-gap-type-grinded-option-input'" value="Grinded">Grinded</option>
+                <option :data-cy="'CoreGappingArtisanGapInput-column-' + index + '-gap-type-ground-option-input'" value="Ground">Ground</option>
                 <option :data-cy="'CoreGappingArtisanGapInput-column-' + index + '-gap-type-distributed-option-input'" :disabled="coreStore.distributedGapAlreadyInUse && gapTypeSelected != 'Distributed'" value="Distributed">{{coreStore.distributedGapAlreadyInUse && gapTypeSelected != 'Distributed'? 'Distributed (only one allowed)' : 'Distributed'}}</option>
             </Field>
             <label v-if="gapTypeSelected == 'Distributed'" class="small-text col-sm-4 col-md-5 col-lg-5 col-xl-5 text-start mt-2">No. gaps:</label>

@@ -20,7 +20,7 @@ const schema = Yup.object().shape({
 
 export default {
     data() {
-        var quickGapTypeSelected = "Grinded";
+        var quickGapTypeSelected = "Ground";
         var quickGapLengthSelected = 0;
         var quickShapeSelected = "ETD 39/20/13";
         var quickMaterialSelected = "3C97";
@@ -156,8 +156,8 @@ export default {
             if (this.quickGapTypeSelected == "Ungapped") {
                 this.$userStore.globalCore['functionalDescription']['gapping'] = Defaults.defaultUngappedGapping
             }
-            else if (this.quickGapTypeSelected == "Grinded") {
-                this.$userStore.globalCore['functionalDescription']['gapping'] = Defaults.defaultGrindedGapping
+            else if (this.quickGapTypeSelected == "Ground") {
+                this.$userStore.globalCore['functionalDescription']['gapping'] = Defaults.defaultGroundGapping
             }
             else if (this.quickGapTypeSelected == "Spacer") {
                 this.$userStore.globalCore['functionalDescription']['gapping'] = Defaults.defaultSpacerGapping
@@ -214,7 +214,7 @@ export default {
             <Field data-cy="CoreQuickAccess-gap-type-select-input" v-if="$userStore.globalCore['functionalDescription']['shape']['family'] != 't'" @keydown.enter.prevent name="quickGapTypeField" ref="quickGapTypeFieldRef" as="select" :class="{'is-invalid': errors.quickGapTypeField }" @change="onGapTypeChange" class= "fs-6 bg-light text-white rounded-2 col-xl-2 col-sm-5" v-model="quickGapTypeSelected" >
                 <option data-cy="CoreQuickAccess-gap-type-NA-option-input" disabled value="">Please select one</option>
                 <option data-cy="CoreQuickAccess-gap-type-ungapped-option-input" value="Ungapped">Ungapped</option>
-                <option data-cy="CoreQuickAccess-gap-type-grinded-option-input" value="Grinded">Grinded</option>
+                <option data-cy="CoreQuickAccess-gap-type-ground-option-input" value="Ground">Ground</option>
                 <option data-cy="CoreQuickAccess-gap-type-spacer-option-input" value="Spacer">Spacer</option>
                 <option data-cy="CoreQuickAccess-gap-type-distributed-option-input" value="Distributed">Distributed</option>
                 <option data-cy="CoreQuickAccess-gap-type-custom-option-input" disabled value="Custom">Custom</option>

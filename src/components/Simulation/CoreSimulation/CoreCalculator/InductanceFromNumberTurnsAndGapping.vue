@@ -158,8 +158,8 @@ export default {
             if (this.gapTypeSelected == "Ungapped") {
                 this.$userStore.globalSimulation['magnetic']['core']['functionalDescription']['gapping'] = Defaults.defaultUngappedGapping
             }
-            else if (this.gapTypeSelected == "Grinded") {
-                this.$userStore.globalSimulation['magnetic']['core']['functionalDescription']['gapping'] = Defaults.defaultGrindedGapping
+            else if (this.gapTypeSelected == "Ground") {
+                this.$userStore.globalSimulation['magnetic']['core']['functionalDescription']['gapping'] = Defaults.defaultGroundGapping
             }
             else if (this.gapTypeSelected == "Spacer") {
                 this.$userStore.globalSimulation['magnetic']['core']['functionalDescription']['gapping'] = Defaults.defaultSpacerGapping
@@ -258,7 +258,7 @@ export default {
             <Field data-cy="SimulationCoreCalculatorInductanceFromNumberTurnsAndGapping-gap-type-select-input" v-if="isNotToroid" name="quickGapTypeField" ref="quickGapTypeFieldRef" as="select" :class="{'is-invalid': errors.quickGapTypeField }" @change="onGapTypeChange" class= "rounded-2 bg-light text-white  col-6" v-model="gapTypeSelected" >
                 <option data-cy="SimulationCoreCalculatorInductanceFromNumberTurnsAndGapping-gap-type-NA-option-input" disabled value="">Please select one</option>
                 <option data-cy="SimulationCoreCalculatorInductanceFromNumberTurnsAndGapping-gap-type-ungapped-option-input" value="Ungapped">Ungapped</option>
-                <option data-cy="SimulationCoreCalculatorInductanceFromNumberTurnsAndGapping-gap-type-grinded-option-input" value="Grinded">Grinded</option>
+                <option data-cy="SimulationCoreCalculatorInductanceFromNumberTurnsAndGapping-gap-type-ground-option-input" value="Ground">Ground</option>
                 <option data-cy="SimulationCoreCalculatorInductanceFromNumberTurnsAndGapping-gap-type-spacer-option-input" value="Spacer">Spacer</option>
                 <option data-cy="SimulationCoreCalculatorInductanceFromNumberTurnsAndGapping-gap-type-distributed-option-input" value="Distributed">Distributed</option>
                 <option data-cy="SimulationCoreCalculatorInductanceFromNumberTurnsAndGapping-gap-type-custom-option-input" disabled value="Custom">Custom</option>

@@ -281,7 +281,7 @@ export function formatInductance(inductance) {
 }
 
 export function formatPermeance(permeance) {
-    return formatUnit(permeance, "H")
+    return formatUnit(permeance, "H/tu.")
 }
 
 export function formatReluctance(reluctance) {
@@ -312,6 +312,14 @@ export function formatDimension(dimension) {
     return formatUnit(dimension, "m")
 }
 
+export function formatArea(dimension) {
+    return formatUnit(dimension, "m²")
+}
+
+export function formatVolume(dimension) {
+    return formatUnit(dimension, "m³")
+}
+
 export function formatCurrent(current) {
     return formatUnit(current, "A")
 }
@@ -326,6 +334,10 @@ export function formatTemperature(temperature) {
 
 export function formatResistance(resistance) {
     return formatUnit(resistance, "Ω")
+}
+
+export function formatPercentage(percentage) {
+    return formatUnit(percentage * 100, "%")
 }
 
 export function deepCopy(data) {
@@ -885,17 +897,17 @@ export function hexToRgb(hex) {
 //     });
 // }
  
-export function guessBasicGappingParameters(core) {
+export function guessBasicGappingParameters(core, scale=1000) {
     var gapType = Defaults.defaultGapType;
-    var gapLength = Defaults.defaultGapLength;
+    var gapLength = Defaults.defaultGapLength / 1000 * scale;
     var numberGaps = Defaults.defaultNumberGaps;
     if (core['functionalDescription'] != null && core['processedDescription'] != null) {
         if (core['functionalDescription']['gapping'].length == core['processedDescription']['columns'].length &&
             core['functionalDescription']['gapping'][0]['type'] == 'subtractive' &&
             core['functionalDescription']['gapping'][1]['type'] == 'residual' &&
             (core['processedDescription']['columns'].length == 2 || core['functionalDescription']['gapping'][2]['type'] == 'residual')) {
-            gapType = "Grinded"
-            gapLength = core['functionalDescription']['gapping'][0]['length'] * 1000;
+            gapType = "Ground"
+            gapLength = core['functionalDescription']['gapping'][0]['length'] * scale;
             numberGaps = 1;
         }
         else if (core['functionalDescription']['gapping'].length == core['processedDescription']['columns'].length &&
@@ -903,7 +915,7 @@ export function guessBasicGappingParameters(core) {
             core['functionalDescription']['gapping'][1]['type'] == 'additive' &&
             (core['processedDescription']['columns'].length == 2 || core['functionalDescription']['gapping'][2]['type'] == 'additive')) {
             gapType = "Spacer"
-            gapLength = core['functionalDescription']['gapping'][0]['length'] * 1000;
+            gapLength = core['functionalDescription']['gapping'][0]['length'] * scale;
             numberGaps = 1;
         }
         else if (core['functionalDescription']['gapping'].length == core['processedDescription']['columns'].length &&
@@ -911,7 +923,7 @@ export function guessBasicGappingParameters(core) {
             core['functionalDescription']['gapping'][1]['type'] == 'residual' &&
             (core['processedDescription']['columns'].length == 2 || core['functionalDescription']['gapping'][2]['type'] == 'residual')) {
             gapType = "Ungapped"
-            gapLength = core['functionalDescription']['gapping'][0]['length'] * 1000;
+            gapLength = core['functionalDescription']['gapping'][0]['length'] * scale;
             numberGaps = 1;
         }
         else if (core['functionalDescription']['gapping'].length > core['processedDescription']['columns'].length &&
@@ -923,7 +935,7 @@ export function guessBasicGappingParameters(core) {
                 core['functionalDescription']['gapping'][3]['type'] == 'subtractive'
             )) {
             gapType = "Distributed"
-            gapLength = core['functionalDescription']['gapping'][0]['length'] * 1000;
+            gapLength = core['functionalDescription']['gapping'][0]['length'] * scale;
             numberGaps = core['functionalDescription']['gapping'].length - core['processedDescription']['columns'].length + 1;
             for (let i = 0; i < core['functionalDescription']['gapping'].length; i++) {
                 if (core['functionalDescription']['gapping'][i]['type'] == 'subtractive') {
@@ -938,7 +950,7 @@ export function guessBasicGappingParameters(core) {
             core['functionalDescription']['gapping'][1]['type'] == 'subtractive' &&
             core['functionalDescription']['gapping'][2]['type'] == 'subtractive') {
             gapType = "Distributed"
-            gapLength = core['functionalDescription']['gapping'][0]['length'] * 1000;
+            gapLength = core['functionalDescription']['gapping'][0]['length'] * scale;
             numberGaps = core['functionalDescription']['gapping'].length - core['processedDescription']['columns'].length + 1;
             for (let i = 0; i < core['functionalDescription']['gapping'].length; i++) {
                 if (core['functionalDescription']['gapping'][i]['type'] == 'subtractive') {
@@ -1094,13 +1106,14 @@ export function processCoreTexts(data) {
                 localTexts.coreDescription += ', ungapped.'
             }
             else {
-                localTexts.coreDescription += `, with a grinded gap of ${removeTrailingZeroes(data.magnetic.core.functionalDescription.gapping[0].length * 1000, 5)} mm.`
+                localTexts.coreDescription += `, with a ground gap of ${removeTrailingZeroes(data.magnetic.core.functionalDescription.gapping[0].length * 1000, 5)} mm.`
             }
         }
         else if (data.magnetic.core.functionalDescription.gapping.length > data.magnetic.core.processedDescription.columns.length) {
             localTexts.coreDescription += `, with a distributed gap of ${removeTrailingZeroes(data.magnetic.core.functionalDescription.gapping[0].length * 1000, 5)} mm.`
         }
     }
+    if (data.outputs != null)
     {
         const aux = formatUnit(1 / data.outputs[0].magnetizingInductance.coreReluctance / numberTurnsPrimary, "H/turn");
         localTexts.coreMaterial = `It has a permeance (AL value) of ${removeTrailingZeroes(aux.label, 1)} ${aux.unit}.`
@@ -1156,7 +1169,7 @@ export function processCoreTexts(data) {
             localTexts.coreMaterialDensityTable.value = `${removeTrailingZeroes(aux.label, 2)} ${aux.unit}`;
         }
     }
-    {
+    if (data.outputs != null) {
         localTexts.numberTurns = `Using ${removeTrailingZeroes(data.magnetic.coil.functionalDescription[0].numberTurns)} turns will produce a magnetic with the following estimated output per operating point:`
     }
     {
@@ -1200,7 +1213,7 @@ export function processCoreTexts(data) {
         localTexts.coreTemperatureTable.push({text: null, value: null});
         localTexts.dcResistanceTable.push({text: null, value: null});
         localTexts.windingLossesTable.push({text: null, value: null});
-        if (operatingPointIndex < data.outputs.length) {
+        if (data.outputs != null && operatingPointIndex < data.outputs.length) {
 
             if (data.outputs[operatingPointIndex].magnetizingInductance != null)
             {
@@ -1245,7 +1258,7 @@ export function clean(object) {
             if (v && typeof v === 'object') {
                 clean(v);
             }
-            if (v && typeof v === 'object' && !Object.keys(v).length || v === null || v === undefined) {
+            if (v && typeof v === 'object' && !Object.keys(v).length || v === null || v === "null" || v === undefined) {
                 if (Array.isArray(object)) {
                     object.splice(k, 1);
                 } else {

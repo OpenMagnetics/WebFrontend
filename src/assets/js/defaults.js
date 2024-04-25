@@ -15,7 +15,7 @@ export const mas = {
         "designRequirements": {
             "name": "My Design Requirements",
             "magnetizingInductance": {
-                "nominal": 10e-6
+                "nominal": 100e-6
             },
             "turnsRatios": [],
         },
@@ -140,12 +140,12 @@ export const defaultOperatingPointExcitation = {
             ],
             "time": [
                 0,
-                0.0000025,
+                0.000005,
                 0.00001
             ]
         },
         "processed": {
-            "dutyCycle" : 0.25,
+            "dutyCycle" : 0.5,
             "peakToPeak" : 10,
             "offset" : 0,
             "label": "Triangular"
@@ -154,23 +154,23 @@ export const defaultOperatingPointExcitation = {
     "voltage": {
         "waveform": {
             "data": [
-                -2.5,
-                7.5,
-                7.5,
-                -2.5,
-                -2.5
+                -20.5,
+                70.5,
+                70.5,
+                -20.5,
+                -20.5
             ],
             "time": [
                 0,
                 0,
-                0.0000025,
-                0.0000025,
+                0.000005,
+                0.000005,
                 0.00001
             ]
         },
         "processed": {
-            "dutyCycle" : 0.25,
-            "peakToPeak" : 10,
+            "dutyCycle" : 0.5,
+            "peakToPeak" : 100,
             "offset" : 0,
             "label": "Rectangular"
         }
@@ -193,6 +193,12 @@ export const minimumMaximumScalePerParameter = {
 }
 
 
+export const gapTypes = [
+    "Ungapped",
+    "Ground",
+    "Spacer",
+    "Distributed",
+]
 
 export const defaultUngappedGapping = [
     {
@@ -208,7 +214,7 @@ export const defaultUngappedGapping = [
         "type": "residual"
     }
 ]
-export const defaultGrindedGapping = [
+export const defaultGroundGapping = [
     {
         "length": 0.001,
         "type": "subtractive"
@@ -411,7 +417,7 @@ export const defaultCoreSaveConfiguration = {
     downloadOnlyPiece: false,
 }
 
-export const defaultGapType = "Grinded";
+export const defaultGapType = "Ground";
 export const defaultGapLength = 1;
 export const defaultNumberGaps = 1;
 

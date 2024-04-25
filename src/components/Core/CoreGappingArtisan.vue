@@ -212,7 +212,7 @@ export default {
                             }
                             else {
                                 firstGuessGapType.push({
-                                    gapType: "Grinded",
+                                    gapType: "Ground",
                                     coordinates: columns[i]['coordinates']
                                 })
                             }
@@ -243,7 +243,7 @@ export default {
                                 }
                                 else {
                                     firstGuessGapType.push({
-                                        gapType: "Grinded",
+                                        gapType: "Ground",
                                         coordinates: columns[i]['coordinates']
                                     })
                                 }
@@ -271,7 +271,7 @@ export default {
                     }
                     else {
                         firstGuessGapType.push({
-                            gapType: "Grinded",
+                            gapType: "Ground",
                             coordinates: columns[i]['coordinates']
                         })
                     }

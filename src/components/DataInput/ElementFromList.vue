@@ -36,6 +36,10 @@ export default {
             type: Array,
             default: [],
         },
+        justifyContent: {
+            type: Boolean,
+            default: false,
+        },
     },
     data() {
         return {
@@ -85,7 +89,7 @@ export default {
             <input :data-cy="dataTestLabel + '-alt-title-label'" v-if="altText != null && !titleSameRow" type="text" class="rounded-2 fs-5 ms-3 bg-dark text-white col-11 p-0 mb-2 border-0" @change="$emit('changeText', $event.target.value)" :value="altText">
             <label :data-cy="dataTestLabel + '-title'" v-if="altText == null && !titleSameRow" class="rounded-2 fs-5 ms-3">{{replaceTitle == null? toTitleCase(name) : toTitleCase(replaceTitle)}}</label>
         </div>
-        <div class="row">
+        <div class="row" :class="justifyContent? 'd-flex justify-content-between' : ''">
             <label :data-cy="dataTestLabel + '-same-row-label'" v-if="titleSameRow" class="rounded-2 fs-5 col-4">{{replaceTitle == null? toTitleCase(name) : toTitleCase(replaceTitle)}}</label>
             <div  v-if="!titleSameRow" class=" col-sm-0 col-md-2">
             </div>

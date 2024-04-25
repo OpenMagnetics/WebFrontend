@@ -75,7 +75,7 @@ import Footer from '/src/components/Footer.vue'
                                 <div class="card-body">
                                     <i class="text-white fa-solid fa-arrows-left-right-to-line fa-2x mb-4"></i>
                                     <h5 class="card-title text-white"><a href="/core_gapping_artisan" class="text-primary">Customize gapping</a></h5>
-                                    <p class="card-text text-white">Add gapping to your core, distributed, spacer, grinded, in any column, at any position; and get its reluctance and storable energy.</p>
+                                    <p class="card-text text-white">Add gapping to your core, distributed, spacer, ground, in any column, at any position; and get its reluctance and storable energy.</p>
                                 </div>
                             </div>
                         </div>

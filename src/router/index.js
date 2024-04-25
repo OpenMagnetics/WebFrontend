@@ -173,6 +173,11 @@ const routes = [
     //     name: 'Dune',
     //     component: () => import('../views/Dune.vue')
     // },
+    {
+        path: '/core_cross_referencer',
+        name: 'CoreCrossReferencer',
+        component: () => import('../views/CoreCrossReferencer.vue')
+    },
 ]
 const router = createRouter({
     history: createWebHistory(),
