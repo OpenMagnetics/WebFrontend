@@ -181,14 +181,14 @@ export default {
             </h1>
         </div>
         <div class="row">
-            <div class="col-lg-3 text-center text-white bg-dark">
-                <label class="rounded-2 fs-4 col-12 mb-1 text-success"> 1<sup>st</sup> Step: Introduce your Current Core</label>
+            <div class="col-lg-3 text-center text-white bg-dark m-0 p-0">
+                <label class="rounded-2 fs-5 col-12 mb-1 text-success"> 1<sup>st</sup> Step: What is your Current Core?</label>
             </div>
-            <div class="col-lg-6 text-center text-white">
-                <label class="rounded-2 fs-4 col-12 mb-1 text-success"> 2<sup>nd</sup> Step: Select an Alternative</label>
+            <div class="col-lg-6 text-center text-white m-0 p-0">
+                <label class="rounded-2 fs-5 col-12 mb-1 text-success"> 2<sup>nd</sup> Step: Select an Alternative</label>
             </div>
-            <div class="col-lg-3 text-center text-white">
-                <label class="rounded-2 fs-4 col-12 mb-1 text-success"> 3<sup>rd</sup> Step: Analyze your Alternative</label>
+            <div class="col-lg-3 text-center text-white m-0 p-0">
+                <label class="rounded-2 fs-5 col-12 mb-1 text-success"> 3<sup>rd</sup> Step: Analyze your Alternative</label>
             </div>
         </div>
         <div class="row">
