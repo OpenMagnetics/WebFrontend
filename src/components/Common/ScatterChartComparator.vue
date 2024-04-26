@@ -110,7 +110,7 @@ export default {
                   fontSize: 13,
                   color: theme['white'],
 
-                  formatter: (value) => `${removeTrailingZeroes(formatUnit(this.xLabel == "Saturation"? value * 100 : value, this.processUnit(this.xLabel)).label, 2)} ${formatUnit(value, this.processUnit(this.xLabel)).unit}`,
+                  formatter: (value) => `${removeTrailingZeroes(formatUnit(this.xLabel == "Saturation"? value * 100 : value, this.processUnit(this.xLabel)).label, 2)} ${formatUnit(this.xLabel == "Saturation"? value * 100 : value, this.processUnit(this.xLabel), this.processUnit(this.xLabel)).unit}`,
                 }
             },
             yAxis: {
@@ -120,7 +120,7 @@ export default {
                   fontSize: 13,
                   color: theme['white'],
 
-                  formatter: (value) => `${removeTrailingZeroes(formatUnit(this.yLabel == "Saturation"? value * 100 : value, this.processUnit(this.yLabel)).label, 2)} ${formatUnit(value, this.processUnit(this.yLabel)).unit}`,
+                  formatter: (value) => `${removeTrailingZeroes(formatUnit(this.yLabel == "Saturation"? value * 100 : value, this.processUnit(this.yLabel)).label, 2)} ${formatUnit(this.yLabel == "Saturation"? value * 100 : value, this.processUnit(this.yLabel), this.processUnit(this.yLabel)).unit}`,
                 }
             },
 

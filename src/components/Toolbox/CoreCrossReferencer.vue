@@ -236,12 +236,16 @@ export default {
 
                 </div>
             </div>
-            <div v-if="crossReferencerStore.selectedCoreIndex != -1" class="col-lg-3 text-center text-white" 
+            <div class="col-lg-3 text-center text-white" 
                      style="height: 45vh">
                 <Output
+                    v-if="crossReferencerStore.selectedCoreIndex != -1"
                     :dataTestLabel="`${dataTestLabel}-CoreCrossReferencerFinalizer`"
                     :mas="masCore"
                 />
+                <h2 v-else class="text-center text-white">
+                    Select a core to view details, either by clicking on the graph point or in the name in the table
+                </h2>
             </div>
         </div>
     </div>
