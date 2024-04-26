@@ -1168,6 +1168,21 @@ export function processCoreTexts(data) {
             localTexts.coreMaterialDensityTable.text = 'Density';
             localTexts.coreMaterialDensityTable.value = `${removeTrailingZeroes(aux.label, 2)} ${aux.unit}`;
         }
+        {
+            localTexts.coreMaterialManufacturerNameTable = {};
+            localTexts.coreMaterialManufacturerNameTable.text = 'Manufacturer';
+            localTexts.coreMaterialManufacturerNameTable.value = data.magnetic.core.manufacturerInfo.name;
+        }
+        {
+            localTexts.coreMaterialManufacturerReferenceTable = {};
+            localTexts.coreMaterialManufacturerReferenceTable.text = 'Manufacturer Ref.';
+            localTexts.coreMaterialManufacturerReferenceTable.value = data.magnetic.core.manufacturerInfo.reference;
+        }
+        {
+            localTexts.coreMaterialManufacturerDatasheetTable = {};
+            localTexts.coreMaterialManufacturerDatasheetTable.text = 'Manufacturer Datasheet';
+            localTexts.coreMaterialManufacturerDatasheetTable.value = data.magnetic.core.manufacturerInfo.datasheetUrl;
+        }
     }
     if (data.outputs != null) {
         localTexts.numberTurns = `Using ${removeTrailingZeroes(data.magnetic.coil.functionalDescription[0].numberTurns)} turns will produce a magnetic with the following estimated output per operating point:`

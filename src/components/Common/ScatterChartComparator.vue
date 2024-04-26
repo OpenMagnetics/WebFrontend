@@ -254,12 +254,12 @@ export default {
             })
 
             limits.xAxis = {
-                min: Math.max(0, referencePoint[0] - xLimit),
-                max: Math.max(0, referencePoint[0] + xLimit),
+                min: Math.max(0, referencePoint[0] - xLimit) * 0.9,
+                max: Math.max(0, referencePoint[0] + xLimit) * 1.1,
             };
             limits.yAxis = {
-                min: Math.max(0, referencePoint[1] - yLimit),
-                max: Math.max(0, referencePoint[1] + yLimit),
+                min: Math.max(0, referencePoint[1] - yLimit) * 0.9,
+                max: Math.max(0, referencePoint[1] + yLimit) * 1.1,
             };
             return limits;
         },

@@ -47,6 +47,8 @@ export default {
         const tryingToSend = false;
         const loading = false;
         const recentChange = false;
+        const errorMessage = "";
+        const hasError = false;
         var scatterChartComparatorForceUpdate = 0; 
         return {
             masStore,
@@ -55,6 +57,8 @@ export default {
             loading,
             recentChange,
             scatterChartComparatorForceUpdate,
+            errorMessage,
+            hasError,
         }
     },
     computed: {
@@ -110,16 +114,19 @@ export default {
                                                                                         this.crossReferencerStore.referenceInputs.numberTurns,
                                                                                         JSON.stringify(inputs),
                                                                                         20,
-                                                                                        this.onlyManufacturer));
+                                                                                        this.onlyManufacturer,
+                                                                                        this.crossReferencerStore.referenceInputs.enabledCoreTypes.includes("Toroidal"),
+                                                                                        this.crossReferencerStore.referenceInputs.enabledCoreTypes.includes("Two-Piece Set")));
 
                 const auxCrossReferencedCoresValues = [];
                 aux.cores.forEach((elem, index) => {
                     const auxElem = {
                         label: elem.name,
                         coreLosses: aux.data[index].scoredValuePerFilter.CORE_LOSSES,
-                        dimensions: aux.data[index].scoredValuePerFilter.DIMENSIONS,
+                        envelopingVolume: aux.data[index].scoredValuePerFilter.ENVELOPING_VOLUME,
                         permeance: aux.data[index].scoredValuePerFilter.PERMEANCE,
                         saturation: aux.data[index].scoredValuePerFilter.SATURATION,
+                        effectiveArea: aux.data[index].scoredValuePerFilter.EFFECTIVE_AREA,
                         windingWindowArea: aux.data[index].scoredValuePerFilter.WINDING_WINDOW_AREA,
                     }
                     auxCrossReferencedCoresValues.push(auxElem);
@@ -130,9 +137,10 @@ export default {
                 this.crossReferencerStore.results.crossReferencedCoresValues = auxCrossReferencedCoresValues;
                 this.crossReferencerStore.results.referenceScoredValues = {
                     coreLosses: aux.referenceScoredValues.CORE_LOSSES,
-                    dimensions: aux.referenceScoredValues.DIMENSIONS,
+                    envelopingVolume: aux.referenceScoredValues.ENVELOPING_VOLUME,
                     permeance: aux.referenceScoredValues.PERMEANCE,
                     saturation: aux.referenceScoredValues.SATURATION,
+                    effectiveArea: aux.referenceScoredValues.EFFECTIVE_AREA,
                     windingWindowArea: aux.referenceScoredValues.WINDING_WINDOW_AREA,
                 };
 
@@ -143,7 +151,7 @@ export default {
             });
         },
         tryToSend() {
-            if (!this.tryingToSend && !this.loading) {
+            if (!this.tryingToSend && !this.loading && !this.hasError) {
                 this.recentChange = false
                 this.tryingToSend = true                
                 setTimeout(() => {
@@ -162,6 +170,14 @@ export default {
         },
         inputsUpdated() {
             this.recentChange = true;
+            if (this.crossReferencerStore.referenceInputs.enabledCoreTypes.length == 0) {
+                this.errorMessage = "Either Toroidal or Two-Piece Set cores must be selected";
+                this.hasError = true;
+            }
+            else {
+                this.errorMessage = "";
+                this.hasError = false;
+            }
             this.tryToSend();
         },
         onPointClick(event) {
@@ -204,7 +220,10 @@ export default {
             <div class="col-lg-3 text-center text-white bg-dark p-3">
                 <CoreCrossReferencerInputs 
                 @inputsUpdated="inputsUpdated"
+                :hasError="hasError"
+                :disabled="loading"
                 />
+                <label :data-cy="dataTestLabel + '-ErrorMessage'" class="text-danger m-0" style="font-size: 0.9em"> {{errorMessage}}</label>
 
             </div>
             <div class="col-lg-6 text-center text-white">
@@ -270,98 +289,3 @@ export default {
     </div>
 </template>
 
-
-<style>
-
-    html {
-      position: relative;
-      min-height: 100%;
-      padding-bottom:160px;
-    }
-
-    .om-header {
-        min-width: 100%;
-        position: fixed;
-        z-index: 999;
-    }
-
-
-    @media (max-width: 340px) {
-        #title {
-            display : none;
-        }
-    }
-
-    body {
-        background-color: var(--bs-dark) !important;
-    }
-    .border-dark {
-        border-color: var(--bs-dark) !important;
-    }
-    .input-group-text{
-        background-color: var(--bs-light) !important;
-        color: var(--bs-white) !important;
-        border-color: var(--bs-dark) !important;
-    }
-    .custom-select,
-    .form-control {
-        background-color: var(--bs-dark) !important;
-        color: var(--bs-white) !important;
-        border-color: var(--bs-dark) !important;
-    }
-    .jumbotron{
-        border-radius: 1em;
-        box-shadow: 0 5px 10px rgba(0,0,0,.2);
-    }
-    .card{
-        padding: 1.5em .5em .5em;
-        background-color: var(--bs-light);
-        border-radius: 1em;
-        text-align: center;
-        box-shadow: 0 5px 10px rgba(0,0,0,.2);
-    }
-    .form-control:disabled {
-        background-color: var(--bs-dark) !important;
-        color: var(--bs-white) !important;
-        border-color: var(--bs-dark) !important;
-    }
-    .form-control:-webkit-autofill,
-    .form-control:-webkit-autofill:focus,
-    .form-control:-webkit-autofill{
-        -webkit-text-fill-color: var(--bs-white) !important;
-        background-color: transparent !important;
-        -webkit-box-shadow: 0 0 0 50px var(--bs-dark) inset;
-    }
-
-    .container {
-        max-width: 100vw;
-        align-items: center;
-    }
-
-    .main {
-      margin-top: 60px;
-    }
-    ::-webkit-scrollbar { height: 3px;}
-    ::-webkit-scrollbar-button {  background-color: var(--bs-light); }
-    ::-webkit-scrollbar-track {  background-color: var(--bs-light);}
-    ::-webkit-scrollbar-track-piece { background-color: var(--bs-dark);}
-    ::-webkit-scrollbar-thumb {  background-color: var(--bs-light); border-radius: 3px;}
-    ::-webkit-scrollbar-corner { background-color: var(--bs-light);}
-
-    .small-text {
-       font-size: calc(1rem + 0.1vw);
-    }
-    .medium-text {
-       font-size: calc(0.8rem + 0.4vw);
-    }
-    .large-text {
-       font-size: calc(1rem + 0.5vw);
-    }
-
-    .accordion-button:focus {
-        border-color: var(--bs-primary) !important;
-        outline: 0  !important;
-        box-shadow: none  !important;
-    }
-
-</style>

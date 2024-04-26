@@ -4,6 +4,7 @@ import { defaultCore, defaultInputs } from '/src/assets/js/defaults.js'
 import { deepCopy } from '/src/assets/js/utils.js'
 import Dimension from '/src/components/DataInput/Dimension.vue'
 import ElementFromList from '/src/components/DataInput/ElementFromList.vue'
+import SeveralElementsFromList from '/src/components/DataInput/SeveralElementsFromList.vue'
 import Module from '/src/assets/js/libCrossReferencers.wasm.js'
 import CoreGappingSelector from '/src/components/Common/CoreGappingSelector.vue'
 import OperatingPointOffcanvas from '/src/components/Common/OperatingPointOffcanvas.vue'
@@ -31,6 +32,14 @@ export default {
             type: String,
             default: '',
         },
+        hasError: {
+            type: Boolean,
+            default: false,
+        },
+        disabled: {
+            type: Boolean,
+            default: false,
+        },
     },
     emits: [
         'inputsUpdated',
@@ -52,6 +61,22 @@ export default {
         }
     },
     computed: {
+        isStackable() {
+            var shapeName = this.crossReferencerStore.referenceInputs.core.functionalDescription.shape;
+            console.log(shapeName)
+            if (! (typeof shapeName === 'string' || shapeName instanceof String)) {
+                shapeName = shapeName.name;
+            }
+
+            console.log(shapeName)
+
+            if (shapeName.startsWith("E ") || shapeName.startsWith("U ") || shapeName.startsWith("T ")) {
+                return true;
+            }
+            else {
+                return false;
+            }
+        }
     },
     watch: { 
     },
@@ -135,6 +160,7 @@ export default {
                 :name="'shape'"
                 :titleSameRow="true"
                 :justifyContent="true"
+                :disabled="disabled"
                 v-model="crossReferencerStore.referenceInputs.core.functionalDescription"
                 :optionsToDisable="coreShapeFamilies"
                 :options="coreShapeNames"
@@ -147,6 +173,7 @@ export default {
                 :name="'material'"
                 :titleSameRow="true"
                 :justifyContent="true"
+                :disabled="disabled"
                 v-model="crossReferencerStore.referenceInputs.core.functionalDescription"
                 :optionsToDisable="coreMaterialManufacturers"
                 :options="coreMaterialNames"
@@ -154,12 +181,14 @@ export default {
             />
 
             <Dimension class="col-12 my-2 text-start"
+                v-if="isStackable"
                 :name="'numberStacks'"
                 :replaceTitle="'Number of Stacks'"
                 :unit="null"
                 :dataTestLabel="dataTestLabel + '-NumberStacks'"
                 :min="1"
                 :justifyContent="true"
+                :disabled="disabled"
                 :defaultValue="1"
                 :allowNegative="false"
                 :modelValue="crossReferencerStore.referenceInputs.core.functionalDescription"
@@ -169,6 +198,7 @@ export default {
             <CoreGappingSelector class="col-12 my-2 text-start"
                 :title="'Gap Info: '"
                 :dataTestLabel="dataTestLabel + '-Gap'"
+                :disabled="disabled"
                 :core="crossReferencerStore.referenceInputs.core"
                 @update="gappingUpdated"
             />
@@ -178,6 +208,7 @@ export default {
                 :replaceTitle="'Number of Turns'"
                 :unit="null"
                 :dataTestLabel="dataTestLabel + '-NumberTurns'"
+                :disabled="disabled"
                 :justifyContent="true"
                 :min="1"
                 :defaultValue="10"
@@ -191,6 +222,7 @@ export default {
                 :replaceTitle="'Temperature'"
                 :unit="'°C'"
                 :dataTestLabel="dataTestLabel + '-Temperature'"
+                :disabled="disabled"
                 :justifyContent="true"
                 :min="1"
                 :max="100"
@@ -200,8 +232,19 @@ export default {
                 @update="inputsUpdated"
             />
 
-            <button :data-cy="dataTestLabel + '-view-edit-excitation-modal-button'" class="btn btn-primary" data-bs-toggle="offcanvas" :data-bs-target="'#' + offcanvasName" ::aria-controls="offcanvasName + 'OperationPointOffCanvas'">View/Edit excitation</button>
-            <button :data-cy="dataTestLabel + '-calculate'" class="btn btn-success" @click="inputsUpdated">Get Alternative Cores</button>
+            <SeveralElementsFromList
+                class="col-12 my-2 text-start"
+                :classInput="'col-12'"
+                :name="'enabledCoreTypes'"
+                :disabled="disabled"
+                :justifyContent="true"
+                v-model="crossReferencerStore.referenceInputs"
+                :options="crossReferencerStore.possibleCoreTypes"
+                @update="inputsUpdated"
+            />
+
+            <button :disabled="disabled" :data-cy="dataTestLabel + '-view-edit-excitation-modal-button'" class="btn btn-primary" data-bs-toggle="offcanvas" :data-bs-target="'#' + offcanvasName" ::aria-controls="offcanvasName + 'OperationPointOffCanvas'">View/Edit excitation</button>
+            <button :disabled="disabled" v-if="!hasError" :data-cy="dataTestLabel + '-calculate'" class="btn btn-success" @click="inputsUpdated">Get Alternative Cores</button>
 
         </div>
     </div>

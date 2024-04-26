@@ -23,6 +23,10 @@ export default {
             type: Number,
             default: 0
         },
+        disabled: {
+            type: Boolean,
+            default: false,
+        },
     },
     data() {
 
@@ -123,6 +127,7 @@ export default {
                     :dataTestLabel="dataTestLabel + '-GapType'"
                     :name="'gapType'"
                     :replaceTitle="'Type'"
+                    :disabled="disabled"
                     :justifyContent="true"
                     :titleSameRow="true"
                     v-model="localData"
@@ -136,6 +141,7 @@ export default {
                     :replaceTitle="'Length'"
                     :min="1e-6"
                     :max="0.1"
+                    :disabled="disabled"
                     :justifyContent="true"
                     :unit="'m'"
                     :dataTestLabel="dataTestLabel + '-GapLength'"
@@ -148,6 +154,7 @@ export default {
                     :name="'numberGaps'"
                     v-if="localData.gapType == 'Distributed'"
                     :unit="null"
+                    :disabled="disabled"
                     :justifyContent="true"
                     :min="1"
                     :max="10"

@@ -42,8 +42,8 @@ export default {
                 tooltip: 'Core loss of the core',
             },
             {
-                label: 'Dimensions',
-                field: 'dimensions',
+                label: 'Enveloping Volume',
+                field: 'envelopingVolume',
                 tdClass: 'text-center',
                 tooltip: 'Volume of the core',
             },
@@ -58,6 +58,12 @@ export default {
                 field: 'saturation',
                 tdClass: 'text-center',
                 tooltip: 'How close the core would be to saturation',
+            },
+            {
+                label: 'Eff. Area',
+                field: 'effectiveArea',
+                tdClass: 'text-center',
+                tooltip: 'Effective Area of the core',
             },
             {
                 label: 'WW Area',
@@ -146,7 +152,7 @@ export default {
                     <span v-if="props.column.field == 'coreLosses'">
                         {{`${removeTrailingZeroes(formatPower(props.formattedRow[props.column.field]).label, 2)} ${formatPower(props.formattedRow[props.column.field]).unit}`}}
                     </span>
-                    <span v-if="props.column.field == 'dimensions'">
+                    <span v-if="props.column.field == 'envelopingVolume'">
                         {{`${removeTrailingZeroes(formatVolume(props.formattedRow[props.column.field]).label, 2)} ${formatVolume(props.formattedRow[props.column.field]).unit}`}}
                     </span>
                     <span v-if="props.column.field == 'permeance'">
@@ -156,6 +162,9 @@ export default {
                         {{`${removeTrailingZeroes(formatPercentage(props.formattedRow[props.column.field]).label, 2)} ${formatPercentage(props.formattedRow[props.column.field]).unit}`}}
                     </span>
                     <span v-if="props.column.field == 'windingWindowArea'">
+                        {{`${removeTrailingZeroes(formatArea(props.formattedRow[props.column.field]).label, 2)} ${formatArea(props.formattedRow[props.column.field]).unit}`}}
+                    </span>
+                    <span v-if="props.column.field == 'effectiveArea'">
                         {{`${removeTrailingZeroes(formatArea(props.formattedRow[props.column.field]).label, 2)} ${formatArea(props.formattedRow[props.column.field]).unit}`}}
                     </span>
                 </template>

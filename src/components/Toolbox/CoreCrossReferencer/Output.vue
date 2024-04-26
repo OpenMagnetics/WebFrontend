@@ -197,6 +197,12 @@ export default {
                         <div class="col-6 p-0 m-0 border text-center ps-2"></div>
                         <div class="col-3 p-0 m-0 border text-center">25°C</div>
                         <div class="col-3 p-0 m-0 border text-center">100°C</div>
+                        <div v-if="'coreMaterialManufacturerNameTable' in localTexts" class="col-6 p-0 m-0 border ps-2">{{localTexts.coreMaterialManufacturerNameTable.text}}</div>
+                        <div v-if="'coreMaterialManufacturerNameTable' in localTexts" class="col-6 p-0 m-0 border text-end pe-1">{{localTexts.coreMaterialManufacturerNameTable.value}}</div>
+                        <div v-if="'coreMaterialManufacturerReferenceTable' in localTexts" class="col-6 p-0 m-0 border ps-2">{{localTexts.coreMaterialManufacturerReferenceTable.text}}</div>
+                        <div v-if="'coreMaterialManufacturerReferenceTable' in localTexts" class="col-6 p-0 m-0 border text-end pe-1">{{localTexts.coreMaterialManufacturerReferenceTable.value}}</div>
+                        <div v-if="'coreMaterialManufacturerDatasheetTable' in localTexts" class="col-6 p-0 m-0 border ps-2">{{localTexts.coreMaterialManufacturerDatasheetTable.text}}</div>
+                        <a :href="localTexts.coreMaterialManufacturerDatasheetTable.value" target="_blank" v-if="'coreMaterialManufacturerDatasheetTable' in localTexts" class="col-6 p-0 m-0 border text-end pe-1">Link</a>
                         <div v-if="'coreMaterialPermeanceTable' in localTexts" class="col-6 p-0 m-0 border ps-2">{{localTexts.coreMaterialPermeanceTable.text}}</div>
                         <div v-if="'coreMaterialPermeanceTable' in localTexts" class="col-3 p-0 m-0 border text-end pe-1">{{localTexts.coreMaterialPermeanceTable.value_25}}</div>
                         <div v-if="'coreMaterialPermeanceTable' in localTexts" class="col-3 p-0 m-0 border text-end pe-1">{{localTexts.coreMaterialPermeanceTable.value_100}}</div>

@@ -24,21 +24,29 @@ export const useCrossReferencerStore = defineStore("crossReferencer", () => {
         },
         numberTurns: 10,
         temperature: 25,
+        enabledCoreTypes: ["Toroidal", "Two-Piece Set"],
     });
 
     const possibleLabels = ref([
         "Core Losses",
-        "Dimensions",
+        "Enveloping Volume",
         "Permeance",
+        "Effective Area",
         "Saturation",
         "Winding Window Area"
+    ]);
+
+
+    const possibleCoreTypes = ref([
+        "Toroidal",
+        "Two-Piece Set",
     ]);
 
     const results = ref({
         crossReferencedCores: [],
         crossReferencedCoresValues: [],
         referenceScoredValues: [],
-        xLabel: "Dimensions",
+        xLabel: "Enveloping Volume",
         yLabel: "Core Losses",
     });
 
@@ -47,6 +55,7 @@ export const useCrossReferencerStore = defineStore("crossReferencer", () => {
     return {
         referenceInputs,
         possibleLabels,
+        possibleCoreTypes,
         selectedCoreIndex,
         results,
     }
