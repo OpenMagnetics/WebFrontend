@@ -168,7 +168,6 @@ export default {
         <div class="row">
             <div v-if="mas.magnetic.manufacturerInfo != null" class="col-sm-12 col-md-12 text-start pe-0 row">
                 <h3 class="col-12 p-0 m-0 ps-3">{{mas.magnetic.manufacturerInfo.reference}}</h3>
-                <div class="col-12 fs-5 p-0 m-0 mt-2 text-start ps-3">{{localTexts.coreDescription}}</div>
                 <Core3DVisualizer 
                     :dataTestLabel="`${dataTestLabel}-CoreCrossReferencerCore3DVisualizer`"
                     :core="mas.magnetic.core"
