@@ -75,7 +75,8 @@ export default {
 
 <style type="text/css">
     .unit-select {
-        background-image: none;
-    }
+        background-image: none !important;
+        background: none !important;
+ }
 </style>
 

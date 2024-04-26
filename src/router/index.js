@@ -176,7 +176,22 @@ const routes = [
     {
         path: '/core_cross_referencer',
         name: 'CoreCrossReferencer',
-        component: () => import('../views/CoreCrossReferencer.vue')
+        component: () => import('../views/coreCrossReferencers/CoreCrossReferencer.vue')
+    },
+    {
+        path: '/core_cross_referencer_standex',
+        name: 'CoreCrossReferencerStandex',
+        component: () => import('../views/coreCrossReferencers/CoreCrossReferencerStandex.vue')
+    },
+    {
+        path: '/core_cross_referencer_ferroxcube',
+        name: 'CoreCrossReferencerFerroxcube',
+        component: () => import('../views/coreCrossReferencers/CoreCrossReferencerFerroxcube.vue')
+    },
+    {
+        path: '/core_cross_referencer_fair_rite',
+        name: 'CoreCrossReferencerFairRite',
+        component: () => import('../views/coreCrossReferencers/CoreCrossReferencerFairRite.vue')
     },
 ]
 const router = createRouter({

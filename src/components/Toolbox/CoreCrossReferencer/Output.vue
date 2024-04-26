@@ -30,6 +30,10 @@ export default {
             type: Object,
             required: true,
         },
+        loadingGif: {
+            type: String,
+            default: "/images/loading.gif",
+        },
     },
     data() {
         const style = getComputedStyle(document.body);
@@ -172,6 +176,7 @@ export default {
                     :dataTestLabel="`${dataTestLabel}-CoreCrossReferencerCore3DVisualizer`"
                     :core="mas.magnetic.core"
                     :fullCoreModel="true"
+                    :loadingGif="loadingGif"
                 />
                 <div class="col-12 mt-2">
                     <div class="row">

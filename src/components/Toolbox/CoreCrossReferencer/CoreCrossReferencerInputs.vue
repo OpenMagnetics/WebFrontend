@@ -7,6 +7,7 @@ import ElementFromList from '/src/components/DataInput/ElementFromList.vue'
 import Module from '/src/assets/js/libCrossReferencers.wasm.js'
 import CoreGappingSelector from '/src/components/Common/CoreGappingSelector.vue'
 import OperatingPointOffcanvas from '/src/components/Common/OperatingPointOffcanvas.vue'
+
 </script>
 
 <script>
@@ -208,31 +209,124 @@ export default {
 
 
 <style>
-.offcanvas-size-xxl {
-    --bs-offcanvas-width: 65vw !important;
-}
-.offcanvas-size-xl {
-    --bs-offcanvas-width: 65vw !important;
-    --bs-offcanvas-height: 60vh !important;
-}
-.offcanvas-size-lg {
-    --bs-offcanvas-width: 65vw !important;
-    --bs-offcanvas-height: 60vh !important;
-}
-.offcanvas-size-md { /* add Responsivenes to default offcanvas */
-    --bs-offcanvas-width: 65vw !important;
-    --bs-offcanvas-height: 60vh !important;
-}
-.offcanvas-size-sm {
-    --bs-offcanvas-width: 65vw !important;
-    --bs-offcanvas-height: 60vh !important;
-}
-.offcanvas-size-xs {
-    --bs-offcanvas-width: 65vw !important;
-    --bs-offcanvas-height: 60vh !important;
-}
-.offcanvas-size-xxs {
-    --bs-offcanvas-width: 65vw !important;
-    --bs-offcanvas-height: 60vh !important;
-}
+    .offcanvas-size-xxl {
+        --bs-offcanvas-width: 65vw !important;
+    }
+    .offcanvas-size-xl {
+        --bs-offcanvas-width: 65vw !important;
+        --bs-offcanvas-height: 60vh !important;
+    }
+    .offcanvas-size-lg {
+        --bs-offcanvas-width: 65vw !important;
+        --bs-offcanvas-height: 60vh !important;
+    }
+    .offcanvas-size-md { /* add Responsivenes to default offcanvas */
+        --bs-offcanvas-width: 65vw !important;
+        --bs-offcanvas-height: 60vh !important;
+    }
+    .offcanvas-size-sm {
+        --bs-offcanvas-width: 65vw !important;
+        --bs-offcanvas-height: 60vh !important;
+    }
+    .offcanvas-size-xs {
+        --bs-offcanvas-width: 65vw !important;
+        --bs-offcanvas-height: 60vh !important;
+    }
+    .offcanvas-size-xxs {
+        --bs-offcanvas-width: 65vw !important;
+        --bs-offcanvas-height: 60vh !important;
+    }
+
+
+    html {
+      position: relative;
+      min-height: 100%;
+      padding-bottom:160px;
+    }
+
+    .om-header {
+        min-width: 100%;
+        position: fixed;
+        z-index: 999;
+    }
+
+
+    @media (max-width: 340px) {
+        #title {
+            display : none;
+        }
+    }
+
+    body {
+        background-color: var(--bs-dark) !important;
+    }
+    .border-dark {
+        border-color: var(--bs-dark) !important;
+    }
+    .input-group-text{
+        background-color: var(--bs-light) !important;
+        color: var(--bs-white) !important;
+        border-color: var(--bs-dark) !important;
+    }
+    .custom-select,
+    .form-control {
+        background-color: var(--bs-dark) !important;
+        color: var(--bs-white) !important;
+        border-color: var(--bs-dark) !important;
+    }
+    .jumbotron{
+        border-radius: 1em;
+        box-shadow: 0 5px 10px rgba(0,0,0,.2);
+    }
+    .card{
+        padding: 1.5em .5em .5em;
+        background-color: var(--bs-light);
+        border-radius: 1em;
+        text-align: center;
+        box-shadow: 0 5px 10px rgba(0,0,0,.2);
+    }
+    .form-control:disabled {
+        background-color: var(--bs-dark) !important;
+        color: var(--bs-white) !important;
+        border-color: var(--bs-dark) !important;
+    }
+    .form-control:-webkit-autofill,
+    .form-control:-webkit-autofill:focus,
+    .form-control:-webkit-autofill{
+        -webkit-text-fill-color: var(--bs-white) !important;
+        background-color: transparent !important;
+        -webkit-box-shadow: 0 0 0 50px var(--bs-dark) inset;
+    }
+
+    .container {
+        max-width: 100vw;
+        align-items: center;
+    }
+
+    .main {
+      margin-top: 60px;
+    }
+    ::-webkit-scrollbar { height: 3px;}
+    ::-webkit-scrollbar-button {  background-color: var(--bs-light); }
+    ::-webkit-scrollbar-track {  background-color: var(--bs-light);}
+    ::-webkit-scrollbar-track-piece { background-color: var(--bs-dark);}
+    ::-webkit-scrollbar-thumb {  background-color: var(--bs-light); border-radius: 3px;}
+    ::-webkit-scrollbar-corner { background-color: var(--bs-light);}
+
+    .small-text {
+       font-size: calc(1rem + 0.1vw);
+    }
+    .medium-text {
+       font-size: calc(0.8rem + 0.4vw);
+    }
+    .large-text {
+       font-size: calc(1rem + 0.5vw);
+    }
+
+    .accordion-button:focus {
+        border-color: var(--bs-primary) !important;
+        outline: 0  !important;
+        box-shadow: none  !important;
+    }
+
 </style>

@@ -40,6 +40,10 @@ export default {
             type: Number,
             default: 1,
         },
+        loadingGif: {
+            type: String,
+            default: "/images/loading.gif",
+        },
     },
     components: {
         Camera,
@@ -58,11 +62,25 @@ export default {
         const posting = false
         const recentChange = false
         const tryingToSend = false
+        const style = getComputedStyle(document.body);
+
+        const theme = {
+          primary: style.getPropertyValue('--bs-primary'),
+          secondary: style.getPropertyValue('--bs-secondary'),
+          success: style.getPropertyValue('--bs-success'),
+          info: style.getPropertyValue('--bs-info'),
+          warning: style.getPropertyValue('--bs-warning'),
+          danger: style.getPropertyValue('--bs-danger'),
+          light: style.getPropertyValue('--bs-light'),
+          dark: style.getPropertyValue('--bs-dark'),
+          white: style.getPropertyValue('--bs-white'),
+        };
         return {
             current3dObject,
             posting,
             recentChange,
             tryingToSend,
+            theme,
         }
     },
     watch: {
@@ -271,14 +289,14 @@ export default {
 </script>
 
 <template>
-    <img data-cy="CoreShapeArtisanVisualizer-loading" v-if="posting" class="mx-auto d-block col-12" alt="loading" style="width: 60%; height: auto;" src="/images/loading.gif">
+    <img data-cy="CoreShapeArtisanVisualizer-loading" v-if="posting" class="mx-auto d-block col-12" alt="loading" style="width: 60%; height: auto;" :src="loadingGif">
     <Renderer data-cy="CoreShapeArtisanVisualizer-canvas" ref="renderer" resize=true :orbit-ctrl="{ enableDamping: true, dampingFactor: 0.05, autoRotate : true }" shadow class="p-0 m-0 bg-dark">
         <Camera ref="camera" />
-        <Scene ref="scene" :background="'#1a1a1a'">
-            <SpotLight color="#539796" :intensity="1" :position="{ y: 150, z: 100 }" :cast-shadow="true" :shadow-map-size="{ width: 1024, height: 1024 }" />
-            <SpotLight color="#539796" :intensity="1" :position="{ y: -150, z: 100 }" :cast-shadow="true" :shadow-map-size="{ width: 1024, height: 1024 }" />
-            <SpotLight color="#539796" :intensity="1" :position="{ x: 150, z: 100 }" :cast-shadow="true" :shadow-map-size="{ width: 1024, height: 1024 }" />
-            <SpotLight color="#539796" :intensity="1" :position="{ x: -150, z: 100 }" :cast-shadow="true" :shadow-map-size="{ width: 1024, height: 1024 }" />
+        <Scene ref="scene" :background="theme['dark']">
+            <SpotLight :color="theme['primary']" :intensity="1" :position="{ y: 150, z: 100 }" :cast-shadow="true" :shadow-map-size="{ width: 1024, height: 1024 }" />
+            <SpotLight :color="theme['primary']" :intensity="1" :position="{ y: -150, z: 100 }" :cast-shadow="true" :shadow-map-size="{ width: 1024, height: 1024 }" />
+            <SpotLight :color="theme['primary']" :intensity="1" :position="{ x: 150, z: 100 }" :cast-shadow="true" :shadow-map-size="{ width: 1024, height: 1024 }" />
+            <SpotLight :color="theme['primary']" :intensity="1" :position="{ x: -150, z: 100 }" :cast-shadow="true" :shadow-map-size="{ width: 1024, height: 1024 }" />
         </Scene>
     </Renderer>
 </template>
