@@ -192,7 +192,7 @@ export default {
             </div>
         </div>
         <div class="row">
-            <div class="col-lg-3 text-center text-white border bg-dark p-3">
+            <div class="col-lg-3 text-center text-white bg-dark p-3">
                 <CoreCrossReferencerInputs 
                 @inputsUpdated="inputsUpdated"
                 />

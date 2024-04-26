@@ -129,7 +129,7 @@ export default {
     <div class="container">
         <div class="row">
             <ElementFromList
-                class="col-12 my-3 text-start"
+                class="col-12 my-2 text-start"
                 :dataTestLabel="dataTestLabel + '-ShapeNames'"
                 :name="'shape'"
                 :titleSameRow="true"
@@ -141,7 +141,7 @@ export default {
             />
 
             <ElementFromList
-                class="col-12 my-3 text-start"
+                class="col-12 my-2 text-start"
                 :dataTestLabel="dataTestLabel + '-MaterialNames'"
                 :name="'material'"
                 :titleSameRow="true"
@@ -152,7 +152,7 @@ export default {
                 @update="inputsUpdated"
             />
 
-            <Dimension class="col-12 my-3 text-start"
+            <Dimension class="col-12 my-2 text-start"
                 :name="'numberStacks'"
                 :replaceTitle="'Number of Stacks'"
                 :unit="null"
@@ -165,14 +165,14 @@ export default {
                 @update="inputsUpdated"
             />
 
-            <CoreGappingSelector class="col-12 my-3 text-start"
+            <CoreGappingSelector class="col-12 my-2 text-start"
                 :title="'Gap Info: '"
                 :dataTestLabel="dataTestLabel + '-Gap'"
                 :core="crossReferencerStore.referenceInputs.core"
                 @update="gappingUpdated"
             />
 
-            <Dimension class="col-12 my-3 text-start"
+            <Dimension class="col-12 my-2 text-start"
                 :name="'numberTurns'"
                 :replaceTitle="'Number of Turns'"
                 :unit="null"
@@ -185,7 +185,7 @@ export default {
                 @update="inputsUpdated"
             />
 
-            <Dimension class="col-12 my-3 text-start"
+            <Dimension class="col-12 my-2 text-start"
                 :name="'temperature'"
                 :replaceTitle="'Temperature'"
                 :unit="'°C'"
@@ -200,6 +200,7 @@ export default {
             />
 
             <button :data-cy="dataTestLabel + '-view-edit-excitation-modal-button'" class="btn btn-primary" data-bs-toggle="offcanvas" :data-bs-target="'#' + offcanvasName" ::aria-controls="offcanvasName + 'OperationPointOffCanvas'">View/Edit excitation</button>
+            <button :data-cy="dataTestLabel + '-calculate'" class="btn btn-success" @click="inputsUpdated">Get Alternative Cores</button>
 
         </div>
     </div>
