@@ -88,14 +88,14 @@ export default {
     created () {
         this.masStore.$onAction((action) => {
             if (action.name == "updatedInputExcitationProcessed") {
+                this.checkError();
                 this.tryToSend();
             }
         })
     },
     mounted () {
-        if (this.crossReferencerStore.results.crossReferencedCores.length == 0) {
-            this.tryToSend();
-        }
+        this.checkError();
+        this.tryToSend();
     },
     methods: {
         calculateCrossReferencedCoresValues() {
@@ -116,7 +116,8 @@ export default {
                                                                                         20,
                                                                                         this.onlyManufacturer,
                                                                                         this.crossReferencerStore.referenceInputs.enabledCoreTypes.includes("Toroidal"),
-                                                                                        this.crossReferencerStore.referenceInputs.enabledCoreTypes.includes("Two-Piece Set")));
+                                                                                        this.crossReferencerStore.referenceInputs.enabledCoreTypes.includes("Two-Piece Set"),
+                                                                                        this.crossReferencerStore.referenceInputs.enabledCoreTypes.includes("Only Cores In Stock")));
 
                 const auxCrossReferencedCoresValues = [];
                 aux.cores.forEach((elem, index) => {
@@ -168,9 +169,9 @@ export default {
                 , 500);
             }
         },
-        inputsUpdated() {
-            this.recentChange = true;
-            if (this.crossReferencerStore.referenceInputs.enabledCoreTypes.length == 0) {
+        checkError() {
+            if (!(this.crossReferencerStore.referenceInputs.enabledCoreTypes.includes("Toroidal") ||
+                  this.crossReferencerStore.referenceInputs.enabledCoreTypes.includes("Two-Piece Set"))) {
                 this.errorMessage = "Either Toroidal or Two-Piece Set cores must be selected";
                 this.hasError = true;
             }
@@ -178,6 +179,10 @@ export default {
                 this.errorMessage = "";
                 this.hasError = false;
             }
+        },
+        inputsUpdated() {
+            this.recentChange = true;
+            this.checkError();
             this.tryToSend();
         },
         onPointClick(event) {
@@ -268,6 +273,7 @@ export default {
                         :dataTestLabel="dataTestLabel + '-YLabelSelector'"
                         :data="crossReferencerStore.results.crossReferencedCoresValues"
                         :reference="null"
+                        :onlyCoresInStock="crossReferencerStore.referenceInputs.enabledCoreTypes.includes(`Only Cores In Stock`)"
                         @click="onTableClick"
                     />
 

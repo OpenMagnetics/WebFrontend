@@ -24,7 +24,7 @@ export const useCrossReferencerStore = defineStore("crossReferencer", () => {
         },
         numberTurns: 10,
         temperature: 25,
-        enabledCoreTypes: ["Toroidal", "Two-Piece Set"],
+        enabledCoreTypes: ["Toroidal", "Two-Piece Set", "Only Cores In Stock"],
     });
 
     const possibleLabels = ref([
@@ -40,6 +40,7 @@ export const useCrossReferencerStore = defineStore("crossReferencer", () => {
     const possibleCoreTypes = ref([
         "Toroidal",
         "Two-Piece Set",
+        "Only Cores In Stock",
     ]);
 
     const results = ref({

@@ -1,0 +1,30 @@
+$light:     	#f1f1f1 !default;
+$white:     	#000000 !default;
+$dark:     		#ffffff !default;
+$primary:       #eb1c24 !default;
+$secondary:     #acaba6 !default;
+$info:        	#7ba7c6 !default;
+$success:       #4b4b4b !default;
+$warning:       #ff8800 !default;
+$danger:        #ff8800 !default;
+$border-color:  #eb1c24 !default;
+
+$popover-bg:                        $dark !default;
+
+$popover-body-color:                $white !default;
+$enable-responsive-font-sizes: 		true;
+
+$accordion-icon-color:   #eb1c24 !default;
+
+$grid-breakpoints: (
+  xs: 0,
+  sm: 576px,
+  md: 768px,
+  lg: 1075px,
+  xl: 1200px,
+  xxl: 1400px
+);
+
+
+@import "./bootstrap-5.2.1/scss/bootstrap";
+

@@ -21,10 +21,14 @@ export default {
             default: '',
         },
         data: {
-            type: Object,
+            type: Array,
         },
         reference: {
             type: Object,
+        },
+        onlyCoresInStock: {
+            type: Boolean,
+            defalut: "false"
         },
     },
     data() {
@@ -114,6 +118,13 @@ export default {
         getTableGridSize() {
             return "col-lg-12"
         },
+        getWarningMessage() {
+            var warningMessage = "";
+            if (this.data.length == 0 && this.onlyCoresInStock) {
+                warningMessage = "No result found with stock. Try disabling option \"Only Cores In Stock\"";
+            }
+            return warningMessage;
+        }
     },
     created() {
         this.scaleColumns()
@@ -169,6 +180,9 @@ export default {
                     </span>
                 </template>
             </vue-good-table>
+        </div>
+        <div row>
+            <label :data-cy="dataTestLabel + '-ErrorMessage'" class="text-danger m-0" style="font-size: 0.9em"> {{getWarningMessage}}</label>
         </div>
     </div>
 </template>

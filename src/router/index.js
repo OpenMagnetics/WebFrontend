@@ -193,6 +193,21 @@ const routes = [
         name: 'CoreCrossReferencerFairRite',
         component: () => import('../views/coreCrossReferencers/CoreCrossReferencerFairRite.vue')
     },
+    {
+        path: '/core_cross_referencer_tdk',
+        name: 'CoreCrossReferencerTDK',
+        component: () => import('../views/coreCrossReferencers/CoreCrossReferencerTDK.vue')
+    },
+    {
+        path: '/core_cross_referencer_magnetics',
+        name: 'CoreCrossReferencerMagnetics',
+        component: () => import('../views/coreCrossReferencers/CoreCrossReferencerMagnetics.vue')
+    },
+    {
+        path: '/core_cross_referencer_micrometals',
+        name: 'CoreCrossReferencerMicrometals',
+        component: () => import('../views/coreCrossReferencers/CoreCrossReferencerMicrometals.vue')
+    },
 ]
 const router = createRouter({
     history: createWebHistory(),

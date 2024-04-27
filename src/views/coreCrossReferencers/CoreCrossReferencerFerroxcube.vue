@@ -22,7 +22,7 @@ export default {
 </script>
 
 <template>
-    <CoreCrossReferencer />
+    <CoreCrossReferencer :onlyManufacturer="'Ferroxcube'" loadingGif="/images/loading_ferroxcube.gif"/>
 </template>
 
 

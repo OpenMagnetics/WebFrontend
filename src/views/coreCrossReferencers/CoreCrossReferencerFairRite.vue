@@ -22,7 +22,7 @@ export default {
 </script>
 
 <template>
-    <CoreCrossReferencer :onlyManufacturer="'Fair-Rite'"/>
+    <CoreCrossReferencer :onlyManufacturer="'Fair-Rite'" loadingGif="/images/loading_fair_rite.gif"/>
 </template>
 
 
