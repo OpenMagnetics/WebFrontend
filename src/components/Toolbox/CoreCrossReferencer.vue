@@ -1,7 +1,7 @@
 <script setup>
 import { useMasStore } from '/src/stores/mas'
 import { useCrossReferencerStore } from '/src/stores/crossReferencer'
-import { defaultCore, defaultInputs } from '/src/assets/js/defaults.js'
+import { defaultCore, defaultInputs, coreCrossReferencerPossibleLabels } from '/src/assets/js/defaults.js'
 import { deepCopy } from '/src/assets/js/utils.js'
 import ElementFromList from '/src/components/DataInput/ElementFromList.vue'
 import Module from '/src/assets/js/libCrossReferencers.wasm.js'
@@ -253,7 +253,7 @@ export default {
                         :titleSameRow="true"
                         :justifyContent="false"
                         v-model="crossReferencerStore.results"
-                        :options="crossReferencerStore.possibleLabels"
+                        :options="coreCrossReferencerPossibleLabels"
                         @update="labelsUpdated"
                     />
 
@@ -264,7 +264,7 @@ export default {
                         :titleSameRow="true"
                         :justifyContent="false"
                         v-model="crossReferencerStore.results"
-                        :options="crossReferencerStore.possibleLabels"
+                        :options="coreCrossReferencerPossibleLabels"
                         @update="labelsUpdated"
                     />
 

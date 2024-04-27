@@ -10,6 +10,24 @@ export const magneticAdviserWeights = {
     "COST": 30,
 }
 
+
+export const coreCrossReferencerPossibleLabels = [
+    "Core Losses",
+    "Enveloping Volume",
+    "Permeance",
+    "Effective Area",
+    "Saturation",
+    "Winding Window Area"
+];
+
+
+export const coreCrossReferencerPossibleCoreTypes = [
+    "Toroidal",
+    "Two-Piece Set",
+    "Only Cores In Stock",
+];
+
+
 export const mas = {
     "inputs": {
         "designRequirements": {

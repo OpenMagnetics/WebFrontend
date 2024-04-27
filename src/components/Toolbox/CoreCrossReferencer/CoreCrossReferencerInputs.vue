@@ -1,6 +1,6 @@
 <script setup>
 import { useCrossReferencerStore } from '/src/stores/crossReferencer'
-import { defaultCore, defaultInputs } from '/src/assets/js/defaults.js'
+import { defaultCore, defaultInputs, coreCrossReferencerPossibleCoreTypes } from '/src/assets/js/defaults.js'
 import { deepCopy } from '/src/assets/js/utils.js'
 import Dimension from '/src/components/DataInput/Dimension.vue'
 import ElementFromList from '/src/components/DataInput/ElementFromList.vue'
@@ -239,7 +239,7 @@ export default {
                 :disabled="disabled"
                 :justifyContent="true"
                 v-model="crossReferencerStore.referenceInputs"
-                :options="crossReferencerStore.possibleCoreTypes"
+                :options="coreCrossReferencerPossibleCoreTypes"
                 @update="inputsUpdated"
             />
 

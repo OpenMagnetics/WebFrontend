@@ -27,22 +27,6 @@ export const useCrossReferencerStore = defineStore("crossReferencer", () => {
         enabledCoreTypes: ["Toroidal", "Two-Piece Set", "Only Cores In Stock"],
     });
 
-    const possibleLabels = ref([
-        "Core Losses",
-        "Enveloping Volume",
-        "Permeance",
-        "Effective Area",
-        "Saturation",
-        "Winding Window Area"
-    ]);
-
-
-    const possibleCoreTypes = ref([
-        "Toroidal",
-        "Two-Piece Set",
-        "Only Cores In Stock",
-    ]);
-
     const results = ref({
         crossReferencedCores: [],
         crossReferencedCoresValues: [],
@@ -55,8 +39,6 @@ export const useCrossReferencerStore = defineStore("crossReferencer", () => {
 
     return {
         referenceInputs,
-        possibleLabels,
-        possibleCoreTypes,
         selectedCoreIndex,
         results,
     }
