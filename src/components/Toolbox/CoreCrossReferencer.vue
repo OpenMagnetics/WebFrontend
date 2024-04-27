@@ -162,8 +162,7 @@ export default {
                     }
                     else {
                         this.tryingToSend = false
-                        this.loading = true;
-                        setTimeout(() => {this.calculateCrossReferencedCoresValues()}, 5);
+                        setTimeout(() => {this.loading = true; setTimeout(() => {this.calculateCrossReferencedCoresValues()}, 100);}, 5);
                     }
                 }
                 , 500);
