@@ -278,8 +278,7 @@ export default {
 
                 </div>
             </div>
-            <div class="col-lg-3 text-center text-white" 
-                     style="height: 45vh">
+            <div v-if="!loading" class="col-lg-3 text-center text-white" style="height: 45vh">
                 <Output
                     v-if="crossReferencerStore.selectedCoreIndex != -1"
                     :dataTestLabel="`${dataTestLabel}-CoreCrossReferencerFinalizer`"
@@ -289,6 +288,9 @@ export default {
                 <h2 v-else class="text-center text-white">
                     Select a core to view details, either by clicking on the graph point or in the name in the table
                 </h2>
+            </div>
+            <div v-else class="col-lg-3">
+                <img data-cy="CoreAdviser-loading" class="mx-auto d-block col-12" alt="loading" style="width: 50%; height: auto;" :src="loadingGif">
             </div>
         </div>
     </div>
