@@ -130,12 +130,16 @@ export default {
         this.scaleColumns()
     },
     mounted() {
-        this.currentTableWidth = this.$refs.CoreCrossReferencerTable.$el.clientWidth;
+        if (this.$refs.CoreCrossReferencerTable.$el != null){
+            this.currentTableWidth = this.$refs.CoreCrossReferencerTable.$el.clientWidth;
+        }
         console.log(this.currentTableWidth);
         this.scaleColumns();
 
         window.addEventListener('resize', () => {
-            this.currentTableWidth = this.$refs.CoreCrossReferencerTable.$el.clientWidth;
+            if (this.$refs.CoreCrossReferencerTable.$el != null){
+                this.currentTableWidth = this.$refs.CoreCrossReferencerTable.$el.clientWidth;
+            }
             console.log(this.currentTableWidth);
             this.scaleColumns();
         })

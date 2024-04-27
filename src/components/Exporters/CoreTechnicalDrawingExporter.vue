@@ -1,0 +1,71 @@
+<script setup>
+import * as download from 'downloadjs'
+import { clean } from '/src/assets/js/utils.js'
+
+</script>
+<script>
+
+export default {
+    props: {
+        dataTestLabel: {
+            type: String,
+            default: '',
+        },
+        core: {
+            type: Object,
+            required: true,
+        },
+        fullCoreModel: {
+            type: Boolean,
+            default: true,
+        },
+        classProp: {
+            type: String,
+            default: "btn-primary m-0 p-0",
+        },
+    },
+    data() {
+        const exported = false;
+
+        return {
+            exported,
+        }
+    },
+    computed: {
+    },
+    methods: {
+        onClick(event) {
+            var coreName;
+            const url = import.meta.env.VITE_API_ENDPOINT + '/core_compute_gapping_technical_drawing'
+            var data = this.core;
+
+            if (this.core.name != null) {
+                coreName = this.core.name;
+            }
+            else {
+                coreName = "Custom core"; 
+            }
+
+            data = clean(data);
+
+            this.$axios.post(url, data)
+            .then(response => {
+                download(response.data.front_view, coreName + ".svg", "text/plain");
+                this.$emit("export", coreName + ".svg")
+                this.exported = true
+                setTimeout(() => this.exported = false, 2000);
+            })
+            .catch(error => {
+                console.error(error)
+            });
+
+        },
+    }
+}
+</script>
+
+<template>
+    <div class="container">
+        <button :disabled="exported" :data-cy="dataTestLabel + '-download-Technical-Drawing-File-button'" class="btn" :class="classProp" @click="onClick"> Download Technical Drawing </button>
+    </div>
+</template>

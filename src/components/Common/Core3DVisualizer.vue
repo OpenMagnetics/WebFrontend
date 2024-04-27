@@ -3,7 +3,7 @@ import Module from '/src/assets/js/libCrossReferencers.wasm.js'
 import { Object3D, MathUtils, MeshBasicMaterial, Mesh, BoxGeometry, MeshStandardMaterial, LoadingManager, TextureLoader, PointLight, Box3, Vector3} from 'three';
 import {Camera, EffectComposer, InstancedMesh, PhongMaterial, Renderer, RenderPass, SphereGeometry, SpotLight, Scene, UnrealBloomPass, AmbientLight} from 'troisjs';
 import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
-import * as Utils from '/src/assets/js/utils.js'
+import { clean, deepCopy, hexToRgb } from '/src/assets/js/utils.js'
 
 </script>
 
@@ -114,7 +114,7 @@ export default {
             const object = new OBJLoader().parse( sourceObject );
             object.traverse( function ( child, index ) {
                 if ( child.isMesh ) {
-                    const color = Utils.hexToRgb("#646877")
+                    const color = hexToRgb("#646877")
                     child.material.color.r = color.r / 255
                     child.material.color.g = color.g / 255
                     child.material.color.b = color.b / 255
@@ -122,7 +122,7 @@ export default {
                     child.material.specular.g = 0.2
                     child.material.specular.b = 0.2
                 }
-
+4
             } );
 
             object.rotation.x = -Math.PI / 2
@@ -219,7 +219,7 @@ export default {
             if (!this.posting) {
                 crossReferencers.ready.then(_ => {
 
-                    const aux = Utils.deepCopy(this.core);
+                    const aux = deepCopy(this.core);
                     aux['geometricalDescription'] = null;
                     aux['processedDescription'] = null;
                     aux['functionalDescription']['shape']['familySubtype'] = String(aux['functionalDescription']['shape']['familySubtype']);
@@ -239,7 +239,7 @@ export default {
 
                     this.hasFreeCADError = false;
                     this.removeObject3D(this.current3dObject);
-                    core = Utils.clean(core);
+                    core = clean(core);
 
                     if (core.functionalDescription.gapping == undefined) {
                         core.functionalDescription.gapping = []

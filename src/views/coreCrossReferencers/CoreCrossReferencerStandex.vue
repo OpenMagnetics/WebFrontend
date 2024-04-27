@@ -25,7 +25,6 @@ export default {
     <CoreCrossReferencer loadingGif="/images/loading_standex.gif"/>
 </template>
 
-
 <style>
 
     html {

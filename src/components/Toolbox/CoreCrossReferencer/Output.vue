@@ -3,6 +3,9 @@ import Module from '/src/assets/js/libCrossReferencers.wasm.js'
 import * as download from 'downloadjs'
 import { toTitleCase, removeTrailingZeroes, processCoreTexts, deepCopy, downloadBase64asPDF, clean } from '/src/assets/js/utils.js'
 import Core3DVisualizer from '/src/components/Common/Core3DVisualizer.vue'
+import CoreSTPExporter from '/src/components/Exporters/CoreSTPExporter.vue'
+import CoreOBJExporter from '/src/components/Exporters/CoreOBJExporter.vue'
+import CoreTechnicalDrawingExporter from '/src/components/Exporters/CoreTechnicalDrawingExporter.vue'
 
 </script>
 
@@ -53,9 +56,9 @@ export default {
             theme,
             localTexts,
             masExported: false,
-            STPExported: true,
-            OBJExported: true,
-            technicalDrawingExported: true,
+            STPExported: false,
+            OBJExported: false,
+            technicalDrawingExported: false,
         }
     },
     computed: {
@@ -162,6 +165,9 @@ export default {
                 console.error(error)
             });
         },
+        onExport(filename) {
+            console.log("Exported" + filename);
+        },
     
     }
 }
@@ -170,14 +176,18 @@ export default {
 <template>
     <div class="container">
         <div class="row">
+            <h3 class="col-12 p-0 m-0 ps-3">{{mas.magnetic.manufacturerInfo.reference}}</h3>
+        </div>
+        <div class="row" style="height: 30vh">
+            <Core3DVisualizer 
+                :dataTestLabel="`${dataTestLabel}-CoreCrossReferencerCore3DVisualizer`"
+                :core="mas.magnetic.core"
+                :fullCoreModel="true"
+                :loadingGif="loadingGif"
+            />
+        </div>
+        <div class="row">
             <div v-if="mas.magnetic.manufacturerInfo != null" class="col-sm-12 col-md-12 text-start pe-0 row">
-                <h3 class="col-12 p-0 m-0 ps-3">{{mas.magnetic.manufacturerInfo.reference}}</h3>
-                <Core3DVisualizer 
-                    :dataTestLabel="`${dataTestLabel}-CoreCrossReferencerCore3DVisualizer`"
-                    :core="mas.magnetic.core"
-                    :fullCoreModel="true"
-                    :loadingGif="loadingGif"
-                />
                 <div class="col-12 mt-2">
                     <div class="row">
                         <div class="col-12 fs-5 p-0 m-0 my-1 text-center">Core Effective Parameters</div>
@@ -225,12 +235,29 @@ export default {
                     </div>
                 </div>
             </div>
-
         </div>
         <div class=" row text-start">
-            <button :disabled="STPExported" :data-cy="dataTestLabel + '-download-STP-File-button'" class="btn btn-primary col-4 mt-4" @click="exportSTP"> Download STP model </button>
-            <button :disabled="OBJExported" :data-cy="dataTestLabel + '-download-OBJ-File-button'" class="btn btn-primary col-4 mt-4" @click="exportOBJ"> Download OBJ model </button>
-            <button :disabled="technicalDrawingExported" :data-cy="dataTestLabel + '-download-TechnicalDrawing-File-button'" class="btn btn-primary col-4 mt-4" @click="exportPDF"> Download Technical Drawing</button>
+            <CoreSTPExporter
+                class="btn btn-primary col-4 mt-4"
+                :data-cy="dataTestLabel + '-download-STP-File-button'"
+                :core="mas.magnetic.core"
+                :fullCoreModel="true"
+                @export="onExport"
+            />
+            <CoreOBJExporter
+                class="btn btn-primary col-4 mt-4"
+                :data-cy="dataTestLabel + '-download-STP-File-button'"
+                :core="mas.magnetic.core"
+                :fullCoreModel="true"
+                @export="onExport"
+            />
+            <CoreTechnicalDrawingExporter
+                class="btn btn-primary col-4 mt-4"
+                :data-cy="dataTestLabel + '-download-STP-File-button'"
+                :core="mas.magnetic.core"
+                :fullCoreModel="true"
+                @export="onExport"
+            />
         </div>
     </div>
 </template>
