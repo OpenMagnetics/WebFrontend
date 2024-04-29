@@ -32,6 +32,10 @@ export default {
             type: String,
             default: '',
         },
+        onlyManufacturer: {
+            type: String,
+            default: '',
+        },
         hasError: {
             type: Boolean,
             default: false,
@@ -93,7 +97,14 @@ export default {
 
                 this.coreShapeFamilies = this.coreShapeFamilies.sort();
 
-                const coreShapeNamesHandle = crossReferencers.get_available_core_shapes();
+                var coreShapeNamesHandle;
+                if (this.onlyManufacturer != '' && this.onlyManufacturer != null) {
+                    coreShapeNamesHandle = crossReferencers.get_available_core_shapes_by_manufacturer(this.onlyManufacturer);
+                }
+                else {
+                    coreShapeNamesHandle = crossReferencers.get_available_core_shapes();
+                }
+
                 this.coreShapeFamilies.forEach((shapeFamily) => {
                     if (!shapeFamily.includes("PQI") && !shapeFamily.includes("UT") &&
                         !shapeFamily.includes("UI") && !shapeFamily.includes("H") && !shapeFamily.includes("DRUM")) {
@@ -112,6 +123,11 @@ export default {
 
                     }
                 })
+                this.coreShapeNames = this.coreShapeNames.sort();
+
+                if (!this.coreShapeNames.includes(this.crossReferencerStore.coreReferenceInputs.core.functionalDescription.shape)) {
+                    this.crossReferencerStore.coreReferenceInputs.core.functionalDescription.shape = this.coreShapeNames[1];
+                }
             });
         },
         getMaterialNames() {
@@ -124,12 +140,19 @@ export default {
                 this.coreMaterialManufacturers = this.coreMaterialManufacturers.sort();
 
                 this.coreMaterialManufacturers.forEach((manufacturer) => {
-                    const coreMaterialNamesHandle = crossReferencers.get_available_core_materials(manufacturer);
-                    this.coreMaterialNames.push(manufacturer);
-                    for (var i = coreMaterialNamesHandle.size() - 1; i >= 0; i--) {
-                        this.coreMaterialNames.push(coreMaterialNamesHandle.get(i));
+                    if (!(this.onlyManufacturer != '' && this.onlyManufacturer != null && manufacturer != this.onlyManufacturer)) {
+                        const coreMaterialNamesHandle = crossReferencers.get_available_core_materials(manufacturer);
+                        this.coreMaterialNames.push(manufacturer);
+                        for (var i = coreMaterialNamesHandle.size() - 1; i >= 0; i--) {
+                            this.coreMaterialNames.push(coreMaterialNamesHandle.get(i));
+                        }
                     }
                 })
+                this.coreMaterialNames = this.coreMaterialNames.sort();
+
+                if (!this.coreMaterialNames.includes(this.crossReferencerStore.coreReferenceInputs.core.functionalDescription.material)) {
+                    this.crossReferencerStore.coreReferenceInputs.core.functionalDescription.material = this.coreMaterialNames[1];
+                }
             });
         },
         inputsUpdated() {

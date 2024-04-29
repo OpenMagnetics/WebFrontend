@@ -287,10 +287,12 @@ export default {
         </div>
         <div class="row">
             <div class="col-lg-3 text-center text-white bg-dark p-3">
+                {{(keepMaterialConstant)? onlyManufacturer : ''}}
                 <CoreCrossReferencerInputs 
                 @inputsUpdated="inputsUpdated"
                 :hasError="hasError"
                 :disabled="loading"
+                :onlyManufacturer="(keepMaterialConstant)? onlyManufacturer : ''"
                 />
                 <label :data-cy="dataTestLabel + '-ErrorMessage'" class="text-danger m-0" style="font-size: 0.9em"> {{errorMessage}}</label>
                 <div class="container">
