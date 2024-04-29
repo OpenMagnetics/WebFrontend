@@ -42,7 +42,7 @@ export default {
                         <h2 class="">I have chosen a core but I am looking for substitute core, and I don't mind exploring different similar shapes</h2>
                     </div>
                     <div class="text-white mt-5 p-2 text-center offset-md-1 col-sm-10 col-3-md col-lg-5 rounded-4">
-                        <h2 class="">I have chosen a core and I have to keep it shape, but I am looking for a substitute material</h2>
+                        <h2 class="">I have chosen a core and I have to keep its shape, but I am looking for a substitute material</h2>
                     </div>
                 </div>
                 <div class="row">
