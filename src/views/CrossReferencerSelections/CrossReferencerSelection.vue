@@ -65,6 +65,28 @@ export default {
 </template>
 
 <style>
+    .wrap {
+      position: relative;
+    }
+
+    .wrap:before {
+      content: ' ';
+      display: block;
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      opacity: 1;
+      background-image: linear-gradient(to bottom, rgba(26, 26, 26, 0.666), var(--bs-dark)),
+    url('/images/background_cross_reference.png');
+      background-repeat: no-repeat;
+      background-position: 50% 0;
+      background-size: cover;
+    }
+
+    .content {
+      position: relative;
+    }
+
     @media (max-width: 340px) {
         #title {
             display : none;
@@ -78,7 +100,7 @@ export default {
       width: 100%;
       height: 100%;
       opacity: 1;
-      background-image: linear-gradient(to bottom, var(--bs-primary), var(--bs-dark) 100px);
+      background-image: linear-gradient(to bottom, var(--bs-light), var(--bs-dark) 100px);
       background-repeat: no-repeat;
       background-position: 50% 0;
       background-size: cover;
@@ -152,6 +174,7 @@ export default {
         outline: 0  !important;
         box-shadow: none  !important;
     }
+
 
 </style>
 

@@ -44,6 +44,10 @@ export default {
       background-position: 50% 0;
       background-size: cover;
     }
+    body:before {
+      background-image: linear-gradient(to bottom, var(--bs-primary), var(--bs-dark) 100px);
+    }
+
 
     .content {
       position: relative;
