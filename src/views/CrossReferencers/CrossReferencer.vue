@@ -100,8 +100,8 @@ export default {
     }
 
     .container {
-        max-width: 100vw;
-        align-items: center;
+        max-width: 100vw !important;
+        align-items: center !important;
     }
 
     .main {

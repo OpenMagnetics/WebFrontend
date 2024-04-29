@@ -28,19 +28,23 @@ export default {
 </script>
 
 <template>
-    <CoreCrossReferencer 
-        v-if="currentRoute == '/core_cross_referencer_tdk' || currentRoute == '/core_shape_cross_referencer_tdk'"
-        suffix="_tdk"
-        loadingGif="/images/loading_tdk.gif"
-        :onlyManufacturer="'TDK'"
-        :keepMaterialConstant="currentRoute == '/core_shape_cross_referencer_tdk'"
-    />
-    <CoreMaterialCrossReferencer
-        suffix="_tdk"
-        :onlyManufacturer="'TDK'"
-        loadingGif="/images/loading_tdk.gif"
-        v-if="currentRoute == '/core_material_cross_referencer_tdk'"
-    />
+    <div class="d-flex flex-column min-vh-100">
+        <div class="container">
+            <CoreCrossReferencer 
+                v-if="currentRoute == '/core_cross_referencer_tdk' || currentRoute == '/core_shape_cross_referencer_tdk'"
+                suffix="_tdk"
+                loadingGif="/images/loading_tdk.gif"
+                :onlyManufacturer="'TDK'"
+                :keepMaterialConstant="currentRoute == '/core_shape_cross_referencer_tdk'"
+            />
+            <CoreMaterialCrossReferencer
+                suffix="_tdk"
+                :onlyManufacturer="'TDK'"
+                loadingGif="/images/loading_tdk.gif"
+                v-if="currentRoute == '/core_material_cross_referencer_tdk'"
+            />
+        </div>
+    </div>
 </template>
 
 <style>
@@ -106,8 +110,8 @@ export default {
     }
 
     .container {
-        max-width: 100vw;
-        align-items: center;
+        max-width: 100vw !important;
+        align-items: center !important;
     }
 
     .main {
