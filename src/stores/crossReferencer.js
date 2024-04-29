@@ -24,6 +24,7 @@ export const useCrossReferencerStore = defineStore("crossReferencer", () => {
         },
         numberTurns: 10,
         temperature: 25,
+        numberMaximumResults: 20,
         enabledCoreTypes: ["Toroidal", "Two-Piece Set", "Only Cores In Stock"],
     });
 
@@ -38,6 +39,7 @@ export const useCrossReferencerStore = defineStore("crossReferencer", () => {
     const coreMaterialReferenceInputs = ref({
         material: "3C97",
         temperature: 25,
+        numberMaximumResults: 20,
         enabledCoreTypes: [],
     });
 

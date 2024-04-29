@@ -129,6 +129,20 @@ export default {
                 @update="inputsUpdated"
             />
 
+            <Dimension class="col-12 my-2 text-start"
+                :name="'numberMaximumResults'"
+                :replaceTitle="'Number of Maximum Results'"
+                :unit="null"
+                :dataTestLabel="dataTestLabel + '-NumberMaximumResults'"
+                :disabled="disabled"
+                :justifyContent="true"
+                :min="1"
+                :defaultValue="10"
+                :allowNegative="false"
+                :modelValue="crossReferencerStore.coreMaterialReferenceInputs"
+                @update="inputsUpdated"
+            />
+
             <button :disabled="disabled" v-if="!hasError" :data-cy="dataTestLabel + '-calculate'" class="btn btn-success" @click="inputsUpdated">Get Alternative Cores</button>
 
         </div>

@@ -240,6 +240,20 @@ export default {
                 @update="inputsUpdated"
             />
 
+            <Dimension class="col-12 my-2 text-start"
+                :name="'numberMaximumResults'"
+                :replaceTitle="'Number of Maximum Results'"
+                :unit="null"
+                :dataTestLabel="dataTestLabel + '-NumberMaximumResults'"
+                :disabled="disabled"
+                :justifyContent="true"
+                :min="1"
+                :defaultValue="10"
+                :allowNegative="false"
+                :modelValue="crossReferencerStore.coreReferenceInputs"
+                @update="inputsUpdated"
+            />
+
             <button :disabled="disabled" :data-cy="dataTestLabel + '-view-edit-excitation-modal-button'" class="btn btn-primary" data-bs-toggle="offcanvas" :data-bs-target="'#' + offcanvasName" ::aria-controls="offcanvasName + 'OperationPointOffCanvas'">View/Edit excitation</button>
             <button :disabled="disabled" v-if="!hasError" :data-cy="dataTestLabel + '-calculate'" class="btn btn-success" @click="inputsUpdated">Get Alternative Cores</button>
 

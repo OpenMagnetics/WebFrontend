@@ -44,6 +44,10 @@ export default {
             type: String,
             default: "",
         },
+        keepMaterialConstant: {
+            type: Boolean,
+            default: false,
+        },
     },
     data() {
         const masStore = useMasStore();
@@ -121,11 +125,12 @@ export default {
                 const aux = JSON.parse(crossReferencers.calculate_cross_referenced_core(JSON.stringify(core),
                                                                                         this.crossReferencerStore.coreReferenceInputs.numberTurns,
                                                                                         JSON.stringify(inputs),
-                                                                                        20,
+                                                                                        this.crossReferencerStore.coreReferenceInputs.numberMaximumResults,
                                                                                         this.onlyManufacturer,
                                                                                         this.crossReferencerStore.coreReferenceInputs.enabledCoreTypes.includes("Toroidal"),
                                                                                         this.crossReferencerStore.coreReferenceInputs.enabledCoreTypes.includes("Two-Piece Set"),
-                                                                                        this.crossReferencerStore.coreReferenceInputs.enabledCoreTypes.includes("Only Cores In Stock")));
+                                                                                        this.crossReferencerStore.coreReferenceInputs.enabledCoreTypes.includes("Only Cores In Stock"),
+                                                                                        this.keepMaterialConstant));
 
                 const auxCrossReferencedCoresValues = [];
                 aux.cores.forEach((elem, index) => {
@@ -158,6 +163,10 @@ export default {
 
                 setTimeout(() => {this.scatterChartComparatorForceUpdate += 1}, 5);
 
+            }).catch(error => {
+                console.log(error);
+                this.hideOutputs = false;
+                this.loading = false;
             });
         },
         tryToSend() {
@@ -262,9 +271,8 @@ export default {
 <template>
     <div class="container">
         <div class="row">
-            <h1 class="col-lg-12 text-center text-white">
-                Core Cross Referencer
-            </h1>
+            <h1 v-if="!keepMaterialConstant" class="col-lg-12 text-center text-white">Core Cross Referencer</h1>
+            <h1 v-else class="col-lg-12 text-center text-white">Core Shape Cross Referencer</h1>
         </div>
         <div class="row">
             <div class="col-lg-3 text-center text-white bg-dark m-0 p-0">
@@ -287,7 +295,17 @@ export default {
                 <label :data-cy="dataTestLabel + '-ErrorMessage'" class="text-danger m-0" style="font-size: 0.9em"> {{errorMessage}}</label>
                 <div class="container">
                     <div class="row">
-                        <a :disabled="loading" :data-cy="dataTestLabel + '-changeTool'" :href="'/core_material_cross_referencer' + (suffix == ''? '' : suffix)" class="btn btn-secondary" @click="inputsUpdated">I want to cross-reference just the material instead</a>
+                        <a :disabled="loading" :data-cy="dataTestLabel + '-changeTool'" :href="'/core_material_cross_referencer' + (suffix == ''? '' : suffix)" class="btn btn-secondary mb-2">I want to cross-reference just the material instead, keeping the shape constant</a>
+                    </div>
+                </div>
+                <div v-if="keepMaterialConstant" class="container">
+                    <div class="row">
+                        <a :disabled="loading" :data-cy="dataTestLabel + '-changeTool'" :href="'/core_material_cross_referencer' + (suffix == ''? '' : suffix)" class="btn btn-secondary">I want to cross-reference the full core instead</a>
+                    </div>
+                </div>
+                <div v-if="!keepMaterialConstant" class="container">
+                    <div class="row">
+                        <a :disabled="loading" :data-cy="dataTestLabel + '-changeTool'" :href="'/core_shape_cross_referencer' + (suffix == ''? '' : suffix)" class="btn btn-secondary">I want to cross-reference just the shape instead, keeping the material constant</a>
                     </div>
                 </div>
             </div>

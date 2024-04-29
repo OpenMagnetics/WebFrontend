@@ -81,7 +81,7 @@ export default {
                 console.time('Execution Time');
                 const aux = JSON.parse(crossReferencers.calculate_cross_referenced_core_material(this.crossReferencerStore.coreMaterialReferenceInputs.material,
                                                                                                  this.crossReferencerStore.coreMaterialReferenceInputs.temperature,
-                                                                                                 20,
+                                                                                                 this.crossReferencerStore.coreMaterialReferenceInputs.numberMaximumResults,
                                                                                                  this.onlyManufacturer,
                                                                                                  this.crossReferencerStore.coreMaterialReferenceInputs.enabledCoreTypes.includes("Only Cores In Stock")));
 
@@ -118,6 +118,10 @@ export default {
 
                 setTimeout(() => {this.scatterChartComparatorForceUpdate += 1}, 5);
 
+            }).catch(error => {
+                console.log(error);
+                this.hideOutputs = false;
+                this.loading = false;
             });
         },
         tryToSend() {
@@ -246,7 +250,12 @@ export default {
                 <label :data-cy="dataTestLabel + '-ErrorMessage'" class="text-danger m-0" style="font-size: 0.9em"> {{errorMessage}}</label>
                 <div class="container">
                     <div class="row">
-                        <a :disabled="loading" :data-cy="dataTestLabel + '-changeTool'" :href="'/core_cross_referencer' + (suffix == ''? '' : suffix)" class="btn btn-secondary" @click="inputsUpdated">I want to cross-reference the full core instead</a>
+                        <a :disabled="loading" :data-cy="dataTestLabel + '-changeTool'" :href="'/core_cross_referencer' + (suffix == ''? '' : suffix)" class="btn btn-secondary mb-2">I want to cross-reference the full core instead</a>
+                    </div>
+                </div>
+                <div class="container">
+                    <div class="row">
+                        <a :disabled="loading" :data-cy="dataTestLabel + '-changeTool'" :href="'/core_shape_cross_referencer' + (suffix == ''? '' : suffix)" class="btn btn-secondary">I want to cross-reference just the shape instead, keeping the material constant</a>
                     </div>
                 </div>
 
