@@ -275,6 +275,7 @@ export default {
                         :dataTestLabel="dataTestLabel + '-Offcanvas'"
                         :axisFormatter="axisFormatter"
                         :labelFormatter="labelFormatter"
+                        :highlightIndex="crossReferencerStore.selectedCoreMaterialIndex"
                         @click="onPointClick"
                      />
 

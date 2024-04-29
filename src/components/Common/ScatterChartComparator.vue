@@ -40,6 +40,10 @@ export default {
         reference: {
             type: Object,
         },
+        highlightIndex: {
+            type: Number,
+            default: -1
+        },
         xLabel: {
             type: String,
         },
@@ -169,6 +173,12 @@ export default {
                     symbolSize: 12,
                     data: [[this.reference[toCamelCase(this.xLabel)], this.reference[toCamelCase(this.yLabel)]]],
                     color: theme["info"],
+                },
+                {
+                    type: 'effectScatter',
+                    symbolSize: 12,
+                    data: [],
+                    color: theme["primary"],
                 }
             ]
         };
@@ -186,6 +196,10 @@ export default {
     watch: {
         forceUpdate(newValue, oldValue) {
             this.processOptions(this.options);
+        },
+        highlightIndex(newValue, oldValue) {
+            console.log("highlightIndex")
+            setTimeout(() => {this.processOptions(this.options)}, 10);
         },
     },
     mounted() {
@@ -246,6 +260,10 @@ export default {
 
             options.series[0].data = [];
             options.series[0].data = this.processData();
+
+            if (this.highlightIndex != -1 && this.highlightIndex != null) {
+                options.series[2].data = [options.series[0].data[this.highlightIndex]];
+            }
         },
         onClick(event) {
             this.$emit('click', event);
