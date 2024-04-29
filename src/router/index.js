@@ -1,12 +1,10 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import Home from '../views/Home.vue'
-
 
 const routes = [
     {
         path: '/',
         name: 'Home',
-        component: Home
+        component: () => import('../views/Home.vue')
     },
     {
         path: '/musings',
@@ -208,6 +206,76 @@ const routes = [
         name: 'CoreCrossReferencerMicrometals',
         component: () => import('../views/coreCrossReferencers/CoreCrossReferencerMicrometals.vue')
     },
+    {
+        path: '/core_material_cross_referencer',
+        name: 'CoreMaterialCrossReferencer',
+        component: () => import('../views/coreMaterialCrossReferencers/CoreMaterialCrossReferencer.vue')
+    },
+    {
+        path: '/core_material_cross_referencer_standex',
+        name: 'CoreMaterialCrossReferencerStandex',
+        component: () => import('../views/coreMaterialCrossReferencers/CoreMaterialCrossReferencerStandex.vue')
+    },
+    {
+        path: '/core_material_cross_referencer_ferroxcube',
+        name: 'CoreMaterialCrossReferencerFerroxcube',
+        component: () => import('../views/coreMaterialCrossReferencers/CoreMaterialCrossReferencerFerroxcube.vue')
+    },
+    {
+        path: '/core_material_cross_referencer_fair_rite',
+        name: 'CoreMaterialCrossReferencerFairRite',
+        component: () => import('../views/coreMaterialCrossReferencers/CoreMaterialCrossReferencerFairRite.vue')
+    },
+    {
+        path: '/core_material_cross_referencer_tdk',
+        name: 'CoreMaterialCrossReferencerTDK',
+        component: () => import('../views/coreMaterialCrossReferencers/CoreMaterialCrossReferencerTDK.vue')
+    },
+    {
+        path: '/core_material_cross_referencer_magnetics',
+        name: 'CoreMaterialCrossReferencerMagnetics',
+        component: () => import('../views/coreMaterialCrossReferencers/CoreMaterialCrossReferencerMagnetics.vue')
+    },
+    {
+        path: '/core_material_cross_referencer_micrometals',
+        name: 'CoreMaterialCrossReferencerMicrometals',
+        component: () => import('../views/coreMaterialCrossReferencers/CoreMaterialCrossReferencerMicrometals.vue')
+    },
+    {
+        path: '/cross_referencer_selection',
+        name: 'CrossReferencerSelection',
+        component: () => import('../views/CrossReferencerSelections/CrossReferencerSelection.vue')
+    },
+    {
+        path: '/cross_referencer_selection_standex',
+        name: 'CrossReferencerSelectionStandex',
+        component: () => import('../views/CrossReferencerSelections/CrossReferencerSelectionStandex.vue')
+    },
+    {
+        path: '/cross_referencer_selection_ferroxcube',
+        name: 'CrossReferencerSelectionFerroxcube',
+        component: () => import('../views/CrossReferencerSelections/CrossReferencerSelectionFerroxcube.vue')
+    },
+    {
+        path: '/cross_referencer_selection_fair_rite',
+        name: 'CrossReferencerSelectionFairRite',
+        component: () => import('../views/CrossReferencerSelections/CrossReferencerSelectionFairRite.vue')
+    },
+    {
+        path: '/cross_referencer_selection_tdk',
+        name: 'CrossReferencerSelectionTDK',
+        component: () => import('../views/CrossReferencerSelections/CrossReferencerSelectionTDK.vue')
+    },
+    {
+        path: '/cross_referencer_selection_magnetics',
+        name: 'CrossReferencerSelectionMagnetics',
+        component: () => import('../views/CrossReferencerSelections/CrossReferencerSelectionMagnetics.vue')
+    },
+    {
+        path: '/cross_referencer_selection_micrometals',
+        name: 'CrossReferencerSelectionMicrometals',
+        component: () => import('../views/CrossReferencerSelections/CrossReferencerSelectionMicrometals.vue')
+    }
 ]
 const router = createRouter({
     history: createWebHistory(),

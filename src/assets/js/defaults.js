@@ -28,6 +28,22 @@ export const coreCrossReferencerPossibleCoreTypes = [
 ];
 
 
+export const coreMaterialCrossReferencerPossibleLabels = [
+    "Initial Permeability",
+    "Remanence", 
+    "Coercive Force", 
+    "Saturation",
+    "Curie Temperature",
+    "Volumetric Losses",
+    "Resistivity",
+    "Density"
+];
+
+
+export const coreMaterialCrossReferencerPossibleCoreTypes = [
+];
+
+
 export const mas = {
     "inputs": {
         "designRequirements": {

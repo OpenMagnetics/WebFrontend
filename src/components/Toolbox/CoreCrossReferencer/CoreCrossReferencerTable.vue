@@ -133,14 +133,12 @@ export default {
         if (this.$refs.CoreCrossReferencerTable.$el != null){
             this.currentTableWidth = this.$refs.CoreCrossReferencerTable.$el.clientWidth;
         }
-        console.log(this.currentTableWidth);
         this.scaleColumns();
 
         window.addEventListener('resize', () => {
             if (this.$refs.CoreCrossReferencerTable.$el != null){
                 this.currentTableWidth = this.$refs.CoreCrossReferencerTable.$el.clientWidth;
             }
-            console.log(this.currentTableWidth);
             this.scaleColumns();
         })
     }

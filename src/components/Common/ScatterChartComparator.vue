@@ -50,6 +50,12 @@ export default {
             type: Number,
             default: 0
         },
+        axisFormatter:{
+            type: Function,
+        },
+        labelFormatter:{
+            type: Function,
+        },
     },
     emits: [
         'click',
@@ -110,7 +116,7 @@ export default {
                   fontSize: 13,
                   color: theme['white'],
 
-                  formatter: (value) => `${removeTrailingZeroes(formatUnit(this.xLabel == "Saturation"? value * 100 : value, this.processUnit(this.xLabel)).label, 2)} ${formatUnit(this.xLabel == "Saturation"? value * 100 : value, this.processUnit(this.xLabel), this.processUnit(this.xLabel)).unit}`,
+                  formatter: (value) => this.axisFormatter(value, this.xLabel),
                 }
             },
             yAxis: {
@@ -120,7 +126,7 @@ export default {
                   fontSize: 13,
                   color: theme['white'],
 
-                  formatter: (value) => `${removeTrailingZeroes(formatUnit(this.yLabel == "Saturation"? value * 100 : value, this.processUnit(this.yLabel)).label, 2)} ${formatUnit(this.yLabel == "Saturation"? value * 100 : value, this.processUnit(this.yLabel), this.processUnit(this.yLabel)).unit}`,
+                  formatter: (value) => this.axisFormatter(value, this.yLabel),
                 }
             },
 
@@ -189,49 +195,11 @@ export default {
     computed: {
     },
     methods: {
-        processLabel(label) {
-            if (label == "Core Losses") {
-                return "Core Loss";
-            }
-            else if (label == "Dimensions") {
-                return "Dimensions";
-            }
-            else if (label == "Permeance") {
-                return "AL value (Permeance)";
-            }
-            else if (label == "Saturation") {
-                return "% to Saturation";
-            }
-            else if (label == "Winding Window Area") {
-                return "Winding Window Area";
-            }
-
-            return "";
-        },
-        processUnit(label) {
-            if (label == "Core Losses") {
-                return "W";
-            }
-            else if (label == "Dimensions") {
-                return "m³";
-            }
-            else if (label == "Permeance") {
-                return "H/tu.";
-            }
-            else if (label == "Saturation") {
-                return "%";
-            }
-            else if (label == "Winding Window Area") {
-                return "m²";
-            }
-
-            return "";
-        },
         processSubtext() {
             var subtext = "";
-            subtext += this.processLabel(this.xLabel);
+            subtext += this.labelFormatter(this.xLabel);
             subtext += " vs ";
-            subtext += this.processLabel(this.yLabel);
+            subtext += this.labelFormatter(this.yLabel);
             return subtext;
         },
         processData() {

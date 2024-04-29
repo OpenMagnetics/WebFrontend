@@ -22,7 +22,7 @@ export default {
 </script>
 
 <template>
-    <CoreCrossReferencer :onlyManufacturer="'Magnetics'" loadingGif="/images/loading_magnetics.gif"/>
+    <CoreCrossReferencer :onlyManufacturer="'Magnetics'" loadingGif="/images/loading_magnetics.gif" suffix="_magnetics"/>
 </template>
 
 <style>

@@ -62,13 +62,10 @@ export default {
     },
     computed: {
         isStackable() {
-            var shapeName = this.crossReferencerStore.referenceInputs.core.functionalDescription.shape;
-            console.log(shapeName)
+            var shapeName = this.crossReferencerStore.coreReferenceInputs.core.functionalDescription.shape;
             if (! (typeof shapeName === 'string' || shapeName instanceof String)) {
                 shapeName = shapeName.name;
             }
-
-            console.log(shapeName)
 
             if (shapeName.startsWith("E ") || shapeName.startsWith("U ") || shapeName.startsWith("T ")) {
                 return true;
@@ -139,7 +136,7 @@ export default {
             this.$emit('inputsUpdated');
         },
         gappingUpdated(gapping) {
-            this.crossReferencerStore.referenceInputs.core.functionalDescription.gapping = gapping;
+            this.crossReferencerStore.coreReferenceInputs.core.functionalDescription.gapping = gapping;
             this.$emit('inputsUpdated');
         },
     }
@@ -161,7 +158,7 @@ export default {
                 :titleSameRow="true"
                 :justifyContent="true"
                 :disabled="disabled"
-                v-model="crossReferencerStore.referenceInputs.core.functionalDescription"
+                v-model="crossReferencerStore.coreReferenceInputs.core.functionalDescription"
                 :optionsToDisable="coreShapeFamilies"
                 :options="coreShapeNames"
                 @update="inputsUpdated"
@@ -174,7 +171,7 @@ export default {
                 :titleSameRow="true"
                 :justifyContent="true"
                 :disabled="disabled"
-                v-model="crossReferencerStore.referenceInputs.core.functionalDescription"
+                v-model="crossReferencerStore.coreReferenceInputs.core.functionalDescription"
                 :optionsToDisable="coreMaterialManufacturers"
                 :options="coreMaterialNames"
                 @update="inputsUpdated"
@@ -191,7 +188,7 @@ export default {
                 :disabled="disabled"
                 :defaultValue="1"
                 :allowNegative="false"
-                :modelValue="crossReferencerStore.referenceInputs.core.functionalDescription"
+                :modelValue="crossReferencerStore.coreReferenceInputs.core.functionalDescription"
                 @update="inputsUpdated"
             />
 
@@ -199,7 +196,7 @@ export default {
                 :title="'Gap Info: '"
                 :dataTestLabel="dataTestLabel + '-Gap'"
                 :disabled="disabled"
-                :core="crossReferencerStore.referenceInputs.core"
+                :core="crossReferencerStore.coreReferenceInputs.core"
                 @update="gappingUpdated"
             />
 
@@ -213,7 +210,7 @@ export default {
                 :min="1"
                 :defaultValue="10"
                 :allowNegative="false"
-                :modelValue="crossReferencerStore.referenceInputs"
+                :modelValue="crossReferencerStore.coreReferenceInputs"
                 @update="inputsUpdated"
             />
 
@@ -225,10 +222,10 @@ export default {
                 :disabled="disabled"
                 :justifyContent="true"
                 :min="1"
-                :max="100"
+                :max="400"
                 :defaultValue="25"
                 :allowNegative="true"
-                :modelValue="crossReferencerStore.referenceInputs"
+                :modelValue="crossReferencerStore.coreReferenceInputs"
                 @update="inputsUpdated"
             />
 
@@ -238,7 +235,7 @@ export default {
                 :name="'enabledCoreTypes'"
                 :disabled="disabled"
                 :justifyContent="true"
-                v-model="crossReferencerStore.referenceInputs"
+                v-model="crossReferencerStore.coreReferenceInputs"
                 :options="coreCrossReferencerPossibleCoreTypes"
                 @update="inputsUpdated"
             />

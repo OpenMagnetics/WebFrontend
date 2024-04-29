@@ -3,7 +3,7 @@ import { ref, watch, computed  } from 'vue'
 
 export const useCrossReferencerStore = defineStore("crossReferencer", () => {
 
-    const referenceInputs = ref({
+    const coreReferenceInputs = ref({
         core: {
             functionalDescription: {
                 type: "two-piece set",
@@ -27,7 +27,7 @@ export const useCrossReferencerStore = defineStore("crossReferencer", () => {
         enabledCoreTypes: ["Toroidal", "Two-Piece Set", "Only Cores In Stock"],
     });
 
-    const results = ref({
+    const coreResults = ref({
         crossReferencedCores: [],
         crossReferencedCoresValues: [],
         referenceScoredValues: [],
@@ -35,12 +35,30 @@ export const useCrossReferencerStore = defineStore("crossReferencer", () => {
         yLabel: "Core Losses",
     });
 
+    const coreMaterialReferenceInputs = ref({
+        material: "3C97",
+        temperature: 25,
+        enabledCoreTypes: [],
+    });
+
+    const coreMaterialResults = ref({
+        crossReferencedCoreMaterials: [],
+        crossReferencedCoreMaterialsValues: [],
+        referenceScoredValues: [],
+        xLabel: "Initial Permeability",
+        yLabel: "Volumetric Losses",
+    });
+
     const selectedCoreIndex = ref(-1);
+    const selectedCoreMaterialIndex = ref(-1);
 
     return {
-        referenceInputs,
+        coreReferenceInputs,
         selectedCoreIndex,
-        results,
+        coreResults,
+        coreMaterialReferenceInputs,
+        selectedCoreMaterialIndex,
+        coreMaterialResults,
     }
 },
 {

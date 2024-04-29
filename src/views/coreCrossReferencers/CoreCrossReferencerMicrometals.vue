@@ -22,7 +22,7 @@ export default {
 </script>
 
 <template>
-    <CoreCrossReferencer :onlyManufacturer="'Micrometals'" loadingGif="/images/loading_micrometals.gif"/>
+    <CoreCrossReferencer :onlyManufacturer="'Micrometals'" loadingGif="/images/loading_micrometals.gif" suffix="_micrometals"/>
 </template>
 
 <style>

@@ -304,8 +304,16 @@ export function formatPowerDensity(powerDensity) {
     return formatUnit(powerDensity, "W/m³")
 }
 
+export function formatDensity(density) {
+    return formatUnit(density, "g/m³")
+}
+
 export function formatMagneticFluxDensity(magneticFluxDensity) {
     return formatUnit(magneticFluxDensity, "T")
+}
+
+export function formatMagneticFieldStrength(magneticFieldStrength) {
+    return formatUnit(magneticFieldStrength, "A/m")
 }
 
 export function formatDimension(dimension) {
@@ -336,8 +344,16 @@ export function formatResistance(resistance) {
     return formatUnit(resistance, "Ω")
 }
 
+export function formatResistivity(resistivity) {
+    return formatUnit(resistivity, "Ωm")
+}
+
 export function formatPercentage(percentage) {
     return formatUnit(percentage * 100, "%")
+}
+
+export function formatAdimensional(percentage) {
+    return formatUnit(percentage, "")
 }
 
 export function deepCopy(data) {
@@ -1183,6 +1199,11 @@ export function processCoreTexts(data) {
             localTexts.coreMaterialManufacturerDatasheetTable.text = 'Manufacturer Datasheet';
             localTexts.coreMaterialManufacturerDatasheetTable.value = data.magnetic.core.manufacturerInfo.datasheetUrl;
         }
+        {
+            localTexts.coreMaterialManufacturerMaterialDatasheetTable = {};
+            localTexts.coreMaterialManufacturerMaterialDatasheetTable.text = 'Material Datasheet';
+            localTexts.coreMaterialManufacturerMaterialDatasheetTable.value = data.magnetic.core.functionalDescription.material.manufacturerInfo.datasheetUrl;
+        }
     }
     if (data.outputs != null) {
         localTexts.numberTurns = `Using ${removeTrailingZeroes(data.magnetic.coil.functionalDescription[0].numberTurns)} turns will produce a magnetic with the following estimated output per operating point:`
@@ -1263,6 +1284,83 @@ export function processCoreTexts(data) {
     }
 
 
+    return localTexts;
+}
+
+
+export function processCoreMaterialTexts(data) {
+    const localTexts = {
+
+    };
+    if ('temp' in data) {
+        {
+            localTexts.coreMaterialInitialPermeabilityTable = {};
+            localTexts.coreMaterialInitialPermeabilityTable.text = 'Initial Permeability (µᵢ)';
+            localTexts.coreMaterialInitialPermeabilityTable.value = {};
+            Object.entries(data.temp).forEach(([key, val])  => {
+                localTexts.coreMaterialInitialPermeabilityTable.value[key] = `${removeTrailingZeroes(val.initialPermeability, 0)}`;
+            });
+        }
+        {
+            var aux = formatTemperature(data.curieTemperature);
+
+            localTexts.coreMaterialCurieTemperatureTable = {};
+            localTexts.coreMaterialCurieTemperatureTable.text = 'Curie Temperature';
+            localTexts.coreMaterialCurieTemperatureTable.value = `${removeTrailingZeroes(aux.label, 2)} ${aux.unit}`;
+        }
+        {
+            localTexts.coreMaterialResistivityTable = {};
+            localTexts.coreMaterialResistivityTable.text = 'Resistivity';
+            localTexts.coreMaterialResistivityTable.value = {};
+            Object.entries(data.temp).forEach(([key, val])  => {
+                var aux = formatUnit(val.resistivity, "Ωm");
+                localTexts.coreMaterialResistivityTable.value[key] = `${removeTrailingZeroes(aux.label, 2)} ${aux.unit}`;
+            });
+        }
+        {
+            localTexts.coreMaterialRemanenceTable = {};
+            localTexts.coreMaterialRemanenceTable.text = 'Remanence';
+            localTexts.coreMaterialRemanenceTable.value = {};
+            Object.entries(data.temp).forEach(([key, val])  => {
+                var aux = formatUnit(val.remanence, "T");
+                localTexts.coreMaterialRemanenceTable.value[key] = `${removeTrailingZeroes(aux.label, 2)} ${aux.unit}`;
+            });
+        }
+        {
+            localTexts.coreMaterialCoerciveForceTable = {};
+            localTexts.coreMaterialCoerciveForceTable.text = 'Coercive Force';
+            localTexts.coreMaterialCoerciveForceTable.value = {};
+            Object.entries(data.temp).forEach(([key, val])  => {
+                var aux = formatUnit(val.coerciveForce, "A/m");
+                localTexts.coreMaterialCoerciveForceTable.value[key] = `${removeTrailingZeroes(aux.label, 1)} ${aux.unit}`;
+            });
+        }
+        {
+            var aux = formatUnit(data.temp["25"].magneticFluxDensitySaturation, "T");
+            localTexts.magneticFluxDensitySaturationTable = {};
+            localTexts.magneticFluxDensitySaturationTable.text = 'Saturation B Field';
+            localTexts.magneticFluxDensitySaturationTable.value = {};
+            Object.entries(data.temp).forEach(([key, val])  => {
+                var aux = formatUnit(val.magneticFluxDensitySaturation, "T");
+                localTexts.magneticFluxDensitySaturationTable.value[key] = `${removeTrailingZeroes(aux.label, 2)} ${aux.unit}`;
+            });
+        }
+        {
+            localTexts.coreMaterialManufacturerNameTable = {};
+            localTexts.coreMaterialManufacturerNameTable.text = 'Manufacturer';
+            localTexts.coreMaterialManufacturerNameTable.value = data.manufacturerInfo.name;
+        }
+        {
+            localTexts.coreMaterialManufacturerReferenceTable = {};
+            localTexts.coreMaterialManufacturerReferenceTable.text = 'Manufacturer Ref.';
+            localTexts.coreMaterialManufacturerReferenceTable.value = data.name;
+        }
+        {
+            localTexts.coreMaterialManufacturerDatasheetTable = {};
+            localTexts.coreMaterialManufacturerDatasheetTable.text = 'Manufacturer Datasheet';
+            localTexts.coreMaterialManufacturerDatasheetTable.value = data.manufacturerInfo.datasheetUrl;
+        }
+    }
     return localTexts;
 }
 

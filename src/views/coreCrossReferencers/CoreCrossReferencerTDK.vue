@@ -22,7 +22,7 @@ export default {
 </script>
 
 <template>
-    <CoreCrossReferencer :onlyManufacturer="'TDK'" loadingGif="/images/loading_tdk.gif"/>
+    <CoreCrossReferencer :onlyManufacturer="'TDK'" loadingGif="/images/loading_tdk.gif" suffix="_tdk"/>
 </template>
 
 <style>

@@ -2,13 +2,13 @@
 import { useMasStore } from '/src/stores/mas'
 import { useCrossReferencerStore } from '/src/stores/crossReferencer'
 import { defaultCore, defaultInputs, coreCrossReferencerPossibleLabels } from '/src/assets/js/defaults.js'
-import { deepCopy } from '/src/assets/js/utils.js'
+import { toCamelCase, formatUnit, removeTrailingZeroes, deepCopy } from '/src/assets/js/utils.js'
 import ElementFromList from '/src/components/DataInput/ElementFromList.vue'
 import Module from '/src/assets/js/libCrossReferencers.wasm.js'
 import CoreCrossReferencerInputs from '/src/components/Toolbox/CoreCrossReferencer/CoreCrossReferencerInputs.vue'
 import CoreCrossReferencerTable from '/src/components/Toolbox/CoreCrossReferencer/CoreCrossReferencerTable.vue'
 import ScatterChartComparator from '/src/components/Common/ScatterChartComparator.vue'
-import Output from '/src/components/Toolbox/CoreCrossReferencer/Output.vue'
+import CoreCrossReferencerOutput from '/src/components/Toolbox/CoreCrossReferencer/CoreCrossReferencerOutput.vue'
 </script>
 
 <script>
@@ -40,11 +40,16 @@ export default {
             type: String,
             default: "/images/loading.gif",
         },
+        suffix: {
+            type: String,
+            default: "",
+        },
     },
     data() {
         const masStore = useMasStore();
         const crossReferencerStore = useCrossReferencerStore();
         const tryingToSend = false;
+        const hideOutputs = true;
         const loading = false;
         const recentChange = false;
         const errorMessage = "";
@@ -54,6 +59,7 @@ export default {
             masStore,
             crossReferencerStore,
             tryingToSend,
+            hideOutputs,
             loading,
             recentChange,
             scatterChartComparatorForceUpdate,
@@ -66,12 +72,12 @@ export default {
             const magnetic = {
                 coil: {
                     functionalDescription: [{
-                        numberTurns: this.crossReferencerStore.referenceInputs.numberTurns
+                        numberTurns: this.crossReferencerStore.coreReferenceInputs.numberTurns
                     }]
                 },
-                core: this.crossReferencerStore.results.crossReferencedCores[this.crossReferencerStore.selectedCoreIndex],
+                core: this.crossReferencerStore.coreResults.crossReferencedCores[this.crossReferencerStore.selectedCoreIndex],
                 manufacturerInfo: {
-                    reference: this.crossReferencerStore.results.crossReferencedCores[this.crossReferencerStore.selectedCoreIndex].name
+                    reference: this.crossReferencerStore.coreResults.crossReferencedCores[this.crossReferencerStore.selectedCoreIndex].name
                 }
             }
 
@@ -88,12 +94,14 @@ export default {
     created () {
         this.masStore.$onAction((action) => {
             if (action.name == "updatedInputExcitationProcessed") {
+                this.hideOutputs = true;
                 this.checkError();
                 this.tryToSend();
             }
         })
     },
     mounted () {
+        this.hideOutputs = true;
         this.checkError();
         this.tryToSend();
     },
@@ -102,7 +110,7 @@ export default {
             crossReferencers.ready.then(_ => {
                 console.time('Execution Time');
 
-                const coreAux = deepCopy(this.crossReferencerStore.referenceInputs.core);
+                const coreAux = deepCopy(this.crossReferencerStore.coreReferenceInputs.core);
                 coreAux['geometricalDescription'] = null;
                 coreAux['processedDescription'] = null;
 
@@ -111,13 +119,13 @@ export default {
 
                 const inputs = this.masStore.mas.inputs;
                 const aux = JSON.parse(crossReferencers.calculate_cross_referenced_core(JSON.stringify(core),
-                                                                                        this.crossReferencerStore.referenceInputs.numberTurns,
+                                                                                        this.crossReferencerStore.coreReferenceInputs.numberTurns,
                                                                                         JSON.stringify(inputs),
                                                                                         20,
                                                                                         this.onlyManufacturer,
-                                                                                        this.crossReferencerStore.referenceInputs.enabledCoreTypes.includes("Toroidal"),
-                                                                                        this.crossReferencerStore.referenceInputs.enabledCoreTypes.includes("Two-Piece Set"),
-                                                                                        this.crossReferencerStore.referenceInputs.enabledCoreTypes.includes("Only Cores In Stock")));
+                                                                                        this.crossReferencerStore.coreReferenceInputs.enabledCoreTypes.includes("Toroidal"),
+                                                                                        this.crossReferencerStore.coreReferenceInputs.enabledCoreTypes.includes("Two-Piece Set"),
+                                                                                        this.crossReferencerStore.coreReferenceInputs.enabledCoreTypes.includes("Only Cores In Stock")));
 
                 const auxCrossReferencedCoresValues = [];
                 aux.cores.forEach((elem, index) => {
@@ -133,10 +141,10 @@ export default {
                     auxCrossReferencedCoresValues.push(auxElem);
                 })
                 this.crossReferencerStore.selectedCoreIndex = -1;
-                this.crossReferencerStore.referenceInputs.core = core;
-                this.crossReferencerStore.results.crossReferencedCores = aux.cores;
-                this.crossReferencerStore.results.crossReferencedCoresValues = auxCrossReferencedCoresValues;
-                this.crossReferencerStore.results.referenceScoredValues = {
+                this.crossReferencerStore.coreReferenceInputs.core = core;
+                this.crossReferencerStore.coreResults.crossReferencedCores = aux.cores;
+                this.crossReferencerStore.coreResults.crossReferencedCoresValues = auxCrossReferencedCoresValues;
+                this.crossReferencerStore.coreResults.referenceScoredValues = {
                     coreLosses: aux.referenceScoredValues.CORE_LOSSES,
                     envelopingVolume: aux.referenceScoredValues.ENVELOPING_VOLUME,
                     permeance: aux.referenceScoredValues.PERMEANCE,
@@ -145,6 +153,7 @@ export default {
                     windingWindowArea: aux.referenceScoredValues.WINDING_WINDOW_AREA,
                 };
 
+                this.hideOutputs = false;
                 this.loading = false;
 
                 setTimeout(() => {this.scatterChartComparatorForceUpdate += 1}, 5);
@@ -169,8 +178,8 @@ export default {
             }
         },
         checkError() {
-            if (!(this.crossReferencerStore.referenceInputs.enabledCoreTypes.includes("Toroidal") ||
-                  this.crossReferencerStore.referenceInputs.enabledCoreTypes.includes("Two-Piece Set"))) {
+            if (!(this.crossReferencerStore.coreReferenceInputs.enabledCoreTypes.includes("Toroidal") ||
+                  this.crossReferencerStore.coreReferenceInputs.enabledCoreTypes.includes("Two-Piece Set"))) {
                 this.errorMessage = "Either Toroidal or Two-Piece Set cores must be selected";
                 this.hasError = true;
             }
@@ -181,6 +190,7 @@ export default {
         },
         inputsUpdated() {
             this.recentChange = true;
+            this.hideOutputs = true;
             this.checkError();
             this.tryToSend();
         },
@@ -197,6 +207,53 @@ export default {
         },
         labelsUpdated(event) {
             setTimeout(() => {this.scatterChartComparatorForceUpdate += 1}, 5);
+        },
+        axisFormatter(value, axisLabel) {
+            var unit;
+            if (axisLabel == "Core Losses") {
+                unit = "W";
+            }
+            else if (axisLabel == "Enveloping Volume") {
+                unit = "m³";
+            }
+            else if (axisLabel == "Effective Area") {
+                unit = "m²";
+            }
+            else if (axisLabel == "Permeance") {
+                unit = "H/tu.";
+            }
+            else if (axisLabel == "Saturation") {
+                unit = "%";
+            }
+            else if (axisLabel == "Winding Window Area") {
+                unit = "m²";
+            }
+
+            const aux = formatUnit(axisLabel == "Saturation"? value * 100 : value, unit);
+
+            return `${removeTrailingZeroes(aux.label, 2)} ${aux.unit}`;
+        },
+        labelFormatter(label) {
+            if (label == "Core Losses") {
+                return "Core Loss";
+            }
+            else if (label == "Enveloping Volume") {
+                return "Enveloping Volume";
+            }
+            else if (label == "Permeance") {
+                return "AL value (Permeance)";
+            }
+            else if (label == "Saturation") {
+                return "% to Saturation";
+            }
+            else if (label == "Winding Window Area") {
+                return "Winding Window Area";
+            }
+            else if (label == "Effective Area") {
+                return "Effective Area";
+            }
+
+            return "";
         },
     }
 }
@@ -228,21 +285,27 @@ export default {
                 :disabled="loading"
                 />
                 <label :data-cy="dataTestLabel + '-ErrorMessage'" class="text-danger m-0" style="font-size: 0.9em"> {{errorMessage}}</label>
-
+                <div class="container">
+                    <div class="row">
+                        <a :disabled="loading" :data-cy="dataTestLabel + '-changeTool'" :href="'/core_material_cross_referencer' + (suffix == ''? '' : suffix)" class="btn btn-secondary" @click="inputsUpdated">I want to cross-reference just the material instead</a>
+                    </div>
+                </div>
             </div>
             <div class="col-lg-6 text-center text-white">
-                <div class="row" v-if="loading" >
+                <div class="row" v-if="hideOutputs" >
                     <img data-cy="CoreAdviser-loading" class="mx-auto d-block col-12" alt="loading" style="width: 50%; height: auto;" :src="loadingGif">
                 </div>
                 <div class="row " v-else >
                     <ScatterChartComparator
                         class="col-12"
-                        :reference="crossReferencerStore.results.referenceScoredValues"
-                        :data="crossReferencerStore.results.crossReferencedCoresValues"
+                        :reference="crossReferencerStore.coreResults.referenceScoredValues"
+                        :data="crossReferencerStore.coreResults.crossReferencedCoresValues"
                         :forceUpdate="scatterChartComparatorForceUpdate"
-                        :xLabel="crossReferencerStore.results.xLabel"
-                        :yLabel="crossReferencerStore.results.yLabel"
+                        :xLabel="crossReferencerStore.coreResults.xLabel"
+                        :yLabel="crossReferencerStore.coreResults.yLabel"
                         :dataTestLabel="dataTestLabel + '-Offcanvas'"
+                        :axisFormatter="axisFormatter"
+                        :labelFormatter="labelFormatter"
                         @click="onPointClick"
                      />
 
@@ -252,7 +315,7 @@ export default {
                         :name="'xLabel'"
                         :titleSameRow="true"
                         :justifyContent="false"
-                        v-model="crossReferencerStore.results"
+                        v-model="crossReferencerStore.coreResults"
                         :options="coreCrossReferencerPossibleLabels"
                         @update="labelsUpdated"
                     />
@@ -263,23 +326,23 @@ export default {
                         :name="'yLabel'"
                         :titleSameRow="true"
                         :justifyContent="false"
-                        v-model="crossReferencerStore.results"
+                        v-model="crossReferencerStore.coreResults"
                         :options="coreCrossReferencerPossibleLabels"
                         @update="labelsUpdated"
                     />
 
                     <CoreCrossReferencerTable
                         :dataTestLabel="dataTestLabel + '-YLabelSelector'"
-                        :data="crossReferencerStore.results.crossReferencedCoresValues"
+                        :data="crossReferencerStore.coreResults.crossReferencedCoresValues"
                         :reference="null"
-                        :onlyCoresInStock="crossReferencerStore.referenceInputs.enabledCoreTypes.includes(`Only Cores In Stock`)"
+                        :onlyCoresInStock="crossReferencerStore.coreReferenceInputs.enabledCoreTypes.includes(`Only Cores In Stock`)"
                         @click="onTableClick"
                     />
 
                 </div>
             </div>
-            <div v-if="!loading" class="col-lg-3 text-center text-white" style="height: 45vh">
-                <Output
+            <div v-if="!hideOutputs" class="col-lg-3 text-center text-white" style="height: 45vh">
+                <CoreCrossReferencerOutput
                     v-if="crossReferencerStore.selectedCoreIndex != -1"
                     :dataTestLabel="`${dataTestLabel}-CoreCrossReferencerFinalizer`"
                     :mas="masCore"
