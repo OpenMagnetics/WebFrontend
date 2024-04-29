@@ -78,7 +78,6 @@ export default {
     methods: {
         calculateCrossReferencedCoreMaterialsValues() {
             crossReferencers.ready.then(_ => {
-                console.time('Execution Time');
                 const aux = JSON.parse(crossReferencers.calculate_cross_referenced_core_material(this.crossReferencerStore.coreMaterialReferenceInputs.material,
                                                                                                  this.crossReferencerStore.coreMaterialReferenceInputs.temperature,
                                                                                                  this.crossReferencerStore.coreMaterialReferenceInputs.numberMaximumResults,
