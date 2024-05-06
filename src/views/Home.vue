@@ -22,7 +22,7 @@ import Footer from '/src/components/Footer.vue'
                         <div class="offset-2 col-8 d-flex justify-content-evenly">
                             <a href="https://github.com/OpenMagnetics/" target="_blank" rel="noopener noreferrer" class="btn text-dark bg-success border-dark mx-2">Give a star on Github! <i class="fa-brands fa-github"></i> </a>
                             <a href="/tool_selection" class="btn text-dark bg-primary border-dark mx-2">Start designing!<i class="ms-2 fa-solid fa-toolbox"></i> </a>
-                            <a href="/tool_selection" class="btn text-dark bg-info border-dark mx-2">Follow us on LinkedIn! <i class="fa-brands fa-linkedin"></i> </a>
+                            <a href="https://www.linkedin.com/company/openmagnetics" target="_blank" class="btn text-dark bg-info border-dark mx-2">Follow us on LinkedIn! <i class="fa-brands fa-linkedin"></i> </a>
                         </div>
                     </div>
                 </div>
