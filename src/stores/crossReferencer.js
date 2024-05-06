@@ -24,6 +24,9 @@ export const useCrossReferencerStore = defineStore("crossReferencer", () => {
         },
         numberTurns: 10,
         temperature: 25,
+        maximumDimensions: {
+            height: 0.05
+        },
         numberMaximumResults: 20,
         enabledCoreTypes: ["Toroidal", "Two-Piece Set", "Only Cores In Stock"],
     });

@@ -122,6 +122,7 @@ export default {
                 core['functionalDescription']['shape'] = core['functionalDescription']['shape']['name'];
 
                 const inputs = this.masStore.mas.inputs;
+                inputs.designRequirements.maximumDimensions = this.crossReferencerStore.coreReferenceInputs.maximumDimensions;
                 const aux = JSON.parse(crossReferencers.calculate_cross_referenced_core(JSON.stringify(core),
                                                                                         this.crossReferencerStore.coreReferenceInputs.numberTurns,
                                                                                         JSON.stringify(inputs),

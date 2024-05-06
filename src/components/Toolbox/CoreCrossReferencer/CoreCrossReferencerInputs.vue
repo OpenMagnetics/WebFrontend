@@ -1,6 +1,6 @@
 <script setup>
 import { useCrossReferencerStore } from '/src/stores/crossReferencer'
-import { defaultCore, defaultInputs, coreCrossReferencerPossibleCoreTypes } from '/src/assets/js/defaults.js'
+import { defaultCore, defaultInputs, coreCrossReferencerPossibleCoreTypes, minimumMaximumScalePerParameter, defaultDesignRequirements } from '/src/assets/js/defaults.js'
 import { deepCopy } from '/src/assets/js/utils.js'
 import Dimension from '/src/components/DataInput/Dimension.vue'
 import ElementFromList from '/src/components/DataInput/ElementFromList.vue'
@@ -8,6 +8,7 @@ import SeveralElementsFromList from '/src/components/DataInput/SeveralElementsFr
 import Module from '/src/assets/js/libCrossReferencers.wasm.js'
 import CoreGappingSelector from '/src/components/Common/CoreGappingSelector.vue'
 import OperatingPointOffcanvas from '/src/components/Common/OperatingPointOffcanvas.vue'
+import MaximumDimensions from '/src/components/Common/MaximumDimensions.vue'
 
 </script>
 
@@ -250,6 +251,15 @@ export default {
                 :allowNegative="true"
                 :modelValue="crossReferencerStore.coreReferenceInputs"
                 @update="inputsUpdated"
+            />
+
+            <MaximumDimensions class="border-bottom py-2"
+                unit="m"
+                :dataTestLabel="dataTestLabel + '-MaximumDimensions'"
+                :min="minimumMaximumScalePerParameter['dimension']['min']"
+                :max="minimumMaximumScalePerParameter['dimension']['max']"
+                :defaultValue="defaultDesignRequirements.maximumDimensions"
+                v-model="crossReferencerStore.coreReferenceInputs.maximumDimensions"
             />
 
             <SeveralElementsFromList
