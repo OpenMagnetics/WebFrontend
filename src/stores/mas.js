@@ -10,6 +10,8 @@ export const useMasStore = defineStore("mas", () => {
 
     const magneticAdviserWeights = ref(null);
     const magneticAdviserMaximumNumberResults = ref(6);
+    const magneticManualOperationPoints = ref([false]);
+    const magneticCircuitSimulatorOperationPoints = ref([false]);
 
     function updatedTurnsRatios() {
     }
@@ -32,6 +34,8 @@ export const useMasStore = defineStore("mas", () => {
     function resetMas() {
         this.coreAdviserWeights = null;
         this.mas = MAS.Convert.toMas(JSON.stringify(Defaults.mas));
+        this.magneticManualOperationPoints = [false];
+        this.magneticCircuitSimulatorOperationPoints = [false];
         console.log("Resetting!!!!!!!!!!!!!")
     }
 
@@ -55,6 +59,8 @@ export const useMasStore = defineStore("mas", () => {
         updatedInputExcitationProcessed,
         magneticAdviserWeights,
         magneticAdviserMaximumNumberResults,
+        magneticManualOperationPoints,
+        magneticCircuitSimulatorOperationPoints,
     }
 },
 {

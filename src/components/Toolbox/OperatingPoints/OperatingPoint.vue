@@ -7,9 +7,12 @@ import WaveformInput from '/src/components/Toolbox/OperatingPoints/WaveformInput
 import WaveformInputCommon from '/src/components/Toolbox/OperatingPoints/WaveformInputCommon.vue'
 import WaveformOutput from '/src/components/Toolbox/OperatingPoints/WaveformOutput.vue'
 import WaveformCombinedOutput from '/src/components/Toolbox/OperatingPoints/WaveformCombinedOutput.vue'
-import { tryGuessType, roundWithDecimals, deepCopy } from '/src/assets/js/utils.js'
+import OperatingPointManual from '/src/components/Toolbox/OperatingPoints/OperatingPointManual.vue'
+import OperatingPointCircuitSimulator from '/src/components/Toolbox/OperatingPoints/OperatingPointCircuitSimulator.vue'
+import { tryGuessType, roundWithDecimals, deepCopy, removeTrailingZeroes } from '/src/assets/js/utils.js'
+import Dimension from '/src/components/DataInput/Dimension.vue'
 
-import { defaultOperatingPointExcitation, defaultPrecision, defaultSinusoidalNumberPoints } from '/src/assets/js/defaults.js'
+import { defaultOperatingPointExcitation, defaultPrecision, defaultSinusoidalNumberPoints, minimumMaximumScalePerParameter } from '/src/assets/js/defaults.js'
 import { tooltipsMagneticSynthesisOperatingPoints } from '/src/assets/js/texts.js'
 
 </script>
@@ -42,9 +45,12 @@ export default {
                 }
             );
         }
+        const localData = {"frequency": defaultOperatingPointExcitation['frequency']};
 
         return {
             masStore,
+            localData,
+            columnNames: [],
         }
     },
     computed: {
@@ -78,37 +84,52 @@ export default {
         updatedWaveform(signalDescriptor) {
             this.$emit('updatedWaveform', signalDescriptor);
         },
-        induce(sourceSignalDescriptor){
-            if (sourceSignalDescriptor == 'current'){
-
-                this.$mkf.ready.then(_ => {
-                    var magnetizingInductance = this.$mkf.resolve_dimension_with_tolerance(JSON.stringify(this.masStore.mas.inputs.designRequirements.magnetizingInductance));
-                    var voltage = JSON.parse(this.$mkf.calculate_induced_voltage(JSON.stringify(this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex]), magnetizingInductance));
-
-                    this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex].voltage.waveform = voltage.waveform;
-                    this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex].voltage.harmonics = voltage.harmonics;
-                    this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex].voltage.processed = voltage.processed;
-                    this.masStore.updatedInputExcitationWaveformUpdatedFromProcessed('voltage');
-                    this.masStore.updatedInputExcitationProcessed('voltage');
-                });
-            }
-            else if (sourceSignalDescriptor == 'voltage'){
-
-                this.$mkf.ready.then(_ => {
-                    var magnetizingInductance = this.$mkf.resolve_dimension_with_tolerance(JSON.stringify(this.masStore.mas.inputs.designRequirements.magnetizingInductance));
-                    var current = JSON.parse(this.$mkf.calculate_induced_current(JSON.stringify(this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex]), magnetizingInductance));
-
-                    this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex].current.waveform = current.waveform;
-                    this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex].current.harmonics = current.harmonics;
-                    this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex].current.processed = current.processed;
-                    this.masStore.updatedInputExcitationWaveformUpdatedFromProcessed('current');
-                    this.masStore.updatedInputExcitationProcessed('current');
-                });
-            }
-            this.$emit("canContinue", this.canContinue);
+        extractOperationPoint(file) {
+            this.$mkf.ready.then(_ => {
+                const numberWindings = this.masStore.mas.inputs.designRequirements.turnsRatios.length + 1;
+                const frequency = this.localData.frequency;
+                const desiredMagnetizingInductance = this.$mkf.resolve_dimension_with_tolerance(JSON.stringify(this.masStore.mas.inputs.designRequirements.magnetizingInductance));
+                var operatingPoint = JSON.parse(this.$mkf.extract_operating_point(file, numberWindings, frequency, desiredMagnetizingInductance));
+                console.log(operatingPoint);
+            });
         },
-        resetCurrentExcitation() {
-            this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex] = deepCopy(defaultOperatingPointExcitation);
+        extractMapColumnNames(file) {
+            this.$mkf.ready.then(_ => {
+                const numberWindings = this.masStore.mas.inputs.designRequirements.turnsRatios.length + 1;
+                const frequency = this.localData.frequency;
+                var mapColumnNames = JSON.parse(this.$mkf.extract_map_column_names(file, numberWindings, frequency));
+                this.columnNames = mapColumnNames;
+                console.log(mapColumnNames);
+            });
+        },
+        onMASFileTypeSelected(event) {
+            const fr = new FileReader();
+
+            fr.onload = e => {
+                const data = e.target.result;
+            }
+            fr.readAsText(this.$refs["OperationPoint-MAS-upload-ref"].files.item(0));
+        },
+        onCircuitSimulatorFileTypeSelected(event) {
+            const fr = new FileReader();
+
+            fr.onload = e => {
+                const data = e.target.result;
+                // this.extractOperationPoint(data);
+                this.extractMapColumnNames(data);
+                this.masStore.magneticCircuitSimulatorOperationPoints[this.currentOperatingPointIndex] = true;
+                // console.log(data);
+            }
+            fr.readAsText(this.$refs["OperationPoint-CircuitSimulator-upload-ref"].files.item(0));
+        },
+        onManualTypeSelected(event) {
+            console.log("Manual!");
+            this.masStore.magneticManualOperationPoints[this.currentOperatingPointIndex] = true;
+        },
+        setImportMode(event) {
+            console.log("Import mode!");
+            this.masStore.magneticManualOperationPoints[this.currentOperatingPointIndex] = false;
+            this.masStore.magneticCircuitSimulatorOperationPoints[this.currentOperatingPointIndex] = false;
         },
     }
 }
@@ -117,86 +138,47 @@ export default {
 <template>
     <div class="container">
         <div class="row" v-tooltip="styleTooltip">
-            <div class="col-lg-4 col-md-12" style="max-width: 360px;">
+            <OperatingPointManual
+                v-if="masStore.magneticManualOperationPoints[currentOperatingPointIndex]"
+                :currentOperatingPointIndex="currentOperatingPointIndex"
+                :currentWindingIndex="currentWindingIndex"
+                @updatedWaveform="updatedWaveform"
+                @setImportMode="setImportMode"
+            />
+            <OperatingPointCircuitSimulator
+                v-if="masStore.magneticCircuitSimulatorOperationPoints[currentOperatingPointIndex]"
+                :currentOperatingPointIndex="currentOperatingPointIndex"
+                :currentWindingIndex="currentWindingIndex"
+                @updatedWaveform="updatedWaveform"
+                @setImportMode="setImportMode"
+            />
+            <div v-if="!masStore.magneticCircuitSimulatorOperationPoints[currentOperatingPointIndex] && !masStore.magneticManualOperationPoints[currentOperatingPointIndex]" class="col-12">
+                <label :data-cy="dataTestLabel + '-current-title'" class="row fs-4 text-primary mx-0 p-0 mb-4">{{masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].name}}</label>
+                <div class="row mt-2">
 
-                <label :data-cy="dataTestLabel + '-current-title'" class="fs-4 text-primary mx-0 p-0 mb-4">{{masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].name + ' - ' + masStore.mas.magnetic.coil.functionalDescription[currentWindingIndex].name}}</label>
+                    <label class="fs-5 text-white mt-3 mb-2"> Where do you want to import your operating point from? </label>
+                </div>
+                <div class="row mt-2">
+                    <label for="OperationPoint-MAS-upload-input" class="col-lg-3 col-md-12">
+                            <span :data-cy="dataTestLabel + '-MAS-upload-button'" type="button" class="btn btn-primary mt-1 rounded-3 fs-5 pt-2" style="min-height: 6em">Magnetic Agnostic Structure file (It will replace all Op. points)</span> 
+                            <input type="file" id="OperationPoint-MAS-upload-input" ref="OperationPoint-MAS-upload-ref" @change="onMASFileTypeSelected"  style="display:none">
+                    </label>
+                    <label for="OperationPoint-CircuitSimulator-upload-input" class="col-lg-3 col-md-12 offset-lg-1 ">
 
-                <WaveformInputCommon class="scrollable-column border-bottom border-top rounded-4 border-2"
-                    :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex]"
-                    :defaultValue="defaultOperatingPointExcitation"
-                    :dataTestLabel="dataTestLabel + '-selected'"
-                    @updatedSwitchingFrequency="masStore.updatedInputExcitationProcessed()"
-                    @updatedDutyCycle="masStore.updatedInputExcitationProcessed()"
-                />
-
-                <WaveformInput v-if="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex].current != null && masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex].current.processed.label != 'Custom'" class="scrollable-column mt-5 border-bottom border-top rounded-4 border-2"
-                    :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex]"
-                    :defaultValue="defaultOperatingPointExcitation"
-                    :dataTestLabel="dataTestLabel + '-selected-current'"
-                    :signalDescriptor="'current'"
-                    @peakToPeakChanged="masStore.updatedInputExcitationProcessed('current')"
-                    @offsetChanged="masStore.updatedInputExcitationProcessed('current')"
-                    @labelChanged="masStore.updatedInputExcitationProcessed('current')"
-                    @induce="induce('voltage')"
-                />
-                <WaveformInputCustom v-else class="scrollable-column mt-5 border-bottom border-top rounded-4 border-2"
-                    :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex]"
-                    :defaultValue="defaultOperatingPointExcitation"
-                    :dataTestLabel="dataTestLabel + '-selected-current'"
-                    :signalDescriptor="'current'"
-                    @labelChanged="masStore.updatedInputExcitationProcessed('current')"
-                    @updatedTime="masStore.updatedInputExcitationWaveformUpdatedFromProcessed('current')"
-                    @updatedData="masStore.updatedInputExcitationWaveformUpdatedFromProcessed('current')"
-                    @induce="induce('voltage')"
-                />
-                <WaveformInput v-if="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex].voltage.processed.label != 'Custom'" class="scrollable-column mt-5 border-bottom border-top rounded-4 border-2"
-                    :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex]"
-                    :defaultValue="defaultOperatingPointExcitation"
-                    :dataTestLabel="dataTestLabel + '-selected-voltage'"
-                    :signalDescriptor="'voltage'"
-                    @peakToPeakChanged="masStore.updatedInputExcitationProcessed('voltage')"
-                    @offsetChanged="masStore.updatedInputExcitationProcessed('voltage')"
-                    @labelChanged="masStore.updatedInputExcitationProcessed('voltage')"
-                    @induce="induce('current')"
-                />
-                <WaveformInputCustom v-else class="scrollable-column mt-5 border-bottom border-top rounded-4 border-2"
-                    :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex]"
-                    :defaultValue="defaultOperatingPointExcitation"
-                    :dataTestLabel="dataTestLabel + '-selected-voltage'"
-                    :signalDescriptor="'voltage'"
-                    @labelChanged="masStore.updatedInputExcitationProcessed('voltage')"
-                    @updatedTime="masStore.updatedInputExcitationWaveformUpdatedFromProcessed('voltage')"
-                    @updatedData="masStore.updatedInputExcitationWaveformUpdatedFromProcessed('voltage')"
-                    @induce="induce('current')"
-                />
-            </div>
-            <div class="col-lg-8 col-md-12 row m-0 p-0" style="max-width: 800px;">
-                <WaveformGraph class=" col-12 py-2"
-                    :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex]"
-                    :dataTestLabel="dataTestLabel + '-WaveformGraph'"
-                    @updatedWaveform="updatedWaveform"
-                />
-                <WaveformFourier class="col-12 mt-1" style="max-height: 150px;"
-                    :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex]"
-                    :dataTestLabel="dataTestLabel + '-WaveformFourier'"
-                />
-
-                <WaveformOutput class="col-lg-6 col-md-6 m-0 px-2"
-                    :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex]"
-                    :dataTestLabel="dataTestLabel + '-WaveformOutput-current'"
-                    :signalDescriptor="'current'"
-                />
-                <WaveformOutput class="col-lg-6 col-md-6 m-0 px-2"
-                    :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex]"
-                    :dataTestLabel="dataTestLabel + '-WaveformOutput-voltage'"
-                    :signalDescriptor="'voltage'"
-                />
-                <WaveformCombinedOutput class="col-12 m-0 px-2 border-top"
-                    :dataTestLabel="dataTestLabel + '-WaveformCombinedOutput'"
-                    :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex]"
-                />
-                <button :data-cy="dataTestLabel + '-reset-button'" class="btn btn-danger fs-6 offset-md-10 col-sm-12 col-md-2  mt-2 p-0" style="max-height: 2em" @click="resetCurrentExcitation"> Reset Point
-                </button>
+<!--                         <Dimension class="border-bottom  col-12"
+                            :name="'frequency'"
+                            :unit="'Hz'"
+                            :dataTestLabel="dataTestLabel + '-Frequency'"
+                            :min="minimumMaximumScalePerParameter['frequency']['min']"
+                            :max="minimumMaximumScalePerParameter['frequency']['max']"
+                            :defaultValue="defaultOperatingPointExcitation.frequency"
+                            v-model="localData"
+                        /> -->
+                            <span :data-cy="dataTestLabel + '-CircuitSimulator-upload-button'" type="button" class="btn btn-primary mt-1 rounded-3 fs-5 py-4" style="min-height: 6em">Circuit simulator export file</span> 
+                            <input type="file" id="OperationPoint-CircuitSimulator-upload-input" ref="OperationPoint-CircuitSimulator-upload-ref" @change="onCircuitSimulatorFileTypeSelected" style="display:none">
+                    </label>
+                        <button data-cy="OperatingPointImport-source-Manual-button" type="button" @click="onManualTypeSelected" class="col-lg-3 col-md-12 offset-lg-1 btn btn-primary mt-1 rounded-3 fs-5" style="min-height: 6em">I will define it manually</button>
+                </div>
             </div>
         </div>
     </div>

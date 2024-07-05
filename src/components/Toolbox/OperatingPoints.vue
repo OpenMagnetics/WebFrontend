@@ -7,7 +7,6 @@ import WaveformInput from '/src/components/Toolbox/OperatingPoints/WaveformInput
 import WaveformInputCommon from '/src/components/Toolbox/OperatingPoints/WaveformInputCommon.vue'
 import WaveformOutput from '/src/components/Toolbox/OperatingPoints/WaveformOutput.vue'
 import WaveformCombinedOutput from '/src/components/Toolbox/OperatingPoints/WaveformCombinedOutput.vue'
-import OperatingPointImport from '/src/components/Toolbox/OperatingPoints/OperatingPointImport.vue'
 import OperatingPoint from '/src/components/Toolbox/OperatingPoints/OperatingPoint.vue'
 import { tryGuessType, roundWithDecimals, deepCopy } from '/src/assets/js/utils.js'
 
@@ -174,6 +173,8 @@ export default {
 
             newOperatingPoint.excitationsPerWinding = [newOperatingPoint.excitationsPerWinding[0]];
 
+            this.masStore.magneticCircuitSimulatorOperationPoints.push(false);
+            this.masStore.magneticManualOperationPoints.push(false);
             this.masStore.mas.inputs.operatingPoints.push(newOperatingPoint);
             this.currentOperatingPointIndex += 1;
             this.$emit("canContinue", this.canContinue);
@@ -182,6 +183,8 @@ export default {
             if (index < this.currentOperatingPointIndex) {
                 this.currentOperatingPointIndex -= 1;
             }
+            this.masStore.magneticCircuitSimulatorOperationPoints.splice(index, 1);
+            this.masStore.magneticManualOperationPoints.splice(index, 1);
             this.masStore.mas.inputs.operatingPoints.splice(index, 1);
             this.$emit("canContinue", this.canContinue);
         },
@@ -214,32 +217,11 @@ export default {
         resetCurrentExcitation() {
             this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex] = deepCopy(defaultOperatingPointExcitation);
         },
-        importData(data) {
-            this.$mkf.ready.then(_ => {
-                if (data.current.processed == null) {
-                    data.current.processed = JSON.parse(this.$mkf.calculate_basic_processed_data(JSON.stringify(data.current.waveform)));
-                }
-                if (data.current.waveform == null) {
-                    data.current.waveform = JSON.parse(this.$mkf.create_waveform(JSON.stringify(data.current.processed), data.frequency));
-                }
-                if (data.voltage.processed == null) {
-                    data.voltage.processed = JSON.parse(this.$mkf.calculate_basic_processed_data(JSON.stringify(data.voltage.waveform)));
-                }
-                if (data.voltage.waveform == null) {
-                    data.voltage.waveform = JSON.parse(this.$mkf.create_waveform(JSON.stringify(data.voltage.processed), data.frequency));
-                }
-
-                this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex] = data;
-            });
-
-
-        }
     }
 }
 </script>
 
 <template>
-    <OperatingPointImport @importData="importData"/>
     <div class="container">
         <div class="row" v-tooltip="styleTooltip">
             <div class="col-sm-12 col-md-2 text-start border border-primary m-0 px-1">
@@ -268,8 +250,6 @@ export default {
                             <svg v-else xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-earmark-plus-fill" viewBox="0 0 16 16">
                                 <path d="M9.293 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.707A1 1 0 0 0 13.707 4L10 .293A1 1 0 0 0 9.293 0zM9.5 3.5v-2l3 3h-2a1 1 0 0 1-1-1zM8.5 7v1.5H10a.5.5 0 0 1 0 1H8.5V11a.5.5 0 0 1-1 0V9.5H6a.5.5 0 0 1 0-1h1.5V7a.5.5 0 0 1 1 0z"/>
                             </svg>
-                        </button>
-                        <button :data-cy="dataTestLabel + '-operating-point-' + operatingPointIndex + '-import-button'" class="btn btn-secondary fs-6 col-12 mt-2 p-0" style="max-height: 2em" data-bs-toggle="offcanvas" data-bs-target="#ImportOffCanvas" > Import OP
                         </button>
                     </div>
                     <div v-else class="col-12 row m-0 p-0">
