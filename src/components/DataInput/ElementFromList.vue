@@ -15,7 +15,6 @@ export default {
             required: true
         },
         options:{
-            type: Object,
             required: true
         },
         replaceTitle:{
@@ -50,7 +49,18 @@ export default {
         }
     },
     computed: {
-        selectedLabel() {
+        computedOptions() {
+            if (this.options.constructor.name === "Array") {
+                return this.options;
+            }
+            else {
+                const computedOptions = []
+                for (let [key, value] of Object.entries(this.options)) {
+                    computedOptions.push(value)
+                }
+                return computedOptions;
+            }
+                
         },
         styleTooltip() {
             var relative_placement;
@@ -98,7 +108,7 @@ export default {
             <div  v-if="!titleSameRow" class=" col-sm-0 col-md-2">
             </div>
             <select :disabled="disabled" :data-cy="dataTestLabel + '-select'"  class="form-select bg-light text-white m-0 col-8 mt-1"  @change="changeOption" style="width:auto; max-height: 3em;" :value="modelValue[name]" >
-                <option :disabled="optionsToDisable.includes(value)" v-for="[key, value] in Object.entries(options)">
+                <option :disabled="optionsToDisable.includes(value)" v-for="value in computedOptions">
                     {{value}}
                 </option>
             </select>

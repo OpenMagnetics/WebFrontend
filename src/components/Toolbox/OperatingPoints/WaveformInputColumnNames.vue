@@ -1,5 +1,7 @@
 <script setup>
+import { useMasStore } from '/src/stores/mas'
 import Dimension from '/src/components/DataInput/Dimension.vue'
+import ElementFromList from '/src/components/DataInput/ElementFromList.vue'
 import { minimumMaximumScalePerParameter } from '/src/assets/js/defaults.js'
 import { removeTrailingZeroes } from '/src/assets/js/utils.js'
 
@@ -16,60 +18,37 @@ export default {
             type: Object,
             default: {}
         },
+        currentOperatingPointIndex: {
+            type: Number,
+            default: 0,
+        },
+        currentWindingIndex: {
+            type: Number,
+            default: 0,
+        },
         dataTestLabel: {
             type: String,
             default: '',
         },
+        allColumnNames: {
+            type: Array,
+        },
     },
     data() {
+        const masStore = useMasStore();
         const localData = {"frequency": this.modelValue['frequency']};
         const errorMessages = '';
-        const forceUpdateDutyCycle = 0;
         const forceUpdateFrequency = 0;
-        const blockingReboundsDutyCycle = false;
-        const blockingReboundsFrequency = false;
         return {
+            masStore,
             localData,
-            forceUpdateDutyCycle,
-            forceUpdateFrequency,
             errorMessages,
-            blockingReboundsDutyCycle,
-            blockingReboundsFrequency,
+            forceUpdateFrequency,
         }
     },
     computed: {
-        enableDutyCycle() {
-            if (this.modelValue.current == null)
-                return false;
-            if (this.modelValue.voltage == null)
-                return false;
-            if (this.modelValue.current.processed.label != 'Custom' || this.modelValue.voltage.processed.label != 'Custom')
-                return true;
-            return false;
-        }
     },
     watch: {
-        'modelValue.current.processed.dutyCycle'(newValue, oldValue) {
-            var aux = this.localData;
-            aux.dutyCycle = newValue;
-            this.localData = aux;
-            if (!this.blockingReboundsDutyCycle) {
-                this.blockingReboundsDutyCycle = true;
-                this.forceUpdateDutyCycle += 1;
-                setTimeout(() => this.blockingReboundsDutyCycle = false, 10);
-            }
-        },
-        'modelValue.voltage.processed.dutyCycle'(newValue, oldValue) {
-            // this.localData.dutyCycle = newValue;
-            const aux = this.localData;
-            aux.dutyCycle = newValue;
-            this.localData = aux;
-            if (!this.blockingReboundsDutyCycle) {
-                this.blockingReboundsDutyCycle = true;
-                this.forceUpdateDutyCycle += 1;
-                setTimeout(() => this.blockingReboundsDutyCycle = false, 10);
-            }
-        },
         'modelValue'(newValue, oldValue) {
             if (!this.blockingReboundsFrequency) {
                 var aux = this.localData;
@@ -84,16 +63,12 @@ export default {
     mounted () {
     },
     methods: {
+        columnNameChanged(value) {
+            this.$emit("updatedColumnName");
+        },
         frequencyChanged(value) {
             this.modelValue.frequency = value;
             this.$emit("updatedSwitchingFrequency");
-        },
-        dutyCycleChanged(value) {
-            if (!isNaN(value)) {
-                this.modelValue.current.processed.dutyCycle = value;
-                this.modelValue.voltage.processed.dutyCycle = value;
-                this.$emit("updatedDutyCycle");
-            }
         },
     }
 }
@@ -106,7 +81,11 @@ export default {
         </div>
         <div class="row">
 
-            <Dimension class="border-bottom border-1 py-2 col-12"
+
+        </div>
+        <div class="row">
+
+            <Dimension class="border-bottom pb-2 mb-1"
                 :name="'frequency'"
                 :unit="'Hz'"
                 :dataTestLabel="dataTestLabel + '-Frequency'"
@@ -117,16 +96,33 @@ export default {
                 v-model="localData"
                 @update="frequencyChanged"
             />
-            {{ "mierda"}}
-<!--             <ElementFromList class="border-bottom pb-2 mb-1"
-                :name="'current'"
-                :dataTestLabel="dataTestLabel + '-Label'"
-                :options="WaveformLabel"
+            <ElementFromList class="border-bottom pb-2 mb-1"
+                :name="'time'"
+                :dataTestLabel="dataTestLabel + '-Current-Name'"
+                :options="allColumnNames"
                 :titleSameRow="true"
-                :replaceTitle="'Waveform'"
-                v-model="modelValue[signalDescriptor].processed"
-                @updatedNumberElements="labelChanged"
-            /> -->
+                :replaceTitle="'Cur. Time'"
+                v-model="masStore.magneticCircuitSimulatorColumnNames[currentOperatingPointIndex][currentWindingIndex]"
+                @updatedNumberElements="columnNameChanged"
+            />
+            <ElementFromList class="border-bottom pb-2 mb-1"
+                :name="'current'"
+                :dataTestLabel="dataTestLabel + '-Current-Name'"
+                :options="allColumnNames"
+                :titleSameRow="true"
+                :replaceTitle="'Current'"
+                v-model="masStore.magneticCircuitSimulatorColumnNames[currentOperatingPointIndex][currentWindingIndex]"
+                @updatedNumberElements="columnNameChanged"
+            />
+            <ElementFromList class="pb-2 mb-1"
+                :name="'voltage'"
+                :dataTestLabel="dataTestLabel + '-Current-Name'"
+                :options="allColumnNames"
+                :titleSameRow="true"
+                :replaceTitle="'Voltage'"
+                v-model="masStore.magneticCircuitSimulatorColumnNames[currentOperatingPointIndex][currentWindingIndex]"
+                @updatedNumberElements="columnNameChanged"
+            />
         </div>
         <div data-cy="`${dataTestLabel}-error-text`" class="invalid-feedback">{{errorMessages}}</div>
     </div>

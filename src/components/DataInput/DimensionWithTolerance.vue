@@ -42,6 +42,10 @@ export default {
             type: Number,
             default: 1e+9
         },
+        disabledScaling: {
+            type: Boolean,
+            default: false
+        },
         allowNegative:{
             type: Boolean,
             default: false
@@ -83,23 +87,23 @@ export default {
             this.modelValue.maximum == null &&
             this.defaultField != null &&
             this.defaultValue != null) {
-            const aux = getMultiplier(this.defaultValue[this.defaultField]);
+            const aux = getMultiplier(this.defaultValue[this.defaultField], 0.001, this.disabledScaling);
             localData[this.defaultField].scaledValue = aux.scaledValue;
             localData[this.defaultField].multiplier = aux.multiplier;
         }
 
         if (this.modelValue.minimum != null) {
-            const aux = getMultiplier(this.modelValue.minimum, 0.001);
+            const aux = getMultiplier(this.modelValue.minimum, 0.001, this.disabledScaling);
             localData.minimum.scaledValue = aux.scaledValue;
             localData.minimum.multiplier = aux.multiplier;
         }
         if (this.modelValue.nominal != null) {
-            const aux = getMultiplier(this.modelValue.nominal, 0.001);
+            const aux = getMultiplier(this.modelValue.nominal, 0.001, this.disabledScaling);
             localData.nominal.scaledValue = aux.scaledValue;
             localData.nominal.multiplier = aux.multiplier;
         }
         if (this.modelValue.maximum != null) {
-            const aux = getMultiplier(this.modelValue.maximum, 0.001);
+            const aux = getMultiplier(this.modelValue.maximum, 0.001, this.disabledScaling);
             localData.maximum.scaledValue = aux.scaledValue;
             localData.maximum.multiplier = aux.multiplier;
         }
@@ -213,7 +217,7 @@ export default {
             return hasError;
         },
         update(field, actualValue) {
-            const aux = getMultiplier(actualValue, 0.001);
+            const aux = getMultiplier(actualValue, 0.001, this.disabledScaling);
             this.localData[field].scaledValue = aux.scaledValue;
             this.localData[field].multiplier = aux.multiplier;
             const hasError = this.checkErrors();
@@ -224,7 +228,7 @@ export default {
         },
         changeMultiplier(field) {
             if (isNaN(this.localData[field].scaledValue)) {
-                const aux = getMultiplier(this.defaultValue[this.defaultField]);
+                const aux = getMultiplier(this.defaultValue[this.defaultField], 0.001, this.disabledScaling);
                 this.localData[field].scaledValue = aux.scaledValue;
             }
             const actualValue = this.localData[field].scaledValue * this.localData[field].multiplier;
@@ -282,7 +286,7 @@ export default {
         },
         changeScaledValue(value, field) {
             if (isNaN(this.localData[field].multiplier)) {
-                const aux = getMultiplier(this.defaultValue[this.defaultField]);
+                const aux = getMultiplier(this.defaultValue[this.defaultField], 0.001, this.disabledScaling);
                 this.localData[field].multiplier = aux.multiplier;
             }
             if (value == '' || (value < 0 && ! this.allowNegative)) {

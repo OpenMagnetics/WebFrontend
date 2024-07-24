@@ -178,6 +178,8 @@ export default {
                         settings["coreIncludeStacks"] = this.$settingsStore.adviserAllowStacks == "1";
                         magneticAdviser.set_settings(JSON.stringify(settings));
 
+                        // console.log(JSON.stringify(this.masStore.mas.inputs))
+                        // console.log(JSON.stringify(this.masStore.magneticAdviserWeights))
                         const aux = JSON.parse(magneticAdviser.calculate_advised_magnetics(JSON.stringify(this.masStore.mas.inputs), JSON.stringify(this.masStore.magneticAdviserWeights), this.masStore.magneticAdviserMaximumNumberResults, this.$settingsStore.adviserUseOnlyCoresInStock == "1" || this.$settingsStore.adviserUseOnlyCoresInStock == 1));
 
                         var data = aux["data"];

@@ -19,6 +19,10 @@ import { tooltipsMagneticSynthesisOperatingPoints } from '/src/assets/js/texts.j
 export default {
     emits: ["canContinue", "changeTool", "updatedWaveform", "setImportMode"],
     props: {
+        loadedFile: {
+            type: String,
+            required: true,
+        },
         dataTestLabel: {
             type: String,
             default: '',
@@ -30,6 +34,9 @@ export default {
         currentWindingIndex: {
             type: Number,
             default: 0,
+        },
+        allColumnNames: {
+            type: Array,
         },
     },
     data() {
@@ -46,6 +53,7 @@ export default {
 
         return {
             masStore,
+            errorMessages: "",
         }
     },
     computed: {
@@ -76,11 +84,35 @@ export default {
         })
     },
     methods: {
-        updatedWaveform(signalDescriptor) {
-            this.$emit('updatedWaveform', signalDescriptor);
-        },
         setImportMode() {
             this.$emit("setImportMode");
+        },
+        extractOperatingPoint(file) {
+            this.$mkf.ready.then(_ => {
+                const numberWindings = this.masStore.mas.inputs.designRequirements.turnsRatios.length + 1;
+                const frequency = this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex].frequency;
+                const desiredMagnetizingInductance = this.$mkf.resolve_dimension_with_tolerance(JSON.stringify(this.masStore.mas.inputs.designRequirements.magnetizingInductance));
+                const mapColumnNamesString = JSON.stringify(this.masStore.magneticCircuitSimulatorColumnNames[this.currentOperatingPointIndex]);
+
+                var operatingPointString = this.$mkf.extract_operating_point(file, numberWindings, frequency, desiredMagnetizingInductance, mapColumnNamesString);
+                if (operatingPointString.startsWith("Error")) {
+                    this.errorMessages = operatingPointString;
+                    this.masStore.magneticCircuitSimulatorConfirmedColumns[this.currentOperatingPointIndex][this.currentWindingIndex] = true;
+                }
+                else {
+                    var operatingPoint = JSON.parse(operatingPointString);
+                    this.errorMessages = "";
+                    this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex] = operatingPoint.excitationsPerWinding[this.currentWindingIndex]
+                    this.masStore.magneticCircuitSimulatorConfirmedColumns[this.currentOperatingPointIndex][this.currentWindingIndex] = true;
+                }
+
+            });
+        },
+        updatedColumnNames() {
+            // this.extractOperatingPoint(this.loadedFile);
+        },
+        confirmColumns() {
+            this.extractOperatingPoint(this.loadedFile);
         },
     }
 }
@@ -96,18 +128,29 @@ export default {
                 <WaveformInputColumnNames class="scrollable-column border-bottom border-top rounded-4 border-2"
                     :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex]"
                     :dataTestLabel="dataTestLabel + '-selected'"
-                    @updatedSwitchingFrequency="masStore.updatedInputExcitationProcessed()"
-                    @updatedColumnName="masStore.updatedInputExcitationProcessed()"
+                    :allColumnNames="allColumnNames"
+                    :currentOperatingPointIndex="currentOperatingPointIndex"
+                    :currentWindingIndex="currentWindingIndex"
+                    @updatedSwitchingFrequency="updatedColumnNames"
+                    @updatedColumnName="updatedColumnNames"
                 />
 
-                <button :data-cy="dataTestLabel + '-import-button'" class="btn btn-success fs-5 col-sm-12 col-md-12 mt-5 p-0" style="max-height: 2em" @click="setImportMode">Go back to importing files
+                <button :disabled='loadedFile==""' :data-cy="dataTestLabel + '-import-button'" class="btn btn-success fs-5 col-sm-12 col-md-12 mt-3 p-0" style="max-height: 2em" @click="confirmColumns">{{masStore.magneticCircuitSimulatorConfirmedColumns[currentOperatingPointIndex][currentWindingIndex]? 'Update columns' : 'Confirm columns'}}
+                </button>
+                <div v-if='loadedFile=="" && !masStore.magneticCircuitSimulatorConfirmedColumns[currentOperatingPointIndex][currentWindingIndex]' class="col-12">
+                    <label :data-cy="dataTestLabel + '-error-text'" class="text-danger text-center col-12 pt-1" style="font-size: 0.9em; white-space: pre-wrap;">Please reload file</label>
+                </div>
+                <div v-if='errorMessages != ""' class="col-12">
+                    <label :data-cy="dataTestLabel + '-error-text'" class="text-danger text-center col-12 pt-1" style="font-size: 0.9em; white-space: pre-wrap;">{{errorMessages}}</label>
+                </div>
+                <button :data-cy="dataTestLabel + '-import-button'" class="btn btn-success fs-5 col-sm-12 col-md-12 mt-3 p-0" style="max-height: 2em" @click="setImportMode">Go back to importing files
                 </button>
             </div>
-            <div class="col-lg-8 col-md-12 row m-0 p-0" style="max-width: 800px;">
+            <div v-if="masStore.magneticCircuitSimulatorConfirmedColumns[currentOperatingPointIndex][currentWindingIndex]" class="col-lg-8 col-md-12 row m-0 p-0" style="max-width: 800px;">
                 <WaveformGraph class=" col-12 py-2"
                     :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex]"
                     :dataTestLabel="dataTestLabel + '-WaveformGraph'"
-                    @updatedWaveform="updatedWaveform"
+                    :enableDrag="false"
                 />
                 <WaveformFourier class="col-12 mt-1" style="max-height: 150px;"
                     :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex]"

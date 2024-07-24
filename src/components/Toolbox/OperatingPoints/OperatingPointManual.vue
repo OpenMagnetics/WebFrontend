@@ -120,7 +120,7 @@ export default {
 <template>
     <div class="container">
         <div class="row" v-tooltip="styleTooltip">
-            <div class="col-lg-4 col-md-12" style="max-width: 360px;">
+            <div v-if="masStore.mas.inputs.operatingPoints.length > currentOperatingPointIndex" class="col-lg-4 col-md-12" style="max-width: 360px;">
 
                 <label :data-cy="dataTestLabel + '-current-title'" class="fs-4 text-primary mx-0 p-0 mb-4">{{masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].name + ' - ' + masStore.mas.magnetic.coil.functionalDescription[currentWindingIndex].name}}</label>
 

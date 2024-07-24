@@ -232,9 +232,12 @@ export function formatUnit(valueRaw, unitRaw) {
     return {label, unit}
 }
 
-export function getMultiplier(value, precision=0.001) {
-    var multiplier;
-    var scaledValue;
+export function getMultiplier(value, precision=0.001, disabled=false) {
+    var multiplier = 1;
+    var scaledValue = value;
+    if (disabled) {
+        return {scaledValue, multiplier};
+    }
     if (Math.abs(value) < 1e-12 && Math.abs(value) != 0) {
         multiplier = 1e-15;
     }

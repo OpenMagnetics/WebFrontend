@@ -31,15 +31,16 @@ export default {
         const errorMessages = "";
 
 
-        if (masStore.mas.inputs.operatingPoints.length == 0) {
-            masStore.mas.inputs.operatingPoints.push(
-                {
-                    name: "Operating Point No. 1",
-                    conditions: {ambientTemperature: 42},
-                    excitationsPerWinding: [deepCopy(defaultOperatingPointExcitation)]
-                }
-            );
-        }
+        masStore.initializeOperatingPoints();
+        // if (masStore.mas.inputs.operatingPoints.length == 0) {
+        //     masStore.mas.inputs.operatingPoints.push(
+        //         {
+        //             name: "Operating Point No. 1",
+        //             conditions: {ambientTemperature: 42},
+        //             excitationsPerWinding: [deepCopy(defaultOperatingPointExcitation)]
+        //         }
+        //     );
+        // }
 
         return {
             masStore,
@@ -167,15 +168,7 @@ export default {
             });
         },
         addNewOperatingPoint() {
-            var newOperatingPoint = deepCopy(this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex]);
-
-            newOperatingPoint.name = 'Operating Point No. ' + (this.masStore.mas.inputs.operatingPoints.length + 1);
-
-            newOperatingPoint.excitationsPerWinding = [newOperatingPoint.excitationsPerWinding[0]];
-
-            this.masStore.magneticCircuitSimulatorOperationPoints.push(false);
-            this.masStore.magneticManualOperationPoints.push(false);
-            this.masStore.mas.inputs.operatingPoints.push(newOperatingPoint);
+            this.masStore.addNewOperatingPoint(this.currentOperatingPointIndex);
             this.currentOperatingPointIndex += 1;
             this.$emit("canContinue", this.canContinue);
         },
@@ -183,9 +176,7 @@ export default {
             if (index < this.currentOperatingPointIndex) {
                 this.currentOperatingPointIndex -= 1;
             }
-            this.masStore.magneticCircuitSimulatorOperationPoints.splice(index, 1);
-            this.masStore.magneticManualOperationPoints.splice(index, 1);
-            this.masStore.mas.inputs.operatingPoints.splice(index, 1);
+            this.masStore.removeOperatingPoint(index);
             this.$emit("canContinue", this.canContinue);
         },
         changeWinding(windingIndex) {

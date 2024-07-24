@@ -31,6 +31,10 @@ var chart = null;
 
 export default {
     props: {
+        enableDrag:{
+            type: Boolean,
+            default: true
+        },
         modelValue:{
             type: Object,
             required: true
@@ -49,6 +53,7 @@ export default {
                         label: 'Current',
                         yAxisID: 'current',
                         data:  this.convertMasToChartjs(this.modelValue.current.waveform),
+                        pointRadius: this.enableDrag? 2 : 1,
                         borderWidth: 5,
                         borderColor: theme['info'],
                         backgroundColor: theme['info'],
@@ -57,6 +62,7 @@ export default {
                         label: 'Voltage',
                         yAxisID: 'voltage',
                         data: this.convertMasToChartjs(this.modelValue.voltage.waveform),
+                        pointRadius: this.enableDrag? 2 : 1,
                         borderWidth: 5,
                         borderColor: theme['primary'],
                         backgroundColor: theme['primary'],
@@ -91,7 +97,8 @@ export default {
             plugins:{
                 dragData: {
                     round: 100,
-                    dragX: true,
+                    dragX: this.enableDrag,
+                    dragY: this.enableDrag,
                     showTooltip: true,
                     onDragStart:(e, datasetIndex, index, value) => {
                         e.target.style.cursor = 'grabbing';
@@ -113,9 +120,9 @@ export default {
                     onDragEnd: (e, datasetIndex, index, value) => {
                         e.target.style.cursor = 'default'
                         this.updateVerticalLimits(datasetIndex);
-                        chart.options.plugins.dragData.dragX = true
-                        chart.options.plugins.dragData.dragY = true
-                        chart.update()
+                        chart.options.plugins.dragData.dragX = this.enableDrag;
+                        chart.options.plugins.dragData.dragY = this.enableDrag;
+                        chart.update();
                         this.modelValue[this.getSignalDescriptor(datasetIndex)].waveform = this.convertChartjsToMas(chart.data.datasets[datasetIndex].data);
                         this.$emit("updatedWaveform", this.getSignalDescriptor(datasetIndex));
                     },
@@ -361,43 +368,43 @@ export default {
             const signalDescriptor = this.getSignalDescriptor(datasetIndex)
             if (this.modelValue[signalDescriptor].processed.label == "Triangular") {
                 if (index == 0 || index == 2) {
-                    chart.options.plugins.dragData.dragX = false
+                    chart.options.plugins.dragData.dragX = false;
                 }
             }
             else if (this.modelValue[signalDescriptor].processed.label == "Rectangular" ) {
                 if (index == 0 || index == 1 || index == 4) {
-                    chart.options.plugins.dragData.dragX = false
+                    chart.options.plugins.dragData.dragX = false;
                 }
             }
             else if (this.modelValue[signalDescriptor].processed.label == "Unipolar Triangular") {
                 if (index == 0 || index == 4) {
-                    chart.options.plugins.dragData.dragX = false
+                    chart.options.plugins.dragData.dragX = false;
                 }
             }
             else if (this.modelValue[signalDescriptor].processed.label == "Unipolar Rectangular" || this.modelValue[signalDescriptor].processed.label == "Flyback Primary") {
                 if (index == 0 || index == 1 || index == 4) {
-                    chart.options.plugins.dragData.dragX = false
+                    chart.options.plugins.dragData.dragX = false;
                 }
             }
             else if (this.modelValue[signalDescriptor].processed.label == "Flyback Secondary") {
                 if (index == 0 || index == 3 || index == 4) {
-                    chart.options.plugins.dragData.dragX = false
+                    chart.options.plugins.dragData.dragX = false;
                 }
             }
             else if (this.modelValue[signalDescriptor].processed.label == "Bipolar Rectangular") {
                 if (index == 0 || index == 9) {
-                    chart.options.plugins.dragData.dragX = false
+                    chart.options.plugins.dragData.dragX = false;
                 }
                 if (index == 0 || index == 1 || index == 4 || index == 5 || index == 8 || index == 9) {
-                    chart.options.plugins.dragData.dragY = false
+                    chart.options.plugins.dragData.dragY = false;
                 }
             }
             else if (this.modelValue[signalDescriptor].processed.label == "Sinusoidal") {
-                 chart.options.plugins.dragData.dragX = false
+                 chart.options.plugins.dragData.dragX = false;
             }
             else if (this.modelValue[signalDescriptor].processed.label == "Custom") {
                 if (index == 0 || index == (chart.data.datasets[datasetIndex].data.length - 1)) {
-                    chart.options.plugins.dragData.dragX = false
+                    chart.options.plugins.dragData.dragX = false;
                 }
             }
         },

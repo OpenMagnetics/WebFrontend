@@ -41,6 +41,10 @@ export default {
             type: Number,
             default: 1e+9
         },
+        disabledScaling: {
+            type: Boolean,
+            default: false
+        },
         allowNegative:{
             type: Boolean,
             default: false
@@ -121,7 +125,7 @@ export default {
             <label :data-cy="dataTestLabel + '-title'" class="rounded-2 fs-5 ms-3" :class="maximumNumberElements != null? 'col-sm-6 col-md-3' : 'col-12'">{{toTitleCase(name)}}</label>
         </div>
         <div :data-cy="dataTestLabel + '-' + requirementIndex + '-container'" class="row" v-for="requirement, requirementIndex in masStore.mas.inputs.designRequirements[name]">
-            <DimensionWithTolerance :dataTestLabel="dataTestLabel + '-' + requirementIndex"  :allowNegative="allowNegative" :allowAllNull="allowAllNull" :min="min" :max="max" :varText="true" :defaultValue="defaultValue" :name="masStore.mas.magnetic.coil.functionalDescription[requirementIndex + 1] == null? isolationSideOrdered[requirementIndex + 1] : masStore.mas.magnetic.coil.functionalDescription[requirementIndex + 1].name" :unit="unit" v-model="masStore.mas.inputs.designRequirements[name][requirementIndex]" @hasError="$emit('hasError')" @changeText="changeText($event, requirementIndex + 1)" class="offset-1 col-11"/>            
+            <DimensionWithTolerance :dataTestLabel="dataTestLabel + '-' + requirementIndex"  :allowNegative="allowNegative" :allowAllNull="allowAllNull" :min="min" :max="max" :disabledScaling="disabledScaling" :varText="true" :defaultValue="defaultValue" :name="masStore.mas.magnetic.coil.functionalDescription[requirementIndex + 1] == null? isolationSideOrdered[requirementIndex + 1] : masStore.mas.magnetic.coil.functionalDescription[requirementIndex + 1].name" :unit="unit" v-model="masStore.mas.inputs.designRequirements[name][requirementIndex]" @hasError="$emit('hasError')" @changeText="changeText($event, requirementIndex + 1)" class="offset-1 col-11"/>            
         </div>
         <div class="row">
             <label class="text-danger text-center col-12 pt-1" style="font-size: 0.9em; white-space: pre-wrap;">{{errorMessages}}</label>

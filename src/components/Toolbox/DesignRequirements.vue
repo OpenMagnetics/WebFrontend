@@ -219,6 +219,7 @@ export default {
                     :dataTestLabel="dataTestLabel + '-TurnsRatios'"
                     :defaultField="'nominal'"
                     :defaultValue="{'nominal': 1}"
+                    :disabledScaling="true"
                     :maximumNumberElements="12"
                     @hasError="hasError"
                 />
