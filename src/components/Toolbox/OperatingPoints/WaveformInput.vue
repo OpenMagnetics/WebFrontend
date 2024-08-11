@@ -86,11 +86,11 @@ export default {
             <ElementFromList class="border-bottom border-1 pb-2 mb-1 col-12"
                 :name="'label'"
                 :dataTestLabel="dataTestLabel + '-Label'"
-                :options="WaveformLabel"
+                :options="Object.values(WaveformLabel)"
                 :titleSameRow="true"
                 :replaceTitle="'Waveform'"
                 v-model="modelValue[signalDescriptor].processed"
-                @updatedNumberElements="labelChanged"
+                @update="labelChanged"
             />
 
             <Dimension class="border-bottom border-1 col-12"

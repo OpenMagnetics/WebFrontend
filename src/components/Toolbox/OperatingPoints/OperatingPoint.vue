@@ -19,7 +19,7 @@ import { tooltipsMagneticSynthesisOperatingPoints } from '/src/assets/js/texts.j
 <script>
 
 export default {
-    emits: ["canContinue", "changeTool", "updatedWaveform"],
+    emits: ["canContinue", "changeTool", "updatedWaveform", "importedWaveform", "selectedManualOrImported"],
     props: {
         dataTestLabel: {
             type: String,
@@ -82,18 +82,19 @@ export default {
         updatedWaveform(signalDescriptor) {
             this.$emit('updatedWaveform', signalDescriptor);
         },
+        importedWaveform() {
+            this.$emit('importedWaveform');
+        },
         extractMapColumnNames(file) {
             this.$mkf.ready.then(_ => {
                 const numberWindings = this.masStore.mas.inputs.designRequirements.turnsRatios.length + 1;
                 const frequency = this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex].frequency;
                 this.masStore.magneticCircuitSimulatorColumnNames[this.currentOperatingPointIndex] = JSON.parse(this.$mkf.extract_map_column_names(file, numberWindings, frequency));
-                console.log(this.masStore.magneticCircuitSimulatorColumnNames);
             });
         },
         extractAllColumnNames(file) {
             this.$mkf.ready.then(_ => {
                 this.masStore.magneticCircuitSimulatorAllLastReadColumnNames = JSON.parse(this.$mkf.extract_column_names(file));
-                console.log(this.masStore.magneticCircuitSimulatorAllLastReadColumnNames);
             });
         },
         onMASFileTypeSelected(event) {
@@ -112,18 +113,17 @@ export default {
                 this.extractAllColumnNames(this.loadedFile);
                 this.extractMapColumnNames(this.loadedFile);
                 this.masStore.magneticCircuitSimulatorOperatingPoints[this.currentOperatingPointIndex] = true;
-                // console.log(data);
             }
             fr.readAsText(this.$refs["OperatingPoint-CircuitSimulator-upload-ref"].files.item(0));
         },
         onManualTypeSelected(event) {
-            console.log("Manual!");
             this.masStore.magneticManualOperatingPoints[this.currentOperatingPointIndex] = true;
+            this.$emit("selectedManualOrImported")
         },
         setImportMode(event) {
-            console.log("Import mode!");
             this.masStore.magneticManualOperatingPoints[this.currentOperatingPointIndex] = false;
             this.masStore.magneticCircuitSimulatorOperatingPoints[this.currentOperatingPointIndex] = false;
+            this.$emit("selectedManualOrImported")
         },
     }
 }
@@ -146,6 +146,7 @@ export default {
                 :currentWindingIndex="currentWindingIndex"
                 :allColumnNames="masStore.magneticCircuitSimulatorAllLastReadColumnNames"
                 @setImportMode="setImportMode"
+                @importedWaveform="importedWaveform"
             />
             <div v-if="!masStore.magneticCircuitSimulatorOperatingPoints[currentOperatingPointIndex] && !masStore.magneticManualOperatingPoints[currentOperatingPointIndex]" class="col-12">
                 <label :data-cy="dataTestLabel + '-current-title'" class="row fs-4 text-primary mx-0 p-0 mb-4">{{masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].name}}</label>

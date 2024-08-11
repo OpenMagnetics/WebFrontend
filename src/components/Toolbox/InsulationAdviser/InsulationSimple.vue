@@ -103,7 +103,7 @@ export default {
                 :dataTestLabel="dataTestLabel + '-Cti'"
                 :name="'cti'"
                 v-model="modelValue['insulation']"
-                :options="Cti"
+                :options="Object.values(Cti)"
                 @update="$emit('update')"
             />
             <ElementFromList
@@ -111,7 +111,7 @@ export default {
                 :dataTestLabel="dataTestLabel + '-InsulationType'"
                 :name="'insulationType'"
                 v-model="modelValue['insulation']"
-                :options="InsulationType"
+                :options="Object.values(InsulationType)"
                 @update="$emit('update')"
             />
             <ElementFromList
@@ -119,7 +119,7 @@ export default {
                 :dataTestLabel="dataTestLabel + '-OvervoltageCategory'"
                 :name="'overvoltageCategory'"
                 v-model="modelValue['insulation']"
-                :options="OvervoltageCategory"
+                :options="Object.values(OvervoltageCategory)"
                 @update="$emit('update')"
             />
             <ElementFromList
@@ -127,14 +127,14 @@ export default {
                 :dataTestLabel="dataTestLabel + '-PollutionDegree'"
                 :name="'pollutionDegree'"
                 v-model="modelValue['insulation']"
-                :options="PollutionDegree"
+                :options="Object.values(PollutionDegree)"
                 @update="$emit('update')"
             />
             <SeveralElementsFromList
                 class="col-12"
                 :name="'standards'"
                 v-model="modelValue['insulation']"
-                :options="InsulationStandards"
+                :options="Object.values(InsulationStandards)"
                 :optionsToDisable="standardsToDisable"
                 @update="$emit('update')"
             />

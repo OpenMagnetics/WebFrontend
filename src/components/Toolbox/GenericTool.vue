@@ -16,6 +16,7 @@ import InsulationAdviser from '/src/components/Toolbox/InsulationAdviser.vue'
 import MagneticAdviserFinalizer from '/src/components/Toolbox/MagneticAdviser/Finalizer.vue'
 import MagneticCoreFinalizer from '/src/components/Toolbox/CoreAdviser/Finalizer.vue'
 import MagneticSpecificationFinalizer from '/src/components/Toolbox/MagneticSpecification/Finalizer.vue'
+import MagneticBuilder from '/src/components/Toolbox/MagneticBuilder.vue'
 
 </script>
 
@@ -114,6 +115,7 @@ export default {
                             <WireCustomizer :dataTestLabel="`${dataTestLabel}-WireCustomizer`" v-if="$userStore[`${toolLabel}Subsection`] == 'wireCustomizer'"/>
                             <CoilAdviser :dataTestLabel="`${dataTestLabel}-CoilAdviser`" v-if="$userStore[`${toolLabel}Subsection`] == 'coilAdviser'"/>
                             <InsulationAdviser :dataTestLabel="`${dataTestLabel}-InsulationAdviser`" v-if="$userStore[`${toolLabel}Subsection`] == 'insulationRequirements'"/>
+                            <MagneticBuilder @canContinue="updateCanContinue('magneticBuilder', $event)" :dataTestLabel="`${dataTestLabel}-MagneticBuilder`" v-if="$userStore[`${toolLabel}Subsection`] == 'magneticBuilder'"/>
                             <MagneticAdviserFinalizer :dataTestLabel="`${dataTestLabel}-MagneticFinalizer`" v-if="$userStore[`${toolLabel}Subsection`] == 'magneticAdviserFinalizer'"/>
                             <MagneticCoreFinalizer :dataTestLabel="`${dataTestLabel}-MagneticFinalizer`" v-if="$userStore[`${toolLabel}Subsection`] == 'magneticCoreAdviserFinalizer'"/>
                             <MagneticSpecificationFinalizer :dataTestLabel="`${dataTestLabel}-MagneticFinalizer`" v-if="$userStore[`${toolLabel}Subsection`] == 'magneticSpecificationFinalizer'"/>

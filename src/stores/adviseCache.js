@@ -5,35 +5,29 @@ import * as Defaults from '/src/assets/js/defaults.js'
 
 export const useAdviseCacheStore = defineStore("adviseCache", () => {
 
-    const advises = ref(null);
-    const advisesCache = ref({});
-    const advisesTimestamp = ref(null)
-    const advisesTtlInMilliseconds = 24 * 60 * 60 * 1000 // 24 hours
+    const currentMasAdvises = ref(null);
+    const currentCoreAdvises = ref(null);
 
-    function areAdvisesValid() {
-        if (this.advisesTimestamp == null || (this.advisesTimestamp + this.advisesTtlInMilliseconds < Date.now())) {
-            Object.keys(this.advisesCache).forEach(function(k) { delete this.advisesCache[k]})
-            return false;
-        }
-        else {
-            return true;
-        }
+    function cleanMasAdvises() {
+        this.currentMasAdvises = null;
     }
-
-
-    function resetCache() {
-        this.advisesCache = {};
-        this.advises = null;
-        this.advisesTimestamp = null;
-        console.log("Resetting cache!!!!!!!!!!!!!")
+    function noMasAdvises() {
+        return this.currentMasAdvises == null;
+    }
+    function cleanCoreAdvises() {
+        this.currentCoreAdvises = null;
+    }
+    function noCoreAdvises() {
+        return this.currentCoreAdvises == null;
     }
 
     return {
-        resetCache,
-        advises,
-        advisesCache,
-        advisesTimestamp,
-        areAdvisesValid,
+        cleanMasAdvises,
+        currentMasAdvises,
+        noMasAdvises,
+        cleanCoreAdvises,
+        currentCoreAdvises,
+        noCoreAdvises,
     }
 },
 {

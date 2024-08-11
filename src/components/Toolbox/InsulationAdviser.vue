@@ -81,8 +81,6 @@ export default {
     created () {
     },
     mounted () {
-        this.masStore.resetCache();
-
         this.calculateInsulation();
     },
     methods: {

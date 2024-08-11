@@ -27,14 +27,18 @@ export default {
             type: Boolean,
             default: false,
         },
+        autoupdate: {
+            type: Boolean,
+            default: true,
+        },
+        scale: {
+            type: Number,
+            default: 1000,
+        },
     },
     data() {
 
-        console.log("this.core");
-        console.log(this.core);
         var localData = guessBasicGappingParameters(this.core, 1);
-        console.log("localData");
-        console.log(localData);
 
         const errorMessages = "";
 
@@ -100,7 +104,9 @@ export default {
                 gapping.push(residualGap);
             }
 
-            this.core['functionalDescription']['gapping'] = gapping;
+            if (this.autoupdate) {
+                this.core['functionalDescription']['gapping'] = gapping;
+            }
 
             if (!hasError) {
                 this.$emit("update", gapping);
@@ -157,7 +163,7 @@ export default {
                     :disabled="disabled"
                     :justifyContent="true"
                     :min="1"
-                    :max="10"
+                    :max="100"
                     :dataTestLabel="dataTestLabel + '-NumberGaps'"
                     :allowNegative="false"
                     :modelValue="localData"

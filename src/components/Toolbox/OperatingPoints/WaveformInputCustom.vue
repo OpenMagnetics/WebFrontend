@@ -71,11 +71,11 @@ export default {
             v-if="modelValue[signalDescriptor] != null"
             :name="'label'"
             :dataTestLabel="dataTestLabel + '-Label'"
-            :options="WaveformLabel"
+            :options="Object.values(WaveformLabel)"
             :titleSameRow="true"
             :replaceTitle="'Waveform'"
             v-model="modelValue[signalDescriptor].processed"
-            @updatedNumberElements="labelChanged"
+            @update="labelChanged"
         />
         <div v-if="modelValue[signalDescriptor] != null" v-for="(value, key) in modelValue[signalDescriptor].waveform.data">
             <WaveformInputCustomPoint

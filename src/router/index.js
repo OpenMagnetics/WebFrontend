@@ -152,6 +152,11 @@ const routes = [
         component: () => import('../views/MagneticAdviser.vue')
     },
     {
+        path: '/magnetic_builder',
+        name: 'MagneticBuilder',
+        component: () => import('../views/MagneticBuilder.vue')
+    },
+    {
         path: '/magnetic_specification',
         name: 'MagneticSpecification',
         component: () => import('../views/MagneticSpecification.vue')

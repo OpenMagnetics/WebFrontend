@@ -84,9 +84,12 @@ export default {
         }
     },
     watch: {
-        core(newValue, oldValue) {
-            this.tryToSend();
-        },
+        'core': {
+            handler(newValue, oldValue) {
+                this.tryToSend();
+            },
+          deep: true
+        }
     },
     methods: {
         removeObject3D(object3D) {

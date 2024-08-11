@@ -33,6 +33,14 @@ export const useUserStore = defineStore("user", () => {
         'magneticFinalizer': false,
     })
 
+    const magneticBuilderSubsection = ref("designRequirements")
+    const magneticBuilderCanContinue = ref({
+        'designRequirements': false,
+        'operatingPoints': false,
+        'magneticBuilder': false,
+        'magneticFinalizer': false,
+    })
+
     const magneticCoreAdviserSubsection = ref("designRequirements")
     const magneticCoreAdviserCanContinue = ref({
         'designRequirements': false,
@@ -73,6 +81,16 @@ export const useUserStore = defineStore("user", () => {
             'designRequirements': false,
             'operatingPoints': false,
             'magneticAdviser': false,
+            'magneticFinalizer': false,
+        };
+    }
+
+    function resetMagneticBuilder() {
+        this.magneticBuilderSubsection = "designRequirements";
+        this.magneticBuilderCanContinue = {
+            'designRequirements': false,
+            'operatingPoints': false,
+            'magneticBuilder': false,
             'magneticFinalizer': false,
         };
     }
@@ -306,9 +324,12 @@ export const useUserStore = defineStore("user", () => {
         magneticAdviserSelectedAdvise,
         magneticAdviserSubsection,
         magneticAdviserCanContinue,
+        magneticBuilderSubsection,
+        magneticBuilderCanContinue,
         resetMagneticSpecification,
         resetMagneticCoreAdviser,
         resetMagneticAdviser,
+        resetMagneticBuilder,
 
 
         dump,

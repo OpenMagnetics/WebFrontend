@@ -43,9 +43,20 @@ export default {
             type: Boolean,
             default: false,
         },
+        labelStyleClass: {
+            type: String,
+            default: "col-4",
+        },
+        selectStyleClass: {
+            type: String,
+            default: "col-8",
+        },
     },
     data() {
+        var localData = this.assignLocalData(this.options)
+
         return {
+            localData
         }
     },
     computed: {
@@ -60,7 +71,23 @@ export default {
                 }
                 return computedOptions;
             }
-                
+        },
+        chosenOption() {
+            console.log(this.options.constructor.name)
+            console.log(this.modelValue[this.name])
+            if (this.options.constructor.name === "Array") {
+                return this.modelValue[this.name];
+            }
+            else {
+                var chosen = null;
+                for (let [key, value] of Object.entries(this.options)) {
+                    if (this.modelValue[this.name] == key) {
+                        this.modelValue[this.name] = value;
+                        break;
+                    }
+                }
+                return chosen;
+            }
         },
         styleTooltip() {
             var relative_placement;
@@ -74,23 +101,54 @@ export default {
             }
         },
     },
-    watch: { 
+    watch: {
+        'options': {
+            handler(newValue, oldValue) {
+                this.localData = this.assignLocalData(newValue);
+            },
+            deep: true
+        },
     },
     mounted () {
     },
     methods: {
+        assignLocalData(options) {
+            var localData;
+            if (options.constructor.name === "Array") {
+                localData = this.modelValue[this.name];
+            }
+            else {
+                const computedOptions = []
+                for (let [key, value] of Object.entries(options)) {
+                    if (this.modelValue[this.name] == key) {
+                        localData = value;
+                        break;
+                    }
+                }
+            }
+            return localData;
+        },
         changeOption(event) {
             var chosen = null;
 
-            for (let [key, value] of Object.entries(this.options)) {
-                if (event.target.value == value) {
-                    chosen = value;
-                    break;
+            if (this.options.constructor.name === "Array") {
+                for (var i = this.options.length - 1; i >= 0; i--) {
+                    if (event.target.value == this.options[i]) {
+                        chosen = this.options[i];
+                    }
+                }
+            }
+            else{
+                for (let [key, value] of Object.entries(this.options)) {
+                    if (event.target.value == value) {
+                        chosen = key;
+                        break;
+                    }
                 }
             }
             this.modelValue[this.name] = chosen;
-            this.$emit("updatedNumberElements", event.target.value, this.name);
-            this.$emit("update", event.target.value, this.name);
+            this.localData = event.target.value;
+            this.$emit("update", chosen, this.name);
         },
     }
 }
@@ -104,10 +162,11 @@ export default {
             <label :data-cy="dataTestLabel + '-title'" v-if="altText == null && !titleSameRow" class="rounded-2 fs-5 ms-3">{{replaceTitle == null? toTitleCase(name) : toTitleCase(replaceTitle)}}</label>
         </div>
         <div class="row" :class="justifyContent? 'd-flex justify-content-between' : ''">
-            <label :data-cy="dataTestLabel + '-same-row-label'" v-if="titleSameRow" class="rounded-2 fs-5 col-4">{{replaceTitle == null? toTitleCase(name) : toTitleCase(replaceTitle)}}</label>
+            <label :data-cy="dataTestLabel + '-same-row-label'" v-if="titleSameRow" :class="labelStyleClass" class="rounded-2 fs-5">{{replaceTitle == null? toTitleCase(name) : toTitleCase(replaceTitle)}}</label>
             <div  v-if="!titleSameRow" class=" col-sm-0 col-md-2">
             </div>
-            <select :disabled="disabled" :data-cy="dataTestLabel + '-select'"  class="form-select bg-light text-white m-0 col-8 mt-1"  @change="changeOption" style="width:auto; max-height: 3em;" :value="modelValue[name]" >
+            <select :disabled="disabled" :data-cy="dataTestLabel + '-select'"  :class="selectStyleClass" class="form-select bg-light text-white m-0 mt-1"  @change="changeOption" style="width:auto; max-height: 3em;" :value="localData" >
+
                 <option :disabled="optionsToDisable.includes(value)" v-for="value in computedOptions">
                     {{value}}
                 </option>

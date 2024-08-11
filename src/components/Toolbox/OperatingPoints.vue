@@ -62,9 +62,16 @@ export default {
         },
         canContinue() {
             var allSet = true;
+
             this.errorMessages = "";
             for (var operatingPointIndex = 0; operatingPointIndex < this.masStore.mas.inputs.operatingPoints.length; operatingPointIndex++) {
-
+                if (!this.masStore.magneticManualOperatingPoints[operatingPointIndex] && !this.masStore.magneticCircuitSimulatorOperatingPoints[operatingPointIndex]) {
+                    allSet = false;
+                }
+                console.log("this.masStore.magneticManualOperatingPoints[operatingPointIndex]")
+                console.log(this.masStore.magneticManualOperatingPoints[operatingPointIndex])
+                console.log("this.masStore.magneticCircuitSimulatorOperatingPoints[operatingPointIndex]")
+                console.log(this.masStore.magneticCircuitSimulatorOperatingPoints[operatingPointIndex])
                 if (this.masStore.mas.inputs.operatingPoints[operatingPointIndex] == null) {
                     allSet = false;
                     this.errorMessages += "Operating point with index " + operatingPointIndex + " is totally empty.\n"
@@ -100,8 +107,6 @@ export default {
             }
         }
         this.$emit("canContinue", this.canContinue);
-
-        this.masStore.resetCache();
 
         this.masStore.$onAction((action) => {
             if (action.name == "updatedInputExcitationProcessed") {
@@ -177,6 +182,12 @@ export default {
                 this.currentOperatingPointIndex -= 1;
             }
             this.masStore.removeOperatingPoint(index);
+            this.$emit("canContinue", this.canContinue);
+        },
+        importedWaveform() {
+            this.$emit("canContinue", this.canContinue);
+        },
+        selectedManualOrImported() {
             this.$emit("canContinue", this.canContinue);
         },
         changeWinding(windingIndex) {
@@ -263,6 +274,8 @@ export default {
                             :currentOperatingPointIndex="currentOperatingPointIndex"
                             :currentWindingIndex="currentWindingIndex"
                             @updatedWaveform="updatedWaveform"
+                            @importedWaveform="importedWaveform"
+                            @selectedManualOrImported="selectedManualOrImported"
                         />
                     </div>
                 </div>

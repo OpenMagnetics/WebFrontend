@@ -6,6 +6,7 @@ export const useSettingsStore = defineStore("settings", () => {
     const adviserUseOnlyCoresInStock = ref('1')
     const adviserAllowDistributedGaps = ref('1')
     const adviserAllowStacks = ref('1')
+    const adviserToroidalCores = ref('1')
 
     const dump = computed(() => {
         return {
@@ -13,6 +14,7 @@ export const useSettingsStore = defineStore("settings", () => {
             "adviserUseOnlyCoresInStock": adviserUseOnlyCoresInStock.value,
             "adviserAllowDistributedGaps": adviserAllowDistributedGaps.value,
             "adviserAllowStacks": adviserAllowStacks.value,
+            "adviserToroidalCores": adviserToroidalCores.value,
         }
     })
 
@@ -21,6 +23,7 @@ export const useSettingsStore = defineStore("settings", () => {
         this.adviserUseOnlyCoresInStock = true;
         this.adviserAllowDistributedGaps = true;
         this.adviserAllowStacks = true;
+        this.adviserToroidalCores = true;
     }
 
     return {
@@ -28,6 +31,7 @@ export const useSettingsStore = defineStore("settings", () => {
         adviserUseOnlyCoresInStock,
         adviserAllowDistributedGaps,
         adviserAllowStacks,
+        adviserToroidalCores,
 
         dump,
         reset,

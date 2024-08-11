@@ -58,20 +58,13 @@ export default {
             masStore.magneticAdviserWeights = magneticAdviserWeights;
         }
 
-
-        const advises = [];
         const loading = false;
-        const tryingToSend = false;
-        const recentChange = false;
 
         return {
             adviseCacheStore,
             masStore,
             inventoryCacheStore,
             loading,
-            advises,
-            tryingToSend,
-            recentChange,
             currentAdviseToShow: 0,
         }
     },
@@ -98,42 +91,11 @@ export default {
     created () {
     },
     mounted () {
-        setTimeout(() => {this.calculateAdvisedMagnetics();}, 200);
+        if (this.adviseCacheStore.noMasAdvises()) {
+            setTimeout(() => {this.calculateAdvisedMagnetics();}, 200);
+        }
     },
     methods: {
-        getKeyToCache() {
-            var cacheKeyString = JSON.stringify(this.masStore.mas.inputs);
-            for (let [key, value] of Object.entries(this.masStore.magneticAdviserWeights)) {
-                cacheKeyString += value;
-            }
-            const cacheKey = cyrb53(cacheKeyString);
-            console.log(cacheKey)
-            return cacheKey;
-        },
-        addCurrentAdvisesToCache() {
-            var cacheKey = this.getKeyToCache();
-            this.adviseCacheStore.advisesCache[cacheKey] = this.advises;
-        },
-        tryLoadAdvisesfromCache() {
-            if (this.adviseCacheStore.areAdvisesValid()) {
-                var cacheKey = this.getKeyToCache();
-                console.log(Object.keys(this.adviseCacheStore.advisesCache))
-                if (cacheKey in this.adviseCacheStore.advisesCache) {
-                    console.log("Cache hit!")
-                    this.advises = this.adviseCacheStore.advisesCache[cacheKey];
-                    this.$userStore.magneticAdviserSelectedAdvise = 0;
-                    if (this.advises.length > 0) {
-                        this.masStore.mas = this.advises[this.$userStore.magneticAdviserSelectedAdvise].mas;
-                        this.$emit("canContinue", true);
-                    }
-                    return true;
-                }
-                else {
-                    console.log("Cache miss!")
-                    return false;
-                }
-            }
-        },
         getTopMagneticByFilter(data, filter) {
             data.sort(function(a, b) { 
                 if (filter == null) {
@@ -159,13 +121,7 @@ export default {
             }
         },
         calculateAdvisedMagnetics() {
-            this.loading = true;
             this.currentAdviseToShow = 0;
-
-            if (this.tryLoadAdvisesfromCache()) {
-                setTimeout(() => {this.loading = false;}, 500);
-                return;
-            }
 
             // Timeout to give time to gif to load
             setTimeout(() => {
@@ -176,6 +132,7 @@ export default {
                         const settings = JSON.parse(magneticAdviser.get_settings());
                         settings["coreIncludeDistributedGaps"] = this.$settingsStore.adviserAllowDistributedGaps == "1";
                         settings["coreIncludeStacks"] = this.$settingsStore.adviserAllowStacks == "1";
+                        settings["useToroidalCores"] = this.$settingsStore.adviserToroidalCores == "1";
                         magneticAdviser.set_settings(JSON.stringify(settings));
 
                         // console.log(JSON.stringify(this.masStore.mas.inputs))
@@ -192,24 +149,24 @@ export default {
                             })
                         }
 
-                        this.advises = [];
+                        console.log(`Found ${data.length} designs`)
+
+                        this.adviseCacheStore.currentMasAdvises = [];
                         // orderedWeights.forEach((value) => {
                         //     const topMas = this.getTopMagneticByFilter(data, value.filter);
-                        //     this.advises.push(topMas);
+                        //     this.adviseCacheStore.currentMasAdvises.push(topMas);
                         // })
-                        // this.advises.forEach((mas) => {
+                        // this.adviseCacheStore.currentMasAdvises.forEach((mas) => {
                         //     this.deleteMasElementFromArray(data, mas);
                         // })
+
                         data.forEach((datum) => {
-                            this.advises.push(datum);
+                            this.adviseCacheStore.currentMasAdvises.push(datum);
                         })
                         console.timeEnd('Execution Time');
-                        this.adviseCacheStore.advises = this.advises;
-                        this.adviseCacheStore.advisesTimestamp = Date.now();
-                        this.addCurrentAdvisesToCache();
                         this.$userStore.magneticAdviserSelectedAdvise = 0;
-                        if (this.advises.length > 0) {
-                            this.masStore.mas = this.advises[this.$userStore.magneticAdviserSelectedAdvise].mas;
+                        if (this.adviseCacheStore.currentMasAdvises.length > 0) {
+                            this.masStore.mas = this.adviseCacheStore.currentMasAdvises[this.$userStore.magneticAdviserSelectedAdvise].mas;
                             this.$emit("canContinue", true);
                         }
 
@@ -223,32 +180,10 @@ export default {
                 });
             }, 10);
         },
-        tryToSend() {
-            if (!this.tryingToSend && !this.loading) {
-                this.recentChange = false
-                this.tryingToSend = true
-                setTimeout(() => {
-                    if (this.recentChange) {
-                        this.tryingToSend = false
-                        this.tryToSend()
-                    }
-                    else {
-                        this.tryingToSend = false
-                        this.calculateAdvisedMagnetics()
-                    }
-                }
-                , 500);
-            }
-        },
         changedInputValue(key, value) {
             this.masStore.magneticAdviserWeights[key] = value / 100;
-            this.recentChange = true;
-            this.tryToSend();
         },
         maximumNumberResultsChangedInputValue(value) {
-            this.recentChange = true;
-            this.masStore.resetCache();
-            this.tryToSend();
         },
         changedSliderValue(newkey, newValue) {
             const remainingValue = 100 - newValue;
@@ -274,35 +209,28 @@ export default {
                     }
                 }
             }
-            this.recentChange = true;
-
-            this.tryToSend();
         },
         maximumNumberResultsChangedSliderValue(newValue) {
-            this.recentChange = true;
-            this.masStore.resetCache();
-            this.tryToSend();
         },
         selectedMas(index) {
-            this.masStore.mas = null;
-            this.masStore.mas = deepCopy(this.advises[index].mas);
-            this.masStore.setMas(deepCopy(this.advises[index].mas));
+            this.masStore.setMas(deepCopy(this.adviseCacheStore.currentMasAdvises[index].mas));
             this.$userStore.magneticAdviserSelectedAdvise = index;
             console.log("canContinue")
             this.$emit("canContinue", true);
 
         },
         adviseReady(index) {
-            if (this.currentAdviseToShow < this.advises.length - 1) {
+            if (this.currentAdviseToShow < this.adviseCacheStore.currentMasAdvises.length - 1) {
                 setTimeout(() => {this.currentAdviseToShow = this.currentAdviseToShow + 1}, 100);
             }
         },
-        onChangeBarOrSpider(event) {
-            this.$router.go();
+        onSettingsUpdated(event) {
+            this.loading = true;
+            setTimeout(() => {this.calculateAdvisedMagnetics();}, 200);
         },
-        onChangeWithOrWithoutStock(event) {
-            this.masStore.resetCache();
-            this.$router.go();
+        calculateAdvises(event) {
+            this.loading = true;
+            setTimeout(() => {this.calculateAdvisedMagnetics();}, 200);
         },
 
     }
@@ -312,8 +240,7 @@ export default {
 <template>
     <AdviseDetails :modelValue="masStore.mas"/>
     <Settings
-        @onChangeBarOrSpider="onChangeBarOrSpider"
-        @onChangeWithOrWithoutStock="onChangeWithOrWithoutStock"
+        @onSettingsUpdated="onSettingsUpdated"
     />
     <div class="container" >
         <div class="row">
@@ -331,12 +258,13 @@ export default {
                 <div class="row">
                     <label class="form-label col-12 py-0 my-0">Max. No results</label>
                     <div class=" col-7 me-2 pt-2">
-                        <Slider v-model="masStore.magneticAdviserMaximumNumberResults" :disabled="loading" class="col-12 text-primary  slider" :height="10" :min="1" :max="20" :step="1"  :color="theme.primary"  :tooltips="false" @change="maximumNumberResultsChangedSliderValue($event)"/>
+                        <Slider v-model="masStore.magneticAdviserMaximumNumberResults" :disabled="loading" class="col-12 text-primary  slider" :height="10" :min="2" :max="20" :step="1"  :color="theme.primary"  :tooltips="false" @change="maximumNumberResultsChangedSliderValue($event)"/>
                     </div>
 
-                    <input :disabled="loading" :data-cy="dataTestLabel + '-number-input'" type="number" class="m-0 mb-2 px-0 col-3 bg-light text-white" :min="10" :step="10" @change="maximumNumberResultsChangedInputValue($event.target.value)" :value="removeTrailingZeroes(masStore.magneticAdviserMaximumNumberResults)" ref="inputRef">
+                    <input :disabled="loading" :data-cy="dataTestLabel + '-number-input'" type="number" class="m-0 mb-2 px-0 col-3 bg-light text-white" :min="2" :step="1" @change="maximumNumberResultsChangedInputValue($event.target.value)" :value="removeTrailingZeroes(masStore.magneticAdviserMaximumNumberResults)" ref="inputRef">
                 </div>
                 <button :disabled="loading" :data-cy="dataTestLabel + '-settings-modal-button'" class="btn btn-info mx-auto d-block mt-4" data-bs-toggle="modal" data-bs-target="#settingsModal">Settings</button>
+                <button :disabled="loading" :data-cy="dataTestLabel + '-calculate-mas-advises-button'" class="btn btn-success mx-auto d-block mt-4" @click="calculateAdvises" >Get advised magnetics!</button>
             </div>
             <div class="col-sm-12 col-md-10 text-start pe-0 container-fluid"  style="height: 70vh">
                 <div class="row" v-if="loading" >
@@ -344,7 +272,7 @@ export default {
 
                 </div>
                 <div class="row advises" v-else>
-                    <div class="col-md-4 col-sm-12 m-0 p-0 mt-1" v-for="advise, adviseIndex in advises">
+                    <div class="col-md-4 col-sm-12 m-0 p-0 mt-1" v-for="advise, adviseIndex in adviseCacheStore.currentMasAdvises">
                         <Advise
                             v-if="(Object.values(titledFilters).length > 0) && (currentAdviseToShow >= adviseIndex)"
                             :adviseIndex="adviseIndex"

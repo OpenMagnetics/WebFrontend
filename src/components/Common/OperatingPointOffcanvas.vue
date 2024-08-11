@@ -78,8 +78,6 @@ export default {
         }
         this.$emit("canContinue", this.canContinue);
 
-        this.masStore.resetCache();
-
         this.masStore.$onAction((action) => {
             if (action.name == "updatedInputExcitationProcessed") {
                 const operatingPointIndex = 0;

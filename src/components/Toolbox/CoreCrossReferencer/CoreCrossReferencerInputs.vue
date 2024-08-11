@@ -221,6 +221,7 @@ export default {
                 :dataTestLabel="dataTestLabel + '-Gap'"
                 :disabled="disabled"
                 :core="crossReferencerStore.coreReferenceInputs.core"
+                :scale="1"
                 @update="gappingUpdated"
             />
 

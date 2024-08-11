@@ -58,20 +58,13 @@ export default {
             masStore.coreAdviserWeights = coreAdviserWeights;
         }
 
-
-        const advises = [];
         const loading = false;
-        const tryingToSend = false;
-        const recentChange = false;
 
         return {
             adviseCacheStore,
             masStore,
             inventoryCacheStore,
             loading,
-            advises,
-            tryingToSend,
-            recentChange,
             currentAdviseToShow: 0,
         }
     },
@@ -98,78 +91,11 @@ export default {
     created () {
     },
     mounted () {
-        // this.$userStore.coreAdviserSelectedAdvise = -1;
-        // const url = import.meta.env.VITE_API_ENDPOINT + '/read_mas_inventory'
-
-        // this.$axios.post(url, {})
-        // .then(response => {
-        //     this.inventoryCacheStore.coreInventory = response.data['cores'];
-        //     // if (this.masStore.areCoreAdvisesValid()) {
-        //     //     console.log("Cache valid!")
-        //     //     this.advises = this.adviseCacheStore.advises;
-        //     //     this.addCurrentAdvisesToCache();
-        //     //     this.$userStore.coreAdviserSelectedAdvise = 0;
-        //     //     if (this.advises.length > 0) {
-        //     //         this.masStore.mas = this.advises[this.$userStore.coreAdviserSelectedAdvise].mas;
-        //     //         this.$emit("canContinue", true);
-        //     //     }
-        //     // }
-        //     // else {
-        //     //     console.log("Cache not valid!")
-        //         this.calculateAdvisedCores();
-        //     // }
-        // })
-        // .catch(error => {
-        //     console.error("Error loading inventory")
-        //     console.error(error)
-        // });
-        setTimeout(() => {this.calculateAdvisedCores();}, 200);
-
-
-        // coreAdviser.ready.then(_ => {
-        //     console.log('Starting Execution Time Loading');
-        //     console.time('Execution Time Loading');
-        //     coreAdviser.clear_loaded_cores();
-        //     coreAdviser.load_cores(false, true);
-        //     console.timeEnd('Execution Time Loading');
-        // });
+        if (this.adviseCacheStore.noCoreAdvises()) {
+            setTimeout(() => {this.calculateAdvisedCores();}, 200);
+        }
     },
     methods: {
-        getKeyToCache() {
-            var cacheKeyString = JSON.stringify(this.masStore.mas.inputs);
-            for (let [key, value] of Object.entries(this.masStore.coreAdviserWeights)) {
-                cacheKeyString += value;
-            }
-
-            const cacheKey = cyrb53(cacheKeyString);
-
-            console.log(cacheKey)
-            return cacheKey;
-        },
-        addCurrentAdvisesToCache() {
-            var cacheKey = this.getKeyToCache();
-            this.adviseCacheStore.advisesCache[cacheKey] = this.advises;
-        },
-        tryLoadAdvisesfromCache() {
-            if (this.adviseCacheStore.areAdvisesValid()) {
-                var cacheKey = this.getKeyToCache();
-                console.log(Object.keys(this.adviseCacheStore.advisesCache))
-                if (cacheKey in this.adviseCacheStore.advisesCache) {
-                    console.log("Cache hit!")
-                    this.advises = this.adviseCacheStore.advisesCache[cacheKey];
-                    this.$userStore.coreAdviserSelectedAdvise = 0;
-                    if (this.advises.length > 0) {
-                        this.masStore.mas = this.advises[this.$userStore.coreAdviserSelectedAdvise].mas;
-                        this.$emit("canContinue", true);
-                    }
-                    return true;
-                }
-                else {
-                    console.log("Cache miss!")
-                    return false;
-                }
-            }
-        },
         getTopMagneticByFilter(data, filter) {
             data.sort(function(a, b) { 
                 if (filter == null) {
@@ -195,13 +121,7 @@ export default {
             }
         },
         calculateAdvisedCores() {
-            this.loading = true;
             this.currentAdviseToShow = 0;
-
-            if (this.tryLoadAdvisesfromCache()) {
-                setTimeout(() => {this.loading = false;}, 500);
-                return;
-            }
 
             coreAdviser.ready.then(_ => {
                 if (this.masStore.mas.inputs.operatingPoints.length > 0) {
@@ -210,6 +130,7 @@ export default {
                     const settings = JSON.parse(coreAdviser.get_settings());
                     settings["coreIncludeDistributedGaps"] = this.$settingsStore.adviserAllowDistributedGaps == "1";
                     settings["coreIncludeStacks"] = this.$settingsStore.adviserAllowStacks == "1";
+                    settings["useToroidalCores"] = this.$settingsStore.adviserToroidalCores == "1";
                     coreAdviser.set_settings(JSON.stringify(settings));
 
                     const aux = JSON.parse(coreAdviser.calculate_advised_cores(JSON.stringify(this.masStore.mas.inputs), JSON.stringify(this.masStore.coreAdviserWeights), 20, this.$settingsStore.coreAdviserUseOnlyCoresInStock == 1));
@@ -228,24 +149,21 @@ export default {
                         })
                     }
 
-                    this.advises = [];
+                    this.adviseCacheStore.currentCoreAdvises = [];
                     // orderedWeights.forEach((value) => {
                     //     const topMas = this.getTopMagneticByFilter(data, value.filter);
-                    //     this.advises.push(topMas);
+                    //     this.adviseCacheStore.currentCoreAdvises.push(topMas);
                     // })
-                    this.advises.forEach((mas) => {
+                    this.adviseCacheStore.currentCoreAdvises.forEach((mas) => {
                         this.deleteMasElementFromArray(data, mas);
                     })
                     data.forEach((datum) => {
-                        this.advises.push(datum);
+                        this.adviseCacheStore.currentCoreAdvises.push(datum);
                     })
                     console.timeEnd('Execution Time');
-                    this.adviseCacheStore.advises = this.advises;
-                    this.adviseCacheStore.advisesTimestamp = Date.now();
-                    this.addCurrentAdvisesToCache();
                     this.$userStore.coreAdviserSelectedAdvise = 0;
-                    if (this.advises.length > 0) {
-                        this.masStore.mas = this.advises[this.$userStore.coreAdviserSelectedAdvise].mas;
+                    if (this.adviseCacheStore.currentCoreAdvises.length > 0) {
+                        this.masStore.mas = this.adviseCacheStore.currentCoreAdvises[this.$userStore.coreAdviserSelectedAdvise].mas;
                         this.$emit("canContinue", true);
                     }
 
@@ -258,27 +176,8 @@ export default {
                 }
             });
         },
-        tryToSend() {
-            if (!this.tryingToSend && !this.loading) {
-                this.recentChange = false
-                this.tryingToSend = true
-                setTimeout(() => {
-                    if (this.recentChange) {
-                        this.tryingToSend = false
-                        this.tryToSend()
-                    }
-                    else {
-                        this.tryingToSend = false
-                        this.calculateAdvisedCores()
-                    }
-                }
-                , 500);
-            }
-        },
         changedInputValue(key, value) {
             this.masStore.coreAdviserWeights[key] = value / 100;
-            this.recentChange = true;
-            this.tryToSend();
         },
         changedSliderValue(newkey, newValue) {
             const remainingValue = 100 - newValue;
@@ -304,27 +203,25 @@ export default {
                     }
                 }
             }
-            this.recentChange = true;
-
-            this.tryToSend();
         },
         selectedMas(index) {
-            this.masStore.mas = this.advises[index].mas;
+            this.masStore.mas = this.adviseCacheStore.currentCoreAdvises[index].mas;
             this.$userStore.coreAdviserSelectedAdvise = index;
             this.$emit("canContinue", true);
 
         },
         adviseReady(index) {
-            if (this.currentAdviseToShow < this.advises.length - 1) {
+            if (this.currentAdviseToShow < this.adviseCacheStore.currentCoreAdvises.length - 1) {
                 setTimeout(() => {this.currentAdviseToShow = this.currentAdviseToShow + 1}, 100);
             }
         },
-        onChangeBarOrSpider(event) {
-            this.$router.go();
+        onSettingsUpdated(event) {
+            this.loading = true;
+            setTimeout(() => {this.calculateAdvisedCores();}, 200);
         },
-        onChangeWithOrWithoutStock(event) {
-            this.masStore.resetCache();
-            this.$router.go();
+        calculateAdvises(event) {
+            this.loading = true;
+            setTimeout(() => {this.calculateAdvisedCores();}, 200);
         },
 
     }
@@ -334,8 +231,7 @@ export default {
 <template>
     <AdviseDetails :modelValue="masStore.mas"/>
     <Settings
-        @onChangeBarOrSpider="onChangeBarOrSpider"
-        @onChangeWithOrWithoutStock="onChangeWithOrWithoutStock"
+        @onSettingsUpdated="onSettingsUpdated"
     />
     <div class="container" >
         <div class="row">
@@ -350,6 +246,7 @@ export default {
 
                 </div>
                 <button :disabled="loading" :data-cy="dataTestLabel + '-settings-modal-button'" class="btn btn-info mx-auto d-block mt-4" data-bs-toggle="modal" data-bs-target="#settingsModal">Settings</button>
+                <button :disabled="loading" :data-cy="dataTestLabel + '-calculate-mas-advises-button'" class="btn btn-success mx-auto d-block mt-4" @click="calculateAdvises" >Get advised magnetics!</button>
             </div>
             <div class="col-sm-12 col-md-10 text-start pe-0 container-fluid"  style="height: 70vh">
                 <div class="row" v-if="loading" >
@@ -357,7 +254,7 @@ export default {
 
                 </div>
                 <div class="row advises" v-else>
-                    <div class="col-md-4 col-sm-12 m-0 p-0 mt-1" v-for="advise, adviseIndex in advises">
+                    <div class="col-md-4 col-sm-12 m-0 p-0 mt-1" v-for="advise, adviseIndex in adviseCacheStore.currentCoreAdvises">
                         <Advise
                             v-if="(Object.values(titledFilters).length > 0) && (currentAdviseToShow >= adviseIndex)"
                             :adviseIndex="adviseIndex"

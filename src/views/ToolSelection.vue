@@ -3,6 +3,7 @@ import Header from '/src/components/Header.vue'
 import Footer from '/src/components/Footer.vue'
 import CreateOrContinueModal from '/src/components/Toolbox/CreateOrContinueModal.vue'
 import { useMasStore } from '/src/stores/mas'
+import { useAdviseCacheStore } from '/src/stores/adviseCache'
 
 
 </script>
@@ -10,9 +11,11 @@ import { useMasStore } from '/src/stores/mas'
 export default {
     data() {
         const masStore = useMasStore();
+        const adviseCacheStore = useAdviseCacheStore();
 
         return {
             masStore,
+            adviseCacheStore,
             selectedTool: "",
         }
     },
@@ -38,6 +41,13 @@ export default {
             }
             this.$router.push('/magnetic_adviser');
         },
+        createNewMagneticBuilder(reset) {
+            this.$userStore.resetMagneticBuilder();
+            if (reset) {
+                this.masStore.resetMas();
+            }
+            this.$router.push('/magnetic_builder');
+        },
         createNewInsulationAdviser(reset) {
             // this.$userStore.resetInsulationAdviser();
             if (reset) {
@@ -50,10 +60,15 @@ export default {
                 this.createNewMagneticSpecification(true);
             }
             if (this.selectedTool == "coreAdviser") {
+                this.adviseCacheStore.cleanCoreAdvises();
                 this.createNewMagneticCoreAdviser(true);
             }
             if (this.selectedTool == "magneticAdviser") {
+                this.adviseCacheStore.cleanMasAdvises();
                 this.createNewMagneticAdviser(true);
+            }
+            if (this.selectedTool == "magneticBuilder") {
+                this.createNewMagneticBuilder(true);
             }
             if (this.selectedTool == "insulationAdviser") {
                 this.createNewInsulationAdviser(true);
@@ -68,6 +83,9 @@ export default {
             }
             if (this.selectedTool == "magneticAdviser") {
                 this.createNewMagneticAdviser(false);
+            }
+            if (this.selectedTool == "magneticBuilder") {
+                this.createNewMagneticBuilder(false);
             }
             if (this.selectedTool == "insulationAdviser") {
                 this.createNewInsulationAdviser(false);
@@ -106,6 +124,7 @@ export default {
                             <button v-resize-text="{ratio: 0.7, minFontSize: '14px', maxFontSize: '20px', delay: 20}" data-cy="ToolSelection-magnetic-specification-button" class="m-2 btn btn-primary" data-bs-toggle="modal" data-bs-target="#createOrContinueModal" @click="selectedTool = 'magneticSpecification'">Specify a magnetic</button>
                             <button v-resize-text="{ratio: 0.7, minFontSize: '14px', maxFontSize: '20px', delay: 20}" data-cy="ToolSelection-insulation-button" class="m-2 btn btn-primary" data-bs-toggle="modal" data-bs-target="#createOrContinueModal" @click="selectedTool = 'insulationAdviser'">Calculate insulation</button>
                             <button v-resize-text="{ratio: 0.7, minFontSize: '14px', maxFontSize: '20px', delay: 20}" data-cy="ToolSelection-magnetic-adviser-button" class="m-2 btn btn-danger" data-bs-toggle="modal" data-bs-target="#createOrContinueModal" @click="selectedTool = 'magneticAdviser'">Design a magnetic <i class="fa-solid fa-fire"></i> </button>
+                            <button v-resize-text="{ratio: 0.7, minFontSize: '14px', maxFontSize: '20px', delay: 20}" data-cy="ToolSelection-magnetic-builder-button" class="m-2 btn btn-danger" data-bs-toggle="modal" data-bs-target="#createOrContinueModal" @click="selectedTool = 'magneticBuilder'">Build a magnetic <i class="fa-solid fa-rocket"></i> </button>
                         </div>
                     </div>
                     <div class="text-white my-5 p-2 text-center offset-1 col-sm-10 col-3-md col-lg-3 rounded-4">

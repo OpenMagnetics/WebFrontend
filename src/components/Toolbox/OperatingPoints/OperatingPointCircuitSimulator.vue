@@ -17,7 +17,7 @@ import { tooltipsMagneticSynthesisOperatingPoints } from '/src/assets/js/texts.j
 <script>
 
 export default {
-    emits: ["canContinue", "changeTool", "updatedWaveform", "setImportMode"],
+    emits: ["canContinue", "changeTool", "importedWaveform", "setImportMode"],
     props: {
         loadedFile: {
             type: String,
@@ -105,6 +105,7 @@ export default {
                     this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex] = operatingPoint.excitationsPerWinding[this.currentWindingIndex]
                     this.masStore.magneticCircuitSimulatorConfirmedColumns[this.currentOperatingPointIndex][this.currentWindingIndex] = true;
                 }
+                this.$emit("importedWaveform");
 
             });
         },

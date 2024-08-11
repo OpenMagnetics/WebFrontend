@@ -91,7 +91,6 @@ export default {
         }
     },
     mounted () {
-        this.masStore.resetCache();
         this.masStore.$subscribe((mutation, state) => {
             this.$emit("canContinue", this.canContinue(state));
         })
@@ -197,7 +196,7 @@ export default {
                     :options="Array.from({length: 12}, (_, i) => i + 1)"
                     :titleSameRow="true"
                     v-model="numberWindingsAux"
-                    @updatedNumberElements="updatedNumberElements"
+                    @update="updatedNumberElements"
                 />
 
                 <DimensionWithTolerance class="border-bottom py-2"
@@ -307,7 +306,7 @@ export default {
                     v-if="masStore.mas.inputs.designRequirements.topology != null"
                     :name="'topology'"
                     :dataTestLabel="dataTestLabel + '-Topology'"
-                    :options="Topology"
+                    :options="Object.values(Topology)"
                     v-model="masStore.mas.inputs.designRequirements"
                 />
 
@@ -315,7 +314,7 @@ export default {
                     :name="'market'"
                     v-if="masStore.mas.inputs.designRequirements.market != null"
                     :dataTestLabel="dataTestLabel + '-Market'"
-                    :options="Market"
+                    :options="Object.values(Market)"
                     v-model="masStore.mas.inputs.designRequirements"
                 />
 

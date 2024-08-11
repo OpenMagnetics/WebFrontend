@@ -27,12 +27,8 @@ export const useMasStore = defineStore("mas", () => {
     }
 
     function setMas(mas) {
-        console.log("Inside mas")
-        console.log(mas)
-
+        this.mas = null;
         this.mas = mas;
-        console.log("Inside this.mas")
-        console.log(this.mas)
     }
 
     function resetMas() {
@@ -44,14 +40,6 @@ export const useMasStore = defineStore("mas", () => {
         this.magneticCircuitSimulatorAllLastReadColumnNames = [];
         this.magneticCircuitSimulatorConfirmedColumns = [];
         console.log("Resetting!!!!!!!!!!!!!")
-    }
-
-
-    function resetCache() {
-        this.coreAdvisesCache = {};
-        this.coreAdvises = null;
-        this.coreAdvisesTimestamp = null;
-        console.log("Resetting cache!!!!!!!!!!!!!")
     }
 
     function initializeOperatingPoints() {
@@ -97,7 +85,6 @@ export const useMasStore = defineStore("mas", () => {
         setMas,
         mas,
         resetMas,
-        resetCache,
         coreAdviserWeights,
         updatedTurnsRatios,
         updatedInputExcitationWaveformUpdatedFromGraph,

@@ -103,7 +103,7 @@ export default {
                 :titleSameRow="true"
                 :replaceTitle="'Cur. Time'"
                 v-model="masStore.magneticCircuitSimulatorColumnNames[currentOperatingPointIndex][currentWindingIndex]"
-                @updatedNumberElements="columnNameChanged"
+                @update="columnNameChanged"
             />
             <ElementFromList class="border-bottom pb-2 mb-1"
                 :name="'current'"
@@ -112,7 +112,7 @@ export default {
                 :titleSameRow="true"
                 :replaceTitle="'Current'"
                 v-model="masStore.magneticCircuitSimulatorColumnNames[currentOperatingPointIndex][currentWindingIndex]"
-                @updatedNumberElements="columnNameChanged"
+                @update="columnNameChanged"
             />
             <ElementFromList class="pb-2 mb-1"
                 :name="'voltage'"
@@ -121,7 +121,7 @@ export default {
                 :titleSameRow="true"
                 :replaceTitle="'Voltage'"
                 v-model="masStore.magneticCircuitSimulatorColumnNames[currentOperatingPointIndex][currentWindingIndex]"
-                @updatedNumberElements="columnNameChanged"
+                @update="columnNameChanged"
             />
         </div>
         <div data-cy="`${dataTestLabel}-error-text`" class="invalid-feedback">{{errorMessages}}</div>
