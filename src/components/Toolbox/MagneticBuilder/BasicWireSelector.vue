@@ -44,6 +44,7 @@ export default {
         };
         if (typeof(masStore.mas.magnetic.coil.functionalDescription[this.windingIndex].wire) == 'string') {
             this.$mkf.ready.then(_ => {
+
                 masStore.mas.magnetic.coil.functionalDescription[this.windingIndex].wire = JSON.parse(this.$mkf.get_wire_data(JSON.stringify(masStore.mas.magnetic.coil.functionalDescription[this.windingIndex])));
 
             });
@@ -257,7 +258,6 @@ export default {
 <template>
     <div class="container">
         <div class="row">
-            {{localData}}
             <ElementFromList
                 class="col-12 mb-1 text-start"
                 :dataTestLabel="dataTestLabel + '-WireType'"
