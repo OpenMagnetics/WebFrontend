@@ -61,10 +61,10 @@ export const mas = {
             "functionalDescription": [
                 {
                     "name": "Primary",
-                    "numberTurns": 1,
-                    "numberParallels": 1,
+                    "numberTurns": 0,
+                    "numberParallels": 0,
                     "isolationSide": "primary",
-                    "wire": "Dummy"
+                    "wire": ""
                 }
             ],
         },
@@ -72,8 +72,8 @@ export const mas = {
             "name": "DummyCore",
             "functionalDescription": {
                 "type": "two-piece set",
-                "material": "dummy",
-                "shape": "ETD44",
+                "material": "",
+                "shape": "",
                 "gapping": [],
                 "numberStacks": 1
             }
@@ -471,3 +471,5 @@ export function titleColor(electricalParameter){
 export const coreLossesModelDefault = 'iGSE';
 export const coreTemperatureModelDefault = 'Maniktala';
 export const reluctanceModelDefault = 'Zhang';
+
+export const wireMaterialDefault = "copper";

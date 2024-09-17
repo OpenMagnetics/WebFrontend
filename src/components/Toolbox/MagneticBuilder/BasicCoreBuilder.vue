@@ -20,7 +20,7 @@ export default {
     },
     computed: {
     },
-    watch: { 
+    watch: {
     },
     mounted () {
     },

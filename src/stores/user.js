@@ -50,6 +50,11 @@ export const useUserStore = defineStore("user", () => {
     })
     const coreAdviserSelectedAdvise = ref(0)
     const magneticAdviserSelectedAdvise = ref(0)
+    const wire2DVisualizerPlotCurrentDensity = ref(0);
+    const wire2DVisualizerPlotCurrentViews = ref({});
+    const magnetic2DVisualizerPlotCurrentView = ref(null);
+    const magnetic2DVisualizerPlotMagneticField = ref(0);
+    const magnetic2DVisualizerPlotFringingField = ref(1);
 
     const insulationAdviserSubsection = ref("insulationRequirements")
     const insulationAdviserCanContinue = ref({
@@ -94,6 +99,8 @@ export const useUserStore = defineStore("user", () => {
             'magneticFinalizer': false,
         };
     }
+
+
 
     const loggedIn = ref(false)
     const ipAddress = ref(0)
@@ -191,6 +198,11 @@ export const useUserStore = defineStore("user", () => {
         this.idToDelete = null
         this.userSubsection = "operationPoints"
         this.coreSubsection = "shapeArtisan"
+        this.wire2DVisualizerPlotCurrentDensity = 0;
+        this.magnetic2DVisualizerPlotMagneticField = 0;
+        this.magnetic2DVisualizerPlotFringingField = 1;
+        this.wire2DVisualizerPlotCurrentViews = {};
+        this.magnetic2DVisualizerPlotCurrentView = null;
 
         this.readNotifications = []
         this.loggedIn = false
@@ -330,6 +342,11 @@ export const useUserStore = defineStore("user", () => {
         resetMagneticCoreAdviser,
         resetMagneticAdviser,
         resetMagneticBuilder,
+        wire2DVisualizerPlotCurrentDensity,
+        wire2DVisualizerPlotCurrentViews,
+        magnetic2DVisualizerPlotCurrentView,
+        magnetic2DVisualizerPlotMagneticField,
+        magnetic2DVisualizerPlotFringingField,
 
 
         dump,

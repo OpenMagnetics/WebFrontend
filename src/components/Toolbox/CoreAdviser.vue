@@ -133,7 +133,7 @@ export default {
                     settings["useToroidalCores"] = this.$settingsStore.adviserToroidalCores == "1";
                     coreAdviser.set_settings(JSON.stringify(settings));
 
-                    const aux = JSON.parse(coreAdviser.calculate_advised_cores(JSON.stringify(this.masStore.mas.inputs), JSON.stringify(this.masStore.coreAdviserWeights), 20, this.$settingsStore.coreAdviserUseOnlyCoresInStock == 1));
+                    const aux = JSON.parse(coreAdviser.calculate_advised_cores(JSON.stringify(this.masStore.mas.inputs), JSON.stringify(this.masStore.coreAdviserWeights), 20, this.$settingsStore.adviserUseOnlyCoresInStock == 1));
 
                     var log = aux["log"];
                     var data = aux["data"];

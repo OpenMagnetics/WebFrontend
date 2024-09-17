@@ -3,7 +3,7 @@ import { useMasStore } from '/src/stores/mas'
 import * as download from 'downloadjs'
 import { toTitleCase, removeTrailingZeroes, formatUnit, formatDimension, formatTemperature, formatInductance,
          formatPower, formatResistance, deepCopy, downloadBase64asPDF, clean } from '/src/assets/js/utils.js'
-import Magnetic2DPlotter from '/src/components/Toolbox/MagneticAdviser/Magnetic2DPlotter.vue'
+import Magnetic2DVisualizer from '/src/components/Common/Magnetic2DVisualizer.vue'
 import Module from '/src/assets/js/libAdvisers.wasm.js'
 
 </script>
@@ -694,7 +694,7 @@ export default {
                 </div>
                 <div v-if="masStore.mas.magnetic.manufacturerInfo != null" class="col-sm-12 col-md-6 text-start pe-0">
                     <div class="col-12 fs-5 p-0 m-0 mt-2 text-center">{{showFieldPlot? 'Core Coil and H Field' : 'Core Coil'}}</div>
-                    <Magnetic2DPlotter
+                    <Magnetic2DVisualizer
                         :modelValue="masStore.mas"
                         :enableZoom="false"
                         @swapFieldPlot="swapFieldPlot"

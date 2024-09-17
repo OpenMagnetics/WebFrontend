@@ -1,5 +1,5 @@
 <script setup>
-import Module from '/src/assets/js/libCrossReferencers.wasm.js'
+import Module from '/src/assets/js/libMKF.wasm.js'
 import { Object3D, MathUtils, MeshBasicMaterial, Mesh, BoxGeometry, MeshStandardMaterial, LoadingManager, TextureLoader, PointLight, Box3, Vector3} from 'three';
 import {Camera, EffectComposer, InstancedMesh, PhongMaterial, Renderer, RenderPass, SphereGeometry, SpotLight, Scene, UnrealBloomPass, AmbientLight} from 'troisjs';
 import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
@@ -9,11 +9,11 @@ import { clean, deepCopy, hexToRgb } from '/src/assets/js/utils.js'
 
 <script>
 
-var crossReferencers = {
+var mkf = {
     ready: new Promise(resolve => {
         Module({
             onRuntimeInitialized () {
-                crossReferencers = Object.assign(this, {
+                mkf = Object.assign(this, {
                     ready: Promise.resolve()
                 });
                 resolve();
@@ -117,7 +117,7 @@ export default {
             const object = new OBJLoader().parse( sourceObject );
             object.traverse( function ( child, index ) {
                 if ( child.isMesh ) {
-                    const color = hexToRgb("#646877")
+                    const color = hexToRgb("#7b7c7d")
                     child.material.color.r = color.r / 255
                     child.material.color.g = color.g / 255
                     child.material.color.b = color.b / 255
@@ -125,7 +125,6 @@ export default {
                     child.material.specular.g = 0.2
                     child.material.specular.b = 0.2
                 }
-4
             } );
 
             object.rotation.x = -Math.PI / 2
@@ -219,14 +218,18 @@ export default {
             }
         },
         computeShape() {
-            if (!this.posting) {
-                crossReferencers.ready.then(_ => {
+            if (!this.posting && this.core['functionalDescription']['shape'] != "") {
+                mkf.ready.then(_ => {
 
                     const aux = deepCopy(this.core);
                     aux['geometricalDescription'] = null;
                     aux['processedDescription'] = null;
+                    if (typeof(aux['functionalDescription']['shape']) == "string") {
+                        aux['functionalDescription']['shape'] = JSON.parse(mkf.get_shape_data(aux['functionalDescription']['shape']));
+
+                    }
                     aux['functionalDescription']['shape']['familySubtype'] = String(aux['functionalDescription']['shape']['familySubtype']);
-                    var core = JSON.parse(crossReferencers.calculate_core_data(JSON.stringify(aux), false));
+                    var core = JSON.parse(mkf.calculate_core_data(JSON.stringify(aux), false));
                     this.posting = true;
 
                     var url;
@@ -296,10 +299,10 @@ export default {
     <Renderer data-cy="CoreShapeArtisanVisualizer-canvas" ref="renderer" resize=true :orbit-ctrl="{ enableDamping: true, dampingFactor: 0.05, autoRotate : true }" shadow class="p-0 m-0 bg-dark">
         <Camera ref="camera" />
         <Scene ref="scene" :background="theme['dark']">
-            <SpotLight :color="theme['primary']" :intensity="1" :position="{ y: 150, z: 100 }" :cast-shadow="true" :shadow-map-size="{ width: 1024, height: 1024 }" />
-            <SpotLight :color="theme['primary']" :intensity="1" :position="{ y: -150, z: 100 }" :cast-shadow="true" :shadow-map-size="{ width: 1024, height: 1024 }" />
-            <SpotLight :color="theme['primary']" :intensity="1" :position="{ x: 150, z: 100 }" :cast-shadow="true" :shadow-map-size="{ width: 1024, height: 1024 }" />
-            <SpotLight :color="theme['primary']" :intensity="1" :position="{ x: -150, z: 100 }" :cast-shadow="true" :shadow-map-size="{ width: 1024, height: 1024 }" />
+            <SpotLight :color="theme['white']" :intensity="1" :position="{ y: 150, z: 100 }" :cast-shadow="true" :shadow-map-size="{ width: 1024, height: 1024 }" />
+            <SpotLight :color="theme['white']" :intensity="1" :position="{ y: -150, z: 100 }" :cast-shadow="true" :shadow-map-size="{ width: 1024, height: 1024 }" />
+            <SpotLight :color="theme['white']" :intensity="1" :position="{ x: 150, z: 100 }" :cast-shadow="true" :shadow-map-size="{ width: 1024, height: 1024 }" />
+            <SpotLight :color="theme['white']" :intensity="1" :position="{ x: -150, z: 100 }" :cast-shadow="true" :shadow-map-size="{ width: 1024, height: 1024 }" />
         </Scene>
     </Renderer>
 </template>

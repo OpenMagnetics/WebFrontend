@@ -1,6 +1,7 @@
 <script setup>
 import BasicCoreBuilder from '/src/components/Toolbox/MagneticBuilder/BasicCoreBuilder.vue'
 import BasicWireBuilder from '/src/components/Toolbox/MagneticBuilder/BasicWireBuilder.vue'
+import BasicCoilBuilder from '/src/components/Toolbox/MagneticBuilder/BasicCoilBuilder.vue'
 </script>
 
 <script>
@@ -35,8 +36,11 @@ export default {
             <div class="col-4">
                 <BasicWireBuilder />
             </div>
+<!--             <div class="col-4">
+                <h2 class="text-white my-5">Coil - Coming next</h2>
+            </div> -->
             <div class="col-4">
-                <h2 class="text-white my-5">Coil</h2>
+                <BasicCoilBuilder />
             </div>
         </div>
     </div>

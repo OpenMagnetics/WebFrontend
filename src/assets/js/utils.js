@@ -232,46 +232,46 @@ export function formatUnit(valueRaw, unitRaw) {
     return {label, unit}
 }
 
-export function getMultiplier(value, precision=0.001, disabled=false) {
+export function getMultiplier(value, precision=0.001, disabled=false, power=1) {
     var multiplier = 1;
     var scaledValue = value;
     if (disabled) {
         return {scaledValue, multiplier};
     }
-    if (Math.abs(value) < 1e-12 && Math.abs(value) != 0) {
+    if (Math.abs(value) < Math.pow(1e-12, power) && Math.abs(value) != 0) {
         multiplier = 1e-15;
     }
-    if (Math.abs(value) < 1e-9 && Math.abs(value) != 0) {
+    if (Math.abs(value) < Math.pow(1e-9, power) && Math.abs(value) != 0) {
         multiplier = 1e-12;
     }
-    else if (Math.abs(value) < 1e-6 && Math.abs(value) != 0) {
+    else if (Math.abs(value) < Math.pow(1e-6, power) && Math.abs(value) != 0) {
         multiplier = 1e-9;
     }
-    else if (Math.abs(value) < 1e-3 && Math.abs(value) != 0) {
+    else if (Math.abs(value) < Math.pow(1e-3, power) && Math.abs(value) != 0) {
         multiplier = 1e-6;
     }
-    else if (Math.abs(value) < 0.1 && Math.abs(value) != 0) {
+    else if (Math.abs(value) < Math.pow(0.1, power) && Math.abs(value) != 0) {
         multiplier = 0.001;
     }
-    else if (Math.abs(value) < 1000) {
+    else if (Math.abs(value) < Math.pow(1000)) {
         multiplier = 1;
     }
-    else if (Math.abs(value) >= 1000 && Math.abs(value) < 1000000) {
+    else if (Math.abs(value) < Math.pow(1000000)) {
         multiplier = 1000;
     }
-    else if (Math.abs(value) >= 1000000 && Math.abs(value) < 1000000000) {
+    else if (Math.abs(value) < Math.pow(1000000000)) {
         multiplier = 1000000;
     }
-    else if (Math.abs(value) >= 1000000000 && Math.abs(value) < 1000000000000) {
+    else if (Math.abs(value) < Math.pow(1000000000000)) {
         multiplier = 1000000000;
     }
-    else if (Math.abs(value) >= 1000000000000 && Math.abs(value) < 1000000000000000) {
+    else if (Math.abs(value) < Math.pow(1000000000000000)) {
         multiplier = 1000000000000;
     }
-    else if (Math.abs(value) >= 1000000000000000 && Math.abs(value) < 1000000000000000000) {
+    else if (Math.abs(value) < Math.pow(1000000000000000000)) {
         multiplier = 1000000000000000;
     }
-    scaledValue = roundWithDecimals(value / multiplier, precision);
+    scaledValue = roundWithDecimals(value / Math.pow(multiplier, power), precision);
     return {scaledValue, multiplier};
 }
 
@@ -284,7 +284,7 @@ export function formatInductance(inductance) {
 }
 
 export function formatPermeance(permeance) {
-    return formatUnit(permeance, "H/tu.")
+    return formatUnit(permeance, "H/tu²")
 }
 
 export function formatReluctance(reluctance) {
@@ -921,7 +921,12 @@ export function guessBasicGappingParameters(core, scale=1000) {
     var gapLength = Defaults.defaultGapLength / 1000 * scale;
     var numberGaps = Defaults.defaultNumberGaps;
     if (core['functionalDescription'] != null && core['processedDescription'] != null) {
-        if (core['functionalDescription']['gapping'].length == core['processedDescription']['columns'].length &&
+        if (core['functionalDescription']['gapping'].length == 0) {
+            gapType = "Ungapped"
+            gapLength = 0;
+            numberGaps = 1;
+        }
+        else if (core['functionalDescription']['gapping'].length == core['processedDescription']['columns'].length &&
             core['functionalDescription']['gapping'][0]['type'] == 'subtractive' &&
             core['functionalDescription']['gapping'][1]['type'] == 'residual' &&
             (core['processedDescription']['columns'].length == 2 || core['functionalDescription']['gapping'][2]['type'] == 'residual')) {
@@ -1399,3 +1404,77 @@ export const cyrb53 = (str, seed = 0) => {
   
     return 4294967296 * (2097151 & h2) + (h1 >>> 0);
 };
+
+export async function checkAndFixMas(mas, mkf) {
+    var numberWindings = 0;
+    if (mas.inputs != null) {
+        numberWindings = mas.inputs.designRequirements.turnsRatios.length + 1;
+        if (mas.inputs.designRequirements.isolationSides != null) {
+            for (let i = 0; i < numberWindings; i++) {
+                if (mas.inputs.designRequirements.isolationSides.length <= i) {
+                    mas.inputs.designRequirements.isolationSides.push(Defaults.isolationSideOrdered[i].toLowerCase());
+                }
+            }
+        }
+    }
+
+    if (mas.magnetic.coil != null) {
+        for (let i = 0; i < numberWindings; i++) {
+            if (mas.magnetic.coil.functionalDescription.length <= i) {
+                const dummyWinding = {
+                    name: toTitleCase(Defaults.isolationSideOrdered[i]),
+                    numberTurns: 1,
+                    numberParallels: 1,
+                    isolationSide: Defaults.isolationSideOrdered[i].toLowerCase(),
+                    wire: "Dummy",
+                }
+                mas.magnetic.coil.functionalDescription.push(dummyWinding);
+            }
+            else {
+                if (mas.magnetic.coil.functionalDescription[i].name == null) {
+                    mas.magnetic.coil.functionalDescription[i].name = toTitleCase(Defaults.isolationSideOrdered[i]);
+                }
+                if (mas.magnetic.coil.functionalDescription[i].numberTurns == null || 
+                    mas.magnetic.coil.functionalDescription[i].numberTurns == 0) {
+                    mas.magnetic.coil.functionalDescription[i].numberTurns = 1;
+                }
+                if (mas.magnetic.coil.functionalDescription[i].numberParallels == null || 
+                    mas.magnetic.coil.functionalDescription[i].numberParallels == 0) {
+                    mas.magnetic.coil.functionalDescription[i].numberParallels = 1;
+                }
+                if (mas.magnetic.coil.functionalDescription[i].isolationSide == null) {
+                    mas.magnetic.coil.functionalDescription[i].isolationSide = Defaults.isolationSideOrdered[i].toLowerCase();
+                }
+                if (mas.magnetic.coil.functionalDescription[i].wire == null ||
+                    mas.magnetic.coil.functionalDescription[i].wire == "") {
+                    mas.magnetic.coil.functionalDescription[i].wire = "Dummy";
+                }
+            }
+        }
+
+    }
+
+    if (mas.magnetic.coil.bobbin == null || mas.magnetic.coil.bobbin == "Dummy") {
+        await mkf.ready.then(_ => {
+            mas.magnetic.coil.bobbin = "Dummy";
+            const result = mkf.calculate_bobbin_data(JSON.stringify(mas.magnetic));
+            if (result.startsWith("Exception")) {
+                console.error(result);
+                return mas;
+            }
+            mas.magnetic.coil.bobbin = JSON.parse(result);
+            return mas;
+        })
+        .catch(error => {
+            console.error(error.data)
+        });
+    }
+
+    return mas;
+
+}
+
+export function range(start, stop, step=1) {
+    const length = Math.ceil((stop - start) / step);
+    return Array.from({length}, (_, i) => (i * step) + start);
+}

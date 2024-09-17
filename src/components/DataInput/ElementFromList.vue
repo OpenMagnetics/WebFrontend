@@ -108,6 +108,12 @@ export default {
             },
             deep: true
         },
+        'modelValue': {
+            handler(newValue, oldValue) {
+                this.localData = this.assignLocalData(this.options);
+            },
+            deep: true
+        },
     },
     mounted () {
     },

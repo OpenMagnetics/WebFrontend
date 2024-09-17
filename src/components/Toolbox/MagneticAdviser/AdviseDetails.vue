@@ -2,7 +2,7 @@
 import { useMasStore } from '/src/stores/mas'
 import { toTitleCase, removeTrailingZeroes, formatInductance, formatPower, formatTemperature, formatResistance} from '/src/assets/js/utils.js'
 import Module from '/src/assets/js/libAdvisers.wasm.js'
-import Magnetic2DPlotter from '/src/components/Toolbox/MagneticAdviser/Magnetic2DPlotter.vue'
+import Magnetic2DVisualizer from '/src/components/Common/Magnetic2DVisualizer.vue'
 </script>
 
 <script>
@@ -362,7 +362,7 @@ export default {
                 
             <div :class="zoomingPlot? 'col-12' : 'col-5'">
                 <div class="col-12 fs-5 p-0 m-0 mt-2 text-center">{{showFieldPlot? 'Core Coil and H Field' : 'Core Coil'}}</div>
-                <Magnetic2DPlotter  :modelValue="modelValue" @zoomIn="zoomIn" @zoomOut="zoomOut" @swapFieldPlot="swapFieldPlot"/>
+                <Magnetic2DVisualizer  :modelValue="modelValue" @zoomIn="zoomIn" @zoomOut="zoomOut" @swapFieldPlot="swapFieldPlot"/>
             </div>
         </div>
     </div>
