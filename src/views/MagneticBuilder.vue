@@ -50,6 +50,7 @@ export default {
         :toolLabel="'magneticBuilder'"
         :currentStoryline="currentStoryline"
         :dataTestLabel="'MagneticBuilder'"
+        :showControlPanel="true"
     />
 </template>
 

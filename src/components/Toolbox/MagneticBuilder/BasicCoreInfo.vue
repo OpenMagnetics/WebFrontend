@@ -2,6 +2,7 @@
 import { useMasStore } from '/src/stores/mas'
 import { removeTrailingZeroes, deepCopy } from '/src/assets/js/utils.js'
 import DimensionReadOnly from '/src/components/DataInput/DimensionReadOnly.vue'
+import { tooltipsMagneticBuilder } from '/src/assets/js/texts.js'
 </script>
 
 <script>
@@ -37,6 +38,17 @@ export default {
         }
     },
     computed: {
+        styleTooltip() {
+            var relative_placement;
+            relative_placement = 'top'
+            return {
+                theme: {
+                    placement: relative_placement,
+                    width: '200px',
+                    "text-align": "start",
+                },
+            }
+        },
         inputStyleClassMagneticFluxDensity() {
             if (this.coreLossesData.magneticFluxDensityPeak < this.coreTemperatureDependantParametersData.magneticFluxDensitySaturation * 0.85) {
                 return 'col-6 text-white';
@@ -157,8 +169,9 @@ export default {
 
 <template>
     <div class="container-flex text-white mt-2 mb-3 pb-3 border-bottom border-top pt-2">
-        <div v-if="core.processedDescription != null" class="row">
+        <div v-if="core.processedDescription != null" class="row" v-tooltip="styleTooltip">
             <DimensionReadOnly 
+                v-tooltip="tooltipsMagneticBuilder.effectiveLength"
                 class="col-xl-6 col-lg-12 text-start"
                 :name="'L'"
                 :subscriptName="'eff'"
@@ -173,6 +186,7 @@ export default {
                 :inputStyleClass="'col-6 text-white'"
             />
             <DimensionReadOnly 
+                v-tooltip="tooltipsMagneticBuilder.effectiveArea"
                 class="col-xl-6 col-lg-12 text-start border-start"
                 :name="'A'"
                 :subscriptName="'eff'"
@@ -187,6 +201,7 @@ export default {
                 :inputStyleClass="'col-6 text-white'"
             />
             <DimensionReadOnly 
+                v-tooltip="tooltipsMagneticBuilder.effectiveVolume"
                 class="col-xl-6 col-lg-12 text-start"
                 :name="'V'"
                 :subscriptName="'eff'"
@@ -201,6 +216,7 @@ export default {
                 :inputStyleClass="'col-6 text-white'"
             />
             <DimensionReadOnly 
+                v-tooltip="tooltipsMagneticBuilder.minimumArea"
                 class="col-xl-6 col-lg-12 text-start border-start"
                 :name="'A'"
                 :subscriptName="'min'"
@@ -215,6 +231,7 @@ export default {
                 :inputStyleClass="'col-6 text-white'"
             />
             <DimensionReadOnly 
+                v-tooltip="tooltipsMagneticBuilder.initialPermeability"
                 class="col-xl-6 col-lg-12 text-start"
                 :name="'μ'"
                 :subscriptName="'ini'"
@@ -230,6 +247,7 @@ export default {
                 :inputStyleClass="'col-6 text-white'"
             />
             <DimensionReadOnly 
+                v-tooltip="tooltipsMagneticBuilder.effectivePermeability"
                 class="col-xl-6 col-lg-12 text-start border-start"
                 :name="'μ'"
                 :subscriptName="'eff'"
@@ -245,6 +263,7 @@ export default {
                 :inputStyleClass="'col-6 text-white'"
             />
             <DimensionReadOnly 
+                v-tooltip="tooltipsMagneticBuilder.permeance"
                 class="col-xl-6 col-lg-12 text-start"
                 :name="'A'"
                 :subscriptName="'L'"
@@ -260,6 +279,7 @@ export default {
                 :inputStyleClass="'col-6 text-white'"
             />
             <DimensionReadOnly 
+                v-tooltip="tooltipsMagneticBuilder.saturatingMagneticFluxDensity"
                 class="col-xl-6 col-lg-12 text-start border-start"
                 :name="'B'"
                 :subscriptName="'sat'"
@@ -275,6 +295,7 @@ export default {
                 :inputStyleClass="'col-6 text-white'"
             />
             <DimensionReadOnly 
+                v-tooltip="tooltipsMagneticBuilder.magneticFluxDensityPeak"
                 class="col-xl-6 col-lg-12 text-start text-white"
                 :name="'B'"
                 :subscriptName="'peak'"
@@ -290,6 +311,7 @@ export default {
                 :inputStyleClass="inputStyleClassMagneticFluxDensity"
             />
             <DimensionReadOnly 
+                v-tooltip="tooltipsMagneticBuilder.magneticFluxDensityAcPeak"
                 class="col-xl-6 col-lg-12 text-start border-start"
                 :name="'B'"
                 :subscriptName="'ACpeak'"
@@ -305,6 +327,7 @@ export default {
                 :inputStyleClass="inputStyleClassMagneticFluxDensity"
             />
             <DimensionReadOnly 
+                v-tooltip="tooltipsMagneticBuilder.magnetizingInductance"
                 class="col-xl-6 col-lg-12 text-start"
                 :name="'L'"
                 :unit="'H'"
@@ -319,6 +342,7 @@ export default {
                 :inputStyleClass="inputStyleClassMagnetizingInductance"
             />
             <DimensionReadOnly 
+                v-tooltip="tooltipsMagneticBuilder.coreLosses"
                 class="col-xl-6 col-lg-12 text-start border-start"
                 :name="'P'"
                 :subscriptName="'core'"

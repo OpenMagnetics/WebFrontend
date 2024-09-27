@@ -52,6 +52,7 @@ export const useUserStore = defineStore("user", () => {
     const magneticAdviserSelectedAdvise = ref(0)
     const wire2DVisualizerPlotCurrentDensity = ref(0);
     const wire2DVisualizerPlotCurrentViews = ref({});
+    const wire2DVisualizerShowAnyway = ref(false);
     const magnetic2DVisualizerPlotCurrentView = ref(null);
     const magnetic2DVisualizerPlotMagneticField = ref(0);
     const magnetic2DVisualizerPlotFringingField = ref(1);
@@ -98,6 +99,12 @@ export const useUserStore = defineStore("user", () => {
             'magneticBuilder': false,
             'magneticFinalizer': false,
         };
+        this.wire2DVisualizerPlotCurrentDensity = 0;
+        this.magnetic2DVisualizerPlotMagneticField = 0;
+        this.magnetic2DVisualizerPlotFringingField = 1;
+        this.wire2DVisualizerPlotCurrentViews = {};
+        this.wire2DVisualizerShowAnyway = false;
+        this.magnetic2DVisualizerPlotCurrentView = null;
     }
 
 
@@ -344,6 +351,7 @@ export const useUserStore = defineStore("user", () => {
         resetMagneticBuilder,
         wire2DVisualizerPlotCurrentDensity,
         wire2DVisualizerPlotCurrentViews,
+        wire2DVisualizerShowAnyway,
         magnetic2DVisualizerPlotCurrentView,
         magnetic2DVisualizerPlotMagneticField,
         magnetic2DVisualizerPlotFringingField,

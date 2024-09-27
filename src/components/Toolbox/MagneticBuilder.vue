@@ -1,4 +1,6 @@
 <script setup>
+import { useMasStore } from '/src/stores/mas'
+import { useHistoryStore } from '/src/stores/history'
 import BasicCoreBuilder from '/src/components/Toolbox/MagneticBuilder/BasicCoreBuilder.vue'
 import BasicWireBuilder from '/src/components/Toolbox/MagneticBuilder/BasicWireBuilder.vue'
 import BasicCoilBuilder from '/src/components/Toolbox/MagneticBuilder/BasicCoilBuilder.vue'
@@ -13,7 +15,11 @@ export default {
         },
     },
     data() {
+        const masStore = useMasStore();
+        const historyStore = useHistoryStore();
         return {
+            masStore,
+            historyStore,
         }
     },
     computed: {
@@ -21,6 +27,8 @@ export default {
     watch: { 
     },
     mounted () {
+        this.historyStore.addToHistory(this.masStore.mas);
+        this.historyStore.blockAdditions();
     },
     methods: {
     }
@@ -36,9 +44,6 @@ export default {
             <div class="col-4">
                 <BasicWireBuilder />
             </div>
-<!--             <div class="col-4">
-                <h2 class="text-white my-5">Coil - Coming next</h2>
-            </div> -->
             <div class="col-4">
                 <BasicCoilBuilder />
             </div>

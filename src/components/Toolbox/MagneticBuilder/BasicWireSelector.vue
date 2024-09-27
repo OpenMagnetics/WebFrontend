@@ -7,6 +7,8 @@ import BasicWireInfo from '/src/components/Toolbox/MagneticBuilder/BasicWireInfo
 import Module from '/src/assets/js/libAdvisers.wasm.js'
 import { useDataCacheStore } from '/src/stores/dataCache'
 import { toTitleCase, checkAndFixMas } from '/src/assets/js/utils.js'
+import { useHistoryStore } from '/src/stores/history'
+import { tooltipsMagneticBuilder } from '/src/assets/js/texts.js'
 </script>
 
 <script>
@@ -41,6 +43,7 @@ export default {
     data() {
         const dataCacheStore = useDataCacheStore();
         const masStore = useMasStore();
+        const historyStore = useHistoryStore();
         const loading = false; 
         const forceUpdate = 0; 
         const wireTypes = {};
@@ -73,6 +76,7 @@ export default {
         return {
             dataCacheStore,
             masStore,
+            historyStore,
             localData,
             wireTypes,
             wireConductingDiameters,
@@ -86,13 +90,29 @@ export default {
         }
     },
     computed: {
+        styleTooltip() {
+            var relative_placement;
+            relative_placement = 'top'
+            return {
+                theme: {
+                    placement: relative_placement,
+                    width: '200px',
+                    "text-align": "start",
+                },
+            }
+        },
     },
-    watch: { 
+    watch: {
     },
     mounted () {
         if (this.masStore.mas.magnetic.coil.functionalDescription[this.windingIndex].wire != null) {
             this.assignLocalData(this.masStore.mas.magnetic.coil.functionalDescription[this.windingIndex].wire);
         }
+        this.historyStore.$onAction((action) => {
+            if (action.name == "historyPointerUpdated") {
+                this.assignLocalData(this.masStore.mas.magnetic.coil.functionalDescription[this.windingIndex].wire);
+            }
+        })
     },
     methods: {
         cleanCoil() {
@@ -236,6 +256,7 @@ export default {
                 this.$userStore.wire2DVisualizerPlotCurrentViews[this.windingIndex] = null;
                 this.masStore.mas.magnetic.coil.functionalDescription[this.windingIndex].wire = wire;
                 this.cleanCoil();
+                // this.historyStore.addToHistory(this.masStore.mas);
             });
         },
         getWireTypes() {
@@ -345,6 +366,7 @@ export default {
             return this.localData["foilConductingWidth"] != null
         },
         wireTypeUpdated() {
+            console.log("Mierda 0")
             this.getWireCoatings();
 
             const newType = this.localData.type;
@@ -352,17 +374,26 @@ export default {
                 this.masStore.mas.magnetic.coil.functionalDescription[this.windingIndex].wire.type != null) {
                 const oldType = this.masStore.mas.magnetic.coil.functionalDescription[this.windingIndex].wire.type;
                 const effectiveFrequency = this.masStore.mas.inputs.operatingPoints[0].excitationsPerWinding[0].current.processed.effectiveFrequency;
+                console.log("Mierda 1")
 
                 this.$mkf.ready.then(_ => {
+                    console.log("Mierda 0")
+
                     if ((newType == "litz" && !this.isAnyLitzLoaded()) ||
                         (newType == "round" && !this.isAnyRoundLoaded()) ||
                         (newType == "rectangular" && !this.isAnyRectangularLoaded()) ||
                         (newType == "foil" && !this.isAnyFoilLoaded())) {
-                        const wire = JSON.parse(this.$mkf.get_equivalent_wire(JSON.stringify(this.masStore.mas.magnetic.coil.functionalDescription[this.windingIndex].wire), JSON.stringify(newType), effectiveFrequency));
+                        const wireString = this.$mkf.get_equivalent_wire(JSON.stringify(this.masStore.mas.magnetic.coil.functionalDescription[this.windingIndex].wire), JSON.stringify(newType), effectiveFrequency);
+
+                        if (wireString.startsWith("Exception")) {
+                            console.error(wireString);
+                            return;
+                        }
+                        const wire = JSON.parse(wireString);
                         this.masStore.mas.magnetic.coil.functionalDescription[this.windingIndex].wire = wire;
                         this.assignLocalData(wire);
                     }
-                    this.assignWire();
+                    // this.assignWire();
                 });
             }
         },
@@ -451,9 +482,10 @@ export default {
 
 <template>
     <div class="container">
-        <div class="row">
+        <div class="row" v-tooltip="styleTooltip">
             <img :data-cy="dataTestLabel + '-BasicWireSelector-loading'" v-if="loading" class="mx-auto d-block col-12" alt="loading" style="width: 60%; height: auto;" :src="loadingGif">
             <ElementFromList
+                v-tooltip="tooltipsMagneticBuilder.wireType"
                 v-if="!loading"
                 class="col-12 mb-1 text-start"
                 :dataTestLabel="dataTestLabel + '-WireType'"
@@ -469,6 +501,7 @@ export default {
             <h5 v-if="!loading && localData.type == null" class="text-danger my-2">Select a type for the wire</h5>
 
             <ElementFromList
+                v-tooltip="tooltipsMagneticBuilder.wireStandard"
                 v-if="!loading && localData.type == 'round' || localData.type == 'litz' && localData.standard != null"
                 class="col-12 mb-1 text-start"
                 :dataTestLabel="dataTestLabel + '-WireStandard'"
@@ -482,6 +515,7 @@ export default {
                 @update="wireStandardUpdated"
             />
             <ElementFromList
+                v-tooltip="tooltipsMagneticBuilder.wireRoundConductingDiameter"
                 v-if="!loading && localData.type == 'round'"
                 class="col-12 mb-1 text-start"
                 :dataTestLabel="dataTestLabel + '-WireConductingDiameter'"
@@ -496,6 +530,7 @@ export default {
                 @update="wireUpdated"
             />
             <ElementFromList
+                v-tooltip="tooltipsMagneticBuilder.wireLitzStrandConductingDiameter"
                 v-if="!loading && localData.type == 'litz'"
                 class="col-12 mb-1 text-start"
                 :dataTestLabel="dataTestLabel + '-StrandConductingDiameter'"
@@ -510,6 +545,7 @@ export default {
                 @update="wireUpdated"
             />
             <ElementFromList
+                v-tooltip="tooltipsMagneticBuilder.wireCoating"
                 v-if="!loading && localData.type != null"
                 class="col-12 mb-1 text-start"
                 :dataTestLabel="dataTestLabel + '-WireCoating'"
@@ -523,6 +559,7 @@ export default {
                 @update="wireCoatingUpdated"
             />
             <Dimension class="col-12 mb-1 text-start"
+                v-tooltip="tooltipsMagneticBuilder.wireLitzNumberConductors"
                 v-if="!loading && localData.type == 'litz'"
                 :name="'numberConductors'"
                 :replaceTitle="'No. Strands'"
@@ -534,10 +571,11 @@ export default {
                 :allowNegative="false"
                 :modelValue="localData"
                 :forceUpdate="forceUpdate"
-                :styleClassInput="'offset-6'"
+                :styleClassInput="'offset-6 col-6'"
                 @update="wireUpdated"
             />
             <Dimension class="col-12 mb-1 text-start"
+                v-tooltip="tooltipsMagneticBuilder.wireRectangularConductingHeight"
                 v-if="!loading && localData.type == 'rectangular'"
                 :name="'rectangularConductingHeight'"
                 :replaceTitle="'Cond. Height'"
@@ -548,10 +586,11 @@ export default {
                 :allowNegative="false"
                 :modelValue="localData"
                 :forceUpdate="forceUpdate"
-                :styleClassInput="'offset-3'"
+                :styleClassInput="'offset-3 col-6'"
                 @update="wireUpdated"
             />
             <Dimension class="col-12 mb-1 text-start"
+                v-tooltip="tooltipsMagneticBuilder.wireRectangularConductingWidth"
                 v-if="!loading && localData.type == 'rectangular'"
                 :name="'rectangularConductingWidth'"
                 :replaceTitle="'Cond. Width'"
@@ -562,10 +601,11 @@ export default {
                 :allowNegative="false"
                 :modelValue="localData"
                 :forceUpdate="forceUpdate"
-                :styleClassInput="'offset-3'"
+                :styleClassInput="'offset-3 col-6'"
                 @update="wireUpdated"
             />
             <Dimension class="col-12 mb-1 text-start"
+                v-tooltip="tooltipsMagneticBuilder.wireFoilConductingHeight"
                 v-if="!loading && localData.type == 'foil'"
                 :name="'foilConductingHeight'"
                 :replaceTitle="'Cond. Height'"
@@ -576,10 +616,11 @@ export default {
                 :allowNegative="false"
                 :modelValue="localData"
                 :forceUpdate="forceUpdate"
-                :styleClassInput="'offset-3'"
+                :styleClassInput="'offset-3 col-6'"
                 @update="wireUpdated"
             />
             <Dimension class="col-12 mb-1 text-start"
+                v-tooltip="tooltipsMagneticBuilder.wireFoilConductingWidth"
                 v-if="!loading && localData.type == 'foil'"
                 :name="'foilConductingWidth'"
                 :replaceTitle="'Cond. Width'"
@@ -590,7 +631,7 @@ export default {
                 :allowNegative="false"
                 :modelValue="localData"
                 :forceUpdate="forceUpdate"
-                :styleClassInput="'offset-3'"
+                :styleClassInput="'offset-3 col-6'"
                 @update="wireUpdated"
             />
 

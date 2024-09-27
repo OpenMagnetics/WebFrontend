@@ -3,6 +3,7 @@ import { guessBasicGappingParameters } from '/src/assets/js/utils.js'
 import { gapTypes } from '/src/assets/js/defaults.js'
 import ElementFromList from '/src/components/DataInput/ElementFromList.vue'
 import Dimension from '/src/components/DataInput/Dimension.vue'
+import { tooltipsMagneticBuilder } from '/src/assets/js/texts.js'
 </script>
 <script>
 export default {
@@ -39,18 +40,32 @@ export default {
     data() {
 
         var localData = guessBasicGappingParameters(this.core, 1);
-
+        const blockingRebounds = false;
         const errorMessages = "";
-
         return {
             localData,
+            blockingRebounds,
             errorMessages,
         }
     },
     computed: {
+        styleTooltip() {
+            var relative_placement;
+            relative_placement = 'top'
+            return {
+                theme: {
+                    placement: relative_placement,
+                    width: '200px',
+                    "text-align": "start",
+                },
+            }
+        },
     },
     watch: {
         forceUpdate(newValue, oldValue) {
+            this.blockingRebounds = true;
+            this.localData = guessBasicGappingParameters(this.core, 1);
+            setTimeout(() => this.blockingRebounds = false, 10);
         },
     },
     mounted () {    
@@ -108,8 +123,10 @@ export default {
                 this.core['functionalDescription']['gapping'] = gapping;
             }
 
-            if (!hasError) {
-                this.$emit("update", gapping);
+            if (!this.blockingRebounds) {
+                if (!hasError) {
+                    this.$emit("update", gapping);
+                }
             }
         },
         gapTypeUpdated() {
@@ -125,10 +142,16 @@ export default {
 
 <template>
     <div :data-cy="dataTestLabel + '-container'" class="container-flex" ref="container">
-        <div class="row">
-            <label :data-cy="dataTestLabel + '-title'" class="rounded-2 fs-5 col-12">{{title}}</label>
+        <div class="row" v-tooltip="styleTooltip">
+            <label
+                v-tooltip="tooltipsMagneticBuilder.coreGapping"
+                :data-cy="dataTestLabel + '-title'"
+                class="rounded-2 fs-5 col-12">
+                {{title}}
+            </label>
             <div class="offset-1 col-11">
                 <ElementFromList
+                    v-tooltip="tooltipsMagneticBuilder.coreGappingType"
                     class="col-12 text-start"
                     :dataTestLabel="dataTestLabel + '-GapType'"
                     :name="'gapType'"
@@ -142,12 +165,14 @@ export default {
                 />
 
                 <Dimension class="col-12 text-start"
+                    v-tooltip="tooltipsMagneticBuilder.coreGappingLength"
                     v-if="localData.gapType != 'Ungapped'"
                     :name="'gapLength'"
                     :replaceTitle="'Length'"
                     :min="1e-6"
                     :max="0.1"
                     :disabled="disabled"
+                    :forceUpdate="forceUpdate"
                     :justifyContent="true"
                     :unit="'m'"
                     :dataTestLabel="dataTestLabel + '-GapLength'"
@@ -157,10 +182,12 @@ export default {
                 />
 
                 <Dimension class="col-12 text-start"
+                    v-tooltip="tooltipsMagneticBuilder.coreGappingNumberGaps"
                     :name="'numberGaps'"
                     v-if="localData.gapType == 'Distributed'"
                     :unit="null"
                     :disabled="disabled"
+                    :forceUpdate="forceUpdate"
                     :justifyContent="true"
                     :min="1"
                     :max="100"

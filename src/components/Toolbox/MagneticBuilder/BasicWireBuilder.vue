@@ -2,6 +2,7 @@
 import { useMasStore } from '/src/stores/mas'
 import Wire2DVisualizer from '/src/components/Common/Wire2DVisualizer.vue'
 import BasicTurnsSelector from '/src/components/Toolbox/MagneticBuilder/BasicTurnsSelector.vue'
+import WindingSelector from '/src/components/Toolbox/MagneticBuilder/WindingSelector.vue'
 import BasicWireSelector from '/src/components/Toolbox/MagneticBuilder/BasicWireSelector.vue'
 </script>
 
@@ -30,7 +31,7 @@ export default {
     methods: {
         windingIndexChanged(windingIndex) {
             this.selectedWindingIndex = windingIndex;
-        }
+        },
     }
 }
 </script>
@@ -41,6 +42,7 @@ export default {
     <div v-else class="container">
         <div class="row mb-2" style="max-height: 30vh">
             <Wire2DVisualizer 
+                v-if="masStore.mas.magnetic.coil.functionalDescription[selectedWindingIndex].wire.type != null"
                 :dataTestLabel="`${dataTestLabel}-Wire2DVisualizer`"
                 :wire="masStore.mas.magnetic.coil.functionalDescription[selectedWindingIndex].wire"
                 :windingIndex="selectedWindingIndex"
@@ -59,17 +61,15 @@ export default {
                 </div>
             </div>
         </div>
-        <div v-if="masStore.mas.magnetic.coil.functionalDescription.length > 1" class="row">
-            <div class="accordion row m-0 p-0" id="wireBuilderAccordion bg-dark">
-                <div :class="'col-lg-' + Number(12 / masStore.mas.magnetic.coil.functionalDescription.length)" class="accordion-item border-0 m-0 p-0 bg-dark" v-for="value, key in masStore.mas.magnetic.coil.functionalDescription">
-                    <h2 class="accordion-header" :id="'wireBuilderAccordionHeading-' + key">
-                        <button :class="selectedWindingIndex == key? '' : 'collapsed'" class="fs-5 accordion-button text-info bg-light" type="button" data-bs-toggle="collapse" aria-expanded="false" :aria-controls="'wireBuilderAccordioncollapse_' + key" @click="windingIndexChanged(key)">
-                            {{key + 1}}
-                        </button>
-                    </h2>
-                </div>
-            </div>
+
+        <div class="row">
+            <WindingSelector
+                :dataTestLabel="`${dataTestLabel}-WindingSelector`"
+                :coil="masStore.mas.magnetic.coil"
+                @windingIndexChanged="windingIndexChanged"
+            />
         </div>
+
         <div class="row">
             <div v-for="value, key in masStore.mas.magnetic.coil.functionalDescription">
                 <BasicTurnsSelector

@@ -17,6 +17,7 @@ import MagneticAdviserFinalizer from '/src/components/Toolbox/MagneticAdviser/Fi
 import MagneticCoreFinalizer from '/src/components/Toolbox/CoreAdviser/Finalizer.vue'
 import MagneticSpecificationFinalizer from '/src/components/Toolbox/MagneticSpecification/Finalizer.vue'
 import MagneticBuilder from '/src/components/Toolbox/MagneticBuilder.vue'
+import ControlPanel from '/src/components/Toolbox/ControlPanel.vue'
 
 </script>
 
@@ -34,6 +35,14 @@ export default {
         dataTestLabel: {
             type: String,
             default: 'MagneticCoreAdviser',
+        },
+        showTitle: {
+            type: Boolean,
+            default: true,
+        },
+        showControlPanel: {
+            type: Boolean,
+            default: false,
         },
     },
     data() {
@@ -100,9 +109,12 @@ export default {
                         <div class="mb-2 row" >
                             <button v-if="currentStoryline[$userStore[`${toolLabel}Subsection`]].prevTool != null" data-cy="magnetic-synthesis-previous-tool-button" class="btn btn-outline-primary col-sm-12 col-md-2 mt-1"  @click="prevTool"> Previous tool</button>
                             <div v-else data-cy="magnetic-synthesis-previous-tool-button-placeholder" class=" col-sm-12 col-md-2 mt-1"></div>
-                            <h2 data-cy="magnetic-synthesis-title-text" class="col-sm-12 col-md-9" >
+                            <h2 v-if="showTitle" data-cy="magnetic-synthesis-title-text" :class="showControlPanel? 'col-sm-12 col-md-6' : 'col-sm-12 col-md-9'" class="" >
                                 {{toTitleCase($userStore[`${toolLabel}Subsection`])}}
                             </h2>
+                            <div v-if="showControlPanel" data-cy="magnetic-synthesis-title-control-panel" :class="showTitle? 'col-sm-12 col-md-4' : 'col-sm-12 col-md-9'">
+                                <ControlPanel />
+                            </div>
                         </div>
                             
                         <div class="row">

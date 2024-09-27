@@ -59,16 +59,17 @@ export default {
     watch: {
         'wire': {
             handler(newValue, oldValue) {
+                this.$userStore.wire2DVisualizerPlotCurrentViews[this.windingIndex] = null;
                 this.tryToSend();
             },
-          deep: true
+            deep: true
         },
         'includeCurrentDensity': {
             handler(newValue, oldValue) {
                 this.$userStore.wire2DVisualizerPlotCurrentViews[this.windingIndex] = null;
                 this.tryToSend();
             },
-          deep: true
+            deep: true
         },
     },
     methods: {

@@ -40,6 +40,10 @@ export default {
             type: Boolean,
             default: false
         },
+        allowZero:{
+            type: Boolean,
+            default: false
+        },
         altUnit:{
             type: String,
             default: ''
@@ -63,9 +67,21 @@ export default {
             type: Boolean,
             default: false,
         },
+        styleClass:{
+            type: String,
+            default: 'fs-5'
+        },
         styleClassInput: {
             type: String,
-            default: "m-0 px-0",
+            default: "m-0 px-0 col-6",
+        },
+        labelStyleClass:{
+            type: String,
+            default: 'col-xs-12 col-md-7'
+        },
+        dimensionStyleClass:{
+            type: String,
+            default: 'col-xs-8 col-md-5'
         },
     },
     data() {
@@ -85,7 +101,12 @@ export default {
         if (this.modelValue[this.name] != null) {
             const aux = getMultiplier(this.modelValue[this.name], 0.001);
             localData.scaledValue = removeTrailingZeroes(aux.scaledValue, this.numberDecimals);
-            localData.multiplier = aux.multiplier;
+            if (this.modelValue[this.name] == 0) {
+                localData.multiplier = this.max;
+            }
+            else {
+                localData.multiplier = aux.multiplier;
+            }
         }
 
         var shortenedName = this.name;
@@ -139,7 +160,7 @@ export default {
             }
             if (this.localData.scaledValue != null) {
                 const nominalActualValue = this.localData.scaledValue * this.localData.multiplier;
-                if (nominalActualValue <= 0 && !this.allowNegative) {
+                if ((nominalActualValue < 0 && !this.allowNegative) || (nominalActualValue == 0 && !this.allowZero)) {
                     hasError = true;
                     this.errorMessages += "Value must be greater or equal than 0.\n"
                 }
@@ -162,9 +183,15 @@ export default {
                     if (Math.abs(actualValue) < this.min)
                         actualValue = this.min * Math.sign(actualValue);
                 }
-                else{
-                    if (actualValue < this.min)
-                        actualValue = this.min;
+                else {
+                    if (this.allowZero) {
+                        if (actualValue < 0)
+                            actualValue = 0;
+                    }
+                    else {
+                        if (actualValue < this.min)
+                            actualValue = this.min;
+                    }
                 }
             }
 
@@ -185,7 +212,7 @@ export default {
             const hasError = this.checkErrors();
             if (!hasError) {
                 this.modelValue[this.name] = actualValue;
-                this.$emit("update", actualValue);
+                this.$emit("update", actualValue, this.name);
             }
         },
         changeMultiplier() {
@@ -204,12 +231,12 @@ export default {
 <template>
     <div :data-cy="dataTestLabel + '-container'" class="container-flex" ref="container">
         <div class="row">
-            <label v-if="replaceTitle == null" :data-cy="dataTestLabel + '-title'" class="rounded-2 fs-5 col-xs-12 col-md-7 ">{{shortenedName}}</label>
-            <label v-if="replaceTitle != null && replaceTitle != ''"  :data-cy="dataTestLabel + '-title'" class="rounded-2 fs-5 col-xs-12 col-md-7 ">{{replaceTitle}}</label>
-            <div v-if="localData.scaledValue != null" class="col-xs-8 col-md-5 row m-0 px-0" :class="justifyContent? 'd-flex justify-content-end' : ''">
-                <input :disabled="disabled" :data-cy="dataTestLabel + '-number-input'" type="number" :class="styleClassInput" class="col-6 bg-light text-white" @change="changeScaledValue($event.target.value)" :value="removeTrailingZeroes(localData.scaledValue * visualScale, numberDecimals)" ref="inputRef">
-                <DimensionUnit :disabled="disabled" :data-cy="dataTestLabel + '-DimensionUnit-input'" :min="min" :max="max" v-if="unit != null" :unit="unit" v-model="localData.multiplier" class="m-0 px-0 col-3 bg-light" @update:modelValue="changeMultiplier"/>
-                <label :data-cy="dataTestLabel + '-DimensionUnit-text'" v-if="unit == null" class="ms-2 pt-1 px-0 " :class="unit == null && justifyContent? 'col-0':'col-3'">{{altUnit}}</label>
+            <label v-if="replaceTitle == null" :data-cy="dataTestLabel + '-title'" :class="styleClass + ' ' + labelStyleClass" class="rounded-2 ">{{shortenedName}}</label>
+            <label v-if="replaceTitle != null && replaceTitle != ''"  :data-cy="dataTestLabel + '-title'" :class="styleClass + ' ' + labelStyleClass" class="rounded-2">{{replaceTitle}}</label>
+            <div v-if="localData.scaledValue != null" class="row m-0 px-0" :class="justifyContent? 'd-flex justify-content-end ' + dimensionStyleClass : dimensionStyleClass">
+                <input :disabled="disabled" :data-cy="dataTestLabel + '-number-input'" type="number" :class="styleClassInput" class="bg-light text-white" @change="changeScaledValue($event.target.value)" :value="removeTrailingZeroes(localData.scaledValue * visualScale, numberDecimals)" ref="inputRef">
+                <DimensionUnit :disabled="disabled" :data-cy="dataTestLabel + '-DimensionUnit-input'" :min="min" :max="max" v-if="unit != null" :unit="unit" v-model="localData.multiplier" class="m-0 px-0 col-4 bg-light" @update:modelValue="changeMultiplier"/>
+                <label :data-cy="dataTestLabel + '-DimensionUnit-text'" v-if="unit == null" class="px-2 pt-1 px-0 " :class="unit == null && justifyContent? 'col-0':'col-4'">{{altUnit}}</label>
             </div>
         </div>
         <div class="row">

@@ -60,9 +60,11 @@ export default {
     data() {
         const current3dObject = null
         const posting = false
+        const updating = false
         const recentChange = false
         const tryingToSend = false
         const style = getComputedStyle(document.body);
+        const currentCore = null;
 
         const theme = {
           primary: style.getPropertyValue('--bs-primary'),
@@ -78,15 +80,22 @@ export default {
         return {
             current3dObject,
             posting,
+            updating,
             recentChange,
             tryingToSend,
             theme,
+            currentCore,
         }
     },
     watch: {
         'core': {
             handler(newValue, oldValue) {
-                this.tryToSend();
+                if (JSON.stringify(newValue) !== JSON.stringify(this.currentCore)) {
+                    this.tryToSend();
+                    this.updating = true;
+                    this.removeObject3D(this.current3dObject);
+                    this.currentCore = deepCopy(newValue);
+                }
             },
           deep: true
         }
@@ -254,10 +263,12 @@ export default {
                     this.$axios.post(url, data)
                     .then(response => {
                         this.posting = false
+                        this.updating = false
                         this.getPiece(response.data);
                     })
                     .catch(error => {
                         this.posting = false
+                        this.updating = false
                         this.hasFreeCADError = true
                     });
 
@@ -295,14 +306,14 @@ export default {
 </script>
 
 <template>
-    <img data-cy="CoreShapeArtisanVisualizer-loading" v-if="posting" class="mx-auto d-block col-12" alt="loading" style="width: 60%; height: auto;" :src="loadingGif">
-    <Renderer data-cy="CoreShapeArtisanVisualizer-canvas" ref="renderer" resize=true :orbit-ctrl="{ enableDamping: true, dampingFactor: 0.05, autoRotate : true }" shadow class="p-0 m-0 bg-dark">
+    <img data-cy="CoreShapeArtisanVisualizer-loading" v-if="updating" class="mx-auto d-block col-12" alt="loading" style="height: auto;" :src="loadingGif">
+    <Renderer  data-cy="CoreShapeArtisanVisualizer-canvas" ref="renderer" resize=true :orbit-ctrl="{ enableDamping: true, dampingFactor: 0.05, autoRotate : true }" shadow class="p-0 m-0 bg-dark">
         <Camera ref="camera" />
         <Scene ref="scene" :background="theme['dark']">
-            <SpotLight :color="theme['white']" :intensity="1" :position="{ y: 150, z: 100 }" :cast-shadow="true" :shadow-map-size="{ width: 1024, height: 1024 }" />
-            <SpotLight :color="theme['white']" :intensity="1" :position="{ y: -150, z: 100 }" :cast-shadow="true" :shadow-map-size="{ width: 1024, height: 1024 }" />
-            <SpotLight :color="theme['white']" :intensity="1" :position="{ x: 150, z: 100 }" :cast-shadow="true" :shadow-map-size="{ width: 1024, height: 1024 }" />
-            <SpotLight :color="theme['white']" :intensity="1" :position="{ x: -150, z: 100 }" :cast-shadow="true" :shadow-map-size="{ width: 1024, height: 1024 }" />
+            <SpotLight :color="theme['white']" :intensity="50" :position="{ y: 150, z: 100 }" :cast-shadow="true" :shadow-map-size="{ width: 1024, height: 1024 }" />
+            <SpotLight :color="theme['white']" :intensity="50" :position="{ y: -150, z: 100 }" :cast-shadow="true" :shadow-map-size="{ width: 1024, height: 1024 }" />
+            <SpotLight :color="theme['white']" :intensity="50" :position="{ x: 150, z: 100 }" :cast-shadow="true" :shadow-map-size="{ width: 1024, height: 1024 }" />
+            <SpotLight :color="theme['white']" :intensity="50" :position="{ x: -150, z: 100 }" :cast-shadow="true" :shadow-map-size="{ width: 1024, height: 1024 }" />
         </Scene>
     </Renderer>
 </template>

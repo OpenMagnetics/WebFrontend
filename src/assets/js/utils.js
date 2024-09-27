@@ -253,22 +253,22 @@ export function getMultiplier(value, precision=0.001, disabled=false, power=1) {
     else if (Math.abs(value) < Math.pow(0.1, power) && Math.abs(value) != 0) {
         multiplier = 0.001;
     }
-    else if (Math.abs(value) < Math.pow(1000)) {
+    else if (Math.abs(value) < Math.pow(1000, power)) {
         multiplier = 1;
     }
-    else if (Math.abs(value) < Math.pow(1000000)) {
+    else if (Math.abs(value) < Math.pow(1000000, power)) {
         multiplier = 1000;
     }
-    else if (Math.abs(value) < Math.pow(1000000000)) {
+    else if (Math.abs(value) < Math.pow(1000000000, power)) {
         multiplier = 1000000;
     }
-    else if (Math.abs(value) < Math.pow(1000000000000)) {
+    else if (Math.abs(value) < Math.pow(1000000000000, power)) {
         multiplier = 1000000000;
     }
-    else if (Math.abs(value) < Math.pow(1000000000000000)) {
+    else if (Math.abs(value) < Math.pow(1000000000000000, power)) {
         multiplier = 1000000000000;
     }
-    else if (Math.abs(value) < Math.pow(1000000000000000000)) {
+    else if (Math.abs(value) < Math.pow(1000000000000000000, power)) {
         multiplier = 1000000000000000;
     }
     scaledValue = roundWithDecimals(value / Math.pow(multiplier, power), precision);
@@ -1405,7 +1405,7 @@ export const cyrb53 = (str, seed = 0) => {
     return 4294967296 * (2097151 & h2) + (h1 >>> 0);
 };
 
-export async function checkAndFixMas(mas, mkf) {
+export async function checkAndFixMas(mas, mkf=null) {
     var numberWindings = 0;
     if (mas.inputs != null) {
         numberWindings = mas.inputs.designRequirements.turnsRatios.length + 1;
@@ -1414,6 +1414,20 @@ export async function checkAndFixMas(mas, mkf) {
                 if (mas.inputs.designRequirements.isolationSides.length <= i) {
                     mas.inputs.designRequirements.isolationSides.push(Defaults.isolationSideOrdered[i].toLowerCase());
                 }
+            }
+        }
+    }
+
+    if (mas.magnetic.core != null) {
+        if (mas.magnetic.core.functionalDescription.shape != null && typeof(mas.magnetic.core.functionalDescription.shape) !== "string") {
+            if (mas.magnetic.core.functionalDescription.shape.family == 't') {
+                mas.magnetic.core.functionalDescription.type = "toroidal";
+                mas.magnetic.core.functionalDescription.magneticCircuit = "closed";
+                mas.magnetic.core.functionalDescription.gapping = [];
+            }
+            else {
+                mas.magnetic.core.functionalDescription.type = "two-piece set";
+                mas.magnetic.core.functionalDescription.magneticCircuit = "open";
             }
         }
     }
@@ -1454,7 +1468,7 @@ export async function checkAndFixMas(mas, mkf) {
 
     }
 
-    if (mas.magnetic.coil.bobbin == null || mas.magnetic.coil.bobbin == "Dummy") {
+    if (mkf != null && (mas.magnetic.coil.bobbin == null || mas.magnetic.coil.bobbin == "Dummy")) {
         await mkf.ready.then(_ => {
             mas.magnetic.coil.bobbin = "Dummy";
             const result = mkf.calculate_bobbin_data(JSON.stringify(mas.magnetic));
@@ -1469,9 +1483,21 @@ export async function checkAndFixMas(mas, mkf) {
             console.error(error.data)
         });
     }
+    else {
+        return mas;
+    }
 
-    return mas;
 
+}
+
+export function getWindingIndex(coil, windinName) {
+    var foundWindingIndex = null;
+    coil.functionalDescription.forEach((winding, windingIndex) => {
+        if (winding.name == windinName) {
+            foundWindingIndex = windingIndex;
+        }
+    })
+    return foundWindingIndex;
 }
 
 export function range(start, stop, step=1) {

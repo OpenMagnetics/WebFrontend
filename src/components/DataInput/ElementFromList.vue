@@ -171,7 +171,7 @@ export default {
             <label :data-cy="dataTestLabel + '-same-row-label'" v-if="titleSameRow" :class="labelStyleClass" class="rounded-2 fs-5">{{replaceTitle == null? toTitleCase(name) : toTitleCase(replaceTitle)}}</label>
             <div  v-if="!titleSameRow" class=" col-sm-0 col-md-2">
             </div>
-            <select :disabled="disabled" :data-cy="dataTestLabel + '-select'"  :class="selectStyleClass" class="form-select bg-light text-white m-0 mt-1"  @change="changeOption" style="width:auto; max-height: 3em;" :value="localData" >
+            <select :disabled="disabled" :data-cy="dataTestLabel + '-select'"  :class="selectStyleClass" class="form-select py-1 px-2 bg-light text-white m-0 mt-1"  @change="changeOption" style="width:auto; max-height: 3em;" :value="localData" >
 
                 <option :disabled="optionsToDisable.includes(value)" v-for="value in computedOptions">
                     {{value}}

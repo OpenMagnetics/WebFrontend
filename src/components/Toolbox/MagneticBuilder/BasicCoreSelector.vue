@@ -7,7 +7,9 @@ import BasicCoreSubmenu from '/src/components/Toolbox/MagneticBuilder/BasicCoreS
 import Module from '/src/assets/js/libAdvisers.wasm.js'
 import { coreAdviserWeights } from '/src/assets/js/defaults.js'
 import BasicCoreInfo from '/src/components/Toolbox/MagneticBuilder/BasicCoreInfo.vue'
-
+import { useHistoryStore } from '/src/stores/history'
+import { deepCopy, checkAndFixMas } from '/src/assets/js/utils.js'
+import { tooltipsMagneticBuilder } from '/src/assets/js/texts.js'
 </script>
 
 <script>
@@ -37,11 +39,13 @@ export default {
     },
     data() {
         const masStore = useMasStore();
-        const coreShapeNames = []; 
+        const historyStore = useHistoryStore();
+        const coreShapeNames = {}; 
         const coreShapeFamilies = []; 
-        const coreMaterialNames = []; 
+        const coreMaterialNames = {}; 
         const coreMaterialManufacturers = [];
         const localData = {};
+        const onlyManufacturer = null;
 
         if (masStore.coreAdviserWeights == null) {
             masStore.coreAdviserWeights = coreAdviserWeights;
@@ -49,19 +53,35 @@ export default {
 
         const errorMessage = "";
         const loading = false;
+        const forceUpdate = 0;
 
         return {
             masStore,
+            historyStore,
             localData,
+            onlyManufacturer,
             coreShapeNames,
             coreShapeFamilies,
             coreMaterialNames,
             coreMaterialManufacturers,
             errorMessage,
             loading,
+            forceUpdate,
         }
     },
     computed: {
+        styleTooltip() {
+            var relative_placement;
+            relative_placement = 'top'
+            return {
+                theme: {
+                    placement: relative_placement,
+                    width: '100px',
+                    'transition-delay': '1s',
+                    "text-align": "start",
+                },
+            }
+        },
         isStackable() {
             var shapeName = this.masStore.mas.magnetic.core.functionalDescription.shape;
             if (! (typeof shapeName === 'string' || shapeName instanceof String)) {
@@ -79,32 +99,66 @@ export default {
     watch: { 
     },
     mounted () {
-        this.getShapeNames()
-        this.getMaterialNames()
+        this.getShapeNames();
+        this.getMaterialNames();
         this.assignLocalData(this.masStore.mas.magnetic.core);
+        this.historyStore.$onAction((action) => {
+            if (action.name == "historyPointerUpdated") {
+                this.assignLocalData(this.masStore.mas.magnetic.core);
+                this.forceUpdate += 1;
+            }
+        })
     },
     methods: {
         assignLocalData(core) {
             if (typeof(core.functionalDescription.shape) == 'string') {
-                this.localData["shape"] = core.functionalDescription.shape;
+                this.localData["shape"] = deepCopy(core.functionalDescription.shape);
+
+                this.$mkf.ready.then(_ => {
+                    const shapeResult = this.$mkf.get_shape_data(core.functionalDescription.shape);
+                    if (shapeResult.startsWith("Exception")) {
+                        console.error(shapeResult);
+                    }
+                    else {
+                        const shape = JSON.parse(shapeResult);
+                        this.localData["shapeFamily"] = shape.family.toUpperCase();
+                    }
+                })
             }
             else {
-                this.localData["shape"] = core.functionalDescription.shape.name
+                this.localData["shape"] = deepCopy(core.functionalDescription.shape.name);
+                this.localData["shapeFamily"] = deepCopy(core.functionalDescription.shape.family).toUpperCase();
             }
+
             if (typeof(core.functionalDescription.material) == 'string') {
-                this.localData["material"] = core.functionalDescription.material;
+                this.localData["material"] = deepCopy(core.functionalDescription.material);
+                this.$mkf.ready.then(_ => {
+                    const materialResult = this.$mkf.get_material_data(core.functionalDescription.material);
+                    if (materialResult.startsWith("Exception")) {
+                        console.error(materialResult);
+                    }
+                    else {
+                        const material = JSON.parse(materialResult);
+                        this.localData["materialManufacturer"] = material.manufacturerInfo.name;
+                    }
+                })
             }
             else {
-                this.localData["material"] = core.functionalDescription.material.name
+                this.localData["material"] = deepCopy(core.functionalDescription.material.name);
+                this.localData["materialManufacturer"] = core.functionalDescription.material.manufacturerInfo.name;
             }
-            this.localData["numberStacks"] = core.functionalDescription.numberStacks
-            this.localData["gapping"] = core.functionalDescription.gapping
+            this.localData["numberStacks"] = deepCopy(core.functionalDescription.numberStacks);
+            this.localData["gapping"] = deepCopy(core.functionalDescription.gapping);
         },
         getShapeNames() {
             this.$mkf.ready.then(_ => {
                 const coreShapeFamiliesHandle = this.$mkf.get_available_core_shape_families();
                 for (var i = coreShapeFamiliesHandle.size() - 1; i >= 0; i--) {
-                    this.coreShapeFamilies.push(coreShapeFamiliesHandle.get(i));
+                    const shapeFamily = coreShapeFamiliesHandle.get(i)
+                    if (!shapeFamily.includes("PQI") && !shapeFamily.includes("UT") &&
+                        !shapeFamily.includes("UI") && !shapeFamily.includes("H") && !shapeFamily.includes("DRUM")) {
+                        this.coreShapeFamilies.push(shapeFamily);
+                    }
                 }
 
 
@@ -121,22 +175,22 @@ export default {
                 this.coreShapeFamilies.forEach((shapeFamily) => {
                     if (!shapeFamily.includes("PQI") && !shapeFamily.includes("UT") &&
                         !shapeFamily.includes("UI") && !shapeFamily.includes("H") && !shapeFamily.includes("DRUM")) {
-                        this.coreShapeNames.push(shapeFamily);
+                        this.coreShapeNames[shapeFamily] = [];
                         var numberShapes = 0;
                         for (var i = coreShapeNamesHandle.size() - 1; i >= 0; i--) {
                             const aux = coreShapeNamesHandle.get(i);
                             if (aux.startsWith(shapeFamily + " ")) {
                                 numberShapes += 1;
-                                this.coreShapeNames.push(aux);
+                                this.coreShapeNames[shapeFamily].push(aux);
                             }
                         }
                         if (numberShapes == 0) {
-                            this.coreShapeNames.pop();
+                            this.coreShapeNames[shapeFamily].pop();
                         }
 
                     }
+                    // this.coreShapeNames[shapeFamily] = this.coreShapeNames[shapeFamily].sort();
                 })
-                this.coreShapeNames = this.coreShapeNames.sort();
             });
         },
         getMaterialNames() {
@@ -149,45 +203,65 @@ export default {
                 this.coreMaterialManufacturers = this.coreMaterialManufacturers.sort();
 
                 this.coreMaterialManufacturers.forEach((manufacturer) => {
+                    this.coreMaterialNames[manufacturer] = []
                     if (!(this.onlyManufacturer != '' && this.onlyManufacturer != null && manufacturer != this.onlyManufacturer)) {
                         const coreMaterialNamesHandle = this.$mkf.get_available_core_materials(manufacturer);
-                        this.coreMaterialNames.push(manufacturer);
                         for (var i = coreMaterialNamesHandle.size() - 1; i >= 0; i--) {
-                            this.coreMaterialNames.push(coreMaterialNamesHandle.get(i));
+                            this.coreMaterialNames[manufacturer].push(coreMaterialNamesHandle.get(i));
                         }
                     }
+                    // this.coreMaterialNames[manufacturer] = this.coreMaterialNames[manufacturer].sort();
                 })
-                this.coreMaterialNames = this.coreMaterialNames.sort();
             });
         },
-        shapeUpdated(value) {
-            this.masStore.mas.magnetic.core.functionalDescription.shape = value;
+        async shapeUpdated(value) {
             this.masStore.mas.magnetic.core.name = "Custom";
             this.masStore.mas.magnetic.core.manufacturerInfo = null;
             this.masStore.mas.magnetic.core.processedDescription = null;
             this.masStore.mas.magnetic.core.geometricalDescription = null;
 
             this.$mkf.ready.then(_ => {
-                const aux = this.masStore.mas.magnetic.core;
-                aux['geometricalDescription'] = null;
-                aux['processedDescription'] = null;
-                this.masStore.mas.magnetic.core = JSON.parse(this.$mkf.calculate_core_data(JSON.stringify(aux), false));
-                this.masStore.mas.magnetic.coil.bobbin = "Dummy";
-                this.masStore.mas.magnetic.coil.turnsDescription = null;
-                this.masStore.mas.magnetic.coil.layersDescription = null;
-                this.masStore.mas.magnetic.coil.sectionsDescription = null;
-                console.warn(this.masStore.mas.magnetic.coil.bobbin)
-                console.warn(this.masStore.mas.magnetic.core)
-                const bobbinResult = this.$mkf.calculate_bobbin_data(JSON.stringify(this.masStore.mas.magnetic));
-                if (bobbinResult.startsWith("Exception")) {
-                    console.error(bobbinResult);
+                var mas = deepCopy(this.masStore.mas);
+                mas.magnetic.core.geometricalDescription = null;
+                mas.magnetic.core.processedDescription = null;
+
+                const shapeResult = this.$mkf.get_shape_data(value);
+                if (shapeResult.startsWith("Exception")) {
+                    console.error(shapeResult);
                 }
                 else {
-                    this.masStore.mas.magnetic.coil.bobbin = JSON.parse(bobbinResult);
+                    const shape = JSON.parse(shapeResult);
+                    mas.magnetic.core.functionalDescription.shape = shape;
+
+                    checkAndFixMas(mas).then(response => {
+                        mas = response;
+                        console.log(mas)
+
+                        const coreResult = this.$mkf.calculate_core_data(JSON.stringify(mas.magnetic.core), false);
+                        if (coreResult.startsWith("Exception")) {
+                            console.error(coreResult);
+                        }
+                        else {
+                            this.masStore.mas.magnetic.core = JSON.parse(coreResult);
+
+                            this.masStore.mas.magnetic.coil.bobbin = "Dummy";
+                            this.masStore.mas.magnetic.coil.turnsDescription = null;
+                            this.masStore.mas.magnetic.coil.layersDescription = null;
+                            this.masStore.mas.magnetic.coil.sectionsDescription = null;
+                            const bobbinResult = this.$mkf.calculate_bobbin_data(JSON.stringify(this.masStore.mas.magnetic));
+                            if (bobbinResult.startsWith("Exception")) {
+                                console.error(bobbinResult);
+                            }
+                            else {
+                                this.masStore.mas.magnetic.coil.bobbin = JSON.parse(bobbinResult);
+                                this.historyStore.addToHistory(this.masStore.mas);
+                            }
+                        }
+                    })
+                    .catch(error => {
+                        console.error(error.data)
+                    });
                 }
-                console.warn(this.masStore.mas.magnetic.coil.bobbin)
-
-
             });
             if (!this.isStackable) {
                 this.masStore.mas.magnetic.core.functionalDescription.numberStacks = 1;
@@ -197,12 +271,15 @@ export default {
             const aux = this.masStore.mas.magnetic.core;
             aux.functionalDescription.material = value
             this.masStore.mas.magnetic.core = aux;
+            this.historyStore.addToHistory(this.masStore.mas);
         },
         numberStacksUpdated(value) {
             this.masStore.mas.magnetic.core.functionalDescription.numberStacks = value;
+            this.historyStore.addToHistory(this.masStore.mas);
         },
         gappingUpdated(value) {
             this.masStore.mas.magnetic.core.functionalDescription.gapping = value;
+            this.historyStore.addToHistory(this.masStore.mas);
         },
         adviseCoreRequested() {
             this.loading = true;
@@ -249,11 +326,11 @@ export default {
                             const numberTurnsHandle = this.$mkf.calculate_number_turns(data[0].mas.magnetic.coil.functionalDescription[0].numberTurns, JSON.stringify(this.masStore.mas.inputs.designRequirements));
 
                             const windings = this.masStore.mas.magnetic.coil.functionalDescription;
-                            console.log(numberTurnsHandle)
                             for (var i = 0; i < numberTurnsHandle.size(); i++) {
                                 windings[i].numberTurns = numberTurnsHandle.get(i);
                             }
                             this.masStore.mas.magnetic.coil.functionalDescription = windings;
+                            this.historyStore.addToHistory(this.masStore.mas);
                         });
 
                         this.errorMessage = "";
@@ -282,10 +359,23 @@ export default {
 
 <template>
     <div class="container">
-        <div class="row">
+        <div class="row" v-tooltip="styleTooltip">
             <img :data-cy="dataTestLabel + '-BasicCoreSelector-loading'" v-if="loading" class="mx-auto d-block col-12" alt="loading" style="width: 60%; height: auto;" :src="loadingGif">
             <ElementFromList
+                v-tooltip="tooltipsMagneticBuilder.coreShapeFamily"
                 v-if="!loading"
+                class="col-12 mb-1 text-start"
+                :dataTestLabel="dataTestLabel + '-ShapeFamilies'"
+                :name="'shapeFamily'"
+                :titleSameRow="true"
+                :justifyContent="true"
+                v-model="localData"
+                :options="coreShapeFamilies"
+                @update="shapeUpdated"
+            />
+            <ElementFromList
+                v-tooltip="tooltipsMagneticBuilder.coreShape"
+                v-if="!loading && localData.shapeFamily != null && coreShapeNames[localData.shapeFamily] != null && coreShapeNames[localData.shapeFamily].length > 0"
                 class="col-12 mb-1 text-start"
                 :dataTestLabel="dataTestLabel + '-ShapeNames'"
                 :name="'shape'"
@@ -293,12 +383,27 @@ export default {
                 :justifyContent="true"
                 v-model="localData"
                 :optionsToDisable="coreShapeFamilies"
-                :options="coreShapeNames"
+                :options="coreShapeNames[localData.shapeFamily]"
                 @update="shapeUpdated"
             />
 
             <ElementFromList
+                v-tooltip="tooltipsMagneticBuilder.coreMaterialManufacturer"
                 v-if="localData.shape != '' && !loading"
+                class="col-12 mb-1 text-start"
+                :dataTestLabel="dataTestLabel + '-MaterialManufacturers'"
+                :name="'materialManufacturer'"
+                :replaceTitle="'Manufacturer'"
+                :titleSameRow="true"
+                :justifyContent="true"
+                v-model="localData"
+                :options="coreMaterialManufacturers"
+                @update="materialUpdated"
+            />
+
+            <ElementFromList
+                v-tooltip="tooltipsMagneticBuilder.coreMaterial"
+                v-if="localData.shape != '' && !loading && localData.materialManufacturer != null && coreMaterialNames[localData.materialManufacturer] != null && coreMaterialNames[localData.materialManufacturer].length > 0"
                 class="col-12 mb-1 text-start"
                 :dataTestLabel="dataTestLabel + '-MaterialNames'"
                 :name="'material'"
@@ -306,13 +411,14 @@ export default {
                 :justifyContent="true"
                 v-model="localData"
                 :optionsToDisable="coreMaterialManufacturers"
-                :options="coreMaterialNames"
+                :options="coreMaterialNames[localData.materialManufacturer]"
                 @update="materialUpdated"
             />
-            <h5 v-else v-if="!loading" class="text-danger my-2">Select a shape for the core</h5>
+            <h5 v-if="localData.shape == '' && !loading" class="text-danger my-2">Select a family and a shape for the core</h5>
 
 
             <Dimension class="col-12 mb-1 text-start"
+                v-tooltip="tooltipsMagneticBuilder.coreNumberStacks"
                 v-if="isStackable && localData.shape != '' && !loading"
                 :name="'numberStacks'"
                 :replaceTitle="'Number of Stacks'"
@@ -327,11 +433,12 @@ export default {
             />
 
             <CoreGappingSelector class="col-12 mb-1 text-start"
-                v-if="localData.shape != '' && !loading"
+                v-if="localData.shape != '' && !loading && masStore.mas.magnetic.core.functionalDescription.type == 'two-piece set'"
                 :title="'Gap Info: '"
                 :dataTestLabel="dataTestLabel + '-Gap'"
+                :forceUpdate="forceUpdate"
                 :autoupdate="false"
-                :core="masStore.mas.magnetic.core"
+                :core="localData"
                 @update="gappingUpdated"
             />
 
