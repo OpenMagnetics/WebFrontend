@@ -30,6 +30,9 @@ export default {
         const loading = false;
         const recentChange = false;
         const tryingToSend = false;
+        const lastSimulatedInputs = "";
+        const lastSimulatedMagnetics = "";
+        const lastSimulatedModels = "";
 
         return {
             masStore,
@@ -38,6 +41,9 @@ export default {
             recentChange,
             tryingToSend,
             loading,
+            lastSimulatedInputs,
+            lastSimulatedMagnetics,
+            lastSimulatedModels,
         }
     },
     computed: {
@@ -110,59 +116,73 @@ export default {
                                   coreTemperature: this.$userStore.selectedModels['coreTemperature'].toUpperCase(),
                                   gapReluctance: this.$userStore.selectedModels['gapReluctance'].toUpperCase().replace(" ", "_")};
 
-                    const result = this.$mkf.simulate(JSON.stringify(this.masStore.mas.inputs),
-                                                      JSON.stringify(this.masStore.mas.magnetic),
-                                                      JSON.stringify(modelsData));
+                    const inputsString = JSON.stringify(this.masStore.mas.inputs);
+                    const magneticsString = JSON.stringify(this.masStore.mas.magnetic);
+                    const modelsString = JSON.stringify(modelsData);
 
-                    if (result.startsWith("Exception")) {
-                        this.tryingToSend = false;
-                        this.loading = false;
-                        console.error(result);
-                        return;
+                    if (inputsString != this.lastSimulatedInputs || magneticsString != this.lastSimulatedMagnetics || modelsString != this.lastSimulatedModels) {
+                        const result = this.$mkf.simulate(inputsString,
+                                                      magneticsString,
+                                                      modelsString);
+
+                        this.lastSimulatedInputs = inputsString;
+                        this.lastSimulatedMagnetics = magneticsString;
+                        this.lastSimulatedModels = modelsString;
+
+                        if (result.startsWith("Exception")) {
+                            this.tryingToSend = false;
+                            this.loading = false;
+                            console.error(result);
+                            return;
+                        }
+                        else {
+                            const mas = JSON.parse(result);
+                            this.outputsData.proximityLosses = 0;
+                            this.outputsData.ohmicLosses = 0;
+                            this.outputsData.acLosses = 0;
+                            this.outputsData.skinLosses = 0;
+                            this.outputsData.dcResistancePerWinding = [];
+                            this.outputsData.effectiveResistancePerWinding = [];
+                            this.outputsData.proximityLossesPerWinding = [];
+                            this.outputsData.ohmicLossesPerWinding = [];
+                            this.outputsData.skinLossesPerWinding = [];
+                            this.outputsData.windingLossesPerWinding = [];
+                            this.outputsData.leakageInductancePerWinding = [0];
+                            for (var windingIndex = 0; windingIndex < this.masStore.mas.magnetic.coil.functionalDescription.length; windingIndex++) {
+                                var proximityLosses = mas.outputs[0].windingLosses.windingLossesPerWinding[windingIndex].proximityEffectLosses.lossesPerHarmonic.reduce((a, c) => {return a + c}, 0);
+                                this.outputsData.proximityLossesPerWinding.push(proximityLosses);
+                                var skinLosses = mas.outputs[0].windingLosses.windingLossesPerWinding[windingIndex].skinEffectLosses.lossesPerHarmonic.reduce((a, c) => {return a + c}, 0);
+                                var ohmicLosses = mas.outputs[0].windingLosses.windingLossesPerWinding[windingIndex].ohmicLosses.losses;
+                                this.outputsData.proximityLosses += proximityLosses;
+                                this.outputsData.ohmicLosses += ohmicLosses;
+                                this.outputsData.skinLosses += skinLosses;
+                                this.outputsData.acLosses += skinLosses + proximityLosses;
+                                this.outputsData.ohmicLossesPerWinding.push(ohmicLosses);
+                                this.outputsData.skinLossesPerWinding.push(skinLosses);
+                                this.outputsData.windingLossesPerWinding.push(proximityLosses + skinLosses + ohmicLosses);
+                                this.outputsData.dcResistancePerWinding.push(mas.outputs[0].windingLosses.dcResistancePerWinding[windingIndex]);
+                            }
+
+                            console.warn()
+
+                            for (var windingIndex = 0; windingIndex < this.masStore.mas.magnetic.coil.functionalDescription.length - 1; windingIndex++) {
+                                var leakageInductance = mas.outputs[0].leakageInductance.leakageInductancePerWinding[windingIndex].nominal;
+                                this.outputsData.leakageInductancePerWinding.push(leakageInductance);
+                                this.outputsData.effectiveResistancePerWinding.push(this.outputsData.windingLossesPerWinding[windingIndex] / Math.pow(this.masStore.mas.inputs.operatingPoints[0].excitationsPerWinding[windingIndex].current.processed.rms));
+                            }
+
+                            // this.outputsData.proximityLossesPerWinding = mas.outputs[0].windingLosses.windingLossesPerWinding[];
+                            this.outputsData.windingLosses = mas.outputs[0].windingLosses.windingLosses;
+                            this.outputsData.totalLosses = mas.outputs[0].windingLosses.windingLosses + mas.outputs[0].coreLosses.coreLosses;
+                            this.masStore.mas.outputs = deepCopy(mas.outputs);
+                            this.tryingToSend = false;
+                            this.loading = false;
+                        }
                     }
                     else {
-                        const mas = JSON.parse(result);
-                        this.outputsData.proximityLosses = 0;
-                        this.outputsData.ohmicLosses = 0;
-                        this.outputsData.acLosses = 0;
-                        this.outputsData.skinLosses = 0;
-                        this.outputsData.dcResistancePerWinding = [];
-                        this.outputsData.effectiveResistancePerWinding = [];
-                        this.outputsData.proximityLossesPerWinding = [];
-                        this.outputsData.ohmicLossesPerWinding = [];
-                        this.outputsData.skinLossesPerWinding = [];
-                        this.outputsData.windingLossesPerWinding = [];
-                        this.outputsData.leakageInductancePerWinding = [0];
-                        for (var windingIndex = 0; windingIndex < this.masStore.mas.magnetic.coil.functionalDescription.length; windingIndex++) {
-                            var proximityLosses = mas.outputs[0].windingLosses.windingLossesPerWinding[windingIndex].proximityEffectLosses.lossesPerHarmonic.reduce((a, c) => {return a + c}, 0);
-                            this.outputsData.proximityLossesPerWinding.push(proximityLosses);
-                            var skinLosses = mas.outputs[0].windingLosses.windingLossesPerWinding[windingIndex].skinEffectLosses.lossesPerHarmonic.reduce((a, c) => {return a + c}, 0);
-                            var ohmicLosses = mas.outputs[0].windingLosses.windingLossesPerWinding[windingIndex].ohmicLosses.losses;
-                            this.outputsData.proximityLosses += proximityLosses;
-                            this.outputsData.ohmicLosses += ohmicLosses;
-                            this.outputsData.skinLosses += skinLosses;
-                            this.outputsData.acLosses += skinLosses + proximityLosses;
-                            this.outputsData.ohmicLossesPerWinding.push(ohmicLosses);
-                            this.outputsData.skinLossesPerWinding.push(skinLosses);
-                            this.outputsData.windingLossesPerWinding.push(proximityLosses + skinLosses + ohmicLosses);
-                            this.outputsData.dcResistancePerWinding.push(mas.outputs[0].windingLosses.dcResistancePerWinding[windingIndex]);
-                        }
-
-                        console.warn()
-
-                        for (var windingIndex = 0; windingIndex < this.masStore.mas.magnetic.coil.functionalDescription.length - 1; windingIndex++) {
-                            var leakageInductance = mas.outputs[0].leakageInductance.leakageInductancePerWinding[windingIndex].nominal;
-                            this.outputsData.leakageInductancePerWinding.push(leakageInductance);
-                            this.outputsData.effectiveResistancePerWinding.push(this.outputsData.windingLossesPerWinding[windingIndex] / Math.pow(this.masStore.mas.inputs.operatingPoints[0].excitationsPerWinding[windingIndex].current.processed.rms));
-                        }
-
-                        // this.outputsData.proximityLossesPerWinding = mas.outputs[0].windingLosses.windingLossesPerWinding[];
-                        this.outputsData.windingLosses = mas.outputs[0].windingLosses.windingLosses;
-                        this.outputsData.totalLosses = mas.outputs[0].windingLosses.windingLosses + mas.outputs[0].coreLosses.coreLosses;
                         this.tryingToSend = false;
                         this.loading = false;
                     }
-
                 })
             }
         },

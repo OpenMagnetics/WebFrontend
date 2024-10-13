@@ -68,10 +68,6 @@ export default {
                 if (!this.masStore.magneticManualOperatingPoints[operatingPointIndex] && !this.masStore.magneticCircuitSimulatorOperatingPoints[operatingPointIndex]) {
                     allSet = false;
                 }
-                console.log("this.masStore.magneticManualOperatingPoints[operatingPointIndex]")
-                console.log(this.masStore.magneticManualOperatingPoints[operatingPointIndex])
-                console.log("this.masStore.magneticCircuitSimulatorOperatingPoints[operatingPointIndex]")
-                console.log(this.masStore.magneticCircuitSimulatorOperatingPoints[operatingPointIndex])
                 if (this.masStore.mas.inputs.operatingPoints[operatingPointIndex] == null) {
                     allSet = false;
                     this.errorMessages += "Operating point with index " + operatingPointIndex + " is totally empty.\n"

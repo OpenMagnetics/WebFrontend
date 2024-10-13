@@ -29,8 +29,51 @@ export default {
     mounted () {
         this.historyStore.addToHistory(this.masStore.mas);
         this.historyStore.blockAdditions();
+        this.historyStore.$onAction((action) => {
+            if (action.name == "addToHistory") {
+                this.$emit("canContinue", this.isMagneticBuilt());
+            }
+        })
     },
     methods: {
+        isMagneticBuilt() {
+            if (this.masStore.mas.magnetic.core.functionalDescription.material == null) {
+                return false;
+            }
+            if (this.masStore.mas.magnetic.core.functionalDescription.shape == null) {
+                return false;
+            }
+            if (this.masStore.mas.magnetic.core.functionalDescription.gapping == null) {
+                return false;
+            }
+            if (this.masStore.mas.magnetic.coil.functionalDescription.length == 0) {
+                return false;
+            }
+            if (this.masStore.mas.magnetic.coil.bobbin == null) {
+                return false;
+            }
+            if (this.masStore.mas.magnetic.coil.bobbin == "") {
+                return false;
+            }
+            if (this.masStore.mas.magnetic.coil.bobbin == "Dummy") {
+                return false;
+            }
+            this.masStore.mas.magnetic.coil.functionalDescription.forEach((winding) => {
+                if (winding.wire == null) {
+                    return false;
+                }
+                if (winding.wire == "") {
+                    return false;
+                }
+                if (winding.wire == "Dummy") {
+                    return false;
+                }
+            })
+            if (this.masStore.mas.magnetic.coil.turnsDescription == null) {
+                return false;
+            }
+            return true;
+        }
     }
 }
 </script>

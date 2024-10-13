@@ -3,7 +3,7 @@ import { ref } from 'vue'
 import * as Defaults from '/src/assets/js/defaults.js'
 import { findCoreMaterial, getCoreData, deepCopy } from '/src/assets/js/utils.js'
 import { useCoreStore } from '/src/stores/core'
-import * as download from 'downloadjs'
+import download from 'downloadjs'
 
 </script>
 <script>

@@ -6,18 +6,21 @@ import { toTitleCase } from '/src/assets/js/utils.js'
 
 import DesignRequirements from '/src/components/Toolbox/DesignRequirements.vue'
 import OperatingPoints from '/src/components/Toolbox/OperatingPoints.vue'
-import CoreAdviser from '/src/components/Toolbox/CoreAdviser.vue'
+import MagneticCoreAdviser from '/src/components/Toolbox/MagneticCoreAdviser.vue'
 import CoreCustomizer from '/src/components/Toolbox/CoreCustomizer.vue'
 import WireAdviser from '/src/components/Toolbox/WireAdviser.vue'
 import MagneticAdviser from '/src/components/Toolbox/MagneticAdviser.vue'
 import WireCustomizer from '/src/components/Toolbox/WireCustomizer.vue'
 import CoilAdviser from '/src/components/Toolbox/CoilAdviser.vue'
 import InsulationAdviser from '/src/components/Toolbox/InsulationAdviser.vue'
-import MagneticAdviserFinalizer from '/src/components/Toolbox/MagneticAdviser/Finalizer.vue'
-import MagneticCoreFinalizer from '/src/components/Toolbox/CoreAdviser/Finalizer.vue'
-import MagneticSpecificationFinalizer from '/src/components/Toolbox/MagneticSpecification/Finalizer.vue'
+import MagneticSummary from '/src/components/Common/MagneticSummary.vue'
+import MagneticCoreSummary from '/src/components/Toolbox/MagneticCoreAdviser/MagneticCoreSummary.vue'
+import MagneticSpecificationsSummary from '/src/components/Toolbox/MagneticSpecificationsReport/MagneticSpecificationsSummary.vue'
 import MagneticBuilder from '/src/components/Toolbox/MagneticBuilder.vue'
 import ControlPanel from '/src/components/Toolbox/ControlPanel.vue'
+import Welcome from '/src/components/Toolbox/Welcome.vue'
+import ToolSelector from '/src/components/Toolbox/ToolSelector.vue'
+import Settings from '/src/components/Toolbox/Settings.vue'
 
 </script>
 
@@ -85,12 +88,19 @@ export default {
         },
         changeTool(tool) {
             this.$userStore[`${this.toolLabel}Subsection`] = tool;
-        }
+        },
+        toolSelected(tool) {
+            this.$emit('toolSelected', tool);
+        },
+        onSettingsUpdated(event) {
+        },
     },
     mounted() {
     },
     created() {
         console.log(this.currentStoryline)
+        console.log(`${this.toolLabel}Subsection`)
+        console.log(this.$userStore[`${this.toolLabel}Subsection`])
     },
 }
 </script>
@@ -98,53 +108,52 @@ export default {
 <template>
     <div class="d-flex flex-column min-vh-100">
         <Header />
+        <Settings 
+            :modalName="'StorylineSettingsModal'"
+            @onSettingsUpdated="onSettingsUpdated"
+        />
         <main role="main" class="main">
-            <div class="container mx-auto">
+            <div v-if="currentStoryline[$userStore[`${toolLabel}Subsection`]] != null" class="container mx-auto">
                 <div class="row">
                     <div class="storyline text-white text-center col-1 bg-light border border-primary m-0 p-1">
                         <h4 class="text-center">Storyline</h4>
-                        <Storyline :selectedTool="$userStore[`${toolLabel}Subsection`]" :storyline="currentStoryline" :canContinue="$userStore[`${toolLabel}CanContinue`]" @changeTool="changeTool" :forceUpdate="updateStoryline"/>
+                        <Storyline
+                            :selectedTool="$userStore[`${toolLabel}Subsection`]"
+                            :storyline="currentStoryline"
+                            :canContinue="$userStore[`${toolLabel}CanContinue`]"
+                            :forceUpdate="updateStoryline"
+                            :showAvoidOption="currentStoryline[$userStore[`${toolLabel}Subsection`]].title=='Welcome'"
+                            @changeTool="changeTool"
+                            @nextTool="nextTool"
+                        />
                     </div>
                     <div class="tool text-white bg-dark text-center offset-1 col-11 bg-light px-3 container" >
                         <div class="mb-2 row" >
-                            <button v-if="currentStoryline[$userStore[`${toolLabel}Subsection`]].prevTool != null" data-cy="magnetic-synthesis-previous-tool-button" class="btn btn-outline-primary col-sm-12 col-md-2 mt-1"  @click="prevTool"> Previous tool</button>
-                            <div v-else data-cy="magnetic-synthesis-previous-tool-button-placeholder" class=" col-sm-12 col-md-2 mt-1"></div>
+
+                            <div data-cy="magnetic-synthesis-previous-tool-button-placeholder" class=" col-sm-12 col-md-2 mt-1"></div>
                             <h2 v-if="showTitle" data-cy="magnetic-synthesis-title-text" :class="showControlPanel? 'col-sm-12 col-md-6' : 'col-sm-12 col-md-9'" class="" >
                                 {{toTitleCase($userStore[`${toolLabel}Subsection`])}}
                             </h2>
                             <div v-if="showControlPanel" data-cy="magnetic-synthesis-title-control-panel" :class="showTitle? 'col-sm-12 col-md-4' : 'col-sm-12 col-md-9'">
-                                <ControlPanel />
+                                <ControlPanel @toolSelected="toolSelected"/>
                             </div>
                         </div>
                             
                         <div class="row">
+                            <Welcome @canContinue="updateCanContinue('welcome', $event)" :dataTestLabel="`${dataTestLabel}-Welcome`" v-if="$userStore[`${toolLabel}Subsection`] == 'welcome'"/>
+                            <ToolSelector @toolSelected="toolSelected" :dataTestLabel="`${dataTestLabel}-ToolSelector`" v-if="$userStore[`${toolLabel}Subsection`] == 'toolSelector'"/>
                             <DesignRequirements @canContinue="updateCanContinue('designRequirements', $event)" :dataTestLabel="`${dataTestLabel}-DesignRequirements`" v-if="$userStore[`${toolLabel}Subsection`] == 'designRequirements'"/>
                             <OperatingPoints @canContinue="updateCanContinue('operatingPoints', $event)" @changeTool="changeTool" :dataTestLabel="`${dataTestLabel}-OperatingPoints`" v-if="$userStore[`${toolLabel}Subsection`] == 'operatingPoints'"/>
-                            <CoreAdviser @canContinue="updateCanContinue('coreAdviser', $event)" :dataTestLabel="`${dataTestLabel}-CoreAdviser`" v-if="$userStore[`${toolLabel}Subsection`] == 'coreAdviser'"/>
+                            <MagneticCoreAdviser @canContinue="updateCanContinue('magneticCoreAdviser', $event)" :dataTestLabel="`${dataTestLabel}-MagneticmagneticCoreAdviser`" v-if="$userStore[`${toolLabel}Subsection`] == 'magneticCoreAdviser'"/>
                             <MagneticAdviser @canContinue="updateCanContinue('magneticAdviser', $event)" :dataTestLabel="`${dataTestLabel}-MagneticAdviser`" v-if="$userStore[`${toolLabel}Subsection`] == 'magneticAdviser'"/>
                             <CoreCustomizer :dataTestLabel="`${dataTestLabel}-CoreCustomizer`" v-if="$userStore[`${toolLabel}Subsection`] == 'coreCustomizer'"/>
                             <WireAdviser :dataTestLabel="`${dataTestLabel}-WireAdviser`" v-if="$userStore[`${toolLabel}Subsection`] == 'wireAdviser'"/>
                             <WireCustomizer :dataTestLabel="`${dataTestLabel}-WireCustomizer`" v-if="$userStore[`${toolLabel}Subsection`] == 'wireCustomizer'"/>
-                            <CoilAdviser :dataTestLabel="`${dataTestLabel}-CoilAdviser`" v-if="$userStore[`${toolLabel}Subsection`] == 'coilAdviser'"/>
                             <InsulationAdviser :dataTestLabel="`${dataTestLabel}-InsulationAdviser`" v-if="$userStore[`${toolLabel}Subsection`] == 'insulationRequirements'"/>
                             <MagneticBuilder @canContinue="updateCanContinue('magneticBuilder', $event)" :dataTestLabel="`${dataTestLabel}-MagneticBuilder`" v-if="$userStore[`${toolLabel}Subsection`] == 'magneticBuilder'"/>
-                            <MagneticAdviserFinalizer :dataTestLabel="`${dataTestLabel}-MagneticFinalizer`" v-if="$userStore[`${toolLabel}Subsection`] == 'magneticAdviserFinalizer'"/>
-                            <MagneticCoreFinalizer :dataTestLabel="`${dataTestLabel}-MagneticFinalizer`" v-if="$userStore[`${toolLabel}Subsection`] == 'magneticCoreAdviserFinalizer'"/>
-                            <MagneticSpecificationFinalizer :dataTestLabel="`${dataTestLabel}-MagneticFinalizer`" v-if="$userStore[`${toolLabel}Subsection`] == 'magneticSpecificationFinalizer'"/>
-                        </div>
-                        <div class="row">
-                            {{}}
-                            <button 
-                                v-if="!$userStore[`${toolLabel}Subsection`].includes('Finalizer') && currentStoryline[$userStore[`${toolLabel}Subsection`]].nextTool != null"  
-                                :disabled="!$userStore[`${toolLabel}CanContinue`][$userStore[`${toolLabel}Subsection`]]" 
-                                data-cy="magnetic-synthesis-next-tool-button" 
-                                class="btn  mt-2 col-sm-12 col-md-2"
-                                :class="$userStore[`${toolLabel}CanContinue`][$userStore[`${toolLabel}Subsection`]]? 'btn-success' : 'btn-outline-primary'"
-                                @click="nextTool">
-                                {{$userStore[`${toolLabel}CanContinue`][$userStore[`${toolLabel}Subsection`]]? 'Continue' : 'Errors must be fixed'}}
-                            </button>
-                            <button  data-cy="magnetic-synthesis-main-tool-button" v-if="traversableLeft()" class="btn btn-outline-primary mt-2 offset-6 col-2" @click="basicTool"> Back to main tool</button>
-                            <button  data-cy="magnetic-synthesis-customize-tool-button" v-if="traversableRight()" class="btn btn-outline-primary mt-2 col-2" :class="traversableLeft()? '' : 'offset-8'" @click="advancedTool"> Customize tool</button>
+                            <MagneticSummary :dataTestLabel="`${dataTestLabel}-MagneticSummary`" v-if="$userStore[`${toolLabel}Subsection`] == 'magneticSummary'"/>
+                            <MagneticCoreSummary :dataTestLabel="`${dataTestLabel}-MagneticFinalizer`" v-if="$userStore[`${toolLabel}Subsection`] == 'magneticCoreSummary'"/>
+                            <MagneticSpecificationsSummary :dataTestLabel="`${dataTestLabel}-MagneticSpecificationsSummary`" v-if="$userStore[`${toolLabel}Subsection`] == 'magneticSpecificationsSummary'"/>
                         </div>
                     </div>
                 </div>

@@ -108,22 +108,30 @@ export default {
                 this.forceUpdate += 1;
             }
         })
+        this.masStore.$onAction((action) => {
+            if (action.name == "importedMas") {
+                this.assignLocalData(this.masStore.mas.magnetic.core);
+                this.forceUpdate += 1;
+            }
+        })
     },
     methods: {
         assignLocalData(core) {
             if (typeof(core.functionalDescription.shape) == 'string') {
-                this.localData["shape"] = deepCopy(core.functionalDescription.shape);
-
-                this.$mkf.ready.then(_ => {
-                    const shapeResult = this.$mkf.get_shape_data(core.functionalDescription.shape);
-                    if (shapeResult.startsWith("Exception")) {
-                        console.error(shapeResult);
-                    }
-                    else {
-                        const shape = JSON.parse(shapeResult);
-                        this.localData["shapeFamily"] = shape.family.toUpperCase();
-                    }
-                })
+                if (core.functionalDescription.shape != "") {
+                    this.localData["shape"] = deepCopy(core.functionalDescription.shape);
+                    this.$mkf.ready.then(_ => {
+                        const shapeResult = this.$mkf.get_shape_data(core.functionalDescription.shape);
+                        if (shapeResult.startsWith("Exception")) {
+                            console.error(core.functionalDescription.shape);
+                            console.error(shapeResult);
+                        }
+                        else {
+                            const shape = JSON.parse(shapeResult);
+                            this.localData["shapeFamily"] = shape.family.toUpperCase();
+                        }
+                    })
+                }
             }
             else {
                 this.localData["shape"] = deepCopy(core.functionalDescription.shape.name);
@@ -131,17 +139,19 @@ export default {
             }
 
             if (typeof(core.functionalDescription.material) == 'string') {
-                this.localData["material"] = deepCopy(core.functionalDescription.material);
-                this.$mkf.ready.then(_ => {
-                    const materialResult = this.$mkf.get_material_data(core.functionalDescription.material);
-                    if (materialResult.startsWith("Exception")) {
-                        console.error(materialResult);
-                    }
-                    else {
-                        const material = JSON.parse(materialResult);
-                        this.localData["materialManufacturer"] = material.manufacturerInfo.name;
-                    }
-                })
+                if (core.functionalDescription.material != "") {
+                    this.localData["material"] = deepCopy(core.functionalDescription.material);
+                    this.$mkf.ready.then(_ => {
+                        const materialResult = this.$mkf.get_material_data(core.functionalDescription.material);
+                        if (materialResult.startsWith("Exception")) {
+                            console.error(materialResult);
+                        }
+                        else {
+                            const material = JSON.parse(materialResult);
+                            this.localData["materialManufacturer"] = material.manufacturerInfo.name;
+                        }
+                    })
+                }
             }
             else {
                 this.localData["material"] = deepCopy(core.functionalDescription.material.name);
@@ -156,7 +166,7 @@ export default {
                 for (var i = coreShapeFamiliesHandle.size() - 1; i >= 0; i--) {
                     const shapeFamily = coreShapeFamiliesHandle.get(i)
                     if (!shapeFamily.includes("PQI") && !shapeFamily.includes("UT") &&
-                        !shapeFamily.includes("UI") && !shapeFamily.includes("H") && !shapeFamily.includes("DRUM")) {
+                        !shapeFamily.includes("UI") && !shapeFamily.includes("H") && !shapeFamily.includes("DRUM") && !shapeFamily.includes("C")) {
                         this.coreShapeFamilies.push(shapeFamily);
                     }
                 }
@@ -371,7 +381,8 @@ export default {
                 :justifyContent="true"
                 v-model="localData"
                 :options="coreShapeFamilies"
-                @update="shapeUpdated"
+                :labelStyleClass="'col-6'"
+                :selectStyleClass="'col-6'"
             />
             <ElementFromList
                 v-tooltip="tooltipsMagneticBuilder.coreShape"
@@ -385,11 +396,13 @@ export default {
                 :optionsToDisable="coreShapeFamilies"
                 :options="coreShapeNames[localData.shapeFamily]"
                 @update="shapeUpdated"
+                :labelStyleClass="'col-6'"
+                :selectStyleClass="'col-6'"
             />
 
             <ElementFromList
                 v-tooltip="tooltipsMagneticBuilder.coreMaterialManufacturer"
-                v-if="localData.shape != '' && !loading"
+                v-if="localData.shape != '' && localData.shapeFamily != null && !loading"
                 class="col-12 mb-1 text-start"
                 :dataTestLabel="dataTestLabel + '-MaterialManufacturers'"
                 :name="'materialManufacturer'"
@@ -398,7 +411,8 @@ export default {
                 :justifyContent="true"
                 v-model="localData"
                 :options="coreMaterialManufacturers"
-                @update="materialUpdated"
+                :labelStyleClass="'col-6'"
+                :selectStyleClass="'col-6'"
             />
 
             <ElementFromList
@@ -413,6 +427,8 @@ export default {
                 :optionsToDisable="coreMaterialManufacturers"
                 :options="coreMaterialNames[localData.materialManufacturer]"
                 @update="materialUpdated"
+                :labelStyleClass="'col-6'"
+                :selectStyleClass="'col-6'"
             />
             <h5 v-if="localData.shape == '' && !loading" class="text-danger my-2">Select a family and a shape for the core</h5>
 
@@ -433,12 +449,12 @@ export default {
             />
 
             <CoreGappingSelector class="col-12 mb-1 text-start"
-                v-if="localData.shape != '' && !loading && masStore.mas.magnetic.core.functionalDescription.type == 'two-piece set'"
+                v-if="localData.shape != '' && localData.shapeFamily != null && localData.shape != null && !loading && masStore.mas.magnetic.core.functionalDescription.type == 'two-piece set'"
                 :title="'Gap Info: '"
                 :dataTestLabel="dataTestLabel + '-Gap'"
                 :forceUpdate="forceUpdate"
                 :autoupdate="false"
-                :core="localData"
+                :core="masStore.mas.magnetic.core"
                 @update="gappingUpdated"
             />
 

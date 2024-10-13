@@ -7,7 +7,6 @@ import { removeTrailingZeroes, toTitleCase, toCamelCase, calculateObjectSize, de
 import { magneticAdviserWeights } from '/src/assets/js/defaults.js'
 import Advise from '/src/components/Toolbox/MagneticAdviser/Advise.vue'
 import AdviseDetails from '/src/components/Toolbox/MagneticAdviser/AdviseDetails.vue'
-import Settings from '/src/components/Toolbox/Settings.vue'
 import Module from '/src/assets/js/libAdvisers.wasm.js'
 </script>
 
@@ -135,9 +134,11 @@ export default {
                         settings["useToroidalCores"] = this.$settingsStore.adviserToroidalCores == "1";
                         magneticAdviser.set_settings(JSON.stringify(settings));
 
-                        // console.log(JSON.stringify(this.masStore.mas.inputs))
+                        console.log(JSON.stringify(this.masStore.mas.inputs))
                         // console.log(JSON.stringify(this.masStore.magneticAdviserWeights))
                         const aux = JSON.parse(magneticAdviser.calculate_advised_magnetics(JSON.stringify(this.masStore.mas.inputs), JSON.stringify(this.masStore.magneticAdviserWeights), this.masStore.magneticAdviserMaximumNumberResults, this.$settingsStore.adviserUseOnlyCoresInStock == "1" || this.$settingsStore.adviserUseOnlyCoresInStock == 1));
+
+                        console.log(aux)
 
                         var data = aux["data"];
 
@@ -224,10 +225,6 @@ export default {
                 setTimeout(() => {this.currentAdviseToShow = this.currentAdviseToShow + 1}, 100);
             }
         },
-        onSettingsUpdated(event) {
-            this.loading = true;
-            setTimeout(() => {this.calculateAdvisedMagnetics();}, 200);
-        },
         calculateAdvises(event) {
             this.loading = true;
             setTimeout(() => {this.calculateAdvisedMagnetics();}, 200);
@@ -239,9 +236,6 @@ export default {
 
 <template>
     <AdviseDetails :modelValue="masStore.mas"/>
-    <Settings
-        @onSettingsUpdated="onSettingsUpdated"
-    />
     <div class="container" >
         <div class="row">
             <div class="col-sm-12 col-md-2 text-start border border-primary m-0 px-2 py-1 ">
@@ -263,7 +257,6 @@ export default {
 
                     <input :disabled="loading" :data-cy="dataTestLabel + '-number-input'" type="number" class="m-0 mb-2 px-0 col-3 bg-light text-white" :min="2" :step="1" @change="maximumNumberResultsChangedInputValue($event.target.value)" :value="removeTrailingZeroes(masStore.magneticAdviserMaximumNumberResults)" ref="inputRef">
                 </div>
-                <button :disabled="loading" :data-cy="dataTestLabel + '-settings-modal-button'" class="btn btn-info mx-auto d-block mt-4" data-bs-toggle="modal" data-bs-target="#settingsModal">Settings</button>
                 <button :disabled="loading" :data-cy="dataTestLabel + '-calculate-mas-advises-button'" class="btn btn-success mx-auto d-block mt-4" @click="calculateAdvises" >Get advised magnetics!</button>
             </div>
             <div class="col-sm-12 col-md-10 text-start pe-0 container-fluid"  style="height: 70vh">

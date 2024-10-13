@@ -6,6 +6,12 @@ import { Modal } from "bootstrap";
 
 export default {
     emits: ["onSettingsUpdated"],
+    props: {
+        modalName: {
+            type: String,
+            default: 'SettingsModal',
+        },
+    },
     data() {
         const settingsChanged = false;
         return {
@@ -34,7 +40,7 @@ export default {
 
 
 <template>
-    <div class="modal fade" id="settingsModal" tabindex="-1" aria-labelledby="settingsModalLabel" aria-hidden="true">
+    <div class="modal fade" :id="modalName" tabindex="-1" aria-labelledby="settingsModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg modal-dialog-scrollable settings">
             <div class="modal-content bg-dark text-white">
                 <div class="modal-header">

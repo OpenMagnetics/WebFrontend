@@ -3,7 +3,7 @@ import { getOperationPointData } from '/src/assets/js/utils.js'
 import { useCurrentStore,
          useVoltageStore,
          useCommonStore } from '/src/stores/waveform'
-import * as download from 'downloadjs'
+import download from 'downloadjs'
 </script>
 
 <script>

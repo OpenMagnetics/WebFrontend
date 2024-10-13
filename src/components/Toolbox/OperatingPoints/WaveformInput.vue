@@ -114,6 +114,7 @@ export default {
                 :max="minimumMaximumScalePerParameter[signalDescriptor]['max']"
                 :defaultValue="defaultValue[signalDescriptor].processed.offset"
                 :allowNegative="true"
+                :allowZero="true"
                 :forceUpdate="forceUpdate"
                 v-model="modelValue[signalDescriptor].processed"
                 @update="offsetChanged"

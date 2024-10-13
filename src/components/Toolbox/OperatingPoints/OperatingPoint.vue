@@ -120,6 +120,9 @@ export default {
             this.masStore.magneticManualOperatingPoints[this.currentOperatingPointIndex] = true;
             this.$emit("selectedManualOrImported")
         },
+        onCircuitSimulatorTypeSelected(event) {
+            this.$refs['OperatingPoint-CircuitSimulator-upload-ref'].click()
+        },
         setImportMode(event) {
             this.masStore.magneticManualOperatingPoints[this.currentOperatingPointIndex] = false;
             this.masStore.magneticCircuitSimulatorOperatingPoints[this.currentOperatingPointIndex] = false;
@@ -155,15 +158,14 @@ export default {
                     <label class="fs-5 text-white mt-3 mb-2"> Where do you want to import your operating point from? </label>
                 </div>
                 <div class="row mt-2">
-                    <label for="OperatingPoint-MAS-upload-input" class="col-lg-3 col-md-12">
+<!--                     <label for="OperatingPoint-MAS-upload-input" class="col-lg-3 col-md-12">
                             <span :data-cy="dataTestLabel + '-MAS-upload-button'" type="button" class="btn btn-primary mt-1 rounded-3 fs-5 pt-2" style="min-height: 6em">Magnetic Agnostic Structure file (It will replace all Op. points)</span> 
                             <input type="file" id="OperatingPoint-MAS-upload-input" ref="OperatingPoint-MAS-upload-ref" @change="onMASFileTypeSelected"  style="display:none">
-                    </label>
-                    <label for="OperatingPoint-CircuitSimulator-upload-input" class="col-lg-3 col-md-12 offset-lg-1 ">
-                        <span :data-cy="dataTestLabel + '-CircuitSimulator-upload-button'" type="button" class="btn btn-primary mt-1 rounded-3 fs-5 py-4" style="min-height: 6em">Circuit simulator export file</span> 
-                        <input type="file" id="OperatingPoint-CircuitSimulator-upload-input" ref="OperatingPoint-CircuitSimulator-upload-ref" @change="onCircuitSimulatorFileTypeSelected" style="display:none">
-                    </label>
-                        <button data-cy="OperatingPointImport-source-Manual-button" type="button" @click="onManualTypeSelected" class="col-lg-3 col-md-12 offset-lg-1 btn btn-primary mt-1 rounded-3 fs-5" style="min-height: 6em">I will define it manually</button>
+                    </label> -->
+                        <input type="file" id="OperatingPoint-CircuitSimulator-upload-input" ref="OperatingPoint-CircuitSimulator-upload-ref" @change="onCircuitSimulatorFileTypeSelected" style="display:none" hidden/>
+                        <button data-cy="OperatingPointImport-source-Manual-button" type="button" @click="onCircuitSimulatorTypeSelected" class="col-lg-4 col-md-12 offset-lg-1 btn btn-primary mt-1 rounded-3 fs-5" style="min-height: 6em">Circuit simulator export file</button>
+
+                        <button data-cy="OperatingPointImport-source-Manual-button" type="button" @click="onManualTypeSelected" class="col-lg-4 col-md-12 offset-lg-1 btn btn-primary mt-1 rounded-3 fs-5" style="min-height: 6em">I will define it manually</button>
                 </div>
             </div>
         </div>

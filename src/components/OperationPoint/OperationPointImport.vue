@@ -4,7 +4,7 @@ import * as Utils from '/src/assets/js/utils.js'
 import { useCurrentStore } from '/src/stores/waveform'
 import { useVoltageStore } from '/src/stores/waveform'
 import { useCommonStore } from '/src/stores/waveform'
-import * as download from 'downloadjs'
+import download from 'downloadjs'
 </script>
 
 <script>

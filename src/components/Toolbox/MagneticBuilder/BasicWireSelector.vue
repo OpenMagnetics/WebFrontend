@@ -167,7 +167,7 @@ export default {
 
                 var wire = {};
 
-                if (this.masStore.mas.magnetic.coil.functionalDescription[this.windingIndex].wire != "") {
+                if (this.masStore.mas.magnetic.coil.functionalDescription[this.windingIndex].wire != "" && this.masStore.mas.magnetic.coil.functionalDescription[this.windingIndex].wire != "Dummy") {
                     wire = this.masStore.mas.magnetic.coil.functionalDescription[this.windingIndex].wire;
                 }
                 var coating = null;

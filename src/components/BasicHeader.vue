@@ -1,5 +1,8 @@
 <script setup >
 import { defineAsyncComponent } from "vue";
+import { useMasStore } from '/src/stores/mas'
+
+
 </script>
 
 <script>
@@ -9,9 +12,11 @@ export default {
         LoginModal: defineAsyncComponent(() => import('/src/components/User/Login.vue') ),
     },
     data() {
+        const masStore = useMasStore();
         return {
             loggedIn: false,
             username: null,
+            masStore,
         }
     },
     methods: {
@@ -51,6 +56,11 @@ export default {
             this.$userStore.logout()
             this.$userStore.setUsername(null)
         },
+        newMagneticToolDesign() {
+            this.masStore.resetMas();
+            this.$userStore.resetMagneticTool();
+            setTimeout(() => {this.$router.push('/magnetic_tool');}, 100);
+        }
     },
     computed: {
     },
@@ -82,14 +92,16 @@ export default {
             <div class="collapse navbar-collapse" id="navbarNavDropdown">
                 <ul class="navbar-nav">
                     <li class="nav-item">
-                        <router-link class="nav-link text-primary" to="/roadmap">Roadmap</router-link>
-                    </li>
-                    <li class="nav-item">
-                        <router-link class="nav-link text-primary me-3" to="/musings">Knowledge</router-link>
+                        <a data-cy="Header-alfs-musings-link" class="nav-link text-primary me-3" href="https://www.linkedin.com/newsletters/7026708624966135808/"  target="_blank">Alf's Musings</a>
                     </li>
                     <li class="nav-item">
                         <span class="nav-item">
-                            <a data-cy="Header-donate-link" href="/tool_selection" class="btn me-4 nav-link text-dark bg-primary border-dark">Design toolbox<i class="ms-2 fa-solid fa-toolbox"></i> </a>
+                            <button data-cy="Header-donate-link" class="btn me-4 nav-link text-dark bg-primary border-dark" @click="newMagneticToolDesign">Design tool<i class="ms-2 fa-solid fa-toolbox"></i> </button>
+                        </span>
+                    </li>
+                    <li class="nav-item">
+                        <span class="nav-item">
+                            <a data-cy="Header-donate-link" href="/insulation_adviser" class="btn me-4 nav-link text-dark bg-primary border-dark">Insulation Coordinator<i class="ms-2 fa-solid fa-bolt-lightning"></i> </a>
                         </span>
                     </li>
                 </ul>
@@ -109,7 +121,7 @@ export default {
                             <a class="btn me-4 nav-link text-success border-dark" href="https://github.com/OpenMagnetics/">Beta <i class="fa-brands fa-github"></i> </a>
                         </span>
                     </li>
-                    <li v-if="!loggedIn" class="nav-item">
+<!--                     <li v-if="!loggedIn" class="nav-item">
                         <span class="nav-item">
                             <button class="btn nav-link text-primary" data-bs-toggle="modal" data-bs-target="#registerModal">Register</button>
                         </span>
@@ -123,7 +135,7 @@ export default {
                         <a class="nav-link dropdown-toggle rounded-3 ps-1 text-light bg-primary ps-3 pe-3" href="#" role="button" data-bs-toggle="offcanvas" data-bs-target="#UserOffCanvas" aria-controls="UserOffCanvas">
                             {{username}}
                         </a>
-                    </li>
+                    </li> -->
                 </ul>
             </div>
 

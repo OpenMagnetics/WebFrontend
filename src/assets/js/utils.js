@@ -1468,7 +1468,7 @@ export async function checkAndFixMas(mas, mkf=null) {
 
     }
 
-    if (mkf != null && (mas.magnetic.coil.bobbin == null || mas.magnetic.coil.bobbin == "Dummy")) {
+    if (mkf != null && (mas.magnetic.coil.bobbin == null || mas.magnetic.coil.bobbin == "Dummy" || mas.magnetic.core.processedDescription == null)) {
         await mkf.ready.then(_ => {
             mas.magnetic.coil.bobbin = "Dummy";
             const result = mkf.calculate_bobbin_data(JSON.stringify(mas.magnetic));
@@ -1477,6 +1477,19 @@ export async function checkAndFixMas(mas, mkf=null) {
                 return mas;
             }
             mas.magnetic.coil.bobbin = JSON.parse(result);
+
+            const aux = deepCopy(mas.magnetic.core);
+            aux['geometricalDescription'] = null;
+            aux['processedDescription'] = null;
+            const coreJson = this.$mkf.calculate_core_data(JSON.stringify(aux), false);
+            if (coreJson.startsWith("Exception")) {
+                console.error(coreJson);
+                return mas;
+            }
+            else {
+                mas.magnetic.core = JSON.parse(coreJson);
+            }
+
             return mas;
         })
         .catch(error => {

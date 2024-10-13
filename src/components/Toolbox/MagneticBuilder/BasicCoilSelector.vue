@@ -212,6 +212,26 @@ export default {
             }
         })
 
+
+        this.masStore.$onAction((action) => {
+            if (action.name == "importedMas") {
+                this.assignLocalData(this.masStore.mas.magnetic);
+                this.getProportionsAndPattern(this.masStore.mas.magnetic.coil);
+                this.tryToWind();
+
+                this.masStore.mas.magnetic.coil.functionalDescription.forEach((datum, sectionIndex) => {
+                    if (sectionIndex >= this.localData.dataPerSection.length) {
+                        this.localData.dataPerSection.push({
+                            layersOrientation: this.localData.dataPerSection[sectionIndex - 1].layersOrientation,
+                            turnsAlignment: this.localData.dataPerSection[sectionIndex - 1].turnsAlignment,
+                            topOrLeftMargin: this.localData.dataPerSection[sectionIndex - 1].topOrLeftMargin,
+                            bottomOrRightMargin: this.localData.dataPerSection[sectionIndex - 1].bottomOrRightMargin,
+                        });
+                    }
+                })
+            }
+        })
+
     },
     methods: {
         getProportionsAndPattern(coil) {
@@ -287,8 +307,6 @@ export default {
                     })
                 }
 
-                console.warn(margins)
-
                 const pattern = [];
                 this.localData.pattern.split('').forEach((char) => {
                     pattern.push(Number(char) - 1);
@@ -305,7 +323,6 @@ export default {
                 const fits = this.$mkf.are_sections_and_layers_fitting(JSON.stringify(inputCoil));
                 this.$emit("fits", fits);
 
-                console.warn("addToHistory in wind")
                 this.historyStore.addToHistory(this.masStore.mas);
                 this.tryingToSend = false;
                 this.historyStore.unblockAdditions();
@@ -426,7 +443,6 @@ export default {
     <div class="container" v-tooltip="styleTooltip">
         <div class="row"  ref="coilSelectorContainer">
             <img :data-cy="dataTestLabel + '-BasicCoilSelector-loading'" v-if="loading" class="mx-auto d-block col-12" alt="loading" style="width: 60%; height: auto;" :src="loadingGif">
-
             <ListOfCharacters
                 v-tooltip="tooltipsMagneticBuilder.sectionsInterleaving"
                 v-if="!loading"

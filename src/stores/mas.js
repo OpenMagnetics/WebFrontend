@@ -17,6 +17,8 @@ export const useMasStore = defineStore("mas", () => {
     const magneticCircuitSimulatorAllLastReadColumnNames = ref([]);
     const magneticCircuitSimulatorConfirmedColumns = ref([]);
 
+    function importedMas() {
+    }
     function updatedTurnsRatios() {
     }
     function updatedInputExcitationWaveformUpdatedFromGraph(signalDescriptor) {
@@ -86,6 +88,7 @@ export const useMasStore = defineStore("mas", () => {
         mas,
         resetMas,
         coreAdviserWeights,
+        importedMas,
         updatedTurnsRatios,
         updatedInputExcitationWaveformUpdatedFromGraph,
         updatedInputExcitationWaveformUpdatedFromProcessed,

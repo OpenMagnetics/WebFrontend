@@ -1,6 +1,8 @@
 <script setup>
 import { useMasStore } from '/src/stores/mas'
 import { useHistoryStore } from '/src/stores/history'
+import { checkAndFixMas } from '/src/assets/js/utils.js'
+import download from 'downloadjs'
 </script>
 
 <script>
@@ -14,9 +16,13 @@ export default {
     data() {
         const masStore = useMasStore();
         const historyStore = useHistoryStore();
+        const masExported = false;
+        const loading = false;
         return {
             masStore,
             historyStore,
+            masExported,
+            loading,
         }
     },
     computed: {
@@ -44,9 +50,39 @@ export default {
         },
         load() {
             console.log("load");
+            this.loading = true;
+            // console.log(this.$refs.masFileReader);
+            this.$refs.masFileReader.click()
+            setTimeout(() => {this.loading = false;}, 2000);
         },
-        export() {
+        exportMAS() {
             console.log("export");
+            download(JSON.stringify(this.masStore.mas, null, 4), "mierda.json", "text/plain");
+            this.masExported = true
+            setTimeout(() => this.masExported = false, 2000);
+        },
+        readMASFile(event) {
+            const fr = new FileReader();
+
+            fr.onload = e => {
+                const newMas = JSON.parse(e.target.result);
+                if (newMas.magnetic != null) {
+                    checkAndFixMas(newMas, this.$mkf).then(response => {
+                        this.masStore.mas = response;
+                        this.masStore.importedMas();
+                        this.$userStore.magneticBuilderSubsection = "magneticBuilder";
+                        for (var i = 0; i < this.masStore.magneticManualOperatingPoints.length; i++) {
+                            this.masStore.magneticManualOperatingPoints[i] = true;
+                        }
+                        this.$emit('toolSelected', "magneticBuilder");
+                    })
+                    .catch(error => {
+                        console.error(error.data)
+                    });
+                }
+
+            }
+            fr.readAsText(this.$refs['masFileReader'].files.item(0));
         },
     }
 }
@@ -61,10 +97,14 @@ export default {
             <button :disabled="!historyStore.isForwardPossible()" class="btn btn-primary offset-1 col-1" @click="redo">
                 <i class="fa-solid fa-arrow-rotate-right"></i>
             </button>
-            <button class="btn btn-primary offset-1 col-3" @click="load">
+            <input data-cy="CoreImport-MAS-file-button" type="file" ref="masFileReader" @change="readMASFile()" class="btn btn-primary mt-1 rounded-3"hidden />
+            <button v-if="!loading" class="btn btn-primary offset-1 col-3" @click="load">
                 {{'Load MAS'}}
             </button>
-            <button class="btn btn-primary offset-1 col-3" @click="export">
+            <button v-else class="btn btn-primary offset-1 col-3" @click="load">
+                {{'Loading'}}
+            </button>
+            <button class="btn btn-primary offset-1 col-3" @click="exportMAS">
                 {{'Export MAS'}}
             </button>
         </div>

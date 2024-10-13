@@ -1,5 +1,5 @@
 <script setup>
-import * as download from 'downloadjs'
+import download from 'downloadjs'
 import { clean } from '/src/assets/js/utils.js'
 
 </script>

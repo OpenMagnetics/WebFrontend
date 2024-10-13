@@ -4,6 +4,7 @@ import { toDashCase, toPascalCase, toTitleCase } from '/src/assets/js/utils.js'
 
 <script>
 export default {
+    emits: ["changeTool", "nextTool"],
     props: {
         selectedTool: {
             type: String,
@@ -20,6 +21,10 @@ export default {
         forceUpdate: {
             type: Number,
             default: 0
+        },
+        showAvoidOption: {
+            type: Boolean,
+            default: false
         },
     },
     data() {
@@ -123,6 +128,13 @@ export default {
             }
             return btn_class
         },
+        nextTool(hideForever) {
+            if (hideForever) {
+                this.$userStore.showWelcome = false;
+            }
+            console.log("nextTool")
+            this.$emit("nextTool");
+        },
     }
 }
 </script>
@@ -135,6 +147,25 @@ export default {
             </button>
             <div v-if="adventure.nextTool != null" class="vr m-0 p-0"></div>
         </div>
+        <button 
+            v-if="storyline[selectedTool].nextTool != null"  
+            :disabled="!canContinue[selectedTool]" 
+            data-cy="magnetic-synthesis-next-tool-button" 
+            class="btn mt-4 col-12"
+            :class="canContinue[selectedTool]? 'btn-success' : 'btn-outline-primary'"
+            @click="nextTool(false)">
+            {{canContinue[selectedTool]? 'Continue' : 'Errors must be fixed'}}
+        </button>
+        <button 
+            v-if="$userStore.showWelcome && showAvoidOption && storyline[selectedTool].nextTool != null"  
+            :disabled="!canContinue[selectedTool]" 
+            data-cy="magnetic-synthesis-next-tool-button" 
+            class="btn mt-4 col-12"
+            :class="canContinue[selectedTool]? 'btn-success' : 'btn-outline-primary'"
+            @click="nextTool(true)">
+            {{canContinue[selectedTool]? 'Continue and don\'t show again' : 'Errors must be fixed'}}
+        </button>
+        <button  :data-cy="'settings-modal-button'" class="btn btn-info mx-auto d-block mt-4" data-bs-toggle="modal" data-bs-target="#StorylineSettingsModal">Settings</button>
     </div>
 </template>
 

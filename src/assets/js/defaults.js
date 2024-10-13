@@ -451,8 +451,8 @@ export const defaultCoreSaveConfiguration = {
     downloadOnlyPiece: false,
 }
 
-export const defaultGapType = "Ground";
-export const defaultGapLength = 1;
+export const defaultGapType = "Ungapped";
+export const defaultGapLength = 0;
 export const defaultNumberGaps = 1;
 
 
