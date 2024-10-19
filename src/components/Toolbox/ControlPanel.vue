@@ -57,7 +57,7 @@ export default {
         },
         exportMAS() {
             console.log("export");
-            download(JSON.stringify(this.masStore.mas, null, 4), "mierda.json", "text/plain");
+            download(JSON.stringify(this.masStore.mas, null, 4), "custom_magnetic.json", "text/plain");
             this.masExported = true
             setTimeout(() => this.masExported = false, 2000);
         },

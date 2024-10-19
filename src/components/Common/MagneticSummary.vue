@@ -490,7 +490,6 @@ export default {
 
                     coilLossRow.push(coilLossCell)
                 }
-            console.warn("Mierda 2")
                 outputsTable.coil.push(coilLossRow)
             }
             return outputsTable;

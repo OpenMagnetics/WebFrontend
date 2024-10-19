@@ -37,7 +37,7 @@ export default {
     data() {
         const masStore = useMasStore();
         const localData = {"frequency": this.modelValue['frequency']};
-        const errorMessages = '';
+        var errorMessages = '';
         if (!masStore.magneticCircuitSimulatorConfirmedColumns[this.currentOperatingPointIndex][this.currentWindingIndex]) {
             localData["frequency"] = 1;
             errorMessages = 'Please, introduce the frequency of your imported signal';

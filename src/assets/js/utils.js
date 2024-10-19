@@ -1481,7 +1481,7 @@ export async function checkAndFixMas(mas, mkf=null) {
             const aux = deepCopy(mas.magnetic.core);
             aux['geometricalDescription'] = null;
             aux['processedDescription'] = null;
-            const coreJson = this.$mkf.calculate_core_data(JSON.stringify(aux), false);
+            const coreJson = mkf.calculate_core_data(JSON.stringify(aux), false);
             if (coreJson.startsWith("Exception")) {
                 console.error(coreJson);
                 return mas;
@@ -1493,12 +1493,14 @@ export async function checkAndFixMas(mas, mkf=null) {
             return mas;
         })
         .catch(error => {
-            console.error(error.data)
+            console.error(error)
+            return mas;
         });
     }
     else {
         return mas;
     }
+    return mas;
 
 
 }

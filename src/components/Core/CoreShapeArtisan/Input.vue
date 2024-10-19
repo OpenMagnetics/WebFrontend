@@ -265,11 +265,9 @@ export default {
             
             this.subtypeLabels = Object.keys(this.familiesData[data['family'].toLowerCase()])
             if ('familySubtype' in data && data['familySubtype'] != null && data['familySubtype'] != "undefined") {
-                console.log("Mierda 1")
                 this.subtypeLabelSelected = data['familySubtype']
             }
             else {
-                console.log("Mierda 2")
                 this.subtypeLabelSelected = "1"
             }
 
