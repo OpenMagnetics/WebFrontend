@@ -148,7 +148,7 @@ export default {
                     </li>
                     <li class="nav-item">
                         <span class="nav-item">
-                            <button data-cy="Header-donate-link" class="btn me-4 nav-link text-dark bg-primary border-dark" @click="newMagneticToolDesign">New magnetic<i class="ms-2 fa-solid fa-toolbox"></i> </button>
+                            <button data-cy="Header-new-magnetic-link" class="btn me-4 nav-link text-dark bg-primary border-dark" @click="newMagneticToolDesign">New magnetic<i class="ms-2 fa-solid fa-toolbox"></i> </button>
                         </span>
                     </li>
                     <li v-if="$userStore.isAnyDesignLoaded() && $route.name != 'MagneticTool'" class="nav-item">

@@ -4,6 +4,37 @@ import Footer from '/src/components/Footer.vue'
 
 </script>
 
+<script>
+
+export default {
+    components: {
+    },
+    data() {
+        return {
+        }
+    },
+    methods: {
+    },
+    computed: {
+        newMagneticToolDesign() {
+            this.$userStore.resetMagneticTool();
+            if (this.$route.name != 'MagneticTool')
+                setTimeout(() => {this.$router.push('/magnetic_tool');}, 100);
+            else
+                setTimeout(() => {this.$router.go();}, 100);
+        },
+        newMagneticToolDesignNewTab() {
+            this.$userStore.resetMagneticTool();
+            const routeData = this.$router.resolve({name: 'MagneticTool'});
+            window.open(routeData.href, '_blank');
+        },
+    },
+    created() {
+    },
+    mounted() {
+    }
+}
+</script>
 <template>
     <div class="d-flex flex-column min-vh-100">
         <Header />
@@ -20,9 +51,9 @@ import Footer from '/src/components/Footer.vue'
                     </div>
                     <div class="row my-2">
                         <div class="offset-2 col-8 d-flex justify-content-evenly">
-                            <a href="https://github.com/OpenMagnetics/" target="_blank" rel="noopener noreferrer" class="btn text-dark bg-success border-dark mx-2">Give a star on Github! <i class="fa-brands fa-github"></i> </a>
-                            <a href="/tool_selection" class="btn text-dark bg-primary border-dark mx-2">Start designing!<i class="ms-2 fa-solid fa-toolbox"></i> </a>
-                            <a href="https://www.linkedin.com/company/openmagnetics" target="_blank" class="btn text-dark bg-info border-dark mx-2">Follow us on LinkedIn! <i class="fa-brands fa-linkedin"></i> </a>
+                            <a href="https://github.com/OpenMagnetics/" target="_blank" rel="noopener noreferrer" class="btn text-dark bg-success border-dark mx-2 fs-5 fw-bold">Give a star on Github! <i class="fa-brands fa-github"></i> </a>
+                            <button class="btn text-dark bg-primary border-dark mx-2 fs-5 fw-bold" @click="newMagneticToolDesign">Start designing!<i class="ms-2 fa-solid fa-toolbox"></i> </button>
+                            <a href="https://www.linkedin.com/company/openmagnetics" target="_blank" class="btn text-dark bg-info border-dark mx-2 fs-5 fw-bold">Follow us on LinkedIn! <i class="fa-brands fa-linkedin"></i> </a>
                         </div>
                     </div>
                 </div>
@@ -33,49 +64,49 @@ import Footer from '/src/components/Footer.vue'
                 </div>
                 <div class="row mt-2 offset-2 col-8 mb-5">
                     <div class="container">
+                        <div class="row">
+                            <div class="card p-0 col-lg-3 col-sm-12 mt-3">
+                                <div class="card-body">
+                                    <i class="text-white fa-solid fa-wave-square fa-2x mb-4"></i>
+                                    <h5 class="card-title text-white"><a href="/operation_point" class="text-primary bg-light btn fs-5">Import waveforms</a></h5>
+                                    <p class="card-text text-white">Introduce any waveform (even by hand!) or upload the file exported you exported from your favorite Circuit Simulator.</p>
+                                </div>
+
+                                
+                            </div>
+                            <div class="card p-0 mx-lg-3 mx-sm-0 col-lg col-sm-12 mt-3 container">
+                                <div class="card-body row">
+                                    <div class="col-6">
+                                        <i class="text-white fa-solid fa-magnet fa-2x mb-4"></i>
+                                        <h5 class="card-title text-white"><button @click="newMagneticToolDesign" @click.middle="newMagneticToolDesignNewTab" class="text-primary bg-light btn fs-5">Build your own magnetic!</button></h5>
+                                        <p class="card-text text-white">Customize any magnetic component as you like! Choose your core, wires and play with different winding distributions, and get instantaneous simulation results!</p>
+                                    </div>
+                                    <div class="col-6">
+                                        <button @click="newMagneticToolDesign" @click.middle="newMagneticToolDesignNewTab" class="text-primary bg-light btn m-0 p-0 fs-5"><img class="img-fluid" src="/images/MagneticBuilderPreview.png" alt="Magnetic Builder Preview" width="auto" height="auto"></button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                         <div class="row ">
                             <div class="card p-0 col-lg col-sm-12 mt-3">
                                 <div class="card-body">
                                     <i class="text-white fa-solid fa-wand-sparkles fa-2x mb-4"></i>
-                                    <h5 class="card-title text-white"><a href="/tool_selection" class="text-primary">Magnetic Synthesis</a></h5>
+                                    <h5 class="card-title text-white"><button  @click="newMagneticToolDesign" class="text-primary bg-light btn fs-5">Magnetic Synthesis</button></h5>
                                     <p class="card-text text-white">Input your specifications, get a full manufacturable magnetic design. That simple.</p>
                                 </div>
                             </div>
                             <div class="card p-0 mx-lg-3 mx-sm-0 col-lg col-sm-12 mt-3">
                                 <div class="card-body">
                                     <i class="text-white fa-solid fa-bolt-lightning fa-2x mb-4"></i>
-                                    <h5 class="card-title text-white"><a href="/tool_selection" class="text-primary">Calculate insulation</a></h5>
+                                    <h5 class="card-title text-white"><a href="/insulation_adviser" class="text-primary bg-light btn fs-5">Calculate insulation</a></h5>
                                     <p class="card-text text-white">Get the insulation coodination needed to comply with IEC 60664, IEC 62368, IEC 61558, and IEC 60335.</p>
                                 </div>
                             </div>
                             <div class="card p-0 col-lg col-sm-12 mt-3">
                                 <div class="card-body">
                                     <i class="text-white fa-solid fa-cart-shopping fa-2x mb-4"></i>
-                                    <h5 class="card-title text-white"><a href="/tool_selection" class="text-primary">Find COTS Core</a></h5>
+                                    <h5 class="card-title text-white"><button click="newMagneticToolDesign" class="text-primary bg-light btn fs-5">Find COTS Core</button></h5>
                                     <p class="card-text text-white">Find the in-stock COTS core perfect for your application, along with the number of turns, core losses, and the link to buy it right now!</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="card p-0 col-lg col-sm-12 mt-3">
-                                <div class="card-body">
-                                    <i class="text-white fa-solid fa-wave-square fa-2x mb-4"></i>
-                                    <h5 class="card-title text-white"><a href="/operation_point" class="text-primary">Process waveforms</a></h5>
-                                    <p class="card-text text-white">Introduce any waveform (even by hand!) and get its harmonics, effective frequency, RMS and THD.</p>
-                                </div>
-                            </div>
-                            <div class="card p-0 mx-lg-3 mx-sm-0 col-lg col-sm-12 mt-3">
-                                <div class="card-body">
-                                    <i class="text-white fa-solid fa-magnet fa-2x mb-4"></i>
-                                    <h5 class="card-title text-white"><a href="/core_shape_artisan" class="text-primary">Customize core</a></h5>
-                                    <p class="card-text text-white">Customize any magnetic core shape as you like, and get its effective parameters.</p>
-                                </div>
-                            </div>
-                            <div class="card p-0 col-lg col-sm-12 mt-3">
-                                <div class="card-body">
-                                    <i class="text-white fa-solid fa-arrows-left-right-to-line fa-2x mb-4"></i>
-                                    <h5 class="card-title text-white"><a href="/core_gapping_artisan" class="text-primary">Customize gapping</a></h5>
-                                    <p class="card-text text-white">Add gapping to your core, distributed, spacer, ground, in any column, at any position; and get its reluctance and storable energy.</p>
                                 </div>
                             </div>
                         </div>
@@ -86,10 +117,8 @@ import Footer from '/src/components/Footer.vue'
                     <div class="offset-sm-0 col-sm-12 offset-lg-2 col-lg-8 bg-light text-center  rounded-4">
                         <h3 class="text-white my-2">What you'll be able to do soon</h3>
                         <ul class="text-white text-start fs-5">
-                            <li class="">Cross reference any magnetic core and find a in-stock replacement.</li>
-                            <li class="">Cross reference any wire and find a in-stock replacement.</li>
-                            <li class="">Analyze in magnetic in your browser and find its core and winding losses, leakage inductance, capacitance, etc. with accuracy equivalent to 3D FEA.</li>
-                            <li class="">Customize your magnetic as you want: Custom core shape, custom gapping, custom wire, custom bobbin, custom coil.</li>
+                            <li class="">Create custom core shapes, core materials, and wires for your magnetics.</li>
+                            <li class="">Design not only power cores, but common mode chokes.</li>
                         </ul>
                     </div>
                 </div>
