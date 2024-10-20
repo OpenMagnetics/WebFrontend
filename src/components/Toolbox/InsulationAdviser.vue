@@ -125,7 +125,8 @@ export default {
                     :dataTestLabel="dataTestLabel + '-Clearance'"
                     :value="insulation.clearance"
                     :disableShortenLabels="true"
-                    :styleClass="'fs-5 text-primary'"
+                    :styleClass="'fs-4 text-primary'"
+                    :inputStyleClass="'col-7 text-white fs-4'"
                 />
                 <DimensionReadOnly class="col-sm-12 col-md-4 offset-md-4"
                     :name="'creepageDistance'"
@@ -133,7 +134,8 @@ export default {
                     :dataTestLabel="dataTestLabel + '-CreepageDistance'"
                     :value="insulation.creepageDistance"
                     :disableShortenLabels="true"
-                    :styleClass="'fs-5 text-primary'"
+                    :styleClass="'fs-4 text-primary'"
+                    :inputStyleClass="'col-7 text-white fs-4'"
                 />
                 <DimensionReadOnly class="col-sm-12 col-md-4 offset-md-4"
                     :name="'withstandVoltage'"
@@ -141,7 +143,8 @@ export default {
                     :dataTestLabel="dataTestLabel + '-WithstandVoltage'"
                     :value="insulation.withstandVoltage"
                     :disableShortenLabels="true"
-                    :styleClass="'fs-5 text-primary'"
+                    :styleClass="'fs-4 text-primary'"
+                    :inputStyleClass="'col-7 text-white fs-4'"
                 />
                 <DimensionReadOnly class="col-sm-12 col-md-4 offset-md-4"
                     :name="'distanceThroughInsulation'"
@@ -149,7 +152,8 @@ export default {
                     :dataTestLabel="dataTestLabel + '-DistanceThroughInsulation'"
                     :value="insulation.distanceThroughInsulation"
                     :disableShortenLabels="true"
-                    :styleClass="'fs-5 text-primary'"
+                    :styleClass="'fs-4 text-primary'"
+                    :inputStyleClass="'col-7 text-white fs-4'"
                 />
                 <label :data-cy="dataTestLabel + '-ErrorMessage'" class="text-danger m-0" style="font-size: 0.9em"> {{insulation.errorMessage}}</label>
             </div>

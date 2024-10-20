@@ -79,7 +79,7 @@ export default {
 <template>
     <div class="container">
         <div class="row">
-            <div class="offset-1 col-lg-10 text-center" v-for="textToAppear, index in textsToAppear">
+            <div class="offset-sm-0 offset-lg-1 col-lg-10 text-center" v-for="textToAppear, index in textsToAppear">
                 <Transition>
                     <h3 v-if="textToAppear.enabled" class=my-2>{{textToAppear.text}}</h3>
                 </Transition>

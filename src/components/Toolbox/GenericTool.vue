@@ -94,6 +94,16 @@ export default {
         },
         onSettingsUpdated(event) {
         },
+        isMobile() {
+            if( window.innerWidth <= 760 ) {
+                return true;
+            }
+            else {
+                return false;
+            }
+        },
+    },
+    computed: {
     },
     mounted() {
     },
@@ -115,7 +125,7 @@ export default {
         <main role="main" class="main">
             <div v-if="currentStoryline[$userStore[`${toolLabel}Subsection`]] != null" class="container mx-auto">
                 <div class="row">
-                    <div class="storyline text-white text-center col-1 bg-light border border-primary m-0 p-1">
+                    <div class="text-white text-center col-xs-12 col-sm-12 col-md-1 bg-transparent border border-primary m-0 pb-2" style="height: fit-content">
                         <h4 class="text-center">Storyline</h4>
                         <Storyline
                             :selectedTool="$userStore[`${toolLabel}Subsection`]"
@@ -127,14 +137,14 @@ export default {
                             @nextTool="nextTool"
                         />
                     </div>
-                    <div class="tool text-white bg-dark text-center offset-1 col-11 bg-light px-3 container" >
-                        <div class="mb-2 row" >
+                    <div class="text-white bg-dark text-center col-xs-12 col-sm-12 col-md-11 bg-transparent px container" >
+                        <div class="mb-2 row px-3" >
 
                             <div data-cy="magnetic-synthesis-previous-tool-button-placeholder" class=" col-sm-12 col-md-2 mt-1"></div>
-                            <h2 v-if="showTitle" data-cy="magnetic-synthesis-title-text" :class="showControlPanel? 'col-sm-12 col-md-6' : 'col-sm-12 col-md-9'" class="" >
+                            <h2 v-if="showTitle" data-cy="magnetic-synthesis-title-text" :class="showControlPanel? 'col-sm-12 col-md-4 col-lg-4' : 'col-sm-12 col-md-9'" class="" >
                                 {{toTitleCase($userStore[`${toolLabel}Subsection`])}}
                             </h2>
-                            <div v-if="showControlPanel" data-cy="magnetic-synthesis-title-control-panel" :class="showTitle? 'col-sm-12 col-md-4' : 'col-sm-12 col-md-9'">
+                            <div v-if="showControlPanel" data-cy="magnetic-synthesis-title-control-panel" :class="showTitle? 'col-sm-12 col-md-6 col-lg-6 col-xl-6' : 'col-sm-12 col-md-9'">
                                 <ControlPanel @toolSelected="toolSelected"/>
                             </div>
                         </div>
@@ -166,14 +176,5 @@ export default {
 
 <style lang="css">
 
-.tool {
-    min-height: 84vh;
-    overflow: hidden;
-}
-.storyline {
-    max-height: auto;
-    position: fixed;
-    overflow: hidden;
-}
 
 </style>

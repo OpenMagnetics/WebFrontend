@@ -32,24 +32,38 @@ export default {
 </script>
 
 <template>
-    <GenericTool
-        :toolLabel="'insulationAdviser'"
-        :currentStoryline="currentStoryline"
-        :dataTestLabel="'InsulationAdviser'"
-    />
+    <div class="container-fluid wrap p-0">
+        <GenericTool
+            class="container content"
+            :toolLabel="'insulationAdviser'"
+            :currentStoryline="currentStoryline"
+            :dataTestLabel="'InsulationAdviser'"
+        />
+    </div>
 </template>
 
 
 <style lang="css">
-
-.tool {
-    min-height: 84vh;
-    overflow: hidden;
+.wrap {
+  position: relative;
 }
-.storyline {
-    max-height: auto;
-    position: fixed;
-    overflow: hidden;
+
+.wrap:before {
+      content: ' ';
+      display: block;
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      opacity: 1;
+      background-image: linear-gradient(to bottom, rgba(26, 26, 26, 0.9), rgba(26, 26, 26, 1)), url('/images/background_insulation.jpg');
+      background-repeat: no-repeat;
+      background-position: 50% 0;
+      background-size: cover;
+}
+
+.content {
+    background-color: transparent;
+    position: relative;
 }
 
 </style>

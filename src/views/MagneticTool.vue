@@ -224,17 +224,3 @@ export default {
     />
 </template>
 
-
-<style lang="css">
-
-.tool {
-    min-height: 84vh;
-    overflow: hidden;
-}
-.storyline {
-    max-height: auto;
-    position: fixed;
-    overflow: hidden;
-}
-
-</style>

@@ -50,7 +50,7 @@ export default {
                 <div class="modal-body container">
                     <div class="row">
                         <h5 class="offset-0 col-6 text-end">Graph style</h5>
-                        <div class="col-4">
+                        <div class="col-sm-6 col-md-6 col-lg-4">
                             <label v-tooltip="'Choose between spider or bar charts'" class="fs-6 p-0 ps-3 pe-3 text-end text-white col-4 ">Bar</label>
                             <input :data-cy="'Settings-Modal-bar-spider-button'" v-model="$settingsStore.adviserSpiderBarChartNotBar" @change="onSettingChanged" type="range" class="form-range col-1 pt-2" min="0" max="1" step="1" style="width: 30px">
                             <label v-tooltip="'Choose between spider or bar charts'" class="fs-6 p-0 ps-3 text-white col-6 text-start">Spider</label>
@@ -58,7 +58,7 @@ export default {
                     </div>
                     <div class="row">
                         <h5 class="offset-0 col-6 text-end">Use only cores in stock</h5>
-                        <div class="col-4">
+                        <div class="col-sm-6 col-md-6 col-lg-4">
                             <label v-tooltip="'Choose between using all available cores or only those in stock'" class="fs-6 p-0 ps-3 pe-3 text-end text-white col-4 ">All</label>
                             <input :data-cy="'Settings-Modal-with-without-stock-button'" v-model="$settingsStore.adviserUseOnlyCoresInStock" @change="onSettingChanged" type="range" class="form-range col-1 pt-2" min="0" max="1" step="1" style="width: 30px">
                             <label v-tooltip="'Choose between using all available cores or only those in stock'" class="fs-6 p-0 ps-3 text-white col-6  text-start">Only in stock</label>
@@ -66,7 +66,7 @@ export default {
                     </div>
                     <div class="row">
                         <h5 class="offset-0 col-6 text-end">Allow cores with distributed gaps</h5>
-                        <div class="col-4">
+                        <div class="col-sm-6 col-md-6 col-lg-4">
                             <label v-tooltip="'Allow the usage of cores with distributed gaps'" class="fs-6 p-0 ps-3 pe-3 text-end text-white col-4 ">Avoid</label>
                             <input :data-cy="'Settings-Modal-with-without-stock-button'" v-model="$settingsStore.adviserAllowDistributedGaps" @change="onSettingChanged" type="range" class="form-range col-1 pt-2" min="0" max="1" step="1" style="width: 30px">
                             <label v-tooltip="'Choose between using all available cores or only those in stock'" class="fs-6 p-0 ps-3 text-white col-6  text-start">Allow</label>
@@ -74,7 +74,7 @@ export default {
                     </div>
                     <div class="row">
                         <h5 class="offset-0 col-6 text-end">Allow core stacking</h5>
-                        <div class="col-4">
+                        <div class="col-sm-6 col-md-6 col-lg-4">
                             <label v-tooltip="'Allow magnetics with more than one core stacked'" class="fs-6 p-0 ps-3 pe-3 text-end text-white col-4 ">Avoid</label>
                             <input :data-cy="'Settings-Modal-with-without-stock-button'" v-model="$settingsStore.adviserAllowStacks" @change="onSettingChanged" type="range" class="form-range col-1 pt-2" min="0" max="1" step="1" style="width: 30px">
                             <label v-tooltip="'Choose between using all available cores or only those in stock'" class="fs-6 p-0 ps-3 text-white col-6  text-start">Allow</label>
@@ -82,7 +82,7 @@ export default {
                     </div>
                     <div class="row">
                         <h5 class="offset-0 col-6 text-end">Allow toroidal cores</h5>
-                        <div class="col-4">
+                        <div class="col-sm-6 col-md-6 col-lg-4">
                             <label v-tooltip="'Allow toroidal cores'" class="fs-6 p-0 ps-3 pe-3 text-end text-white col-4 ">Avoid</label>
                             <input :data-cy="'Settings-Modal-with-without-stock-button'" v-model="$settingsStore.adviserToroidalCores" @change="onSettingChanged" type="range" class="form-range col-1 pt-2" min="0" max="1" step="1" style="width: 30px">
                             <label v-tooltip="'Select whether toroidal cores will be considered for the designs'" class="fs-6 p-0 ps-3 text-white col-6  text-start">Allow</label>

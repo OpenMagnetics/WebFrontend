@@ -1,6 +1,6 @@
 <script setup>
 import { useMasStore } from '/src/stores/mas'
-import { removeTrailingZeroes, deepCopy } from '/src/assets/js/utils.js'
+import { removeTrailingZeroes, deepCopy, isMobile } from '/src/assets/js/utils.js'
 import DimensionReadOnly from '/src/components/DataInput/DimensionReadOnly.vue'
 import WindingSelector from '/src/components/Toolbox/MagneticBuilder/WindingSelector.vue'
 import { tooltipsMagneticBuilder } from '/src/assets/js/texts.js'
@@ -219,7 +219,8 @@ export default {
             <DimensionReadOnly 
                 v-tooltip="tooltipsMagneticBuilder.totalLosses"
                 v-if="outputsData.totalLosses != null"
-                class="col-xl-6 col-lg-12 text-start border-start"
+                :class="isMobile()? '' : 'border-start'"
+                class="col-xl-6 col-lg-12 text-start"
                 :name="'P'"
                 :subscriptName="'total'"
                 :unit="'W'"
@@ -251,7 +252,8 @@ export default {
             <DimensionReadOnly 
                 v-tooltip="tooltipsMagneticBuilder.acLosses"
                 v-if="outputsData.acLosses != null"
-                class="col-xl-6 col-lg-12 text-start border-start"
+                :class="isMobile()? '' : 'border-start'"
+                class="col-xl-6 col-lg-12 text-start"
                 :name="'P'"
                 :subscriptName="'AC'"
                 :unit="'W'"
@@ -290,7 +292,8 @@ export default {
             <DimensionReadOnly 
                 v-tooltip="tooltipsMagneticBuilder.skinLossesPerWinding"
                 v-if="outputsData.skinLossesPerWinding != null"
-                class="col-xl-6 col-lg-12 text-start border-start"
+                :class="isMobile()? '' : 'border-start'"
+                class="col-xl-6 col-lg-12 text-start"
                 :name="'P'"
                 :subscriptName="'skin'"
                 :unit="'W'"
@@ -323,7 +326,8 @@ export default {
             <DimensionReadOnly 
                 v-tooltip="tooltipsMagneticBuilder.windingLossesPerWinding"
                 v-if="outputsData.windingLossesPerWinding != null"
-                class="col-xl-6 col-lg-12 text-start border-start"
+                :class="isMobile()? '' : 'border-start'"
+                class="col-xl-6 col-lg-12 text-start"
                 :name="'P'"
                 :subscriptName="'winding'"
                 :unit="'W'"
@@ -356,7 +360,8 @@ export default {
             <DimensionReadOnly 
                 v-tooltip="tooltipsMagneticBuilder.effectiveResistancePerWinding"
                 v-if="outputsData.effectiveResistancePerWinding != null"
-                class="col-xl-6 col-lg-12 text-start border-start"
+                :class="isMobile()? '' : 'border-start'"
+                class="col-xl-6 col-lg-12 text-start"
                 :name="'R'"
                 :subscriptName="'eff'"
                 :unit="'H'"

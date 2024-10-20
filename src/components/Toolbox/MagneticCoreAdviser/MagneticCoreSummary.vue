@@ -148,7 +148,7 @@ export default {
             <div v-if="masStore.mas.magnetic.manufacturerInfo != null" class="col-sm-12 col-md-10 text-start pe-0 row">
                 <h3 class="col-12 p-0 m-0 ps-3">{{masStore.mas.magnetic.manufacturerInfo.reference}}</h3>
                 <div class="col-12 fs-5 p-0 m-0 mt-2 text-start ps-3">{{localTexts.coreDescription}}</div>
-                <div class="offset-1 col-md-4 col-sm-12 my-4 pb-4">
+                <div class="offset-sm-0 offset-md-1 col-md-4 col-sm-11 my-4 pb-4">
                     <div class="row pb-4">
                         <div class="col-12 fs-5 p-0 m-0 my-1 text-center">Core Effective Parameters</div>
                         <div v-if="'effectiveParametersTable' in localTexts" class="col-6 p-0 m-0 border ps-2">{{localTexts.effectiveParametersTable.effectiveLength.text}}</div>
@@ -161,7 +161,7 @@ export default {
                         <div v-if="'effectiveParametersTable' in localTexts" class="col-6 p-0 m-0 border text-end pe-1">{{localTexts.effectiveParametersTable.minimumArea.value}}</div>
                     </div>
                 </div>
-                <div class="offset-1 col-md-4 col-sm-12 mt-4">
+                <div class="offset-sm-0 offset-md-1 col-md-4 col-sm-11 mt-4">
                     <div class="row">
                         <div class="col-12 fs-5 p-0 m-0 my-1 text-center">Material Parameters</div>
                         <div class="col-6 p-0 m-0 border text-center ps-2"></div>
@@ -189,7 +189,7 @@ export default {
                     </div>
                 </div>
                 <div class="col-12 fs-5 p-0 m-0 mt-4 text-start ps-3">{{localTexts.numberTurns}}</div>
-                <div class="offset-1 col-md-4 col-sm-12 row mt-3" v-for="operationPoint, operationPointIndex in masStore.mas.inputs.operatingPoints">
+                <div class="offset-sm-0 offset-md-1 col-md-4 col-sm-11 row mt-3" v-for="operationPoint, operationPointIndex in masStore.mas.inputs.operatingPoints">
                     <div class="col-12 fs-5 p-0 m-0 my-1">{{operationPoint.name}}</div>
                     <div v-if="'magnetizingInductanceTable' in localTexts" class="col-6 p-0 m-0 border ps-2">{{localTexts.magnetizingInductanceTable[operationPointIndex].text}}</div>
                     <div v-if="'magnetizingInductanceTable' in localTexts" class="col-4 p-0 m-0 border text-end pe-1">{{localTexts.magnetizingInductanceTable[operationPointIndex].value}}</div>

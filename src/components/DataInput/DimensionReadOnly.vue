@@ -60,6 +60,10 @@ export default {
             type: String,
             default: 'col-5'
         },
+        dimensionUnitStyleClass:{
+            type: String,
+            default: 'bg-dark border-0 my-0 py-0 fs-4'
+        },
         dimensionStyleClass:{
             type: String,
             default: 'col-7'
@@ -156,8 +160,8 @@ export default {
             <label :data-cy="dataTestLabel + '-title'" class="rounded-2 pe-0" :class="styleClass + ' ' + labelStyleClass">{{shortenedName}}<sub>{{subscriptName}}</sub> </label>
             <div v-if="localData.scaledValue != null" :class="dimensionStyleClass" class="container m-0 px-0">
                 <div class="row m-0 px-0 ">
-                    <input :disabled="true" :data-cy="dataTestLabel + '-number-label'" type="number" class="m-0 px-0 bg-light text-end bg-dark border-0" :class="inputStyleClass" :value="visuallyScaledValue" ref="inputRef">
-                    <DimensionUnit :styleClass="'bg-dark border-0 my-0 py-0'" :readOnly="true" :data-cy="dataTestLabel + '-DimensionUnit-input'" :min="min" :max="max" v-if="unit != null" :unit="unit" v-model="localData.multiplier" class="m-0 px-0 col-2"/>
+                    <input :disabled="true" :data-cy="dataTestLabel + '-number-label'" type="number" class="m-0 px-0 bg-transparent text-end border-0" :class="inputStyleClass" :value="visuallyScaledValue" ref="inputRef">
+                    <DimensionUnit :styleClass="dimensionUnitStyleClass" :readOnly="true" :data-cy="dataTestLabel + '-DimensionUnit-input'" :min="min" :max="max" v-if="unit != null" :unit="unit" v-model="localData.multiplier" class="m-0 px-0 col-2"/>
                     <label :data-cy="dataTestLabel + '-DimensionUnit-text'" v-if="unit == null" class="ms-2 pt-1 px-0 col-2" >{{altUnit}}</label>
                 </div>
             </div>

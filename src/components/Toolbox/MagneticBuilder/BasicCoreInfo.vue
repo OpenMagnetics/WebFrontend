@@ -1,6 +1,6 @@
 <script setup>
 import { useMasStore } from '/src/stores/mas'
-import { removeTrailingZeroes, deepCopy } from '/src/assets/js/utils.js'
+import { removeTrailingZeroes, deepCopy, isMobile } from '/src/assets/js/utils.js'
 import DimensionReadOnly from '/src/components/DataInput/DimensionReadOnly.vue'
 import { tooltipsMagneticBuilder } from '/src/assets/js/texts.js'
 </script>
@@ -187,7 +187,8 @@ export default {
             />
             <DimensionReadOnly 
                 v-tooltip="tooltipsMagneticBuilder.effectiveArea"
-                class="col-xl-6 col-lg-12 text-start border-start"
+                :class="isMobile()? '' : 'border-start'"
+                class="col-xl-6 col-lg-12 text-start"
                 :name="'A'"
                 :subscriptName="'eff'"
                 :unit="'m²'"
@@ -217,7 +218,8 @@ export default {
             />
             <DimensionReadOnly 
                 v-tooltip="tooltipsMagneticBuilder.minimumArea"
-                class="col-xl-6 col-lg-12 text-start border-start"
+                :class="isMobile()? '' : 'border-start'"
+                class="col-xl-6 col-lg-12 text-start"
                 :name="'A'"
                 :subscriptName="'min'"
                 :unit="'m²'"
@@ -248,7 +250,8 @@ export default {
             />
             <DimensionReadOnly 
                 v-tooltip="tooltipsMagneticBuilder.effectivePermeability"
-                class="col-xl-6 col-lg-12 text-start border-start"
+                :class="isMobile()? '' : 'border-start'"
+                class="col-xl-6 col-lg-12 text-start"
                 :name="'μ'"
                 :subscriptName="'eff'"
                 :unit="null"
@@ -280,7 +283,8 @@ export default {
             />
             <DimensionReadOnly 
                 v-tooltip="tooltipsMagneticBuilder.saturatingMagneticFluxDensity"
-                class="col-xl-6 col-lg-12 text-start border-start"
+                :class="isMobile()? '' : 'border-start'"
+                class="col-xl-6 col-lg-12 text-start"
                 :name="'B'"
                 :subscriptName="'sat'"
                 :unit="'T'"
@@ -312,7 +316,8 @@ export default {
             />
             <DimensionReadOnly 
                 v-tooltip="tooltipsMagneticBuilder.magneticFluxDensityAcPeak"
-                class="col-xl-6 col-lg-12 text-start border-start"
+                :class="isMobile()? '' : 'border-start'"
+                class="col-xl-6 col-lg-12 text-start"
                 :name="'B'"
                 :subscriptName="'ACpeak'"
                 :unit="'T'"
@@ -343,7 +348,8 @@ export default {
             />
             <DimensionReadOnly 
                 v-tooltip="tooltipsMagneticBuilder.coreLosses"
-                class="col-xl-6 col-lg-12 text-start border-start"
+                :class="isMobile()? '' : 'border-start'"
+                class="col-xl-6 col-lg-12 text-start"
                 :name="'P'"
                 :subscriptName="'core'"
                 :unit="'W'"

@@ -4,6 +4,7 @@ import { useHistoryStore } from '/src/stores/history'
 import BasicCoreBuilder from '/src/components/Toolbox/MagneticBuilder/BasicCoreBuilder.vue'
 import BasicWireBuilder from '/src/components/Toolbox/MagneticBuilder/BasicWireBuilder.vue'
 import BasicCoilBuilder from '/src/components/Toolbox/MagneticBuilder/BasicCoilBuilder.vue'
+import { isMobile } from '/src/assets/js/utils.js'
 </script>
 
 <script>
@@ -79,7 +80,7 @@ export default {
                 return false;
             }
             return true;
-        }
+        },
     }
 }
 </script>
@@ -87,13 +88,13 @@ export default {
 <template>
     <div class="container">
         <div class="row">
-            <div class="col-4">
+            <div :class="isMobile()? 'col-12' : 'col-4'">
                 <BasicCoreBuilder />
             </div>
-            <div class="col-4">
+            <div :class="isMobile()? 'col-12' : 'col-4'">
                 <BasicWireBuilder />
             </div>
-            <div class="col-4">
+            <div :class="isMobile()? 'col-12' : 'col-4'">
                 <BasicCoilBuilder />
             </div>
         </div>

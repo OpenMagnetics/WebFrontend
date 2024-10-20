@@ -1649,3 +1649,12 @@ export function download(data, strFileName, strMimeType) {
     }
     return true;
 };
+
+export function isMobile() {
+    if( screen.width <= 760 ) {
+        return true;
+    }
+    else {
+        return false;
+    }
+}

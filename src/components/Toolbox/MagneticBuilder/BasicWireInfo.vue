@@ -1,6 +1,6 @@
 <script setup>
 import { useMasStore } from '/src/stores/mas'
-import { removeTrailingZeroes, deepCopy, checkAndFixMas } from '/src/assets/js/utils.js'
+import { removeTrailingZeroes, deepCopy, checkAndFixMas, isMobile } from '/src/assets/js/utils.js'
 import DimensionReadOnly from '/src/components/DataInput/DimensionReadOnly.vue'
 import { wireMaterialDefault } from '/src/assets/js/defaults.js'
 import { tooltipsMagneticBuilder } from '/src/assets/js/texts.js'
@@ -196,7 +196,8 @@ export default {
 
             <DimensionReadOnly 
                 v-tooltip="tooltipsMagneticBuilder.skinResistancePerMeter"
-                class="col-xl-6 col-lg-12 text-start border-start"
+                :class="isMobile()? '' : 'border-start'"
+                class="col-xl-6 col-lg-12 text-start"
                 :name="'R'"
                 :subscriptName="'sk.AC'"
                 :unit="'Ω/m'"
@@ -226,7 +227,8 @@ export default {
 
             <DimensionReadOnly 
                 v-tooltip="tooltipsMagneticBuilder.skinLossesPermeter"
-                class="col-xl-6 col-lg-12 text-start border-start"
+                :class="isMobile()? '' : 'border-start'"
+                class="col-xl-6 col-lg-12 text-start"
                 :name="'P'"
                 :subscriptName="'sk.AC'"
                 :unit="'W/m'"
@@ -256,7 +258,8 @@ export default {
 
             <DimensionReadOnly 
                 v-tooltip="tooltipsMagneticBuilder.effectiveSkinDepth"
-                class="col-xl-6 col-lg-12 text-start border-start"
+                :class="isMobile()? '' : 'border-start'"
+                class="col-xl-6 col-lg-12 text-start"
                 :name="'δ'"
                 :subscriptName="'eff'"
                 :unit="'m'"
@@ -286,7 +289,8 @@ export default {
 
             <DimensionReadOnly 
                 v-tooltip="tooltipsMagneticBuilder.skinFactor"
-                class="col-xl-6 col-lg-12 text-start border-start"
+                :class="isMobile()? '' : 'border-start'"
+                class="col-xl-6 col-lg-12 text-start"
                 :name="'F'"
                 :subscriptName="'skin'"
                 :unit="null"
@@ -316,7 +320,8 @@ export default {
 
             <DimensionReadOnly 
                 v-tooltip="tooltipsMagneticBuilder.turnsRatio"
-                class="col-xl-6 col-lg-12 text-start border-start"
+                :class="isMobile()? '' : 'border-start'"
+                class="col-xl-6 col-lg-12 text-start"
                 v-if="windingIndex > 0"
                 :name="'T'"
                 :subscriptName="'ratio'"

@@ -73,7 +73,7 @@ export default {
             // console.log(shortenedLabels);
 
             return shortenedLabels
-        }
+        },
     },
     watch: { 
         forceUpdate: function(newVal, oldVal) { // watch it
@@ -118,14 +118,21 @@ export default {
             }
 
             if (children.includes(this.selectedTool)) {
-                btn_class += "bg-primary text-dark"
+                btn_class += "bg-primary text-dark "
             }
             else if (this.enabledAdventures[index]) {
-                btn_class += "bg-secondary text-white"
+                btn_class += "bg-secondary text-white "
             }
             else {
-                btn_class += "bg-dark text-primary"
+                btn_class += "bg-dark text-primary "
             }
+            if (this.storyline[index].nextTool != null) {
+                btn_class += "col-9 col-sm-9 col-md-12"
+            }
+            else {
+                btn_class += "col-12"
+            }
+
             return btn_class
         },
         nextTool(hideForever) {
@@ -135,37 +142,53 @@ export default {
             console.log("nextTool")
             this.$emit("nextTool");
         },
+        getInnerWidth() {
+            return window.innerWidth;
+        },
     }
 }
 </script>
 
 <template>
-    <div class="py-2 p-0 m-0" role="group" aria-label="Storyline button group ">
-        <div v-for="adventure, index in basicStoryline" class=""> 
-            <button :data-cy="'storyline-' + toPascalCase(adventure.title) + '-button'" class="border border-primary btn-outline-primary col-12 m-0 px-1 py-2" :class="btn_class(index)" :disabled="!enabledAdventures[index]" @click="$emit('changeTool', index)"> 
-                {{shortenedLabels[index]}}
-            </button>
-            <div v-if="adventure.nextTool != null" class="vr m-0 p-0"></div>
+    <div class="py-2 p-0 container">
+        <div class="row px-1">
+            <div v-for="adventure, index in basicStoryline" class="col-3 col-sm-3 col-md-12 px-0"> 
+                <button :data-cy="'storyline-' + toPascalCase(adventure.title) + '-button'" class="border border-primary btn-outline-primary  px-0 py-2" :class="btn_class(index)" :disabled="!enabledAdventures[index]" @click="$emit('changeTool', index)"> 
+                    {{shortenedLabels[index]}}
+                </button>
+                <i v-if="adventure.nextTool != null && getInnerWidth() > 768" class="fa-solid fa-up-down text-primary col-3 col-sm-3 col-md-12"></i>
+                <i v-if="adventure.nextTool != null && getInnerWidth() < 768" class="fa-solid fa-left-right text-primary col-3 col-sm-3 col-md-12"></i>
+            </div>
         </div>
-        <button 
-            v-if="storyline[selectedTool].nextTool != null"  
-            :disabled="!canContinue[selectedTool]" 
-            data-cy="magnetic-synthesis-next-tool-button" 
-            class="btn mt-4 col-12"
-            :class="canContinue[selectedTool]? 'btn-success' : 'btn-outline-primary'"
-            @click="nextTool(false)">
-            {{canContinue[selectedTool]? 'Continue' : 'Errors must be fixed'}}
-        </button>
-        <button 
-            v-if="$userStore.showWelcome && showAvoidOption && storyline[selectedTool].nextTool != null"  
-            :disabled="!canContinue[selectedTool]" 
-            data-cy="magnetic-synthesis-next-tool-button" 
-            class="btn mt-4 col-12"
-            :class="canContinue[selectedTool]? 'btn-success' : 'btn-outline-primary'"
-            @click="nextTool(true)">
-            {{canContinue[selectedTool]? 'Continue and don\'t show again' : 'Errors must be fixed'}}
-        </button>
-        <button  :data-cy="'settings-modal-button'" class="btn btn-info mx-auto d-block mt-4" data-bs-toggle="modal" data-bs-target="#StorylineSettingsModal">Settings</button>
+
+
+
+        <div class="row px-3">
+            <button 
+                v-if="storyline[selectedTool].nextTool != null"  
+                :disabled="!canContinue[selectedTool]" 
+                data-cy="magnetic-synthesis-next-tool-button" 
+                class="btn mt-4 col-6 col-sm-6 col-md-12"
+                :class="canContinue[selectedTool]? 'btn-success' : 'btn-outline-primary'"
+                @click="nextTool(false)">
+                {{canContinue[selectedTool]? 'Continue' : 'Errors must be fixed'}}
+            </button>
+            <button 
+                v-if="$userStore.showWelcome && showAvoidOption && storyline[selectedTool].nextTool != null"  
+                :disabled="!canContinue[selectedTool]" 
+                data-cy="magnetic-synthesis-next-tool-button" 
+                class="btn mt-4 col-6 col-sm-6 col-md-12"
+                :class="canContinue[selectedTool]? 'btn-success' : 'btn-outline-primary'"
+                @click="nextTool(true)">
+                {{canContinue[selectedTool]? 'Continue and don\'t show again' : 'Errors must be fixed'}}
+            </button>
+            <button
+                :data-cy="'settings-modal-button'"
+                class="btn btn-info mx-auto d-block mt-4 col-6 col-sm-6 col-md-12"
+                data-bs-toggle="modal"
+                data-bs-target="#StorylineSettingsModal"
+            >Settings</button>
+        </div>
     </div>
 </template>
 

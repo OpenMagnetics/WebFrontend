@@ -43,17 +43,17 @@ export default {
                 <div class="container content">
                     <div id="home-welcome" class="row pt-2 mx-1 mt-5">
                         <div class="text-white my-1 mt-5 pt-4 pb-2 offset-sm-2 offset-lg-3 col-sm-8 col-lg-6 text-center rounded-4">
-                            <h1 data-cy="Home-title-text" class=" fw-bolder fs-1">The free open-source platform for magnetics design and simulation.</h1>
+                            <h1 data-cy="Home-title-text" class="fs-1" style="font-family: Impact;">THE FREE OPEN-SOURCE PLATFORM FOR MAGNETICS DESIGN AND SIMULATION</h1>
                         </div>
                         <div class="text-white offset-sm-2 offset-lg-3 col-sm-8 col-lg-6 text-center rounded-4">
                             <h5 data-cy="Home-title-text" class="text-white fw-light">We believe that the access to knowledge and tools are a right, not a privilege, so we offer the best tools in the market for free, so the whole of humanity can benefit.</h5>
                         </div>
                     </div>
                     <div class="row my-2">
-                        <div class="offset-2 col-8 d-flex justify-content-evenly">
-                            <a href="https://github.com/OpenMagnetics/" target="_blank" rel="noopener noreferrer" class="btn text-dark bg-success border-dark mx-2 fs-5 fw-bold">Give a star on Github! <i class="fa-brands fa-github"></i> </a>
-                            <button class="btn text-dark bg-primary border-dark mx-2 fs-5 fw-bold" @click="newMagneticToolDesign">Start designing!<i class="ms-2 fa-solid fa-toolbox"></i> </button>
-                            <a href="https://www.linkedin.com/company/openmagnetics" target="_blank" class="btn text-dark bg-info border-dark mx-2 fs-5 fw-bold">Follow us on LinkedIn! <i class="fa-brands fa-linkedin"></i> </a>
+                        <div class="offset-lg-2 col-8 d-flex justify-content-evenly">
+                            <a href="https://github.com/OpenMagnetics/" target="_blank" rel="noopener noreferrer" class="btn text-dark bg-success border-dark mx-2 fs-5 ">Give us a star on Github! <i class="fa-brands fa-github"></i> </a>
+                            <button class="btn text-dark bg-primary border-dark mx-2 fs-5 " @click="newMagneticToolDesign">Start designing!<i class="ms-2 fa-solid fa-toolbox"></i> </button>
+                            <a href="https://www.linkedin.com/company/openmagnetics" target="_blank" class="btn text-dark bg-info border-dark mx-2 fs-5 ">Follow us on LinkedIn! <i class="fa-brands fa-linkedin"></i> </a>
                         </div>
                     </div>
                 </div>
@@ -76,12 +76,12 @@ export default {
                             </div>
                             <div class="card p-0 mx-lg-3 mx-sm-0 col-lg col-sm-12 mt-3 container">
                                 <div class="card-body row">
-                                    <div class="col-6">
+                                    <div class="col-sm-12 col-lg-6">
                                         <i class="text-white fa-solid fa-magnet fa-2x mb-4"></i>
                                         <h5 class="card-title text-white"><button @click="newMagneticToolDesign" @click.middle="newMagneticToolDesignNewTab" class="text-primary bg-light btn fs-5">Build your own magnetic!</button></h5>
                                         <p class="card-text text-white">Customize any magnetic component as you like! Choose your core, wires and play with different winding distributions, and get instantaneous simulation results!</p>
                                     </div>
-                                    <div class="col-6">
+                                    <div class="col-sm-12 col-lg-6">
                                         <button @click="newMagneticToolDesign" @click.middle="newMagneticToolDesignNewTab" class="text-primary bg-light btn m-0 p-0 fs-5"><img class="img-fluid" src="/images/MagneticBuilderPreview.png" alt="Magnetic Builder Preview" width="auto" height="auto"></button>
                                     </div>
                                 </div>
