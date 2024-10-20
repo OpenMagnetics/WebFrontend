@@ -62,7 +62,7 @@ export default {
         },
         dimensionUnitStyleClass:{
             type: String,
-            default: 'bg-dark border-0 my-0 py-0 fs-4'
+            default: 'bg-dark border-0 my-0 py-0'
         },
         dimensionStyleClass:{
             type: String,

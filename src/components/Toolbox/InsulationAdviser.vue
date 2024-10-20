@@ -127,6 +127,7 @@ export default {
                     :disableShortenLabels="true"
                     :styleClass="'fs-4 text-primary'"
                     :inputStyleClass="'col-7 text-white fs-4'"
+                    :dimensionUnitStyleClass="'bg-dark border-0 my-0 py-0 fs-4'"
                 />
                 <DimensionReadOnly class="col-sm-12 col-md-4 offset-md-4"
                     :name="'creepageDistance'"
@@ -136,6 +137,7 @@ export default {
                     :disableShortenLabels="true"
                     :styleClass="'fs-4 text-primary'"
                     :inputStyleClass="'col-7 text-white fs-4'"
+                    :dimensionUnitStyleClass="'bg-dark border-0 my-0 py-0 fs-4'"
                 />
                 <DimensionReadOnly class="col-sm-12 col-md-4 offset-md-4"
                     :name="'withstandVoltage'"
@@ -145,6 +147,7 @@ export default {
                     :disableShortenLabels="true"
                     :styleClass="'fs-4 text-primary'"
                     :inputStyleClass="'col-7 text-white fs-4'"
+                    :dimensionUnitStyleClass="'bg-dark border-0 my-0 py-0 fs-4'"
                 />
                 <DimensionReadOnly class="col-sm-12 col-md-4 offset-md-4"
                     :name="'distanceThroughInsulation'"
@@ -154,6 +157,7 @@ export default {
                     :disableShortenLabels="true"
                     :styleClass="'fs-4 text-primary'"
                     :inputStyleClass="'col-7 text-white fs-4'"
+                    :dimensionUnitStyleClass="'bg-dark border-0 my-0 py-0 fs-4'"
                 />
                 <label :data-cy="dataTestLabel + '-ErrorMessage'" class="text-danger m-0" style="font-size: 0.9em"> {{insulation.errorMessage}}</label>
             </div>
