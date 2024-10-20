@@ -39,10 +39,27 @@ export default {
         this.historyStore.$onAction((action) => {
             if (action.name == "addToHistory") {
                 this.$emit("canContinue", this.isMagneticBuilt());
+                if (this.isMagneticBuilt()) {
+                    this.insertIntermediateMas();
+                }
             }
         })
     },
     methods: {
+        insertIntermediateMas() {
+            const url = import.meta.env.VITE_API_ENDPOINT + '/insert_intermediate_mas'
+
+            console.log("Inserting Mas")
+            this.$axios.post(url, this.masStore.mas)
+            .then(response => {
+                console.log("response.data")
+                console.log(response.data)
+            })
+            .catch(error => {
+                console.error("Error inserting")
+                console.error(error)
+            });
+        },
         isMagneticBuilt() {
             if (this.masStore.mas.magnetic.core.functionalDescription.material == null) {
                 return false;
