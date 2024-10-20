@@ -34,6 +34,17 @@ export default {
         }
     },
     computed: {
+        styleTooltip() {
+            var relative_placement;
+            relative_placement = 'right'
+            return {
+                theme: {
+                    placement: relative_placement,
+                    width: '150px',
+                    "text-align": "end",
+                },
+            }
+        },
         basicStoryline() {
             const basicStoryline = {}
 
@@ -150,10 +161,15 @@ export default {
 </script>
 
 <template>
-    <div class="py-2 p-0 container">
+    <div class="py-2 p-0 container" v-tooltip="styleTooltip">
         <div class="row px-1">
             <div v-for="adventure, index in basicStoryline" class="col-3 col-sm-3 col-md-12 px-0"> 
-                <button :data-cy="'storyline-' + toPascalCase(adventure.title) + '-button'" class="border border-primary btn-outline-primary  px-0 py-2" :class="btn_class(index)" :disabled="!enabledAdventures[index]" @click="$emit('changeTool', index)"> 
+                <button
+                    v-tooltip="toPascalCase(adventure.title)"
+                    :data-cy="'storyline-' + toPascalCase(adventure.title) + '-button'"
+                    class="border border-primary btn-outline-primary  px-0 py-2"
+                    :class="btn_class(index)" :disabled="!enabledAdventures[index]"
+                    @click="$emit('changeTool', index)"> 
                     {{shortenedLabels[index]}}
                 </button>
                 <i v-if="adventure.nextTool != null && getInnerWidth() > 768" class="fa-solid fa-up-down text-primary col-3 col-sm-3 col-md-12"></i>
