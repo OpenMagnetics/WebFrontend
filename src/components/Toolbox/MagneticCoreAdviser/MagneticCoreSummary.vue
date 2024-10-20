@@ -1,6 +1,6 @@
 <script setup>
 import { useMasStore } from '/src/stores/mas'
-import download from 'downloadjs'
+import * as downloadjs from 'downloadjs'
 import { toTitleCase, removeTrailingZeroes, processCoreTexts, deepCopy, downloadBase64asPDF, clean } from '/src/assets/js/utils.js'
 
 </script>
@@ -58,7 +58,7 @@ export default {
 
             masOnlyCore = clean(masOnlyCore);
 
-            download(JSON.stringify(masOnlyCore, null, 4), this.masStore.mas.magnetic.manufacturerInfo.reference + ".json", "text/plain");
+            downloadjs.default(JSON.stringify(masOnlyCore, null, 4), this.masStore.mas.magnetic.manufacturerInfo.reference + ".json", "text/plain");
             this.masExported = true
             setTimeout(() => this.masExported = false, 2000);
         },
@@ -77,7 +77,7 @@ export default {
             delete masOnlyCore.outputs.windingWindowMagneticStrengthField;
             masOnlyCore = clean(masOnlyCore);
 
-            download(JSON.stringify(masOnlyCore, null, 4), this.masStore.mas.magnetic.manufacturerInfo.reference + ".json", "text/plain");
+            downloadjs.default(JSON.stringify(masOnlyCore, null, 4), this.masStore.mas.magnetic.manufacturerInfo.reference + ".json", "text/plain");
             this.masExported = true
             setTimeout(() => this.masExported = false, 2000);
         },

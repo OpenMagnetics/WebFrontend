@@ -10,13 +10,6 @@ export const useDataCacheStore = defineStore("dataCache", () => {
     });
 
 
-    const timestamp = ref(null)
-    const standards = ref({})
-    var masData = ref({coreMaterials: [], coreShapes: [], wireMaterials: []})
-
-    function dataLoaded() {
-    }
-
     function isWireDataValid() {
         if (this.wireDataTimestamp == null)
             return false;
@@ -31,23 +24,12 @@ export const useDataCacheStore = defineStore("dataCache", () => {
         this.wireDataTimestamp = Date.now();
     }
 
-    function reset() {
-        this.timestamp = null
-        this.standards = {}
-    }
 
     return {
         isWireDataValid,
         setWireDataTimestamp,
         wireData,
         wireDataTimestamp,
-
-        masData,
-        reset,
-        timestamp,
-        ttlInMilliseconds,
-        dataLoaded,
-        standards,
     }
 },
 {

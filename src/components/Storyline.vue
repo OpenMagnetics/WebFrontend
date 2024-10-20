@@ -142,7 +142,7 @@ export default {
 <template>
     <div class="py-2 p-0 m-0" role="group" aria-label="Storyline button group ">
         <div v-for="adventure, index in basicStoryline" class=""> 
-            <button :data-cy="'storyline-' + toPascalCase(adventure.title) + '-button'" v-resize-text="{ratio:1, minFontSize: '14px', maxFontSize: '100px', delay: 20}" class="border border-primary btn-outline-primary col-12 m-0 px-1 py-2" :class="btn_class(index)" :disabled="!enabledAdventures[index]" @click="$emit('changeTool', index)"> 
+            <button :data-cy="'storyline-' + toPascalCase(adventure.title) + '-button'" class="border border-primary btn-outline-primary col-12 m-0 px-1 py-2" :class="btn_class(index)" :disabled="!enabledAdventures[index]" @click="$emit('changeTool', index)"> 
                 {{shortenedLabels[index]}}
             </button>
             <div v-if="adventure.nextTool != null" class="vr m-0 p-0"></div>

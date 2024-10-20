@@ -10,9 +10,6 @@ export default {
     components: {
         BugReporterModal: defineAsyncComponent(() => import('/src/components/User/BugReporter.vue') ),
         DeadManSwitch: defineAsyncComponent(() => import('/src/components/User/DeadManSwitch.vue') ),
-        LoginModal: defineAsyncComponent(() => import('/src/components/User/Login.vue') ),
-        CoreLoadCommercialShape: defineAsyncComponent(() => import('/src/components/Core/CoreLoadCommercialShape.vue') ),
-        CoreLoadCommercialMaterial: defineAsyncComponent(() => import('/src/components/Core/CoreLoadCommercialMaterial.vue') ),
         NotificationsModal: defineAsyncComponent(() => import('/src/components/NotificationsModal.vue') ),
     },
     data() {
@@ -135,8 +132,6 @@ export default {
 
 <template>
     <NotificationsModal/>
-    <CoreLoadCommercialMaterial v-if="$dataCacheStore != null" @onLoadCommercialMaterial="onLoadCommercialMaterial"/>
-    <CoreLoadCommercialShape v-if="$dataCacheStore != null" @onLoadCommercialShape="onLoadCommercialShape"/>
     <nav class="navbar navbar-expand-lg bg-dark navbar-dark text-primary mb-1 om-header" id="header_wrapper">
         <div class="container-fluid">
             <a data-cy="Header-logo-home-link" href="/" aria-label="Visit OpenMagnetics and Tear Down the Paywalls!">
@@ -224,12 +219,6 @@ export default {
     <!-- Modal -->
     <BugReporterModal/>
     <DeadManSwitch/>
-    <div class="modal fade" id="registerModal" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
-        <LoginModal :isLogin="false" @onLoggedIn="onLoggedIn"/>
-    </div>
-    <div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
-        <LoginModal :isLogin="true" @onLoggedIn="onLoggedIn"/>
-    </div>
 </template>
 
 <style>

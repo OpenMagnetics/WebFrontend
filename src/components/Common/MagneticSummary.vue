@@ -1,6 +1,6 @@
 <script setup>
 import { useMasStore } from '/src/stores/mas'
-import download from 'downloadjs'
+import * as downloadjs from 'downloadjs'
 import { toTitleCase, removeTrailingZeroes, formatUnit, formatDimension, formatTemperature, formatInductance,
          formatPower, formatResistance, deepCopy, downloadBase64asPDF, clean } from '/src/assets/js/utils.js'
 import Magnetic2DVisualizer from '/src/components/Common/Magnetic2DVisualizer.vue'
@@ -78,7 +78,7 @@ export default {
 
             mas = clean(mas);
 
-            download(JSON.stringify(mas, null, 4), this.masStore.mas.magnetic.manufacturerInfo.reference + ".json", "text/plain");
+            downloadjs.default(JSON.stringify(mas, null, 4), this.masStore.mas.magnetic.manufacturerInfo.reference + ".json", "text/plain");
             this.masExported = true
             setTimeout(() => this.masExported = false, 2000);
         },
@@ -101,15 +101,13 @@ export default {
                 aux['processedDescription'] = null;
                 var core = JSON.parse(this.$mkf.calculate_core_data(JSON.stringify(aux), false));
 
-                console.log(core);
-
                 this.$axios.post(url, core)
                 .then(response => {
                     if (format == "STP") {
-                        download(response.data, this.masStore.mas.magnetic.core.name + ".stp", "text/plain");
+                        downloadjs.default(response.data, this.masStore.mas.magnetic.core.name + ".stp", "text/plain");
                     }
                     else if (format == "OBJ") {
-                        download(response.data, this.masStore.mas.magnetic.core.name + ".obj", "text/plain");
+                        downloadjs.default(response.data, this.masStore.mas.magnetic.core.name + ".obj", "text/plain");
                     }
                     this.Core3DExported = true;
                     setTimeout(() => this.Core3DExported = false, 2000);
@@ -128,7 +126,7 @@ export default {
 
             mas = clean(mas);
 
-            download(JSON.stringify(mas, null, 4), this.masStore.mas.magnetic.manufacturerInfo.reference + ".json", "text/plain");
+            downloadjs.default(JSON.stringify(mas, null, 4), this.masStore.mas.magnetic.manufacturerInfo.reference + ".json", "text/plain");
             this.masExported = true
             setTimeout(() => this.masExported = false, 2000);
         },
@@ -137,7 +135,7 @@ export default {
 
             this.$axios.post(url, {magnetic: this.masStore.mas.magnetic, operatingPoint: this.masStore.mas.inputs.operatingPoints[0]})
             .then(response => {
-                download(response.data, this.masStore.mas.magnetic.manufacturerInfo.reference + "_Magnetic_Section.svg", "image/svg+xml");
+                downloadjs.default(response.data, this.masStore.mas.magnetic.manufacturerInfo.reference + "_Magnetic_Section.svg", "image/svg+xml");
                 this.MagneticSectionPlotExported = true
                 setTimeout(() => this.MagneticSectionPlotExported = false, 2000);
             })
@@ -151,7 +149,7 @@ export default {
 
             this.$axios.post(url, {magnetic: this.masStore.mas.magnetic, operatingPoint: this.masStore.mas.inputs.operatingPoints[0], includeFringing: this.includeFringing})
             .then(response => {
-                download(response.data, this.masStore.mas.magnetic.manufacturerInfo.reference + "_Magnetic_Section_And_H_Field.svg", "image/svg+xml");
+                downloadjs.default(response.data, this.masStore.mas.magnetic.manufacturerInfo.reference + "_Magnetic_Section_And_H_Field.svg", "image/svg+xml");
                 this.MagneticSectionAndFieldPlotExported = true
                 setTimeout(() => this.MagneticSectionAndFieldPlotExported = false, 2000);
             })
@@ -562,7 +560,7 @@ export default {
                 <button :disabled="MagneticSectionAndFieldPlotExported" :data-cy="dataTestLabel + '-download-MagneticSectionAndFieldPlot-File-button'" class="btn btn-primary col-12 mt-4" @click="exportMagneticSectionAndFieldPlot">Download Magnetic Section with H field</button>
             </div>
             <div class="col-10 row">
-                <h3 v-if="'manufacturerInfo' in masStore.mas.magnetic" class="col-12 p-0 m-0 fs-4">{{masStore.mas.magnetic.manufacturerInfo.reference}}</h3>
+                <!-- <h3 v-if="'manufacturerInfo' in masStore.mas.magnetic" class="col-12 p-0 m-0 fs-4">{{masStore.mas.magnetic.manufacturerInfo.reference}}</h3> -->
                 <div v-if="masStore.mas.magnetic.manufacturerInfo != null" class="col-sm-12 col-md-6 text-start pe-0 row">
                     <div class="col-12 fs-4 p-0 m-0 mt-2 text-center fw-bold">Core data</div>
                     <div>

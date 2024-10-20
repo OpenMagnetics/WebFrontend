@@ -1,6 +1,6 @@
 <script setup>
 import Module from '/src/assets/js/libCrossReferencers.wasm.js'
-import download from 'downloadjs'
+import * as downloadjs from 'downloadjs'
 import { toTitleCase, removeTrailingZeroes, processCoreTexts, deepCopy, downloadBase64asPDF, clean } from '/src/assets/js/utils.js'
 import Core3DVisualizer from '/src/components/Common/Core3DVisualizer.vue'
 import CoreSTPExporter from '/src/components/Exporters/CoreSTPExporter.vue'
@@ -84,7 +84,7 @@ export default {
 
             masOnlyCore = clean(masOnlyCore);
 
-            download(JSON.stringify(masOnlyCore, null, 4), this.mas.magnetic.manufacturerInfo.reference + ".json", "text/plain");
+            downloadjs.default(JSON.stringify(masOnlyCore, null, 4), this.mas.magnetic.manufacturerInfo.reference + ".json", "text/plain");
             this.masExported = true
             setTimeout(() => this.masExported = false, 2000);
         },
@@ -103,7 +103,7 @@ export default {
             delete masOnlyCore.outputs.windingWindowMagneticStrengthField;
             masOnlyCore = clean(masOnlyCore);
 
-            download(JSON.stringify(masOnlyCore, null, 4), this.mas.magnetic.manufacturerInfo.reference + ".json", "text/plain");
+            downloadjs.default(JSON.stringify(masOnlyCore, null, 4), this.mas.magnetic.manufacturerInfo.reference + ".json", "text/plain");
             this.masExported = true
             setTimeout(() => this.masExported = false, 2000);
         },

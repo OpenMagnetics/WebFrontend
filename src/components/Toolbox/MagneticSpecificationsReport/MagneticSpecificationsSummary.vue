@@ -1,7 +1,7 @@
 <script setup>
 import { useMasStore } from '/src/stores/mas'
 import { formatUnit, removeTrailingZeroes, deepCopy, downloadBase64asPDF } from '/src/assets/js/utils.js'
-import download from 'downloadjs'
+import * as downloadjs from 'downloadjs'
 
 </script>
 
@@ -600,7 +600,7 @@ export default {
             });
             delete masOnlyInputs.outputs;
 
-            download(JSON.stringify(masOnlyInputs, null, 4), masOnlyInputs.inputs.designRequirements.name + ".json", "text/plain");
+            downloadjs.default(JSON.stringify(masOnlyInputs, null, 4), masOnlyInputs.inputs.designRequirements.name + ".json", "text/plain");
             this.masExported = true
             setTimeout(() => this.masExported = false, 2000);
         },

@@ -1,5 +1,5 @@
 <script setup>
-import download from 'downloadjs'
+import * as downloadjs from 'downloadjs'
 import { clean } from '/src/assets/js/utils.js'
 
 </script>
@@ -57,7 +57,7 @@ export default {
 
             this.$axios.post(url, data)
             .then(response => {
-                download(response.data, coreName + ".stp", "text/plain");
+                downloadjs.default(response.data, coreName + ".stp", "text/plain");
                 this.$emit("export", coreName + ".stp")
                 this.exported = true
                 setTimeout(() => this.exported = false, 2000);

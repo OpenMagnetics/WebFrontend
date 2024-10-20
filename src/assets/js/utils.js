@@ -1,5 +1,3 @@
-import * as Everpolate from 'everpolate'
-import * as FFT from 'fft.js'
 import * as Defaults from '/src/assets/js/defaults.js'
 import axios from "axios"
 
@@ -41,25 +39,6 @@ export function calculateObjectSize(obj) {
     }
     // Return the total size
     return totalSize;
-}
-
-export function findCoreMaterial(dataCacheStore, materialName) {
-    var foundMaterial;
-    dataCacheStore.masData.coreMaterials.forEach((material) => {
-        if (material.name == materialName) {
-            foundMaterial = material;
-        }
-    })
-    return foundMaterial;
-}
-export function findCoreShape(dataCacheStore, shapeName) {
-    var foundShape;
-    dataCacheStore.masData.coreShapes.forEach((shape) => {
-        if (shape.name == shapeName) {
-            foundShape = shape;
-        }
-    })
-    return foundShape;
 }
 
 export function removeEmpty(obj) {
@@ -382,7 +361,6 @@ export function sampleWaveform(data, switchingFrequency, samplingNumberPoints) {
         return {sampledTime, sampledWaveform}
 }
 
-
 export function fourierTransform(data, switchingFrequency, samplingNumberPoints) {
         const {sampledTime, sampledWaveform} = sampleWaveform(data, switchingFrequency, samplingNumberPoints)
 
@@ -557,6 +535,7 @@ export function tryGuessType(dataPoints, frequency) {
     }
     return "Custom"
 }
+
 export function tryGuessTypeOld(dataPoints, frequency) {
     if (dataPoints.length == 3) {
         if (roundWithDecimals(1 / (dataPoints[2].x - dataPoints[0].x), 0.001) == frequency)

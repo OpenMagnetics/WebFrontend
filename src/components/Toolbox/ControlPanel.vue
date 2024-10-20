@@ -2,10 +2,12 @@
 import { useMasStore } from '/src/stores/mas'
 import { useHistoryStore } from '/src/stores/history'
 import { checkAndFixMas } from '/src/assets/js/utils.js'
-import download from 'downloadjs'
+import * as downloadjs from 'downloadjs'
 </script>
 
+
 <script>
+
 export default {
     props: {
         dataTestLabel: {
@@ -57,7 +59,7 @@ export default {
         },
         exportMAS() {
             console.log("export");
-            download(JSON.stringify(this.masStore.mas, null, 4), "custom_magnetic.json", "text/plain");
+            downloadjs.default(JSON.stringify(this.masStore.mas, null, 4), "custom_magnetic.json", "text/plain");
             this.masExported = true
             setTimeout(() => this.masExported = false, 2000);
         },
@@ -74,6 +76,8 @@ export default {
                         for (var i = 0; i < this.masStore.magneticManualOperatingPoints.length; i++) {
                             this.masStore.magneticManualOperatingPoints[i] = true;
                         }
+                        this.historyStore.addToHistory(this.masStore.mas);
+                        this.historyStore.blockAdditions();
                         this.$emit('toolSelected', "magneticBuilder");
                     })
                     .catch(error => {

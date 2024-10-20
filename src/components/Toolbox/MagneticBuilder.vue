@@ -27,6 +27,12 @@ export default {
     watch: { 
     },
     mounted () {
+        if (this.masStore.mas.magnetic.manufacturerInfo == null) {
+            this.masStore.mas.magnetic.manufacturerInfo = {};
+            this.masStore.mas.magnetic.manufacturerInfo.name = "OpenMagnetics";
+            this.masStore.mas.magnetic.manufacturerInfo.reference = "My custom magnetic";
+        }
+
         this.historyStore.addToHistory(this.masStore.mas);
         this.historyStore.blockAdditions();
         this.historyStore.$onAction((action) => {

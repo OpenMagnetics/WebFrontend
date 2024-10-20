@@ -366,7 +366,6 @@ export default {
             return this.localData["foilConductingWidth"] != null
         },
         wireTypeUpdated() {
-            console.log("Mierda 0")
             this.getWireCoatings();
 
             const newType = this.localData.type;
@@ -374,10 +373,8 @@ export default {
                 this.masStore.mas.magnetic.coil.functionalDescription[this.windingIndex].wire.type != null) {
                 const oldType = this.masStore.mas.magnetic.coil.functionalDescription[this.windingIndex].wire.type;
                 const effectiveFrequency = this.masStore.mas.inputs.operatingPoints[0].excitationsPerWinding[0].current.processed.effectiveFrequency;
-                console.log("Mierda 1")
 
                 this.$mkf.ready.then(_ => {
-                    console.log("Mierda 0")
 
                     if ((newType == "litz" && !this.isAnyLitzLoaded()) ||
                         (newType == "round" && !this.isAnyRoundLoaded()) ||

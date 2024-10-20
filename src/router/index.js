@@ -17,11 +17,6 @@ const routes = [
         component: () => import('../views/LegalNotice.vue')
     },
     {
-        path: '/user',
-        name: 'User',
-        component: () => import('../views/User.vue')
-    },
-    {
         path: '/magnetic_tool',
         name: 'MagneticTool',
         component: () => import('../views/MagneticTool.vue')

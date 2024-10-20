@@ -1,6 +1,6 @@
 <script setup>
 import { useMasStore } from '/src/stores/mas'
-import download from 'downloadjs'
+import * as downloadjs from 'downloadjs'
 import { toTitleCase, removeTrailingZeroes, formatUnit, formatDimension, formatTemperature, formatInductance,
          formatPower, formatResistance, deepCopy, downloadBase64asPDF, clean } from '/src/assets/js/utils.js'
 import Magnetic2DVisualizer from '/src/components/Common/Magnetic2DVisualizer.vue'
@@ -78,7 +78,7 @@ export default {
 
             mas = clean(mas);
 
-            download(JSON.stringify(mas, null, 4), this.masStore.mas.magnetic.manufacturerInfo.reference + ".json", "text/plain");
+            downloadjs.default(JSON.stringify(mas, null, 4), this.masStore.mas.magnetic.manufacturerInfo.reference + ".json", "text/plain");
             this.masExported = true
             setTimeout(() => this.masExported = false, 2000);
         },
@@ -106,10 +106,10 @@ export default {
                 this.$axios.post(url, core)
                 .then(response => {
                     if (format == "STP") {
-                        download(response.data, this.masStore.mas.magnetic.core.name + ".stp", "text/plain");
+                        downloadjs.default(response.data, this.masStore.mas.magnetic.core.name + ".stp", "text/plain");
                     }
                     else if (format == "OBJ") {
-                        download(response.data, this.masStore.mas.magnetic.core.name + ".obj", "text/plain");
+                        downloadjs.default(response.data, this.masStore.mas.magnetic.core.name + ".obj", "text/plain");
                     }
                     this.Core3DExported = true;
                     setTimeout(() => this.Core3DExported = false, 2000);
@@ -128,7 +128,7 @@ export default {
 
             mas = clean(mas);
 
-            download(JSON.stringify(mas, null, 4), this.masStore.mas.magnetic.manufacturerInfo.reference + ".json", "text/plain");
+            downloadjs.default(JSON.stringify(mas, null, 4), this.masStore.mas.magnetic.manufacturerInfo.reference + ".json", "text/plain");
             this.masExported = true
             setTimeout(() => this.masExported = false, 2000);
         },
@@ -137,7 +137,7 @@ export default {
 
             this.$axios.post(url, {magnetic: this.masStore.mas.magnetic, operatingPoint: this.masStore.mas.inputs.operatingPoints[0]})
             .then(response => {
-                download(response.data, this.masStore.mas.magnetic.manufacturerInfo.reference + "_Magnetic_Section.svg", "image/svg+xml");
+                downloadjs.default(response.data, this.masStore.mas.magnetic.manufacturerInfo.reference + "_Magnetic_Section.svg", "image/svg+xml");
                 this.MagneticSectionPlotExported = true
                 setTimeout(() => this.MagneticSectionPlotExported = false, 2000);
             })
@@ -151,7 +151,7 @@ export default {
 
             this.$axios.post(url, {magnetic: this.masStore.mas.magnetic, operatingPoint: this.masStore.mas.inputs.operatingPoints[0], includeFringing: this.includeFringing})
             .then(response => {
-                download(response.data, this.masStore.mas.magnetic.manufacturerInfo.reference + "_Magnetic_Section_And_H_Field.svg", "image/svg+xml");
+                downloadjs.default(response.data, this.masStore.mas.magnetic.manufacturerInfo.reference + "_Magnetic_Section_And_H_Field.svg", "image/svg+xml");
                 this.MagneticSectionAndFieldPlotExported = true
                 setTimeout(() => this.MagneticSectionAndFieldPlotExported = false, 2000);
             })
