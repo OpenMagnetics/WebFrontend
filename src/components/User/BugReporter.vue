@@ -1,14 +1,17 @@
 <script setup>
+import { useMasStore } from '/src/stores/mas'
 </script>
 
 <script>
 
 export default {
     data() {
+        const masStore = useMasStore();
         return {
             isReported: false,
             userInformation: "",
             posting: false,
+            masStore,
         }
     },
     methods: {
@@ -16,9 +19,9 @@ export default {
             this.posting = true
 
             const data = {
-                "userDataDump": this.$userStore.dump,  
+                "userDataDump": this.masStore.mas,  
                 "userInformation": this.userInformation,
-                "username": this.$userStore.username,
+                "username": "Anonymous",
             }
             console.log(data)
             const url = import.meta.env.VITE_API_ENDPOINT + '/report_bug'
@@ -48,7 +51,7 @@ export default {
                     <button data-cy="BugReporter-corner-close-modal-button" type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="reportBugModalClose"></button>
                 </div>
                 <div class="modal-body row mt-1 px-4">
-                    <label class="fs-5 mb-1" for="bugReportUserInformation">Let us know what happened</label>
+                    <label class="fs-5 mb-1" for="bugReportUserInformation">Let us know what happened and any contact info (in case you want to be contacted)</label>
                     <textarea data-cy="BugReporter-user-information-input" class="bg-light rounded-2 my-2 text-white" placeholder="Leave a comment here" id="bugReportUserInformation" style="height: 100px" v-model="userInformation"></textarea>
                     <button data-cy="BugReporter-report-bug-button" :disabled="isReported || posting" class="btn text-dark bg-primary mt-2 offset-1 col-5" @click="onReportBug" >{{posting? "Reporting" : isReported? "Bug reported, thanks!" : "Report bug"}}</button>
                     <button data-cy="BugReporter-close-modal-button" :disabled="posting" class="btn btn-dark text-primary border-primary mx-auto d-block mt-2 offset-1 col-5" data-bs-dismiss="modal" >Close</button>
