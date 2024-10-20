@@ -1,8 +1,7 @@
 <script setup>
 import { useMasStore } from '/src/stores/mas'
 import { useHistoryStore } from '/src/stores/history'
-import { checkAndFixMas } from '/src/assets/js/utils.js'
-import * as downloadjs from 'downloadjs'
+import { checkAndFixMas, download } from '/src/assets/js/utils.js'
 </script>
 
 
@@ -59,7 +58,7 @@ export default {
         },
         exportMAS() {
             console.log("export");
-            downloadjs.default(JSON.stringify(this.masStore.mas, null, 4), "custom_magnetic.json", "text/plain");
+            download(JSON.stringify(this.masStore.mas, null, 4), "custom_magnetic.json", "text/plain");
             this.masExported = true
             setTimeout(() => this.masExported = false, 2000);
         },

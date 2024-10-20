@@ -1,6 +1,5 @@
 <script setup>
-import * as downloadjs from 'downloadjs'
-import { clean } from '/src/assets/js/utils.js'
+import { clean, download } from '/src/assets/js/utils.js'
 
 </script>
 <script>
@@ -50,7 +49,7 @@ export default {
 
             this.$axios.post(url, data)
             .then(response => {
-                downloadjs.default(response.data.front_view, coreName + ".svg", "text/plain");
+                download(response.data.front_view, coreName + ".svg", "text/plain");
                 this.$emit("export", coreName + ".svg")
                 this.exported = true
                 setTimeout(() => this.exported = false, 2000);
