@@ -177,7 +177,7 @@ export default {
                         {{masStore.mas.inputs.designRequirements[requirementName]==null? 'Add Req.' : 'Remove'}}
                     </button>
                     <button :data-cy="dataTestLabel + '-' + toPascalCase(requirementName) + '-required-button'" v-if="compulsoryRequirements.includes(requirementName)" class="btn btn-light float-end disabled col-4">
-                        Required
+                        {{(requirementName == 'turnsRatios' && masStore.mas.inputs.designRequirements.turnsRatios.length == 0) ? 'Not Req.' : "Required"}}
                     </button>
                 </div>
             </div>
@@ -213,7 +213,7 @@ export default {
                 />
 
                 <ArrayDimensionWithTolerance class="border-bottom py-2"
-                    v-if="masStore.mas.inputs.designRequirements.turnsRatios != null"
+                    v-if="masStore.mas.inputs.designRequirements.turnsRatios != null && masStore.mas.inputs.designRequirements.turnsRatios.length > 0"
                     :name="'turnsRatios'"
                     :dataTestLabel="dataTestLabel + '-TurnsRatios'"
                     :defaultField="'nominal'"
