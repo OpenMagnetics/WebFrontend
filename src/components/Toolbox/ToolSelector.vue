@@ -36,6 +36,10 @@ export default {
             <div class="container">
                 <div class="row">
                     <div class="text-white my-2 p-2 text-start col-12 rounded-4 row">
+                        <h5 :data-cy="dataTestLabel + '-magnetic-specifications-explanation'" class="col-6 col-md-9 py-3">I need a full magnetic design, but I know what I want and I want to build it myself and get the simulated behavior.</h5>
+                        <button :data-cy="dataTestLabel + '-magnetic-builder-button'" class="fs-5 col-6 col-md-3 py-4 btn btn-danger" @click="$emit('toolSelected', 'magneticBuilder')">I want build my own magnetic <i class="fa-solid fa-rocket"></i> </button>
+                    </div>
+                    <div class="text-white my-2 p-2 text-start col-12 rounded-4 row">
                         <h5 :data-cy="dataTestLabel + '-magnetic-specifications-explanation'" class="col-6 col-md-9 py-3">I want to get a PDF report with my specifications, so I can send it to manufacturers and get a quotation.</h5>
                         <button :data-cy="dataTestLabel + '-magnetic-specifications-button'" class="col-6 col-md-3 fs-5 py-4 btn btn-primary px-xs-0 px-sm-0 px-md-2" @click="$emit('toolSelected', 'magneticSpecificationsReport')">I want to download a report</button>
                     </div>
@@ -46,10 +50,6 @@ export default {
                     <div class="text-white my-2 p-2 text-start col-12 rounded-4 row">
                         <h5 :data-cy="dataTestLabel + '-magnetic-specifications-explanation'" class="col-6 col-md-9 py-3">I am looking for a full magnetic design, but I am not sure what I need, so I would like to look at several options.</h5>
                         <button :data-cy="dataTestLabel + '-magnetic-adviser-button'" class="fs-5 col-6 col-md-3 py-4 btn btn-primary" @click="$emit('toolSelected', 'magneticAdviser')">Advise me some magnetic designs</button>
-                    </div>
-                    <div class="text-white my-2 p-2 text-start col-12 rounded-4 row">
-                        <h5 :data-cy="dataTestLabel + '-magnetic-specifications-explanation'" class="col-6 col-md-9 py-3">I need a full magnetic design, but I know what I want and I want to build it myself and get the simulated behavior.</h5>
-                        <button :data-cy="dataTestLabel + '-magnetic-builder-button'" class="fs-5 col-6 col-md-3 py-4 btn btn-primary" @click="$emit('toolSelected', 'magneticBuilder')">I want build my own magnetic</button>
                     </div>
                 </div>
             </div>
