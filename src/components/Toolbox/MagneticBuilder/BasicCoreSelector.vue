@@ -81,19 +81,6 @@ export default {
                     "text-align": "start",
                 },
             }
-        },
-        isStackable() {
-            var shapeName = this.masStore.mas.magnetic.core.functionalDescription.shape;
-            if (! (typeof shapeName === 'string' || shapeName instanceof String)) {
-                shapeName = shapeName.name;
-            }
-
-            if (shapeName.startsWith("E ") || shapeName.startsWith("U ") || shapeName.startsWith("T ")) {
-                return true;
-            }
-            else {
-                return false;
-            }
         }
     },
     watch: { 
@@ -116,6 +103,22 @@ export default {
         })
     },
     methods: {
+        isStackable(shape) {
+            var shapeName = shape;
+            if (shape == null) {
+                shapeName = this.masStore.mas.magnetic.core.functionalDescription.shape;
+            }
+            if (! (typeof shapeName === 'string' || shapeName instanceof String)) {
+                shapeName = shapeName.name;
+            }
+
+            if (shapeName.startsWith("E ") || shapeName.startsWith("U ") || shapeName.startsWith("T ")) {
+                return true;
+            }
+            else {
+                return false;
+            }
+        },
         assignLocalData(core) {
             if (typeof(core.functionalDescription.shape) == 'string') {
                 if (core.functionalDescription.shape != "") {
@@ -243,6 +246,10 @@ export default {
                     const shape = JSON.parse(shapeResult);
                     mas.magnetic.core.functionalDescription.shape = shape;
 
+                    if (!this.isStackable(shape)) {
+                        mas.magnetic.core.functionalDescription.numberStacks = 1;
+                    }
+
                     checkAndFixMas(mas).then(response => {
                         mas = response;
                         console.log(mas)
@@ -273,9 +280,6 @@ export default {
                     });
                 }
             });
-            if (!this.isStackable) {
-                this.masStore.mas.magnetic.core.functionalDescription.numberStacks = 1;
-            }
         },
         materialUpdated(value) {
             const aux = this.masStore.mas.magnetic.core;
@@ -435,7 +439,7 @@ export default {
 
             <Dimension class="col-12 mb-1 text-start"
                 v-tooltip="tooltipsMagneticBuilder.coreNumberStacks"
-                v-if="isStackable && localData.shape != '' && !loading"
+                v-if="isStackable() && localData.shape != '' && !loading"
                 :name="'numberStacks'"
                 :replaceTitle="'Number of Stacks'"
                 :unit="null"
