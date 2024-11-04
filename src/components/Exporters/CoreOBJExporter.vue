@@ -73,6 +73,6 @@ export default {
 
 <template>
     <div class="container">
-        <button :disabled="exported" :data-cy="dataTestLabel + '-download-OBJ-File-button'" class="btn" :class="classProp" @click="onClick"> Download OBJ model </button>
+        <button :disabled="exported" :data-cy="dataTestLabel + '-download-button'" class="btn" :class="classProp" @click="onClick"> Download OBJ model </button>
     </div>
 </template>

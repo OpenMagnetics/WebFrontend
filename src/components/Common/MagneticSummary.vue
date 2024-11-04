@@ -3,6 +3,10 @@ import { useMasStore } from '/src/stores/mas'
 import { toTitleCase, removeTrailingZeroes, formatUnit, formatDimension, formatTemperature, formatInductance,
          formatPower, formatResistance, deepCopy, downloadBase64asPDF, clean, download, isMobile } from '/src/assets/js/utils.js'
 import Magnetic2DVisualizer from '/src/components/Common/Magnetic2DVisualizer.vue'
+import CoreExporter from '/src/components/Exporters/CoreExporter.vue'
+import CoilExporter from '/src/components/Exporters/CoilExporter.vue'
+import MASExporter from '/src/components/Exporters/MASExporter.vue'
+import CircuitSimulatorsExporter from '/src/components/Exporters/CircuitSimulatorsExporter.vue'
 import Module from '/src/assets/js/libAdvisers.wasm.js'
 
 </script>
@@ -48,9 +52,9 @@ export default {
             theme,
             localTexts,
             masExported: false,
-            Core3DExported: false,
-            MagneticSectionPlotExported: false,
-            MagneticSectionAndFieldPlotExported: false,
+            magneticSectionPlotExported: false,
+            magneticSectionAndFieldPlotExported: false,
+            magneticSimbaSubcircuitExported: false,
             showFieldPlot: false,
             includeFringing: true,
         }
@@ -69,93 +73,6 @@ export default {
         },
         swapIncludeFringing() {
             this.includeFringing = !this.includeFringing;
-        },
-        exportMAS() {
-            var mas = deepCopy(this.masStore.mas);
-            delete mas.inputs;
-            delete mas.outputs;
-
-            mas = clean(mas);
-
-            download(JSON.stringify(mas, null, 4), this.masStore.mas.magnetic.manufacturerInfo.reference + ".json", "text/plain");
-            this.masExported = true
-            setTimeout(() => this.masExported = false, 2000);
-        },
-        exportCore3D(format) {
-
-            this.$mkf.ready.then(_ => {
-                var url;
-                if (format == "STP") {
-                    url = import.meta.env.VITE_API_ENDPOINT + '/core_compute_core_3d_model_stp';
-                }
-                else if (format == "OBJ") {
-                    url = import.meta.env.VITE_API_ENDPOINT + '/core_compute_core_3d_model_obj';
-                }
-                if (this.masStore.mas.magnetic.core.functionalDescription.shape.familySubtype == null) {
-                    this.masStore.mas.magnetic.core.functionalDescription.shape.familySubtype = "1";
-                }
-
-                const aux = deepCopy( this.masStore.mas.magnetic.core);
-                aux['geometricalDescription'] = null;
-                aux['processedDescription'] = null;
-                var core = JSON.parse(this.$mkf.calculate_core_data(JSON.stringify(aux), false));
-
-                this.$axios.post(url, core)
-                .then(response => {
-                    if (format == "STP") {
-                        download(response.data, this.masStore.mas.magnetic.core.name + ".stp", "text/plain");
-                    }
-                    else if (format == "OBJ") {
-                        download(response.data, this.masStore.mas.magnetic.core.name + ".obj", "text/plain");
-                    }
-                    this.Core3DExported = true;
-                    setTimeout(() => this.Core3DExported = false, 2000);
-                })
-                .catch(error => {
-                    console.error(error.data)
-                });
-
-            }).catch(error => {
-                console.error(error);
-            });
-
-        },
-        exportMASWithExcitations() {
-            var mas = deepCopy(this.masStore.mas);
-
-            mas = clean(mas);
-
-            download(JSON.stringify(mas, null, 4), this.masStore.mas.magnetic.manufacturerInfo.reference + ".json", "text/plain");
-            this.masExported = true
-            setTimeout(() => this.masExported = false, 2000);
-        },
-        exportMagneticSectionPlot() {
-            const url = import.meta.env.VITE_API_ENDPOINT + '/plot_core'
-
-            this.$axios.post(url, {magnetic: this.masStore.mas.magnetic, operatingPoint: this.masStore.mas.inputs.operatingPoints[0]})
-            .then(response => {
-                download(response.data, this.masStore.mas.magnetic.manufacturerInfo.reference + "_Magnetic_Section.svg", "image/svg+xml");
-                this.MagneticSectionPlotExported = true
-                setTimeout(() => this.MagneticSectionPlotExported = false, 2000);
-            })
-            .catch(error => {
-                console.error("Error plotting magnetic section")
-                console.error(error)
-            });
-        },
-        exportMagneticSectionAndFieldPlot() {
-            const url = import.meta.env.VITE_API_ENDPOINT + '/plot_core_and_fields'
-
-            this.$axios.post(url, {magnetic: this.masStore.mas.magnetic, operatingPoint: this.masStore.mas.inputs.operatingPoints[0], includeFringing: this.includeFringing})
-            .then(response => {
-                download(response.data, this.masStore.mas.magnetic.manufacturerInfo.reference + "_Magnetic_Section_And_H_Field.svg", "image/svg+xml");
-                this.MagneticSectionAndFieldPlotExported = true
-                setTimeout(() => this.MagneticSectionAndFieldPlotExported = false, 2000);
-            })
-            .catch(error => {
-                console.error("Error plotting magnetic section")
-                console.error(error)
-            });
         },
 
         calculateLeakageInductance() {
@@ -549,14 +466,36 @@ export default {
 
 <template>
     <div class="container">
+        <CoreExporter :data-cy="dataTestLabel + '-CoreExporter'"/>
+        <CoilExporter :data-cy="dataTestLabel + '-CoilExporter'" />
+        <MASExporter :data-cy="dataTestLabel + '-MASExporter'" />
+        <CircuitSimulatorsExporter :data-cy="dataTestLabel + '-CircuitSimulatorsExporter'" />
         <div class="row">
             <div class="col-sm-12 col-md-2 text-start border border-primary pb-4" style="height: fit-content">
-                <button :disabled="masExported" :data-cy="dataTestLabel + '-download-MAS-File-button'" class="btn btn-primary col-12 mt-4" @click="exportMAS"> Download MAS file </button>
-                <button :disabled="masExported" :data-cy="dataTestLabel + '-download-MAS-Excitations-File-button'" class="btn btn-primary col-12 mt-4" @click="exportMASWithExcitations"> Download MAS file with excitations and results </button>
-                <button :disabled="Core3DExported" :data-cy="dataTestLabel + '-download-STP-File-button'" class="btn btn-primary col-12 mt-4" @click="exportCore3D('STP')"> Download Core STP model </button>
-                <button :disabled="Core3DExported" :data-cy="dataTestLabel + '-download-OBJ-File-button'" class="btn btn-primary col-12 mt-4" @click="exportCore3D('OBJ')"> Download Core OBJ model </button>
-                <button :disabled="MagneticSectionPlotExported" :data-cy="dataTestLabel + '-download-MagneticSectionPlot-File-button'" class="btn btn-primary col-12 mt-4" @click="exportMagneticSectionPlot">Download Magnetic Section</button>
-                <button :disabled="MagneticSectionAndFieldPlotExported" :data-cy="dataTestLabel + '-download-MagneticSectionAndFieldPlot-File-button'" class="btn btn-primary col-12 mt-4" @click="exportMagneticSectionAndFieldPlot">Download Magnetic Section with H field</button>
+                <button
+                    :data-cy="'settings-modal-button'"
+                    class="btn btn-primary mx-auto d-block mt-4 col-6 col-sm-6 col-md-12"
+                    data-bs-toggle="modal"
+                    data-bs-target="#MASExporterModal"
+                >MAS Exports</button>
+                <button
+                    :data-cy="'settings-modal-button'"
+                    class="btn btn-primary mx-auto d-block mt-4 col-6 col-sm-6 col-md-12"
+                    data-bs-toggle="modal"
+                    data-bs-target="#CoreExporterModal"
+                >Core Exports</button>
+                <button
+                    :data-cy="'settings-modal-button'"
+                    class="btn btn-primary mx-auto d-block mt-4 col-6 col-sm-6 col-md-12"
+                    data-bs-toggle="modal"
+                    data-bs-target="#CoilExporterModal"
+                >Coil Exports</button>
+                <button
+                    :data-cy="'settings-modal-button'"
+                    class="btn btn-danger mx-auto d-block mt-4 col-6 col-sm-6 col-md-12"
+                    data-bs-toggle="modal"
+                    data-bs-target="#CircuitSimulatorsExporterModal"
+                >Circuit Simulators Exports</button>
             </div>
             <div :class="isMobile()? 'col-12' : 'col-10'" class="row">
                 <!-- <h3 v-if="'manufacturerInfo' in masStore.mas.magnetic" class="col-12 p-0 m-0 fs-4">{{masStore.mas.magnetic.manufacturerInfo.reference}}</h3> -->

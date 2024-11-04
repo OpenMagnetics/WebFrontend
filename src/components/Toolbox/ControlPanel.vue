@@ -100,7 +100,7 @@ export default {
             <button :disabled="!historyStore.isForwardPossible()" class="btn btn-primary offset-sm-0 offset-lg-1 col-2 col-lg-1" @click="redo">
                 <i class="fa-solid fa-arrow-rotate-right"></i>
             </button>
-            <input data-cy="CoreImport-MAS-file-button" type="file" ref="masFileReader" @change="readMASFile()" class="btn btn-primary mt-1 rounded-3"hidden />
+            <input data-cy="CoreImport-MAS-file-button" type="file" ref="masFileReader" @change="readMASFile()" class="btn btn-primary mt-1 rounded-3" hidden />
             <button v-if="!loading" class="btn btn-primary offset-1 col-3" @click="load">
                 {{'Load MAS'}}
             </button>
