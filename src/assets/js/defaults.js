@@ -44,7 +44,45 @@ export const coreMaterialCrossReferencerPossibleCoreTypes = [
 ];
 
 
-export const mas = {
+export const powerMas = {
+    "inputs": {
+        "designRequirements": {
+            "name": "My Design Requirements",
+            "magnetizingInductance": {
+                "nominal": 100e-6
+            },
+            "turnsRatios": [],
+        },
+        "operatingPoints": [],
+    },
+    "magnetic": {
+        "coil": {
+            "bobbin": "Dummy",
+            "functionalDescription": [
+                {
+                    "name": "Primary",
+                    "numberTurns": 0,
+                    "numberParallels": 0,
+                    "isolationSide": "primary",
+                    "wire": ""
+                }
+            ],
+        },
+        "core": {
+            "name": "DummyCore",
+            "functionalDescription": {
+                "type": "two-piece set",
+                "material": "",
+                "shape": "",
+                "gapping": [],
+                "numberStacks": 1
+            }
+        },
+    },
+    "outputs": []
+}
+
+export const filterMas = {
     "inputs": {
         "designRequirements": {
             "name": "My Design Requirements",

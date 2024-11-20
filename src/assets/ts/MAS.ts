@@ -73,6 +73,10 @@ export interface DesignRequirements {
      */
     maximumWeight?: number;
     /**
+     * List of minimum impedance at given frequency in the primary
+     */
+    minimumImpedance?: ImpedanceAtFrequency[];
+    /**
      * A label that identifies these Design Requirements
      */
     name?: string;
@@ -167,13 +171,13 @@ export interface InsulationRequirements {
  *
  * Heat conductivity value according to manufacturer, in W/m/K
  *
+ * Data a two dimensional matrix, created as an array of array, where the first coordinate
+ * in the X and the second the Y
+ *
  * Value of the leakage inductance between the primary and a secondary winding given by the
  * position in the array
  *
  * Value of the magnetizing inductance
- *
- * Data a two dimensional matrix, created as an array of array, where the first coordinate
- * in the X and the second the Y
  *
  * A dimension of with minimum, nominal, and maximum values
  */
@@ -284,6 +288,23 @@ export interface MaximumDimensions {
     depth?:  number;
     height?: number;
     width?:  number;
+    [property: string]: any;
+}
+
+export interface ImpedanceAtFrequency {
+    frequency: number;
+    impedance: ImpedancePoint;
+    [property: string]: any;
+}
+
+/**
+ * Data describing one impendance value
+ */
+export interface ImpedancePoint {
+    imaginaryPart?: number;
+    magnitude:      number;
+    phase?:         number;
+    realPart?:      number;
     [property: string]: any;
 }
 
@@ -499,10 +520,7 @@ export interface Processed {
      * https://sci-hub.wf/https://ieeexplore.ieee.org/document/750181, Appendix C
      */
     effectiveFrequency?: number;
-    /**
-     * Label of the waveform, if applicable. Used for common waveforms
-     */
-    label: WaveformLabel;
+    label:               WaveformLabel;
     /**
      * The offset value of the waveform, referred to 0
      */
@@ -515,6 +533,10 @@ export interface Processed {
      * The peak to peak value of the waveform
      */
     peakToPeak?: number;
+    /**
+     * The phase of the waveform, in degrees
+     */
+    phase?: number;
     /**
      * The RMS value of the waveform
      */
@@ -536,7 +558,11 @@ export enum WaveformLabel {
     Custom = "Custom",
     FlybackPrimary = "Flyback Primary",
     FlybackSecondary = "Flyback Secondary",
+    FlybackSecondaryDcm = "FlybackSecondaryDCM",
+    FlybackSecondaryWithDeadtime = "Flyback Secondary With Deadtime",
     Rectangular = "Rectangular",
+    RectangularDcm = "RectangularDCM",
+    RectangularWithDeadtime = "Rectangular With Deadtime",
     Sinusoidal = "Sinusoidal",
     Triangular = "Triangular",
     UnipolarRectangular = "Unipolar Rectangular",
@@ -558,7 +584,7 @@ export interface Waveform {
      * The number of periods covered by the data
      */
     numberPeriods?:  number;
-    ancillaryLabel?: string;
+    ancillaryLabel?: WaveformLabel;
     time?:           number[];
     [property: string]: any;
 }
@@ -962,6 +988,10 @@ export interface WindingWindowElement {
      */
     height?: number;
     /**
+     * Way in which the sections are aligned inside the winding window
+     */
+    sectionsAlignment?: CoilAlignment;
+    /**
      * Way in which the sections are oriented inside the winding window
      */
     sectionsOrientation?: WindingOrientation;
@@ -982,6 +1012,20 @@ export interface WindingWindowElement {
      */
     radialHeight?: number;
     [property: string]: any;
+}
+
+/**
+ * Way in which the sections are aligned inside the winding window
+ *
+ * Way in which the turns are aligned inside the layer
+ *
+ * Way in which the layers are aligned inside the section
+ */
+export enum CoilAlignment {
+    Centered = "centered",
+    InnerOrTop = "inner or top",
+    OuterOrBottom = "outer or bottom",
+    Spread = "spread",
 }
 
 /**
@@ -1056,6 +1100,8 @@ export interface ConnectionElement {
  * The description of a solid rectangular magnet wire
  *
  * The description of a stranded litz magnet wire
+ *
+ * The description of a solid planar magnet wire
  */
 export interface Wire {
     /**
@@ -1166,12 +1212,8 @@ export interface InsulationMaterial {
     /**
      * The composition of a insulation material
      */
-    composition?: string;
-    /**
-     * The dielectric constant of the insulation material
-     */
-    dielectricConstant?: number;
-    dielectricStrength:  DielectricStrengthElement[];
+    composition?:       string;
+    dielectricStrength: DielectricStrengthElement[];
     /**
      * The manufacturer of the insulation material
      */
@@ -1184,6 +1226,10 @@ export interface InsulationMaterial {
      * The name of a insulation material
      */
     name: string;
+    /**
+     * The dielectric constant of the insulation material
+     */
+    relativePermittivity?: number;
     /**
      * Resistivity value according to manufacturer
      */
@@ -1309,7 +1355,7 @@ export interface ThermalConductivityElement {
  */
 export enum WireStandard {
     Iec60317 = "IEC 60317",
-    JisC3202 = "JIS C3202",
+    Ipc6012 = "IPC-6012",
     NemaMw1000C = "NEMA MW 1000 C",
 }
 
@@ -1361,6 +1407,7 @@ export interface WireRound {
 export enum WireType {
     Foil = "foil",
     Litz = "litz",
+    Planar = "planar",
     Rectangular = "rectangular",
     Round = "round",
 }
@@ -1452,18 +1499,6 @@ export interface PartialWinding {
      */
     winding: string;
     [property: string]: any;
-}
-
-/**
- * Way in which the turns are aligned inside the layer
- *
- * Way in which the layers are aligned inside the section
- */
-export enum CoilAlignment {
-    Centered = "centered",
-    InnerOrTop = "inner or top",
-    OuterOrBottom = "outer or bottom",
-    Spread = "spread",
 }
 
 /**
@@ -1751,7 +1786,11 @@ export interface CoreMaterial {
     /**
      * The composition of a magnetic material
      */
-    materialComposition: MaterialComposition;
+    material: MaterialEnum;
+    /**
+     * The composition of a magnetic material
+     */
+    materialComposition?: MaterialCompositionEnum;
     /**
      * The name of a magnetic material
      */
@@ -1806,7 +1845,7 @@ export interface BhCycleElement {
 /**
  * The composition of a magnetic material
  */
-export enum MaterialComposition {
+export enum MaterialEnum {
     Amorphous = "amorphous",
     ElectricalSteel = "electricalSteel",
     Ferrite = "ferrite",
@@ -1815,11 +1854,24 @@ export enum MaterialComposition {
 }
 
 /**
+ * The composition of a magnetic material
+ */
+export enum MaterialCompositionEnum {
+    MgZn = "MgZn",
+    MnZn = "MnZn",
+    NiZn = "NiZn",
+}
+
+/**
  * The data regarding the relative permeability of a magnetic material
  */
 export interface Permeabilities {
     amplitude?: PermeabilityPoint[] | PermeabilityPoint;
-    initial:    PermeabilityPoint[] | PermeabilityPoint;
+    /**
+     * The data regarding the complex permeability of a magnetic material
+     */
+    complex?: ComplexPermeabilityData;
+    initial:  PermeabilityPoint[] | PermeabilityPoint;
     [property: string]: any;
 }
 
@@ -1865,6 +1917,8 @@ export interface PermeabilityPoint {
  * Coefficients given by Magnetics in order to calculate the permeability of their cores
  *
  * Coefficients given by Micrometals in order to calculate the permeability of their cores
+ *
+ * Coefficients given by Fair-Rite in order to calculate the permeability of their materials
  */
 export interface InitialPermeabilitModifier {
     /**
@@ -1882,7 +1936,7 @@ export interface InitialPermeabilitModifier {
      * Field with the coefficients used to calculate how much the permeability decreases with
      * the H DC bias, as factor = a + b * pow(H, c) + d
      */
-    magneticFieldDcBiasFactor: MagneticFieldDcBiasFactor;
+    magneticFieldDcBiasFactor?: MagneticFieldDcBiasFactor;
     /**
      * Name of this method
      */
@@ -1894,6 +1948,9 @@ export interface InitialPermeabilitModifier {
      * Field with the coefficients used to calculate how much the permeability decreases with
      * the temperature, as either factor = a * (T -20) * 0.0001 or factor = (a + c * T + e *
      * pow(T, 2)) / (1 + b * T + d * pow(T, 2))
+     *
+     * Field with the coefficients used to calculate how much the permeability decreases with
+     * the temperature, as either factor = a
      */
     temperatureFactor?: TemperatureFactor;
     /**
@@ -1950,6 +2007,7 @@ export interface MagneticFluxDensityFactor {
 }
 
 export enum InitialPermeabilitModifierMethod {
+    FairRite = "fair-rite",
     Magnetics = "magnetics",
     Micrometals = "micrometals",
 }
@@ -1961,6 +2019,9 @@ export enum InitialPermeabilitModifierMethod {
  * Field with the coefficients used to calculate how much the permeability decreases with
  * the temperature, as either factor = a * (T -20) * 0.0001 or factor = (a + c * T + e *
  * pow(T, 2)) / (1 + b * T + d * pow(T, 2))
+ *
+ * Field with the coefficients used to calculate how much the permeability decreases with
+ * the temperature, as either factor = a
  */
 export interface TemperatureFactor {
     a:  number;
@@ -1968,6 +2029,15 @@ export interface TemperatureFactor {
     c?: number;
     d?: number;
     e?: number;
+    [property: string]: any;
+}
+
+/**
+ * The data regarding the complex permeability of a magnetic material
+ */
+export interface ComplexPermeabilityData {
+    imaginary: PermeabilityPoint[] | PermeabilityPoint;
+    real:      PermeabilityPoint[] | PermeabilityPoint;
     [property: string]: any;
 }
 
@@ -2010,6 +2080,8 @@ export interface VolumetricLossesPoint {
  * Micrometals method for estimating volumetric losses
  *
  * Magnetics method for estimating volumetric losses
+ *
+ * Loss factor method for estimating volumetric losses
  */
 export interface CoreLossesMethodData {
     /**
@@ -2030,6 +2102,7 @@ export interface CoreLossesMethodData {
     b?:                         number;
     c?:                         number;
     d?:                         number;
+    factors?:                   LossFactorPoint[];
     [property: string]: any;
 }
 
@@ -2046,7 +2119,27 @@ export interface RoshenAdditionalCoefficients {
     [property: string]: any;
 }
 
+/**
+ * Data for describing the loss factor at a given frequency and temperature
+ */
+export interface LossFactorPoint {
+    /**
+     * Frequency of the field, in Hz
+     */
+    frequency?: number;
+    /**
+     * temperature for the value, in Celsius
+     */
+    temperature?: number;
+    /**
+     * Loss Factor value
+     */
+    value: number;
+    [property: string]: any;
+}
+
 export enum CoreLossesMethodType {
+    LossFactor = "lossFactor",
     Magnetics = "magnetics",
     Micrometals = "micrometals",
     Roshen = "roshen",
@@ -2414,6 +2507,10 @@ export interface Outputs {
      */
     coreLosses?: CoreLossesOutput;
     /**
+     * Data describing the output impedance
+     */
+    impedance?: ImpedanceOutput;
+    /**
      * Data describing the output insulation that the magnetic has
      */
     insulation?: DielectricVoltage[];
@@ -2422,11 +2519,11 @@ export interface Outputs {
      */
     insulationCoordination?: InsulationCoordinationOutput;
     /**
-     * Data describing the output magnetic strength field
+     * Data describing the output leakage inductance
      */
     leakageInductance?: LeakageInductanceOutput;
     /**
-     * Data describing the output magnetic strength field
+     * Data describing the output magnetizing inductance
      */
     magnetizingInductance?: MagnetizingInductanceOutput;
     /**
@@ -2505,6 +2602,47 @@ export enum ResultOrigin {
 }
 
 /**
+ * Data describing the output impedance
+ *
+ * Data describing the impendance and the intermediate inputs used to calculate them
+ */
+export interface ImpedanceOutput {
+    /**
+     * List of inductance matrix per frequency
+     */
+    inductanceMatrix: InductanceMatrixAtFrequency[];
+    /**
+     * Model used to calculate the impedance in the case of simulation, or method used to
+     * measure it
+     */
+    methodUsed: string;
+    origin:     ResultOrigin;
+    /**
+     * List of resistance matrix per frequency
+     */
+    resistanceMatrix: ResistanceMatrixAtFrequency[];
+    [property: string]: any;
+}
+
+export interface InductanceMatrixAtFrequency {
+    /**
+     * Frequency of the inductance matrix
+     */
+    frequency: number;
+    matrix:    Array<DimensionWithTolerance[]>;
+    [property: string]: any;
+}
+
+export interface ResistanceMatrixAtFrequency {
+    /**
+     * Frequency of the resitance matrix
+     */
+    frequency: number;
+    matrix:    Array<DimensionWithTolerance[]>;
+    [property: string]: any;
+}
+
+/**
  * Data describing the output insulation that the magnetic has
  *
  * List of voltages that the magnetic can withstand
@@ -2576,7 +2714,7 @@ export interface InsulationCoordinationOutput {
 }
 
 /**
- * Data describing the output magnetic strength field
+ * Data describing the output leakage inductance
  *
  * Data describing the leakage inductance and the intermediate inputs used to calculate them
  */
@@ -2592,7 +2730,7 @@ export interface LeakageInductanceOutput {
 }
 
 /**
- * Data describing the output magnetic strength field
+ * Data describing the output magnetizing inductance
  *
  * Data describing the magnetizing inductance and the intermediate inputs used to calculate
  * them
@@ -2689,6 +2827,18 @@ export interface StrayCapacitanceOutput {
      * between two given windings
      */
     tripoleCapacitancePerWinding?: TripoleCapacitancePerWinding;
+    /**
+     * Voltage divider at the end of the physical turn
+     */
+    voltageDividerEndPerTurn?: number[];
+    /**
+     * Voltage divider at the start of the physical turn
+     */
+    voltageDividerStartPerTurn?: number[];
+    /**
+     * Voltage at the beginning of the physical turn
+     */
+    voltagePerTurn?: number[];
     [property: string]: any;
 }
 
@@ -2802,15 +2952,6 @@ export interface WindingLossesOutput {
     windingLossesPerSection?: WindingLossesPerElement[];
     windingLossesPerTurn?:    WindingLossesPerElement[];
     windingLossesPerWinding?: WindingLossesPerElement[];
-    [property: string]: any;
-}
-
-export interface ResistanceMatrixAtFrequency {
-    /**
-     * Frequency of the resitance matrix
-     */
-    frequency?: number;
-    matrix?:    Array<DimensionWithTolerance[]>;
     [property: string]: any;
 }
 
@@ -3045,6 +3186,22 @@ export class Convert {
 
     public static maximumDimensionsToJson(value: MaximumDimensions): string {
         return JSON.stringify(uncast(value, r("MaximumDimensions")), null, 2);
+    }
+
+    public static toImpedanceAtFrequency(json: string): ImpedanceAtFrequency {
+        return cast(JSON.parse(json), r("ImpedanceAtFrequency"));
+    }
+
+    public static impedanceAtFrequencyToJson(value: ImpedanceAtFrequency): string {
+        return JSON.stringify(uncast(value, r("ImpedanceAtFrequency")), null, 2);
+    }
+
+    public static toImpedancePoint(json: string): ImpedancePoint {
+        return cast(JSON.parse(json), r("ImpedancePoint"));
+    }
+
+    public static impedancePointToJson(value: ImpedancePoint): string {
+        return JSON.stringify(uncast(value, r("ImpedancePoint")), null, 2);
     }
 
     public static toOperatingPoint(json: string): OperatingPoint {
@@ -3415,6 +3572,14 @@ export class Convert {
         return JSON.stringify(uncast(value, r("TemperatureFactor")), null, 2);
     }
 
+    public static toComplexPermeabilityData(json: string): ComplexPermeabilityData {
+        return cast(JSON.parse(json), r("ComplexPermeabilityData"));
+    }
+
+    public static complexPermeabilityDataToJson(value: ComplexPermeabilityData): string {
+        return JSON.stringify(uncast(value, r("ComplexPermeabilityData")), null, 2);
+    }
+
     public static toVolumetricLossesPoint(json: string): VolumetricLossesPoint {
         return cast(JSON.parse(json), r("VolumetricLossesPoint"));
     }
@@ -3437,6 +3602,14 @@ export class Convert {
 
     public static roshenAdditionalCoefficientsToJson(value: RoshenAdditionalCoefficients): string {
         return JSON.stringify(uncast(value, r("RoshenAdditionalCoefficients")), null, 2);
+    }
+
+    public static toLossFactorPoint(json: string): LossFactorPoint {
+        return cast(JSON.parse(json), r("LossFactorPoint"));
+    }
+
+    public static lossFactorPointToJson(value: LossFactorPoint): string {
+        return JSON.stringify(uncast(value, r("LossFactorPoint")), null, 2);
     }
 
     public static toSteinmetzCoreLossesMethodRangeDatum(json: string): SteinmetzCoreLossesMethodRangeDatum {
@@ -3527,6 +3700,30 @@ export class Convert {
         return JSON.stringify(uncast(value, r("CoreLossesOutput")), null, 2);
     }
 
+    public static toImpedanceOutput(json: string): ImpedanceOutput {
+        return cast(JSON.parse(json), r("ImpedanceOutput"));
+    }
+
+    public static impedanceOutputToJson(value: ImpedanceOutput): string {
+        return JSON.stringify(uncast(value, r("ImpedanceOutput")), null, 2);
+    }
+
+    public static toInductanceMatrixAtFrequency(json: string): InductanceMatrixAtFrequency {
+        return cast(JSON.parse(json), r("InductanceMatrixAtFrequency"));
+    }
+
+    public static inductanceMatrixAtFrequencyToJson(value: InductanceMatrixAtFrequency): string {
+        return JSON.stringify(uncast(value, r("InductanceMatrixAtFrequency")), null, 2);
+    }
+
+    public static toResistanceMatrixAtFrequency(json: string): ResistanceMatrixAtFrequency {
+        return cast(JSON.parse(json), r("ResistanceMatrixAtFrequency"));
+    }
+
+    public static resistanceMatrixAtFrequencyToJson(value: ResistanceMatrixAtFrequency): string {
+        return JSON.stringify(uncast(value, r("ResistanceMatrixAtFrequency")), null, 2);
+    }
+
     public static toDielectricVoltage(json: string): DielectricVoltage {
         return cast(JSON.parse(json), r("DielectricVoltage"));
     }
@@ -3613,14 +3810,6 @@ export class Convert {
 
     public static windingLossesOutputToJson(value: WindingLossesOutput): string {
         return JSON.stringify(uncast(value, r("WindingLossesOutput")), null, 2);
-    }
-
-    public static toResistanceMatrixAtFrequency(json: string): ResistanceMatrixAtFrequency {
-        return cast(JSON.parse(json), r("ResistanceMatrixAtFrequency"));
-    }
-
-    public static resistanceMatrixAtFrequencyToJson(value: ResistanceMatrixAtFrequency): string {
-        return JSON.stringify(uncast(value, r("ResistanceMatrixAtFrequency")), null, 2);
     }
 
     public static toWindingLossesPerElement(json: string): WindingLossesPerElement {
@@ -3866,6 +4055,7 @@ const typeMap: any = {
         { json: "market", js: "market", typ: u(undefined, r("Market")) },
         { json: "maximumDimensions", js: "maximumDimensions", typ: u(undefined, r("MaximumDimensions")) },
         { json: "maximumWeight", js: "maximumWeight", typ: u(undefined, 3.14) },
+        { json: "minimumImpedance", js: "minimumImpedance", typ: u(undefined, a(r("ImpedanceAtFrequency"))) },
         { json: "name", js: "name", typ: u(undefined, "") },
         { json: "operatingTemperature", js: "operatingTemperature", typ: u(undefined, r("DimensionWithTolerance")) },
         { json: "strayCapacitance", js: "strayCapacitance", typ: u(undefined, a(r("DimensionWithTolerance"))) },
@@ -3894,6 +4084,16 @@ const typeMap: any = {
         { json: "depth", js: "depth", typ: u(undefined, 3.14) },
         { json: "height", js: "height", typ: u(undefined, 3.14) },
         { json: "width", js: "width", typ: u(undefined, 3.14) },
+    ], "any"),
+    "ImpedanceAtFrequency": o([
+        { json: "frequency", js: "frequency", typ: 3.14 },
+        { json: "impedance", js: "impedance", typ: r("ImpedancePoint") },
+    ], "any"),
+    "ImpedancePoint": o([
+        { json: "imaginaryPart", js: "imaginaryPart", typ: u(undefined, 3.14) },
+        { json: "magnitude", js: "magnitude", typ: 3.14 },
+        { json: "phase", js: "phase", typ: u(undefined, 3.14) },
+        { json: "realPart", js: "realPart", typ: u(undefined, 3.14) },
     ], "any"),
     "OperatingPoint": o([
         { json: "conditions", js: "conditions", typ: r("OperatingConditions") },
@@ -3944,13 +4144,14 @@ const typeMap: any = {
         { json: "offset", js: "offset", typ: 3.14 },
         { json: "peak", js: "peak", typ: u(undefined, 3.14) },
         { json: "peakToPeak", js: "peakToPeak", typ: u(undefined, 3.14) },
+        { json: "phase", js: "phase", typ: u(undefined, 3.14) },
         { json: "rms", js: "rms", typ: u(undefined, 3.14) },
         { json: "thd", js: "thd", typ: u(undefined, 3.14) },
     ], "any"),
     "Waveform": o([
         { json: "data", js: "data", typ: a(3.14) },
         { json: "numberPeriods", js: "numberPeriods", typ: u(undefined, 0) },
-        { json: "ancillaryLabel", js: "ancillaryLabel", typ: u(undefined, "") },
+        { json: "ancillaryLabel", js: "ancillaryLabel", typ: u(undefined, r("WaveformLabel")) },
         { json: "time", js: "time", typ: u(undefined, a(3.14)) },
     ], "any"),
     "Magnetic": o([
@@ -4039,6 +4240,7 @@ const typeMap: any = {
         { json: "area", js: "area", typ: u(undefined, 3.14) },
         { json: "coordinates", js: "coordinates", typ: u(undefined, a(3.14)) },
         { json: "height", js: "height", typ: u(undefined, 3.14) },
+        { json: "sectionsAlignment", js: "sectionsAlignment", typ: u(undefined, r("CoilAlignment")) },
         { json: "sectionsOrientation", js: "sectionsOrientation", typ: u(undefined, r("WindingOrientation")) },
         { json: "shape", js: "shape", typ: u(undefined, r("WindingWindowShape")) },
         { json: "width", js: "width", typ: u(undefined, 3.14) },
@@ -4091,11 +4293,11 @@ const typeMap: any = {
     "InsulationMaterial": o([
         { json: "aliases", js: "aliases", typ: u(undefined, a("")) },
         { json: "composition", js: "composition", typ: u(undefined, "") },
-        { json: "dielectricConstant", js: "dielectricConstant", typ: u(undefined, 3.14) },
         { json: "dielectricStrength", js: "dielectricStrength", typ: a(r("DielectricStrengthElement")) },
         { json: "manufacturer", js: "manufacturer", typ: u(undefined, "") },
         { json: "meltingPoint", js: "meltingPoint", typ: u(undefined, 3.14) },
         { json: "name", js: "name", typ: "" },
+        { json: "relativePermittivity", js: "relativePermittivity", typ: u(undefined, 3.14) },
         { json: "resistivity", js: "resistivity", typ: u(undefined, a(r("ResistivityPoint"))) },
         { json: "specificHeat", js: "specificHeat", typ: u(undefined, 3.14) },
         { json: "temperatureClass", js: "temperatureClass", typ: u(undefined, 3.14) },
@@ -4222,7 +4424,8 @@ const typeMap: any = {
         { json: "heatCapacity", js: "heatCapacity", typ: u(undefined, r("DimensionWithTolerance")) },
         { json: "heatConductivity", js: "heatConductivity", typ: u(undefined, r("DimensionWithTolerance")) },
         { json: "manufacturerInfo", js: "manufacturerInfo", typ: r("ManufacturerInfo") },
-        { json: "materialComposition", js: "materialComposition", typ: r("MaterialComposition") },
+        { json: "material", js: "material", typ: r("MaterialEnum") },
+        { json: "materialComposition", js: "materialComposition", typ: u(undefined, r("MaterialCompositionEnum")) },
         { json: "name", js: "name", typ: "" },
         { json: "permeability", js: "permeability", typ: r("Permeabilities") },
         { json: "remanence", js: "remanence", typ: u(undefined, a(r("BhCycleElement"))) },
@@ -4238,6 +4441,7 @@ const typeMap: any = {
     ], "any"),
     "Permeabilities": o([
         { json: "amplitude", js: "amplitude", typ: u(undefined, u(a(r("PermeabilityPoint")), r("PermeabilityPoint"))) },
+        { json: "complex", js: "complex", typ: u(undefined, r("ComplexPermeabilityData")) },
         { json: "initial", js: "initial", typ: u(a(r("PermeabilityPoint")), r("PermeabilityPoint")) },
     ], "any"),
     "PermeabilityPoint": o([
@@ -4251,7 +4455,7 @@ const typeMap: any = {
     ], "any"),
     "InitialPermeabilitModifier": o([
         { json: "frequencyFactor", js: "frequencyFactor", typ: u(undefined, r("FrequencyFactor")) },
-        { json: "magneticFieldDcBiasFactor", js: "magneticFieldDcBiasFactor", typ: r("MagneticFieldDcBiasFactor") },
+        { json: "magneticFieldDcBiasFactor", js: "magneticFieldDcBiasFactor", typ: u(undefined, r("MagneticFieldDcBiasFactor")) },
         { json: "method", js: "method", typ: u(undefined, r("InitialPermeabilitModifierMethod")) },
         { json: "temperatureFactor", js: "temperatureFactor", typ: u(undefined, r("TemperatureFactor")) },
         { json: "magneticFluxDensityFactor", js: "magneticFluxDensityFactor", typ: u(undefined, r("MagneticFluxDensityFactor")) },
@@ -4284,6 +4488,10 @@ const typeMap: any = {
         { json: "d", js: "d", typ: u(undefined, 3.14) },
         { json: "e", js: "e", typ: u(undefined, 3.14) },
     ], "any"),
+    "ComplexPermeabilityData": o([
+        { json: "imaginary", js: "imaginary", typ: u(a(r("PermeabilityPoint")), r("PermeabilityPoint")) },
+        { json: "real", js: "real", typ: u(a(r("PermeabilityPoint")), r("PermeabilityPoint")) },
+    ], "any"),
     "VolumetricLossesPoint": o([
         { json: "magneticFluxDensity", js: "magneticFluxDensity", typ: r("OperatingPointExcitation") },
         { json: "origin", js: "origin", typ: "" },
@@ -4299,6 +4507,7 @@ const typeMap: any = {
         { json: "b", js: "b", typ: u(undefined, 3.14) },
         { json: "c", js: "c", typ: u(undefined, 3.14) },
         { json: "d", js: "d", typ: u(undefined, 3.14) },
+        { json: "factors", js: "factors", typ: u(undefined, a(r("LossFactorPoint"))) },
     ], "any"),
     "RoshenAdditionalCoefficients": o([
         { json: "excessLossesCoefficient", js: "excessLossesCoefficient", typ: 3.14 },
@@ -4306,6 +4515,11 @@ const typeMap: any = {
         { json: "resistivityMagneticFluxDensityCoefficient", js: "resistivityMagneticFluxDensityCoefficient", typ: 3.14 },
         { json: "resistivityOffset", js: "resistivityOffset", typ: 3.14 },
         { json: "resistivityTemperatureCoefficient", js: "resistivityTemperatureCoefficient", typ: 3.14 },
+    ], "any"),
+    "LossFactorPoint": o([
+        { json: "frequency", js: "frequency", typ: u(undefined, 3.14) },
+        { json: "temperature", js: "temperature", typ: u(undefined, 3.14) },
+        { json: "value", js: "value", typ: 3.14 },
     ], "any"),
     "SteinmetzCoreLossesMethodRangeDatum": o([
         { json: "alpha", js: "alpha", typ: 3.14 },
@@ -4383,6 +4597,7 @@ const typeMap: any = {
     ], "any"),
     "Outputs": o([
         { json: "coreLosses", js: "coreLosses", typ: u(undefined, r("CoreLossesOutput")) },
+        { json: "impedance", js: "impedance", typ: u(undefined, r("ImpedanceOutput")) },
         { json: "insulation", js: "insulation", typ: u(undefined, a(r("DielectricVoltage"))) },
         { json: "insulationCoordination", js: "insulationCoordination", typ: u(undefined, r("InsulationCoordinationOutput")) },
         { json: "leakageInductance", js: "leakageInductance", typ: u(undefined, r("LeakageInductanceOutput")) },
@@ -4403,6 +4618,20 @@ const typeMap: any = {
         { json: "origin", js: "origin", typ: r("ResultOrigin") },
         { json: "temperature", js: "temperature", typ: u(undefined, 3.14) },
         { json: "volumetricLosses", js: "volumetricLosses", typ: u(undefined, 3.14) },
+    ], "any"),
+    "ImpedanceOutput": o([
+        { json: "inductanceMatrix", js: "inductanceMatrix", typ: a(r("InductanceMatrixAtFrequency")) },
+        { json: "methodUsed", js: "methodUsed", typ: "" },
+        { json: "origin", js: "origin", typ: r("ResultOrigin") },
+        { json: "resistanceMatrix", js: "resistanceMatrix", typ: a(r("ResistanceMatrixAtFrequency")) },
+    ], "any"),
+    "InductanceMatrixAtFrequency": o([
+        { json: "frequency", js: "frequency", typ: 3.14 },
+        { json: "matrix", js: "matrix", typ: a(a(r("DimensionWithTolerance"))) },
+    ], "any"),
+    "ResistanceMatrixAtFrequency": o([
+        { json: "frequency", js: "frequency", typ: 3.14 },
+        { json: "matrix", js: "matrix", typ: a(a(r("DimensionWithTolerance"))) },
     ], "any"),
     "DielectricVoltage": o([
         { json: "duration", js: "duration", typ: u(undefined, 3.14) },
@@ -4448,6 +4677,9 @@ const typeMap: any = {
         { json: "origin", js: "origin", typ: r("ResultOrigin") },
         { json: "sixCapacitorNetworkPerWinding", js: "sixCapacitorNetworkPerWinding", typ: u(undefined, r("SixCapacitorNetworkPerWinding")) },
         { json: "tripoleCapacitancePerWinding", js: "tripoleCapacitancePerWinding", typ: u(undefined, r("TripoleCapacitancePerWinding")) },
+        { json: "voltageDividerEndPerTurn", js: "voltageDividerEndPerTurn", typ: u(undefined, a(3.14)) },
+        { json: "voltageDividerStartPerTurn", js: "voltageDividerStartPerTurn", typ: u(undefined, a(3.14)) },
+        { json: "voltagePerTurn", js: "voltagePerTurn", typ: u(undefined, a(3.14)) },
     ], "any"),
     "SixCapacitorNetworkPerWinding": o([
         { json: "C1", js: "c1", typ: 3.14 },
@@ -4488,10 +4720,6 @@ const typeMap: any = {
         { json: "windingLossesPerSection", js: "windingLossesPerSection", typ: u(undefined, a(r("WindingLossesPerElement"))) },
         { json: "windingLossesPerTurn", js: "windingLossesPerTurn", typ: u(undefined, a(r("WindingLossesPerElement"))) },
         { json: "windingLossesPerWinding", js: "windingLossesPerWinding", typ: u(undefined, a(r("WindingLossesPerElement"))) },
-    ], "any"),
-    "ResistanceMatrixAtFrequency": o([
-        { json: "frequency", js: "frequency", typ: u(undefined, 3.14) },
-        { json: "matrix", js: "matrix", typ: u(undefined, a(a(r("DimensionWithTolerance")))) },
     ], "any"),
     "WindingLossesPerElement": o([
         { json: "ohmicLosses", js: "ohmicLosses", typ: u(undefined, r("OhmicLosses")) },
@@ -4629,7 +4857,11 @@ const typeMap: any = {
         "Custom",
         "Flyback Primary",
         "Flyback Secondary",
+        "FlybackSecondaryDCM",
+        "Flyback Secondary With Deadtime",
         "Rectangular",
+        "RectangularDCM",
+        "Rectangular With Deadtime",
         "Sinusoidal",
         "Triangular",
         "Unipolar Rectangular",
@@ -4673,6 +4905,12 @@ const typeMap: any = {
         "rectangular",
         "round",
     ],
+    "CoilAlignment": [
+        "centered",
+        "inner or top",
+        "outer or bottom",
+        "spread",
+    ],
     "WindingOrientation": [
         "contiguous",
         "overlapping",
@@ -4691,24 +4929,19 @@ const typeMap: any = {
     ],
     "WireStandard": [
         "IEC 60317",
-        "JIS C3202",
+        "IPC-6012",
         "NEMA MW 1000 C",
     ],
     "WireType": [
         "foil",
         "litz",
+        "planar",
         "rectangular",
         "round",
     ],
     "CoordinateSystem": [
         "cartesian",
         "polar",
-    ],
-    "CoilAlignment": [
-        "centered",
-        "inner or top",
-        "outer or bottom",
-        "spread",
     ],
     "ElectricalType": [
         "conduction",
@@ -4732,14 +4965,20 @@ const typeMap: any = {
         "residual",
         "subtractive",
     ],
-    "MaterialComposition": [
+    "MaterialEnum": [
         "amorphous",
         "electricalSteel",
         "ferrite",
         "nanocrystalline",
         "powder",
     ],
+    "MaterialCompositionEnum": [
+        "MgZn",
+        "MnZn",
+        "NiZn",
+    ],
     "InitialPermeabilitModifierMethod": [
+        "fair-rite",
         "magnetics",
         "micrometals",
     ],
@@ -4748,6 +4987,7 @@ const typeMap: any = {
         "custom",
     ],
     "CoreLossesMethodType": [
+        "lossFactor",
         "magnetics",
         "micrometals",
         "roshen",

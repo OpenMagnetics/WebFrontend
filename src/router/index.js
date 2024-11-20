@@ -18,8 +18,13 @@ const routes = [
     },
     {
         path: '/magnetic_tool',
-        name: 'MagneticTool',
-        component: () => import('../views/MagneticTool.vue')
+        name: 'PowerMagneticTool',
+        component: () => import('../views/PowerMagneticTool.vue')
+    },
+    {
+        path: '/filter_magnetic_tool',
+        name: 'FilterMagneticTool',
+        component: () => import('../views/FilterMagneticTool.vue')
     },
     {
         path: '/insulation_adviser',

@@ -6,7 +6,7 @@ import * as Defaults from '/src/assets/js/defaults.js'
 
 export const useMasStore = defineStore("mas", () => {
 
-    const mas = ref(MAS.Convert.toMas(JSON.stringify(Defaults.mas)));
+    const mas = ref(MAS.Convert.toMas(JSON.stringify(Defaults.powerMas)));
     const coreAdviserWeights = ref(null);
 
     const magneticAdviserWeights = ref(null);
@@ -35,7 +35,7 @@ export const useMasStore = defineStore("mas", () => {
 
     function resetMas() {
         this.coreAdviserWeights = null;
-        this.mas = MAS.Convert.toMas(JSON.stringify(Defaults.mas));
+        this.mas = MAS.Convert.toMas(JSON.stringify(Defaults.powerMas));
         this.magneticManualOperatingPoints = [false];
         this.magneticCircuitSimulatorOperatingPoints = [false];
         this.magneticCircuitSimulatorColumnNames = [];

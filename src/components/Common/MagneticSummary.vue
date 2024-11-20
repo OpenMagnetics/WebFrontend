@@ -98,6 +98,15 @@ export default {
             const coreGappingTable = []
             for (var gapIndex = 0; gapIndex < data.magnetic.core.functionalDescription.gapping.length; gapIndex++) {
                 const coreGappingRow = {}
+
+                const coreResult = this.$mkf.calculate_core_data(JSON.stringify(data.magnetic.core), true);
+                if (coreResult.startsWith("Exception")) {
+                    console.error(coreResult);
+                }
+                else {
+                    data.magnetic.core.functionalDescription.gapping = JSON.parse(coreResult).functionalDescription.gapping;
+                }
+
                 const gap = data.magnetic.core.functionalDescription.gapping[gapIndex];
                 {
                     coreGappingRow['type'] = {}

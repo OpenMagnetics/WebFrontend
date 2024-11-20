@@ -4,7 +4,8 @@ import Footer from '/src/components/Footer.vue'
 import Storyline from '/src/components/Storyline.vue'
 import { toTitleCase } from '/src/assets/js/utils.js'
 
-import DesignRequirements from '/src/components/Toolbox/DesignRequirements.vue'
+import DesignRequirements from '/src/components/Toolbox/PowerDesignRequirements.vue'
+import FilterDesignRequirements from '/src/components/Toolbox/FilterDesignRequirements.vue'
 import OperatingPoints from '/src/components/Toolbox/OperatingPoints.vue'
 import MagneticCoreAdviser from '/src/components/Toolbox/MagneticCoreAdviser.vue'
 import CoreCustomizer from '/src/components/Toolbox/CoreCustomizer.vue'
@@ -153,6 +154,7 @@ export default {
                             <Welcome @canContinue="updateCanContinue('welcome', $event)" :dataTestLabel="`${dataTestLabel}-Welcome`" v-if="$userStore[`${toolLabel}Subsection`] == 'welcome'"/>
                             <ToolSelector @toolSelected="toolSelected" :dataTestLabel="`${dataTestLabel}-ToolSelector`" v-if="$userStore[`${toolLabel}Subsection`] == 'toolSelector'"/>
                             <DesignRequirements @canContinue="updateCanContinue('designRequirements', $event)" :dataTestLabel="`${dataTestLabel}-DesignRequirements`" v-if="$userStore[`${toolLabel}Subsection`] == 'designRequirements'"/>
+                            <FilterDesignRequirements @canContinue="updateCanContinue('filterDesignRequirements', $event)" :dataTestLabel="`${dataTestLabel}-FilterDesignRequirements`" v-if="$userStore[`${toolLabel}Subsection`] == 'filterDesignRequirements'"/>
                             <OperatingPoints @canContinue="updateCanContinue('operatingPoints', $event)" @changeTool="changeTool" :dataTestLabel="`${dataTestLabel}-OperatingPoints`" v-if="$userStore[`${toolLabel}Subsection`] == 'operatingPoints'"/>
                             <MagneticCoreAdviser @canContinue="updateCanContinue('magneticCoreAdviser', $event)" :dataTestLabel="`${dataTestLabel}-MagneticmagneticCoreAdviser`" v-if="$userStore[`${toolLabel}Subsection`] == 'magneticCoreAdviser'"/>
                             <MagneticAdviser @canContinue="updateCanContinue('magneticAdviser', $event)" :dataTestLabel="`${dataTestLabel}-MagneticAdviser`" v-if="$userStore[`${toolLabel}Subsection`] == 'magneticAdviser'"/>

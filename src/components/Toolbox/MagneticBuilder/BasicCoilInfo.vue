@@ -347,7 +347,7 @@ export default {
                 class="col-xl-6 col-lg-12 text-start"
                 :name="'R'"
                 :subscriptName="'DC'"
-                :unit="'W'"
+                :unit="'Ω'"
                 :power="1"
                 :dataTestLabel="dataTestLabel + '-DcResistancePerWinding'"
                 :numberDecimals="2"

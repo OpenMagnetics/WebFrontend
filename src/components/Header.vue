@@ -101,10 +101,17 @@ export default {
             else
                 return "Loading"
         },
-        newMagneticToolDesign() {
+        newPowerMagneticToolDesign() {
             this.$userStore.resetMagneticTool();
-            if (this.$route.name != 'MagneticTool')
+            if (this.$route.name != 'PowerMagneticTool')
                 setTimeout(() => {this.$router.push('/magnetic_tool');}, 100);
+            else
+                setTimeout(() => {this.$router.go();}, 100);
+        },
+        newFilterMagneticToolDesign() {
+            this.$userStore.resetMagneticTool();
+            if (this.$route.name != 'FilterMagneticTool')
+                setTimeout(() => {this.$router.push('/filter_magnetic_tool');}, 100);
             else
                 setTimeout(() => {this.$router.go();}, 100);
         },
@@ -148,12 +155,17 @@ export default {
                     </li>
                     <li class="nav-item">
                         <span class="nav-item">
-                            <button data-cy="Header-new-magnetic-link" class="btn me-4 nav-link text-dark bg-primary border-dark" @click="newMagneticToolDesign">New magnetic<i class="ms-2 fa-solid fa-toolbox"></i> </button>
+                            <button data-cy="Header-new-magnetic-link" class="btn me-4 nav-link text-dark bg-primary border-dark" @click="newFilterMagneticToolDesign">New filter<i class="ms-2 fa-solid fa-filter"></i> </button>
+                        </span>
+                    </li>
+                    <li class="nav-item">
+                        <span class="nav-item">
+                            <button data-cy="Header-new-magnetic-link" class="btn me-4 nav-link text-dark bg-primary border-dark" @click="newPowerMagneticToolDesign">New magnetic<i class="ms-2 fa-solid fa-toolbox"></i> </button>
                         </span>
                     </li>
                     <li v-if="$userStore.isAnyDesignLoaded() && $route.name != 'MagneticTool'" class="nav-item">
                         <span class="nav-item">
-                            <button data-cy="Header-donate-link" class="btn me-4 nav-link text-dark bg-primary border-dark" @click="continueMagneticToolDesign">Continue design<i class="ms-2 fa-solid fa-toolbox"></i> </button>
+                            <button data-cy="Header-donate-link" class="btn me-4 nav-link text-dark bg-primary border-dark" @click="continueMagneticToolDesign">Continue design<i class="ms-2 fa-solid fa-box-open"></i> </button>
                         </span>
                     </li>
                     <li class="nav-item">

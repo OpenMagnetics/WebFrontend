@@ -45,7 +45,26 @@ export const useUserStore = defineStore("user", () => {
         'toolSelector': false,
     });
 
+
+    const filterMagneticAdviserSubsection = ref("filterDesignRequirements");
+    const filterMagneticAdviserCanContinue = ref({
+        'filterDesignRequirements': false,
+        'operatingPoints': false,
+        'magneticAdviser': false,
+        'magneticBuilder': false,
+        'magneticSummary': false,
+    })
+
+    const filterMagneticBuilderSubsection = ref("filterDesignRequirements");
+    const filterMagneticBuilderCanContinue = ref({
+        'filterDesignRequirements': false,
+        'operatingPoints': false,
+        'magneticBuilder': false,
+        'magneticSummary': false,
+    })
+
     const magneticSelectedTool = ref("magneticTool");
+    const filterMagneticSelectedTool = ref("magneticTool");
     const anyDesignLoaded = ref(false);
     const showWelcome = ref(true);
     const magneticCoreAdviserSelectedAdvise = ref(0);
@@ -73,6 +92,7 @@ export const useUserStore = defineStore("user", () => {
     function resetMagneticTool() {
         this.anyDesignLoaded = false;
         this.magneticSelectedTool = "magneticTool";
+        this.filterMagneticSelectedTool = "magneticTool";
         this.magneticToolSubsection = "welcome";
         this.magneticSpecificationsReportSubsection = "designRequirements";
         this.magneticAdviserSubsection = "designRequirements";
@@ -108,6 +128,21 @@ export const useUserStore = defineStore("user", () => {
     
         this.magneticBuilderCanContinue = {
             'designRequirements': false,
+            'operatingPoints': false,
+            'magneticBuilder': false,
+            'magneticCoreSummary': false,
+        };
+    
+        this.filterMagneticAdviserCanContinue = {
+            'filterDesignRequirements': false,
+            'operatingPoints': false,
+            'magneticBuilder': false,
+            'magneticAdviser': false,
+            'magneticSummary': false,
+        };
+    
+        this.filterMagneticBuilderCanContinue = {
+            'filterDesignRequirements': false,
             'operatingPoints': false,
             'magneticBuilder': false,
             'magneticCoreSummary': false,
@@ -227,6 +262,7 @@ export const useUserStore = defineStore("user", () => {
     }
     return {
         magneticSelectedTool,
+        filterMagneticSelectedTool,
         showWelcome,
         magneticCoreAdviserSelectedAdvise,
         magneticAdviserSelectedAdvise,
@@ -240,6 +276,11 @@ export const useUserStore = defineStore("user", () => {
         magneticAdviserSubsection,
         magneticBuilderSubsection,
         magneticSpecificationsReportSubsection,
+        filterMagneticAdviserSubsection,
+        filterMagneticAdviserCanContinue,
+        filterMagneticBuilderSubsection,
+        filterMagneticBuilderCanContinue,
+
         insulationAdviserSubsection,
         insulationAdviserCanContinue,
         resetMagneticTool,
