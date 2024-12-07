@@ -62,8 +62,6 @@ export const useMasStore = defineStore("mas", () => {
             this.mas.inputs.operatingPoints[0].excitationsPerWinding.push(deepCopy(Defaults.defaultOperatingPointExcitation));
             this.magneticCircuitSimulatorConfirmedColumns[0].push(false);
         }
-
-
     }
 
 

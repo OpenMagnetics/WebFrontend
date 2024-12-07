@@ -289,10 +289,12 @@ export default {
         },
         numberStacksUpdated(value) {
             this.masStore.mas.magnetic.core.functionalDescription.numberStacks = value;
+            this.shapeUpdated(this.localData.shape)
             this.historyStore.addToHistory(this.masStore.mas);
         },
         gappingUpdated(value) {
             this.masStore.mas.magnetic.core.functionalDescription.gapping = value;
+            this.shapeUpdated(this.localData.shape)
             this.historyStore.addToHistory(this.masStore.mas);
         },
         adviseCoreRequested() {

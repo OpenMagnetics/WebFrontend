@@ -172,7 +172,7 @@ export default {
             />
 
 
-<!--             <ElementFromList
+            <ElementFromList
                 class="col-12 mb-1 text-start"
                 :dataTestLabel="dataTestLabel + '-LayersOrientation'"
                 :name="'layersOrientation'"
@@ -184,7 +184,7 @@ export default {
                 :labelStyleClass="'col-7'"
                 :selectStyleClass="'col-5'"
                 @update="coilUpdated"
-            /> -->
+            />
 
             <ElementFromList
                 v-tooltip="tooltipsMagneticBuilder.turnsAlignment"
