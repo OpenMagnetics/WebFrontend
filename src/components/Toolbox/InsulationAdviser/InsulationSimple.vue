@@ -1,5 +1,5 @@
 <script setup>
-import { isNumber, toTitleCase, getMultiplier } from '/src/assets/js/utils.js'
+import { toTitleCase, getMultiplier } from '/src/assets/js/utils.js'
 import Dimension from '/src/components/DataInput/Dimension.vue'
 import ElementFromListRadio from '/src/components/DataInput/ElementFromListRadio.vue'
 import ElementFromList from '/src/components/DataInput/ElementFromList.vue'

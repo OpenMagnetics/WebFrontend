@@ -1,5 +1,5 @@
 <script setup>
-import { isNumber, toTitleCase, getMultiplier } from '/src/assets/js/utils.js'
+import { toTitleCase, getMultiplier } from '/src/assets/js/utils.js'
 import DimensionWithTolerance from '/src/components/DataInput/DimensionWithTolerance.vue'
 import ElementFromList from '/src/components/DataInput/ElementFromList.vue'
 import SeveralElementsFromList from '/src/components/DataInput/SeveralElementsFromList.vue'

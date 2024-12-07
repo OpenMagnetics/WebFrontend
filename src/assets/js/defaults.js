@@ -490,7 +490,7 @@ export const defaultCoreSaveConfiguration = {
 }
 
 export const defaultGapType = "Ungapped";
-export const defaultGapLength = 0;
+export const defaultGapLength = 5e-6;
 export const defaultNumberGaps = 1;
 
 

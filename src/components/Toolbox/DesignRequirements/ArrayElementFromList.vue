@@ -1,6 +1,6 @@
 <script setup>
 import { useMasStore } from '/src/stores/mas'
-import { isNumber, toTitleCase, getMultiplier } from '/src/assets/js/utils.js'
+import { toTitleCase, getMultiplier } from '/src/assets/js/utils.js'
 import ElementFromList from '/src/components/DataInput/ElementFromList.vue'
 import { isolationSideOrdered } from '/src/assets/js/defaults.js'
 </script>

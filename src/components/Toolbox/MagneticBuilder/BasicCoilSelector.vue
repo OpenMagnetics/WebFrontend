@@ -9,7 +9,7 @@ import BasicCoilSectionMarginsSelector from '/src/components/Toolbox/MagneticBui
 import BasicCoilSectionAlignmentSelector from '/src/components/Toolbox/MagneticBuilder/BasicCoilSectionAlignmentSelector.vue'
 import Module from '/src/assets/js/libAdvisers.wasm.js'
 import { useDataCacheStore } from '/src/stores/dataCache'
-import { toTitleCase, checkAndFixMas, deepCopy, range, getWindingIndex, roundWithDecimals } from '/src/assets/js/utils.js'
+import { toTitleCase, checkAndFixMas, deepCopy, roundWithDecimals } from '/src/assets/js/utils.js'
 import { useHistoryStore } from '/src/stores/history'
 import { tooltipsMagneticBuilder } from '/src/assets/js/texts.js'
 </script>
@@ -234,6 +234,15 @@ export default {
 
     },
     methods: {
+        getWindingIndex(coil, windinName) {
+            var foundWindingIndex = null;
+            coil.functionalDescription.forEach((winding, windingIndex) => {
+                if (winding.name == windinName) {
+                    foundWindingIndex = windingIndex;
+                }
+            })
+            return foundWindingIndex;
+        },
         getProportionsAndPattern(coil) {
             if (coil.sectionsDescription != null) {
                 const bobbinShape = coil.bobbin.processedDescription.windingWindows[0].shape;
@@ -248,7 +257,7 @@ export default {
                 this.localData.pattern = "";
                 coil.sectionsDescription.forEach((section) => {
                     if (section.type == "conduction") {
-                        const windingIndex = getWindingIndex(coil, section.partialWindings[0].winding);
+                        const windingIndex = this.getWindingIndex(coil, section.partialWindings[0].winding);
                         this.localData.pattern += String(windingIndex + 1)
                         if (bobbinShape == "round") {
                             if (sectionsOrientation == "contiguous") {

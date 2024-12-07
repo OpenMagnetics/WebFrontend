@@ -1,7 +1,6 @@
 <script setup >
 import { defineAsyncComponent } from "vue";
 import { useUserDatabaseStore } from '/src/stores/userDatabase'
-import { tryLoadElements } from '/src/assets/js/utils.js'
 </script>
 
 <script>
@@ -132,7 +131,6 @@ export default {
         fontawesome.setAttribute('src', 'https://kit.fontawesome.com/d5a40d6941.js')
         document.head.appendChild(fontawesome)
         this.onLoggedIn()
-        tryLoadElements(this.userDatabaseStore, this.$userStore.getUsername.value)
     }
 }
 </script>

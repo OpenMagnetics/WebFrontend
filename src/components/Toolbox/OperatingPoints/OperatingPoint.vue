@@ -9,7 +9,7 @@ import WaveformOutput from '/src/components/Toolbox/OperatingPoints/WaveformOutp
 import WaveformCombinedOutput from '/src/components/Toolbox/OperatingPoints/WaveformCombinedOutput.vue'
 import OperatingPointManual from '/src/components/Toolbox/OperatingPoints/OperatingPointManual.vue'
 import OperatingPointCircuitSimulator from '/src/components/Toolbox/OperatingPoints/OperatingPointCircuitSimulator.vue'
-import { tryGuessType, roundWithDecimals, deepCopy, removeTrailingZeroes } from '/src/assets/js/utils.js'
+import { roundWithDecimals, deepCopy, removeTrailingZeroes } from '/src/assets/js/utils.js'
 import Dimension from '/src/components/DataInput/Dimension.vue'
 
 import { defaultOperatingPointExcitation, defaultPrecision, defaultSinusoidalNumberPoints, minimumMaximumScalePerParameter } from '/src/assets/js/defaults.js'

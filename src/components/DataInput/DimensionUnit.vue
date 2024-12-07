@@ -58,6 +58,24 @@ export default {
         }
     },
     computed: {
+        modelValueInRange() {
+            if (!Object.values(this.multipliersLabel).includes(this.modelValue)) {
+                var distance = 1e+12;
+                var closest = this.modelValue;
+                for (let [key, value] of Object.entries(this.multipliersLabel)) {
+                    const thisDistance = Math.abs(value - this.modelValue);
+                    if (distance > thisDistance) {
+                        distance = thisDistance;
+                        closest = value;
+                    }
+                }
+                return closest;
+
+            }
+            else {
+                return this.modelValue;
+            }
+        }
     },
     watch: { 
     },
@@ -70,7 +88,7 @@ export default {
 
 
 <template>
-    <select class="form-select bg-light text-white m-0 p-0 text-center unit-select" :class="styleClass" :value="modelValue" @change="$emit('update:modelValue', Number($event.target.value))" style="width:auto;" :disabled="readOnly || disabled">
+    <select class="form-select bg-light text-white m-0 p-0 text-center unit-select" :class="styleClass" :value="modelValueInRange" @change="$emit('update:modelValue', Number($event.target.value))" style="width:auto;" :disabled="readOnly || disabled">
         <option v-for="value, label in multipliersLabel" :value="value">
             {{label + unit}}
         </option>

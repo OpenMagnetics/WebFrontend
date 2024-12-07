@@ -6,8 +6,6 @@ import { useCurrentStore,
 import { Chart,
          registerables } from 'chart.js'
 import { removeTrailingZeroes,
-         synchronizeExtremes,
-         getMaxMinInPoints,
          roundWithDecimals } from '/src/assets/js/utils.js'
 import 'chartjs-plugin-dragdata'
 </script>
@@ -224,6 +222,25 @@ export default {
         })
     },
     methods: {
+        getMaxMinInPoints(points, elem=null) {
+            var max = -Infinity
+            var min = Infinity
+            points.forEach((item, index) => {
+                var value
+                if (elem == null)
+                    value = item
+                else 
+                    value = item[elem]
+
+                if (value > max) {
+                    max = value;
+                }
+                if (value < min) {
+                    min = value;
+                }
+            });
+            return {max, min}
+        },
         roundValue(datasetIndex, index, value, xPrecision, yPrecision) {
             value.x = roundWithDecimals(value.x, xPrecision)
             value.y = roundWithDecimals(value.y, yPrecision)
@@ -306,19 +323,19 @@ export default {
             return waveform;
         },
         getYPrecision(datasetIndex) {
-            var aux = getMaxMinInPoints(chart.data.datasets[datasetIndex].data, 'y')
+            var aux = this.getMaxMinInPoints(chart.data.datasets[datasetIndex].data, 'y')
             if (aux['max'] != aux['min']) {
                 return Math.abs(aux['max'] - aux['min']) / 100;
             }
         },
         setHorizontalLimits(step) {
-            var aux = getMaxMinInPoints(chart.data.datasets[0].data, 'x')
+            var aux = this.getMaxMinInPoints(chart.data.datasets[0].data, 'x')
             chart.options.scales.x.max = aux['max']
             chart.options.scales.x.min = aux['min']
             chart.options.scales.x.stepSize = step
         },
         updateVerticalLimits(datasetIndex) {
-            var aux = getMaxMinInPoints(chart.data.datasets[datasetIndex].data, 'y')
+            var aux = this.getMaxMinInPoints(chart.data.datasets[datasetIndex].data, 'y')
             var yMax = aux['max']
             var yMin = aux['min']
 
@@ -637,7 +654,7 @@ export default {
             else if (this.modelValue[signalDescriptor].processed.label == "Sinusoidal") {
                 const numberPoints = chart.data.datasets[datasetIndex].data.length - 1
                 const indexAngle = index * 2 * Math.PI / numberPoints
-                const maxMin = getMaxMinInPoints(chart.data.datasets[datasetIndex].data, 'y')
+                const maxMin = this.getMaxMinInPoints(chart.data.datasets[datasetIndex].data, 'y')
                 const offset = chart.data.datasets[datasetIndex].data[0].y
                 const newAmplitude = (value.y - offset) / Math.sin(indexAngle) 
                 const data = []

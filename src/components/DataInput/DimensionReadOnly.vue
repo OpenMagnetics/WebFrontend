@@ -1,5 +1,5 @@
 <script setup>
-import { isNumber, toTitleCase, getMultiplier, removeTrailingZeroes } from '/src/assets/js/utils.js'
+import { toTitleCase, getMultiplier, removeTrailingZeroes } from '/src/assets/js/utils.js'
 import DimensionUnit from '/src/components/DataInput/DimensionUnit.vue'
 </script>
 <script>

@@ -1,5 +1,5 @@
 <script setup>
-import { isNumber, toTitleCase, getMultiplier } from '/src/assets/js/utils.js'
+import { toTitleCase, getMultiplier } from '/src/assets/js/utils.js'
 import * as Utils from '/src/assets/js/utils.js'
 </script>
 

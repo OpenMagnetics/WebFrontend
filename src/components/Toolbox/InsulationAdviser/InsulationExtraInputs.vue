@@ -1,6 +1,6 @@
 <script setup>
 import { minimumMaximumScalePerParameter } from '/src/assets/js/defaults.js'
-import { isNumber, toTitleCase, getMultiplier } from '/src/assets/js/utils.js'
+import { toTitleCase, getMultiplier } from '/src/assets/js/utils.js'
 import Dimension from '/src/components/DataInput/Dimension.vue'
 import * as Utils from '/src/assets/js/utils.js'
 </script>

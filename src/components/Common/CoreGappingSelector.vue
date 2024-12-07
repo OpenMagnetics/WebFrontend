@@ -65,9 +65,6 @@ export default {
         forceUpdate(newValue, oldValue) {
             this.blockingRebounds = true;
             this.localData = guessBasicGappingParameters(this.core, 1);
-            console.log("forceUpdate")
-            console.log(this.core)
-            console.log(this.localData)
             setTimeout(() => this.blockingRebounds = false, 10);
         },
     },

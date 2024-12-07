@@ -66,6 +66,7 @@ export default {
             const fr = new FileReader();
 
             fr.onload = e => {
+                console.warn(e.target.result)
                 const newMas = JSON.parse(e.target.result);
                 if (newMas.magnetic != null) {
                     checkAndFixMas(newMas, this.$mkf).then(response => {
@@ -83,9 +84,8 @@ export default {
                         console.error(error.data)
                     });
                 }
-
             }
-            fr.readAsText(this.$refs['masFileReader'].files.item(0));
+            fr.readAsText(this.$refs['masFileReader'].files.item(0), "ISO-8859-1");
         },
     }
 }
