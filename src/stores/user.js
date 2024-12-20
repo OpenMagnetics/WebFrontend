@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, watch, computed  } from 'vue'
-import * as Utils from '/src/assets/js/utils.js'
-import * as Defaults from '/src/assets/js/defaults.js'
+import * as Utils from '/WebSharedComponents/assets/js/utils.js'
+import * as Defaults from '/WebSharedComponents/assets/js/defaults.js'
 
 export const useUserStore = defineStore("user", () => {
 

@@ -1,6 +1,6 @@
 <script setup>
 import { useMasStore } from '/src/stores/mas'
-import { formatUnit, removeTrailingZeroes, deepCopy, downloadBase64asPDF, download } from '/src/assets/js/utils.js'
+import { formatUnit, removeTrailingZeroes, deepCopy, downloadBase64asPDF, download } from '/WebSharedComponents/assets/js/utils.js'
 
 </script>
 

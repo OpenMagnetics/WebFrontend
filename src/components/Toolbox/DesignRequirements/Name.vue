@@ -1,6 +1,6 @@
 <script setup>
-import { toTitleCase, getMultiplier } from '/src/assets/js/utils.js'
-import * as Utils from '/src/assets/js/utils.js'
+import { toTitleCase, getMultiplier } from '/WebSharedComponents/assets/js/utils.js'
+import * as Utils from '/WebSharedComponents/assets/js/utils.js'
 </script>
 
 <script>

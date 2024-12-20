@@ -1,8 +1,8 @@
 <script setup>
 import { useMasStore } from '/src/stores/mas'
-import { toTitleCase, removeTrailingZeroes, formatInductance, formatPower, formatTemperature, formatResistance} from '/src/assets/js/utils.js'
+import { toTitleCase, removeTrailingZeroes, formatInductance, formatPower, formatTemperature, formatResistance} from '/WebSharedComponents/assets/js/utils.js'
 import Module from '/src/assets/js/libAdvisers.wasm.js'
-import Magnetic2DVisualizer from '/src/components/Common/Magnetic2DVisualizer.vue'
+import Magnetic2DVisualizer from '/WebSharedComponents/Common/Magnetic2DVisualizer.vue'
 </script>
 
 <script>

@@ -1,8 +1,8 @@
 import { defineStore } from 'pinia'
 import { ref, watch, computed  } from 'vue'
 import * as MAS from '/src/assets/ts/MAS.ts'
-import { deepCopy } from '/src/assets/js/utils.js'
-import * as Defaults from '/src/assets/js/defaults.js'
+import { deepCopy } from '/WebSharedComponents/assets/js/utils.js'
+import * as Defaults from '/WebSharedComponents/assets/js/defaults.js'
 
 export const useMasStore = defineStore("mas", () => {
 

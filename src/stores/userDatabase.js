@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import * as Utils from '/src/assets/js/utils.js'
+import * as Utils from '/WebSharedComponents/assets/js/utils.js'
 
 export const useUserDatabaseStore = defineStore("userDatabase", () => {
     const operationPoints = ref(null)

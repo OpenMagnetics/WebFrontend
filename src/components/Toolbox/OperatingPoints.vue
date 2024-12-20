@@ -8,10 +8,10 @@ import WaveformInputCommon from '/src/components/Toolbox/OperatingPoints/Wavefor
 import WaveformOutput from '/src/components/Toolbox/OperatingPoints/WaveformOutput.vue'
 import WaveformCombinedOutput from '/src/components/Toolbox/OperatingPoints/WaveformCombinedOutput.vue'
 import OperatingPoint from '/src/components/Toolbox/OperatingPoints/OperatingPoint.vue'
-import { roundWithDecimals, deepCopy } from '/src/assets/js/utils.js'
+import { roundWithDecimals, deepCopy } from '/WebSharedComponents/assets/js/utils.js'
 
-import { defaultOperatingPointExcitation, defaultPrecision, defaultSinusoidalNumberPoints } from '/src/assets/js/defaults.js'
-import { tooltipsMagneticSynthesisOperatingPoints } from '/src/assets/js/texts.js'
+import { defaultOperatingPointExcitation, defaultPrecision, defaultSinusoidalNumberPoints } from '/WebSharedComponents/assets/js/defaults.js'
+import { tooltipsMagneticSynthesisOperatingPoints } from '/WebSharedComponents/assets/js/texts.js'
 
 </script>
 <script>

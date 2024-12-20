@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, watch, computed  } from 'vue'
-import { deepCopy  } from '/src/assets/js/utils.js'
+import { deepCopy  } from '/WebSharedComponents/assets/js/utils.js'
 
 export const useHistoryStore = defineStore("history", () => {
     var masHistory = ref([]);

@@ -11,9 +11,8 @@ import "/src/assets/css/tooltip.css";
 import axios from "axios";
 import { useUserStore } from '/src/stores/user'
 import { useSettingsStore } from '/src/stores/settings'
-import { useDataCacheStore } from '/src/stores/dataCache'
 import Module from '/src/assets/js/libMKF.wasm.js';
-import { removeEmpty } from '/src/assets/js/utils.js';
+import { removeEmpty } from '/WebSharedComponents/assets/js/utils.js';
 
 
 const axiosInstance = axios.create()
@@ -28,7 +27,6 @@ app.directive("tooltip", tooltip);
 app.config.globalProperties.$axios = axiosInstance
 app.config.globalProperties.$userStore = useUserStore()
 app.config.globalProperties.$settingsStore = useSettingsStore()
-app.config.globalProperties.$dataCacheStore = null
 app.mount("#app");
 
 
@@ -52,10 +50,6 @@ router.beforeEach((to, from, next) => {
                 });
             })
         };
-
-    	if (app.config.globalProperties.$dataCacheStore == null) {
-    		app.config.globalProperties.$dataCacheStore = useDataCacheStore();
-    	}
     }
 
     console.log("Loaded");

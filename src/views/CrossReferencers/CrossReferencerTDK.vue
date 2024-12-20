@@ -1,7 +1,7 @@
 <script setup>
 import CoreCrossReferencer from '/src/components/Toolbox/CoreCrossReferencer.vue'
 import CoreMaterialCrossReferencer from '/src/components/Toolbox/CoreMaterialCrossReferencer.vue'
-import { toTitleCase } from '/src/assets/js/utils.js'
+import { toTitleCase } from '/WebSharedComponents/assets/js/utils.js'
 import '/src/assets/css/tdk.css'
 import {useRoute} from 'vue-router'
 </script>

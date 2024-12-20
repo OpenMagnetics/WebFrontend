@@ -2,7 +2,7 @@
 import { useMasStore } from '/src/stores/mas'
 import { Modal } from "bootstrap";
 import SimbaExporter from '/src/components/Exporters/SimbaExporter.vue'
-import { deepCopy, download } from '/src/assets/js/utils.js'
+import { deepCopy, download } from '/WebSharedComponents/assets/js/utils.js'
 </script>
 
 <script>

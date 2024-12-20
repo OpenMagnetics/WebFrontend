@@ -1,7 +1,7 @@
 <script setup>
 import { useMasStore } from '/src/stores/mas'
 import { useHistoryStore } from '/src/stores/history'
-import { checkAndFixMas, download } from '/src/assets/js/utils.js'
+import { checkAndFixMas, download } from '/WebSharedComponents/assets/js/utils.js'
 </script>
 
 

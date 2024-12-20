@@ -2,7 +2,7 @@
 import Header from '/src/components/Header.vue'
 import Footer from '/src/components/Footer.vue'
 import Storyline from '/src/components/Storyline.vue'
-import { toTitleCase } from '/src/assets/js/utils.js'
+import { toTitleCase } from '/WebSharedComponents/assets/js/utils.js'
 
 import DesignRequirements from '/src/components/Toolbox/PowerDesignRequirements.vue'
 import FilterDesignRequirements from '/src/components/Toolbox/FilterDesignRequirements.vue'
@@ -14,14 +14,16 @@ import MagneticAdviser from '/src/components/Toolbox/MagneticAdviser.vue'
 import WireCustomizer from '/src/components/Toolbox/WireCustomizer.vue'
 import CoilAdviser from '/src/components/Toolbox/CoilAdviser.vue'
 import InsulationAdviser from '/src/components/Toolbox/InsulationAdviser.vue'
-import MagneticSummary from '/src/components/Common/MagneticSummary.vue'
+import MagneticSummary from '/WebSharedComponents/Common/MagneticSummary.vue'
 import MagneticCoreSummary from '/src/components/Toolbox/MagneticCoreAdviser/MagneticCoreSummary.vue'
 import MagneticSpecificationsSummary from '/src/components/Toolbox/MagneticSpecificationsReport/MagneticSpecificationsSummary.vue'
-import MagneticBuilder from '/src/components/Toolbox/MagneticBuilder.vue'
+import MagneticBuilder from '/MagneticBuilder/src/components/MagneticBuilder.vue'
 import ControlPanel from '/src/components/Toolbox/ControlPanel.vue'
 import Welcome from '/src/components/Toolbox/Welcome.vue'
 import ToolSelector from '/src/components/Toolbox/ToolSelector.vue'
 import Settings from '/src/components/Toolbox/Settings.vue'
+
+import { useMasStore } from '/src/stores/mas'
 
 </script>
 
@@ -50,7 +52,9 @@ export default {
         },
     },
     data() {
+        const masStore = useMasStore();
         return {
+            masStore,
             updateStoryline: 0,
         }
     },
@@ -151,21 +155,77 @@ export default {
                         </div>
                             
                         <div class="row">
-                            <Welcome @canContinue="updateCanContinue('welcome', $event)" :dataTestLabel="`${dataTestLabel}-Welcome`" v-if="$userStore[`${toolLabel}Subsection`] == 'welcome'"/>
-                            <ToolSelector @toolSelected="toolSelected" :dataTestLabel="`${dataTestLabel}-ToolSelector`" v-if="$userStore[`${toolLabel}Subsection`] == 'toolSelector'"/>
-                            <DesignRequirements @canContinue="updateCanContinue('designRequirements', $event)" :dataTestLabel="`${dataTestLabel}-DesignRequirements`" v-if="$userStore[`${toolLabel}Subsection`] == 'designRequirements'"/>
-                            <FilterDesignRequirements @canContinue="updateCanContinue('filterDesignRequirements', $event)" :dataTestLabel="`${dataTestLabel}-FilterDesignRequirements`" v-if="$userStore[`${toolLabel}Subsection`] == 'filterDesignRequirements'"/>
-                            <OperatingPoints @canContinue="updateCanContinue('operatingPoints', $event)" @changeTool="changeTool" :dataTestLabel="`${dataTestLabel}-OperatingPoints`" v-if="$userStore[`${toolLabel}Subsection`] == 'operatingPoints'"/>
-                            <MagneticCoreAdviser @canContinue="updateCanContinue('magneticCoreAdviser', $event)" :dataTestLabel="`${dataTestLabel}-MagneticmagneticCoreAdviser`" v-if="$userStore[`${toolLabel}Subsection`] == 'magneticCoreAdviser'"/>
-                            <MagneticAdviser @canContinue="updateCanContinue('magneticAdviser', $event)" :dataTestLabel="`${dataTestLabel}-MagneticAdviser`" v-if="$userStore[`${toolLabel}Subsection`] == 'magneticAdviser'"/>
-                            <CoreCustomizer :dataTestLabel="`${dataTestLabel}-CoreCustomizer`" v-if="$userStore[`${toolLabel}Subsection`] == 'coreCustomizer'"/>
-                            <WireAdviser :dataTestLabel="`${dataTestLabel}-WireAdviser`" v-if="$userStore[`${toolLabel}Subsection`] == 'wireAdviser'"/>
-                            <WireCustomizer :dataTestLabel="`${dataTestLabel}-WireCustomizer`" v-if="$userStore[`${toolLabel}Subsection`] == 'wireCustomizer'"/>
-                            <InsulationAdviser :dataTestLabel="`${dataTestLabel}-InsulationAdviser`" v-if="$userStore[`${toolLabel}Subsection`] == 'insulationRequirements'"/>
-                            <MagneticBuilder @canContinue="updateCanContinue('magneticBuilder', $event)" :dataTestLabel="`${dataTestLabel}-MagneticBuilder`" v-if="$userStore[`${toolLabel}Subsection`] == 'magneticBuilder'"/>
-                            <MagneticSummary :dataTestLabel="`${dataTestLabel}-MagneticSummary`" v-if="$userStore[`${toolLabel}Subsection`] == 'magneticSummary'"/>
-                            <MagneticCoreSummary :dataTestLabel="`${dataTestLabel}-MagneticFinalizer`" v-if="$userStore[`${toolLabel}Subsection`] == 'magneticCoreSummary'"/>
-                            <MagneticSpecificationsSummary :dataTestLabel="`${dataTestLabel}-MagneticSpecificationsSummary`" v-if="$userStore[`${toolLabel}Subsection`] == 'magneticSpecificationsSummary'"/>
+                            <Welcome
+                                v-if="$userStore[`${toolLabel}Subsection`] == 'welcome'"
+                                :dataTestLabel="`${dataTestLabel}-Welcome`"
+                                @canContinue="updateCanContinue('welcome', $event)"
+                            />
+                            <ToolSelector
+                                v-if="$userStore[`${toolLabel}Subsection`] == 'toolSelector'"
+                                :dataTestLabel="`${dataTestLabel}-ToolSelector`"
+                                @toolSelected="toolSelected"
+                            />
+                            <DesignRequirements
+                                v-if="$userStore[`${toolLabel}Subsection`] == 'designRequirements'"
+                                :dataTestLabel="`${dataTestLabel}-DesignRequirements`"
+                                @canContinue="updateCanContinue('designRequirements', $event)"
+                            />
+                            <FilterDesignRequirements
+                                v-if="$userStore[`${toolLabel}Subsection`] == 'filterDesignRequirements'"
+                                :dataTestLabel="`${dataTestLabel}-FilterDesignRequirements`"
+                                @canContinue="updateCanContinue('filterDesignRequirements', $event)"
+                            />
+                            <OperatingPoints
+                                v-if="$userStore[`${toolLabel}Subsection`] == 'operatingPoints'"
+                                :dataTestLabel="`${dataTestLabel}-OperatingPoints`"
+                                @canContinue="updateCanContinue('operatingPoints', $event)" 
+                                @changeTool="changeTool"
+                            />
+                            <MagneticCoreAdviser
+                                v-if="$userStore[`${toolLabel}Subsection`] == 'magneticCoreAdviser'"
+                                :dataTestLabel="`${dataTestLabel}-MagneticmagneticCoreAdviser`"
+                                @canContinue="updateCanContinue('magneticCoreAdviser', $event)"
+                            />
+                            <MagneticAdviser
+                                v-if="$userStore[`${toolLabel}Subsection`] == 'magneticAdviser'"
+                                :dataTestLabel="`${dataTestLabel}-MagneticAdviser`"
+                                @canContinue="updateCanContinue('magneticAdviser', $event)"
+                            />
+                            <CoreCustomizer
+                                v-if="$userStore[`${toolLabel}Subsection`] == 'coreCustomizer'"
+                                :dataTestLabel="`${dataTestLabel}-CoreCustomizer`"
+                            />
+                            <WireAdviser
+                                v-if="$userStore[`${toolLabel}Subsection`] == 'wireAdviser'"
+                                :dataTestLabel="`${dataTestLabel}-WireAdviser`"
+                            />
+                            <WireCustomizer
+                                v-if="$userStore[`${toolLabel}Subsection`] == 'wireCustomizer'"
+                                :dataTestLabel="`${dataTestLabel}-WireCustomizer`"
+                            />
+                            <InsulationAdviser
+                                v-if="$userStore[`${toolLabel}Subsection`] == 'insulationRequirements'"
+                                :dataTestLabel="`${dataTestLabel}-InsulationAdviser`"
+                            />
+                            <MagneticBuilder 
+                                v-if="$userStore[`${toolLabel}Subsection`] == 'magneticBuilder'"
+                                :masStore="masStore"
+                                :dataTestLabel="`${dataTestLabel}-MagneticBuilder`"
+                                @canContinue="updateCanContinue('magneticBuilder', $event)"
+                            />
+                            <MagneticSummary
+                                v-if="$userStore[`${toolLabel}Subsection`] == 'magneticSummary'"
+                                :mas="masStore.mas"
+                                :dataTestLabel="`${dataTestLabel}-MagneticSummary`"
+                            />
+                            <MagneticCoreSummary
+                                v-if="$userStore[`${toolLabel}Subsection`] == 'magneticCoreSummary'"
+                                :dataTestLabel="`${dataTestLabel}-MagneticFinalizer`"
+                            />
+                            <MagneticSpecificationsSummary
+                                v-if="$userStore[`${toolLabel}Subsection`] == 'magneticSpecificationsSummary'"
+                                :dataTestLabel="`${dataTestLabel}-MagneticSpecificationsSummary`"
+                            />
                         </div>
                     </div>
                 </div>

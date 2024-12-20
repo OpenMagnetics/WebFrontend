@@ -6,7 +6,7 @@ import { useCurrentStore,
 import { Chart,
          registerables } from 'chart.js'
 import { removeTrailingZeroes,
-         roundWithDecimals } from '/src/assets/js/utils.js'
+         roundWithDecimals } from '/WebSharedComponents/assets/js/utils.js'
 import 'chartjs-plugin-dragdata'
 </script>
 

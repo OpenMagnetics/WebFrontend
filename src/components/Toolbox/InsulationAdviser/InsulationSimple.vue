@@ -1,12 +1,12 @@
 <script setup>
-import { toTitleCase, getMultiplier } from '/src/assets/js/utils.js'
-import Dimension from '/src/components/DataInput/Dimension.vue'
-import ElementFromListRadio from '/src/components/DataInput/ElementFromListRadio.vue'
-import ElementFromList from '/src/components/DataInput/ElementFromList.vue'
-import SeveralElementsFromList from '/src/components/DataInput/SeveralElementsFromList.vue'
-import { minimumMaximumScalePerParameter} from '/src/assets/js/defaults.js'
+import { toTitleCase, getMultiplier } from '/WebSharedComponents/assets/js/utils.js'
+import Dimension from '/WebSharedComponents/DataInput/Dimension.vue'
+import ElementFromListRadio from '/WebSharedComponents/DataInput/ElementFromListRadio.vue'
+import ElementFromList from '/WebSharedComponents/DataInput/ElementFromList.vue'
+import SeveralElementsFromList from '/WebSharedComponents/DataInput/SeveralElementsFromList.vue'
+import { minimumMaximumScalePerParameter} from '/WebSharedComponents/assets/js/defaults.js'
 import { Cti, InsulationType, OvervoltageCategory, PollutionDegree, InsulationStandards } from '/src/assets/ts/MAS.ts'
-import * as Utils from '/src/assets/js/utils.js'
+import * as Utils from '/WebSharedComponents/assets/js/utils.js'
 import { WiringTechnology } from '/src/assets/ts/MAS.ts'
 </script>
 

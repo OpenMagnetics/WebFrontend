@@ -3,7 +3,7 @@ import OperationPoint from '/src/views/OperationPoint.vue'
 import Core from '/src/views/Core.vue'
 import { useCommonStore } from '/src/stores/waveform'
 import { useCoreStore } from '/src/stores/core'
-import { deepCopy } from '/src/assets/js/utils.js'
+import { deepCopy } from '/WebSharedComponents/assets/js/utils.js'
 
 </script>
 <script>

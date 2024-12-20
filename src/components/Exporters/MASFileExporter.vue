@@ -1,5 +1,5 @@
 <script setup>
-import { clean, download, deepCopy } from '/src/assets/js/utils.js'
+import { clean, download, deepCopy } from '/WebSharedComponents/assets/js/utils.js'
 
 </script>
 <script>

@@ -1,9 +1,9 @@
 <script setup>
 import { useMasStore } from '/src/stores/mas'
-import Dimension from '/src/components/DataInput/Dimension.vue'
-import ElementFromList from '/src/components/DataInput/ElementFromList.vue'
-import { minimumMaximumScalePerParameter } from '/src/assets/js/defaults.js'
-import { removeTrailingZeroes } from '/src/assets/js/utils.js'
+import Dimension from '/WebSharedComponents/DataInput/Dimension.vue'
+import ElementFromList from '/WebSharedComponents/DataInput/ElementFromList.vue'
+import { minimumMaximumScalePerParameter } from '/WebSharedComponents/assets/js/defaults.js'
+import { removeTrailingZeroes } from '/WebSharedComponents/assets/js/utils.js'
 
 </script>
 

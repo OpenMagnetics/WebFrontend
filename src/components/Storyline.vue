@@ -1,5 +1,5 @@
 <script setup>
-import { toDashCase, toPascalCase, toTitleCase } from '/src/assets/js/utils.js'
+import { toDashCase, toPascalCase, toTitleCase } from '/WebSharedComponents/assets/js/utils.js'
 </script>
 
 <script>

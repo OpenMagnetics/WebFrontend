@@ -1,14 +1,14 @@
 <script setup>
 import { useCrossReferencerStore } from '/src/stores/crossReferencer'
-import { defaultCore, defaultInputs, coreCrossReferencerPossibleCoreTypes, minimumMaximumScalePerParameter, defaultDesignRequirements } from '/src/assets/js/defaults.js'
-import { deepCopy } from '/src/assets/js/utils.js'
-import Dimension from '/src/components/DataInput/Dimension.vue'
-import ElementFromList from '/src/components/DataInput/ElementFromList.vue'
-import SeveralElementsFromList from '/src/components/DataInput/SeveralElementsFromList.vue'
+import { defaultCore, defaultInputs, coreCrossReferencerPossibleCoreTypes, minimumMaximumScalePerParameter, defaultDesignRequirements } from '/WebSharedComponents/assets/js/defaults.js'
+import { deepCopy } from '/WebSharedComponents/assets/js/utils.js'
+import Dimension from '/WebSharedComponents/DataInput/Dimension.vue'
+import ElementFromList from '/WebSharedComponents/DataInput/ElementFromList.vue'
+import SeveralElementsFromList from '/WebSharedComponents/DataInput/SeveralElementsFromList.vue'
 import Module from '/src/assets/js/libCrossReferencers.wasm.js'
-import CoreGappingSelector from '/src/components/Common/CoreGappingSelector.vue'
-import OperatingPointOffcanvas from '/src/components/Common/OperatingPointOffcanvas.vue'
-import MaximumDimensions from '/src/components/Common/MaximumDimensions.vue'
+import CoreGappingSelector from '/WebSharedComponents/Common/CoreGappingSelector.vue'
+import OperatingPointOffcanvas from './OperatingPointOffcanvas.vue'
+import MaximumDimensions from '/WebSharedComponents/Common/MaximumDimensions.vue'
 
 </script>
 

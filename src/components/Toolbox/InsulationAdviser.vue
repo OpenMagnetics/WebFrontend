@@ -1,11 +1,11 @@
 <script setup>
 import { ref } from 'vue'
 import { useMasStore } from '/src/stores/mas'
-import { toTitleCase, toPascalCase } from '/src/assets/js/utils.js'
-import { defaultDesignRequirements, defaultOperatingPointExcitationForInsulation, defaultOperatingPoint, defaultOperatingConditions } from '/src/assets/js/defaults.js'
+import { toTitleCase, toPascalCase } from '/WebSharedComponents/assets/js/utils.js'
+import { defaultDesignRequirements, defaultOperatingPointExcitationForInsulation, defaultOperatingPoint, defaultOperatingConditions } from '/WebSharedComponents/assets/js/defaults.js'
 import InsulationSimple from '/src/components/Toolbox/InsulationAdviser/InsulationSimple.vue'
-import ElementFromListRadio from '/src/components/DataInput/ElementFromListRadio.vue'
-import DimensionReadOnly from '/src/components/DataInput/DimensionReadOnly.vue'
+import ElementFromListRadio from '/WebSharedComponents/DataInput/ElementFromListRadio.vue'
+import DimensionReadOnly from '/WebSharedComponents/DataInput/DimensionReadOnly.vue'
 import InsulationExtraInputs from '/src/components/Toolbox/InsulationAdviser/InsulationExtraInputs.vue'
 import Module from '/src/assets/js/libInsulationCoordinator.wasm.js'
 </script>

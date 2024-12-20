@@ -1,5 +1,5 @@
 <script setup>
-import { toTitleCase, removeTrailingZeroes, processCoreTexts} from '/src/assets/js/utils.js'
+import { toTitleCase, removeTrailingZeroes, processCoreTexts} from '/WebSharedComponents/assets/js/utils.js'
 </script>
 
 <script>

@@ -4,7 +4,7 @@ import { useAdviseCacheStore } from '/src/stores/adviseCache'
 import Header from '/src/components/Header.vue'
 import Footer from '/src/components/Footer.vue'
 import Storyline from '/src/components/Storyline.vue'
-import { toTitleCase } from '/src/assets/js/utils.js'
+import { toTitleCase } from '/WebSharedComponents/assets/js/utils.js'
 
 import GenericTool from '/src/components/Toolbox/GenericTool.vue'
 

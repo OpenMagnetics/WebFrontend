@@ -1,7 +1,7 @@
 <script setup>
 import { useMasStore } from '/src/stores/mas'
-import { toTitleCase, getMultiplier } from '/src/assets/js/utils.js'
-import DimensionUnit from '/src/components/DataInput/DimensionUnit.vue'
+import { toTitleCase, getMultiplier } from '/WebSharedComponents/assets/js/utils.js'
+import DimensionUnit from '/WebSharedComponents/DataInput/DimensionUnit.vue'
 
 </script>
 

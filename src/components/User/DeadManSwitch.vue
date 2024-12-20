@@ -17,7 +17,7 @@ export default {
         trigger() {
             if (this.isArmed) {
                 this.$userStore.reset()
-                this.$dataCacheStore.reset()
+                // this.$dataCacheStore.reset()
             }
         },
         disarm() {

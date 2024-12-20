@@ -1,7 +1,7 @@
 <script setup>
-import Dimension from '/src/components/DataInput/Dimension.vue'
-import ElementFromList from '/src/components/DataInput/ElementFromList.vue'
-import { minimumMaximumScalePerParameter, titleColor } from '/src/assets/js/defaults.js'
+import Dimension from '/WebSharedComponents/DataInput/Dimension.vue'
+import ElementFromList from '/WebSharedComponents/DataInput/ElementFromList.vue'
+import { minimumMaximumScalePerParameter, titleColor } from '/WebSharedComponents/assets/js/defaults.js'
 import { WaveformLabel } from '/src/assets/ts/MAS.ts'
 
 </script>

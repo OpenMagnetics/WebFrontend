@@ -1,8 +1,8 @@
 <script setup>
 import { useMasStore } from '/src/stores/mas'
-import { toTitleCase, getMultiplier } from '/src/assets/js/utils.js'
-import DimensionWithTolerance from '/src/components/DataInput/DimensionWithTolerance.vue'
-import { isolationSideOrdered } from '/src/assets/js/defaults.js'
+import { toTitleCase, getMultiplier } from '/WebSharedComponents/assets/js/utils.js'
+import DimensionWithTolerance from '/WebSharedComponents/DataInput/DimensionWithTolerance.vue'
+import { isolationSideOrdered } from '/WebSharedComponents/assets/js/defaults.js'
 </script>
 
 <script>

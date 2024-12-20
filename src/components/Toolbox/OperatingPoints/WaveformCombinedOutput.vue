@@ -1,7 +1,7 @@
 <script setup>
-import DimensionReadOnly from '/src/components/DataInput/DimensionReadOnly.vue'
-import { removeTrailingZeroes } from '/src/assets/js/utils.js'
-import { minimumMaximumScalePerParameter, titleColor } from '/src/assets/js/defaults.js'
+import DimensionReadOnly from '/WebSharedComponents/DataInput/DimensionReadOnly.vue'
+import { removeTrailingZeroes } from '/WebSharedComponents/assets/js/utils.js'
+import { minimumMaximumScalePerParameter, titleColor } from '/WebSharedComponents/assets/js/defaults.js'
 </script>
 
 <script>
