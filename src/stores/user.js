@@ -63,8 +63,17 @@ export const useUserStore = defineStore("user", () => {
         'magneticSummary': false,
     })
 
+    const filterMagneticToolSubsection = ref("welcome");
+    const filterMagneticToolCanContinue = ref({
+        'welcome': true,
+        'filterDesignRequirements': false,
+        'operatingPoints': false,
+        'toolSelector': false,
+    });
+
+
     const magneticSelectedTool = ref("magneticTool");
-    const filterMagneticSelectedTool = ref("magneticTool");
+    const filterMagneticSelectedTool = ref("filterMagneticTool");
     const anyDesignLoaded = ref(false);
     const showWelcome = ref(true);
     const magneticCoreAdviserSelectedAdvise = ref(0);
@@ -92,13 +101,20 @@ export const useUserStore = defineStore("user", () => {
     function resetMagneticTool() {
         this.anyDesignLoaded = false;
         this.magneticSelectedTool = "magneticTool";
-        this.filterMagneticSelectedTool = "magneticTool";
+        this.filterMagneticSelectedTool = "filterMagneticTool";
         this.magneticToolSubsection = "welcome";
+        this.filterMagneticToolSubsection = "welcome";
         this.magneticSpecificationsReportSubsection = "designRequirements";
         this.magneticAdviserSubsection = "designRequirements";
         this.magneticBuilderSubsection = "designRequirements";
         this.magneticCoreAdviserSubsection = "designRequirements";
         this.magneticToolCanContinue = {
+            'welcome': true,
+            'designRequirements': false,
+            'operatingPoints': false,
+            'toolSelector': false,
+        };
+        this.filterMagneticToolCanContinue = {
             'welcome': true,
             'designRequirements': false,
             'operatingPoints': false,
@@ -276,10 +292,12 @@ export const useUserStore = defineStore("user", () => {
         magneticAdviserSubsection,
         magneticBuilderSubsection,
         magneticSpecificationsReportSubsection,
+        filterMagneticToolSubsection,
         filterMagneticAdviserSubsection,
         filterMagneticAdviserCanContinue,
         filterMagneticBuilderSubsection,
         filterMagneticBuilderCanContinue,
+        filterMagneticToolCanContinue,
 
         insulationAdviserSubsection,
         insulationAdviserCanContinue,

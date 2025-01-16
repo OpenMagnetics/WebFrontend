@@ -14,6 +14,7 @@ import { useSettingsStore } from '/src/stores/settings'
 import Module from '/src/assets/js/libMKF.wasm.js';
 import { removeEmpty } from '/WebSharedComponents/assets/js/utils.js';
 
+import mkfAdvisersModule from '/src/assets/js/libAdvisers.wasm.js'
 
 const axiosInstance = axios.create()
 
@@ -50,6 +51,21 @@ router.beforeEach((to, from, next) => {
                 });
             })
         };
+
+
+    app.config.globalProperties.$mkfAdvisers = {
+        ready: new Promise(resolve => {
+            mkfAdvisersModule({
+                onRuntimeInitialized () {
+                    app.config.globalProperties.$mkfAdvisers = Object.assign(this, {
+                        ready: Promise.resolve()
+                    });
+                    resolve();
+                }
+            });
+        })
+    };
+
     }
 
     console.log("Loaded");

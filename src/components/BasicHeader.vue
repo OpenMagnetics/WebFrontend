@@ -57,7 +57,7 @@ export default {
             this.$userStore.setUsername(null)
         },
         newMagneticToolDesign() {
-            this.masStore.resetMas();
+            this.masStore.resetMas("power");
             this.$userStore.resetMagneticTool();
             setTimeout(() => {this.$router.push('/magnetic_tool');}, 100);
         }

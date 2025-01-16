@@ -57,7 +57,10 @@ export default {
     watch: { 
     },
     mounted () {
-
+        console.log(this.masStore.mas.inputs.designRequirements)
+        console.log(this.masStore.mas.inputs.designRequirements)
+        console.log(this.masStore.mas.inputs.designRequirements)
+        console.log(this.masStore.mas.inputs.designRequirements)
         if (this.masStore.mas.inputs.designRequirements[this.name] != this.fixedNumberElements &&
             this.maximumNumberElements == null &&
             this.fixedNumberElements != null) {
@@ -109,7 +112,7 @@ export default {
             <label :data-cy="dataTestLabel + '-title'"  class="rounded-2 fs-5 ms-3" :class="maximumNumberElements != null? 'col-sm-6 col-md-3' : 'col-12'">{{toTitleCase(name)}}</label>
         </div>
         <div class="row">
-            <ElementFromList :data-cy="dataTestLabel + '-' + (requirementIndex - 1) + '-container'" :dataTestLabel="dataTestLabel + '-' + (requirementIndex - 1)" :min="min" :max="max" v-for="requirementIndex in masStore.mas.inputs.designRequirements[name].length" :altText="masStore.mas.magnetic.coil.functionalDescription[requirementIndex - 1].name" :defaultValue="defaultValue" class="py-2 col-3" :name="requirementIndex - 1" v-model="masStore.mas.inputs.designRequirements[name]" :options="options" :replaceTitle="isolationSideOrdered[requirementIndex - 1]" @changeText="changeText($event, requirementIndex - 1)" />
+            <ElementFromList :data-cy="dataTestLabel + '-' + (requirementIndex) + '-container'" :dataTestLabel="dataTestLabel + '-' + (requirementIndex - 1)" :min="min" :max="max" v-for="requirementIndex in masStore.mas.inputs.designRequirements[name].length" ::defaultValue="defaultValue" class="py-2 col-3" :name="requirementIndex" v-model="masStore.mas.inputs.designRequirements[name]" :options="options" :replaceTitle="isolationSideOrdered[requirementIndex]" @changeText="changeText($event, requirementIndex)" />
         </div>
         <div class="row">
             <label class="text-danger text-center col-12 pt-1" style="font-size: 0.9em; white-space: pre-wrap;">{{errorMessages}}</label>

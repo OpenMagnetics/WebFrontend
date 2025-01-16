@@ -13,6 +13,8 @@
     "@chenfengyuan/vue-number-input": "^2.0.1",
     "@popperjs/core": "^2.11.8",
     "@vueform/slider": "^2.1.10",
+    "@vuepic/vue-datepicker": "^10.0.0",
+    "@vueuse/core": "^12.4.0",
     "axios": "^1.7.7",
     "bootstrap": "^5.3.3",
     "chartjs-plugin-dragdata": "^2.3.1",
@@ -27,10 +29,10 @@
     "three-trackballcontrols": "^0.9.0",
     "troisjs": "^0.3.4",
     "vue": "^3.5.8",
-    "vue3-cookies": "^1.0.6",
     "vue-echarts": "^7.0.3",
     "vue-good-table-next": "^0.2.2",
     "vue-router": "^4.4.5",
+    "vue3-cookies": "^1.0.6",
     "vue3-popper": "^1.5.0"
   },
   "devDependencies": {

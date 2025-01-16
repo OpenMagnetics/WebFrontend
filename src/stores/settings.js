@@ -2,11 +2,15 @@ import { defineStore } from 'pinia'
 import { ref, watch, computed  } from 'vue'
 
 export const useSettingsStore = defineStore("settings", () => {
-    const adviserSpiderBarChartNotBar = ref('0')
-    const adviserUseOnlyCoresInStock = ref('1')
-    const adviserAllowDistributedGaps = ref('1')
-    const adviserAllowStacks = ref('1')
-    const adviserToroidalCores = ref('1')
+    const adviserSpiderBarChartNotBar = ref('0');
+    const adviserUseOnlyCoresInStock = ref('1');
+    const adviserAllowDistributedGaps = ref('1');
+    const adviserAllowStacks = ref('1');
+    const adviserToroidalCores = ref('1');
+
+    const labelBgColor = ref('bg-dark');
+    const inputBgColor = ref('bg-light');
+    const textColor = ref('text-white');
 
     const dump = computed(() => {
         return {
@@ -35,6 +39,10 @@ export const useSettingsStore = defineStore("settings", () => {
 
         dump,
         reset,
+
+        labelBgColor,
+        inputBgColor,
+        textColor,
     }
 },
 {

@@ -83,8 +83,8 @@ export default {
         const currentStoryline = initialStoryline;
 
         if (!this.$userStore.showWelcome) {
-            if (this.$userStore.magneticToolSubsection == "welcome") {
-                this.$userStore.magneticToolSubsection = "filterDesignRequirements";
+            if (this.$userStore.filterMagneticToolSubsection == "welcome") {
+                this.$userStore.filterMagneticToolSubsection = "filterDesignRequirements";
             }
             delete currentStoryline.welcome;
         }
@@ -92,7 +92,7 @@ export default {
         if (!this.$userStore.isAnyDesignLoaded()) {
             this.$userStore.designLoaded();
             const masStore = useMasStore();
-            masStore.resetMas();
+            masStore.resetMas("filter");
 
             const adviseCacheStore = useAdviseCacheStore();
             adviseCacheStore.cleanMasAdvises();
@@ -107,6 +107,11 @@ export default {
     },
     methods: {
         toolSelected(tool) {
+            console.log(tool)
+            console.log(tool)
+            console.log(tool)
+            console.log(tool)
+            console.log(tool)
             if (tool == 'magneticAdviser') {
                 this.currentStoryline = this.magneticAdviserStoryline;
                 this.$userStore.filterMagneticSelectedTool = "magneticAdviser";
@@ -121,6 +126,9 @@ export default {
                 this.$userStore.filterMagneticBuilderCanContinue.filterDesignRequirements = true;
                 this.$userStore.filterMagneticBuilderCanContinue.operatingPoints = true;
             }
+
+            console.log(this.currentStoryline)
+            console.log(this.$userStore.filterMagneticBuilderC)
         },
     },
     mounted() {
@@ -134,8 +142,8 @@ export default {
 
 <template>
     <GenericTool
-        v-if="$userStore.filterMagneticSelectedTool == 'magneticTool'"
-        :toolLabel="'magneticTool'"
+        v-if="$userStore.filterMagneticSelectedTool == 'filterMagneticTool'"
+        :toolLabel="'filterMagneticTool'"
         :currentStoryline="currentStoryline"
         :dataTestLabel="'MagneticTool'"
         :showControlPanel="true"
@@ -143,28 +151,28 @@ export default {
     />
     <GenericTool
         v-if="$userStore.filterMagneticSelectedTool == 'magneticBuilder'"
-        :toolLabel="'magneticBuilder'"
+        :toolLabel="'filterMagneticBuilder'"
         :currentStoryline="magneticBuilderStoryline"
         :dataTestLabel="'MagneticBuilder'"
         :showControlPanel="true"
     />
     <GenericTool
         v-if="$userStore.filterMagneticSelectedTool == 'magneticAdviser'"
-        :toolLabel="'magneticAdviser'"
+        :toolLabel="'filterMagneticAdviser'"
         :currentStoryline="magneticAdviserStoryline"
         :dataTestLabel="'MagneticAdviser'"
         :showControlPanel="true"
     />
     <GenericTool
         v-if="$userStore.filterMagneticSelectedTool == 'magneticCoreAdviser'"
-        :toolLabel="'magneticCoreAdviser'"
+        :toolLabel="'filterMagneticCoreAdviser'"
         :currentStoryline="magneticCoreAdviserStoryline"
         :dataTestLabel="'MagneticCoreAdviser'"
         :showControlPanel="true"
     />
     <GenericTool
         v-if="$userStore.filterMagneticSelectedTool == 'magneticSpecificationsReport'"
-        :toolLabel="'magneticSpecificationsReport'"
+        :toolLabel="'filterMagneticSpecificationsReport'"
         :currentStoryline="magneticSpecificationsReportStoryline"
         :dataTestLabel="'MagneticSpecificationsReport'"
         :showControlPanel="true"

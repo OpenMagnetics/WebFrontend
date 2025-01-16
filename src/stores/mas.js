@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, watch, computed  } from 'vue'
-import * as MAS from '/src/assets/ts/MAS.ts'
+import * as MAS from '/WebSharedComponents/assets/ts/MAS.ts'
 import { deepCopy } from '/WebSharedComponents/assets/js/utils.js'
 import * as Defaults from '/WebSharedComponents/assets/js/defaults.js'
 
@@ -12,6 +12,7 @@ export const useMasStore = defineStore("mas", () => {
     const magneticAdviserWeights = ref(null);
     const magneticAdviserMaximumNumberResults = ref(6);
     const magneticManualOperatingPoints = ref([false]);
+    const magneticAcSweepOperatingPoints = ref(false);
     const magneticCircuitSimulatorOperatingPoints = ref([false]);
     const magneticCircuitSimulatorColumnNames = ref([]);
     const magneticCircuitSimulatorAllLastReadColumnNames = ref([]);
@@ -33,10 +34,16 @@ export const useMasStore = defineStore("mas", () => {
         this.mas = mas;
     }
 
-    function resetMas() {
+    function resetMas(type) {
         this.coreAdviserWeights = null;
-        this.mas = MAS.Convert.toMas(JSON.stringify(Defaults.powerMas));
+        if (type == "power") {
+            this.mas = MAS.Convert.toMas(JSON.stringify(Defaults.powerMas));
+        }
+        else if (type == "filter") {
+            this.mas = MAS.Convert.toMas(JSON.stringify(Defaults.filterMas));
+        }
         this.magneticManualOperatingPoints = [false];
+        this.magneticAcSweepOperatingPoints = false;
         this.magneticCircuitSimulatorOperatingPoints = [false];
         this.magneticCircuitSimulatorColumnNames = [];
         this.magneticCircuitSimulatorAllLastReadColumnNames = [];
@@ -94,6 +101,7 @@ export const useMasStore = defineStore("mas", () => {
         magneticAdviserWeights,
         magneticAdviserMaximumNumberResults,
         magneticManualOperatingPoints,
+        magneticAcSweepOperatingPoints,
         magneticCircuitSimulatorOperatingPoints,
         magneticCircuitSimulatorColumnNames,
         magneticCircuitSimulatorAllLastReadColumnNames,

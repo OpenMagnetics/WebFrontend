@@ -186,6 +186,10 @@ export default {
         selectedManualOrImported() {
             this.$emit("canContinue", this.canContinue);
         },
+        selectedAcSweepTypeSelected() {
+            this.$emit("canContinue", true);
+            this.$emit('changeTool', 'toolSelector')
+        },
         changeWinding(windingIndex) {
 
             if (this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[windingIndex] == null) {
@@ -272,6 +276,7 @@ export default {
                             @updatedWaveform="updatedWaveform"
                             @importedWaveform="importedWaveform"
                             @selectedManualOrImported="selectedManualOrImported"
+                            @selectedAcSweepTypeSelected="selectedAcSweepTypeSelected"
                         />
                     </div>
                 </div>

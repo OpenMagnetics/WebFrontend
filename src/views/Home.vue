@@ -52,7 +52,7 @@ export default {
                     <div class="row my-2">
                         <div class="offset-lg-2 col-8 d-flex justify-content-evenly">
                             <a href="https://github.com/OpenMagnetics/" target="_blank" rel="noopener noreferrer" class="btn text-dark bg-success border-dark mx-2 fs-5 ">Give us a star on Github! <i class="fa-brands fa-github"></i> </a>
-                            <button class="btn text-dark bg-primary border-dark mx-2 fs-5 " @click="newMagneticToolDesign">Start designing!<i class="ms-2 fa-solid fa-toolbox"></i> </button>
+                            <button class="btn text-dark bg-primary border-dark mx-2 fs-5 " @click="newMagneticToolDesign">Join us on Discord!<i class="ms-2 fa-brands fa-discord"></i> </button>
                             <a href="https://www.linkedin.com/company/openmagnetics" target="_blank" class="btn text-dark bg-info border-dark mx-2 fs-5 ">Follow us on LinkedIn! <i class="fa-brands fa-linkedin"></i> </a>
                         </div>
                     </div>

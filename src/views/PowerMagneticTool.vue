@@ -129,7 +129,7 @@ export default {
         if (!this.$userStore.isAnyDesignLoaded()) {
             this.$userStore.designLoaded();
             const masStore = useMasStore();
-            masStore.resetMas();
+            masStore.resetMas("power");
 
             const adviseCacheStore = useAdviseCacheStore();
             adviseCacheStore.cleanMasAdvises();

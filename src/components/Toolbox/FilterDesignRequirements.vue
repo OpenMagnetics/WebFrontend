@@ -4,10 +4,11 @@ import { useMasStore } from '/src/stores/mas'
 import { toTitleCase, toPascalCase } from '/WebSharedComponents/assets/js/utils.js'
 import { tooltipsMagneticSynthesisDesignRequirements } from '/WebSharedComponents/assets/js/texts.js'
 import { defaultDesignRequirements, designRequirementsOrdered, isolationSideOrdered, minimumMaximumScalePerParameter} from '/WebSharedComponents/assets/js/defaults.js'
-import { Market, ConnectionType, Topology } from '/src/assets/ts/MAS.ts'
+import { Market, ConnectionType, Topology } from '/WebSharedComponents/assets/ts/MAS.ts'
 import Insulation from '/src/components/Toolbox/DesignRequirements/Insulation.vue'
 import Dimension from '/WebSharedComponents/DataInput/Dimension.vue'
 import MaximumDimensions from '/src/components/Toolbox/DesignRequirements/MaximumDimensions.vue'
+import Impedances from '/src/components/Toolbox/DesignRequirements/Impedances.vue'
 import DimensionWithTolerance from '/WebSharedComponents/DataInput/DimensionWithTolerance.vue'
 import ArrayDimensionWithTolerance from '/src/components/Toolbox/DesignRequirements/ArrayDimensionWithTolerance.vue'
 import ElementFromList from '/WebSharedComponents/DataInput/ElementFromList.vue'
@@ -23,9 +24,10 @@ export default {
         },
     },
     data() {
-        const compulsoryRequirements = ["numberWindings", "impedance", "turnsRatios", "name"];
+        const compulsoryRequirements = ["numberWindings", "magnetizingInductance", "minimumImpedance", "turnsRatios", "name"];
         const masStore = useMasStore();
-        var numberWindings = 1;
+        var numberWindings = 2;
+
         if (masStore.mas.inputs.designRequirements.turnsRatios != null) {
             numberWindings = masStore.mas.inputs.designRequirements.turnsRatios.length + 1;
         }
@@ -95,10 +97,12 @@ export default {
             this.$emit("canContinue", this.canContinue(state));
         })
         this.$emit("canContinue", this.canContinue(this.masStore));
+
+        this.updatedNumberElements(this.numberWindingsAux.numberWindings, 'numberWindings');
     },
     methods: {
         canContinue(store){
-            var canContinue = store.mas.inputs.designRequirements.impedance != null;
+            var canContinue = store.mas.inputs.designRequirements.magnetizingInductance != null && store.mas.inputs.designRequirements.minimumImpedance != null;
             canContinue &= store.mas.inputs.designRequirements.name != '';
             for (var index in store.mas.inputs.designRequirements.turnsRatios) {
                 canContinue &= store.mas.inputs.designRequirements.turnsRatios[index].minimum != null ||
@@ -187,7 +191,7 @@ export default {
                     @hasError="hasError"
                 />
 
-                <ElementFromList class="border-bottom py-2"
+                <ElementFromList class="py-2 ms-3"
                     :name="'numberWindings'"
                     :dataTestLabel="dataTestLabel + '-NumberWindings'"
                     :options="Array.from({length: 12}, (_, i) => i + 1)"
@@ -195,6 +199,7 @@ export default {
                     v-model="numberWindingsAux"
                     @update="updatedNumberElements"
                 />
+                <div class="border-bottom"></div>
 
                 <DimensionWithTolerance class="border-bottom py-2"
                     v-if="masStore.mas.inputs.designRequirements.magnetizingInductance != null"
@@ -207,6 +212,11 @@ export default {
                     :max="minimumMaximumScalePerParameter['inductance']['max']"
                     v-model="masStore.mas.inputs.designRequirements.magnetizingInductance"
                     @hasError="hasError"
+                />
+
+                <Impedances class="border-bottom py-2"
+                    v-if="masStore.mas.inputs.designRequirements.minimumImpedance != null"
+                    :dataTestLabel="dataTestLabel + '-MinimumImpedance'"
                 />
 
                 <ArrayDimensionWithTolerance class="border-bottom py-2"
@@ -268,7 +278,7 @@ export default {
                     @hasError="hasError"
                 />
               
-                <Dimension class="border-bottom py-2"
+                <Dimension class="py-2 ms-3"
                     v-if="masStore.mas.inputs.designRequirements.maximumWeight != null"
                     :name="'maximumWeight'"
                     unit="g"
@@ -278,6 +288,7 @@ export default {
                     :defaultValue="300"
                     v-model="masStore.mas.inputs.designRequirements"
                 />
+                <div class="border-bottom"></div>
 
                 <MaximumDimensions class="border-bottom py-2"
                     v-if="masStore.mas.inputs.designRequirements.maximumDimensions != null"

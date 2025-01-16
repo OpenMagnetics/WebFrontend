@@ -95,7 +95,7 @@ export default {
             this.$userStore[`${this.toolLabel}Subsection`] = tool;
         },
         toolSelected(tool) {
-            this.$emit('toolSelected', tool);
+            this.$emit('toolSelected', tool); 
         },
         onSettingsUpdated(event) {
         },
@@ -113,9 +113,6 @@ export default {
     mounted() {
     },
     created() {
-        console.log(this.currentStoryline)
-        console.log(`${this.toolLabel}Subsection`)
-        console.log(this.$userStore[`${this.toolLabel}Subsection`])
     },
 }
 </script>
@@ -127,8 +124,8 @@ export default {
             :modalName="'StorylineSettingsModal'"
             @onSettingsUpdated="onSettingsUpdated"
         />
-        <main role="main" class="main">
-            <div v-if="currentStoryline[$userStore[`${toolLabel}Subsection`]] != null" class="container mx-auto">
+        <main role="main" class="main text-white">
+            <div v-if="currentStoryline[$userStore[`${toolLabel}Subsection`]] != null && $userStore[`${toolLabel}CanContinue`] != null" class="container mx-auto">
                 <div class="row">
                     <div class="text-white text-center col-xs-12 col-sm-12 col-md-1 bg-transparent border border-primary m-0 pb-2" style="height: fit-content">
                         <h4 class="text-center">Storyline</h4>
@@ -210,7 +207,14 @@ export default {
                             <MagneticBuilder 
                                 v-if="$userStore[`${toolLabel}Subsection`] == 'magneticBuilder'"
                                 :masStore="masStore"
+                                :mkf="$mkf"
+                                :mkfAdvisers="$mkfAdvisers"
                                 :dataTestLabel="`${dataTestLabel}-MagneticBuilder`"
+                                :useVisualizers="true"
+                                :enableCoil="true"
+                                :enableGraphs="masStore.magneticAcSweepOperatingPoints"
+                                :enableAdvisers="!masStore.magneticAcSweepOperatingPoints"
+                                :enableSimulation="!masStore.magneticAcSweepOperatingPoints"
                                 @canContinue="updateCanContinue('magneticBuilder', $event)"
                             />
                             <MagneticSummary

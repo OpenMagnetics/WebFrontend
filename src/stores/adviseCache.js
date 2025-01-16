@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, watch, computed  } from 'vue'
-import * as MAS from '/src/assets/ts/MAS.ts'
+import * as MAS from '/WebSharedComponents/assets/ts/MAS.ts'
 import * as Defaults from '/WebSharedComponents/assets/js/defaults.js'
 
 export const useAdviseCacheStore = defineStore("adviseCache", () => {
