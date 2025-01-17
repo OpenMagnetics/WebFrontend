@@ -169,7 +169,7 @@ export default {
                             <input type="file" id="OperatingPoint-MAS-upload-input" ref="OperatingPoint-MAS-upload-ref" @change="onMASFileTypeSelected"  style="display:none">
                     </label> -->
                         <input type="file" id="OperatingPoint-CircuitSimulator-upload-input" ref="OperatingPoint-CircuitSimulator-upload-ref" @change="onCircuitSimulatorFileTypeSelected" style="display:none" hidden/>
-                        <button data-cy="OperatingPointImport-source-Manual-button" type="button" @click="onCircuitSimulatorTypeSelected" class="col-lg-3 col-md-12 offset-lg-0 btn btn-primary mt-1 rounded-3 fs-5" style="min-height: 6em">Circuit simulator export file</button>
+                        <button data-cy="OperatingPointImport-source-Manual-button" type="button" @click="onCircuitSimulatorTypeSelected" class="col-lg-3 col-md-12 offset-lg-0 btn btn-primary mt-1 rounded-3 fs-5" style="min-height: 6em">Circuit simulator export file or CSV</button>
 
                         <button data-cy="OperatingPointImport-source-Manual-button" type="button" @click="onManualTypeSelected" class="col-lg-3 col-md-12 offset-lg-1 btn btn-primary mt-1 rounded-3 fs-5" style="min-height: 6em">I will define it manually</button>
                         <button data-cy="OperatingPointImport-source-Manual-button" type="button" @click="onAcSweepTypeSelected" class="col-lg-3 col-md-12 offset-lg-1 btn btn-primary mt-1 rounded-3 fs-5" style="min-height: 6em">I am here for the AC sweeps</button>
