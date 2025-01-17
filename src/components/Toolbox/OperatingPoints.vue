@@ -219,6 +219,23 @@ export default {
         resetCurrentExcitation() {
             this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex] = deepCopy(defaultOperatingPointExcitation);
         },
+        isExcitationProcessed(operatingPointIndex, windingIndex) {
+            if (this.masStore.mas.inputs.operatingPoints[operatingPointIndex].excitationsPerWinding[windingIndex] == null) {
+                return false;
+            }
+            else {
+                if (this.masStore.mas.inputs.operatingPoints[operatingPointIndex].excitationsPerWinding[windingIndex].current == null) {
+                    return false;
+                }
+                if (this.masStore.mas.inputs.operatingPoints[operatingPointIndex].excitationsPerWinding[windingIndex].current.processed == null) {
+                    return false;
+                }
+                if (this.masStore.mas.inputs.operatingPoints[operatingPointIndex].excitationsPerWinding[windingIndex].current.processed.rms == null) {
+                    return false;
+                }
+            }
+            return true;
+        },
     }
 }
 </script>
@@ -231,7 +248,7 @@ export default {
                     <input :data-cy="dataTestLabel + '-operating-point-' + operatingPointIndex + '-name-input'" type="text" class="m-0 px-0 col-12 bg-dark text-white" 
                         v-model="masStore.mas.inputs.operatingPoints[operatingPointIndex].name"
                         placeholder="My operating point"/>
-                    <div v-if="currentOperatingPointIndex == operatingPointIndex" class="col-12 row m-0 p-0" v-for="winding, windingIndex in masStore.mas.magnetic.coil.functionalDescription">
+                    <div v-if="currentOperatingPointIndex == operatingPointIndex" class="col-12 row m-0 p-0 " v-for="winding, windingIndex in masStore.mas.magnetic.coil.functionalDescription">
                         <input :data-cy="dataTestLabel + '-operating-point-' + operatingPointIndex + '-winding-' + windingIndex + '-name-input'" class="rounded-2 fs-5 ms-2 bg-light text-white col-7 p-0 mb-2 border-0" v-model="winding.name">
                         <button :data-cy="dataTestLabel + '-operating-point-' + operatingPointIndex + '-winding-' + windingIndex + '-reflect-button'" v-if="masStore.mas.magnetic.coil.functionalDescription.length == 2 && masStore.mas.inputs.operatingPoints[operatingPointIndex].excitationsPerWinding[(windingIndex + 1) % 2] != null" v-tooltip="tooltipsMagneticSynthesisOperatingPoints[(windingIndex == 0? 'reflectPrimary' : 'reflectSecondaries')]" class="btn btn-secondary fs-6 col-2 mt-2 p-0" style="max-height: 1.7em" @click="reflectWinding(windingIndex)">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-symmetry-vertical" viewBox="0 0 16 16">
@@ -240,14 +257,10 @@ export default {
                         </button>
                         <div v-if="!(masStore.mas.magnetic.coil.functionalDescription.length == 2 && masStore.mas.inputs.operatingPoints[operatingPointIndex].excitationsPerWinding[(windingIndex + 1) % 2] != null)" class="fs-6 col-2 mt-2 p-0" style="max-height: 1.7em">
                         </div>
-                        <button :data-cy="dataTestLabel + '-operating-point-' + operatingPointIndex + '-winding-' + windingIndex + '-select-button'" v-tooltip="tooltipsMagneticSynthesisOperatingPoints['editWindingWaveform']" class="btn fs-6 col-2 mt-2 p-0 ms-1" :class="currentWindingIndex == windingIndex? 'btn-success disabled' : masStore.mas.inputs.operatingPoints[operatingPointIndex].excitationsPerWinding[windingIndex] != null? 'btn-primary' : 'btn-danger'" @click="changeWinding(windingIndex)" style="max-height: 1.7em;">
+                        <button :data-cy="dataTestLabel + '-operating-point-' + operatingPointIndex + '-winding-' + windingIndex + '-select-button'" v-tooltip="tooltipsMagneticSynthesisOperatingPoints['editWindingWaveform']" class="btn fs-6 col-2 mt-2 p-0 ms-1" :class="currentWindingIndex == windingIndex? 'btn-success disabled' : isExcitationProcessed(operatingPointIndex, windingIndex)? 'btn-primary' : 'btn-danger'" @click="changeWinding(windingIndex)" style="max-height: 1.7em;">
                             <svg v-if="currentWindingIndex == windingIndex" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-eye-fill" viewBox="0 0 16 16">
                                 <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0z"/>
                                 <path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8zm8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z"/>
-                            </svg>
-                            <svg v-else v-if="masStore.mas.inputs.operatingPoints[operatingPointIndex].excitationsPerWinding[windingIndex] != null" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square" viewBox="0 0 16 16">
-                                <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/>
-                                <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z"/>
                             </svg>
                             <svg v-else xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-earmark-plus-fill" viewBox="0 0 16 16">
                                 <path d="M9.293 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.707A1 1 0 0 0 13.707 4L10 .293A1 1 0 0 0 9.293 0zM9.5 3.5v-2l3 3h-2a1 1 0 0 1-1-1zM8.5 7v1.5H10a.5.5 0 0 1 0 1H8.5V11a.5.5 0 0 1-1 0V9.5H6a.5.5 0 0 1 0-1h1.5V7a.5.5 0 0 1 1 0z"/>

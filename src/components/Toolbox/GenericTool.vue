@@ -160,6 +160,7 @@ export default {
                             <ToolSelector
                                 v-if="$userStore[`${toolLabel}Subsection`] == 'toolSelector'"
                                 :dataTestLabel="`${dataTestLabel}-ToolSelector`"
+                                :acSweepSelected="masStore.magneticAcSweepOperatingPoints"
                                 @toolSelected="toolSelected"
                             />
                             <DesignRequirements

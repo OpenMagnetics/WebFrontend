@@ -158,7 +158,7 @@ export default {
                       <a class="nav-link dropdown-toggle text-primary bg-dark border-primary border rounded" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                         <i class="me-2 fa-solid fa-square-plus"></i>New Design
                       </a>
-                      <ul class="dropdown-menu bg-dark">
+                      <ul class="dropdown-menu bg-dark border-primary px-1">
                         <li><button data-cy="Header-new-magnetic-link" :class="headerTogglerIsVisible? 'w-100' : 'mx-1' " class="dropdown-item btn btn-block nav-link text-primary bg-dark border-primary px-2" @click="newFilterMagneticToolDesign"><i class="me-2 fa-solid fa-filter"></i>New Filter</button></li>
                         <li><button data-cy="Header-new-magnetic-link" :class="headerTogglerIsVisible? 'w-100' : 'mx-1' " class="dropdown-item btn btn-block nav-link text-primary bg-dark border-primary px-2" @click="newPowerMagneticToolDesign"><i class="me-2 fa-solid fa-toolbox"></i>New Magnetic</button></li>
                         <!-- <li><hr class="dropdown-divider"></li> -->
@@ -168,7 +168,7 @@ export default {
                       <a :class="headerTogglerIsVisible? '' : 'mx-1'" class="nav-link dropdown-toggle text-primary bg-dark border-primary border rounded" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                         <i class="me-2 fa-solid fa-toolbox"></i>Other Tools
                       </a>
-                      <ul class="dropdown-menu bg-dark">
+                      <ul class="dropdown-menu bg-dark border-primary px-1">
                         <li><a data-cy="Header-insulation-coordinator-link" href="/insulation_adviser" :class="headerTogglerIsVisible? 'w-100' : 'mx-1' " class="dropdown-item btn btn-block nav-link text-primary bg-dark border-primary px-2"><i class="me-2 fa-solid fa-bolt-lightning"></i>Insulation Coordinator</a></li>
                       </ul>
                     </li>

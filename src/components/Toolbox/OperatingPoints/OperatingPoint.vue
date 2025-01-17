@@ -117,6 +117,7 @@ export default {
             fr.readAsText(this.$refs["OperatingPoint-CircuitSimulator-upload-ref"].files.item(0));
         },
         onManualTypeSelected(event) {
+            this.masStore.magneticAcSweepOperatingPoints = false;
             this.masStore.magneticManualOperatingPoints[this.currentOperatingPointIndex] = true;
             this.$emit("selectedManualOrImported")
         },
@@ -125,6 +126,7 @@ export default {
             this.$emit("selectedAcSweepTypeSelected")
         },
         onCircuitSimulatorTypeSelected(event) {
+            this.masStore.magneticAcSweepOperatingPoints = false;
             this.$refs['OperatingPoint-CircuitSimulator-upload-ref'].click()
         },
         setImportMode(event) {
