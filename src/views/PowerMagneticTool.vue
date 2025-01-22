@@ -120,8 +120,8 @@ export default {
         const currentStoryline = initialStoryline;
 
         if (!this.$userStore.showWelcome) {
-            if (this.$userStore.magneticToolSubsection == "welcome") {
-                this.$userStore.magneticToolSubsection = "designRequirements";
+            if (this.$userStore.getCurrentToolState().subsection == "welcome") {
+                this.$userStore.setCurrentToolSubsection("designRequirements");
             }
             delete currentStoryline.welcome;
         }
@@ -148,37 +148,37 @@ export default {
         toolSelected(tool) {
             if (tool == 'magneticSpecificationsReport') {
                 this.currentStoryline = this.magneticSpecificationsReportStoryline;
-                this.$userStore.magneticSelectedTool = "magneticSpecificationsReport";
-                this.$userStore.magneticSpecificationsReportSubsection = "magneticSpecificationsSummary";
-                this.$userStore.magneticSpecificationsReportCanContinue.designRequirements = true;
-                this.$userStore.magneticSpecificationsReportCanContinue.operatingPoints = true;
+                this.$userStore.selectTool("magneticSpecificationsReport");
+                this.$userStore.setCurrentToolSubsection("magneticSpecificationsSummary");
+                this.$userStore.setCurrentToolSubsectionStatus("designRequirements", true);
+                this.$userStore.setCurrentToolSubsectionStatus("operatingPoints", true);
             }
             if (tool == 'magneticCoreAdviser') {
                 this.currentStoryline = this.magneticCoreAdviserStoryline;
-                this.$userStore.magneticSelectedTool = "magneticCoreAdviser";
-                this.$userStore.magneticCoreAdviserSubsection = "magneticCoreAdviser";
-                this.$userStore.magneticCoreAdviserCanContinue.designRequirements = true;
-                this.$userStore.magneticCoreAdviserCanContinue.operatingPoints = true;
+                this.$userStore.selectTool("magneticCoreAdviser");
+                this.$userStore.setCurrentToolSubsection("magneticCoreAdviser");
+                this.$userStore.setCurrentToolSubsectionStatus("designRequirements", true);
+                this.$userStore.setCurrentToolSubsectionStatus("operatingPoints", true);
             }
             if (tool == 'magneticAdviser') {
                 this.currentStoryline = this.magneticAdviserStoryline;
-                this.$userStore.magneticSelectedTool = "magneticAdviser";
-                this.$userStore.magneticAdviserSubsection = "magneticAdviser";
-                this.$userStore.magneticAdviserCanContinue.designRequirements = true;
-                this.$userStore.magneticAdviserCanContinue.operatingPoints = true;
+                this.$userStore.selectTool("magneticAdviser");
+                this.$userStore.setCurrentToolSubsection("magneticAdviser");
+                this.$userStore.setCurrentToolSubsectionStatus("designRequirements", true);
+                this.$userStore.setCurrentToolSubsectionStatus("operatingPoints", true);
             }
             if (tool == 'magneticBuilder') {
                 this.currentStoryline = this.magneticBuilderStoryline;
-                this.$userStore.magneticSelectedTool = "magneticBuilder";
-                this.$userStore.magneticBuilderSubsection = "magneticBuilder";
-                this.$userStore.magneticBuilderCanContinue.designRequirements = true;
-                this.$userStore.magneticBuilderCanContinue.operatingPoints = true;
+                this.$userStore.selectTool("magneticBuilder");
+                this.$userStore.setCurrentToolSubsection("magneticBuilder");
+                this.$userStore.setCurrentToolSubsectionStatus("designRequirements", true);
+                this.$userStore.setCurrentToolSubsectionStatus("operatingPoints", true);
             }
         },
     },
     mounted() {
-        console.log("this.$userStore.magneticSelectedTool")
-        console.log(this.$userStore.magneticSelectedTool)
+        console.log("this.$userStore.selectedTool")
+        console.log(this.$userStore.selectedTool)
     },
     created() {
     },
@@ -187,36 +187,36 @@ export default {
 
 <template>
     <GenericTool
-        v-if="$userStore.magneticSelectedTool == 'magneticTool'"
-        :toolLabel="'magneticTool'"
+        v-if="$userStore.selectedTool == 'agnosticTool'"
+        :toolLabel="'agnosticTool'"
         :currentStoryline="currentStoryline"
         :dataTestLabel="'MagneticTool'"
         :showControlPanel="true"
         @toolSelected="toolSelected"
     />
     <GenericTool
-        v-if="$userStore.magneticSelectedTool == 'magneticBuilder'"
+        v-if="$userStore.selectedTool == 'magneticBuilder'"
         :toolLabel="'magneticBuilder'"
         :currentStoryline="magneticBuilderStoryline"
         :dataTestLabel="'MagneticBuilder'"
         :showControlPanel="true"
     />
     <GenericTool
-        v-if="$userStore.magneticSelectedTool == 'magneticAdviser'"
+        v-if="$userStore.selectedTool == 'magneticAdviser'"
         :toolLabel="'magneticAdviser'"
         :currentStoryline="magneticAdviserStoryline"
         :dataTestLabel="'MagneticAdviser'"
         :showControlPanel="true"
     />
     <GenericTool
-        v-if="$userStore.magneticSelectedTool == 'magneticCoreAdviser'"
+        v-if="$userStore.selectedTool == 'magneticCoreAdviser'"
         :toolLabel="'magneticCoreAdviser'"
         :currentStoryline="magneticCoreAdviserStoryline"
         :dataTestLabel="'MagneticCoreAdviser'"
         :showControlPanel="true"
     />
     <GenericTool
-        v-if="$userStore.magneticSelectedTool == 'magneticSpecificationsReport'"
+        v-if="$userStore.selectedTool == 'magneticSpecificationsReport'"
         :toolLabel="'magneticSpecificationsReport'"
         :currentStoryline="magneticSpecificationsReportStoryline"
         :dataTestLabel="'MagneticSpecificationsReport'"

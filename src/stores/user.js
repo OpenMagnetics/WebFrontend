@@ -5,90 +5,147 @@ import * as Defaults from '/WebSharedComponents/assets/js/defaults.js'
 
 export const useUserStore = defineStore("user", () => {
 
-    const magneticSpecificationsReportSubsection = ref("designRequirements");
-    const magneticSpecificationsReportCanContinue = ref({
-        'designRequirements': false,
-        'operatingPoints': false,
-        'magneticSpecificationsSummary': false,
-    })
-
-    const magneticAdviserSubsection = ref("designRequirements");
-    const magneticAdviserCanContinue = ref({
-        'designRequirements': false,
-        'operatingPoints': false,
-        'magneticAdviser': false,
-        'magneticBuilder': false,
-        'magneticSummary': false,
-    })
-
-    const magneticBuilderSubsection = ref("designRequirements");
-    const magneticBuilderCanContinue = ref({
-        'designRequirements': false,
-        'operatingPoints': false,
-        'magneticBuilder': false,
-        'magneticSummary': false,
-    })
-
-    const magneticCoreAdviserSubsection = ref("designRequirements");
-    const magneticCoreAdviserCanContinue = ref({
-        'designRequirements': false,
-        'operatingPoints': false,
-        'magneticCoreAdviser': false,
-        'magneticCoreSummary': false,
-    })
-
-    const magneticToolSubsection = ref("welcome");
-    const magneticToolCanContinue = ref({
-        'welcome': true,
-        'designRequirements': false,
-        'operatingPoints': false,
-        'toolSelector': false,
+    const toolboxStates = ref({
+        power: {
+            magneticSpecificationsReport: {
+                subsection: "designRequirements",
+                canContinue: {
+                    'designRequirements': false,
+                    'operatingPoints': false,
+                    'magneticSpecificationsSummary': false,
+                },
+            },
+            magneticAdviser: {
+                subsection: "designRequirements",
+                canContinue: {
+                    'designRequirements': false,
+                    'operatingPoints': false,
+                    'magneticAdviser': false,
+                    'magneticBuilder': false,
+                    'magneticSummary': false,
+                },
+                selectedAdvise: 0,
+            },
+            magneticBuilder: {
+                subsection: "designRequirements",
+                canContinue: {
+                    'designRequirements': false,
+                    'operatingPoints': false,
+                    'magneticBuilder': false,
+                    'magneticSummary': false,
+                },
+            },
+            magneticCoreAdviser: {
+                subsection: "designRequirements",
+                canContinue: {
+                    'designRequirements': false,
+                    'operatingPoints': false,
+                    'magneticCoreAdviser': false,
+                    'magneticCoreSummary': false,
+                },
+                selectedAdvise: 0,
+            },
+            agnosticTool: {
+                subsection: "welcome",
+                canContinue: {
+                    'welcome': true,
+                    'designRequirements': false,
+                    'operatingPoints': false,
+                    'toolSelector': false,
+                },
+            },
+        },
+        filter: {
+            magneticAdviser: {
+                subsection: "filterDesignRequirements",
+                canContinue: {
+                    'filterDesignRequirements': false,
+                    'operatingPoints': false,
+                    'magneticAdviser': false,
+                    'magneticBuilder': false,
+                    'magneticSummary': false,
+                },
+                selectedAdvise: 0,
+            },
+            magneticBuilder: {
+                subsection: "filterDesignRequirements",
+                canContinue: {
+                    'filterDesignRequirements': false,
+                    'operatingPoints': false,
+                    'magneticBuilder': false,
+                    'magneticSummary': false,
+                },
+            },
+            agnosticTool: {
+                subsection: "welcome",
+                canContinue: {
+                    'welcome': true,
+                    'filterDesignRequirements': false,
+                    'operatingPoints': false,
+                    'toolSelector': false,
+                },
+            },
+        },
+        insulationCoordinator: {
+            insulationAdviser: {
+                subsection: "insulationRequirements",
+                canContinue: {
+                    'insulationRequirements': false,
+                },
+            },
+        },
+        magneticViewer: {
+            magneticViewer: {
+                subsection: "operatingPoints",
+                canContinue: {
+                    'operatingPoints': false,
+                    'magneticBuilder': false,
+                },
+            },
+        }
     });
 
+    const selectedApplication = ref("power");
+    const selectedTool = ref("agnosticTool");
 
-    const filterMagneticAdviserSubsection = ref("filterDesignRequirements");
-    const filterMagneticAdviserCanContinue = ref({
-        'filterDesignRequirements': false,
-        'operatingPoints': false,
-        'magneticAdviser': false,
-        'magneticBuilder': false,
-        'magneticSummary': false,
-    })
-
-    const filterMagneticBuilderSubsection = ref("filterDesignRequirements");
-    const filterMagneticBuilderCanContinue = ref({
-        'filterDesignRequirements': false,
-        'operatingPoints': false,
-        'magneticBuilder': false,
-        'magneticSummary': false,
-    })
-
-    const filterMagneticToolSubsection = ref("welcome");
-    const filterMagneticToolCanContinue = ref({
-        'welcome': true,
-        'filterDesignRequirements': false,
-        'operatingPoints': false,
-        'toolSelector': false,
-    });
-
-
-    const magneticSelectedTool = ref("magneticTool");
-    const filterMagneticSelectedTool = ref("filterMagneticTool");
     const anyDesignLoaded = ref(false);
     const showWelcome = ref(true);
-    const magneticCoreAdviserSelectedAdvise = ref(0);
-    const magneticAdviserSelectedAdvise = ref(0);
-    const wire2DVisualizerPlotCurrentDensity = ref(0);
-    const wire2DVisualizerPlotCurrentViews = ref({});
-    const wire2DVisualizerShowAnyway = ref(false);
-    const magnetic2DVisualizerPlotCurrentView = ref(null);
-    const magnetic2DVisualizerPlotMagneticField = ref(0);
-    const magnetic2DVisualizerPlotFringingField = ref(1);
 
-    const insulationAdviserSubsection = ref("insulationRequirements")
-    const insulationAdviserCanContinue = ref({
-        'insulationRequirements': false
-    })
+    const wire2DVisualizerState = ref({
+        plotCurrentDensity: false,
+        plotCurrentViews: {},
+        showAnyway: false,
+    });
+
+    const magnetic2DVisualizerState = ref({
+        PlotCurrentView: null,
+        PlotMagneticField: false,
+        PlotFringingField: true,
+    });
+
+    function getCurrentToolBoxState() {
+        return this.toolboxStates[this.selectedApplication];
+    }
+
+    function getCurrentToolState() {
+        return this.toolboxStates[this.selectedApplication][this.selectedTool];
+    }
+
+    function setCurrentToolSubsection(subsection) {
+        return this.toolboxStates[this.selectedApplication][this.selectedTool].subsection = subsection;
+    }
+
+    function setCurrentToolSubsectionStatus(subsection, canContinue) {
+        return this.toolboxStates[this.selectedApplication][this.selectedTool].canContinue[subsection] = canContinue;
+    }
+
+    function selectApplication(application) {
+        this.selectedApplication = application;
+    }
+
+    function selectTool(tool) {
+        this.selectedTool = tool;
+    }
 
     function isAnyDesignLoaded() {
         return this.anyDesignLoaded;
@@ -100,70 +157,99 @@ export const useUserStore = defineStore("user", () => {
 
     function resetMagneticTool() {
         this.anyDesignLoaded = false;
-        this.magneticSelectedTool = "magneticTool";
-        this.filterMagneticSelectedTool = "filterMagneticTool";
-        this.magneticToolSubsection = "welcome";
-        this.filterMagneticToolSubsection = "welcome";
-        this.magneticSpecificationsReportSubsection = "designRequirements";
-        this.magneticAdviserSubsection = "designRequirements";
-        this.magneticBuilderSubsection = "designRequirements";
-        this.magneticCoreAdviserSubsection = "designRequirements";
-        this.magneticToolCanContinue = {
-            'welcome': true,
-            'designRequirements': false,
-            'operatingPoints': false,
-            'toolSelector': false,
-        };
-        this.filterMagneticToolCanContinue = {
-            'welcome': true,
-            'designRequirements': false,
-            'operatingPoints': false,
-            'toolSelector': false,
-        };
+        this.selectedTool = "agnosticTool";
 
-        this.magneticSpecificationsReportCanContinue = {
-            'designRequirements': false,
-            'operatingPoints': false,
-            'magneticSpecificationsSummary': false,
-        };
-    
-        this.magneticCoreAdviserCanContinue = {
-            'designRequirements': false,
-            'operatingPoints': false,
-            'magneticCoreAdviser': false,
-            'magneticSummary': false,
-        };
-    
-        this.magneticAdviserCanContinue = {
-            'designRequirements': false,
-            'operatingPoints': false,
-            'magneticBuilder': false,
-            'magneticAdviser': false,
-            'magneticSummary': false,
-        };
-    
-        this.magneticBuilderCanContinue = {
-            'designRequirements': false,
-            'operatingPoints': false,
-            'magneticBuilder': false,
-            'magneticCoreSummary': false,
-        };
-    
-        this.filterMagneticAdviserCanContinue = {
-            'filterDesignRequirements': false,
-            'operatingPoints': false,
-            'magneticBuilder': false,
-            'magneticAdviser': false,
-            'magneticSummary': false,
-        };
-    
-        this.filterMagneticBuilderCanContinue = {
-            'filterDesignRequirements': false,
-            'operatingPoints': false,
-            'magneticBuilder': false,
-            'magneticCoreSummary': false,
-        };
 
+        this.toolboxStates = {
+            power: {
+                magneticSpecificationsReport: {
+                    subsection: "designRequirements",
+                    canContinue: {
+                        'designRequirements': false,
+                        'operatingPoints': false,
+                        'magneticSpecificationsSummary': false,
+                    },
+                },
+                magneticAdviser: {
+                    subsection: "designRequirements",
+                    canContinue: {
+                        'designRequirements': false,
+                        'operatingPoints': false,
+                        'magneticAdviser': false,
+                        'magneticBuilder': false,
+                        'magneticSummary': false,
+                    },
+                    selectedAdvise: 0,
+                },
+                magneticBuilder: {
+                    subsection: "designRequirements",
+                    canContinue: {
+                        'designRequirements': false,
+                        'operatingPoints': false,
+                        'magneticBuilder': false,
+                        'magneticSummary': false,
+                    },
+                },
+                magneticCoreAdviser: {
+                    subsection: "designRequirements",
+                    canContinue: {
+                        'designRequirements': false,
+                        'operatingPoints': false,
+                        'magneticCoreAdviser': false,
+                        'magneticCoreSummary': false,
+                    },
+                    selectedAdvise: 0,
+                },
+                agnosticTool: {
+                    subsection: "welcome",
+                    canContinue: {
+                        'welcome': true,
+                        'designRequirements': false,
+                        'operatingPoints': false,
+                        'toolSelector': false,
+                    },
+                },
+            },
+            filter: {
+                magneticAdviser: {
+                    subsection: "filterDesignRequirements",
+                    canContinue: {
+                        'filterDesignRequirements': false,
+                        'operatingPoints': false,
+                        'magneticAdviser': false,
+                        'magneticBuilder': false,
+                        'magneticSummary': false,
+                    },
+                    selectedAdvise: 0,
+                },
+                magneticBuilder: {
+                    subsection: "filterDesignRequirements",
+                    canContinue: {
+                        'filterDesignRequirements': false,
+                        'operatingPoints': false,
+                        'magneticBuilder': false,
+                        'magneticSummary': false,
+                    },
+                },
+                agnosticTool: {
+                    subsection: "welcome",
+                    canContinue: {
+                        'welcome': true,
+                        'filterDesignRequirements': false,
+                        'operatingPoints': false,
+                        'toolSelector': false,
+                    },
+                },
+            },
+            insulationCoordinator: {
+                insulationAdviser: {
+                    subsection: "insulationRequirements",
+                    canContinue: {
+                        'insulationRequirements': false,
+                    },
+                },
+            }
+        };
     }
 
 
@@ -197,12 +283,6 @@ export const useUserStore = defineStore("user", () => {
 
     const dump = computed(() => {
         return {
-            "magneticSynthesisSubsection": magneticSynthesisSubsection.value,
-            "magneticCoreAdviserSelectedAdvise": magneticCoreAdviserSelectedAdvise.value,
-            "magneticAdviserSelectedAdvise": magneticAdviserSelectedAdvise.value,
-
-
-
             "loggedIn": loggedIn.value,
             "ipAddress": ipAddress.value,
             "username": username.value,
@@ -222,15 +302,29 @@ export const useUserStore = defineStore("user", () => {
 
     function reset() {
 
+        this.wire2DVisualizerState = {
+            plotCurrentDensity: false,
+            plotCurrentViews: {},
+            showAnyway: false,
+        };
+
+        this.magnetic2DVisualizerState = {
+            PlotCurrentView: null,
+            PlotMagneticField: false,
+            PlotFringingField: true,
+        };
+
+
+
+
+
+
+
+
         this.loggedIn = false
         this.username = null
         this.idToDelete = null
         this.userSubsection = "operationPoints"
-        this.wire2DVisualizerPlotCurrentDensity = 0;
-        this.magnetic2DVisualizerPlotMagneticField = 0;
-        this.magnetic2DVisualizerPlotFringingField = 1;
-        this.wire2DVisualizerPlotCurrentViews = {};
-        this.magnetic2DVisualizerPlotCurrentView = null;
 
         this.readNotifications = []
         this.loggedIn = false
@@ -277,42 +371,24 @@ export const useUserStore = defineStore("user", () => {
     function disarmDeadManSwitch() {
     }
     return {
-        magneticSelectedTool,
-        filterMagneticSelectedTool,
         showWelcome,
-        magneticCoreAdviserSelectedAdvise,
-        magneticAdviserSelectedAdvise,
-        magneticToolSubsection,
-        magneticToolCanContinue,
-        magneticSpecificationsReportCanContinue,
-        magneticCoreAdviserCanContinue,
-        magneticCoreAdviserSubsection,
-        magneticAdviserCanContinue,
-        magneticBuilderCanContinue,
-        magneticAdviserSubsection,
-        magneticBuilderSubsection,
-        magneticSpecificationsReportSubsection,
-        filterMagneticToolSubsection,
-        filterMagneticAdviserSubsection,
-        filterMagneticAdviserCanContinue,
-        filterMagneticBuilderSubsection,
-        filterMagneticBuilderCanContinue,
-        filterMagneticToolCanContinue,
 
-        insulationAdviserSubsection,
-        insulationAdviserCanContinue,
         resetMagneticTool,
         isAnyDesignLoaded,
         designLoaded,
         anyDesignLoaded,
 
-        wire2DVisualizerPlotCurrentDensity,
-        wire2DVisualizerPlotCurrentViews,
-        wire2DVisualizerShowAnyway,
-        magnetic2DVisualizerPlotCurrentView,
-        magnetic2DVisualizerPlotMagneticField,
-        magnetic2DVisualizerPlotFringingField,
-
+        toolboxStates,
+        selectedApplication,
+        selectedTool,
+        getCurrentToolBoxState,
+        getCurrentToolState,
+        setCurrentToolSubsection,
+        setCurrentToolSubsectionStatus,
+        selectApplication,
+        selectTool,
+        wire2DVisualizerState,
+        magnetic2DVisualizerState,
 
         dump,
         armDeadManSwitch,

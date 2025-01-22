@@ -68,39 +68,39 @@ export default {
     },
     methods: {
         prevTool(event) {
-            if (this.currentStoryline[this.$userStore[`${this.toolLabel}Subsection`]].prevTool != null) {
-                this.$userStore[`${this.toolLabel}Subsection`] = this.currentStoryline[this.$userStore[`${this.toolLabel}Subsection`]].prevTool;
+            if (this.currentStoryline[this.$userStore.getCurrentToolState().subsection].prevTool != null) {
+                this.$userStore.getCurrentToolState().subsection = this.currentStoryline[this.$userStore.getCurrentToolState().subsection].prevTool;
             }
         },
         nextTool(event) {
-            if (this.currentStoryline[this.$userStore[`${this.toolLabel}Subsection`]].nextTool != null) {
-                this.$userStore[`${this.toolLabel}Subsection`] = this.currentStoryline[this.$userStore[`${this.toolLabel}Subsection`]].nextTool;
+            if (this.currentStoryline[this.$userStore.getCurrentToolState().subsection].nextTool != null) {
+                this.$userStore.getCurrentToolState().subsection = this.currentStoryline[this.$userStore.getCurrentToolState().subsection].nextTool;
             }
         },
         advancedTool(event) {
-            if (this.currentStoryline[this.$userStore[`${this.toolLabel}Subsection`]].advancedTool != null) {
-                this.$userStore[`${this.toolLabel}Subsection`] = this.currentStoryline[this.$userStore[`${this.toolLabel}Subsection`]].advancedTool;
+            if (this.currentStoryline[this.$userStore.getCurrentToolState().subsection].advancedTool != null) {
+                this.$userStore.getCurrentToolState().subsection = this.currentStoryline[this.$userStore.getCurrentToolState().subsection].advancedTool;
             }
         },
         basicTool(event) {
-            if (this.currentStoryline[this.$userStore[`${this.toolLabel}Subsection`]].basicTool != null) {
-                this.$userStore[`${this.toolLabel}Subsection`] = this.currentStoryline[this.$userStore[`${this.toolLabel}Subsection`]].basicTool;
+            if (this.currentStoryline[this.$userStore.getCurrentToolState().subsection].basicTool != null) {
+                this.$userStore.getCurrentToolState().subsection = this.currentStoryline[this.$userStore.getCurrentToolState().subsection].basicTool;
             }
         },
         traversableRight() {
-            return this.currentStoryline[this.$userStore[`${this.toolLabel}Subsection`]].advancedTool != null;
+            return this.currentStoryline[this.$userStore.getCurrentToolState().subsection].advancedTool != null;
         },
         traversableLeft() {
-            console.log(`${this.toolLabel}Subsection`)
+            console.log(this.$userStore.getCurrentToolState().subsection)
 
-            return this.currentStoryline[this.$userStore[`${this.toolLabel}Subsection`]].basicTool != null;
+            return this.currentStoryline[this.$userStore.getCurrentToolState().subsection].basicTool != null;
         },
         updateCanContinue(tool, value) {
-            this.$userStore[`${this.toolLabel}CanContinue`][tool] = value;
+            this.$userStore.getCurrentToolState().canContinue[tool] = value;
             this.updateStoryline += 1;
         },
         changeTool(tool) {
-            this.$userStore[`${this.toolLabel}Subsection`] = tool;
+            this.$userStore.getCurrentToolState().subsection = tool;
         },
         toolSelected(tool) {
             this.$emit('toolSelected', tool); 
@@ -147,16 +147,16 @@ export default {
             @onSettingsUpdated="onSettingsUpdated"
         />
         <main role="main" class="main text-white">
-            <div v-if="currentStoryline[$userStore[`${toolLabel}Subsection`]] != null && $userStore[`${toolLabel}CanContinue`] != null" class="container mx-auto">
+            <div v-if="currentStoryline[$userStore.getCurrentToolState().subsection] != null && $userStore.getCurrentToolState().canContinue != null" class="container mx-auto">
                 <div class="row">
                     <div class="text-white text-center col-xs-12 col-sm-12 col-md-1 bg-transparent border border-primary m-0 pb-2" style="height: fit-content">
                         <h4 class="text-center">Storyline</h4>
                         <Storyline
-                            :selectedTool="$userStore[`${toolLabel}Subsection`]"
+                            :selectedTool="$userStore.getCurrentToolState().subsection"
                             :storyline="currentStoryline"
-                            :canContinue="$userStore[`${toolLabel}CanContinue`]"
+                            :canContinue="$userStore.getCurrentToolState().canContinue"
                             :forceUpdate="updateStoryline"
-                            :showAvoidOption="currentStoryline[$userStore[`${toolLabel}Subsection`]].title=='Welcome'"
+                            :showAvoidOption="currentStoryline[$userStore.getCurrentToolState().subsection].title=='Welcome'"
                             @changeTool="changeTool"
                             @nextTool="nextTool"
                         />
@@ -183,7 +183,7 @@ export default {
                             />
                             <div v-else data-cy="magnetic-synthesis-previous-tool-button-placeholder" class=" col-sm-12 col-md-2 mt-1"></div>
                             <h2 v-if="showTitle" data-cy="magnetic-synthesis-title-text" :class="showControlPanel? 'col-sm-12 col-md-3 col-lg-3' : 'col-sm-12 col-md-9'" class="" >
-                                {{toTitleCase($userStore[`${toolLabel}Subsection`])}}
+                                {{toTitleCase($userStore.getCurrentToolState().subsection)}}
                             </h2>
 
                             <div v-if="showControlPanel" data-cy="magnetic-synthesis-title-control-panel" :class="showTitle? 'col-sm-12 col-md-6 col-lg-6 col-xl-6' : 'col-sm-12 col-md-9'">
@@ -193,60 +193,60 @@ export default {
                             
                         <div class="row">
                             <Welcome
-                                v-if="$userStore[`${toolLabel}Subsection`] == 'welcome'"
+                                v-if="$userStore.getCurrentToolState().subsection == 'welcome'"
                                 :dataTestLabel="`${dataTestLabel}-Welcome`"
                                 @canContinue="updateCanContinue('welcome', $event)"
                             />
                             <ToolSelector
-                                v-if="$userStore[`${toolLabel}Subsection`] == 'toolSelector'"
+                                v-if="$userStore.getCurrentToolState().subsection == 'toolSelector'"
                                 :dataTestLabel="`${dataTestLabel}-ToolSelector`"
                                 :acSweepSelected="masStore.magneticAcSweepOperatingPoints"
                                 @toolSelected="toolSelected"
                             />
                             <DesignRequirements
-                                v-if="$userStore[`${toolLabel}Subsection`] == 'designRequirements'"
+                                v-if="$userStore.getCurrentToolState().subsection == 'designRequirements'"
                                 :dataTestLabel="`${dataTestLabel}-DesignRequirements`"
                                 @canContinue="updateCanContinue('designRequirements', $event)"
                             />
                             <FilterDesignRequirements
-                                v-if="$userStore[`${toolLabel}Subsection`] == 'filterDesignRequirements'"
+                                v-if="$userStore.getCurrentToolState().subsection == 'filterDesignRequirements'"
                                 :dataTestLabel="`${dataTestLabel}-FilterDesignRequirements`"
                                 @canContinue="updateCanContinue('filterDesignRequirements', $event)"
                             />
                             <OperatingPoints
-                                v-if="$userStore[`${toolLabel}Subsection`] == 'operatingPoints'"
+                                v-if="$userStore.getCurrentToolState().subsection == 'operatingPoints'"
                                 :dataTestLabel="`${dataTestLabel}-OperatingPoints`"
                                 @canContinue="updateCanContinue('operatingPoints', $event)" 
                                 @changeTool="changeTool"
                             />
                             <MagneticCoreAdviser
-                                v-if="$userStore[`${toolLabel}Subsection`] == 'magneticCoreAdviser'"
+                                v-if="$userStore.getCurrentToolState().subsection == 'magneticCoreAdviser'"
                                 :dataTestLabel="`${dataTestLabel}-MagneticmagneticCoreAdviser`"
                                 @canContinue="updateCanContinue('magneticCoreAdviser', $event)"
                             />
                             <MagneticAdviser
-                                v-if="$userStore[`${toolLabel}Subsection`] == 'magneticAdviser'"
+                                v-if="$userStore.getCurrentToolState().subsection == 'magneticAdviser'"
                                 :dataTestLabel="`${dataTestLabel}-MagneticAdviser`"
                                 @canContinue="updateCanContinue('magneticAdviser', $event)"
                             />
                             <CoreCustomizer
-                                v-if="$userStore[`${toolLabel}Subsection`] == 'coreCustomizer'"
+                                v-if="$userStore.getCurrentToolState().subsection == 'coreCustomizer'"
                                 :dataTestLabel="`${dataTestLabel}-CoreCustomizer`"
                             />
                             <WireAdviser
-                                v-if="$userStore[`${toolLabel}Subsection`] == 'wireAdviser'"
+                                v-if="$userStore.getCurrentToolState().subsection == 'wireAdviser'"
                                 :dataTestLabel="`${dataTestLabel}-WireAdviser`"
                             />
                             <WireCustomizer
-                                v-if="$userStore[`${toolLabel}Subsection`] == 'wireCustomizer'"
+                                v-if="$userStore.getCurrentToolState().subsection == 'wireCustomizer'"
                                 :dataTestLabel="`${dataTestLabel}-WireCustomizer`"
                             />
                             <InsulationAdviser
-                                v-if="$userStore[`${toolLabel}Subsection`] == 'insulationRequirements'"
+                                v-if="$userStore.getCurrentToolState().subsection == 'insulationRequirements'"
                                 :dataTestLabel="`${dataTestLabel}-InsulationAdviser`"
                             />
                             <MagneticBuilder 
-                                v-if="$userStore[`${toolLabel}Subsection`] == 'magneticBuilder'"
+                                v-if="$userStore.getCurrentToolState().subsection == 'magneticBuilder'"
                                 :masStore="masStore"
                                 :readOnly="false"
                                 :mkf="$mkf"
@@ -261,16 +261,16 @@ export default {
                                 @canContinue="updateCanContinue('magneticBuilder', $event)"
                             />
                             <MagneticSummary
-                                v-if="$userStore[`${toolLabel}Subsection`] == 'magneticSummary'"
+                                v-if="$userStore.getCurrentToolState().subsection == 'magneticSummary'"
                                 :mas="masStore.mas"
                                 :dataTestLabel="`${dataTestLabel}-MagneticSummary`"
                             />
                             <MagneticCoreSummary
-                                v-if="$userStore[`${toolLabel}Subsection`] == 'magneticCoreSummary'"
+                                v-if="$userStore.getCurrentToolState().subsection == 'magneticCoreSummary'"
                                 :dataTestLabel="`${dataTestLabel}-MagneticFinalizer`"
                             />
                             <MagneticSpecificationsSummary
-                                v-if="$userStore[`${toolLabel}Subsection`] == 'magneticSpecificationsSummary'"
+                                v-if="$userStore.getCurrentToolState().subsection == 'magneticSpecificationsSummary'"
                                 :dataTestLabel="`${dataTestLabel}-MagneticSpecificationsSummary`"
                             />
                         </div>
