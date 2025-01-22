@@ -7,6 +7,7 @@ import * as Defaults from '/WebSharedComponents/assets/js/defaults.js'
 export const useMasStore = defineStore("mas", () => {
 
     const mas = ref(MAS.Convert.toMas(JSON.stringify(Defaults.powerMas)));
+    const currentOperatingPoint = ref(0);
     const coreAdviserWeights = ref(null);
 
     const magneticAdviserWeights = ref(null);
@@ -42,6 +43,7 @@ export const useMasStore = defineStore("mas", () => {
         else if (type == "filter") {
             this.mas = MAS.Convert.toMas(JSON.stringify(Defaults.filterMas));
         }
+        this.currentOperatingPoint = 0;
         this.magneticManualOperatingPoints = [false];
         this.magneticAcSweepOperatingPoints = false;
         this.magneticCircuitSimulatorOperatingPoints = [false];
@@ -109,6 +111,7 @@ export const useMasStore = defineStore("mas", () => {
         initializeOperatingPoints,
         addNewOperatingPoint,
         removeOperatingPoint,
+        currentOperatingPoint,
     }
 },
 {

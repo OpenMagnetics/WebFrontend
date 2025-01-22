@@ -4,6 +4,7 @@ import Footer from '/src/components/Footer.vue'
 import Storyline from '/src/components/Storyline.vue'
 import { toTitleCase } from '/WebSharedComponents/assets/js/utils.js'
 
+import ElementFromList from '/WebSharedComponents/DataInput/ElementFromList.vue'
 import DesignRequirements from '/src/components/Toolbox/PowerDesignRequirements.vue'
 import FilterDesignRequirements from '/src/components/Toolbox/FilterDesignRequirements.vue'
 import OperatingPoints from '/src/components/Toolbox/OperatingPoints.vue'
@@ -53,8 +54,12 @@ export default {
     },
     data() {
         const masStore = useMasStore();
+        const localData = {
+            operatingPoint: masStore.mas.inputs.operatingPoints[masStore.currentOperatingPoint].name
+        }
         return {
             masStore,
+            localData,
             updateStoryline: 0,
         }
     },
@@ -99,6 +104,13 @@ export default {
         },
         onSettingsUpdated(event) {
         },
+        operatingPointUpdated(name, ea) {
+            this.masStore.mas.inputs.operatingPoints.forEach((elem, index) => {
+                if (name == elem.name) {
+                    this.masStore.currentOperatingPoint = index;
+                }
+            })
+        },
         isMobile() {
             if( window.innerWidth <= 760 ) {
                 return true;
@@ -109,6 +121,13 @@ export default {
         },
     },
     computed: {
+        operatingPointNames() {
+            const names = [];
+            this.masStore.mas.inputs.operatingPoints.forEach((elem) => {
+                names.push(elem.name);
+            })
+            return names;
+        }
     },
     mounted() {
     },
@@ -142,10 +161,26 @@ export default {
                     <div class="text-white bg-dark text-center col-xs-12 col-sm-12 col-md-11 bg-transparent px container" >
                         <div class="mb-2 row px-3" >
 
-                            <div data-cy="magnetic-synthesis-previous-tool-button-placeholder" class=" col-sm-12 col-md-2 mt-1"></div>
-                            <h2 v-if="showTitle" data-cy="magnetic-synthesis-title-text" :class="showControlPanel? 'col-sm-12 col-md-4 col-lg-4' : 'col-sm-12 col-md-9'" class="" >
+                            <ElementFromList
+                                class="col-3 mb-1 text-start"
+                                :dataTestLabel="dataTestLabel + '-OperatingPointSelector'"
+                                :name="'operatingPoint'"
+                                :replaceTitle="'Op. Point'"
+                                :titleSameRow="true"
+                                :justifyContent="true"
+                                v-model="localData"
+                                :options="operatingPointNames"
+                                :labelStyleClass="'col-5'"
+                                :selectStyleClass="'col-7'"
+                                :labelBgColor="$settingsStore.labelBgColor"
+                                :inputBgColor="$settingsStore.inputBgColor"
+                                :textColor="$settingsStore.textColor"
+                                @update="operatingPointUpdated"
+                            />
+                            <h2 v-if="showTitle" data-cy="magnetic-synthesis-title-text" :class="showControlPanel? 'col-sm-12 col-md-3 col-lg-3' : 'col-sm-12 col-md-9'" class="" >
                                 {{toTitleCase($userStore[`${toolLabel}Subsection`])}}
                             </h2>
+
                             <div v-if="showControlPanel" data-cy="magnetic-synthesis-title-control-panel" :class="showTitle? 'col-sm-12 col-md-6 col-lg-6 col-xl-6' : 'col-sm-12 col-md-9'">
                                 <ControlPanel @toolSelected="toolSelected"/>
                             </div>
@@ -208,8 +243,10 @@ export default {
                             <MagneticBuilder 
                                 v-if="$userStore[`${toolLabel}Subsection`] == 'magneticBuilder'"
                                 :masStore="masStore"
+                                :readOnly="false"
                                 :mkf="$mkf"
                                 :mkfAdvisers="$mkfAdvisers"
+                                :operatingPointIndex="masStore.currentOperatingPoint"
                                 :dataTestLabel="`${dataTestLabel}-MagneticBuilder`"
                                 :useVisualizers="true"
                                 :enableCoil="true"

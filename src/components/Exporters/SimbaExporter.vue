@@ -74,7 +74,7 @@ export default {
         },
         createSimbaSubcircuit() {
             this.$mkf.ready.then(_ => {
-                var subcircuit = this.$mkf.export_magnetic_as_subcircuit(JSON.stringify(this.magnetic), "");
+                var subcircuit = this.$mkf.export_magnetic_as_subcircuit(JSON.stringify(this.magnetic), "SIMBA", "");
                 var blob = new Blob([subcircuit], {
                     type: 'text/csv; charset=utf-8'
                 });
