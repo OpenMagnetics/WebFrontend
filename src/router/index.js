@@ -31,11 +31,11 @@ const routes = [
         name: 'InsulationAdviser',
         component: () => import('../views/InsulationAdviser.vue')
     },
-    {
-        path: '/catalog',
-        name: 'Catalog',
-        component: () => import('../views/Catalog.vue')
-    },
+    // {
+    //     path: '/catalog',
+    //     name: 'Catalog',
+    //     component: () => import('../views/Catalog.vue')
+    // },
     {
         path: '/magnetic_viewer',
         name: 'MagneticViewer',
