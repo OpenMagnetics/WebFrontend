@@ -55,8 +55,11 @@ export default {
     data() {
         const masStore = useMasStore();
         const localData = {
-            operatingPoint: masStore.mas.inputs.operatingPoints[masStore.currentOperatingPoint].name
-        }
+            operatingPoint: 0
+        };
+
+        if (masStore.mas.inputs.operatingPoints[masStore.currentOperatingPoint] != null)
+            localData["operatingPoint"] = masStore.mas.inputs.operatingPoints[masStore.currentOperatingPoint].name
         return {
             masStore,
             localData,
@@ -162,6 +165,7 @@ export default {
                         <div class="mb-2 row px-3" >
 
                             <ElementFromList
+                                v-if="operatingPointNames.length > 1"
                                 class="col-3 mb-1 text-start"
                                 :dataTestLabel="dataTestLabel + '-OperatingPointSelector'"
                                 :name="'operatingPoint'"
@@ -170,13 +174,14 @@ export default {
                                 :justifyContent="true"
                                 v-model="localData"
                                 :options="operatingPointNames"
-                                :labelStyleClass="'col-5'"
-                                :selectStyleClass="'col-7'"
+                                :labelStyleClass="'col-4'"
+                                :selectStyleClass="'col-8'"
                                 :labelBgColor="$settingsStore.labelBgColor"
                                 :inputBgColor="$settingsStore.inputBgColor"
                                 :textColor="$settingsStore.textColor"
                                 @update="operatingPointUpdated"
                             />
+                            <div v-else data-cy="magnetic-synthesis-previous-tool-button-placeholder" class=" col-sm-12 col-md-2 mt-1"></div>
                             <h2 v-if="showTitle" data-cy="magnetic-synthesis-title-text" :class="showControlPanel? 'col-sm-12 col-md-3 col-lg-3' : 'col-sm-12 col-md-9'" class="" >
                                 {{toTitleCase($userStore[`${toolLabel}Subsection`])}}
                             </h2>

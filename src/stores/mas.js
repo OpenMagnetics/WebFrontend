@@ -58,7 +58,7 @@ export const useMasStore = defineStore("mas", () => {
         if (this.mas.inputs.operatingPoints.length == 0) {
             this.mas.inputs.operatingPoints.push(
                 {
-                    name: "Operating Point No. 1",
+                    name: "Op. Point No. 1",
                     conditions: {ambientTemperature: 42},
                     excitationsPerWinding: []
                 }
@@ -76,7 +76,7 @@ export const useMasStore = defineStore("mas", () => {
 
     function addNewOperatingPoint(currentOperatingPointIndex) {
         var newOperatingPoint = deepCopy(this.mas.inputs.operatingPoints[currentOperatingPointIndex]);
-        newOperatingPoint.name = 'Operating Point No. ' + (this.mas.inputs.operatingPoints.length + 1);
+        newOperatingPoint.name = 'Op. Point No. ' + (this.mas.inputs.operatingPoints.length + 1);
         newOperatingPoint.excitationsPerWinding = [newOperatingPoint.excitationsPerWinding[0]];
 
         this.magneticCircuitSimulatorConfirmedColumns.push([]);

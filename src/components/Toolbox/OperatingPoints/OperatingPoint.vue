@@ -39,7 +39,7 @@ export default {
         if (masStore.mas.inputs.operatingPoints.length == 0) {
             masStore.mas.inputs.operatingPoints.push(
                 {
-                    name: "Operating Point No. 1",
+                    name: "Op. Point No. 1",
                     conditions: {ambientTemperature: 42},
                     excitationsPerWinding: [deepCopy(defaultOperatingPointExcitation)]
                 }
