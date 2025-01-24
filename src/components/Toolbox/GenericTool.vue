@@ -13,6 +13,7 @@ import MagneticCoreAdviser from '/src/components/Toolbox/MagneticCoreAdviser.vue
 import CoreCustomizer from '/src/components/Toolbox/CoreCustomizer.vue'
 import WireAdviser from '/src/components/Toolbox/WireAdviser.vue'
 import MagneticAdviser from '/src/components/Toolbox/MagneticAdviser.vue'
+import CatalogAdviser from '/src/components/Toolbox/CatalogAdviser.vue'
 import WireCustomizer from '/src/components/Toolbox/WireCustomizer.vue'
 import CoilAdviser from '/src/components/Toolbox/CoilAdviser.vue'
 import InsulationAdviser from '/src/components/Toolbox/InsulationAdviser.vue'
@@ -235,6 +236,11 @@ export default {
                                 v-if="$userStore.getCurrentToolState().subsection == 'magneticAdviser'"
                                 :dataTestLabel="`${dataTestLabel}-MagneticAdviser`"
                                 @canContinue="updateCanContinue('magneticAdviser', $event)"
+                            />
+                            <CatalogAdviser
+                                v-if="$userStore.getCurrentToolState().subsection == 'catalogAdviser'"
+                                :dataTestLabel="`${dataTestLabel}-CatalogAdviser`"
+                                @canContinue="updateCanContinue('catalogAdviser', $event)"
                             />
                             <CoreCustomizer
                                 v-if="$userStore.getCurrentToolState().subsection == 'coreCustomizer'"

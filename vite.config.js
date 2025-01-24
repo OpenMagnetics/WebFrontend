@@ -19,13 +19,10 @@ export default defineConfig({
                         return 'assets/css/[name]-[hash][extname]';
                     }
  
-                    // default value
-                    // ref: https://rollupjs.org/guide/en/#outputassetfilenames
                     return 'assets/[name]-[hash][extname]';
                 },
             },
         },
-        commonjsOptions: { include: [] },
     },
     optimizeDeps: {
         disabled: false,
