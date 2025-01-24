@@ -5,9 +5,9 @@ import { useInventoryCacheStore } from '/src/stores/inventoryCache'
 import Slider from '@vueform/slider'
 import { removeTrailingZeroes, toTitleCase, toCamelCase, deepCopy } from '/WebSharedComponents/assets/js/utils.js'
 import { magneticAdviserWeights } from '/WebSharedComponents/assets/js/defaults.js'
-import Advise from '/src/components/Toolbox/MagneticAdviser/Advise.vue'
-import AdviseDetails from '/src/components/Toolbox/MagneticAdviser/AdviseDetails.vue'
+import Advise from '/src/components/Toolbox/CatalogAdviser/Advise.vue'
 import Module from '/src/assets/js/libAdvisers.wasm.js'
+import { useCatalogStore } from '/src/stores/catalog'
 </script>
 
 <script>
@@ -53,6 +53,9 @@ export default {
         const masStore = useMasStore();
         const inventoryCacheStore = useInventoryCacheStore();
 
+        const catalogStore = useCatalogStore();
+        var catalogString = "";
+
         if (masStore.magneticAdviserWeights == null) {
             masStore.magneticAdviserWeights = magneticAdviserWeights;
         }
@@ -61,6 +64,8 @@ export default {
 
         return {
             adviseCacheStore,
+            catalogString,
+            catalogStore,
             masStore,
             inventoryCacheStore,
             loading,
@@ -90,9 +95,26 @@ export default {
     created () {
     },
     mounted () {
-        if (this.adviseCacheStore.noMasAdvises()) {
-            setTimeout(() => {this.calculateAdvisedMagnetics();}, 200);
-        }
+        fetch(this.catalogStore.catalogUrl)
+        .then((data) => data.text())
+        .then((data) => {
+            this.catalogString = data;
+            // data.split("\n").forEach((masString) => {
+            //     const mas = JSON.parse(masString)
+            //     console.log(mas)
+            //     this.catalogData.push({
+            //         reference: mas.magnetic.manufacturerInfo.reference,
+            //         core: mas.magnetic.core.name,
+            //         mas: mas,
+            //     })
+            // })
+            // console.log(this.catalogData)
+            // console.log(data)
+            // if (this.adviseCacheStore.noMasAdvises()) {
+                setTimeout(() => {this.calculateAdvisedMagnetics();}, 200);
+            // }
+        })
+
     },
     methods: {
         getTopMagneticByFilter(data, filter) {
@@ -133,41 +155,31 @@ export default {
                         settings["coreIncludeStacks"] = this.$settingsStore.adviserAllowStacks == "1";
                         settings["useToroidalCores"] = this.$settingsStore.adviserToroidalCores == "1";
                         magneticAdviser.set_settings(JSON.stringify(settings));
+                        // console.log(this.catalogString)
 
-                        // console.log(JSON.stringify(this.masStore.mas.inputs))
-                        // console.log(JSON.stringify(this.masStore.magneticAdviserWeights))
-                        const aux = JSON.parse(magneticAdviser.calculate_advised_magnetics(JSON.stringify(this.masStore.mas.inputs), JSON.stringify(this.masStore.magneticAdviserWeights), this.masStore.magneticAdviserMaximumNumberResults, this.$settingsStore.adviserUseOnlyCoresInStock == "1" || this.$settingsStore.adviserUseOnlyCoresInStock == 1));
+                        const result = magneticAdviser.calculate_advised_magnetics_from_catalog(JSON.stringify(this.masStore.mas.inputs), this.catalogString, 2);
 
-                        // console.log(aux)
-
-                        var data = aux["data"];
-
-                        var orderedWeights = [];
-                        for (let [key, value] of Object.entries(this.masStore.magneticAdviserWeights)) {
-                            orderedWeights.push({
-                                filter: key,
-                                weight: value
-                            })
+                        var aux;
+                        if (result.startsWith("Exception")) {
+                            console.error(result);
+                            return;
+                        }
+                        else {
+                            aux = JSON.parse(result);
                         }
 
-                        console.log(`Found ${data.length} designs`)
+                        var data = aux["data"];
+                        console.log(data)
 
-                        this.adviseCacheStore.currentMasAdvises = [];
-                        // orderedWeights.forEach((value) => {
-                        //     const topMas = this.getTopMagneticByFilter(data, value.filter);
-                        //     this.adviseCacheStore.currentMasAdvises.push(topMas);
-                        // })
-                        // this.adviseCacheStore.currentMasAdvises.forEach((mas) => {
-                        //     this.deleteMasElementFromArray(data, mas);
-                        // })
+                        // console.log(`Found ${data.length} designs`)
+
+                        this.catalogStore.advises = [];
 
                         data.forEach((datum) => {
-                            this.adviseCacheStore.currentMasAdvises.push(datum);
+                            this.catalogStore.advises.push(datum);
                         })
                         console.timeEnd('Execution Time');
-                        this.$userStore.magneticAdviserSelectedAdvise = 0;
-                        if (this.adviseCacheStore.currentMasAdvises.length > 0) {
-                            this.masStore.mas = this.adviseCacheStore.currentMasAdvises[this.$userStore.magneticAdviserSelectedAdvise].mas;
+                        if (this.catalogStore.advises.length > 0) {
                             this.$emit("canContinue", true);
                         }
 
@@ -238,39 +250,18 @@ export default {
     <AdviseDetails :modelValue="masStore.mas"/>
     <div class="container" >
         <div class="row">
-            <div class="col-sm-12 col-md-2 text-start border border-primary m-0 px-2 py-1 ">
-                <div class="row" v-for="value, key in masStore.magneticAdviserWeights">
-                    <label class="form-label col-12 py-0 my-0">{{titledFilters[key]}}</label>
-                    <div class=" col-7 me-2 pt-2">
-                        <Slider v-model="masStore.magneticAdviserWeights[key]" :disabled="loading" class="col-12 text-primary slider" :height="10" :min="10" :max="80" :step="10" :color="theme.primary" :tooltips="false" @change="changedSliderValue(key, $event)"/>
-                    </div>
-
-                <input :disabled="loading" :data-cy="dataTestLabel + '-number-input'" type="number" class="m-0 mb-2 px-0 col-3 bg-light text-white" :min="10" :step="10" @change="changedInputValue(key, $event.target.value)" :value="removeTrailingZeroes(masStore.magneticAdviserWeights[key])" ref="inputRef">
-
-                </div>
-                <p>The sliders are designed to transmit your preferences into which criterion is most important for the design.</p>
-                <div class="row">
-                    <label class="form-label col-12 py-0 my-0">Max. No results</label>
-                    <div class=" col-7 me-2 pt-2">
-                        <Slider v-model="masStore.magneticAdviserMaximumNumberResults" :disabled="loading" class="col-12 text-primary  slider" :height="10" :min="2" :max="20" :step="1"  :color="theme.primary"  :tooltips="false" @change="maximumNumberResultsChangedSliderValue($event)"/>
-                    </div>
-
-                    <input :disabled="loading" :data-cy="dataTestLabel + '-number-input'" type="number" class="m-0 mb-2 px-0 col-3 bg-light text-white" :min="2" :step="1" @change="maximumNumberResultsChangedInputValue($event.target.value)" :value="removeTrailingZeroes(masStore.magneticAdviserMaximumNumberResults)" ref="inputRef">
-                </div>
-                <button :disabled="loading" :data-cy="dataTestLabel + '-calculate-mas-advises-button'" class="btn btn-success mx-auto d-block mt-4" @click="calculateAdvises" >Get advised magnetics!</button>
-            </div>
             <div class="col-sm-12 col-md-10 text-start pe-0 container-fluid"  style="height: 70vh">
                 <div class="row" v-if="loading" >
                     <img data-cy="magneticAdviser-loading" class="mx-auto d-block col-12" alt="loading" style="width: 50%; height: auto;" src="/images/loading.gif">
 
                 </div>
                 <div class="row advises" v-else>
-                    <div class="col-md-4 col-sm-12 m-0 p-0 mt-1" v-for="advise, adviseIndex in adviseCacheStore.currentMasAdvises">
+                    <div class="col-md-4 col-sm-12 m-0 p-0 mt-1" v-for="advise, adviseIndex in catalogStore.advises">
                         <Advise
                             v-if="(Object.values(titledFilters).length > 0) && (currentAdviseToShow >= adviseIndex)"
                             :adviseIndex="adviseIndex"
                             :masData="advise.mas"
-                            :scoring="advise.scoringPerFilter"
+                            :scoring="advise.scoring"
                             :selected="$userStore.magneticAdviserSelectedAdvise == adviseIndex"
                             :graphType="$settingsStore.adviserSpiderBarChartNotBar == '1'? 'radar' : 'bar'"
                             @selectedMas="selectedMas(adviseIndex)"

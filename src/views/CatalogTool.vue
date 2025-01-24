@@ -1,5 +1,6 @@
 <script setup>
 import { useMasStore } from '/src/stores/mas'
+import { useCatalogStore } from '/src/stores/catalog'
 import { useAdviseCacheStore } from '/src/stores/adviseCache'
 import Header from '/src/components/Header.vue'
 import Footer from '/src/components/Footer.vue'
@@ -35,6 +36,8 @@ export default {
         };
 
         const currentStoryline = catalogAdviserStoryline;
+        const catalogStore = useCatalogStore();
+        catalogStore.catalogUrl = "/cmcs.ndjson"
 
         if (!this.$userStore.isAnyDesignLoaded()) {
             this.$userStore.designLoaded();

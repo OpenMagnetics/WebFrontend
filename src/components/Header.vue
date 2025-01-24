@@ -196,7 +196,7 @@ export default {
                       </a>
                       <ul class="dropdown-menu bg-dark border-primary px-1">
                         <li><button data-cy="Header-insulation-coordinator-link" :class="headerTogglerIsVisible? 'w-100' : 'mx-1' " class="dropdown-item btn btn-block nav-link text-primary bg-dark border-primary px-2" @click="onInsulationCoordinator"><i class="me-2 fa-solid fa-bolt-lightning"></i>Insulation Coordinator</button></li>
-                        <li><button data-cy="Header-magnetic-viewer-link" :class="headerTogglerIsVisible? 'w-100' : 'mx-1' " class="dropdown-item btn btn-block nav-link text-primary bg-dark border-primary px-2" @click="onCatalogTool"><i class="me-2 fa-solid fa-book"></i>The CHOKER</button></li>
+                        <!-- <li><button data-cy="Header-magnetic-viewer-link" :class="headerTogglerIsVisible? 'w-100' : 'mx-1' " class="dropdown-item btn btn-block nav-link text-primary bg-dark border-primary px-2" @click="onCatalogTool"><i class="me-2 fa-solid fa-book"></i>The CHOKER</button></li> -->
                       </ul>
                     </li>
                     <li v-if="$userStore.isAnyDesignLoaded() && $route.name != 'MagneticTool'" class="nav-item">
