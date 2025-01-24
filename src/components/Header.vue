@@ -108,7 +108,7 @@ export default {
             this.$userStore.selectApplication("power");
             this.$userStore.selectTool("agnosticTool");
 
-            if (this.$route.name != 'PowerMagneticTool')
+            if (this.$route.name != 'MagneticTool')
                 setTimeout(() => {this.$router.push('/magnetic_tool');}, 100);
             else
                 setTimeout(() => {this.$router.go();}, 100);
@@ -118,8 +118,8 @@ export default {
             this.$userStore.selectApplication("filter");
             this.$userStore.selectTool("agnosticTool");
 
-            if (this.$route.name != 'FilterMagneticTool')
-                setTimeout(() => {this.$router.push('/filter_magnetic_tool');}, 100);
+            if (this.$route.name != 'MagneticTool')
+                setTimeout(() => {this.$router.push('/magnetic_tool');}, 100);
             else
                 setTimeout(() => {this.$router.go();}, 100);
         },
@@ -133,12 +133,13 @@ export default {
             else
                 setTimeout(() => {this.$router.go();}, 100);
         },
-        onMagneticViewer() {
-            this.$userStore.selectApplication("magneticViewer");
-            this.$userStore.selectTool("magneticViewer");
+        onCatalogTool() {
+            this.$userStore.resetMagneticTool();
+            this.$userStore.selectApplication("catalog");
+            this.$userStore.selectTool("catalogAdviser");
 
-            if (this.$route.name != 'Catalog')
-                setTimeout(() => {this.$router.push('/catalog');}, 100);
+            if (this.$route.name != 'CatalogTool')
+                setTimeout(() => {this.$router.push('/catalog_tool');}, 100);
             else
                 setTimeout(() => {this.$router.go();}, 100);
         },
@@ -195,7 +196,7 @@ export default {
                       </a>
                       <ul class="dropdown-menu bg-dark border-primary px-1">
                         <li><button data-cy="Header-insulation-coordinator-link" :class="headerTogglerIsVisible? 'w-100' : 'mx-1' " class="dropdown-item btn btn-block nav-link text-primary bg-dark border-primary px-2" @click="onInsulationCoordinator"><i class="me-2 fa-solid fa-bolt-lightning"></i>Insulation Coordinator</button></li>
-                        <!-- <li><button data-cy="Header-magnetic-viewer-link" :class="headerTogglerIsVisible? 'w-100' : 'mx-1' " class="dropdown-item btn btn-block nav-link text-primary bg-dark border-primary px-2" @click="onMagneticViewer"><i class="me-2 fa-solid fa-book"></i>Catalog</button></li> -->
+                        <!-- <li><button data-cy="Header-magnetic-viewer-link" :class="headerTogglerIsVisible? 'w-100' : 'mx-1' " class="dropdown-item btn btn-block nav-link text-primary bg-dark border-primary px-2" @click="onCatalogTool"><i class="me-2 fa-solid fa-book"></i>The CHOKER</button></li> -->
                       </ul>
                     </li>
                     <li v-if="$userStore.isAnyDesignLoaded() && $route.name != 'MagneticTool'" class="nav-item">

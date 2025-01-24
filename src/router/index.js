@@ -18,24 +18,24 @@ const routes = [
     },
     {
         path: '/magnetic_tool',
-        name: 'PowerMagneticTool',
-        component: () => import('../views/PowerMagneticTool.vue')
+        name: 'MagneticTool',
+        component: () => import('../views/MagneticTool.vue')
     },
-    {
-        path: '/filter_magnetic_tool',
-        name: 'FilterMagneticTool',
-        component: () => import('../views/FilterMagneticTool.vue')
-    },
+    // {
+    //     path: '/filter_magnetic_tool',
+    //     name: 'FilterMagneticTool',
+    //     component: () => import('../views/FilterMagneticTool.vue')
+    // },
     {
         path: '/insulation_adviser',
         name: 'InsulationAdviser',
         component: () => import('../views/InsulationAdviser.vue')
     },
-    // {
-    //     path: '/catalog',
-    //     name: 'Catalog',
-    //     component: () => import('../views/Catalog.vue')
-    // },
+    {
+        path: '/catalog_tool',
+        name: 'CatalogTool',
+        component: () => import('../views/CatalogTool.vue')
+    },
     {
         path: '/magnetic_viewer',
         name: 'MagneticViewer',

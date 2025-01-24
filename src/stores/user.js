@@ -57,9 +57,9 @@ export const useUserStore = defineStore("user", () => {
         },
         filter: {
             magneticAdviser: {
-                subsection: "filterDesignRequirements",
+                subsection: "designRequirements",
                 canContinue: {
-                    'filterDesignRequirements': false,
+                    'designRequirements': false,
                     'operatingPoints': false,
                     'magneticAdviser': false,
                     'magneticBuilder': false,
@@ -68,9 +68,9 @@ export const useUserStore = defineStore("user", () => {
                 selectedAdvise: 0,
             },
             magneticBuilder: {
-                subsection: "filterDesignRequirements",
+                subsection: "designRequirements",
                 canContinue: {
-                    'filterDesignRequirements': false,
+                    'designRequirements': false,
                     'operatingPoints': false,
                     'magneticBuilder': false,
                     'magneticSummary': false,
@@ -80,7 +80,7 @@ export const useUserStore = defineStore("user", () => {
                 subsection: "welcome",
                 canContinue: {
                     'welcome': true,
-                    'filterDesignRequirements': false,
+                    'designRequirements': false,
                     'operatingPoints': false,
                     'toolSelector': false,
                 },
@@ -94,12 +94,14 @@ export const useUserStore = defineStore("user", () => {
                 },
             },
         },
-        magneticViewer: {
-            magneticViewer: {
-                subsection: "operatingPoints",
+        catalog: {
+            catalogAdviser: {
+                subsection: "designRequirements",
                 canContinue: {
+                    'designRequirements': false,
                     'operatingPoints': false,
-                    'magneticBuilder': false,
+                    'catalogAdviser': false,
+                    'magneticViewer': false,
                 },
             },
         }
@@ -212,9 +214,9 @@ export const useUserStore = defineStore("user", () => {
             },
             filter: {
                 magneticAdviser: {
-                    subsection: "filterDesignRequirements",
+                    subsection: "designRequirements",
                     canContinue: {
-                        'filterDesignRequirements': false,
+                        'designRequirements': false,
                         'operatingPoints': false,
                         'magneticAdviser': false,
                         'magneticBuilder': false,
@@ -223,9 +225,9 @@ export const useUserStore = defineStore("user", () => {
                     selectedAdvise: 0,
                 },
                 magneticBuilder: {
-                    subsection: "filterDesignRequirements",
+                    subsection: "designRequirements",
                     canContinue: {
-                        'filterDesignRequirements': false,
+                        'designRequirements': false,
                         'operatingPoints': false,
                         'magneticBuilder': false,
                         'magneticSummary': false,
@@ -235,7 +237,7 @@ export const useUserStore = defineStore("user", () => {
                     subsection: "welcome",
                     canContinue: {
                         'welcome': true,
-                        'filterDesignRequirements': false,
+                        'designRequirements': false,
                         'operatingPoints': false,
                         'toolSelector': false,
                     },
@@ -246,6 +248,17 @@ export const useUserStore = defineStore("user", () => {
                     subsection: "insulationRequirements",
                     canContinue: {
                         'insulationRequirements': false,
+                    },
+                },
+            },
+            catalog: {
+                catalogAdviser: {
+                    subsection: "designRequirements",
+                    canContinue: {
+                        'designRequirements': false,
+                        'operatingPoints': false,
+                        'catalogAdviser': false,
+                        'magneticViewer': false,
                     },
                 },
             }

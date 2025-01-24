@@ -54,6 +54,7 @@ export default {
         .then((data) => {
             data.split("\n").forEach((masString) => {
                 const mas = JSON.parse(masString)
+                console.log(mas)
                 this.catalogData.push({
                     reference: mas.magnetic.manufacturerInfo.reference,
                     core: mas.magnetic.core.name,
@@ -66,6 +67,11 @@ export default {
     methods: {
         viewMagnetic(row) {
             this.masStore.mas = row.mas;
+            this.$userStore.selectApplication("magneticViewer");
+            this.$userStore.selectTool("magneticViewer");
+            this.$userStore.setCurrentToolSubsection("magneticBuilder");
+            this.$userStore.setCurrentToolSubsectionStatus("operatingPoints", true);
+
             setTimeout(() => {this.$router.push('/magnetic_viewer');}, 50);
             console.log(row)
         }

@@ -10,7 +10,7 @@ import Catalog from '/src/components/Toolbox/Catalog.vue'
 <script>
 export default {
     data() {
-        const currentCatalog = "/catalog.ndjson"
+        const currentCatalog = "/cmcs.ndjson"
         return {
             currentCatalog,
         }

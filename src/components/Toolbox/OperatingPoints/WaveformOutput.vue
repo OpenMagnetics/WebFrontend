@@ -99,6 +99,9 @@ export default {
             :min="minimumMaximumScalePerParameter.percentage.min"
             :max="minimumMaximumScalePerParameter.percentage.max"
             :disableShortenLabels="true"
+            :labelBgColor="$settingsStore.labelBgColor"
+            :inputBgColor="$settingsStore.labelBgColor"
+            :textColor="$settingsStore.textColor"
         />
         <DimensionReadOnly 
             :name="'peakToPeak'"
@@ -108,6 +111,9 @@ export default {
             :min="minimumMaximumScalePerParameter[signalDescriptor].min"
             :max="minimumMaximumScalePerParameter[signalDescriptor].max"
             :disableShortenLabels="true"
+            :labelBgColor="$settingsStore.labelBgColor"
+            :inputBgColor="$settingsStore.labelBgColor"
+            :textColor="$settingsStore.textColor"
         />
         <DimensionReadOnly 
             :name="'offset'"
@@ -117,6 +123,9 @@ export default {
             :min="minimumMaximumScalePerParameter[signalDescriptor].min"
             :max="minimumMaximumScalePerParameter[signalDescriptor].max"
             :disableShortenLabels="true"
+            :labelBgColor="$settingsStore.labelBgColor"
+            :inputBgColor="$settingsStore.labelBgColor"
+            :textColor="$settingsStore.textColor"
         />
         <DimensionReadOnly 
             :name="'effectiveFrequency'"
@@ -126,6 +135,9 @@ export default {
             :min="minimumMaximumScalePerParameter.frequency.min"
             :max="minimumMaximumScalePerParameter.frequency.max"
             :disableShortenLabels="true"
+            :labelBgColor="$settingsStore.labelBgColor"
+            :inputBgColor="$settingsStore.labelBgColor"
+            :textColor="$settingsStore.textColor"
         />
         <DimensionReadOnly 
             :name="'peak'"
@@ -135,6 +147,9 @@ export default {
             :min="minimumMaximumScalePerParameter[signalDescriptor].min"
             :max="minimumMaximumScalePerParameter[signalDescriptor].max"
             :disableShortenLabels="true"
+            :labelBgColor="$settingsStore.labelBgColor"
+            :inputBgColor="$settingsStore.labelBgColor"
+            :textColor="$settingsStore.textColor"
         />
         <DimensionReadOnly 
             :name="'rms'"
@@ -144,6 +159,9 @@ export default {
             :min="minimumMaximumScalePerParameter[signalDescriptor].min"
             :max="minimumMaximumScalePerParameter[signalDescriptor].max"
             :disableShortenLabels="true"
+            :labelBgColor="$settingsStore.labelBgColor"
+            :inputBgColor="$settingsStore.labelBgColor"
+            :textColor="$settingsStore.textColor"
         />
         <DimensionReadOnly 
             :name="'thd'"
@@ -155,6 +173,9 @@ export default {
             :min="minimumMaximumScalePerParameter.percentage.min"
             :max="minimumMaximumScalePerParameter.percentage.max"
             :disableShortenLabels="true"
+            :labelBgColor="$settingsStore.labelBgColor"
+            :inputBgColor="$settingsStore.labelBgColor"
+            :textColor="$settingsStore.textColor"
         />
 
     </div>

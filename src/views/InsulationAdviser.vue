@@ -35,7 +35,6 @@ export default {
     <div class="container-fluid wrap p-0">
         <GenericTool
             class="container content"
-            :toolLabel="'insulationAdviser'"
             :currentStoryline="currentStoryline"
             :dataTestLabel="'InsulationAdviser'"
         />

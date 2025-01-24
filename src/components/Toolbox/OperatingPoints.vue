@@ -50,6 +50,9 @@ export default {
         }
     },
     computed: {
+        excitationSelectorDisabled() {
+            return !(this.masStore.magneticManualOperatingPoints[this.currentOperatingPointIndex] || this.masStore.magneticCircuitSimulatorOperatingPoints[this.currentOperatingPointIndex]);
+        },
         styleTooltip() {
             var relative_placement;
             relative_placement = 'right'
@@ -78,10 +81,18 @@ export default {
                 }
 
                 for (var windingIndex = 0; windingIndex < this.masStore.mas.magnetic.coil.functionalDescription.length; windingIndex++) {
-                        if (this.masStore.mas.inputs.operatingPoints[operatingPointIndex].excitationsPerWinding[windingIndex] == null) {
-                            this.errorMessages += "Missing waveforms for winding " + this.masStore.mas.magnetic.coil.functionalDescription[windingIndex].name + " in operating point " + this.masStore.mas.inputs.operatingPoints[operatingPointIndex].name + ".\n"
-                            allSet = false;
-                        }
+                    if (this.masStore.mas.inputs.operatingPoints[operatingPointIndex].excitationsPerWinding[windingIndex] == null || 
+                        this.masStore.mas.inputs.operatingPoints[operatingPointIndex].excitationsPerWinding[windingIndex].current == null || 
+                        this.masStore.mas.inputs.operatingPoints[operatingPointIndex].excitationsPerWinding[windingIndex].current.waveform == null || 
+                        this.masStore.mas.inputs.operatingPoints[operatingPointIndex].excitationsPerWinding[windingIndex].current.processed == null || 
+                        this.masStore.mas.inputs.operatingPoints[operatingPointIndex].excitationsPerWinding[windingIndex].current.harmonics == null || 
+                        this.masStore.mas.inputs.operatingPoints[operatingPointIndex].excitationsPerWinding[windingIndex].voltage == null || 
+                        this.masStore.mas.inputs.operatingPoints[operatingPointIndex].excitationsPerWinding[windingIndex].voltage.waveform == null || 
+                        this.masStore.mas.inputs.operatingPoints[operatingPointIndex].excitationsPerWinding[windingIndex].voltage.processed == null || 
+                        this.masStore.mas.inputs.operatingPoints[operatingPointIndex].excitationsPerWinding[windingIndex].voltage.harmonics == null) {
+                        this.errorMessages += "Missing waveforms for winding " + this.masStore.mas.magnetic.coil.functionalDescription[windingIndex].name + " in operating point " + this.masStore.mas.inputs.operatingPoints[operatingPointIndex].name + ".\n"
+                        allSet = false;
+                    }
                 }
             }
             return allSet;
@@ -184,6 +195,9 @@ export default {
             this.$emit("canContinue", this.canContinue);
         },
         selectedManualOrImported() {
+            setTimeout(() => {
+                this.masStore.updatedInputExcitationWaveformUpdatedFromProcessed('current');
+            }, 100);
             this.$emit("canContinue", this.canContinue);
         },
         selectedAcSweepTypeSelected() {
@@ -199,6 +213,9 @@ export default {
             this.currentWindingIndex = windingIndex;
             this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[windingIndex] = tempExcitation;
             // this.masStore.updatedInputExcitationWaveformUpdatedFromProcessed('current');
+            setTimeout(() => {
+                this.masStore.updatedInputExcitationWaveformUpdatedFromProcessed('current');
+            }, 100);
             this.$emit("canContinue", this.canContinue);
         },
         reflectWinding(windingIndexToBeReflected){
@@ -245,19 +262,19 @@ export default {
         <div class="row" v-tooltip="styleTooltip">
             <div class="col-sm-12 col-md-2 text-start border border-primary m-0 px-1">
                 <div class="col-12 row m-0 p-0 border-bottom border-top rounded-4 border-4 mb-5 pb-2 pt-2 mt-2 bg-light" :style="operatingPointIndex == currentOperatingPointIndex? 'opacity: 1;' : 'opacity: 0.65;'"  v-for="operatingPoint, operatingPointIndex in masStore.mas.inputs.operatingPoints">
-                    <input :data-cy="dataTestLabel + '-operating-point-' + operatingPointIndex + '-name-input'" type="text" class="m-0 px-0 col-12 bg-dark text-white" 
+                    <input :disabled="excitationSelectorDisabled" :data-cy="dataTestLabel + '-operating-point-' + operatingPointIndex + '-name-input'" type="text" class="m-0 px-0 col-12 bg-dark text-white" 
                         v-model="masStore.mas.inputs.operatingPoints[operatingPointIndex].name"
                         placeholder="My operating point"/>
                     <div v-if="currentOperatingPointIndex == operatingPointIndex" class="col-12 row m-0 p-0 " v-for="winding, windingIndex in masStore.mas.magnetic.coil.functionalDescription">
-                        <input :data-cy="dataTestLabel + '-operating-point-' + operatingPointIndex + '-winding-' + windingIndex + '-name-input'" class="rounded-2 fs-5 ms-2 bg-light text-white col-7 p-0 mb-2 border-0" v-model="winding.name">
-                        <button :data-cy="dataTestLabel + '-operating-point-' + operatingPointIndex + '-winding-' + windingIndex + '-reflect-button'" v-if="masStore.mas.magnetic.coil.functionalDescription.length == 2 && masStore.mas.inputs.operatingPoints[operatingPointIndex].excitationsPerWinding[(windingIndex + 1) % 2] != null" v-tooltip="tooltipsMagneticSynthesisOperatingPoints[(windingIndex == 0? 'reflectPrimary' : 'reflectSecondaries')]" class="btn btn-secondary fs-6 col-2 mt-2 p-0" style="max-height: 1.7em" @click="reflectWinding(windingIndex)">
+                        <input :disabled="excitationSelectorDisabled" :data-cy="dataTestLabel + '-operating-point-' + operatingPointIndex + '-winding-' + windingIndex + '-name-input'" class="rounded-2 fs-5 ms-2 bg-light text-white col-7 p-0 mb-2 border-0" v-model="winding.name">
+                        <button :disabled="excitationSelectorDisabled" :data-cy="dataTestLabel + '-operating-point-' + operatingPointIndex + '-winding-' + windingIndex + '-reflect-button'" v-if="masStore.mas.magnetic.coil.functionalDescription.length == 2 && masStore.mas.inputs.operatingPoints[operatingPointIndex].excitationsPerWinding[(windingIndex + 1) % 2] != null" v-tooltip="tooltipsMagneticSynthesisOperatingPoints[(windingIndex == 0? 'reflectPrimary' : 'reflectSecondaries')]" class="btn btn-secondary fs-6 col-2 mt-2 p-0" style="max-height: 1.7em" @click="reflectWinding(windingIndex)">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-symmetry-vertical" viewBox="0 0 16 16">
                                 <path d="M7 2.5a.5.5 0 0 0-.939-.24l-6 11A.5.5 0 0 0 .5 14h6a.5.5 0 0 0 .5-.5v-11zm2.376-.484a.5.5 0 0 1 .563.245l6 11A.5.5 0 0 1 15.5 14h-6a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .376-.484zM10 4.46V13h4.658L10 4.46z"/>
                             </svg>
                         </button>
                         <div v-if="!(masStore.mas.magnetic.coil.functionalDescription.length == 2 && masStore.mas.inputs.operatingPoints[operatingPointIndex].excitationsPerWinding[(windingIndex + 1) % 2] != null)" class="fs-6 col-2 mt-2 p-0" style="max-height: 1.7em">
                         </div>
-                        <button :data-cy="dataTestLabel + '-operating-point-' + operatingPointIndex + '-winding-' + windingIndex + '-select-button'" v-tooltip="tooltipsMagneticSynthesisOperatingPoints['editWindingWaveform']" class="btn fs-6 col-2 mt-2 p-0 ms-1" :class="currentWindingIndex == windingIndex? 'btn-success disabled' : isExcitationProcessed(operatingPointIndex, windingIndex)? 'btn-primary' : 'btn-danger'" @click="changeWinding(windingIndex)" style="max-height: 1.7em;">
+                        <button :disabled="excitationSelectorDisabled" :data-cy="dataTestLabel + '-operating-point-' + operatingPointIndex + '-winding-' + windingIndex + '-select-button'" v-tooltip="tooltipsMagneticSynthesisOperatingPoints['editWindingWaveform']" class="btn fs-6 col-2 mt-2 p-0 ms-1" :class="currentWindingIndex == windingIndex? 'btn-success disabled' : isExcitationProcessed(operatingPointIndex, windingIndex)? 'btn-primary' : 'btn-danger'" @click="changeWinding(windingIndex)" style="max-height: 1.7em;">
                             <svg v-if="currentWindingIndex == windingIndex" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-eye-fill" viewBox="0 0 16 16">
                                 <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0z"/>
                                 <path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8zm8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z"/>

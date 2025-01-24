@@ -61,6 +61,9 @@ export default {
                 :max="minimumMaximumScalePerParameter.power.max"
                 :disableShortenLabels="true"
                 :styleClass="'fs-5'"
+                :labelBgColor="$settingsStore.labelBgColor"
+                :inputBgColor="$settingsStore.labelBgColor"
+                :textColor="$settingsStore.textColor"
             />
             <DimensionReadOnly class="col-6"
                 :name="'rmsPower'"
@@ -71,6 +74,9 @@ export default {
                 :max="minimumMaximumScalePerParameter.power.max"
                 :disableShortenLabels="true"
                 :styleClass="'fs-5'"
+                :labelBgColor="$settingsStore.labelBgColor"
+                :inputBgColor="$settingsStore.labelBgColor"
+                :textColor="$settingsStore.textColor"
             />
         </div>
     </div>

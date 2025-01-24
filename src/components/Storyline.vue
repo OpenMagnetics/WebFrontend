@@ -26,6 +26,10 @@ export default {
             type: Boolean,
             default: false
         },
+        showEditOption: {
+            type: Boolean,
+            default: false
+        },
     },
     data() {
         var enabledAdventures = {};
@@ -204,6 +208,11 @@ export default {
                 data-bs-toggle="modal"
                 data-bs-target="#StorylineSettingsModal"
             >Settings</button>
+            <button
+                v-if="showEditOption"  
+                :data-cy="'edit-from-viewer-button'"
+                class="btn btn-success mx-auto d-block mt-4 col-6 col-sm-6 col-md-12"
+            >Edit magnetic!</button>
         </div>
     </div>
 </template>

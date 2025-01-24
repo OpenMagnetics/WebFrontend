@@ -22,7 +22,6 @@
     "cors": "^2.8.5",
     "datatables.net-vue3": "^3.0.4",
     "echarts": "^5.5.1",
-    "jquery": "^3.7.1",
     "latex.js": "^0.12.6",
     "pinia": "^2.2.2",
     "pinia-plugin-persistedstate": "^4.0.2",

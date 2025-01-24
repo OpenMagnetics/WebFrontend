@@ -7,6 +7,7 @@ import { toTitleCase } from '/WebSharedComponents/assets/js/utils.js'
 import ElementFromList from '/WebSharedComponents/DataInput/ElementFromList.vue'
 import DesignRequirements from '/src/components/Toolbox/PowerDesignRequirements.vue'
 import FilterDesignRequirements from '/src/components/Toolbox/FilterDesignRequirements.vue'
+import CatalogDesignRequirements from '/src/components/Toolbox/CatalogDesignRequirements.vue'
 import OperatingPoints from '/src/components/Toolbox/OperatingPoints.vue'
 import MagneticCoreAdviser from '/src/components/Toolbox/MagneticCoreAdviser.vue'
 import CoreCustomizer from '/src/components/Toolbox/CoreCustomizer.vue'
@@ -31,10 +32,6 @@ import { useMasStore } from '/src/stores/mas'
 <script>
 export default {
     props: {
-        toolLabel: {
-            type: String,
-            default: 'magneticCoreAdviser',
-        },
         currentStoryline: {
             type: Object,
             required: true,
@@ -122,6 +119,9 @@ export default {
                 return false;
             }
         },
+        editMagnetic(tool) {
+            this.$userStore.getCurrentToolState().subsection = tool;
+        },
     },
     computed: {
         operatingPointNames() {
@@ -157,6 +157,8 @@ export default {
                             :canContinue="$userStore.getCurrentToolState().canContinue"
                             :forceUpdate="updateStoryline"
                             :showAvoidOption="currentStoryline[$userStore.getCurrentToolState().subsection].title=='Welcome'"
+                            :showEditOption="$userStore.selectedTool == 'magneticViewer'"
+                            @editMagnetic="editMagnetic"
                             @changeTool="changeTool"
                             @nextTool="nextTool"
                         />
@@ -204,14 +206,19 @@ export default {
                                 @toolSelected="toolSelected"
                             />
                             <DesignRequirements
-                                v-if="$userStore.getCurrentToolState().subsection == 'designRequirements'"
+                                v-if="$userStore.getCurrentToolState().subsection == 'designRequirements' && $userStore.selectedApplication == 'power'"
                                 :dataTestLabel="`${dataTestLabel}-DesignRequirements`"
                                 @canContinue="updateCanContinue('designRequirements', $event)"
                             />
                             <FilterDesignRequirements
-                                v-if="$userStore.getCurrentToolState().subsection == 'filterDesignRequirements'"
+                                v-if="$userStore.getCurrentToolState().subsection == 'designRequirements' && $userStore.selectedApplication == 'filter'"
                                 :dataTestLabel="`${dataTestLabel}-FilterDesignRequirements`"
-                                @canContinue="updateCanContinue('filterDesignRequirements', $event)"
+                                @canContinue="updateCanContinue('designRequirements', $event)"
+                            />
+                            <CatalogDesignRequirements
+                                v-if="$userStore.getCurrentToolState().subsection == 'designRequirements' && $userStore.selectedApplication == 'catalog'"
+                                :dataTestLabel="`${dataTestLabel}-CatalogDesignRequirements`"
+                                @canContinue="updateCanContinue('designRequirements', $event)"
                             />
                             <OperatingPoints
                                 v-if="$userStore.getCurrentToolState().subsection == 'operatingPoints'"
@@ -248,14 +255,12 @@ export default {
                             <MagneticBuilder 
                                 v-if="$userStore.getCurrentToolState().subsection == 'magneticBuilder'"
                                 :masStore="masStore"
-                                :readOnly="false"
-                                :mkf="$mkf"
-                                :mkfAdvisers="$mkfAdvisers"
                                 :operatingPointIndex="masStore.currentOperatingPoint"
                                 :dataTestLabel="`${dataTestLabel}-MagneticBuilder`"
                                 :useVisualizers="true"
                                 :enableCoil="true"
-                                :enableGraphs="masStore.magneticAcSweepOperatingPoints"
+                                :readOnly="$userStore.selectedTool == 'magneticViewer'"
+                                :enableGraphs="masStore.magneticAcSweepOperatingPoints || $userStore.selectedTool == 'magneticViewer'"
                                 :enableAdvisers="!masStore.magneticAcSweepOperatingPoints"
                                 :enableSimulation="!masStore.magneticAcSweepOperatingPoints"
                                 @canContinue="updateCanContinue('magneticBuilder', $event)"

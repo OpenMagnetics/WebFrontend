@@ -87,6 +87,9 @@ export default {
         calculateInsulation() {
             insulationCoordinator.ready.then(_ => {
                 this.masStore.mas.inputs.operatingPoints[0].excitationsPerWinding[0].voltage.processed.peakToPeak = 2 * this.masStore.mas.inputs.operatingPoints[0].excitationsPerWinding[0].voltage.processed.peak;
+
+                console.log(this.masStore.mas.inputs.operatingPoints)
+
                 this.insulation = JSON.parse(insulationCoordinator.calculate_insulation(JSON.stringify(this.masStore.mas.inputs)));
             });
         },
