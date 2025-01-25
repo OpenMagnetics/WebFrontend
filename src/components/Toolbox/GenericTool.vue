@@ -259,13 +259,14 @@ export default {
                                 :dataTestLabel="`${dataTestLabel}-InsulationAdviser`"
                             />
                             <MagneticBuilder 
-                                v-if="$userStore.getCurrentToolState().subsection == 'magneticBuilder'"
+                                v-if="$userStore.getCurrentToolState().subsection == 'magneticBuilder' || 
+                                      $userStore.getCurrentToolState().subsection == 'magneticViewer'"
                                 :masStore="masStore"
                                 :operatingPointIndex="masStore.currentOperatingPoint"
                                 :dataTestLabel="`${dataTestLabel}-MagneticBuilder`"
                                 :useVisualizers="true"
                                 :enableCoil="true"
-                                :readOnly="$userStore.selectedTool == 'magneticViewer'"
+                                :readOnly="$userStore.getCurrentToolState().subsection == 'magneticViewer'"
                                 :enableGraphs="masStore.magneticAcSweepOperatingPoints || $userStore.selectedTool == 'magneticViewer'"
                                 :enableAdvisers="!masStore.magneticAcSweepOperatingPoints"
                                 :enableSimulation="!masStore.magneticAcSweepOperatingPoints"

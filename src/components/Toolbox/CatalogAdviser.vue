@@ -69,7 +69,6 @@ export default {
             masStore,
             inventoryCacheStore,
             loading,
-            currentAdviseToShow: 0,
         }
     },
     computed: {
@@ -89,6 +88,27 @@ export default {
             }
             return titledFilters;
         },
+        resultsMessage() {
+            if (this.catalogStore.advises.length > 0) {
+                if (this.catalogStore.advises[0].scoring > 0) {
+                    if (this.catalogStore.advises.length > 1) {
+                        return "We found these suitable magnetics in our standard catalog:"
+                    }
+                    else {
+                        return "We found this suitable magnetic in our standard catalog:"
+                    }
+                }
+                else {
+                    if (this.catalogStore.advises.length > 1) {
+                        return "We didn't find any standard magnetics in catalog that complied with you requirements, but these were the closest, which means they are a good starting poing to create your own design:"
+                    }
+                    else {
+                        return "We didn't find any standard magnetics in catalog that complied with you requirements, but this was the closest, which means it is a good starting poing to create your own design:"
+                    }
+                }
+            }
+
+        }
     },
     watch: { 
     },
@@ -117,33 +137,7 @@ export default {
 
     },
     methods: {
-        getTopMagneticByFilter(data, filter) {
-            data.sort(function(a, b) { 
-                if (filter == null) {
-                    return b.weightedTotalScoring - a.weightedTotalScoring;
-                }
-                else {
-                   return b.scoringPerFilter[filter] - a.scoringPerFilter[filter];
-               }
-            })
-            var topMas = deepCopy(data[0]);
-            return topMas;
-        },
-        deleteMasElementFromArray(data, datum) {
-            var index = -1;
-            for (var i = data.length - 1; i >= 0; i--) {
-                if (data[i].mas.magnetic.manufacturerInfo.name == datum.mas.magnetic.manufacturerInfo.name) {
-                    index = i;
-                    break;
-                }
-            }
-            if (index > -1) { // only splice data when item is found
-              data.splice(index, 1); // 2nd parameter means remove one item only
-            }
-        },
         calculateAdvisedMagnetics() {
-            this.currentAdviseToShow = 0;
-
             // Timeout to give time to gif to load
             setTimeout(() => {
                 magneticAdviser.ready.then(_ => {
@@ -179,9 +173,9 @@ export default {
                             this.catalogStore.advises.push(datum);
                         })
                         console.timeEnd('Execution Time');
-                        if (this.catalogStore.advises.length > 0) {
-                            this.$emit("canContinue", true);
-                        }
+                        // if (this.catalogStore.advises.length > 0) {
+                        //     this.$emit("canContinue", true);
+                        // }
 
                         this.loading = false;
 
@@ -193,49 +187,22 @@ export default {
                 });
             }, 10);
         },
-        changedInputValue(key, value) {
-            this.masStore.magneticAdviserWeights[key] = value / 100;
-        },
         maximumNumberResultsChangedInputValue(value) {
-        },
-        changedSliderValue(newkey, newValue) {
-            const remainingValue = 100 - newValue;
-            var valueInOthers = 0;
-            for (let [key, value] of Object.entries(this.masStore.magneticAdviserWeights)) {
-                if (isNaN(value)) {
-                    value = 0;
-                }
-                if (key != newkey) {
-                    valueInOthers += value;
-                }
-            }
-            for (let [key, value] of Object.entries(this.masStore.magneticAdviserWeights)) {
-                if (isNaN(value)) {
-                    value = 0;
-                }
-                if (key != newkey) {
-                    if (value == 0) {
-                        this.masStore.magneticAdviserWeights[key] = remainingValue / 2;
-                    }
-                    else {
-                        this.masStore.magneticAdviserWeights[key] = value / valueInOthers * remainingValue;
-                    }
-                }
-            }
         },
         maximumNumberResultsChangedSliderValue(newValue) {
         },
-        selectedMas(index) {
-            this.masStore.setMas(deepCopy(this.adviseCacheStore.currentMasAdvises[index].mas));
-            this.$userStore.magneticAdviserSelectedAdvise = index;
-            console.log("canContinue")
+        viewMagnetic(index) {
+            this.masStore.mas = this.catalogStore.advises[index].mas;
             this.$emit("canContinue", true);
 
+            this.$userStore.setCurrentToolSubsection("magneticViewer");
         },
-        adviseReady(index) {
-            if (this.currentAdviseToShow < this.adviseCacheStore.currentMasAdvises.length - 1) {
-                setTimeout(() => {this.currentAdviseToShow = this.currentAdviseToShow + 1}, 100);
-            }
+        editMagnetic(index) {
+        },
+        orderSample(index) {
+            const mas = this.catalogStore.advises[index].mas;
+            var link = `mailto:target@example.com?subject=Sample ${mas.magnetic.manufacturerInfo.reference}&body=I would like to order a sample of the part ${mas.magnetic.manufacturerInfo.reference}`; 
+            window.location.href = link;
         },
         calculateAdvises(event) {
             this.loading = true;
@@ -247,25 +214,25 @@ export default {
 </script>
 
 <template>
-    <AdviseDetails :modelValue="masStore.mas"/>
-    <div class="container" >
+    <div class="container text-start pe-0 container-fluid"  style="height: 70vh" >
         <div class="row">
-            <div class="col-sm-12 col-md-10 text-start pe-0 container-fluid"  style="height: 70vh">
+            <div class="col-10 offset-1 text-start pe-0 container-fluid"  style="height: 70vh">
                 <div class="row" v-if="loading" >
                     <img data-cy="magneticAdviser-loading" class="mx-auto d-block col-12" alt="loading" style="width: 50%; height: auto;" src="/images/loading.gif">
 
                 </div>
-                <div class="row advises" v-else>
-                    <div class="col-md-4 col-sm-12 m-0 p-0 mt-1" v-for="advise, adviseIndex in catalogStore.advises">
+                <div class="col-12 row fs-5 mb-4">
+                    {{resultsMessage}}
+                </div>
+                <div class="col-12 row advises">
+                    <div class="col-6 m-0 p-0 mt-1" v-for="advise, adviseIndex in catalogStore.advises">
                         <Advise
-                            v-if="(Object.values(titledFilters).length > 0) && (currentAdviseToShow >= adviseIndex)"
                             :adviseIndex="adviseIndex"
                             :masData="advise.mas"
                             :scoring="advise.scoring"
-                            :selected="$userStore.magneticAdviserSelectedAdvise == adviseIndex"
-                            :graphType="$settingsStore.adviserSpiderBarChartNotBar == '1'? 'radar' : 'bar'"
-                            @selectedMas="selectedMas(adviseIndex)"
-                            @adviseReady="adviseReady(adviseIndex)"
+                            @viewMagnetic="viewMagnetic(adviseIndex)"
+                            @editMagnetic="editMagnetic(adviseIndex)"
+                            @orderSample="orderSample(adviseIndex)"
                         />
                     </div>
                 </div>

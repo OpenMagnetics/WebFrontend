@@ -53,6 +53,26 @@ const commonPart = () => {
         return dataImported
     })
 
+    function getMaxMinInPoints(points, elem=null) {
+        var max = -Infinity
+        var min = Infinity
+        points.forEach((item, index) => {
+            var value
+            if (elem == null)
+                value = item
+            else 
+                value = item[elem]
+
+            if (value > max) {
+                max = value;
+            }
+            if (value < min) {
+                min = value;
+            }
+        });
+        return {max, min}
+    }
+
     function setHarmonicsAmplitude(harmonicsAmplitude) {
         this.harmonicsAmplitude = Utils.deepCopy(harmonicsAmplitude)
     }
@@ -61,7 +81,7 @@ const commonPart = () => {
     }
     function setDataPoint(point, index) {
         this.dataPoints[index] = Utils.deepCopy(point)
-        var aux = Utils.getMaxMinInPoints(this.dataPoints, 'y')
+        var aux = getMaxMinInPoints(this.dataPoints, 'y')
         if (aux['max'] != aux['min']) {
             this.valuePrecision = Math.abs(aux['max'] - aux['min']) / 100
         }
@@ -70,7 +90,7 @@ const commonPart = () => {
         const unpackedPoints = Utils.unpackDataPoints(points)
         userStore.globalOperationPoint[this.$id]["waveform"] = {data: unpackedPoints["values"], time: unpackedPoints["times"]}
         this.dataPoints = Utils.deepCopy(points)
-        var aux = Utils.getMaxMinInPoints(points, 'y')
+        var aux = getMaxMinInPoints(points, 'y')
         if (aux['max'] != aux['min']) {
             this.valuePrecision = Math.abs(aux['max'] - aux['min']) / 100
         }
@@ -79,7 +99,7 @@ const commonPart = () => {
         const unpackedPoints = Utils.unpackDataPoints(points)
         userStore.globalOperationPoint[this.$id]["waveform"] = {data: unpackedPoints["values"], time: unpackedPoints["times"]}
         this.dataPoints = Utils.deepCopy(points)
-        var aux = Utils.getMaxMinInPoints(points, 'y')
+        var aux = getMaxMinInPoints(points, 'y')
         if (aux['max'] != aux['min']) {
             this.valuePrecision = Math.abs(aux['max'] - aux['min']) / 100
         }
@@ -88,7 +108,7 @@ const commonPart = () => {
         const unpackedPoints = Utils.unpackDataPoints(points)
         userStore.globalOperationPoint[this.$id]["waveform"] = {data: unpackedPoints["values"], time: unpackedPoints["times"]}
         this.dataPoints = Utils.deepCopy(points)
-        var aux = Utils.getMaxMinInPoints(points, 'y')
+        var aux = getMaxMinInPoints(points, 'y')
         if (aux['max'] != aux['min']) {
             this.valuePrecision = Math.abs(aux['max'] - aux['min']) / 100
         }

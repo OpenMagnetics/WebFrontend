@@ -17,12 +17,8 @@ export default {
             required: true
         },
         scoring: {
-            type: Object,
+            type: Number,
             required: true
-        },
-        selected: {
-            type: Boolean,
-            default: false,
         },
         dataTestLabel: {
             type: String,
@@ -73,8 +69,6 @@ export default {
     mounted () {
 
         this.processLocalTexts();
-
-        this.$emit("adviseReady")
     },
     methods: {
         processLocalTexts() {
@@ -83,26 +77,7 @@ export default {
                 console.log(this.scoring)
                 const aux = formatPower(this.masData.outputs[0].coreLosses.coreLosses + this.masData.outputs[0].windingLosses.windingLosses);
                 this.localTexts.losses = `Losses:\n${removeTrailingZeroes(aux.label, 2)} ${aux.unit}`
-            }
-
-            this.$mkf.ready.then(_ => {
-                // hardcoded operation point
-                const rmsPower = this.$mkf.calculate_rms_power(JSON.stringify(this.masData.inputs.operatingPoints[0].excitationsPerWinding[0]));
-                const volume = this.masData.magnetic.core.processedDescription.width *
-                               this.masData.magnetic.core.processedDescription.depth * 
-                               this.masData.magnetic.core.processedDescription.height;
-                const aux = formatPowerDensity(rmsPower / volume);
-                this.localTexts.powerDensity = `Power dens.:\n${removeTrailingZeroes(aux.label, 1)} ${aux.unit}`;
-            }); 
-            {
-                var masScore = 0;
-                for (let [key, value] of Object.entries(this.scoring)) {
-                    masScore += value;
-                }
-                masScore /= 3;
-                masScore *= 100;
-                this.masScore = `${removeTrailingZeroes(masScore, 1)}`
-            }   
+            } 
             {
                 const aux = formatInductance(this.masData.outputs[0].magnetizingInductance.magnetizingInductance.nominal);
                 this.localTexts.magnetizingInductance = `Mag. Ind.:\n${removeTrailingZeroes(aux.label, 1)} ${aux.unit}`
@@ -116,8 +91,7 @@ export default {
     <div class="container">
         <div class="card p-0 m-0">
             <div class="card-header row p-0 m-0 mt-2 pb-2">
-                <p class="fs-6 col-10 p-0 px-1 fw-bold">{{fixedMagneticName}}</p>
-                <p class="fs-4 col-2 p-0 m-0 text-success">{{masScore}}</p>
+                <p class="fs-4 col-10 p-0 px-1 fw-bold">{{fixedMagneticName}}</p>
                 <!-- <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p> -->
             </div>
             <div class="row py-3">
@@ -127,8 +101,9 @@ export default {
                 </div>
             </div>
             <div class="card-body">
-                <button :data-cy="dataTestLabel + '-advise-' + adviseIndex + '-details-button'" class="btn btn-primary col-4" data-bs-toggle="offcanvas" data-bs-target="#CoreAdviserDetailOffCanvas" @click="$emit('selectedMas')"> Details </button>
-                <button :data-cy="dataTestLabel + '-advise-' + adviseIndex + '-select-button'" :class="selected? 'btn-success' : 'btn-primary'" class="btn  offset-1 col-4" @click="$emit('selectedMas')">{{selected? 'Selected' : 'Select'}}</button>
+                <button :data-cy="dataTestLabel + '-advise-' + adviseIndex + '-view-button'" class="btn btn-primary col-3 fs-5" @click="$emit('viewMagnetic')"> View </button>
+                <button :data-cy="dataTestLabel + '-advise-' + adviseIndex + '-edit-button'" class="btn btn-info offset-1 col-3 fs-5" @click="$emit('editMagnetic')">Edit</button>
+                <button :data-cy="dataTestLabel + '-advise-' + adviseIndex + '-order-button'" class="btn btn-success offset-1 col-4 fs-5" @click="$emit('orderSample')">Order a sample</button>
             </div>
         </div>
     </div>

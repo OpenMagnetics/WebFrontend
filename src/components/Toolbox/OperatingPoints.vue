@@ -30,17 +30,7 @@ export default {
         const currentWindingIndex = 0;
         const errorMessages = "";
 
-
         masStore.initializeOperatingPoints();
-        // if (masStore.mas.inputs.operatingPoints.length == 0) {
-        //     masStore.mas.inputs.operatingPoints.push(
-        //         {
-        //             name: "Op. Point No. 1",
-        //             conditions: {ambientTemperature: 42},
-        //             excitationsPerWinding: [deepCopy(defaultOperatingPointExcitation)]
-        //         }
-        //     );
-        // }
 
         return {
             masStore,

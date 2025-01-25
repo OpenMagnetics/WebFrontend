@@ -53,13 +53,13 @@ export const useMasStore = defineStore("mas", () => {
         console.log("Resetting!!!!!!!!!!!!!")
     }
 
-    function initializeOperatingPoints() {
+    function initializeOperatingPoints(temperature=100) {
 
         if (this.mas.inputs.operatingPoints.length == 0) {
             this.mas.inputs.operatingPoints.push(
                 {
                     name: "Op. Point No. 1",
-                    conditions: {ambientTemperature: 42},
+                    conditions: {ambientTemperature: temperature},
                     excitationsPerWinding: []
                 }
             );
