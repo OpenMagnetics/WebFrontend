@@ -89,7 +89,10 @@ export default {
             return titledFilters;
         },
         resultsMessage() {
-            if (this.catalogStore.advises.length > 0) {
+            if (this.loading) {
+                return "Looking for the best designs for you in our catalog"
+            }
+            else if (this.catalogStore.advises.length > 0) {
                 if (this.catalogStore.advises[0].scoring > 0) {
                     if (this.catalogStore.advises.length > 1) {
                         return "We found these suitable magnetics in our standard catalog:"
@@ -130,9 +133,10 @@ export default {
             // })
             // console.log(this.catalogData)
             // console.log(data)
-            // if (this.adviseCacheStore.noMasAdvises()) {
+            if (this.catalogStore.advises.length == 0) {
+                this.loading = true;
                 setTimeout(() => {this.calculateAdvisedMagnetics();}, 200);
-            // }
+            }
         })
 
     },
@@ -217,12 +221,12 @@ export default {
     <div class="container text-start pe-0 container-fluid"  style="height: 70vh" >
         <div class="row">
             <div class="col-10 offset-1 text-start pe-0 container-fluid"  style="height: 70vh">
+                <div class="col-12 row fs-5 mb-4">
+                    {{resultsMessage}}
+                </div>
                 <div class="row" v-if="loading" >
                     <img data-cy="magneticAdviser-loading" class="mx-auto d-block col-12" alt="loading" style="width: 50%; height: auto;" src="/images/loading.gif">
 
-                </div>
-                <div class="col-12 row fs-5 mb-4">
-                    {{resultsMessage}}
                 </div>
                 <div class="col-12 row advises">
                     <div class="col-6 m-0 p-0 mt-1" v-for="advise, adviseIndex in catalogStore.advises">

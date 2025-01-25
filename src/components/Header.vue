@@ -3,6 +3,7 @@ import { defineAsyncComponent } from "vue";
 import { useUserDatabaseStore } from '/src/stores/userDatabase'
 import { useElementVisibility  } from '@vueuse/core'
 import { ref } from 'vue'
+import { useCatalogStore } from '/src/stores/catalog'
 </script>
 
 <script>
@@ -134,6 +135,8 @@ export default {
                 setTimeout(() => {this.$router.go();}, 100);
         },
         onCatalogTool() {
+            const catalogStore = useCatalogStore();
+            catalogStore.resetCatalog();
             this.$userStore.resetMagneticTool();
             this.$userStore.selectApplication("catalog");
             this.$userStore.selectTool("catalogAdviser");
