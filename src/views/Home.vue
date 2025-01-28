@@ -73,7 +73,7 @@ export default {
                     <div class="row my-2">
                         <div class="offset-lg-2 col-8 d-flex justify-content-evenly">
                             <a href="https://github.com/OpenMagnetics/" target="_blank" rel="noopener noreferrer" class="btn text-dark bg-success border-dark mx-2 fs-5 ">Give us a star on Github! <i class="fa-brands fa-github"></i> </a>
-                            <button class="btn text-dark bg-primary border-dark mx-2 fs-5 " @click="newMagneticToolDesign">Join us on Discord!<i class="ms-2 fa-brands fa-discord"></i> </button>
+                            <a href="https://discord.gg/PFpMjYNb5c" target="_blank" class="btn text-dark bg-primary border-dark mx-2 fs-5 ">Join us on Discord!<i class="ms-2 fa-brands fa-discord"></i> </a>
                             <a href="https://www.linkedin.com/company/openmagnetics" target="_blank" class="btn text-dark bg-info border-dark mx-2 fs-5 ">Follow us on LinkedIn! <i class="fa-brands fa-linkedin"></i> </a>
                         </div>
                     </div>
@@ -225,7 +225,7 @@ export default {
                         <div class="text-white my-1 py-4 offset-sm-0 offset-lg-2 col-sm-12 col-lg-8 text-center bg-light rounded-4">
                             <h3>Tools and Roadmap</h3>
                             <p class="fs-5">OpenMagnetics is maintained and developed by volunteers, and we do it because we believe in what Open Source brings to the world. Each one of us makes their living by some other meaning and works on these in our free time, so there won't be any deadlines. Despite of that, we will do our best to make this tool as good as we are capable.</p>
-                            <p class="fs-5">If you want to support this project, consider joining our <a href="https://discord.gg/ADKTnYhXDU" target="_blank" rel="noopener noreferrer">Discord server</a> and let us know what you enjoy doing the most!.</p>
+                            <p class="fs-5">If you want to support this project, consider joining our <a href="https://discord.gg/PFpMjYNb5c" target="_blank" rel="noopener noreferrer">Discord server</a> and let us know what you enjoy doing the most!.</p>
                         </div>
                     </div>
                 </h2>
