@@ -8,9 +8,13 @@ export const useCatalogStore = defineStore("catalog", () => {
     const catalogCoreShapeDatabase = ref(null);
     const catalogWireDatabase = ref(null);
     const advises = ref([]);
+    const requests = ref([]);
 
     function resetCatalog() {
         this.advises = [];
+    }
+    function addRequest() {
+        this.requests.push(requests);
     }
 
     function orderSample() {
@@ -25,9 +29,11 @@ export const useCatalogStore = defineStore("catalog", () => {
         advises,
         resetCatalog,
         orderSample,
+        requests,
+        addRequest,
     }
 },
 {
-    persist: false,
+    persist: true,
 }
 )

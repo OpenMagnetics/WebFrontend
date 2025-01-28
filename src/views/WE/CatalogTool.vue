@@ -7,6 +7,7 @@ import Storyline from '/src/components/Storyline.vue'
 import { toTitleCase } from '/WebSharedComponents/assets/js/utils.js'
 
 import GenericTool from '/src/components/WE/GenericTool.vue'
+import Formular from '/src/components/WE/Formular.vue'
 
 </script>
 
@@ -73,8 +74,9 @@ export default {
             this.catalogAdviserStoryline.magneticBuilder.enabled = true;
         },
         orderSample(mas) {
-            var link = `mailto:target@example.com?subject=Sample ${mas.magnetic.manufacturerInfo.reference}&body=I would like to order a sample of the part ${mas.magnetic.manufacturerInfo.reference}`; 
-            window.location.href = link;
+            this.$refs.requestModalButton.click()
+            // var link = `mailto:target@example.com?subject=Sample ${mas.magnetic.manufacturerInfo.reference}&body=I would like to order a sample of the part ${mas.magnetic.manufacturerInfo.reference}`; 
+            // window.location.href = link;
         },
     },
     mounted() {
@@ -95,6 +97,14 @@ export default {
 </script>
 
 <template>
+    <button
+        hidden    
+        ref="requestModalButton" 
+        class="btn btn-primary mt-1 rounded-3"
+        data-bs-toggle="modal"
+        data-bs-target="#requestModal"
+    />
+    <Formular />
     <GenericTool
         :currentStoryline="currentStoryline"
         :dataTestLabel="'MagneticTool'"

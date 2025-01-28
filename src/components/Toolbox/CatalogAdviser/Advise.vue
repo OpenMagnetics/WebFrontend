@@ -116,7 +116,7 @@ export default {
             </div>
             <div class="card-body">
                 <button :data-cy="dataTestLabel + '-advise-' + adviseIndex + '-view-button'" class="btn btn-primary col-3 fs-5" @click="$emit('viewMagnetic')"> View </button>
-                <button :data-cy="dataTestLabel + '-advise-' + adviseIndex + '-edit-button'" class="btn btn-info offset-1 col-3 fs-5" @click="$emit('editMagnetic')">Edit</button>
+                <button v-if="scoring < 0" :data-cy="dataTestLabel + '-advise-' + adviseIndex + '-edit-button'" class="btn btn-info offset-1 col-3 fs-5" @click="$emit('editMagnetic')">Edit</button>
                 <button :data-cy="dataTestLabel + '-advise-' + adviseIndex + '-order-button'" class="btn btn-success offset-1 col-4 fs-5" @click="$emit('orderSample')">Order a sample</button>
             </div>
         </div>
