@@ -183,13 +183,14 @@ export default {
                 </div>
             </div>
             <div class="col-sm-12 col-md-8 text-start pe-0">
-                <Name class="border-bottom border-top py-2" 
+<!--                 <Name class="border-bottom border-top py-2" 
                     :name="'name'"
                     :dataTestLabel="dataTestLabel + '-Name'"
                     :defaultValue="defaultDesignRequirements.name"
                     v-model="masStore.mas.inputs.designRequirements"
                     @hasError="hasError"
-                />
+                /> -->
+                <div class="border-bottom"></div>
 
                 <ElementFromList class="py-2 ms-3"
                     :name="'numberWindings'"

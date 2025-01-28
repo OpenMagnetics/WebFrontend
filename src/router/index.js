@@ -7,6 +7,11 @@ const routes = [
         component: () => import('../views/Home.vue')
     },
     {
+        path: '/engine_loader',
+        name: 'EngineLoader',
+        component: () => import('../views/EngineLoader.vue')
+    },
+    {
         path: '/cookie_policy',
         name: 'CookiePolicy',
         component: () => import('../views/CookiePolicy.vue')
@@ -21,11 +26,6 @@ const routes = [
         name: 'MagneticTool',
         component: () => import('../views/MagneticTool.vue')
     },
-    // {
-    //     path: '/filter_magnetic_tool',
-    //     name: 'FilterMagneticTool',
-    //     component: () => import('../views/FilterMagneticTool.vue')
-    // },
     {
         path: '/insulation_adviser',
         name: 'InsulationAdviser',
@@ -35,6 +35,11 @@ const routes = [
         path: '/catalog_tool',
         name: 'CatalogTool',
         component: () => import('../views/CatalogTool.vue')
+    },
+    {
+        path: '/catalog',
+        name: 'Catalog',
+        component: () => import('../views/Catalog.vue')
     },
     {
         path: '/magnetic_viewer',
@@ -197,6 +202,27 @@ const routes = [
         path: '/core_shape_cross_referencer_tdk',
         name: 'CoreShapeCrossReferencerTDK',
         component: () => import('../views/CrossReferencers/CrossReferencerTDK.vue')
+    },
+
+    {
+        path: '/we_catalog_tool',
+        name: 'WECatalogTool',
+        component: () => import('../views/WE/CatalogTool.vue')
+    },
+    {
+        path: '/we_catalog',
+        name: 'WECatalog',
+        component: () => import('../views/WE/Catalog.vue')
+    },
+    {
+        path: '/we_engine_loader',
+        name: 'WEEngineLoader',
+        component: () => import('../views/WE/EngineLoader.vue')
+    },
+    {
+        path: '/we_magnetic_viewer',
+        name: 'WEMagneticViewer',
+        component: () => import('../views/WE/MagneticViewer.vue')
     },
 
 ]

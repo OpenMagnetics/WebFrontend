@@ -26,10 +26,6 @@ export default {
             type: Boolean,
             default: false
         },
-        showEditOption: {
-            type: Boolean,
-            default: false
-        },
     },
     data() {
         var enabledAdventures = {};
@@ -96,6 +92,12 @@ export default {
         },
         selectedTool: function(newVal, oldVal) { // watch it
             this.calculateDisabled();
+        },
+        'storyline': {
+            handler(newValue, oldValue) {
+                this.calculateDisabled();
+            },
+          deep: true
         },
     },
     mounted () {
@@ -169,6 +171,7 @@ export default {
         <div class="row px-1">
             <div v-for="adventure, index in basicStoryline" class="col-3 col-sm-3 col-md-12 px-0"> 
                 <button
+                    v-if="adventure.enabled == null || adventure.enabled"
                     v-tooltip="toPascalCase(adventure.title)"
                     :data-cy="'storyline-' + toPascalCase(adventure.title) + '-button'"
                     class="border border-primary btn-outline-primary  px-0 py-2"
@@ -202,7 +205,7 @@ export default {
                 @click="nextTool(true)">
                 {{canContinue[selectedTool]? 'Continue and don\'t show again' : 'Errors must be fixed'}}
             </button>
-            <button
+<!--             <button
                 :data-cy="'settings-modal-button'"
                 class="btn btn-info mx-auto d-block mt-4 col-6 col-sm-6 col-md-12"
                 data-bs-toggle="modal"
@@ -212,7 +215,7 @@ export default {
                 v-if="showEditOption"  
                 :data-cy="'edit-from-viewer-button'"
                 class="btn btn-success mx-auto d-block mt-4 col-6 col-sm-6 col-md-12"
-            >Edit magnetic!</button>
+            >Edit magnetic!</button> -->
         </div>
     </div>
 </template>

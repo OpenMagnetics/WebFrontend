@@ -2,6 +2,7 @@
 import Header from '/src/components/Header.vue'
 import Footer from '/src/components/Footer.vue'
 import { toTitleCase } from '/WebSharedComponents/assets/js/utils.js'
+import { useCatalogStore } from '/src/stores/catalog'
 
 import Catalog from '/src/components/Toolbox/Catalog.vue'
 
@@ -10,9 +11,52 @@ import Catalog from '/src/components/Toolbox/Catalog.vue'
 <script>
 export default {
     data() {
-        const currentCatalog = "/cmcs.ndjson"
+        const catalogStore = useCatalogStore();
+        catalogStore.catalogUrl = "/cmcs.ndjson"
+        catalogStore.catalogCoreMaterialDatabase = "/core_materials.ndjson"
+        catalogStore.catalogCoreShapeDatabase = "/core_shapes.ndjson"
+        catalogStore.catalogWireDatabase = "/wires.ndjson"
+
+        fetch(catalogStore.catalogCoreMaterialDatabase)
+        .then((data) => data.text())
+        .then((data) => {
+            console.log(data);
+
+            // this.$mkfAdvisers.ready.then(_ => {
+            //     this.$mkfAdvisers.clear_databases();
+            //     const result = this.$mkfAdvisers.load_core_materials(data);
+            //     console.log(result)
+            //     const coreMaterialManufacturersHandle = this.$mkfAdvisers.get_available_core_manufacturers();
+            //     for (var i = coreMaterialManufacturersHandle.size() - 1; i >= 0; i--) {
+            //         const manufacturer = coreMaterialManufacturersHandle.get(i);
+            //         console.log(manufacturer)
+            //         const coreMaterialsHandle = this.$mkfAdvisers.get_available_core_materials(manufacturer);
+            //         for (var index = coreMaterialsHandle.size() - 1; index >= 0; index--) {
+            //             const material = coreMaterialsHandle.get(index);
+            //             console.log(material)
+            //         }
+            //     }
+            // })
+
+            // this.$mkf.ready.then(_ => {
+            //     this.$mkf.clear_databases();
+            //     const result = this.$mkf.load_core_materials(data);
+            //     console.log(result)
+            //     const coreMaterialManufacturersHandle = this.$mkf.get_available_core_manufacturers();
+            //     for (var i = coreMaterialManufacturersHandle.size() - 1; i >= 0; i--) {
+            //         const manufacturer = coreMaterialManufacturersHandle.get(i);
+            //         const coreMaterialsHandle = this.$mkf.get_available_core_materials(manufacturer);
+            //         for (var index = coreMaterialsHandle.size() - 1; index >= 0; index--) {
+            //             const material = coreMaterialsHandle.get(index);
+            //             console.log(material)
+            //         }
+            //     }
+            // })
+            this.catalogString = data;
+        })
+
         return {
-            currentCatalog,
+            catalogStore,
         }
     },
     methods: {
@@ -30,7 +74,7 @@ export default {
         <main role="main" class="main p-0 m-0">
             <Catalog
                 class="container content pt-2"
-                :catalogInput="currentCatalog"
+                :catalogInput="catalogStore.catalogUrl"
                 :name="'Test Catalog'"
                 :dataTestLabel="'Catalog'"
             />

@@ -32,6 +32,12 @@ export default {
             "magneticViewer": {
                 title: "Magnetic Viewer",
                 prevTool: "catalogAdviser",
+                enabled: true,
+            },
+            "magneticBuilder": {
+                title: "Magnetic Builder",
+                prevTool: "catalogAdviser",
+                enabled: false,
             },
         };
 
@@ -49,11 +55,31 @@ export default {
         return {
             catalogAdviserStoryline,
             currentStoryline,
+            catalogStore,
         }
     },
     methods: {
+        viewMagnetic() {
+            this.$userStore.setCurrentToolSubsection("magneticViewer");
+            this.catalogAdviserStoryline.magneticViewer.enabled = true;
+            this.catalogAdviserStoryline.magneticBuilder.enabled = false;
+        },
+        editMagnetic() {
+            this.$userStore.setCurrentToolSubsection("magneticBuilder");
+            this.catalogAdviserStoryline.magneticViewer.enabled = false;
+            this.catalogAdviserStoryline.magneticBuilder.enabled = true;
+        },
+        orderSample(mas) {
+            var link = `mailto:target@example.com?subject=Sample ${mas.magnetic.manufacturerInfo.reference}&body=I would like to order a sample of the part ${mas.magnetic.manufacturerInfo.reference}`; 
+            window.location.href = link;
+        },
     },
     mounted() {
+        this.catalogStore.$onAction((action) => {
+            if (action.name == "orderSample") {
+                this.orderSample(action.args[0])
+            }
+        })
     },
     created() {
     },
@@ -62,9 +88,13 @@ export default {
 
 <template>
     <GenericTool
-        :currentStoryline="catalogAdviserStoryline"
+        :currentStoryline="currentStoryline"
         :dataTestLabel="'MagneticTool'"
         :showControlPanel="true"
+        :showTitle="false"
+        :showReference="true"
+        @editMagnetic="editMagnetic"
+        @viewMagnetic="viewMagnetic"
     />
 </template>
 

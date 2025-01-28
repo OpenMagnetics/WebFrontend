@@ -1,0 +1,105 @@
+<script setup>
+import Header from '/src/components/WE/Header.vue'
+import { toTitleCase } from '/WebSharedComponents/assets/js/utils.js'
+import { useCatalogStore } from '/src/stores/catalog'
+
+import Catalog from '/src/components/WE/Catalog.vue'
+
+</script>
+
+<script>
+export default {
+    data() {
+        const catalogStore = useCatalogStore();
+        catalogStore.catalogUrl = "/cmcs.ndjson"
+        catalogStore.catalogCoreMaterialDatabase = "/core_materials.ndjson"
+        catalogStore.catalogCoreShapeDatabase = "/core_shapes.ndjson"
+        catalogStore.catalogWireDatabase = "/wires.ndjson"
+
+        fetch(catalogStore.catalogCoreMaterialDatabase)
+        .then((data) => data.text())
+        .then((data) => {
+
+            // this.$mkfAdvisers.ready.then(_ => {
+            //     this.$mkfAdvisers.clear_databases();
+            //     const result = this.$mkfAdvisers.load_core_materials(data);
+            //     console.log(result)
+            //     const coreMaterialManufacturersHandle = this.$mkfAdvisers.get_available_core_manufacturers();
+            //     for (var i = coreMaterialManufacturersHandle.size() - 1; i >= 0; i--) {
+            //         const manufacturer = coreMaterialManufacturersHandle.get(i);
+            //         console.log(manufacturer)
+            //         const coreMaterialsHandle = this.$mkfAdvisers.get_available_core_materials(manufacturer);
+            //         for (var index = coreMaterialsHandle.size() - 1; index >= 0; index--) {
+            //             const material = coreMaterialsHandle.get(index);
+            //             console.log(material)
+            //         }
+            //     }
+            // })
+
+            // this.$mkf.ready.then(_ => {
+            //     this.$mkf.clear_databases();
+            //     const result = this.$mkf.load_core_materials(data);
+            //     console.log(result)
+            //     const coreMaterialManufacturersHandle = this.$mkf.get_available_core_manufacturers();
+            //     for (var i = coreMaterialManufacturersHandle.size() - 1; i >= 0; i--) {
+            //         const manufacturer = coreMaterialManufacturersHandle.get(i);
+            //         const coreMaterialsHandle = this.$mkf.get_available_core_materials(manufacturer);
+            //         for (var index = coreMaterialsHandle.size() - 1; index >= 0; index--) {
+            //             const material = coreMaterialsHandle.get(index);
+            //             console.log(material)
+            //         }
+            //     }
+            // })
+            this.catalogString = data;
+        })
+
+        return {
+            catalogStore,
+        }
+    },
+    methods: {
+    },
+    mounted() {
+    },
+    created() {
+    },
+}
+</script>
+
+<template>
+    <div class="d-flex flex-column min-vh-100">
+        <Header />
+        <main role="main" class="main p-0 m-0">
+            <Catalog
+                class="container content pt-2"
+                :catalogInput="catalogStore.catalogUrl"
+                :name="'Test Catalog'"
+                :dataTestLabel="'Catalog'"
+            />
+        </main>
+    </div>
+</template>
+
+<style>
+    .wrap {
+      position: relative;
+    }
+
+    .wrap:before {
+      content: ' ';
+      display: block;
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      opacity: 1;
+      background-image: linear-gradient(to bottom, rgba(26, 26, 26, 0.8), rgba(26, 26, 26, 1)),
+    url('/images/background_home.png');
+      background-repeat: no-repeat;
+      background-position: 50% 0;
+      background-size: cover;
+    }
+
+    .content {
+      position: relative;
+    }
+</style>

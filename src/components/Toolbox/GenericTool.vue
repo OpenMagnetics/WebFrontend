@@ -2,6 +2,7 @@
 import Header from '/src/components/Header.vue'
 import Footer from '/src/components/Footer.vue'
 import Storyline from '/src/components/Storyline.vue'
+import ContextMenu from '/src/components/ContextMenu.vue'
 import { toTitleCase } from '/WebSharedComponents/assets/js/utils.js'
 
 import ElementFromList from '/WebSharedComponents/DataInput/ElementFromList.vue'
@@ -21,10 +22,9 @@ import MagneticSummary from '/WebSharedComponents/Common/MagneticSummary.vue'
 import MagneticCoreSummary from '/src/components/Toolbox/MagneticCoreAdviser/MagneticCoreSummary.vue'
 import MagneticSpecificationsSummary from '/src/components/Toolbox/MagneticSpecificationsReport/MagneticSpecificationsSummary.vue'
 import MagneticBuilder from '/MagneticBuilder/src/components/MagneticBuilder.vue'
-import ControlPanel from '/src/components/Toolbox/ControlPanel.vue'
+import ControlPanel from '/MagneticBuilder/src/components/ControlPanel.vue'
 import Welcome from '/src/components/Toolbox/Welcome.vue'
 import ToolSelector from '/src/components/Toolbox/ToolSelector.vue'
-import Settings from '/src/components/Toolbox/Settings.vue'
 
 import { useMasStore } from '/src/stores/mas'
 
@@ -32,6 +32,7 @@ import { useMasStore } from '/src/stores/mas'
 
 <script>
 export default {
+    emits: ["toolSelected"],
     props: {
         currentStoryline: {
             type: Object,
@@ -44,6 +45,10 @@ export default {
         showTitle: {
             type: Boolean,
             default: true,
+        },
+        showReference: {
+            type: Boolean,
+            default: false,
         },
         showControlPanel: {
             type: Boolean,
@@ -103,8 +108,6 @@ export default {
         toolSelected(tool) {
             this.$emit('toolSelected', tool); 
         },
-        onSettingsUpdated(event) {
-        },
         operatingPointUpdated(name, ea) {
             this.masStore.mas.inputs.operatingPoints.forEach((elem, index) => {
                 if (name == elem.name) {
@@ -120,9 +123,6 @@ export default {
                 return false;
             }
         },
-        editMagnetic(tool) {
-            this.$userStore.getCurrentToolState().subsection = tool;
-        },
     },
     computed: {
         operatingPointNames() {
@@ -131,6 +131,18 @@ export default {
                 names.push(elem.name);
             })
             return names;
+        },
+        enableGraphs() {
+            if (this.$userStore.selectedTool == 'catalogAdviser') {
+                if (this.$userStore.getCurrentToolState().subsection == 'magneticViewer')
+                    return true;
+                if (this.$userStore.getCurrentToolState().subsection == 'magneticBuilder')
+                    return true;
+                return false;
+            }
+            else{
+                return this.masStore.magneticAcSweepOperatingPoints;
+            }
         }
     },
     mounted() {
@@ -143,26 +155,35 @@ export default {
 <template>
     <div class="d-flex flex-column min-vh-100">
         <Header />
-        <Settings 
-            :modalName="'StorylineSettingsModal'"
-            @onSettingsUpdated="onSettingsUpdated"
-        />
         <main role="main" class="main text-white">
             <div v-if="currentStoryline[$userStore.getCurrentToolState().subsection] != null && $userStore.getCurrentToolState().canContinue != null" class="container mx-auto">
                 <div class="row">
-                    <div class="text-white text-center col-xs-12 col-sm-12 col-md-1 bg-transparent border border-primary m-0 pb-2" style="height: fit-content">
-                        <h4 class="text-center">Storyline</h4>
-                        <Storyline
-                            :selectedTool="$userStore.getCurrentToolState().subsection"
-                            :storyline="currentStoryline"
-                            :canContinue="$userStore.getCurrentToolState().canContinue"
-                            :forceUpdate="updateStoryline"
-                            :showAvoidOption="currentStoryline[$userStore.getCurrentToolState().subsection].title=='Welcome'"
-                            :showEditOption="$userStore.selectedTool == 'magneticViewer'"
-                            @editMagnetic="editMagnetic"
-                            @changeTool="changeTool"
-                            @nextTool="nextTool"
-                        />
+                    <div class="text-white text-center col-xs-12 col-sm-12 col-md-1 bg-transparent m-0 p-0" style="height: fit-content">
+                        <div class="border border-primary " style="height: fit-content">
+                            <h4 class="text-center p-2">Storyline</h4>
+                            <Storyline
+                                class="p-3"
+                                :selectedTool="$userStore.getCurrentToolState().subsection"
+                                :storyline="currentStoryline"
+                                :canContinue="$userStore.getCurrentToolState().canContinue"
+                                :forceUpdate="updateStoryline"
+                                :showAvoidOption="currentStoryline[$userStore.getCurrentToolState().subsection].title=='Welcome'"
+                                @changeTool="changeTool"
+                                @nextTool="nextTool"
+                            />
+                        </div>
+                        <div class="border border-primary mt-2" style="height: fit-content">
+                            <h4 class="text-center pt-2 fs-5">Tool menu</h4>
+                            <ContextMenu
+                                :showAdviserSettingsOption="$userStore.getCurrentToolState().subsection == 'magneticAdviser' || $userStore.getCurrentToolState().subsection == 'magneticCoreAdviser'"
+                                :showCatalogAdviserSettingsOption="$userStore.selectedApplication == 'catalog'"
+                                :showEditOption="$userStore.getCurrentToolState().subsection == 'magneticViewer'"
+                                :showOrderOption="$userStore.selectedApplication == 'catalog' && ($userStore.getCurrentToolState().subsection == 'magneticViewer')"
+                                :showConfirmOption="$userStore.selectedApplication == 'catalog' && $userStore.getCurrentToolState().subsection == 'magneticBuilder'"
+                                @editMagnetic="$emit('editMagnetic')"
+                                @viewMagnetic="$emit('viewMagnetic')"
+                            />
+                        </div>
                     </div>
                     <div class="text-white bg-dark text-center col-xs-12 col-sm-12 col-md-11 bg-transparent px container" >
                         <div class="mb-2 row px-3" >
@@ -188,8 +209,17 @@ export default {
                             <h2 v-if="showTitle" data-cy="magnetic-synthesis-title-text" :class="showControlPanel? 'col-sm-12 col-md-3 col-lg-3' : 'col-sm-12 col-md-9'" class="" >
                                 {{toTitleCase($userStore.getCurrentToolState().subsection)}}
                             </h2>
+<!--                             <h2 v-if="showReference" data-cy="magnetic-reference-text" :class="showControlPanel? 'col-sm-12 col-md-3 col-lg-3' : 'col-sm-12 col-md-9'" class="" >
+                                <input
+                                    :disabled="$userStore.getCurrentToolState().subsection == 'magneticViewer'"
+                                    :data-cy="dataTestLabel + '-magnetic-reference-text'"
+                                    type="text"
+                                    :class="(showControlPanel? 'col-sm-12 col-md-3 col-lg-3' : 'col-sm-12 col-md-9') + ' ' + ($userStore.getCurrentToolState().subsection == 'magneticViewer'? $settingsStore.labelBgColor : $settingsStore.inputBgColor) + ' ' + $settingsStore.textColor"
+                                    class="w-100 "
+                                    v-model="masStore.mas.magnetic.manufacturerInfo.reference">
+                            </h2> -->
 
-                            <div v-if="showControlPanel" data-cy="magnetic-synthesis-title-control-panel" :class="showTitle? 'col-sm-12 col-md-6 col-lg-6 col-xl-6' : 'col-sm-12 col-md-9'">
+                            <div v-if="showControlPanel" data-cy="magnetic-synthesis-title-control-panel" :class="(showTitle || showReference)? 'col-sm-12 col-md-6 col-lg-6 col-xl-6' : 'col-sm-12 col-md-9'">
                                 <ControlPanel @toolSelected="toolSelected"/>
                             </div>
                         </div>
@@ -267,7 +297,7 @@ export default {
                                 :useVisualizers="true"
                                 :enableCoil="true"
                                 :readOnly="$userStore.getCurrentToolState().subsection == 'magneticViewer'"
-                                :enableGraphs="masStore.magneticAcSweepOperatingPoints || $userStore.selectedTool == 'magneticViewer'"
+                                :enableGraphs="enableGraphs"
                                 :enableAdvisers="!masStore.magneticAcSweepOperatingPoints"
                                 :enableSimulation="!masStore.magneticAcSweepOperatingPoints"
                                 @canContinue="updateCanContinue('magneticBuilder', $event)"

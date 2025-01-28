@@ -7,10 +7,12 @@ export const useSettingsStore = defineStore("settings", () => {
     const adviserAllowDistributedGaps = ref('1');
     const adviserAllowStacks = ref('1');
     const adviserToroidalCores = ref('1');
+    const catalogAdviserUseAllParts = ref(false);
 
     const labelBgColor = ref('bg-dark');
     const inputBgColor = ref('bg-light');
     const textColor = ref('text-white');
+    const loadingGif = ref("/images/loading.gif");
 
     const dump = computed(() => {
         return {
@@ -19,6 +21,7 @@ export const useSettingsStore = defineStore("settings", () => {
             "adviserAllowDistributedGaps": adviserAllowDistributedGaps.value,
             "adviserAllowStacks": adviserAllowStacks.value,
             "adviserToroidalCores": adviserToroidalCores.value,
+            "catalogAdviserUseAllParts": catalogAdviserUseAllParts.value,
         }
     })
 
@@ -28,6 +31,7 @@ export const useSettingsStore = defineStore("settings", () => {
         this.adviserAllowDistributedGaps = true;
         this.adviserAllowStacks = true;
         this.adviserToroidalCores = true;
+        this.catalogAdviserUseAllParts = false;
     }
 
     return {
@@ -36,6 +40,7 @@ export const useSettingsStore = defineStore("settings", () => {
         adviserAllowDistributedGaps,
         adviserAllowStacks,
         adviserToroidalCores,
+        catalogAdviserUseAllParts,
 
         dump,
         reset,
@@ -43,6 +48,7 @@ export const useSettingsStore = defineStore("settings", () => {
         labelBgColor,
         inputBgColor,
         textColor,
+        loadingGif,
     }
 },
 {

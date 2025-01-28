@@ -1,6 +1,6 @@
 <script setup>
 import { Chart, registerables } from 'chart.js'
-import { toTitleCase, removeTrailingZeroes, formatPower, formatPowerDensity, formatInductance, formatTemperature } from '/WebSharedComponents/assets/js/utils.js'
+import { toTitleCase, removeTrailingZeroes, formatPower, formatDimension, formatInductance, formatResistance } from '/WebSharedComponents/assets/js/utils.js'
 </script>
 
 <script>
@@ -28,10 +28,10 @@ export default {
     data() {
         const data = {};
         const localTexts = {
-            coreLosses: null,
-            powerDensity: null,
+            losses: null,
+            dcResistance: null,
             magnetizingInductance: null,
-            coreTemperature: null,
+            dimensions: null,
         };
         return {
             data,
@@ -72,15 +72,27 @@ export default {
     },
     methods: {
         processLocalTexts() {
+            console.log(this.masData.outputs[0])
             {
-                console.log(this.masData)
-                console.log(this.scoring)
                 const aux = formatPower(this.masData.outputs[0].coreLosses.coreLosses + this.masData.outputs[0].windingLosses.windingLosses);
                 this.localTexts.losses = `Losses:\n${removeTrailingZeroes(aux.label, 2)} ${aux.unit}`
-            } 
+            }
             {
                 const aux = formatInductance(this.masData.outputs[0].magnetizingInductance.magnetizingInductance.nominal);
                 this.localTexts.magnetizingInductance = `Mag. Ind.:\n${removeTrailingZeroes(aux.label, 1)} ${aux.unit}`
+            }
+            {
+                const aux = formatResistance(this.masData.outputs[0].windingLosses.dcResistancePerWinding[0]);
+                this.localTexts.dcResistance = `DC Res.:\n${removeTrailingZeroes(aux.label, 1)} ${aux.unit}`
+            } 
+            {
+                this.$mkf.ready.then(_ => {
+                    const maximumDimensions = this.$mkf.get_maximum_dimensions(JSON.stringify(this.masData.magnetic));
+                    const maximumDimensions0 = formatDimension(maximumDimensions.get(0));
+                    const maximumDimensions1 = formatDimension(maximumDimensions.get(1));
+                    const maximumDimensions2 = formatDimension(maximumDimensions.get(2));
+                    this.localTexts.dimensions = `Dimensions: ${removeTrailingZeroes(maximumDimensions0.label, 2)} ${maximumDimensions0.unit} x ${removeTrailingZeroes(maximumDimensions1.label, 2)} ${maximumDimensions1.unit} x ${removeTrailingZeroes(maximumDimensions2.label, 2)} ${maximumDimensions2.unit}`
+                })
             }  
         }
     }
@@ -95,9 +107,11 @@ export default {
                 <!-- <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p> -->
             </div>
             <div class="row py-3">
-                <div class="col-5 mx-2 text-start px-4">
-                    <div class="col-12 p-0 m-0" style="white-space: pre-line">{{localTexts.losses}}</div>
-                    <div class="col-12 p-0 m-0" style="white-space: pre-line">{{localTexts.powerDensity}}</div>
+                <div class="col-12 mx-2 text-start px-4 row text-center">
+                    <div class="col-12 p-0 mb-4" style="white-space: pre-line">{{localTexts.dimensions}}</div>
+                    <div class="col-4 p-0 m-0" style="white-space: pre-line">{{localTexts.losses}}</div>
+                    <div class="col-4 p-0 m-0" style="white-space: pre-line">{{localTexts.dcResistance}}</div>
+                    <div class="col-4 p-0 m-0" style="white-space: pre-line">{{localTexts.magnetizingInductance}}</div>
                 </div>
             </div>
             <div class="card-body">

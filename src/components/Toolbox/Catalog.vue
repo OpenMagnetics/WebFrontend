@@ -30,7 +30,6 @@ export default {
         ];
 
         const catalogData = []
-        console.log(this.catalogInput)
 
         const loadingCatalog = false
         return {
@@ -49,31 +48,30 @@ export default {
     },
     mounted () {
 
-        fetch(this.catalogInput)
-        .then((data) => data.text())
-        .then((data) => {
-            data.split("\n").forEach((masString) => {
-                const mas = JSON.parse(masString)
-                console.log(mas)
-                this.catalogData.push({
-                    reference: mas.magnetic.manufacturerInfo.reference,
-                    core: mas.magnetic.core.name,
-                    mas: mas,
+        if (this.catalogInput != null) {
+            fetch(this.catalogInput)
+            .then((data) => data.text())
+            .then((data) => {
+                data.split("\n").forEach((magneticString) => {
+                    const magnetic = JSON.parse(magneticString)
+                    this.catalogData.push({
+                        reference: magnetic.manufacturerInfo.reference,
+                        core: magnetic.core.name,
+                        magnetic: magnetic,
+                    })
                 })
             })
-            console.log(this.catalogData)
-        })
+        }
     },
     methods: {
         viewMagnetic(row) {
-            this.masStore.mas = row.mas;
+            this.masStore.mas.magnetic = row.magnetic;
             this.$userStore.selectApplication("magneticViewer");
             this.$userStore.selectTool("magneticViewer");
             this.$userStore.setCurrentToolSubsection("magneticBuilder");
             this.$userStore.setCurrentToolSubsectionStatus("operatingPoints", true);
 
             setTimeout(() => {this.$router.push('/magnetic_viewer');}, 50);
-            console.log(row)
         }
     }
 }

@@ -18,6 +18,8 @@ export default {
     computed: {
         newMagneticToolDesign() {
             this.$userStore.resetMagneticTool();
+            this.$userStore.selectApplication("power");
+            this.$userStore.selectTool("agnosticTool");
             if (this.$route.name != 'MagneticTool')
                 setTimeout(() => {this.$router.push('/magnetic_tool');}, 100);
             else
@@ -25,7 +27,26 @@ export default {
         },
         newMagneticToolDesignNewTab() {
             this.$userStore.resetMagneticTool();
+            this.$userStore.selectApplication("power");
+            this.$userStore.selectTool("agnosticTool");
             const routeData = this.$router.resolve({name: 'MagneticTool'});
+            window.open(routeData.href, '_blank');
+        },
+        onInsulationCoordinator() {
+            this.$userStore.resetMagneticTool();
+            this.$userStore.selectApplication("insulationCoordinator");
+            this.$userStore.selectTool("insulationAdviser");
+
+            if (this.$route.name != 'InsulationAdviser')
+                setTimeout(() => {this.$router.push('/insulation_adviser');}, 100);
+            else
+                setTimeout(() => {this.$router.go();}, 100);
+        },
+        onInsulationCoordinatorNewTab() {
+            this.$userStore.resetMagneticTool();
+            this.$userStore.selectApplication("insulationCoordinator");
+            this.$userStore.selectTool("insulationAdviser");
+            const routeData = this.$router.resolve({name: 'InsulationAdviser'});
             window.open(routeData.href, '_blank');
         },
     },
@@ -68,7 +89,7 @@ export default {
                             <div class="card p-0 col-lg-3 col-sm-12 mt-3">
                                 <div class="card-body">
                                     <i class="text-white fa-solid fa-wave-square fa-2x mb-4"></i>
-                                    <h5 class="card-title text-white"><a href="/operation_point" class="text-primary bg-light btn fs-5">Import waveforms</a></h5>
+                                    <h5 class="card-title text-white"><button @click="newMagneticToolDesign" @click.middle="newMagneticToolDesignNewTab" class="text-primary bg-light btn fs-5">Import waveforms</button></h5>
                                     <p class="card-text text-white">Introduce any waveform (even by hand!) or upload the file exported you exported from your favorite Circuit Simulator.</p>
                                 </div>
 
@@ -98,14 +119,14 @@ export default {
                             <div class="card p-0 mx-lg-3 mx-sm-0 col-lg col-sm-12 mt-3">
                                 <div class="card-body">
                                     <i class="text-white fa-solid fa-bolt-lightning fa-2x mb-4"></i>
-                                    <h5 class="card-title text-white"><a href="/insulation_adviser" class="text-primary bg-light btn fs-5">Calculate insulation</a></h5>
+                                    <h5 class="card-title text-white"><button @click="onInsulationCoordinator" @click.middle="onInsulationCoordinatorNewTab" class="text-primary bg-light btn fs-5">Calculate insulation</button></h5>
                                     <p class="card-text text-white">Get the insulation coodination needed to comply with IEC 60664, IEC 62368, IEC 61558, and IEC 60335.</p>
                                 </div>
                             </div>
                             <div class="card p-0 col-lg col-sm-12 mt-3">
                                 <div class="card-body">
                                     <i class="text-white fa-solid fa-cart-shopping fa-2x mb-4"></i>
-                                    <h5 class="card-title text-white"><button click="newMagneticToolDesign" class="text-primary bg-light btn fs-5">Find COTS Core</button></h5>
+                                    <h5 class="card-title text-white"><button @click="newMagneticToolDesign" @click.middle="newMagneticToolDesignNewTab" class="text-primary bg-light btn fs-5">Find COTS Core</button></h5>
                                     <p class="card-text text-white">Find the in-stock COTS core perfect for your application, along with the number of turns, core losses, and the link to buy it right now!</p>
                                 </div>
                             </div>

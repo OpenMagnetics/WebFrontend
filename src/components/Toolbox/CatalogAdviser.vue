@@ -4,25 +4,12 @@ import { useAdviseCacheStore } from '/src/stores/adviseCache'
 import { useInventoryCacheStore } from '/src/stores/inventoryCache'
 import Slider from '@vueform/slider'
 import { removeTrailingZeroes, toTitleCase, toCamelCase, deepCopy } from '/WebSharedComponents/assets/js/utils.js'
-import { magneticAdviserWeights } from '/WebSharedComponents/assets/js/defaults.js'
 import Advise from '/src/components/Toolbox/CatalogAdviser/Advise.vue'
 import Module from '/src/assets/js/libAdvisers.wasm.js'
 import { useCatalogStore } from '/src/stores/catalog'
 </script>
 
 <script>
-var magneticAdviser = {
-    ready: new Promise(resolve => {
-        Module({
-            onRuntimeInitialized () {
-                magneticAdviser = Object.assign(this, {
-                    ready: Promise.resolve()
-                });
-                resolve();
-            }
-        });
-    })
-};
 
 const style = getComputedStyle(document.body);
 const theme = {
@@ -56,10 +43,6 @@ export default {
         const catalogStore = useCatalogStore();
         var catalogString = "";
 
-        if (masStore.magneticAdviserWeights == null) {
-            masStore.magneticAdviserWeights = magneticAdviserWeights;
-        }
-
         const loading = false;
 
         return {
@@ -72,22 +55,6 @@ export default {
         }
     },
     computed: {
-        titledFilters() {
-            const titledFilters = {};
-            for (let [key, _] of Object.entries(this.masStore.magneticAdviserWeights)) {
-                titledFilters[key] = toTitleCase(key.toLowerCase().replaceAll("_", " "));
-            }
-            return titledFilters;
-        },
-        brokenLinedFilters() {
-            const titledFilters = {};
-            for (let [key, _] of Object.entries(this.masStore.magneticAdviserWeights)) {
-                titledFilters[key] = toTitleCase(key.toLowerCase().replaceAll("_", " "));
-                titledFilters[key] = titledFilters[key].split(' ')
-                .map(item => toTitleCase(item));
-            }
-            return titledFilters;
-        },
         resultsMessage() {
             if (this.loading) {
                 return "Looking for the best designs for you in our catalog"
@@ -122,40 +89,28 @@ export default {
         .then((data) => data.text())
         .then((data) => {
             this.catalogString = data;
-            // data.split("\n").forEach((masString) => {
-            //     const mas = JSON.parse(masString)
-            //     console.log(mas)
-            //     this.catalogData.push({
-            //         reference: mas.magnetic.manufacturerInfo.reference,
-            //         core: mas.magnetic.core.name,
-            //         mas: mas,
-            //     })
-            // })
-            // console.log(this.catalogData)
-            // console.log(data)
             if (this.catalogStore.advises.length == 0) {
                 this.loading = true;
                 setTimeout(() => {this.calculateAdvisedMagnetics();}, 200);
             }
         })
-
     },
     methods: {
         calculateAdvisedMagnetics() {
             // Timeout to give time to gif to load
             setTimeout(() => {
-                magneticAdviser.ready.then(_ => {
+                this.$mkfAdvisers.ready.then(_ => {
                     if (this.masStore.mas.inputs.operatingPoints.length > 0) {
                         console.time('Execution Time');
 
-                        const settings = JSON.parse(magneticAdviser.get_settings());
+                        const settings = JSON.parse(this.$mkfAdvisers.get_settings());
                         settings["coreIncludeDistributedGaps"] = this.$settingsStore.adviserAllowDistributedGaps == "1";
                         settings["coreIncludeStacks"] = this.$settingsStore.adviserAllowStacks == "1";
                         settings["useToroidalCores"] = this.$settingsStore.adviserToroidalCores == "1";
-                        magneticAdviser.set_settings(JSON.stringify(settings));
+                        this.$mkfAdvisers.set_settings(JSON.stringify(settings));
                         // console.log(this.catalogString)
 
-                        const result = magneticAdviser.calculate_advised_magnetics_from_catalog(JSON.stringify(this.masStore.mas.inputs), this.catalogString, 2);
+                        const result = this.$mkfAdvisers.calculate_advised_magnetics_from_catalog(JSON.stringify(this.masStore.mas.inputs), this.catalogString, 2);
 
                         var aux;
                         if (result.startsWith("Exception")) {
@@ -196,17 +151,19 @@ export default {
         maximumNumberResultsChangedSliderValue(newValue) {
         },
         viewMagnetic(index) {
-            this.masStore.mas = this.catalogStore.advises[index].mas;
+            this.masStore.mas = deepCopy(this.catalogStore.advises[index].mas);
             this.$emit("canContinue", true);
 
             this.$userStore.setCurrentToolSubsection("magneticViewer");
         },
         editMagnetic(index) {
-        },
-        orderSample(index) {
-            const mas = this.catalogStore.advises[index].mas;
-            var link = `mailto:target@example.com?subject=Sample ${mas.magnetic.manufacturerInfo.reference}&body=I would like to order a sample of the part ${mas.magnetic.manufacturerInfo.reference}`; 
-            window.location.href = link;
+            this.masStore.mas = deepCopy(this.catalogStore.advises[index].mas);
+            if (this.masStore.mas.magnetic.manufacturerInfo != null && !this.masStore.mas.magnetic.manufacturerInfo.reference.includes("Edited")) {
+                this.masStore.mas.magnetic.manufacturerInfo.reference += "_Edited";
+            }
+            this.$emit("canContinue", true);
+
+            this.$userStore.setCurrentToolSubsection("magneticBuilder");
         },
         calculateAdvises(event) {
             this.loading = true;
@@ -225,7 +182,7 @@ export default {
                     {{resultsMessage}}
                 </div>
                 <div class="row" v-if="loading" >
-                    <img data-cy="magneticAdviser-loading" class="mx-auto d-block col-12" alt="loading" style="width: 50%; height: auto;" src="/images/loading.gif">
+                    <img data-cy="magneticAdviser-loading" class="mx-auto d-block col-12" alt="loading" style="width: auto; height: 20%;" :src="$settingsStore.loadingGif">
 
                 </div>
                 <div class="col-12 row advises">
@@ -236,7 +193,7 @@ export default {
                             :scoring="advise.scoring"
                             @viewMagnetic="viewMagnetic(adviseIndex)"
                             @editMagnetic="editMagnetic(adviseIndex)"
-                            @orderSample="orderSample(adviseIndex)"
+                            @orderSample="catalogStore.orderSample(catalogStore.advises[adviseIndex].mas)"
                         />
                     </div>
                 </div>

@@ -3,7 +3,7 @@ import { defineAsyncComponent } from "vue";
 import { useUserDatabaseStore } from '/src/stores/userDatabase'
 import { useElementVisibility  } from '@vueuse/core'
 import { ref } from 'vue'
-import { useCatalogStore } from '/src/stores/catalog'
+import '/src/assets/css/custom.css'
 </script>
 
 <script>
@@ -112,7 +112,7 @@ export default {
             if (this.$route.name != 'MagneticTool')
                 setTimeout(() => {this.$router.push('/magnetic_tool');}, 100);
             else
-                setTimeout(() => {this.$router.go();}, 100);
+                setTimeout(() => {this.$router.push('/engine_loader');}, 100);
         },
         onNewFilterMagneticDesign() {
             this.$userStore.resetMagneticTool();
@@ -122,7 +122,7 @@ export default {
             if (this.$route.name != 'MagneticTool')
                 setTimeout(() => {this.$router.push('/magnetic_tool');}, 100);
             else
-                setTimeout(() => {this.$router.go();}, 100);
+                setTimeout(() => {this.$router.push('/engine_loader');}, 100);
         },
         onInsulationCoordinator() {
             this.$userStore.resetMagneticTool();
@@ -132,25 +132,13 @@ export default {
             if (this.$route.name != 'InsulationAdviser')
                 setTimeout(() => {this.$router.push('/insulation_adviser');}, 100);
             else
-                setTimeout(() => {this.$router.go();}, 100);
-        },
-        onCatalogTool() {
-            const catalogStore = useCatalogStore();
-            catalogStore.resetCatalog();
-            this.$userStore.resetMagneticTool();
-            this.$userStore.selectApplication("catalog");
-            this.$userStore.selectTool("catalogAdviser");
-
-            if (this.$route.name != 'CatalogTool')
-                setTimeout(() => {this.$router.push('/catalog_tool');}, 100);
-            else
-                setTimeout(() => {this.$router.go();}, 100);
+                setTimeout(() => {this.$router.push('/engine_loader');}, 100);
         },
         continueMagneticToolDesign() {
             if (this.$route.name != 'MagneticTool')
                 setTimeout(() => {this.$router.push('/magnetic_tool');}, 100);
             else
-                setTimeout(() => {this.$router.go();}, 100);
+                setTimeout(() => {this.$router.push('/engine_loader');}, 100);
         },
     },
     created() {
@@ -159,6 +147,7 @@ export default {
         }
     },
     mounted() {
+        this.$settingsStore.loadingGif = "/images/loading.gif";
         let fontawesome = document.createElement('script')
         fontawesome.setAttribute('src', 'https://kit.fontawesome.com/d5a40d6941.js')
         document.head.appendChild(fontawesome)
@@ -199,7 +188,6 @@ export default {
                       </a>
                       <ul class="dropdown-menu bg-dark border-primary px-1">
                         <li><button data-cy="Header-insulation-coordinator-link" :class="headerTogglerIsVisible? 'w-100' : 'mx-1' " class="dropdown-item btn btn-block nav-link text-primary bg-dark border-primary px-2" @click="onInsulationCoordinator"><i class="me-2 fa-solid fa-bolt-lightning"></i>Insulation Coordinator</button></li>
-                        <!-- <li><button data-cy="Header-magnetic-viewer-link" :class="headerTogglerIsVisible? 'w-100' : 'mx-1' " class="dropdown-item btn btn-block nav-link text-primary bg-dark border-primary px-2" @click="onCatalogTool"><i class="me-2 fa-solid fa-book"></i>The CHOKER</button></li> -->
                       </ul>
                     </li>
                     <li v-if="$userStore.isAnyDesignLoaded() && $route.name != 'MagneticTool'" class="nav-item">

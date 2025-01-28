@@ -5,6 +5,8 @@ import * as Defaults from '/WebSharedComponents/assets/js/defaults.js'
 
 export const useUserStore = defineStore("user", () => {
 
+    const loadingPath = ref(null);
+
     const toolboxStates = ref({
         power: {
             magneticSpecificationsReport: {
@@ -101,6 +103,14 @@ export const useUserStore = defineStore("user", () => {
                     'designRequirements': false,
                     'operatingPoints': false,
                     'catalogAdviser': false,
+                    'magneticViewer': false,
+                },
+            },
+        },
+        magneticViewer: {
+            magneticViewer: {
+                subsection: "magneticViewer",
+                canContinue: {
                     'magneticViewer': false,
                 },
             },
@@ -261,6 +271,14 @@ export const useUserStore = defineStore("user", () => {
                         'magneticViewer': false,
                     },
                 },
+            },
+            magneticViewer: {
+                magneticViewer: {
+                    subsection: "magneticViewer",
+                    canContinue: {
+                        'magneticViewer': false,
+                    },
+                },
             }
         };
     }
@@ -384,6 +402,7 @@ export const useUserStore = defineStore("user", () => {
     function disarmDeadManSwitch() {
     }
     return {
+        loadingPath,
         showWelcome,
 
         resetMagneticTool,

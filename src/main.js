@@ -1,6 +1,5 @@
 import { createApp } from 'vue'
 import App from './App.vue'
-import './assets/css/custom.css'
 import 'bootstrap';
 import router from "./router";
 import { createPinia } from 'pinia'
@@ -30,44 +29,164 @@ app.config.globalProperties.$userStore = useUserStore()
 app.config.globalProperties.$settingsStore = useSettingsStore()
 app.mount("#app");
 
-
 router.beforeEach((to, from, next) => {
-    const nonDataViews = ['/', '/home']
+
+    if (app.config.globalProperties.$mkf != null && (to.name == "EngineLoader" || to.name == "WEEngineLoader")) {
+        // If WASM is loaded and we go to enginer loader, we just return to where we were
+        setTimeout(() => {router.push(from.path);}, 500);
+    }
+
+    const nonDataViews = ['/', '/home', '/insulation_adviser']
 
     var loadData = !nonDataViews.includes(to.path);
 
+    const weApplication = to.path.includes("we_") || from.path.includes("we_");
+
     if (loadData) {
-        
-        console.log("Loading");
-        app.config.globalProperties.$mkf = {
-            ready: new Promise(resolve => {
-                Module({
-                    onRuntimeInitialized () {
-                        app.config.globalProperties.$mkf = Object.assign(this, {
-                            ready: Promise.resolve()
-                        });
-                        resolve();
-                    }
-                });
-            })
-        };
+        if (app.config.globalProperties.$mkf == null && to.name != "WEEngineLoader" && weApplication) {
+            app.config.globalProperties.$userStore.loadingPath = to.path
+            router.push('/we_engine_loader')
+        }
+        else if (app.config.globalProperties.$mkf == null && to.name != "EngineLoader" && !weApplication) {
+            app.config.globalProperties.$userStore.loadingPath = to.path
+            router.push('/engine_loader')
+        }
+        else if (app.config.globalProperties.$mkf == null && (to.name == "EngineLoader" || to.name == "WEEngineLoader")) {
+            const loadAllParts = !weApplication || (weApplication && app.config.globalProperties.$settingsStore.catalogAdviserUseAllParts);
+            const loadExternalParts = weApplication;
+            console.log(loadAllParts)
+            console.log(loadAllParts)
+            console.log(loadAllParts)
+            console.log(loadExternalParts)
+            console.log(loadExternalParts)
+            setTimeout(() => 
+                {
 
+                    console.warn("Loading core materials in backend")
+                    fetch("/core_materials.ndjson")
+                    .then((data) => data.text())
+                    .then((data) => {
+                            const postData = {
+                                "coreMaterialsString": data
+                            };
+                            const url = import.meta.env.VITE_API_ENDPOINT + '/load_external_core_materials';
 
-    app.config.globalProperties.$mkfAdvisers = {
-        ready: new Promise(resolve => {
-            mkfAdvisersModule({
-                onRuntimeInitialized () {
-                    app.config.globalProperties.$mkfAdvisers = Object.assign(this, {
-                        ready: Promise.resolve()
-                    });
-                    resolve();
+                            app.config.globalProperties.$axios.post(url, postData)
+                            .then(response => {
+                                console.log(response);
+                            })
+                            .catch(error => {
+                                console.error(error);
+                            });
+                        })
+
+                    app.config.globalProperties.$mkf = {
+                        ready: new Promise(resolve => {
+                            Module({
+                                onRuntimeInitialized () {
+                                    app.config.globalProperties.$mkf = Object.assign(this, {
+                                        ready: Promise.resolve()
+                                    });
+
+                                    app.config.globalProperties.$mkf.ready.then(_ => {
+                                        console.warn("Loading core materials in simulator")
+                                        fetch("/core_materials.ndjson")
+                                        .then((data) => data.text())
+                                        .then((data) => {
+                                                if (loadAllParts) {
+                                                    app.config.globalProperties.$mkf.load_core_materials("");
+                                                }
+                                                if (loadExternalParts) {
+                                                    app.config.globalProperties.$mkf.load_core_materials(data);
+                                                }
+                                            })
+                                        console.warn("Loading core shapes in simulator")
+                                        fetch("/core_shapes.ndjson")
+                                        .then((data) => data.text())
+                                        .then((data) => {
+                                                if (loadAllParts) {
+                                                    app.config.globalProperties.$mkf.load_core_shapes("");
+                                                }
+                                                if (loadExternalParts) {
+                                                    app.config.globalProperties.$mkf.load_core_shapes(data);
+                                                }
+                                        })
+                                        console.warn("Loading wires in simulator")
+                                        fetch("/wires.ndjson")
+                                        .then((data) => data.text())
+                                        .then((data) => {
+                                            if (loadAllParts) {
+                                                app.config.globalProperties.$mkf.load_wires("");
+                                            }
+                                            if (loadExternalParts) {
+                                                app.config.globalProperties.$mkf.load_wires(data);
+                                            }
+                                        })
+                                        router.push(app.config.globalProperties.$userStore.loadingPath)
+                                    }).error((error) => {
+                                        console.error(error)
+                                    })
+
+                                    resolve(); 
+                                }
+                            });
+                        })
+                    };
+
+                    app.config.globalProperties.$mkfAdvisers = {
+                        ready: new Promise(resolve => {
+                            mkfAdvisersModule({
+                                onRuntimeInitialized () {
+                                    app.config.globalProperties.$mkfAdvisers = Object.assign(this, {
+                                        ready: Promise.resolve()
+                                    });
+
+                                    app.config.globalProperties.$mkfAdvisers.ready.then(_ => {
+                                        console.warn("Loading core materials in advisers")
+                                        fetch("/core_materials.ndjson")
+                                        .then((data) => data.text())
+                                        .then((data) => {
+                                                if (loadAllParts) {
+                                                    app.config.globalProperties.$mkfAdvisers.load_core_materials("");
+                                                }
+                                                if (loadExternalParts) {
+                                                    app.config.globalProperties.$mkfAdvisers.load_core_materials(data);
+                                                }
+                                            })
+                                        console.warn("Loading core shapes in advisers")
+                                        fetch("/core_shapes.ndjson")
+                                        .then((data) => data.text())
+                                        .then((data) => {
+                                                if (loadAllParts) {
+                                                    app.config.globalProperties.$mkfAdvisers.load_core_shapes("");
+                                                }
+                                                if (loadExternalParts) {
+                                                    app.config.globalProperties.$mkfAdvisers.load_core_shapes(data);
+                                                }
+                                        })
+                                        console.warn("Loading wires in advisers")
+                                        fetch("/wires.ndjson")
+                                        .then((data) => data.text())
+                                        .then((data) => {
+                                                if (loadAllParts) {
+                                                    app.config.globalProperties.$mkfAdvisers.load_wires("");
+                                                }
+                                                if (loadExternalParts) {
+                                                    app.config.globalProperties.$mkfAdvisers.load_wires(data);
+                                                }
+                                        })
+                                    })
+
+                                    resolve();
+                                }
+                            });
+                        })
+                    };
                 }
-            });
-        })
-    };
+                , 100);
 
+        }
     }
 
-    console.log("Loaded");
     next();
 })
