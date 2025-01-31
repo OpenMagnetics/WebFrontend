@@ -8,7 +8,7 @@ import { toTitleCase } from '/WebSharedComponents/assets/js/utils.js'
 
 import GenericTool from '/src/components/WE/GenericTool.vue'
 import Formular from '/src/components/WE/Formular.vue'
-
+import { useFavicon } from '@vueuse/core'
 </script>
 
 <script>
@@ -79,6 +79,14 @@ export default {
             // window.location.href = link;
         },
     },
+    watch: {
+        $route: {
+            immediate: true,
+            handler(to, from) {
+                document.title = "WE CMC Designer";
+            }
+        },
+    },
     mounted() {
         this.catalogStore.$onAction((action) => {
             if (action.name == "orderSample") {
@@ -90,8 +98,11 @@ export default {
         this.$settingsStore.inputBgColor = 'bg-light';
         this.$settingsStore.textColor = 'text-white';
         this.$settingsStore.loadingGif = "/images/loading_wuerth.gif";
+
     },
     created() {
+        const icon = useFavicon()
+        icon.value = "/images/we.ico"
     },
 }
 </script>

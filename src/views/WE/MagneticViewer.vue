@@ -5,6 +5,7 @@ import Storyline from '/src/components/Storyline.vue'
 import { toTitleCase } from '/WebSharedComponents/assets/js/utils.js'
 
 import GenericTool from '/src/components/WE/GenericTool.vue'
+import { useFavicon } from '@vueuse/core'
 
 </script>
 
@@ -31,6 +32,8 @@ export default {
     mounted() {
     },
     created() {
+        const icon = useFavicon();
+        icon.value = "/images/we.ico";
     },
 }
 </script>

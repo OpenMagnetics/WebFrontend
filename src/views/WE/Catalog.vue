@@ -4,7 +4,7 @@ import { toTitleCase } from '/WebSharedComponents/assets/js/utils.js'
 import { useCatalogStore } from '/src/stores/catalog'
 
 import Catalog from '/src/components/WE/Catalog.vue'
-
+import { useFavicon } from '@vueuse/core'
 </script>
 
 <script>
@@ -59,9 +59,19 @@ export default {
     },
     methods: {
     },
+    watch: {
+        $route: {
+            immediate: true,
+            handler(to, from) {
+                document.title = "WE CMC Designer";
+            }
+        },
+    },
     mounted() {
     },
     created() {
+        const icon = useFavicon();
+        icon.value = "/images/we.ico";
     },
 }
 </script>

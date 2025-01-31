@@ -1,6 +1,6 @@
 <script setup>
 import Header from '/src/components/WE/Header.vue'
-
+import { useFavicon } from '@vueuse/core'
 
 </script>
 
@@ -17,6 +17,8 @@ export default {
     mounted() {
     },
     created() {
+        const icon = useFavicon();
+        icon.value = "/images/we.ico";
     },
 }
 </script>
