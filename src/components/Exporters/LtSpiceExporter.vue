@@ -1,5 +1,5 @@
 <script setup>
-import { clean, download } from '/WebSharedComponents/assets/js/utils.js'
+import { clean, download, deepCopy } from '/WebSharedComponents/assets/js/utils.js'
 
 </script>
 <script>
@@ -45,11 +45,16 @@ export default {
         },
         createLtSpiceSubcircuit() {
             this.$mkf.ready.then(_ => {
-                var subcircuit = this.$mkf.export_magnetic_as_subcircuit(JSON.stringify(this.magnetic), "LtSpice", "");
+                const magnetic = deepCopy(this.magnetic);
+                magnetic.manufacturerInfo.reference = magnetic.manufacturerInfo.reference.replaceAll(" ", "_").replaceAll("-", "_").replaceAll(".", "_").replaceAll(",", "_").replaceAll(":", "_").replaceAll("___", "_").replaceAll("__", "_");
+                var subcircuit = this.$mkf.export_magnetic_as_subcircuit(JSON.stringify(magnetic), "LtSpice", "");
                 var blob = new Blob([subcircuit], {
                     type: 'text/csv; charset=utf-8'
                 });
-                download(blob, this.magnetic.manufacturerInfo.reference + ".cir", "text/csv; charset=utf-8");
+                const filename = magnetic.manufacturerInfo.reference;
+                console.log("filename");
+                console.log(filename);
+                download(blob, filename + ".cir", "text/csv; charset=utf-8");
 
             }).catch(error => {
                 console.error(error);
@@ -57,11 +62,16 @@ export default {
         },
         createLtSpiceSymbol() {
             this.$mkf.ready.then(_ => {
-                var subcircuit = this.$mkf.export_magnetic_as_symbol(JSON.stringify(this.magnetic), "LtSpice", "");
+                const magnetic = deepCopy(this.magnetic);
+                magnetic.manufacturerInfo.reference = magnetic.manufacturerInfo.reference.replaceAll(" ", "_").replaceAll("-", "_").replaceAll(".", "_").replaceAll(",", "_").replaceAll(":", "_").replaceAll("___", "_").replaceAll("__", "_");
+                var subcircuit = this.$mkf.export_magnetic_as_symbol(JSON.stringify(magnetic), "LtSpice", "");
                 var blob = new Blob([subcircuit], {
                     type: 'text/csv; charset=utf-8'
                 });
-                download(blob, this.magnetic.manufacturerInfo.reference + ".asy", "text/csv; charset=utf-8");
+                const filename = magnetic.manufacturerInfo.reference;
+                console.log("filename");
+                console.log(filename);
+                download(blob, filename + ".asy", "text/csv; charset=utf-8");
 
             }).catch(error => {
                 console.error(error);

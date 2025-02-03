@@ -3,6 +3,7 @@ import { useMasStore } from '/src/stores/mas'
 import { Modal } from "bootstrap";
 import SimbaExporter from '/src/components/Exporters/SimbaExporter.vue'
 import LtSpiceExporter from '/src/components/Exporters/LtSpiceExporter.vue'
+import NgSpiceExporter from '/src/components/Exporters/NgSpiceExporter.vue'
 import { deepCopy, download } from '/WebSharedComponents/assets/js/utils.js'
 </script>
 
@@ -63,7 +64,7 @@ export default {
                             :attachToFile="true"
                         />
                     </div>
-<!--                     <div class="row">
+                    <div class="row">
                         <p class="text-center fs-5 pt-2">LtSpice</p>
                     </div>
                     <div class="row border-bottom pb-3">
@@ -84,19 +85,13 @@ export default {
                         <p class="text-center fs-5 pt-2">NgSpice</p>
                     </div>
                     <div class="row border-bottom pb-3">
-                        <SimbaExporter
+                        <NgSpiceExporter
                             class="btn btn-primary col-4 mt-1"
                             :data-cy="dataTestLabel + '-Simba-Subcircuit-Section'"
                             :magnetic="masStore.mas.magnetic"
                             :attachToFile="false"
                         />
-                        <SimbaExporter
-                            class="btn btn-primary offset-1 col-4 mt-1"
-                            :data-cy="dataTestLabel + '-Simba-Subcircuit-Attached'"
-                            :magnetic="masStore.mas.magnetic"
-                            :attachToFile="true"
-                        />
-                    </div> -->
+                    </div>
                 </div>
             </div>
         </div>
