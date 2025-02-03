@@ -175,7 +175,7 @@ export default {
                         <div class="border border-primary mt-2" style="height: fit-content">
                             <h4 class="text-center pt-2 fs-5">Tool menu</h4>
                             <ContextMenu
-                                :showAdviserSettingsOption="$userStore.getCurrentToolState().subsection == 'magneticAdviser' || $userStore.getCurrentToolState().subsection == 'magneticCoreAdviser'"
+                                :showAdviserSettingsOption="$userStore.getCurrentToolState().subsection == 'magneticAdviser' || $userStore.getCurrentToolState().subsection == 'magneticCoreAdviser' || $userStore.getCurrentToolState().subsection == 'magneticBuilder'"
                                 :showCatalogAdviserSettingsOption="$userStore.selectedApplication == 'catalog'"
                                 :showEditOption="$userStore.getCurrentToolState().subsection == 'magneticViewer'"
                                 :showOrderOption="$userStore.selectedApplication == 'catalog' && ($userStore.getCurrentToolState().subsection == 'magneticViewer')"
