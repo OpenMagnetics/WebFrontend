@@ -1,7 +1,6 @@
 <script setup>
 import { useMasStore } from '/src/stores/mas'
 import { useAdviseCacheStore } from '/src/stores/adviseCache'
-import { useInventoryCacheStore } from '/src/stores/inventoryCache'
 import Slider from '@vueform/slider'
 import { removeTrailingZeroes, toTitleCase, toCamelCase, deepCopy } from '/WebSharedComponents/assets/js/utils.js'
 import { coreAdviserWeights } from '/WebSharedComponents/assets/js/defaults.js'
@@ -51,10 +50,9 @@ export default {
     data() {
         const adviseCacheStore = useAdviseCacheStore();
         const masStore = useMasStore();
-        const inventoryCacheStore = useInventoryCacheStore();
 
-        if (masStore.coreAdviserWeights == null) {
-            masStore.coreAdviserWeights = coreAdviserWeights;
+        if (this.$settingsStore.coreAdviserSettings.weights == null) {
+            this.$settingsStore.coreAdviserSettings.weights = coreAdviserWeights;
         }
 
         const loading = false;
@@ -62,7 +60,6 @@ export default {
         return {
             adviseCacheStore,
             masStore,
-            inventoryCacheStore,
             loading,
             currentAdviseToShow: 0,
         }
@@ -70,14 +67,14 @@ export default {
     computed: {
         titledFilters() {
             const titledFilters = {};
-            for (let [key, _] of Object.entries(this.masStore.coreAdviserWeights)) {
+            for (let [key, _] of Object.entries(this.$settingsStore.coreAdviserSettings.weights)) {
                 titledFilters[key] = toTitleCase(key.toLowerCase().replaceAll("_", " "));
             }
             return titledFilters;
         },
         brokenLinedFilters() {
             const titledFilters = {};
-            for (let [key, _] of Object.entries(this.masStore.coreAdviserWeights)) {
+            for (let [key, _] of Object.entries(this.$settingsStore.coreAdviserSettings.weights)) {
                 titledFilters[key] = toTitleCase(key.toLowerCase().replaceAll("_", " "));
                 titledFilters[key] = titledFilters[key].split(' ')
                 .map(item => toTitleCase(item));
@@ -132,7 +129,7 @@ export default {
                     settings["useToroidalCores"] = this.$settingsStore.adviserToroidalCores == "1";
                     coreAdviser.set_settings(JSON.stringify(settings));
 
-                    const aux = JSON.parse(coreAdviser.calculate_advised_cores(JSON.stringify(this.masStore.mas.inputs), JSON.stringify(this.masStore.coreAdviserWeights), 20, this.$settingsStore.adviserUseOnlyCoresInStock == 1));
+                    const aux = JSON.parse(coreAdviser.calculate_advised_cores(JSON.stringify(this.masStore.mas.inputs), JSON.stringify(this.$settingsStore.coreAdviserSettings.weights), 20, this.$settingsStore.adviserUseOnlyCoresInStock == 1));
 
                     var log = aux["log"];
                     var data = aux["data"];
@@ -141,7 +138,7 @@ export default {
                     })
 
                     var orderedWeights = [];
-                    for (let [key, value] of Object.entries(this.masStore.coreAdviserWeights)) {
+                    for (let [key, value] of Object.entries(this.$settingsStore.coreAdviserSettings.weights)) {
                         orderedWeights.push({
                             filter: key,
                             weight: value
@@ -176,12 +173,12 @@ export default {
             });
         },
         changedInputValue(key, value) {
-            this.masStore.coreAdviserWeights[key] = value / 100;
+            this.$settingsStore.coreAdviserSettings.weights[key] = value / 100;
         },
         changedSliderValue(newkey, newValue) {
             const remainingValue = 100 - newValue;
             var valueInOthers = 0;
-            for (let [key, value] of Object.entries(this.masStore.coreAdviserWeights)) {
+            for (let [key, value] of Object.entries(this.$settingsStore.coreAdviserSettings.weights)) {
                 if (isNaN(value)) {
                     value = 0;
                 }
@@ -189,16 +186,16 @@ export default {
                     valueInOthers += value;
                 }
             }
-            for (let [key, value] of Object.entries(this.masStore.coreAdviserWeights)) {
+            for (let [key, value] of Object.entries(this.$settingsStore.coreAdviserSettings.weights)) {
                 if (isNaN(value)) {
                     value = 0;
                 }
                 if (key != newkey) {
                     if (value == 0) {
-                        this.masStore.coreAdviserWeights[key] = remainingValue / 2;
+                        this.$settingsStore.coreAdviserSettings.weights[key] = remainingValue / 2;
                     }
                     else {
-                        this.masStore.coreAdviserWeights[key] = value / valueInOthers * remainingValue;
+                        this.$settingsStore.coreAdviserSettings.weights[key] = value / valueInOthers * remainingValue;
                     }
                 }
             }
@@ -228,13 +225,13 @@ export default {
     <div class="container" >
         <div class="row">
             <div class="col-sm-12 col-md-2 text-start border border-primary m-0 px-2 py-1 ">
-                <div class="row" v-for="value, key in masStore.coreAdviserWeights">
+                <div class="row" v-for="value, key in $settingsStore.coreAdviserSettings.weights">
                     <label class="form-label col-12 py-0 my-0">{{titledFilters[key]}}</label>
                     <div class=" col-7 me-2 pt-2">
-                        <Slider v-model="masStore.coreAdviserWeights[key]" :disabled="loading" class="col-12 text-primary slider" :height="10" :min="10" :max="80" :step="10"  id="core-adviser-weight-area-product" :tooltips="false" @change="changedSliderValue(key, $event)"/>
+                        <Slider v-model="$settingsStore.coreAdviserSettings.weights[key]" :disabled="loading" class="col-12 text-primary slider" :height="10" :min="10" :max="80" :step="10"  id="core-adviser-weight-area-product" :tooltips="false" @change="changedSliderValue(key, $event)"/>
                     </div>
 
-                <input :disabled="loading" :data-cy="dataTestLabel + '-number-input'" type="number" class="m-0 mb-2 px-0 col-3 bg-light text-white" :min="10" :step="10" @change="changedInputValue(key, $event.target.value)" :value="removeTrailingZeroes(masStore.coreAdviserWeights[key])" ref="inputRef">
+                <input :disabled="loading" :data-cy="dataTestLabel + '-number-input'" type="number" class="m-0 mb-2 px-0 col-3 bg-light text-white" :min="10" :step="10" @change="changedInputValue(key, $event.target.value)" :value="removeTrailingZeroes($settingsStore.coreAdviserSettings.weights[key])" ref="inputRef">
 
                 </div>
                 <button :disabled="loading" :data-cy="dataTestLabel + '-calculate-mas-advises-button'" class="btn btn-success mx-auto d-block mt-4" @click="calculateAdvises" >Get advised cores!</button>

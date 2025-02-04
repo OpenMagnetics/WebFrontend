@@ -131,9 +131,11 @@ export default {
             const masStore = useMasStore();
 
             if (this.$userStore.selectedApplication == 'power') {
+                this.$stateStore.reset();
                 masStore.resetMas("power");
             }
             else if (this.$userStore.selectedApplication == 'filter') {
+                this.$stateStore.reset();
                 masStore.resetMas("filter");
             }
 

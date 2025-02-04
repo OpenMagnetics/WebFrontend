@@ -1,6 +1,5 @@
 <script setup >
 import { defineAsyncComponent } from "vue";
-import { useUserDatabaseStore } from '/src/stores/userDatabase'
 import { useElementVisibility  } from '@vueuse/core'
 import { ref } from 'vue'
 import '/src/assets/css/custom.css'
@@ -18,12 +17,10 @@ export default {
         NotificationsModal: defineAsyncComponent(() => import('/src/components/NotificationsModal.vue') ),
     },
     data() {
-        const userDatabaseStore = useUserDatabaseStore()
         return {
             showModal: false,
             loggedIn: false,
             username: null,
-            userDatabaseStore,
         }
     },
     methods: {
@@ -74,36 +71,6 @@ export default {
         },
     },
     computed: {
-        getOperationPointsLength() {
-            if (this.userDatabaseStore.operationPoints != null)
-                return this.userDatabaseStore.operationPoints.length
-            else
-                return "Loading"
-        },
-        getCoresLength() {
-            if (this.userDatabaseStore.cores != null)
-                return this.userDatabaseStore.cores.length
-            else
-                return "Loading"
-        },
-        getBobbinsLength() {
-            if (this.userDatabaseStore.bobbins != null)
-                return this.userDatabaseStore.bobbins.length
-            else
-                return "Loading"
-        },
-        getWiresLength() {
-            if (this.userDatabaseStore.wires != null)
-                return this.userDatabaseStore.wires.length
-            else
-                return "Loading"
-        },
-        getMagneticsLength() {
-            if (this.userDatabaseStore.magnetics != null)
-                return this.userDatabaseStore.magnetics.length
-            else
-                return "Loading"
-        },
         onNewPowerMagneticDesign() {
             this.$userStore.resetMagneticTool();
             this.$userStore.selectApplication("power");
@@ -239,13 +206,6 @@ export default {
             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="UserOffCanvasClose"></button>
         </div>
         <div class="offcanvas-body">
-            <div class="list-group" style="margin: 0" >
-                <button data-cy="Header-inventory-operation-points-link" class="list-group-item list-group-item-action bg-light text-primary border-primary border-opacity-50" data-bs-dismiss="offcanvas" @click="onClickNumberOperationPoints">My operation points <span class="badge text-bg-secondary opacity-80">{{getOperationPointsLength}}</span> </button>
-                <button data-cy="Header-inventory-cores-link" class="list-group-item list-group-item-action bg-light text-primary border-primary border-opacity-50" data-bs-dismiss="offcanvas" @click="onClickNumberCores">My cores <span class="badge text-bg-secondary opacity-80">{{getCoresLength}}</span> </button>
-                <button data-cy="Header-inventory-bobbins-link" class="list-group-item list-group-item-action bg-light text-primary border-primary border-opacity-50" data-bs-dismiss="offcanvas" @click="onClickNumberBobbins">My bobbins <span class="badge text-bg-secondary opacity-80">{{getBobbinsLength}}</span> </button>
-                <button data-cy="Header-inventory-wires-link" class="list-group-item list-group-item-action bg-light text-primary border-primary border-opacity-50" data-bs-dismiss="offcanvas" @click="onClickNumberWires">My wires <span class="badge text-bg-secondary opacity-80">{{getWiresLength}}</span> </button>
-                <button data-cy="Header-inventory-magnetics-link" class="list-group-item list-group-item-action bg-light text-primary border-primary border-opacity-50" data-bs-dismiss="offcanvas" @click="onClickNumberMagnetics">My magnetics <span class="badge text-bg-secondary opacity-80">{{getMagneticsLength}}</span> </button>
-            </div>
             <button data-cy="Header-logout-button" class="btn mt-5 text-dark bg-primary fs-5" data-bs-dismiss="offcanvas" @click="onLoggedOut">Logout</button>
         </div>
     </div>

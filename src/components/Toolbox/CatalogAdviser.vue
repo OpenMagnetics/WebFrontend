@@ -1,7 +1,6 @@
 <script setup>
 import { useMasStore } from '/src/stores/mas'
 import { useAdviseCacheStore } from '/src/stores/adviseCache'
-import { useInventoryCacheStore } from '/src/stores/inventoryCache'
 import Slider from '@vueform/slider'
 import { removeTrailingZeroes, toTitleCase, toCamelCase, deepCopy } from '/WebSharedComponents/assets/js/utils.js'
 import Advise from '/src/components/Toolbox/CatalogAdviser/Advise.vue'
@@ -38,7 +37,6 @@ export default {
     data() {
         const adviseCacheStore = useAdviseCacheStore();
         const masStore = useMasStore();
-        const inventoryCacheStore = useInventoryCacheStore();
 
         const catalogStore = useCatalogStore();
         var catalogString = "";
@@ -50,7 +48,6 @@ export default {
             catalogString,
             catalogStore,
             masStore,
-            inventoryCacheStore,
             loading,
         }
     },

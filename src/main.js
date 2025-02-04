@@ -10,6 +10,7 @@ import "/src/assets/css/tooltip.css";
 import axios from "axios";
 import { useUserStore } from '/src/stores/user'
 import { useSettingsStore } from '/src/stores/settings'
+import { useStateStore } from '/src/stores/state'
 import Module from '/src/assets/js/libMKF.wasm.js';
 import { removeEmpty } from '/WebSharedComponents/assets/js/utils.js';
 
@@ -27,6 +28,7 @@ app.directive("tooltip", tooltip);
 app.config.globalProperties.$axios = axiosInstance
 app.config.globalProperties.$userStore = useUserStore()
 app.config.globalProperties.$settingsStore = useSettingsStore()
+app.config.globalProperties.$stateStore = useStateStore()
 app.mount("#app");
 
 router.beforeEach((to, from, next) => {
@@ -54,11 +56,6 @@ router.beforeEach((to, from, next) => {
         else if (app.config.globalProperties.$mkf == null && (to.name == "EngineLoader" || to.name == "WEEngineLoader")) {
             const loadAllParts = !weApplication || (weApplication && app.config.globalProperties.$settingsStore.catalogAdviserUseAllParts);
             const loadExternalParts = weApplication;
-            console.log(loadAllParts)
-            console.log(loadAllParts)
-            console.log(loadAllParts)
-            console.log(loadExternalParts)
-            console.log(loadExternalParts)
             setTimeout(() => 
                 {
 
@@ -66,18 +63,20 @@ router.beforeEach((to, from, next) => {
                     fetch("/core_materials.ndjson")
                     .then((data) => data.text())
                     .then((data) => {
-                            const postData = {
-                                "coreMaterialsString": data
-                            };
-                            const url = import.meta.env.VITE_API_ENDPOINT + '/load_external_core_materials';
+                            if (!data.startsWith("<")) {
+                                const postData = {
+                                    "coreMaterialsString": data
+                                };
+                                const url = import.meta.env.VITE_API_ENDPOINT + '/load_external_core_materials';
 
-                            app.config.globalProperties.$axios.post(url, postData)
-                            .then(response => {
-                                console.log(response);
-                            })
-                            .catch(error => {
-                                console.error(error);
-                            });
+                                app.config.globalProperties.$axios.post(url, postData)
+                                .then(response => {
+                                    console.log(response);
+                                })
+                                .catch(error => {
+                                    console.error(error);
+                                });
+                            }
                         })
 
                     app.config.globalProperties.$mkf = {

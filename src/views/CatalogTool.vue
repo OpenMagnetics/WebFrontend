@@ -49,6 +49,7 @@ export default {
             this.$userStore.designLoaded();
             const masStore = useMasStore();
 
+            this.$stateStore.reset();
             masStore.resetMas("filter");
         }
 

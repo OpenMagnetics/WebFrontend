@@ -1,12 +1,5 @@
 <script setup>
 import { useMasStore } from '/src/stores/mas'
-import WaveformGraph from '/src/components/Toolbox/OperatingPoints/WaveformGraph.vue'
-import WaveformFourier from '/src/components/Toolbox/OperatingPoints/WaveformFourier.vue'
-import WaveformInputCustom from '/src/components/Toolbox/OperatingPoints/WaveformInputCustom.vue'
-import WaveformInput from '/src/components/Toolbox/OperatingPoints/WaveformInput.vue'
-import WaveformInputCommon from '/src/components/Toolbox/OperatingPoints/WaveformInputCommon.vue'
-import WaveformOutput from '/src/components/Toolbox/OperatingPoints/WaveformOutput.vue'
-import WaveformCombinedOutput from '/src/components/Toolbox/OperatingPoints/WaveformCombinedOutput.vue'
 import OperatingPoint from '/src/components/Toolbox/OperatingPoints/OperatingPoint.vue'
 import { roundWithDecimals, deepCopy } from '/WebSharedComponents/assets/js/utils.js'
 
@@ -30,7 +23,7 @@ export default {
         const currentWindingIndex = 0;
         const errorMessages = "";
 
-        masStore.initializeOperatingPoints();
+        this.$stateStore.initializeOperatingPoints();
 
         return {
             masStore,
@@ -41,7 +34,7 @@ export default {
     },
     computed: {
         excitationSelectorDisabled() {
-            return !(this.masStore.magneticManualOperatingPoints[this.currentOperatingPointIndex] || this.masStore.magneticCircuitSimulatorOperatingPoints[this.currentOperatingPointIndex]);
+            return this.$stateStore.operatingPoints.modePerPoint[this.currentOperatingPointIndex] !== this.$stateStore.OperatingPointsMode.Manual && this.$stateStore.operatingPoints.modePerPoint[this.currentOperatingPointIndex] !== this.$stateStore.OperatingPointsMode.CircuitSimulatorImport;
         },
         styleTooltip() {
             var relative_placement;
@@ -58,7 +51,7 @@ export default {
 
             this.errorMessages = "";
             for (var operatingPointIndex = 0; operatingPointIndex < this.masStore.mas.inputs.operatingPoints.length; operatingPointIndex++) {
-                if (!this.masStore.magneticManualOperatingPoints[operatingPointIndex] && !this.masStore.magneticCircuitSimulatorOperatingPoints[operatingPointIndex]) {
+                if (this.$stateStore.operatingPoints.modePerPoint[this.currentOperatingPointIndex] !== this.$stateStore.OperatingPointsMode.Manual && this.$stateStore.operatingPoints.modePerPoint[this.currentOperatingPointIndex] !== this.$stateStore.OperatingPointsMode.CircuitSimulatorImport) {
                     allSet = false;
                 }
                 if (this.masStore.mas.inputs.operatingPoints[operatingPointIndex] == null) {
@@ -170,7 +163,7 @@ export default {
             });
         },
         addNewOperatingPoint() {
-            this.masStore.addNewOperatingPoint(this.currentOperatingPointIndex);
+            this.$stateStore.addNewOperatingPoint(this.currentOperatingPointIndex);
             this.currentOperatingPointIndex += 1;
             this.$emit("canContinue", this.canContinue);
         },
@@ -178,7 +171,7 @@ export default {
             if (index < this.currentOperatingPointIndex) {
                 this.currentOperatingPointIndex -= 1;
             }
-            this.masStore.removeOperatingPoint(index);
+            this.$stateStore.removeOperatingPoint(index);
             this.$emit("canContinue", this.canContinue);
         },
         importedWaveform() {

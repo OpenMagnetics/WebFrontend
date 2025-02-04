@@ -1,11 +1,13 @@
 <script setup>
 import { useMasStore } from '/src/stores/mas'
+import WaveformInputHarmonic from '/src/components/Toolbox/OperatingPoints/Input/WaveformInputHarmonic.vue'
 import WaveformGraph from '/src/components/Toolbox/OperatingPoints/Output/WaveformGraph.vue'
 import WaveformFourier from '/src/components/Toolbox/OperatingPoints/Output/WaveformFourier.vue'
 import WaveformOutput from '/src/components/Toolbox/OperatingPoints/Output/WaveformOutput.vue'
 import WaveformCombinedOutput from '/src/components/Toolbox/OperatingPoints/Output/WaveformCombinedOutput.vue'
-import WaveformInputColumnNames from '/src/components/Toolbox/OperatingPoints/Input/WaveformInputColumnNames.vue'
 import { roundWithDecimals, deepCopy } from '/WebSharedComponents/assets/js/utils.js'
+import Dimension from '/WebSharedComponents/DataInput/Dimension.vue'
+
 
 import { defaultOperatingPointExcitation, defaultPrecision, defaultSinusoidalNumberPoints } from '/WebSharedComponents/assets/js/defaults.js'
 import { tooltipsMagneticSynthesisOperatingPoints } from '/WebSharedComponents/assets/js/texts.js'
@@ -14,12 +16,8 @@ import { tooltipsMagneticSynthesisOperatingPoints } from '/WebSharedComponents/a
 <script>
 
 export default {
-    emits: ["canContinue", "changeTool", "importedWaveform", "clearMode"],
+    emits: [],
     props: {
-        loadedFile: {
-            type: String,
-            required: true,
-        },
         dataTestLabel: {
             type: String,
             default: '',
@@ -31,9 +29,6 @@ export default {
         currentWindingIndex: {
             type: Number,
             default: 0,
-        },
-        allColumnNames: {
-            type: Array,
         },
     },
     data() {
@@ -47,6 +42,18 @@ export default {
                 }
             );
         }
+
+        masStore.mas.inputs.operatingPoints.forEach((_, operatingPointIndex) => {
+            masStore.mas.inputs.operatingPoints[operatingPointIndex].excitationsPerWinding.forEach((elem, windingIndex) => {
+                if (elem.current.harmonics == null) {
+                    masStore.mas.inputs.operatingPoints[operatingPointIndex].excitationsPerWinding[windingIndex].current.harmonics = {
+                        amplitudes: [42, 69],
+                        frequencies: [420000, 690000],
+                    }
+                } 
+            })
+        })
+
 
         return {
             masStore,
@@ -73,36 +80,11 @@ export default {
     mounted () {
     },
     methods: {
-        clearMode() {
-            this.$emit("clearMode");
+        onFrequencyChanged() {
+            console.log(onFrequencyChanged)
         },
-        extractOperatingPoint(file) {
-            this.$mkf.ready.then(_ => {
-                const numberWindings = this.masStore.mas.inputs.designRequirements.turnsRatios.length + 1;
-                const frequency = this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex].frequency;
-                const desiredMagnetizingInductance = this.$mkf.resolve_dimension_with_tolerance(JSON.stringify(this.masStore.mas.inputs.designRequirements.magnetizingInductance));
-                const mapColumnNamesString = JSON.stringify(this.$stateStore.operatingPointsCircuitSimulator.columnNames[this.currentOperatingPointIndex]);
-
-                var operatingPointString = this.$mkf.extract_operating_point(file, numberWindings, frequency, desiredMagnetizingInductance, mapColumnNamesString);
-                if (operatingPointString.startsWith("Error")) {
-                    this.errorMessages = operatingPointString;
-                    this.$stateStore.operatingPointsCircuitSimulator.confirmedColumns[this.currentOperatingPointIndex][this.currentWindingIndex] = true;
-                }
-                else {
-                    var operatingPoint = JSON.parse(operatingPointString);
-                    this.errorMessages = "";
-                    this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex] = operatingPoint.excitationsPerWinding[this.currentWindingIndex]
-                    this.$stateStore.operatingPointsCircuitSimulator.confirmedColumns[this.currentOperatingPointIndex][this.currentWindingIndex] = true;
-                }
-                this.$emit("importedWaveform");
-
-            });
-        },
-        updatedColumnNames() {
-            // this.extractOperatingPoint(this.loadedFile);
-        },
-        confirmColumns() {
-            this.extractOperatingPoint(this.loadedFile);
+        onAmplitudeChanged() {
+            console.log(onAmplitudeChanged)
         },
     }
 }
@@ -115,25 +97,24 @@ export default {
 
                 <label :data-cy="dataTestLabel + '-current-title'" class="fs-4 text-primary mx-0 p-0 mb-4">{{masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].name + ' - ' + masStore.mas.magnetic.coil.functionalDescription[currentWindingIndex].name}}</label>
 
-                <WaveformInputColumnNames class="scrollable-column border-bottom border-top rounded-4 border-2"
-                    :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex]"
-                    :dataTestLabel="dataTestLabel + '-selected'"
-                    :allColumnNames="allColumnNames"
-                    :currentOperatingPointIndex="currentOperatingPointIndex"
-                    :currentWindingIndex="currentWindingIndex"
-                    @updatedSwitchingFrequency="updatedColumnNames"
-                    @updatedColumnName="updatedColumnNames"
-                />
 
-                <button :disabled='loadedFile==""' :data-cy="dataTestLabel + '-import-button'" class="btn btn-success fs-5 col-sm-12 col-md-12 mt-3 p-0" style="max-height: 2em" @click="confirmColumns">{{$stateStore.operatingPointsCircuitSimulator.confirmedColumns[currentOperatingPointIndex][currentWindingIndex]? 'Update columns' : 'Confirm columns'}}
-                </button>
-                <div v-if='loadedFile=="" && !$stateStore.operatingPointsCircuitSimulator.confirmedColumns[currentOperatingPointIndex][currentWindingIndex]' class="col-12">
-                    <label :data-cy="dataTestLabel + '-error-text'" class="text-danger text-center col-12 pt-1" style="font-size: 0.9em; white-space: pre-wrap;">Please reload file</label>
+                <label :data-cy="dataTestLabel + '-current-title'" class="fs-5 text-white mx-0 p-0 mb-4">Current harmonics</label>
+                <div v-for="index in masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex].current.harmonics.amplitudes.length" :key="index">
+
+                    <WaveformInputHarmonic class="col-7 mb-1 text-start"
+                        :dataTestLabel="dataTestLabel + '-Harmonic-' + (index - 1)"
+                        :index="index - 1"
+                        :unit="'A'"
+                        :title="'Current'"
+                        :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex].current.harmonics"
+                        @onFrequencyChanged="onFrequencyChanged"
+                        @onAmplitudeChanged="onAmplitudeChanged"
+                    />
                 </div>
                 <div v-if='errorMessages != ""' class="col-12">
                     <label :data-cy="dataTestLabel + '-error-text'" class="text-danger text-center col-12 pt-1" style="font-size: 0.9em; white-space: pre-wrap;">{{errorMessages}}</label>
                 </div>
-                <button :data-cy="dataTestLabel + '-import-button'" class="btn btn-success fs-5 col-sm-12 col-md-12 mt-3 p-0" style="max-height: 2em" @click="clearMode">Go back to selecting mode
+                <button :data-cy="dataTestLabel + '-import-button'" class="btn btn-success fs-5 col-sm-12 col-md-12 mt-3 p-0" style="max-height: 2em" @click="setImportMode">Go back to importing files
                 </button>
             </div>
             <div v-if="$stateStore.operatingPointsCircuitSimulator.confirmedColumns[currentOperatingPointIndex][currentWindingIndex]" class="col-lg-8 col-md-12 row m-0 p-0" style="max-width: 800px;">

@@ -1,8 +1,5 @@
 <script setup>
 import { useMasStore } from '/src/stores/mas'
-import { useCurrentStore,
-         useVoltageStore,
-         useCommonStore } from '/src/stores/waveform'
 import { Chart,
          registerables } from 'chart.js'
 import { removeTrailingZeroes,

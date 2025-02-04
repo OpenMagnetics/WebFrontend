@@ -38,7 +38,7 @@ export default {
         const masStore = useMasStore();
         const localData = {"frequency": this.modelValue['frequency']};
         var errorMessages = '';
-        if (!masStore.magneticCircuitSimulatorConfirmedColumns[this.currentOperatingPointIndex][this.currentWindingIndex]) {
+        if (!this.$stateStore.operatingPointsCircuitSimulator.confirmedColumns[this.currentOperatingPointIndex][this.currentWindingIndex]) {
             localData["frequency"] = 1;
             errorMessages = 'Please, introduce the frequency of your imported signal';
         }
@@ -109,7 +109,7 @@ export default {
                 :options="allColumnNames"
                 :titleSameRow="true"
                 :replaceTitle="'Cur. Time'"
-                v-model="masStore.magneticCircuitSimulatorColumnNames[currentOperatingPointIndex][currentWindingIndex]"
+                v-model="$stateStore.operatingPointsCircuitSimulator.columnNames[currentOperatingPointIndex][currentWindingIndex]"
                 @update="columnNameChanged"
             />
             <ElementFromList class="border-bottom pb-2 mb-1"
@@ -118,7 +118,7 @@ export default {
                 :options="allColumnNames"
                 :titleSameRow="true"
                 :replaceTitle="'Current'"
-                v-model="masStore.magneticCircuitSimulatorColumnNames[currentOperatingPointIndex][currentWindingIndex]"
+                v-model="$stateStore.operatingPointsCircuitSimulator.columnNames[currentOperatingPointIndex][currentWindingIndex]"
                 @update="columnNameChanged"
             />
             <ElementFromList class="pb-2 mb-1"
@@ -127,7 +127,7 @@ export default {
                 :options="allColumnNames"
                 :titleSameRow="true"
                 :replaceTitle="'Voltage'"
-                v-model="masStore.magneticCircuitSimulatorColumnNames[currentOperatingPointIndex][currentWindingIndex]"
+                v-model="$stateStore.operatingPointsCircuitSimulator.columnNames[currentOperatingPointIndex][currentWindingIndex]"
                 @update="columnNameChanged"
             />
         </div>

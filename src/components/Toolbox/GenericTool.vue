@@ -61,8 +61,8 @@ export default {
             operatingPoint: 0
         };
 
-        if (masStore.mas.inputs.operatingPoints[masStore.currentOperatingPoint] != null)
-            localData["operatingPoint"] = masStore.mas.inputs.operatingPoints[masStore.currentOperatingPoint].name
+        if (masStore.mas.inputs.operatingPoints[this.$stateStore.currentOperatingPoint] != null)
+            localData["operatingPoint"] = masStore.mas.inputs.operatingPoints[this.$stateStore.currentOperatingPoint].name
         return {
             masStore,
             localData,
@@ -111,7 +111,7 @@ export default {
         operatingPointUpdated(name, ea) {
             this.masStore.mas.inputs.operatingPoints.forEach((elem, index) => {
                 if (name == elem.name) {
-                    this.masStore.currentOperatingPoint = index;
+                    this.$stateStore.currentOperatingPoint = index;
                 }
             })
         },
@@ -141,7 +141,7 @@ export default {
                 return false;
             }
             else{
-                return this.masStore.magneticAcSweepOperatingPoints;
+                return this.$stateStore.operatingPoints.modePerPoint[this.$stateStore.currentOperatingPoint] === this.$stateStore.OperatingPointsMode.AcSweep;
             }
         }
     },
@@ -233,7 +233,7 @@ export default {
                             <ToolSelector
                                 v-if="$userStore.getCurrentToolState().subsection == 'toolSelector'"
                                 :dataTestLabel="`${dataTestLabel}-ToolSelector`"
-                                :acSweepSelected="masStore.magneticAcSweepOperatingPoints"
+                                :acSweepSelected="$stateStore.operatingPoints.modePerPoint[$stateStore.currentOperatingPoint] === $stateStore.OperatingPointsMode.AcSweep"
                                 @toolSelected="toolSelected"
                             />
                             <DesignRequirements
@@ -292,14 +292,14 @@ export default {
                                 v-if="$userStore.getCurrentToolState().subsection == 'magneticBuilder' || 
                                       $userStore.getCurrentToolState().subsection == 'magneticViewer'"
                                 :masStore="masStore"
-                                :operatingPointIndex="masStore.currentOperatingPoint"
+                                :operatingPointIndex="$stateStore.currentOperatingPoint"
                                 :dataTestLabel="`${dataTestLabel}-MagneticBuilder`"
                                 :useVisualizers="true"
                                 :enableCoil="true"
                                 :readOnly="$userStore.getCurrentToolState().subsection == 'magneticViewer'"
                                 :enableGraphs="enableGraphs"
-                                :enableAdvisers="!masStore.magneticAcSweepOperatingPoints"
-                                :enableSimulation="!masStore.magneticAcSweepOperatingPoints"
+                                :enableAdvisers="$stateStore.operatingPoints.modePerPoint[$stateStore.currentOperatingPoint] !== $stateStore.OperatingPointsMode.AcSweep"
+                                :enableSimulation="$stateStore.operatingPoints.modePerPoint[$stateStore.currentOperatingPoint] !== $stateStore.OperatingPointsMode.AcSweep"
                                 @canContinue="updateCanContinue('magneticBuilder', $event)"
                             />
                             <MagneticSummary

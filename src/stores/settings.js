@@ -14,6 +14,15 @@ export const useSettingsStore = defineStore("settings", () => {
     const textColor = ref('text-white');
     const loadingGif = ref("/images/loading.gif");
 
+    const coreAdviserSettings = ref({
+        weights: null,
+    })
+
+    const magneticAdviserSettings = ref({
+        weights: null,
+        maximumNumberResults: 6,
+    })
+
     const dump = computed(() => {
         return {
             "adviserSpiderBarChartNotBar": adviserSpiderBarChartNotBar.value,
@@ -26,15 +35,29 @@ export const useSettingsStore = defineStore("settings", () => {
     })
 
     function reset() {
+        this.coreAdviserSettings ={
+            weights: null
+        };
+        this.magneticAdviserSettings ={
+            weights: null,
+            maximumNumberResults: 6,
+        };
+
+
         this.adviserSpiderBarChartNotBar = false;
         this.adviserUseOnlyCoresInStock = true;
         this.adviserAllowDistributedGaps = true;
         this.adviserAllowStacks = true;
         this.adviserToroidalCores = true;
         this.catalogAdviserUseAllParts = false;
+
+
     }
 
     return {
+        coreAdviserSettings,
+        magneticAdviserSettings,
+
         adviserSpiderBarChartNotBar,
         adviserUseOnlyCoresInStock,
         adviserAllowDistributedGaps,

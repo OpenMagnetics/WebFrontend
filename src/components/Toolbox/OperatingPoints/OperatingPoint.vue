@@ -1,13 +1,7 @@
 <script setup>
 import { useMasStore } from '/src/stores/mas'
-import WaveformGraph from '/src/components/Toolbox/OperatingPoints/WaveformGraph.vue'
-import WaveformFourier from '/src/components/Toolbox/OperatingPoints/WaveformFourier.vue'
-import WaveformInputCustom from '/src/components/Toolbox/OperatingPoints/WaveformInputCustom.vue'
-import WaveformInput from '/src/components/Toolbox/OperatingPoints/WaveformInput.vue'
-import WaveformInputCommon from '/src/components/Toolbox/OperatingPoints/WaveformInputCommon.vue'
-import WaveformOutput from '/src/components/Toolbox/OperatingPoints/WaveformOutput.vue'
-import WaveformCombinedOutput from '/src/components/Toolbox/OperatingPoints/WaveformCombinedOutput.vue'
 import OperatingPointManual from '/src/components/Toolbox/OperatingPoints/OperatingPointManual.vue'
+import OperatingPointHarmonics from '/src/components/Toolbox/OperatingPoints/OperatingPointHarmonics.vue'
 import OperatingPointCircuitSimulator from '/src/components/Toolbox/OperatingPoints/OperatingPointCircuitSimulator.vue'
 import { roundWithDecimals, deepCopy, removeTrailingZeroes } from '/WebSharedComponents/assets/js/utils.js'
 import Dimension from '/WebSharedComponents/DataInput/Dimension.vue'
@@ -89,12 +83,12 @@ export default {
             this.$mkf.ready.then(_ => {
                 const numberWindings = this.masStore.mas.inputs.designRequirements.turnsRatios.length + 1;
                 const frequency = this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex].frequency;
-                this.masStore.magneticCircuitSimulatorColumnNames[this.currentOperatingPointIndex] = JSON.parse(this.$mkf.extract_map_column_names(file, numberWindings, frequency));
+                this.$stateStore.operatingPointsCircuitSimulator.columnNames[this.currentOperatingPointIndex] = JSON.parse(this.$mkf.extract_map_column_names(file, numberWindings, frequency));
             });
         },
         extractAllColumnNames(file) {
             this.$mkf.ready.then(_ => {
-                this.masStore.magneticCircuitSimulatorAllLastReadColumnNames = JSON.parse(this.$mkf.extract_column_names(file));
+                this.$stateStore.operatingPointsCircuitSimulator.allLastReadColumnNames = JSON.parse(this.$mkf.extract_column_names(file));
             });
         },
         onMASFileTypeSelected(event) {
@@ -112,27 +106,27 @@ export default {
                 this.loadedFile = e.target.result;
                 this.extractAllColumnNames(this.loadedFile);
                 this.extractMapColumnNames(this.loadedFile);
-                this.masStore.magneticCircuitSimulatorOperatingPoints[this.currentOperatingPointIndex] = true;
+                this.$stateStore.operatingPoints.modePerPoint[this.currentOperatingPointIndex] = this.$stateStore.OperatingPointsMode.CircuitSimulatorImport;
             }
             fr.readAsText(this.$refs["OperatingPoint-CircuitSimulator-upload-ref"].files.item(0));
         },
+        onHarmoncsTypeSelected(event) {
+            this.$stateStore.operatingPoints.modePerPoint[this.currentOperatingPointIndex] = this.$stateStore.OperatingPointsMode.HarmonicsList;
+            this.$emit("selectedManualOrImported")
+        },
         onManualTypeSelected(event) {
-            this.masStore.magneticAcSweepOperatingPoints = false;
-            this.masStore.magneticManualOperatingPoints[this.currentOperatingPointIndex] = true;
+            this.$stateStore.operatingPoints.modePerPoint[this.currentOperatingPointIndex] = this.$stateStore.OperatingPointsMode.Manual;
             this.$emit("selectedManualOrImported")
         },
         onAcSweepTypeSelected(event) {
-            this.masStore.magneticAcSweepOperatingPoints = true;
+            this.$stateStore.operatingPoints.modePerPoint[this.currentOperatingPointIndex] = this.$stateStore.OperatingPointsMode.AcSweep;
             this.$emit("selectedAcSweepTypeSelected")
         },
         onCircuitSimulatorTypeSelected(event) {
-            this.masStore.magneticAcSweepOperatingPoints = false;
             this.$refs['OperatingPoint-CircuitSimulator-upload-ref'].click()
         },
-        setImportMode(event) {
-            this.masStore.magneticManualOperatingPoints[this.currentOperatingPointIndex] = false;
-            this.masStore.magneticCircuitSimulatorOperatingPoints[this.currentOperatingPointIndex] = false;
-            this.$emit("selectedManualOrImported")
+        clearMode(event) {
+            this.$stateStore.operatingPoints.modePerPoint[this.currentOperatingPointIndex] = null
         },
     }
 }
@@ -142,22 +136,28 @@ export default {
     <div class="container">
         <div class="row" v-tooltip="styleTooltip">
             <OperatingPointManual
-                v-if="masStore.magneticManualOperatingPoints[currentOperatingPointIndex]"
+                v-if="$stateStore.operatingPoints.modePerPoint[currentOperatingPointIndex] === $stateStore.OperatingPointsMode.Manual"
                 :currentOperatingPointIndex="currentOperatingPointIndex"
                 :currentWindingIndex="currentWindingIndex"
                 @updatedWaveform="updatedWaveform"
-                @setImportMode="setImportMode"
+                @clearMode="clearMode"
             />
             <OperatingPointCircuitSimulator
-                v-if="masStore.magneticCircuitSimulatorOperatingPoints[currentOperatingPointIndex]"
+                v-if="$stateStore.operatingPoints.modePerPoint[currentOperatingPointIndex] === $stateStore.OperatingPointsMode.CircuitSimulatorImport"
                 :loadedFile="loadedFile"
                 :currentOperatingPointIndex="currentOperatingPointIndex"
                 :currentWindingIndex="currentWindingIndex"
-                :allColumnNames="masStore.magneticCircuitSimulatorAllLastReadColumnNames"
-                @setImportMode="setImportMode"
+                :allColumnNames="$stateStore.operatingPointsCircuitSimulator.allLastReadColumnNames"
+                @clearMode="clearMode"
                 @importedWaveform="importedWaveform"
             />
-            <div v-if="!masStore.magneticCircuitSimulatorOperatingPoints[currentOperatingPointIndex] && !masStore.magneticManualOperatingPoints[currentOperatingPointIndex]" class="col-12">
+            <OperatingPointHarmonics
+                v-if="$stateStore.operatingPoints.modePerPoint[currentOperatingPointIndex] === $stateStore.OperatingPointsMode.HarmonicsList"
+                :currentOperatingPointIndex="currentOperatingPointIndex"
+                :currentWindingIndex="currentWindingIndex"
+                @clearMode="clearMode"
+            />
+            <div v-if="$stateStore.operatingPoints.modePerPoint[currentOperatingPointIndex] == null" class="col-12">
                 <label :data-cy="dataTestLabel + '-current-title'" class="row fs-4 text-primary mx-0 p-0 mb-4">{{masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].name}}</label>
                 <div class="row mt-2">
 
@@ -169,10 +169,11 @@ export default {
                             <input type="file" id="OperatingPoint-MAS-upload-input" ref="OperatingPoint-MAS-upload-ref" @change="onMASFileTypeSelected"  style="display:none">
                     </label> -->
                         <input type="file" id="OperatingPoint-CircuitSimulator-upload-input" ref="OperatingPoint-CircuitSimulator-upload-ref" @change="onCircuitSimulatorFileTypeSelected" style="display:none" hidden/>
-                        <button data-cy="OperatingPointImport-source-Manual-button" type="button" @click="onCircuitSimulatorTypeSelected" class="col-lg-3 col-md-12 offset-lg-0 btn btn-primary mt-1 rounded-3 fs-5" style="min-height: 6em">Circuit simulator export file or CSV</button>
+                        <button data-cy="OperatingPoint-source-Manual-button" type="button" @click="onCircuitSimulatorTypeSelected" class="col-lg-3 col-md-12 offset-lg-0 btn btn-primary mt-1 rounded-3 fs-5" style="min-height: 6em">Circuit simulator export file or CSV</button>
 
-                        <button data-cy="OperatingPointImport-source-Manual-button" type="button" @click="onManualTypeSelected" class="col-lg-3 col-md-12 offset-lg-1 btn btn-primary mt-1 rounded-3 fs-5" style="min-height: 6em">I will define it manually</button>
-                        <button data-cy="OperatingPointImport-source-Manual-button" type="button" @click="onAcSweepTypeSelected" class="col-lg-3 col-md-12 offset-lg-1 btn btn-primary mt-1 rounded-3 fs-5" style="min-height: 6em">I am here for the AC sweeps</button>
+                        <button data-cy="OperatingPoint-source-Manual-button" type="button" @click="onManualTypeSelected" class="col-lg-3 col-md-12 offset-lg-1 btn btn-primary mt-1 rounded-3 fs-5" style="min-height: 6em">I will define it manually</button>
+                        <button data-cy="OperatingPoint-source-Manual-button" type="button" @click="onHarmoncsTypeSelected" class="col-lg-3 col-md-12 offset-lg-1 btn btn-primary mt-1 rounded-3 fs-5" style="min-height: 6em">I want to introduce a list of harmonics</button>
+                        <button data-cy="OperatingPoint-source-Manual-button" type="button" @click="onAcSweepTypeSelected" class="col-lg-3 col-md-12 offset-lg-1 btn btn-primary mt-1 rounded-3 fs-5" style="min-height: 6em">I am here for the AC sweeps</button>
                 </div>
             </div>
         </div>

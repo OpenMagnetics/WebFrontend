@@ -60,8 +60,8 @@ export default {
             operatingPoint: 0
         };
 
-        if (masStore.mas.inputs.operatingPoints[masStore.currentOperatingPoint] != null)
-            localData["operatingPoint"] = masStore.mas.inputs.operatingPoints[masStore.currentOperatingPoint].name
+        if (masStore.mas.inputs.operatingPoints[this.$stateStore.currentOperatingPoint] != null)
+            localData["operatingPoint"] = masStore.mas.inputs.operatingPoints[this.$stateStore.currentOperatingPoint].name
         return {
             masStore,
             localData,
@@ -110,7 +110,7 @@ export default {
         operatingPointUpdated(name, ea) {
             this.masStore.mas.inputs.operatingPoints.forEach((elem, index) => {
                 if (name == elem.name) {
-                    this.masStore.currentOperatingPoint = index;
+                    this.stateStore.currentOperatingPoint = index;
                 }
             })
         },
@@ -294,7 +294,7 @@ export default {
                                 v-if="$userStore.getCurrentToolState().subsection == 'magneticBuilder' || 
                                       $userStore.getCurrentToolState().subsection == 'magneticViewer'"
                                 :masStore="masStore"
-                                :operatingPointIndex="masStore.currentOperatingPoint"
+                                :operatingPointIndex="stateStore.currentOperatingPoint"
                                 :dataTestLabel="`${dataTestLabel}-MagneticBuilder`"
                                 :useVisualizers="true"
                                 :enableCoil="true"

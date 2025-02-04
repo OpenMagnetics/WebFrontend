@@ -1,12 +1,12 @@
 <script setup>
 import { useMasStore } from '/src/stores/mas'
-import WaveformGraph from '/src/components/Toolbox/OperatingPoints/WaveformGraph.vue'
-import WaveformFourier from '/src/components/Toolbox/OperatingPoints/WaveformFourier.vue'
-import WaveformInputCustom from '/src/components/Toolbox/OperatingPoints/WaveformInputCustom.vue'
-import WaveformInput from '/src/components/Toolbox/OperatingPoints/WaveformInput.vue'
-import WaveformInputCommon from '/src/components/Toolbox/OperatingPoints/WaveformInputCommon.vue'
-import WaveformOutput from '/src/components/Toolbox/OperatingPoints/WaveformOutput.vue'
-import WaveformCombinedOutput from '/src/components/Toolbox/OperatingPoints/WaveformCombinedOutput.vue'
+import WaveformGraph from '/src/components/Toolbox/OperatingPoints/Output/WaveformGraph.vue'
+import WaveformFourier from '/src/components/Toolbox/OperatingPoints/Output/WaveformFourier.vue'
+import WaveformInputCustom from '/src/components/Toolbox/OperatingPoints/Input/WaveformInputCustom.vue'
+import WaveformInput from '/src/components/Toolbox/OperatingPoints/Input/WaveformInput.vue'
+import WaveformInputCommon from '/src/components/Toolbox/OperatingPoints/Input/WaveformInputCommon.vue'
+import WaveformOutput from '/src/components/Toolbox/OperatingPoints/Output/WaveformOutput.vue'
+import WaveformCombinedOutput from '/src/components/Toolbox/OperatingPoints/Output/WaveformCombinedOutput.vue'
 import { roundWithDecimals, deepCopy } from '/WebSharedComponents/assets/js/utils.js'
 
 import { defaultOperatingPointExcitation, defaultPrecision, defaultSinusoidalNumberPoints } from '/WebSharedComponents/assets/js/defaults.js'
@@ -16,7 +16,7 @@ import { tooltipsMagneticSynthesisOperatingPoints } from '/WebSharedComponents/a
 <script>
 
 export default {
-    emits: ["canContinue", "changeTool", "updatedWaveform", "setImportMode"],
+    emits: ["canContinue", "changeTool", "updatedWaveform", "clearMode"],
     props: {
         dataTestLabel: {
             type: String,
@@ -65,14 +65,6 @@ export default {
 
     },
     mounted () {
-        this.masStore.$onAction((action) => {
-            if (action.name == "updatedInputExcitationProcessed") {
-                const signalDescriptor = action.args[0];
-            }
-            if (action.name == "updatedInputExcitationWaveformUpdatedFromGraph") {
-                const signalDescriptor = action.args[0];
-            }
-        })
     },
     methods: {
         updatedWaveform(signalDescriptor) {
@@ -110,8 +102,8 @@ export default {
         resetCurrentExcitation() {
             this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex] = deepCopy(defaultOperatingPointExcitation);
         },
-        setImportMode() {
-            this.$emit("setImportMode");
+        clearMode() {
+            this.$emit("clearMode");
         },
     }
 }
@@ -172,7 +164,7 @@ export default {
                     @updatedData="masStore.updatedInputExcitationWaveformUpdatedFromProcessed('voltage')"
                     @induce="induce('current')"
                 />
-                <button :data-cy="dataTestLabel + '-import-button'" class="btn btn-success fs-5 col-sm-12 col-md-12 mt-5 p-0" style="max-height: 2em" @click="setImportMode">Go back to importing files
+                <button :data-cy="dataTestLabel + '-import-button'" class="btn btn-success fs-5 col-sm-12 col-md-12 mt-5 p-0" style="max-height: 2em" @click="clearMode">Go back to selecting mode
                 </button>
             </div>
             <div class="col-lg-8 col-md-12 row m-0 p-0" style="max-width: 800px;">

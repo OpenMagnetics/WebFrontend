@@ -49,6 +49,7 @@ export default {
         if (!this.$userStore.isAnyDesignLoaded()) {
             this.$userStore.designLoaded();
 
+            this.$stateStore.reset();
             masStore.resetMas("filter");
         }
 
