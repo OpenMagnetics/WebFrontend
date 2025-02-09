@@ -1,4 +1,5 @@
 <script setup>
+import { useStyleStore } from '/src/stores/style'
 import { toDashCase, toPascalCase, toTitleCase } from '/WebSharedComponents/assets/js/utils.js'
 </script>
 
@@ -28,9 +29,12 @@ export default {
         },
     },
     data() {
+
+        const styleStore = useStyleStore();
         var enabledAdventures = {};
         return {
-            enabledAdventures
+            styleStore,
+            enabledAdventures,
         }
     },
     computed: {
@@ -130,19 +134,7 @@ export default {
                 btn_class += "rounded-0 "
             }
             var children = [index]
-            while (this.storyline[children[children.length - 1]].advancedTool != null) {
-                children.push(this.storyline[children[children.length - 1]].advancedTool);
-            }
 
-            if (children.includes(this.selectedTool)) {
-                btn_class += "bg-primary text-dark "
-            }
-            else if (this.enabledAdventures[index]) {
-                btn_class += "bg-secondary text-white "
-            }
-            else {
-                btn_class += "bg-dark text-primary "
-            }
             if (this.storyline[index].nextTool != null) {
                 btn_class += "col-9 col-sm-9 col-md-12"
             }
@@ -167,15 +159,18 @@ export default {
 </script>
 
 <template>
-    <div class="py-2 p-0 container" v-tooltip="styleTooltip">
+    <div class="py-2 p-0 container" v-tooltip="styleTooltip" :style="styleStore.storyline.main">
+        <h4 class="text-center p-2">Steps</h4>
         <div class="row px-1">
             <div v-for="adventure, index in basicStoryline" class="col-3 col-sm-3 col-md-12 px-0"> 
                 <button
+                    :style="index == selectedTool? styleStore.storyline.activeButton : enabledAdventures[index]? styleStore.storyline.availableButton : styleStore.storyline.pendingButton"
                     v-if="adventure.enabled == null || adventure.enabled"
                     v-tooltip="toPascalCase(adventure.title)"
                     :data-cy="'storyline-' + toPascalCase(adventure.title) + '-button'"
                     class="border border-primary btn-outline-primary  px-0 py-2"
-                    :class="btn_class(index)" :disabled="!enabledAdventures[index]"
+                    :class="btn_class(index)"
+                    :disabled="!enabledAdventures[index]"
                     @click="$emit('changeTool', index)"> 
                     {{shortenedLabels[index]}}
                 </button>
@@ -188,15 +183,17 @@ export default {
 
         <div class="row px-3">
             <button 
+                :style="styleStore.storyline.continueButton"
                 v-if="storyline[selectedTool].nextTool != null"  
                 :disabled="!canContinue[selectedTool]" 
                 data-cy="magnetic-synthesis-next-tool-button" 
-                class="btn mt-4 col-6 col-sm-6 col-md-12"
+                class="btn px-0 mt-4 col-6 col-sm-6 col-md-12"
                 :class="canContinue[selectedTool]? 'btn-success' : 'btn-outline-primary'"
                 @click="nextTool(false)">
                 {{canContinue[selectedTool]? 'Continue' : 'Errors must be fixed'}}
             </button>
             <button 
+                :style="styleStore.storyline.continueButton"
                 v-if="$userStore.showWelcome && showAvoidOption && storyline[selectedTool].nextTool != null"  
                 :disabled="!canContinue[selectedTool]" 
                 data-cy="magnetic-synthesis-next-tool-button" 

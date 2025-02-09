@@ -1,5 +1,6 @@
 <script setup>
-import { removeTrailingZeroes, getMultiplier } from '/WebSharedComponents/assets/js/utils.js'
+import { useStyleStore } from '/src/stores/style'
+import { removeTrailingZeroes, getMultiplier, combinedStyle, combinedClass } from '/WebSharedComponents/assets/js/utils.js'
 import { useMasStore } from '/src/stores/mas'
 
 import { defaultTimeExponent } from '/WebSharedComponents/assets/js/defaults.js'
@@ -30,6 +31,7 @@ export default {
     },
     data() {
         const masStore = useMasStore();
+        const styleStore = useStyleStore();
         const localData = {
             data: {
                 value: null
@@ -47,8 +49,9 @@ export default {
         const errorMessages = '';
 
         return {
-            localData,
+            styleStore,
             masStore,
+            localData,
             errorMessages,
         }
     },
@@ -124,23 +127,96 @@ export default {
 </script>
 
 <template>
-    <div class="container-flex text-white">
+    <div class="container-flex">
         <div class="row">
-            <label class="fs-5 col-md-1 col-2 m-0 p-0 ps-2 pt-1">x: </label>
-            <input :data-cy="dataTestLabel + '-time-input'" type="number" :disabled="name == 0 || name == (modelValue.data.length - 1)"  v-model="localData.time.scaledValue" @change="onTimeChange" class="rounded-2 bg-light text-white col-md-3 col-6  p-0 ps-1 my-1"/>
-            <input class="fs-6 bg-light text-white bg-dark border-0 col-md-1 col-2  m-0 p-0 ps-1  pt-1" style="width: 30px;" :value="getExponentLabel" disabled/>
-            <label class="fs-5 col-md-1 col-2  m-0 p-0  pt-1" style="width: 10px;">{{'s'}}</label>
+            <label
+                :style="combinedStyle([styleStore.operatingPoints.inputLabelBgColor, styleStore.operatingPoints.inputTextColor, styleStore.operatingPoints.inputTitleFontSize])"
 
-            <label class="fs-5 col-md-1 col-2 p-0 ps-2 pt-1">y: </label>
-            <input :data-cy="dataTestLabel + '-value-input'" type="number" v-model=" localData.data.value" @change="onValueChange" class=" rounded-2 bg-light text-white col-md-3 col-6  p-0 ps-1  my-1"/>
-            <label class="fs-5 col-md-1 col-2  p-0 ps-1 pt-1" style="width: 10px;">{{signalDescriptor == "current"? 'A' : 'V'}}</label>
+                :class="combinedClass([styleStore.operatingPoints.inputLabelBgColor, styleStore.operatingPoints.inputTextColor, styleStore.operatingPoints.inputTitleFontSize])"
+                class="col-md-1 col-2 m-0 p-0 ps-2 pt-1"
+            >
+                {{'x: '}}
+            </label>
+            <input
+                :style="combinedStyle([styleStore.operatingPoints.inputValueBgColor, styleStore.operatingPoints.inputTextColor, styleStore.operatingPoints.inputFontSize])"
+                :data-cy="dataTestLabel + '-time-input'"
+                type="number"
+                :disabled="name == 0 || name == (modelValue.data.length - 1)"
+                v-model="localData.time.scaledValue"
+                @change="onTimeChange"
+                :class="combinedClass([styleStore.operatingPoints.inputValueBgColor, styleStore.operatingPoints.inputTextColor, styleStore.operatingPoints.inputFontSize])"
+                class="rounded-2 col-md-3 col-6  p-0 ps-1 my-1"
+            />
+            <input
+                :style="combinedStyle([styleStore.operatingPoints.inputLabelBgColor, styleStore.operatingPoints.inputTextColor, styleStore.operatingPoints.inputFontSize])"
+                :class="combinedClass([styleStore.operatingPoints.inputLabelBgColor, styleStore.operatingPoints.inputTextColor, styleStore.operatingPoints.inputFontSize])"
+                class="border-0 col-md-1 col-2  m-0 p-0 ps-1  pt-1"
+                style="width: 30px;"
+                :value="getExponentLabel"
+                disabled/>
+            <label 
+                :style="combinedStyle([styleStore.operatingPoints.inputLabelBgColor, styleStore.operatingPoints.inputTextColor, styleStore.operatingPoints.inputTitleFontSize])"
+
+                :class="combinedClass([styleStore.operatingPoints.inputLabelBgColor, styleStore.operatingPoints.inputTextColor, styleStore.operatingPoints.inputTitleFontSize])"
+                class="col-md-1 col-2  m-0 p-0  pt-1"
+                style="width: 10px;"
+            >
+                {{'s'}}
+            </label>
+
+            <label
+                :style="combinedStyle([styleStore.operatingPoints.inputLabelBgColor, styleStore.operatingPoints.inputTextColor, styleStore.operatingPoints.inputTitleFontSize])"
+
+                :class="combinedClass([styleStore.operatingPoints.inputLabelBgColor, styleStore.operatingPoints.inputTextColor, styleStore.operatingPoints.inputTitleFontSize])"
+                class="col-md-1 col-2 p-0 ps-2 pt-1"
+            >
+                {{'y: '}}
+            </label>
+            <input
+                :style="combinedStyle([styleStore.operatingPoints.inputValueBgColor, styleStore.operatingPoints.inputTextColor, styleStore.operatingPoints.inputFontSize])"
+                :data-cy="dataTestLabel + '-value-input'"
+                type="number"
+                v-model=" localData.data.value"
+                @change="onValueChange"
+                :class="combinedClass([styleStore.operatingPoints.inputValueBgColor, styleStore.operatingPoints.inputTextColor, styleStore.operatingPoints.inputFontSize])"
+                class=" rounded-2 col-md-3 col-6 p-0 ps-1  my-1"
+            />
+            <label
+                :style="combinedStyle([styleStore.operatingPoints.inputLabelBgColor, styleStore.operatingPoints.inputTextColor, styleStore.operatingPoints.inputTitleFontSize])"
+
+                :class="combinedClass([styleStore.operatingPoints.inputLabelBgColor, styleStore.operatingPoints.inputTextColor, styleStore.operatingPoints.inputTitleFontSize])"
+                class="col-md-1 col-2  p-0 ps-1 pt-1" 
+                style="width: 10px;"
+            >
+                {{signalDescriptor == "current"? 'A' : 'V'}}
+            </label>
             <div class="col-md-2 col-12 p-0 m-0 ps-2 container-flex" style="height: 40px;">
                 <div class="row m-0 p-0  pt-2" style="height: 40px;">
-                    <button :data-cy="dataTestLabel + '-add-point-below-button'" v-if="name != (modelValue.data.length - 1)" type="button" class="btn btn-default btn-circle fa-1x bg-dark mb-1 me-2 me-md-1 col-6" @click="onAddPointBelow">
-                        <i class="fa-solid fa-circle-plus text-secondary" > </i>
+                    <button
+                        v-if="name != (modelValue.data.length - 1)"
+                        :data-cy="dataTestLabel + '-add-point-below-button'"
+                        type="button"
+                        class="btn btn-default btn-circle fa-1x bg-dark mb-1 me-2 me-md-1 col-6"
+                        @click="onAddPointBelow"
+                    >
+                        <i
+                            :style="combinedStyle([styleStore.operatingPoints.addElementButtonColor])"
+                            :class="combinedClass([styleStore.operatingPoints.addElementButtonColor])"
+                            class="fa-solid fa-circle-plus"
+                        > </i>
                     </button>
-                    <button :data-cy="dataTestLabel + '-remove-point-button'" v-if="name != 0 && name != (modelValue.data.length - 1)" type="button" class="btn btn-default fa-1x btn-circle bg-dark mb-1 ms-2 ms-md-0 col-6" @click="onRemovePoint">
-                        <i class="fa-solid fa-circle-minus text-danger"></i>
+                    <button
+                        v-if="name != 0 && name != (modelValue.data.length - 1)"
+                        :data-cy="dataTestLabel + '-remove-point-button'"
+                        type="button"
+                        class="btn btn-default fa-1x btn-circle bg-dark mb-1 ms-2 ms-md-0 col-6"
+                        @click="onRemovePoint"
+                    >
+                        <i
+                            :style="combinedStyle([styleStore.operatingPoints.removeElementButtonColor])"
+                            :class="combinedClass([styleStore.operatingPoints.removeElementButtonColor])"
+                            class="fa-solid fa-circle-minus"
+                        ></i>
                     </button>
                 </div>
             </div>

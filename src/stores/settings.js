@@ -10,7 +10,7 @@ export const useSettingsStore = defineStore("settings", () => {
     const catalogAdviserUseAllParts = ref(false);
 
     const labelBgColor = ref('bg-dark');
-    const inputBgColor = ref('bg-light');
+    const valueBgColor = ref('bg-light');
     const textColor = ref('text-white');
     const loadingGif = ref("/images/loading.gif");
 
@@ -21,6 +21,10 @@ export const useSettingsStore = defineStore("settings", () => {
     const magneticAdviserSettings = ref({
         weights: null,
         maximumNumberResults: 6,
+    })
+
+    const operatingPointSettings = ref({
+        advancedMode: false,
     })
 
     const dump = computed(() => {
@@ -42,6 +46,9 @@ export const useSettingsStore = defineStore("settings", () => {
             weights: null,
             maximumNumberResults: 6,
         };
+        this.operatingPointSettings ={
+            advancedMode: false,
+        };
 
 
         this.adviserSpiderBarChartNotBar = false;
@@ -57,6 +64,7 @@ export const useSettingsStore = defineStore("settings", () => {
     return {
         coreAdviserSettings,
         magneticAdviserSettings,
+        operatingPointSettings,
 
         adviserSpiderBarChartNotBar,
         adviserUseOnlyCoresInStock,
@@ -69,7 +77,7 @@ export const useSettingsStore = defineStore("settings", () => {
         reset,
 
         labelBgColor,
-        inputBgColor,
+        valueBgColor,
         textColor,
         loadingGif,
     }

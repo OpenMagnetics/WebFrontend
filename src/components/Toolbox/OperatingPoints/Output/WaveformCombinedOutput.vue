@@ -1,7 +1,8 @@
 <script setup>
+import { useStyleStore } from '/src/stores/style'
 import DimensionReadOnly from '/WebSharedComponents/DataInput/DimensionReadOnly.vue'
-import { removeTrailingZeroes } from '/WebSharedComponents/assets/js/utils.js'
-import { minimumMaximumScalePerParameter, titleColor } from '/WebSharedComponents/assets/js/defaults.js'
+import { removeTrailingZeroes, combinedStyle } from '/WebSharedComponents/assets/js/utils.js'
+import { minimumMaximumScalePerParameter } from '/WebSharedComponents/assets/js/defaults.js'
 </script>
 
 <script>
@@ -17,12 +18,14 @@ export default {
         },
     },
     data() {
+        const styleStore = useStyleStore();
         const localData = {
             instantaneousPower: null,
             rmsPower: null,
         }
         return {
-            localData
+            styleStore,
+            localData,
         }
     },
     computed: {
@@ -60,10 +63,11 @@ export default {
                 :min="minimumMaximumScalePerParameter.power.min"
                 :max="minimumMaximumScalePerParameter.power.max"
                 :disableShortenLabels="true"
-                :styleClass="'fs-5'"
-                :labelBgColor="$settingsStore.labelBgColor"
-                :inputBgColor="$settingsStore.labelBgColor"
-                :textColor="$settingsStore.textColor"
+                :valueFontSize="styleStore.operatingPoints.inputFontSize"
+                :labelFontSize="styleStore.operatingPoints.inputTitleFontSize"
+                :labelBgColor='styleStore.operatingPoints.inputLabelBgColor'
+                :valueBgColor='styleStore.operatingPoints.inputValueBgColor'
+                :textColor='styleStore.operatingPoints.inputTextColor'
             />
             <DimensionReadOnly class="col-6"
                 :name="'rmsPower'"
@@ -73,10 +77,11 @@ export default {
                 :min="minimumMaximumScalePerParameter.power.min"
                 :max="minimumMaximumScalePerParameter.power.max"
                 :disableShortenLabels="true"
-                :styleClass="'fs-5'"
-                :labelBgColor="$settingsStore.labelBgColor"
-                :inputBgColor="$settingsStore.labelBgColor"
-                :textColor="$settingsStore.textColor"
+                :valueFontSize="styleStore.operatingPoints.inputFontSize"
+                :labelFontSize="styleStore.operatingPoints.inputTitleFontSize"
+                :labelBgColor='styleStore.operatingPoints.inputLabelBgColor'
+                :valueBgColor='styleStore.operatingPoints.inputValueBgColor'
+                :textColor='styleStore.operatingPoints.inputTextColor'
             />
         </div>
     </div>

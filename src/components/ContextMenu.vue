@@ -4,6 +4,7 @@ import { useMasStore } from '/src/stores/mas'
 import { toDashCase, toPascalCase, toTitleCase } from '/WebSharedComponents/assets/js/utils.js'
 import AdviserSettings from '/src/components/Toolbox/Settings/AdviserSettings.vue'
 import CatalogSettings from '/src/components/Toolbox/Settings/CatalogSettings.vue'
+import OperatingPointSettings from '/src/components/Toolbox/Settings/OperatingPointSettings.vue'
 
 </script>
 
@@ -20,6 +21,10 @@ export default {
             default: false
         },
         showCatalogAdviserSettingsOption: {
+            type: Boolean,
+            default: false
+        },
+        showOperatingPointSettingsOption: {
             type: Boolean,
             default: false
         },
@@ -56,6 +61,17 @@ export default {
                 },
             }
         },
+        modalTarget() {
+            if (this.showAdviserSettingsOption) {
+                return '#AdviserSettingsModal'
+            }
+            else if (this.showAdviserSettingsOption) {
+                return '#CatalogAdviserSettingsModal'
+            }
+            else if (this.showOperatingPointSettingsOption) {
+                return '#OperatingPointSettingsModal'
+            }
+        },
     },
     watch: {
     },
@@ -66,7 +82,8 @@ export default {
         },
         onCatalogSettingsUpdated() {
             setTimeout(() => {this.$router.go();}, 100);
-            
+        },
+        onOperatingPointSettingsUpdated() {
         },
     }
 }
@@ -84,13 +101,18 @@ export default {
             :modalName="'CatalogAdviserSettingsModal'"
             @onSettingsUpdated="onCatalogSettingsUpdated"
         />
+        <OperatingPointSettings 
+            v-if="showOperatingPointSettingsOption"
+            :modalName="'OperatingPointSettingsModal'"
+            @onSettingsUpdated="onOperatingPointSettingsUpdated"
+        />
         <div class="row px-3">
             <button
-                v-if="showAdviserSettingsOption || showCatalogAdviserSettingsOption"  
+                v-if="showAdviserSettingsOption || showCatalogAdviserSettingsOption || showOperatingPointSettingsOption"  
                 :data-cy="dataTestLabel + 'settings-modal-button'"
                 class="btn btn-info mx-auto d-block mt-4 col-6 col-sm-6 col-md-12"
                 data-bs-toggle="modal"
-                :data-bs-target="showAdviserSettingsOption? '#AdviserSettingsModal' : '#CatalogAdviserSettingsModal'"
+                :data-bs-target="modalTarget"
             >Settings</button>
             <button
                 v-if="showEditOption"  

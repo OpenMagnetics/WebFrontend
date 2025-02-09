@@ -1,6 +1,6 @@
 <script setup>
 import { useMasStore } from '/src/stores/mas'
-import { toTitleCase, getMultiplier } from '/WebSharedComponents/assets/js/utils.js'
+import { toTitleCase, getMultiplier, combinedStyle, combinedClass } from '/WebSharedComponents/assets/js/utils.js'
 import ElementFromList from '/WebSharedComponents/DataInput/ElementFromList.vue'
 import { isolationSideOrdered } from '/WebSharedComponents/assets/js/defaults.js'
 </script>
@@ -38,9 +38,33 @@ export default {
             type: Number,
             default: 1e+9
         },
+        titleSameRow:{
+            type: Boolean,
+            default: false
+        },
         dataTestLabel: {
             type: String,
             default: '',
+        },
+        valueFontSize: {
+            type: [String, Object],
+            default: 'fs-6'
+        },
+        titleFontSize: {
+            type: [String, Object],
+            default: 'fs-6'
+        },
+        labelBgColor: {
+            type: [String, Object],
+            default: "bg-dark",
+        },
+        valueBgColor: {
+            type: [String, Object],
+            default: "bg-light",
+        },
+        textColor: {
+            type: [String, Object],
+            default: "text-white",
         },
     },
     data() {
@@ -57,10 +81,6 @@ export default {
     watch: { 
     },
     mounted () {
-        console.log(this.masStore.mas.inputs.designRequirements)
-        console.log(this.masStore.mas.inputs.designRequirements)
-        console.log(this.masStore.mas.inputs.designRequirements)
-        console.log(this.masStore.mas.inputs.designRequirements)
         if (this.masStore.mas.inputs.designRequirements[this.name] != this.fixedNumberElements &&
             this.maximumNumberElements == null &&
             this.fixedNumberElements != null) {
@@ -105,14 +125,39 @@ export default {
 }
 </script>
 
-
 <template>
     <div :data-cy="dataTestLabel + '-container'" class="container-flex border-bottom">
         <div class="row">
-            <label :data-cy="dataTestLabel + '-title'"  class="rounded-2 fs-5 ms-3" :class="maximumNumberElements != null? 'col-sm-6 col-md-3' : 'col-12'">{{toTitleCase(name)}}</label>
+            <label
+                :style="combinedStyle([titleFontSize, labelBgColor, textColor])"
+                :data-cy="dataTestLabel + '-title'"
+                class="rounded-2 fs-5 ms-3"
+                :class="combinedClass([maximumNumberElements != null? 'col-sm-6 col-md-3' : 'col-12', titleFontSize, labelBgColor, textColor])"
+            >
+                {{toTitleCase(name)}}
+            </label>
         </div>
-        <div class="row">
-            <ElementFromList :data-cy="dataTestLabel + '-' + (requirementIndex) + '-container'" :dataTestLabel="dataTestLabel + '-' + (requirementIndex - 1)" :min="min" :max="max" v-for="requirementIndex in masStore.mas.inputs.designRequirements[name].length" ::defaultValue="defaultValue" class="py-2 col-3" :name="requirementIndex" v-model="masStore.mas.inputs.designRequirements[name]" :options="options" :replaceTitle="isolationSideOrdered[requirementIndex]" @changeText="changeText($event, requirementIndex)" />
+        <div class="row ms-5">
+            <ElementFromList
+                :data-cy="dataTestLabel + '-' + (requirementIndex) + '-container'"
+                :dataTestLabel="dataTestLabel + '-' + (requirementIndex - 1)"
+                :min="min"
+                :max="max"
+                :titleSameRow="titleSameRow"
+                v-for="requirementIndex in masStore.mas.inputs.designRequirements[name].length"
+                :defaultValue="defaultValue"
+                class="py-2 col-12"
+                :name="requirementIndex"
+                v-model="masStore.mas.inputs.designRequirements[name]"
+                :options="options"
+                :replaceTitle="isolationSideOrdered[requirementIndex - 1]"
+                :labelFontSize='valueFontSize'
+                :valueFontSize='valueFontSize'
+                :labelBgColor='labelBgColor'
+                :valueBgColor='valueBgColor'
+                :textColor='textColor'
+                @changeText="changeText($event, requirementIndex)"
+            />
         </div>
         <div class="row">
             <label class="text-danger text-center col-12 pt-1" style="font-size: 0.9em; white-space: pre-wrap;">{{errorMessages}}</label>

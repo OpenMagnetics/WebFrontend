@@ -6,22 +6,9 @@ import { removeTrailingZeroes, toTitleCase, toCamelCase, deepCopy } from '/WebSh
 import { magneticAdviserWeights } from '/WebSharedComponents/assets/js/defaults.js'
 import Advise from '/src/components/Toolbox/MagneticAdviser/Advise.vue'
 import AdviseDetails from '/src/components/Toolbox/MagneticAdviser/AdviseDetails.vue'
-import Module from '/src/assets/js/libAdvisers.wasm.js'
 </script>
 
 <script>
-var magneticAdviser = {
-    ready: new Promise(resolve => {
-        Module({
-            onRuntimeInitialized () {
-                magneticAdviser = Object.assign(this, {
-                    ready: Promise.resolve()
-                });
-                resolve();
-            }
-        });
-    })
-};
 
 const style = getComputedStyle(document.body);
 const theme = {
@@ -88,6 +75,7 @@ export default {
     },
     mounted () {
         if (this.adviseCacheStore.noMasAdvises()) {
+            this.loading = true;
             setTimeout(() => {this.calculateAdvisedMagnetics();}, 200);
         }
     },
@@ -121,19 +109,19 @@ export default {
 
             // Timeout to give time to gif to load
             setTimeout(() => {
-                magneticAdviser.ready.then(_ => {
+                this.$mkf.ready.then(_ => {
                     if (this.masStore.mas.inputs.operatingPoints.length > 0) {
                         console.time('Execution Time');
 
-                        const settings = JSON.parse(magneticAdviser.get_settings());
+                        const settings = JSON.parse(this.$mkf.get_settings());
                         settings["coreIncludeDistributedGaps"] = this.$settingsStore.adviserAllowDistributedGaps == "1";
                         settings["coreIncludeStacks"] = this.$settingsStore.adviserAllowStacks == "1";
                         settings["useToroidalCores"] = this.$settingsStore.adviserToroidalCores == "1";
-                        magneticAdviser.set_settings(JSON.stringify(settings));
+                        this.$mkf.set_settings(JSON.stringify(settings));
 
                         // console.log(JSON.stringify(this.masStore.mas.inputs))
                         // console.log(JSON.stringify(this.$settingsStore.magneticAdviserSettings.weights))
-                        const aux = JSON.parse(magneticAdviser.calculate_advised_magnetics(JSON.stringify(this.masStore.mas.inputs), JSON.stringify(this.$settingsStore.magneticAdviserSettings.weights), this.$settingsStore.magneticAdviserMaximumNumberResults, this.$settingsStore.adviserUseOnlyCoresInStock == "1" || this.$settingsStore.adviserUseOnlyCoresInStock == 1));
+                        const aux = JSON.parse(this.$mkf.calculate_advised_magnetics(JSON.stringify(this.masStore.mas.inputs), JSON.stringify(this.$settingsStore.magneticAdviserSettings.weights), this.$settingsStore.magneticAdviserSettings.maximumNumberResults, this.$settingsStore.adviserUseOnlyCoresInStock == "1" || this.$settingsStore.adviserUseOnlyCoresInStock == 1));
 
                         // console.log(aux)
 
@@ -249,10 +237,10 @@ export default {
                 <div class="row">
                     <label class="form-label col-12 py-0 my-0">Max. No results</label>
                     <div class=" col-7 me-2 pt-2">
-                        <Slider v-model="$settingsStore.magneticAdviserMaximumNumberResults" :disabled="loading" class="col-12 text-primary  slider" :height="10" :min="2" :max="20" :step="1"  :color="theme.primary"  :tooltips="false" @change="maximumNumberResultsChangedSliderValue($event)"/>
+                        <Slider v-model="$settingsStore.magneticAdviserSettings.maximumNumberResults" :disabled="loading" class="col-12 text-primary  slider" :height="10" :min="2" :max="20" :step="1"  :color="theme.primary"  :tooltips="false" @change="maximumNumberResultsChangedSliderValue($event)"/>
                     </div>
 
-                    <input :disabled="loading" :data-cy="dataTestLabel + '-number-input'" type="number" class="m-0 mb-2 px-0 col-3 bg-light text-white" :min="2" :step="1" @change="maximumNumberResultsChangedInputValue($event.target.value)" :value="removeTrailingZeroes($settingsStore.magneticAdviserMaximumNumberResults)" ref="inputRef">
+                    <input :disabled="loading" :data-cy="dataTestLabel + '-number-input'" type="number" class="m-0 mb-2 px-0 col-3 bg-light text-white" :min="2" :step="1" @change="maximumNumberResultsChangedInputValue($event.target.value)" :value="removeTrailingZeroes($settingsStore.magneticAdviserSettings.maximumNumberResults)" ref="inputRef">
                 </div>
                 <button :disabled="loading" :data-cy="dataTestLabel + '-calculate-mas-advises-button'" class="btn btn-success mx-auto d-block mt-4" @click="calculateAdvises" >Get advised magnetics!</button>
             </div>

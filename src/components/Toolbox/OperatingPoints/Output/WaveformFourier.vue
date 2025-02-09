@@ -1,8 +1,10 @@
 <script setup>
+import { useStyleStore } from '/src/stores/style'
 import { useMasStore } from '/src/stores/mas'
 import { Chart, registerables } from 'chart.js'
 import { formatCurrent, removeTrailingZeroes, formatFrequency, formatVoltage } from '/WebSharedComponents/assets/js/utils.js'
 import { defaultSamplingNumberPoints, defaultMaximumNumberHarmonicsShown } from '/WebSharedComponents/assets/js/defaults.js'
+import { deepCopy } from '/WebSharedComponents/assets/js/utils.js'
 </script>
 
 <script>
@@ -21,45 +23,46 @@ export default {
             type: String,
             default: '',
         },
+        updateHarmonics: {
+            type: Boolean,
+            default: true,
+        },
+        harmonicPowerThresholdVoltage: {
+            type: Number,
+            default: 0.2,
+        },
+        harmonicPowerThresholdCurrent: {
+            type: Number,
+            default: 0.05,
+        },
     },
     data() {
         const masStore = useMasStore();
-        const style = getComputedStyle(document.body);
-        const theme = {
-          primary: style.getPropertyValue('--bs-primary'),
-          secondary: style.getPropertyValue('--bs-secondary'),
-          success: style.getPropertyValue('--bs-success'),
-          info: style.getPropertyValue('--bs-info'),
-          warning: style.getPropertyValue('--bs-warning'),
-          danger: style.getPropertyValue('--bs-danger'),
-          light: style.getPropertyValue('--bs-light'),
-          dark: style.getPropertyValue('--bs-dark'),
-          white: style.getPropertyValue('--bs-white'),
-        };
+        const styleStore = useStyleStore();
         const data = {
                 labels: [],
                 datasets: [
                     {
                         label: 'Current',
                         yAxisID: 'current',
-                        fillColor: theme["info"],
-                        borderColor: theme['info'],
-                        backgroundColor: theme['info'],
+                        fillColor: styleStore.operatingPoints.currentBgColor.background,
+                        borderColor: styleStore.operatingPoints.currentTextColor.color,
+                        backgroundColor: styleStore.operatingPoints.currentBgColor.background,
                         data: []
                     },
                     {
                         label: 'Voltage',
                         yAxisID: 'voltage',
-                        fillColor: "red",
-                        borderColor: theme['primary'],
-                        backgroundColor: theme['primary'],
+                        fillColor: styleStore.operatingPoints.voltageBgColor.background,
+                        borderColor: styleStore.operatingPoints.voltageTextColor.color,
+                        backgroundColor: styleStore.operatingPoints.voltageBgColor.background,
                         data: []
                     }
                 ],
             };
         return {
-            theme,
             data,
+            styleStore,
             masStore,
         }
     },
@@ -70,12 +73,22 @@ export default {
     created () {
         this.masStore.$onAction((action) => {
             if (action.name == "updatedInputExcitationWaveformUpdatedFromProcessed") {
-                this.runFFT('current');
-                this.runFFT('voltage');
+                if (this.updateHarmonics) {
+                    this.runFFT('current');
+                    this.runFFT('voltage');
+                }
+                else {
+                    this.updateChart();
+                }
             }
             if (action.name == "updatedInputExcitationWaveformUpdatedFromGraph") {
-                this.runFFT('current');
-                this.runFFT('voltage');
+                if (this.updateHarmonics) {
+                    this.runFFT('current');
+                    this.runFFT('voltage');
+                }
+                else {
+                    this.updateChart();
+                }
             }
         })
     },
@@ -87,7 +100,7 @@ export default {
                 legend: {
                     position: 'top',
                     labels: {
-                        color: this.theme['white'],
+                        color: this.styleStore.operatingPoints.commonParameterTextColor.color,
                     }
                 },
                 tooltip: {
@@ -134,14 +147,14 @@ export default {
                 current: {
                     position: 'left',
                     ticks: {
-                        color: this.theme['info'],
+                        color: this.styleStore.operatingPoints.currentTextColor.color,
                         font: {
                             size: 12
                         },
                     },
                     grid: {
-                        color: this.theme['info'],
-                        borderColor: this.theme['info'],
+                        color: this.styleStore.operatingPoints.currentTextColor.color,
+                        borderColor: this.styleStore.operatingPoints.currentTextColor.color,
                         borderWidth: 2,
                         lineWidth: 0.4
                     },
@@ -149,21 +162,21 @@ export default {
                 voltage: {
                     position: 'right',
                     ticks: {
-                        color: this.theme['primary'],
+                        color: this.styleStore.operatingPoints.voltageTextColor.color,
                         font: {
                             size: 12
                         },
                     },
                     grid: {
-                        color: this.theme['primary'],
-                        borderColor: this.theme['primary'],
+                        color: this.styleStore.operatingPoints.voltageTextColor.color,
+                        borderColor: this.styleStore.operatingPoints.voltageTextColor.color,
                         borderWidth: 2,
                         lineWidth: 0.4
                     },
                 },
                 x:{
                     ticks: {
-                        color: this.theme['white'],
+                        color: this.styleStore.operatingPoints.commonParameterTextColor.color,
                         font: {
                             size: 12
                         },
@@ -183,8 +196,8 @@ export default {
                         }
                     },
                     grid: {
-                        color: this.theme['white'],
-                        borderColor: this.theme['white'],
+                        color: this.styleStore.operatingPoints.commonParameterTextColor.color,
+                        borderColor: this.styleStore.operatingPoints.commonParameterTextColor.color,
                         borderWidth: 2,
                         lineWidth: 0.4
                     },
@@ -196,8 +209,13 @@ export default {
         Chart.register(...registerables)
         this.createChart('chartFourier', options)
 
-        this.runFFT('current');
-        this.runFFT('voltage');
+        if (this.updateHarmonics) {
+            this.runFFT('current');
+            this.runFFT('voltage');
+        }
+        else {
+            this.updateChart();
+        }
     },
     methods: {
         getDatasetIndex(signalDescriptor) {
@@ -210,13 +228,83 @@ export default {
             }
             return datasetIndex
         },
+        updateChart() {
+            if (chart != null && this.modelValue.current.harmonics != null && this.modelValue.voltage.harmonics != null) {
+                const commonFrequencies = [];
+                this.modelValue.current.harmonics.frequencies.forEach((frequency) => {
+                    if (!commonFrequencies.includes(frequency)) {
+                        commonFrequencies.push(frequency);
+                    }
+                })
+                this.modelValue.voltage.harmonics.frequencies.forEach((frequency) => {
+                    if (!commonFrequencies.includes(frequency)) {
+                        commonFrequencies.push(frequency);
+                    }
+                })
+
+                commonFrequencies.sort(function(a, b) {return a - b; });
+                chart.data.labels = commonFrequencies;
+                harmonicsFrequencies = commonFrequencies;
+                chart.data.datasets[this.getDatasetIndex('current')].data = [];
+                chart.data.datasets[this.getDatasetIndex('voltage')].data = [];
+                commonFrequencies.forEach((frequency) => {
+                    if (this.modelValue.current.harmonics.frequencies.includes(frequency)) {
+                        const index = this.modelValue.current.harmonics.frequencies.findIndex((x) => x === frequency);
+                        chart.data.datasets[this.getDatasetIndex('current')].data.push(this.modelValue.current.harmonics.amplitudes[index]);
+                    }
+                    else {
+                        chart.data.datasets[this.getDatasetIndex('current')].data.push(0);
+                    }
+                    if (this.modelValue.voltage.harmonics.frequencies.includes(frequency)) {
+                        const index = this.modelValue.voltage.harmonics.frequencies.findIndex((x) => x === frequency);
+                        chart.data.datasets[this.getDatasetIndex('voltage')].data.push(this.modelValue.voltage.harmonics.amplitudes[index]);
+                    }
+                    else {
+                        chart.data.datasets[this.getDatasetIndex('voltage')].data.push(0);
+                    }
+                })
+
+
+                chart.update()
+            }
+        },
         runFFT(signalDescriptor){
             this.$mkf.ready.then(_ => {
-                this.modelValue[signalDescriptor].harmonics = JSON.parse(this.$mkf.calculate_harmonics(JSON.stringify(this.modelValue[signalDescriptor].waveform), this.modelValue.frequency));
+                const result = this.$mkf.calculate_harmonics(JSON.stringify(this.modelValue[signalDescriptor].waveform), this.modelValue.frequency);
+
+                if (result.startsWith("Exception")) {
+                    console.error(result);
+                    return;
+                }
+                else {
+
+                    this.modelValue[signalDescriptor].harmonics = JSON.parse(result);
+
+                    this.chopHarmonics(signalDescriptor);
+
+                    if (chart != null) {
+                        this.updateChart();
+                    }
+                }
+            });
+        },
+        chopHarmonics(signalDescriptor){
+            this.$mkf.ready.then(_ => {
+                const aux = this.$mkf.get_main_harmonic_indexes(JSON.stringify(this.modelValue[signalDescriptor].harmonics), signalDescriptor == "current"? this.harmonicPowerThresholdCurrent : this.harmonicPowerThresholdVoltage, 1);
+
+                const filteredHarmonics = {
+                    amplitudes: [this.modelValue[signalDescriptor].harmonics.amplitudes[0]],
+                    frequencies: [this.modelValue[signalDescriptor].harmonics.frequencies[0]]
+                }
+                for (var i = 0; i < aux.size(); i++) {
+                    filteredHarmonics.amplitudes.push(this.modelValue[signalDescriptor].harmonics.amplitudes[aux.get(i)]);
+                    filteredHarmonics.frequencies.push(this.modelValue[signalDescriptor].harmonics.frequencies[aux.get(i)]);
+                }
+
+                this.modelValue[signalDescriptor].harmonics = filteredHarmonics;
+
                 if (chart != null) {
-                    chart.data.datasets[this.getDatasetIndex(signalDescriptor)].data = this.modelValue[signalDescriptor].harmonics.amplitudes.slice(0, defaultMaximumNumberHarmonicsShown);
-                    chart.data.labels = this.modelValue[signalDescriptor].harmonics.frequencies.slice(0, defaultMaximumNumberHarmonicsShown);
-                    chart.update();
+                    this.updateChart();
                 }
             });
         },
@@ -229,10 +317,11 @@ export default {
                     options: options,
                 })
 
-                harmonicsFrequencies = []
-                for(var i = 0; i < defaultSamplingNumberPoints / 2; i++) {
-                    harmonicsFrequencies.push(this.modelValue.frequency * i)
-                }
+
+                // harmonicsFrequencies = []
+                // for(var i = 0; i < defaultSamplingNumberPoints / 2; i++) {
+                //     harmonicsFrequencies.push(this.modelValue.frequency * i)
+                // }
                 chart.update()
             }
         },

@@ -1,8 +1,10 @@
 <script setup>
+import { useStyleStore } from '/src/stores/style'
 import WaveformInputCustomPoint from '/src/components/Toolbox/OperatingPoints/Input/WaveformInputCustomPoint.vue'
 import ElementFromList from '/WebSharedComponents/DataInput/ElementFromList.vue'
 import { WaveformLabel } from '/WebSharedComponents/assets/ts/MAS.ts'
-import { minimumMaximumScalePerParameter, titleColor } from '/WebSharedComponents/assets/js/defaults.js'
+import { minimumMaximumScalePerParameter } from '/WebSharedComponents/assets/js/defaults.js'
+import { toTitleCase, combinedStyle } from '/WebSharedComponents/assets/js/utils.js'
 
 </script>
 
@@ -28,9 +30,11 @@ export default {
         },
     },
     data() {
+        const styleStore = useStyleStore();
         var resettingPoints = false;
         var addedOrRemovedIndex = 0;
         return {
+            styleStore,
             resettingPoints,
             addedOrRemovedIndex
         }
@@ -65,7 +69,7 @@ export default {
 
 <template>
     <div class="container-flex text-white mt-2 mb-3 pb-3 border-bottom">
-        <label class="fs-4 row" :class="titleColor(signalDescriptor)">Waveform for {{signalDescriptor}}</label>
+        <!-- <label class="fs-4 row" :class="titleColor(signalDescriptor)">Waveform for {{signalDescriptor}}</label> -->
         <div></div>
         <ElementFromList class="border-bottom pb-2 mb-1"
             v-if="modelValue[signalDescriptor] != null"
@@ -75,6 +79,11 @@ export default {
             :titleSameRow="true"
             :replaceTitle="'Waveform'"
             v-model="modelValue[signalDescriptor].processed"
+            :valueFontSize="styleStore.operatingPoints.inputFontSize"
+            :labelFontSize="styleStore.operatingPoints.inputTitleFontSize"
+            :labelBgColor='styleStore.operatingPoints.inputLabelBgColor'
+            :valueBgColor='styleStore.operatingPoints.inputValueBgColor'
+            :textColor='styleStore.operatingPoints.inputTextColor'
             @update="labelChanged"
         />
         <div v-if="modelValue[signalDescriptor] != null" v-for="(value, key) in modelValue[signalDescriptor].waveform.data">
@@ -90,7 +99,12 @@ export default {
                 />
                 <div v-else style="height: 40px;"></div>
         </div>
-        <button v-if="induceableSignal" class="btn btn-secondary fs-6 offset-2 col-8 mt-2 p-0" @click="$emit('induce')" style="max-height: 1.7em">
+        <button
+            v-if="induceableSignal"
+            :style="combinedStyle([styleStore.operatingPoints.inputFontSize, signalDescriptor == 'current'? styleStore.operatingPoints.currentBgColor : signalDescriptor == 'voltage'? styleStore.operatingPoints.voltageBgColor : styleStore.operatingPoints.commonParameterBgColor])"
+            class="btn offset-2 col-8 mt-2 p-0"
+            @click="$emit('induce')"
+            style="max-height: 1.7em">
             {{'Induce from ' + (signalDescriptor == 'current'? 'voltage' : 'current')}}
             <i class="fa-solid fa-bolt"></i>
             <i class="fa-solid fa-magnet"></i>

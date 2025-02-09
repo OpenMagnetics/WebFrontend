@@ -19,37 +19,6 @@ export default {
         fetch(catalogStore.catalogCoreMaterialDatabase)
         .then((data) => data.text())
         .then((data) => {
-
-            // this.$mkfAdvisers.ready.then(_ => {
-            //     this.$mkfAdvisers.clear_databases();
-            //     const result = this.$mkfAdvisers.load_core_materials(data);
-            //     console.log(result)
-            //     const coreMaterialManufacturersHandle = this.$mkfAdvisers.get_available_core_manufacturers();
-            //     for (var i = coreMaterialManufacturersHandle.size() - 1; i >= 0; i--) {
-            //         const manufacturer = coreMaterialManufacturersHandle.get(i);
-            //         console.log(manufacturer)
-            //         const coreMaterialsHandle = this.$mkfAdvisers.get_available_core_materials(manufacturer);
-            //         for (var index = coreMaterialsHandle.size() - 1; index >= 0; index--) {
-            //             const material = coreMaterialsHandle.get(index);
-            //             console.log(material)
-            //         }
-            //     }
-            // })
-
-            // this.$mkf.ready.then(_ => {
-            //     this.$mkf.clear_databases();
-            //     const result = this.$mkf.load_core_materials(data);
-            //     console.log(result)
-            //     const coreMaterialManufacturersHandle = this.$mkf.get_available_core_manufacturers();
-            //     for (var i = coreMaterialManufacturersHandle.size() - 1; i >= 0; i--) {
-            //         const manufacturer = coreMaterialManufacturersHandle.get(i);
-            //         const coreMaterialsHandle = this.$mkf.get_available_core_materials(manufacturer);
-            //         for (var index = coreMaterialsHandle.size() - 1; index >= 0; index--) {
-            //             const material = coreMaterialsHandle.get(index);
-            //             console.log(material)
-            //         }
-            //     }
-            // })
             this.catalogString = data;
         })
 

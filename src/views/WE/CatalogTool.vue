@@ -96,7 +96,7 @@ export default {
         })
 
         this.$settingsStore.labelBgColor = 'bg-dark';
-        this.$settingsStore.inputBgColor = 'bg-light';
+        this.$settingsStore.valueBgColor = 'bg-light';
         this.$settingsStore.textColor = 'text-white';
         this.$settingsStore.loadingGif = "/images/loading_wuerth.gif";
 

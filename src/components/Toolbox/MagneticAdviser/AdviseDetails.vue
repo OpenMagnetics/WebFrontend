@@ -1,25 +1,10 @@
 <script setup>
 import { useMasStore } from '/src/stores/mas'
 import { toTitleCase, removeTrailingZeroes, formatInductance, formatPower, formatTemperature, formatResistance} from '/WebSharedComponents/assets/js/utils.js'
-import Module from '/src/assets/js/libAdvisers.wasm.js'
 import Magnetic2DVisualizer from '/WebSharedComponents/Common/Magnetic2DVisualizer.vue'
 </script>
 
 <script>
-
-var magneticAdviser = {
-    ready: new Promise(resolve => {
-        Module({
-            onRuntimeInitialized () {
-                magneticAdviser = Object.assign(this, {
-                    ready: Promise.resolve()
-                });
-                resolve();
-            }
-        });
-    })
-};
-
 export default {
     components: {
     },
@@ -57,8 +42,8 @@ export default {
     methods: {
         calculaLeakageInductance() {
             if (this.modelValue.magnetic.coil.functionalDescription.length > 1) {
-                magneticAdviser.ready.then(_ => {
-                    const leakageInductaceOutput = JSON.parse(magneticAdviser.calculate_leakage_inductance(JSON.stringify(this.masStore.mas.magnetic), this.masStore.mas.inputs.operatingPoints[0].excitationsPerWinding[0].frequency, 0));
+                this.$mkf.ready.then(_ => {
+                    const leakageInductaceOutput = JSON.parse(this.$mkf.calculate_leakage_inductance(JSON.stringify(this.masStore.mas.magnetic), this.masStore.mas.inputs.operatingPoints[0].excitationsPerWinding[0].frequency, 0));
 
 
                     for (var windingIndex = 1; windingIndex < this.masStore.mas.magnetic.coil.functionalDescription.length; windingIndex++) {

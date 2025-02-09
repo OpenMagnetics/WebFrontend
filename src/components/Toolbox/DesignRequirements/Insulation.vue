@@ -1,5 +1,5 @@
 <script setup>
-import { toTitleCase, getMultiplier } from '/WebSharedComponents/assets/js/utils.js'
+import { toTitleCase, getMultiplier, combinedStyle, combinedClass } from '/WebSharedComponents/assets/js/utils.js'
 import DimensionWithTolerance from '/WebSharedComponents/DataInput/DimensionWithTolerance.vue'
 import ElementFromList from '/WebSharedComponents/DataInput/ElementFromList.vue'
 import SeveralElementsFromList from '/WebSharedComponents/DataInput/SeveralElementsFromList.vue'
@@ -31,6 +31,38 @@ export default {
             type: Array,
             default: [],
         },
+        addButtonStyle: {
+            type: Object,
+            default: {},
+        },
+        removeButtonBgColor: {
+            type: String,
+            default: "bg-danger",
+        },
+        valueFontSize: {
+            type: [String, Object],
+            default: 'fs-6'
+        },
+        titleFontSize: {
+            type: [String, Object],
+            default: 'fs-6'
+        },
+        labelBgColor: {
+            type: [String, Object],
+            default: "bg-transparent",
+        },
+        valueBgColor: {
+            type: [String, Object],
+            default: "bg-light",
+        },
+        textColor: {
+            type: [String, Object],
+            default: "text-white",
+        },
+        unitExtraStyleClass:{
+            type: String,
+            default: ''
+        },
     },
     data() {
         return {
@@ -47,11 +79,18 @@ export default {
 }
 </script>
 
-
 <template>
     <div :data-cy="dataTestLabel + '-container'" class="container-flex">
         <div class="row">
-            <label v-if="showTitle" :data-cy="dataTestLabel + '-title'"  class="rounded-2 fs-5 ms-3 col-12">Insulation</label>
+            <label
+                :style="combinedStyle([titleFontSize, textColor, labelBgColor])"
+                v-if="showTitle"
+                :data-cy="dataTestLabel + '-title'"
+                :class="combinedClass([titleFontSize, textColor, labelBgColor])"
+                class="rounded-2 ms-3 col-12"
+            >
+                Insulation
+            </label>
         </div>
         <div class="row ms-2">
             <DimensionWithTolerance 
@@ -65,6 +104,14 @@ export default {
                 :name="'altitude'"
                 :unit="'m'"
                 v-model="modelValue['insulation']['altitude']"
+                :addButtonStyle="addButtonStyle"
+                :removeButtonBgColor="removeButtonBgColor"
+                :titleFontSize='valueFontSize'
+                :valueFontSize="valueFontSize"
+                :labelBgColor="labelBgColor"
+                :valueBgColor="valueBgColor"
+                :textColor="textColor"
+                :unitExtraStyleClass="unitExtraStyleClass"
                 @update="$emit('update')"
                 />
             <DimensionWithTolerance
@@ -77,6 +124,14 @@ export default {
                 :name="'mainSupplyVoltage'"
                 :unit="'V'"
                 v-model="modelValue['insulation']['mainSupplyVoltage']"
+                :addButtonStyle="addButtonStyle"
+                :removeButtonBgColor="removeButtonBgColor"
+                :titleFontSize='valueFontSize'
+                :valueFontSize="valueFontSize"
+                :labelBgColor="labelBgColor"
+                :valueBgColor="valueBgColor"
+                :textColor="textColor"
+                :unitExtraStyleClass="unitExtraStyleClass"
                 @update="$emit('update')"
                 />
 
@@ -86,6 +141,11 @@ export default {
                 :name="'cti'"
                 v-model="modelValue['insulation']"
                 :options="Object.values(Cti)"
+                :labelFontSize='valueFontSize'
+                :valueFontSize="valueFontSize"
+                :labelBgColor="labelBgColor"
+                :valueBgColor="valueBgColor"
+                :textColor="textColor"
                 @update="$emit('update')"
             />
             <ElementFromList
@@ -94,6 +154,11 @@ export default {
                 :name="'insulationType'"
                 v-model="modelValue['insulation']"
                 :options="Object.values(InsulationType)"
+                :labelFontSize='valueFontSize'
+                :valueFontSize="valueFontSize"
+                :labelBgColor="labelBgColor"
+                :valueBgColor="valueBgColor"
+                :textColor="textColor"
                 @update="$emit('update')"
             />
             <ElementFromList
@@ -102,6 +167,11 @@ export default {
                 :name="'overvoltageCategory'"
                 v-model="modelValue['insulation']"
                 :options="Object.values(OvervoltageCategory)"
+                :labelFontSize='valueFontSize'
+                :valueFontSize="valueFontSize"
+                :labelBgColor="labelBgColor"
+                :valueBgColor="valueBgColor"
+                :textColor="textColor"
                 @update="$emit('update')"
             />
             <ElementFromList
@@ -110,6 +180,11 @@ export default {
                 :name="'pollutionDegree'"
                 v-model="modelValue['insulation']"
                 :options="Object.values(PollutionDegree)"
+                :labelFontSize='valueFontSize'
+                :valueFontSize="valueFontSize"
+                :labelBgColor="labelBgColor"
+                :valueBgColor="valueBgColor"
+                :textColor="textColor"
                 @update="$emit('update')"
             />
             <SeveralElementsFromList
@@ -118,6 +193,11 @@ export default {
                 v-model="modelValue['insulation']"
                 :options="Object.values(InsulationStandards)"
                 :optionsToDisable="standardsToDisable"
+                :labelFontSize='valueFontSize'
+                :valueFontSize="valueFontSize"
+                :labelBgColor="labelBgColor"
+                :valueBgColor="valueBgColor"
+                :textColor="textColor"
                 @update="$emit('update')"
             />
         </div>

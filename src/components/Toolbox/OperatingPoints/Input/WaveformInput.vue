@@ -1,8 +1,10 @@
 <script setup>
+import { useStyleStore } from '/src/stores/style'
 import Dimension from '/WebSharedComponents/DataInput/Dimension.vue'
 import ElementFromList from '/WebSharedComponents/DataInput/ElementFromList.vue'
-import { minimumMaximumScalePerParameter, titleColor } from '/WebSharedComponents/assets/js/defaults.js'
+import { minimumMaximumScalePerParameter } from '/WebSharedComponents/assets/js/defaults.js'
 import { WaveformLabel } from '/WebSharedComponents/assets/ts/MAS.ts'
+import { toTitleCase, combinedStyle } from '/WebSharedComponents/assets/js/utils.js'
 
 </script>
 
@@ -28,9 +30,11 @@ export default {
         },
     },
     data() {
+        const styleStore = useStyleStore();
         const errorMessages = '';
         const forceUpdate = 0;
         return {
+            styleStore,
             errorMessages,
             forceUpdate,
         }
@@ -79,7 +83,9 @@ export default {
 <template>
     <div class="container-flex text-white ">
         <div class="row text-center">
-            <label class="fs-4" :class="titleColor(signalDescriptor)">Waveform for {{signalDescriptor}}</label>
+            <label 
+                :style="combinedStyle([styleStore.operatingPoints.inputTitleFontSize, signalDescriptor == 'current'? styleStore.operatingPoints.currentTextColor : signalDescriptor == 'voltage'? styleStore.operatingPoints.voltageTextColor : styleStore.operatingPoints.commonParameterTextColor])"
+            >{{toTitleCase(signalDescriptor)}} waveform</label>
         </div>
         <div class="row">
 
@@ -91,6 +97,11 @@ export default {
                 :replaceTitle="'Waveform'"
                 v-model="modelValue[signalDescriptor].processed"
                 @update="labelChanged"
+                :valueFontSize="styleStore.operatingPoints.inputFontSize"
+                :labelFontSize="styleStore.operatingPoints.inputTitleFontSize"
+                :labelBgColor='styleStore.operatingPoints.inputLabelBgColor'
+                :valueBgColor='styleStore.operatingPoints.inputValueBgColor'
+                :textColor='styleStore.operatingPoints.inputTextColor'
             />
 
             <Dimension class="border-bottom border-1 col-12"
@@ -103,6 +114,11 @@ export default {
                 :forceUpdate="forceUpdate"
                 v-model="modelValue[signalDescriptor].processed"
                 @update="peakToPeakChanged"
+                :valueFontSize="styleStore.operatingPoints.inputFontSize"
+                :labelFontSize="styleStore.operatingPoints.inputTitleFontSize"
+                :labelBgColor='styleStore.operatingPoints.inputLabelBgColor'
+                :valueBgColor='styleStore.operatingPoints.inputValueBgColor'
+                :textColor='styleStore.operatingPoints.inputTextColor'
             />
 
             <Dimension class="border-bottom border-1 col-12"
@@ -118,8 +134,20 @@ export default {
                 :forceUpdate="forceUpdate"
                 v-model="modelValue[signalDescriptor].processed"
                 @update="offsetChanged"
+                :valueFontSize="styleStore.operatingPoints.inputFontSize"
+                :labelFontSize="styleStore.operatingPoints.inputTitleFontSize"
+                :labelBgColor='styleStore.operatingPoints.inputLabelBgColor'
+                :valueBgColor='styleStore.operatingPoints.inputValueBgColor'
+                :textColor='styleStore.operatingPoints.inputTextColor'
             />
-            <button v-if="induceableSignal" :data-cy="`${dataTestLabel}-induce-button`" :class="signalDescriptor == 'current'? 'btn-info' : 'btn-primary'" class="btn  fs-6 offset-2 col-8 mt-2 p-0" @click="$emit('induce')" style="max-height: 1.7em">
+            <button
+                :style="combinedStyle([styleStore.operatingPoints.inputFontSize, signalDescriptor == 'current'? styleStore.operatingPoints.currentBgColor : signalDescriptor == 'voltage'? styleStore.operatingPoints.voltageBgColor : styleStore.operatingPoints.commonParameterBgColor])"
+                v-if="induceableSignal"
+                :data-cy="`${dataTestLabel}-induce-button`"
+                class="btn offset-2 col-8 mt-2 p-0"
+                @click="$emit('induce')"
+                style="max-height: 1.7em"
+            >
                 {{'Induce from ' + (signalDescriptor == 'current'? 'voltage' : 'current')}}
                 <i class="fa-solid fa-bolt"></i>
                 <i class="fa-solid fa-magnet"></i>

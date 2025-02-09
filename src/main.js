@@ -12,9 +12,6 @@ import { useUserStore } from '/src/stores/user'
 import { useSettingsStore } from '/src/stores/settings'
 import { useStateStore } from '/src/stores/state'
 import Module from '/src/assets/js/libMKF.wasm.js';
-import { removeEmpty } from '/WebSharedComponents/assets/js/utils.js';
-
-import mkfAdvisersModule from '/src/assets/js/libAdvisers.wasm.js'
 
 const axiosInstance = axios.create()
 
@@ -127,56 +124,6 @@ router.beforeEach((to, from, next) => {
                                     })
 
                                     resolve(); 
-                                }
-                            });
-                        })
-                    };
-
-                    app.config.globalProperties.$mkfAdvisers = {
-                        ready: new Promise(resolve => {
-                            mkfAdvisersModule({
-                                onRuntimeInitialized () {
-                                    app.config.globalProperties.$mkfAdvisers = Object.assign(this, {
-                                        ready: Promise.resolve()
-                                    });
-
-                                    app.config.globalProperties.$mkfAdvisers.ready.then(_ => {
-                                        console.warn("Loading core materials in advisers")
-                                        fetch("/core_materials.ndjson")
-                                        .then((data) => data.text())
-                                        .then((data) => {
-                                                if (loadAllParts) {
-                                                    app.config.globalProperties.$mkfAdvisers.load_core_materials("");
-                                                }
-                                                if (loadExternalParts) {
-                                                    app.config.globalProperties.$mkfAdvisers.load_core_materials(data);
-                                                }
-                                            })
-                                        console.warn("Loading core shapes in advisers")
-                                        fetch("/core_shapes.ndjson")
-                                        .then((data) => data.text())
-                                        .then((data) => {
-                                                if (loadAllParts) {
-                                                    app.config.globalProperties.$mkfAdvisers.load_core_shapes("");
-                                                }
-                                                if (loadExternalParts) {
-                                                    app.config.globalProperties.$mkfAdvisers.load_core_shapes(data);
-                                                }
-                                        })
-                                        console.warn("Loading wires in advisers")
-                                        fetch("/wires.ndjson")
-                                        .then((data) => data.text())
-                                        .then((data) => {
-                                                if (loadAllParts) {
-                                                    app.config.globalProperties.$mkfAdvisers.load_wires("");
-                                                }
-                                                if (loadExternalParts) {
-                                                    app.config.globalProperties.$mkfAdvisers.load_wires(data);
-                                                }
-                                        })
-                                    })
-
-                                    resolve();
                                 }
                             });
                         })

@@ -4,7 +4,6 @@ import { useAdviseCacheStore } from '/src/stores/adviseCache'
 import Slider from '@vueform/slider'
 import { removeTrailingZeroes, toTitleCase, toCamelCase, deepCopy } from '/WebSharedComponents/assets/js/utils.js'
 import Advise from '/src/components/Toolbox/CatalogAdviser/Advise.vue'
-import Module from '/src/assets/js/libAdvisers.wasm.js'
 import { useCatalogStore } from '/src/stores/catalog'
 </script>
 
@@ -96,18 +95,18 @@ export default {
         calculateAdvisedMagnetics() {
             // Timeout to give time to gif to load
             setTimeout(() => {
-                this.$mkfAdvisers.ready.then(_ => {
+                this.$mkf.ready.then(_ => {
                     if (this.masStore.mas.inputs.operatingPoints.length > 0) {
                         console.time('Execution Time');
 
-                        const settings = JSON.parse(this.$mkfAdvisers.get_settings());
+                        const settings = JSON.parse(this.$mkf.get_settings());
                         settings["coreIncludeDistributedGaps"] = this.$settingsStore.adviserAllowDistributedGaps == "1";
                         settings["coreIncludeStacks"] = this.$settingsStore.adviserAllowStacks == "1";
                         settings["useToroidalCores"] = this.$settingsStore.adviserToroidalCores == "1";
-                        this.$mkfAdvisers.set_settings(JSON.stringify(settings));
+                        this.$mkf.set_settings(JSON.stringify(settings));
                         // console.log(this.catalogString)
 
-                        const result = this.$mkfAdvisers.calculate_advised_magnetics_from_catalog(JSON.stringify(this.masStore.mas.inputs), this.catalogString, 2);
+                        const result = this.$mkf.calculate_advised_magnetics_from_catalog(JSON.stringify(this.masStore.mas.inputs), this.catalogString, 2);
 
                         var aux;
                         if (result.startsWith("Exception")) {

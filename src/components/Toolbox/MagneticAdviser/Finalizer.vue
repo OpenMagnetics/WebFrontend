@@ -3,24 +3,10 @@ import { useMasStore } from '/src/stores/mas'
 import { toTitleCase, removeTrailingZeroes, formatUnit, formatDimension, formatTemperature, formatInductance,
          formatPower, formatResistance, deepCopy, downloadBase64asPDF, clean, download } from '/WebSharedComponents/assets/js/utils.js'
 import Magnetic2DVisualizer from '/WebSharedComponents/Common/Magnetic2DVisualizer.vue'
-import Module from '/src/assets/js/libAdvisers.wasm.js'
 
 </script>
 
 <script>
-var magneticAdviser = {
-    ready: new Promise(resolve => {
-        Module({
-            onRuntimeInitialized () {
-                magneticAdviser = Object.assign(this, {
-                    ready: Promise.resolve()
-                });
-                resolve();
-            }
-        });
-    })
-};
-
 export default {
     props: {
         dataTestLabel: {
@@ -30,22 +16,9 @@ export default {
     },
     data() {
         const masStore = useMasStore();
-        const style = getComputedStyle(document.body);
-        const theme = {
-          primary: style.getPropertyValue('--bs-primary'),
-          secondary: style.getPropertyValue('--bs-secondary'),
-          success: style.getPropertyValue('--bs-success'),
-          info: style.getPropertyValue('--bs-info'),
-          warning: style.getPropertyValue('--bs-warning'),
-          danger: style.getPropertyValue('--bs-danger'),
-          light: style.getPropertyValue('--bs-light'),
-          dark: style.getPropertyValue('--bs-dark'),
-          white: style.getPropertyValue('--bs-white'),
-        };
         const localTexts = {};
         return {
             masStore,
-            theme,
             localTexts,
             masExported: false,
             Core3DExported: false,
@@ -162,9 +135,9 @@ export default {
 
         calculateLeakageInductance() {
             if (this.masStore.mas.magnetic.coil.functionalDescription.length > 1) {
-                magneticAdviser.ready.then(_ => {
+                this.$mkf.ready.then(_ => {
 
-                    const leakageInductaceOutput = JSON.parse(magneticAdviser.calculate_leakage_inductance(JSON.stringify(this.masStore.mas.magnetic), this.masStore.mas.inputs.operatingPoints[0].excitationsPerWinding[0].frequency, 0));
+                    const leakageInductaceOutput = JSON.parse(this.$mkf.calculate_leakage_inductance(JSON.stringify(this.masStore.mas.magnetic), this.masStore.mas.inputs.operatingPoints[0].excitationsPerWinding[0].frequency, 0));
 
                     for (var operatingPointIndex = 0; operatingPointIndex < this.masStore.mas.outputs.length; operatingPointIndex++) {
                         this.masStore.mas.outputs[operatingPointIndex].leakageInductance = leakageInductaceOutput;

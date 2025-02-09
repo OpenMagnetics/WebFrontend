@@ -1,9 +1,10 @@
 <script setup>
 import { useMasStore } from '/src/stores/mas'
+import { useStyleStore } from '/src/stores/style'
 import OperatingPointManual from '/src/components/Toolbox/OperatingPoints/OperatingPointManual.vue'
 import OperatingPointHarmonics from '/src/components/Toolbox/OperatingPoints/OperatingPointHarmonics.vue'
 import OperatingPointCircuitSimulator from '/src/components/Toolbox/OperatingPoints/OperatingPointCircuitSimulator.vue'
-import { roundWithDecimals, deepCopy, removeTrailingZeroes } from '/WebSharedComponents/assets/js/utils.js'
+import { roundWithDecimals, deepCopy, removeTrailingZeroes, combinedStyle } from '/WebSharedComponents/assets/js/utils.js'
 import Dimension from '/WebSharedComponents/DataInput/Dimension.vue'
 
 import { defaultOperatingPointExcitation, defaultPrecision, defaultSinusoidalNumberPoints, minimumMaximumScalePerParameter } from '/WebSharedComponents/assets/js/defaults.js'
@@ -13,7 +14,7 @@ import { tooltipsMagneticSynthesisOperatingPoints } from '/WebSharedComponents/a
 <script>
 
 export default {
-    emits: ["canContinue", "changeTool", "updatedWaveform", "importedWaveform", "selectedManualOrImported", "selectedAcSweepTypeSelected"],
+    emits: ["updatedWaveform", "importedWaveform", "selectedManualOrImported", "selectedAcSweepTypeSelected"],
     props: {
         dataTestLabel: {
             type: String,
@@ -30,6 +31,7 @@ export default {
     },
     data() {
         const masStore = useMasStore();
+        const styleStore = useStyleStore();
         if (masStore.mas.inputs.operatingPoints.length == 0) {
             masStore.mas.inputs.operatingPoints.push(
                 {
@@ -42,6 +44,7 @@ export default {
 
         return {
             masStore,
+            styleStore,
             loadedFile: "",
         }
     },
@@ -158,10 +161,21 @@ export default {
                 @clearMode="clearMode"
             />
             <div v-if="$stateStore.operatingPoints.modePerPoint[currentOperatingPointIndex] == null" class="col-12">
-                <label :data-cy="dataTestLabel + '-current-title'" class="row fs-4 text-primary mx-0 p-0 mb-4">{{masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].name}}</label>
+                <label
+                    :style="combinedStyle([styleStore.operatingPoints.inputTitleFontSize, styleStore.operatingPoints.commonParameterTextColor])"
+                    :data-cy="dataTestLabel + '-current-title'"
+                    class="row mx-0 p-0 mb-4"
+                >
+                    {{masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].name}}
+                </label>
                 <div class="row mt-2">
 
-                    <label class="fs-5 text-white mt-3 mb-2"> Where do you want to import your operating point from? </label>
+                    <label
+                    :style="combinedStyle([styleStore.operatingPoints.inputTitleFontSize, styleStore.operatingPoints.commonParameterTextColor])"
+                        class="mt-3 mb-2"
+                    > 
+                        {{'Where do you want to import your operating point from?'}}
+                    </label>
                 </div>
                 <div class="row mt-2">
 <!--                     <label for="OperatingPoint-MAS-upload-input" class="col-lg-3 col-md-12">
@@ -169,11 +183,47 @@ export default {
                             <input type="file" id="OperatingPoint-MAS-upload-input" ref="OperatingPoint-MAS-upload-ref" @change="onMASFileTypeSelected"  style="display:none">
                     </label> -->
                         <input type="file" id="OperatingPoint-CircuitSimulator-upload-input" ref="OperatingPoint-CircuitSimulator-upload-ref" @change="onCircuitSimulatorFileTypeSelected" style="display:none" hidden/>
-                        <button data-cy="OperatingPoint-source-Manual-button" type="button" @click="onCircuitSimulatorTypeSelected" class="col-lg-3 col-md-12 offset-lg-0 btn btn-primary mt-1 rounded-3 fs-5" style="min-height: 6em">Circuit simulator export file or CSV</button>
+                        <button
+                            :style="styleStore.operatingPoints.typeButton"
+                            data-cy="OperatingPoint-source-Manual-button"
+                            type="button"
+                            @click="onCircuitSimulatorTypeSelected"
+                            class="col-lg-4 col-md-12 offset-lg-1 btn mt-1 rounded-3"
+                            style="min-height: 6em"
+                        >
+                            {{'Circuit simulator export file or CSV'}}
+                        </button>
 
-                        <button data-cy="OperatingPoint-source-Manual-button" type="button" @click="onManualTypeSelected" class="col-lg-3 col-md-12 offset-lg-1 btn btn-primary mt-1 rounded-3 fs-5" style="min-height: 6em">I will define it manually</button>
-                        <button data-cy="OperatingPoint-source-Manual-button" type="button" @click="onHarmoncsTypeSelected" class="col-lg-3 col-md-12 offset-lg-1 btn btn-primary mt-1 rounded-3 fs-5" style="min-height: 6em">I want to introduce a list of harmonics</button>
-                        <button data-cy="OperatingPoint-source-Manual-button" type="button" @click="onAcSweepTypeSelected" class="col-lg-3 col-md-12 offset-lg-1 btn btn-primary mt-1 rounded-3 fs-5" style="min-height: 6em">I am here for the AC sweeps</button>
+                        <button
+                            :style="styleStore.operatingPoints.typeButton"
+                            data-cy="OperatingPoint-source-Manual-button"
+                            type="button"
+                            @click="onManualTypeSelected"
+                            class="col-lg-4 col-md-12 offset-lg-1 btn mt-1 rounded-3"
+                            style="min-height: 6em"
+                        >
+                            {{'I will define it manually'}}
+                        </button>
+                        <button
+                            :style="styleStore.operatingPoints.typeButton"
+                            data-cy="OperatingPoint-source-Manual-button"
+                            type="button"
+                            @click="onHarmoncsTypeSelected"
+                            class="col-lg-4 col-md-12 offset-lg-1 btn mt-1 rounded-3"
+                            style="min-height: 6em"
+                        >
+                            {{'I want to introduce a list of harmonics'}}
+                        </button>
+                        <button
+                            :style="styleStore.operatingPoints.typeButton"
+                            data-cy="OperatingPoint-source-Manual-button"
+                            type="button"
+                            @click="onAcSweepTypeSelected"
+                            class="col-lg-4 col-md-12 offset-lg-1 btn mt-1 rounded-3"
+                            style="min-height: 6em"
+                        >
+                            {{'I am here for the AC sweeps'}}
+                        </button>
                 </div>
             </div>
         </div>

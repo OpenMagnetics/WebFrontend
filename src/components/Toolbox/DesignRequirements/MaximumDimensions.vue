@@ -1,6 +1,6 @@
 <script setup>
 import { useMasStore } from '/src/stores/mas'
-import { toTitleCase, getMultiplier } from '/WebSharedComponents/assets/js/utils.js'
+import { toTitleCase, getMultiplier, combinedStyle, combinedClass } from '/WebSharedComponents/assets/js/utils.js'
 import DimensionUnit from '/WebSharedComponents/DataInput/DimensionUnit.vue'
 
 </script>
@@ -27,9 +27,45 @@ export default {
             type: Number,
             default: 1e+9
         },
+        disabled: {
+            type: Boolean,
+            default: false,
+        },
         dataTestLabel: {
             type: String,
             default: '',
+        },
+        valueFontSize: {
+            type: [String, Object],
+            default: 'fs-6'
+        },
+        titleFontSize: {
+            type: [String, Object],
+            default: 'fs-6'
+        },
+        addButtonStyle: {
+            type: Object,
+            default: {},
+        },
+        removeButtonBgColor: {
+            type: String,
+            default: "bg-danger",
+        },
+        labelBgColor: {
+            type: [String, Object],
+            default: "bg-dark",
+        },
+        valueBgColor: {
+            type: [String, Object],
+            default: "bg-light",
+        },
+        textColor: {
+            type: [String, Object],
+            default: "text-white",
+        },
+        unitExtraStyleClass:{
+            type: String,
+            default: ''
         },
     },
     data() {
@@ -128,23 +164,141 @@ export default {
 <template>
     <div :data-cy="dataTestLabel + '-container'" class="container-flex border-bottom">
         <div class="row">
-            <label :data-cy="dataTestLabel + '-title'" class="rounded-2 fs-5 ms-3" :class="'col-sm-6 col-md-5'">{{'Maximum Dimensions'}}</label>
+            <label
+                :style="combinedStyle([titleFontSize, labelBgColor, textColor])"
+                :data-cy="dataTestLabel + '-title'"
+                class="rounded-2 fs-5 ms-3 col-sm-6 col-md-5"
+                :class="combinedClass([titleFontSize, labelBgColor, textColor])"
+            >
+                {{'Maximum Dimensions'}}
+            </label>
         </div>
-        <div class="row">
-            <label v-if="localData.width.scaledValue != null" for="design-requirements-width-input" class="m-0 px-0 col-2 col-form-label text-center">Width</label>
-            <input v-if="localData.width.scaledValue != null" type="number" class="m-0 px-0 col-1 bg-light text-white" id="design-requirements-width-input'" @change="changeScaledValue($event.target.value, 'width')" :value="localData.width.scaledValue">
-            <DimensionUnit :min="min" :max="max" v-if="unit != null && localData.width.scaledValue != null" :unit="unit" v-model="localData.width.multiplier" class="m-0 ms-1 px-0 col-1" @update:modelValue="changeMultiplier('width')"/>
-            <button v-if="localData.width.scaledValue == null" class="col-3 m-0 px-xl-3 px-md-0 btn btn-primary mx-4" @click="add('width')">{{'Add Width'}}</button>
+        <div class="row align-items-center">
+            <label
+                :style="combinedStyle([titleFontSize, labelBgColor, textColor])"
+                v-if="localData.width.scaledValue != null"
+                for="design-requirements-width-input"
+                :class="combinedClass([titleFontSize, labelBgColor, textColor])"
+                class="m-0 px-0 col-2 text-center"
+            >
+                Width
+            </label>
+            <input
+                :style="combinedStyle([disabled? labelBgColor : valueBgColor, textColor, valueFontSize ])"
+                v-if="localData.width.scaledValue != null"
+                type="number"
+                class="m-0 px-0 col-1"
+                :class="combinedClass([disabled? labelBgColor : valueBgColor, textColor, valueFontSize, disabled? 'border-0' : ''])"
+                id="design-requirements-width-input'"
+                :value="localData.width.scaledValue"
+                @change="changeScaledValue($event.target.value, 'width')"
+            />
+            <DimensionUnit
+                :min="min"
+                :max="max"
+                v-if="unit != null && localData.width.scaledValue != null"
+                :unit="unit"
+                :extraStyleClass="unitExtraStyleClass"
+                :valueBgColor="valueBgColor"
+                :valueFontSize="valueFontSize"
+                :textColor="textColor"
+                v-model="localData.width.multiplier"
+                class="m-0 col-1"
+                @update:modelValue="changeMultiplier('width')"
+            />
+            <button
+                v-if="localData.width.scaledValue == null"
+                :style="addButtonStyle"
+                :class="valueFontSize"
+                class="col-3 m-0 px-xl-3 px-md-0 btn mx-4"
+                @click="add('width')"
+            >
+            {{'Add Width'}}
+            </button>
 
-            <label v-if="localData.height.scaledValue != null" for="design-requirements-width-input" class="m-0 px-0 col-2 col-form-label text-center">Height</label>
-            <input v-if="localData.height.scaledValue != null" type="number" class="m-0 px-0 col-1 bg-light text-white" id="design-requirements-width-input'" @change="changeScaledValue($event.target.value, 'height')" :value="localData.height.scaledValue">
-            <DimensionUnit :min="min" :max="max" v-if="unit != null && localData.height.scaledValue != null" :unit="unit" v-model="localData.height.multiplier" class="m-0 ms-1 px-0 col-1" @update:modelValue="changeMultiplier('height')"/>
-            <button v-if="localData.height.scaledValue == null" class="col-3 m-0 px-xl-3 px-md-0 btn btn-primary mx-4" @click="add('height')">{{'Add Heigth'}}</button>
+            <label
+                :style="combinedStyle([titleFontSize, labelBgColor, textColor])"
+                v-if="localData.height.scaledValue != null"
+                for="design-requirements-width-input"
+                :class="combinedClass([titleFontSize, labelBgColor, textColor])"
+                class="m-0 px-0 col-2 text-center"
+            >
+                Height
+            </label>
+            <input
+                :style="combinedStyle([disabled? labelBgColor : valueBgColor, textColor, valueFontSize ])"
+                v-if="localData.height.scaledValue != null"
+                type="number"
+                class="m-0 px-0 col-1"
+                :class="combinedClass([disabled? labelBgColor : valueBgColor, textColor, valueFontSize, disabled? 'border-0' : ''])"
+                id="design-requirements-width-input'"
+                @change="changeScaledValue($event.target.value, 'height')"
+                :value="localData.height.scaledValue"
+            />
+            <DimensionUnit
+                :min="min"
+                :max="max"
+                v-if="unit != null && localData.height.scaledValue != null"
+                :unit="unit"
+                :extraStyleClass="unitExtraStyleClass"
+                :valueBgColor="valueBgColor"
+                :valueFontSize="valueFontSize"
+                :textColor="textColor"
+                v-model="localData.height.multiplier"
+                class="m-0 col-1"
+                @update:modelValue="changeMultiplier('height')"
+            />
+            <button
+                v-if="localData.height.scaledValue == null"
+                :style="addButtonStyle"
+                :class="valueFontSize"
+                class="col-3 m-0 px-xl-3 px-md-0 btn mx-4"
+                @click="add('height')"
+            >
+            {{'Add Heigth'}}
+            </button>
 
-            <label v-if="localData.depth.scaledValue != null" for="design-requirements-width-input" class="m-0 px-0 col-2 col-form-label text-center">Depth</label>
-            <input v-if="localData.depth.scaledValue != null" type="number" class="m-0 px-0 col-1 bg-light text-white" id="design-requirements-width-input'" @change="changeScaledValue($event.target.value, 'depth')" :value="localData.depth.scaledValue">
-            <DimensionUnit :min="min" :max="max" v-if="unit != null && localData.depth.scaledValue != null" :unit="unit" v-model="localData.depth.multiplier" class="m-0 ms-1 px-0 col-1" @update:modelValue="changeMultiplier('depth')"/>
-            <button v-if="localData.depth.scaledValue == null" class="col-3 m-0 px-xl-3 px-md-0 btn btn-primary mx-4" @click="add('depth')">{{'Add Depth'}}</button>
+            <label
+                :style="combinedStyle([titleFontSize, labelBgColor, textColor])"
+                v-if="localData.depth.scaledValue != null"
+                for="design-requirements-width-input"
+                :class="combinedClass([titleFontSize, labelBgColor, textColor])"
+                class="m-0 px-0 col-2 text-center"
+            >
+                Depth
+            </label>
+            <input
+                :style="combinedStyle([disabled? labelBgColor : valueBgColor, textColor, valueFontSize ])"
+                v-if="localData.depth.scaledValue != null"
+                type="number"
+                class="m-0 px-0 col-1"
+                :class="combinedClass([disabled? labelBgColor : valueBgColor, textColor, valueFontSize, disabled? 'border-0' : ''])"
+                id="design-requirements-width-input'"
+                @change="changeScaledValue($event.target.value, 'depth')"
+                :value="localData.depth.scaledValue"
+            />
+            <DimensionUnit
+                :min="min"
+                :max="max"
+                v-if="unit != null && localData.depth.scaledValue != null"
+                :unit="unit"
+                :extraStyleClass="unitExtraStyleClass"
+                :valueBgColor="valueBgColor"
+                :valueFontSize="valueFontSize"
+                :textColor="textColor"
+                v-model="localData.depth.multiplier"
+                class="m-0 col-1"
+                @update:modelValue="changeMultiplier('depth')"
+            />
+            <button
+                v-if="localData.depth.scaledValue == null"
+                :style="addButtonStyle"
+                :class="valueFontSize"
+                class="col-3 m-0 px-xl-3 px-md-0 btn mx-4"
+                @click="add('depth')"
+            >
+            {{'Add Depth'}}
+            </button>
         </div>
         <div class="row">
             <label class="text-danger text-center col-12 pt-1" style="font-size: 0.9em; white-space: pre-wrap;">{{errorMessages}}</label>

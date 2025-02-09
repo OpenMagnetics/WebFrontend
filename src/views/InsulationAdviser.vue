@@ -36,6 +36,7 @@ export default {
         <GenericTool
             class="container content"
             :currentStoryline="currentStoryline"
+            :showStoryline="false"
             :dataTestLabel="'InsulationAdviser'"
         />
     </div>

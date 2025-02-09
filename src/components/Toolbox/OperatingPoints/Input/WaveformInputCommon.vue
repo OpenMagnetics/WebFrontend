@@ -1,7 +1,8 @@
 <script setup>
+import { useStyleStore } from '/src/stores/style'
 import Dimension from '/WebSharedComponents/DataInput/Dimension.vue'
 import { minimumMaximumScalePerParameter } from '/WebSharedComponents/assets/js/defaults.js'
-import { removeTrailingZeroes } from '/WebSharedComponents/assets/js/utils.js'
+import { removeTrailingZeroes, combinedStyle } from '/WebSharedComponents/assets/js/utils.js'
 
 </script>
 
@@ -22,6 +23,7 @@ export default {
         },
     },
     data() {
+        const styleStore = useStyleStore();
         const localData = {"frequency": this.modelValue['frequency'], "dutyCycle": this.modelValue.current.processed.dutyCycle};
         const errorMessages = '';
         const forceUpdateDutyCycle = 0;
@@ -29,6 +31,7 @@ export default {
         const blockingReboundsDutyCycle = false;
         const blockingReboundsFrequency = false;
         return {
+            styleStore,
             localData,
             forceUpdateDutyCycle,
             forceUpdateFrequency,
@@ -102,7 +105,12 @@ export default {
 <template>
     <div class="container-flex">
         <div class="row text-center">
-            <label class="fs-4 text-white">Common parameters</label>
+            <label
+                :style="combinedStyle([styleStore.operatingPoints.inputTitleFontSize, styleStore.operatingPoints.commonParameterTextColor])"
+                class=""
+            >
+                Common parameters
+            </label>
         </div>
         <div class="row">
 
@@ -116,6 +124,11 @@ export default {
                 :forceUpdate="forceUpdateFrequency"
                 v-model="localData"
                 @update="frequencyChanged"
+                :valueFontSize="styleStore.operatingPoints.inputFontSize"
+                :labelFontSize="styleStore.operatingPoints.inputTitleFontSize"
+                :labelBgColor='styleStore.operatingPoints.inputLabelBgColor'
+                :valueBgColor='styleStore.operatingPoints.inputValueBgColor'
+                :textColor='styleStore.operatingPoints.inputTextColor'
             />
 
             <Dimension class="py-2 col-12"
@@ -131,6 +144,11 @@ export default {
                 :forceUpdate="forceUpdateDutyCycle"
                 v-model="localData"
                 @update="dutyCycleChanged"
+                :valueFontSize="styleStore.operatingPoints.inputFontSize"
+                :labelFontSize="styleStore.operatingPoints.inputTitleFontSize"
+                :labelBgColor='styleStore.operatingPoints.inputLabelBgColor'
+                :valueBgColor='styleStore.operatingPoints.inputValueBgColor'
+                :textColor='styleStore.operatingPoints.inputTextColor'
             />
         </div>
         <div data-cy="`${dataTestLabel}-error-text`" class="invalid-feedback">{{errorMessages}}</div>

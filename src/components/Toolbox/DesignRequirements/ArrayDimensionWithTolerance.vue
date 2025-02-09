@@ -1,6 +1,6 @@
 <script setup>
 import { useMasStore } from '/src/stores/mas'
-import { toTitleCase, getMultiplier } from '/WebSharedComponents/assets/js/utils.js'
+import { toTitleCase, getMultiplier, combinedStyle, combinedClass } from '/WebSharedComponents/assets/js/utils.js'
 import DimensionWithTolerance from '/WebSharedComponents/DataInput/DimensionWithTolerance.vue'
 import { isolationSideOrdered } from '/WebSharedComponents/assets/js/defaults.js'
 </script>
@@ -52,6 +52,38 @@ export default {
         allowAllNull:{
             type: Boolean,
             default: false
+        },
+        addButtonStyle: {
+            type: Object,
+            default: {},
+        },
+        valueFontSize: {
+            type: [String, Object],
+            default: 'fs-6'
+        },
+        titleFontSize: {
+            type: [String, Object],
+            default: 'fs-6'
+        },
+        removeButtonBgColor: {
+            type: String,
+            default: "bg-danger",
+        },
+        labelBgColor: {
+            type: [String, Object],
+            default: "bg-dark",
+        },
+        valueBgColor: {
+            type: [String, Object],
+            default: "bg-light",
+        },
+        textColor: {
+            type: [String, Object],
+            default: "text-white",
+        },
+        unitExtraStyleClass:{
+            type: String,
+            default: ''
         },
     },
     data() {
@@ -122,10 +154,40 @@ export default {
 <template>
     <div class="container-flex border-bottom">
         <div class="row">
-            <label :data-cy="dataTestLabel + '-title'" class="rounded-2 fs-5 ms-3" :class="maximumNumberElements != null? 'col-sm-6 col-md-3' : 'col-12'">{{toTitleCase(name)}}</label>
+            <label
+                :style="combinedStyle([titleFontSize, labelBgColor, textColor])"
+                :data-cy="dataTestLabel + '-title'"
+                class="rounded-2 ms-3"
+                :class="combinedClass([maximumNumberElements != null? 'col-sm-6 col-md-3' : 'col-12', titleFontSize, labelBgColor, textColor])"
+            >
+                {{toTitleCase(name)}}
+            </label>
         </div>
         <div :data-cy="dataTestLabel + '-' + requirementIndex + '-container'" class="row" v-for="requirement, requirementIndex in masStore.mas.inputs.designRequirements[name]">
-            <DimensionWithTolerance :dataTestLabel="dataTestLabel + '-' + requirementIndex"  :allowNegative="allowNegative" :allowAllNull="allowAllNull" :min="min" :max="max" :disabledScaling="disabledScaling" :varText="true" :defaultValue="defaultValue" :name="masStore.mas.magnetic.coil.functionalDescription[requirementIndex + 1] == null? isolationSideOrdered[requirementIndex + 1] : masStore.mas.magnetic.coil.functionalDescription[requirementIndex + 1].name" :unit="unit" v-model="masStore.mas.inputs.designRequirements[name][requirementIndex]" @hasError="$emit('hasError')" @changeText="changeText($event, requirementIndex + 1)" class="offset-1 col-11"/>            
+            <DimensionWithTolerance
+                :dataTestLabel="dataTestLabel + '-' + requirementIndex" 
+                :allowNegative="allowNegative"
+                :allowAllNull="allowAllNull"
+                :min="min"
+                :max="max"
+                :disabledScaling="disabledScaling"
+                :varText="true"
+                :defaultValue="defaultValue"
+                :name="masStore.mas.magnetic.coil.functionalDescription[requirementIndex + 1] == null? isolationSideOrdered[requirementIndex + 1] : masStore.mas.magnetic.coil.functionalDescription[requirementIndex + 1].name"
+                :unit="unit"
+                v-model="masStore.mas.inputs.designRequirements[name][requirementIndex]"
+                @hasError="$emit('hasError')"
+                @changeText="changeText($event, requirementIndex + 1)"
+                :addButtonStyle="addButtonStyle"
+                :removeButtonBgColor="removeButtonBgColor"
+                :titleFontSize='valueFontSize'
+                :valueFontSize="valueFontSize"
+                :labelBgColor="labelBgColor"
+                :valueBgColor="valueBgColor"
+                :textColor="textColor"
+                :unitExtraStyleClass="unitExtraStyleClass"
+                class="offset-1 col-11"
+            />            
         </div>
         <div class="row">
             <label class="text-danger text-center col-12 pt-1" style="font-size: 0.9em; white-space: pre-wrap;">{{errorMessages}}</label>

@@ -6,22 +6,9 @@ import { removeTrailingZeroes, toTitleCase, toCamelCase, deepCopy } from '/WebSh
 import { coreAdviserWeights } from '/WebSharedComponents/assets/js/defaults.js'
 import Advise from '/src/components/Toolbox/MagneticCoreAdviser/Advise.vue'
 import AdviseDetails from '/src/components/Toolbox/MagneticCoreAdviser/AdviseDetails.vue'
-import Module from '/src/assets/js/libAdvisers.wasm.js'
 </script>
 
 <script>
-var coreAdviser = {
-    ready: new Promise(resolve => {
-        Module({
-            onRuntimeInitialized () {
-                coreAdviser = Object.assign(this, {
-                    ready: Promise.resolve()
-                });
-                resolve();
-            }
-        });
-    })
-};
 
 const style = getComputedStyle(document.body);
 const theme = {
@@ -119,17 +106,17 @@ export default {
         calculateAdvisedCores() {
             this.currentAdviseToShow = 0;
 
-            coreAdviser.ready.then(_ => {
+            this.$mkf.ready.then(_ => {
                 if (this.masStore.mas.inputs.operatingPoints.length > 0) {
                     console.time('Execution Time');
 
-                    const settings = JSON.parse(coreAdviser.get_settings());
+                    const settings = JSON.parse(this.$mkf.get_settings());
                     settings["coreIncludeDistributedGaps"] = this.$settingsStore.adviserAllowDistributedGaps == "1";
                     settings["coreIncludeStacks"] = this.$settingsStore.adviserAllowStacks == "1";
                     settings["useToroidalCores"] = this.$settingsStore.adviserToroidalCores == "1";
-                    coreAdviser.set_settings(JSON.stringify(settings));
+                    this.$mkf.set_settings(JSON.stringify(settings));
 
-                    const aux = JSON.parse(coreAdviser.calculate_advised_cores(JSON.stringify(this.masStore.mas.inputs), JSON.stringify(this.$settingsStore.coreAdviserSettings.weights), 20, this.$settingsStore.adviserUseOnlyCoresInStock == 1));
+                    const aux = JSON.parse(this.$mkf.calculate_advised_cores(JSON.stringify(this.masStore.mas.inputs), JSON.stringify(this.$settingsStore.coreAdviserSettings.weights), 20, this.$settingsStore.adviserUseOnlyCoresInStock == 1));
 
                     var log = aux["log"];
                     var data = aux["data"];

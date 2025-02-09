@@ -1,11 +1,12 @@
 <script setup>
+import { useStyleStore } from '/src/stores/style'
 import { useMasStore } from '/src/stores/mas'
 import WaveformGraph from '/src/components/Toolbox/OperatingPoints/Output/WaveformGraph.vue'
 import WaveformFourier from '/src/components/Toolbox/OperatingPoints/Output/WaveformFourier.vue'
 import WaveformOutput from '/src/components/Toolbox/OperatingPoints/Output/WaveformOutput.vue'
 import WaveformCombinedOutput from '/src/components/Toolbox/OperatingPoints/Output/WaveformCombinedOutput.vue'
 import WaveformInputColumnNames from '/src/components/Toolbox/OperatingPoints/Input/WaveformInputColumnNames.vue'
-import { roundWithDecimals, deepCopy } from '/WebSharedComponents/assets/js/utils.js'
+import { roundWithDecimals, deepCopy, combinedStyle } from '/WebSharedComponents/assets/js/utils.js'
 
 import { defaultOperatingPointExcitation, defaultPrecision, defaultSinusoidalNumberPoints } from '/WebSharedComponents/assets/js/defaults.js'
 import { tooltipsMagneticSynthesisOperatingPoints } from '/WebSharedComponents/assets/js/texts.js'
@@ -14,7 +15,7 @@ import { tooltipsMagneticSynthesisOperatingPoints } from '/WebSharedComponents/a
 <script>
 
 export default {
-    emits: ["canContinue", "changeTool", "importedWaveform", "clearMode"],
+    emits: ["importedWaveform", "clearMode"],
     props: {
         loadedFile: {
             type: String,
@@ -38,6 +39,7 @@ export default {
     },
     data() {
         const masStore = useMasStore();
+        const styleStore = useStyleStore();
         if (masStore.mas.inputs.operatingPoints.length == 0) {
             masStore.mas.inputs.operatingPoints.push(
                 {
@@ -50,6 +52,7 @@ export default {
 
         return {
             masStore,
+            styleStore,
             errorMessages: "",
         }
     },
@@ -113,7 +116,13 @@ export default {
         <div class="row" v-tooltip="styleTooltip">
             <div class="col-lg-4 col-md-12" style="max-width: 360px;">
 
-                <label :data-cy="dataTestLabel + '-current-title'" class="fs-4 text-primary mx-0 p-0 mb-4">{{masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].name + ' - ' + masStore.mas.magnetic.coil.functionalDescription[currentWindingIndex].name}}</label>
+                <label
+                    :style="combinedStyle([styleStore.operatingPoints.inputTitleFontSize, styleStore.operatingPoints.commonParameterTextColor])"
+                    :data-cy="dataTestLabel + '-current-title'"
+                    class="mx-0 p-0 mb-4"
+                >
+                    {{masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].name + ' - ' + masStore.mas.magnetic.coil.functionalDescription[currentWindingIndex].name}}
+                </label>
 
                 <WaveformInputColumnNames class="scrollable-column border-bottom border-top rounded-4 border-2"
                     :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex]"
@@ -125,7 +134,15 @@ export default {
                     @updatedColumnName="updatedColumnNames"
                 />
 
-                <button :disabled='loadedFile==""' :data-cy="dataTestLabel + '-import-button'" class="btn btn-success fs-5 col-sm-12 col-md-12 mt-3 p-0" style="max-height: 2em" @click="confirmColumns">{{$stateStore.operatingPointsCircuitSimulator.confirmedColumns[currentOperatingPointIndex][currentWindingIndex]? 'Update columns' : 'Confirm columns'}}
+                <button
+                    :style="styleStore.operatingPoints.confirmColumnsButton"
+                    :disabled='loadedFile==""'
+                    :data-cy="dataTestLabel + '-import-button'"
+                    class="btn btn-success fs-5 col-sm-12 col-md-12 mt-3 p-0"
+                    style="max-height: 2em"
+                    @click="confirmColumns"
+                >
+                    {{$stateStore.operatingPointsCircuitSimulator.confirmedColumns[currentOperatingPointIndex][currentWindingIndex]? 'Update columns' : 'Confirm columns'}}
                 </button>
                 <div v-if='loadedFile=="" && !$stateStore.operatingPointsCircuitSimulator.confirmedColumns[currentOperatingPointIndex][currentWindingIndex]' class="col-12">
                     <label :data-cy="dataTestLabel + '-error-text'" class="text-danger text-center col-12 pt-1" style="font-size: 0.9em; white-space: pre-wrap;">Please reload file</label>
@@ -133,7 +150,14 @@ export default {
                 <div v-if='errorMessages != ""' class="col-12">
                     <label :data-cy="dataTestLabel + '-error-text'" class="text-danger text-center col-12 pt-1" style="font-size: 0.9em; white-space: pre-wrap;">{{errorMessages}}</label>
                 </div>
-                <button :data-cy="dataTestLabel + '-import-button'" class="btn btn-success fs-5 col-sm-12 col-md-12 mt-3 p-0" style="max-height: 2em" @click="clearMode">Go back to selecting mode
+                <button
+                    :style="styleStore.operatingPoints.goBackSelectingButton"
+                    :data-cy="dataTestLabel + '-import-button'"
+                    class="btn btn-success fs-5 col-sm-12 col-md-12 mt-3 p-0"
+                    style="max-height: 2em"
+                    @click="clearMode"
+                >
+                    {{'Go back to selecting mode'}}
                 </button>
             </div>
             <div v-if="$stateStore.operatingPointsCircuitSimulator.confirmedColumns[currentOperatingPointIndex][currentWindingIndex]" class="col-lg-8 col-md-12 row m-0 p-0" style="max-width: 800px;">

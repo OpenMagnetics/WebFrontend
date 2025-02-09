@@ -1,4 +1,5 @@
 <script setup>
+import { useStyleStore } from '/src/stores/style'
 import { useMasStore } from '/src/stores/mas'
 import WaveformGraph from '/src/components/Toolbox/OperatingPoints/Output/WaveformGraph.vue'
 import WaveformFourier from '/src/components/Toolbox/OperatingPoints/Output/WaveformFourier.vue'
@@ -16,7 +17,7 @@ import { tooltipsMagneticSynthesisOperatingPoints } from '/WebSharedComponents/a
 <script>
 
 export default {
-    emits: ["canContinue", "changeTool", "updatedWaveform", "clearMode"],
+    emits: ["updatedWaveform", "clearMode"],
     props: {
         dataTestLabel: {
             type: String,
@@ -32,6 +33,7 @@ export default {
         },
     },
     data() {
+        const styleStore = useStyleStore();
         const masStore = useMasStore();
         if (masStore.mas.inputs.operatingPoints.length == 0) {
             masStore.mas.inputs.operatingPoints.push(
@@ -44,6 +46,7 @@ export default {
         }
 
         return {
+            styleStore,
             masStore,
         }
     },
@@ -97,7 +100,6 @@ export default {
                     this.masStore.updatedInputExcitationProcessed('current');
                 });
             }
-            this.$emit("canContinue", this.canContinue);
         },
         resetCurrentExcitation() {
             this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex] = deepCopy(defaultOperatingPointExcitation);
@@ -164,7 +166,14 @@ export default {
                     @updatedData="masStore.updatedInputExcitationWaveformUpdatedFromProcessed('voltage')"
                     @induce="induce('current')"
                 />
-                <button :data-cy="dataTestLabel + '-import-button'" class="btn btn-success fs-5 col-sm-12 col-md-12 mt-5 p-0" style="max-height: 2em" @click="clearMode">Go back to selecting mode
+                <button
+                    :style="styleStore.operatingPoints.goBackSelectingButton"
+                    :data-cy="dataTestLabel + '-import-button'"
+                    class="btn btn-success fs-5 col-sm-12 col-md-12 mt-5 p-0"
+                    style="max-height: 2em"
+                    @click="clearMode"
+                >
+                    {{'Go back to selecting mode'}}
                 </button>
             </div>
             <div class="col-lg-8 col-md-12 row m-0 p-0" style="max-width: 800px;">

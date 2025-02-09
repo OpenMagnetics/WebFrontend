@@ -1,4 +1,5 @@
 <script setup>
+import { useStyleStore } from '/src/stores/style'
 import { useMasStore } from '/src/stores/mas'
 import { Chart,
          registerables } from 'chart.js'
@@ -8,19 +9,6 @@ import 'chartjs-plugin-dragdata'
 </script>
 
 <script>
-const style = getComputedStyle(document.body);
-const theme = {
-  primary: style.getPropertyValue('--bs-primary'),
-  secondary: style.getPropertyValue('--bs-secondary'),
-  success: style.getPropertyValue('--bs-success'),
-  info: style.getPropertyValue('--bs-info'),
-  warning: style.getPropertyValue('--bs-warning'),
-  danger: style.getPropertyValue('--bs-danger'),
-  light: style.getPropertyValue('--bs-light'),
-  dark: style.getPropertyValue('--bs-dark'),
-  white: style.getPropertyValue('--bs-white'),
-};
-
 var options = {};
 var chart = null;
 
@@ -41,6 +29,7 @@ export default {
     },
     data() {
         const masStore = useMasStore();
+        const styleStore = useStyleStore();
         return {
             data: {
                 datasets: [
@@ -50,8 +39,8 @@ export default {
                         data:  this.convertMasToChartjs(this.modelValue.current.waveform),
                         pointRadius: this.enableDrag? 2 : 1,
                         borderWidth: 5,
-                        borderColor: theme['info'],
-                        backgroundColor: theme['info'],
+                        borderColor: styleStore.operatingPoints.currentTextColor.color,
+                        backgroundColor: styleStore.operatingPoints.currentBgColor.background,
                     },
                     {
                         label: 'Voltage',
@@ -59,20 +48,21 @@ export default {
                         data: this.convertMasToChartjs(this.modelValue.voltage.waveform),
                         pointRadius: this.enableDrag? 2 : 1,
                         borderWidth: 5,
-                        borderColor: theme['primary'],
-                        backgroundColor: theme['primary'],
+                        borderColor: styleStore.operatingPoints.voltageTextColor.color,
+                        backgroundColor: styleStore.operatingPoints.voltageBgColor.background,
                     },
                     {
                         label: 'zeroLineCurrent',
                         yAxisID: 'zeroLineCurrent',
                         data: [{x: -1, y: 0}, {x: 1, y: 0}],
                         borderWidth: 2,
-                        borderColor: theme['white'],
-                        backgroundColor: theme['white'],
+                        borderColor: styleStore.operatingPoints.commonParameterTextColor.color,
+                        backgroundColor: styleStore.operatingPoints.commonParameterBgColor.background,
                     }
                 ]
             },
-            masStore
+            styleStore,
+            masStore,
         }
     }, 
     watch: { 
@@ -124,7 +114,7 @@ export default {
                 },
                 legend: {
                     labels: {
-                        color: theme['white'], 
+                        color: this.styleStore.operatingPoints.commonParameterTextColor.color, 
                         font: {
                             size: 12
                         },
@@ -140,7 +130,7 @@ export default {
                     position: 'left',
                     ticks: {
                         beginAtZero: true,
-                        color: theme['info'],
+                        color: this.styleStore.operatingPoints.currentTextColor.color,
                         font: {
                             size: 12
                         },
@@ -152,8 +142,8 @@ export default {
                     max: 15,
                     min: -15,
                     grid: {
-                        color: theme['info'],
-                        borderColor: theme['info'],
+                        color: this.styleStore.operatingPoints.currentTextColor.color,
+                        borderColor: this.styleStore.operatingPoints.currentTextColor.color,
                         borderWidth: 2,
                         lineWidth: 0.4
                     },
@@ -163,7 +153,7 @@ export default {
                     position: 'right',
                     ticks: {
                         beginAtZero: true,
-                        color: theme['primary'],
+                        color: this.styleStore.operatingPoints.voltageTextColor.color,
                         font: {
                             size: 12
                         },
@@ -175,8 +165,8 @@ export default {
                     max: 100,
                     min: -100,
                     grid: {
-                        color: theme['primary'],
-                        borderColor: theme['primary'],
+                        color: this.styleStore.operatingPoints.voltageTextColor.color,
+                        borderColor: this.styleStore.operatingPoints.voltageTextColor.color,
                         borderWidth: 2,
                         lineWidth: 0.4
                     },
@@ -185,7 +175,7 @@ export default {
                     type: 'linear',
                     ticks: {
                         beginAtZero: true,
-                        color: theme['white'],
+                        color: this.styleStore.operatingPoints.commonParameterTextColor.color,
                         font: {
                             size: 12
                         },
@@ -197,8 +187,8 @@ export default {
                         }
                     },
                     grid: {
-                        color: theme['white'],
-                        borderColor: theme['white'],
+                        color: this.styleStore.operatingPoints.commonParameterTextColor.color,
+                        borderColor: this.styleStore.operatingPoints.commonParameterTextColor.color,
                         borderWidth: 2,
                         lineWidth: 0.4
                     },

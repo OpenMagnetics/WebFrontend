@@ -197,10 +197,10 @@ export default {
                                 :justifyContent="true"
                                 v-model="localData"
                                 :options="operatingPointNames"
-                                :labelStyleClass="'col-4'"
+                                :labelWidthProportionClass="'col-4'"
                                 :selectStyleClass="'col-8'"
                                 :labelBgColor="$settingsStore.labelBgColor"
-                                :inputBgColor="$settingsStore.inputBgColor"
+                                :valueBgColor="$settingsStore.valueBgColor"
                                 :textColor="$settingsStore.textColor"
                                 @update="operatingPointUpdated"
                             />
@@ -214,7 +214,7 @@ export default {
                                     :disabled="$userStore.getCurrentToolState().subsection == 'magneticViewer'"
                                     :data-cy="dataTestLabel + '-magnetic-reference-text'"
                                     type="text"
-                                    :class="(showControlPanel? 'col-sm-12 col-md-3 col-lg-3' : 'col-sm-12 col-md-9') + ' ' + ($userStore.getCurrentToolState().subsection == 'magneticViewer'? $settingsStore.labelBgColor : $settingsStore.inputBgColor) + ' ' + $settingsStore.textColor"
+                                    :class="(showControlPanel? 'col-sm-12 col-md-3 col-lg-3' : 'col-sm-12 col-md-9') + ' ' + ($userStore.getCurrentToolState().subsection == 'magneticViewer'? $settingsStore.labelBgColor : $settingsStore.valueBgColor) + ' ' + $settingsStore.textColor"
                                     class="w-100 "
                                     v-model="masStore.mas.magnetic.manufacturerInfo.reference">
                             </h2>

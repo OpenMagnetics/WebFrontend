@@ -1,9 +1,10 @@
 <script setup>
+import { useStyleStore } from '/src/stores/style'
 import { useMasStore } from '/src/stores/mas'
 import Dimension from '/WebSharedComponents/DataInput/Dimension.vue'
 import ElementFromList from '/WebSharedComponents/DataInput/ElementFromList.vue'
 import { minimumMaximumScalePerParameter } from '/WebSharedComponents/assets/js/defaults.js'
-import { removeTrailingZeroes } from '/WebSharedComponents/assets/js/utils.js'
+import { removeTrailingZeroes, combinedStyle } from '/WebSharedComponents/assets/js/utils.js'
 
 </script>
 
@@ -36,6 +37,7 @@ export default {
     },
     data() {
         const masStore = useMasStore();
+        const styleStore = useStyleStore();
         const localData = {"frequency": this.modelValue['frequency']};
         var errorMessages = '';
         if (!this.$stateStore.operatingPointsCircuitSimulator.confirmedColumns[this.currentOperatingPointIndex][this.currentWindingIndex]) {
@@ -45,6 +47,7 @@ export default {
         const forceUpdateFrequency = 0;
         return {
             masStore,
+            styleStore,
             localData,
             errorMessages,
             forceUpdateFrequency,
@@ -87,7 +90,12 @@ export default {
 <template>
     <div class="container-flex">
         <div class="row text-center">
-            <label class="fs-4 text-white">Common parameters</label>
+            <label
+                :style="combinedStyle([styleStore.operatingPoints.inputTitleFontSize, styleStore.operatingPoints.commonParameterTextColor])"
+                class=""
+            >
+                {{'Common parameters'}}
+            </label>
         </div>
         <div class="row">
 
@@ -100,6 +108,11 @@ export default {
                 :defaultValue="0"
                 :forceUpdate="forceUpdateFrequency"
                 v-model="localData"
+            :valueFontSize="styleStore.operatingPoints.inputFontSize"
+            :labelFontSize="styleStore.operatingPoints.inputTitleFontSize"
+            :labelBgColor='styleStore.operatingPoints.inputLabelBgColor'
+            :valueBgColor='styleStore.operatingPoints.inputValueBgColor'
+            :textColor='styleStore.operatingPoints.inputTextColor'
                 @update="frequencyChanged"
             />
             <label class="text-danger col-12 pt-1" style="font-size: 0.8em">{{errorMessages}}</label>
@@ -110,6 +123,11 @@ export default {
                 :titleSameRow="true"
                 :replaceTitle="'Cur. Time'"
                 v-model="$stateStore.operatingPointsCircuitSimulator.columnNames[currentOperatingPointIndex][currentWindingIndex]"
+                :valueFontSize="styleStore.operatingPoints.inputFontSize"
+                :labelFontSize="styleStore.operatingPoints.inputFontSize"
+                :labelBgColor='styleStore.operatingPoints.inputLabelBgColor'
+                :valueBgColor='styleStore.operatingPoints.inputValueBgColor'
+                :textColor='styleStore.operatingPoints.inputTextColor'
                 @update="columnNameChanged"
             />
             <ElementFromList class="border-bottom pb-2 mb-1"
@@ -119,6 +137,11 @@ export default {
                 :titleSameRow="true"
                 :replaceTitle="'Current'"
                 v-model="$stateStore.operatingPointsCircuitSimulator.columnNames[currentOperatingPointIndex][currentWindingIndex]"
+                :valueFontSize="styleStore.operatingPoints.inputFontSize"
+                :labelFontSize="styleStore.operatingPoints.inputFontSize"
+                :labelBgColor='styleStore.operatingPoints.inputLabelBgColor'
+                :valueBgColor='styleStore.operatingPoints.inputValueBgColor'
+                :textColor='styleStore.operatingPoints.inputTextColor'
                 @update="columnNameChanged"
             />
             <ElementFromList class="pb-2 mb-1"
@@ -128,6 +151,11 @@ export default {
                 :titleSameRow="true"
                 :replaceTitle="'Voltage'"
                 v-model="$stateStore.operatingPointsCircuitSimulator.columnNames[currentOperatingPointIndex][currentWindingIndex]"
+                :valueFontSize="styleStore.operatingPoints.inputFontSize"
+                :labelFontSize="styleStore.operatingPoints.inputFontSize"
+                :labelBgColor='styleStore.operatingPoints.inputLabelBgColor'
+                :valueBgColor='styleStore.operatingPoints.inputValueBgColor'
+                :textColor='styleStore.operatingPoints.inputTextColor'
                 @update="columnNameChanged"
             />
         </div>
