@@ -59,11 +59,20 @@ export const useStateStore = defineStore("state", () => {
         }
     }
 
-    function addNewOperatingPoint(currentOperatingPointIndex) {
+    function addNewOperatingPoint(currentOperatingPointIndex, mode) {
         const masStore = useMasStore();
         var newOperatingPoint = deepCopy(masStore.mas.inputs.operatingPoints[currentOperatingPointIndex]);
         newOperatingPoint.name = 'Op. Point No. ' + (masStore.mas.inputs.operatingPoints.length + 1);
-        newOperatingPoint.excitationsPerWinding = [newOperatingPoint.excitationsPerWinding[0]];
+        newOperatingPoint.excitationsPerWinding = [];
+
+        if (mode == this.OperatingPointsMode.HarmonicsList) {
+            for (var windingIndex = 0; windingIndex < masStore.mas.inputs.designRequirements.turnsRatios.length + 1; windingIndex++) {
+                newOperatingPoint.excitationsPerWinding.push(deepCopy(Defaults.defaultOperatingPointExcitationWithHarmonics));
+            }
+        }
+        else {
+            // newOperatingPoint.excitationsPerWinding = [newOperatingPoint.excitationsPerWinding[0]];
+        }
 
         this.operatingPointsCircuitSimulator.confirmedColumns.push([]);
         this.operatingPointsCircuitSimulator.columnNames.push([]);

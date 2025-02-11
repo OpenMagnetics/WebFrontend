@@ -1,5 +1,4 @@
 <script setup>
-import { useStyleStore } from '/src/stores/style'
 import { useMasStore } from '/src/stores/mas'
 import WaveformGraph from '/src/components/Toolbox/OperatingPoints/Output/WaveformGraph.vue'
 import WaveformFourier from '/src/components/Toolbox/OperatingPoints/Output/WaveformFourier.vue'
@@ -39,7 +38,6 @@ export default {
     },
     data() {
         const masStore = useMasStore();
-        const styleStore = useStyleStore();
         if (masStore.mas.inputs.operatingPoints.length == 0) {
             masStore.mas.inputs.operatingPoints.push(
                 {
@@ -52,7 +50,6 @@ export default {
 
         return {
             masStore,
-            styleStore,
             errorMessages: "",
         }
     },
@@ -117,7 +114,7 @@ export default {
             <div class="col-lg-4 col-md-12" style="max-width: 360px;">
 
                 <label
-                    :style="combinedStyle([styleStore.operatingPoints.inputTitleFontSize, styleStore.operatingPoints.commonParameterTextColor])"
+                    :style="combinedStyle([$styleStore.operatingPoints.inputTitleFontSize, $styleStore.operatingPoints.commonParameterTextColor])"
                     :data-cy="dataTestLabel + '-current-title'"
                     class="mx-0 p-0 mb-4"
                 >
@@ -135,7 +132,7 @@ export default {
                 />
 
                 <button
-                    :style="styleStore.operatingPoints.confirmColumnsButton"
+                    :style="$styleStore.operatingPoints.confirmColumnsButton"
                     :disabled='loadedFile==""'
                     :data-cy="dataTestLabel + '-import-button'"
                     class="btn btn-success fs-5 col-sm-12 col-md-12 mt-3 p-0"
@@ -151,7 +148,7 @@ export default {
                     <label :data-cy="dataTestLabel + '-error-text'" class="text-danger text-center col-12 pt-1" style="font-size: 0.9em; white-space: pre-wrap;">{{errorMessages}}</label>
                 </div>
                 <button
-                    :style="styleStore.operatingPoints.goBackSelectingButton"
+                    :style="$styleStore.operatingPoints.goBackSelectingButton"
                     :data-cy="dataTestLabel + '-import-button'"
                     class="btn btn-success fs-5 col-sm-12 col-md-12 mt-3 p-0"
                     style="max-height: 2em"

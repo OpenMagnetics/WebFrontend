@@ -1,8 +1,8 @@
 <script setup>
 import Header from '/src/components/Header.vue'
 import Footer from '/src/components/Footer.vue'
-import Storyline from '/src/components/Storyline.vue'
-import ContextMenu from '/src/components/ContextMenu.vue'
+import Storyline from '/src/components/Toolbox/Storyline.vue'
+import ContextMenu from '/src/components/Toolbox/ContextMenu.vue'
 import { toTitleCase } from '/WebSharedComponents/assets/js/utils.js'
 
 import ElementFromList from '/WebSharedComponents/DataInput/ElementFromList.vue'
@@ -157,13 +157,13 @@ export default {
 </script>
 
 <template>
-    <div class="d-flex flex-column min-vh-100">
+    <div class="d-flex flex-column min-vh-100" :style="$styleStore.main">
         <Header />
-        <main role="main" class="main text-white">
+        <main role="main" class="main" :style="$styleStore.main">
             <div v-if="currentStoryline[$userStore.getCurrentToolState().subsection] != null && $userStore.getCurrentToolState().canContinue != null" class="container mx-auto">
                 <div class="row">
-                    <div v-if="showStoryline" class="text-white text-center col-xs-12 col-sm-12 col-md-1 bg-transparent m-0 p-0" style="height: fit-content">
-                        <div class="border border-primary " style="height: fit-content">
+                    <div v-if="showStoryline" class=" text-center col-xs-12 col-sm-12 col-md-1 bg-transparent m-0 p-0" style="height: fit-content">
+                        <div class="border" style="height: fit-content"  :style="$styleStore.storyline.main">
                             <Storyline
                                 class="p-3"
                                 :selectedTool="$userStore.getCurrentToolState().subsection"
@@ -175,8 +175,7 @@ export default {
                                 @nextTool="nextTool"
                             />
                         </div>
-                        <div class="border border-primary mt-2" style="height: fit-content">
-                            <h4 class="text-center pt-2 fs-5">Tool menu</h4>
+                        <div class="border mt-2" style="height: fit-content" :style="$styleStore.contextMenu.main">
                             <ContextMenu
                                 :showAdviserSettingsOption="$userStore.getCurrentToolState().subsection == 'magneticAdviser' || $userStore.getCurrentToolState().subsection == 'magneticCoreAdviser' || $userStore.getCurrentToolState().subsection == 'magneticBuilder'"
                                 :showCatalogAdviserSettingsOption="$userStore.selectedApplication == 'catalog'"
@@ -189,21 +188,21 @@ export default {
                             />
                         </div>
                     </div>
-                    <div class="text-white bg-dark text-center col-xs-12 col-sm-12 col-md-11 bg-transparent px container" >
+                    <div class="text-center col-xs-12 col-sm-12 col-md-11 bg-transparent px container" >
                         <div class="mb-2 row px-3" >
 
                             <ElementFromList
                                 v-if="operatingPointNames.length > 1"
-                                class="col-3 mb-1 text-start"
+                                class="col-2 mb-1 text-start"
                                 :dataTestLabel="dataTestLabel + '-OperatingPointSelector'"
                                 :name="'operatingPoint'"
-                                :replaceTitle="'Op. Point'"
+                                :replaceTitle="''"
                                 :titleSameRow="true"
                                 :justifyContent="true"
                                 v-model="localData"
                                 :options="operatingPointNames"
-                                :labelWidthProportionClass="'col-4'"
-                                :selectStyleClass="'col-8'"
+                                :labelWidthProportionClass="'col-0'"
+                                :selectStyleClass="'col-12'"
                                 :labelBgColor="$settingsStore.labelBgColor"
                                 :valueBgColor="$settingsStore.valueBgColor"
                                 :textColor="$settingsStore.textColor"

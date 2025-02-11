@@ -1,8 +1,7 @@
 <script setup>
 import { useMasStore } from '/src/stores/mas'
-import { useStyleStore } from '/src/stores/style'
 import OperatingPoint from '/src/components/Toolbox/OperatingPoints/OperatingPoint.vue'
-import { roundWithDecimals, deepCopy } from '/WebSharedComponents/assets/js/utils.js'
+import { roundWithDecimals, deepCopy, combinedStyle } from '/WebSharedComponents/assets/js/utils.js'
 
 import { defaultOperatingPointExcitation, defaultPrecision, defaultSinusoidalNumberPoints } from '/WebSharedComponents/assets/js/defaults.js'
 import { tooltipsMagneticSynthesisOperatingPoints } from '/WebSharedComponents/assets/js/texts.js'
@@ -23,7 +22,6 @@ export default {
     },
     data() {
         const masStore = useMasStore();
-        const styleStore = useStyleStore();
         const currentOperatingPointIndex = 0;
         const currentWindingIndex = 0;
         const errorMessages = "";
@@ -32,7 +30,6 @@ export default {
 
         return {
             masStore,
-            styleStore,
             currentOperatingPointIndex,
             currentWindingIndex,
             errorMessages,
@@ -40,7 +37,7 @@ export default {
     },
     computed: {
         excitationSelectorDisabled() {
-            return this.$stateStore.operatingPoints.modePerPoint[this.currentOperatingPointIndex] !== this.$stateStore.OperatingPointsMode.Manual && this.$stateStore.operatingPoints.modePerPoint[this.currentOperatingPointIndex] !== this.$stateStore.OperatingPointsMode.CircuitSimulatorImport;
+            return this.$stateStore.operatingPoints.modePerPoint[this.currentOperatingPointIndex] !== this.$stateStore.OperatingPointsMode.Manual && this.$stateStore.operatingPoints.modePerPoint[this.currentOperatingPointIndex] !== this.$stateStore.OperatingPointsMode.CircuitSimulatorImport && this.$stateStore.operatingPoints.modePerPoint[this.currentOperatingPointIndex] !== this.$stateStore.OperatingPointsMode.HarmonicsList;
         },
         styleTooltip() {
             var relative_placement;
@@ -169,7 +166,7 @@ export default {
             });
         },
         addNewOperatingPoint() {
-            this.$stateStore.addNewOperatingPoint(this.currentOperatingPointIndex);
+            this.$stateStore.addNewOperatingPoint(this.currentOperatingPointIndex, this.$stateStore.operatingPoints.modePerPoint[this.currentOperatingPointIndex]);
             this.currentOperatingPointIndex += 1;
             this.$emit("canContinue", this.canContinue);
         },
@@ -248,9 +245,9 @@ export default {
 
 <template>
     <div class="container">
-        <div class="row" v-tooltip="styleTooltip">
-            <div class="col-sm-12 col-md-2 text-start border border-primary m-0 px-1">
-                <div class="col-12 row m-0 p-0 border-bottom border-top rounded-4 border-4 mb-5 pb-2 pt-2 mt-2 bg-light" :style="operatingPointIndex == currentOperatingPointIndex? 'opacity: 1;' : 'opacity: 0.65;'"  v-for="operatingPoint, operatingPointIndex in masStore.mas.inputs.operatingPoints">
+        <div class="row" v-tooltip="styleTooltip" :style="$styleStore.operatingPoints.main">
+            <div class="col-sm-12 col-md-2 text-start border m-0 px-1" :style="$styleStore.operatingPoints.main">
+                <div class="col-12 row m-0 p-0 px-1 border-bottom border-top rounded-4 border-4 mb-5 pb-2 pt-2 mt-2" :style="combinedStyle([$styleStore.operatingPoints.operatingPointBgColor, operatingPointIndex == currentOperatingPointIndex? 'opacity: 1;' : 'opacity: 0.65;'])"  v-for="operatingPoint, operatingPointIndex in masStore.mas.inputs.operatingPoints">
                     <Text
                         :name="'name'"
                         v-model="masStore.mas.inputs.operatingPoints[operatingPointIndex]"
@@ -259,33 +256,33 @@ export default {
                         :canBeEmpty="false"
                         :labelWidthProportionClass="'col-0'"
                         :valueWidthProportionClass="'col-12'"
-                        :valueFontSize="styleStore.operatingPoints.inputFontSize"
-                        :titleFontSize="styleStore.operatingPoints.inputTitleFontSize"
-                        :labelBgColor="styleStore.operatingPoints.titleLabelBgColor"
-                        :valueBgColor="styleStore.operatingPoints.titleLabelBgColor"
-                        :textColor="styleStore.operatingPoints.titleTextColor"
+                        :valueFontSize="$styleStore.operatingPoints.inputFontSize"
+                        :titleFontSize="$styleStore.operatingPoints.inputTitleFontSize"
+                        :labelBgColor="$styleStore.operatingPoints.titleLabelBgColor"
+                        :valueBgColor="$styleStore.operatingPoints.titleLabelBgColor"
+                        :textColor="$styleStore.operatingPoints.titleTextColor"
                     />
                     <div v-if="currentOperatingPointIndex == operatingPointIndex" class="col-12 row m-0 p-0 " v-for="winding, windingIndex in masStore.mas.magnetic.coil.functionalDescription">
                         <Text
                             :disabled="excitationSelectorDisabled"
-                            class="rounded-2 fs-5 ms-2 col-7 p-0 mb-2 "
+                            class="rounded-2 col-7 p-0 px-3 "
                             :name="'name'"
                             v-model="masStore.mas.magnetic.coil.functionalDescription[windingIndex]"
                             :dataTestLabel="dataTestLabel + '-operating-point-' + operatingPointIndex + '-winding-' + windingIndex + '-name-input'"
                             :canBeEmpty="false"
                             :labelWidthProportionClass="'col-0'"
                             :valueWidthProportionClass="'col-12'"
-                            :valueFontSize="styleStore.operatingPoints.inputFontSize"
-                            :titleFontSize="styleStore.operatingPoints.inputTitleFontSize"
-                            :labelBgColor="styleStore.operatingPoints.inputLabelBgColor"
-                            :valueBgColor="styleStore.operatingPoints.inputValueBgColor"
-                            :textColor="styleStore.operatingPoints.titleTextColor"
+                            :valueFontSize="$styleStore.operatingPoints.inputFontSize"
+                            :titleFontSize="$styleStore.operatingPoints.inputTitleFontSize"
+                            :labelBgColor="$styleStore.operatingPoints.inputLabelBgColor"
+                            :valueBgColor="$styleStore.operatingPoints.inputValueBgColor"
+                            :textColor="$styleStore.operatingPoints.titleTextColor"
                             :extraStyleClass="'border-0'"
                         />
                         <button
                             v-tooltip="tooltipsMagneticSynthesisOperatingPoints[(windingIndex == 0? 'reflectPrimary' : 'reflectSecondaries')]"
-                            :style="styleStore.operatingPoints.reflectWindingButton"
-                            class="btn col-2 mt-2 p-0"
+                            :style="$styleStore.operatingPoints.reflectWindingButton"
+                            class="btn col-2 p-0"
                             :disabled="excitationSelectorDisabled"
                             :data-cy="dataTestLabel + '-operating-point-' + operatingPointIndex + '-winding-' + windingIndex + '-reflect-button'"
                             v-if="masStore.mas.magnetic.coil.functionalDescription.length == 2 && masStore.mas.inputs.operatingPoints[operatingPointIndex].excitationsPerWinding[(windingIndex + 1) % 2] != null"
@@ -296,14 +293,14 @@ export default {
                                 <path d="M7 2.5a.5.5 0 0 0-.939-.24l-6 11A.5.5 0 0 0 .5 14h6a.5.5 0 0 0 .5-.5v-11zm2.376-.484a.5.5 0 0 1 .563.245l6 11A.5.5 0 0 1 15.5 14h-6a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .376-.484zM10 4.46V13h4.658L10 4.46z"/>
                             </svg>
                         </button>
-                        <div v-if="!(masStore.mas.magnetic.coil.functionalDescription.length == 2 && masStore.mas.inputs.operatingPoints[operatingPointIndex].excitationsPerWinding[(windingIndex + 1) % 2] != null)" class="fs-6 col-2 mt-2 p-0" style="max-height: 1.7em">
+                        <div v-if="!(masStore.mas.magnetic.coil.functionalDescription.length == 2 && masStore.mas.inputs.operatingPoints[operatingPointIndex].excitationsPerWinding[(windingIndex + 1) % 2] != null)" class="fs-6 col-2 p-0" style="max-height: 1.7em">
                         </div>
                         <button
                             v-tooltip="tooltipsMagneticSynthesisOperatingPoints['editWindingWaveform']"
                             :disabled="excitationSelectorDisabled"
                             :data-cy="dataTestLabel + '-operating-point-' + operatingPointIndex + '-winding-' + windingIndex + '-select-button'"
-                            :style="currentWindingIndex == windingIndex? styleStore.operatingPoints.selectedWindingButton : isExcitationProcessed(operatingPointIndex, windingIndex)? styleStore.operatingPoints.unselectedProcessedWindingButton : styleStore.operatingPoints.unselectedUnprocessedWindingButton"
-                            class="btn col-2 mt-2 p-0 ms-1"
+                            :style="currentWindingIndex == windingIndex? $styleStore.operatingPoints.selectedWindingButton : isExcitationProcessed(operatingPointIndex, windingIndex)? $styleStore.operatingPoints.unselectedProcessedWindingButton : $styleStore.operatingPoints.unselectedUnprocessedWindingButton"
+                            class="btn col-2 p-0 ms-1"
                             :class="currentWindingIndex == windingIndex? 'disabled' : ''"
                             @click="changeWinding(windingIndex)"
                             style="max-height: 1.7em;"
@@ -320,7 +317,7 @@ export default {
                     <div v-else class="col-12 row m-0 p-0">
                         <button
                             :data-cy="dataTestLabel + '-remove-operating-point-' + operatingPointIndex + '-button'"
-                            :style="styleStore.operatingPoints.removeOperatingPointButton"
+                            :style="$styleStore.operatingPoints.removeOperatingPointButton"
                             class="btn col-6 mt-2"
                             @click="removePoint(operatingPointIndex)"
                         >
@@ -328,7 +325,7 @@ export default {
                         </button>
                         <button
                             :data-cy="dataTestLabel + '-select-operating-point-' + operatingPointIndex + '-button'"
-                            :style="styleStore.operatingPoints.selectOperatingPointButton"
+                            :style="$styleStore.operatingPoints.selectOperatingPointButton"
                             class="btn col-6 mt-2"
                             @click="currentOperatingPointIndex = operatingPointIndex"
                         >
@@ -338,7 +335,7 @@ export default {
                 </div>
                 <button
                     :data-cy="dataTestLabel + '-add-operating-point-button'"
-                    :style="styleStore.operatingPoints.addOperatingPointButton"
+                    :style="$styleStore.operatingPoints.addOperatingPointButton"
                     class="btn col-12 mt-2"
                     @click="addNewOperatingPoint"
                 >
@@ -346,7 +343,7 @@ export default {
                 </button>
                 <button
                     :data-cy="dataTestLabel + '-modify-number-windings-button'"
-                    :style="styleStore.operatingPoints.modifyNumberWindingsButton"
+                    :style="$styleStore.operatingPoints.modifyNumberWindingsButton"
                     class="btn col-12 mt-2"
                     @click="$emit('changeTool', 'designRequirements')"
                 >

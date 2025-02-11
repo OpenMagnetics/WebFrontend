@@ -1,4 +1,5 @@
 <script setup >
+import { combinedStyle, combinedClass } from '/WebSharedComponents/assets/js/utils.js'
 import { defineAsyncComponent } from "vue";
 import { useElementVisibility  } from '@vueuse/core'
 import { ref } from 'vue'
@@ -118,6 +119,23 @@ export default {
         let fontawesome = document.createElement('script')
         fontawesome.setAttribute('src', 'https://kit.fontawesome.com/d5a40d6941.js')
         document.head.appendChild(fontawesome)
+
+        const style = getComputedStyle(document.body);
+        const theme = {
+            primary: style.getPropertyValue('--bs-primary'),
+            secondary: style.getPropertyValue('--bs-secondary'),
+            success: style.getPropertyValue('--bs-success'),
+            info: style.getPropertyValue('--bs-info'),
+            warning: style.getPropertyValue('--bs-warning'),
+            danger: style.getPropertyValue('--bs-danger'),
+            light: style.getPropertyValue('--bs-light'),
+            dark: style.getPropertyValue('--bs-dark'),
+            white: style.getPropertyValue('--bs-white'),
+            transparent: style.getPropertyValue('--bs-transparent'),
+        };
+        console.log(theme)
+        this.$styleStore.setTheme(theme);
+
         this.onLoggedIn()
     }
 }
@@ -125,90 +143,172 @@ export default {
 
 <template>
     <NotificationsModal/>
-    <nav class="navbar navbar-expand-lg bg-dark navbar-dark text-primary mb-1 om-header" id="header_wrapper">
+    <nav class="navbar navbar-expand-lg mb-1 om-header" id="header_wrapper" :style="$styleStore.header.main">
         <div class="container-fluid">
             <a data-cy="Header-logo-home-link" href="/" aria-label="Visit OpenMagnetics and Tear Down the Paywalls!">
                 <img src="/images/logo.svg" width="60" height="40" href="/" class="d-inline-block align-top me-3" alt="OpenMagnetics Logo">
             </a>
-            <a  data-cy="Header-brand-home-link" class="navbar-brand text-primary" href="/">OpenMagnetics</a>
-            <button class="navbar-toggler text-primary" ref="headerToggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+            <a
+                :style="$styleStore.header.title"
+                data-cy="Header-brand-home-link"
+                class="navbar-brand"
+                href="/"
+            >
+                {{'OpenMagnetics'}}
+            </a>
+            <button
+                :style="$styleStore.header.collapsedButton"
+                class="navbar-toggler"
+                ref="headerToggler"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#navbarNavDropdown"
+                aria-controls="navbarNavDropdown"
+                aria-expanded="false"
+                aria-label="Toggle navigation">
             <span class="navbar-toggler-icon text-white"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNavDropdown">
                 <ul class="navbar-nav text-center">
-                    <li class="nav-item">
-                        <a data-cy="Header-alfs-musings-link" :class="headerTogglerIsVisible? '' : 'mx-1'" class="nav-link text-primary me-3 text-center" href="https://www.linkedin.com/newsletters/7026708624966135808/"  target="_blank">Alf's Musings</a>
+                    <li class="nav-item" >
+                        <a 
+                            :style="$styleStore.header.musings"
+                            data-cy="Header-alfs-musings-link"
+                            :class="headerTogglerIsVisible? '' : 'mx-1'"
+                            class="nav-link me-3 text-center"
+                            href="https://www.linkedin.com/newsletters/7026708624966135808/"
+                            target="_blank"
+                        >
+                            {{"Alf's Musings"}}
+                        </a>
                     </li>
-                    <li class="nav-item dropdown bg-dark">
-                      <a class="nav-link dropdown-toggle text-primary bg-dark border-primary border rounded" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        <i class="me-2 fa-solid fa-square-plus"></i>New Design
-                      </a>
-                      <ul class="dropdown-menu bg-dark border-primary px-1">
-                        <li><button data-cy="Header-new-magnetic-link" :class="headerTogglerIsVisible? 'w-100' : 'mx-1' " class="dropdown-item btn btn-block nav-link text-primary bg-dark border-primary px-2" @click="onNewFilterMagneticDesign"><i class="me-2 fa-solid fa-filter"></i>New Filter</button></li>
-                        <li><button data-cy="Header-new-magnetic-link" :class="headerTogglerIsVisible? 'w-100' : 'mx-1' " class="dropdown-item btn btn-block nav-link text-primary bg-dark border-primary px-2" @click="onNewPowerMagneticDesign"><i class="me-2 fa-solid fa-toolbox"></i>New Magnetic</button></li>
-                        <!-- <li><hr class="dropdown-divider"></li> -->
-                      </ul>
+                    {{combinedClass([$styleStore.header.designSectionDropdown])}}
+                    <li class="nav-item dropdown">
+                        <a 
+                            :style="$styleStore.header.designSectionDropdown"
+                            :class="combinedClass([$styleStore.header.designSectionDropdown])"
+                            class="nav-link dropdown-toggle border rounded"
+                            href="#"
+                            role="button"
+                            data-bs-toggle="dropdown"
+                            aria-expanded="false"
+                        >
+                            <i class="me-2 fa-solid fa-square-plus"></i>{{'New Design'}}
+                        </a>
+                        <ul class="dropdown-menu px-1" :style="$styleStore.header.designSectionDropdown">
+                            <li>
+                                <button
+                                    :style="$styleStore.header.designSectionDropdown"
+                                    data-cy="Header-new-magnetic-link"
+                                    :class="headerTogglerIsVisible? 'w-100' : 'mx-1' "
+                                    class="dropdown-item btn btn-block   nav-link px-2"
+                                    @click="onNewFilterMagneticDesign"
+                                >
+                                    <i class="me-2 fa-solid fa-filter"></i>{{'New Filter'}}
+                                </button>
+                            </li>
+                            <li>
+                                <button
+                                    :style="$styleStore.header.designSectionDropdown"
+                                    data-cy="Header-new-magnetic-link"
+                                    :class="headerTogglerIsVisible? 'w-100' : 'mx-1' "
+                                    class="dropdown-item btn btn-block   nav-link px-2"
+                                    @click="onNewPowerMagneticDesign"
+                                >
+                                    <i class="me-2 fa-solid fa-toolbox"></i>{{'New Magnetic'}}
+                                </button>
+                            </li>
+                            <!-- <li><hr class="dropdown-divider"></li> -->
+                        </ul>
                     </li>
-                    <li class="nav-item dropdown bg-dark">
-                      <a :class="headerTogglerIsVisible? '' : 'mx-1'" class="nav-link dropdown-toggle text-primary bg-dark border-primary border rounded" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        <i class="me-2 fa-solid fa-toolbox"></i>Other Tools
-                      </a>
-                      <ul class="dropdown-menu bg-dark border-primary px-1">
-                        <li><button data-cy="Header-insulation-coordinator-link" :class="headerTogglerIsVisible? 'w-100' : 'mx-1' " class="dropdown-item btn btn-block nav-link text-primary bg-dark border-primary px-2" @click="onInsulationCoordinator"><i class="me-2 fa-solid fa-bolt-lightning"></i>Insulation Coordinator</button></li>
+                    <li class="nav-item dropdown">
+                        <a
+                            :style="$styleStore.header.othersSectionDropdown"
+                            :class="headerTogglerIsVisible? '' : 'mx-1'"
+                            class="nav-link dropdown-toggle border rounded"
+                            href="#"
+                            role="button"
+                            data-bs-toggle="dropdown"
+                            aria-expanded="false"
+                        >
+                            <i class="me-2 fa-solid fa-toolbox"></i>{{'Other Tools'}}
+                        </a>
+                      <ul class="dropdown-menu px-1" :style="$styleStore.header.othersSectionDropdown">
+                        <li>
+                            <button
+                                :style="$styleStore.header.designSectionDropdown"
+                                data-cy="Header-insulation-coordinator-link"
+                                :class="headerTogglerIsVisible? 'w-100' : 'mx-1' "
+                                class="dropdown-item btn btn-block nav-link px-2"
+                                @click="onInsulationCoordinator"
+                            >
+                                <i class="me-2 fa-solid fa-bolt-lightning"></i>{{'Insulation Coordinator'}}
+                            </button>
+                        </li>
                       </ul>
                     </li>
                     <li v-if="$userStore.isAnyDesignLoaded() && $route.name != 'MagneticTool'" class="nav-item">
                         <span class="nav-item">
-                            <button data-cy="Header-donate-link" :class="headerTogglerIsVisible? 'w-100' : 'mx-1' " class="btn btn-block nav-link text-primary bg-dark border-primary px-2" @click="continueMagneticToolDesign"><i class="me-2 fa-solid fa-box-open"></i>Continue design</button>
+                            <button
+                                :style="$styleStore.header.continueDesignButton"
+                                data-cy="Header-donate-link"
+                                :class="headerTogglerIsVisible? 'w-100' : 'mx-1' "
+                                class="btn btn-block nav-link px-2"
+                                @click="continueMagneticToolDesign"
+                            >
+                                <i class="me-2 fa-solid fa-box-open"></i>{{'Continue design'}}
+                            </button>
                         </span>
                     </li>
                 </ul>
                 <ul class="navbar-nav ms-auto text-center">
                     <li class="nav-item">
                         <span class="nav-item">
-                            <a data-cy="Header-donate-link" href="https://en.liberapay.com/OpenMagnetics/" target="_blank" rel="noopener noreferrer" class="btn nav-link text-dark bg-info border-dark">Donate <i class="fa-solid fa-circle-dollar-to-slot"></i></a>
+                            <a
+                                :style="$styleStore.header.donateButton"
+                                data-cy="Header-donate-link"
+                                href="https://en.liberapay.com/OpenMagnetics/"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                class="btn nav-link text-dark bg-info border-dark"
+                            >
+                                {{'Donate '}}<i class="fa-solid fa-circle-dollar-to-slot"></i></a>
                         </span>
                     </li>
                     <li class="nav-item">
                         <span class="nav-item">
-                            <button data-cy="Header-report-bug-modal-button" :class="headerTogglerIsVisible? 'w-100' : 'mx-1' " class="btn nav-link text-danger border-dark text-center"  data-bs-toggle="modal" data-bs-target="#reportBugModal">{{headerTogglerIsVisible? 'Report a bug' : 'Bug?'}} <i class="fa-solid fa-bug"></i></button>
+                            <button
+                                :style="$styleStore.header.bugButton"
+                                data-cy="Header-report-bug-modal-button"
+                                :class="headerTogglerIsVisible? 'w-100' : 'mx-1' "
+                                class="btn nav-link text-danger border-dark text-center"
+                                data-bs-toggle="modal"
+                                data-bs-target="#reportBugModal"
+                            >
+                                {{headerTogglerIsVisible? 'Report a bug' : 'Bug?'}} <i class="fa-solid fa-bug"></i>
+                            </button>
                         </span>
                     </li>
                     <li class="nav-item">
                         <span class="nav-item">
-                            <a data-cy="Header-repository-link" :class="headerTogglerIsVisible? 'w-100' : 'mx-1' " class="btn nav-link text-success border-dark" href="https://github.com/OpenMagnetics/" target="_blank" rel="noopener noreferrer">{{headerTogglerIsVisible? 'GitHub ' : ''}}<i class="fa-brands fa-github"></i></a>
+                            <a
+                                :style="$styleStore.header.githubButton"
+                                data-cy="Header-repository-link"
+                                :class="headerTogglerIsVisible? 'w-100' : 'mx-1' "
+                                class="btn nav-link text-success border-dark"
+                                href="https://github.com/OpenMagnetics/"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                            >
+                                {{headerTogglerIsVisible? 'GitHub ' : ''}}<i class="fa-brands fa-github"></i>
+                            </a>
                         </span>
                     </li>
-<!--                     <li v-if="!loggedIn" class="nav-item">
-                        <span class="nav-item">
-                            <button data-cy="Header-register-modal-button" class="btn nav-link text-primary" data-bs-toggle="modal" data-bs-target="#registerModal">Register</button>
-                        </span>
-                    </li>
-                    <li v-if="!loggedIn" class="nav-item">
-                        <span class="nav-item">
-                            <button data-cy="Header-login-modal-button" class="btn nav-link text-primary" data-bs-toggle="modal" data-bs-target="#loginModal">Login</button>
-                        </span>
-                    </li>
-                    <li v-if="loggedIn" class="nav-item dropdown">
-                        <a data-cy="Header-user-menu-button" class="nav-link dropdown-toggle rounded-3 ps-1 text-light bg-primary ps-3 pe-3" href="#" role="button" data-bs-toggle="offcanvas" data-bs-target="#UserOffCanvas" aria-controls="UserOffCanvas">
-                            {{username}}
-                        </a>
-                    </li> -->
                 </ul>
             </div>
 
         </div>
     </nav>
- 
-    <div class="offcanvas offcanvas-end bg-light" tabindex="-1" id="UserOffCanvas" aria-labelledby="UserOffCanvasLabel">
-        <div class="offcanvas-header">
-            <h5 class="offcanvas-title text-white fs-3" id="UserOffCanvasLabel">{{username}}</h5>
-            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="UserOffCanvasClose"></button>
-        </div>
-        <div class="offcanvas-body">
-            <button data-cy="Header-logout-button" class="btn mt-5 text-dark bg-primary fs-5" data-bs-dismiss="offcanvas" @click="onLoggedOut">Logout</button>
-        </div>
-    </div>
 
     <!-- Modal -->
     <BugReporterModal/>

@@ -1,5 +1,4 @@
 <script setup>
-import { useStyleStore } from '/src/stores/style'
 import { useMasStore } from '/src/stores/mas'
 import { Chart, registerables } from 'chart.js'
 import { formatCurrent, removeTrailingZeroes, formatFrequency, formatVoltage } from '/WebSharedComponents/assets/js/utils.js'
@@ -38,31 +37,29 @@ export default {
     },
     data() {
         const masStore = useMasStore();
-        const styleStore = useStyleStore();
         const data = {
                 labels: [],
                 datasets: [
                     {
                         label: 'Current',
                         yAxisID: 'current',
-                        fillColor: styleStore.operatingPoints.currentBgColor.background,
-                        borderColor: styleStore.operatingPoints.currentTextColor.color,
-                        backgroundColor: styleStore.operatingPoints.currentBgColor.background,
+                        fillColor: this.$styleStore.operatingPoints.currentBgColor.background,
+                        borderColor: this.$styleStore.operatingPoints.currentTextColor.color,
+                        backgroundColor: this.$styleStore.operatingPoints.currentBgColor.background,
                         data: []
                     },
                     {
                         label: 'Voltage',
                         yAxisID: 'voltage',
-                        fillColor: styleStore.operatingPoints.voltageBgColor.background,
-                        borderColor: styleStore.operatingPoints.voltageTextColor.color,
-                        backgroundColor: styleStore.operatingPoints.voltageBgColor.background,
+                        fillColor: this.$styleStore.operatingPoints.voltageBgColor.background,
+                        borderColor: this.$styleStore.operatingPoints.voltageTextColor.color,
+                        backgroundColor: this.$styleStore.operatingPoints.voltageBgColor.background,
                         data: []
                     }
                 ],
             };
         return {
             data,
-            styleStore,
             masStore,
         }
     },
@@ -100,7 +97,7 @@ export default {
                 legend: {
                     position: 'top',
                     labels: {
-                        color: this.styleStore.operatingPoints.commonParameterTextColor.color,
+                        color: this.$styleStore.operatingPoints.commonParameterTextColor.color,
                     }
                 },
                 tooltip: {
@@ -147,14 +144,14 @@ export default {
                 current: {
                     position: 'left',
                     ticks: {
-                        color: this.styleStore.operatingPoints.currentTextColor.color,
+                        color: this.$styleStore.operatingPoints.currentTextColor.color,
                         font: {
                             size: 12
                         },
                     },
                     grid: {
-                        color: this.styleStore.operatingPoints.currentTextColor.color,
-                        borderColor: this.styleStore.operatingPoints.currentTextColor.color,
+                        color: this.$styleStore.operatingPoints.currentTextColor.color,
+                        borderColor: this.$styleStore.operatingPoints.currentTextColor.color,
                         borderWidth: 2,
                         lineWidth: 0.4
                     },
@@ -162,21 +159,21 @@ export default {
                 voltage: {
                     position: 'right',
                     ticks: {
-                        color: this.styleStore.operatingPoints.voltageTextColor.color,
+                        color: this.$styleStore.operatingPoints.voltageTextColor.color,
                         font: {
                             size: 12
                         },
                     },
                     grid: {
-                        color: this.styleStore.operatingPoints.voltageTextColor.color,
-                        borderColor: this.styleStore.operatingPoints.voltageTextColor.color,
+                        color: this.$styleStore.operatingPoints.voltageTextColor.color,
+                        borderColor: this.$styleStore.operatingPoints.voltageTextColor.color,
                         borderWidth: 2,
                         lineWidth: 0.4
                     },
                 },
                 x:{
                     ticks: {
-                        color: this.styleStore.operatingPoints.commonParameterTextColor.color,
+                        color: this.$styleStore.operatingPoints.commonParameterTextColor.color,
                         font: {
                             size: 12
                         },
@@ -196,8 +193,8 @@ export default {
                         }
                     },
                     grid: {
-                        color: this.styleStore.operatingPoints.commonParameterTextColor.color,
-                        borderColor: this.styleStore.operatingPoints.commonParameterTextColor.color,
+                        color: this.$styleStore.operatingPoints.commonParameterTextColor.color,
+                        borderColor: this.$styleStore.operatingPoints.commonParameterTextColor.color,
                         borderWidth: 2,
                         lineWidth: 0.4
                     },

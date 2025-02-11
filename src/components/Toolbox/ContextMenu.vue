@@ -90,7 +90,8 @@ export default {
 </script>
 
 <template>
-    <div class="pb-2 p-0 container" v-tooltip="styleTooltip">
+    <div class="pb-2 p-0 container" v-tooltip="styleTooltip" :style="$styleStore.contextMenu.main">
+        <h4 class="text-center pt-2 fs-5">Tool menu</h4>
         <AdviserSettings 
             v-if="showAdviserSettingsOption"
             :modalName="'AdviserSettingsModal'"
@@ -108,25 +109,29 @@ export default {
         />
         <div class="row px-3">
             <button
+                :style="$styleStore.contextMenu.settingsButton"
                 v-if="showAdviserSettingsOption || showCatalogAdviserSettingsOption || showOperatingPointSettingsOption"  
                 :data-cy="dataTestLabel + 'settings-modal-button'"
-                class="btn btn-info mx-auto d-block mt-4 col-6 col-sm-6 col-md-12"
+                class="btn mx-auto d-block mt-4 col-6 col-sm-6 col-md-12"
                 data-bs-toggle="modal"
                 :data-bs-target="modalTarget"
             >Settings</button>
             <button
+                :style="$styleStore.contextMenu.editButton"
                 v-if="showEditOption"  
                 :data-cy="dataTestLabel + 'edit-from-viewer-button'"
-                class="btn btn-info mx-auto d-block mt-4 col-6 col-sm-6 col-md-12"
+                class="btn mx-auto d-block mt-4 col-6 col-sm-6 col-md-12"
                 @click="$emit('editMagnetic')"
             >Edit</button>
             <button
+                :style="$styleStore.contextMenu.confirmButton"
                 v-if="showConfirmOption"  
                 :data-cy="dataTestLabel + 'edit-from-viewer-button'"
                 class="btn btn-success mx-auto d-block mt-4 col-6 col-sm-6 col-md-12"
                 @click="$emit('viewMagnetic')"
             >Confirm</button>
             <button
+                :style="$styleStore.contextMenu.orderButton"
                 v-if="showOrderOption"  
                 :data-cy="dataTestLabel + '-order-button'"
                 class="btn btn-success mx-auto d-block mt-4 col-6 col-sm-6 col-md-12"

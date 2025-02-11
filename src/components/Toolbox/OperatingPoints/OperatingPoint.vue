@@ -1,6 +1,5 @@
 <script setup>
 import { useMasStore } from '/src/stores/mas'
-import { useStyleStore } from '/src/stores/style'
 import OperatingPointManual from '/src/components/Toolbox/OperatingPoints/OperatingPointManual.vue'
 import OperatingPointHarmonics from '/src/components/Toolbox/OperatingPoints/OperatingPointHarmonics.vue'
 import OperatingPointCircuitSimulator from '/src/components/Toolbox/OperatingPoints/OperatingPointCircuitSimulator.vue'
@@ -31,7 +30,6 @@ export default {
     },
     data() {
         const masStore = useMasStore();
-        const styleStore = useStyleStore();
         if (masStore.mas.inputs.operatingPoints.length == 0) {
             masStore.mas.inputs.operatingPoints.push(
                 {
@@ -44,7 +42,6 @@ export default {
 
         return {
             masStore,
-            styleStore,
             loadedFile: "",
         }
     },
@@ -162,7 +159,7 @@ export default {
             />
             <div v-if="$stateStore.operatingPoints.modePerPoint[currentOperatingPointIndex] == null" class="col-12">
                 <label
-                    :style="combinedStyle([styleStore.operatingPoints.inputTitleFontSize, styleStore.operatingPoints.commonParameterTextColor])"
+                    :style="combinedStyle([$styleStore.operatingPoints.inputTitleFontSize, $styleStore.operatingPoints.commonParameterTextColor])"
                     :data-cy="dataTestLabel + '-current-title'"
                     class="row mx-0 p-0 mb-4"
                 >
@@ -171,7 +168,7 @@ export default {
                 <div class="row mt-2">
 
                     <label
-                    :style="combinedStyle([styleStore.operatingPoints.inputTitleFontSize, styleStore.operatingPoints.commonParameterTextColor])"
+                    :style="combinedStyle([$styleStore.operatingPoints.inputTitleFontSize, $styleStore.operatingPoints.commonParameterTextColor])"
                         class="mt-3 mb-2"
                     > 
                         {{'Where do you want to import your operating point from?'}}
@@ -184,7 +181,7 @@ export default {
                     </label> -->
                         <input type="file" id="OperatingPoint-CircuitSimulator-upload-input" ref="OperatingPoint-CircuitSimulator-upload-ref" @change="onCircuitSimulatorFileTypeSelected" style="display:none" hidden/>
                         <button
-                            :style="styleStore.operatingPoints.typeButton"
+                            :style="$styleStore.operatingPoints.typeButton"
                             data-cy="OperatingPoint-source-Manual-button"
                             type="button"
                             @click="onCircuitSimulatorTypeSelected"
@@ -195,7 +192,7 @@ export default {
                         </button>
 
                         <button
-                            :style="styleStore.operatingPoints.typeButton"
+                            :style="$styleStore.operatingPoints.typeButton"
                             data-cy="OperatingPoint-source-Manual-button"
                             type="button"
                             @click="onManualTypeSelected"
@@ -205,7 +202,7 @@ export default {
                             {{'I will define it manually'}}
                         </button>
                         <button
-                            :style="styleStore.operatingPoints.typeButton"
+                            :style="$styleStore.operatingPoints.typeButton"
                             data-cy="OperatingPoint-source-Manual-button"
                             type="button"
                             @click="onHarmoncsTypeSelected"
@@ -215,7 +212,7 @@ export default {
                             {{'I want to introduce a list of harmonics'}}
                         </button>
                         <button
-                            :style="styleStore.operatingPoints.typeButton"
+                            :style="$styleStore.operatingPoints.typeButton"
                             data-cy="OperatingPoint-source-Manual-button"
                             type="button"
                             @click="onAcSweepTypeSelected"

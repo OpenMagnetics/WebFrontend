@@ -1,5 +1,4 @@
 <script setup>
-import { useStyleStore } from '/src/stores/style'
 
 import DimensionReadOnly from '/WebSharedComponents/DataInput/DimensionReadOnly.vue'
 import { removeTrailingZeroes } from '/WebSharedComponents/assets/js/utils.js'
@@ -26,10 +25,8 @@ export default {
     },
     data() {
         const blockingRebounds = false;
-        const styleStore = useStyleStore();
 
         return {
-            styleStore,
             blockingRebounds,
         }
     },
@@ -94,7 +91,7 @@ export default {
 <template>
     <div class="container-flex">
         <label
-            :style="combinedStyle([styleStore.operatingPoints.inputTitleFontSize, signalDescriptor == 'current'? styleStore.operatingPoints.currentTextColor : signalDescriptor == 'voltage'? styleStore.operatingPoints.voltageTextColor : styleStore.operatingPoints.commonParameterTextColor])"
+            :style="combinedStyle([$styleStore.operatingPoints.inputTitleFontSize, signalDescriptor == 'current'? $styleStore.operatingPoints.currentTextColor : signalDescriptor == 'voltage'? $styleStore.operatingPoints.voltageTextColor : $styleStore.operatingPoints.commonParameterTextColor])"
         > 
             {{`Outputs for ${signalDescriptor}`}}
         </label>
@@ -108,11 +105,11 @@ export default {
             :min="minimumMaximumScalePerParameter.percentage.min"
             :max="minimumMaximumScalePerParameter.percentage.max"
             :disableShortenLabels="true"
-            :valueFontSize="styleStore.operatingPoints.inputFontSize"
-            :labelFontSize="styleStore.operatingPoints.inputTitleFontSize"
-            :labelBgColor='styleStore.operatingPoints.inputLabelBgColor'
-            :valueBgColor='styleStore.operatingPoints.inputValueBgColor'
-            :textColor='styleStore.operatingPoints.inputTextColor'
+            :valueFontSize="$styleStore.operatingPoints.inputFontSize"
+            :labelFontSize="$styleStore.operatingPoints.inputTitleFontSize"
+            :labelBgColor="$styleStore.operatingPoints.inputLabelBgColor"
+            :valueBgColor="$styleStore.operatingPoints.inputValueBgColor"
+            :textColor="$styleStore.operatingPoints.inputTextColor"
         />
         <DimensionReadOnly 
             :name="'peakToPeak'"
@@ -122,11 +119,11 @@ export default {
             :min="minimumMaximumScalePerParameter[signalDescriptor].min"
             :max="minimumMaximumScalePerParameter[signalDescriptor].max"
             :disableShortenLabels="true"
-            :valueFontSize="styleStore.operatingPoints.inputFontSize"
-            :labelFontSize="styleStore.operatingPoints.inputTitleFontSize"
-            :labelBgColor='styleStore.operatingPoints.inputLabelBgColor'
-            :valueBgColor='styleStore.operatingPoints.inputValueBgColor'
-            :textColor='styleStore.operatingPoints.inputTextColor'
+            :valueFontSize="$styleStore.operatingPoints.inputFontSize"
+            :labelFontSize="$styleStore.operatingPoints.inputTitleFontSize"
+            :labelBgColor="$styleStore.operatingPoints.inputLabelBgColor"
+            :valueBgColor="$styleStore.operatingPoints.inputValueBgColor"
+            :textColor="$styleStore.operatingPoints.inputTextColor"
         />
         <DimensionReadOnly 
             :name="'offset'"
@@ -136,11 +133,11 @@ export default {
             :min="minimumMaximumScalePerParameter[signalDescriptor].min"
             :max="minimumMaximumScalePerParameter[signalDescriptor].max"
             :disableShortenLabels="true"
-            :valueFontSize="styleStore.operatingPoints.inputFontSize"
-            :labelFontSize="styleStore.operatingPoints.inputTitleFontSize"
-            :labelBgColor='styleStore.operatingPoints.inputLabelBgColor'
-            :valueBgColor='styleStore.operatingPoints.inputValueBgColor'
-            :textColor='styleStore.operatingPoints.inputTextColor'
+            :valueFontSize="$styleStore.operatingPoints.inputFontSize"
+            :labelFontSize="$styleStore.operatingPoints.inputTitleFontSize"
+            :labelBgColor="$styleStore.operatingPoints.inputLabelBgColor"
+            :valueBgColor="$styleStore.operatingPoints.inputValueBgColor"
+            :textColor="$styleStore.operatingPoints.inputTextColor"
         />
         <DimensionReadOnly 
             :name="'effectiveFrequency'"
@@ -150,11 +147,11 @@ export default {
             :min="minimumMaximumScalePerParameter.frequency.min"
             :max="minimumMaximumScalePerParameter.frequency.max"
             :disableShortenLabels="true"
-            :valueFontSize="styleStore.operatingPoints.inputFontSize"
-            :labelFontSize="styleStore.operatingPoints.inputTitleFontSize"
-            :labelBgColor='styleStore.operatingPoints.inputLabelBgColor'
-            :valueBgColor='styleStore.operatingPoints.inputValueBgColor'
-            :textColor='styleStore.operatingPoints.inputTextColor'
+            :valueFontSize="$styleStore.operatingPoints.inputFontSize"
+            :labelFontSize="$styleStore.operatingPoints.inputTitleFontSize"
+            :labelBgColor="$styleStore.operatingPoints.inputLabelBgColor"
+            :valueBgColor="$styleStore.operatingPoints.inputValueBgColor"
+            :textColor="$styleStore.operatingPoints.inputTextColor"
         />
         <DimensionReadOnly 
             :name="'peak'"
@@ -164,11 +161,11 @@ export default {
             :min="minimumMaximumScalePerParameter[signalDescriptor].min"
             :max="minimumMaximumScalePerParameter[signalDescriptor].max"
             :disableShortenLabels="true"
-            :valueFontSize="styleStore.operatingPoints.inputFontSize"
-            :labelFontSize="styleStore.operatingPoints.inputTitleFontSize"
-            :labelBgColor='styleStore.operatingPoints.inputLabelBgColor'
-            :valueBgColor='styleStore.operatingPoints.inputValueBgColor'
-            :textColor='styleStore.operatingPoints.inputTextColor'
+            :valueFontSize="$styleStore.operatingPoints.inputFontSize"
+            :labelFontSize="$styleStore.operatingPoints.inputTitleFontSize"
+            :labelBgColor="$styleStore.operatingPoints.inputLabelBgColor"
+            :valueBgColor="$styleStore.operatingPoints.inputValueBgColor"
+            :textColor="$styleStore.operatingPoints.inputTextColor"
         />
         <DimensionReadOnly 
             :name="'rms'"
@@ -178,11 +175,11 @@ export default {
             :min="minimumMaximumScalePerParameter[signalDescriptor].min"
             :max="minimumMaximumScalePerParameter[signalDescriptor].max"
             :disableShortenLabels="true"
-            :valueFontSize="styleStore.operatingPoints.inputFontSize"
-            :labelFontSize="styleStore.operatingPoints.inputTitleFontSize"
-            :labelBgColor='styleStore.operatingPoints.inputLabelBgColor'
-            :valueBgColor='styleStore.operatingPoints.inputValueBgColor'
-            :textColor='styleStore.operatingPoints.inputTextColor'
+            :valueFontSize="$styleStore.operatingPoints.inputFontSize"
+            :labelFontSize="$styleStore.operatingPoints.inputTitleFontSize"
+            :labelBgColor="$styleStore.operatingPoints.inputLabelBgColor"
+            :valueBgColor="$styleStore.operatingPoints.inputValueBgColor"
+            :textColor="$styleStore.operatingPoints.inputTextColor"
         />
         <DimensionReadOnly 
             :name="'thd'"
@@ -194,11 +191,11 @@ export default {
             :min="minimumMaximumScalePerParameter.percentage.min"
             :max="minimumMaximumScalePerParameter.percentage.max"
             :disableShortenLabels="true"
-            :valueFontSize="styleStore.operatingPoints.inputFontSize"
-            :labelFontSize="styleStore.operatingPoints.inputTitleFontSize"
-            :labelBgColor='styleStore.operatingPoints.inputLabelBgColor'
-            :valueBgColor='styleStore.operatingPoints.inputValueBgColor'
-            :textColor='styleStore.operatingPoints.inputTextColor'
+            :valueFontSize="$styleStore.operatingPoints.inputFontSize"
+            :labelFontSize="$styleStore.operatingPoints.inputTitleFontSize"
+            :labelBgColor="$styleStore.operatingPoints.inputLabelBgColor"
+            :valueBgColor="$styleStore.operatingPoints.inputValueBgColor"
+            :textColor="$styleStore.operatingPoints.inputTextColor"
         />
 
     </div>

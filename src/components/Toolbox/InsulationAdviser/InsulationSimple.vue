@@ -33,6 +33,30 @@ export default {
             type: Array,
             default: [],
         },
+        valueFontSize: {
+            type: [String, Object],
+            default: 'fs-6'
+        },
+        titleFontSize: {
+            type: [String, Object],
+            default: 'fs-6'
+        },
+        labelBgColor: {
+            type: [String, Object],
+            default: "bg-transparent",
+        },
+        valueBgColor: {
+            type: [String, Object],
+            default: "bg-light",
+        },
+        textColor: {
+            type: [String, Object],
+            default: "text-white",
+        },
+        unitExtraStyleClass:{
+            type: String,
+            default: ''
+        },
     },
     data() {
         const wiringTechnologyToDisable = ["Deposition"]
@@ -66,10 +90,16 @@ export default {
                 :titleSameRow="false"
                 :optionsToDisable="wiringTechnologyToDisable"
                 :modelValue="modelValue"
+                :labelFontSize='titleFontSize'
+                :valueFontSize="valueFontSize"
+                :labelBgColor="labelBgColor"
+                :valueBgColor="valueBgColor"
+                :textColor="textColor"
+                :unitExtraStyleClass="unitExtraStyleClass"
                 @input="modelValue['wiringTechnology'] = $event.target.value"
                 @update="$emit('update')"
             />
-            <Dimension class="col-md-3 col-xm-12"
+            <Dimension class="col-md-3 col-xm-12 ps-4 border-end"
                 :name="'maximum'"
                 :replaceTitle="'Altitude'"
                 :unit="'m'"
@@ -78,11 +108,17 @@ export default {
                 :max="minimumMaximumScalePerParameter['altitude']['max']"
                 :defaultValue="Utils.deepCopy(defaultValue['altitude']['maximum'])"
                 :allowNegative="false"
+                :labelFontSize='titleFontSize'
+                :valueFontSize="valueFontSize"
+                :labelBgColor="labelBgColor"
+                :valueBgColor="valueBgColor"
+                :textColor="textColor"
+                :unitExtraStyleClass="unitExtraStyleClass"
                 :modelValue="modelValue['insulation']['altitude']"
                 @input="modelValue['insulation']['altitude']['maximum'] = $event.target.value"
                 @update="$emit('update')"
             />
-            <Dimension class="col-md-4 col-xm-12"
+            <Dimension class="col-md-4 col-xm-12 ps-4"
                 :name="'maximum'"
                 :replaceTitle="'Main Supply Voltage'"
                 :unit="'V'"
@@ -91,6 +127,12 @@ export default {
                 :max="minimumMaximumScalePerParameter['voltage']['max']"
                 :defaultValue="Utils.deepCopy(defaultValue['mainSupplyVoltage']['maximum'])"
                 :allowNegative="false"
+                :labelFontSize='titleFontSize'
+                :valueFontSize="valueFontSize"
+                :labelBgColor="labelBgColor"
+                :valueBgColor="valueBgColor"
+                :textColor="textColor"
+                :unitExtraStyleClass="unitExtraStyleClass"
                 :modelValue="modelValue['insulation']['mainSupplyVoltage']"
                 @input="modelValue['insulation']['mainSupplyVoltage']['maximum'] = $event.target.value"
                 @update="$emit('update')"
@@ -104,6 +146,12 @@ export default {
                 :name="'cti'"
                 v-model="modelValue['insulation']"
                 :options="Object.values(Cti)"
+                :labelFontSize='titleFontSize'
+                :valueFontSize="valueFontSize"
+                :labelBgColor="labelBgColor"
+                :valueBgColor="valueBgColor"
+                :textColor="textColor"
+                :unitExtraStyleClass="unitExtraStyleClass"
                 @update="$emit('update')"
             />
             <ElementFromList
@@ -112,6 +160,12 @@ export default {
                 :name="'insulationType'"
                 v-model="modelValue['insulation']"
                 :options="Object.values(InsulationType)"
+                :labelFontSize='titleFontSize'
+                :valueFontSize="valueFontSize"
+                :labelBgColor="labelBgColor"
+                :valueBgColor="valueBgColor"
+                :textColor="textColor"
+                :unitExtraStyleClass="unitExtraStyleClass"
                 @update="$emit('update')"
             />
             <ElementFromList
@@ -120,6 +174,12 @@ export default {
                 :name="'overvoltageCategory'"
                 v-model="modelValue['insulation']"
                 :options="Object.values(OvervoltageCategory)"
+                :labelFontSize='titleFontSize'
+                :valueFontSize="valueFontSize"
+                :labelBgColor="labelBgColor"
+                :valueBgColor="valueBgColor"
+                :textColor="textColor"
+                :unitExtraStyleClass="unitExtraStyleClass"
                 @update="$emit('update')"
             />
             <ElementFromList
@@ -128,6 +188,12 @@ export default {
                 :name="'pollutionDegree'"
                 v-model="modelValue['insulation']"
                 :options="Object.values(PollutionDegree)"
+                :labelFontSize='titleFontSize'
+                :valueFontSize="valueFontSize"
+                :labelBgColor="labelBgColor"
+                :valueBgColor="valueBgColor"
+                :textColor="textColor"
+                :unitExtraStyleClass="unitExtraStyleClass"
                 @update="$emit('update')"
             />
             <SeveralElementsFromList
@@ -136,6 +202,12 @@ export default {
                 v-model="modelValue['insulation']"
                 :options="Object.values(InsulationStandards)"
                 :optionsToDisable="standardsToDisable"
+                :labelFontSize='titleFontSize'
+                :valueFontSize="valueFontSize"
+                :labelBgColor="labelBgColor"
+                :valueBgColor="valueBgColor"
+                :textColor="textColor"
+                :unitExtraStyleClass="unitExtraStyleClass"
                 @update="$emit('update')"
             />
         </div>

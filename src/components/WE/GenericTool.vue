@@ -1,7 +1,7 @@
 <script setup>
 import Header from '/src/components/WE/Header.vue'
-import Storyline from '/src/components/Storyline.vue'
-import ContextMenu from '/src/components/ContextMenu.vue'
+import Storyline from '/src/components/Toolbox/Storyline.vue'
+import ContextMenu from '/src/components/Toolbox/ContextMenu.vue'
 import { toTitleCase } from '/WebSharedComponents/assets/js/utils.js'
 
 import ElementFromList from '/WebSharedComponents/DataInput/ElementFromList.vue'
@@ -154,7 +154,7 @@ export default {
 <template>
     <div class="d-flex flex-column min-vh-100">
         <Header />
-        <main role="main" class="main text-white">
+        <main role="main" class="main text-white" :style="$styleStore.main">
             <div v-if="currentStoryline[$userStore.getCurrentToolState().subsection] != null && $userStore.getCurrentToolState().canContinue != null" class="container mx-auto">
                 <div class="row">
                     <div class="text-white text-center col-xs-12 col-sm-12 col-md-1 bg-transparent m-0 p-0" style="height: fit-content">

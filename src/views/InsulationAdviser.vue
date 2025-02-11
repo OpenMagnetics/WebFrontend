@@ -1,7 +1,6 @@
 <script setup>
 import Header from '/src/components/Header.vue'
 import Footer from '/src/components/Footer.vue'
-import Storyline from '/src/components/Storyline.vue'
 import { toTitleCase } from '/WebSharedComponents/assets/js/utils.js'
 
 import GenericTool from '/src/components/Toolbox/GenericTool.vue'

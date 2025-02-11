@@ -1,5 +1,4 @@
 <script setup>
-import { useStyleStore } from '/src/stores/style'
 import { useMasStore } from '/src/stores/mas'
 import WaveformGraph from '/src/components/Toolbox/OperatingPoints/Output/WaveformGraph.vue'
 import WaveformFourier from '/src/components/Toolbox/OperatingPoints/Output/WaveformFourier.vue'
@@ -8,7 +7,7 @@ import WaveformInput from '/src/components/Toolbox/OperatingPoints/Input/Wavefor
 import WaveformInputCommon from '/src/components/Toolbox/OperatingPoints/Input/WaveformInputCommon.vue'
 import WaveformOutput from '/src/components/Toolbox/OperatingPoints/Output/WaveformOutput.vue'
 import WaveformCombinedOutput from '/src/components/Toolbox/OperatingPoints/Output/WaveformCombinedOutput.vue'
-import { roundWithDecimals, deepCopy } from '/WebSharedComponents/assets/js/utils.js'
+import { roundWithDecimals, deepCopy, combinedStyle } from '/WebSharedComponents/assets/js/utils.js'
 
 import { defaultOperatingPointExcitation, defaultPrecision, defaultSinusoidalNumberPoints } from '/WebSharedComponents/assets/js/defaults.js'
 import { tooltipsMagneticSynthesisOperatingPoints } from '/WebSharedComponents/assets/js/texts.js'
@@ -33,7 +32,6 @@ export default {
         },
     },
     data() {
-        const styleStore = useStyleStore();
         const masStore = useMasStore();
         if (masStore.mas.inputs.operatingPoints.length == 0) {
             masStore.mas.inputs.operatingPoints.push(
@@ -46,7 +44,6 @@ export default {
         }
 
         return {
-            styleStore,
             masStore,
         }
     },
@@ -116,9 +113,17 @@ export default {
         <div class="row" v-tooltip="styleTooltip">
             <div v-if="masStore.mas.inputs.operatingPoints.length > currentOperatingPointIndex" class="col-lg-4 col-md-12" style="max-width: 360px;">
 
-                <label :data-cy="dataTestLabel + '-current-title'" class="fs-4 text-primary mx-0 p-0 mb-4">{{masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].name + ' - ' + masStore.mas.magnetic.coil.functionalDescription[currentWindingIndex].name}}</label>
+                <label
+                    :style="combinedStyle([$styleStore.operatingPoints.inputTitleFontSize, $styleStore.operatingPoints.commonParameterTextColor])"
+                    data-cy="dataTestLabel + '-current-title'"
+                    class="fs-4 mx-0 p-0 mb-4"
+                >
+                    {{masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].name + ' - ' + masStore.mas.magnetic.coil.functionalDescription[currentWindingIndex].name}}
+                </label>
 
-                <WaveformInputCommon class="scrollable-column border-bottom border-top rounded-4 border-2"
+                <WaveformInputCommon
+                    :style="$styleStore.operatingPoints.main"
+                    class="scrollable-column border-bottom border-top rounded-4 border-2"
                     :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex]"
                     :defaultValue="defaultOperatingPointExcitation"
                     :dataTestLabel="dataTestLabel + '-selected'"
@@ -126,7 +131,10 @@ export default {
                     @updatedDutyCycle="masStore.updatedInputExcitationProcessed()"
                 />
 
-                <WaveformInput v-if="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex].current != null && masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex].current.processed.label != 'Custom'" class="scrollable-column mt-5 border-bottom border-top rounded-4 border-2"
+                <WaveformInput 
+                    :style="$styleStore.operatingPoints.main"
+
+                    v-if="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex].current != null && masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex].current.processed.label != 'Custom'" class="scrollable-column mt-5 border-bottom border-top rounded-4 border-2"
                     :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex]"
                     :defaultValue="defaultOperatingPointExcitation"
                     :dataTestLabel="dataTestLabel + '-selected-current'"
@@ -136,7 +144,9 @@ export default {
                     @labelChanged="masStore.updatedInputExcitationProcessed('current')"
                     @induce="induce('voltage')"
                 />
-                <WaveformInputCustom v-else class="scrollable-column mt-5 border-bottom border-top rounded-4 border-2"
+                <WaveformInputCustom
+                    v-else class="scrollable-column mt-5 border-bottom border-top rounded-4 border-2"
+                    :style="$styleStore.operatingPoints.main"
                     :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex]"
                     :defaultValue="defaultOperatingPointExcitation"
                     :dataTestLabel="dataTestLabel + '-selected-current'"
@@ -146,7 +156,10 @@ export default {
                     @updatedData="masStore.updatedInputExcitationWaveformUpdatedFromProcessed('current')"
                     @induce="induce('voltage')"
                 />
-                <WaveformInput v-if="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex].voltage.processed.label != 'Custom'" class="scrollable-column mt-5 border-bottom border-top rounded-4 border-2"
+                <WaveformInput
+                    v-if="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex].voltage.processed.label != 'Custom'" 
+                    class="scrollable-column mt-5 border-bottom border-top rounded-4 border-2"
+                    :style="$styleStore.operatingPoints.main"
                     :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex]"
                     :defaultValue="defaultOperatingPointExcitation"
                     :dataTestLabel="dataTestLabel + '-selected-voltage'"
@@ -156,7 +169,10 @@ export default {
                     @labelChanged="masStore.updatedInputExcitationProcessed('voltage')"
                     @induce="induce('current')"
                 />
-                <WaveformInputCustom v-else class="scrollable-column mt-5 border-bottom border-top rounded-4 border-2"
+                <WaveformInputCustom
+                    v-else
+                    class="scrollable-column mt-5 border-bottom border-top rounded-4 border-2"
+                    :style="$styleStore.operatingPoints.main"
                     :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex]"
                     :defaultValue="defaultOperatingPointExcitation"
                     :dataTestLabel="dataTestLabel + '-selected-voltage'"
@@ -167,7 +183,7 @@ export default {
                     @induce="induce('current')"
                 />
                 <button
-                    :style="styleStore.operatingPoints.goBackSelectingButton"
+                    :style="$styleStore.operatingPoints.goBackSelectingButton"
                     :data-cy="dataTestLabel + '-import-button'"
                     class="btn btn-success fs-5 col-sm-12 col-md-12 mt-5 p-0"
                     style="max-height: 2em"
@@ -197,7 +213,9 @@ export default {
                     :dataTestLabel="dataTestLabel + '-WaveformOutput-voltage'"
                     :signalDescriptor="'voltage'"
                 />
-                <WaveformCombinedOutput class="col-12 m-0 px-2 border-top"
+                <WaveformCombinedOutput
+                    :style="$styleStore.operatingPoints.main"
+                    class="col-12 m-0 px-2 border-top"
                     :dataTestLabel="dataTestLabel + '-WaveformCombinedOutput'"
                     :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex]"
                 />

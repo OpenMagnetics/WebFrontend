@@ -1,7 +1,7 @@
 <script setup>
 import Header from '/src/components/Header.vue'
 import Footer from '/src/components/Footer.vue'
-import CreateOrContinueModal from '/src/components/Toolbox/CreateOrContinueModal.vue'
+// import CreateOrContinueModal from '/src/components/Toolbox/CreateOrContinueModal.vue'
 import { useMasStore } from '/src/stores/mas'
 // import Module from '/src/assets/js/spice.js'
 
@@ -113,7 +113,7 @@ export default {
 </script>
 
 <template>
-    <CreateOrContinueModal @onCreate="onCreate()" @onContinue="onContinue()"/>
+    <!-- <CreateOrContinueModal @onCreate="onCreate()" @onContinue="onContinue()"/> -->
     <div class="d-flex flex-column min-vh-100">
         <Header />
         <main role="main" class="main p-0 m-0">

@@ -1,5 +1,4 @@
 <script setup>
-import { useStyleStore } from '/src/stores/style'
 import { toDashCase, toPascalCase, toTitleCase } from '/WebSharedComponents/assets/js/utils.js'
 </script>
 
@@ -30,10 +29,8 @@ export default {
     },
     data() {
 
-        const styleStore = useStyleStore();
         var enabledAdventures = {};
         return {
-            styleStore,
             enabledAdventures,
         }
     },
@@ -159,23 +156,31 @@ export default {
 </script>
 
 <template>
-    <div class="py-2 p-0 container" v-tooltip="styleTooltip" :style="styleStore.storyline.main">
+    <div class="py-2 p-0 container" v-tooltip="styleTooltip" :style="$styleStore.storyline.main">
         <h4 class="text-center p-2">Steps</h4>
         <div class="row px-1">
             <div v-for="adventure, index in basicStoryline" class="col-3 col-sm-3 col-md-12 px-0"> 
                 <button
-                    :style="index == selectedTool? styleStore.storyline.activeButton : enabledAdventures[index]? styleStore.storyline.availableButton : styleStore.storyline.pendingButton"
+                    :style="index == selectedTool? $styleStore.storyline.activeButton : enabledAdventures[index]? $styleStore.storyline.availableButton : $styleStore.storyline.pendingButton"
                     v-if="adventure.enabled == null || adventure.enabled"
                     v-tooltip="toPascalCase(adventure.title)"
                     :data-cy="'storyline-' + toPascalCase(adventure.title) + '-button'"
-                    class="border border-primary btn-outline-primary  px-0 py-2"
+                    class="border px-0 py-2"
                     :class="btn_class(index)"
                     :disabled="!enabledAdventures[index]"
                     @click="$emit('changeTool', index)"> 
                     {{shortenedLabels[index]}}
                 </button>
-                <i v-if="adventure.nextTool != null && getInnerWidth() > 768" class="fa-solid fa-up-down text-primary col-3 col-sm-3 col-md-12"></i>
-                <i v-if="adventure.nextTool != null && getInnerWidth() < 768" class="fa-solid fa-left-right text-primary col-3 col-sm-3 col-md-12"></i>
+                <i
+                    :style="$styleStore.storyline.arrow"
+                    v-if="adventure.nextTool != null && getInnerWidth() > 768"
+                    class="fa-solid fa-up-down col-3 col-sm-3 col-md-12"
+                ></i>
+                <i
+                    :style="$styleStore.storyline.arrow"
+                    v-if="adventure.nextTool != null && getInnerWidth() < 768"
+                    class="fa-solid fa-left-right col-3 col-sm-3 col-md-12"
+                ></i>
             </div>
         </div>
 
@@ -183,7 +188,7 @@ export default {
 
         <div class="row px-3">
             <button 
-                :style="styleStore.storyline.continueButton"
+                :style="$styleStore.storyline.continueButton"
                 v-if="storyline[selectedTool].nextTool != null"  
                 :disabled="!canContinue[selectedTool]" 
                 data-cy="magnetic-synthesis-next-tool-button" 
@@ -193,7 +198,7 @@ export default {
                 {{canContinue[selectedTool]? 'Continue' : 'Errors must be fixed'}}
             </button>
             <button 
-                :style="styleStore.storyline.continueButton"
+                :style="$styleStore.storyline.continueButton"
                 v-if="$userStore.showWelcome && showAvoidOption && storyline[selectedTool].nextTool != null"  
                 :disabled="!canContinue[selectedTool]" 
                 data-cy="magnetic-synthesis-next-tool-button" 

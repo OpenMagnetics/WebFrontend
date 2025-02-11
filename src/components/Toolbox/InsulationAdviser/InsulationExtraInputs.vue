@@ -20,6 +20,30 @@ export default {
             type: String,
             default: '',
         },
+        valueFontSize: {
+            type: [String, Object],
+            default: 'fs-6'
+        },
+        titleFontSize: {
+            type: [String, Object],
+            default: 'fs-6'
+        },
+        labelBgColor: {
+            type: [String, Object],
+            default: "bg-transparent",
+        },
+        valueBgColor: {
+            type: [String, Object],
+            default: "bg-light",
+        },
+        textColor: {
+            type: [String, Object],
+            default: "text-white",
+        },
+        unitExtraStyleClass:{
+            type: String,
+            default: ''
+        },
     },
     data() {
         return {
@@ -50,6 +74,12 @@ export default {
                 :defaultValue="defaultValue.frequency"
                 :allowNegative="false"
                 :modelValue="modelValue"
+                :labelFontSize='titleFontSize'
+                :valueFontSize="valueFontSize"
+                :labelBgColor="labelBgColor"
+                :valueBgColor="valueBgColor"
+                :textColor="textColor"
+                :unitExtraStyleClass="unitExtraStyleClass"
                 @input="modelValue.frequency = $event.target.value"
                 @update="$emit('update')"
             />
@@ -64,6 +94,12 @@ export default {
                 :defaultValue="defaultValue.voltage.processed.rms"
                 :allowNegative="false"
                 :modelValue="modelValue.voltage.processed"
+                :labelFontSize='titleFontSize'
+                :valueFontSize="valueFontSize"
+                :labelBgColor="labelBgColor"
+                :valueBgColor="valueBgColor"
+                :textColor="textColor"
+                :unitExtraStyleClass="unitExtraStyleClass"
                 @input="modelValue.voltage.processed.peak = $event.target.value"
                 @update="$emit('update')"
             />
@@ -78,6 +114,12 @@ export default {
                 :defaultValue="defaultValue.voltage.processed.peak"
                 :allowNegative="false"
                 :modelValue="modelValue.voltage.processed"
+                :labelFontSize='titleFontSize'
+                :valueFontSize="valueFontSize"
+                :labelBgColor="labelBgColor"
+                :valueBgColor="valueBgColor"
+                :textColor="textColor"
+                :unitExtraStyleClass="unitExtraStyleClass"
                 @input="modelValue.voltage.processed.rms = $event.target.value"
                 @update="$emit('update')"
             />

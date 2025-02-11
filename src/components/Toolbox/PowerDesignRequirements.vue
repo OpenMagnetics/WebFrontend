@@ -1,7 +1,6 @@
 <script setup>
 import { ref } from 'vue'
 import { useMasStore } from '/src/stores/mas'
-import { useStyleStore } from '/src/stores/style'
 import { toTitleCase, toPascalCase } from '/WebSharedComponents/assets/js/utils.js'
 import { tooltipsMagneticSynthesisDesignRequirements } from '/WebSharedComponents/assets/js/texts.js'
 import { defaultDesignRequirements, designRequirementsOrdered, isolationSideOrdered, minimumMaximumScalePerParameter} from '/WebSharedComponents/assets/js/defaults.js'
@@ -27,7 +26,6 @@ export default {
     data() {
         const compulsoryRequirements = ["numberWindings", "magnetizingInductance", "turnsRatios", "name"];
         const masStore = useMasStore();
-        const styleStore = useStyleStore();
         var numberWindings = 1;
         if (masStore.mas.inputs.designRequirements.turnsRatios != null) {
             numberWindings = masStore.mas.inputs.designRequirements.turnsRatios.length + 1;
@@ -39,7 +37,6 @@ export default {
             compulsoryRequirements,
             numberWindingsAux,
             masStore,
-            styleStore
         }
     },
     computed: {
@@ -173,12 +170,12 @@ export default {
 <template>
     <div class="container">
         <div v-tooltip="styleTooltip" class="row">
-            <div class="col-sm-12 col-md-4 text-start border" style="max-width: 360px; height: 75vh" :style="styleStore.designRequirements.main">
+            <div class="col-sm-12 col-md-4 text-start border" style="max-width: 360px; height: 75vh" :style="$styleStore.designRequirements.main">
                 <div class="my-2 row px-2" v-for="requirementName in designRequirementsOrdered" >
                     <label v-tooltip="tooltipsMagneticSynthesisDesignRequirements[requirementName]"  class="rounded-2 fs-5 col-8">{{toTitleCase(shortenedLabels[requirementName])}}</label>
                 
                     <button 
-                        :style="masStore.mas.inputs.designRequirements[requirementName]==null? styleStore.designRequirements.addButton : styleStore.designRequirements.removeButton"
+                        :style="masStore.mas.inputs.designRequirements[requirementName]==null? $styleStore.designRequirements.addButton : $styleStore.designRequirements.removeButton"
                         :data-cy="dataTestLabel + '-' + toPascalCase(requirementName) + '-add-remove-button'"
                         v-if="!compulsoryRequirements.includes(requirementName)"
                         class="btn float-end col-4"
@@ -186,7 +183,7 @@ export default {
                         {{masStore.mas.inputs.designRequirements[requirementName]==null? 'Add Req.' : 'Remove'}}
                     </button>
                     <button
-                        :style="styleStore.designRequirements.requiredButton"
+                        :style="$styleStore.designRequirements.requiredButton"
                         :data-cy="dataTestLabel + '-' + toPascalCase(requirementName) + '-required-button'"
                         v-if="compulsoryRequirements.includes(requirementName)"
                         class="btn float-end disabled col-4">
@@ -195,34 +192,37 @@ export default {
                 </div>
             </div>
             <div class="col-sm-12 col-md-8 text-start pe-0">
-                <Name class="border-bottom border-top py-2" 
+<!--                 <Name class="border-bottom border-top py-2" 
+                    :style = "$styleStore.designRequirements.inputBorderColor"
                     :name="'name'"
                     :dataTestLabel="dataTestLabel + '-Name'"
                     :defaultValue="defaultDesignRequirements.name"
                     v-model="masStore.mas.inputs.designRequirements"
-                    :valueFontSize="styleStore.designRequirements.inputFontSize"
-                    :labelFontSize="styleStore.designRequirements.inputTitleFontSize"
-                    :labelBgColor='styleStore.designRequirements.inputLabelBgColor'
-                    :valueBgColor='styleStore.designRequirements.inputValueBgColor'
-                    :textColor='styleStore.designRequirements.inputTextColor'
+                    :valueFontSize="$styleStore.designRequirements.inputFontSize"
+                    :labelFontSize="$styleStore.designRequirements.inputTitleFontSize"
+                    :labelBgColor="$styleStore.designRequirements.inputLabelBgColor"
+                    :valueBgColor="$styleStore.designRequirements.inputValueBgColor"
+                    :textColor="$styleStore.designRequirements.inputTextColor"
                     @hasError="hasError"
-                />
+                /> -->
 
-                <ElementFromList class="border-bottom py-2 ps-3"
-                    :name="'numberWindings'"s
+                <ElementFromList class="border-bottom border-top py-2 ps-3"
+                    :style = "$styleStore.designRequirements.inputBorderColor"
+                    :name="'numberWindings'"
                     :dataTestLabel="dataTestLabel + '-NumberWindings'"
                     :options="Array.from({length: 12}, (_, i) => i + 1)"
                     :titleSameRow="true"
-                    :valueFontSize="styleStore.designRequirements.inputFontSize"
-                    :labelFontSize="styleStore.designRequirements.inputTitleFontSize"
-                    :labelBgColor='styleStore.designRequirements.inputLabelBgColor'
-                    :valueBgColor='styleStore.designRequirements.inputValueBgColor'
-                    :textColor='styleStore.designRequirements.inputTextColor'
+                    :valueFontSize="$styleStore.designRequirements.inputFontSize"
+                    :labelFontSize="$styleStore.designRequirements.inputTitleFontSize"
+                    :labelBgColor="$styleStore.designRequirements.inputLabelBgColor"
+                    :valueBgColor="$styleStore.designRequirements.inputValueBgColor"
+                    :textColor="$styleStore.designRequirements.inputTextColor"
                     v-model="numberWindingsAux"
                     @update="updatedNumberElements"
                 />
 
                 <DimensionWithTolerance class="border-bottom py-2"
+                    :style = "$styleStore.designRequirements.inputBorderColor"
                     v-if="masStore.mas.inputs.designRequirements.magnetizingInductance != null"
                     :name="'magnetizingInductance'"
                     unit="H"
@@ -233,29 +233,31 @@ export default {
                     :max="minimumMaximumScalePerParameter['inductance']['max']"
                     v-model="masStore.mas.inputs.designRequirements.magnetizingInductance"
                     :unitExtraStyleClass="'py-1 mt-1'"
-                    :addButtonStyle="styleStore.designRequirements.requirementButton"
-                    :valueFontSize="styleStore.designRequirements.inputFontSize"
-                    :titleFontSize="styleStore.designRequirements.inputTitleFontSize"
-                    :labelBgColor='styleStore.designRequirements.inputLabelBgColor'
-                    :valueBgColor='styleStore.designRequirements.inputValueBgColor'
-                    :textColor='styleStore.designRequirements.inputTextColor'
+                    :addButtonStyle="$styleStore.designRequirements.requirementButton"
+                    :valueFontSize="$styleStore.designRequirements.inputFontSize"
+                    :titleFontSize="$styleStore.designRequirements.inputTitleFontSize"
+                    :labelBgColor="$styleStore.designRequirements.inputLabelBgColor"
+                    :valueBgColor="$styleStore.designRequirements.inputValueBgColor"
+                    :textColor="$styleStore.designRequirements.inputTextColor"
                     @hasError="hasError"
                 />
 
                 <Impedances class="border-bottom py-2"
+                    :style = "$styleStore.designRequirements.inputBorderColor"
                     v-if="masStore.mas.inputs.designRequirements.minimumImpedance != null"
                     :dataTestLabel="dataTestLabel + '-MinimumImpedance'"
-                    :addElementButtonColor='styleStore.designRequirements.addElementButtonColor'
-                    :removeElementButtonColor='styleStore.designRequirements.removeElementButtonColor'
-                    :valueFontSize="styleStore.designRequirements.inputFontSize"
-                    :titleFontSize="styleStore.designRequirements.inputTitleFontSize"
-                    :labelBgColor='styleStore.designRequirements.inputLabelBgColor'
-                    :valueBgColor='styleStore.designRequirements.inputValueBgColor'
-                    :textColor='styleStore.designRequirements.inputTextColor'
+                    :addElementButtonColor="$styleStore.designRequirements.addElementButtonColor"
+                    :removeElementButtonColor="$styleStore.designRequirements.removeElementButtonColor"
+                    :valueFontSize="$styleStore.designRequirements.inputFontSize"
+                    :titleFontSize="$styleStore.designRequirements.inputTitleFontSize"
+                    :labelBgColor="$styleStore.designRequirements.inputLabelBgColor"
+                    :valueBgColor="$styleStore.designRequirements.inputValueBgColor"
+                    :textColor="$styleStore.designRequirements.inputTextColor"
                     :unitExtraStyleClass="'p-1'"
                 />
 
                 <ArrayDimensionWithTolerance class="border-bottom py-2"
+                    :style = "$styleStore.designRequirements.inputBorderColor"
                     v-if="masStore.mas.inputs.designRequirements.turnsRatios != null && masStore.mas.inputs.designRequirements.turnsRatios.length > 0"
                     :name="'turnsRatios'"
                     :dataTestLabel="dataTestLabel + '-TurnsRatios'"
@@ -264,29 +266,31 @@ export default {
                     :disabledScaling="true"
                     :maximumNumberElements="12"
                     :unitExtraStyleClass="'py-1 mt-1'"
-                    :addButtonStyle="styleStore.designRequirements.requirementButton"
-                    :valueFontSize="styleStore.designRequirements.inputFontSize"
-                    :titleFontSize="styleStore.designRequirements.inputTitleFontSize"
-                    :labelBgColor='styleStore.designRequirements.inputLabelBgColor'
-                    :valueBgColor='styleStore.designRequirements.inputValueBgColor'
-                    :textColor='styleStore.designRequirements.inputTextColor'
+                    :addButtonStyle="$styleStore.designRequirements.requirementButton"
+                    :valueFontSize="$styleStore.designRequirements.inputFontSize"
+                    :titleFontSize="$styleStore.designRequirements.inputTitleFontSize"
+                    :labelBgColor="$styleStore.designRequirements.inputLabelBgColor"
+                    :valueBgColor="$styleStore.designRequirements.inputValueBgColor"
+                    :textColor="$styleStore.designRequirements.inputTextColor"
                     @hasError="hasError"
                 />
 
                 <Insulation class="border-bottom py-2"
+                    :style = "$styleStore.designRequirements.inputBorderColor"
                     v-if="masStore.mas.inputs.designRequirements.insulation != null"
                     :dataTestLabel="dataTestLabel + '-Insulation'"
                     :defaultValue="defaultDesignRequirements.insulation"
                     v-model="masStore.mas.inputs.designRequirements"
-                    :addButtonStyle="styleStore.designRequirements.requirementButton"
-                    :valueFontSize="styleStore.designRequirements.inputFontSize"
-                    :titleFontSize="styleStore.designRequirements.inputTitleFontSize"
-                    :labelBgColor='styleStore.designRequirements.inputLabelBgColor'
-                    :valueBgColor='styleStore.designRequirements.inputValueBgColor'
-                    :textColor='styleStore.designRequirements.inputTextColor'
+                    :addButtonStyle="$styleStore.designRequirements.requirementButton"
+                    :valueFontSize="$styleStore.designRequirements.inputFontSize"
+                    :titleFontSize="$styleStore.designRequirements.inputTitleFontSize"
+                    :labelBgColor="$styleStore.designRequirements.inputLabelBgColor"
+                    :valueBgColor="$styleStore.designRequirements.inputValueBgColor"
+                    :textColor="$styleStore.designRequirements.inputTextColor"
                 />
 
                 <ArrayDimensionWithTolerance class="border-bottom py-2"
+                    :style = "$styleStore.designRequirements.inputBorderColor"
                     v-if="masStore.mas.inputs.designRequirements.leakageInductance != null"
                     :name="'leakageInductance'"
                     unit="H"
@@ -297,16 +301,17 @@ export default {
                     :fixedNumberElements="masStore.mas.inputs.designRequirements.turnsRatios.length"
                     :min="minimumMaximumScalePerParameter['leakageInductance']['min']"
                     :max="minimumMaximumScalePerParameter['leakageInductance']['max']"
-                    :addButtonStyle="styleStore.designRequirements.requirementButton"
-                    :valueFontSize="styleStore.designRequirements.inputFontSize"
-                    :titleFontSize="styleStore.designRequirements.inputTitleFontSize"
-                    :labelBgColor='styleStore.designRequirements.inputLabelBgColor'
-                    :valueBgColor='styleStore.designRequirements.inputValueBgColor'
-                    :textColor='styleStore.designRequirements.inputTextColor'
+                    :addButtonStyle="$styleStore.designRequirements.requirementButton"
+                    :valueFontSize="$styleStore.designRequirements.inputFontSize"
+                    :titleFontSize="$styleStore.designRequirements.inputTitleFontSize"
+                    :labelBgColor="$styleStore.designRequirements.inputLabelBgColor"
+                    :valueBgColor="$styleStore.designRequirements.inputValueBgColor"
+                    :textColor="$styleStore.designRequirements.inputTextColor"
                     @hasError="hasError"
                 />
 
                 <ArrayDimensionWithTolerance class="border-bottom py-2"
+                    :style = "$styleStore.designRequirements.inputBorderColor"
                     v-if="masStore.mas.inputs.designRequirements.strayCapacitance != null"
                     :name="'strayCapacitance'"
                     unit="F"
@@ -317,16 +322,17 @@ export default {
                     :fixedNumberElements="masStore.mas.inputs.designRequirements.turnsRatios.length"
                     :min="minimumMaximumScalePerParameter['strayCapacitance']['min']"
                     :max="minimumMaximumScalePerParameter['strayCapacitance']['max']"
-                    :addButtonStyle="styleStore.designRequirements.requirementButton"
-                    :valueFontSize="styleStore.designRequirements.inputFontSize"
-                    :titleFontSize="styleStore.designRequirements.inputTitleFontSize"
-                    :labelBgColor='styleStore.designRequirements.inputLabelBgColor'
-                    :valueBgColor='styleStore.designRequirements.inputValueBgColor'
-                    :textColor='styleStore.designRequirements.inputTextColor'
+                    :addButtonStyle="$styleStore.designRequirements.requirementButton"
+                    :valueFontSize="$styleStore.designRequirements.inputFontSize"
+                    :titleFontSize="$styleStore.designRequirements.inputTitleFontSize"
+                    :labelBgColor="$styleStore.designRequirements.inputLabelBgColor"
+                    :valueBgColor="$styleStore.designRequirements.inputValueBgColor"
+                    :textColor="$styleStore.designRequirements.inputTextColor"
                     @hasError="hasError"
                 />
 
                 <DimensionWithTolerance class="border-bottom py-2"
+                    :style = "$styleStore.designRequirements.inputBorderColor"
                     v-if="masStore.mas.inputs.designRequirements.operatingTemperature != null"
                     :name="'operatingTemperature'"
                     unit="°C"
@@ -336,16 +342,17 @@ export default {
                     :max="minimumMaximumScalePerParameter['temperature']['max']"
                     :defaultValue="defaultDesignRequirements.operatingTemperature"
                     v-model="masStore.mas.inputs.designRequirements.operatingTemperature"
-                    :addButtonStyle="styleStore.designRequirements.requirementButton"
-                    :valueFontSize="styleStore.designRequirements.inputFontSize"
-                    :titleFontSize="styleStore.designRequirements.inputTitleFontSize"
-                    :labelBgColor='styleStore.designRequirements.inputLabelBgColor'
-                    :valueBgColor='styleStore.designRequirements.inputValueBgColor'
-                    :textColor='styleStore.designRequirements.inputTextColor'
+                    :addButtonStyle="$styleStore.designRequirements.requirementButton"
+                    :valueFontSize="$styleStore.designRequirements.inputFontSize"
+                    :titleFontSize="$styleStore.designRequirements.inputTitleFontSize"
+                    :labelBgColor="$styleStore.designRequirements.inputLabelBgColor"
+                    :valueBgColor="$styleStore.designRequirements.inputValueBgColor"
+                    :textColor="$styleStore.designRequirements.inputTextColor"
                     @hasError="hasError"
                 />
               
                 <Dimension class="border-bottom py-2 ps-3"
+                    :style = "$styleStore.designRequirements.inputBorderColor"
                     v-if="masStore.mas.inputs.designRequirements.maximumWeight != null"
                     :name="'maximumWeight'"
                     unit="g"
@@ -354,30 +361,31 @@ export default {
                     :max="minimumMaximumScalePerParameter['weight']['max']"
                     :defaultValue="300"
                     v-model="masStore.mas.inputs.designRequirements"
-                    :valueFontSize="styleStore.designRequirements.inputFontSize"
-                    :labelFontSize="styleStore.designRequirements.inputTitleFontSize"
-                    :labelBgColor='styleStore.designRequirements.inputLabelBgColor'
-                    :valueBgColor='styleStore.designRequirements.inputValueBgColor'
-                    :textColor='styleStore.designRequirements.inputTextColor'
+                    :valueFontSize="$styleStore.designRequirements.inputFontSize"
+                    :labelFontSize="$styleStore.designRequirements.inputTitleFontSize"
+                    :labelBgColor="$styleStore.designRequirements.inputLabelBgColor"
+                    :valueBgColor="$styleStore.designRequirements.inputValueBgColor"
+                    :textColor="$styleStore.designRequirements.inputTextColor"
                 />
 
                 <MaximumDimensions class="border-bottom py-2"
+                    :style = "$styleStore.designRequirements.inputBorderColor"
                     v-if="masStore.mas.inputs.designRequirements.maximumDimensions != null"
                     unit="m"
                     :dataTestLabel="dataTestLabel + '-MaximumDimensions'"
                     :min="minimumMaximumScalePerParameter['dimension']['min']"
                     :max="minimumMaximumScalePerParameter['dimension']['max']"
                     :defaultValue="defaultDesignRequirements.maximumDimensions"
-                    :addButtonStyle="styleStore.designRequirements.requirementButton"
+                    :addButtonStyle="$styleStore.designRequirements.requirementButton"
                     v-model="masStore.mas.inputs.designRequirements.maximumDimensions"
-                    :valueFontSize="styleStore.designRequirements.inputFontSize"
-                    :titleFontSize="styleStore.designRequirements.inputTitleFontSize"
-                    :labelBgColor='styleStore.designRequirements.inputLabelBgColor'
-                    :valueBgColor='styleStore.designRequirements.inputValueBgColor'
-                    :textColor='styleStore.designRequirements.inputTextColor'
+                    :valueFontSize="$styleStore.designRequirements.inputFontSize"
+                    :titleFontSize="$styleStore.designRequirements.inputTitleFontSize"
+                    :labelBgColor="$styleStore.designRequirements.inputLabelBgColor"
+                    :valueBgColor="$styleStore.designRequirements.inputValueBgColor"
+                    :textColor="$styleStore.designRequirements.inputTextColor"
                 />
                 <ArrayElementFromList class="border-bottom py-2"
-
+                    :style = "$styleStore.designRequirements.inputBorderColor"
                     v-if="masStore.mas.inputs.designRequirements.terminalType != null"
                     :name="'terminalType'"
                     :dataTestLabel="dataTestLabel + '-TerminalType'"
@@ -386,37 +394,39 @@ export default {
                     :titleSameRow="true"
                     :fixedNumberElements="masStore.mas.inputs.designRequirements.turnsRatios.length + 1"
                     v-model="masStore.mas.inputs.designRequirements"
-                    :valueFontSize="styleStore.designRequirements.inputFontSize"
-                    :titleFontSize="styleStore.designRequirements.inputTitleFontSize"
-                    :labelBgColor='styleStore.designRequirements.inputLabelBgColor'
-                    :valueBgColor='styleStore.designRequirements.inputValueBgColor'
-                    :textColor='styleStore.designRequirements.inputTextColor'
+                    :valueFontSize="$styleStore.designRequirements.inputFontSize"
+                    :titleFontSize="$styleStore.designRequirements.inputTitleFontSize"
+                    :labelBgColor="$styleStore.designRequirements.inputLabelBgColor"
+                    :valueBgColor="$styleStore.designRequirements.inputValueBgColor"
+                    :textColor="$styleStore.designRequirements.inputTextColor"
                 />
 
                 <ElementFromList class="border-bottom py-2"
+                    :style = "$styleStore.designRequirements.inputBorderColor"
                     v-if="masStore.mas.inputs.designRequirements.topology != null"
                     :name="'topology'"
                     :dataTestLabel="dataTestLabel + '-Topology'"
                     :options="Object.values(Topology)"
                     v-model="masStore.mas.inputs.designRequirements"
-                    :valueFontSize="styleStore.designRequirements.inputFontSize"
-                    :labelFontSize="styleStore.designRequirements.inputTitleFontSize"
-                    :labelBgColor='styleStore.designRequirements.inputLabelBgColor'
-                    :valueBgColor='styleStore.designRequirements.inputValueBgColor'
-                    :textColor='styleStore.designRequirements.inputTextColor'
+                    :valueFontSize="$styleStore.designRequirements.inputFontSize"
+                    :labelFontSize="$styleStore.designRequirements.inputTitleFontSize"
+                    :labelBgColor="$styleStore.designRequirements.inputLabelBgColor"
+                    :valueBgColor="$styleStore.designRequirements.inputValueBgColor"
+                    :textColor="$styleStore.designRequirements.inputTextColor"
                 />
 
                 <ElementFromList class="border-bottom py-2"
+                    :style = "$styleStore.designRequirements.inputBorderColor"
                     :name="'market'"
                     v-if="masStore.mas.inputs.designRequirements.market != null"
                     :dataTestLabel="dataTestLabel + '-Market'"
                     :options="Object.values(Market)"
                     v-model="masStore.mas.inputs.designRequirements"
-                    :valueFontSize="styleStore.designRequirements.inputFontSize"
-                    :labelFontSize="styleStore.designRequirements.inputTitleFontSize"
-                    :labelBgColor='styleStore.designRequirements.inputLabelBgColor'
-                    :valueBgColor='styleStore.designRequirements.inputValueBgColor'
-                    :textColor='styleStore.designRequirements.inputTextColor'
+                    :valueFontSize="$styleStore.designRequirements.inputFontSize"
+                    :labelFontSize="$styleStore.designRequirements.inputTitleFontSize"
+                    :labelBgColor="$styleStore.designRequirements.inputLabelBgColor"
+                    :valueBgColor="$styleStore.designRequirements.inputValueBgColor"
+                    :textColor="$styleStore.designRequirements.inputTextColor"
                 />
 
             </div>

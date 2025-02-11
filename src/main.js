@@ -12,6 +12,7 @@ import { useUserStore } from '/src/stores/user'
 import { useSettingsStore } from '/src/stores/settings'
 import { useStateStore } from '/src/stores/state'
 import Module from '/src/assets/js/libMKF.wasm.js';
+import { useStyleStore } from '/src/stores/style'
 
 const axiosInstance = axios.create()
 
@@ -26,6 +27,8 @@ app.config.globalProperties.$axios = axiosInstance
 app.config.globalProperties.$userStore = useUserStore()
 app.config.globalProperties.$settingsStore = useSettingsStore()
 app.config.globalProperties.$stateStore = useStateStore()
+app.config.globalProperties.$styleStore = useStyleStore()
+
 app.mount("#app");
 
 router.beforeEach((to, from, next) => {

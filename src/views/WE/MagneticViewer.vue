@@ -1,7 +1,6 @@
 <script setup>
 import { useMasStore } from '/src/stores/mas'
 import { useAdviseCacheStore } from '/src/stores/adviseCache'
-import Storyline from '/src/components/Storyline.vue'
 import { toTitleCase } from '/WebSharedComponents/assets/js/utils.js'
 
 import GenericTool from '/src/components/WE/GenericTool.vue'

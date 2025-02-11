@@ -124,6 +124,7 @@ export default {
         </div>
         <div class="row ms-2" v-for="row, index in masStore.mas.inputs.designRequirements.minimumImpedance">
             <PairOfDimensions class="border-bottom py-2 col-10"
+                :style = "$styleStore.designRequirements.inputBorderColor"
                 :names="['frequency', 'impedance']"
                 :units="['H', 'Ω']"
                 :dataTestLabel="dataTestLabel + '-MinimumImpedance'"

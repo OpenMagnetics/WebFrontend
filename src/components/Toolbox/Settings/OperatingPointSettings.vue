@@ -47,21 +47,30 @@ export default {
 <template>
     <div class="modal fade" :id="modalName" tabindex="-1" aria-labelledby="operatingPointSettingsModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg modal-dialog-scrollable settings">
-            <div class="modal-content bg-dark text-white">
+            <div class="modal-content" :style="$styleStore.contextMenu.main">
                 <div class="modal-header">
                     <p data-cy="settingsModal-notification-text" class="modal-title fs-5" id="operatingPointSettingsModalLabel">Settings</p>
                     <button ref="closeSettingsModalRef" type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="settingsModalClose"></button>
                 </div>
                 <div class="modal-body container">
-                    <div class="row">
+                    <div class="row" :style="$styleStore.contextMenu.setting">
                         <h5 class="offset-0 col-6 text-end">Show advanced outputs</h5>
                         <div class="col-sm-6 col-md-6 col-lg-4">
-                            <label v-tooltip="'Choose between spider or bar charts'" class="fs-6 p-0 ps-3 pe-3 text-end text-white col-4 ">No</label>
+                            <label v-tooltip="'Choose between spider or bar charts'" class="fs-6 p-0 ps-3 pe-3 text-end col-4 ">No</label>
                             <input :data-cy="'Settings-Modal-bar-spider-button'" v-model="localData.operatingPointAdvancedMode"  @change="onSettingChanged($event, 'operatingPointAdvancedMode')" type="range" class="form-range col-1 pt-2" min="0" max="1" step="1" style="width: 30px">
-                            <label v-tooltip="'Choose between spider or bar charts'" class="fs-6 p-0 ps-3 text-white col-6 text-start">Yes</label>
+                            <label v-tooltip="'Choose between spider or bar charts'" class="fs-6 p-0 ps-3 col-6 text-start">Yes</label>
                         </div>
                     </div>
-                    <button :disabled="!settingsChanged" :data-cy="'Settings-Modal-update-settings-button'" class="btn btn-success mx-auto d-block mt-4" data-bs-dismiss="modal" @click="onSettingsUpdated" >Update settings</button>
+                    <button
+                        :style="$styleStore.contextMenu.closeButton"
+                        :disabled="!settingsChanged"
+                        :data-cy="'Settings-Modal-update-settings-button'"
+                        class="btn btn-success mx-auto d-block mt-4"
+                        data-bs-dismiss="modal"
+                        @click="onSettingsUpdated"
+                    >
+                        Update settings
+                    </button>
                 </div>
             </div>
         </div>

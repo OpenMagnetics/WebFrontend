@@ -1,6 +1,5 @@
 <script setup>
 import { useMasStore } from '/src/stores/mas'
-import { useStyleStore } from '/src/stores/style'
 import WaveformInputHarmonic from '/src/components/Toolbox/OperatingPoints/Input/WaveformInputHarmonic.vue'
 import WaveformGraph from '/src/components/Toolbox/OperatingPoints/Output/WaveformGraph.vue'
 import WaveformFourier from '/src/components/Toolbox/OperatingPoints/Output/WaveformFourier.vue'
@@ -34,7 +33,6 @@ export default {
     },
     data() {
         const masStore = useMasStore();
-        const styleStore = useStyleStore();
         // masStore.mas.inputs.operatingPoints = [];
         if (masStore.mas.inputs.operatingPoints.length == 0) {
 
@@ -47,12 +45,8 @@ export default {
             );
         }
 
-        masStore.mas.inputs.operatingPoints.forEach((_, operatingPointIndex) => {
-            masStore.mas.inputs.operatingPoints[operatingPointIndex].excitationsPerWinding.forEach((elem, windingIndex) => {
-                if (elem.current.harmonics == null || elem.voltage.harmonics == null) {
-                    masStore.mas.inputs.operatingPoints[operatingPointIndex].excitationsPerWinding[windingIndex] = defaultOperatingPointExcitationWithHarmonics
-                } 
-            })
+        masStore.mas.inputs.operatingPoints.forEach((operatingPoint, operatingPointIndex) => {
+            masStore.mas.inputs.operatingPoints[operatingPointIndex] = this.checkAndFixOperatingPoint(operatingPoint);
         })
 
         const forceUpdateCurrent = 0;
@@ -60,7 +54,6 @@ export default {
         const blockingRebounds = false;
         return {
             masStore,
-            styleStore,
             forceUpdateCurrent,
             forceUpdateVoltage,
             blockingRebounds,
@@ -83,6 +76,15 @@ export default {
         },
     },
     watch: { 
+        'currentOperatingPointIndex'(newValue, oldValue) {
+            this.forceUpdateCurrent += 1;
+            this.forceUpdateVoltage += 1;
+
+        },
+        'currentWindingIndex'(newValue, oldValue) {
+            this.forceUpdateCurrent += 1;
+            this.forceUpdateVoltage += 1;
+        },
     },
     created () {
 
@@ -92,6 +94,15 @@ export default {
         this.processHarmonics("voltage");
     },
     methods: {
+        checkAndFixOperatingPoint(operatingPoint) {
+
+            operatingPoint.excitationsPerWinding.forEach((elem, windingIndex) => {
+                if (elem == null || elem.current.harmonics == null || elem.voltage.harmonics == null) {
+                    operatingPoint.excitationsPerWinding[windingIndex] = deepCopy(defaultOperatingPointExcitationWithHarmonics)
+                } 
+            })
+            return operatingPoint;
+        },
         checkFrequencies(signalDescriptor) {
             this.errorMessages[signalDescriptor] = "";
             this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex][signalDescriptor].harmonics.frequencies.forEach((frequency, index) => {
@@ -108,6 +119,10 @@ export default {
             return true;
         },
         processHarmonics(signalDescriptor) {
+            this.masStore.mas.inputs.operatingPoints.forEach((operatingPoint, operatingPointIndex) => {
+                this.masStore.mas.inputs.operatingPoints[operatingPointIndex] = this.checkAndFixOperatingPoint(operatingPoint);
+            })
+
             this.$mkf.ready.then(_ => {
                 const frequency = this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex][signalDescriptor].harmonics.frequencies[1];
                 this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex][signalDescriptor].waveform = null;
@@ -212,7 +227,7 @@ export default {
             <div class="col-lg-4 col-md-12" style="max-width: 360px;">
 
                 <label
-                    :style="combinedStyle([styleStore.operatingPoints.inputTitleFontSize, styleStore.operatingPoints.commonParameterTextColor])"
+                    :style="combinedStyle([$styleStore.operatingPoints.inputTitleFontSize, $styleStore.operatingPoints.commonParameterTextColor])"
                     :data-cy="dataTestLabel + '-current-title'"
                     class="mx-0 p-0 mb-4"
                 >
@@ -220,14 +235,16 @@ export default {
                 </label>
 
                 <label
-                    :style="combinedStyle([styleStore.operatingPoints.inputTitleFontSize, styleStore.operatingPoints.commonParameterTextColor])"
+                    :style="combinedStyle([$styleStore.operatingPoints.inputTitleFontSize, $styleStore.operatingPoints.commonParameterTextColor])"
                     :data-cy="dataTestLabel + '-current-title'"
                     class="mx-0 p-0 mb-4"
                 >
                     {{'Current harmonics'}}
                 </label>
 
-                <div v-for="index in masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex].current.harmonics.amplitudes.length" :key="index">
+                <div 
+                    v-if="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex] != null && masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex].current.harmonics"
+                    v-for="index in masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex].current.harmonics.amplitudes.length" :key="index">
                     <WaveformInputHarmonic class="col-12 mb-1 text-start"
                         :dataTestLabel="dataTestLabel + '-Harmonic-' + (index - 1)"
                         :index="index - 1"
@@ -246,13 +263,15 @@ export default {
                     <label :data-cy="dataTestLabel + '-error-text'" class="text-danger text-center col-12 pt-1" style="font-size: 0.9em; white-space: pre-wrap;">{{errorMessages.current}}</label>
                 </div>
                 <label
-                    :style="combinedStyle([styleStore.operatingPoints.inputTitleFontSize, styleStore.operatingPoints.commonParameterTextColor])"
+                    :style="combinedStyle([$styleStore.operatingPoints.inputTitleFontSize, $styleStore.operatingPoints.commonParameterTextColor])"
                     :data-cy="dataTestLabel + '-current-title'"
                     class="mx-0 p-0 mb-4"
                 >
                     {{'Voltage harmonics'}}
                 </label>
-                <div v-for="index in masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex].voltage.harmonics.amplitudes.length" :key="index">
+                <div
+                    v-if="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex] != null && masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex].voltage.harmonics"
+                    v-for="index in masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex].voltage.harmonics.amplitudes.length" :key="index">
 
                     <WaveformInputHarmonic class="col-12 mb-1 text-start"
                         :dataTestLabel="dataTestLabel + '-Harmonic-' + (index - 1)"
@@ -272,7 +291,7 @@ export default {
                     <label :data-cy="dataTestLabel + '-error-text'" class="text-danger text-center col-12 pt-1" style="font-size: 0.9em; white-space: pre-wrap;">{{errorMessages.voltage}}</label>
                 </div>
                 <button
-                    :style="styleStore.operatingPoints.goBackSelectingButton"
+                    :style="$styleStore.operatingPoints.goBackSelectingButton"
                     :data-cy="dataTestLabel + '-import-button'"
                     class="btn btn-success fs-5 col-sm-12 col-md-12 mt-3 p-0"
                     style="max-height: 2em"
@@ -280,7 +299,7 @@ export default {
                     {{'Go back to selecting mode'}}
                 </button>
             </div> 
-            <div v-if="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex].current.waveform != null && masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex].current.processed != null && masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex].voltage.waveform != null && masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex].voltage.processed != null" class="col-lg-8 col-md-12 row m-0 p-0" style="max-width: 800px;">
+            <div v-if="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex] !=null && masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex].current.waveform != null && masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex].current.processed != null && masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex].voltage.waveform != null && masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex].voltage.processed != null" class="col-lg-8 col-md-12 row m-0 p-0" style="max-width: 800px;">
                 <WaveformGraph class=" col-12 py-2"
                     :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex]"
                     :dataTestLabel="dataTestLabel + '-WaveformGraph'"

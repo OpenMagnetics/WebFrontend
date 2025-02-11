@@ -1,5 +1,4 @@
 <script setup>
-import { useStyleStore } from '/src/stores/style'
 import { removeTrailingZeroes, getMultiplier, combinedStyle, combinedClass } from '/WebSharedComponents/assets/js/utils.js'
 import { useMasStore } from '/src/stores/mas'
 
@@ -31,7 +30,6 @@ export default {
     },
     data() {
         const masStore = useMasStore();
-        const styleStore = useStyleStore();
         const localData = {
             data: {
                 value: null
@@ -49,7 +47,6 @@ export default {
         const errorMessages = '';
 
         return {
-            styleStore,
             masStore,
             localData,
             errorMessages,
@@ -130,34 +127,34 @@ export default {
     <div class="container-flex">
         <div class="row">
             <label
-                :style="combinedStyle([styleStore.operatingPoints.inputLabelBgColor, styleStore.operatingPoints.inputTextColor, styleStore.operatingPoints.inputTitleFontSize])"
+                :style="combinedStyle([$styleStore.operatingPoints.inputLabelBgColor, $styleStore.operatingPoints.inputTextColor, $styleStore.operatingPoints.inputTitleFontSize])"
 
-                :class="combinedClass([styleStore.operatingPoints.inputLabelBgColor, styleStore.operatingPoints.inputTextColor, styleStore.operatingPoints.inputTitleFontSize])"
+                :class="combinedClass([$styleStore.operatingPoints.inputLabelBgColor, $styleStore.operatingPoints.inputTextColor, $styleStore.operatingPoints.inputTitleFontSize])"
                 class="col-md-1 col-2 m-0 p-0 ps-2 pt-1"
             >
                 {{'x: '}}
             </label>
             <input
-                :style="combinedStyle([styleStore.operatingPoints.inputValueBgColor, styleStore.operatingPoints.inputTextColor, styleStore.operatingPoints.inputFontSize])"
+                :style="combinedStyle([$styleStore.operatingPoints.inputValueBgColor, $styleStore.operatingPoints.inputTextColor, $styleStore.operatingPoints.inputFontSize])"
                 :data-cy="dataTestLabel + '-time-input'"
                 type="number"
                 :disabled="name == 0 || name == (modelValue.data.length - 1)"
                 v-model="localData.time.scaledValue"
                 @change="onTimeChange"
-                :class="combinedClass([styleStore.operatingPoints.inputValueBgColor, styleStore.operatingPoints.inputTextColor, styleStore.operatingPoints.inputFontSize])"
+                :class="combinedClass([$styleStore.operatingPoints.inputValueBgColor, $styleStore.operatingPoints.inputTextColor, $styleStore.operatingPoints.inputFontSize])"
                 class="rounded-2 col-md-3 col-6  p-0 ps-1 my-1"
             />
             <input
-                :style="combinedStyle([styleStore.operatingPoints.inputLabelBgColor, styleStore.operatingPoints.inputTextColor, styleStore.operatingPoints.inputFontSize])"
-                :class="combinedClass([styleStore.operatingPoints.inputLabelBgColor, styleStore.operatingPoints.inputTextColor, styleStore.operatingPoints.inputFontSize])"
+                :style="combinedStyle([$styleStore.operatingPoints.inputLabelBgColor, $styleStore.operatingPoints.inputTextColor, $styleStore.operatingPoints.inputFontSize])"
+                :class="combinedClass([$styleStore.operatingPoints.inputLabelBgColor, $styleStore.operatingPoints.inputTextColor, $styleStore.operatingPoints.inputFontSize])"
                 class="border-0 col-md-1 col-2  m-0 p-0 ps-1  pt-1"
                 style="width: 30px;"
                 :value="getExponentLabel"
                 disabled/>
             <label 
-                :style="combinedStyle([styleStore.operatingPoints.inputLabelBgColor, styleStore.operatingPoints.inputTextColor, styleStore.operatingPoints.inputTitleFontSize])"
+                :style="combinedStyle([$styleStore.operatingPoints.inputLabelBgColor, $styleStore.operatingPoints.inputTextColor, $styleStore.operatingPoints.inputTitleFontSize])"
 
-                :class="combinedClass([styleStore.operatingPoints.inputLabelBgColor, styleStore.operatingPoints.inputTextColor, styleStore.operatingPoints.inputTitleFontSize])"
+                :class="combinedClass([$styleStore.operatingPoints.inputLabelBgColor, $styleStore.operatingPoints.inputTextColor, $styleStore.operatingPoints.inputTitleFontSize])"
                 class="col-md-1 col-2  m-0 p-0  pt-1"
                 style="width: 10px;"
             >
@@ -165,26 +162,26 @@ export default {
             </label>
 
             <label
-                :style="combinedStyle([styleStore.operatingPoints.inputLabelBgColor, styleStore.operatingPoints.inputTextColor, styleStore.operatingPoints.inputTitleFontSize])"
+                :style="combinedStyle([$styleStore.operatingPoints.inputLabelBgColor, $styleStore.operatingPoints.inputTextColor, $styleStore.operatingPoints.inputTitleFontSize])"
 
-                :class="combinedClass([styleStore.operatingPoints.inputLabelBgColor, styleStore.operatingPoints.inputTextColor, styleStore.operatingPoints.inputTitleFontSize])"
+                :class="combinedClass([$styleStore.operatingPoints.inputLabelBgColor, $styleStore.operatingPoints.inputTextColor, $styleStore.operatingPoints.inputTitleFontSize])"
                 class="col-md-1 col-2 p-0 ps-2 pt-1"
             >
                 {{'y: '}}
             </label>
             <input
-                :style="combinedStyle([styleStore.operatingPoints.inputValueBgColor, styleStore.operatingPoints.inputTextColor, styleStore.operatingPoints.inputFontSize])"
+                :style="combinedStyle([$styleStore.operatingPoints.inputValueBgColor, $styleStore.operatingPoints.inputTextColor, $styleStore.operatingPoints.inputFontSize])"
                 :data-cy="dataTestLabel + '-value-input'"
                 type="number"
                 v-model=" localData.data.value"
                 @change="onValueChange"
-                :class="combinedClass([styleStore.operatingPoints.inputValueBgColor, styleStore.operatingPoints.inputTextColor, styleStore.operatingPoints.inputFontSize])"
+                :class="combinedClass([$styleStore.operatingPoints.inputValueBgColor, $styleStore.operatingPoints.inputTextColor, $styleStore.operatingPoints.inputFontSize])"
                 class=" rounded-2 col-md-3 col-6 p-0 ps-1  my-1"
             />
             <label
-                :style="combinedStyle([styleStore.operatingPoints.inputLabelBgColor, styleStore.operatingPoints.inputTextColor, styleStore.operatingPoints.inputTitleFontSize])"
+                :style="combinedStyle([$styleStore.operatingPoints.inputLabelBgColor, $styleStore.operatingPoints.inputTextColor, $styleStore.operatingPoints.inputTitleFontSize])"
 
-                :class="combinedClass([styleStore.operatingPoints.inputLabelBgColor, styleStore.operatingPoints.inputTextColor, styleStore.operatingPoints.inputTitleFontSize])"
+                :class="combinedClass([$styleStore.operatingPoints.inputLabelBgColor, $styleStore.operatingPoints.inputTextColor, $styleStore.operatingPoints.inputTitleFontSize])"
                 class="col-md-1 col-2  p-0 ps-1 pt-1" 
                 style="width: 10px;"
             >
@@ -200,8 +197,8 @@ export default {
                         @click="onAddPointBelow"
                     >
                         <i
-                            :style="combinedStyle([styleStore.operatingPoints.addElementButtonColor])"
-                            :class="combinedClass([styleStore.operatingPoints.addElementButtonColor])"
+                            :style="combinedStyle([$styleStore.operatingPoints.addElementButtonColor])"
+                            :class="combinedClass([$styleStore.operatingPoints.addElementButtonColor])"
                             class="fa-solid fa-circle-plus"
                         > </i>
                     </button>
@@ -213,8 +210,8 @@ export default {
                         @click="onRemovePoint"
                     >
                         <i
-                            :style="combinedStyle([styleStore.operatingPoints.removeElementButtonColor])"
-                            :class="combinedClass([styleStore.operatingPoints.removeElementButtonColor])"
+                            :style="combinedStyle([$styleStore.operatingPoints.removeElementButtonColor])"
+                            :class="combinedClass([$styleStore.operatingPoints.removeElementButtonColor])"
                             class="fa-solid fa-circle-minus"
                         ></i>
                     </button>

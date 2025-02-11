@@ -109,6 +109,11 @@ export default {
                     :dataTestLabel="dataTestLabel + '-Insulation'"
                     :defaultValue="defaultOperatingPointExcitationForInsulation"
                     v-model="masStore.mas.inputs.operatingPoints[0].excitationsPerWinding[0]"
+                    :valueFontSize="$styleStore.insulationAdviser.inputFontSize"
+                    :titleFontSize="$styleStore.insulationAdviser.inputTitleFontSize"
+                    :labelBgColor="$styleStore.insulationAdviser.inputLabelBgColor"
+                    :valueBgColor="$styleStore.insulationAdviser.inputValueBgColor"
+                    :textColor="$styleStore.insulationAdviser.inputTextColor"
                     @update="onChange"
                 />
                 <InsulationSimple class="border-bottom py-2 mt-2"
@@ -117,6 +122,11 @@ export default {
                     :showTitle="false"
                     :standardsToDisable="standardsToDisable"
                     v-model="masStore.mas.inputs.designRequirements"
+                    :valueFontSize="$styleStore.insulationAdviser.inputFontSize"
+                    :titleFontSize="$styleStore.insulationAdviser.inputTitleFontSize"
+                    :labelBgColor="$styleStore.insulationAdviser.inputLabelBgColor"
+                    :valueBgColor="$styleStore.insulationAdviser.inputValueBgColor"
+                    :textColor="$styleStore.insulationAdviser.inputTextColor"
                     @update="onChange"
                 />
             </div>

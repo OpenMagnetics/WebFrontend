@@ -1,5 +1,4 @@
 <script setup>
-import { useStyleStore } from '/src/stores/style'
 import { useMasStore } from '/src/stores/mas'
 import { Chart,
          registerables } from 'chart.js'
@@ -29,7 +28,9 @@ export default {
     },
     data() {
         const masStore = useMasStore();
-        const styleStore = useStyleStore();
+        console.log(this.$styleStore.operatingPoints)
+        console.log(this.$styleStore.operatingPoints)
+        console.log(this.$styleStore.operatingPoints)
         return {
             data: {
                 datasets: [
@@ -39,8 +40,8 @@ export default {
                         data:  this.convertMasToChartjs(this.modelValue.current.waveform),
                         pointRadius: this.enableDrag? 2 : 1,
                         borderWidth: 5,
-                        borderColor: styleStore.operatingPoints.currentTextColor.color,
-                        backgroundColor: styleStore.operatingPoints.currentBgColor.background,
+                        borderColor: this.$styleStore.operatingPoints.currentTextColor.color,
+                        backgroundColor: this.$styleStore.operatingPoints.currentBgColor.background,
                     },
                     {
                         label: 'Voltage',
@@ -48,20 +49,19 @@ export default {
                         data: this.convertMasToChartjs(this.modelValue.voltage.waveform),
                         pointRadius: this.enableDrag? 2 : 1,
                         borderWidth: 5,
-                        borderColor: styleStore.operatingPoints.voltageTextColor.color,
-                        backgroundColor: styleStore.operatingPoints.voltageBgColor.background,
+                        borderColor: this.$styleStore.operatingPoints.voltageTextColor.color,
+                        backgroundColor: this.$styleStore.operatingPoints.voltageBgColor.background,
                     },
                     {
                         label: 'zeroLineCurrent',
                         yAxisID: 'zeroLineCurrent',
                         data: [{x: -1, y: 0}, {x: 1, y: 0}],
                         borderWidth: 2,
-                        borderColor: styleStore.operatingPoints.commonParameterTextColor.color,
-                        backgroundColor: styleStore.operatingPoints.commonParameterBgColor.background,
+                        borderColor: this.$styleStore.operatingPoints.commonParameterTextColor.color,
+                        backgroundColor: this.$styleStore.operatingPoints.commonParameterBgColor.background,
                     }
                 ]
             },
-            styleStore,
             masStore,
         }
     }, 
@@ -114,7 +114,7 @@ export default {
                 },
                 legend: {
                     labels: {
-                        color: this.styleStore.operatingPoints.commonParameterTextColor.color, 
+                        color: this.$styleStore.operatingPoints.commonParameterTextColor.color, 
                         font: {
                             size: 12
                         },
@@ -130,7 +130,7 @@ export default {
                     position: 'left',
                     ticks: {
                         beginAtZero: true,
-                        color: this.styleStore.operatingPoints.currentTextColor.color,
+                        color: this.$styleStore.operatingPoints.currentTextColor.color,
                         font: {
                             size: 12
                         },
@@ -142,8 +142,8 @@ export default {
                     max: 15,
                     min: -15,
                     grid: {
-                        color: this.styleStore.operatingPoints.currentTextColor.color,
-                        borderColor: this.styleStore.operatingPoints.currentTextColor.color,
+                        color: this.$styleStore.operatingPoints.currentTextColor.color,
+                        borderColor: this.$styleStore.operatingPoints.currentTextColor.color,
                         borderWidth: 2,
                         lineWidth: 0.4
                     },
@@ -153,7 +153,7 @@ export default {
                     position: 'right',
                     ticks: {
                         beginAtZero: true,
-                        color: this.styleStore.operatingPoints.voltageTextColor.color,
+                        color: this.$styleStore.operatingPoints.voltageTextColor.color,
                         font: {
                             size: 12
                         },
@@ -165,8 +165,8 @@ export default {
                     max: 100,
                     min: -100,
                     grid: {
-                        color: this.styleStore.operatingPoints.voltageTextColor.color,
-                        borderColor: this.styleStore.operatingPoints.voltageTextColor.color,
+                        color: this.$styleStore.operatingPoints.voltageTextColor.color,
+                        borderColor: this.$styleStore.operatingPoints.voltageTextColor.color,
                         borderWidth: 2,
                         lineWidth: 0.4
                     },
@@ -175,7 +175,7 @@ export default {
                     type: 'linear',
                     ticks: {
                         beginAtZero: true,
-                        color: this.styleStore.operatingPoints.commonParameterTextColor.color,
+                        color: this.$styleStore.operatingPoints.commonParameterTextColor.color,
                         font: {
                             size: 12
                         },
@@ -187,8 +187,8 @@ export default {
                         }
                     },
                     grid: {
-                        color: this.styleStore.operatingPoints.commonParameterTextColor.color,
-                        borderColor: this.styleStore.operatingPoints.commonParameterTextColor.color,
+                        color: this.$styleStore.operatingPoints.commonParameterTextColor.color,
+                        borderColor: this.$styleStore.operatingPoints.commonParameterTextColor.color,
                         borderWidth: 2,
                         lineWidth: 0.4
                     },

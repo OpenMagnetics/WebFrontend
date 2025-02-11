@@ -1,5 +1,4 @@
 <script setup>
-import { useStyleStore } from '/src/stores/style'
 import { combinedStyle, combinedClass } from '/WebSharedComponents/assets/js/utils.js'
 
 import Dimension from '/WebSharedComponents/DataInput/Dimension.vue'
@@ -38,9 +37,7 @@ export default {
         },
     },
     data() {
-        const styleStore = useStyleStore();
         return {
-            styleStore,
             errorMessages: "",
         }
     },
@@ -77,11 +74,11 @@ export default {
                 @update="$emit('onFrequencyChanged')"
                 :labelWidthProportionClass="'col-3'"
                 :valueWidthProportionClass="'col-9'"
-                :valueFontSize="styleStore.operatingPoints.inputFontSize"
-                :labelFontSize="styleStore.operatingPoints.inputLabelFontSize"
-                :labelBgColor='styleStore.operatingPoints.inputLabelBgColor'
-                :valueBgColor='styleStore.operatingPoints.inputValueBgColor'
-                :textColor='styleStore.operatingPoints.inputTextColor'
+                :valueFontSize="$styleStore.operatingPoints.inputFontSize"
+                :labelFontSize="$styleStore.operatingPoints.inputLabelFontSize"
+                :labelBgColor="$styleStore.operatingPoints.inputLabelBgColor"
+                :valueBgColor="$styleStore.operatingPoints.inputValueBgColor"
+                :textColor="$styleStore.operatingPoints.inputTextColor"
             />
 
             <Dimension class="col-4 mb-1 text-start"
@@ -99,11 +96,11 @@ export default {
                 @update="$emit('onAmplitudeChanged')"
                 :labelWidthProportionClass="'col-0'"
                 :valueWidthProportionClass="'col-12'"
-                :valueFontSize="styleStore.operatingPoints.inputFontSize"
-                :labelFontSize="styleStore.operatingPoints.inputLabelFontSize"
-                :labelBgColor='styleStore.operatingPoints.inputLabelBgColor'
-                :valueBgColor='styleStore.operatingPoints.inputValueBgColor'
-                :textColor='styleStore.operatingPoints.inputTextColor'
+                :valueFontSize="$styleStore.operatingPoints.inputFontSize"
+                :labelFontSize="$styleStore.operatingPoints.inputLabelFontSize"
+                :labelBgColor="$styleStore.operatingPoints.inputLabelBgColor"
+                :valueBgColor="$styleStore.operatingPoints.inputValueBgColor"
+                :textColor="$styleStore.operatingPoints.inputTextColor"
             />
             <div class="col-md-2 col-12 p-0 m-0 ps-2 container-flex" style="height: 40px;">
                 <div class="row m-0 p-0  pt-2" style="height: 40px;">
@@ -114,8 +111,8 @@ export default {
                         @click="$emit('onAddPointBelow')"
                     >
                         <i
-                            :style="combinedStyle([styleStore.operatingPoints.addElementButtonColor])"
-                            :class="combinedClass([styleStore.operatingPoints.addElementButtonColor])"
+                            :style="combinedStyle([$styleStore.operatingPoints.addElementButtonColor])"
+                            :class="combinedClass([$styleStore.operatingPoints.addElementButtonColor])"
                             class="fa-solid fa-circle-plus text-secondary"
                         > </i>
                     </button>
@@ -127,8 +124,8 @@ export default {
                         @click="$emit('onRemovePoint')"
                     >
                         <i
-                            :style="combinedStyle([styleStore.operatingPoints.addElementButtonColor])"
-                            :class="combinedClass([styleStore.operatingPoints.addElementButtonColor])"
+                            :style="combinedStyle([$styleStore.operatingPoints.addElementButtonColor])"
+                            :class="combinedClass([$styleStore.operatingPoints.addElementButtonColor])"
                             class="fa-solid fa-circle-minus text-danger"
                         ></i>
                     </button>
