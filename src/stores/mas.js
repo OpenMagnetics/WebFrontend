@@ -31,7 +31,7 @@ export const useMasStore = defineStore("mas", () => {
         else if (type == "filter") {
             this.mas = MAS.Convert.toMas(JSON.stringify(Defaults.filterMas));
         }
-        console.log("Resetting!!!!!!!!!!!!!")
+        console.log("Resetting MAS");
     }
 
     return {

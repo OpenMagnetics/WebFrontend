@@ -48,8 +48,6 @@ export default {
                     type: 'text/csv; charset=utf-8'
                 });
                 const filename = magnetic.manufacturerInfo.reference;
-                console.log("filename");
-                console.log(filename);
                 download(blob, filename + ".cir", "text/csv; charset=utf-8");
 
             }).catch(error => {

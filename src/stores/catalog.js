@@ -18,7 +18,6 @@ export const useCatalogStore = defineStore("catalog", () => {
     }
 
     function orderSample() {
-        console.log("MIerda");
     }
 
     return {

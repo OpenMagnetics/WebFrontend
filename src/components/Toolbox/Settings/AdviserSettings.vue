@@ -14,17 +14,24 @@ export default {
     },
     data() {
         const settingsChanged = false;
+        const localData = {
+            spiderBarChartNotBar: this.$settingsStore.adviserSettings.spiderBarChartNotBar? '1' : '0',
+            useOnlyCoresInStock: this.$settingsStore.adviserSettings.useOnlyCoresInStock? '1' : '0',
+            allowDistributedGaps: this.$settingsStore.adviserSettings.allowDistributedGaps? '1' : '0',
+            allowStacks: this.$settingsStore.adviserSettings.allowStacks? '1' : '0',
+            allowToroidalCores: this.$settingsStore.adviserSettings.allowToroidalCores? '1' : '0',
+        }
         return {
             settingsChanged,
+            localData,
         }
     },
     methods: {
-        onSettingChanged(event) {
+        onSettingChanged(event, setting) {
+            this.$settingsStore.adviserSettings[setting] = event.target.value == '1';
             this.settingsChanged = true;
         },
-        onSettingsUpdated(event) {
-            console.log("onSettingsUpdated");
-            console.log(this.$refs.closeSettingsModalRef);
+        onSettingsUpdated(event) {;
             this.$refs.closeSettingsModalRef.click();
             this.$emit('onSettingsUpdated');
         },
@@ -52,7 +59,7 @@ export default {
                         <h5 class="offset-0 col-6 text-end">Graph style</h5>
                         <div class="col-sm-6 col-md-6 col-lg-4">
                             <label v-tooltip="'Choose between spider or bar charts'" class="fs-6 p-0 ps-3 pe-3 text-end col-4 ">Bar</label>
-                            <input :data-cy="'Settings-Modal-bar-spider-button'" v-model="$settingsStore.adviserSpiderBarChartNotBar" @change="onSettingChanged" type="range" class="form-range col-1 pt-2" min="0" max="1" step="1" style="width: 30px">
+                            <input :data-cy="'Settings-Modal-bar-spider-button'" v-model="localData.spiderBarChartNotBar" @change="onSettingChanged($event, 'spiderBarChartNotBar')" type="range" class="form-range col-1 pt-2" min="0" max="1" step="1" style="width: 30px">
                             <label v-tooltip="'Choose between spider or bar charts'" class="fs-6 p-0 ps-3 col-6 text-start">Spider</label>
                         </div>
                     </div>
@@ -60,7 +67,7 @@ export default {
                         <h5 class="offset-0 col-6 text-end">Use only cores in stock</h5>
                         <div class="col-sm-6 col-md-6 col-lg-4">
                             <label v-tooltip="'Choose between using all available cores or only those in stock'" class="fs-6 p-0 ps-3 pe-3 text-end col-4 ">All</label>
-                            <input :data-cy="'Settings-Modal-with-without-stock-button'" v-model="$settingsStore.adviserUseOnlyCoresInStock" @change="onSettingChanged" type="range" class="form-range col-1 pt-2" min="0" max="1" step="1" style="width: 30px">
+                            <input :data-cy="'Settings-Modal-with-without-stock-button'" v-model="localData.useOnlyCoresInStock" @change="onSettingChanged($event, 'useOnlyCoresInStock')" type="range" class="form-range col-1 pt-2" min="0" max="1" step="1" style="width: 30px">
                             <label v-tooltip="'Choose between using all available cores or only those in stock'" class="fs-6 p-0 ps-3 col-6  text-start">Only in stock</label>
                         </div>
                     </div>
@@ -68,7 +75,7 @@ export default {
                         <h5 class="offset-0 col-6 text-end">Allow cores with distributed gaps</h5>
                         <div class="col-sm-6 col-md-6 col-lg-4">
                             <label v-tooltip="'Allow the usage of cores with distributed gaps'" class="fs-6 p-0 ps-3 pe-3 text-end col-4 ">Avoid</label>
-                            <input :data-cy="'Settings-Modal-with-without-stock-button'" v-model="$settingsStore.adviserAllowDistributedGaps" @change="onSettingChanged" type="range" class="form-range col-1 pt-2" min="0" max="1" step="1" style="width: 30px">
+                            <input :data-cy="'Settings-Modal-with-without-stock-button'" v-model="localData.allowDistributedGaps" @change="onSettingChanged($event, 'allowDistributedGaps')" type="range" class="form-range col-1 pt-2" min="0" max="1" step="1" style="width: 30px">
                             <label v-tooltip="'Choose between using all available cores or only those in stock'" class="fs-6 p-0 ps-3 col-6  text-start">Allow</label>
                         </div>
                     </div>
@@ -76,7 +83,7 @@ export default {
                         <h5 class="offset-0 col-6 text-end">Allow core stacking</h5>
                         <div class="col-sm-6 col-md-6 col-lg-4">
                             <label v-tooltip="'Allow magnetics with more than one core stacked'" class="fs-6 p-0 ps-3 pe-3 text-end col-4 ">Avoid</label>
-                            <input :data-cy="'Settings-Modal-with-without-stock-button'" v-model="$settingsStore.adviserAllowStacks" @change="onSettingChanged" type="range" class="form-range col-1 pt-2" min="0" max="1" step="1" style="width: 30px">
+                            <input :data-cy="'Settings-Modal-with-without-stock-button'" v-model="localData.allowStacks" @change="onSettingChanged($event, 'allowStacks')" type="range" class="form-range col-1 pt-2" min="0" max="1" step="1" style="width: 30px">
                             <label v-tooltip="'Choose between using all available cores or only those in stock'" class="fs-6 p-0 ps-3 col-6  text-start">Allow</label>
                         </div>
                     </div>
@@ -84,7 +91,7 @@ export default {
                         <h5 class="offset-0 col-6 text-end">Allow toroidal cores</h5>
                         <div class="col-sm-6 col-md-6 col-lg-4">
                             <label v-tooltip="'Allow toroidal cores'" class="fs-6 p-0 ps-3 pe-3 text-end col-4 ">Avoid</label>
-                            <input :data-cy="'Settings-Modal-with-without-stock-button'" v-model="$settingsStore.adviserToroidalCores" @change="onSettingChanged" type="range" class="form-range col-1 pt-2" min="0" max="1" step="1" style="width: 30px">
+                            <input :data-cy="'Settings-Modal-with-without-stock-button'" v-model="localData.allowToroidalCores" @change="onSettingChanged($event, 'allowToroidalCores')" type="range" class="form-range col-1 pt-2" min="0" max="1" step="1" style="width: 30px">
                             <label v-tooltip="'Select whether toroidal cores will be considered for the designs'" class="fs-6 p-0 ps-3 col-6  text-start">Allow</label>
                         </div>
                     </div>

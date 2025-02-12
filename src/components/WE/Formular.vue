@@ -23,17 +23,13 @@ export default {
     },
     methods: {
         storeAndCloseModal() {
-            console.log(this.name)
-            console.log(this.email)
 
             const data = {
                 email: this.email,
                 name: this.name,
                 mas: this.masStore.mas,
             }
-            console.log(this.catalogStore.requests)
             this.catalogStore.requests.push(data);
-            console.log(this.catalogStore.requests)
             const url = import.meta.env.VITE_API_ENDPOINT + '/store_request';
             this.$axios.post(url, data)
             .then(response => {

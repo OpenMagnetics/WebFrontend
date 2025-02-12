@@ -133,7 +133,6 @@ export default {
             white: style.getPropertyValue('--bs-white'),
             transparent: style.getPropertyValue('--bs-transparent'),
         };
-        console.log(theme)
         this.$styleStore.setTheme(theme);
 
         this.onLoggedIn()

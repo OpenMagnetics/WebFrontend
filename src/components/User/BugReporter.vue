@@ -23,7 +23,6 @@ export default {
                 "userInformation": this.userInformation,
                 "username": "Anonymous",
             }
-            console.log(data)
             const url = import.meta.env.VITE_API_ENDPOINT + '/report_bug'
 
             this.$axios.post(url, data)

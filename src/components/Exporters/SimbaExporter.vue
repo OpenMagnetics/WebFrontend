@@ -37,13 +37,11 @@ export default {
             const fr = new FileReader();
 
             const name = this.$refs['simbaFileReader'].files.item(0).name
-            console.log(name)
             fr.readAsText(this.$refs['simbaFileReader'].files.item(0));
 
 
             fr.onload = e => {
                 const jsimba = e.target.result
-                console.log(e)
 
                 this.$mkf.ready.then(_ => {
                     var subcircuit = this.$mkf.export_magnetic_as_subcircuit(JSON.stringify(this.magnetic), jsimba);

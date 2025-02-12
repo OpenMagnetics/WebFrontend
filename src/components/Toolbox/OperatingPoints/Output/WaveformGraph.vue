@@ -28,9 +28,6 @@ export default {
     },
     data() {
         const masStore = useMasStore();
-        console.log(this.$styleStore.operatingPoints)
-        console.log(this.$styleStore.operatingPoints)
-        console.log(this.$styleStore.operatingPoints)
         return {
             data: {
                 datasets: [

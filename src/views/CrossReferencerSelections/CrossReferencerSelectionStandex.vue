@@ -7,7 +7,6 @@ import '/src/assets/css/standex.css'
 export default {
     data() {
         const suffix = '_standex';
-        console.log(this.$route)
         return {
             suffix
         }

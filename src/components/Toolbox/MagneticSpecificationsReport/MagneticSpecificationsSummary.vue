@@ -128,7 +128,6 @@ export default {
             return text;
         },
         computeHarmonicsLatex(harmonics, name, unit, limit=0.05) {
-            console.log(harmonics)
             var data = `data {\nx, y\n`;
             var maximumAmplitude = 0;
             for (var i = 0; i < harmonics.amplitudes.length; i++) {
@@ -350,7 +349,6 @@ export default {
                 this.masStore.mas.inputs.operatingPoints.forEach((operatingPoint, operationPointIndex) => {
                     text += `\\subsection*{${operatingPoint.name}}\n`
                     operatingPoint.excitationsPerWinding.forEach((excitation, windingIndex) => {
-                        console.log(excitation.current.processed)
                         text += `\\subsection*{${this.masStore.mas.magnetic.coil.functionalDescription[windingIndex].name}}\n`
                         text += `
                             \\begin{tabular}{ |l|c|c| } 

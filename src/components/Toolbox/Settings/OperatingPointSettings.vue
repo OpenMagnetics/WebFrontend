@@ -25,7 +25,7 @@ export default {
     },
     methods: {
         onSettingChanged(event, setting) {
-            this.$settingsStore[setting] = event.target.value == '1';
+            this.$settingsStore.operatingPointSettings[setting] = event.target.value == '1';
             this.settingsChanged = true;
         },
         onSettingsUpdated(event) {
@@ -56,9 +56,9 @@ export default {
                     <div class="row" :style="$styleStore.contextMenu.setting">
                         <h5 class="offset-0 col-6 text-end">Show advanced outputs</h5>
                         <div class="col-sm-6 col-md-6 col-lg-4">
-                            <label v-tooltip="'Choose between spider or bar charts'" class="fs-6 p-0 ps-3 pe-3 text-end col-4 ">No</label>
+                            <label v-tooltip="'Choose between basic or advanced output'" class="fs-6 p-0 ps-3 pe-3 text-end col-4 ">No</label>
                             <input :data-cy="'Settings-Modal-bar-spider-button'" v-model="localData.operatingPointAdvancedMode"  @change="onSettingChanged($event, 'operatingPointAdvancedMode')" type="range" class="form-range col-1 pt-2" min="0" max="1" step="1" style="width: 30px">
-                            <label v-tooltip="'Choose between spider or bar charts'" class="fs-6 p-0 ps-3 col-6 text-start">Yes</label>
+                            <label v-tooltip="'Choose between basic or advanced output'" class="fs-6 p-0 ps-3 col-6 text-start">Yes</label>
                         </div>
                     </div>
                     <button

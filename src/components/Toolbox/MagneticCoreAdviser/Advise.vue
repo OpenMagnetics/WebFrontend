@@ -90,12 +90,6 @@ export default {
         },
     },
     watch: {
-        // 'scoring'(newValue, oldValue) {
-        //     console.log("watching " + this.adviseIndex)
-        //     console.log(newValue)
-        //     chart.data.labels = this.filters;
-        //     chart.update();
-        // },
     },
     mounted () {
         options = {
@@ -201,8 +195,6 @@ export default {
                 this.localTexts.magnetizingInductance = `Mag. Ind.: ${removeTrailingZeroes(aux.label, 1)} ${aux.unit}`
             }  
             {
-                // if (this.masData.outputs[0].coreLosses.temperature == null)
-                    // console.log(this.masData)
                 const aux = formatTemperature(this.masData.outputs[0].coreLosses.temperature);
                 this.localTexts.coreTemperature = `Core Temp.: ${removeTrailingZeroes(aux.label, 1)} ${aux.unit}`
             }

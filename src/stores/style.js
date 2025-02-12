@@ -20,8 +20,6 @@ export const useStyleStore = defineStore("style", () => {
     function setTheme(theme) {
         this.theme = theme;
 
-        console.log(theme)
-
         this.main = {
             "background": theme["dark"],
             "color": theme["white"],
@@ -276,6 +274,9 @@ export const useStyleStore = defineStore("style", () => {
             inputLabelBgColor:{
                 "background": theme["dark"],
             },
+            inputLabelDangerBgColor:{
+                "color": theme["danger"],
+            },
             inputValueBgColor:{
                 "background": theme["light"],
             },
@@ -351,6 +352,10 @@ export const useStyleStore = defineStore("style", () => {
             confirmButton: {
                 "background": theme["success"],
                 "color": theme["dark"],
+            },
+            changeToolButton: {
+                "background": theme["secondary"],
+                "color": theme["white"],
             },
             orderButton: {
                 "background": theme["primary"],

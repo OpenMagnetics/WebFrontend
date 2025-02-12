@@ -2,6 +2,7 @@
 import { useCatalogStore } from '/src/stores/catalog'
 import { useMasStore } from '/src/stores/mas'
 import { toDashCase, toPascalCase, toTitleCase } from '/WebSharedComponents/assets/js/utils.js'
+import MagneticBuilderSettings from '/src/components/Toolbox/Settings/MagneticBuilderSettings.vue'
 import AdviserSettings from '/src/components/Toolbox/Settings/AdviserSettings.vue'
 import CatalogSettings from '/src/components/Toolbox/Settings/CatalogSettings.vue'
 import OperatingPointSettings from '/src/components/Toolbox/Settings/OperatingPointSettings.vue'
@@ -10,11 +11,15 @@ import OperatingPointSettings from '/src/components/Toolbox/Settings/OperatingPo
 
 <script>
 export default {
-    emits: ["editMagnetic", "viewMagnetic"],
+    emits: ["editMagnetic", "viewMagnetic", "toolSelected"],
     props: {
         dataTestLabel: {
             type: String,
             default: '',
+        },
+        showMagneticBuilderSettingsOption: {
+            type: Boolean,
+            default: false
         },
         showAdviserSettingsOption: {
             type: Boolean,
@@ -37,6 +42,10 @@ export default {
             default: false
         },
         showConfirmOption: {
+            type: Boolean,
+            default: false
+        },
+        showChangeToolOption: {
             type: Boolean,
             default: false
         },
@@ -65,6 +74,9 @@ export default {
             if (this.showAdviserSettingsOption) {
                 return '#AdviserSettingsModal'
             }
+            else if (this.showMagneticBuilderSettingsOption) {
+                return '#MagneticBuilderSettingsModal'
+            }
             else if (this.showAdviserSettingsOption) {
                 return '#CatalogAdviserSettingsModal'
             }
@@ -85,6 +97,8 @@ export default {
         },
         onOperatingPointSettingsUpdated() {
         },
+        onMagneticBuilderSettingsUpdated() {
+        },
     }
 }
 </script>
@@ -92,6 +106,11 @@ export default {
 <template>
     <div class="pb-2 p-0 container" v-tooltip="styleTooltip" :style="$styleStore.contextMenu.main">
         <h4 class="text-center pt-2 fs-5">Tool menu</h4>
+        <MagneticBuilderSettings 
+            v-if="showMagneticBuilderSettingsOption"
+            :modalName="'MagneticBuilderSettingsModal'"
+            @onSettingsUpdated="onMagneticBuilderSettingsUpdated"
+        />
         <AdviserSettings 
             v-if="showAdviserSettingsOption"
             :modalName="'AdviserSettingsModal'"
@@ -110,32 +129,50 @@ export default {
         <div class="row px-3">
             <button
                 :style="$styleStore.contextMenu.settingsButton"
-                v-if="showAdviserSettingsOption || showCatalogAdviserSettingsOption || showOperatingPointSettingsOption"  
+                v-if="showAdviserSettingsOption || showCatalogAdviserSettingsOption || showOperatingPointSettingsOption || showMagneticBuilderSettingsOption"  
                 :data-cy="dataTestLabel + 'settings-modal-button'"
                 class="btn mx-auto d-block mt-4 col-6 col-sm-6 col-md-12"
                 data-bs-toggle="modal"
                 :data-bs-target="modalTarget"
-            >Settings</button>
+            >
+                {{'Settings'}}
+            </button>
             <button
                 :style="$styleStore.contextMenu.editButton"
                 v-if="showEditOption"  
                 :data-cy="dataTestLabel + 'edit-from-viewer-button'"
                 class="btn mx-auto d-block mt-4 col-6 col-sm-6 col-md-12"
                 @click="$emit('editMagnetic')"
-            >Edit</button>
+            >
+                {{'Edit'}}
+            </button>
             <button
                 :style="$styleStore.contextMenu.confirmButton"
                 v-if="showConfirmOption"  
                 :data-cy="dataTestLabel + 'edit-from-viewer-button'"
-                class="btn btn-success mx-auto d-block mt-4 col-6 col-sm-6 col-md-12"
+                class="btn mx-auto d-block mt-4 col-6 col-sm-6 col-md-12"
                 @click="$emit('viewMagnetic')"
-            >Confirm</button>
+            >
+                {{'Confirm'}}
+            </button>
             <button
                 :style="$styleStore.contextMenu.orderButton"
                 v-if="showOrderOption"  
                 :data-cy="dataTestLabel + '-order-button'"
-                class="btn btn-success mx-auto d-block mt-4 col-6 col-sm-6 col-md-12"
-                @click="catalogStore.orderSample(masStore.mas)">Order a sample</button>
+                class="btn mx-auto d-block mt-4 col-6 col-sm-6 col-md-12"
+                @click="catalogStore.orderSample(masStore.mas)"
+            >
+                {{'Order a sample'}}
+            </button>
+            <button
+                :style="$styleStore.contextMenu.changeToolButton"
+                v-if="showChangeToolOption"  
+                :data-cy="dataTestLabel + '-change-tool-button'"
+                class="btn mx-auto d-block mt-4 col-6 col-sm-6 col-md-12"
+                @click="$emit('toolSelected', 'agnosticTool')"
+            >
+                {{'Change tool'}}
+            </button>
         </div>
     </div>
 </template>

@@ -2,11 +2,6 @@ import { defineStore } from 'pinia'
 import { ref, watch, computed  } from 'vue'
 
 export const useSettingsStore = defineStore("settings", () => {
-    const adviserSpiderBarChartNotBar = ref('0');
-    const adviserUseOnlyCoresInStock = ref('1');
-    const adviserAllowDistributedGaps = ref('1');
-    const adviserAllowStacks = ref('1');
-    const adviserToroidalCores = ref('1');
     const catalogAdviserUseAllParts = ref(false);
 
     const labelBgColor = ref('bg-dark');
@@ -16,6 +11,22 @@ export const useSettingsStore = defineStore("settings", () => {
 
     const coreAdviserSettings = ref({
         weights: null,
+    })
+
+    const adviserSettings = ref({
+        spiderBarChartNotBar: false,
+        useOnlyCoresInStock: true,
+        allowDistributedGaps: true,
+        allowStacks: true,
+        allowToroidalCores: true,
+    })
+
+    const magneticBuilderSettings = ref({
+        useOnlyCoresInStock: true,
+        allowDistributedGaps: true,
+        allowStacks: true,
+        allowToroidalCores: true,
+        advancedMode: false,
     })
 
     const magneticAdviserSettings = ref({
@@ -29,16 +40,25 @@ export const useSettingsStore = defineStore("settings", () => {
 
     const dump = computed(() => {
         return {
-            "adviserSpiderBarChartNotBar": adviserSpiderBarChartNotBar.value,
-            "adviserUseOnlyCoresInStock": adviserUseOnlyCoresInStock.value,
-            "adviserAllowDistributedGaps": adviserAllowDistributedGaps.value,
-            "adviserAllowStacks": adviserAllowStacks.value,
-            "adviserToroidalCores": adviserToroidalCores.value,
             "catalogAdviserUseAllParts": catalogAdviserUseAllParts.value,
         }
     })
 
     function reset() {
+        this.adviserSettings ={
+            spiderBarChartNotBar: false,
+            useOnlyCoresInStock: true,
+            allowDistributedGaps: true,
+            allowStacks: true,
+            allowToroidalCores: true,
+        };
+        this.magneticBuilderSettings = {
+            useOnlyCoresInStock: true,
+            allowDistributedGaps: true,
+            allowStacks: true,
+            allowToroidalCores: true,
+            advancedMode: false,
+        };
         this.coreAdviserSettings ={
             weights: null
         };
@@ -51,26 +71,18 @@ export const useSettingsStore = defineStore("settings", () => {
         };
 
 
-        this.adviserSpiderBarChartNotBar = false;
-        this.adviserUseOnlyCoresInStock = true;
-        this.adviserAllowDistributedGaps = true;
-        this.adviserAllowStacks = true;
-        this.adviserToroidalCores = true;
         this.catalogAdviserUseAllParts = false;
 
 
     }
 
     return {
+        adviserSettings,
+        magneticBuilderSettings,
         coreAdviserSettings,
         magneticAdviserSettings,
         operatingPointSettings,
 
-        adviserSpiderBarChartNotBar,
-        adviserUseOnlyCoresInStock,
-        adviserAllowDistributedGaps,
-        adviserAllowStacks,
-        adviserToroidalCores,
         catalogAdviserUseAllParts,
 
         dump,

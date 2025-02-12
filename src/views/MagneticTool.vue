@@ -96,7 +96,7 @@ export default {
             },
         };
 
-        const initialStoryline = {
+        const agnosticStoryline = {
             "welcome": {
                 title: "Welcome",
                 nextTool: "designRequirements"
@@ -116,7 +116,7 @@ export default {
             },
         };
 
-        const currentStoryline = initialStoryline;
+        const currentStoryline = agnosticStoryline;
 
         if (!this.$userStore.showWelcome) {
             if (this.$userStore.getCurrentToolState().subsection == "welcome") {
@@ -147,12 +147,19 @@ export default {
             magneticAdviserStoryline,
             magneticBuilderStoryline,
             magneticCoreAdviserStoryline,
-            initialStoryline,
+            agnosticStoryline,
             currentStoryline,
         }
     },
     methods: {
         toolSelected(tool) {
+            if (tool == 'agnosticTool') {
+                this.currentStoryline = this.agnosticStoryline;
+                this.$userStore.selectTool("agnosticTool");
+                this.$userStore.setCurrentToolSubsection("toolSelector");
+                this.$userStore.setCurrentToolSubsectionStatus("designRequirements", true);
+                this.$userStore.setCurrentToolSubsectionStatus("operatingPoints", true);
+            }
             if (tool == 'magneticSpecificationsReport') {
                 this.currentStoryline = this.magneticSpecificationsReportStoryline;
                 this.$userStore.selectTool("magneticSpecificationsReport");
@@ -184,8 +191,6 @@ export default {
         },
     },
     mounted() {
-        console.log("this.$userStore.selectedTool")
-        console.log(this.$userStore.selectedTool)
     },
     created() {
     },
@@ -205,24 +210,28 @@ export default {
         :currentStoryline="magneticBuilderStoryline"
         :dataTestLabel="'MagneticBuilder'"
         :showControlPanel="true"
+        @toolSelected="toolSelected"
     />
     <GenericTool
         v-if="$userStore.selectedTool == 'magneticAdviser'"
         :currentStoryline="magneticAdviserStoryline"
         :dataTestLabel="'MagneticAdviser'"
         :showControlPanel="true"
+        @toolSelected="toolSelected"
     />
     <GenericTool
         v-if="$userStore.selectedTool == 'magneticCoreAdviser'"
         :currentStoryline="magneticCoreAdviserStoryline"
         :dataTestLabel="'MagneticCoreAdviser'"
         :showControlPanel="true"
+        @toolSelected="toolSelected"
     />
     <GenericTool
         v-if="$userStore.selectedTool == 'magneticSpecificationsReport'"
         :currentStoryline="magneticSpecificationsReportStoryline"
         :dataTestLabel="'MagneticSpecificationsReport'"
         :showControlPanel="true"
+        @toolSelected="toolSelected"
     />
 </template>
 

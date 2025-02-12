@@ -7,7 +7,6 @@ import '/src/assets/css/magnetics.css'
 export default {
     data() {
         const suffix = '_magnetics';
-        console.log(this.$route)
         return {
             suffix
         }

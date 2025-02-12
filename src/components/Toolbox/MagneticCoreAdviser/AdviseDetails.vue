@@ -27,14 +27,10 @@ export default {
     watch: {
         modelValue(newValue, oldValue) {
             this.processLocalTexts()
-            // if (!isNaN(this.modelValue[this.name]))
-            //     this.update(this.modelValue[this.name]);
         },
     },
     methods: {
         processLocalTexts() {
-            console.log("this.modelValue")
-            console.log(this.modelValue)
             this.localTexts = processCoreTexts(this.modelValue);
         },
     },

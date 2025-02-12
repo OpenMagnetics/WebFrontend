@@ -100,11 +100,10 @@ export default {
                         console.time('Execution Time');
 
                         const settings = JSON.parse(this.$mkf.get_settings());
-                        settings["coreIncludeDistributedGaps"] = this.$settingsStore.adviserAllowDistributedGaps == "1";
-                        settings["coreIncludeStacks"] = this.$settingsStore.adviserAllowStacks == "1";
-                        settings["useToroidalCores"] = this.$settingsStore.adviserToroidalCores == "1";
+                        settings["coreIncludeDistributedGaps"] = this.$settingsStore.adviserSettings.allowDistributedGaps;
+                        settings["coreIncludeStacks"] = this.$settingsStore.adviserSettings.allowStacks;
+                        settings["useToroidalCores"] = this.$settingsStore.adviserSettings.allowToroidalCores;
                         this.$mkf.set_settings(JSON.stringify(settings));
-                        // console.log(this.catalogString)
 
                         const result = this.$mkf.calculate_advised_magnetics_from_catalog(JSON.stringify(this.masStore.mas.inputs), this.catalogString, 2);
 
@@ -118,9 +117,6 @@ export default {
                         }
 
                         var data = aux["data"];
-                        console.log(data)
-
-                        // console.log(`Found ${data.length} designs`)
 
                         this.catalogStore.advises = [];
 

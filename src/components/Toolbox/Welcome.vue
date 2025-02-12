@@ -64,8 +64,6 @@ export default {
         enabledNext() {
             if (this.currentText < this.textsToAppear.length) {
                 setTimeout(() => {
-                        console.log(this.currentText)
-                        console.log(this.textsToAppear[this.currentText])
                         this.textsToAppear[this.currentText].enabled = true;
                         this.currentText += 1;
                         this.enabledNext();

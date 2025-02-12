@@ -73,7 +73,6 @@ export default {
                 aux['processedDescription'] = null;
                 var core = JSON.parse(this.$mkf.calculate_core_data(JSON.stringify(aux), false));
 
-                console.log(core);
 
                 this.$axios.post(url, core)
                 .then(response => {
@@ -146,7 +145,6 @@ export default {
 
                             const aux = formatInductance(leakageInductaceOutput.leakageInductancePerWinding[windingIndex].nominal);
                             this.localTexts.outputsTable.coil[operatingPointIndex][windingIndex].leakageInductance.value = `${removeTrailingZeroes(aux.label, 1)} ${aux.unit}`;
-                            console.log(this.localTexts.outputsTable.coil[0]);
                         }
                     }
                 })
@@ -181,7 +179,6 @@ export default {
         },
         processCoreShapeTexts(data) {
             const coreShapeTable = {}
-            console.log(data.magnetic.core.functionalDescription)
             {
                 coreShapeTable['name'] = {}
                 coreShapeTable['name'].text = 'Name';
@@ -496,11 +493,8 @@ export default {
         insertMas() {
             const url = import.meta.env.VITE_API_ENDPOINT + '/insert_mas'
 
-            console.log("Inserting Mas")
             this.$axios.post(url, this.masStore.mas)
             .then(response => {
-                console.log("response.data")
-                console.log(response.data)
             })
             .catch(error => {
                 console.error("Error inserting")

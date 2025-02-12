@@ -7,7 +7,6 @@ import '/src/assets/css/fair-rite.css'
 export default {
     data() {
         const suffix = '_fair_rite';
-        console.log(this.$route)
         return {
             suffix
         }

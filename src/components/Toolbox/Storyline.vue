@@ -82,7 +82,6 @@ export default {
                 }
                 shortenedLabels[key] =label;
             }
-            // console.log(shortenedLabels);
 
             return shortenedLabels
         },
@@ -145,7 +144,6 @@ export default {
             if (hideForever) {
                 this.$userStore.showWelcome = false;
             }
-            console.log("nextTool")
             this.$emit("nextTool");
         },
         getInnerWidth() {

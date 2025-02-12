@@ -3,6 +3,7 @@ import { useMasStore } from '/src/stores/mas'
 import WaveformGraph from '/src/components/Toolbox/OperatingPoints/Output/WaveformGraph.vue'
 import WaveformFourier from '/src/components/Toolbox/OperatingPoints/Output/WaveformFourier.vue'
 import WaveformOutput from '/src/components/Toolbox/OperatingPoints/Output/WaveformOutput.vue'
+import WaveformSimpleOutput from '/src/components/Toolbox/OperatingPoints/Output/WaveformSimpleOutput.vue'
 import WaveformCombinedOutput from '/src/components/Toolbox/OperatingPoints/Output/WaveformCombinedOutput.vue'
 import WaveformInputColumnNames from '/src/components/Toolbox/OperatingPoints/Input/WaveformInputColumnNames.vue'
 import { roundWithDecimals, deepCopy, combinedStyle } from '/WebSharedComponents/assets/js/utils.js'
@@ -168,17 +169,26 @@ export default {
                     :dataTestLabel="dataTestLabel + '-WaveformFourier'"
                 />
 
+                <WaveformSimpleOutput class="col-lg-12 col-md-12 m-0 px-2"
+                    v-if="!$settingsStore.operatingPointSettings.advancedMode"
+                    :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex]"
+                    :dataTestLabel="dataTestLabel + '-WaveformOutput-current'"
+                />
+
                 <WaveformOutput class="col-lg-6 col-md-6 m-0 px-2"
+                    v-if="$settingsStore.operatingPointSettings.advancedMode"
                     :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex]"
                     :dataTestLabel="dataTestLabel + '-WaveformOutput-current'"
                     :signalDescriptor="'current'"
                 />
                 <WaveformOutput class="col-lg-6 col-md-6 m-0 px-2"
+                    v-if="$settingsStore.operatingPointSettings.advancedMode"
                     :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex]"
                     :dataTestLabel="dataTestLabel + '-WaveformOutput-voltage'"
                     :signalDescriptor="'voltage'"
                 />
                 <WaveformCombinedOutput class="col-12 m-0 px-2 border-top"
+                    v-if="$settingsStore.operatingPointSettings.advancedMode"
                     :dataTestLabel="dataTestLabel + '-WaveformCombinedOutput'"
                     :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex]"
                 />

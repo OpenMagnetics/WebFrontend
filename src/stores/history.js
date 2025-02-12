@@ -18,11 +18,9 @@ export const useHistoryStore = defineStore("history", () => {
 
     function addToHistory(mas) {
         if (blockingRebounds) {
-            console.log("blockingRebounds");
             return
         }
         if (blockingAdditions) {
-            console.log("blockingAdditions");
             return
         }
         for (var i = this.masHistory.length - 1; i >= 0; i--) {
@@ -42,7 +40,6 @@ export const useHistoryStore = defineStore("history", () => {
     }
 
     function back() {
-        console.log("back");
         if (this.historyPointer > 0) {
             this.historyPointer -= 1;
         }

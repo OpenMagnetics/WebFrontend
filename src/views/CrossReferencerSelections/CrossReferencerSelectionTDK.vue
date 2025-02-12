@@ -7,7 +7,6 @@ import '/src/assets/css/tdk.css'
 export default {
     data() {
         const suffix = '_tdk';
-        console.log(this.$route)
         return {
             suffix
         }

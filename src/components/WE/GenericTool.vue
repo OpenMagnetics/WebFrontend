@@ -93,8 +93,6 @@ export default {
             return this.currentStoryline[this.$userStore.getCurrentToolState().subsection].advancedTool != null;
         },
         traversableLeft() {
-            console.log(this.$userStore.getCurrentToolState().subsection)
-
             return this.currentStoryline[this.$userStore.getCurrentToolState().subsection].basicTool != null;
         },
         updateCanContinue(tool, value) {

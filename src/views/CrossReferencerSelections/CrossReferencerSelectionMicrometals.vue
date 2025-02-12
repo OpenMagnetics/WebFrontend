@@ -7,7 +7,6 @@ import '/src/assets/css/micrometals.css'
 export default {
     data() {
         const suffix = '_micrometals';
-        console.log(this.$route)
         return {
             suffix
         }

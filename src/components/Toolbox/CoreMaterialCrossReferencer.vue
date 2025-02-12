@@ -84,7 +84,6 @@ export default {
                                                                                                  this.onlyManufacturer,
                                                                                                  this.crossReferencerStore.coreMaterialReferenceInputs.enabledCoreTypes.includes("Only Cores In Stock")));
 
-                console.log(aux)
                 const auxCrossReferencedCoreMaterialsValues = [];
                 aux.coreMaterials.forEach((elem, index) => {
                     const auxElem = {
@@ -118,7 +117,7 @@ export default {
                 setTimeout(() => {this.scatterChartComparatorForceUpdate += 1}, 5);
 
             }).catch(error => {
-                console.log(error);
+                console.error(error);
                 this.hideOutputs = false;
                 this.loading = false;
             });
@@ -152,7 +151,6 @@ export default {
         },
         onPointClick(event) {
             if (event.componentIndex == 1) {
-                console.log("Click on reference");
             }
             else {
                 this.crossReferencerStore.selectedCoreMaterialIndex = event.dataIndex;

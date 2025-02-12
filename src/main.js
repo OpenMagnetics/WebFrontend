@@ -71,7 +71,6 @@ router.beforeEach((to, from, next) => {
 
                                 app.config.globalProperties.$axios.post(url, postData)
                                 .then(response => {
-                                    console.log(response);
                                 })
                                 .catch(error => {
                                     console.error(error);

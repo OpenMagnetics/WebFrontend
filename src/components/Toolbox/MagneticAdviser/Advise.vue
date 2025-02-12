@@ -90,12 +90,6 @@ export default {
         },
     },
     watch: {
-        // 'scoring'(newValue, oldValue) {
-        //     console.log("watching " + this.adviseIndex)
-        //     console.log(newValue)
-        //     chart.data.labels = this.filters;
-        //     chart.update();
-        // },
     },
     mounted () {
         options = {

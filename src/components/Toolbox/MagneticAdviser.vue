@@ -114,16 +114,13 @@ export default {
                         console.time('Execution Time');
 
                         const settings = JSON.parse(this.$mkf.get_settings());
-                        settings["coreIncludeDistributedGaps"] = this.$settingsStore.adviserAllowDistributedGaps == "1";
-                        settings["coreIncludeStacks"] = this.$settingsStore.adviserAllowStacks == "1";
-                        settings["useToroidalCores"] = this.$settingsStore.adviserToroidalCores == "1";
+                        settings["coreIncludeDistributedGaps"] = this.$settingsStore.adviserSettings.allowDistributedGaps;
+                        settings["coreIncludeStacks"] = this.$settingsStore.adviserSettings.allowStacks;
+                        settings["useToroidalCores"] = this.$settingsStore.adviserSettings.allowToroidalCores;
                         this.$mkf.set_settings(JSON.stringify(settings));
 
-                        // console.log(JSON.stringify(this.masStore.mas.inputs))
-                        // console.log(JSON.stringify(this.$settingsStore.magneticAdviserSettings.weights))
-                        const aux = JSON.parse(this.$mkf.calculate_advised_magnetics(JSON.stringify(this.masStore.mas.inputs), JSON.stringify(this.$settingsStore.magneticAdviserSettings.weights), this.$settingsStore.magneticAdviserSettings.maximumNumberResults, this.$settingsStore.adviserUseOnlyCoresInStock == "1" || this.$settingsStore.adviserUseOnlyCoresInStock == 1));
+                        const aux = JSON.parse(this.$mkf.calculate_advised_magnetics(JSON.stringify(this.masStore.mas.inputs), JSON.stringify(this.$settingsStore.magneticAdviserSettings.weights), this.$settingsStore.magneticAdviserSettings.maximumNumberResults, this.$settingsStore.adviserSettings.useOnlyCoresInStock));
 
-                        // console.log(aux)
 
                         var data = aux["data"];
 
@@ -135,7 +132,6 @@ export default {
                             })
                         }
 
-                        console.log(`Found ${data.length} designs`)
 
                         this.adviseCacheStore.currentMasAdvises = [];
                         // orderedWeights.forEach((value) => {
@@ -163,6 +159,9 @@ export default {
                         console.error("No operating points found")
                         this.loading = false;
                     }
+                }).catch(error => {
+                    console.error("Error calculating advising magnetics");
+                    console.error(error);
                 });
             }, 10);
         },
@@ -201,7 +200,6 @@ export default {
         selectedMas(index) {
             this.masStore.setMas(deepCopy(this.adviseCacheStore.currentMasAdvises[index].mas));
             this.$userStore.magneticAdviserSelectedAdvise = index;
-            console.log("canContinue")
             this.$emit("canContinue", true);
 
         },
@@ -257,7 +255,7 @@ export default {
                             :masData="advise.mas"
                             :scoring="advise.scoringPerFilter"
                             :selected="$userStore.magneticAdviserSelectedAdvise == adviseIndex"
-                            :graphType="$settingsStore.adviserSpiderBarChartNotBar == '1'? 'radar' : 'bar'"
+                            :graphType="$settingsStore.adviserSettings.spiderBarChartNotBar? 'radar' : 'bar'"
                             @selectedMas="selectedMas(adviseIndex)"
                             @adviseReady="adviseReady(adviseIndex)"
                         />

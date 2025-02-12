@@ -165,7 +165,7 @@ export default {
                 setTimeout(() => {this.scatterChartComparatorForceUpdate += 1}, 5);
 
             }).catch(error => {
-                console.log(error);
+                console.error(error);
                 this.hideOutputs = false;
                 this.loading = false;
             });
@@ -206,7 +206,6 @@ export default {
         },
         onPointClick(event) {
             if (event.componentIndex == 1) {
-                console.log("Click on reference");
             }
             else {
                 this.crossReferencerStore.selectedCoreIndex = event.dataIndex;

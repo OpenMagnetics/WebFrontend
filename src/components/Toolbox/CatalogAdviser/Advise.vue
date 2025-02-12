@@ -59,12 +59,6 @@ export default {
         },
     },
     watch: {
-        // 'scoring'(newValue, oldValue) {
-        //     console.log("watching " + this.adviseIndex)
-        //     console.log(newValue)
-        //     chart.data.labels = this.filters;
-        //     chart.update();
-        // },
     },
     mounted () {
 
@@ -72,7 +66,6 @@ export default {
     },
     methods: {
         processLocalTexts() {
-            console.log(this.masData.outputs[0])
             {
                 const aux = formatPower(this.masData.outputs[0].coreLosses.coreLosses + this.masData.outputs[0].windingLosses.windingLosses);
                 this.localTexts.losses = `Losses:\n${removeTrailingZeroes(aux.label, 2)} ${aux.unit}`

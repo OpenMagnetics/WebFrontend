@@ -94,7 +94,6 @@ export default {
                 coreMaterial.temp[this.temperature].remanence = temperatureDependantDataRef["remanence"];
                 coreMaterial.temp[this.temperature].coerciveForce = temperatureDependantDataRef["coerciveForce"];
 
-                console.log(coreMaterial)
                 this.localTexts = processCoreMaterialTexts(coreMaterial);
             }).catch(error => { 
                 console.error("Error reading material data")

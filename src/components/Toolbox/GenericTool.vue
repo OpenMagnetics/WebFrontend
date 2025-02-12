@@ -98,8 +98,6 @@ export default {
             return this.currentStoryline[this.$userStore.getCurrentToolState().subsection].advancedTool != null;
         },
         traversableLeft() {
-            console.log(this.$userStore.getCurrentToolState().subsection)
-
             return this.currentStoryline[this.$userStore.getCurrentToolState().subsection].basicTool != null;
         },
         updateCanContinue(tool, value) {
@@ -177,14 +175,17 @@ export default {
                         </div>
                         <div class="border mt-2" style="height: fit-content" :style="$styleStore.contextMenu.main">
                             <ContextMenu
-                                :showAdviserSettingsOption="$userStore.getCurrentToolState().subsection == 'magneticAdviser' || $userStore.getCurrentToolState().subsection == 'magneticCoreAdviser' || $userStore.getCurrentToolState().subsection == 'magneticBuilder'"
+                                :showMagneticBuilderSettingsOption="$userStore.getCurrentToolState().subsection == 'magneticBuilder'"
+                                :showAdviserSettingsOption="$userStore.getCurrentToolState().subsection == 'magneticAdviser' || $userStore.getCurrentToolState().subsection == 'magneticCoreAdviser'"
                                 :showCatalogAdviserSettingsOption="$userStore.selectedApplication == 'catalog'"
                                 :showOperatingPointSettingsOption="$userStore.getCurrentToolState().subsection == 'operatingPoints'"
                                 :showEditOption="$userStore.getCurrentToolState().subsection == 'magneticViewer'"
                                 :showOrderOption="$userStore.selectedApplication == 'catalog' && ($userStore.getCurrentToolState().subsection == 'magneticViewer')"
+                                :showChangeToolOption="$userStore.getCurrentToolState().subsection == 'magneticCoreAdviser' || $userStore.getCurrentToolState().subsection == 'magneticAdviser' || $userStore.getCurrentToolState().subsection == 'magneticBuilder' || $userStore.getCurrentToolState().subsection == 'magneticSpecificationsSummary'"
                                 :showConfirmOption="$userStore.selectedApplication == 'catalog' && $userStore.getCurrentToolState().subsection == 'magneticBuilder'"
                                 @editMagnetic="$emit('editMagnetic')"
                                 @viewMagnetic="$emit('viewMagnetic')"
+                                @toolSelected="toolSelected"
                             />
                         </div>
                     </div>

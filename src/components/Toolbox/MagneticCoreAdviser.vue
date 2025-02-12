@@ -111,12 +111,12 @@ export default {
                     console.time('Execution Time');
 
                     const settings = JSON.parse(this.$mkf.get_settings());
-                    settings["coreIncludeDistributedGaps"] = this.$settingsStore.adviserAllowDistributedGaps == "1";
-                    settings["coreIncludeStacks"] = this.$settingsStore.adviserAllowStacks == "1";
-                    settings["useToroidalCores"] = this.$settingsStore.adviserToroidalCores == "1";
+                    settings["coreIncludeDistributedGaps"] = this.$settingsStore.adviserSettings.allowDistributedGaps;
+                    settings["coreIncludeStacks"] = this.$settingsStore.adviserSettings.allowStacks;
+                    settings["useToroidalCores"] = this.$settingsStore.adviserSettings.allowToroidalCores;
                     this.$mkf.set_settings(JSON.stringify(settings));
 
-                    const aux = JSON.parse(this.$mkf.calculate_advised_cores(JSON.stringify(this.masStore.mas.inputs), JSON.stringify(this.$settingsStore.coreAdviserSettings.weights), 20, this.$settingsStore.adviserUseOnlyCoresInStock == 1));
+                    const aux = JSON.parse(this.$mkf.calculate_advised_cores(JSON.stringify(this.masStore.mas.inputs), JSON.stringify(this.$settingsStore.coreAdviserSettings.weights), 20, this.$settingsStore.adviserSettings.useOnlyCoresInStock));
 
                     var log = aux["log"];
                     var data = aux["data"];
@@ -157,6 +157,9 @@ export default {
                     console.error("No operating points found")
                     this.loading = false;
                 }
+            }).catch(error => {
+                console.error("Error calculating advising cores");
+                console.error(error);
             });
         },
         changedInputValue(key, value) {
@@ -236,7 +239,7 @@ export default {
                             :masData="advise.mas"
                             :scoring="advise.scoringPerFilter"
                             :selected="$userStore.coreAdviserSelectedAdvise == adviseIndex"
-                            :graphType="$settingsStore.adviserSpiderBarChartNotBar == '1'? 'radar' : 'bar'"
+                            :graphType="$settingsStore.adviserSettings.spiderBarChartNotBar? 'radar' : 'bar'"
                             @selectedMas="selectedMas(adviseIndex)"
                             @adviseReady="adviseReady(adviseIndex)"
                         />

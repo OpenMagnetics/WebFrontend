@@ -7,7 +7,6 @@ import '/src/assets/css/ferroxcube.css'
 export default {
     data() {
         const suffix = '_ferroxcube';
-        console.log(this.$route)
         return {
             suffix
         }
