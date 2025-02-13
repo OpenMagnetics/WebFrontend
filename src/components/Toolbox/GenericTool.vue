@@ -204,9 +204,11 @@ export default {
                                 :options="operatingPointNames"
                                 :labelWidthProportionClass="'col-0'"
                                 :selectStyleClass="'col-12'"
-                                :labelBgColor="$settingsStore.labelBgColor"
-                                :valueBgColor="$settingsStore.valueBgColor"
-                                :textColor="$settingsStore.textColor"
+                                :valueFontSize="$styleStore.magneticBuilder.inputTitleFontSize"
+                                :labelFontSize="$styleStore.magneticBuilder.inputTitleFontSize"
+                                :labelBgColor="$styleStore.magneticBuilder.inputLabelBgColor"
+                                :valueBgColor="$styleStore.magneticBuilder.inputValueBgColor"
+                                :textColor="$styleStore.magneticBuilder.inputTextColor"
                                 @update="operatingPointUpdated"
                             />
                             <div v-else data-cy="magnetic-synthesis-previous-tool-button-placeholder" class=" col-sm-12 col-md-2 mt-1"></div>

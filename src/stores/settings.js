@@ -3,10 +3,6 @@ import { ref, watch, computed  } from 'vue'
 
 export const useSettingsStore = defineStore("settings", () => {
     const catalogAdviserUseAllParts = ref(false);
-
-    const labelBgColor = ref('bg-dark');
-    const valueBgColor = ref('bg-light');
-    const textColor = ref('text-white');
     const loadingGif = ref("/images/loading.gif");
 
     const coreAdviserSettings = ref({
@@ -88,9 +84,6 @@ export const useSettingsStore = defineStore("settings", () => {
         dump,
         reset,
 
-        labelBgColor,
-        valueBgColor,
-        textColor,
         loadingGif,
     }
 },

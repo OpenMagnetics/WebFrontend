@@ -99,12 +99,13 @@ export default {
 
 <template>
     <div class="container">
-        <div class="row pb-5 my-5 text-start align-items-start text-white">
+        <div class="row pb-5 my-5 text-start align-items-start" :style="$styleStore.catalog.main">
             <div class="offset-1 col-10 rowy">
                 <h3>Catalog</h3>
                 <DataTable
+                    :style="$styleStore.catalog.tableHeader"
                     v-if="!loadingCatalog"
-                    class="table text-white bg-primary"
+                    class="table"
                     :columns="catalogColumns"
                     :data="catalogData"
                     :options="{ select: true, filter: true, lengthChange: true, info: false, paginate: false}"
@@ -119,11 +120,15 @@ export default {
                             <th>Dimensions</th>
                         </tr>
                     </thead>
+                    <template #column-0="props">
+                        <label :style="$styleStore.catalog.tableBodyReference"> {{props.rowData.reference}} </label>
+                    </template>
                     <template #column-4="props">
-                        <Button
-                            class="btn btn-primary"
+                        <button
+                            :style="$styleStore.catalog.viewButton"
+                            class="btn"
                             @click="viewMagnetic(props.rowData)"
-                        >View</Button>
+                        >View</button>
                     </template>
                 </DataTable>
             </div>
@@ -131,27 +136,28 @@ export default {
     </div>
 </template>
 <style type="text/css">
-    
+
+
 .dt-input {
-   background-color: var(--bs-light);
-   color: var(--bs-white);
+   background-color: v-bind($styleStore.catalog.search.background) !important;
+   color: v-bind($styleStore.catalog.search.color) !important;
+   border-color: v-bind($styleStore.catalog.search.border-color) !important;
    padding: 5px;
    margin: 10px;
 }   
 
 td  {
-   background-color: var(--bs-light)  !important;
-   color: var(--bs-white);
+   background-color: v-bind($styleStore.catalog.tableBody.background) !important;
+   color: v-bind($styleStore.catalog.tableBody.color) !important;
    padding: 5px;
    margin: 10px;
 }
 
 
 .dt-orderable-asc  {
-   background-color: var(--bs-light)  !important;
-   color: var(--bs-white);
+   background-color: v-bind($styleStore.catalog.tableHeader.background) !important;
+   color: v-bind($styleStore.catalog.tableHeader.color) !important;
    padding: 5px;
    margin: 10px;
 }
-
 </style>

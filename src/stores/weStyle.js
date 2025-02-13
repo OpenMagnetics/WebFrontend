@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, watch, computed  } from 'vue'
 
-export const useStyleStore = defineStore("style", () => {
+export const useWeStyleStore = defineStore("style", () => {
 
     const theme = ref({});
 
@@ -15,66 +15,72 @@ export const useStyleStore = defineStore("style", () => {
     const main = ref({});
     const toolSelector = ref({});
     const engineLoader = ref({});
-    const insulationAdviser = ref({});
+    const catalog = ref({});
     const catalogAdviser = ref({});
+    const insulationAdviser = ref({});
 
     function setTheme(theme) {
         this.theme = theme;
 
         this.main = {
-            "background": theme["dark"],
-            "color": theme["white"],
-            "border-color":  theme["primary"] + ' !important',
+            "background": theme["info"],
+            "color": theme["dark"],
+            "border-color":  theme["secondary"] + ' !important',
         };
 
         this.storyline = {
             main: {
-                "background":"transparent",
-                "color": theme["white"],
-                "border-color":  theme["primary"] + ' !important',
+                "background": theme["info"],
+                "color": theme["dark"],
+                "border-color":  theme["info"] + ' !important',
             },
             activeButton: {
                 "background": theme["primary"],
-                "color": theme["dark"],
-                "border-color":  theme["primary"] + ' !important',
+                "color": theme["white"],
+                "border-color":  theme["dark"] + ' !important',
             },
             availableButton: {
-                "background": theme["secondary"],
-                "color": theme["white"],
-                "border-color":  theme["primary"] + ' !important',
+                "background": "transparent",
+                "color": theme["dark"],
+                "border-color":  theme["dark"] + ' !important',
             },
             pendingButton: {
                 "background": "transparent",
-                "color": theme["primary"],
-                "border-color":  theme["primary"] + ' !important',
+                "color": "transparent",
+                "border-color":  "transparent" + ' !important',
             },
             continueButton: {
-                "background": theme["success"],
-                "color": theme["dark"],
-                "border-color":  theme["primary"] + ' !important',
+                "background": theme["primary"],
+                "color": theme["white"],
+                "border-color":  theme["dark"] + ' !important',
             },
             arrow: {
-                "color": theme["primary"],
+                "color": "transparent",
             },
         };
 
         this.designRequirements = {
             main: {
-                "background": theme["dark"],
-                "color": theme["white"],
-                "border-color":  theme["primary"] + ' !important',
+                "background": theme["info"],
+                "color": theme["dark"],
+                "border-color":  theme["dark"] + ' !important',
             },
             requiredButton: {
                 "background": theme["light"],
                 "color": theme["white"],
                 "border-color": theme["dark"],
             },
-            addButton: {
+            requirement: {
                 "background": theme["info"],
+                "color": theme["white"],
+                "border-color": theme["dark"],
+            },
+            addButton: {
+                "background": theme["light"],
                 "color": theme["dark"],
             },
             removeButton: {
-                "background": theme["danger"],
+                "background": theme["secondary"],
                 "color": theme["dark"],
             },
             requirementButton: {
@@ -83,7 +89,7 @@ export const useStyleStore = defineStore("style", () => {
                 "border-color": theme["primary"],
             },
             inputBorderColor: {
-                "border-color":  theme["primary"] + ' !important',
+                "border-color":  theme["dark"] + ' !important',
             },
             inputFontSize: {
                 // "font-size": '2rem',
@@ -94,14 +100,15 @@ export const useStyleStore = defineStore("style", () => {
                 "font-size": '1.25rem',
             },
             inputLabelBgColor:{
-                "background": theme["dark"] + ' !important',
+                "background": theme["info"] + ' !important',
                 "background-image": "none !important",
             },
             inputValueBgColor:{
-                "background": theme["light"],
+                "background": theme["white"],
+                "border-color":  theme["dark"] + ' !important',
             },
             inputTextColor:{
-                "color": theme["white"],
+                "color": theme["dark"],
             },
             addElementButtonColor: {
                 "color": theme["secondary"],
@@ -113,20 +120,17 @@ export const useStyleStore = defineStore("style", () => {
 
         this.operatingPoints = {
             main: {
-                "background": theme["dark"],
-                "color": theme["white"],
-                "border-color":  theme["primary"] + ' !important',
-            },
-            windingBgColor:{
-                "background": theme["light"],
-                "border-color":  theme["light"] + ' !important',
+                "background": theme["info"],
+                "color": theme["dark"],
+                "border-color":  theme["dark"] + ' !important',
             },
             unselectedUnprocessedWindingButton: {
                 "background": theme["danger"],
                 "color": theme["dark"],
             },
             unselectedProcessedWindingButton: {
-                "background": theme["primary"],
+                "background": theme["light"],
+                "border-color":  theme["dark"] + ' !important',
                 "color": theme["dark"],
             },
             selectedWindingButton: {
@@ -142,20 +146,20 @@ export const useStyleStore = defineStore("style", () => {
                 "color": theme["white"],
             },
             selectOperatingPointButton: {
-                "background": theme["primary"],
-                "color": theme["dark"],
+                "background": theme["secondary"],
+                "color": theme["white"],
             },
             removeOperatingPointButton: {
                 "background": theme["danger"],
-                "color": theme["dark"],
+                "color": theme["white"],
             },
             modifyNumberWindingsButton: {
                 "background": theme["secondary"],
                 "color": theme["white"],
             },
             goBackSelectingButton: {
-                "background": theme["success"],
-                "border-color": theme["success"],
+                "background": theme["light"],
+                "border-color": theme["light"],
                 "color": theme["dark"],
             },
             confirmColumnsButton: {
@@ -166,40 +170,44 @@ export const useStyleStore = defineStore("style", () => {
             typeButton: {
                 "background": theme["primary"],
                 "border-color": theme["primary"],
-                "color": theme["dark"],
+                "color": theme["white"],
                 "font-size": '1.25rem',
             },
 
             operatingPointBgColor:{
                 "background": theme["light"],
-                "border-color":  theme["primary"] + ' !important',
+                "border-color":  theme["dark"] + ' !important',
+            },
+            windingBgColor:{
+                "background": theme["light"],
+                "border-color":  theme["dark"] + ' !important',
             },
             titleLabelBgColor:{
-                "background": theme["dark"],
+                "background": theme["info"],
             },
             titleTextColor:{
-                "color": theme["white"],
+                "color": theme["dark"],
             },
             commonParameterTextColor:{
-                "color": theme["white"],
+                "color": theme["dark"],
             },
             commonParameterBgColor:{
                 "background": theme["dark"],
             },
             currentTextColor:{
-                "color": theme["info"],
+                "color": theme["warning"],
             },
             voltageTextColor:{
                 "color": theme["primary"],
             },
             currentBgColor:{
-                "background": theme["info"],
+                "background": theme["warning"],
             },
             voltageBgColor:{
                 "background": theme["primary"],
             },
             graphBgColor:{
-                "background": theme["light"],
+                "background": theme["info"],
             },
 
 
@@ -212,14 +220,15 @@ export const useStyleStore = defineStore("style", () => {
                 "font-size": '1.25rem',
             },
             inputLabelBgColor:{
-                "background": theme["dark"] + ' !important',
+                "background": theme["info"] + ' !important',
                 "background-image": "none !important",
             },
             inputValueBgColor:{
-                "background": theme["light"],
+                "background": theme["white"],
+                "border-color":  theme["dark"] + ' !important',
             },
             inputTextColor:{
-                "color": theme["white"],
+                "color": theme["dark"],
             },
             addElementButtonColor: {
                 "color": theme["secondary"],
@@ -260,15 +269,46 @@ export const useStyleStore = defineStore("style", () => {
             },
         };
 
-        this.magneticBuilder = {
+        this.catalog = {
             main: {
+                "background": theme["info"],
+                "color": theme["dark"],
+                "border-color":  theme["dark"] + ' !important',
+            },
+            tableHeader: {
                 "background": theme["dark"],
                 "color": theme["white"],
-                "border-color":  theme["primary"] + ' !important',
+            },
+            tableBody: {
+                "background": theme["info"],
+                "color": theme["dark"],
+            },
+            tableBodyReference: {
+                "background": theme["info"],
+                "color": theme["primary"],
+            },
+            viewButton: {
+                "background": theme["secondary"],
+                "color": theme["white"],
+                "border-color":  theme["secondary"] + ' !important',
+            },
+            search: {
+                "background": theme["white"],
+                "color": theme["dark"],
+                "border-color":  theme["dark"] + ' !important',
+            },
+        };
+
+        this.magneticBuilder = {
+            main: {
+                "background": theme["info"],
+                "color": theme["dark"],
+                "border-color":  theme["dark"] + ' !important',
             },
             customizeButton: {
-                "background": theme["success"],
+                "background": theme["info"],
                 "color": theme["dark"],
+                "border-color":  theme["dark"] + ' !important',
             },
             loadFromLibraryButton: {
                 "background": theme["secondary"],
@@ -276,15 +316,15 @@ export const useStyleStore = defineStore("style", () => {
             },
             adviseButton: {
                 "background": theme["primary"],
-                "color": theme["dark"],
+                "color": theme["white"],
             },
             showAlignmentOptionsButton: {
-                "background": theme["primary"],
-                "color": theme["dark"],
+                "background": theme["secondary"],
+                "color": theme["white"],
             },
             showMarginOptionsButton: {
-                "background": theme["primary"],
-                "color": theme["dark"],
+                "background": theme["secondary"],
+                "color": theme["white"],
             },
             hideAlignmentOptionsButton: {
                 "background": theme["secondary"],
@@ -295,24 +335,25 @@ export const useStyleStore = defineStore("style", () => {
                 "color": theme["white"],
             },
             coilVisualizerButton: {
-                "background": theme["primary"],
-                "color": theme["dark"],
+                "background": theme["warning"],
+                "color": theme["white"],
+                "border-color":  theme["warning"] + ' !important',
             },
             wireVisualizerButton: {
                 "background": "transparent",
                 "color": theme["white"],
+                "border-color":  theme["dark"] + ' !important',
                 "display": ['-webkit-slider-thumb']
             },
             graphBgColor:{
-                "background": theme["light"],
+                "background": theme["info"],
             },
             graphLineColor:{
-                "color": theme["info"],
+                "color": theme["warning"],
             },
             graphPointsColor:{
                 "color": theme["danger"],
             },
-
 
             inputFontSize: {
                 // "font-size": '2rem',
@@ -323,20 +364,21 @@ export const useStyleStore = defineStore("style", () => {
                 "font-size": '1.25rem',
             },
             inputLabelBgColor:{
-                "background": theme["dark"] + ' !important',
+                "background": theme["info"] + ' !important',
                 "background-image": "none !important",
             },
             inputLabelDangerBgColor:{
                 "color": theme["danger"],
             },
             inputValueBgColor:{
-                "background": theme["light"],
+                "background": theme["white"],
+                "border-color":  theme["dark"] + ' !important',
             },
             inputTextColor:{
-                "color": theme["white"],
+                "color": theme["dark"],
             },
             inputSelectedTextColor:{
-                "color": theme["success"],
+                "color": theme["warning"],
             },
             inputErrorTextColor:{
                 "color": theme["danger"],
@@ -351,19 +393,19 @@ export const useStyleStore = defineStore("style", () => {
 
         this.controlPanel = {
             main: {
-                "background": theme["dark"],
-                "color": theme["white"],
+                "background": theme["white"],
+                "color": theme["dark"],
             },
             button: {
-                "background": theme["primary"],
+                "background": theme["light"],
                 "color": theme["dark"],
             },
             setting: {
-                "background": theme["dark"],
-                "color": theme["white"],
+                "background": theme["white"],
+                "color": theme["dark"],
             },
             closeButton: {
-                "background": theme["primary"],
+                "background": theme["light"],
                 "color": theme["dark"],
             },
         };
@@ -389,29 +431,32 @@ export const useStyleStore = defineStore("style", () => {
 
         this.contextMenu = {
             main: {
-                "background": theme["dark"],
-                "color": theme["white"],
-                "border-color":  theme["primary"] + ' !important',
+                "background": theme["white"],
+                "color": theme["dark"],
+                "border-color":  theme["dark"] + ' !important',
             },
             settingsButton: {
-                "background": theme["info"],
-                "color": theme["dark"],
+                "background": theme["primary"],
+                "color": theme["white"],
             },
             editButton: {
-                "background": theme["success"],
-                "color": theme["dark"],
+                "background": theme["secondary"],
+                "color": theme["white"],
+                "border-color":  theme["secondary"] + ' !important',
             },
             confirmButton: {
                 "background": theme["success"],
                 "color": theme["dark"],
+                "border-color":  theme["success"] + ' !important',
             },
             changeToolButton: {
                 "background": theme["secondary"],
                 "color": theme["white"],
             },
             orderButton: {
-                "background": theme["primary"],
+                "background": theme["success"],
                 "color": theme["dark"],
+                "border-color":  theme["success"] + ' !important',
             },
             setting: {
                 "background": theme["dark"],
@@ -420,14 +465,15 @@ export const useStyleStore = defineStore("style", () => {
             closeButton: {
                 "background": theme["primary"],
                 "color": theme["dark"],
-                "border-color":  theme["primary"] + ' !important',
+                "border-color":  theme["dark"] + ' !important',
             },
         };
 
         this.header = {
             main: {
                 "background": theme["dark"],
-                "color": theme["primary"],
+                "color": theme["white"],
+                "font-size": '1.5rem',
             },
             collapsedButton: {
                 "background": theme["primary"],
@@ -444,6 +490,7 @@ export const useStyleStore = defineStore("style", () => {
             designSectionDropdown: {
                 "background": theme["dark"],
                 "color": theme["primary"],
+                "font-size": '1rem',
                 "border-color": theme["primary"] + ' !important' ,
             },
             continueDesignButton: {
@@ -472,16 +519,16 @@ export const useStyleStore = defineStore("style", () => {
 
         this.engineLoader = {
             main: {
-                "background": theme["dark"] + ' !important',
-                "color": theme["white"],
+                "background": theme["info"] + ' !important',
+                "color": theme["dark"],
             },
         };
 
         this.insulationAdviser = {
             main: {
-                "background": theme["dark"],
-                "color": theme["white"],
-                "border-color":  theme["primary"] + ' !important',
+                "background": theme["white"],
+                "color": theme["dark"],
+                "border-color":  theme["dark"] + ' !important',
             },
             inputFontSize: {
                 // "font-size": '2rem',
@@ -492,14 +539,14 @@ export const useStyleStore = defineStore("style", () => {
                 "font-size": '1.25rem',
             },
             inputLabelBgColor:{
-                "background": theme["dark"] + ' !important',
+                "background": theme["info"] + ' !important',
                 "background-image": "none !important",
             },
             inputValueBgColor:{
-                "background": theme["light"],
+                "background": theme["white"],
             },
             inputTextColor:{
-                "color": theme["white"],
+                "color": theme["dark"],
             },
             addElementButtonColor: {
                 "color": theme["secondary"],
@@ -526,6 +573,7 @@ export const useStyleStore = defineStore("style", () => {
         engineLoader,
         insulationAdviser,
         catalogAdviser,
+        catalog,
     }
 },
 {

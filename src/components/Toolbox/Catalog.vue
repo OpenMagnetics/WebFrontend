@@ -98,10 +98,10 @@ export default {
                         </tr>
                     </thead>
                     <template #column-2="props">
-                        <Button
+                        <button
                             class="btn btn-primary"
                             @click="viewMagnetic(props.rowData)"
-                        >View</Button>
+                        >View</button>
                     </template>
                 </DataTable>
             </div>

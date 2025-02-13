@@ -70,8 +70,6 @@ export default {
         onLoadCommercialMaterial(data) {
             this.$userStore.setGlobalCoreMaterial(data)
         },
-    },
-    computed: {
         onCatalogAdviser() {
             const catalogStore = useCatalogStore();
             catalogStore.resetCatalog();
@@ -79,64 +77,111 @@ export default {
             this.$userStore.selectApplication("catalog");
             this.$userStore.selectTool("catalogAdviser");
 
-            if (this.$route.name != 'CatalogTool')
+            if (this.$route.name != 'WECatalogTool')
                 setTimeout(() => {this.$router.push('/we_catalog_tool');}, 100);
             else
                 setTimeout(() => {this.$router.push('/we_engine_loader');}, 100);
         },
         onCatalog() {
-            if (this.$route.name != 'Catalog')
+            if (this.$route.name != 'WECatalog')
                 setTimeout(() => {this.$router.push('/we_catalog');}, 100);
             else
                 setTimeout(() => {this.$router.push('/we_engine_loader');}, 100);
         },
     },
+    computed: {
+    },
     created() {
         if (this.$userStore.isLoggedIn.value && this.$cookies.get('username') == null) {
             this.$userStore.reset();
         }
+
     },
     mounted() {
         this.$settingsStore.loadingGif = "/images/loading_wuerth.gif";
         let fontawesome = document.createElement('script')
         fontawesome.setAttribute('src', 'https://kit.fontawesome.com/d5a40d6941.js')
         document.head.appendChild(fontawesome)
+
+        const style = getComputedStyle(document.body);
+        const theme = {
+            primary: style.getPropertyValue('--bs-primary'),
+            secondary: style.getPropertyValue('--bs-secondary'),
+            success: style.getPropertyValue('--bs-success'),
+            info: style.getPropertyValue('--bs-info'),
+            warning: style.getPropertyValue('--bs-warning'),
+            danger: style.getPropertyValue('--bs-danger'),
+            light: style.getPropertyValue('--bs-light'),
+            dark: style.getPropertyValue('--bs-dark'),
+            white: style.getPropertyValue('--bs-white'),
+            transparent: style.getPropertyValue('--bs-transparent'),
+        };
+        this.$styleStore.setTheme(theme);
+
         this.onLoggedIn()
     }
 }
 </script>
 
 <template>
-    <nav class="navbar navbar-expand-lg bg-white navbar-white text-primary mb-1 om-header" id="header_wrapper">
+    <nav class="navbar navbar-expand-lg mb-1 om-header" id="header_wrapper" :style="$styleStore.header.main">
         <div class="container-fluid">
-            <div class="text-dark me-5 fs-4">
-                <a data-cy="Header-logo-home-link" href="/we_catalog_tool">
-                    <img src="/images/welogodark.svg" height="40" href="/we_catalog_tool" class="d-inline-block align-top me-3 " alt="OpenMagnetics Logo">
-                </a>
-                CMC Designer
+            <div class="me-5">
+                <button data-cy="Header-logo-home-link" class="bg-transparent border-0" @click="onCatalogAdviser">
+                    <img src="/images/welogodark.svg" height="40" class="d-inline-block align-top me-3" alt="WE Logo">
+                </button>
+                <button
+                    :style="$styleStore.header.title"
+                    data-cy="Header-brand-home-link"
+                    class="ms-5 border-0"
+                    @click="we_catalog_tool"
+                >
+                    {{'CMC Designer'}}
+                </button>
             </div>
-            <button class="navbar-toggler text-primary" ref="headerToggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+            <button
+                :style="$styleStore.header.collapsedButton"
+                class="navbar-toggler"
+                ref="headerToggler"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#navbarNavDropdown"
+                aria-controls="navbarNavDropdown"
+                aria-expanded="false"
+                aria-label="Toggle navigation">
             <span class="navbar-toggler-icon text-white"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNavDropdown">
                 <ul class="navbar-nav ms-auto text-center">
-                    <li><button data-cy="Header-catalog-adviser-link" :class="headerTogglerIsVisible? 'w-100' : 'mx-1' " class="dropdown-item btn btn-block nav-link text-primary bg-white border-primary px-2" @click="onCatalogAdviser"><i class="me-2 fa-solid fa-book"></i>El CHOKER</button></li>
-                    <li><button data-cy="Header-catalog-link" :class="headerTogglerIsVisible? 'w-100' : 'mx-1' " class="dropdown-item btn btn-block nav-link text-primary bg-white border-primary px-2" @click="onCatalog"><i class="me-2 fa-solid fa-book"></i>Catalog</button></li>
+                    <li>
+                        <button
+                            :style="$styleStore.header.designSectionDropdown"
+                            data-cy="Header-catalog-adviser-link"
+                            :class="headerTogglerIsVisible? 'w-100' : 'mx-1' "
+                            class="dropdown-item btn btn-block nav-link border-primary px-2"
+                            @click="onCatalogAdviser"
+                        >
+                            <i class="me-2 fa-solid fa-book"></i>{{'El CHOKER'}}
+                        </button>
+                    </li>
+                    <li>
+                        <button
+                            :style="$styleStore.header.designSectionDropdown"
+                            data-cy="Header-catalog-link"
+                            :class="headerTogglerIsVisible? 'w-100' : 'mx-1' "
+                            class="dropdown-item btn btn-block nav-link border-primary px-2"
+                            @click="onCatalog"
+                        >
+                            <i class="me-2 fa-solid fa-book"></i>{{'Catalog'}}
+                        </button>
+                    </li>
                 </ul>
             </div>
 
         </div>
     </nav>
  
-    <div class="offcanvas offcanvas-end bg-light" tabindex="-1" id="UserOffCanvas" aria-labelledby="UserOffCanvasLabel">
-        <div class="offcanvas-header">
-            <h5 class="offcanvas-title text-white fs-3" id="UserOffCanvasLabel">{{username}}</h5>
-            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="UserOffCanvasClose"></button>
-        </div>
-        <div class="offcanvas-body">
-            <button data-cy="Header-logout-button" class="btn mt-5 text-dark bg-primary fs-5" data-bs-dismiss="offcanvas" @click="onLoggedOut">Logout</button>
-        </div>
-    </div>
+
 
     <!-- Modal -->
     <BugReporterModal/>

@@ -19,6 +19,26 @@ export default {
             type: String,
             default: '',
         },
+        enableManual: {
+            type: Boolean,
+            default: true,
+        },
+        enableCircuitSimulatorImport: {
+            type: Boolean,
+            default: true,
+        },
+        enableAcSweep: {
+            type: Boolean,
+            default: true,
+        },
+        enableHarmonicsList: {
+            type: Boolean,
+            default: true,
+        },
+        defaultMode: {
+            type: String,
+            default: null,
+        },
     },
     data() {
         const masStore = useMasStore();
@@ -101,6 +121,8 @@ export default {
         }
         this.$emit("canContinue", this.canContinue);
 
+        this.$stateStore.operatingPoints.modePerPoint[this.currentOperatingPointIndex] = this.defaultMode
+
         this.masStore.$onAction((action) => {
             if (action.name == "updatedInputExcitationProcessed") {
                 const operatingPointIndex = this.currentOperatingPointIndex;
@@ -167,7 +189,9 @@ export default {
         },
         addNewOperatingPoint() {
             this.$stateStore.addNewOperatingPoint(this.currentOperatingPointIndex, this.$stateStore.operatingPoints.modePerPoint[this.currentOperatingPointIndex]);
+
             this.currentOperatingPointIndex += 1;
+            this.$stateStore.operatingPoints.modePerPoint[this.currentOperatingPointIndex] = this.defaultMode;
             this.$emit("canContinue", this.canContinue);
         },
         removePoint(index) {
@@ -262,7 +286,11 @@ export default {
                         :valueBgColor="$styleStore.operatingPoints.titleLabelBgColor"
                         :textColor="$styleStore.operatingPoints.titleTextColor"
                     />
-                    <div v-if="currentOperatingPointIndex == operatingPointIndex" class="col-12 row m-0 p-0 " v-for="winding, windingIndex in masStore.mas.magnetic.coil.functionalDescription">
+                    <div
+                        v-if="currentOperatingPointIndex == operatingPointIndex"
+                        class="col-12 row m-0 p-0 "
+                        v-for="winding, windingIndex in masStore.mas.magnetic.coil.functionalDescription"
+                        >
                         <Text
                             :disabled="excitationSelectorDisabled"
                             class="rounded-2 col-7 p-0 px-3 "
@@ -274,8 +302,8 @@ export default {
                             :valueWidthProportionClass="'col-12'"
                             :valueFontSize="$styleStore.operatingPoints.inputFontSize"
                             :titleFontSize="$styleStore.operatingPoints.inputTitleFontSize"
-                            :labelBgColor="$styleStore.operatingPoints.inputLabelBgColor"
-                            :valueBgColor="$styleStore.operatingPoints.inputValueBgColor"
+                            :labelBgColor="$styleStore.operatingPoints.windingBgColor"
+                            :valueBgColor="$styleStore.operatingPoints.windingBgColor"
                             :textColor="$styleStore.operatingPoints.titleTextColor"
                             :extraStyleClass="'border-0'"
                         />
@@ -361,6 +389,10 @@ export default {
                         <OperatingPoint 
                             :currentOperatingPointIndex="currentOperatingPointIndex"
                             :currentWindingIndex="currentWindingIndex"
+                            :enableManual="enableManual"
+                            :enableCircuitSimulatorImport="enableCircuitSimulatorImport"
+                            :enableAcSweep="enableAcSweep"
+                            :enableHarmonicsList="enableHarmonicsList"
                             @updatedWaveform="updatedWaveform"
                             @importedWaveform="importedWaveform"
                             @selectedManualOrImported="selectedManualOrImported"

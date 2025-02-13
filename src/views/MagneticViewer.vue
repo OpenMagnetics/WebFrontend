@@ -1,6 +1,5 @@
 <script setup>
 import { useMasStore } from '/src/stores/mas'
-import { useAdviseCacheStore } from '/src/stores/adviseCache'
 import Header from '/src/components/Header.vue'
 import Footer from '/src/components/Footer.vue'
 import { toTitleCase } from '/WebSharedComponents/assets/js/utils.js'

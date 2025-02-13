@@ -1,5 +1,6 @@
 <script setup>
 import Header from '/src/components/WE/Header.vue'
+import Footer from '/src/components/Footer.vue'
 import Storyline from '/src/components/Toolbox/Storyline.vue'
 import ContextMenu from '/src/components/Toolbox/ContextMenu.vue'
 import { toTitleCase } from '/WebSharedComponents/assets/js/utils.js'
@@ -31,7 +32,7 @@ import { useMasStore } from '/src/stores/mas'
 
 <script>
 export default {
-    emits: ["toolSelected"],
+    emits: ["toolSelected", "editMagnetic", "viewMagnetic"],
     props: {
         currentStoryline: {
             type: Object,
@@ -52,6 +53,10 @@ export default {
         showControlPanel: {
             type: Boolean,
             default: false,
+        },
+        showStoryline: {
+            type: Boolean,
+            default: true,
         },
     },
     data() {
@@ -108,7 +113,7 @@ export default {
         operatingPointUpdated(name, ea) {
             this.masStore.mas.inputs.operatingPoints.forEach((elem, index) => {
                 if (name == elem.name) {
-                    this.stateStore.currentOperatingPoint = index;
+                    this.$stateStore.currentOperatingPoint = index;
                 }
             })
         },
@@ -138,7 +143,7 @@ export default {
                 return false;
             }
             else{
-                return this.masStore.magneticAcSweepOperatingPoints;
+                return this.$stateStore.operatingPoints.modePerPoint[this.$stateStore.currentOperatingPoint] === this.$stateStore.OperatingPointsMode.AcSweep;
             }
         }
     },
@@ -150,14 +155,13 @@ export default {
 </script>
 
 <template>
-    <div class="d-flex flex-column min-vh-100">
+    <div class="d-flex flex-column min-vh-100" :style="$styleStore.main">
         <Header />
-        <main role="main" class="main text-white" :style="$styleStore.main">
+        <main role="main" class="main" :style="$styleStore.main">
             <div v-if="currentStoryline[$userStore.getCurrentToolState().subsection] != null && $userStore.getCurrentToolState().canContinue != null" class="container mx-auto">
                 <div class="row">
-                    <div class="text-white text-center col-xs-12 col-sm-12 col-md-1 bg-transparent m-0 p-0" style="height: fit-content">
-                        <div class="border border-primary " style="height: fit-content">
-                            <h4 class="text-center p-2">Storyline</h4>
+                    <div v-if="showStoryline" class=" text-center col-xs-12 col-sm-12 col-md-1 bg-transparent m-0 p-0" style="height: fit-content">
+                        <div class="border" style="height: fit-content"  :style="$styleStore.storyline.main">
                             <Storyline
                                 class="p-3"
                                 :selectedTool="$userStore.getCurrentToolState().subsection"
@@ -169,57 +173,55 @@ export default {
                                 @nextTool="nextTool"
                             />
                         </div>
-                        <div class="border border-primary mt-2" style="height: fit-content">
-                            <h4 class="text-center pt-2 fs-5">Tool menu</h4>
+                        <div class="border mt-2" style="height: fit-content" :style="$styleStore.contextMenu.main">
                             <ContextMenu
+                                :showMagneticBuilderSettingsOption="$userStore.getCurrentToolState().subsection == 'magneticBuilder' || $userStore.getCurrentToolState().subsection == 'magneticViewer'"
                                 :showAdviserSettingsOption="$userStore.getCurrentToolState().subsection == 'magneticAdviser' || $userStore.getCurrentToolState().subsection == 'magneticCoreAdviser'"
                                 :showCatalogAdviserSettingsOption="$userStore.selectedApplication == 'catalog'"
+                                :showOperatingPointSettingsOption="$userStore.getCurrentToolState().subsection == 'operatingPoints'"
                                 :showEditOption="$userStore.getCurrentToolState().subsection == 'magneticViewer'"
                                 :showOrderOption="$userStore.selectedApplication == 'catalog' && ($userStore.getCurrentToolState().subsection == 'magneticViewer')"
+                                :showChangeToolOption="false"
                                 :showConfirmOption="$userStore.selectedApplication == 'catalog' && $userStore.getCurrentToolState().subsection == 'magneticBuilder'"
                                 @editMagnetic="$emit('editMagnetic')"
                                 @viewMagnetic="$emit('viewMagnetic')"
+                                @toolSelected="toolSelected"
                             />
                         </div>
                     </div>
-                    <div class="text-white bg-dark text-center col-xs-12 col-sm-12 col-md-11 bg-transparent px container" >
+                    <div class="text-center col-xs-12 col-sm-12 col-md-11 bg-transparent px container" >
                         <div class="mb-2 row px-3" >
 
                             <ElementFromList
                                 v-if="operatingPointNames.length > 1"
-                                class="col-3 mb-1 text-start"
+                                class="col-2 mb-1 text-start"
                                 :dataTestLabel="dataTestLabel + '-OperatingPointSelector'"
                                 :name="'operatingPoint'"
-                                :replaceTitle="'Op. Point'"
+                                :replaceTitle="''"
                                 :titleSameRow="true"
                                 :justifyContent="true"
                                 v-model="localData"
                                 :options="operatingPointNames"
-                                :labelWidthProportionClass="'col-4'"
-                                :selectStyleClass="'col-8'"
-                                :labelBgColor="$settingsStore.labelBgColor"
-                                :valueBgColor="$settingsStore.valueBgColor"
-                                :textColor="$settingsStore.textColor"
+                                :labelWidthProportionClass="'col-0'"
+                                :selectStyleClass="'col-12'"
+                                :valueFontSize="$styleStore.magneticBuilder.inputTitleFontSize"
+                                :labelFontSize="$styleStore.magneticBuilder.inputTitleFontSize"
+                                :labelBgColor="$styleStore.magneticBuilder.inputLabelBgColor"
+                                :valueBgColor="$styleStore.magneticBuilder.inputValueBgColor"
+                                :textColor="$styleStore.magneticBuilder.inputTextColor"
                                 @update="operatingPointUpdated"
                             />
                             <div v-else data-cy="magnetic-synthesis-previous-tool-button-placeholder" class=" col-sm-12 col-md-2 mt-1"></div>
-                            <h2 v-if="showTitle" data-cy="magnetic-synthesis-title-text" :class="showControlPanel? 'col-sm-12 col-md-3 col-lg-3' : 'col-sm-12 col-md-9'" class="" >
+                            <h2 v-if="showTitle" data-cy="magnetic-synthesis-title-text" :class="showControlPanel? 'col-sm-12 col-md-4 col-lg-4' : 'col-sm-12 col-md-9'" class="" >
                                 {{toTitleCase($userStore.getCurrentToolState().subsection)}}
                             </h2>
-                            <h2 v-if="showReference && masStore.mas.magnetic.manufacturerInfo && ($userStore.getCurrentToolState().subsection == 'magneticBuilder' || 
-                                      $userStore.getCurrentToolState().subsection == 'magneticViewer')" data-cy="magnetic-reference-text" :class="showControlPanel? 'col-sm-12 col-md-3 col-lg-3' : 'col-sm-12 col-md-9'" class="fs-5" >
-                                <input
-                                    :disabled="$userStore.getCurrentToolState().subsection == 'magneticViewer'"
-                                    :data-cy="dataTestLabel + '-magnetic-reference-text'"
-                                    type="text"
-                                    :class="(showControlPanel? 'col-sm-12 col-md-3 col-lg-3' : 'col-sm-12 col-md-9') + ' ' + ($userStore.getCurrentToolState().subsection == 'magneticViewer'? $settingsStore.labelBgColor : $settingsStore.valueBgColor) + ' ' + $settingsStore.textColor"
-                                    class="w-100 "
-                                    v-model="masStore.mas.magnetic.manufacturerInfo.reference">
-                            </h2>
-                            <div v-else :class="showControlPanel? 'col-sm-12 col-md-3 col-lg-3' : 'col-sm-12 col-md-9'" class="fs-5" >
-                            </div>
 
-                            <div v-if="showControlPanel" data-cy="magnetic-synthesis-title-control-panel" :class="(showTitle || showReference)? 'col-sm-12 col-md-6 col-lg-6 col-xl-6' : 'col-sm-12 col-md-9'">
+                            <div
+                                v-if="showControlPanel"
+                                data-cy="magnetic-synthesis-title-control-panel"
+                                :class="(showTitle || showReference)? 'col-sm-12 col-md-6 col-lg-6 col-xl-6' : 'col-sm-12 col-md-9'"
+                                class="ms-auto"
+                            >
                                 <ControlPanel @toolSelected="toolSelected"/>
                             </div>
                         </div>
@@ -233,7 +235,7 @@ export default {
                             <ToolSelector
                                 v-if="$userStore.getCurrentToolState().subsection == 'toolSelector'"
                                 :dataTestLabel="`${dataTestLabel}-ToolSelector`"
-                                :acSweepSelected="masStore.magneticAcSweepOperatingPoints"
+                                :acSweepSelected="$stateStore.operatingPoints.modePerPoint[$stateStore.currentOperatingPoint] === $stateStore.OperatingPointsMode.AcSweep"
                                 @toolSelected="toolSelected"
                             />
                             <DesignRequirements
@@ -254,6 +256,11 @@ export default {
                             <OperatingPoints
                                 v-if="$userStore.getCurrentToolState().subsection == 'operatingPoints'"
                                 :dataTestLabel="`${dataTestLabel}-OperatingPoints`"
+                                    :enableManual="false"
+                                    :enableCircuitSimulatorImport="false"
+                                    :enableAcSweep="false"
+                                    :enableHarmonicsList="true"
+                                    :defaultMode="'HarmonicsList'"
                                 @canContinue="updateCanContinue('operatingPoints', $event)" 
                                 @changeTool="changeTool"
                             />
@@ -292,14 +299,14 @@ export default {
                                 v-if="$userStore.getCurrentToolState().subsection == 'magneticBuilder' || 
                                       $userStore.getCurrentToolState().subsection == 'magneticViewer'"
                                 :masStore="masStore"
-                                :operatingPointIndex="stateStore.currentOperatingPoint"
+                                :operatingPointIndex="$stateStore.currentOperatingPoint"
                                 :dataTestLabel="`${dataTestLabel}-MagneticBuilder`"
                                 :useVisualizers="true"
                                 :enableCoil="true"
+                                :enableAdvisers="false"
                                 :readOnly="$userStore.getCurrentToolState().subsection == 'magneticViewer'"
                                 :enableGraphs="enableGraphs"
-                                :enableAdvisers="!masStore.magneticAcSweepOperatingPoints && $userStore.selectedTool != 'catalogAdviser'"
-                                :enableSimulation="!masStore.magneticAcSweepOperatingPoints"
+                                :enableSimulation="$stateStore.operatingPoints.modePerPoint[$stateStore.currentOperatingPoint] !== $stateStore.OperatingPointsMode.AcSweep"
                                 @canContinue="updateCanContinue('magneticBuilder', $event)"
                             />
                             <MagneticSummary
@@ -320,6 +327,7 @@ export default {
                 </div>
             </div>
         </main>
+        <Footer class="mt-auto"/>
     </div>
 </template>
 

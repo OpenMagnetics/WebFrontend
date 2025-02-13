@@ -93,24 +93,45 @@ export default {
 </script>
 
 <template>
-    <div class="container">
+    <div class="container ">
         <div class="card p-0 m-0">
-            <div class="card-header row p-0 m-0 mt-2 pb-2">
-                <p class="fs-4 col-10 p-0 px-1 fw-bold">{{fixedMagneticName}}</p>
-                <!-- <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p> -->
+            <div class="card-header row p-0 m-0 mt-2 pb-2" :style="$styleStore.catalogAdviser.adviserHeader">
+                <p class="text-center fs-4 col-12 p-0 px-1 fw-bold">{{fixedMagneticName}}</p>
             </div>
-            <div class="row py-3">
-                <div class="col-12 mx-2 text-start px-4 row text-center">
-                    <div class="col-12 p-0 mb-4" style="white-space: pre-line">{{localTexts.dimensions}}</div>
-                    <div class="col-4 p-0 m-0" style="white-space: pre-line">{{localTexts.losses}}</div>
-                    <div class="col-4 p-0 m-0" style="white-space: pre-line">{{localTexts.dcResistance}}</div>
-                    <div class="col-4 p-0 m-0" style="white-space: pre-line">{{localTexts.magnetizingInductance}}</div>
+            <div class="card-body" :style="$styleStore.catalogAdviser.adviserBody">
+                <div class="row p-0 m-0 py-3">
+                    <div class="col-12 m-0 row text-center">
+                        <div class="col-12 p-0 mb-4" style="white-space: pre-line">{{localTexts.dimensions}}</div>
+                        <div class="col-4 p-0 m-0" style="white-space: pre-line">{{localTexts.losses}}</div>
+                        <div class="col-4 p-0 m-0" style="white-space: pre-line">{{localTexts.dcResistance}}</div>
+                        <div class="col-4 p-0 m-0" style="white-space: pre-line">{{localTexts.magnetizingInductance}}</div>
+                    </div>
                 </div>
-            </div>
-            <div class="card-body">
-                <button :data-cy="dataTestLabel + '-advise-' + adviseIndex + '-view-button'" class="btn btn-primary col-3 fs-5" @click="$emit('viewMagnetic')"> View </button>
-                <button v-if="scoring < 0" :data-cy="dataTestLabel + '-advise-' + adviseIndex + '-edit-button'" class="btn btn-info offset-1 col-3 fs-5" @click="$emit('editMagnetic')">Edit</button>
-                <button :data-cy="dataTestLabel + '-advise-' + adviseIndex + '-order-button'" class="btn btn-success offset-1 col-4 fs-5" @click="$emit('orderSample')">Order a sample</button>
+                <button
+                    :style="$styleStore.catalogAdviser.viewButton"
+                    :data-cy="dataTestLabel + '-advise-' + adviseIndex + '-view-button'"
+                    class="btn btn-primary col-3 fs-5"
+                    @click="$emit('viewMagnetic')"
+                >
+                    {{'View'}}
+                </button>
+                <button
+                    :style="$styleStore.catalogAdviser.editButton"
+                    v-if="scoring < 0"
+                    :data-cy="dataTestLabel + '-advise-' + adviseIndex + '-edit-button'"
+                    class="btn btn-info offset-1 col-3 fs-5"
+                    @click="$emit('editMagnetic')"
+                >
+                    {{'Edit'}}
+                </button>
+                <button
+                    :style="$styleStore.catalogAdviser.orderButton"
+                    :data-cy="dataTestLabel + '-advise-' + adviseIndex + '-order-button'"
+                    class="btn btn-success offset-1 col-4 fs-5"
+                    @click="$emit('orderSample')"
+                >
+                    {{'Order a sample'}}
+                </button>
             </div>
         </div>
     </div>

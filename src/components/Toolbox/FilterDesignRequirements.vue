@@ -252,7 +252,7 @@ export default {
                     :labelBgColor="$styleStore.designRequirements.inputLabelBgColor"
                     :valueBgColor="$styleStore.designRequirements.inputValueBgColor"
                     :textColor="$styleStore.designRequirements.inputTextColor"
-                    :unitExtraStyleClass="'p-1'"
+                    :unitExtraStyleClass="'py-1'"
                 />
 
                 <ArrayDimensionWithTolerance class="border-bottom py-2"

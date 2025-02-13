@@ -27,6 +27,22 @@ export default {
             type: Number,
             default: 0,
         },
+        enableManual: {
+            type: Boolean,
+            default: true,
+        },
+        enableCircuitSimulatorImport: {
+            type: Boolean,
+            default: true,
+        },
+        enableAcSweep: {
+            type: Boolean,
+            default: true,
+        },
+        enableHarmonicsList: {
+            type: Boolean,
+            default: true,
+        },
     },
     data() {
         const masStore = useMasStore();
@@ -131,7 +147,6 @@ export default {
     }
 }
 </script>
-
 <template>
     <div class="container">
         <div class="row" v-tooltip="styleTooltip">
@@ -175,12 +190,12 @@ export default {
                     </label>
                 </div>
                 <div class="row mt-2">
-<!--                     <label for="OperatingPoint-MAS-upload-input" class="col-lg-3 col-md-12">
-                            <span :data-cy="dataTestLabel + '-MAS-upload-button'" type="button" class="btn btn-primary mt-1 rounded-3 fs-5 pt-2" style="min-height: 6em">Magnetic Agnostic Structure file (It will replace all Op. points)</span> 
-                            <input type="file" id="OperatingPoint-MAS-upload-input" ref="OperatingPoint-MAS-upload-ref" @change="onMASFileTypeSelected"  style="display:none">
-                    </label> -->
+
+
+
                         <input type="file" id="OperatingPoint-CircuitSimulator-upload-input" ref="OperatingPoint-CircuitSimulator-upload-ref" @change="onCircuitSimulatorFileTypeSelected" style="display:none" hidden/>
                         <button
+                            v-if="enableManual"
                             :style="$styleStore.operatingPoints.typeButton"
                             data-cy="OperatingPoint-source-Manual-button"
                             type="button"
@@ -192,6 +207,7 @@ export default {
                         </button>
 
                         <button
+                            v-if="enableCircuitSimulatorImport"
                             :style="$styleStore.operatingPoints.typeButton"
                             data-cy="OperatingPoint-source-Manual-button"
                             type="button"
@@ -202,6 +218,7 @@ export default {
                             {{'I will define it manually'}}
                         </button>
                         <button
+                            v-if="enableHarmonicsList"
                             :style="$styleStore.operatingPoints.typeButton"
                             data-cy="OperatingPoint-source-Manual-button"
                             type="button"
@@ -212,8 +229,9 @@ export default {
                             {{'I want to introduce a list of harmonics'}}
                         </button>
                         <button
+                            v-if="enableAcSweep"
                             :style="$styleStore.operatingPoints.typeButton"
-                            data-cy="OperatingPoint-source-Manual-button"
+                            data-cy="OperatingPoint-source-Ac-Sweep-button"
                             type="button"
                             @click="onAcSweepTypeSelected"
                             class="col-lg-4 col-md-12 offset-lg-1 btn mt-1 rounded-3"

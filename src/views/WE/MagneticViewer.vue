@@ -27,6 +27,13 @@ export default {
         }
     },
     methods: {
+        editMagnetic() {
+            setTimeout(() => {this.$router.push('/we_catalog_tool');}, 100);
+        },
+        orderSample(mas) {
+            var link = `mailto:target@example.com?subject=Sample ${mas.magnetic.manufacturerInfo.reference}&body=I would like to order a sample of the part ${mas.magnetic.manufacturerInfo.reference}`; 
+            window.location.href = link;
+        },
     },
     mounted() {
     },
@@ -44,6 +51,7 @@ export default {
         :currentStoryline="magneticViewerStoryline"
         :dataTestLabel="'MagneticViewer'"
         :showControlPanel="true"
+        @editMagnetic="editMagnetic"
     />
 </template>
 

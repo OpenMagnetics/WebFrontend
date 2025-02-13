@@ -70,8 +70,6 @@ export default {
         onLoadCommercialMaterial(data) {
             this.$userStore.setGlobalCoreMaterial(data)
         },
-    },
-    computed: {
         onNewPowerMagneticDesign() {
             this.$userStore.resetMagneticTool();
             this.$userStore.selectApplication("power");
@@ -108,6 +106,8 @@ export default {
             else
                 setTimeout(() => {this.$router.push('/engine_loader');}, 100);
         },
+    },
+    computed: {
     },
     created() {
         if (this.$userStore.isLoggedIn.value && this.$cookies.get('username') == null) {

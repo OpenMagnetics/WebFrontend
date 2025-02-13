@@ -326,14 +326,12 @@ export default {
 }
 </script>
 
-<style>
-canvas {
-    background-color : var(--bs-light);
-}
-</style>
 
 <template>
     <div>
-        <canvas id="chartFourier"></canvas>
+        <canvas
+            :style="$styleStore.operatingPoints.graphBgColor"
+            id="chartFourier"
+        ></canvas>
     </div>
 </template>

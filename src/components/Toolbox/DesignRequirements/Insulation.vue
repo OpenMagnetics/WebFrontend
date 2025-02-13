@@ -81,19 +81,19 @@ export default {
 
 <template>
     <div :data-cy="dataTestLabel + '-container'" class="container-flex">
-        <div class="row">
+        <div class="row m-0 ps-3">
             <label
                 :style="combinedStyle([titleFontSize, textColor, labelBgColor])"
                 v-if="showTitle"
                 :data-cy="dataTestLabel + '-title'"
                 :class="combinedClass([titleFontSize, textColor, labelBgColor])"
-                class="rounded-2 ms-3 col-12"
+                class="rounded-2 col-12"
             >
                 Insulation
             </label>
         </div>
         <div class="row ms-2">
-            <DimensionWithTolerance 
+            <DimensionWithTolerance
                 class="col-6 border-end"
                 :dataTestLabel="dataTestLabel + '-Altitude'"
                 :allowNegative="true"

@@ -94,9 +94,6 @@ export default {
             }
         })
 
-        this.$settingsStore.labelBgColor = 'bg-dark';
-        this.$settingsStore.valueBgColor = 'bg-light';
-        this.$settingsStore.textColor = 'text-white';
         this.$settingsStore.loadingGif = "/images/loading_wuerth.gif";
 
     },

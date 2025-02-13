@@ -111,20 +111,22 @@ export default {
 
 <template>
     <div :data-cy="dataTestLabel + '-container'" class="container-flex">
-        <div class="row">
+        <div class="row m-0 ps-3">
             <label
                 :style="combinedStyle([titleFontSize, labelBgColor, textColor])"
                 v-if="showTitle"
                 :data-cy="dataTestLabel + '-title'"
                 :class="combinedClass([titleFontSize, labelBgColor, textColor])"
-                class="rounded-2 col-12 ms-3"
+                class="rounded-2 col-12"
             >
                 Minimum Impedance
             </label>
         </div>
         <div class="row ms-2" v-for="row, index in masStore.mas.inputs.designRequirements.minimumImpedance">
-            <PairOfDimensions class="border-bottom py-2 col-10"
-                :style = "$styleStore.designRequirements.inputBorderColor"
+            <PairOfDimensions
+                class="py-2 col-10"
+                :class="index==0? '' : 'border-bottom' "
+                :style="$styleStore.designRequirements.inputBorderColor"
                 :names="['frequency', 'impedance']"
                 :units="['H', 'Ω']"
                 :dataTestLabel="dataTestLabel + '-MinimumImpedance'"
@@ -146,7 +148,7 @@ export default {
                     :data-cy="dataTestLabel + '-remove-point-button'"
                     v-if="masStore.mas.inputs.designRequirements.minimumImpedance.length > 1"
                     type="button"
-                    class="btn h-100 w-50 btn-circle bg-dark col-6"
+                    class="btn h-100 w-50 btn-circle col-6"
                     @click="onRemovePoint(index)">
                     <i
                         :style="combinedStyle([removeElementButtonColor])"
@@ -158,7 +160,7 @@ export default {
                 <button
                     :data-cy="dataTestLabel + '-add-point-below-button'"
                     type="button"
-                    class="btn btn-circle h-100 w-50 bg-transparent col-6"
+                    class="btn btn-circle h-100 w-50 col-6"
                     @click=" onAddPointBelow(index)"
                     >
                     <i

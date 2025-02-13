@@ -167,7 +167,7 @@ export default {
 </script>
 
 <template>
-    <div class="container text-start pe-0 container-fluid"  style="height: 70vh" >
+    <div class="container text-start pe-0 container-fluid"  style="height: 70vh" :style="$styleStore.catalogAdviser.main">
         <div class="row">
             <div class="col-10 offset-1 text-start pe-0 container-fluid"  style="height: 70vh">
                 <div class="col-12 row fs-5 mb-4">

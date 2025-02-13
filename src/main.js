@@ -13,6 +13,7 @@ import { useSettingsStore } from '/src/stores/settings'
 import { useStateStore } from '/src/stores/state'
 import Module from '/src/assets/js/libMKF.wasm.js';
 import { useStyleStore } from '/src/stores/style'
+import { useWeStyleStore } from '/src/stores/weStyle'
 
 const axiosInstance = axios.create()
 
@@ -27,7 +28,6 @@ app.config.globalProperties.$axios = axiosInstance
 app.config.globalProperties.$userStore = useUserStore()
 app.config.globalProperties.$settingsStore = useSettingsStore()
 app.config.globalProperties.$stateStore = useStateStore()
-app.config.globalProperties.$styleStore = useStyleStore()
 
 app.mount("#app");
 
@@ -38,11 +38,19 @@ router.beforeEach((to, from, next) => {
         setTimeout(() => {router.push(from.path);}, 500);
     }
 
-    const nonDataViews = ['/', '/home', '/insulation_adviser']
+    const nonDataViews = ['/', '/home', '/insulation_adviser', '/cmc_wizard']
 
     var loadData = !nonDataViews.includes(to.path);
 
     const weApplication = to.path.includes("we_") || from.path.includes("we_");
+
+    if (weApplication) {
+        app.config.globalProperties.$styleStore = useWeStyleStore()
+    }
+    else {
+        app.config.globalProperties.$styleStore = useStyleStore()
+    }
+
 
     if (loadData) {
         if (app.config.globalProperties.$mkf == null && to.name != "WEEngineLoader" && weApplication) {
