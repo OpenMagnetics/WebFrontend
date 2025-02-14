@@ -14,11 +14,11 @@ export default {
     data() {
         const magneticSpecificationsReportStoryline = {
             "designRequirements": {
-                title: "Design Requirements",
+                title: "Design Req.",
                 nextTool: "operatingPoints"
             },
             "operatingPoints": {
-                title: "Operating Points",
+                title: "Op. Points",
                 prevTool: "designRequirements",
                 nextTool: "magneticSpecificationsSummary",
             },
@@ -30,11 +30,11 @@ export default {
 
         const magneticAdviserStoryline = {
             "designRequirements": {
-                title: "Design Requirements",
+                title: "Design Req.",
                 nextTool: "operatingPoints"
             },
             "operatingPoints": {
-                title: "Operating Points",
+                title: "Op. Points",
                 prevTool: "designRequirements",
                 nextTool: "magneticAdviser",
             },
@@ -56,11 +56,11 @@ export default {
 
         const magneticBuilderStoryline = {
             "designRequirements": {
-                title: "Design Requirements",
+                title: "Design Req.",
                 nextTool: "operatingPoints"
             },
             "operatingPoints": {
-                title: "Operating Points",
+                title: "Op. Points",
                 prevTool: "designRequirements",
                 nextTool: "magneticAdviser",
             },
@@ -77,11 +77,11 @@ export default {
 
         const magneticCoreAdviserStoryline = {
             "designRequirements": {
-                title: "Design Requirements",
+                title: "Design Req.",
                 nextTool: "operatingPoints"
             },
             "operatingPoints": {
-                title: "Operating Points",
+                title: "Op. Points",
                 prevTool: "designRequirements",
                 nextTool: "magneticCoreAdviser",
             },
@@ -102,11 +102,11 @@ export default {
                 nextTool: "designRequirements"
             },
             "designRequirements": {
-                title: "Design Requirements",
+                title: "Design Req.",
                 nextTool: "operatingPoints"
             },
             "operatingPoints": {
-                title: "Operating Points",
+                title: "Op. Points",
                 prevTool: "designRequirements",
                 nextTool: "toolSelector",
             },

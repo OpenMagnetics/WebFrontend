@@ -175,7 +175,7 @@ export default {
                         </div>
                         <div class="border mt-2" style="height: fit-content" :style="$styleStore.contextMenu.main">
                             <ContextMenu
-                                :showMagneticBuilderSettingsOption="$userStore.getCurrentToolState().subsection == 'magneticBuilder' || $userStore.getCurrentToolState().subsection == 'magneticViewer'"
+                                :showMagneticBuilderSettingsOption="$userStore.selectedApplication != 'catalog' && ($userStore.getCurrentToolState().subsection == 'magneticBuilder' || $userStore.getCurrentToolState().subsection == 'magneticViewer')"
                                 :showAdviserSettingsOption="$userStore.getCurrentToolState().subsection == 'magneticAdviser' || $userStore.getCurrentToolState().subsection == 'magneticCoreAdviser'"
                                 :showCatalogAdviserSettingsOption="$userStore.selectedApplication == 'catalog'"
                                 :showOperatingPointSettingsOption="$userStore.getCurrentToolState().subsection == 'operatingPoints'"

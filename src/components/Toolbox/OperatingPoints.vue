@@ -121,7 +121,9 @@ export default {
         }
         this.$emit("canContinue", this.canContinue);
 
-        this.$stateStore.operatingPoints.modePerPoint[this.currentOperatingPointIndex] = this.defaultMode
+        if (!this.canContinue) {
+            this.$stateStore.operatingPoints.modePerPoint[this.currentOperatingPointIndex] = this.defaultMode
+        }
 
         this.masStore.$onAction((action) => {
             if (action.name == "updatedInputExcitationProcessed") {

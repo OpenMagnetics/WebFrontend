@@ -77,7 +77,7 @@ export default {
             else if (this.showMagneticBuilderSettingsOption) {
                 return '#MagneticBuilderSettingsModal'
             }
-            else if (this.showAdviserSettingsOption) {
+            else if (this.showCatalogAdviserSettingsOption) {
                 return '#CatalogAdviserSettingsModal'
             }
             else if (this.showOperatingPointSettingsOption) {

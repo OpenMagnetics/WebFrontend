@@ -100,9 +100,9 @@ export default {
                         console.time('Execution Time');
 
                         const settings = JSON.parse(this.$mkf.get_settings());
-                        settings["coreIncludeDistributedGaps"] = this.$settingsStore.adviserSettings.allowDistributedGaps;
-                        settings["coreIncludeStacks"] = this.$settingsStore.adviserSettings.allowStacks;
-                        settings["useToroidalCores"] = this.$settingsStore.adviserSettings.allowToroidalCores;
+                        settings["coreIncludeDistributedGaps"] = true;
+                        settings["coreIncludeStacks"] = true;
+                        settings["useToroidalCores"] = true;
                         this.$mkf.set_settings(JSON.stringify(settings));
 
                         const result = this.$mkf.calculate_advised_magnetics_from_catalog(JSON.stringify(this.masStore.mas.inputs), this.catalogString, 2);
