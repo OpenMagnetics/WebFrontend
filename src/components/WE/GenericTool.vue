@@ -304,6 +304,7 @@ export default {
                                 :useVisualizers="true"
                                 :enableCoil="true"
                                 :enableAdvisers="false"
+                                :enableCoilOptions="false"
                                 :readOnly="$userStore.getCurrentToolState().subsection == 'magneticViewer'"
                                 :enableGraphs="enableGraphs"
                                 :enableSimulation="$stateStore.operatingPoints.modePerPoint[$stateStore.currentOperatingPoint] !== $stateStore.OperatingPointsMode.AcSweep"

@@ -118,16 +118,7 @@ router.beforeEach((to, from, next) => {
                                                 }
                                         })
                                         console.warn("Loading wires in simulator")
-                                        fetch("/wires.ndjson")
-                                        .then((data) => data.text())
-                                        .then((data) => {
-                                            if (loadAllParts) {
-                                                app.config.globalProperties.$mkf.load_wires("");
-                                            }
-                                            if (loadExternalParts) {
-                                                app.config.globalProperties.$mkf.load_wires(data);
-                                            }
-                                        })
+                                        app.config.globalProperties.$mkf.load_wires("");
                                         router.push(app.config.globalProperties.$userStore.loadingPath)
                                     }).error((error) => {
                                         console.error(error)
