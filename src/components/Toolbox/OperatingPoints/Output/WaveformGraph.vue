@@ -180,7 +180,7 @@ export default {
                             const exp = Math.floor(Math.log10(modelValue.frequency))
                             const base = 10 ** exp
                             value = removeTrailingZeroes(value * base * 10)
-                            return value + "e-" + exp + "s";
+                            return value + "e-" + (exp + 1) + "s";
                         }
                     },
                     grid: {

@@ -287,7 +287,7 @@ export default {
         },
         chopHarmonics(signalDescriptor){
             this.$mkf.ready.then(_ => {
-                const aux = this.$mkf.get_main_harmonic_indexes(JSON.stringify(this.modelValue[signalDescriptor].harmonics), signalDescriptor == "current"? this.harmonicPowerThresholdCurrent : this.harmonicPowerThresholdVoltage, 1);
+                const aux = this.$mkf.get_main_harmonic_indexes(JSON.stringify(this.modelValue[signalDescriptor].harmonics), (signalDescriptor == "current"? this.harmonicPowerThresholdCurrent : this.harmonicPowerThresholdVoltage), (this.updateHarmonics? -1 : 1));
 
                 const filteredHarmonics = {
                     amplitudes: [this.modelValue[signalDescriptor].harmonics.amplitudes[0]],
