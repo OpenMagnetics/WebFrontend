@@ -41,7 +41,7 @@ export const useStyleStore = defineStore("style", () => {
             availableButton: {
                 "background": theme["secondary"],
                 "color": theme["white"],
-                "border-color":  theme["primary"] + ' !important',
+                "border-color":  theme["secondary"] + ' !important',
             },
             pendingButton: {
                 "background": "transparent",
@@ -51,7 +51,7 @@ export const useStyleStore = defineStore("style", () => {
             continueButton: {
                 "background": theme["success"],
                 "color": theme["dark"],
-                "border-color":  theme["primary"] + ' !important',
+                "border-color":  theme["success"] + ' !important',
             },
             arrow: {
                 "color": theme["primary"],

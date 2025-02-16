@@ -24,6 +24,15 @@ export const useStateStore = defineStore("state", () => {
         modePerPoint: [null],
     });
 
+    const graphParameters = ref({
+        type: 'impedanceOverFrequency',
+        xAxisMode: 'log',
+        yAxisMode: 'log',
+        minimumFrequency: 1e3,
+        maximumFrequency: 4e6,
+        numberPoints: 200,
+    });
+
 
     function reset() {
         this.currentOperatingPoint = 0;
@@ -35,6 +44,15 @@ export const useStateStore = defineStore("state", () => {
         this.operatingPoints = {
             modePerPoint: [null],
         };
+
+        this.graphParameters = {
+            graph: 'impedanceOverFrequency',
+            mode: 'log',
+            minimumFrequency: 1e3,
+            maximumFrequency: 4e6,
+            numberPoints: 200,
+        };
+
     }
 
     function initializeOperatingPoints(temperature=100) {
@@ -96,6 +114,7 @@ export const useStateStore = defineStore("state", () => {
         initializeOperatingPoints,
         addNewOperatingPoint,
         removeOperatingPoint,
+        graphParameters,
     }
 },
 {
