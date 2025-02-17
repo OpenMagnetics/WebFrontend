@@ -386,6 +386,11 @@ export default {
 
             </div>
             <div v-if="masStore.mas.inputs.operatingPoints.length > 0" class="col-sm-12 col-md-10 text-start pe-0 ">
+            {{"currentOperatingPointIndex: "}}
+            {{currentOperatingPointIndex}}
+            {{"$stateStore.operatingPoints.modePerPoint[currentOperatingPointIndex]: "}}
+            {{$stateStore.operatingPoints.modePerPoint[currentOperatingPointIndex]}}
+            {{masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding.length}}
                 <div v-if="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding.length > 0" class="container mx-auto">
                     <div class="row">
                         <OperatingPoint 

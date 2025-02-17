@@ -81,9 +81,9 @@ export const useStateStore = defineStore("state", () => {
         const masStore = useMasStore();
         var newOperatingPoint = deepCopy(masStore.mas.inputs.operatingPoints[currentOperatingPointIndex]);
         newOperatingPoint.name = 'Op. Point No. ' + (masStore.mas.inputs.operatingPoints.length + 1);
-        newOperatingPoint.excitationsPerWinding = [];
 
         if (mode == this.OperatingPointsMode.HarmonicsList) {
+            newOperatingPoint.excitationsPerWinding = [];
             for (var windingIndex = 0; windingIndex < masStore.mas.inputs.designRequirements.turnsRatios.length + 1; windingIndex++) {
                 newOperatingPoint.excitationsPerWinding.push(deepCopy(Defaults.defaultOperatingPointExcitationWithHarmonics));
             }
