@@ -30,7 +30,7 @@ export const useStateStore = defineStore("state", () => {
         yAxisMode: 'log',
         minimumFrequency: 1e3,
         maximumFrequency: 4e6,
-        numberPoints: 200,
+        numberPoints: 50,
     });
 
 

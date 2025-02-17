@@ -307,7 +307,7 @@ export const useStyleStore = defineStore("style", () => {
                 "background": theme["light"],
             },
             graphLineColor:{
-                "color": theme["info"],
+                "color": theme["white"],
             },
             graphPointsColor:{
                 "color": theme["danger"],
