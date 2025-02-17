@@ -3,7 +3,8 @@ import { useMasStore } from '/src/stores/mas'
 import OperatingPoint from '/src/components/Toolbox/OperatingPoints/OperatingPoint.vue'
 import { roundWithDecimals, deepCopy, combinedStyle } from '/WebSharedComponents/assets/js/utils.js'
 
-import { defaultOperatingPointExcitation, defaultPrecision, defaultSinusoidalNumberPoints } from '/WebSharedComponents/assets/js/defaults.js'
+import Dimension from '/WebSharedComponents/DataInput/Dimension.vue'
+import { defaultOperatingPointExcitation, defaultPrecision, defaultSinusoidalNumberPoints, minimumMaximumScalePerParameter } from '/WebSharedComponents/assets/js/defaults.js'
 import { tooltipsMagneticSynthesisOperatingPoints } from '/WebSharedComponents/assets/js/texts.js'
 
 import Text from '/WebSharedComponents/DataInput/Text.vue'
@@ -45,14 +46,18 @@ export default {
         const currentOperatingPointIndex = 0;
         const currentWindingIndex = 0;
         const errorMessages = "";
+        const localData = {
+            ambientTemperature: 25
+        };
 
         this.$stateStore.initializeOperatingPoints();
-
+// masStore.mas.inputs.operatingPoints[operatingPointIndex].conditions
         return {
             masStore,
             currentOperatingPointIndex,
             currentWindingIndex,
             errorMessages,
+            localData,
         }
     },
     computed: {
@@ -288,9 +293,24 @@ export default {
                         :valueBgColor="$styleStore.operatingPoints.titleLabelBgColor"
                         :textColor="$styleStore.operatingPoints.titleTextColor"
                     />
+                    <Dimension class="ps-3"
+                        :name="'ambientTemperature'"
+                        :replaceTitle="'Temp.'"
+                        unit="°C"
+                        :dataTestLabel="dataTestLabel + '-ConditionsAmbientTemperature'"
+                        :min="minimumMaximumScalePerParameter['temperature']['min']"
+                        :max="minimumMaximumScalePerParameter['temperature']['max']"
+                        :defaultValue="25"
+                        v-model="masStore.mas.inputs.operatingPoints[operatingPointIndex].conditions"
+                        :valueFontSize="$styleStore.operatingPoints.inputFontSize"
+                        :labelFontSize="$styleStore.operatingPoints.inputFontSize"
+                        :labelBgColor="$styleStore.operatingPoints.inputValueBgColor"
+                        :valueBgColor="$styleStore.operatingPoints.inputValueBgColor"
+                        :textColor="$styleStore.operatingPoints.inputTextColor"
+                    />
                     <div
                         v-if="currentOperatingPointIndex == operatingPointIndex"
-                        class="col-12 row m-0 p-0 "
+                        class="col-12 row m-0 p-0 py-1 border-top"
                         v-for="winding, windingIndex in masStore.mas.magnetic.coil.functionalDescription"
                         >
                         <Text

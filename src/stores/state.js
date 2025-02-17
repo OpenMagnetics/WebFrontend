@@ -72,8 +72,10 @@ export const useStateStore = defineStore("state", () => {
         this.operatingPointsCircuitSimulator.columnNames.push([]);
 
         for (var windingIndex = 0; windingIndex < masStore.mas.inputs.designRequirements.turnsRatios.length + 1; windingIndex++) {
-            masStore.mas.inputs.operatingPoints[0].excitationsPerWinding.push(deepCopy(Defaults.defaultOperatingPointExcitation));
-            this.operatingPointsCircuitSimulator.confirmedColumns[0].push(false);
+            if (masStore.mas.inputs.operatingPoints[0].excitationsPerWinding.length <= windingIndex) {
+                masStore.mas.inputs.operatingPoints[0].excitationsPerWinding.push(deepCopy(Defaults.defaultOperatingPointExcitation));
+                this.operatingPointsCircuitSimulator.confirmedColumns[0].push(false);
+            }
         }
     }
 

@@ -66,7 +66,7 @@ export default {
         };
 
         if (masStore.mas.inputs.operatingPoints[this.$stateStore.currentOperatingPoint] != null)
-            localData["operatingPoint"] = masStore.mas.inputs.operatingPoints[this.$stateStore.currentOperatingPoint].name
+            localData["operatingPoint"] = masStore.mas.inputs.operatingPoints[this.$stateStore.currentOperatingPoint].name  + ' - ' + masStore.mas.inputs.operatingPoints[this.$stateStore.currentOperatingPoint].conditions.ambientTemperature + '°C';
         return {
             masStore,
             localData,
@@ -112,7 +112,7 @@ export default {
         },
         operatingPointUpdated(name, ea) {
             this.masStore.mas.inputs.operatingPoints.forEach((elem, index) => {
-                if (name == elem.name) {
+                if (name.includes(elem.name)) {
                     this.$stateStore.currentOperatingPoint = index;
                 }
             })
@@ -130,7 +130,7 @@ export default {
         operatingPointNames() {
             const names = [];
             this.masStore.mas.inputs.operatingPoints.forEach((elem) => {
-                names.push(elem.name);
+                names.push(elem.name + ' - ' + elem.conditions.ambientTemperature + '°C');
             })
             return names;
         },
@@ -205,8 +205,8 @@ export default {
                                 :options="operatingPointNames"
                                 :labelWidthProportionClass="'col-0'"
                                 :selectStyleClass="'col-12'"
-                                :valueFontSize="$styleStore.magneticBuilder.inputTitleFontSize"
-                                :labelFontSize="$styleStore.magneticBuilder.inputTitleFontSize"
+                                :valueFontSize="$styleStore.magneticBuilder.inputFontSize"
+                                :labelFontSize="$styleStore.magneticBuilder.inputFontSize"
                                 :labelBgColor="$styleStore.magneticBuilder.inputLabelBgColor"
                                 :valueBgColor="$styleStore.magneticBuilder.inputValueBgColor"
                                 :textColor="$styleStore.magneticBuilder.inputTextColor"
