@@ -99,6 +99,11 @@ export default {
 
             });
         },
+        updatedSwitchingFrequency(frequency) {
+            this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding.forEach((elem) => {
+                elem.frequency = frequency;
+            })
+        },
         updatedColumnNames() {
             // this.extractOperatingPoint(this.loadedFile);
         },
@@ -128,7 +133,7 @@ export default {
                     :allColumnNames="allColumnNames"
                     :currentOperatingPointIndex="currentOperatingPointIndex"
                     :currentWindingIndex="currentWindingIndex"
-                    @updatedSwitchingFrequency="updatedColumnNames"
+                    @updatedSwitchingFrequency="updatedSwitchingFrequency"
                     @updatedColumnName="updatedColumnNames"
                 />
 

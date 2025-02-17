@@ -78,7 +78,7 @@ export default {
             else {
                 this.errorMessages = '';
             }
-            this.$emit("updatedSwitchingFrequency");
+            this.$emit("updatedSwitchingFrequency", value);
         },
     }
 }
@@ -105,11 +105,11 @@ export default {
                 :defaultValue="0"
                 :forceUpdate="forceUpdateFrequency"
                 v-model="localData"
-            :valueFontSize="$styleStore.operatingPoints.inputFontSize"
-            :labelFontSize="$styleStore.operatingPoints.inputTitleFontSize"
-            :labelBgColor="$styleStore.operatingPoints.inputLabelBgColor"
-            :valueBgColor="$styleStore.operatingPoints.inputValueBgColor"
-            :textColor="$styleStore.operatingPoints.inputTextColor"
+                :valueFontSize="$styleStore.operatingPoints.inputFontSize"
+                :labelFontSize="$styleStore.operatingPoints.inputTitleFontSize"
+                :labelBgColor="$styleStore.operatingPoints.inputLabelBgColor"
+                :valueBgColor="$styleStore.operatingPoints.inputValueBgColor"
+                :textColor="$styleStore.operatingPoints.inputTextColor"
                 @update="frequencyChanged"
             />
             <label class="text-danger col-12 pt-1" style="font-size: 0.8em">{{errorMessages}}</label>

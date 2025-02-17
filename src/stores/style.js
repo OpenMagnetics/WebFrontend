@@ -365,6 +365,7 @@ export const useStyleStore = defineStore("style", () => {
             closeButton: {
                 "background": theme["primary"],
                 "color": theme["dark"],
+                "border-color":  theme["primary"] + ' !important',
             },
         };
 

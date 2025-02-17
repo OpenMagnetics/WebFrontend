@@ -223,7 +223,7 @@ export default {
                             data-cy="OperatingPoint-source-Manual-button"
                             type="button"
                             @click="onHarmoncsTypeSelected"
-                            class="col-lg-4 col-md-12 offset-lg-1 btn mt-1 rounded-3"
+                            class="col-lg-4 col-md-12 offset-lg-1 btn mt-5 rounded-3"
                             style="min-height: 6em"
                         >
                             {{'I want to introduce a list of harmonics'}}
@@ -234,7 +234,7 @@ export default {
                             data-cy="OperatingPoint-source-Ac-Sweep-button"
                             type="button"
                             @click="onAcSweepTypeSelected"
-                            class="col-lg-4 col-md-12 offset-lg-1 btn mt-1 rounded-3"
+                            class="col-lg-4 col-md-12 offset-lg-1 btn mt-5 rounded-3"
                             style="min-height: 6em"
                         >
                             {{'I am here for the AC sweeps'}}
