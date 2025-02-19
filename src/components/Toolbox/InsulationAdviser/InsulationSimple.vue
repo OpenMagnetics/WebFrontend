@@ -93,7 +93,7 @@ export default {
                 :labelFontSize='titleFontSize'
                 :valueFontSize="valueFontSize"
                 :labelBgColor="labelBgColor"
-                :valueBgColor="valueBgColor"
+                :valueBgColor="labelBgColor"
                 :textColor="textColor"
                 :unitExtraStyleClass="unitExtraStyleClass"
                 @input="modelValue['wiringTechnology'] = $event.target.value"

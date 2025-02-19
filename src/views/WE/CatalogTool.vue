@@ -45,8 +45,8 @@ export default {
         catalogStore.catalogUrl = "/cmcs.ndjson"
 
         const masStore = useMasStore();
-        if (!this.$userStore.isAnyDesignLoaded()) {
-            this.$userStore.designLoaded();
+        if (!this.$stateStore.isAnyDesignLoaded()) {
+            this.$stateStore.designLoaded();
 
             this.$stateStore.reset();
             masStore.resetMas("filter");
@@ -61,7 +61,7 @@ export default {
     },
     methods: {
         viewMagnetic() {
-            this.$userStore.setCurrentToolSubsection("magneticViewer");
+            this.$stateStore.setCurrentToolSubsection("magneticViewer");
             this.catalogAdviserStoryline.magneticViewer.enabled = true;
             this.catalogAdviserStoryline.magneticBuilder.enabled = false;
         },
@@ -69,7 +69,7 @@ export default {
             if (this.masStore.mas.magnetic.manufacturerInfo != null && !this.masStore.mas.magnetic.manufacturerInfo.reference.includes("Edited")) {
                 this.masStore.mas.magnetic.manufacturerInfo.reference += "_Edited";
             }
-            this.$userStore.setCurrentToolSubsection("magneticBuilder");
+            this.$stateStore.setCurrentToolSubsection("magneticBuilder");
             this.catalogAdviserStoryline.magneticViewer.enabled = false;
             this.catalogAdviserStoryline.magneticBuilder.enabled = true;
         },

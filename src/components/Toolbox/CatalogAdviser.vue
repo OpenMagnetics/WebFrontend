@@ -146,7 +146,7 @@ export default {
             this.masStore.mas = deepCopy(this.catalogStore.advises[index].mas);
             this.$emit("canContinue", true);
 
-            this.$userStore.setCurrentToolSubsection("magneticViewer");
+            this.$stateStore.setCurrentToolSubsection("magneticViewer");
         },
         editMagnetic(index) {
             this.masStore.mas = deepCopy(this.catalogStore.advises[index].mas);
@@ -155,7 +155,7 @@ export default {
             }
             this.$emit("canContinue", true);
 
-            this.$userStore.setCurrentToolSubsection("magneticBuilder");
+            this.$stateStore.setCurrentToolSubsection("magneticBuilder");
         },
         calculateAdvises(event) {
             this.loading = true;

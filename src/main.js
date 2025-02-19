@@ -38,13 +38,13 @@ router.beforeEach((to, from, next) => {
         setTimeout(() => {router.push(from.path);}, 500);
     }
 
-    const nonDataViews = ['/', '/home', '/insulation_adviser', '/cmc_wizard']
+    const nonDataViews = ['/', '/home', '/insulation_adviser']
 
     var loadData = !nonDataViews.includes(to.path);
 
-    const weApplication = to.path.includes("we_") || from.path.includes("we_");
+    const weWorkflow = to.path.includes("we_") || from.path.includes("we_");
 
-    if (weApplication) {
+    if (weWorkflow) {
         app.config.globalProperties.$styleStore = useWeStyleStore()
     }
     else {
@@ -53,17 +53,17 @@ router.beforeEach((to, from, next) => {
 
 
     if (loadData) {
-        if (app.config.globalProperties.$mkf == null && to.name != "WEEngineLoader" && weApplication) {
+        if (app.config.globalProperties.$mkf == null && to.name != "WEEngineLoader" && weWorkflow) {
             app.config.globalProperties.$userStore.loadingPath = to.path
             router.push('/we_engine_loader')
         }
-        else if (app.config.globalProperties.$mkf == null && to.name != "EngineLoader" && !weApplication) {
+        else if (app.config.globalProperties.$mkf == null && to.name != "EngineLoader" && !weWorkflow) {
             app.config.globalProperties.$userStore.loadingPath = to.path
             router.push('/engine_loader')
         }
         else if (app.config.globalProperties.$mkf == null && (to.name == "EngineLoader" || to.name == "WEEngineLoader")) {
-            const loadAllParts = !weApplication || (weApplication && app.config.globalProperties.$settingsStore.catalogAdviserUseAllParts);
-            const loadExternalParts = weApplication;
+            const loadAllParts = !weWorkflow || (weWorkflow && app.config.globalProperties.$settingsStore.catalogAdviserUseAllParts);
+            const loadExternalParts = weWorkflow;
             setTimeout(() => 
                 {
 

@@ -1,5 +1,4 @@
 <script setup>
-import { useMasStore } from '/src/stores/mas'
 import { toTitleCase, getMultiplier, combinedStyle, combinedClass } from '/WebSharedComponents/assets/js/utils.js'
 import DimensionUnit from '/WebSharedComponents/DataInput/DimensionUnit.vue'
 
@@ -18,6 +17,9 @@ export default {
         },
         defaultValue:{
             type: Object
+        },
+        replaceTitle:{
+            type: String
         },
         min:{
             type: Number,
@@ -63,13 +65,16 @@ export default {
             type: [String, Object],
             default: "text-white",
         },
+        errorTextColor: {
+            type: [String, Object],
+            default: "text-danger",
+        },
         unitExtraStyleClass:{
             type: String,
             default: ''
         },
     },
     data() {
-        const masStore = useMasStore();
         var localData = {
             'width': {
                 multiplier: null,
@@ -106,7 +111,6 @@ export default {
         const errorMessages = "";
 
         return {
-            masStore,
             errorMessages,
             localData,
         }
@@ -162,33 +166,33 @@ export default {
 </script>
 
 <template>
-    <div :data-cy="dataTestLabel + '-container'" class="container-flex border-bottom">
+    <div :data-cy="dataTestLabel + '-container'" class="container-flex p-0 m-0">
         <div class="row">
             <label
                 :style="combinedStyle([titleFontSize, labelBgColor, textColor])"
                 :data-cy="dataTestLabel + '-title'"
-                class="rounded-2 fs-5 ms-3 col-sm-6 col-md-5"
+                class="rounded-2 col-sm-6 col-md-5 p-0"
                 :class="combinedClass([titleFontSize, labelBgColor, textColor])"
             >
-                {{'Maximum Dimensions'}}
+                {{replaceTitle == null? 'Maximum Dimensions' : replaceTitle}}
             </label>
         </div>
         <div class="row align-items-center">
             <label
-                :style="combinedStyle([titleFontSize, labelBgColor, textColor])"
+                :style="combinedStyle([valueFontSize, labelBgColor, textColor])"
                 v-if="localData.width.scaledValue != null"
                 for="design-requirements-width-input"
-                :class="combinedClass([titleFontSize, labelBgColor, textColor])"
+                :class="combinedClass([valueFontSize, labelBgColor, textColor])"
                 class="m-0 px-0 col-2 text-center"
             >
                 Width
             </label>
             <input
-                :style="combinedStyle([disabled? labelBgColor : valueBgColor, textColor, valueFontSize ])"
+                :style="combinedStyle([disabled? labelBgColor : valueBgColor, localData.width.scaledValue <= 0? errorTextColor : textColor, valueFontSize ])"
                 v-if="localData.width.scaledValue != null"
                 type="number"
                 class="m-0 px-0 col-1"
-                :class="combinedClass([disabled? labelBgColor : valueBgColor, textColor, valueFontSize, disabled? 'border-0' : ''])"
+                :class="combinedClass([disabled? labelBgColor : valueBgColor, localData.width.scaledValue <= 0? errorTextColor : textColor, valueFontSize, disabled? 'border-0' : ''])"
                 id="design-requirements-width-input'"
                 :value="localData.width.scaledValue"
                 @change="changeScaledValue($event.target.value, 'width')"
@@ -217,20 +221,20 @@ export default {
             </button>
 
             <label
-                :style="combinedStyle([titleFontSize, labelBgColor, textColor])"
+                :style="combinedStyle([valueFontSize, labelBgColor, textColor])"
                 v-if="localData.height.scaledValue != null"
                 for="design-requirements-width-input"
-                :class="combinedClass([titleFontSize, labelBgColor, textColor])"
+                :class="combinedClass([valueFontSize, labelBgColor, textColor])"
                 class="m-0 px-0 col-2 text-center"
             >
                 Height
             </label>
             <input
-                :style="combinedStyle([disabled? labelBgColor : valueBgColor, textColor, valueFontSize ])"
+                :style="combinedStyle([disabled? labelBgColor : valueBgColor, localData.height.scaledValue <= 0? errorTextColor : textColor, valueFontSize ])"
                 v-if="localData.height.scaledValue != null"
                 type="number"
                 class="m-0 px-0 col-1"
-                :class="combinedClass([disabled? labelBgColor : valueBgColor, textColor, valueFontSize, disabled? 'border-0' : ''])"
+                :class="combinedClass([disabled? labelBgColor : valueBgColor, localData.height.scaledValue <= 0? errorTextColor : textColor, valueFontSize, disabled? 'border-0' : ''])"
                 id="design-requirements-width-input'"
                 @change="changeScaledValue($event.target.value, 'height')"
                 :value="localData.height.scaledValue"
@@ -259,20 +263,20 @@ export default {
             </button>
 
             <label
-                :style="combinedStyle([titleFontSize, labelBgColor, textColor])"
+                :style="combinedStyle([valueFontSize, labelBgColor, textColor])"
                 v-if="localData.depth.scaledValue != null"
                 for="design-requirements-width-input"
-                :class="combinedClass([titleFontSize, labelBgColor, textColor])"
+                :class="combinedClass([valueFontSize, labelBgColor, textColor])"
                 class="m-0 px-0 col-2 text-center"
             >
                 Depth
             </label>
             <input
-                :style="combinedStyle([disabled? labelBgColor : valueBgColor, textColor, valueFontSize ])"
+                :style="combinedStyle([disabled? labelBgColor : valueBgColor, localData.depth.scaledValue <= 0? errorTextColor : textColor, valueFontSize ])"
                 v-if="localData.depth.scaledValue != null"
                 type="number"
                 class="m-0 px-0 col-1"
-                :class="combinedClass([disabled? labelBgColor : valueBgColor, textColor, valueFontSize, disabled? 'border-0' : ''])"
+                :class="combinedClass([disabled? labelBgColor : valueBgColor, localData.depth.scaledValue <= 0? errorTextColor : textColor, valueFontSize, disabled? 'border-0' : ''])"
                 id="design-requirements-width-input'"
                 @change="changeScaledValue($event.target.value, 'depth')"
                 :value="localData.depth.scaledValue"

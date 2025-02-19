@@ -277,7 +277,7 @@ export default {
                     <WaveformInputHarmonic class="col-12 mb-1 text-start"
                         :dataTestLabel="dataTestLabel + '-Harmonic-' + (index - 1)"
                         :index="index - 1"
-                        :unit="'A'"
+                        :unit="'V'"
                         :title="(index - 1) == 0? 'DC' : ordinalSuffixOf(index - 1)"
                         :forceUpdate="forceUpdateVoltage"
                         :block="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex].voltage.harmonics.frequencies.length < 3 || (index - 1) == 0"

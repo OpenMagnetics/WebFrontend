@@ -73,9 +73,9 @@ export default {
         onCatalogAdviser() {
             const catalogStore = useCatalogStore();
             catalogStore.resetCatalog();
-            this.$userStore.resetMagneticTool();
-            this.$userStore.selectApplication("catalog");
-            this.$userStore.selectTool("catalogAdviser");
+            this.$stateStore.resetMagneticTool();
+            this.$stateStore.selectWorkflow("catalog");
+            this.$stateStore.selectTool("catalogAdviser");
 
             if (this.$route.name != 'WECatalogTool')
                 setTimeout(() => {this.$router.push('/we_catalog_tool');}, 100);

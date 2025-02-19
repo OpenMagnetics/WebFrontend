@@ -87,7 +87,7 @@ export default {
                 v-if="showTitle"
                 :data-cy="dataTestLabel + '-title'"
                 :class="combinedClass([titleFontSize, textColor, labelBgColor])"
-                class="rounded-2 col-12"
+                class="rounded-2 col-12 p-0"
             >
                 Insulation
             </label>

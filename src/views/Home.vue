@@ -17,25 +17,25 @@ export default {
     },
     computed: {
         newMagneticToolDesign() {
-            this.$userStore.resetMagneticTool();
-            this.$userStore.selectApplication("power");
-            this.$userStore.selectTool("agnosticTool");
+            this.$stateStore.resetMagneticTool();
+            this.$stateStore.selectWorkflow("design");
+            this.$stateStore.selectTool("agnosticTool");
             if (this.$route.name != 'MagneticTool')
                 setTimeout(() => {this.$router.push('/magnetic_tool');}, 100);
             else
                 setTimeout(() => {this.$router.go();}, 100);
         },
         newMagneticToolDesignNewTab() {
-            this.$userStore.resetMagneticTool();
-            this.$userStore.selectApplication("power");
-            this.$userStore.selectTool("agnosticTool");
+            this.$stateStore.resetMagneticTool();
+            this.$stateStore.selectWorkflow("design");
+            this.$stateStore.selectTool("agnosticTool");
             const routeData = this.$router.resolve({name: 'MagneticTool'});
             window.open(routeData.href, '_blank');
         },
         onInsulationCoordinator() {
-            this.$userStore.resetMagneticTool();
-            this.$userStore.selectApplication("insulationCoordinator");
-            this.$userStore.selectTool("insulationAdviser");
+            this.$stateStore.resetMagneticTool();
+            this.$stateStore.selectWorkflow("insulationCoordinator");
+            this.$stateStore.selectTool("insulationAdviser");
 
             if (this.$route.name != 'InsulationAdviser')
                 setTimeout(() => {this.$router.push('/insulation_adviser');}, 100);
@@ -43,9 +43,9 @@ export default {
                 setTimeout(() => {this.$router.go();}, 100);
         },
         onInsulationCoordinatorNewTab() {
-            this.$userStore.resetMagneticTool();
-            this.$userStore.selectApplication("insulationCoordinator");
-            this.$userStore.selectTool("insulationAdviser");
+            this.$stateStore.resetMagneticTool();
+            this.$stateStore.selectWorkflow("insulationCoordinator");
+            this.$stateStore.selectTool("insulationAdviser");
             const routeData = this.$router.resolve({name: 'InsulationAdviser'});
             window.open(routeData.href, '_blank');
         },

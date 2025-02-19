@@ -111,7 +111,7 @@ export default {
 
 <template>
     <div :data-cy="dataTestLabel + '-container'" class="container-flex">
-        <div class="row m-0 ps-3">
+        <div class="row m-0">
             <label
                 :style="combinedStyle([titleFontSize, labelBgColor, textColor])"
                 v-if="showTitle"

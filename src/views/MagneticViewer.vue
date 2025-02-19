@@ -37,7 +37,7 @@ export default {
 
 <template>
     <GenericTool
-        v-if="$userStore.selectedTool == 'magneticViewer'"
+        v-if="$stateStore.selectedTool == 'magneticViewer'"
         :toolLabel="'magneticViewer'"
         :currentStoryline="magneticViewerStoryline"
         :dataTestLabel="'MagneticViewer'"

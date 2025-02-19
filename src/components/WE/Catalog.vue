@@ -86,10 +86,10 @@ export default {
     methods: {
         viewMagnetic(row) {
             this.masStore.mas.magnetic = row.magnetic;
-            this.$userStore.selectApplication("magneticViewer");
-            this.$userStore.selectTool("magneticViewer");
-            this.$userStore.setCurrentToolSubsection("magneticViewer");
-            this.$userStore.setCurrentToolSubsectionStatus("operatingPoints", true);
+            this.$stateStore.selectWorkflow("magneticViewer");
+            this.$stateStore.selectTool("magneticViewer");
+            this.$stateStore.setCurrentToolSubsection("magneticViewer");
+            this.$stateStore.setCurrentToolSubsectionStatus("operatingPoints", true);
 
             setTimeout(() => {this.$router.push('/we_magnetic_viewer');}, 50);
         }

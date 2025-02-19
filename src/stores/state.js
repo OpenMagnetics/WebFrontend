@@ -7,11 +7,133 @@ import * as Defaults from '/WebSharedComponents/assets/js/defaults.js'
 
 export const useStateStore = defineStore("state", () => {
     const OperatingPointsMode = {
-      Manual: 'Manual',
-      CircuitSimulatorImport: 'CircuitSimulatorImport',
-      AcSweep: 'AcSweep',
-      HarmonicsList: 'HarmonicsList',
+        Manual: 'Manual',
+        CircuitSimulatorImport: 'CircuitSimulatorImport',
+        AcSweep: 'AcSweep',
+        HarmonicsList: 'HarmonicsList',
     };
+
+    const SupportedApplications = {
+        Power: 'Power',
+        CommonModeChoke: 'CommonModeChoke',
+    };
+
+
+    const toolboxDefaultStates = {
+        design: {
+            magneticSpecificationsReport: {
+                subsection: "designRequirements",
+                canContinue: {
+                    'designRequirements': false,
+                    'operatingPoints': false,
+                    'magneticSpecificationsSummary': false,
+                },
+            },
+            magneticAdviser: {
+                subsection: "designRequirements",
+                canContinue: {
+                    'designRequirements': false,
+                    'operatingPoints': false,
+                    'magneticAdviser': false,
+                    'magneticBuilder': false,
+                    'magneticSummary': false,
+                },
+                selectedAdvise: 0,
+            },
+            magneticBuilder: {
+                subsection: "designRequirements",
+                canContinue: {
+                    'designRequirements': false,
+                    'operatingPoints': false,
+                    'magneticBuilder': false,
+                    'magneticSummary': false,
+                },
+            },
+            magneticCoreAdviser: {
+                subsection: "designRequirements",
+                canContinue: {
+                    'designRequirements': false,
+                    'operatingPoints': false,
+                    'magneticCoreAdviser': false,
+                    'magneticCoreSummary': false,
+                },
+                selectedAdvise: 0,
+            },
+            agnosticTool: {
+                subsection: "welcome",
+                canContinue: {
+                    'welcome': true,
+                    'designRequirements': false,
+                    'operatingPoints': false,
+                    'toolSelector': false,
+                },
+            },
+        },
+        filter: {
+            magneticAdviser: {
+                subsection: "designRequirements",
+                canContinue: {
+                    'designRequirements': false,
+                    'operatingPoints': false,
+                    'magneticAdviser': false,
+                    'magneticBuilder': false,
+                    'magneticSummary': false,
+                },
+                selectedAdvise: 0,
+            },
+            magneticBuilder: {
+                subsection: "designRequirements",
+                canContinue: {
+                    'designRequirements': false,
+                    'operatingPoints': false,
+                    'magneticBuilder': false,
+                    'magneticSummary': false,
+                },
+            },
+            agnosticTool: {
+                subsection: "welcome",
+                canContinue: {
+                    'welcome': true,
+                    'designRequirements': false,
+                    'operatingPoints': false,
+                    'toolSelector': false,
+                },
+            },
+        },
+        insulationCoordinator: {
+            insulationAdviser: {
+                subsection: "insulationRequirements",
+                canContinue: {
+                    'insulationRequirements': false,
+                },
+            },
+        },
+        catalog: {
+            catalogAdviser: {
+                subsection: "designRequirements",
+                canContinue: {
+                    'designRequirements': false,
+                    'operatingPoints': false,
+                    'catalogAdviser': false,
+                    'magneticViewer': false,
+                },
+            },
+        },
+        magneticViewer: {
+            magneticViewer: {
+                subsection: "magneticViewer",
+                canContinue: {
+                    'magneticViewer': false,
+                },
+            },
+        }
+    };
+
+
+    // Router
+    const loadingPath = ref(null);
+
+    // OperatingPoint
     const currentOperatingPoint = ref(0);
 
     const operatingPointsCircuitSimulator = ref({
@@ -24,36 +146,7 @@ export const useStateStore = defineStore("state", () => {
         modePerPoint: [null],
     });
 
-    const graphParameters = ref({
-        type: 'impedanceOverFrequency',
-        xAxisMode: 'log',
-        yAxisMode: 'log',
-        minimumFrequency: 1e3,
-        maximumFrequency: 4e6,
-        numberPoints: 50,
-    });
-
-
-    function reset() {
-        this.currentOperatingPoint = 0;
-        this.operatingPointsCircuitSimulator = {
-            columnNames: [],
-            allLastReadColumnNames: [],
-            confirmedColumns: [],
-        };
-        this.operatingPoints = {
-            modePerPoint: [null],
-        };
-
-        this.graphParameters = {
-            graph: 'impedanceOverFrequency',
-            mode: 'log',
-            minimumFrequency: 1e3,
-            maximumFrequency: 4e6,
-            numberPoints: 200,
-        };
-
-    }
+    
 
     function initializeOperatingPoints(temperature=100) {
 
@@ -106,9 +199,140 @@ export const useStateStore = defineStore("state", () => {
         masStore.mas.inputs.operatingPoints.splice(index, 1);
     }
 
+    // Magnetic Builder
+    const graphParameters = ref({
+        type: 'impedanceOverFrequency',
+        xAxisMode: 'log',
+        yAxisMode: 'log',
+        minimumFrequency: 1e3,
+        maximumFrequency: 4e6,
+        numberPoints: 50,
+    });
+
+
+    // MAS Loader
+    const anyDesignLoaded = ref(false);
+
+    function isAnyDesignLoaded() {
+        return this.anyDesignLoaded;
+    }
+
+    function designLoaded() {
+        this.anyDesignLoaded = true;
+    }
+
+    // Generic tool
+    const toolboxStates = ref(deepCopy(toolboxDefaultStates));
+
+    const selectedWorkflow = ref("design");
+    const selectedApplication = ref(SupportedApplications.Power);
+    const selectedTool = ref("agnosticTool");
+
+    function getCurrentToolBoxState() {
+        return this.toolboxStates[this.selectedWorkflow];
+    }
+
+    function getCurrentToolState() {
+        return this.toolboxStates[this.selectedWorkflow][this.selectedTool];
+    }
+
+    function setCurrentToolSubsection(subsection) {
+        return this.toolboxStates[this.selectedWorkflow][this.selectedTool].subsection = subsection;
+    }
+
+    function setCurrentToolSubsectionStatus(subsection, canContinue) {
+        return this.toolboxStates[this.selectedWorkflow][this.selectedTool].canContinue[subsection] = canContinue;
+    }
+
+    function selectWorkflow(workflow) {
+        this.selectedWorkflow = workflow;
+    }
+
+    function selectApplication(application) {
+        this.selectedApplication = application;
+    }
+
+    function getCurrentApplication() {
+        return this.selectedApplication;
+    }
+
+    function selectTool(tool) {
+        this.selectedTool = tool;
+    }
+
+    function resetMagneticTool() {
+        console.log("Resetting state");
+        this.anyDesignLoaded = false;
+        this.selectedTool = "agnosticTool";
+        this.selectedWorkflow = "design";
+        this.selectedApplication = SupportedApplications.Power;
+
+        this.toolboxStates = deepCopy(toolboxDefaultStates);
+    }
+
+    function reset() {
+        this.currentOperatingPoint = 0;
+        this.operatingPointsCircuitSimulator = {
+            columnNames: [],
+            allLastReadColumnNames: [],
+            confirmedColumns: [],
+        };
+        this.operatingPoints = {
+            modePerPoint: [null],
+        };
+
+        this.graphParameters = {
+            graph: 'impedanceOverFrequency',
+            mode: 'log',
+            minimumFrequency: 1e3,
+            maximumFrequency: 4e6,
+            numberPoints: 200,
+        };
+    }
+
+    // Visualizers
+    const wire2DVisualizerState = ref({
+        plotCurrentDensity: false,
+        plotCurrentViews: {},
+        showAnyway: false,
+    });
+
+    const magnetic2DVisualizerState = ref({
+        plotCurrentView: null,
+        plotMagneticField: false,
+        plotFringingField: true,
+    });
+
+
 
     return {
         reset,
+
+        loadingPath,
+
+        isAnyDesignLoaded,
+        designLoaded,
+        anyDesignLoaded,
+
+        toolboxStates,
+        selectedWorkflow,
+        selectedApplication,
+        selectedTool,
+        getCurrentToolBoxState,
+        getCurrentToolState,
+        setCurrentToolSubsection,
+        setCurrentToolSubsectionStatus,
+        selectWorkflow,
+        selectTool,
+        selectApplication,
+        selectedApplication,
+        getCurrentApplication,
+        SupportedApplications,
+        resetMagneticTool,
+
+        wire2DVisualizerState,
+        magnetic2DVisualizerState,
+
         OperatingPointsMode,
         currentOperatingPoint,
         operatingPointsCircuitSimulator,
@@ -116,6 +340,7 @@ export const useStateStore = defineStore("state", () => {
         initializeOperatingPoints,
         addNewOperatingPoint,
         removeOperatingPoint,
+
         graphParameters,
     }
 },

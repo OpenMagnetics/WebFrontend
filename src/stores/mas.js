@@ -25,7 +25,7 @@ export const useMasStore = defineStore("mas", () => {
     }
 
     function resetMas(type) {
-        if (type == "power") {
+        if (type == "design") {
             this.mas = MAS.Convert.toMas(JSON.stringify(Defaults.powerMas));
         }
         else if (type == "filter") {

@@ -8,7 +8,7 @@ export const useUserStore = defineStore("user", () => {
     const loadingPath = ref(null);
 
     const toolboxStates = ref({
-        power: {
+        design: {
             magneticSpecificationsReport: {
                 subsection: "designRequirements",
                 canContinue: {
@@ -117,7 +117,7 @@ export const useUserStore = defineStore("user", () => {
         }
     });
 
-    const selectedApplication = ref("power");
+    const selectedWorkflow = ref("design");
     const selectedTool = ref("agnosticTool");
 
     const anyDesignLoaded = ref(false);
@@ -136,23 +136,23 @@ export const useUserStore = defineStore("user", () => {
     });
 
     function getCurrentToolBoxState() {
-        return this.toolboxStates[this.selectedApplication];
+        return this.toolboxStates[this.selectedWorkflow];
     }
 
     function getCurrentToolState() {
-        return this.toolboxStates[this.selectedApplication][this.selectedTool];
+        return this.toolboxStates[this.selectedWorkflow][this.selectedTool];
     }
 
     function setCurrentToolSubsection(subsection) {
-        return this.toolboxStates[this.selectedApplication][this.selectedTool].subsection = subsection;
+        return this.toolboxStates[this.selectedWorkflow][this.selectedTool].subsection = subsection;
     }
 
     function setCurrentToolSubsectionStatus(subsection, canContinue) {
-        return this.toolboxStates[this.selectedApplication][this.selectedTool].canContinue[subsection] = canContinue;
+        return this.toolboxStates[this.selectedWorkflow][this.selectedTool].canContinue[subsection] = canContinue;
     }
 
-    function selectApplication(application) {
-        this.selectedApplication = application;
+    function selectWorkflow(application) {
+        this.selectedWorkflow = application;
     }
 
     function selectTool(tool) {
@@ -411,13 +411,13 @@ export const useUserStore = defineStore("user", () => {
         anyDesignLoaded,
 
         toolboxStates,
-        selectedApplication,
+        selectedWorkflow,
         selectedTool,
         getCurrentToolBoxState,
         getCurrentToolState,
         setCurrentToolSubsection,
         setCurrentToolSubsectionStatus,
-        selectApplication,
+        selectWorkflow,
         selectTool,
         wire2DVisualizerState,
         magnetic2DVisualizerState,

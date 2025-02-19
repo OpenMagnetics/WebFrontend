@@ -51,6 +51,8 @@ export default {
         };
 
         this.$stateStore.initializeOperatingPoints();
+
+
 // masStore.mas.inputs.operatingPoints[operatingPointIndex].conditions
         return {
             masStore,
@@ -65,11 +67,11 @@ export default {
             return this.$stateStore.operatingPoints.modePerPoint[this.currentOperatingPointIndex] !== this.$stateStore.OperatingPointsMode.Manual && this.$stateStore.operatingPoints.modePerPoint[this.currentOperatingPointIndex] !== this.$stateStore.OperatingPointsMode.CircuitSimulatorImport && this.$stateStore.operatingPoints.modePerPoint[this.currentOperatingPointIndex] !== this.$stateStore.OperatingPointsMode.HarmonicsList;
         },
         styleTooltip() {
-            var relative_placement;
-            relative_placement = 'right'
+            var relativePlacement;
+            relativePlacement = 'right'
             return {
                 theme: {
-                    placement: relative_placement,
+                    placement: relativePlacement,
                     "text-align": "start",
                 },
             }

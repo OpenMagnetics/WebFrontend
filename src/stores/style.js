@@ -17,6 +17,7 @@ export const useStyleStore = defineStore("style", () => {
     const engineLoader = ref({});
     const insulationAdviser = ref({});
     const catalogAdviser = ref({});
+    const wizard = ref({});
 
     function setTheme(theme) {
         this.theme = theme;
@@ -509,6 +510,50 @@ export const useStyleStore = defineStore("style", () => {
                 "color": theme["danger"],
             },
         };
+
+        this.wizard = {
+            main: {
+                "background": theme["dark"],
+                "color": theme["white"],
+                "border-color":  theme["primary"] + ' !important',
+            },
+            inputFontSize: {
+                "font-size": '1.25rem',
+            },
+            inputTitleFontSize: {
+                "font-size": '2rem',
+            },
+            inputLabelBgColor:{
+                "background": theme["dark"] + ' !important',
+                "background-image": "none !important",
+            },
+            inputValueBgColor:{
+                "background": theme["light"],
+            },
+            inputTextColor:{
+                "color": theme["white"],
+            },
+            inputErrorTextColor:{
+                "color": theme["danger"],
+            },
+            requirementButton: {
+                "background": theme["light"],
+                "color": theme["white"],
+                "border-color": theme["white"],
+            },
+            acceptButton: {
+                "background": theme["success"],
+                "color": theme["dark"],
+                "border-color": theme["success"],
+                "font-size": '2rem',
+            },
+            reviewButton: {
+                "background": theme["primary"],
+                "color": theme["dark"],
+                "border-color": theme["primary"],
+                "font-size": '2rem',
+            },
+        };
     }
 
 
@@ -527,6 +572,7 @@ export const useStyleStore = defineStore("style", () => {
         engineLoader,
         insulationAdviser,
         catalogAdviser,
+        wizard,
     }
 },
 {
