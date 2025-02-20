@@ -76,6 +76,7 @@ export default {
             this.$stateStore.resetMagneticTool();
             this.$stateStore.selectWorkflow("catalog");
             this.$stateStore.selectTool("catalogAdviser");
+            this.$stateStore.selectApplication(this.$stateStore.SupportedApplications.CommonModeChoke);
 
             if (this.$route.name != 'WECatalogTool')
                 setTimeout(() => {this.$router.push('/we_catalog_tool');}, 100);
@@ -83,6 +84,7 @@ export default {
                 setTimeout(() => {this.$router.push('/we_engine_loader');}, 100);
         },
         onCatalog() {
+            this.$stateStore.selectApplication(this.$stateStore.SupportedApplications.CommonModeChoke);
             if (this.$route.name != 'WECatalog')
                 setTimeout(() => {this.$router.push('/we_catalog');}, 100);
             else
