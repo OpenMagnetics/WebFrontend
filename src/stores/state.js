@@ -14,8 +14,8 @@ export const useStateStore = defineStore("state", () => {
     };
 
     const SupportedApplications = {
-        Power: 'Power',
-        CommonModeChoke: 'CommonModeChoke',
+        Power: 'power',
+        CommonModeChoke: 'commonModeChoke',
     };
 
 
@@ -206,7 +206,7 @@ export const useStateStore = defineStore("state", () => {
         yAxisMode: 'log',
         minimumFrequency: 1e3,
         maximumFrequency: 4e6,
-        numberPoints: 50,
+        numberPoints: 100,
     });
 
 
@@ -256,6 +256,10 @@ export const useStateStore = defineStore("state", () => {
         return this.selectedApplication;
     }
 
+    function hasCurrentApplicationMirroredWindings() {
+        return this.selectedApplication == SupportedApplications.CommonModeChoke;
+    }
+
     function selectTool(tool) {
         this.selectedTool = tool;
     }
@@ -283,10 +287,11 @@ export const useStateStore = defineStore("state", () => {
 
         this.graphParameters = {
             graph: 'impedanceOverFrequency',
-            mode: 'log',
+            xAxisMode: 'log',
+            yAxisMode: 'log',
             minimumFrequency: 1e3,
             maximumFrequency: 4e6,
-            numberPoints: 200,
+            numberPoints: 100,
         };
     }
 
@@ -327,6 +332,7 @@ export const useStateStore = defineStore("state", () => {
         selectApplication,
         selectedApplication,
         getCurrentApplication,
+        hasCurrentApplicationMirroredWindings,
         SupportedApplications,
         resetMagneticTool,
 

@@ -46,6 +46,7 @@ export default {
         const currentOperatingPointIndex = 0;
         const currentWindingIndex = 0;
         const errorMessages = "";
+        const blockingRebounds = false;
         const localData = {
             ambientTemperature: 25
         };
@@ -59,6 +60,7 @@ export default {
             currentOperatingPointIndex,
             currentWindingIndex,
             errorMessages,
+            blockingRebounds,
             localData,
         }
     },
@@ -154,8 +156,33 @@ export default {
         })
     },
     methods: {
-        updatedWaveform(signalDescriptor) {
+        updatedSignal(signalDescriptor) {
+            if (!this.blockingRebounds) {
+                this.blockingRebounds = true;
 
+                if (this.$stateStore.hasCurrentApplicationMirroredWindings()) {
+                    console.log(this.currentWindingIndex)
+                    console.log(this.currentOperatingPointIndex)    
+                    this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding.forEach((excitation, index) => {
+                        if (index != this.currentWindingIndex) {
+                            this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[index] = this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex];
+                        }
+                    })
+                }
+                else {
+
+                    this.$mkf.ready.then(_ => {
+                        this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding.forEach((excitation, index) => {
+                            if (index != this.currentWindingIndex && this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex].frequency != this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[index]) {
+                                this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[index] = JSON.parse(this.$mkf.scale_excitation_time_to_frequency(JSON.stringify(this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[index]), this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex].frequency));
+                            }
+                        })
+                    })
+                }
+                setTimeout(() => this.blockingRebounds = false, 10);
+            }
+        },
+        updatedWaveform(signalDescriptor) {
             this.convertFromWaveformToProcessed(this.currentOperatingPointIndex, this.currentWindingIndex, signalDescriptor);
         },
         convertFromProcessedToWaveform(operatingPointIndex, windingIndex, signalDescriptor) {
@@ -311,7 +338,12 @@ export default {
                         :textColor="$styleStore.operatingPoints.inputTextColor"
                     />
                     <div
-                        v-if="currentOperatingPointIndex == operatingPointIndex"
+                        v-if="$stateStore.hasCurrentApplicationMirroredWindings()"
+                        class="col-12 row m-0 p-0 py-1"
+                        >
+                    </div>
+                    <div
+                        v-if="!$stateStore.hasCurrentApplicationMirroredWindings() && currentOperatingPointIndex == operatingPointIndex"
                         class="col-12 row m-0 p-0 py-1 border-top"
                         v-for="winding, windingIndex in masStore.mas.magnetic.coil.functionalDescription"
                         >
@@ -417,6 +449,7 @@ export default {
                             :enableCircuitSimulatorImport="enableCircuitSimulatorImport"
                             :enableAcSweep="enableAcSweep"
                             :enableHarmonicsList="enableHarmonicsList"
+                            @updatedSignal="updatedSignal"
                             @updatedWaveform="updatedWaveform"
                             @importedWaveform="importedWaveform"
                             @selectedManualOrImported="selectedManualOrImported"

@@ -331,6 +331,9 @@ export default {
             this.process();
             this.$stateStore.resetMagneticTool();
             this.$stateStore.designLoaded();
+            console.log(this.$stateStore.SupportedApplications.CommonModeChoke)
+            console.log(this.$stateStore.SupportedApplications.CommonModeChoke)
+            console.log(this.$stateStore.SupportedApplications.CommonModeChoke)
             this.$stateStore.selectApplication(this.$stateStore.SupportedApplications.CommonModeChoke);
             this.$stateStore.selectWorkflow("design");
             this.$stateStore.selectTool("agnosticTool");

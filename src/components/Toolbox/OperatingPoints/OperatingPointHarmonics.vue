@@ -17,7 +17,7 @@ import { tooltipsMagneticSynthesisOperatingPoints } from '/WebSharedComponents/a
 <script>
 
 export default {
-    emits: ['clearMode'],
+    emits: ['clearMode', 'updatedSignal'],
     props: {
         dataTestLabel: {
             type: String,
@@ -151,6 +151,7 @@ export default {
                     this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex][signalDescriptor] = parsedResult;
                 }
 
+                this.$emit('updatedSignal');
                 this.masStore.updatedInputExcitationWaveformUpdatedFromProcessed(signalDescriptor);
             })
         },

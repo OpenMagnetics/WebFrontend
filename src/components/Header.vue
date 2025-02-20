@@ -74,6 +74,7 @@ export default {
             this.$stateStore.resetMagneticTool();
             this.$stateStore.selectWorkflow("design");
             this.$stateStore.selectTool("agnosticTool");
+            this.$stateStore.selectApplication(this.$stateStore.SupportedApplications.Power);
 
             if (this.$route.name != 'MagneticTool')
                 setTimeout(() => {this.$router.push('/magnetic_tool');}, 100);

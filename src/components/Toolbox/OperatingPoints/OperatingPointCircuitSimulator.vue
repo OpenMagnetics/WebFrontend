@@ -15,7 +15,7 @@ import { tooltipsMagneticSynthesisOperatingPoints } from '/WebSharedComponents/a
 <script>
 
 export default {
-    emits: ["importedWaveform", "clearMode"],
+    emits: ["updatedSignal", "importedWaveform", "clearMode"],
     props: {
         loadedFile: {
             type: String,
@@ -96,6 +96,7 @@ export default {
                     this.$stateStore.operatingPointsCircuitSimulator.confirmedColumns[this.currentOperatingPointIndex][this.currentWindingIndex] = true;
                 }
                 this.$emit("importedWaveform");
+                this.$emit("updatedSignal");
 
             });
         },

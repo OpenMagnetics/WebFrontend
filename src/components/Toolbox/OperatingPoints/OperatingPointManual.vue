@@ -17,7 +17,7 @@ import { tooltipsMagneticSynthesisOperatingPoints } from '/WebSharedComponents/a
 <script>
 
 export default {
-    emits: ["updatedWaveform", "clearMode"],
+    emits: ["updatedSignal", "updatedWaveform", "clearMode"],
     props: {
         dataTestLabel: {
             type: String,
@@ -66,10 +66,16 @@ export default {
 
     },
     mounted () {
+        this.masStore.$onAction((action) => {
+            if (action.name == "updatedInputExcitationProcessed") {
+                this.$emit('updatedSignal');
+            }
+        })
     },
     methods: {
         updatedWaveform(signalDescriptor) {
             this.$emit('updatedWaveform', signalDescriptor);
+            this.$emit('updatedSignal');
         },
         induce(sourceSignalDescriptor){
             if (sourceSignalDescriptor == 'current'){

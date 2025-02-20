@@ -13,7 +13,7 @@ import { tooltipsMagneticSynthesisOperatingPoints } from '/WebSharedComponents/a
 <script>
 
 export default {
-    emits: ["updatedWaveform", "importedWaveform", "selectedManualOrImported", "selectedAcSweepTypeSelected"],
+    emits: ["updatedSignal", "updatedWaveform", "importedWaveform", "selectedManualOrImported", "selectedAcSweepTypeSelected"],
     props: {
         dataTestLabel: {
             type: String,
@@ -155,6 +155,7 @@ export default {
                 :currentOperatingPointIndex="currentOperatingPointIndex"
                 :currentWindingIndex="currentWindingIndex"
                 @updatedWaveform="updatedWaveform"
+                @updatedSignal="$emit('updatedSignal')"
                 @clearMode="clearMode"
             />
             <OperatingPointCircuitSimulator
@@ -163,6 +164,7 @@ export default {
                 :currentOperatingPointIndex="currentOperatingPointIndex"
                 :currentWindingIndex="currentWindingIndex"
                 :allColumnNames="$stateStore.operatingPointsCircuitSimulator.allLastReadColumnNames"
+                @updatedSignal="$emit('updatedSignal')"
                 @clearMode="clearMode"
                 @importedWaveform="importedWaveform"
             />
@@ -170,6 +172,7 @@ export default {
                 v-if="$stateStore.operatingPoints.modePerPoint[currentOperatingPointIndex] === $stateStore.OperatingPointsMode.HarmonicsList"
                 :currentOperatingPointIndex="currentOperatingPointIndex"
                 :currentWindingIndex="currentWindingIndex"
+                @updatedSignal="$emit('updatedSignal')"
                 @clearMode="clearMode"
             />
             <div v-if="$stateStore.operatingPoints.modePerPoint[currentOperatingPointIndex] == null" class="col-12">

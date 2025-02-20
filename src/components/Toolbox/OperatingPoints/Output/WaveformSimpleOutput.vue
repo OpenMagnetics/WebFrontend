@@ -3,7 +3,7 @@
 import DimensionReadOnly from '/WebSharedComponents/DataInput/DimensionReadOnly.vue'
 import { removeTrailingZeroes } from '/WebSharedComponents/assets/js/utils.js'
 import { minimumMaximumScalePerParameter } from '/WebSharedComponents/assets/js/defaults.js'
-import { toTitleCase, combinedStyle } from '/WebSharedComponents/assets/js/utils.js'
+import { toTitleCase, combinedStyle, deepCopy } from '/WebSharedComponents/assets/js/utils.js'
 </script>
 
 <script>
@@ -71,18 +71,24 @@ export default {
                 if (this.modelValue[signalDescriptor].harmonics == null) {
                     this.modelValue[signalDescriptor].harmonics = JSON.parse(this.$mkf.calculate_harmonics(JSON.stringify(this.modelValue[signalDescriptor].waveform), this.modelValue.frequency));
                 }
-                var processed = JSON.parse(this.$mkf.calculate_processed(JSON.stringify(this.modelValue[signalDescriptor].harmonics), JSON.stringify(this.modelValue[signalDescriptor].waveform)));
-                this.modelValue[signalDescriptor].processed.acEffectiveFrequency = processed.acEffectiveFrequency;
-                this.modelValue[signalDescriptor].processed.effectiveFrequency = processed.effectiveFrequency;
-                this.modelValue[signalDescriptor].processed.peak = processed.peak;
-                this.modelValue[signalDescriptor].processed.rms = processed.rms;
-                this.modelValue[signalDescriptor].processed.thd = processed.thd;
-                if (this.modelValue[signalDescriptor].processed.label == 'Custom') {
-                    this.modelValue[signalDescriptor].processed.dutyCycle = processed.dutyCycle;
-                    this.modelValue[signalDescriptor].processed.peakToPeak = processed.peakToPeak;
-                    this.modelValue[signalDescriptor].processed.offset = processed.offset;
+                var result = this.$mkf.calculate_processed(JSON.stringify(this.modelValue[signalDescriptor].harmonics), JSON.stringify(this.modelValue[signalDescriptor].waveform));
+                if (result.startsWith("Exception")) {
+                    console.error(result);
                 }
-                this.localData.rmsPower = this.$mkf.calculate_rms_power(JSON.stringify(this.modelValue));
+                else {
+                    var processed = JSON.parse(result);
+                    this.modelValue[signalDescriptor].processed.acEffectiveFrequency = processed.acEffectiveFrequency;
+                    this.modelValue[signalDescriptor].processed.effectiveFrequency = processed.effectiveFrequency;
+                    this.modelValue[signalDescriptor].processed.peak = processed.peak;
+                    this.modelValue[signalDescriptor].processed.rms = processed.rms;
+                    this.modelValue[signalDescriptor].processed.thd = processed.thd;
+                    if (this.modelValue[signalDescriptor].processed.label == 'Custom') {
+                        this.modelValue[signalDescriptor].processed.dutyCycle = processed.dutyCycle;
+                        this.modelValue[signalDescriptor].processed.peakToPeak = processed.peakToPeak;
+                        this.modelValue[signalDescriptor].processed.offset = processed.offset;
+                    }
+                    this.localData.rmsPower = this.$mkf.calculate_rms_power(JSON.stringify(this.modelValue));
+                }
             });
         }
     }
