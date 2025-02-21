@@ -179,6 +179,8 @@ export default {
                         })
                     })
                 }
+                this.$stateStore.updatedSignals();
+                console.log("updatedSignals!!!")
                 setTimeout(() => this.blockingRebounds = false, 10);
             }
         },
@@ -333,7 +335,7 @@ export default {
                         v-model="masStore.mas.inputs.operatingPoints[operatingPointIndex].conditions"
                         :valueFontSize="$styleStore.operatingPoints.inputFontSize"
                         :labelFontSize="$styleStore.operatingPoints.inputFontSize"
-                        :labelBgColor="$styleStore.operatingPoints.inputValueBgColor"
+                        :labelBgColor="$styleStore.operatingPoints.operatingPointBgColor"
                         :valueBgColor="$styleStore.operatingPoints.inputValueBgColor"
                         :textColor="$styleStore.operatingPoints.inputTextColor"
                     />

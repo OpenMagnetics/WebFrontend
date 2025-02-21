@@ -2,10 +2,14 @@ import { defineStore } from 'pinia'
 import { ref, watch, computed  } from 'vue'
 
 export const useSettingsStore = defineStore("settings", () => {
-    const catalogAdviserUseAllParts = ref(false);
     const loadingGif = ref("/images/loading.gif");
     const waitingTimeAfterChange = 200;
     const waitingTimeForPlottingAfterChange = 500;
+
+    const catalogAdviserSettings = ref({
+        advancedMode: false,
+        useAllParts: false,
+    })
 
     const coreAdviserSettings = ref({
         weights: null,
@@ -36,12 +40,6 @@ export const useSettingsStore = defineStore("settings", () => {
         advancedMode: false,
     })
 
-    const dump = computed(() => {
-        return {
-            "catalogAdviserUseAllParts": catalogAdviserUseAllParts.value,
-        }
-    })
-
     function reset() {
         this.adviserSettings ={
             spiderBarChartNotBar: false,
@@ -69,7 +67,10 @@ export const useSettingsStore = defineStore("settings", () => {
         };
 
 
-        this.catalogAdviserUseAllParts = false;
+        this.catalogAdviserSettings = {
+            advancedMode: false,
+            useAllParts: null,
+        };
 
 
     }
@@ -81,9 +82,8 @@ export const useSettingsStore = defineStore("settings", () => {
         magneticAdviserSettings,
         operatingPointSettings,
 
-        catalogAdviserUseAllParts,
+        catalogAdviserSettings,
 
-        dump,
         reset,
 
         loadingGif,

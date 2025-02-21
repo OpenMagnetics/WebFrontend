@@ -83,7 +83,7 @@ export default {
         },
         onNewFilterMagneticDesign() {
             this.$stateStore.resetMagneticTool();
-            this.$stateStore.selectWorkflow("filter");
+            this.$stateStore.selectWorkflow("design");
             this.$stateStore.selectTool("agnosticTool");
 
             if (this.$route.name != 'MagneticTool')

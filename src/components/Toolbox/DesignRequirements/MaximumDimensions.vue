@@ -259,7 +259,7 @@ export default {
                 class="col-3 m-0 px-xl-3 px-md-0 btn mx-4"
                 @click="add('height')"
             >
-            {{'Add Heigth'}}
+            {{'Add Height'}}
             </button>
 
             <label

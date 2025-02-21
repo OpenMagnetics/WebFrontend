@@ -80,6 +80,11 @@ export default {
                 this.orderSample(action.args[0])
             }
         })
+        this.$stateStore.$onAction((action) => {
+            if (action.name == "updatedSignals") {
+                this.catalogStore.advises = [];
+            }
+        })
     },
     created() {
     },

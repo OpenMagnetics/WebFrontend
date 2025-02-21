@@ -70,13 +70,16 @@ export default {
         onLoadCommercialMaterial(data) {
             this.$userStore.setGlobalCoreMaterial(data)
         },
+        onHome() {
+            setTimeout(() => {this.$router.push('/we_home');}, 100);
+        },
         onCatalogAdviser() {
             const catalogStore = useCatalogStore();
             catalogStore.resetCatalog();
             this.$stateStore.resetMagneticTool();
             this.$stateStore.selectWorkflow("catalog");
             this.$stateStore.selectTool("catalogAdviser");
-            this.$stateStore.selectApplication(this.$stateStore.SupportedApplications.CommonModeChoke);
+            this.$stateStore.selectApplication(this.$stateStore.SupportedApplications.CommonModeChokeCatalog);
 
             if (this.$route.name != 'WECatalogTool')
                 setTimeout(() => {this.$router.push('/we_catalog_tool');}, 100);
@@ -84,7 +87,7 @@ export default {
                 setTimeout(() => {this.$router.push('/we_engine_loader');}, 100);
         },
         onCatalog() {
-            this.$stateStore.selectApplication(this.$stateStore.SupportedApplications.CommonModeChoke);
+            this.$stateStore.selectApplication(this.$stateStore.SupportedApplications.CommonModeChokeCatalog);
             if (this.$route.name != 'WECatalog')
                 setTimeout(() => {this.$router.push('/we_catalog');}, 100);
             else
@@ -129,14 +132,14 @@ export default {
     <nav class="navbar navbar-expand-lg mb-1 om-header" id="header_wrapper" :style="$styleStore.header.main">
         <div class="container-fluid">
             <div class="me-5">
-                <button data-cy="Header-logo-home-link" class="bg-transparent border-0" @click="onCatalogAdviser">
+                <button data-cy="Header-logo-home-link" class="bg-transparent border-0" @click="onHome">
                     <img src="/images/welogodark.svg" height="40" class="d-inline-block align-top me-3" alt="WE Logo">
                 </button>
                 <button
                     :style="$styleStore.header.title"
                     data-cy="Header-brand-home-link"
                     class="ms-5 border-0"
-                    @click="we_catalog_tool"
+                    @click="onCatalogAdviser"
                 >
                     {{'CMC Designer'}}
                 </button>

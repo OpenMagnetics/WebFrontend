@@ -5,7 +5,7 @@ import Dimension from '/WebSharedComponents/DataInput/Dimension.vue'
 import ElementFromListRadio from '/WebSharedComponents/DataInput/ElementFromListRadio.vue'
 import ElementFromList from '/WebSharedComponents/DataInput/ElementFromList.vue'
 import PairOfDimensions from '/WebSharedComponents/DataInput/PairOfDimensions.vue'
-import { defaultDesignRequirements, minimumMaximumScalePerParameter, filterMas } from '/WebSharedComponents/assets/js/defaults.js'
+import { defaultCmcWizardInputs, defaultDesignRequirements, minimumMaximumScalePerParameter, filterMas } from '/WebSharedComponents/assets/js/defaults.js'
 import MaximumDimensions from '/src/components/Toolbox/DesignRequirements/MaximumDimensions.vue'
 </script>
 
@@ -30,33 +30,7 @@ export default {
         const numberPhasesOptions = ['Two phases', 'Three phases'];
         const insulationTypes = ['No', 'Basic', 'Reinforced'];
         const errorMessage = "";
-        const localData = {
-            numberPhases: 'Two phases',
-            ambientTemperature: 25,
-            mainSignalFrequency: 50,
-            mainSignalRmsCurrent: 10,
-            numberExtraHarmonics: 1,
-            extraHarmonics: [
-                {
-                    frequency: 10000,
-                    amplitude: 3,
-                }
-            ],
-            minimumInductance: 100e-6,
-            numberImpedancePoints: 1,
-            impedancePoints: [
-                {
-                    frequency: 100000,
-                    impedance: 100,
-                }
-            ],
-            insulationType: 'No',
-            maximumDimensions: {
-                width: null,
-                height: null,
-                depth: null,
-            }
-        }
+        const localData = deepCopy(defaultCmcWizardInputs);
         return {
             masStore,
             numberPhasesOptions,
@@ -110,10 +84,22 @@ export default {
             if (newNumber > this.localData.extraHarmonics.length) {
                 const diff = newNumber - this.localData.extraHarmonics.length;
                 for (let i = 0; i < diff; i++) {
-                    this.localData.extraHarmonics.push({
-                        frequency: 0,
-                        amplitude: 0,
-                    })
+                    var newHarmonic;
+                    console.log(deepCopy(defaultCmcWizardInputs))
+                    if (this.localData.extraHarmonics.length == 0) {
+                        newHarmonic = {
+                            frequency: defaultCmcWizardInputs.extraHarmonics[0].frequency,
+                            amplitude: defaultCmcWizardInputs.extraHarmonics[0].amplitude,
+                        }
+                    }
+                    else {
+                        newHarmonic = {
+                            frequency: this.localData.extraHarmonics[this.localData.extraHarmonics.length - 1].frequency * 2,
+                            amplitude: this.localData.extraHarmonics[this.localData.extraHarmonics.length - 1].amplitude / 2,
+                        }
+                    }
+
+                    this.localData.extraHarmonics.push(newHarmonic);
                 }
             }
             else if (newNumber < this.localData.extraHarmonics.length) {
@@ -126,10 +112,20 @@ export default {
             if (newNumber > this.localData.impedancePoints.length) {
                 const diff = newNumber - this.localData.impedancePoints.length;
                 for (let i = 0; i < diff; i++) {
-                    this.localData.impedancePoints.push({
-                        frequency: 0,
-                        impedance: 0,
-                    })
+                    var newPoint;
+                    if (this.localData.impedancePoints.length == 0) {
+                        newPoint = {
+                            frequency: defaultCmcWizardInputs.impedancePoints[0].frequency,
+                            amplitude: defaultCmcWizardInputs.impedancePoints[0].impedance,
+                        }
+                    }
+                    else {
+                        newPoint = {
+                            frequency: this.localData.impedancePoints[this.localData.impedancePoints.length - 1].frequency * 2,
+                            impedance: this.localData.impedancePoints[this.localData.impedancePoints.length - 1].impedance * 2,
+                        }
+                    }
+                    this.localData.impedancePoints.push(newPoint);
                 }
             }
             else if (newNumber < this.localData.impedancePoints.length) {
@@ -156,19 +152,8 @@ export default {
 
             if (this.localData.insulationType != 'No') {
 
-                this.masStore.mas.inputs.designRequirements.insulation = {
-                    altitude: {
-                        "maximum": 2000,
-                    },
-                    cti: "Group II",
-                    pollutionDegree: "P2",
-                    overvoltageCategory: "OVC-III",
-                    insulationType: this.localData.insulationType,
-                    mainSupplyVoltage: {
-                        "maximum": 400
-                    },
-                    "standards": ["IEC 60664-1"]
-                }
+                this.masStore.mas.inputs.designRequirements.insulation = defaultDesignRequirements.insulation;
+                this.masStore.mas.inputs.designRequirements.insulation.insulationType = this.localData.insulationType;
             }
 
             this.localData.impedancePoints.forEach((point) => {
@@ -252,6 +237,7 @@ export default {
             this.masStore.mas.inputs.operatingPoints = [];
             if (this.localData.numberPhases == 'Two phases') {
                 this.masStore.mas.inputs.operatingPoints.push({
+                    name: "Main op. point",
                     conditions: {
                         ambientTemperature: this.localData.ambientTemperature,
                     },
@@ -260,6 +246,7 @@ export default {
             }
             else {
                 this.masStore.mas.inputs.operatingPoints.push({
+                    name: "Main op. point",
                     conditions: {
                         ambientTemperature: this.localData.ambientTemperature,
                     },
@@ -555,7 +542,7 @@ export default {
                 :style="$styleStore.designRequirements.inputBorderColor"
                 unit="m"
                 :dataTestLabel="dataTestLabel + '-MaximumDimensions'"
-                :defaultValue="defaultDesignRequirements.maximumDimensions"
+                :defaultValue="defaultCmcWizardInputs.maximumDimensions"
                 :min="minimumMaximumScalePerParameter['dimension']['min']"
                 :max="minimumMaximumScalePerParameter['dimension']['max']"
                 v-model="localData.maximumDimensions"

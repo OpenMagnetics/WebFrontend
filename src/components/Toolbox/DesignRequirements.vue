@@ -257,7 +257,7 @@ export default {
 
                 <ArrayDimensionWithTolerance class="border-bottom py-2"
                     :style = "$styleStore.designRequirements.inputBorderColor"
-                    v-if="masStore.mas.inputs.designRequirements.turnsRatios != null && masStore.mas.inputs.designRequirements.turnsRatios.length > 0"
+                    v-if="!$stateStore.hasCurrentApplicationMirroredWindings() && masStore.mas.inputs.designRequirements.turnsRatios != null && masStore.mas.inputs.designRequirements.turnsRatios.length > 0"
                     :name="'turnsRatios'"
                     :dataTestLabel="dataTestLabel + '-TurnsRatios'"
                     :defaultField="'nominal'"

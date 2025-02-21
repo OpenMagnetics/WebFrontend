@@ -107,7 +107,7 @@ export default {
                     <button
                         :data-cy="dataTestLabel + '-add-point-below-button'"
                         type="button"
-                        class="btn btn-default btn-circle fa-1x bg-dark mb-1 me-2 me-md-1 col-6"
+                        class="btn btn-default btn-circle mb-1 col-6"
                         @click="$emit('onAddPointBelow')"
                     >
                         <i
@@ -120,7 +120,7 @@ export default {
                         :data-cy="dataTestLabel + '-remove-point-button'"
                         v-if="!block"
                         type="button"
-                        class="btn btn-default fa-1x btn-circle bg-dark mb-1 ms-2 ms-md-0 col-6" 
+                        class="btn btn-default btn-circle mb-1 col-6 ps-1" 
                         @click="$emit('onRemovePoint')"
                     >
                         <i

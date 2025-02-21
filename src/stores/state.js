@@ -16,6 +16,7 @@ export const useStateStore = defineStore("state", () => {
     const SupportedApplications = {
         Power: 'power',
         CommonModeChoke: 'commonModeChoke',
+        CommonModeChokeCatalog: 'commonModeChokeCatalog',
     };
 
 
@@ -148,6 +149,8 @@ export const useStateStore = defineStore("state", () => {
 
     
 
+    function updatedSignals() {};
+
     function initializeOperatingPoints(temperature=100) {
 
         const masStore = useMasStore();
@@ -257,7 +260,7 @@ export const useStateStore = defineStore("state", () => {
     }
 
     function hasCurrentApplicationMirroredWindings() {
-        return this.selectedApplication == SupportedApplications.CommonModeChoke;
+        return this.selectedApplication == SupportedApplications.CommonModeChoke || this.selectedApplication == SupportedApplications.CommonModeChokeCatalog;
     }
 
     function selectTool(tool) {
@@ -334,6 +337,7 @@ export const useStateStore = defineStore("state", () => {
         getCurrentApplication,
         hasCurrentApplicationMirroredWindings,
         SupportedApplications,
+        updatedSignals,
         resetMagneticTool,
 
         wire2DVisualizerState,

@@ -15,7 +15,8 @@ export default {
     data() {
         const settingsChanged = false;
         const localData = {
-            catalogAdviserUseAllParts: this.$settingsStore.catalogAdviserUseAllParts? '1' : '0',
+            advancedMode: this.$settingsStore.catalogAdviserSettings.advancedMode? '1' : '0',
+            useAllParts: this.$settingsStore.catalogAdviserSettings.useAllParts? '1' : '0',
         }
 
         return {
@@ -25,7 +26,11 @@ export default {
     },
     methods: {
         onSettingChanged(event, setting) {
-            this.$settingsStore[setting] = event.target.value == '1';
+            this.$settingsStore.catalogAdviserSettings[setting] = event.target.value == '1';
+            if (setting == "advancedMode") {
+                this.$settingsStore.magneticBuilderSettings[setting] = event.target.value == '1';
+
+            }
             this.settingsChanged = true;
         },
         onSettingsUpdated(event) {
@@ -57,8 +62,16 @@ export default {
                         <h5 class="offset-0 col-6 text-end">Use all parts?</h5>
                         <div class="col-sm-6 col-md-6 col-lg-4">
                             <label v-tooltip="'Choose between spider or bar charts'" class="fs-6 p-0 ps-3 pe-3 text-end col-4 ">WE's</label>
-                            <input :data-cy="'Settings-Modal-bar-spider-button'" v-model="localData.catalogAdviserUseAllParts"  @change="onSettingChanged($event, 'catalogAdviserUseAllParts')" type="range" class="form-range col-1 pt-2" min="0" max="1" step="1" style="width: 30px">
+                            <input :data-cy="'Settings-Modal-bar-spider-button'" v-model="localData.useAllParts"  @change="onSettingChanged($event, 'useAllParts')" type="range" class="form-range col-1 pt-2" min="0" max="1" step="1" style="width: 30px">
                             <label v-tooltip="'Choose between spider or bar charts'" class="fs-6 p-0 ps-3 col-6 text-start">All</label>
+                        </div>
+                    </div>
+                    <div class="row" :style="$styleStore.contextMenu.setting">
+                        <h5 class="offset-0 col-6 text-end">Show advanced outputs</h5>
+                        <div class="col-sm-6 col-md-6 col-lg-4">
+                            <label v-tooltip="'Choose between basic or advanced output'" class="fs-6 p-0 ps-3 pe-3 text-end col-4 ">No</label>
+                            <input :data-cy="'Settings-Modal-bar-spider-button'" v-model="localData.advancedMode"  @change="onSettingChanged($event, 'advancedMode')" type="range" class="form-range col-1 pt-2" min="0" max="1" step="1" style="width: 30px">
+                            <label v-tooltip="'Choose between basic or advanced output'" class="fs-6 p-0 ps-3 col-6 text-start">Yes</label>
                         </div>
                     </div>
                     <button

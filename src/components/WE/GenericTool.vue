@@ -1,14 +1,11 @@
 <script setup>
 import Header from '/src/components/WE/Header.vue'
-import Footer from '/src/components/Footer.vue'
 import Storyline from '/src/components/Toolbox/Storyline.vue'
 import ContextMenu from '/src/components/Toolbox/ContextMenu.vue'
 import { toTitleCase } from '/WebSharedComponents/assets/js/utils.js'
 
 import ElementFromList from '/WebSharedComponents/DataInput/ElementFromList.vue'
 import DesignRequirements from '/src/components/Toolbox/DesignRequirements.vue'
-import FilterDesignRequirements from '/src/components/Toolbox/FilterDesignRequirements.vue'
-import CatalogDesignRequirements from '/src/components/Toolbox/CatalogDesignRequirements.vue'
 import OperatingPoints from '/src/components/Toolbox/OperatingPoints.vue'
 import MagneticCoreAdviser from '/src/components/Toolbox/MagneticCoreAdviser.vue'
 import CoreCustomizer from '/src/components/Toolbox/CoreCustomizer.vue'
@@ -32,7 +29,7 @@ import { useMasStore } from '/src/stores/mas'
 
 <script>
 export default {
-    emits: ["toolSelected", "editMagnetic", "viewMagnetic"],
+    emits: ["toolSelected"],
     props: {
         currentStoryline: {
             type: Object,
@@ -66,7 +63,7 @@ export default {
         };
 
         if (masStore.mas.inputs.operatingPoints[this.$stateStore.currentOperatingPoint] != null)
-            localData["operatingPoint"] = masStore.mas.inputs.operatingPoints[this.$stateStore.currentOperatingPoint].name
+            localData["operatingPoint"] = masStore.mas.inputs.operatingPoints[this.$stateStore.currentOperatingPoint].name  + ' - ' + masStore.mas.inputs.operatingPoints[this.$stateStore.currentOperatingPoint].conditions.ambientTemperature + '°C';
         return {
             masStore,
             localData,
@@ -112,7 +109,7 @@ export default {
         },
         operatingPointUpdated(name, ea) {
             this.masStore.mas.inputs.operatingPoints.forEach((elem, index) => {
-                if (name == elem.name) {
+                if (name.includes(elem.name)) {
                     this.$stateStore.currentOperatingPoint = index;
                 }
             })
@@ -130,7 +127,7 @@ export default {
         operatingPointNames() {
             const names = [];
             this.masStore.mas.inputs.operatingPoints.forEach((elem) => {
-                names.push(elem.name);
+                names.push(elem.name + ' - ' + elem.conditions.ambientTemperature + '°C');
             })
             return names;
         },
@@ -143,7 +140,8 @@ export default {
                 return false;
             }
             else{
-                return this.$stateStore.operatingPoints.modePerPoint[this.$stateStore.currentOperatingPoint] === this.$stateStore.OperatingPointsMode.AcSweep;
+                return true;
+                // return this.$stateStore.operatingPoints.modePerPoint[this.$stateStore.currentOperatingPoint] === this.$stateStore.OperatingPointsMode.AcSweep;
             }
         }
     },
@@ -175,13 +173,13 @@ export default {
                         </div>
                         <div class="border mt-2" style="height: fit-content" :style="$styleStore.contextMenu.main">
                             <ContextMenu
-                                :showMagneticBuilderSettingsOption="$stateStore.selectedWorkflow != 'catalog' && ($stateStore.getCurrentToolState().subsection == 'magneticBuilder' || $stateStore.getCurrentToolState().subsection == 'magneticViewer')"
+                                :showMagneticBuilderSettingsOption="$stateStore.getCurrentToolState().subsection == 'magneticBuilder'"
                                 :showAdviserSettingsOption="$stateStore.getCurrentToolState().subsection == 'magneticAdviser' || $stateStore.getCurrentToolState().subsection == 'magneticCoreAdviser'"
                                 :showCatalogAdviserSettingsOption="$stateStore.selectedWorkflow == 'catalog'"
                                 :showOperatingPointSettingsOption="$stateStore.getCurrentToolState().subsection == 'operatingPoints'"
                                 :showEditOption="$stateStore.getCurrentToolState().subsection == 'magneticViewer'"
                                 :showOrderOption="$stateStore.selectedWorkflow == 'catalog' && ($stateStore.getCurrentToolState().subsection == 'magneticViewer')"
-                                :showChangeToolOption="false"
+                                :showChangeToolOption="$stateStore.getCurrentToolState().subsection == 'magneticCoreAdviser' || $stateStore.getCurrentToolState().subsection == 'magneticAdviser' || $stateStore.getCurrentToolState().subsection == 'magneticBuilder' || $stateStore.getCurrentToolState().subsection == 'magneticSpecificationsSummary'"
                                 :showConfirmOption="$stateStore.selectedWorkflow == 'catalog' && $stateStore.getCurrentToolState().subsection == 'magneticBuilder'"
                                 @editMagnetic="$emit('editMagnetic')"
                                 @viewMagnetic="$emit('viewMagnetic')"
@@ -193,7 +191,7 @@ export default {
                         <div class="mb-2 row px-3" >
 
                             <ElementFromList
-                                v-if="operatingPointNames.length > 1"
+                                v-if="operatingPointNames.length > 1 && ($stateStore.getCurrentToolState().subsection == 'magneticBuilder' || $stateStore.getCurrentToolState().subsection == 'magneticViewer') "
                                 class="col-2 mb-1 text-start"
                                 :dataTestLabel="dataTestLabel + '-OperatingPointSelector'"
                                 :name="'operatingPoint'"
@@ -204,8 +202,8 @@ export default {
                                 :options="operatingPointNames"
                                 :labelWidthProportionClass="'col-0'"
                                 :selectStyleClass="'col-12'"
-                                :valueFontSize="$styleStore.magneticBuilder.inputTitleFontSize"
-                                :labelFontSize="$styleStore.magneticBuilder.inputTitleFontSize"
+                                :valueFontSize="$styleStore.magneticBuilder.inputFontSize"
+                                :labelFontSize="$styleStore.magneticBuilder.inputFontSize"
                                 :labelBgColor="$styleStore.magneticBuilder.inputLabelBgColor"
                                 :valueBgColor="$styleStore.magneticBuilder.inputValueBgColor"
                                 :textColor="$styleStore.magneticBuilder.inputTextColor"
@@ -216,12 +214,7 @@ export default {
                                 {{toTitleCase($stateStore.getCurrentToolState().subsection)}}
                             </h2>
 
-                            <div
-                                v-if="showControlPanel"
-                                data-cy="magnetic-synthesis-title-control-panel"
-                                :class="(showTitle || showReference)? 'col-sm-12 col-md-6 col-lg-6 col-xl-6' : 'col-sm-12 col-md-9'"
-                                class="ms-auto"
-                            >
+                            <div v-if="showControlPanel" data-cy="magnetic-synthesis-title-control-panel" :class="(showTitle || showReference)? 'col-sm-12 col-md-6 col-lg-6 col-xl-6' : 'col-sm-12 col-md-9'">
                                 <ControlPanel @toolSelected="toolSelected"/>
                             </div>
                         </div>
@@ -239,18 +232,8 @@ export default {
                                 @toolSelected="toolSelected"
                             />
                             <DesignRequirements
-                                v-if="$stateStore.getCurrentToolState().subsection == 'designRequirements' && $stateStore.selectedWorkflow == 'design'"
+                                v-if="$stateStore.getCurrentToolState().subsection == 'designRequirements'"
                                 :dataTestLabel="`${dataTestLabel}-DesignRequirements`"
-                                @canContinue="updateCanContinue('designRequirements', $event)"
-                            />
-                            <FilterDesignRequirements
-                                v-if="$stateStore.getCurrentToolState().subsection == 'designRequirements' && $stateStore.selectedWorkflow == 'filter'"
-                                :dataTestLabel="`${dataTestLabel}-FilterDesignRequirements`"
-                                @canContinue="updateCanContinue('designRequirements', $event)"
-                            />
-                            <CatalogDesignRequirements
-                                v-if="$stateStore.getCurrentToolState().subsection == 'designRequirements' && $stateStore.selectedWorkflow == 'catalog'"
-                                :dataTestLabel="`${dataTestLabel}-CatalogDesignRequirements`"
                                 @canContinue="updateCanContinue('designRequirements', $event)"
                             />
                             <OperatingPoints
@@ -303,10 +286,9 @@ export default {
                                 :dataTestLabel="`${dataTestLabel}-MagneticBuilder`"
                                 :useVisualizers="true"
                                 :enableCoil="true"
-                                :enableAdvisers="false"
-                                :enableCoilOptions="false"
                                 :readOnly="$stateStore.getCurrentToolState().subsection == 'magneticViewer'"
                                 :enableGraphs="enableGraphs"
+                                :enableAdvisers="$stateStore.operatingPoints.modePerPoint[$stateStore.currentOperatingPoint] !== $stateStore.OperatingPointsMode.AcSweep"
                                 :enableSimulation="$stateStore.operatingPoints.modePerPoint[$stateStore.currentOperatingPoint] !== $stateStore.OperatingPointsMode.AcSweep"
                                 @canContinue="updateCanContinue('magneticBuilder', $event)"
                             />
@@ -328,7 +310,6 @@ export default {
                 </div>
             </div>
         </main>
-        <Footer class="mt-auto"/>
     </div>
 </template>
 

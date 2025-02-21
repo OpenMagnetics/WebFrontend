@@ -62,7 +62,7 @@ router.beforeEach((to, from, next) => {
             router.push('/engine_loader')
         }
         else if (app.config.globalProperties.$mkf == null && (to.name == "EngineLoader" || to.name == "WEEngineLoader")) {
-            const loadAllParts = !weWorkflow || (weWorkflow && app.config.globalProperties.$settingsStore.catalogAdviserUseAllParts);
+            const loadAllParts = !weWorkflow || (weWorkflow && app.config.globalProperties.$settingsStore.catalogAdviserSettings.useAllParts);
             const loadExternalParts = weWorkflow;
             setTimeout(() => 
                 {

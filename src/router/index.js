@@ -83,6 +83,11 @@ const routes = [
     },
 
     {
+        path: '/we_home',
+        name: 'WEHome',
+        component: () => import('../views/WE/Home.vue')
+    },
+    {
         path: '/we_catalog_tool',
         name: 'WECatalogTool',
         component: () => import('../views/WE/CatalogTool.vue')

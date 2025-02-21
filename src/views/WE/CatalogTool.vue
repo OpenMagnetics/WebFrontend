@@ -94,6 +94,11 @@ export default {
             }
         })
 
+        this.$stateStore.$onAction((action) => {
+            if (action.name == "updatedSignals") {
+                this.catalogStore.advises = [];
+            }
+        })
         this.$settingsStore.loadingGif = "/images/loading_wuerth.gif";
 
     },
