@@ -62,7 +62,7 @@ export default {
 
             for (var key in this.storyline) {
                 var label = toTitleCase(this.storyline[key].title);
-                if (window.innerWidth < 1200) {
+                if (window.innerWidth < 1450) {
                     var slice = 8
                     if (window.innerWidth < 1100)
                         slice = 7

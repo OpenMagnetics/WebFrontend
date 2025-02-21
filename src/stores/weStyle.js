@@ -67,8 +67,8 @@ export const useWeStyleStore = defineStore("style", () => {
             },
             requiredButton: {
                 "background": theme["light"],
-                "color": theme["white"],
-                "border-color": theme["dark"],
+                "color": theme["dark"],
+                "border-color": theme["info"],
             },
             requirement: {
                 "background": theme["info"],
