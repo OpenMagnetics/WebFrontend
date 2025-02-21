@@ -7,7 +7,6 @@ import { toTitleCase } from '/WebSharedComponents/assets/js/utils.js'
 
 import ElementFromList from '/WebSharedComponents/DataInput/ElementFromList.vue'
 import DesignRequirements from '/src/components/Toolbox/DesignRequirements.vue'
-import CatalogDesignRequirements from '/src/components/Toolbox/CatalogDesignRequirements.vue'
 import OperatingPoints from '/src/components/Toolbox/OperatingPoints.vue'
 import MagneticCoreAdviser from '/src/components/Toolbox/MagneticCoreAdviser.vue'
 import CoreCustomizer from '/src/components/Toolbox/CoreCustomizer.vue'
@@ -236,11 +235,6 @@ export default {
                             <DesignRequirements
                                 v-if="$stateStore.getCurrentToolState().subsection == 'designRequirements' && $stateStore.selectedWorkflow == 'design'"
                                 :dataTestLabel="`${dataTestLabel}-DesignRequirements`"
-                                @canContinue="updateCanContinue('designRequirements', $event)"
-                            />
-                            <CatalogDesignRequirements
-                                v-if="$stateStore.getCurrentToolState().subsection == 'designRequirements' && $stateStore.selectedWorkflow == 'catalog'"
-                                :dataTestLabel="`${dataTestLabel}-CatalogDesignRequirements`"
                                 @canContinue="updateCanContinue('designRequirements', $event)"
                             />
                             <OperatingPoints
