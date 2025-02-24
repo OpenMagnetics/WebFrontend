@@ -458,6 +458,16 @@ export const useStyleStore = defineStore("style", () => {
                 "color": theme["primary"],
                 "border-color": theme["primary"] + ' !important' ,
             },
+            wizardsSectionDropdown: {
+                "background": theme["danger"],
+                "color": theme["dark"],
+                "border-color": theme["dark"] + ' !important' ,
+            },
+            wizardButton: {
+                "background": theme["danger"],
+                "color": theme["dark"],
+                "border-color": theme["dark"] + ' !important' ,
+            },
             donateButton: {
                 "background": theme["info"],
                 "color": theme["dark"],

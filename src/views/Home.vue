@@ -88,9 +88,9 @@ export default {
                         <div class="row">
                             <div class="card p-0 col-lg-3 col-sm-12 mt-3">
                                 <div class="card-body">
-                                    <i class="text-white fa-solid fa-wave-square fa-2x mb-4"></i>
-                                    <h5 class="card-title text-white"><button @click="newMagneticToolDesign" @click.middle="newMagneticToolDesignNewTab" class="text-primary bg-light btn fs-5">Import waveforms</button></h5>
-                                    <p class="card-text text-white">Introduce any waveform (even by hand!) or upload the file exported you exported from your favorite Circuit Simulator.</p>
+                                    <i class="text-white fa-solid fa-hat-wizard fa-2x mb-4"></i>
+                                    <h5 class="card-title text-white"><button @click="newMagneticToolDesign" @click.middle="newMagneticToolDesignNewTab" class="text-primary bg-light btn fs-5">Design CMCs!</button></h5>
+                                    <p class="card-text text-white">Design a Common Mode Choke using our latest wizard. Answer a few questions and get a design!</p>
                                 </div>
 
                                 
@@ -139,7 +139,6 @@ export default {
                         <h3 class="text-white my-2">What you'll be able to do soon</h3>
                         <ul class="text-white text-start fs-5">
                             <li class="">Create custom core shapes, core materials, and wires for your magnetics.</li>
-                            <li class="">Design not only power cores, but common mode chokes.</li>
                         </ul>
                     </div>
                 </div>

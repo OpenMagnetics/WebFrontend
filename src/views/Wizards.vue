@@ -26,6 +26,7 @@ export default {
         <Header />
         <main role="main" class="main" :style="$styleStore.main">
             <CmcWizard
+                v-if="$stateStore.getCurrentWizard() == $stateStore.Wizards.CommonModeChoke"
                 :dataTestLabel="'CmcWizard'"
             />
         </main>

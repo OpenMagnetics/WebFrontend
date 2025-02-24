@@ -17,6 +17,10 @@ export const useStateStore = defineStore("state", () => {
         Power: 'power',
         CommonModeChoke: 'commonModeChoke',
         CommonModeChokeCatalog: 'commonModeChokeCatalog',
+    }
+
+    const Wizards = {
+        CommonModeChoke: 'commonModeChoke',
     };
 
 
@@ -172,6 +176,7 @@ export const useStateStore = defineStore("state", () => {
                 masStore.mas.inputs.operatingPoints[0].excitationsPerWinding.push(deepCopy(Defaults.defaultOperatingPointExcitation));
                 this.operatingPointsCircuitSimulator.confirmedColumns[0].push(false);
             }
+            console.warn(masStore.mas.inputs.operatingPoints[0].excitationsPerWinding)
         }
     }
 
@@ -230,6 +235,7 @@ export const useStateStore = defineStore("state", () => {
     const selectedWorkflow = ref("design");
     const selectedApplication = ref(SupportedApplications.Power);
     const selectedTool = ref("agnosticTool");
+    const selectedWizard = ref(Wizards.CommonModeChoke);
 
     function getCurrentToolBoxState() {
         return this.toolboxStates[this.selectedWorkflow];
@@ -255,8 +261,17 @@ export const useStateStore = defineStore("state", () => {
         this.selectedApplication = application;
     }
 
+    function selectWizard(wizard) {
+        this.selectedWizard = wizard;
+    }
+
     function getCurrentApplication() {
         return this.selectedApplication;
+    }
+
+
+    function getCurrentWizard() {
+        return this.selectedWizard;
     }
 
     function hasCurrentApplicationMirroredWindings() {
@@ -339,6 +354,11 @@ export const useStateStore = defineStore("state", () => {
         SupportedApplications,
         updatedSignals,
         resetMagneticTool,
+
+        Wizards,
+        selectWizard,
+        getCurrentWizard,
+        selectedWizard,
 
         wire2DVisualizerState,
         magnetic2DVisualizerState,

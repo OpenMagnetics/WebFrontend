@@ -39,6 +39,15 @@ export default {
         }
     },
     computed: {
+        getNumberPossibleWindings() {
+            if (this.$stateStore.getCurrentApplication() == this.$stateStore.SupportedApplications.Power) {
+                return Array.from({length: 12}, (_, i) => i + 1);
+            }
+            else if (this.$stateStore.getCurrentApplication() == this.$stateStore.SupportedApplications.CommonModeChoke) {
+                return [2, 3];
+            }
+            return Array.from({length: 12}, (_, i) => i + 1);
+        },
         shortenedLabels() {
             const shortenedLabels = {"numberWindings": "No. Windings"};
             designRequirementsOrdered[this.$stateStore.getCurrentApplication()].forEach((value) => {
@@ -209,7 +218,7 @@ export default {
                     :style = "$styleStore.designRequirements.inputBorderColor"
                     :name="'numberWindings'"
                     :dataTestLabel="dataTestLabel + '-NumberWindings'"
-                    :options="Array.from({length: 12}, (_, i) => i + 1)"
+                    :options="getNumberPossibleWindings"
                     :titleSameRow="true"
                     :valueFontSize="$styleStore.designRequirements.inputFontSize"
                     :labelFontSize="$styleStore.designRequirements.inputTitleFontSize"

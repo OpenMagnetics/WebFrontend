@@ -131,16 +131,17 @@ export default {
             this.$stateStore.designLoaded();
             const masStore = useMasStore();
 
-            if (this.$stateStore.selectedWorkflow == 'design') {
+            if (this.$stateStore.getCurrentApplication() == this.$stateStore.SupportedApplications.Power) {
                 this.$stateStore.reset();
-                masStore.resetMas("design");
+                masStore.resetMas("power");
             }
-            else if (this.$stateStore.selectedWorkflow == 'filter') {
+            if (this.$stateStore.getCurrentApplication() == this.$stateStore.SupportedApplications.CommonModeChoke) {
                 this.$stateStore.reset();
                 masStore.resetMas("filter");
             }
 
             const adviseCacheStore = useAdviseCacheStore();
+            adviseCacheStore.cleanCoreAdvises();
             adviseCacheStore.cleanMasAdvises();
         }
 

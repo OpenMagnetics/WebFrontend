@@ -81,13 +81,21 @@ export default {
             else
                 setTimeout(() => {this.$router.push('/engine_loader');}, 100);
         },
-        onNewFilterMagneticDesign() {
+        onNewCommonModeChokeDesign() {
             this.$stateStore.resetMagneticTool();
             this.$stateStore.selectWorkflow("design");
+            this.$stateStore.selectApplication(this.$stateStore.SupportedApplications.CommonModeChoke);
             this.$stateStore.selectTool("agnosticTool");
 
             if (this.$route.name != 'MagneticTool')
                 setTimeout(() => {this.$router.push('/magnetic_tool');}, 100);
+            else
+                setTimeout(() => {this.$router.push('/engine_loader');}, 100);
+        },
+        onCmcWizard() {
+            this.$stateStore.selectWizard(this.$stateStore.Wizards.CommonModeChoke);
+            if (this.$route.name != 'CmcWizard')
+                setTimeout(() => {this.$router.push('/cmc_wizard');}, 100);
             else
                 setTimeout(() => {this.$router.push('/engine_loader');}, 100);
         },
@@ -202,9 +210,9 @@ export default {
                                     data-cy="Header-new-magnetic-link"
                                     :class="headerTogglerIsVisible? 'w-100' : 'mx-1' "
                                     class="dropdown-item btn btn-block   nav-link px-2"
-                                    @click="onNewFilterMagneticDesign"
+                                    @click="onNewCommonModeChokeDesign"
                                 >
-                                    <i class="me-2 fa-solid fa-filter"></i>{{'New Filter'}}
+                                    <i class="me-2 fa-solid fa-filter"></i>{{'New CMC'}}
                                 </button>
                             </li>
                             <li>
@@ -243,6 +251,32 @@ export default {
                                 @click="onInsulationCoordinator"
                             >
                                 <i class="me-2 fa-solid fa-bolt-lightning"></i>{{'Insulation Coordinator'}}
+                            </button>
+                        </li>
+                      </ul>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a
+                            :style="$styleStore.header.wizardsSectionDropdown"
+                            :class="headerTogglerIsVisible? '' : 'mx-1'"
+                            class="nav-link dropdown-toggle border rounded"
+                            href="#"
+                            role="button"
+                            data-bs-toggle="dropdown"
+                            aria-expanded="false"
+                        >
+                            <i class="me-2 fa-solid fa-hat-wizard"></i>{{'Wizards'}}
+                        </a>
+                      <ul class="dropdown-menu px-1" :style="$styleStore.header.wizardsSectionDropdown">
+                        <li>
+                            <button
+                                :style="$styleStore.header.wizardButton"
+                                data-cy="Header-insulation-coordinator-link"
+                                :class="headerTogglerIsVisible? 'w-100' : 'mx-1' "
+                                class="dropdown-item btn btn-block nav-link px-2"
+                                @click="onCmcWizard"
+                            >
+                                <i class="me-2 fa-solid fa-bolt-lightning"></i>{{'CMC Wizard'}}
                             </button>
                         </li>
                       </ul>
