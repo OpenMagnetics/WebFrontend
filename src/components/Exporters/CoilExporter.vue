@@ -1,7 +1,7 @@
 <script setup >
-import { useMasStore } from '/src/stores/mas'
+import { useMasStore } from '../../stores/mas'
 import { Modal } from "bootstrap";
-import CoilWindingExporter from '/src/components/Exporters/CoilWindingExporter.vue'
+import CoilWindingExporter from '.CoilWindingExporter.vue'
 import { deepCopy, download } from '/WebSharedComponents/assets/js/utils.js'
 </script>
 

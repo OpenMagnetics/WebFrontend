@@ -1,9 +1,9 @@
 <script setup >
-import { useMasStore } from '/src/stores/mas'
+import { useMasStore } from '../../stores/mas'
 import { Modal } from "bootstrap";
-import SimbaExporter from '/src/components/Exporters/SimbaExporter.vue'
-import LtSpiceExporter from '/src/components/Exporters/LtSpiceExporter.vue'
-import NgSpiceExporter from '/src/components/Exporters/NgSpiceExporter.vue'
+import SimbaExporter from './SimbaExporter.vue'
+import LtSpiceExporter from './LtSpiceExporter.vue'
+import NgSpiceExporter from './NgSpiceExporter.vue'
 import { deepCopy, download } from '/WebSharedComponents/assets/js/utils.js'
 </script>
 

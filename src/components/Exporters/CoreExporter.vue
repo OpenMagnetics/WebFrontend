@@ -1,9 +1,9 @@
 <script setup >
-import { useMasStore } from '/src/stores/mas'
+import { useMasStore } from '../../stores/mas'
 import { Modal } from "bootstrap";
-import CoreSTPExporter from '/src/components/Exporters/CoreSTPExporter.vue'
-import CoreOBJExporter from '/src/components/Exporters/CoreOBJExporter.vue'
-import CoreTechnicalDrawingExporter from '/src/components/Exporters/CoreTechnicalDrawingExporter.vue'
+import CoreSTPExporter from './CoreSTPExporter.vue'
+import CoreOBJExporter from './CoreOBJExporter.vue'
+import CoreTechnicalDrawingExporter from './CoreTechnicalDrawingExporter.vue'
 import { deepCopy, download } from '/WebSharedComponents/assets/js/utils.js'
 </script>
 

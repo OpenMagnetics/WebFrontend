@@ -1,7 +1,7 @@
 <script setup >
-import { useMasStore } from '/src/stores/mas'
+import { useMasStore } from '../../stores/mas'
 import { Modal } from "bootstrap";
-import MASFileExporter from '/src/components/Exporters/MASFileExporter.vue'
+import MASFileExporter from './MASFileExporter.vue'
 import { deepCopy, download } from '/WebSharedComponents/assets/js/utils.js'
 </script>
 
