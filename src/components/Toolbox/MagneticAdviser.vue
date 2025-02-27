@@ -33,6 +33,10 @@ export default {
             type: String,
             default: '',
         },
+        loadingGif: {
+            type: String,
+            default: "/images/loading.gif",
+        },
     },
     data() {
         const adviseCacheStore = useAdviseCacheStore();
@@ -244,7 +248,7 @@ export default {
             </div>
             <div class="col-sm-12 col-md-10 text-start pe-0 container-fluid"  style="height: 70vh">
                 <div class="row" v-if="loading" >
-                    <img data-cy="magneticAdviser-loading" class="mx-auto d-block col-12" alt="loading" style="width: 50%; height: auto;" src="/images/loading.gif">
+                    <img data-cy="magneticAdviser-loading" class="mx-auto d-block col-12" alt="loading" style="width: 50%; height: auto;" :src="loadingGif">
 
                 </div>
                 <div class="row advises" v-else>
