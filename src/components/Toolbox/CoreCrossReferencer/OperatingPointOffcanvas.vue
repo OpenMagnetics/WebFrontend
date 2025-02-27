@@ -1,6 +1,6 @@
 <script setup>
-import { useMasStore } from '/src/stores/mas'
-import OperatingPoint from '/src/components/Toolbox/OperatingPoints/OperatingPoint.vue'
+import { useMasStore } from '../../../stores/mas'
+import OperatingPoint from '../OperatingPoints/OperatingPoint.vue'
 
 </script>
 <script>

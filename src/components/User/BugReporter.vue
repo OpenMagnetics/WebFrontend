@@ -1,5 +1,5 @@
 <script setup>
-import { useMasStore } from '/src/stores/mas'
+import { useMasStore } from '../../stores/mas'
 </script>
 
 <script>

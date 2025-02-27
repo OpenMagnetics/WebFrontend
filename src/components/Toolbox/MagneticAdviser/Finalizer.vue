@@ -1,5 +1,5 @@
 <script setup>
-import { useMasStore } from '/src/stores/mas'
+import { useMasStore } from '../../../stores/mas'
 import { toTitleCase, removeTrailingZeroes, formatUnit, formatDimension, formatTemperature, formatInductance,
          formatPower, formatResistance, deepCopy, downloadBase64asPDF, clean, download } from '/WebSharedComponents/assets/js/utils.js'
 import Magnetic2DVisualizer from '/WebSharedComponents/Common/Magnetic2DVisualizer.vue'

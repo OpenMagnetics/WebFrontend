@@ -1,5 +1,5 @@
 <script setup>
-import { useMasStore } from '/src/stores/mas'
+import { useMasStore } from '../../../../stores/mas'
 import Dimension from '/WebSharedComponents/DataInput/Dimension.vue'
 import ElementFromList from '/WebSharedComponents/DataInput/ElementFromList.vue'
 import { minimumMaximumScalePerParameter } from '/WebSharedComponents/assets/js/defaults.js'

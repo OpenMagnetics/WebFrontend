@@ -1,10 +1,10 @@
 <script setup>
-import Header from '/src/components/Header.vue'
-import Footer from '/src/components/Footer.vue'
+import Header from '../components/Header.vue'
+import Footer from '../components/Footer.vue'
 import { toTitleCase } from '/WebSharedComponents/assets/js/utils.js'
-import { useCatalogStore } from '/src/stores/catalog'
+import { useCatalogStore } from '../stores/catalog'
 
-import Catalog from '/src/components/Toolbox/Catalog.vue'
+import Catalog from '../components/Toolbox/Catalog.vue'
 
 </script>
 

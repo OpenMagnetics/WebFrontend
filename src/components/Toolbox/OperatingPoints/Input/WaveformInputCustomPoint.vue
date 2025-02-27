@@ -1,6 +1,6 @@
 <script setup>
 import { removeTrailingZeroes, getMultiplier, combinedStyle, combinedClass } from '/WebSharedComponents/assets/js/utils.js'
-import { useMasStore } from '/src/stores/mas'
+import { useMasStore } from '../../../../stores/mas'
 
 import { defaultTimeExponent } from '/WebSharedComponents/assets/js/defaults.js'
 

@@ -3,7 +3,7 @@ import { combinedStyle, combinedClass } from '/WebSharedComponents/assets/js/uti
 import { defineAsyncComponent } from "vue";
 import { useElementVisibility  } from '@vueuse/core'
 import { ref } from 'vue'
-import '/src/assets/css/custom.css'
+import '../assets/css/custom.css'
 </script>
 
 <script>

@@ -1,19 +1,19 @@
 <script setup>
 import { ref } from 'vue'
-import { useMasStore } from '/src/stores/mas'
+import { useMasStore } from '../../stores/mas'
 import { toTitleCase, toPascalCase } from '/WebSharedComponents/assets/js/utils.js'
 import { tooltipsMagneticSynthesisDesignRequirements } from '/WebSharedComponents/assets/js/texts.js'
 import { defaultDesignRequirements, compulsoryRequirements, designRequirementsOrdered, isolationSideOrdered, minimumMaximumScalePerParameter} from '/WebSharedComponents/assets/js/defaults.js'
 import { Market, ConnectionType, Topology } from '/WebSharedComponents/assets/ts/MAS.ts'
-import Insulation from '/src/components/Toolbox/DesignRequirements/Insulation.vue'
+import Insulation from './DesignRequirements/Insulation.vue'
 import Dimension from '/WebSharedComponents/DataInput/Dimension.vue'
-import MaximumDimensions from '/src/components/Toolbox/DesignRequirements/MaximumDimensions.vue'
-import Impedances from '/src/components/Toolbox/DesignRequirements/Impedances.vue'
+import MaximumDimensions from './DesignRequirements/MaximumDimensions.vue'
+import Impedances from './DesignRequirements/Impedances.vue'
 import DimensionWithTolerance from '/WebSharedComponents/DataInput/DimensionWithTolerance.vue'
-import ArrayDimensionWithTolerance from '/src/components/Toolbox/DesignRequirements/ArrayDimensionWithTolerance.vue'
+import ArrayDimensionWithTolerance from './DesignRequirements/ArrayDimensionWithTolerance.vue'
 import ElementFromList from '/WebSharedComponents/DataInput/ElementFromList.vue'
-import ArrayElementFromList from '/src/components/Toolbox/DesignRequirements/ArrayElementFromList.vue'
-import Name from '/src/components/Toolbox/DesignRequirements/Name.vue'
+import ArrayElementFromList from './DesignRequirements/ArrayElementFromList.vue'
+import Name from './DesignRequirements/Name.vue'
 </script>
 <script>
 export default {

@@ -1,11 +1,11 @@
 <script setup>
-import Header from '/src/components/Header.vue'
-import Footer from '/src/components/Footer.vue'
-// import CreateOrContinueModal from '/src/components/Toolbox/CreateOrContinueModal.vue'
-import { useMasStore } from '/src/stores/mas'
-// import Module from '/src/assets/js/spice.js'
+import Header from '../components/Header.vue'
+import Footer from '../components/Footer.vue'
+// import CreateOrContinueModal from '../components/Toolbox/CreateOrContinueModal.vue'
+import { useMasStore } from '../stores/mas'
+// import Module from '../assets/js/spice.js'
 
-import { isComplex, ResultArrayType, SimArray } from "/src/sim/simulationArray";
+import { isComplex, ResultArrayType, SimArray } from "../sim/simulationArray";
 
 </script>
 <script>

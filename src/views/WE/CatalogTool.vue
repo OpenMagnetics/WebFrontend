@@ -1,12 +1,12 @@
 <script setup>
-import { useMasStore } from '/src/stores/mas'
-import { useCatalogStore } from '/src/stores/catalog'
-import { useAdviseCacheStore } from '/src/stores/adviseCache'
-import Header from '/src/components/WE/Header.vue'
+import { useMasStore } from '../../stores/mas'
+import { useCatalogStore } from '../../stores/catalog'
+import { useAdviseCacheStore } from '../../stores/adviseCache'
+import Header from '../../components/WE/Header.vue'
 import { toTitleCase } from '/WebSharedComponents/assets/js/utils.js'
 
-import GenericTool from '/src/components/WE/GenericTool.vue'
-import Formular from '/src/components/WE/Formular.vue'
+import GenericTool from '../../components/WE/GenericTool.vue'
+import Formular from '../../components/WE/Formular.vue'
 import { useFavicon } from '@vueuse/core'
 </script>
 

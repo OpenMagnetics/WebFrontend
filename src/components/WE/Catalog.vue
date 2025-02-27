@@ -1,7 +1,7 @@
 <script setup>
 import DataTable from 'datatables.net-vue3';
 import DataTablesCore from 'datatables.net';
-import { useMasStore } from '/src/stores/mas'
+import { useMasStore } from '../../stores/mas'
 import { defaultOperatingConditions } from '/WebSharedComponents/assets/js/defaults.js'
 import { formatInductance, formatResistance, formatDimension, removeTrailingZeroes } from '/WebSharedComponents/assets/js/utils.js'
 

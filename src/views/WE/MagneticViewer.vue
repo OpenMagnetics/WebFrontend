@@ -1,9 +1,9 @@
 <script setup>
-import { useMasStore } from '/src/stores/mas'
-import { useAdviseCacheStore } from '/src/stores/adviseCache'
+import { useMasStore } from '../../stores/mas'
+import { useAdviseCacheStore } from '../../stores/adviseCache'
 import { toTitleCase } from '/WebSharedComponents/assets/js/utils.js'
 
-import GenericTool from '/src/components/WE/GenericTool.vue'
+import GenericTool from '../../components/WE/GenericTool.vue'
 import { useFavicon } from '@vueuse/core'
 
 </script>

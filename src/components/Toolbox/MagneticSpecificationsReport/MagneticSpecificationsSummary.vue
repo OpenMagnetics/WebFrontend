@@ -1,5 +1,5 @@
 <script setup>
-import { useMasStore } from '/src/stores/mas'
+import { useMasStore } from '../../../stores/mas'
 import { formatUnit, removeTrailingZeroes, deepCopy, downloadBase64asPDF, download } from '/WebSharedComponents/assets/js/utils.js'
 
 </script>

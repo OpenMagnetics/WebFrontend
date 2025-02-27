@@ -2,8 +2,8 @@
 import { defineAsyncComponent } from "vue";
 import { useElementVisibility  } from '@vueuse/core'
 import { ref } from 'vue'
-import { useCatalogStore } from '/src/stores/catalog'
-import '/src/assets/css/wuerth.css' 
+import { useCatalogStore } from '../../stores/catalog'
+import '../../assets/css/wuerth.css' 
 </script>
 
 <script>

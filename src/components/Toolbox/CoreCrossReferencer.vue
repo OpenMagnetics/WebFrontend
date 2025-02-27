@@ -1,14 +1,14 @@
 <script setup>
-import { useMasStore } from '/src/stores/mas'
-import { useCrossReferencerStore } from '/src/stores/crossReferencer'
+import { useMasStore } from '../../stores/mas'
+import { useCrossReferencerStore } from '../../stores/crossReferencer'
 import { defaultCore, defaultInputs, coreCrossReferencerPossibleLabels } from '/WebSharedComponents/assets/js/defaults.js'
 import { toCamelCase, formatUnit, removeTrailingZeroes, deepCopy } from '/WebSharedComponents/assets/js/utils.js'
 import ElementFromList from '/WebSharedComponents/DataInput/ElementFromList.vue'
-import Module from '/src/assets/js/libCrossReferencers.wasm.js'
-import CoreCrossReferencerInputs from '/src/components/Toolbox/CoreCrossReferencer/CoreCrossReferencerInputs.vue'
-import CoreCrossReferencerTable from '/src/components/Toolbox/CoreCrossReferencer/CoreCrossReferencerTable.vue'
+import Module from '../../assets/js/libCrossReferencers.wasm.js'
+import CoreCrossReferencerInputs from './CoreCrossReferencer/CoreCrossReferencerInputs.vue'
+import CoreCrossReferencerTable from './CoreCrossReferencer/CoreCrossReferencerTable.vue'
 import ScatterChartComparator from '/WebSharedComponents/Common/ScatterChartComparator.vue'
-import CoreCrossReferencerOutput from '/src/components/Toolbox/CoreCrossReferencer/CoreCrossReferencerOutput.vue'
+import CoreCrossReferencerOutput from './CoreCrossReferencer/CoreCrossReferencerOutput.vue'
 </script>
 
 <script>

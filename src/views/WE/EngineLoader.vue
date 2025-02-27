@@ -1,5 +1,5 @@
 <script setup>
-import Header from '/src/components/WE/Header.vue'
+import Header from '../../components/WE/Header.vue'
 import { useFavicon } from '@vueuse/core'
 
 </script>

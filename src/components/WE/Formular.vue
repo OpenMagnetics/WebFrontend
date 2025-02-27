@@ -1,6 +1,6 @@
 <script setup >
-import { useMasStore } from '/src/stores/mas'
-import { useCatalogStore } from '/src/stores/catalog'
+import { useMasStore } from '../../stores/mas'
+import { useCatalogStore } from '../../stores/catalog'
 import { Modal } from "bootstrap";
 </script>
 

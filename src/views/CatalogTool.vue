@@ -1,12 +1,12 @@
 <script setup>
-import { useMasStore } from '/src/stores/mas'
-import { useCatalogStore } from '/src/stores/catalog'
-import { useAdviseCacheStore } from '/src/stores/adviseCache'
-import Header from '/src/components/Header.vue'
-import Footer from '/src/components/Footer.vue'
+import { useMasStore } from '../stores/mas'
+import { useCatalogStore } from '../stores/catalog'
+import { useAdviseCacheStore } from '../stores/adviseCache'
+import Header from '../components/Header.vue'
+import Footer from '../components/Footer.vue'
 import { toTitleCase } from '/WebSharedComponents/assets/js/utils.js'
 
-import GenericTool from '/src/components/Toolbox/GenericTool.vue'
+import GenericTool from '../components/Toolbox/GenericTool.vue'
 
 </script>
 

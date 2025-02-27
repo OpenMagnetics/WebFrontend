@@ -1,6 +1,6 @@
 <script setup>
-import CoreCrossReferencer from '/src/components/Toolbox/CoreCrossReferencer.vue'
-import CoreMaterialCrossReferencer from '/src/components/Toolbox/CoreMaterialCrossReferencer.vue'
+import CoreCrossReferencer from '../../components/Toolbox/CoreCrossReferencer.vue'
+import CoreMaterialCrossReferencer from '../../components/Toolbox/CoreMaterialCrossReferencer.vue'
 import { toTitleCase } from '/WebSharedComponents/assets/js/utils.js'
 import {useRoute} from 'vue-router'
 

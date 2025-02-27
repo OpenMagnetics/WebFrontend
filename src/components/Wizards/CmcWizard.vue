@@ -1,12 +1,12 @@
 <script setup>
-import { useMasStore } from '/src/stores/mas'
+import { useMasStore } from '../../stores/mas'
 import { combinedStyle, combinedClass, deepCopy } from '/WebSharedComponents/assets/js/utils.js'
 import Dimension from '/WebSharedComponents/DataInput/Dimension.vue'
 import ElementFromListRadio from '/WebSharedComponents/DataInput/ElementFromListRadio.vue'
 import ElementFromList from '/WebSharedComponents/DataInput/ElementFromList.vue'
 import PairOfDimensions from '/WebSharedComponents/DataInput/PairOfDimensions.vue'
 import { defaultCmcWizardInputs, defaultDesignRequirements, minimumMaximumScalePerParameter, filterMas } from '/WebSharedComponents/assets/js/defaults.js'
-import MaximumDimensions from '/src/components/Toolbox/DesignRequirements/MaximumDimensions.vue'
+import MaximumDimensions from '../Toolbox/DesignRequirements/MaximumDimensions.vue'
 </script>
 
 <script>

@@ -1,8 +1,8 @@
 <script setup>
-import { useMasStore } from '/src/stores/mas'
-import OperatingPointManual from '/src/components/Toolbox/OperatingPoints/OperatingPointManual.vue'
-import OperatingPointHarmonics from '/src/components/Toolbox/OperatingPoints/OperatingPointHarmonics.vue'
-import OperatingPointCircuitSimulator from '/src/components/Toolbox/OperatingPoints/OperatingPointCircuitSimulator.vue'
+import { useMasStore } from '../../../stores/mas'
+import OperatingPointManual from './OperatingPointManual.vue'
+import OperatingPointHarmonics from './OperatingPointHarmonics.vue'
+import OperatingPointCircuitSimulator from './OperatingPointCircuitSimulator.vue'
 import { roundWithDecimals, deepCopy, removeTrailingZeroes, combinedStyle } from '/WebSharedComponents/assets/js/utils.js'
 import Dimension from '/WebSharedComponents/DataInput/Dimension.vue'
 

@@ -1,11 +1,11 @@
 <script setup>
-import { useMasStore } from '/src/stores/mas'
-import { useAdviseCacheStore } from '/src/stores/adviseCache'
+import { useMasStore } from '../../stores/mas'
+import { useAdviseCacheStore } from '../../stores/adviseCache'
 import Slider from '@vueform/slider'
 import { removeTrailingZeroes, toTitleCase, toCamelCase, deepCopy } from '/WebSharedComponents/assets/js/utils.js'
 import { magneticAdviserWeights } from '/WebSharedComponents/assets/js/defaults.js'
-import Advise from '/src/components/Toolbox/MagneticAdviser/Advise.vue'
-import AdviseDetails from '/src/components/Toolbox/MagneticAdviser/AdviseDetails.vue'
+import Advise from './MagneticAdviser/Advise.vue'
+import AdviseDetails from './MagneticAdviser/AdviseDetails.vue'
 </script>
 
 <script>

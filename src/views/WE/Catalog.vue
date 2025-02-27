@@ -1,9 +1,9 @@
 <script setup>
-import Header from '/src/components/WE/Header.vue'
+import Header from '../../components/WE/Header.vue'
 import { toTitleCase } from '/WebSharedComponents/assets/js/utils.js'
-import { useCatalogStore } from '/src/stores/catalog'
+import { useCatalogStore } from '../../stores/catalog'
 
-import Catalog from '/src/components/WE/Catalog.vue'
+import Catalog from '../../components/WE/Catalog.vue'
 import { useFavicon } from '@vueuse/core'
 </script>
 

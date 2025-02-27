@@ -1,11 +1,11 @@
 <script setup>
-import { useMasStore } from '/src/stores/mas'
-import WaveformGraph from '/src/components/Toolbox/OperatingPoints/Output/WaveformGraph.vue'
-import WaveformFourier from '/src/components/Toolbox/OperatingPoints/Output/WaveformFourier.vue'
-import WaveformOutput from '/src/components/Toolbox/OperatingPoints/Output/WaveformOutput.vue'
-import WaveformSimpleOutput from '/src/components/Toolbox/OperatingPoints/Output/WaveformSimpleOutput.vue'
-import WaveformCombinedOutput from '/src/components/Toolbox/OperatingPoints/Output/WaveformCombinedOutput.vue'
-import WaveformInputColumnNames from '/src/components/Toolbox/OperatingPoints/Input/WaveformInputColumnNames.vue'
+import { useMasStore } from '../../../stores/mas'
+import WaveformGraph from './Output/WaveformGraph.vue'
+import WaveformFourier from './Output/WaveformFourier.vue'
+import WaveformOutput from './Output/WaveformOutput.vue'
+import WaveformSimpleOutput from './Output/WaveformSimpleOutput.vue'
+import WaveformCombinedOutput from './Output/WaveformCombinedOutput.vue'
+import WaveformInputColumnNames from './Input/WaveformInputColumnNames.vue'
 import { roundWithDecimals, deepCopy, combinedStyle } from '/WebSharedComponents/assets/js/utils.js'
 
 import { defaultOperatingPointExcitation, defaultPrecision, defaultSinusoidalNumberPoints } from '/WebSharedComponents/assets/js/defaults.js'

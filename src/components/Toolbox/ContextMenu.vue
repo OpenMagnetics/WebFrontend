@@ -1,11 +1,11 @@
 <script setup>
-import { useCatalogStore } from '/src/stores/catalog'
-import { useMasStore } from '/src/stores/mas'
+import { useCatalogStore } from '../../stores/catalog'
+import { useMasStore } from '../../stores/mas'
 import { toDashCase, toPascalCase, toTitleCase } from '/WebSharedComponents/assets/js/utils.js'
-import MagneticBuilderSettings from '/src/components/Toolbox/Settings/MagneticBuilderSettings.vue'
-import AdviserSettings from '/src/components/Toolbox/Settings/AdviserSettings.vue'
-import CatalogSettings from '/src/components/Toolbox/Settings/CatalogSettings.vue'
-import OperatingPointSettings from '/src/components/Toolbox/Settings/OperatingPointSettings.vue'
+import MagneticBuilderSettings from './Settings/MagneticBuilderSettings.vue'
+import AdviserSettings from './Settings/AdviserSettings.vue'
+import CatalogSettings from './Settings/CatalogSettings.vue'
+import OperatingPointSettings from './Settings/OperatingPointSettings.vue'
 
 </script>
 

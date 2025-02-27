@@ -1,6 +1,6 @@
 <script setup>
-import Header from '/src/components/WE/Header.vue'
-import { useCatalogStore } from '/src/stores/catalog'
+import Header from '../../components/WE/Header.vue'
+import { useCatalogStore } from '../../stores/catalog'
 
 </script>
 

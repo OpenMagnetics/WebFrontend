@@ -1,10 +1,10 @@
 <script setup>
-import { useMasStore } from '/src/stores/mas'
-import { useAdviseCacheStore } from '/src/stores/adviseCache'
+import { useMasStore } from '../../stores/mas'
+import { useAdviseCacheStore } from '../../stores/adviseCache'
 import Slider from '@vueform/slider'
 import { removeTrailingZeroes, toTitleCase, toCamelCase, deepCopy } from '/WebSharedComponents/assets/js/utils.js'
-import Advise from '/src/components/Toolbox/CatalogAdviser/Advise.vue'
-import { useCatalogStore } from '/src/stores/catalog'
+import Advise from './CatalogAdviser/Advise.vue'
+import { useCatalogStore } from '../../stores/catalog'
 </script>
 
 <script>

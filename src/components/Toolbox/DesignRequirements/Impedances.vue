@@ -2,7 +2,7 @@
 import { deepCopy, combinedStyle, combinedClass } from '/WebSharedComponents/assets/js/utils.js'
 import { minimumMaximumScalePerParameter} from '/WebSharedComponents/assets/js/defaults.js'
 import PairOfDimensions from '/WebSharedComponents/DataInput/PairOfDimensions.vue';
-import { useMasStore } from '/src/stores/mas'
+import { useMasStore } from '../../../stores/mas'
 
 </script>
 
