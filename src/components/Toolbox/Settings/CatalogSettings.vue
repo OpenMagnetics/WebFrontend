@@ -59,14 +59,6 @@ export default {
                 </div>
                 <div class="modal-body container">
                     <div class="row" :style="$styleStore.contextMenu.setting">
-                        <h5 class="offset-0 col-6 text-end">Use all parts?</h5>
-                        <div class="col-sm-6 col-md-6 col-lg-4">
-                            <label v-tooltip="'Choose between spider or bar charts'" class="fs-6 p-0 ps-3 pe-3 text-end col-4 ">WE's</label>
-                            <input :data-cy="'Settings-Modal-bar-spider-button'" v-model="localData.useAllParts"  @change="onSettingChanged($event, 'useAllParts')" type="range" class="form-range col-1 pt-2" min="0" max="1" step="1" style="width: 30px">
-                            <label v-tooltip="'Choose between spider or bar charts'" class="fs-6 p-0 ps-3 col-6 text-start">All</label>
-                        </div>
-                    </div>
-                    <div class="row" :style="$styleStore.contextMenu.setting">
                         <h5 class="offset-0 col-6 text-end">Show advanced outputs</h5>
                         <div class="col-sm-6 col-md-6 col-lg-4">
                             <label v-tooltip="'Choose between basic or advanced output'" class="fs-6 p-0 ps-3 pe-3 text-end col-4 ">No</label>
