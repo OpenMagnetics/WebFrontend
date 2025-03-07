@@ -134,7 +134,7 @@ export default {
                 class="offset-1 col-11"
                 :name="'rms'"
                 :replaceTitle="'Power:'"
-                :unit="'A'"
+                :unit="'W'"
                 :dataTestLabel="dataTestLabel + '-Rms'"
                 :value="localData.rmsPower"
                 :min="minimumMaximumScalePerParameter.power.min"
