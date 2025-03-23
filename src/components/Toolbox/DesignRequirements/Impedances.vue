@@ -128,7 +128,7 @@ export default {
                 :class="index==0? '' : 'border-bottom' "
                 :style="$styleStore.designRequirements.inputBorderColor"
                 :names="['frequency', 'impedance']"
-                :units="['H', 'Ω']"
+                :units="['Hz', 'Ω']"
                 :dataTestLabel="dataTestLabel + '-MinimumImpedance'"
                 :mins="[minimumMaximumScalePerParameter['frequency']['min'], minimumMaximumScalePerParameter['impedance']['min']]"
                 :maxs="[minimumMaximumScalePerParameter['frequency']['max'], minimumMaximumScalePerParameter['impedance']['max']]"

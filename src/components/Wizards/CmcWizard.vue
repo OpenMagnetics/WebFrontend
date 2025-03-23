@@ -424,7 +424,7 @@ export default {
                 <PairOfDimensions
                     class="ps-3 border-top border-bottom pt-2"
                     :names="['frequency', 'amplitude']"
-                    :units="['H', 'A']"
+                    :units="['Hz', 'A']"
                     :dataTestLabel="dataTestLabel + '-ExtraHarmonics'"
                     :mins="[minimumMaximumScalePerParameter['frequency']['min'], minimumMaximumScalePerParameter['current']['min']]"
                     :maxs="[minimumMaximumScalePerParameter['frequency']['max'], minimumMaximumScalePerParameter['current']['max']]"
@@ -482,7 +482,7 @@ export default {
                 <PairOfDimensions
                     class="ps-3 border-top border-bottom pt-2"
                     :names="['frequency', 'impedance']"
-                    :units="['H', 'Ω']"
+                    :units="['Hz', 'Ω']"
                     :dataTestLabel="dataTestLabel + '-ImpedancePoints'"
                     :mins="[minimumMaximumScalePerParameter['frequency']['min'], minimumMaximumScalePerParameter['impedance']['min']]"
                     :maxs="[minimumMaximumScalePerParameter['frequency']['max'], minimumMaximumScalePerParameter['impedance']['max']]"
