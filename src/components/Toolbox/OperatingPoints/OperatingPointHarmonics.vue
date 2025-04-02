@@ -120,6 +120,7 @@ export default {
             return true;
         },
         processHarmonics(signalDescriptor) {
+            console.log("processHarmonics")
             this.masStore.mas.inputs.operatingPoints.forEach((operatingPoint, operatingPointIndex) => {
                 this.masStore.mas.inputs.operatingPoints[operatingPointIndex] = this.checkAndFixOperatingPoint(operatingPoint);
             })
@@ -142,6 +143,7 @@ export default {
                         amplitudes: [parsedResult.harmonics.amplitudes[0]],
                         frequencies: [parsedResult.harmonics.frequencies[0]]
                     }
+                    // console.log(deepCopy(filteredHarmonics.frequencies))
                     for (var i = 0; i < aux.size(); i++) {
                         filteredHarmonics.amplitudes.push(parsedResult.harmonics.amplitudes[aux.get(i)]);
                         filteredHarmonics.frequencies.push(parsedResult.harmonics.frequencies[aux.get(i)]);
@@ -149,9 +151,11 @@ export default {
 
                     parsedResult.harmonics = filteredHarmonics;
                     this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex][signalDescriptor] = parsedResult;
+                    console.log(deepCopy(this.currentWindingIndex))
+                    console.log(deepCopy(filteredHarmonics.frequencies.length))
                 }
 
-                this.$emit('updatedSignal');
+                // this.$emit('updatedSignal');
                 this.masStore.updatedInputExcitationWaveformUpdatedFromProcessed(signalDescriptor);
             })
         },
@@ -244,6 +248,8 @@ export default {
                     {{'Current harmonics'}}
                 </label>
 
+                {{masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[0].current.harmonics.amplitudes.length}}
+                {{masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[1].current.harmonics.amplitudes.length}}
                 <div 
                     v-if="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex] != null && masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex].current.harmonics"
                     v-for="index in masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex].current.harmonics.amplitudes.length" :key="index">

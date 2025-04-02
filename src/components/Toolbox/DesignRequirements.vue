@@ -3,7 +3,7 @@ import { ref } from 'vue'
 import { useMasStore } from '../../stores/mas'
 import { toTitleCase, toPascalCase } from '/WebSharedComponents/assets/js/utils.js'
 import { tooltipsMagneticSynthesisDesignRequirements } from '/WebSharedComponents/assets/js/texts.js'
-import { defaultDesignRequirements, compulsoryRequirements, designRequirementsOrdered, isolationSideOrdered, minimumMaximumScalePerParameter} from '/WebSharedComponents/assets/js/defaults.js'
+import { defaultDesignRequirements, compulsoryRequirements, designRequirementsOrdered, isolationSideOrdered, IsolationSideOrdered, minimumMaximumScalePerParameter} from '/WebSharedComponents/assets/js/defaults.js'
 import { Market, ConnectionType, Topology } from '/WebSharedComponents/assets/ts/MAS.ts'
 import Insulation from './DesignRequirements/Insulation.vue'
 import Dimension from '/WebSharedComponents/DataInput/Dimension.vue'
@@ -170,6 +170,9 @@ export default {
         hasError() {
             this.$emit("canContinue", false);
         },
+        updatedIsolationSides(value, index) {
+            this.masStore.mas.magnetic.coil.functionalDescription[index].isolationSide = value;
+        }
     }
 }
 </script>
@@ -391,12 +394,13 @@ export default {
                     :valueBgColor="$styleStore.designRequirements.inputValueBgColor"
                     :textColor="$styleStore.designRequirements.inputTextColor"
                 />
+
                 <ArrayElementFromList class="border-bottom py-2"
                     :style = "$styleStore.designRequirements.inputBorderColor"
                     v-if="masStore.mas.inputs.designRequirements.terminalType != null"
                     :name="'terminalType'"
                     :dataTestLabel="dataTestLabel + '-TerminalType'"
-                    :defaultValue="defaultDesignRequirements.terminalType[0]"
+                    :defaultValue="new Array(Object.keys(ConnectionType).length).fill(Object.keys(ConnectionType)[0])"
                     :options="ConnectionType" 
                     :titleSameRow="true"
                     :fixedNumberElements="masStore.mas.inputs.designRequirements.turnsRatios.length + 1"
@@ -406,6 +410,24 @@ export default {
                     :labelBgColor="$styleStore.designRequirements.inputLabelBgColor"
                     :valueBgColor="$styleStore.designRequirements.inputValueBgColor"
                     :textColor="$styleStore.designRequirements.inputTextColor"
+                />
+
+                <ArrayElementFromList class="border-bottom py-2"
+                    :style = "$styleStore.designRequirements.inputBorderColor"
+                    v-if="masStore.mas.inputs.designRequirements.isolationSides != null"
+                    :name="'isolationSides'"
+                    :dataTestLabel="dataTestLabel + '-IsolationSides'"
+                    :defaultValue="Object.keys(IsolationSideOrdered)"
+                    :options="IsolationSideOrdered" 
+                    :titleSameRow="true"
+                    :fixedNumberElements="masStore.mas.inputs.designRequirements.turnsRatios.length + 1"
+                    v-model="masStore.mas.inputs.designRequirements"
+                    :valueFontSize="$styleStore.designRequirements.inputFontSize"
+                    :titleFontSize="$styleStore.designRequirements.inputTitleFontSize"
+                    :labelBgColor="$styleStore.designRequirements.inputLabelBgColor"
+                    :valueBgColor="$styleStore.designRequirements.inputValueBgColor"
+                    :textColor="$styleStore.designRequirements.inputTextColor"
+                    @update="updatedIsolationSides"
                 />
 
                 <ElementFromList class="border-bottom py-2"

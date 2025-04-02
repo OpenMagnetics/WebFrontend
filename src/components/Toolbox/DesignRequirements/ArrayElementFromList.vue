@@ -27,7 +27,7 @@ export default {
             required: true
         },
         defaultValue: {
-            type: String,
+            type: Array,
             default: '',
         },
         min:{
@@ -101,16 +101,10 @@ export default {
                     newElements.push(this.masStore.mas.inputs.designRequirements[this.name][i]);
                 }
                 else {
-                    newElements.push(this.defaultValue);
+                    newElements.push(this.defaultValue[i]);
                 }
             }
             this.masStore.mas.inputs.designRequirements[this.name] = newElements;
-        },
-        addElementBelow(index) {
-            this.masStore.mas.inputs.designRequirements[this.name].splice(index + 1, 0, this.defaultValue);
-        },
-        removeElement(index) {
-            this.masStore.mas.inputs.designRequirements[this.name].splice(index, 1)
         },
         changeText(value, index) {
             if (value != '') {
@@ -120,6 +114,9 @@ export default {
             else {
                 this.errorMessages = "Winding name cannot be empty";
             }
+        },
+        update(value, index) {
+            this.$emit("update", value, index);
         },
     }
 }
@@ -145,9 +142,9 @@ export default {
                 :max="max"
                 :titleSameRow="titleSameRow"
                 v-for="requirementIndex in masStore.mas.inputs.designRequirements[name].length"
-                :defaultValue="defaultValue"
+                :defaultValue="defaultValue[requirementIndex - 1]"
                 class="py-2 col-12"
-                :name="requirementIndex"
+                :name="requirementIndex - 1"
                 v-model="masStore.mas.inputs.designRequirements[name]"
                 :options="options"
                 :replaceTitle="isolationSideOrdered[requirementIndex - 1]"
@@ -157,6 +154,7 @@ export default {
                 :valueBgColor='valueBgColor'
                 :textColor='textColor'
                 @changeText="changeText($event, requirementIndex)"
+                @update="update($event, requirementIndex - 1)"
             />
         </div>
         <div class="row">

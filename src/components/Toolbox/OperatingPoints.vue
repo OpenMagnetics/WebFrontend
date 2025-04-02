@@ -181,7 +181,7 @@ export default {
 
                     this.$mkf.ready.then(_ => {
                         this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding.forEach((excitation, index) => {
-                            if (index != this.currentWindingIndex && this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex].frequency != this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[index]) {
+                            if (this.$stateStore.operatingPoints.modePerPoint[this.currentOperatingPointIndex] === this.$stateStore.OperatingPointsMode.Manual && index != this.currentWindingIndex && this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex].frequency != this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[index]) {
                                 this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[index] = JSON.parse(this.$mkf.scale_excitation_time_to_frequency(JSON.stringify(this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[index]), this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex].frequency));
                             }
                         })

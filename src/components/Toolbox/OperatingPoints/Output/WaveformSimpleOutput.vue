@@ -118,7 +118,7 @@ export default {
                 class="offset-1 col-11"
                 :name="'rms'"
                 :replaceTitle="'Voltage RMS:'"
-                :unit="'A'"
+                :unit="'V'"
                 :dataTestLabel="dataTestLabel + '-Rms'"
                 :value="modelValue.voltage.processed.rms"
                 :min="minimumMaximumScalePerParameter.voltage.min"
