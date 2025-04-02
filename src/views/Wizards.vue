@@ -3,6 +3,7 @@ import Header from '../components/Header.vue'
 import Footer from '../components/Footer.vue'
 
 import CmcWizard from '../components/Wizards/CmcWizard.vue'
+import FlybackWizard from '../components/Wizards/FlybackWizard.vue'
 
 </script>
 
@@ -28,6 +29,10 @@ export default {
             <CmcWizard
                 v-if="$stateStore.getCurrentWizard() == $stateStore.Wizards.CommonModeChoke"
                 :dataTestLabel="'CmcWizard'"
+            />
+            <FlybackWizard
+                v-if="$stateStore.getCurrentWizard() == $stateStore.Wizards.Flyback"
+                :dataTestLabel="'FlybackWizard'"
             />
         </main>
         <Footer class="mt-auto"/>

@@ -50,7 +50,7 @@ const routes = [
     },
 
     {
-        path: '/cmc_wizard',
+        path: '/wizards',
         name: 'Wizards',
         component: () => import('../views/Wizards.vue')
     },

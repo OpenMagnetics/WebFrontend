@@ -92,10 +92,10 @@ export default {
             else
                 setTimeout(() => {this.$router.push('/engine_loader');}, 100);
         },
-        onCmcWizard() {
-            this.$stateStore.selectWizard(this.$stateStore.Wizards.CommonModeChoke);
-            if (this.$route.name != 'CmcWizard')
-                setTimeout(() => {this.$router.push('/cmc_wizard');}, 100);
+        onWizards(wizard) {
+            this.$stateStore.selectWizard(wizard);
+            if (this.$route.name != 'Wizards')
+                setTimeout(() => {this.$router.push('/wizards');}, 100);
             else
                 setTimeout(() => {this.$router.push('/engine_loader');}, 100);
         },
@@ -257,7 +257,7 @@ export default {
                     </li>
                     <li class="nav-item dropdown">
                         <a
-                            :style="$styleStore.header.wizardsSectionDropdown"
+                            :style="$styleStore.header.wizardsSectionButton"
                             :class="headerTogglerIsVisible? '' : 'mx-1'"
                             class="nav-link dropdown-toggle border rounded"
                             href="#"
@@ -267,16 +267,27 @@ export default {
                         >
                             <i class="me-2 fa-solid fa-hat-wizard"></i>{{'Wizards'}}
                         </a>
-                      <ul class="dropdown-menu px-1" :style="$styleStore.header.wizardsSectionDropdown">
+                      <ul class="dropdown-menu px-3" :style="$styleStore.header.wizardsSectionDropdown">
                         <li>
                             <button
                                 :style="$styleStore.header.wizardButton"
                                 data-cy="Header-insulation-coordinator-link"
-                                :class="headerTogglerIsVisible? 'w-100' : 'mx-1' "
+                                :class="headerTogglerIsVisible? 'w-100' : 'mx-0' "
                                 class="dropdown-item btn btn-block nav-link px-2"
-                                @click="onCmcWizard"
+                                @click="onWizards($stateStore.Wizards.CommonModeChoke)"
                             >
                                 <i class="me-2 fa-solid fa-bolt-lightning"></i>{{'CMC Wizard'}}
+                            </button>
+                        </li>
+                        <li>
+                            <button
+                                :style="$styleStore.header.newWizardButton"
+                                data-cy="Header-insulation-coordinator-link"
+                                :class="headerTogglerIsVisible? 'w-100' : 'mx-0' "
+                                class="dropdown-item btn btn-block nav-link px-2"
+                                @click="onWizards($stateStore.Wizards.Flyback)"
+                            >
+                                <i class="me-2 fa-solid fa-bolt-lightning"></i>{{'Flyback Wizard'}}
                             </button>
                         </li>
                       </ul>

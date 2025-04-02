@@ -21,6 +21,7 @@ export const useStateStore = defineStore("state", () => {
 
     const Wizards = {
         CommonModeChoke: 'commonModeChoke',
+        Flyback: 'flyback',
     };
 
 
@@ -268,7 +269,6 @@ export const useStateStore = defineStore("state", () => {
     function getCurrentApplication() {
         return this.selectedApplication;
     }
-
 
     function getCurrentWizard() {
         return this.selectedWizard;
