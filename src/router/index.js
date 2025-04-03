@@ -64,22 +64,22 @@ const routes = [
     {
         path: '/cross_referencer_selection',
         name: 'CrossReferencerSelection',
-        component: () => import('../views/CrossReferencerSelections/CrossReferencerSelection.vue')
+        component: () => import('../views/CrossReferencerSelections/CrossReferencerSelectionFairRite.vue')
     },
     {
-        path: '/core_cross_referencer',
+        path: '/core_cross_referencer_fair_rite',
         name: 'CoreCrossReferencer',
-        component: () => import('../views/CrossReferencers/CrossReferencer.vue')
+        component: () => import('../views/CrossReferencers/CrossReferencerFairRite.vue')
     },
     {
-        path: '/core_material_cross_referencer',
+        path: '/core_material_cross_referencer_fair_rite',
         name: 'CoreMaterialCrossReferencer',
-        component: () => import('../views/CrossReferencers/CrossReferencer.vue')
+        component: () => import('../views/CrossReferencers/CrossReferencerFairRite.vue')
     },
     {
-        path: '/core_shape_cross_referencer',
+        path: '/core_shape_cross_referencer_fair_rite',
         name: 'CoreShapeCrossReferencer',
-        component: () => import('../views/CrossReferencers/CrossReferencer.vue')
+        component: () => import('../views/CrossReferencers/CrossReferencerFairRite.vue')
     },
 
     {

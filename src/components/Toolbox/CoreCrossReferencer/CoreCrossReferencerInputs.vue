@@ -140,6 +140,7 @@ export default {
 
                 this.coreMaterialManufacturers = this.coreMaterialManufacturers.sort();
 
+
                 this.coreMaterialManufacturers.forEach((manufacturer) => {
                     if (!(this.onlyManufacturer != '' && this.onlyManufacturer != null && manufacturer != this.onlyManufacturer)) {
                         const coreMaterialNamesHandle = crossReferencers.get_available_core_materials(manufacturer);
@@ -150,6 +151,10 @@ export default {
                     }
                 })
                 this.coreMaterialNames = this.coreMaterialNames.sort();
+
+                console.log("this.coreMaterialNames")
+                console.log(this.coreMaterialNames)
+
 
                 if (!this.coreMaterialNames.includes(this.crossReferencerStore.coreReferenceInputs.core.functionalDescription.material)) {
                     this.crossReferencerStore.coreReferenceInputs.core.functionalDescription.material = this.coreMaterialNames[1];
@@ -186,6 +191,13 @@ export default {
                 :optionsToDisable="coreShapeFamilies"
                 :options="coreShapeNames"
                 @update="inputsUpdated"
+                :labelWidthProportionClass="'col-sm-12 col-md-5'"
+                :valueWidthProportionClass="'col-sm-12 col-md-7'"
+                :valueFontSize="$styleStore.crossReferencer.inputFontSize"
+                :labelFontSize="$styleStore.crossReferencer.inputTitleFontSize"
+                :labelBgColor="$styleStore.crossReferencer.inputLabelBgColor"
+                :valueBgColor="$styleStore.crossReferencer.inputValueBgColor"
+                :textColor="$styleStore.crossReferencer.inputTextColor"
             />
 
             <ElementFromList
@@ -199,6 +211,13 @@ export default {
                 :optionsToDisable="coreMaterialManufacturers"
                 :options="coreMaterialNames"
                 @update="inputsUpdated"
+                :labelWidthProportionClass="'col-sm-12 col-md-5'"
+                :valueWidthProportionClass="'col-sm-12 col-md-7'"
+                :valueFontSize="$styleStore.crossReferencer.inputFontSize"
+                :labelFontSize="$styleStore.crossReferencer.inputTitleFontSize"
+                :labelBgColor="$styleStore.crossReferencer.inputLabelBgColor"
+                :valueBgColor="$styleStore.crossReferencer.inputValueBgColor"
+                :textColor="$styleStore.crossReferencer.inputTextColor"
             />
 
             <Dimension class="col-12 my-2 text-start"
@@ -214,6 +233,13 @@ export default {
                 :allowNegative="false"
                 :modelValue="crossReferencerStore.coreReferenceInputs.core.functionalDescription"
                 @update="inputsUpdated"
+                :labelWidthProportionClass="'col-sm-12 col-md-5'"
+                :valueWidthProportionClass="'col-sm-12 col-md-7'"
+                :valueFontSize="$styleStore.crossReferencer.inputFontSize"
+                :labelFontSize="$styleStore.crossReferencer.inputTitleFontSize"
+                :labelBgColor="$styleStore.crossReferencer.inputLabelBgColor"
+                :valueBgColor="$styleStore.crossReferencer.inputValueBgColor"
+                :textColor="$styleStore.crossReferencer.inputTextColor"
             />
 
             <CoreGappingSelector class="col-12 my-2 text-start"
@@ -223,6 +249,13 @@ export default {
                 :core="crossReferencerStore.coreReferenceInputs.core"
                 :scale="1"
                 @update="gappingUpdated"
+                :labelWidthProportionClass="'col-sm-12 col-md-5'"
+                :valueWidthProportionClass="'col-sm-12 col-md-7'"
+                :valueFontSize="$styleStore.crossReferencer.inputFontSize"
+                :labelFontSize="$styleStore.crossReferencer.inputTitleFontSize"
+                :labelBgColor="$styleStore.crossReferencer.inputLabelBgColor"
+                :valueBgColor="$styleStore.crossReferencer.inputValueBgColor"
+                :textColor="$styleStore.crossReferencer.inputTextColor"
             />
 
             <Dimension class="col-12 my-2 text-start"
@@ -237,6 +270,13 @@ export default {
                 :allowNegative="false"
                 :modelValue="crossReferencerStore.coreReferenceInputs"
                 @update="inputsUpdated"
+                :labelWidthProportionClass="'col-sm-12 col-md-5'"
+                :valueWidthProportionClass="'col-sm-12 col-md-7'"
+                :valueFontSize="$styleStore.crossReferencer.inputFontSize"
+                :labelFontSize="$styleStore.crossReferencer.inputTitleFontSize"
+                :labelBgColor="$styleStore.crossReferencer.inputLabelBgColor"
+                :valueBgColor="$styleStore.crossReferencer.inputValueBgColor"
+                :textColor="$styleStore.crossReferencer.inputTextColor"
             />
 
             <Dimension class="col-12 my-2 text-start"
@@ -252,6 +292,13 @@ export default {
                 :allowNegative="true"
                 :modelValue="crossReferencerStore.coreReferenceInputs"
                 @update="inputsUpdated"
+                :labelWidthProportionClass="'col-sm-12 col-md-5'"
+                :valueWidthProportionClass="'col-sm-12 col-md-7'"
+                :valueFontSize="$styleStore.crossReferencer.inputFontSize"
+                :labelFontSize="$styleStore.crossReferencer.inputTitleFontSize"
+                :labelBgColor="$styleStore.crossReferencer.inputLabelBgColor"
+                :valueBgColor="$styleStore.crossReferencer.inputValueBgColor"
+                :textColor="$styleStore.crossReferencer.inputTextColor"
             />
 
             <MaximumDimensions class="border-bottom py-2"
@@ -261,6 +308,12 @@ export default {
                 :max="minimumMaximumScalePerParameter['dimension']['max']"
                 :defaultValue="defaultDesignRequirements.maximumDimensions"
                 v-model="crossReferencerStore.coreReferenceInputs.maximumDimensions"
+                :addButtonStyle="$styleStore.crossReferencer.requirementButton"
+                :valueFontSize="$styleStore.crossReferencer.inputFontSize"
+                :titleFontSize="$styleStore.crossReferencer.inputTitleFontSize"
+                :labelBgColor="$styleStore.crossReferencer.inputLabelBgColor"
+                :valueBgColor="$styleStore.crossReferencer.inputValueBgColor"
+                :textColor="$styleStore.crossReferencer.inputTextColor"
             />
 
             <SeveralElementsFromList
@@ -272,6 +325,13 @@ export default {
                 v-model="crossReferencerStore.coreReferenceInputs"
                 :options="coreCrossReferencerPossibleCoreTypes"
                 @update="inputsUpdated"
+                :labelWidthProportionClass="'col-sm-12 col-md-5'"
+                :valueWidthProportionClass="'col-sm-12 col-md-7'"
+                :valueFontSize="$styleStore.crossReferencer.inputFontSize"
+                :labelFontSize="$styleStore.crossReferencer.inputTitleFontSize"
+                :labelBgColor="$styleStore.crossReferencer.inputLabelBgColor"
+                :valueBgColor="$styleStore.crossReferencer.inputValueBgColor"
+                :textColor="$styleStore.crossReferencer.inputTextColor"
             />
 
             <Dimension class="col-12 my-2 text-start"
@@ -286,6 +346,13 @@ export default {
                 :allowNegative="false"
                 :modelValue="crossReferencerStore.coreReferenceInputs"
                 @update="inputsUpdated"
+                :labelWidthProportionClass="'col-sm-12 col-md-5'"
+                :valueWidthProportionClass="'col-sm-12 col-md-7'"
+                :valueFontSize="$styleStore.crossReferencer.inputFontSize"
+                :labelFontSize="$styleStore.crossReferencer.inputTitleFontSize"
+                :labelBgColor="$styleStore.crossReferencer.inputLabelBgColor"
+                :valueBgColor="$styleStore.crossReferencer.inputValueBgColor"
+                :textColor="$styleStore.crossReferencer.inputTextColor"
             />
 
             <button :disabled="disabled" :data-cy="dataTestLabel + '-view-edit-excitation-modal-button'" class="btn btn-primary" data-bs-toggle="offcanvas" :data-bs-target="'#' + offcanvasName" ::aria-controls="offcanvasName + 'OperationPointOffCanvas'">View/Edit excitation</button>

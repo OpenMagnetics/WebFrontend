@@ -14,6 +14,7 @@ import { useStateStore } from '/src/stores/state'
 import Module from '/src/assets/js/libMKF.wasm.js';
 import { useStyleStore } from '/src/stores/style'
 import { useWeStyleStore } from '/src/stores/weStyle'
+import { useFairRiteStyleStore } from '/src/stores/fairRiteStyle'
 
 const axiosInstance = axios.create()
 
@@ -43,8 +44,12 @@ router.beforeEach((to, from, next) => {
     var loadData = !nonDataViews.includes(to.path);
 
     const weWorkflow = to.path.includes("we_") || from.path.includes("we_");
+    const fairRiteWorkflow = to.path.includes("fair_rite") || from.path.includes("fair_rite");
 
-    if (weWorkflow) {
+    if (fairRiteWorkflow) {
+        app.config.globalProperties.$styleStore = useFairRiteStyleStore()
+    }
+    else if (weWorkflow) {
         app.config.globalProperties.$styleStore = useWeStyleStore()
     }
     else {

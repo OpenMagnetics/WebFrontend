@@ -183,6 +183,7 @@ export default {
                 :core="mas.magnetic.core"
                 :fullCoreModel="true"
                 :loadingGif="loadingGif"
+                :backgroundColor="$styleStore.crossReferencer.main.color"
             />
         </div>
         <div class="row">
@@ -238,7 +239,7 @@ export default {
                 </div>
             </div>
         </div>
-        <div class=" row text-start">
+<!--         <div class=" row text-start">
             <CoreSTPExporter
                 class="btn btn-primary col-4 mt-4"
                 :data-cy="dataTestLabel + '-download-STP-File-button'"
@@ -260,6 +261,6 @@ export default {
                 :fullCoreModel="true"
                 @export="onExport"
             />
-        </div>
+        </div> -->
     </div>
 </template>

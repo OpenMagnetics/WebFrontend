@@ -279,7 +279,7 @@ export default {
                                 <i class="me-2 fa-solid fa-bolt-lightning"></i>{{'CMC Wizard'}}
                             </button>
                         </li>
-<!--                         <li>
+                        <li>
                             <button
                                 :style="$styleStore.header.newWizardButton"
                                 data-cy="Header-insulation-coordinator-link"
@@ -289,7 +289,7 @@ export default {
                             >
                                 <i class="me-2 fa-solid fa-bolt-lightning"></i>{{'Flyback Wizard'}}
                             </button>
-                        </li> -->
+                        </li>
                       </ul>
                     </li>
                     <li v-if="$stateStore.isAnyDesignLoaded() && $route.name != 'MagneticTool'" class="nav-item">

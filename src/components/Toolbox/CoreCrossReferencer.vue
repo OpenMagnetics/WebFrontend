@@ -118,12 +118,13 @@ export default {
                 coreAux['geometricalDescription'] = null;
                 coreAux['processedDescription'] = null;
 
-                var core = JSON.parse(this.$mkf.calculate_core_data(JSON.stringify(coreAux), false));
+                var coreString = this.$mkf.calculate_core_data(JSON.stringify(coreAux), false);
+                var core = JSON.parse(coreString);
                 core['functionalDescription']['shape'] = core['functionalDescription']['shape']['name'];
 
                 const inputs = this.masStore.mas.inputs;
                 inputs.designRequirements.maximumDimensions = this.crossReferencerStore.coreReferenceInputs.maximumDimensions;
-                const aux = JSON.parse(crossReferencers.calculate_cross_referenced_core(JSON.stringify(core),
+                const auxString = crossReferencers.calculate_cross_referenced_core(JSON.stringify(core),
                                                                                         this.crossReferencerStore.coreReferenceInputs.numberTurns,
                                                                                         JSON.stringify(inputs),
                                                                                         this.crossReferencerStore.coreReferenceInputs.numberMaximumResults,
@@ -131,8 +132,11 @@ export default {
                                                                                         this.crossReferencerStore.coreReferenceInputs.enabledCoreTypes.includes("Toroidal"),
                                                                                         this.crossReferencerStore.coreReferenceInputs.enabledCoreTypes.includes("Two-Piece Set"),
                                                                                         this.crossReferencerStore.coreReferenceInputs.enabledCoreTypes.includes("Only Cores In Stock"),
-                                                                                        this.keepMaterialConstant));
+                                                                                        this.keepMaterialConstant);
 
+                console.log("auxString")
+                console.log(auxString)
+                const aux = JSON.parse(auxString);
                 const auxCrossReferencedCoresValues = [];
                 aux.cores.forEach((elem, index) => {
                     const auxElem = {
@@ -264,6 +268,12 @@ export default {
 
             return "";
         },
+        onCoreMaterialCrossReferencer() {
+            setTimeout(() => {this.$router.push('/core_material_cross_referencer' + this.suffix);}, 100);
+        },
+        onCoreShapeCrossReferencer() {
+            setTimeout(() => {this.$router.push('/core_shape_cross_referencer' + this.suffix);}, 100);
+        },
     }
 }
 </script>
@@ -271,8 +281,11 @@ export default {
 <template>
     <div class="container">
         <div class="row">
-            <h1 v-if="!keepMaterialConstant" class="col-lg-12 text-center text-white">Core Cross Referencer</h1>
-            <h1 v-else class="col-lg-12 text-center text-white">Core Shape Cross Referencer</h1>
+            <h1 v-if="!keepMaterialConstant" class="col-lg-12 text-center text-white">Fair-Rite Core Cross Referencer</h1>
+            <h1 v-else class="col-lg-12 text-center text-white">Fair-Rite Core Shape Cross Referencer</h1>
+        </div>
+        <div class="row">
+            <h6 class="col-lg-12 text-center text-white">Powered by OpenMagnetics</h6>
         </div>
         <div class="row">
             <div class="col-lg-3 text-center text-white bg-dark m-0 p-0">
@@ -297,17 +310,17 @@ export default {
                 <label :data-cy="dataTestLabel + '-ErrorMessage'" class="text-danger m-0" style="font-size: 0.9em"> {{errorMessage}}</label>
                 <div class="container">
                     <div class="row">
-                        <a :disabled="loading" :data-cy="dataTestLabel + '-changeTool'" :href="'/core_material_cross_referencer' + (suffix == ''? '' : suffix)" class="btn btn-secondary mb-2">I want to cross-reference just the material instead, keeping the shape constant</a>
+                        <button :disabled="loading" :data-cy="dataTestLabel + '-changeTool'" @click="onCoreMaterialCrossReferencer" class="btn btn-secondary mb-2">I want to cross-reference just the material instead, keeping the shape constant</button>
                     </div>
                 </div>
                 <div v-if="keepMaterialConstant" class="container">
                     <div class="row">
-                        <a :disabled="loading" :data-cy="dataTestLabel + '-changeTool'" :href="'/core_material_cross_referencer' + (suffix == ''? '' : suffix)" class="btn btn-secondary">I want to cross-reference the full core instead</a>
+                        <button :disabled="loading" :data-cy="dataTestLabel + '-changeTool'" @click="onCoreMaterialCrossReferencer" class="btn btn-secondary">I want to cross-reference the full core instead</button>
                     </div>
                 </div>
                 <div v-if="!keepMaterialConstant" class="container">
                     <div class="row">
-                        <a :disabled="loading" :data-cy="dataTestLabel + '-changeTool'" :href="'/core_shape_cross_referencer' + (suffix == ''? '' : suffix)" class="btn btn-secondary">I want to cross-reference just the shape instead, keeping the material constant</a>
+                        <button :disabled="loading" :data-cy="dataTestLabel + '-changeTool'" @click="onCoreShapeCrossReferencer" class="btn btn-secondary">I want to cross-reference just the shape instead, keeping the material constant</button>
                     </div>
                 </div>
             </div>

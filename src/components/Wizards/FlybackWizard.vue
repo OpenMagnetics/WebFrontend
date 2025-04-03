@@ -5,7 +5,7 @@ import Dimension from '/WebSharedComponents/DataInput/Dimension.vue'
 import ElementFromListRadio from '/WebSharedComponents/DataInput/ElementFromListRadio.vue'
 import ElementFromList from '/WebSharedComponents/DataInput/ElementFromList.vue'
 import PairOfDimensions from '/WebSharedComponents/DataInput/PairOfDimensions.vue'
-import { defaultCmcWizardInputs, defaultDesignRequirements, minimumMaximumScalePerParameter, filterMas } from '/WebSharedComponents/assets/js/defaults.js'
+import { defaultFlybackWizardInputs, defaultDesignRequirements, minimumMaximumScalePerParameter, filterMas } from '/WebSharedComponents/assets/js/defaults.js'
 import MaximumDimensions from '../Toolbox/DesignRequirements/MaximumDimensions.vue'
 </script>
 
@@ -59,11 +59,11 @@ export default {
             //     const diff = newNumber - this.localData.extraHarmonics.length;
             //     for (let i = 0; i < diff; i++) {
             //         var newHarmonic;
-            //         console.log(deepCopy(defaultCmcWizardInputs))
+            //         console.log(deepCopy(defaultFlybackWizardInputs))
             //         if (this.localData.extraHarmonics.length == 0) {
             //             newHarmonic = {
-            //                 frequency: defaultCmcWizardInputs.extraHarmonics[0].frequency,
-            //                 amplitude: defaultCmcWizardInputs.extraHarmonics[0].amplitude,
+            //                 frequency: defaultFlybackWizardInputs.extraHarmonics[0].frequency,
+            //                 amplitude: defaultFlybackWizardInputs.extraHarmonics[0].amplitude,
             //             }
             //         }
             //         else {
@@ -126,35 +126,17 @@ export default {
                 class="rounded-2 col-12 p-0 text-center"
                 :class="combinedClass([$styleStore.wizard.inputTitleFontSize, $styleStore.wizard.inputLabelBgColor, $styleStore.wizard.inputTextColor])"
             >
-                {{'CMC Wizard'}}
+                {{'Flyback Wizard'}}
             </label>
         </div>
         <div class="row mt-2 ps-2">
-            <ElementFromListRadio class="ps-3"
-                :name="'numberPhases'"
-                :dataTestLabel="dataTestLabel + '-NumberPhases'"
-                :replaceTitle="'How many phases do you need?'"
-                :options="numberPhasesOptions"
-                :titleSameRow="true"
-                v-model="localData"
-                :labelWidthProportionClass="labelWidthProportionClass"
-                :valueWidthProportionClass="'col-2'"
-                :valueFontSize="$styleStore.wizard.inputFontSize"
-                :labelFontSize="$styleStore.wizard.inputTitleFontSize"
-                :labelBgColor="$styleStore.wizard.inputLabelBgColor"
-                :valueBgColor="$styleStore.wizard.inputLabelBgColor"
-                :textColor="$styleStore.wizard.inputTextColor"
-                @update="updateErrorMessage"
-            />
-        </div>
-        <div class="row mt-2 ps-2">
             <Dimension class="ps-3"
-                :name="'mainSignalFrequency'"
-                :replaceTitle="'What is your main frequency?'"
-                unit="Hz"
-                :dataTestLabel="dataTestLabel + '-MainSignalFrequency'"
-                :min="minimumMaximumScalePerParameter['frequency']['min']"
-                :max="minimumMaximumScalePerParameter['frequency']['max']"
+                :name="'inputVoltage'"
+                :replaceTitle="'What is your input voltage?'"
+                unit="V"
+                :dataTestLabel="dataTestLabel + '-InputVoltage'"
+                :min="minimumMaximumScalePerParameter['voltage']['min']"
+                :max="minimumMaximumScalePerParameter['voltage']['max']"
                 :labelWidthProportionClass="labelWidthProportionClass"
                 :valueWidthProportionClass="'col-lg-1 col-md-2'"
                 v-model="localData"
@@ -166,7 +148,7 @@ export default {
                 @update="updateErrorMessage"
             />
         </div>
-        <div class="row mt-2 ps-2">
+<!--        <div class="row mt-2 ps-2">
             <Dimension class="ps-3"
                 :name="'mainSignalRmsCurrent'"
                 :replaceTitle="'What the RMS current of main signal?'"
@@ -326,7 +308,7 @@ export default {
                 :style="$styleStore.designRequirements.inputBorderColor"
                 unit="m"
                 :dataTestLabel="dataTestLabel + '-MaximumDimensions'"
-                :defaultValue="defaultCmcWizardInputs.maximumDimensions"
+                :defaultValue="defaultFlybackWizardInputs.maximumDimensions"
                 :min="minimumMaximumScalePerParameter['dimension']['min']"
                 :max="minimumMaximumScalePerParameter['dimension']['max']"
                 v-model="localData.maximumDimensions"
@@ -339,7 +321,7 @@ export default {
                 :textColor="$styleStore.wizard.inputTextColor"
                 @update="updateErrorMessage"
             />
-        </div>
+        </div> -->
         <label
             class="text-danger col-12 pt-1"
             :style="$styleStore.wizard.inputFontSize">

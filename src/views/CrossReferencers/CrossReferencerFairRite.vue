@@ -23,6 +23,21 @@ export default {
     mounted() {
     },
     created() {
+
+        const style = getComputedStyle(document.body);
+        const theme = {
+            primary: style.getPropertyValue('--bs-primary'),
+            secondary: style.getPropertyValue('--bs-secondary'),
+            success: style.getPropertyValue('--bs-success'),
+            info: style.getPropertyValue('--bs-info'),
+            warning: style.getPropertyValue('--bs-warning'),
+            danger: style.getPropertyValue('--bs-danger'),
+            light: style.getPropertyValue('--bs-light'),
+            dark: style.getPropertyValue('--bs-dark'),
+            white: style.getPropertyValue('--bs-white'),
+            transparent: style.getPropertyValue('--bs-transparent'),
+        };
+        this.$styleStore.setTheme(theme);
     },
 }
 </script>

@@ -215,6 +215,12 @@ export default {
 
             return "";
         },
+        onCoreCrossReferencer() {
+            setTimeout(() => {this.$router.push('/core_cross_referencer' + this.suffix);}, 100);
+        },
+        onCoreShapeCrossReferencer() {
+            setTimeout(() => {this.$router.push('/core_shape_cross_referencer' + this.suffix);}, 100);
+        },
     }
 }
 </script>
@@ -223,9 +229,10 @@ export default {
     <div class="container">
         <div class="row">
             <h1 class="col-lg-12 text-center text-white">
-                Core Material Cross Referencer
+                Fair-Rite Core Material Cross Referencer
             </h1>
         </div>
+        <h6 class="col-lg-12 text-center text-white">Powered by OpenMagnetics</h6>
         <div class="row">
             <div class="col-lg-3 text-center text-white bg-dark m-0 p-0">
                 <label class="rounded-2 fs-5 col-12 mb-1 text-success"> 1<sup>st</sup> Step: What is your Current Core Material?</label>
@@ -247,12 +254,12 @@ export default {
                 <label :data-cy="dataTestLabel + '-ErrorMessage'" class="text-danger m-0" style="font-size: 0.9em"> {{errorMessage}}</label>
                 <div class="container">
                     <div class="row">
-                        <a :disabled="loading" :data-cy="dataTestLabel + '-changeTool'" :href="'/core_cross_referencer' + (suffix == ''? '' : suffix)" class="btn btn-secondary mb-2">I want to cross-reference the full core instead</a>
+                        <button :disabled="loading" :data-cy="dataTestLabel + '-changeTool'" @click="onCoreCrossReferencer" class="btn btn-secondary mb-2">I want to cross-reference the full core instead</button>
                     </div>
                 </div>
                 <div class="container">
                     <div class="row">
-                        <a :disabled="loading" :data-cy="dataTestLabel + '-changeTool'" :href="'/core_shape_cross_referencer' + (suffix == ''? '' : suffix)" class="btn btn-secondary">I want to cross-reference just the shape instead, keeping the material constant</a>
+                        <button :disabled="loading" :data-cy="dataTestLabel + '-changeTool'" @click="onCoreShapeCrossReferencer" class="btn btn-secondary">I want to cross-reference just the shape instead, keeping the material constant</button>
                     </div>
                 </div>
 
