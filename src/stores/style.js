@@ -573,6 +573,15 @@ export const useStyleStore = defineStore("style", () => {
                 "border-color": theme["primary"],
                 "font-size": '2rem',
             },
+            addButton: {
+                "background": theme["light"],
+                "color": theme["white"],
+                "border-color": theme["white"],
+            },
+            removeButton: {
+                "background": theme["danger"],
+                "color": theme["dark"],
+            },
         };
     }
 

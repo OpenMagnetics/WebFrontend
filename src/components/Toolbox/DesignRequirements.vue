@@ -1,10 +1,10 @@
 <script setup>
 import { ref } from 'vue'
 import { useMasStore } from '../../stores/mas'
-import { toTitleCase, toPascalCase } from '/WebSharedComponents/assets/js/utils.js'
+import { toTitleCase, toPascalCase, deepCopy } from '/WebSharedComponents/assets/js/utils.js'
 import { tooltipsMagneticSynthesisDesignRequirements } from '/WebSharedComponents/assets/js/texts.js'
 import { defaultDesignRequirements, compulsoryRequirements, designRequirementsOrdered, isolationSideOrdered, IsolationSideOrdered, minimumMaximumScalePerParameter} from '/WebSharedComponents/assets/js/defaults.js'
-import { Market, ConnectionType, Topology } from '/WebSharedComponents/assets/ts/MAS.ts'
+import { Market, ConnectionType, Topologies } from '/WebSharedComponents/assets/ts/MAS.ts'
 import Insulation from './DesignRequirements/Insulation.vue'
 import Dimension from '/WebSharedComponents/DataInput/Dimension.vue'
 import MaximumDimensions from './DesignRequirements/MaximumDimensions.vue'
@@ -104,6 +104,7 @@ export default {
             this.$emit("canContinue", this.canContinue(state));
         })
         this.$emit("canContinue", this.canContinue(this.masStore));
+
     },
     methods: {
         canContinue(store){
@@ -232,7 +233,7 @@ export default {
                     @update="updatedNumberElements"
                 />
 
-                <DimensionWithTolerance class="border-bottom py-2"
+                <DimensionWithTolerance class="border-bottom py-2 ps-2"
                     :style = "$styleStore.designRequirements.inputBorderColor"
                     v-if="masStore.mas.inputs.designRequirements.magnetizingInductance != null"
                     :name="'magnetizingInductance'"
@@ -341,7 +342,7 @@ export default {
                     @hasError="hasError"
                 />
 
-                <DimensionWithTolerance class="border-bottom py-2"
+                <DimensionWithTolerance class="border-bottom py-2 ps-2"
                     :style = "$styleStore.designRequirements.inputBorderColor"
                     v-if="masStore.mas.inputs.designRequirements.operatingTemperature != null"
                     :name="'operatingTemperature'"
@@ -435,7 +436,7 @@ export default {
                     v-if="masStore.mas.inputs.designRequirements.topology != null"
                     :name="'topology'"
                     :dataTestLabel="dataTestLabel + '-Topology'"
-                    :options="Object.values(Topology)"
+                    :options="Object.values(Topologies)"
                     v-model="masStore.mas.inputs.designRequirements"
                     :valueFontSize="$styleStore.designRequirements.inputFontSize"
                     :labelFontSize="$styleStore.designRequirements.inputTitleFontSize"

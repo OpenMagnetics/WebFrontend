@@ -5,6 +5,7 @@ import Dimension from '/WebSharedComponents/DataInput/Dimension.vue'
 import ElementFromListRadio from '/WebSharedComponents/DataInput/ElementFromListRadio.vue'
 import ElementFromList from '/WebSharedComponents/DataInput/ElementFromList.vue'
 import PairOfDimensions from '/WebSharedComponents/DataInput/PairOfDimensions.vue'
+import DimensionWithTolerance from '/WebSharedComponents/DataInput/DimensionWithTolerance.vue'
 import { defaultFlybackWizardInputs, defaultDesignRequirements, minimumMaximumScalePerParameter, filterMas } from '/WebSharedComponents/assets/js/defaults.js'
 import MaximumDimensions from '../Toolbox/DesignRequirements/MaximumDimensions.vue'
 </script>
@@ -55,62 +56,119 @@ export default {
 
         },
         updateNumberOutputs(newNumber) {
-            // if (newNumber > this.localData.extraHarmonics.length) {
-            //     const diff = newNumber - this.localData.extraHarmonics.length;
-            //     for (let i = 0; i < diff; i++) {
-            //         var newHarmonic;
-            //         console.log(deepCopy(defaultFlybackWizardInputs))
-            //         if (this.localData.extraHarmonics.length == 0) {
-            //             newHarmonic = {
-            //                 frequency: defaultFlybackWizardInputs.extraHarmonics[0].frequency,
-            //                 amplitude: defaultFlybackWizardInputs.extraHarmonics[0].amplitude,
-            //             }
-            //         }
-            //         else {
-            //             newHarmonic = {
-            //                 frequency: this.localData.extraHarmonics[this.localData.extraHarmonics.length - 1].frequency * 2,
-            //                 amplitude: this.localData.extraHarmonics[this.localData.extraHarmonics.length - 1].amplitude / 2,
-            //             }
-            //         }
+            if (newNumber > this.localData.outputsParameters.length) {
+                const diff = newNumber - this.localData.outputsParameters.length;
+                for (let i = 0; i < diff; i++) {
+                    var newOutput;
+                    console.log(deepCopy(defaultFlybackWizardInputs))
+                    if (this.localData.outputsParameters.length == 0) {
+                        newOutput = {
+                            voltage: defaultFlybackWizardInputs.outputsParameters[0].voltage,
+                            current: defaultFlybackWizardInputs.outputsParameters[0].current,
+                        }
+                    }
+                    else {
+                        newOutput = {
+                            voltage: this.localData.outputsParameters[this.localData.outputsParameters.length - 1].voltage,
+                            current: this.localData.outputsParameters[this.localData.outputsParameters.length - 1].current,
+                        }
+                    }
 
-            //         this.localData.extraHarmonics.push(newHarmonic);
-            //     }
-            // }
-            // else if (newNumber < this.localData.extraHarmonics.length) {
-            //     const diff = this.localData.extraHarmonics.length - newNumber;
-            //     this.localData.extraHarmonics.splice(-diff, diff);
-            // }
-            // this.updateErrorMessage();
+                    this.localData.outputsParameters.push(newOutput);
+                }
+            }
+            else if (newNumber < this.localData.outputsParameters.length) {
+                const diff = this.localData.outputsParameters.length - newNumber;
+                this.localData.outputsParameters.splice(-diff, diff);
+            }
+            this.updateErrorMessage();
         },
 
-        process() {
+        async process() {
             this.masStore.resetMas("power");
 
+            this.$mkf.ready.then(_ => {
+
+                const aux = {};
+                aux['inputVoltage'] = this.localData.inputVoltage;
+                aux['diodeVoltageDrop'] = this.localData.diodeVoltageDrop;
+                aux['maximumDrainSourceVoltage'] = this.localData.maximumDrainSourceVoltage;
+                aux['currentRippleRatio'] = this.localData.currentRippleRatio;
+                aux['efficiency'] = this.localData.efficiency;
+                const auxOperatingPoint = {};
+                auxOperatingPoint['outputVoltages'] = [];
+                auxOperatingPoint['outputCurrents'] = [];
+                this.localData.outputsParameters.forEach((elem) => {
+                    auxOperatingPoint['outputVoltages'].push(elem.voltage);
+                    auxOperatingPoint['outputCurrents'].push(elem.current);
+                })
+                auxOperatingPoint['switchingFrequency'] = this.localData.switchingFrequency;
+                auxOperatingPoint['ambientTemperature'] = this.localData.ambientTemperature;
+                aux['operatingPoints'] = [auxOperatingPoint];
+
+                const result = this.$mkf.calculate_flyback_inputs(JSON.stringify(aux));
+
+                if (result.startsWith("Exception")) {
+                    console.error(result);
+                    return;
+                }
+                else {
+                    this.masStore.mas.inputs = JSON.parse(result);
+                }
+
+                if (this.localData.insulationType != 'No') {
+
+                    this.masStore.mas.inputs.designRequirements.insulation = defaultDesignRequirements.insulation;
+                    this.masStore.mas.inputs.designRequirements.insulation.insulationType = this.localData.insulationType;
+                }
+                console.log(deepCopy(this.masStore.mas.inputs))
+
+                this.masStore.mas.magnetic.coil.functionalDescription = []
+                this.masStore.mas.inputs.operatingPoints[0].excitationsPerWinding.forEach((elem, index) => {
+                    this.masStore.mas.magnetic.coil.functionalDescription.push({
+                            "name": elem.name,
+                            "numberTurns": 0,
+                            "numberParallels": 0,
+                            "isolationSide": this.masStore.mas.inputs.designRequirements.isolationSides[index],
+                            "wire": ""
+                        });
+                })
+
+
+            }).catch(error => {
+                console.error(error);
+            });
+
         },
-        processAndReview() {
-            this.process();
+        async processAndReview() {
+            await this.process();
             this.$stateStore.resetMagneticTool();
             this.$stateStore.designLoaded();
-            this.$stateStore.selectApplication(this.$stateStore.SupportedApplications.Flyback);
+            this.$stateStore.selectApplication(this.$stateStore.SupportedApplications.Power);
             this.$stateStore.selectWorkflow("design");
             this.$stateStore.selectTool("agnosticTool");
             this.$stateStore.setCurrentToolSubsectionStatus("designRequirements", true);
             this.$stateStore.setCurrentToolSubsectionStatus("operatingPoints", true);
+            this.$stateStore.operatingPoints.modePerPoint = [];
+            this.masStore.mas.magnetic.coil.functionalDescription.forEach((_) => {
+                this.$stateStore.operatingPoints.modePerPoint.push(this.$stateStore.OperatingPointsMode.Manual);
+            })
+            console.log("deepCopy(this.masStore.mas.inputs)")
+            // console.log(deepCopy(this.masStore.mas.inputs))
+            // setTimeout(() => {console.warn(deepCopy(this.masStore.mas.inputs.operatingPoints[0]));}, 100);
             setTimeout(() => {this.$router.push('/magnetic_tool');}, 100);
         },
-        processAndAdvise() {
-            this.process();
+        async processAndAdvise() {
+            await this.process();
             this.$stateStore.resetMagneticTool();
             this.$stateStore.designLoaded();
-            console.log(this.$stateStore.SupportedApplications.Flyback)
-            console.log(this.$stateStore.SupportedApplications.Flyback)
-            console.log(this.$stateStore.SupportedApplications.Flyback)
-            this.$stateStore.selectApplication(this.$stateStore.SupportedApplications.Flyback);
+            this.$stateStore.selectApplication(this.$stateStore.SupportedApplications.Power);
             this.$stateStore.selectWorkflow("design");
             this.$stateStore.selectTool("agnosticTool");
             this.$stateStore.setCurrentToolSubsection("toolSelector");
             this.$stateStore.setCurrentToolSubsectionStatus("designRequirements", true);
             this.$stateStore.setCurrentToolSubsectionStatus("operatingPoints", true);
+            this.$stateStore.operatingPoints.modePerPoint = [this.$stateStore.OperatingPointsMode.Manual];
             setTimeout(() => {this.$router.push('/magnetic_tool');}, 100);
         },
     }
@@ -130,7 +188,7 @@ export default {
             </label>
         </div>
         <div class="row mt-2 ps-2">
-            <Dimension class="ps-3"
+            <DimensionWithTolerance class="ps-1"
                 :name="'inputVoltage'"
                 :replaceTitle="'What is your input voltage?'"
                 unit="V"
@@ -139,26 +197,10 @@ export default {
                 :max="minimumMaximumScalePerParameter['voltage']['max']"
                 :labelWidthProportionClass="labelWidthProportionClass"
                 :valueWidthProportionClass="'col-lg-1 col-md-2'"
-                v-model="localData"
-                :valueFontSize="$styleStore.wizard.inputFontSize"
-                :labelFontSize="$styleStore.wizard.inputTitleFontSize"
-                :labelBgColor="$styleStore.wizard.inputLabelBgColor"
-                :valueBgColor="$styleStore.wizard.inputValueBgColor"
-                :textColor="$styleStore.wizard.inputTextColor"
-                @update="updateErrorMessage"
-            />
-        </div>
-<!--        <div class="row mt-2 ps-2">
-            <Dimension class="ps-3"
-                :name="'mainSignalRmsCurrent'"
-                :replaceTitle="'What the RMS current of main signal?'"
-                unit="A"
-                :dataTestLabel="dataTestLabel + '-MainSignalRmsCurrent'"
-                :min="minimumMaximumScalePerParameter['current']['min']"
-                :max="minimumMaximumScalePerParameter['current']['max']"
-                v-model="localData"
-                :labelWidthProportionClass="labelWidthProportionClass"
-                :valueWidthProportionClass="'col-lg-1 col-md-2'"
+                v-model="localData.inputVoltage"
+                :addButtonStyle="$styleStore.wizard.addButton"
+                :removeButtonBgColor="$styleStore.wizard.removeButton.background"
+                :titleFontSize="$styleStore.wizard.inputTitleFontSize"
                 :valueFontSize="$styleStore.wizard.inputFontSize"
                 :labelFontSize="$styleStore.wizard.inputTitleFontSize"
                 :labelBgColor="$styleStore.wizard.inputLabelBgColor"
@@ -169,10 +211,10 @@ export default {
         </div>
         <div class="row mt-2 ps-2">
             <ElementFromList class="ps-3"
-                :name="'numberExtraHarmonics'"
-                :replaceTitle="'Do you have harmonics? how many?'"
-                :dataTestLabel="dataTestLabel + '-NumberExtraHarmonics'"
-                :options="Array.from({length: 13}, (_, i) => i)"
+                :name="'numberOutputs'"
+                :replaceTitle="'How many outputs?'"
+                :dataTestLabel="dataTestLabel + '-NumberOutputs'"
+                :options="Array.from({length: 10}, (_, i) => i + 1)"
                 :titleSameRow="true"
                 v-model="localData"
                 :labelWidthProportionClass="labelWidthProportionClass"
@@ -182,38 +224,38 @@ export default {
                 :labelBgColor="$styleStore.wizard.inputLabelBgColor"
                 :valueBgColor="$styleStore.wizard.inputValueBgColor"
                 :textColor="$styleStore.wizard.inputTextColor"
-                @update="updateHarmonicPoints"
+                @update="updateNumberOutputs"
             />
         </div>
         <div class="row mt-2 ps-2">
-            <div class="offset-2 col-9" v-for="datum, index in localData.extraHarmonics">
+            <div class="offset-2 col-9" v-for="datum, index in localData.outputsParameters">
                 <PairOfDimensions
                     class="ps-3 border-top border-bottom pt-2"
-                    :names="['frequency', 'amplitude']"
-                    :units="['Hz', 'A']"
-                    :dataTestLabel="dataTestLabel + '-ExtraHarmonics'"
-                    :mins="[minimumMaximumScalePerParameter['frequency']['min'], minimumMaximumScalePerParameter['current']['min']]"
-                    :maxs="[minimumMaximumScalePerParameter['frequency']['max'], minimumMaximumScalePerParameter['current']['max']]"
-                    v-model="localData.extraHarmonics[index]"
+                    :names="['voltage', 'current']"
+                    :units="['V', 'A']"
+                    :dataTestLabel="dataTestLabel + '-outputsParameters'"
+                    :mins="[minimumMaximumScalePerParameter['voltage']['min'], minimumMaximumScalePerParameter['current']['min']]"
+                    :maxs="[minimumMaximumScalePerParameter['voltage']['max'], minimumMaximumScalePerParameter['current']['max']]"
+                    v-model="localData.outputsParameters[index]"
                     :labelWidthProportionClass="labelWidthProportionClass"
                     :valueWidthProportionClass="valueWidthProportionClass"
                     :valueFontSize="$styleStore.wizard.inputFontSize"
                     :labelFontSize="$styleStore.wizard.inputFontSize"
                     :labelBgColor="$styleStore.wizard.inputLabelBgColor"
                     :valueBgColor="$styleStore.wizard.inputValueBgColor"
-                    :textColor="localData.extraHarmonics[index].frequency <= 0 || localData.extraHarmonics[index].current <= 0? $styleStore.wizard.inputErrorTextColor : $styleStore.wizard.inputTextColor"
+                    :textColor="localData.outputsParameters[index].voltage <= 0 || localData.outputsParameters[index].current <= 0? $styleStore.wizard.inputErrorTextColor : $styleStore.wizard.inputTextColor"
                     @update="updateErrorMessage"
                 />
             </div>
         </div>
         <div class="row mt-2 ps-2">
             <Dimension class="ps-3"
-                :name="'minimumInductance'"
-                :replaceTitle="'What the minimum inductance you need?'"
-                unit="H"
-                :dataTestLabel="dataTestLabel + '-MinimumInductance'"
-                :min="minimumMaximumScalePerParameter['inductance']['min']"
-                :max="minimumMaximumScalePerParameter['inductance']['max']"
+                :name="'switchingFrequency'"
+                :replaceTitle="'At what frequency do you want to switch?'"
+                unit="Hz"
+                :dataTestLabel="dataTestLabel + '-switchingFrequency'"
+                :min="minimumMaximumScalePerParameter['frequency']['min']"
+                :max="minimumMaximumScalePerParameter['frequency']['max']"
                 v-model="localData"
                 :labelWidthProportionClass="labelWidthProportionClass"
                 :valueWidthProportionClass="'col-lg-1 col-md-2'"
@@ -224,54 +266,93 @@ export default {
                 :textColor="$styleStore.wizard.inputTextColor"
                 @update="updateErrorMessage"
             />
-        </div>
-        <div class="row mt-2 ps-2">
-            <ElementFromList class="ps-3"
-                :name="'numberImpedancePoints'"
-                :replaceTitle="'How many impedance points do you want to define?'"
-                :dataTestLabel="dataTestLabel + '-NumberExtraHarmonics'"
-                :options="Array.from({length: 13}, (_, i) => i)"
-                :titleSameRow="true"
-                v-model="localData"
-                :labelWidthProportionClass="labelWidthProportionClass"
-                :valueWidthProportionClass="valueWidthProportionClass"
-                :valueFontSize="$styleStore.wizard.inputFontSize"
-                :labelFontSize="$styleStore.wizard.inputTitleFontSize"
-                :labelBgColor="$styleStore.wizard.inputLabelBgColor"
-                :valueBgColor="$styleStore.wizard.inputValueBgColor"
-                :textColor="$styleStore.wizard.inputTextColor"
-                @update="updateImpedancePoints"
-            />
-        </div>
-        <div class="row mt-2 ps-2">
-            <div class="offset-2 col-9" v-for="datum, index in localData.impedancePoints">
-                <PairOfDimensions
-                    class="ps-3 border-top border-bottom pt-2"
-                    :names="['frequency', 'impedance']"
-                    :units="['Hz', 'Ω']"
-                    :dataTestLabel="dataTestLabel + '-ImpedancePoints'"
-                    :mins="[minimumMaximumScalePerParameter['frequency']['min'], minimumMaximumScalePerParameter['impedance']['min']]"
-                    :maxs="[minimumMaximumScalePerParameter['frequency']['max'], minimumMaximumScalePerParameter['impedance']['max']]"
-                    v-model="localData.impedancePoints[index]"
-                    :labelWidthProportionClass="labelWidthProportionClass"
-                    :valueWidthProportionClass="valueWidthProportionClass"
-                    :valueFontSize="$styleStore.wizard.inputFontSize"
-                    :labelFontSize="$styleStore.wizard.inputFontSize"
-                    :labelBgColor="$styleStore.wizard.inputLabelBgColor"
-                    :valueBgColor="$styleStore.wizard.inputValueBgColor"
-                    :textColor="localData.impedancePoints[index].frequency <= 0 || localData.impedancePoints[index].impedance <= 0? $styleStore.wizard.inputErrorTextColor : $styleStore.wizard.inputTextColor"
-                    @update="updateErrorMessage"
-                />
-            </div>
         </div>
         <div class="row mt-2 ps-2">
             <Dimension class="ps-3"
                 :name="'ambientTemperature'"
-                :replaceTitle="'What ambiente temperature around the component?'"
+                :replaceTitle="'What is the ambient temperature around the component?'"
                 unit="°C"
                 :dataTestLabel="dataTestLabel + '-AmbientTemperature'"
                 :min="minimumMaximumScalePerParameter['temperature']['min']"
                 :max="minimumMaximumScalePerParameter['temperature']['max']"
+                v-model="localData"
+                :labelWidthProportionClass="labelWidthProportionClass"
+                :valueWidthProportionClass="'col-lg-1 col-md-2'"
+                :valueFontSize="$styleStore.wizard.inputFontSize"
+                :labelFontSize="$styleStore.wizard.inputTitleFontSize"
+                :labelBgColor="$styleStore.wizard.inputLabelBgColor"
+                :valueBgColor="$styleStore.wizard.inputValueBgColor"
+                :textColor="$styleStore.wizard.inputTextColor"
+                @update="updateErrorMessage"
+            />
+        </div>
+        <div class="row mt-2 ps-2">
+            <Dimension class="ps-3"
+                :name="'diodeVoltageDrop'"
+                :replaceTitle="'What is the voltage drop in the diode?'"
+                unit="V"
+                :dataTestLabel="dataTestLabel + '-DiodeVoltageDrop'"
+                :min="minimumMaximumScalePerParameter['voltage']['min']"
+                :max="minimumMaximumScalePerParameter['voltage']['max']"
+                v-model="localData"
+                :labelWidthProportionClass="labelWidthProportionClass"
+                :valueWidthProportionClass="'col-lg-1 col-md-2'"
+                :valueFontSize="$styleStore.wizard.inputFontSize"
+                :labelFontSize="$styleStore.wizard.inputTitleFontSize"
+                :labelBgColor="$styleStore.wizard.inputLabelBgColor"
+                :valueBgColor="$styleStore.wizard.inputValueBgColor"
+                :textColor="$styleStore.wizard.inputTextColor"
+                @update="updateErrorMessage"
+            />
+        </div>
+        <div class="row mt-2 ps-2">
+            <Dimension class="ps-3"
+                :name="'maximumDrainSourceVoltage'"
+                :replaceTitle="'What maximum drain-source voltage can the switch withstand?'"
+                unit="V"
+                :dataTestLabel="dataTestLabel + '-MaximumDrainSourceVoltage'"
+                :min="minimumMaximumScalePerParameter['voltage']['min']"
+                :max="minimumMaximumScalePerParameter['voltage']['max']"
+                v-model="localData"
+                :labelWidthProportionClass="labelWidthProportionClass"
+                :valueWidthProportionClass="'col-lg-1 col-md-2'"
+                :valueFontSize="$styleStore.wizard.inputFontSize"
+                :labelFontSize="$styleStore.wizard.inputTitleFontSize"
+                :labelBgColor="$styleStore.wizard.inputLabelBgColor"
+                :valueBgColor="$styleStore.wizard.inputValueBgColor"
+                :textColor="$styleStore.wizard.inputTextColor"
+                @update="updateErrorMessage"
+            />
+        </div>
+        <div class="row mt-2 ps-2">
+            <Dimension class="ps-3"
+                :name="'currentRippleRatio'"
+                :replaceTitle="'What is the maximum current ripple you can have?'"
+                unit="%"
+                :visualScale="100"
+                :dataTestLabel="dataTestLabel + '-CurrentRippleRatio'"
+                :min="0"
+                :max="1"
+                v-model="localData"
+                :labelWidthProportionClass="labelWidthProportionClass"
+                :valueWidthProportionClass="'col-lg-1 col-md-2'"
+                :valueFontSize="$styleStore.wizard.inputFontSize"
+                :labelFontSize="$styleStore.wizard.inputTitleFontSize"
+                :labelBgColor="$styleStore.wizard.inputLabelBgColor"
+                :valueBgColor="$styleStore.wizard.inputValueBgColor"
+                :textColor="$styleStore.wizard.inputTextColor"
+                @update="updateErrorMessage"
+            />
+        </div>
+        <div class="row mt-2 ps-2">
+            <Dimension class="ps-3"
+                :name="'efficiency'"
+                :replaceTitle="'What is target efficiency?'"
+                unit="%"
+                :visualScale="100"
+                :dataTestLabel="dataTestLabel + '-Efficiency'"
+                :min="0"
+                :max="1"
                 v-model="localData"
                 :labelWidthProportionClass="labelWidthProportionClass"
                 :valueWidthProportionClass="'col-lg-1 col-md-2'"
@@ -301,27 +382,6 @@ export default {
                 @update="updateErrorMessage"
             />
         </div>
-        <div class="row mt-2 ps-2">
-
-            <MaximumDimensions class="ps-3"
-                :replaceTitle="'Do you have dimensional restrictions?'"
-                :style="$styleStore.designRequirements.inputBorderColor"
-                unit="m"
-                :dataTestLabel="dataTestLabel + '-MaximumDimensions'"
-                :defaultValue="defaultFlybackWizardInputs.maximumDimensions"
-                :min="minimumMaximumScalePerParameter['dimension']['min']"
-                :max="minimumMaximumScalePerParameter['dimension']['max']"
-                v-model="localData.maximumDimensions"
-                :addButtonStyle="$styleStore.wizard.requirementButton"
-                :valueFontSize="$styleStore.wizard.inputFontSize"
-                :titleFontSize="$styleStore.wizard.inputTitleFontSize"
-                :labelBgColor="$styleStore.wizard.inputLabelBgColor"
-                :valueBgColor="$styleStore.wizard.inputValueBgColor"
-                :errorTextColor="$styleStore.wizard.inputErrorTextColor"
-                :textColor="$styleStore.wizard.inputTextColor"
-                @update="updateErrorMessage"
-            />
-        </div> -->
         <label
             class="text-danger col-12 pt-1"
             :style="$styleStore.wizard.inputFontSize">

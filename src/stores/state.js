@@ -177,7 +177,6 @@ export const useStateStore = defineStore("state", () => {
                 masStore.mas.inputs.operatingPoints[0].excitationsPerWinding.push(deepCopy(Defaults.defaultOperatingPointExcitation));
                 this.operatingPointsCircuitSimulator.confirmedColumns[0].push(false);
             }
-            console.warn(masStore.mas.inputs.operatingPoints[0].excitationsPerWinding)
         }
     }
 

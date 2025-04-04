@@ -501,7 +501,7 @@ export default {
         <div class="row mt-2 ps-2">
             <Dimension class="ps-3"
                 :name="'ambientTemperature'"
-                :replaceTitle="'What ambiente temperature around the component?'"
+                :replaceTitle="'What is the ambient temperature around the component?'"
                 unit="°C"
                 :dataTestLabel="dataTestLabel + '-AmbientTemperature'"
                 :min="minimumMaximumScalePerParameter['temperature']['min']"

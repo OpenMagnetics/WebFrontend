@@ -186,7 +186,7 @@ export default {
                 :valueBgColor="valueBgColor"
                 :textColor="textColor"
                 :unitExtraStyleClass="unitExtraStyleClass"
-                class="offset-1 col-11"
+                class="offset-1 col-11 ps-5"
             />            
         </div>
         <div class="row">
