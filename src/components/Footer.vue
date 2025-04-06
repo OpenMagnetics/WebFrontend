@@ -6,7 +6,7 @@
                 <li class="nav-item"><a data-cy="Footer-cookie-policy-link" href="/cookie_policy" class="nav-link px-2 text-muted">Cookie Policy</a></li>
                 <li class="nav-item"><a data-cy="Footer-legal-link" href="/legal_notice" class="nav-link px-2 text-muted">Legal</a></li>
             </ul>
-            <p class="text-center text-muted m-1">© 2022-{{new Date().getFullYear()}} Open Magnetics</p>
+            <p class="text-center text-muted m-1">© 2022-{{new Date().getFullYear()}} OpenMagnetics</p>
         </footer>
     </div>
 </template>
