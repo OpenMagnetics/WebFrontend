@@ -66,12 +66,14 @@ export default {
                         newOutput = {
                             voltage: defaultFlybackWizardInputs.outputsParameters[0].voltage,
                             current: defaultFlybackWizardInputs.outputsParameters[0].current,
+                            turnsRatio: defaultFlybackWizardInputs.outputsParameters[0].turnsRatio,
                         }
                     }
                     else {
                         newOutput = {
                             voltage: this.localData.outputsParameters[this.localData.outputsParameters.length - 1].voltage,
                             current: this.localData.outputsParameters[this.localData.outputsParameters.length - 1].current,
+                            turnsRatio: this.localData.outputsParameters[this.localData.outputsParameters.length - 1].turnsRatio,
                         }
                     }
 
