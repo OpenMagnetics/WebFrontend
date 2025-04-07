@@ -20,7 +20,7 @@ export default {
         },
         labelWidthProportionClass:{
             type: String,
-            default: 'col-xs-12 col-md-8'
+            default: 'col-xs-12 col-md-9'
         },
         valueWidthProportionClass:{
             type: String,
@@ -30,12 +30,15 @@ export default {
     data() {
         const masStore = useMasStore();
         const designLevelOptions = ['Help me with the design', 'I know the design I want'];
+        const mosfetOptions = ['Its maximum duty cycle', 'Its maximum drain-source voltage'];
         const insulationTypes = ['No', 'Basic', 'Reinforced'];
         const errorMessage = "";
         const localData = deepCopy(defaultFlybackWizardInputs);
+        localData["mosfetInputType"] = mosfetOptions[0];
         return {
             masStore,
             designLevelOptions,
+            mosfetOptions,
             insulationTypes,
             localData,
             errorMessage,
@@ -50,11 +53,6 @@ export default {
     methods: {
         updateErrorMessage() {
             this.errorMessage = "";
-            if (this.localData.switchingFrequency <= 0) {
-                if (this.errorMessage == "")
-                    this.errorMessage = "Main signal frequency must be positive";
-            }
-
         },
         updateNumberOutputs(newNumber) {
             if (newNumber > this.localData.outputsParameters.length) {
@@ -103,7 +101,12 @@ export default {
                     aux['desiredTurnsRatios'] = [];
                 }
                 else {
-                    aux['maximumDrainSourceVoltage'] = this.localData.maximumDrainSourceVoltage;
+                    if (this.localData.mosfetInputType == 'Its maximum duty cycle') {
+                        aux['maximumDutyCycle'] = this.localData.maximumDutyCycle;
+                    }
+                    else {
+                        aux['maximumDrainSourceVoltage'] = this.localData.maximumDrainSourceVoltage;
+                    }
                     aux['currentRippleRatio'] = this.localData.currentRippleRatio;
                 }
 
@@ -131,6 +134,7 @@ export default {
 
                 if (result.startsWith("Exception")) {
                     console.error(result);
+                    this.errorMessage = result;
                     return;
                 }
                 else {
@@ -154,15 +158,17 @@ export default {
                             "wire": ""
                         });
                 })
-
+                this.errorMessage = "";
 
             }).catch(error => {
                 console.error(error);
+                this.errorMessage = error;
             });
 
         },
         async processAndReview() {
             await this.process();
+
             this.$stateStore.resetMagneticTool();
             this.$stateStore.designLoaded();
             this.$stateStore.selectApplication(this.$stateStore.SupportedApplications.Power);
@@ -174,7 +180,6 @@ export default {
             this.masStore.mas.magnetic.coil.functionalDescription.forEach((_) => {
                 this.$stateStore.operatingPoints.modePerPoint.push(this.$stateStore.OperatingPointsMode.Manual);
             })
-            console.log("deepCopy(this.masStore.mas.inputs)")
             // console.log(deepCopy(this.masStore.mas.inputs))
             // setTimeout(() => {console.warn(deepCopy(this.masStore.mas.inputs.operatingPoints[0]));}, 100);
             setTimeout(() => {this.$router.push('/magnetic_tool');}, 100);
@@ -370,8 +375,26 @@ export default {
                 @update="updateErrorMessage"
             />
         </div>
+        <div class="row mt-2 ps-2">
+            <ElementFromListRadio class="ps-3"
+                :name="'mosfetInputType'"
+                :dataTestLabel="dataTestLabel + '-NumberPhases'"
+                :replaceTitle="'What do you know about your switch?'"
+                :options="mosfetOptions"
+                :titleSameRow="true"
+                v-model="localData"
+                :labelWidthProportionClass="'col-6'"
+                :valueWidthProportionClass="'col-3'"
+                :valueFontSize="$styleStore.wizard.inputFontSize"
+                :labelFontSize="$styleStore.wizard.inputTitleFontSize"
+                :labelBgColor="$styleStore.wizard.inputLabelBgColor"
+                :valueBgColor="$styleStore.wizard.inputLabelBgColor"
+                :textColor="$styleStore.wizard.inputTextColor"
+                @update="updateErrorMessage"
+            />
+        </div>
         <div
-            v-if="localData.designLevel == 'Help me with the design'"
+            v-if="localData.designLevel == 'Help me with the design' && localData.mosfetInputType == 'Its maximum drain-source voltage'"
             class="row mt-2 ps-2"
         >
             <Dimension class="ps-3"
@@ -381,6 +404,29 @@ export default {
                 :dataTestLabel="dataTestLabel + '-MaximumDrainSourceVoltage'"
                 :min="minimumMaximumScalePerParameter['voltage']['min']"
                 :max="minimumMaximumScalePerParameter['voltage']['max']"
+                v-model="localData"
+                :labelWidthProportionClass="labelWidthProportionClass"
+                :valueWidthProportionClass="'col-lg-1 col-md-2'"
+                :valueFontSize="$styleStore.wizard.inputFontSize"
+                :labelFontSize="$styleStore.wizard.inputTitleFontSize"
+                :labelBgColor="$styleStore.wizard.inputLabelBgColor"
+                :valueBgColor="$styleStore.wizard.inputValueBgColor"
+                :textColor="$styleStore.wizard.inputTextColor"
+                @update="updateErrorMessage"
+            />
+        </div>
+        <div
+            v-if="localData.designLevel == 'Help me with the design' && localData.mosfetInputType == 'Its maximum duty cycle'"
+            class="row mt-2 ps-2"
+        >
+            <Dimension class="ps-3"
+                :name="'maximumDutyCycle'"
+                :replaceTitle="'What maximum duty cycle can the switch withstand?'"
+                unit="%"
+                :dataTestLabel="dataTestLabel + '-MaximumDutyCycle'"
+                :visualScale="100"
+                :min="0.01"
+                :max="1"
                 v-model="localData"
                 :labelWidthProportionClass="labelWidthProportionClass"
                 :valueWidthProportionClass="'col-lg-1 col-md-2'"
@@ -402,7 +448,7 @@ export default {
                 unit="%"
                 :visualScale="100"
                 :dataTestLabel="dataTestLabel + '-CurrentRippleRatio'"
-                :min="0"
+                :min="0.01"
                 :max="1"
                 v-model="localData"
                 :labelWidthProportionClass="labelWidthProportionClass"
@@ -423,6 +469,8 @@ export default {
                 :dataTestLabel="dataTestLabel + '-AmbientTemperature'"
                 :min="minimumMaximumScalePerParameter['temperature']['min']"
                 :max="minimumMaximumScalePerParameter['temperature']['max']"
+                :allowNegative="true"
+                :allowZero="true"
                 v-model="localData"
                 :labelWidthProportionClass="labelWidthProportionClass"
                 :valueWidthProportionClass="'col-lg-1 col-md-2'"
@@ -442,6 +490,7 @@ export default {
                 :dataTestLabel="dataTestLabel + '-DiodeVoltageDrop'"
                 :min="minimumMaximumScalePerParameter['voltage']['min']"
                 :max="minimumMaximumScalePerParameter['voltage']['max']"
+                :allowZero="true"
                 v-model="localData"
                 :labelWidthProportionClass="labelWidthProportionClass"
                 :valueWidthProportionClass="'col-lg-1 col-md-2'"
@@ -460,7 +509,7 @@ export default {
                 unit="%"
                 :visualScale="100"
                 :dataTestLabel="dataTestLabel + '-Efficiency'"
-                :min="0"
+                :min="0.01"
                 :max="1"
                 v-model="localData"
                 :labelWidthProportionClass="labelWidthProportionClass"

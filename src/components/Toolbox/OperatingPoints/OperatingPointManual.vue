@@ -127,7 +127,6 @@ export default {
                 >
                     {{masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].name + ' - ' + masStore.mas.magnetic.coil.functionalDescription[currentWindingIndex].name}}
                 </label>
-                {{masStore.mas.inputs.operatingPoints[0].excitationsPerWinding[2].voltage.processed.label}}
                 <WaveformInputCommon
                     :style="$styleStore.operatingPoints.main"
                     class="scrollable-column border-bottom border-top rounded-4 border-2"
