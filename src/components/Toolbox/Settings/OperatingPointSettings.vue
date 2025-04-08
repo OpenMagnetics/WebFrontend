@@ -11,6 +11,14 @@ export default {
             type: String,
             default: 'SettingsModal',
         },
+        labelWidthProportionClass: {
+            type: String,
+            default: 'col-7'
+        },
+        valueWidthProportionClass: {
+            type: String,
+            default: 'col-5'
+        },
     },
     data() {
         const settingsChanged = false;
@@ -54,10 +62,10 @@ export default {
                 </div>
                 <div class="modal-body container">
                     <div class="row" :style="$styleStore.contextMenu.setting">
-                        <h5 class="offset-0 col-6 text-end">Show advanced outputs</h5>
-                        <div class="col-sm-6 col-md-6 col-lg-4">
+                        <h5 class="offset-0 text-end" :class="labelWidthProportionClass">Show advanced outputs</h5>
+                        <div :class="valueWidthProportionClass">
                             <label v-tooltip="'Choose between basic or advanced output'" class="fs-6 p-0 ps-3 pe-3 text-end col-4 ">No</label>
-                            <input :data-cy="'Settings-Modal-bar-spider-button'" v-model="localData.operatingPointAdvancedMode"  @change="onSettingChanged($event, 'operatingPointAdvancedMode')" type="range" class="form-range col-1 pt-2" min="0" max="1" step="1" style="width: 30px">
+                            <input :data-cy="'Settings-Modal-bar-spider-button'" v-model="localData.operatingPointAdvancedMode"  @change="onSettingChanged($event, 'advancedMode')" type="range" class="form-range col-1 pt-2" min="0" max="1" step="1" style="width: 30px">
                             <label v-tooltip="'Choose between basic or advanced output'" class="fs-6 p-0 ps-3 col-6 text-start">Yes</label>
                         </div>
                     </div>

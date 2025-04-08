@@ -138,6 +138,16 @@ export default {
                 {{'Settings'}}
             </button>
             <button
+                :style="$styleStore.contextMenu.redrawButton"
+                v-if="showMagneticBuilderSettingsOption"  
+                :data-cy="dataTestLabel + 'redraw-button'"
+                class="btn mx-auto d-block mt-4 col-6 col-sm-6 col-md-12"
+                data-bs-toggle="modal"
+                :data-bs-target="modalTarget"
+            >
+                {{'Redraw'}}
+            </button>
+            <button
                 :style="$styleStore.contextMenu.editButton"
                 v-if="showEditOption"  
                 :data-cy="dataTestLabel + 'edit-from-viewer-button'"

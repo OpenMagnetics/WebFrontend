@@ -96,7 +96,36 @@ export default {
                 aux['efficiency'] = this.localData.efficiency;
                 if (this.localData.designLevel == 'I know the design I want') {
                     aux['desiredInductance'] = this.localData.inductance;
-                    aux['desiredDutyCycle'] = [this.localData.dutyCycle];
+                    const auxDesiredDutyCycle = []
+                    if (this.localData.inputVoltage.minimum != null) {
+                        if (this.localData.dutyCycle.minimum != null) {
+                            auxDesiredDutyCycle.push(this.localData.dutyCycle.minimum);   
+                        }
+                        else {
+                            this.errorMessage = "Missing duty cycle for minimum voltage";
+                            return;
+                        }
+                    }
+
+                    if (this.localData.inputVoltage.nominal != null) {
+                        if (this.localData.dutyCycle.nominal != null) {
+                            auxDesiredDutyCycle.push(this.localData.dutyCycle.nominal);   
+                        }
+                        else {
+                            this.errorMessage = "Missing duty cycle for nominal voltage";
+                            return;
+                        }
+                    }
+                    if (this.localData.inputVoltage.maximum != null) {
+                        if (this.localData.dutyCycle.maximum != null) {
+                            auxDesiredDutyCycle.push(this.localData.dutyCycle.maximum);   
+                        }
+                        else {
+                            this.errorMessage = "Missing duty cycle for maximum voltage";
+                            return;
+                        }
+                    }
+                    aux['desiredDutyCycle'] = [auxDesiredDutyCycle];
                     aux['desiredDeadTime'] = [this.localData.deadTime];
                     aux['desiredTurnsRatios'] = [];
                 }
@@ -180,9 +209,12 @@ export default {
             this.masStore.mas.magnetic.coil.functionalDescription.forEach((_) => {
                 this.$stateStore.operatingPoints.modePerPoint.push(this.$stateStore.OperatingPointsMode.Manual);
             })
-            // console.log(deepCopy(this.masStore.mas.inputs))
-            // setTimeout(() => {console.warn(deepCopy(this.masStore.mas.inputs.operatingPoints[0]));}, 100);
-            setTimeout(() => {this.$router.push('/magnetic_tool');}, 100);
+            if (this.errorMessage == "") {
+                setTimeout(() => {this.$router.push('/magnetic_tool');}, 100);
+            }
+            else {
+                setTimeout(() => {this.errorMessage = ""}, 5000);
+            }
         },
         async processAndAdvise() {
             await this.process();
@@ -195,7 +227,12 @@ export default {
             this.$stateStore.setCurrentToolSubsectionStatus("designRequirements", true);
             this.$stateStore.setCurrentToolSubsectionStatus("operatingPoints", true);
             this.$stateStore.operatingPoints.modePerPoint = [this.$stateStore.OperatingPointsMode.Manual];
-            setTimeout(() => {this.$router.push('/magnetic_tool');}, 100);
+            if (this.errorMessage == "") {
+                setTimeout(() => {this.$router.push('/magnetic_tool');}, 100);
+            }
+            else {
+                setTimeout(() => {this.errorMessage = ""}, 5000);
+            }
         },
     }
 }
@@ -252,6 +289,33 @@ export default {
                 :textColor="$styleStore.wizard.inputTextColor"
                 @update="updateErrorMessage"
             />
+        </div>
+        <div
+            v-if="localData.designLevel == 'I know the design I want'"
+            class="row mt-2 ps-2"
+        >
+            <DimensionWithTolerance class="ps-1"
+                :name="'dutyCycle'"
+                :replaceTitle="'What is your target duty cycle?'"
+                unit="%"
+                :visualScale="100"
+                :min="0.01"
+                :max="1"
+                :allowUnsorted="true"
+                :labelWidthProportionClass="labelWidthProportionClass"
+                :valueWidthProportionClass="'col-lg-1 col-md-2'"
+                v-model="localData.dutyCycle"
+                :addButtonStyle="$styleStore.wizard.addButton"
+                :removeButtonBgColor="$styleStore.wizard.removeButton.background"
+                :titleFontSize="$styleStore.wizard.inputTitleFontSize"
+                :valueFontSize="$styleStore.wizard.inputFontSize"
+                :labelFontSize="$styleStore.wizard.inputTitleFontSize"
+                :labelBgColor="$styleStore.wizard.inputLabelBgColor"
+                :valueBgColor="$styleStore.wizard.inputValueBgColor"
+                :textColor="$styleStore.wizard.inputTextColor"
+                @update="updateErrorMessage"
+            />
+
         </div>
         <div class="row mt-2 ps-2">
             <ElementFromList class="ps-3"
@@ -353,29 +417,9 @@ export default {
             />
         </div>
         <div
-            v-if="localData.designLevel == 'I know the design I want'"
+            v-if="localData.designLevel == 'Help me with the design'"
             class="row mt-2 ps-2"
-        >
-            <Dimension class="ps-3"
-                :name="'dutyCycle'"
-                :replaceTitle="'What is your target duty cycle?'"
-                unit="%"
-                :visualScale="100"
-                :min="0"
-                :max="1"
-                :dataTestLabel="dataTestLabel + '-DutyCycle'"
-                v-model="localData"
-                :labelWidthProportionClass="labelWidthProportionClass"
-                :valueWidthProportionClass="'col-lg-1 col-md-2'"
-                :valueFontSize="$styleStore.wizard.inputFontSize"
-                :labelFontSize="$styleStore.wizard.inputTitleFontSize"
-                :labelBgColor="$styleStore.wizard.inputLabelBgColor"
-                :valueBgColor="$styleStore.wizard.inputValueBgColor"
-                :textColor="$styleStore.wizard.inputTextColor"
-                @update="updateErrorMessage"
-            />
-        </div>
-        <div class="row mt-2 ps-2">
+            >
             <ElementFromListRadio class="ps-3"
                 :name="'mosfetInputType'"
                 :dataTestLabel="dataTestLabel + '-NumberPhases'"
