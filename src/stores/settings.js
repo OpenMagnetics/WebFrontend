@@ -29,7 +29,7 @@ export const useSettingsStore = defineStore("settings", () => {
         allowStacks: true,
         allowToroidalCores: true,
         advancedMode: false,
-        autoRedraw: false,
+        autoRedraw: true,
     })
 
     const magneticAdviserSettings = ref({
