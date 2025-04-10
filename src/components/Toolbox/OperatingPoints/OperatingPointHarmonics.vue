@@ -248,8 +248,6 @@ export default {
                     {{'Current harmonics'}}
                 </label>
 
-                {{masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[0].current.harmonics.amplitudes.length}}
-                {{masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[1].current.harmonics.amplitudes.length}}
                 <div 
                     v-if="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex] != null && masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex].current.harmonics"
                     v-for="index in masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex].current.harmonics.amplitudes.length" :key="index">
