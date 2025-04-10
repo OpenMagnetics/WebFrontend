@@ -139,11 +139,10 @@ export default {
             </button>
             <button
                 :style="$styleStore.contextMenu.redrawButton"
-                v-if="showMagneticBuilderSettingsOption"  
+                v-if="showMagneticBuilderSettingsOption && !$settingsStore.magneticBuilderSettings.autoRedraw"  
                 :data-cy="dataTestLabel + 'redraw-button'"
                 class="btn mx-auto d-block mt-4 col-6 col-sm-6 col-md-12"
-                data-bs-toggle="modal"
-                :data-bs-target="modalTarget"
+                @click="$stateStore.redraw()"
             >
                 {{'Redraw'}}
             </button>

@@ -108,7 +108,7 @@ export default {
                         <h5 class="offset-0 text-end" :class="labelWidthProportionClass">Auto re-draw</h5>
                         <div :class="valueWidthProportionClass">
                             <label v-tooltip="'Choose between basic or advanced output'" class="fs-6 p-0 ps-3 pe-3 text-end col-4 ">No</label>
-                            <input :data-cy="'Settings-Modal-bar-spider-button'" v-model="localData.autoRedraw"  @change="onSettingChanged($event, 'advancedMode')" type="range" class="form-range col-1 pt-2" min="0" max="1" step="1" style="width: 30px">
+                            <input :data-cy="'Settings-Modal-bar-spider-button'" v-model="localData.autoRedraw"  @change="onSettingChanged($event, 'autoRedraw')" type="range" class="form-range col-1 pt-2" min="0" max="1" step="1" style="width: 30px">
                             <label v-tooltip="'Choose between basic or advanced output'" class="fs-6 p-0 ps-3 col-6 text-start">Yes</label>
                         </div>
                     </div>

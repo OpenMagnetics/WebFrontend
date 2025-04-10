@@ -217,7 +217,6 @@ export const useStateStore = defineStore("state", () => {
         numberPoints: 100,
     });
 
-
     // MAS Loader
     const anyDesignLoaded = ref(false);
 
@@ -325,7 +324,8 @@ export const useStateStore = defineStore("state", () => {
         plotFringingField: true,
     });
 
-
+    function redraw() {
+    };
 
     return {
         reset,
@@ -361,6 +361,7 @@ export const useStateStore = defineStore("state", () => {
 
         wire2DVisualizerState,
         magnetic2DVisualizerState,
+        redraw,
 
         OperatingPointsMode,
         currentOperatingPoint,

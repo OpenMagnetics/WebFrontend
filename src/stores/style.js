@@ -403,6 +403,10 @@ export const useStyleStore = defineStore("style", () => {
                 "background": theme["success"],
                 "color": theme["dark"],
             },
+            redrawButton: {
+                "background": theme["success"],
+                "color": theme["dark"],
+            },
             confirmButton: {
                 "background": theme["success"],
                 "color": theme["dark"],
