@@ -174,14 +174,6 @@ export default {
                         </div>
                         <div class="border mt-2" style="height: fit-content" :style="$styleStore.contextMenu.main">
                             <ContextMenu
-                                :showMagneticBuilderSettingsOption="$stateStore.getCurrentToolState().subsection == 'magneticBuilder'"
-                                :showAdviserSettingsOption="$stateStore.getCurrentToolState().subsection == 'magneticAdviser' || $stateStore.getCurrentToolState().subsection == 'magneticCoreAdviser'"
-                                :showCatalogAdviserSettingsOption="$stateStore.selectedWorkflow == 'catalog'"
-                                :showOperatingPointSettingsOption="$stateStore.getCurrentToolState().subsection == 'operatingPoints'"
-                                :showEditOption="$stateStore.getCurrentToolState().subsection == 'magneticViewer'"
-                                :showOrderOption="$stateStore.selectedWorkflow == 'catalog' && ($stateStore.getCurrentToolState().subsection == 'magneticViewer')"
-                                :showChangeToolOption="$stateStore.getCurrentToolState().subsection == 'magneticCoreAdviser' || $stateStore.getCurrentToolState().subsection == 'magneticAdviser' || $stateStore.getCurrentToolState().subsection == 'magneticBuilder' || $stateStore.getCurrentToolState().subsection == 'magneticSpecificationsSummary'"
-                                :showConfirmOption="$stateStore.selectedWorkflow == 'catalog' && $stateStore.getCurrentToolState().subsection == 'magneticBuilder'"
                                 @editMagnetic="$emit('editMagnetic')"
                                 @viewMagnetic="$emit('viewMagnetic')"
                                 @toolSelected="toolSelected"

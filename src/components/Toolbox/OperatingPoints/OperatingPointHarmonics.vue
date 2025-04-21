@@ -151,6 +151,7 @@ export default {
 
                     parsedResult.harmonics = filteredHarmonics;
                     this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex][signalDescriptor] = parsedResult;
+                    console.warn(this.masStore.mas.inputs.operatingPoints)
                     console.log(deepCopy(this.currentWindingIndex))
                     console.log(deepCopy(filteredHarmonics.frequencies.length))
                 }

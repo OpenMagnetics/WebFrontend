@@ -13,6 +13,17 @@ export const useStateStore = defineStore("state", () => {
         HarmonicsList: 'HarmonicsList',
     };
 
+    const MagneticBuilderModes = {
+        Basic: 'Basic',
+        Advanced: 'Advanced',
+    };
+
+    const MagneticBuilderCoreSubmodes = {
+        Shape: 'Shape',
+        Material: 'Material',
+        Gapping: 'Gapping',
+    };
+
     const SupportedApplications = {
         Power: 'power',
         CommonModeChoke: 'commonModeChoke',
@@ -217,6 +228,17 @@ export const useStateStore = defineStore("state", () => {
         numberPoints: 100,
     });
 
+    const magneticBuilder = ref({
+        mode: {
+            core: MagneticBuilderModes.Basic,
+            wire: MagneticBuilderModes.Basic,
+            coil: MagneticBuilderModes.Basic,
+        },
+        submode: {
+            core: MagneticBuilderCoreSubmodes.Shape,
+        },
+    })
+
     // MAS Loader
     const anyDesignLoaded = ref(false);
 
@@ -309,6 +331,17 @@ export const useStateStore = defineStore("state", () => {
             maximumFrequency: 4e6,
             numberPoints: 100,
         };
+
+        this.magneticBuilder = {
+            mode: {
+                core: MagneticBuilderModes.Basic,
+                wire: MagneticBuilderModes.Basic,
+                coil: MagneticBuilderModes.Basic,
+            },
+            submode: {
+                core: MagneticBuilderCoreSubmodes.Shape,
+            },
+        };
     }
 
     // Visualizers
@@ -325,6 +358,9 @@ export const useStateStore = defineStore("state", () => {
     });
 
     function redraw() {
+    };
+
+    function applyChanges() {
     };
 
     return {
@@ -372,6 +408,10 @@ export const useStateStore = defineStore("state", () => {
         removeOperatingPoint,
 
         graphParameters,
+        MagneticBuilderModes,
+        MagneticBuilderCoreSubmodes,
+        magneticBuilder,
+        applyChanges,
     }
 },
 {

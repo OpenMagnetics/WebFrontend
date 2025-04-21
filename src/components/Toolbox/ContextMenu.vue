@@ -17,38 +17,6 @@ export default {
             type: String,
             default: '',
         },
-        showMagneticBuilderSettingsOption: {
-            type: Boolean,
-            default: false
-        },
-        showAdviserSettingsOption: {
-            type: Boolean,
-            default: false
-        },
-        showCatalogAdviserSettingsOption: {
-            type: Boolean,
-            default: false
-        },
-        showOperatingPointSettingsOption: {
-            type: Boolean,
-            default: false
-        },
-        showEditOption: {
-            type: Boolean,
-            default: false
-        },
-        showOrderOption: {
-            type: Boolean,
-            default: false
-        },
-        showConfirmOption: {
-            type: Boolean,
-            default: false
-        },
-        showChangeToolOption: {
-            type: Boolean,
-            default: false
-        },
     },
     data() {
         const catalogStore = useCatalogStore();
@@ -71,16 +39,16 @@ export default {
             }
         },
         modalTarget() {
-            if (this.showAdviserSettingsOption) {
+            if ((this.$stateStore.getCurrentToolState().subsection == 'magneticAdviser' || this.$stateStore.getCurrentToolState().subsection == 'magneticCoreAdviser')) {
                 return '#AdviserSettingsModal'
             }
-            else if (this.showMagneticBuilderSettingsOption) {
+            else if (this.$stateStore.getCurrentToolState().subsection == 'magneticBuilder') {
                 return '#MagneticBuilderSettingsModal'
             }
-            else if (this.showCatalogAdviserSettingsOption) {
+            else if (this.$stateStore.selectedWorkflow == 'catalog') {
                 return '#CatalogAdviserSettingsModal'
             }
-            else if (this.showOperatingPointSettingsOption) {
+            else if (this.$stateStore.getCurrentToolState().subsection == 'operatingPoints') {
                 return '#OperatingPointSettingsModal'
             }
         },
@@ -99,6 +67,18 @@ export default {
         },
         onMagneticBuilderSettingsUpdated() {
         },
+        coreSubmodeShape() {
+            this.$stateStore.magneticBuilder.submode.core = this.$stateStore.MagneticBuilderCoreSubmodes.Shape;
+        },
+        coreSubmodeGapping() {
+            this.$stateStore.magneticBuilder.submode.core = this.$stateStore.MagneticBuilderCoreSubmodes.Gapping;
+        },
+        coreSubmodeMaterial() {
+            this.$stateStore.magneticBuilder.submode.core = this.$stateStore.MagneticBuilderCoreSubmodes.Material;
+        },
+        coreAdvancedModeConfirmChanges() {
+            this.$stateStore.applyChanges();
+        },
     }
 }
 </script>
@@ -107,29 +87,29 @@ export default {
     <div class="pb-2 p-0 container" v-tooltip="styleTooltip" :style="$styleStore.contextMenu.main">
         <h4 class="text-center pt-2 fs-5">Tool menu</h4>
         <MagneticBuilderSettings 
-            v-if="showMagneticBuilderSettingsOption"
+            v-if="$stateStore.getCurrentToolState().subsection == 'magneticBuilder'"
             :modalName="'MagneticBuilderSettingsModal'"
             @onSettingsUpdated="onMagneticBuilderSettingsUpdated"
         />
         <AdviserSettings 
-            v-if="showAdviserSettingsOption"
+            v-if="($stateStore.getCurrentToolState().subsection == 'magneticAdviser' || $stateStore.getCurrentToolState().subsection == 'magneticCoreAdviser')"
             :modalName="'AdviserSettingsModal'"
             @onSettingsUpdated="onAdviserSettingsUpdated"
         />
         <CatalogSettings 
-            v-if="showCatalogAdviserSettingsOption"
+            v-if="$stateStore.selectedWorkflow == 'catalog'"
             :modalName="'CatalogAdviserSettingsModal'"
             @onSettingsUpdated="onCatalogSettingsUpdated"
         />
         <OperatingPointSettings 
-            v-if="showOperatingPointSettingsOption"
+            v-if="$stateStore.getCurrentToolState().subsection == 'operatingPoints'"
             :modalName="'OperatingPointSettingsModal'"
             @onSettingsUpdated="onOperatingPointSettingsUpdated"
         />
         <div class="row px-3">
             <button
                 :style="$styleStore.contextMenu.settingsButton"
-                v-if="showAdviserSettingsOption || showCatalogAdviserSettingsOption || showOperatingPointSettingsOption || showMagneticBuilderSettingsOption"  
+                v-if="($stateStore.getCurrentToolState().subsection == 'magneticAdviser' || $stateStore.getCurrentToolState().subsection == 'magneticCoreAdviser') || $stateStore.selectedWorkflow == 'catalog' || $stateStore.getCurrentToolState().subsection == 'operatingPoints' || $stateStore.getCurrentToolState().subsection == 'magneticBuilder'"  
                 :data-cy="dataTestLabel + 'settings-modal-button'"
                 class="btn mx-auto d-block mt-4 col-6 col-sm-6 col-md-12"
                 data-bs-toggle="modal"
@@ -139,7 +119,7 @@ export default {
             </button>
             <button
                 :style="$styleStore.contextMenu.redrawButton"
-                v-if="showMagneticBuilderSettingsOption && !$settingsStore.magneticBuilderSettings.autoRedraw"  
+                v-if="$stateStore.getCurrentToolState().subsection == 'magneticBuilder' && !$settingsStore.magneticBuilderSettings.autoRedraw"  
                 :data-cy="dataTestLabel + 'redraw-button'"
                 class="btn mx-auto d-block mt-4 col-6 col-sm-6 col-md-12"
                 @click="$stateStore.redraw()"
@@ -148,7 +128,7 @@ export default {
             </button>
             <button
                 :style="$styleStore.contextMenu.editButton"
-                v-if="showEditOption"  
+                v-if="$stateStore.getCurrentToolState().subsection == 'magneticViewer'"  
                 :data-cy="dataTestLabel + 'edit-from-viewer-button'"
                 class="btn mx-auto d-block mt-4 col-6 col-sm-6 col-md-12"
                 @click="$emit('editMagnetic')"
@@ -157,7 +137,7 @@ export default {
             </button>
             <button
                 :style="$styleStore.contextMenu.confirmButton"
-                v-if="showConfirmOption"  
+                v-if="$stateStore.selectedWorkflow == 'catalog' && $stateStore.getCurrentToolState().subsection == 'magneticBuilder'"  
                 :data-cy="dataTestLabel + 'edit-from-viewer-button'"
                 class="btn mx-auto d-block mt-4 col-6 col-sm-6 col-md-12"
                 @click="$emit('viewMagnetic')"
@@ -166,7 +146,7 @@ export default {
             </button>
             <button
                 :style="$styleStore.contextMenu.orderButton"
-                v-if="showOrderOption"  
+                v-if="$stateStore.selectedWorkflow == 'catalog' && $stateStore.getCurrentToolState().subsection == 'magneticViewer'"  
                 :data-cy="dataTestLabel + '-order-button'"
                 class="btn mx-auto d-block mt-4 col-6 col-sm-6 col-md-12"
                 @click="catalogStore.orderSample(masStore.mas)"
@@ -175,12 +155,47 @@ export default {
             </button>
             <button
                 :style="$styleStore.contextMenu.changeToolButton"
-                v-if="showChangeToolOption"  
+                v-if="$stateStore.magneticBuilder.mode.core == $stateStore.MagneticBuilderModes.Basic && ($stateStore.getCurrentToolState().subsection == 'magneticCoreAdviser' || $stateStore.getCurrentToolState().subsection == 'magneticAdviser' || $stateStore.getCurrentToolState().subsection == 'magneticBuilder' || $stateStore.getCurrentToolState().subsection == 'magneticSpecificationsSummary')"  
                 :data-cy="dataTestLabel + '-change-tool-button'"
                 class="btn mx-auto d-block mt-4 col-6 col-sm-6 col-md-12"
                 @click="$emit('toolSelected', 'agnosticTool')"
             >
                 {{'Change tool'}}
+            </button>
+            <button
+                :style="$styleStore.contextMenu.customizeCoreSectionButton"
+                v-if="$stateStore.magneticBuilder.mode.core == $stateStore.MagneticBuilderModes.Advanced && $stateStore.getCurrentToolState().subsection == 'magneticBuilder' && $stateStore.magneticBuilder.submode.core != $stateStore.MagneticBuilderCoreSubmodes.Shape"  
+                :data-cy="dataTestLabel + '-change-tool-button'"
+                class="btn mx-auto d-block mt-1 col-6 col-sm-6 col-md-12"
+                @click="coreSubmodeShape"
+            >
+                {{'Edit shape'}}
+            </button>
+            <button
+                :style="$styleStore.contextMenu.customizeCoreSectionButton"
+                v-if="$stateStore.magneticBuilder.mode.core == $stateStore.MagneticBuilderModes.Advanced && $stateStore.getCurrentToolState().subsection == 'magneticBuilder' && $stateStore.magneticBuilder.submode.core != $stateStore.MagneticBuilderCoreSubmodes.Gapping"  
+                :data-cy="dataTestLabel + '-change-tool-button'"
+                class="btn mx-auto d-block mt-1 col-6 col-sm-6 col-md-12"
+                @click="coreSubmodeGapping"
+            >
+                {{'Edit gapping'}}
+            </button>
+            <button
+                :style="$styleStore.contextMenu.customizeCoreSectionButton"
+                v-if="$stateStore.magneticBuilder.mode.core == $stateStore.MagneticBuilderModes.Advanced && $stateStore.getCurrentToolState().subsection == 'magneticBuilder' && $stateStore.magneticBuilder.submode.core != $stateStore.MagneticBuilderCoreSubmodes.Material"  
+                :data-cy="dataTestLabel + '-change-tool-button'"
+                class="btn mx-auto d-block mt-1 col-6 col-sm-6 col-md-12"
+                @click="coreSubmodeMaterial"
+            >
+                {{'Edit material'}}
+            </button>
+            <button
+                :style="$styleStore.contextMenu.confirmButton"
+                v-if="$stateStore.magneticBuilder.mode.core == $stateStore.MagneticBuilderModes.Advanced && $stateStore.getCurrentToolState().subsection == 'magneticBuilder'"  
+                class="btn mx-auto d-block mt-1 col-6 col-sm-6 col-md-12"
+                @click="coreAdvancedModeConfirmChanges"
+            >
+                {{'Apply changes'}}
             </button>
         </div>
     </div>

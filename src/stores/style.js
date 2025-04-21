@@ -342,6 +342,18 @@ export const useStyleStore = defineStore("style", () => {
             inputErrorTextColor:{
                 "color": theme["danger"],
             },
+            addButton: {
+                "background": theme["primary"],
+                "color": theme["dark"],
+            },
+            utilityButton: {
+                "background": theme["secondary"],
+                "color": theme["white"],
+            },
+            removeButton: {
+                "background": theme["danger"],
+                "color": theme["dark"],
+            },
             addElementButtonColor: {
                 "color": theme["secondary"],
             },
@@ -412,6 +424,10 @@ export const useStyleStore = defineStore("style", () => {
                 "color": theme["dark"],
             },
             changeToolButton: {
+                "background": theme["secondary"],
+                "color": theme["white"],
+            },
+            customizeCoreSectionButton: {
                 "background": theme["secondary"],
                 "color": theme["white"],
             },
