@@ -256,7 +256,7 @@ export const useStateStore = defineStore("state", () => {
     const selectedWorkflow = ref("design");
     const selectedApplication = ref(SupportedApplications.Power);
     const selectedTool = ref("agnosticTool");
-    const selectedWizard = ref(Wizards.CommonModeChoke);
+    const selectedWizard = ref(Wizards.Flyback);
 
     function getCurrentToolBoxState() {
         return this.toolboxStates[this.selectedWorkflow];
