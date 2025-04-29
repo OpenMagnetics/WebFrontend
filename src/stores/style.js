@@ -314,6 +314,10 @@ export const useStyleStore = defineStore("style", () => {
                 "color": theme["danger"],
             },
 
+            propertyBgColor:{
+                "color": theme["dark"],
+            },
+
 
             inputFontSize: {
                 // "font-size": '2rem',
