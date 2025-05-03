@@ -375,6 +375,10 @@ export const useStyleStore = defineStore("style", () => {
                 "background": theme["primary"],
                 "color": theme["dark"],
             },
+            activeButton: {
+                "background": theme["info"],
+                "color": theme["white"],
+            },
             setting: {
                 "background": theme["dark"],
                 "color": theme["white"],
@@ -425,6 +429,10 @@ export const useStyleStore = defineStore("style", () => {
             },
             confirmButton: {
                 "background": theme["success"],
+                "color": theme["dark"],
+            },
+            cancelButton: {
+                "background": theme["danger"],
                 "color": theme["dark"],
             },
             changeToolButton: {

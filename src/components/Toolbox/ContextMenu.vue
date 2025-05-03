@@ -79,6 +79,9 @@ export default {
         coreAdvancedModeConfirmChanges() {
             this.$stateStore.applyChanges();
         },
+        coreAdvancedModeCancelChanges() {
+            this.$stateStore.cancelChanges();
+        },
     }
 }
 </script>
@@ -196,6 +199,14 @@ export default {
                 @click="coreAdvancedModeConfirmChanges"
             >
                 {{'Apply changes'}}
+            </button>
+            <button
+                :style="$styleStore.contextMenu.cancelButton"
+                v-if="$stateStore.magneticBuilder.mode.core == $stateStore.MagneticBuilderModes.Advanced && $stateStore.getCurrentToolState().subsection == 'magneticBuilder'"  
+                class="btn mx-auto d-block mt-1 col-6 col-sm-6 col-md-12"
+                @click="coreAdvancedModeCancelChanges"
+            >
+                {{'Cancel'}}
             </button>
         </div>
     </div>
