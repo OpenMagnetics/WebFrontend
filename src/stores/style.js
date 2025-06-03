@@ -314,6 +314,10 @@ export const useStyleStore = defineStore("style", () => {
                 "color": theme["danger"],
             },
 
+            propertyBgColor:{
+                "color": theme["dark"],
+            },
+
 
             inputFontSize: {
                 // "font-size": '2rem',
@@ -371,6 +375,10 @@ export const useStyleStore = defineStore("style", () => {
                 "background": theme["primary"],
                 "color": theme["dark"],
             },
+            activeButton: {
+                "background": theme["info"],
+                "color": theme["white"],
+            },
             setting: {
                 "background": theme["dark"],
                 "color": theme["white"],
@@ -421,6 +429,10 @@ export const useStyleStore = defineStore("style", () => {
             },
             confirmButton: {
                 "background": theme["success"],
+                "color": theme["dark"],
+            },
+            cancelButton: {
+                "background": theme["danger"],
                 "color": theme["dark"],
             },
             changeToolButton: {

@@ -116,7 +116,15 @@ export default {
                     settings["useToroidalCores"] = this.$settingsStore.adviserSettings.allowToroidalCores;
                     this.$mkf.set_settings(JSON.stringify(settings));
 
-                    const aux = JSON.parse(this.$mkf.calculate_advised_cores(JSON.stringify(this.masStore.mas.inputs), JSON.stringify(this.$settingsStore.coreAdviserSettings.weights), 20, this.$settingsStore.adviserSettings.useOnlyCoresInStock));
+                    var aux;
+                    const result = this.$mkf.calculate_advised_cores(JSON.stringify(this.masStore.mas.inputs), JSON.stringify(this.$settingsStore.coreAdviserSettings.weights), 20, this.$settingsStore.adviserSettings.useOnlyCoresInStock);
+                    if (result.startsWith("Exception")) {
+                        console.error(result)
+                        this.loading = false;
+                    }
+                    else {
+                        aux = JSON.parse(result);
+                    }
 
                     var log = aux["log"];
                     var data = aux["data"];

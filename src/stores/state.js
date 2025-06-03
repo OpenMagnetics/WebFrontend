@@ -363,6 +363,9 @@ export const useStateStore = defineStore("state", () => {
     function applyChanges() {
     };
 
+    function cancelChanges() {
+    };
+
     return {
         reset,
 
@@ -412,6 +415,7 @@ export const useStateStore = defineStore("state", () => {
         MagneticBuilderCoreSubmodes,
         magneticBuilder,
         applyChanges,
+        cancelChanges,
     }
 },
 {
