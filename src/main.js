@@ -126,7 +126,7 @@ router.beforeEach((to, from, next) => {
                                         console.warn("Loading wires in simulator")
                                         app.config.globalProperties.$mkf.load_wires("");
                                         router.push(app.config.globalProperties.$userStore.loadingPath)
-                                    }).error((error) => {
+                                    }).catch((error) => {
                                         console.error(error)
                                     })
 

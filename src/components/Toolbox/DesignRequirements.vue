@@ -105,6 +105,7 @@ export default {
         })
         this.$emit("canContinue", this.canContinue(this.masStore));
 
+
     },
     methods: {
         canContinue(store){
@@ -402,7 +403,7 @@ export default {
                     :name="'terminalType'"
                     :dataTestLabel="dataTestLabel + '-TerminalType'"
                     :defaultValue="new Array(Object.keys(ConnectionType).length).fill(Object.keys(ConnectionType)[0])"
-                    :options="ConnectionType" 
+                    :options="Object.values(ConnectionType)" 
                     :titleSameRow="true"
                     :fixedNumberElements="masStore.mas.inputs.designRequirements.turnsRatios.length + 1"
                     v-model="masStore.mas.inputs.designRequirements"
