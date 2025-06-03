@@ -14,6 +14,10 @@ export default {
             type: Object,
             required: true,
         },
+        temperature: {
+            type: Number,
+            required: true,
+        },
         isSymbol: {
             type: Boolean,
             default: false,
@@ -47,7 +51,7 @@ export default {
             this.$mkf.ready.then(_ => {
                 const magnetic = deepCopy(this.magnetic);
                 magnetic.manufacturerInfo.reference = magnetic.manufacturerInfo.reference.replaceAll(" ", "_").replaceAll("-", "_").replaceAll(".", "_").replaceAll(",", "_").replaceAll(":", "_").replaceAll("___", "_").replaceAll("__", "_");
-                var subcircuit = this.$mkf.export_magnetic_as_subcircuit(JSON.stringify(magnetic), "LtSpice", "");
+                var subcircuit = this.$mkf.export_magnetic_as_subcircuit(JSON.stringify(magnetic), this.temperature, "LtSpice", "");
                 var blob = new Blob([subcircuit], {
                     type: 'text/csv; charset=utf-8'
                 });

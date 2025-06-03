@@ -1,4 +1,4 @@
-<script setup >
+4<script setup >
 import { useMasStore } from '../../stores/mas'
 import { Modal } from "bootstrap";
 import SimbaExporter from './SimbaExporter.vue'
@@ -55,12 +55,14 @@ export default {
                             class="btn btn-primary col-4 mt-1"
                             :data-cy="dataTestLabel + '-Simba-Subcircuit-Section'"
                             :magnetic="masStore.mas.magnetic"
+                            :temperature="masStore.mas.inputs.operatingPoints[this.$stateStore.currentOperatingPoint].conditions.ambientTemperature"
                             :attachToFile="false"
                         />
                         <SimbaExporter
                             class="btn btn-primary offset-1 col-4 mt-1"
                             :data-cy="dataTestLabel + '-Simba-Subcircuit-Attached'"
                             :magnetic="masStore.mas.magnetic"
+                            :temperature="masStore.mas.inputs.operatingPoints[this.$stateStore.currentOperatingPoint].conditions.ambientTemperature"
                             :attachToFile="true"
                         />
                     </div>
@@ -72,12 +74,14 @@ export default {
                             class="btn btn-primary col-4 mt-1"
                             :data-cy="dataTestLabel + '-Simba-Subcircuit-Section'"
                             :magnetic="masStore.mas.magnetic"
+                            :temperature="masStore.mas.inputs.operatingPoints[this.$stateStore.currentOperatingPoint].conditions.ambientTemperature"
                             :isSymbol="false"
                         />
                         <LtSpiceExporter
                             class="btn btn-primary offset-1 col-4 mt-1"
                             :data-cy="dataTestLabel + '-Simba-Subcircuit-Attached'"
                             :magnetic="masStore.mas.magnetic"
+                            :temperature="masStore.mas.inputs.operatingPoints[this.$stateStore.currentOperatingPoint].conditions.ambientTemperature"
                             :isSymbol="true"
                         />
                     </div>
@@ -89,6 +93,7 @@ export default {
                             class="btn btn-primary col-4 mt-1"
                             :data-cy="dataTestLabel + '-Simba-Subcircuit-Section'"
                             :magnetic="masStore.mas.magnetic"
+                            :temperature="masStore.mas.inputs.operatingPoints[this.$stateStore.currentOperatingPoint].conditions.ambientTemperature"
                             :attachToFile="false"
                         />
                     </div>

@@ -14,6 +14,10 @@ export default {
             type: Object,
             required: true,
         },
+        temperature: {
+            type: Number,
+            required: true,
+        },
         attachToFile: {
             type: Boolean,
             default: false,
@@ -44,11 +48,15 @@ export default {
                 const jsimba = e.target.result
 
                 this.$mkf.ready.then(_ => {
-                    var subcircuit = this.$mkf.export_magnetic_as_subcircuit(JSON.stringify(this.magnetic), jsimba);
+                    var subcircuit = this.$mkf.export_magnetic_as_subcircuit(JSON.stringify(this.magnetic), this.temperature, "SIMBA", jsimba);
                     const filename = name.split(".")[0];
                     var blob = new Blob([subcircuit], {
                         type: 'text/csv; charset=utf-8'
                     });
+                console.log("subcircuit")
+                console.log(subcircuit)
+                console.log("blob")
+                console.log(blob)
                     download(blob, filename + "_with_OM_library.jsimba", "text/plain;charset=UTF-8");
 
 
@@ -72,7 +80,7 @@ export default {
         },
         createSimbaSubcircuit() {
             this.$mkf.ready.then(_ => {
-                var subcircuit = this.$mkf.export_magnetic_as_subcircuit(JSON.stringify(this.magnetic), "SIMBA", "");
+                var subcircuit = this.$mkf.export_magnetic_as_subcircuit(JSON.stringify(this.magnetic), this.temperature, "SIMBA", "");
                 var blob = new Blob([subcircuit], {
                     type: 'text/csv; charset=utf-8'
                 });
