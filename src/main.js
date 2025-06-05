@@ -15,6 +15,8 @@ import Module from '/src/assets/js/libMKF.wasm.js';
 import { useStyleStore } from '/src/stores/style'
 import { useWeStyleStore } from '/src/stores/weStyle'
 import { useFairRiteStyleStore } from '/src/stores/fairRiteStyle'
+import { VueWindowSizePlugin } from 'vue-window-size/plugin';
+
 
 const axiosInstance = axios.create()
 
@@ -25,6 +27,7 @@ app.use(router);
 app.use(pinia)
 app.use(VueCookies, { expires: '7d'})
 app.directive("tooltip", tooltip);
+app.use(VueWindowSizePlugin);
 app.config.globalProperties.$axios = axiosInstance
 app.config.globalProperties.$userStore = useUserStore()
 app.config.globalProperties.$settingsStore = useSettingsStore()
@@ -91,50 +94,61 @@ router.beforeEach((to, from, next) => {
                                 });
                             }
                         })
+                    try {
+                        app.config.globalProperties.$mkf = {
+                            ready: new Promise(resolve => {
+                                Module({
+                                    onRuntimeInitialized () {
+                                        app.config.globalProperties.$mkf = Object.assign(this, {
+                                            ready: Promise.resolve()
+                                        });
 
-                    app.config.globalProperties.$mkf = {
-                        ready: new Promise(resolve => {
-                            Module({
-                                onRuntimeInitialized () {
-                                    app.config.globalProperties.$mkf = Object.assign(this, {
-                                        ready: Promise.resolve()
-                                    });
-
-                                    app.config.globalProperties.$mkf.ready.then(_ => {
-                                        console.warn("Loading core materials in simulator")
-                                        fetch("/core_materials.ndjson")
-                                        .then((data) => data.text())
-                                        .then((data) => {
-                                                if (loadAllParts) {
-                                                    app.config.globalProperties.$mkf.load_core_materials("");
-                                                }
-                                                if (loadExternalParts) {
-                                                    app.config.globalProperties.$mkf.load_core_materials(data);
-                                                }
+                                        app.config.globalProperties.$mkf.ready.then(_ => {
+                                            fetch("/core_materials.ndjson")
+                                            .then((data) => data.text())
+                                            .then((data) => {
+                                                    if (loadAllParts) {
+                                                        app.config.globalProperties.$mkf.load_core_materials("");
+                                                    }
+                                                    if (loadExternalParts) {
+                                                        app.config.globalProperties.$mkf.load_core_materials(data);
+                                                    }
+                                                })
+                                            .catch((error) => {
+                                                console.error("error fetching core_materials.ndjson")
+                                                console.error(error)
                                             })
-                                        console.warn("Loading core shapes in simulator")
-                                        fetch("/core_shapes.ndjson")
-                                        .then((data) => data.text())
-                                        .then((data) => {
-                                                if (loadAllParts) {
-                                                    app.config.globalProperties.$mkf.load_core_shapes("");
-                                                }
-                                                if (loadExternalParts) {
-                                                    app.config.globalProperties.$mkf.load_core_shapes(data);
-                                                }
+                                            console.warn("Loading core shapes in simulator")
+                                            fetch("/core_shapes.ndjson")
+                                            .then((data) => data.text())
+                                            .then((data) => {
+                                                    if (loadAllParts) {
+                                                        app.config.globalProperties.$mkf.load_core_shapes("");
+                                                    }
+                                                    if (loadExternalParts) {
+                                                        app.config.globalProperties.$mkf.load_core_shapes(data);
+                                                    }
+                                            })
+                                            .catch((error) => {
+                                                console.error("error fetching core_shapes.ndjson")
+                                                console.error(error)
+                                            })
+                                            console.warn("Loading wires in simulator")
+                                            app.config.globalProperties.$mkf.load_wires("");
+                                            router.push(app.config.globalProperties.$userStore.loadingPath)
+                                        }).catch((error) => {
+                                            console.error(error)
                                         })
-                                        console.warn("Loading wires in simulator")
-                                        app.config.globalProperties.$mkf.load_wires("");
-                                        router.push(app.config.globalProperties.$userStore.loadingPath)
-                                    }).catch((error) => {
-                                        console.error(error)
-                                    })
 
-                                    resolve(); 
-                                }
-                            });
-                        })
-                    };
+                                        resolve(); 
+                                    }
+                                });
+                            })
+                        };
+                    }
+                    catch(error){
+                        // console.error(error);
+                    }
                 }
                 , 100);
 

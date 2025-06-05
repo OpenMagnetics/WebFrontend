@@ -115,7 +115,7 @@ export default {
                 }
             })
         },
-        isMobile() {
+        isMobile($windowWidth) {
             if( window.innerWidth <= 760 ) {
                 return true;
             }

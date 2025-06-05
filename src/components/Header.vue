@@ -15,7 +15,7 @@ export default {
     components: {
         BugReporterModal: defineAsyncComponent(() => import('/src/components/User/BugReporter.vue') ),
         DeadManSwitch: defineAsyncComponent(() => import('/src/components/User/DeadManSwitch.vue') ),
-        NotificationsModal: defineAsyncComponent(() => import('/src/components/NotificationsModal.vue') ),
+        // NotificationsModal: defineAsyncComponent(() => import('/src/components/NotificationsModal.vue') ),
     },
     data() {
         return {
@@ -150,7 +150,7 @@ export default {
 </script>
 
 <template>
-    <NotificationsModal/>
+    <!-- <NotificationsModal/> -->
     <nav class="navbar navbar-expand-lg mb-1 om-header" id="header_wrapper" :style="$styleStore.header.main">
         <div class="container-fluid">
             <a data-cy="Header-logo-home-link" href="/" aria-label="Visit OpenMagnetics and Tear Down the Paywalls!">

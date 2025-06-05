@@ -474,12 +474,12 @@ export default {
                     data-bs-target="#CircuitSimulatorsExporterModal"
                 >Circuit Simulators Exports</button>
             </div>
-            <div :class="isMobile()? 'col-12' : 'col-10'" class="row">
+            <div :class="isMobile($windowWidth)? 'col-12' : 'col-10'" class="row">
                 <!-- <h3 v-if="'manufacturerInfo' in mas.magnetic" class="col-12 p-0 m-0 fs-4">{{mas.magnetic.manufacturerInfo.reference}}</h3> -->
                 <div v-if="mas.magnetic.manufacturerInfo != null" class="col-sm-12 col-md-6 text-start pe-0 row">
                     <div class="col-12 fs-4 p-0 m-0 mt-2 text-center fw-bold">Core data</div>
                     <div>
-                        <div :class="isMobile()? 'offset-1 col-11' : 'offset-1 col-10'">
+                        <div :class="isMobile($windowWidth)? 'offset-1 col-11' : 'offset-1 col-10'">
                             <div class="row">
                                 <div class="col-12 fs-5 p-0 m-0 my-1 text-center">Core Shape</div>
                                 <div v-if="'coreShapeTable' in localTexts" class="col-6 p-0 m-0 border ps-2">{{localTexts.coreShapeTable.name.text}}</div>
@@ -543,7 +543,7 @@ export default {
                     </div>
                     <div class="col-12 fs-4 p-0 m-0 mt-2 text-center fw-bold">Coil data</div>
                     <div>
-                        <div :class="isMobile()? 'offset-1 col-11' : 'offset-1 col-10'">
+                        <div :class="isMobile($windowWidth)? 'offset-1 col-11' : 'offset-1 col-10'">
                             <div class="row">
                                 <div class="col-12 fs-5 p-0 m-0 my-1 text-center">Coil Global Parameters</div>
                                 <div v-if="'coilTable' in localTexts" class="col-6 p-0 m-0 border ps-2">{{localTexts.coilTable.sectionsInfo.text}}</div>
@@ -552,7 +552,7 @@ export default {
                                 <div v-if="'coilTable' in localTexts" class="col-6 p-0 m-0 border text-end pe-1">{{localTexts.coilTable.layersInfo.value}}</div>
                             </div>
                         </div>
-                        <div :class="isMobile()? 'offset-1 col-11' : 'offset-1 col-10'">
+                        <div :class="isMobile($windowWidth)? 'offset-1 col-11' : 'offset-1 col-10'">
                             <div  v-if="'coilTable' in localTexts" class="row" v-for="winding, windingIndex in mas.magnetic.coil.functionalDescription">
                                 <div class="col-12 fs-5 p-0 m-0 my-1 text-center">{{toTitleCase(winding.name.toLowerCase())}}</div>
 
@@ -567,7 +567,7 @@ export default {
 
                     </div>
                     <div class="col-12 fs-4 p-0 m-0 mt-2 text-center fw-bold">Simulation result per Operating Point</div>
-                    <div :class="isMobile()? 'offset-1 col-11' : 'offset-1 col-10'" class="row mt-3" v-for="operationPoint, operationPointIndex in mas.inputs.operatingPoints">
+                    <div :class="isMobile($windowWidth)? 'offset-1 col-11' : 'offset-1 col-10'" class="row mt-3" v-for="operationPoint, operationPointIndex in mas.inputs.operatingPoints">
                         <div class="col-12 fs-5 p-0 m-0 my-1 text-center">{{operationPoint.name}}</div>
                         <div class="col-12 fs-5 p-0 m-0 mt-2 text-center">Core</div>
                         <div class="col-12 p-0 m-0 mt-2">
