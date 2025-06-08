@@ -71,8 +71,8 @@ router.beforeEach((to, from, next) => {
         }
         else if (app.config.globalProperties.$mkf == null && (to.name == "EngineLoader" || to.name == "WEEngineLoader")) {
             const loadAllParts = !weWorkflow || (weWorkflow && app.config.globalProperties.$settingsStore.catalogAdviserSettings.useAllParts);
-            const loadExternalParts = true;
-            // const loadExternalParts = weWorkflow;
+            // const loadExternalParts = false;
+            const loadExternalParts = weWorkflow;
             setTimeout(() => 
                 {
 
@@ -134,7 +134,35 @@ router.beforeEach((to, from, next) => {
                                                 console.error(error)
                                             })
                                             console.warn("Loading wires in simulator")
-                                            app.config.globalProperties.$mkf.load_wires("");
+                                            fetch("/lab_osma_wires.ndjson")
+                                            .then((data) => data.text())
+                                            .then((data) => {
+                                                    if (loadAllParts) {
+                                                        app.config.globalProperties.$mkf.load_wires("");
+                                                    }
+                                                    if (loadExternalParts) {
+                                                        app.config.globalProperties.$mkf.load_wires(data);
+                                                    }
+                                            })
+                                            .catch((error) => {
+                                                console.error("error fetching core_shapes.ndjson")
+                                                console.error(error)
+                                            })
+                                            console.warn("Loading cores in simulator")
+                                            fetch("/lab_osma_cores.ndjson")
+                                            .then((data) => data.text())
+                                            .then((data) => {
+                                                    // if (loadAllParts) {
+                                                    //     app.config.globalProperties.$mkf.load_cores("", app.config.globalProperties.$settingsStore.adviserSettings.allowToroidalCores, app.config.globalProperties.$settingsStore.adviserSettings.useOnlyCoresInStock);
+                                                    // }
+                                                    if (loadExternalParts) {
+                                                        app.config.globalProperties.$mkf.load_cores(data, app.config.globalProperties.$settingsStore.adviserSettings.allowToroidalCores, app.config.globalProperties.$settingsStore.adviserSettings.useOnlyCoresInStock);
+                                                    }
+                                            })
+                                            .catch((error) => {
+                                                console.error("error fetching core_shapes.ndjson")
+                                                console.error(error)
+                                            })
                                             router.push(app.config.globalProperties.$userStore.loadingPath)
                                         }).catch((error) => {
                                             console.error(error)

@@ -28,48 +28,6 @@ export default {
         onShowModal() {
             this.showModal = true
         },
-        onLoggedIn() {
-            this.loggedIn = this.$cookies.get('username') != null
-            this.username = this.$cookies.get('username')
-            if (this.loggedIn) {
-                this.$userStore.login()
-                this.$userStore.setUsername(this.username)
-            }
-        },
-        onClickNumberOperationPoints() {
-            this.$userStore.setUserSubsection("operationPoints")
-            this.$router.push('/user');
-        },
-        onClickNumberCores() {
-            this.$userStore.setUserSubsection("cores")
-            this.$router.push('/user');
-        },
-        onClickNumberBobbins() {
-            this.$userStore.setUserSubsection("bobbins")
-            this.$router.push('/user');
-        },
-        onClickNumberWires() {
-            this.$userStore.setUserSubsection("wires")
-            this.$router.push('/user');
-        },
-        onClickNumberMagnetics() {
-            this.$userStore.setUserSubsection("magnetics")
-            this.$router.push('/user');
-        },
-        onLoggedOut() {
-            this.$cookies.remove("username");
-            this.loggedIn = false
-            this.username = null
-            this.$userStore.reset()
-            this.$userStore.logout()
-            this.$userStore.setUsername(null)
-        },
-        onLoadCommercialShape(data) {
-            this.$userStore.setGlobalCoreShape(data)
-        },
-        onLoadCommercialMaterial(data) {
-            this.$userStore.setGlobalCoreMaterial(data)
-        },
         onNewPowerMagneticDesign() {
             this.$stateStore.resetMagneticTool();
             this.$stateStore.selectWorkflow("design");
@@ -143,8 +101,6 @@ export default {
             transparent: style.getPropertyValue('--bs-transparent'),
         };
         this.$styleStore.setTheme(theme);
-
-        this.onLoggedIn()
     }
 }
 </script>
