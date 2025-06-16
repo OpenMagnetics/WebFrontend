@@ -317,6 +317,11 @@ export const useStyleStore = defineStore("style", () => {
             propertyBgColor:{
                 "color": theme["dark"],
             },
+            requirementButton: {
+                "background": theme["light"],
+                "color": theme["white"],
+                "border-color": theme["white"],
+            },
 
 
             inputFontSize: {

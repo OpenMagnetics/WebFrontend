@@ -343,7 +343,7 @@ export default {
                     @hasError="hasError"
                 />
 
-                <DimensionWithTolerance class="border-bottom py-2 ps-2"
+                <DimensionWithTolerance class="border-bottom py-2 ps-3"
                     :style = "$styleStore.designRequirements.inputBorderColor"
                     v-if="masStore.mas.inputs.designRequirements.operatingTemperature != null"
                     :name="'operatingTemperature'"
@@ -397,7 +397,7 @@ export default {
                     :textColor="$styleStore.designRequirements.inputTextColor"
                 />
 
-                <ArrayElementFromList class="border-bottom py-2"
+                <ArrayElementFromList class="border-bottom py-2 ps-0"
                     :style = "$styleStore.designRequirements.inputBorderColor"
                     v-if="masStore.mas.inputs.designRequirements.terminalType != null"
                     :name="'terminalType'"
@@ -432,7 +432,7 @@ export default {
                     @update="updatedIsolationSides"
                 />
 
-                <ElementFromList class="border-bottom py-2"
+                <ElementFromList class="border-bottom py-2 ps-4"
                     :style = "$styleStore.designRequirements.inputBorderColor"
                     v-if="masStore.mas.inputs.designRequirements.topology != null"
                     :name="'topology'"
@@ -446,7 +446,7 @@ export default {
                     :textColor="$styleStore.designRequirements.inputTextColor"
                 />
 
-                <ElementFromList class="border-bottom py-2"
+                <ElementFromList class="border-bottom py-2 ps-4"
                     :style = "$styleStore.designRequirements.inputBorderColor"
                     :name="'market'"
                     v-if="masStore.mas.inputs.designRequirements.market != null"

@@ -125,6 +125,7 @@ export default {
 
                         const aux = JSON.parse(this.$mkf.calculate_advised_magnetics(JSON.stringify(this.masStore.mas.inputs), JSON.stringify(this.$settingsStore.magneticAdviserSettings.weights), this.$settingsStore.magneticAdviserSettings.maximumNumberResults, this.$settingsStore.adviserSettings.useOnlyCoresInStock));
 
+                        console.warn(aux.data[0].mas.magnetic.coil.functionalDescription);
 
                         var data = aux["data"];
 
