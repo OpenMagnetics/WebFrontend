@@ -152,6 +152,7 @@ router.beforeEach((to, from, next) => {
                                             fetch("/lab_osma_cores.ndjson")
                                             .then((data) => data.text())
                                             .then((data) => {
+                                                    // console.log(data)
                                                     // if (loadAllParts) {
                                                     //     app.config.globalProperties.$mkf.load_cores("", app.config.globalProperties.$settingsStore.adviserSettings.allowToroidalCores, app.config.globalProperties.$settingsStore.adviserSettings.useOnlyCoresInStock);
                                                     // }
