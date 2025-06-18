@@ -225,6 +225,10 @@ export const useStateStore = defineStore("state", () => {
         yAxisMode: 'log',
         minimumFrequency: 1e3,
         maximumFrequency: 4e6,
+        minimumTemperature: -40,
+        maximumTemperature: 150,
+        minimumDcBias: 0,
+        maximumDcBias: 25,
         numberPoints: 100,
     });
 
