@@ -144,6 +144,13 @@ export default {
                 return true;
                 // return this.$stateStore.operatingPoints.modePerPoint[this.$stateStore.currentOperatingPoint] === this.$stateStore.OperatingPointsMode.AcSweep;
             }
+        },
+        showControlPanelAndTitle() {
+            if (this.$stateStore.magneticBuilder.mode.core == this.$stateStore.MagneticBuilderModes.Advanced)  {
+                return false;
+            }
+
+            return true;
         }
     },
     mounted() {
@@ -181,7 +188,9 @@ export default {
                         </div>
                     </div>
                     <div class="text-center col-xs-12 col-sm-12 col-md-11 bg-transparent px container" >
-                        <div class="mb-2 row px-3" >
+                        <div 
+                            v-if="showControlPanelAndTitle"
+                            class="mb-2 row px-3" >
 
                             <ElementFromList
                                 v-if="operatingPointNames.length > 1 && ($stateStore.getCurrentToolState().subsection == 'magneticBuilder' || $stateStore.getCurrentToolState().subsection == 'magneticViewer') "
@@ -210,6 +219,10 @@ export default {
                             <div v-if="showControlPanel" data-cy="magnetic-synthesis-title-control-panel" :class="(showTitle || showReference)? 'col-sm-12 col-md-6 col-lg-6 col-xl-6' : 'col-sm-12 col-md-9'">
                                 <ControlPanel @toolSelected="toolSelected"/>
                             </div>
+                        </div>
+                        <div
+                            v-else
+                            class="mb-2 row px-3" >
                         </div>
                             
                         <div class="row">
