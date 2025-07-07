@@ -220,7 +220,7 @@ export const useStateStore = defineStore("state", () => {
 
     // Magnetic Builder
     const graphParameters = ref({
-        type: 'impedanceOverFrequency',
+        graph: 'impedanceOverFrequency',
         xAxisMode: 'log',
         yAxisMode: 'log',
         minimumFrequency: 1e3,
@@ -328,7 +328,7 @@ export const useStateStore = defineStore("state", () => {
         };
 
         this.graphParameters = {
-            type: 'impedanceOverFrequency',
+            graph: 'impedanceOverFrequency',
             xAxisMode: 'log',
             yAxisMode: 'log',
             minimumFrequency: 1e3,
