@@ -62,7 +62,7 @@ export default {
             "operatingPoints": {
                 title: "Op. Points",
                 prevTool: "designRequirements",
-                nextTool: "magneticAdviser",
+                nextTool: "magneticBuilder",
             },
             "magneticBuilder": {
                 title: "Magnetic Builder",
