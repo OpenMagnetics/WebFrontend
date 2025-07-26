@@ -235,7 +235,7 @@ export const useStyleStore = defineStore("style", () => {
                 "background": theme["success"],
                 "color": theme["white"],
             },
-            showMarginOptionsButton: {
+            showInsulationOptionsButton: {
                 "background": theme["success"],
                 "color": theme["white"],
             },

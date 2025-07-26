@@ -283,7 +283,7 @@ export const useStyleStore = defineStore("style", () => {
                 "background": theme["primary"],
                 "color": theme["dark"],
             },
-            showMarginOptionsButton: {
+            showInsulationOptionsButton: {
                 "background": theme["primary"],
                 "color": theme["dark"],
             },
@@ -291,7 +291,7 @@ export const useStyleStore = defineStore("style", () => {
                 "background": theme["secondary"],
                 "color": theme["white"],
             },
-            hideMarginOptionsButton: {
+            hideInsulationOptionsButton: {
                 "background": theme["secondary"],
                 "color": theme["white"],
             },

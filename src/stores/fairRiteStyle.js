@@ -338,7 +338,7 @@ export const useFairRiteStyleStore = defineStore("fairRiteStyle", () => {
                 "background": theme["primary"],
                 "color": theme["dark"],
             },
-            showMarginOptionsButton: {
+            showInsulationOptionsButton: {
                 "background": theme["primary"],
                 "color": theme["dark"],
             },
@@ -346,7 +346,7 @@ export const useFairRiteStyleStore = defineStore("fairRiteStyle", () => {
                 "background": theme["secondary"],
                 "color": theme["white"],
             },
-            hideMarginOptionsButton: {
+            hideInsulationOptionsButton: {
                 "background": theme["secondary"],
                 "color": theme["white"],
             },
