@@ -81,6 +81,21 @@ const routes = [
         name: 'CoreShapeCrossReferencer',
         component: () => import('../views/CrossReferencers/CrossReferencerFairRite.vue')
     },
+    {
+        path: '/core_cross_referencer',
+        name: 'CoreCrossReferencer',
+        component: () => import('../views/CrossReferencers/CrossReferencer.vue')
+    },
+    {
+        path: '/core_material_cross_referencer',
+        name: 'CoreMaterialCrossReferencer',
+        component: () => import('../views/CrossReferencers/CrossReferencer.vue')
+    },
+    {
+        path: '/core_shape_cross_referencer',
+        name: 'CoreShapeCrossReferencer',
+        component: () => import('../views/CrossReferencers/CrossReferencer.vue')
+    },
 
     {
         path: '/we_home',
