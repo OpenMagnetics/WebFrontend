@@ -25,6 +25,7 @@ import Welcome from './Welcome.vue'
 import ToolSelector from './ToolSelector.vue'
 
 import { useMasStore } from '/src/stores/mas'
+import { useMagneticBuilderSettingsStore } from '/MagneticBuilder/src/stores/magneticBuilderSettings'
 
 </script>
 
@@ -58,6 +59,8 @@ export default {
         },
     },
     data() {
+        const magneticBuilderSettingsStore = useMagneticBuilderSettingsStore();
+        magneticBuilderSettingsStore.enableContextMenu = false;
         const masStore = useMasStore();
         const localData = {
             operatingPoint: 0

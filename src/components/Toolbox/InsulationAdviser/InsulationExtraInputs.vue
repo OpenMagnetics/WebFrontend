@@ -80,11 +80,13 @@ export default {
                 :valueBgColor="valueBgColor"
                 :textColor="textColor"
                 :unitExtraStyleClass="unitExtraStyleClass"
+                :labelWidthProportionClass="'col-6'"
+                :valueWidthProportionClass="'col-6'"
                 @input="modelValue.frequency = $event.target.value"
                 @update="$emit('update')"
             />
 
-            <Dimension class="border-1 col-md-4 col-sm-12"
+            <Dimension class="border-1 col-md-3 offset-md-1 col-sm-12"
                 :name="'peak'"
                 :replaceTitle="'Voltage Peak'"
                 :unit="'V'"
@@ -100,11 +102,13 @@ export default {
                 :valueBgColor="valueBgColor"
                 :textColor="textColor"
                 :unitExtraStyleClass="unitExtraStyleClass"
+                :labelWidthProportionClass="'col-6'"
+                :valueWidthProportionClass="'col-6'"
                 @input="modelValue.voltage.processed.peak = $event.target.value"
                 @update="$emit('update')"
             />
 
-            <Dimension class="border-1 col-md-4 col-sm-12"
+            <Dimension class="border-1 col-md-3 offset-md-1 col-sm-12"
                 :name="'rms'"
                 :replaceTitle="'Voltage RMS'"
                 :unit="'V'"
@@ -120,6 +124,8 @@ export default {
                 :valueBgColor="valueBgColor"
                 :textColor="textColor"
                 :unitExtraStyleClass="unitExtraStyleClass"
+                :labelWidthProportionClass="'col-6'"
+                :valueWidthProportionClass="'col-6'"
                 @input="modelValue.voltage.processed.rms = $event.target.value"
                 @update="$emit('update')"
             />
