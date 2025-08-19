@@ -34,10 +34,21 @@ export const useMasStore = defineStore("mas", () => {
         console.log("Resetting MAS");
     }
 
+    function resetMagnetic(type) {
+        if (type == "power") {
+            this.mas.magnetic = MAS.Convert.toMas(JSON.stringify(Defaults.powerMas)).magnetic;
+        }
+        else if (type == "filter") {
+            this.mas.magnetic = MAS.Convert.toMas(JSON.stringify(Defaults.filterMas)).magnetic;
+        }
+        console.log("Resetting Magnetic");
+    }
+
     return {
         setMas,
         mas,
         resetMas,
+        resetMagnetic,
         importedMas,
         updatedTurnsRatios,
         updatedInputExcitationWaveformUpdatedFromGraph,

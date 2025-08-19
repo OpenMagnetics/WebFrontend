@@ -10,6 +10,7 @@ import Dimension from '/WebSharedComponents/DataInput/Dimension.vue'
 import MaximumDimensions from './DesignRequirements/MaximumDimensions.vue'
 import Impedances from './DesignRequirements/Impedances.vue'
 import DimensionWithTolerance from '/WebSharedComponents/DataInput/DimensionWithTolerance.vue'
+import ElementFromListRadio from '/WebSharedComponents/DataInput/ElementFromListRadio.vue'
 import ArrayDimensionWithTolerance from './DesignRequirements/ArrayDimensionWithTolerance.vue'
 import ElementFromList from '/WebSharedComponents/DataInput/ElementFromList.vue'
 import ArrayElementFromList from './DesignRequirements/ArrayElementFromList.vue'
@@ -32,10 +33,15 @@ export default {
         const numberWindingsAux = {
             numberWindings: numberWindings
         }
+        const wiringTechnologyOptions = {
+            "Planar": "Printed",
+            "Wound": "Wound",
+        }
 
         return {
             numberWindingsAux,
             masStore,
+            wiringTechnologyOptions,
         }
     },
     computed: {
@@ -174,7 +180,18 @@ export default {
         },
         updatedIsolationSides(value, index) {
             this.masStore.mas.magnetic.coil.functionalDescription[index].isolationSide = value;
-        }
+        },
+        updatedWiringTechnologies(value, index) {
+            if (this.masStore.mas.magnetic.coil.turnsDescription != null) {
+                if (this.$stateStore.getCurrentApplication() == this.$stateStore.SupportedApplications.Power) {
+                    this.masStore.resetMagnetic("power");
+                }
+                if (this.$stateStore.getCurrentApplication() == this.$stateStore.SupportedApplications.CommonModeChoke) {
+                    this.masStore.resetMagnetic("filter");
+                }
+            }
+
+        },
     }
 }
 </script>
@@ -183,7 +200,7 @@ export default {
 <template>
     <div class="container">
         <div v-tooltip="styleTooltip" class="row">
-            <div class="col-sm-12 col-md-4 text-start border" style="max-width: 360px; height: 75vh" :style="$styleStore.designRequirements.main">
+            <div class="col-sm-12 col-md-4 text-start border designRequirementsList" style="max-width: 360px; height: 75vh" :style="$styleStore.designRequirements.main">
                 <div class="my-2 row px-2" v-for="requirementName in designRequirementsOrdered[$stateStore.getCurrentApplication()]" >
                     <label v-tooltip="tooltipsMagneticSynthesisDesignRequirements[requirementName]"  class="rounded-2 fs-5 col-8">{{toTitleCase(shortenedLabels[requirementName])}}</label>
                 
@@ -285,6 +302,22 @@ export default {
                     :valueBgColor="$styleStore.designRequirements.inputValueBgColor"
                     :textColor="$styleStore.designRequirements.inputTextColor"
                     @hasError="hasError"
+                />
+                <ElementFromListRadio class="border-bottom py-2 ps-4"
+                    v-if="!$stateStore.hasCurrentApplicationMirroredWindings() && masStore.mas.inputs.designRequirements.wiringTechnology != null"
+                    :name="'wiringTechnology'"
+                    :dataTestLabel="dataTestLabel + '-WiringTechnology'"
+                    :options="wiringTechnologyOptions"
+                    :titleSameRow="true"
+                    v-model="masStore.mas.inputs.designRequirements"
+                    :labelWidthProportionClass="'col-5'"
+                    :valueWidthProportionClass="'col-3'"
+                    :valueFontSize="$styleStore.designRequirements.inputFontSize"
+                    :labelFontSize="$styleStore.designRequirements.inputTitleFontSize"
+                    :labelBgColor="$styleStore.designRequirements.inputLabelBgColor"
+                    :valueBgColor="$styleStore.designRequirements.inputLabelBgColor"
+                    :textColor="$styleStore.designRequirements.inputTextColor"
+                    @update="updatedWiringTechnologies"
                 />
 
                 <Insulation class="border-bottom py-2"
@@ -466,3 +499,13 @@ export default {
 </template>
 
 
+<style> 
+
+.designRequirementsList{
+    position: relative;
+    float: left;
+    text-align: center;
+    height:100%; 
+    overflow-y: auto; 
+}
+</style>

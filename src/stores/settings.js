@@ -21,6 +21,7 @@ export const useSettingsStore = defineStore("settings", () => {
         allowDistributedGaps: true,
         allowStacks: true,
         allowToroidalCores: true,
+        coreAdviseMode: "available cores",
     })
 
     const magneticBuilderSettings = ref({
@@ -48,6 +49,7 @@ export const useSettingsStore = defineStore("settings", () => {
             allowDistributedGaps: true,
             allowStacks: true,
             allowToroidalCores: true,
+            coreAdviseMode: "available cores",
         };
         this.magneticBuilderSettings = {
             useOnlyCoresInStock: true,
@@ -58,7 +60,7 @@ export const useSettingsStore = defineStore("settings", () => {
             autoRedraw: true,
         };
         this.coreAdviserSettings ={
-            weights: null
+            weights: null,
         };
         this.magneticAdviserSettings ={
             weights: null,

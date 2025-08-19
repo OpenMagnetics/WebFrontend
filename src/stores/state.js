@@ -163,7 +163,6 @@ export const useStateStore = defineStore("state", () => {
         modePerPoint: [null],
     });
 
-    
 
     function updatedSignals() {};
 
@@ -374,6 +373,58 @@ export const useStateStore = defineStore("state", () => {
     function cancelChanges() {
     };
 
+    //CoilConfigurations
+    const woundCoilConfiguration = ref({
+        sectionsOrientation: "contiguous",
+        sectionsAlignment: "spread",
+        interlayerThickness: 0,
+        intersectionThickness: 0,
+        dataPerSection: [],
+        pattern: "",
+        repetitions: 1,
+        proportionPerWinding: [],
+    });
+
+    const planarCoilConfiguration = ref({
+        stackUp: [],
+        insulationThichnessPerLayer: {},
+        clearancePerWinding: {},
+        coreToLayerDistance: null,
+        borderToWireDistance: null,
+    });
+
+    function storeWoundConfiguration(data) {
+        const auxData = deepCopy(data);
+        woundCoilConfiguration.sectionsOrientation = auxData.sectionsOrientation;
+        woundCoilConfiguration.sectionsAlignment = auxData.sectionsAlignment;
+        woundCoilConfiguration.interlayerThickness = auxData.interlayerThickness;
+        woundCoilConfiguration.intersectionThickness = auxData.intersectionThickness;
+        woundCoilConfiguration.dataPerSection = auxData.dataPerSection;
+        woundCoilConfiguration.pattern = auxData.pattern;
+        woundCoilConfiguration.repetitions = auxData.repetitions;
+        woundCoilConfiguration.proportionPerWinding = auxData.proportionPerWinding;
+    }
+
+    function loadWoundConfiguration() {
+        return deepCopy(woundCoilConfiguration);
+    }
+
+    function storePlanarConfiguration(data) {
+        const auxData = deepCopy(data);
+        planarCoilConfiguration.stackUp = auxData.stackUp;
+        planarCoilConfiguration.thicknessPerInsulationLayer = auxData.thicknessPerInsulationLayer;
+        planarCoilConfiguration.coreToLayerDistance = auxData.coreToLayerDistance;
+        planarCoilConfiguration.borderToWireDistance = auxData.borderToWireDistance;
+        planarCoilConfiguration.wireToWireDistance = auxData.wireToWireDistance;
+    }
+
+    function loadPlanarConfiguration() {
+        return deepCopy(planarCoilConfiguration);
+    }
+
+    function wiringTechnologyChanged() {
+    }
+
     return {
         reset,
 
@@ -424,6 +475,14 @@ export const useStateStore = defineStore("state", () => {
         magneticBuilder,
         applyChanges,
         cancelChanges,
+
+        woundCoilConfiguration,
+        storeWoundConfiguration,
+        loadWoundConfiguration,
+        planarCoilConfiguration,
+        storePlanarConfiguration,
+        loadPlanarConfiguration,
+        wiringTechnologyChanged,
     }
 },
 {

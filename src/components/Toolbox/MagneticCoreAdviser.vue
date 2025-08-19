@@ -114,10 +114,11 @@ export default {
                     settings["coreIncludeDistributedGaps"] = this.$settingsStore.adviserSettings.allowDistributedGaps;
                     settings["coreIncludeStacks"] = this.$settingsStore.adviserSettings.allowStacks;
                     settings["useToroidalCores"] = this.$settingsStore.adviserSettings.allowToroidalCores;
+                    settings["useOnlyCoresInStock"] = this.$settingsStore.adviserSettings.useOnlyCoresInStock;
                     this.$mkf.set_settings(JSON.stringify(settings));
 
                     var aux;
-                    const result = this.$mkf.calculate_advised_cores(JSON.stringify(this.masStore.mas.inputs), JSON.stringify(this.$settingsStore.coreAdviserSettings.weights), 20, this.$settingsStore.adviserSettings.useOnlyCoresInStock);
+                    const result = this.$mkf.calculate_advised_cores(JSON.stringify(this.masStore.mas.inputs), JSON.stringify(this.$settingsStore.coreAdviserSettings.weights), 20, this.$settingsStore.adviserSettings.coreAdviseMode);
                     if (result.startsWith("Exception")) {
                         console.error(result)
                         this.loading = false;
