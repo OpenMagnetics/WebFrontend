@@ -99,12 +99,28 @@ export default {
             this.$mkf.ready.then(_ => {
                 const numberWindings = this.masStore.mas.inputs.designRequirements.turnsRatios.length + 1;
                 const frequency = this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex].frequency;
-                this.$stateStore.operatingPointsCircuitSimulator.columnNames[this.currentOperatingPointIndex] = JSON.parse(this.$mkf.extract_map_column_names(file, numberWindings, frequency));
+                const result = this.$mkf.extract_map_column_names(file, numberWindings, frequency);
+                if (result.startsWith("Exception")) {
+                    console.error(resultMasWithCoil);
+                    return;
+                }
+                this.$stateStore.operatingPointsCircuitSimulator.columnNames[this.currentOperatingPointIndex] = JSON.parse(result);
+            })
+            .catch(error => {
+                console.error(error)
             });
         },
         extractAllColumnNames(file) {
             this.$mkf.ready.then(_ => {
-                this.$stateStore.operatingPointsCircuitSimulator.allLastReadColumnNames = JSON.parse(this.$mkf.extract_column_names(file));
+                const result = this.$mkf.extract_column_names(file);
+                if (result.startsWith("Exception")) {
+                    console.error(resultMasWithCoil);
+                    return;
+                }
+                this.$stateStore.operatingPointsCircuitSimulator.allLastReadColumnNames = JSON.parse(result);
+            })
+            .catch(error => {
+                console.error(error)
             });
         },
         onMASFileTypeSelected(event) {
