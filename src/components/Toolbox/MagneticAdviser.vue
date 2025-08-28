@@ -124,7 +124,14 @@ export default {
                         settings["useOnlyCoresInStock"] = this.$settingsStore.adviserSettings.useOnlyCoresInStock;
                         this.$mkf.set_settings(JSON.stringify(settings));
 
-                        const aux = JSON.parse(this.$mkf.calculate_advised_magnetics(JSON.stringify(this.masStore.mas.inputs), JSON.stringify(this.$settingsStore.magneticAdviserSettings.weights), this.$settingsStore.magneticAdviserSettings.maximumNumberResults, this.$settingsStore.adviserSettings.coreAdviseMode));
+                        const result = this.$mkf.calculate_advised_magnetics(JSON.stringify(this.masStore.mas.inputs), JSON.stringify(this.$settingsStore.magneticAdviserSettings.weights), this.$settingsStore.magneticAdviserSettings.maximumNumberResults, this.$settingsStore.adviserSettings.coreAdviseMode);
+
+                        if (result.startsWith("Exception")) {
+                            console.error(result);
+                            return;
+                        }
+                        
+                        const aux = JSON.parse(result);
 
                         console.warn(aux.data[0].mas.magnetic.coil.functionalDescription);
 
@@ -254,7 +261,9 @@ export default {
 
                 </div>
                 <div class="row advises" v-else>
-                    <div class="col-md-4 col-sm-12 m-0 p-0 mt-1" v-for="advise, adviseIndex in adviseCacheStore.currentMasAdvises">
+                    <div 
+                        v-if="adviseCacheStore.currentMasAdvises != null"
+                        class="col-md-4 col-sm-12 m-0 p-0 mt-1" v-for="advise, adviseIndex in adviseCacheStore.currentMasAdvises">
                         <Advise
                             v-if="(Object.values(titledFilters).length > 0) && (currentAdviseToShow >= adviseIndex)"
                             :adviseIndex="adviseIndex"

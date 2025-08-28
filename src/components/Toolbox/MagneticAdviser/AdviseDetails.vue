@@ -170,8 +170,7 @@ export default {
 
             }
 
-
-            for (var operatingPointIndex = 0; operatingPointIndex < data.inputs.operatingPoints.length; operatingPointIndex++) {
+            for (var operatingPointIndex = 0; operatingPointIndex < data.outputs.length; operatingPointIndex++) {
                 localTexts.magnetizingInductanceTable.push({text: null, value: null});
                 localTexts.coreLossesTable.push({text: null, value: null});
                 localTexts.coreTemperatureTable.push({text: null, value: null});
@@ -245,7 +244,8 @@ export default {
                 }
             }
 
-
+            console.warn("localTexts.magnetizingInductanceTable")
+            console.warn(localTexts.magnetizingInductanceTable)
             return localTexts;
         },
         processLocalTexts() {
@@ -307,8 +307,8 @@ export default {
                     <div v-if="'turnsRatioTable' in localTexts" class="col-3 p-0 m-0 border">{{localTexts.turnsRatioTable[windingIndex].value}}</div>
                 </div>
 
-                <div class="row mb-2" v-for="operationPoint, operationPointIndex in modelValue.inputs.operatingPoints">
-                    <div class="col-12 fs-5 p-0 m-0 my-1">{{operationPoint.name}}</div>
+                <div class="row mb-2" v-for="operationPoint, operationPointIndex in modelValue.outputs">
+                    <div class="col-12 fs-5 p-0 m-0 my-1">{{modelValue.inputs.operatingPoints[operationPointIndex].name}}</div>
                     <div class="col-12 fs-5 p-0 m-0 mt-2 text-center">Core</div>
                     <div v-if="'magnetizingInductanceTable' in localTexts" class="col-6 p-0 m-0 border">{{localTexts.magnetizingInductanceTable[operationPointIndex].text}}</div>
                     <div v-if="'magnetizingInductanceTable' in localTexts" class="col-6 p-0 m-0 border">{{localTexts.magnetizingInductanceTable[operationPointIndex].value}}</div>
