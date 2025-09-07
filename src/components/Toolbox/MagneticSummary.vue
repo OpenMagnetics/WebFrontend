@@ -427,15 +427,15 @@ export default {
             const url = import.meta.env.VITE_API_ENDPOINT + '/insert_mas'
 
             console.log("Inserting Mas")
-            this.$axios.post(url, this.mas)
-            .then(response => {
-                console.log("response.data")
-                console.log(response.data)
-            })
-            .catch(error => {
-                console.error("Error inserting")
-                console.error(error)
-            });
+            // this.$axios.post(url, this.mas)
+            // .then(response => {
+            //     console.log("response.data")
+            //     console.log(response.data)
+            // })
+            // .catch(error => {
+            //     console.error("Error inserting")
+            //     console.error(error)
+            // });
         },
     }
 }
@@ -475,8 +475,8 @@ export default {
                 >Circuit Simulators Exports</button>
             </div>
             <div :class="isMobile($windowWidth)? 'col-12' : 'col-10'" class="row">
-                <!-- <h3 v-if="'manufacturerInfo' in mas.magnetic" class="col-12 p-0 m-0 fs-4">{{mas.magnetic.manufacturerInfo.reference}}</h3> -->
-                <div v-if="mas.magnetic.manufacturerInfo != null" class="col-sm-12 col-md-6 text-start pe-0 row">
+                <!-- <h3 v-if="'manufacturerInfo' in mas.magnetic && mas.magnetic.manufacturerInfo.reference != null" class="col-12 p-0 m-0 fs-4">{{mas.magnetic.manufacturerInfo.reference}}</h3> -->
+                <div class="col-sm-12 col-md-6 text-start pe-0 row">
                     <div class="col-12 fs-4 p-0 m-0 mt-2 text-center fw-bold">Core data</div>
                     <div>
                         <div :class="isMobile($windowWidth)? 'offset-1 col-11' : 'offset-1 col-10'">
@@ -616,7 +616,7 @@ export default {
                         </div>
                     </div>
                 </div>
-                <div v-if="mas.magnetic.manufacturerInfo != null" class="col-sm-12 col-md-6 text-start pe-0">
+                <div  class="col-sm-12 col-md-6 text-start pe-0">
                     <div class="col-12 fs-5 p-0 m-0 mt-2 text-center">{{showFieldPlot? 'Core Coil and H Field' : 'Core Coil'}}</div>
                     <Magnetic2DVisualizer
                         :modelValue="mas"
