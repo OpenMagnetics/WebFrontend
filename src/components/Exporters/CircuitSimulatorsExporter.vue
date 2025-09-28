@@ -46,7 +46,10 @@ export default {
                     <p :data-cy="modalName + '-notification-text'" class="modal-title fs-5" :id="modalName + 'Label'">{{title}}</p>
                     <button :ref="'close' + modalName + 'Ref'" type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" :aria-label="modalName + 'Close'"></button>
                 </div>
-                <div class="modal-body container ">
+                <div
+                    v-if="$stateStore.currentOperatingPoint < masStore.mas.inputs.operatingPoints.length"
+                    class="modal-body container "
+                    >
                     <div class="row">
                         <p class="text-center fs-5">SIMBA</p>
                     </div>

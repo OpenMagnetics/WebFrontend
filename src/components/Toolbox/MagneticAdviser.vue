@@ -47,11 +47,13 @@ export default {
         }
 
         const loading = false;
+        const dataUptoDate = false;
 
         return {
             adviseCacheStore,
             masStore,
             loading,
+            dataUptoDate,
             currentAdviseToShow: 0,
         }
     },
@@ -80,6 +82,7 @@ export default {
     mounted () {
         if (this.adviseCacheStore.noMasAdvises()) {
             this.loading = true;
+            this.dataUptoDate = false;
             setTimeout(() => {this.calculateAdvisedMagnetics();}, 200);
         }
     },
@@ -166,6 +169,7 @@ export default {
                         }
 
                         this.loading = false;
+                        this.dataUptoDate = true;
 
                     }
                     else {
@@ -179,11 +183,14 @@ export default {
             }, 10);
         },
         changedInputValue(key, value) {
+            this.dataUptoDate = false;
             this.$settingsStore.magneticAdviserSettings.weights[key] = value / 100;
         },
         maximumNumberResultsChangedInputValue(value) {
+            this.dataUptoDate = false;
         },
         changedSliderValue(newkey, newValue) {
+            this.dataUptoDate = false;
             const remainingValue = 100 - newValue;
             var valueInOthers = 0;
             for (let [key, value] of Object.entries(this.$settingsStore.magneticAdviserSettings.weights)) {
@@ -262,6 +269,7 @@ export default {
                 </div>
                 <div class="row advises" v-else>
                     <div 
+                        :style="dataUptoDate? 'opacity: 100%;' : 'opacity: 20%;'"
                         v-if="adviseCacheStore.currentMasAdvises != null"
                         class="col-md-4 col-sm-12 m-0 p-0 mt-1" v-for="advise, adviseIndex in adviseCacheStore.currentMasAdvises">
                         <Advise
@@ -269,6 +277,7 @@ export default {
                             :adviseIndex="adviseIndex"
                             :masData="advise.mas"
                             :scoring="advise.scoringPerFilter"
+                            :weightedTotalScoring="advise.weightedTotalScoring"
                             :selected="$userStore.magneticAdviserSelectedAdvise == adviseIndex"
                             :graphType="$settingsStore.adviserSettings.spiderBarChartNotBar? 'radar' : 'bar'"
                             @selectedMas="selectedMas(adviseIndex)"

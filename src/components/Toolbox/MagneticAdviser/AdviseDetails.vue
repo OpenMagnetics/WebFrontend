@@ -244,8 +244,6 @@ export default {
                 }
             }
 
-            console.warn("localTexts.magnetizingInductanceTable")
-            console.warn(localTexts.magnetizingInductanceTable)
             return localTexts;
         },
         processLocalTexts() {

@@ -20,6 +20,10 @@ export default {
             type: Object,
             required: true
         },
+        weightedTotalScoring: {
+            type: Number,
+            required: true
+        },
         selected: {
             type: Boolean,
             default: false,
@@ -58,19 +62,10 @@ export default {
             theme,
             localTexts,
             masScore: null,
+            processedScoring: {},
         }
     },
     computed: {
-        brokenLinedFilters() {
-            const titledFilters = [];
-            for (let [key, _] of Object.entries(this.scoring)) {
-                var aux = toTitleCase(key.toLowerCase().replaceAll("_", " "));
-                // titledFilters.push(aux.split(' ').map(item => item.length <= 8? item + ' ' : item.slice(0, 6) + '. ').map(item => toTitleCase(item)).join());
-                // titledFilters.push(aux.split(' ').map(item => item.length <= 8? item + ' ' : item.slice(0, 6) + '. ').map(item => toTitleCase(item)));
-                titledFilters.push(aux);
-            }
-            return titledFilters;
-        },
         fixedMagneticName() {
             if (this.masData.magnetic.manufacturerInfo.reference.split("Gapped ").length > 1) {
                 var gapLength = null;
@@ -128,11 +123,27 @@ export default {
             }
         }
 
+        this.processedScoring = {};
+        this.processedScoring["LOSSES"] = 0;
+        var numberEfficiencyFilters = 0;
+        Object.entries(this.scoring).forEach((elem) => {
+            const [filter, value] = elem
+            if (filter != "COST" && filter != "DIMENSIONS") {
+                numberEfficiencyFilters += 1;
+                this.processedScoring["LOSSES"] += value;
+            }
+            else {
+                this.processedScoring[filter] = value;
+            }
+        })
+
+        this.processedScoring["LOSSES"] /= numberEfficiencyFilters;
+
         this.data = {
-            labels: this.brokenLinedFilters,
+            labels: this.brokenLinedFilters(this.processedScoring),
             datasets: [{
                 label: '',
-                data: Object.values(this.scoring),
+                data: Object.values(this.processedScoring),
                 fill: true,
                 backgroundColor: this.theme.primary,
                 borderColor: this.theme.primary,
@@ -150,6 +161,16 @@ export default {
         this.$emit("adviseReady")
     },
     methods: {
+        brokenLinedFilters(scoring) {
+            const titledFilters = [];
+            for (let [key, _] of Object.entries(scoring)) {
+                var aux = toTitleCase(key.toLowerCase().replaceAll("_", " "));
+                // titledFilters.push(aux.split(' ').map(item => item.length <= 8? item + ' ' : item.slice(0, 6) + '. ').map(item => toTitleCase(item)).join());
+                // titledFilters.push(aux.split(' ').map(item => item.length <= 8? item + ' ' : item.slice(0, 6) + '. ').map(item => toTitleCase(item)));
+                titledFilters.push(aux);
+            }
+            return titledFilters;
+        },
         createChart(chartId, options) {
             const ctx = document.getElementById(chartId)
             if (ctx != null) {
@@ -177,15 +198,6 @@ export default {
                 this.localTexts.powerDensity = `Power dens.:\n${removeTrailingZeroes(aux.label, 1)} ${aux.unit}`;
             }); 
             {
-                var masScore = 0;
-                for (let [key, value] of Object.entries(this.scoring)) {
-                    masScore += value;
-                }
-                masScore /= 3;
-                masScore *= 100;
-                this.masScore = `${removeTrailingZeroes(masScore, 1)}`
-            }   
-            {
                 const aux = formatInductance(this.masData.outputs[0].magnetizingInductance.magnetizingInductance.nominal);
                 this.localTexts.magnetizingInductance = `Mag. Ind.:\n${removeTrailingZeroes(aux.label, 1)} ${aux.unit}`
             }  
@@ -199,7 +211,7 @@ export default {
         <div class="card p-0 m-0">
             <div class="card-header row p-0 m-0 mt-2 pb-2">
                 <p class="fs-6 col-10 p-0 px-1 fw-bold">{{fixedMagneticName}}</p>
-                <p class="fs-4 col-2 p-0 m-0 text-success">{{masScore}}</p>
+                <p class="fs-4 col-2 p-0 m-0 text-success">{{`${removeTrailingZeroes(weightedTotalScoring * 100, 1)}`}}</p>
                 <!-- <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p> -->
             </div>
             <div class="row py-3">
