@@ -4,6 +4,7 @@ import Footer from '../components/Footer.vue'
 
 import CmcWizard from '../components/Wizards/CmcWizard.vue'
 import FlybackWizard from '../components/Wizards/FlybackWizard.vue'
+import BuckWizard from '../components/Wizards/BuckWizard.vue'
 
 </script>
 
@@ -33,6 +34,10 @@ export default {
             <FlybackWizard
                 v-if="$stateStore.getCurrentWizard() == $stateStore.Wizards.Flyback"
                 :dataTestLabel="'FlybackWizard'"
+            />
+            <BuckWizard
+                v-if="$stateStore.getCurrentWizard() == $stateStore.Wizards.Buck"
+                :dataTestLabel="'BuckWizard'"
             />
         </main>
         <Footer class="mt-auto"/>

@@ -237,13 +237,24 @@ export default {
                         </li>
                         <li>
                             <button
-                                :style="$styleStore.header.newWizardButton"
+                                :style="$styleStore.header.wizardButton"
                                 data-cy="Header-insulation-coordinator-link"
                                 :class="headerTogglerIsVisible? 'w-100' : 'mx-0' "
                                 class="dropdown-item btn btn-block nav-link px-2"
                                 @click="onWizards($stateStore.Wizards.Flyback)"
                             >
                                 <i class="me-2 fa-solid fa-bolt-lightning"></i>{{'Flyback Wizard'}}
+                            </button>
+                        </li>
+                        <li>
+                            <button
+                                :style="$styleStore.header.newWizardButton"
+                                data-cy="Header-insulation-coordinator-link"
+                                :class="headerTogglerIsVisible? 'w-100' : 'mx-0' "
+                                class="dropdown-item btn btn-block nav-link px-2"
+                                @click="onWizards($stateStore.Wizards.Buck)"
+                            >
+                                <i class="me-2 fa-solid fa-bolt-lightning"></i>{{'Buck Wizard'}}
                             </button>
                         </li>
                       </ul>

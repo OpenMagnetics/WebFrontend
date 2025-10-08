@@ -33,6 +33,7 @@ export const useStateStore = defineStore("state", () => {
     const Wizards = {
         CommonModeChoke: 'commonModeChoke',
         Flyback: 'flyback',
+        Buck: 'buck',
     };
 
 

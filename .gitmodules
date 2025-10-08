@@ -3,7 +3,7 @@
 	url = https://github.com/twbs/bootstrap.git
 [submodule "WebSharedComponents"]
 	path = WebSharedComponents
-	url = https://github.com/OpenMagnetics/WebSharedComponents.git
+	url = git@github.com:OpenMagnetics/WebSharedComponents.git
 [submodule "MagneticBuilder"]
 	path = MagneticBuilder
-	url = https://github.com/OpenMagnetics/MagneticBuilderApp.git
+	url = git@github.com:OpenMagnetics/MagneticBuilderApp.git
