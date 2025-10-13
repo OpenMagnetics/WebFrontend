@@ -124,20 +124,20 @@ export default {
         }
 
         this.processedScoring = {};
-        this.processedScoring["LOSSES"] = 0;
+        this.processedScoring["Losses"] = 0;
         var numberEfficiencyFilters = 0;
         Object.entries(this.scoring).forEach((elem) => {
             const [filter, value] = elem
-            if (filter != "COST" && filter != "DIMENSIONS") {
+            if (filter != "Cost" && filter != "Dimensions") {
                 numberEfficiencyFilters += 1;
-                this.processedScoring["LOSSES"] += value;
+                this.processedScoring["Losses"] += value;
             }
             else {
                 this.processedScoring[filter] = value;
             }
         })
 
-        this.processedScoring["LOSSES"] /= numberEfficiencyFilters;
+        this.processedScoring["Losses"] /= numberEfficiencyFilters;
 
         this.data = {
             labels: this.brokenLinedFilters(this.processedScoring),

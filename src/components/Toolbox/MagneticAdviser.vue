@@ -127,6 +127,7 @@ export default {
                         settings["useOnlyCoresInStock"] = this.$settingsStore.adviserSettings.useOnlyCoresInStock;
                         this.$mkf.set_settings(JSON.stringify(settings));
 
+                        console.log(this.$settingsStore.magneticAdviserSettings.weights)
                         const result = this.$mkf.calculate_advised_magnetics(JSON.stringify(this.masStore.mas.inputs), JSON.stringify(this.$settingsStore.magneticAdviserSettings.weights), this.$settingsStore.magneticAdviserSettings.maximumNumberResults, this.$settingsStore.adviserSettings.coreAdviseMode);
 
                         if (result.startsWith("Exception")) {

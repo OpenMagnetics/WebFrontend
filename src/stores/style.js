@@ -275,6 +275,11 @@ export const useStyleStore = defineStore("style", () => {
                 "background": theme["secondary"],
                 "color": theme["white"],
             },
+            tableButton: {
+                "background": theme["light"],
+                "color": theme["white"],
+                "border-color": theme["white"],
+            },
             adviseButton: {
                 "background": theme["primary"],
                 "color": theme["dark"],

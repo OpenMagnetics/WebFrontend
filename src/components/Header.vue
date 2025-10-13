@@ -227,7 +227,7 @@ export default {
                         <li>
                             <button
                                 :style="$styleStore.header.wizardButton"
-                                data-cy="Header-insulation-coordinator-link"
+                                data-cy="Wizard-CommonModeChoke-link"
                                 :class="headerTogglerIsVisible? 'w-100' : 'mx-0' "
                                 class="dropdown-item btn btn-block nav-link px-2"
                                 @click="onWizards($stateStore.Wizards.CommonModeChoke)"
@@ -238,7 +238,7 @@ export default {
                         <li>
                             <button
                                 :style="$styleStore.header.wizardButton"
-                                data-cy="Header-insulation-coordinator-link"
+                                data-cy="Flyback-CommonModeChoke-link"
                                 :class="headerTogglerIsVisible? 'w-100' : 'mx-0' "
                                 class="dropdown-item btn btn-block nav-link px-2"
                                 @click="onWizards($stateStore.Wizards.Flyback)"
@@ -249,12 +249,89 @@ export default {
                         <li>
                             <button
                                 :style="$styleStore.header.newWizardButton"
-                                data-cy="Header-insulation-coordinator-link"
+                                data-cy="Buck-CommonModeChoke-link"
                                 :class="headerTogglerIsVisible? 'w-100' : 'mx-0' "
                                 class="dropdown-item btn btn-block nav-link px-2"
                                 @click="onWizards($stateStore.Wizards.Buck)"
                             >
                                 <i class="me-2 fa-solid fa-bolt-lightning"></i>{{'Buck Wizard'}}
+                            </button>
+                        </li>
+                        <li>
+                            <button
+                                :style="$styleStore.header.newWizardButton"
+                                data-cy="Boost-CommonModeChoke-link"
+                                :class="headerTogglerIsVisible? 'w-100' : 'mx-0' "
+                                class="dropdown-item btn btn-block nav-link px-2"
+                                @click="onWizards($stateStore.Wizards.Boost)"
+                            >
+                                <i class="me-2 fa-solid fa-bolt-lightning"></i>{{'Boost Wizard'}}
+                            </button>
+                        </li>
+                        <li>
+                            <button
+                                :style="$styleStore.header.newWizardButton"
+                                data-cy="IsolatedBuck-CommonModeChoke-link"
+                                :class="headerTogglerIsVisible? 'w-100' : 'mx-0' "
+                                class="dropdown-item btn btn-block nav-link px-2"
+                                @click="onWizards($stateStore.Wizards.IsolatedBuck)"
+                            >
+                                <i class="me-2 fa-solid fa-bolt-lightning"></i>{{'Isolated Buck Wizard'}}
+                            </button>
+                        </li>
+                        <li>
+                            <button
+                                :style="$styleStore.header.newWizardButton"
+                                data-cy="IsolatedBuckBoost-CommonModeChoke-link"
+                                :class="headerTogglerIsVisible? 'w-100' : 'mx-0' "
+                                class="dropdown-item btn btn-block nav-link px-2"
+                                @click="onWizards($stateStore.Wizards.IsolatedBuckBoost)"
+                            >
+                                <i class="me-2 fa-solid fa-bolt-lightning"></i>{{'Isolated Buck Boost Wizard'}}
+                            </button>
+                        </li>
+                        <li>
+                            <button
+                                :style="$styleStore.header.newWizardButton"
+                                data-cy="PushPull-CommonModeChoke-link"
+                                :class="headerTogglerIsVisible? 'w-100' : 'mx-0' "
+                                class="dropdown-item btn btn-block nav-link px-2"
+                                @click="onWizards($stateStore.Wizards.PushPull)"
+                            >
+                                <i class="me-2 fa-solid fa-bolt-lightning"></i>{{'Push-Pull Wizard'}}
+                            </button>
+                        </li>
+                        <li>
+                            <button
+                                :style="$styleStore.header.newWizardButton"
+                                data-cy="ActiveClampForward-CommonModeChoke-link"
+                                :class="headerTogglerIsVisible? 'w-100' : 'mx-0' "
+                                class="dropdown-item btn btn-block nav-link px-2"
+                                @click="onWizards($stateStore.Wizards.ActiveClampForward)"
+                            >
+                                <i class="me-2 fa-solid fa-bolt-lightning"></i>{{'Active Clamp Forward Wizard'}}
+                            </button>
+                        </li>
+                        <li>
+                            <button
+                                :style="$styleStore.header.newWizardButton"
+                                data-cy="SingleSwitchForward-CommonModeChoke-link"
+                                :class="headerTogglerIsVisible? 'w-100' : 'mx-0' "
+                                class="dropdown-item btn btn-block nav-link px-2"
+                                @click="onWizards($stateStore.Wizards.SingleSwitchForward)"
+                            >
+                                <i class="me-2 fa-solid fa-bolt-lightning"></i>{{'Single-Switch Forward Wizard'}}
+                            </button>
+                        </li>
+                        <li>
+                            <button
+                                :style="$styleStore.header.newWizardButton"
+                                data-cy="TwoSwitchForward-CommonModeChoke-link"
+                                :class="headerTogglerIsVisible? 'w-100' : 'mx-0' "
+                                class="dropdown-item btn btn-block nav-link px-2"
+                                @click="onWizards($stateStore.Wizards.TwoSwitchForward)"
+                            >
+                                <i class="me-2 fa-solid fa-bolt-lightning"></i>{{'Two-Switch Forward Wizard'}}
                             </button>
                         </li>
                       </ul>

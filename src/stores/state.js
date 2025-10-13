@@ -34,6 +34,13 @@ export const useStateStore = defineStore("state", () => {
         CommonModeChoke: 'commonModeChoke',
         Flyback: 'flyback',
         Buck: 'buck',
+        Boost: 'boost',
+        IsolatedBuck: 'isolatedBuck',
+        IsolatedBuckBoost: 'isolatedBuckBoost',
+        PushPull: 'pushPull',
+        SingleSwitchForward: 'singleSwitchForward',
+        TwoSwitchForward: 'twoSwitchForward',
+        ActiveClampForward: 'activeClampForward',
     };
 
 
