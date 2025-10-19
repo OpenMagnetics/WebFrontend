@@ -28,7 +28,7 @@ export default {
         },
         valueWidthProportionClass:{
             type: String,
-            default: 'col-xs-12 col-md-4'
+            default: 'col-xs-12 col-md-3'
         },
     },
     data() {
@@ -269,320 +269,326 @@ export default {
     <div class="container ps-5">
         <div class="row my-3 ps-2">
             <label
-                :style="combinedStyle([$styleStore.wizard.inputTitleFontSize, $styleStore.wizard.inputLabelBgColor, $styleStore.wizard.inputTextColor])"
+                :style="$styleStore.wizard.title"
                 :data-cy="dataTestLabel + '-title'"
                 class="rounded-2 col-12 p-0 text-center"
-                :class="combinedClass([$styleStore.wizard.inputTitleFontSize, $styleStore.wizard.inputLabelBgColor, $styleStore.wizard.inputTextColor])"
             >
                 {{converterName}}
             </label>
         </div>
-        <div class="row mt-2 ps-2">
-            <ElementFromListRadio class="ps-3"
-                :name="'designLevel'"
-                :dataTestLabel="dataTestLabel + '-NumberPhases'"
-                :replaceTitle="'Design converter from scratch?'"
-                :options="designLevelOptions"
-                :titleSameRow="true"
-                v-model="localData"
-                :labelWidthProportionClass="'col-5'"
-                :valueWidthProportionClass="'col-3'"
-                :valueFontSize="$styleStore.wizard.inputFontSize"
-                :labelFontSize="$styleStore.wizard.inputTitleFontSize"
-                :labelBgColor="$styleStore.wizard.inputLabelBgColor"
-                :valueBgColor="$styleStore.wizard.inputLabelBgColor"
-                :textColor="$styleStore.wizard.inputTextColor"
-                @update="updateErrorMessage"
-            />
-        </div>
-        <div class="row mt-2 ps-2">
-            <DimensionWithTolerance class="ps-1"
-                :name="'inputVoltage'"
-                :replaceTitle="'What is your input voltage?'"
-                unit="V"
-                :dataTestLabel="dataTestLabel + '-InputVoltage'"
-                :min="minimumMaximumScalePerParameter['voltage']['min']"
-                :max="minimumMaximumScalePerParameter['voltage']['max']"
-                :labelWidthProportionClass="labelWidthProportionClass"
-                :valueWidthProportionClass="'col-lg-1 col-md-2'"
-                v-model="localData.inputVoltage"
-                :addButtonStyle="$styleStore.wizard.addButton"
-                :removeButtonBgColor="$styleStore.wizard.removeButton.background"
-                :titleFontSize="$styleStore.wizard.inputTitleFontSize"
-                :valueFontSize="$styleStore.wizard.inputFontSize"
-                :labelFontSize="$styleStore.wizard.inputTitleFontSize"
-                :labelBgColor="$styleStore.wizard.inputLabelBgColor"
-                :valueBgColor="$styleStore.wizard.inputValueBgColor"
-                :textColor="$styleStore.wizard.inputTextColor"
-                @update="updateErrorMessage"
-            />
-        </div>
-        <div class="row mt-2 ps-2">
-            <ElementFromList class="ps-3"
-                :name="'numberOutputs'"
-                :replaceTitle="'How many outputs?'"
-                :dataTestLabel="dataTestLabel + '-NumberOutputs'"
-                :options="Array.from({length: 10}, (_, i) => i + 1)"
-                :titleSameRow="true"
-                v-model="localData"
-                :labelWidthProportionClass="labelWidthProportionClass"
-                :valueWidthProportionClass="valueWidthProportionClass"
-                :valueFontSize="$styleStore.wizard.inputFontSize"
-                :labelFontSize="$styleStore.wizard.inputTitleFontSize"
-                :labelBgColor="$styleStore.wizard.inputLabelBgColor"
-                :valueBgColor="$styleStore.wizard.inputValueBgColor"
-                :textColor="$styleStore.wizard.inputTextColor"
-                @update="updateNumberOutputs"
-            />
-        </div>
-        <div class="row mt-2 ps-2">
-            <div class="offset-2 col-9" v-for="datum, index in localData.outputsParameters">
-                <PairOfDimensions
+        <div class="row">
+            <div class="col-6 container">
+                <div class="row mt-2 ps-2">
+                    <ElementFromListRadio class="ps-3"
+                        :name="'designLevel'"
+                        :dataTestLabel="dataTestLabel + '-NumberPhases'"
+                        :replaceTitle="'Design converter from scratch?'"
+                        :options="designLevelOptions"
+                        :titleSameRow="false"
+                        v-model="localData"
+                        :labelWidthProportionClass="'col-12'"
+                        :valueWidthProportionClass="'ms-5 col-12'"
+                        :valueFontSize="$styleStore.wizard.inputFontSize"
+                        :labelFontSize="$styleStore.wizard.inputLabelFontSize"
+                        :labelBgColor="$styleStore.wizard.inputLabelBgColor"
+                        :valueBgColor="$styleStore.wizard.inputLabelBgColor"
+                        :textColor="$styleStore.wizard.inputTextColor"
+                        @update="updateErrorMessage"
+                    />
+                </div>
+                <div
+                    v-if="localData.designLevel == 'I know the design I want'"
+                    class="row mt-2 ps-2"
+                    >
+                    <Dimension class="ps-3"
+                        :name="'inductance'"
+                        :replaceTitle="'What is your target inductance?'"
+                        unit="H"
+                        :dataTestLabel="dataTestLabel + '-Inductance'"
+                        :min="minimumMaximumScalePerParameter['inductance']['min']"
+                        :max="minimumMaximumScalePerParameter['inductance']['max']"
+                        v-model="localData"
+                        :labelWidthProportionClass="labelWidthProportionClass"
+                        :valueWidthProportionClass="'col-2'"
+                        :valueFontSize="$styleStore.wizard.inputFontSize"
+                        :labelFontSize="$styleStore.wizard.inputLabelFontSize"
+                        :labelBgColor="$styleStore.wizard.inputLabelBgColor"
+                        :valueBgColor="$styleStore.wizard.inputValueBgColor"
+                        :textColor="$styleStore.wizard.inputTextColor"
+                        @update="updateErrorMessage"
+                    />
+                </div>
+                <div
                     v-if="localData.designLevel == 'Help me with the design'"
-                    class="ps-3 border-top border-bottom pt-2"
-                    :names="['voltage', 'current']"
-                    :units="['V', 'A']"
-                    :dataTestLabel="dataTestLabel + '-outputsParameters'"
-                    :mins="[minimumMaximumScalePerParameter['voltage']['min'], minimumMaximumScalePerParameter['current']['min']]"
-                    :maxs="[minimumMaximumScalePerParameter['voltage']['max'], minimumMaximumScalePerParameter['current']['max']]"
-                    v-model="localData.outputsParameters[index]"
-                    :labelWidthProportionClass="labelWidthProportionClass"
-                    :valueWidthProportionClass="valueWidthProportionClass"
-                    :valueFontSize="$styleStore.wizard.inputFontSize"
-                    :labelFontSize="$styleStore.wizard.inputFontSize"
-                    :labelBgColor="$styleStore.wizard.inputLabelBgColor"
-                    :valueBgColor="$styleStore.wizard.inputValueBgColor"
-                    :textColor="localData.outputsParameters[index].voltage <= 0 || localData.outputsParameters[index].current <= 0? $styleStore.wizard.inputErrorTextColor : $styleStore.wizard.inputTextColor"
-                    @update="updateErrorMessage"
-                />
-                <TripleOfDimensions
-                    v-else
-                    class="ps-3 border-top border-bottom pt-2"
-                    :names="['voltage', 'current', 'turnsRatio']"
-                    :units="['V', 'A', null]"
-                    :dataTestLabel="dataTestLabel + '-outputsParameters'"
-                    :mins="[minimumMaximumScalePerParameter['voltage']['min'], minimumMaximumScalePerParameter['current']['min'], 0]"
-                    :maxs="[minimumMaximumScalePerParameter['voltage']['max'], minimumMaximumScalePerParameter['current']['max'], 1000]"
-                    v-model="localData.outputsParameters[index]"
-                    :labelWidthProportionClass="labelWidthProportionClass"
-                    :valueWidthProportionClass="valueWidthProportionClass"
-                    :valueFontSize="$styleStore.wizard.inputFontSize"
-                    :labelFontSize="$styleStore.wizard.inputFontSize"
-                    :labelBgColor="$styleStore.wizard.inputLabelBgColor"
-                    :valueBgColor="$styleStore.wizard.inputValueBgColor"
-                    :textColor="localData.outputsParameters[index].voltage <= 0 || localData.outputsParameters[index].current <= 0? $styleStore.wizard.inputErrorTextColor : $styleStore.wizard.inputTextColor"
-                    @update="updateErrorMessage"
-                />
+                    class="row mt-2 ps-2"
+                    >
+                    <ElementFromListRadio class="ps-3"
+                        :name="'currentOptions'"
+                        :dataTestLabel="dataTestLabel + '-CurrentOptions'"
+                        :replaceTitle="'What requirement do you have on your current?'"
+                        :options="currentOptions"
+                        :titleSameRow="false"
+                        v-model="localData"
+                        :labelWidthProportionClass="'col-12'"
+                        :valueWidthProportionClass="'ms-5 col-12'"
+                        :valueFontSize="$styleStore.wizard.inputFontSize"
+                        :labelFontSize="$styleStore.wizard.inputLabelFontSize"
+                        :labelBgColor="$styleStore.wizard.inputLabelBgColor"
+                        :valueBgColor="$styleStore.wizard.inputLabelBgColor"
+                        :textColor="$styleStore.wizard.inputTextColor"
+                        @update="updateErrorMessage"
+                    />
+                </div>
+                <div
+                    v-if="localData.designLevel == 'Help me with the design' && localData.currentOptions == 'The maximum switch current'"
+                    class="row mt-2 ps-2"
+                >
+                    <Dimension class="ps-3"
+                        :name="'maximumSwitchCurrent'"
+                        :replaceTitle="'What maximum drain-source voltage can the switch withstand?'"
+                        unit="A"
+                        :dataTestLabel="dataTestLabel + '-MaximumSwitchCurrent'"
+                        :min="minimumMaximumScalePerParameter['voltage']['min']"
+                        :max="minimumMaximumScalePerParameter['voltage']['max']"
+                        v-model="localData"
+                        :labelWidthProportionClass="labelWidthProportionClass"
+                        :valueWidthProportionClass="'col-2'"
+                        :valueFontSize="$styleStore.wizard.inputFontSize"
+                        :labelFontSize="$styleStore.wizard.inputLabelFontSize"
+                        :labelBgColor="$styleStore.wizard.inputLabelBgColor"
+                        :valueBgColor="$styleStore.wizard.inputValueBgColor"
+                        :textColor="$styleStore.wizard.inputTextColor"
+                        @update="updateErrorMessage"
+                    />
+                </div>
+                <div 
+                    v-if="localData.designLevel == 'Help me with the design' && localData.currentOptions == 'The output current ratio'"
+                    class="row mt-2 ps-2"
+                >
+                    <Dimension class="ps-3"
+                        :name="'currentRippleRatio'"
+                        :replaceTitle="'What is the maximum current ripple you can have?'"
+                        unit="%"
+                        :visualScale="100"
+                        :dataTestLabel="dataTestLabel + '-CurrentRippleRatio'"
+                        :min="0.01"
+                        :max="1"
+                        v-model="localData"
+                        :labelWidthProportionClass="labelWidthProportionClass"
+                        :valueWidthProportionClass="'col-2'"
+                        :valueFontSize="$styleStore.wizard.inputFontSize"
+                        :labelFontSize="$styleStore.wizard.inputLabelFontSize"
+                        :labelBgColor="$styleStore.wizard.inputLabelBgColor"
+                        :valueBgColor="$styleStore.wizard.inputValueBgColor"
+                        :textColor="$styleStore.wizard.inputTextColor"
+                        @update="updateErrorMessage"
+                    />
+                </div>
+                <div class="row mt-2 ps-2">
+                    <Dimension class="ps-3"
+                        :name="'ambientTemperature'"
+                        :replaceTitle="'What is the ambient temperature around the component?'"
+                        unit="°C"
+                        :dataTestLabel="dataTestLabel + '-AmbientTemperature'"
+                        :min="minimumMaximumScalePerParameter['temperature']['min']"
+                        :max="minimumMaximumScalePerParameter['temperature']['max']"
+                        :allowNegative="true"
+                        :allowZero="true"
+                        v-model="localData"
+                        :labelWidthProportionClass="labelWidthProportionClass"
+                        :valueWidthProportionClass="'col-2'"
+                        :valueFontSize="$styleStore.wizard.inputFontSize"
+                        :labelFontSize="$styleStore.wizard.inputLabelFontSize"
+                        :labelBgColor="$styleStore.wizard.inputLabelBgColor"
+                        :valueBgColor="$styleStore.wizard.inputValueBgColor"
+                        :textColor="$styleStore.wizard.inputTextColor"
+                        @update="updateErrorMessage"
+                    />
+                </div>
+                <div class="row mt-2 ps-2">
+                    <ElementFromList class="ps-3"
+                        :name="'insulationType'"
+                        :replaceTitle="'Do you need insulation?'"
+                        :dataTestLabel="dataTestLabel + '-InsulationType'"
+                        :options="insulationTypes"
+                        :titleSameRow="true"
+                        v-model="localData"
+                        :labelWidthProportionClass="labelWidthProportionClass"
+                        :valueWidthProportionClass="valueWidthProportionClass"
+                        :valueFontSize="$styleStore.wizard.inputFontSize"
+                        :labelFontSize="$styleStore.wizard.inputLabelFontSize"
+                        :labelBgColor="$styleStore.wizard.inputLabelBgColor"
+                        :valueBgColor="$styleStore.wizard.inputValueBgColor"
+                        :textColor="$styleStore.wizard.inputTextColor"
+                        @update="updateErrorMessage"
+                    />
+                </div>
             </div>
-        </div>
-        <div class="row mt-2 ps-2">
-            <Dimension class="ps-3"
-                :name="'switchingFrequency'"
-                :replaceTitle="'At what frequency do you want to switch?'"
-                unit="Hz"
-                :dataTestLabel="dataTestLabel + '-switchingFrequency'"
-                :min="minimumMaximumScalePerParameter['frequency']['min']"
-                :max="minimumMaximumScalePerParameter['frequency']['max']"
-                v-model="localData"
-                :labelWidthProportionClass="labelWidthProportionClass"
-                :valueWidthProportionClass="'col-lg-1 col-md-2'"
-                :valueFontSize="$styleStore.wizard.inputFontSize"
-                :labelFontSize="$styleStore.wizard.inputTitleFontSize"
-                :labelBgColor="$styleStore.wizard.inputLabelBgColor"
-                :valueBgColor="$styleStore.wizard.inputValueBgColor"
-                :textColor="$styleStore.wizard.inputTextColor"
-                @update="updateErrorMessage"
-            />
-        </div>
-        <div
-            v-if="localData.designLevel == 'I know the design I want'"
-            class="row mt-2 ps-2"
-            >
-            <Dimension class="ps-3"
-                :name="'inductance'"
-                :replaceTitle="'What is your target inductance?'"
-                unit="H"
-                :dataTestLabel="dataTestLabel + '-Inductance'"
-                :min="minimumMaximumScalePerParameter['inductance']['min']"
-                :max="minimumMaximumScalePerParameter['inductance']['max']"
-                v-model="localData"
-                :labelWidthProportionClass="labelWidthProportionClass"
-                :valueWidthProportionClass="'col-lg-1 col-md-2'"
-                :valueFontSize="$styleStore.wizard.inputFontSize"
-                :labelFontSize="$styleStore.wizard.inputTitleFontSize"
-                :labelBgColor="$styleStore.wizard.inputLabelBgColor"
-                :valueBgColor="$styleStore.wizard.inputValueBgColor"
-                :textColor="$styleStore.wizard.inputTextColor"
-                @update="updateErrorMessage"
-            />
-        </div>
-        <div
-            v-if="localData.designLevel == 'Help me with the design'"
-            class="row mt-2 ps-2"
-            >
-            <ElementFromListRadio class="ps-3"
-                :name="'currentOptions'"
-                :dataTestLabel="dataTestLabel + '-NumberPhases'"
-                :replaceTitle="'What requirement do you have on your current?'"
-                :options="currentOptions"
-                :titleSameRow="true"
-                v-model="localData"
-                :labelWidthProportionClass="'col-6'"
-                :valueWidthProportionClass="'col-3'"
-                :valueFontSize="$styleStore.wizard.inputFontSize"
-                :labelFontSize="$styleStore.wizard.inputTitleFontSize"
-                :labelBgColor="$styleStore.wizard.inputLabelBgColor"
-                :valueBgColor="$styleStore.wizard.inputLabelBgColor"
-                :textColor="$styleStore.wizard.inputTextColor"
-                @update="updateErrorMessage"
-            />
-        </div>
-        <div
-            v-if="localData.designLevel == 'Help me with the design' && localData.currentOptions == 'The maximum switch current'"
-            class="row mt-2 ps-2"
-        >
-            <Dimension class="ps-3"
-                :name="'maximumSwitchCurrent'"
-                :replaceTitle="'What maximum drain-source voltage can the switch withstand?'"
-                unit="A"
-                :dataTestLabel="dataTestLabel + '-MaximumSwitchCurrent'"
-                :min="minimumMaximumScalePerParameter['voltage']['min']"
-                :max="minimumMaximumScalePerParameter['voltage']['max']"
-                v-model="localData"
-                :labelWidthProportionClass="labelWidthProportionClass"
-                :valueWidthProportionClass="'col-lg-1 col-md-2'"
-                :valueFontSize="$styleStore.wizard.inputFontSize"
-                :labelFontSize="$styleStore.wizard.inputTitleFontSize"
-                :labelBgColor="$styleStore.wizard.inputLabelBgColor"
-                :valueBgColor="$styleStore.wizard.inputValueBgColor"
-                :textColor="$styleStore.wizard.inputTextColor"
-                @update="updateErrorMessage"
-            />
-        </div>
-        <div 
-            v-if="localData.designLevel == 'Help me with the design' && localData.currentOptions == 'The output current ratio'"
-            class="row mt-2 ps-2"
-        >
-            <Dimension class="ps-3"
-                :name="'currentRippleRatio'"
-                :replaceTitle="'What is the maximum current ripple you can have?'"
-                unit="%"
-                :visualScale="100"
-                :dataTestLabel="dataTestLabel + '-CurrentRippleRatio'"
-                :min="0.01"
-                :max="1"
-                v-model="localData"
-                :labelWidthProportionClass="labelWidthProportionClass"
-                :valueWidthProportionClass="'col-lg-1 col-md-2'"
-                :valueFontSize="$styleStore.wizard.inputFontSize"
-                :labelFontSize="$styleStore.wizard.inputTitleFontSize"
-                :labelBgColor="$styleStore.wizard.inputLabelBgColor"
-                :valueBgColor="$styleStore.wizard.inputValueBgColor"
-                :textColor="$styleStore.wizard.inputTextColor"
-                @update="updateErrorMessage"
-            />
-        </div>
-        <div class="row mt-2 ps-2">
-            <Dimension class="ps-3"
-                :name="'ambientTemperature'"
-                :replaceTitle="'What is the ambient temperature around the component?'"
-                unit="°C"
-                :dataTestLabel="dataTestLabel + '-AmbientTemperature'"
-                :min="minimumMaximumScalePerParameter['temperature']['min']"
-                :max="minimumMaximumScalePerParameter['temperature']['max']"
-                :allowNegative="true"
-                :allowZero="true"
-                v-model="localData"
-                :labelWidthProportionClass="labelWidthProportionClass"
-                :valueWidthProportionClass="'col-lg-1 col-md-2'"
-                :valueFontSize="$styleStore.wizard.inputFontSize"
-                :labelFontSize="$styleStore.wizard.inputTitleFontSize"
-                :labelBgColor="$styleStore.wizard.inputLabelBgColor"
-                :valueBgColor="$styleStore.wizard.inputValueBgColor"
-                :textColor="$styleStore.wizard.inputTextColor"
-                @update="updateErrorMessage"
-            />
-        </div>
-        <div class="row mt-2 ps-2">
-            <Dimension class="ps-3"
-                :name="'diodeVoltageDrop'"
-                :replaceTitle="'What is the voltage drop in the diode?'"
-                unit="V"
-                :dataTestLabel="dataTestLabel + '-DiodeVoltageDrop'"
-                :min="minimumMaximumScalePerParameter['voltage']['min']"
-                :max="minimumMaximumScalePerParameter['voltage']['max']"
-                :allowZero="true"
-                v-model="localData"
-                :labelWidthProportionClass="labelWidthProportionClass"
-                :valueWidthProportionClass="'col-lg-1 col-md-2'"
-                :valueFontSize="$styleStore.wizard.inputFontSize"
-                :labelFontSize="$styleStore.wizard.inputTitleFontSize"
-                :labelBgColor="$styleStore.wizard.inputLabelBgColor"
-                :valueBgColor="$styleStore.wizard.inputValueBgColor"
-                :textColor="$styleStore.wizard.inputTextColor"
-                @update="updateErrorMessage"
-            />
-        </div>
-        <div class="row mt-2 ps-2">
-            <Dimension class="ps-3"
-                :name="'efficiency'"
-                :replaceTitle="'What is target efficiency?'"
-                unit="%"
-                :visualScale="100"
-                :dataTestLabel="dataTestLabel + '-Efficiency'"
-                :min="0.01"
-                :max="1"
-                v-model="localData"
-                :labelWidthProportionClass="labelWidthProportionClass"
-                :valueWidthProportionClass="'col-lg-1 col-md-2'"
-                :valueFontSize="$styleStore.wizard.inputFontSize"
-                :labelFontSize="$styleStore.wizard.inputTitleFontSize"
-                :labelBgColor="$styleStore.wizard.inputLabelBgColor"
-                :valueBgColor="$styleStore.wizard.inputValueBgColor"
-                :textColor="$styleStore.wizard.inputTextColor"
-                @update="updateErrorMessage"
-            />
-        </div>
-        <div class="row mt-2 ps-2">
-            <ElementFromList class="ps-3"
-                :name="'insulationType'"
-                :replaceTitle="'Do you need insulation?'"
-                :dataTestLabel="dataTestLabel + '-InsulationType'"
-                :options="insulationTypes"
-                :titleSameRow="true"
-                v-model="localData"
-                :labelWidthProportionClass="labelWidthProportionClass"
-                :valueWidthProportionClass="valueWidthProportionClass"
-                :valueFontSize="$styleStore.wizard.inputFontSize"
-                :labelFontSize="$styleStore.wizard.inputTitleFontSize"
-                :labelBgColor="$styleStore.wizard.inputLabelBgColor"
-                :valueBgColor="$styleStore.wizard.inputValueBgColor"
-                :textColor="$styleStore.wizard.inputTextColor"
-                @update="updateErrorMessage"
-            />
-        </div>
-        <label
-            class="text-danger col-12 pt-1"
-            :style="$styleStore.wizard.inputFontSize">
-        {{errorMessage}}</label>
-        <div class="row mt-4 ps-2">
-            <div class="offset-1 col-10 row">
-                <button
-                    :disabled="errorMessage != ''"
-                    :style="$styleStore.wizard.reviewButton"
-                    class="col-6 m-0 px-xl-3 px-md-0 btn"
-                    @click="processAndReview"
-                >
-                {{'I want to review the specification'}}
-                </button>
-                <button
-                    :disabled="errorMessage != ''"
-                    :style="$styleStore.wizard.acceptButton"
-                    class="col-6 m-0 px-xl-3 px-md-0 btn"
-                    @click="processAndAdvise"
-                >
-                {{'I want go directly to designing'}}
-                </button>
+            <div class="col-6 container">
+                <div class="row mt-2 ps-2">
+                    <DimensionWithTolerance class="ps-1"
+                        :name="'inputVoltage'"
+                        :replaceTitle="'What is your input voltage?'"
+                        unit="V"
+                        :dataTestLabel="dataTestLabel + '-InputVoltage'"
+                        :min="minimumMaximumScalePerParameter['voltage']['min']"
+                        :max="minimumMaximumScalePerParameter['voltage']['max']"
+                        :labelWidthProportionClass="labelWidthProportionClass"
+                        :valueWidthProportionClass="'col-2'"
+                        v-model="localData.inputVoltage"
+                        :severalRows="true"
+                        :addButtonStyle="$styleStore.wizard.addButton"
+                        :removeButtonBgColor="$styleStore.wizard.removeButton.background"
+                        :titleFontSize="$styleStore.wizard.inputLabelFontSize"
+                        :valueFontSize="$styleStore.wizard.inputFontSize"
+                        :labelFontSize="$styleStore.wizard.inputLabelFontSize"
+                        :labelBgColor="$styleStore.wizard.inputLabelBgColor"
+                        :valueBgColor="$styleStore.wizard.inputValueBgColor"
+                        :textColor="$styleStore.wizard.inputTextColor"
+                        @update="updateErrorMessage"
+                    />
+                </div>
+                <div class="row mt-2 ps-2">
+                    <ElementFromList class="ps-3"
+                        :name="'numberOutputs'"
+                        :replaceTitle="'How many outputs?'"
+                        :dataTestLabel="dataTestLabel + '-NumberOutputs'"
+                        :options="Array.from({length: 10}, (_, i) => i + 1)"
+                        :titleSameRow="true"
+                        v-model="localData"
+                        :labelWidthProportionClass="labelWidthProportionClass"
+                        :valueWidthProportionClass="valueWidthProportionClass"
+                        :valueFontSize="$styleStore.wizard.inputFontSize"
+                        :labelFontSize="$styleStore.wizard.inputLabelFontSize"
+                        :labelBgColor="$styleStore.wizard.inputLabelBgColor"
+                        :valueBgColor="$styleStore.wizard.inputValueBgColor"
+                        :textColor="$styleStore.wizard.inputTextColor"
+                        @update="updateNumberOutputs"
+                    />
+                </div>
+                <div class="row mt-2 ps-2">
+                    <div class="col-12" v-for="datum, index in localData.outputsParameters">
+                        <PairOfDimensions
+                            v-if="localData.designLevel == 'Help me with the design'"
+                            class="border-top border-bottom pt-2"
+                            :names="['voltage', 'current']"
+                            :units="['V', 'A']"
+                            :dataTestLabel="dataTestLabel + '-outputsParameters'"
+                            :mins="[minimumMaximumScalePerParameter['voltage']['min'], minimumMaximumScalePerParameter['current']['min']]"
+                            :maxs="[minimumMaximumScalePerParameter['voltage']['max'], minimumMaximumScalePerParameter['current']['max']]"
+                            v-model="localData.outputsParameters[index]"
+                            :labelWidthProportionClass="'col-xs-12 col-md-6'"
+                            :valueWidthProportionClass="'col-xs-12 col-md-6'"
+                            :valueFontSize="$styleStore.wizard.inputFontSize"
+                            :labelFontSize="$styleStore.wizard.inputFontSize"
+                            :labelBgColor="$styleStore.wizard.inputLabelBgColor"
+                            :valueBgColor="$styleStore.wizard.inputValueBgColor"
+                            :textColor="localData.outputsParameters[index].voltage <= 0 || localData.outputsParameters[index].current <= 0? $styleStore.wizard.inputErrorTextColor : $styleStore.wizard.inputTextColor"
+                            @update="updateErrorMessage"
+                        />
+                        <TripleOfDimensions
+                            v-else
+                            class="border-top border-bottom pt-2"
+                            :names="['voltage', 'current', 'turnsRatio']"
+                            :units="['V', 'A', null]"
+                            :dataTestLabel="dataTestLabel + '-outputsParameters'"
+                            :mins="[minimumMaximumScalePerParameter['voltage']['min'], minimumMaximumScalePerParameter['current']['min'], 0]"
+                            :maxs="[minimumMaximumScalePerParameter['voltage']['max'], minimumMaximumScalePerParameter['current']['max'], 1000]"
+                            v-model="localData.outputsParameters[index]"
+                            :labelWidthProportionClass="'col-xs-12 col-md-6'"
+                            :valueWidthProportionClass="'col-xs-12 col-md-6'"
+                            :valueFontSize="$styleStore.wizard.inputFontSize"
+                            :labelFontSize="$styleStore.wizard.inputFontSize"
+                            :labelBgColor="$styleStore.wizard.inputLabelBgColor"
+                            :valueBgColor="$styleStore.wizard.inputValueBgColor"
+                            :textColor="localData.outputsParameters[index].voltage <= 0 || localData.outputsParameters[index].current <= 0? $styleStore.wizard.inputErrorTextColor : $styleStore.wizard.inputTextColor"
+                            @update="updateErrorMessage"
+                        />
+                    </div>
+                </div>
+                <div class="row mt-2 ps-2">
+                    <Dimension class="ps-3"
+                        :name="'switchingFrequency'"
+                        :replaceTitle="'At what frequency do you want to switch?'"
+                        unit="Hz"
+                        :dataTestLabel="dataTestLabel + '-switchingFrequency'"
+                        :min="minimumMaximumScalePerParameter['frequency']['min']"
+                        :max="minimumMaximumScalePerParameter['frequency']['max']"
+                        v-model="localData"
+                        :labelWidthProportionClass="labelWidthProportionClass"
+                        :valueWidthProportionClass="'col-2'"
+                        :valueFontSize="$styleStore.wizard.inputFontSize"
+                        :labelFontSize="$styleStore.wizard.inputLabelFontSize"
+                        :labelBgColor="$styleStore.wizard.inputLabelBgColor"
+                        :valueBgColor="$styleStore.wizard.inputValueBgColor"
+                        :textColor="$styleStore.wizard.inputTextColor"
+                        @update="updateErrorMessage"
+                    />
+                </div>
+                <div class="row mt-2 ps-2">
+                    <Dimension class="ps-3"
+                        :name="'diodeVoltageDrop'"
+                        :replaceTitle="'What is the voltage drop in the diode?'"
+                        unit="V"
+                        :dataTestLabel="dataTestLabel + '-DiodeVoltageDrop'"
+                        :min="minimumMaximumScalePerParameter['voltage']['min']"
+                        :max="minimumMaximumScalePerParameter['voltage']['max']"
+                        :allowZero="true"
+                        v-model="localData"
+                        :labelWidthProportionClass="labelWidthProportionClass"
+                        :valueWidthProportionClass="'col-2'"
+                        :valueFontSize="$styleStore.wizard.inputFontSize"
+                        :labelFontSize="$styleStore.wizard.inputLabelFontSize"
+                        :labelBgColor="$styleStore.wizard.inputLabelBgColor"
+                        :valueBgColor="$styleStore.wizard.inputValueBgColor"
+                        :textColor="$styleStore.wizard.inputTextColor"
+                        @update="updateErrorMessage"
+                    />
+                </div>
+                <div class="row mt-2 ps-2">
+                    <Dimension class="ps-3"
+                        :name="'efficiency'"
+                        :replaceTitle="'What is target efficiency?'"
+                        unit="%"
+                        :visualScale="100"
+                        :dataTestLabel="dataTestLabel + '-Efficiency'"
+                        :min="0.01"
+                        :max="1"
+                        v-model="localData"
+                        :labelWidthProportionClass="labelWidthProportionClass"
+                        :valueWidthProportionClass="'col-2'"
+                        :valueFontSize="$styleStore.wizard.inputFontSize"
+                        :labelFontSize="$styleStore.wizard.inputLabelFontSize"
+                        :labelBgColor="$styleStore.wizard.inputLabelBgColor"
+                        :valueBgColor="$styleStore.wizard.inputValueBgColor"
+                        :textColor="$styleStore.wizard.inputTextColor"
+                        @update="updateErrorMessage"
+                    />
+                </div>
+            </div>
+            <label
+                class="text-danger col-12 pt-1"
+                :style="$styleStore.wizard.inputFontSize">
+            {{errorMessage}}</label>
+            <div class="row mt-4 ps-2">
+                <div class="offset-1 col-10 row">
+                    <button
+                        :disabled="errorMessage != ''"
+                        :style="$styleStore.wizard.reviewButton"
+                        class="col-6 m-0 px-xl-3 px-md-0 btn"
+                        @click="processAndReview"
+                    >
+                    <i class="me-2 fa-solid fa-redo"></i>{{'I want to review the specification'}}
+                    </button>
+                    <button
+                        :disabled="errorMessage != ''"
+                        :style="$styleStore.wizard.acceptButton"
+                        class="col-6 m-0 px-xl-3 px-md-0 btn"
+                        @click="processAndAdvise"
+                    >
+                    <i class="me-2 fa-regular fa-eye"></i>{{'I want go directly to designing'}}
+                    </button>
+                </div>
             </div>
         </div>
     </div>
