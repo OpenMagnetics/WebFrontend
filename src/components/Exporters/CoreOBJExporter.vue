@@ -73,6 +73,15 @@ export default {
 
 <template>
     <div class="container">
-        <button :disabled="exported" :data-cy="dataTestLabel + '-download-button'" class="btn" :class="classProp" @click="onClick"> Download OBJ model </button>
+        <button
+            :style="$styleStore.magneticBuilder.main"
+            :disabled="exported"
+            :data-cy="dataTestLabel + '-download-button'"
+            class="btn p-2"
+            :class="classProp"
+            @click="onClick"
+        >
+            Download OBJ model
+        </button>
     </div>
 </template>

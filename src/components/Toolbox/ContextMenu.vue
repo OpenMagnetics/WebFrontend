@@ -87,8 +87,13 @@ export default {
 </script>
 
 <template>
-    <div class="pb-2 p-0 container" v-tooltip="styleTooltip" :style="$styleStore.contextMenu.main">
-        <h4 class="text-center pt-2 fs-5">Tool menu</h4>
+    <div
+        v-if="$stateStore.getCurrentToolState().subsection != 'designRequirements' && $stateStore.getCurrentToolState().subsection != 'operatingPoints'"
+        :style="$styleStore.contextMenu.main"
+        class="pb-2 p-0 container"
+        v-tooltip="styleTooltip"
+    >
+        <h4 class="text-center py-2 fs-5" :style="$styleStore.contextMenu.title">Tool menu</h4>
         <MagneticBuilderSettings 
             v-if="$stateStore.getCurrentToolState().subsection == 'magneticBuilder'"
             :modalName="'MagneticBuilderSettingsModal'"

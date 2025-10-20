@@ -3,6 +3,7 @@ import { ref, watch, computed  } from 'vue'
 
 export const useSettingsStore = defineStore("settings", () => {
     const loadingGif = ref("/images/loading.gif");
+    const processingGif = ref("/images/processing.gif");
     const waitingTimeAfterChange = 200;
     const waitingTimeForPlottingAfterChange = 500;
 
@@ -91,6 +92,7 @@ export const useSettingsStore = defineStore("settings", () => {
         reset,
 
         loadingGif,
+        processingGif,
         waitingTimeAfterChange,
         waitingTimeForPlottingAfterChange,
     }

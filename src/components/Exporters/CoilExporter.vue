@@ -37,30 +37,30 @@ export default {
 
 
 <template>
-    <div class="modal fade" :id="modalName" tabindex="-1" :aria-labelledby="modalName + 'Label'" aria-hidden="true">
+    <div class="modal fade" :id="modalName" tabindex="-1" :aria-labelledby="modalName + 'Label'" aria-hidden="true" :style="$styleStore.magneticBuilder.exporter">
         <div class="modal-dialog modal-lg modal-dialog-scrollable modal-class">
-            <div class="modal-content bg-dark text-white">
+            <div class="modal-content">
                 <div class="modal-header">
                     <p :data-cy="modalName + '-notification-text'" class="modal-title fs-5" :id="modalName + 'Label'">{{title}}</p>
                     <button :ref="'close' + modalName + 'Ref'" type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" :aria-label="modalName + 'Close'"></button>
                 </div>
                 <div class="modal-body container">
                     <CoilWindingExporter
-                        class="btn btn-primary col-4 mt-4"
+                        class="btn col-4 mt-4"
                         :data-cy="dataTestLabel + '-Magnetic-Winding-2D-Section'"
                         :mas="masStore.mas"
                         :includeHField="false"
                         :includeFringing="false"
                     />
                     <CoilWindingExporter
-                        class="btn btn-primary offset-1 col-4 mt-4"
+                        class="btn offset-1 col-4 mt-4"
                         :data-cy="dataTestLabel + '-Magnetic-Winding-2D-Section-With-H-Field'"
                         :mas="masStore.mas"
                         :includeHField="true"
                         :includeFringing="false"
                     />
                     <CoilWindingExporter
-                        class="btn btn-primary offset-1 col-4 mt-4"
+                        class="btn offset-1 col-4 mt-4"
                         :data-cy="dataTestLabel + '-Magnetic-Winding-2D-Section-With-H-Field-And-Fringing'"
                         :mas="masStore.mas"
                         :includeHField="true"

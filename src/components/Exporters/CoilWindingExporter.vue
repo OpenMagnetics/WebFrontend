@@ -76,6 +76,15 @@ export default {
 
 <template>
     <div class="container">
-        <button :disabled="exported" :data-cy="dataTestLabel + '-download-button'" class="btn" :class="classProp" @click="onClick"> {{includeHField? includeFringing? 'Download Winding 2D Section with H field' : 'Download Winding 2D Section with H field but no fringing' : 'Download Winding 2D Section'}} </button>
+        <button
+            :style="$styleStore.magneticBuilder.main"
+            :disabled="exported"
+            :data-cy="dataTestLabel + '-download-button'"
+            class="btn p-2"
+            :class="classProp"
+            @click="onClick"
+        >
+            {{includeHField? includeFringing? 'Download Winding 2D Section with H field' : 'Download Winding 2D Section with H field but no fringing' : 'Download Winding 2D Section'}}
+        </button>
     </div>
 </template>

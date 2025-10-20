@@ -199,8 +199,8 @@ export default {
 
 <template>
     <div class="container">
-        <div v-tooltip="styleTooltip" class="row">
-            <div class="col-sm-12 col-md-4 text-start border designRequirementsList" style="max-width: 360px; height: 75vh" :style="$styleStore.designRequirements.main">
+        <div v-tooltip="styleTooltip" class="row" :style="$styleStore.designRequirements.main">
+            <div class="col-sm-12 col-md-4 text-start border designRequirementsList" style="max-width: 360px; height: 80vh">
                 <div class="my-2 row px-2" v-for="requirementName in designRequirementsOrdered[$stateStore.getCurrentApplication()]" >
                     <label v-tooltip="tooltipsMagneticSynthesisDesignRequirements[requirementName]"  class="rounded-2 fs-5 col-8">{{toTitleCase(shortenedLabels[requirementName])}}</label>
                 

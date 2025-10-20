@@ -325,7 +325,7 @@ export default {
                         :dataTestLabel="dataTestLabel + '-operating-point-' + operatingPointIndex + '-name-input'"
                         :canBeEmpty="false"
                         :labelWidthProportionClass="'col-0'"
-                        :valueWidthProportionClass="'col-12'"
+                        :valueWidthProportionClass="'ms-2 col-11'"
                         :valueFontSize="$styleStore.operatingPoints.inputFontSize"
                         :titleFontSize="$styleStore.operatingPoints.inputTitleFontSize"
                         :labelBgColor="$styleStore.operatingPoints.titleLabelBgColor"

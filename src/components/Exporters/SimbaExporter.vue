@@ -97,6 +97,15 @@ export default {
 <template>
     <div class="container">
         <input data-cy="CoreImport-MAS-file-button" type="file" ref="simbaFileReader" @change="readSimbaFile()" class="btn btn-primary mt-1 rounded-3" hidden />
-        <button :disabled="exported" :data-cy="dataTestLabel + '-download-button'" class="btn" :class="classProp" @click="onClick"> {{attachToFile? 'Attach magnetic subcircuit to Simba simulation' : 'Download magnetic subcircuit for Simba'}} </button>
+        <button
+            :style="$styleStore.magneticBuilder.main"
+            :disabled="exported"
+            :data-cy="dataTestLabel + '-download-button'"
+            class="btn p-2"
+            :class="classProp"
+            @click="onClick"
+        >
+            {{attachToFile? 'Attach magnetic subcircuit to Simba simulation' : 'Download magnetic subcircuit for Simba'}} 
+        </button>
     </div>
 </template>

@@ -442,32 +442,36 @@ export default {
 </script>
 
 <template>
-    <div class="container">
+    <div class="container" :style="$styleStore.magneticBuilder.main">
         <CoreExporter :data-cy="dataTestLabel + '-CoreExporter'"/>
         <CoilExporter :data-cy="dataTestLabel + '-CoilExporter'" />
         <MASExporter :data-cy="dataTestLabel + '-MASExporter'" />
         <CircuitSimulatorsExporter :data-cy="dataTestLabel + '-CircuitSimulatorsExporter'" />
-        <div class="row">
+        <div class="row" :style="$styleStore.magneticBuilder.main">
             <div class="col-sm-12 col-md-2 text-start border border-primary pb-4" style="height: fit-content">
                 <button
+                    :style="$styleStore.magneticBuilder.exportButton"
                     :data-cy="'settings-modal-button'"
                     class="btn btn-primary mx-auto d-block mt-4 col-6 col-sm-6 col-md-12"
                     data-bs-toggle="modal"
                     data-bs-target="#MASExporterModal"
                 >MAS Exports</button>
                 <button
+                    :style="$styleStore.magneticBuilder.exportButton"
                     :data-cy="'settings-modal-button'"
                     class="btn btn-primary mx-auto d-block mt-4 col-6 col-sm-6 col-md-12"
                     data-bs-toggle="modal"
                     data-bs-target="#CoreExporterModal"
                 >Core Exports</button>
                 <button
+                    :style="$styleStore.magneticBuilder.exportButton"
                     :data-cy="'settings-modal-button'"
                     class="btn btn-primary mx-auto d-block mt-4 col-6 col-sm-6 col-md-12"
                     data-bs-toggle="modal"
                     data-bs-target="#CoilExporterModal"
                 >Coil Exports</button>
                 <button
+                    :style="$styleStore.magneticBuilder.exportButton"
                     :data-cy="'settings-modal-button'"
                     class="btn btn-danger mx-auto d-block mt-4 col-6 col-sm-6 col-md-12"
                     data-bs-toggle="modal"

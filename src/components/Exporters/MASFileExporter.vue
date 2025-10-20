@@ -52,6 +52,15 @@ export default {
 
 <template>
     <div class="container">
-        <button :disabled="exported" :data-cy="dataTestLabel + '-download-button'" class="btn" :class="classProp" @click="onClick"> {{includeInputs? 'Download MAS file with excitations and results' : 'Download MAS file only with magnetic'}} </button>
+        <button
+            :style="$styleStore.magneticBuilder.main"
+            :disabled="exported"
+            :data-cy="dataTestLabel + '-download-button'"
+            class="btn p-2"
+            :class="classProp"
+            @click="onClick"
+        >
+            {{includeInputs? 'Download MAS file with excitations and results' : 'Download MAS file only with magnetic'}}
+        </button>
     </div>
 </template>

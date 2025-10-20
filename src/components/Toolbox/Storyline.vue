@@ -155,7 +155,7 @@ export default {
 
 <template>
     <div class="py-2 p-0 container" v-tooltip="styleTooltip" :style="$styleStore.storyline.main">
-        <h4 class="text-center p-2">Steps</h4>
+        <h4 class="text-center py-2" :style="$styleStore.storyline.title" >Steps</h4>
         <div class="row px-1">
             <div v-for="adventure, index in basicStoryline" class="col-3 col-sm-3 col-md-12 px-0"> 
                 <button
@@ -172,7 +172,7 @@ export default {
                 <i
                     :style="$styleStore.storyline.arrow"
                     v-if="adventure.nextTool != null && getInnerWidth() > 768"
-                    class="fa-solid fa-up-down col-3 col-sm-3 col-md-12"
+                    class="fa-solid fa-arrow-down col-3 col-sm-3 col-md-12"
                 ></i>
                 <i
                     :style="$styleStore.storyline.arrow"

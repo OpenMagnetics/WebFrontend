@@ -37,8 +37,8 @@ export default {
                         data:  this.convertMasToChartjs(this.modelValue.current.waveform),
                         pointRadius: this.enableDrag? 2 : 1,
                         borderWidth: 5,
-                        borderColor: this.$styleStore.operatingPoints.currentTextColor.color,
-                        backgroundColor: this.$styleStore.operatingPoints.currentBgColor.background,
+                        borderColor: this.$styleStore.operatingPoints.currentGraph.color,
+                        backgroundColor: this.$styleStore.operatingPoints.currentGraph.background,
                     },
                     {
                         label: 'Voltage',
@@ -46,8 +46,8 @@ export default {
                         data: this.convertMasToChartjs(this.modelValue.voltage.waveform),
                         pointRadius: this.enableDrag? 2 : 1,
                         borderWidth: 5,
-                        borderColor: this.$styleStore.operatingPoints.voltageTextColor.color,
-                        backgroundColor: this.$styleStore.operatingPoints.voltageBgColor.background,
+                        borderColor: this.$styleStore.operatingPoints.voltageGraph.color,
+                        backgroundColor: this.$styleStore.operatingPoints.voltageGraph.background,
                     },
                     {
                         label: 'zeroLineCurrent',
@@ -127,7 +127,7 @@ export default {
                     position: 'left',
                     ticks: {
                         beginAtZero: true,
-                        color: this.$styleStore.operatingPoints.currentTextColor.color,
+                        color: this.$styleStore.operatingPoints.currentGraph.color,
                         font: {
                             size: 12
                         },
@@ -139,8 +139,8 @@ export default {
                     max: 15,
                     min: -15,
                     grid: {
-                        color: this.$styleStore.operatingPoints.currentTextColor.color,
-                        borderColor: this.$styleStore.operatingPoints.currentTextColor.color,
+                        color: this.$styleStore.operatingPoints.currentGraph.color,
+                        borderColor: this.$styleStore.operatingPoints.currentGraph.color,
                         borderWidth: 2,
                         lineWidth: 0.4
                     },
@@ -150,7 +150,7 @@ export default {
                     position: 'right',
                     ticks: {
                         beginAtZero: true,
-                        color: this.$styleStore.operatingPoints.voltageTextColor.color,
+                        color: this.$styleStore.operatingPoints.voltageGraph.color,
                         font: {
                             size: 12
                         },
@@ -162,8 +162,8 @@ export default {
                     max: 100,
                     min: -100,
                     grid: {
-                        color: this.$styleStore.operatingPoints.voltageTextColor.color,
-                        borderColor: this.$styleStore.operatingPoints.voltageTextColor.color,
+                        color: this.$styleStore.operatingPoints.voltageGraph.color,
+                        borderColor: this.$styleStore.operatingPoints.voltageGraph.color,
                         borderWidth: 2,
                         lineWidth: 0.4
                     },
