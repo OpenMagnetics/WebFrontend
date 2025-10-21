@@ -38,13 +38,11 @@ export default {
         const masStore = useMasStore();
 
         const catalogStore = useCatalogStore();
-        var catalogString = "";
 
         const loading = false;
 
         return {
             adviseCacheStore,
-            catalogString,
             catalogStore,
             masStore,
             loading,
@@ -81,85 +79,70 @@ export default {
     created () {
     },
     mounted () {
-        fetch(this.catalogStore.catalogUrl)
-        .then((data) => data.text())
-        .then((data) => {
-            this.catalogString = data;
-            if (this.catalogStore.advises.length == 0) {
-                this.loading = true;
-                setTimeout(() => {this.calculateAdvisedMagnetics();}, 200);
-            }
-        })
+        console.log(this.catalogStore.advises)
+        this.$emit("canContinue", true);
     },
     methods: {
-        calculateAdvisedMagnetics() {
-            // Timeout to give time to gif to load
-            setTimeout(() => {
-                this.$mkf.ready.then(_ => {
-                    if (this.masStore.mas.inputs.operatingPoints.length > 0) {
-                        console.time('Execution Time');
-
-                        const settings = JSON.parse(this.$mkf.get_settings());
-                        settings["coreIncludeDistributedGaps"] = true;
-                        settings["coreIncludeStacks"] = true;
-                        settings["useToroidalCores"] = true;
-                        this.$mkf.set_settings(JSON.stringify(settings));
-
-                        const result = this.$mkf.calculate_advised_magnetics_from_catalog(JSON.stringify(this.masStore.mas.inputs), this.catalogString, 2);
-
-                        var aux;
-                        if (result.startsWith("Exception")) {
-                            console.error(result);
-                            return;
-                        }
-                        else {
-                            aux = JSON.parse(result);
-                        }
-
-                        var data = aux["data"];
-
-                        this.catalogStore.advises = [];
-
-                        data.forEach((datum) => {
-                            this.catalogStore.advises.push(datum);
-                        })
-                        console.timeEnd('Execution Time');
-                        // if (this.catalogStore.advises.length > 0) {
-                        //     this.$emit("canContinue", true);
-                        // }
-
-                        this.loading = false;
-
-                    }
-                    else {
-                        console.error("No operating points found")
-                        this.loading = false;
-                    }
-                });
-            }, 10);
-        },
         maximumNumberResultsChangedInputValue(value) {
         },
-        maximumNumberResultsChangedSliderValue(newValue) {
+        changedInputValue(filter, newValue) {
+            this.catalogStore.filters[filter] = Number(newValue)
         },
-        viewMagnetic(index) {
-            this.masStore.mas = deepCopy(this.catalogStore.advises[index].mas);
+        changedSliderValue(filter, newValue) {
+        },
+        continueWithoutSearch(index) {
+            this.$stateStore.setCurrentToolSubsection("magneticBuilder");
             this.$emit("canContinue", true);
-
-            this.$stateStore.setCurrentToolSubsection("magneticViewer");
         },
         editMagnetic(index) {
-            this.masStore.mas = deepCopy(this.catalogStore.advises[index].mas);
-            if (this.masStore.mas.magnetic.manufacturerInfo != null && !this.masStore.mas.magnetic.manufacturerInfo.reference.includes("Edited")) {
-                this.masStore.mas.magnetic.manufacturerInfo.reference += "_Edited";
-            }
-            this.$emit("canContinue", true);
-
+            this.masStore.mas = this.catalogStore.advises[index].mas
             this.$stateStore.setCurrentToolSubsection("magneticBuilder");
+            this.$emit("canContinue", true);
         },
-        calculateAdvises(event) {
+        calculateAdvisedMagnetics() {
+            this.catalogStore.advises = [];
             this.loading = true;
-            setTimeout(() => {this.calculateAdvisedMagnetics();}, 200);
+            setTimeout(() => {
+                console.time('Execution Time');
+                const url = import.meta.env.VITE_API_ENDPOINT + '/calculate_advised_magnetics';
+
+                const filterFlow = [];
+                for (const [key, value] of Object.entries(this.catalogStore.filters)) {
+                    if (value > 0) {
+                        filterFlow.push({
+                            "filter": key,
+                            "invert": true,
+                            "log": false,
+                            "strictlyRequired": value==100,
+                            "weight": value / 100
+                        })
+                    }
+                }
+
+                const data = {
+                    inputs:  this.masStore.mas.inputs,
+                    maximum_number_results:  9,
+                    filter_flow: filterFlow,
+                }
+                console.log(filterFlow)
+
+                this.$axios.post(url, data)
+                .then(response => {
+                    console.log(response.data)
+                    this.catalogStore.advises = [];
+                    this.loading = false;
+
+                    response.data.data.forEach((datum) => {
+                        this.catalogStore.advises.push(datum);
+                    })
+                    console.timeEnd('Execution Time');
+                })
+                .catch(error => {
+                    this.loading = false;
+                    console.error(error);
+                });
+
+            }, 100);
         },
 
     }
@@ -167,25 +150,61 @@ export default {
 </script>
 
 <template>
-    <div class="container text-start pe-0 container-fluid"  style="height: 70vh" :style="$styleStore.catalogAdviser.main">
+    <div class="container text-start pe-0 container-fluid"  style="height: 75vh" :style="$styleStore.catalogAdviser.main">
         <div class="row">
-            <div class="col-10 offset-1 text-start pe-0 container-fluid"  style="height: 70vh">
-                <div class="col-12 row fs-5 mb-4">
-                    {{resultsMessage}}
+            <div class="col-2 border text-center p-0 m-0 row"  style="height: 75vh">
+                <div class="col-12">
+                    <label :data-cy="dataTestLabel + '-explanation-text'" class="">Do you want to search in Midcom history for possible similar designs?</label>
+
+                    <button
+                        :disabled="loading"
+                        class="btn fs-5 py-1 offset-1 col-10"
+                        :style="$styleStore.catalogAdviser.searchButton"
+                        @click="calculateAdvisedMagnetics"
+                    >
+                        {{loading? 'Searching in history' : 'Search history'}}
+                    </button>
+                    <h5
+                        v-if="!loading"
+                        :data-cy="dataTestLabel + '-history-explanation-text'"
+                        class="fw-light fs-6"
+                    >
+                        {{loading? '\n' : '(It might take a few minutes)'}}
+                    </h5>
+
+                    <div class="row text-start" v-for="weight, filter in catalogStore.filters">
+                        <label class="form-label col-12 py-0 my-0">{{filter}}</label>
+                        <div class=" col-7 me-2 pt-2">
+                            <Slider v-model="catalogStore.filters[filter]" :disabled="loading" class="col-12 text-primary slider" :height="10" :min="0" :max="100" :step="10" :color="theme.primary" :tooltips="false" @change="changedSliderValue(filter, $event)"/>
+                        </div>
+
+                        <input :disabled="loading" :data-cy="dataTestLabel + '-number-input'" type="number" class="m-0 px-0 col-3" @change="changedInputValue(filter, $event.target.value)" :value="removeTrailingZeroes(catalogStore.filters[filter], 0)" ref="inputRef"/>
+
+                    </div>
+                    <button
+                        :disabled="loading"
+                        class="btn fs-5 my-2 offset-1 col-10"
+                        :style="$styleStore.catalogAdviser.continueButton"
+                        @click="continueWithoutSearch"
+                    >
+                        {{"No thanks"}}
+                    </button>
                 </div>
+            </div>
+            <div class="col-10 text-start pe-0 container-fluid"  style="height: 75vh">
                 <div class="row" v-if="loading" >
                     <img data-cy="magneticAdviser-loading" class="mx-auto d-block col-12" alt="loading" style="width: auto; height: 20%;" :src="$settingsStore.loadingGif">
-
                 </div>
                 <div class="col-12 row advises">
-                    <div class="col-6 m-0 p-0 mt-1" v-for="advise, adviseIndex in catalogStore.advises">
+                    <div class="col-4 m-0 p-0 mt-1" v-for="advise, adviseIndex in catalogStore.advises">
                         <Advise
                             :adviseIndex="adviseIndex"
                             :masData="advise.mas"
                             :scoring="advise.scoring"
-                            @viewMagnetic="viewMagnetic(adviseIndex)"
+                            :allowView="false"
+                            :allowEdit="true"
+                            :allowOrder="false"
                             @editMagnetic="editMagnetic(adviseIndex)"
-                            @orderSample="catalogStore.orderSample(catalogStore.advises[adviseIndex].mas)"
                         />
                     </div>
                 </div>

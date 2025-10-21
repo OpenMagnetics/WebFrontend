@@ -2,8 +2,8 @@ import { defineStore } from 'pinia'
 import { ref, watch, computed  } from 'vue'
 
 export const useSettingsStore = defineStore("settings", () => {
-    const loadingGif = ref("/images/loading.gif");
-    const processingGif = ref("/images/processing.gif");
+    const loadingGif = ref(`${import.meta.env.BASE_URL}/images/loading.gif`);
+    const processingGif = ref(`${import.meta.env.BASE_URL}/images/processing.gif`);
     const waitingTimeAfterChange = 200;
     const waitingTimeForPlottingAfterChange = 500;
 

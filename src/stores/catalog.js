@@ -3,33 +3,23 @@ import { ref, watch, computed  } from 'vue'
 
 export const useCatalogStore = defineStore("catalog", () => {
 
-    const catalogUrl = ref(null);
-    const catalogCoreMaterialDatabase = ref(null);
-    const catalogCoreShapeDatabase = ref(null);
-    const catalogWireDatabase = ref(null);
+    const filters = ref({
+        "Turns Ratios": 100,
+        "Solid Insulation Requirements": 100,
+        "Magnetizing Inductance": 100,
+        "Dc Current Density": 10,
+        "Effective Current Density": 10,
+        "Volume": 10,
+        "Area": 10,
+        "Height": 10,
+        "Losses No Proximity": 10,
+    });
     const advises = ref([]);
-    const requests = ref([]);
 
-    function resetCatalog() {
-        this.advises = [];
-    }
-    function addRequest() {
-        this.requests.push(requests);
-    }
-
-    function orderSample() {
-    }
 
     return {
-        catalogUrl,
-        catalogCoreMaterialDatabase,
-        catalogCoreShapeDatabase,
-        catalogWireDatabase,
+        filters,
         advises,
-        resetCatalog,
-        orderSample,
-        requests,
-        addRequest,
     }
 },
 {

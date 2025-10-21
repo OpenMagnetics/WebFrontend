@@ -173,7 +173,7 @@ export default {
                     this.$stateStore.operatingPoints.modePerPoint.push(this.$stateStore.OperatingPointsMode.Manual);
                 })
                 if (this.errorMessage == "") {
-                    setTimeout(() => {this.$router.push('/magnetic_tool');}, 100);
+                    setTimeout(() => {this.$router.push(`${import.meta.env.BASE_URL}/magnetic_tool`);}, 100);
                 }
                 else {
                     setTimeout(() => {this.errorMessage = ""}, 5000);
@@ -196,7 +196,7 @@ export default {
                     this.$stateStore.operatingPoints.modePerPoint.push(this.$stateStore.OperatingPointsMode.Manual);
                 })
                 if (this.errorMessage == "") {
-                    setTimeout(() => {this.$router.push('/magnetic_tool');}, 100);
+                    setTimeout(() => {this.$router.push(`${import.meta.env.BASE_URL}/magnetic_tool`);}, 100);
                 }
                 else {
                     setTimeout(() => {this.errorMessage = ""}, 5000);

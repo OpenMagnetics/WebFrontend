@@ -236,7 +236,7 @@ export default {
                         @toolSelected="toolSelected"
                     />
                     <DesignRequirements
-                        v-if="$stateStore.getCurrentToolState().subsection == 'designRequirements' && $stateStore.selectedWorkflow == 'design'"
+                        v-if="$stateStore.getCurrentToolState().subsection == 'designRequirements' && ($stateStore.selectedWorkflow == 'design' || $stateStore.selectedWorkflow == 'catalog')"
                         :dataTestLabel="`${dataTestLabel}-DesignRequirements`"
                         @canContinue="updateCanContinue('designRequirements', $event)"
                     />

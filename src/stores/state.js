@@ -143,6 +143,16 @@ export const useStateStore = defineStore("state", () => {
                     'magneticViewer': false,
                 },
             },
+            magneticCatalogAndBuilder: {
+                subsection: "designRequirements",
+                canContinue: {
+                    'designRequirements': false,
+                    'operatingPoints': false,
+                    'catalogAdviser': false,
+                    'magneticBuilder': false,
+                    'magneticSummary': false,
+                },
+            },
         },
         magneticViewer: {
             magneticViewer: {
@@ -236,7 +246,7 @@ export const useStateStore = defineStore("state", () => {
         maximumTemperature: 150,
         minimumDcBias: 0,
         maximumDcBias: 25,
-        numberPoints: 100,
+        numberPoints: 25,
     });
 
     const magneticBuilder = ref({
