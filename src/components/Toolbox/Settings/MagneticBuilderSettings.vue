@@ -1,5 +1,6 @@
 <script setup >
 import { Modal } from "bootstrap";
+import { useMagneticBuilderSettingsStore } from '/MagneticBuilder/src/stores/magneticBuilderSettings'
 </script>
 
 <script>
@@ -7,6 +8,10 @@ import { Modal } from "bootstrap";
 export default {
     emits: ["onSettingsUpdated"],
     props: {
+        dataTestLabel: {
+            type: String,
+            default: '',
+        },
         modalName: {
             type: String,
             default: 'SettingsModal',
@@ -21,6 +26,7 @@ export default {
         },
     },
     data() {
+        const magneticBuilderSettingsStore = useMagneticBuilderSettingsStore();
         const settingsChanged = false;
         const localData = {
             autoRedraw: this.$settingsStore.magneticBuilderSettings.autoRedraw? '1' : '0',
@@ -29,8 +35,14 @@ export default {
             allowDistributedGaps: this.$settingsStore.magneticBuilderSettings.allowDistributedGaps? '1' : '0',
             allowStacks: this.$settingsStore.magneticBuilderSettings.allowStacks? '1' : '0',
             allowToroidalCores: this.$settingsStore.magneticBuilderSettings.allowToroidalCores? '1' : '0',
+            enableVisualizers: magneticBuilderSettingsStore.enableVisualizers? '1' : '0',
+            enableSimulation: magneticBuilderSettingsStore.enableSimulation? '1' : '0',
+            enableSubmenu: magneticBuilderSettingsStore.enableSubmenu? '1' : '0',
+            enableGraphs: magneticBuilderSettingsStore.enableGraphs? '1' : '0',
+
         }
         return {
+            magneticBuilderSettingsStore,
             settingsChanged,
             localData,
         }
@@ -38,6 +50,10 @@ export default {
     methods: {
         onSettingChanged(event, setting) {
             this.$settingsStore.magneticBuilderSettings[setting] = event.target.value == '1';
+            this.settingsChanged = true;
+        },
+        onMagneticBuilderSettingChanged(event, setting) {
+            this.magneticBuilderSettingsStore[setting] = event.target.value == '1';
             this.settingsChanged = true;
         },
         onSettingsUpdated(event) {
@@ -110,6 +126,40 @@ export default {
                             <label v-tooltip="'Choose between basic or advanced output'" class="fs-6 p-0 ps-3 pe-3 text-end col-4 ">No</label>
                             <input :data-cy="'Settings-Modal-bar-spider-button'" v-model="localData.autoRedraw"  @change="onSettingChanged($event, 'autoRedraw')" type="range" class="form-range col-1 pt-2" min="0" max="1" step="1" style="width: 30px">
                             <label v-tooltip="'Choose between basic or advanced output'" class="fs-6 p-0 ps-3 col-6 text-start">Yes</label>
+                        </div>
+                    </div>
+
+
+                    <div class="row" :style="$styleStore.controlPanel.setting">
+                        <h5 class="offset-0 text-end" :class="labelWidthProportionClass">Enable Visualization</h5>
+                        <div :class="valueWidthProportionClass">
+                            <label class="fs-6 p-0 ps-3 pe-3 text-end col-4 ">No</label>
+                            <input :data-cy="dataTestLabel + '-Settings-Modal-enable-visualization-button'" v-model="localData.enableVisualizers" @change="onMagneticBuilderSettingChanged($event, 'enableVisualizers')" type="range" class="form-range col-1 pt-2" min="0" max="1" step="1" style="width: 30px">
+                            <label class="fs-6 p-0 ps-3 col-6 text-start">Yes</label>
+                        </div>
+                    </div>
+                    <div class="row" :style="$styleStore.controlPanel.setting">
+                        <h5 class="offset-0 text-end" :class="labelWidthProportionClass">Enable Simulation</h5>
+                        <div :class="valueWidthProportionClass">
+                            <label class="fs-6 p-0 ps-3 pe-3 text-end col-4 ">No</label>
+                            <input :data-cy="dataTestLabel + '-Settings-Modal-enable-visualization-button'" v-model="localData.enableSimulation" @change="onMagneticBuilderSettingChanged($event, 'enableSimulation')" type="range" class="form-range col-1 pt-2" min="0" max="1" step="1" style="width: 30px">
+                            <label class="fs-6 p-0 ps-3 col-6 text-start">Yes</label>
+                        </div>
+                    </div>
+                    <div class="row" :style="$styleStore.controlPanel.setting">
+                        <h5 class="offset-0 text-end" :class="labelWidthProportionClass">Enable Submenu</h5>
+                        <div :class="valueWidthProportionClass">
+                            <label class="fs-6 p-0 ps-3 pe-3 text-end col-4 ">No</label>
+                            <input :data-cy="dataTestLabel + '-Settings-Modal-enable-visualization-button'" v-model="localData.enableSubmenu" @change="onMagneticBuilderSettingChanged($event, 'enableSubmenu')" type="range" class="form-range col-1 pt-2" min="0" max="1" step="1" style="width: 30px">
+                            <label class="fs-6 p-0 ps-3 col-6 text-start">Yes</label>
+                        </div>
+                    </div>
+                    <div class="row" :style="$styleStore.controlPanel.setting">
+                        <h5 class="offset-0 text-end" :class="labelWidthProportionClass">Enable Graphs</h5>
+                        <div :class="valueWidthProportionClass">
+                            <label class="fs-6 p-0 ps-3 pe-3 text-end col-4 ">No</label>
+                            <input :data-cy="dataTestLabel + '-Settings-Modal-enable-visualization-button'" v-model="localData.enableGraphs" @change="onMagneticBuilderSettingChanged($event, 'enableGraphs')" type="range" class="form-range col-1 pt-2" min="0" max="1" step="1" style="width: 30px">
+                            <label class="fs-6 p-0 ps-3 col-6 text-start">Yes</label>
                         </div>
                     </div>
                     <button

@@ -455,28 +455,36 @@ export default {
                     class="btn btn-primary mx-auto d-block mt-4 col-6 col-sm-6 col-md-12"
                     data-bs-toggle="modal"
                     data-bs-target="#MASExporterModal"
-                >MAS Exports</button>
+                >
+                    MAS Exports
+                </button>
                 <button
                     :style="$styleStore.magneticBuilder.exportButton"
                     :data-cy="'settings-modal-button'"
                     class="btn btn-primary mx-auto d-block mt-4 col-6 col-sm-6 col-md-12"
                     data-bs-toggle="modal"
                     data-bs-target="#CoreExporterModal"
-                >Core Exports</button>
+                >
+                    Core Exports
+                </button>
                 <button
                     :style="$styleStore.magneticBuilder.exportButton"
                     :data-cy="'settings-modal-button'"
                     class="btn btn-primary mx-auto d-block mt-4 col-6 col-sm-6 col-md-12"
                     data-bs-toggle="modal"
                     data-bs-target="#CoilExporterModal"
-                >Coil Exports</button>
+                >
+                    Coil Exports
+                </button>
                 <button
                     :style="$styleStore.magneticBuilder.exportButton"
                     :data-cy="'settings-modal-button'"
                     class="btn btn-danger mx-auto d-block mt-4 col-6 col-sm-6 col-md-12"
                     data-bs-toggle="modal"
                     data-bs-target="#CircuitSimulatorsExporterModal"
-                >Circuit Simulators Exports</button>
+                >
+                    Circuit Simulators Exports
+                </button>
             </div>
             <div :class="isMobile($windowWidth)? 'col-12' : 'col-10'" class="row">
                 <!-- <h3 v-if="'manufacturerInfo' in mas.magnetic && mas.magnetic.manufacturerInfo.reference != null" class="col-12 p-0 m-0 fs-4">{{mas.magnetic.manufacturerInfo.reference}}</h3> -->

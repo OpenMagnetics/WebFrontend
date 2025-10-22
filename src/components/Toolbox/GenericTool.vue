@@ -18,7 +18,7 @@ import MagneticSummary from './MagneticSummary.vue'
 import MagneticCoreSummary from './MagneticCoreAdviser/MagneticCoreSummary.vue'
 import MagneticSpecificationsSummary from './MagneticSpecificationsReport/MagneticSpecificationsSummary.vue'
 import MagneticBuilder from '/MagneticBuilder/src/components/MagneticBuilder.vue'
-import ControlPanel from '/MagneticBuilder/src/components/ControlPanel.vue'
+import ControlPanel from './ControlPanel.vue'
 import Welcome from './Welcome.vue'
 import ToolSelector from './ToolSelector.vue'
 
@@ -215,7 +215,13 @@ export default {
                     </h2>
 
                     <div v-if="showControlPanel" data-cy="magnetic-synthesis-title-control-panel" :class="(showTitle || showReference)? 'col-sm-12 col-md-6 col-lg-6 col-xl-6' : 'col-sm-12 col-md-9'">
-                        <ControlPanel @toolSelected="toolSelected"/>
+                        <ControlPanel
+                            :showExportButtons="$stateStore.getCurrentToolState().subsection == 'magneticBuilder' || 
+                                                $stateStore.getCurrentToolState().subsection == 'magneticViewer' || 
+                                                $stateStore.getCurrentToolState().subsection == 'magneticSummary'"
+                            :showResetButton="true"
+                            @toolSelected="toolSelected"
+                        />
                     </div>
                 </div>
                 <div
