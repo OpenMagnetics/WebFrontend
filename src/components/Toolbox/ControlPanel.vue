@@ -81,13 +81,13 @@ export default {
         },
         exportAnsys() {
             this.exportingAnsys = true;
-                setTimeout(() => this.exportingAnsys = false, 2000);
+            setTimeout(() => this.exportingAnsys = false, 2000);
             setTimeout(() => {
                 const postData = {
                     "mas": this.masStore.mas,
                     "project_name": this.masStore.mas.magnetic.manufacturerInfo.reference,
                 };
-                const url = import.meta.env.VITE_ANSYS_API_ENDPOINT + '/create_simulation_from_mas';
+                const url = import.meta.env.VITE_API_ENDPOINT + '/create_simulation_from_mas';
 
                 this.$axios.post(url, postData)
                 .then(response => {
