@@ -81,7 +81,6 @@ export default {
         },
         exportAnsys() {
             this.exportingAnsys = true;
-            setTimeout(() => this.exportingAnsys = false, 2000);
             setTimeout(() => {
                 const postData = {
                     "mas": this.masStore.mas,
