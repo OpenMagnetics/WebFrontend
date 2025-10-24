@@ -146,6 +146,14 @@ export default {
                 // return this.$stateStore.operatingPoints.modePerPoint[this.$stateStore.currentOperatingPoint] === this.$stateStore.OperatingPointsMode.AcSweep;
             }
         },
+        enableInsertIntermediateMas() {
+            if (this.$stateStore.selectedTool == 'magneticCatalogAndBuilder') {
+                return false;
+            }
+            else{
+                return true;
+            }
+        },
         showControlPanelAndTitle() {
             if (this.$stateStore.magneticBuilder.mode.core == this.$stateStore.MagneticBuilderModes.Advanced)  {
                 return false;
@@ -295,6 +303,7 @@ export default {
                         :enableGraphs="enableGraphs"
                         :enableAdvisers="$stateStore.operatingPoints.modePerPoint[$stateStore.currentOperatingPoint] !== $stateStore.OperatingPointsMode.AcSweep"
                         :enableSimulation="$stateStore.operatingPoints.modePerPoint[$stateStore.currentOperatingPoint] !== $stateStore.OperatingPointsMode.AcSweep"
+                        :enableInsertIntermediateMas="enableInsertIntermediateMas"
                         @canContinue="updateCanContinue('magneticBuilder', $event)"
                     />
                     <MagneticSummary
