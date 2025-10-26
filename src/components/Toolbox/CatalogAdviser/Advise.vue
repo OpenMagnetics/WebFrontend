@@ -132,7 +132,7 @@ export default {
                     <div class="col-12 m-0 row text-center">
                         <!-- <div class="col-4 p-0 m-0" style="white-space: pre-line">{{localTexts.losses}}</div> -->
                         <div class="col-12 p-0 m-0" style="white-space: pre-line">{{localTexts.core}}</div>
-                        <div class="col-12 p-0 m-0" style="white-space: pre-line">{{localTexts.turnsRatios}}</div>
+                        <div v-if="masData.magnetic.coil.functionalDescription.length > 1" class="col-12 p-0 m-0" style="white-space: pre-line">{{localTexts.turnsRatios}}</div>
                         <div class="col-12 p-0 m-0" style="white-space: pre-line">{{localTexts.dcResistance}}</div>
                         <div class="col-12 p-0 m-0" style="white-space: pre-line">{{localTexts.magnetizingInductance}}</div>
                         <!-- <div class="col-12 p-0 m-0" style="white-space: pre-line">{{localTexts.dimensions}}</div> -->
