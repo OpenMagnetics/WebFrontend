@@ -125,7 +125,7 @@ export default {
         <div v-if="masData.magnetic.manufacturerInfo != null" class="card p-0 m-0 " :style="$styleStore.catalogAdviser.adviserHeader">
             <div class="card-header row p-0 m-0 mt-1 pb-0" :style="$styleStore.catalogAdviser.adviserHeader">
                 <p class="text-center fs-4 col-9 p-0 px-1 fw-bold m-0 mb-1">{{fixedMagneticName}}</p>
-                <p class="text-center fs-4 col-2 p-0 px-1 fw-bold m-0 mb-1">{{removeTrailingZeroes(scoring * 100, 1)}}</p>
+                <p class="text-center fs-4 col-3 p-0 px-1 fw-bold m-0 mb-1">{{removeTrailingZeroes(scoring * 100, 1)}}</p>
             </div>
             <div class="card-body" :style="$styleStore.catalogAdviser.adviserBody">
                 <div class="row p-0 m-0 py-2">
