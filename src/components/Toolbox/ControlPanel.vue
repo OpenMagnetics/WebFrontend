@@ -42,18 +42,28 @@ export default {
 
         const masIcon = `${import.meta.env.BASE_URL}/images/MAS_icon.svg`;
         const ansysIcon = `${import.meta.env.BASE_URL}/images/Ansys_icon.svg`;
+        const ansysEddyCurrentsIcon = `${import.meta.env.BASE_URL}/images/Maxwell.svg`;
+        const ansysTransientIcon = `${import.meta.env.BASE_URL}/images/Excitations_24x24.svg`;
+        const ansysThermalIcon = `${import.meta.env.BASE_URL}/images/Icepak_24x24.svg`;
         const simbaIcon = `${import.meta.env.BASE_URL}/images/Simba_icon.svg`;
-        const ltspiceIcon = `${import.meta.env.BASE_URL}/images/Ngspice_icon.svg`;
-        const ngspiceIcon = `${import.meta.env.BASE_URL}/images/Ltspice_icon.svg`;
+        const ltspiceIcon = `${import.meta.env.BASE_URL}/images/Ltspice_icon.svg`;
+        const ltspiceSymbolIcon = `${import.meta.env.BASE_URL}/images/Ltspice Symbol.png`;
+        const ltspiceSubcircuitIcon = `${import.meta.env.BASE_URL}/images/Ltspice Subcircuit.png`;
+        const ngspiceIcon = `${import.meta.env.BASE_URL}/images/Ngspice_icon.svg`;
         return {
             masStore,
             historyStore,
 
             exportingMAS,
             exportingAnsys,
+            ansysEddyCurrentsIcon,
+            ansysTransientIcon,
+            ansysThermalIcon,
             exportingSimba,
-            exportingNgspice,
             exportingLtspice,
+            ltspiceSymbolIcon,
+            ltspiceSubcircuitIcon,
+            exportingNgspice,
 
             masIcon,
             ansysIcon,
@@ -79,12 +89,14 @@ export default {
                 setTimeout(() => this.exportingMAS = false, 2000);
             }, 100);
         },
-        exportAnsys() {
+        exportAnsys(solutionType) {
             this.exportingAnsys = true;
             setTimeout(() => {
                 const postData = {
                     "mas": this.masStore.mas,
                     "project_name": this.masStore.mas.magnetic.manufacturerInfo.reference,
+                    "solution_type": solutionType,
+                    "operating_point_index": this.$stateStore.currentOperatingPoint,
                 };
                 const url = import.meta.env.VITE_API_ENDPOINT + '/create_simulation_from_mas';
 
@@ -118,18 +130,30 @@ export default {
                 });
             }, 100);
         },
-        exportLtspice() {
+        exportLtspice(part) {
             this.exportingLtspice = true;
             setTimeout(() => {
                 this.$mkf.ready.then(_ => {
                     const magnetic = deepCopy(this.masStore.mas.magnetic);
                     magnetic.manufacturerInfo.reference = magnetic.manufacturerInfo.reference.replaceAll(" ", "_").replaceAll("-", "_").replaceAll(".", "_").replaceAll(",", "_").replaceAll(":", "_").replaceAll("___", "_").replaceAll("__", "_");
-                    var subcircuit = this.$mkf.export_magnetic_as_subcircuit(JSON.stringify(magnetic), this.masStore.mas.inputs.operatingPoints[this.$stateStore.currentOperatingPoint].conditions.ambientTemperature, "LtSpice", "");
-                    var blob = new Blob([subcircuit], {
-                        type: 'text/csv; charset=utf-8'
-                    });
-                    const filename = magnetic.manufacturerInfo.reference;
-                    download(blob, filename + ".cir", "text/csv; charset=utf-8");
+
+                    if (part == "subcircuit") {
+                        var subcircuit = this.$mkf.export_magnetic_as_subcircuit(JSON.stringify(magnetic), this.masStore.mas.inputs.operatingPoints[this.$stateStore.currentOperatingPoint].conditions.ambientTemperature, "LtSpice", "");
+                        var blob = new Blob([subcircuit], {
+                            type: 'text/csv; charset=utf-8'
+                        });
+                        const filename = magnetic.manufacturerInfo.reference;
+                        download(blob, filename + ".cir", "text/csv; charset=utf-8");
+                    }
+                    else {
+                        var subcircuit = this.$mkf.export_magnetic_as_symbol(JSON.stringify(magnetic), "LtSpice", "");
+                        var blob = new Blob([subcircuit], {
+                            type: 'text/csv; charset=utf-8'
+                        });
+                        const filename = magnetic.manufacturerInfo.reference;
+                        download(blob, filename + ".asy", "text/csv; charset=utf-8");
+                    }
+
                     setTimeout(() => this.exportingLtspice = false, 2000);
 
                 }).catch(error => {
@@ -221,14 +245,64 @@ export default {
               <img :src='masIcon' width="40" height="40" class="d-inline-block align-top m-0 p-0" alt="El Magnetic Logo">
             </button>
             <img v-if="exportingMAS" class="offset-1 col-1 p-0" alt="loading" style="width: auto; height: 40px;" :src="$settingsStore.loadingGif">
-            <button
+            
+            <div
                 v-if="showExportButtons && !exportingAnsys"
-                :style="$styleStore.controlPanel.button"
-                class="btn col-1 m-0 p-0"
-                @click="exportAnsys"
-            >
-              <img :src='ansysIcon' width="40" height="40" class="d-inline-block align-top m-0 p-0" alt="El Magnetic Logo">
-            </button>
+                class="dropdown col-1 m-0 p-0 row"
+                >
+                <a
+                    :style="$styleStore.controlPanel.button"
+                    class="btn btn-secondary dropdown-toggle border-0 px-0"
+                    href="#"
+                    role="button" 
+                    data-bs-toggle="dropdown"
+                    aria-expanded="false"
+                >
+                    <img :src='ansysIcon' width="40" height="40" class="d-inline-block align-top m-0 p-0" alt="El Magnetic Logo">
+                </a>
+
+                <ul class="dropdown-menu m-0 p-0 row col-12">
+                    <li><button
+                        v-if="showExportButtons && !exportingAnsys"
+                        :style="$styleStore.controlPanel.button"
+                        class="btn px-0 py-0 col-12 row"
+                        @click="exportAnsys('EddyCurrent')"
+                    >
+                        <div class="row col-12">
+                            <img :src='ansysEddyCurrentsIcon' width="30" height="30" class="d-inline-block align-top m-0 p-0 col-3" alt="El Magnetic Logo">
+                            <p class="col-9 my-0 py-0">EddyCurrents</p>
+                        </div>
+                      
+                    </button></li>
+                    <li><button
+                        v-if="showExportButtons && !exportingAnsys"
+                        :style="$styleStore.controlPanel.button"
+                        class="btn px-0 py-0 col-12 row"
+                        @click="exportAnsys('Transient')"
+                    >
+                        <div class="row">
+                            <img :src='ansysTransientIcon' width="30" height="30" class="d-inline-block align-top m-0 p-0 col-3" alt="El Magnetic Logo">
+                            <p class="col-9 my-0 py-0">Transient</p>
+                        </div>
+                      
+                    </button></li>
+                    <li><button
+                        v-if="showExportButtons && !exportingAnsys"
+                        :style="$styleStore.controlPanel.button"
+                        class="btn px-0 py-0 col-12 row"
+                        @click="exportAnsys('SteadyState')"
+                    >
+                        <div class="row">
+                            <img :src='ansysThermalIcon' width="30" height="30" class="d-inline-block align-top m-0 p-0 col-3" alt="El Magnetic Logo">
+                            <p class="col-9 my-0 py-0">Thermal</p>
+                        </div>
+                      
+                    </button></li>
+
+                </ul>
+            </div>
+
+
             <img v-if="exportingAnsys" class="col-1 p-0" alt="loading" style="width: auto; height: 40px;" :src="$settingsStore.loadingGif">
             <button
                 v-if="showExportButtons && !exportingSimba"
@@ -239,14 +313,49 @@ export default {
               <img :src='simbaIcon' width="40" height="40" class="d-inline-block align-top m-0 p-0" alt="El Magnetic Logo">
             </button>
             <img v-if="exportingSimba" class="col-1 p-0" alt="loading" style="width: auto; height: 40px;" :src="$settingsStore.loadingGif">
-            <button
+            <div
                 v-if="showExportButtons && !exportingLtspice"
-                :style="$styleStore.controlPanel.button"
-                class="btn col-1  m-0 p-0"
-                @click="exportLtspice"
-            >
-              <img :src='ltspiceIcon' width="40" height="40" class="d-inline-block align-top m-0 p-0" alt="El Magnetic Logo">
-            </button>
+                class="dropdown col-1 m-0 p-0 row"
+                >
+                <a
+                    :style="$styleStore.controlPanel.button"
+                    class="btn btn-secondary dropdown-toggle border-0 px-0"
+                    href="#"
+                    role="button" 
+                    data-bs-toggle="dropdown"
+                    aria-expanded="false"
+                >
+                    <img :src='ltspiceIcon' width="40" height="40" class="d-inline-block align-top m-0 p-0" alt="El Magnetic Logo">
+                </a>
+
+                <ul class="dropdown-menu m-0 p-0 col-12 row">
+                    <li class=""><button
+                        v-if="showExportButtons && !exportingAnsys"
+                        :style="$styleStore.controlPanel.button"
+                        class="btn px-0 py-0 col-12 row"
+                        @click="exportLtspice('subcircuit')"
+                    >
+                        <div class="row col-12">
+                            <img :src='ltspiceSymbolIcon' width="30" height="30" class="d-inline-block align-top m-0 p-0 col-3" alt="El Magnetic Logo">
+                            <p class="col-9 my-0 py-0">Subcircuit</p>
+                        </div>
+                      
+                    </button></li>
+                    <li class=""><button
+                        v-if="showExportButtons && !exportingAnsys"
+                        :style="$styleStore.controlPanel.button"
+                        class="btn px-0 py-0 row col-12"
+                        @click="exportLtspice('symbol')"
+                    >
+                        <div class="row col-12">
+                            <img :src='ltspiceSubcircuitIcon' width="30" height="30" class="d-inline-block align-top m-0 p-0 col-3" alt="El Magnetic Logo">
+                            <p class="col-9 my-0 py-0">Symbol</p>
+                        </div>
+                      
+                    </button></li>
+
+                </ul>
+            </div>
             <img v-if="exportingLtspice" class="col-1 p-0" alt="loading" style="width: auto; height: 40px;" :src="$settingsStore.loadingGif">
             <button
                 v-if="showExportButtons && !exportingNgspice"
