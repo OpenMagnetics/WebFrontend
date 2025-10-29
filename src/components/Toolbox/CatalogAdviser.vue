@@ -152,7 +152,7 @@ export default {
 <template>
     <div class="container text-start pe-0 container-fluid"  style="height: 75vh" :style="$styleStore.catalogAdviser.main">
         <div class="row">
-            <div class="col-2 border text-center p-0 m-0 row"  style="height: 75vh">
+            <div class="col-2 border text-center p-0 m-0 row control"  style="height: 75vh">
                 <div class="col-12">
                     <label :data-cy="dataTestLabel + '-explanation-text'" class="">Do you want to search in Midcom history for possible similar designs?</label>
 
