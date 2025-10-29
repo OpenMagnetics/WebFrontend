@@ -104,8 +104,7 @@ export default {
             this.loading = true;
             setTimeout(() => {
                 console.time('Execution Time');
-                const url = import.meta.env.VITE_ANSYS_API_ENDPOINT + '/calculate_advised_magnetics';
-                // const url = import.meta.env.VITE_API_ENDPOINT + '/calculate_advised_magnetics';
+                const url = import.meta.env.VITE_API_ENDPOINT + '/calculate_advised_magnetics';
 
                 const filterFlow = [];
                 for (const [key, value] of Object.entries(this.catalogStore.filters)) {
