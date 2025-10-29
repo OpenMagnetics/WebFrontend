@@ -98,7 +98,7 @@ export default {
                     "solution_type": solutionType,
                     "operating_point_index": this.$stateStore.currentOperatingPoint,
                 };
-                const url = import.meta.env.VITE_API_ENDPOINT + '/create_simulation_from_mas';
+                const url = import.meta.env.VITE_ANSYS_API_ENDPOINT + '/create_simulation_from_mas';
 
                 this.$axios.post(url, postData)
                 .then(response => {
