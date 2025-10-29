@@ -90,6 +90,7 @@ export default {
             }, 100);
         },
         exportAnsys(solutionType) {
+            console.warn("exportAnsys")
             this.exportingAnsys = true;
             setTimeout(() => {
                 const postData = {
@@ -98,6 +99,8 @@ export default {
                     "solution_type": solutionType,
                     "operating_point_index": this.$stateStore.currentOperatingPoint,
                 };
+                console.warn("import.meta.env.VITE_ANSYS_API_ENDPOINT")
+                console.warn(import.meta.env.VITE_ANSYS_API_ENDPOINT)
                 const url = import.meta.env.VITE_ANSYS_API_ENDPOINT + '/create_simulation_from_mas';
 
                 this.$axios.post(url, postData)
