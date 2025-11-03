@@ -21,7 +21,7 @@ export default {
             this.$stateStore.selectWorkflow("design");
             this.$stateStore.selectTool("agnosticTool");
             if (this.$route.name != 'MagneticTool')
-                setTimeout(() => {this.$router.push('/magnetic_tool');}, 100);
+                setTimeout(() => {this.$router.push(`${import.meta.env.BASE_URL}magnetic_tool`);}, 100);
             else
                 setTimeout(() => {this.$router.go();}, 100);
         },
@@ -38,7 +38,7 @@ export default {
             this.$stateStore.selectTool("insulationAdviser");
 
             if (this.$route.name != 'InsulationAdviser')
-                setTimeout(() => {this.$router.push('/insulation_adviser');}, 100);
+                setTimeout(() => {this.$router.push(`${import.meta.env.BASE_URL}insulation_adviser`);}, 100);
             else
                 setTimeout(() => {this.$router.go();}, 100);
         },

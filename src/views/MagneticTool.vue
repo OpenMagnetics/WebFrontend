@@ -201,40 +201,53 @@ export default {
 </script>
 
 <template>
-    <GenericTool
-        v-if="$stateStore.selectedTool == 'agnosticTool'"
-        :currentStoryline="currentStoryline"
-        :dataTestLabel="'MagneticTool'"
-        :showControlPanel="true"
-        @toolSelected="toolSelected"
-    />
-    <GenericTool
-        v-if="$stateStore.selectedTool == 'magneticBuilder'"
-        :currentStoryline="magneticBuilderStoryline"
-        :dataTestLabel="'MagneticBuilder'"
-        :showControlPanel="true"
-        @toolSelected="toolSelected"
-    />
-    <GenericTool
-        v-if="$stateStore.selectedTool == 'magneticAdviser'"
-        :currentStoryline="magneticAdviserStoryline"
-        :dataTestLabel="'MagneticAdviser'"
-        :showControlPanel="true"
-        @toolSelected="toolSelected"
-    />
-    <GenericTool
-        v-if="$stateStore.selectedTool == 'magneticCoreAdviser'"
-        :currentStoryline="magneticCoreAdviserStoryline"
-        :dataTestLabel="'MagneticCoreAdviser'"
-        :showControlPanel="true"
-        @toolSelected="toolSelected"
-    />
-    <GenericTool
-        v-if="$stateStore.selectedTool == 'magneticSpecificationsReport'"
-        :currentStoryline="magneticSpecificationsReportStoryline"
-        :dataTestLabel="'MagneticSpecificationsReport'"
-        :showControlPanel="true"
-        @toolSelected="toolSelected"
-    />
+    <div class="d-flex flex-column min-vh-100" :style="$styleStore.magneticBuilder.main">
+        <Header />
+        <main role="main" class="main">
+            <div class="container">
+                <GenericTool
+                    v-if="$stateStore.selectedTool == 'agnosticTool'"
+                    :currentStoryline="currentStoryline"
+                    :dataTestLabel="'MagneticTool'"
+                    :showControlPanel="true"
+                    :showAnsysButtons="false"
+                    @toolSelected="toolSelected"
+                />
+                <GenericTool
+                    v-if="$stateStore.selectedTool == 'magneticBuilder'"
+                    :currentStoryline="magneticBuilderStoryline"
+                    :dataTestLabel="'MagneticBuilder'"
+                    :showControlPanel="true"
+                    :showAnsysButtons="false"
+                    @toolSelected="toolSelected"
+                />
+                <GenericTool
+                    v-if="$stateStore.selectedTool == 'magneticAdviser'"
+                    :currentStoryline="magneticAdviserStoryline"
+                    :dataTestLabel="'MagneticAdviser'"
+                    :showControlPanel="true"
+                    :showAnsysButtons="false"
+                    @toolSelected="toolSelected"
+                />
+                <GenericTool
+                    v-if="$stateStore.selectedTool == 'magneticCoreAdviser'"
+                    :currentStoryline="magneticCoreAdviserStoryline"
+                    :dataTestLabel="'MagneticCoreAdviser'"
+                    :showControlPanel="true"
+                    :showAnsysButtons="false"
+                    @toolSelected="toolSelected"
+                />
+                <GenericTool
+                    v-if="$stateStore.selectedTool == 'magneticSpecificationsReport'"
+                    :currentStoryline="magneticSpecificationsReportStoryline"
+                    :dataTestLabel="'MagneticSpecificationsReport'"
+                    :showControlPanel="true"
+                    :showAnsysButtons="false"
+                    @toolSelected="toolSelected"
+                />
+            </div>
+        </main>
+        <Footer class="mt-auto"/>
+    </div>
 </template>
 

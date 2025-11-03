@@ -51,6 +51,10 @@ export default {
             type: Boolean,
             default: false,
         },
+        showAnsysButtons: {
+            type: Boolean,
+            default: true,
+        },
         showStoryline: {
             type: Boolean,
             default: true,
@@ -170,7 +174,11 @@ export default {
 </script>
 
 <template>
-    <div v-if="currentStoryline[$stateStore.getCurrentToolState().subsection] != null && $stateStore.getCurrentToolState().canContinue != null" class="container mx-auto">
+    <div
+        :style="$styleStore.storyline.main"
+        v-if="currentStoryline[$stateStore.getCurrentToolState().subsection] != null && $stateStore.getCurrentToolState().canContinue != null"
+        class="container mx-auto"
+    >
         <div class="row">
             <div v-if="showStoryline" class=" text-center col-xs-12 col-sm-12 col-md-1 bg-transparent m-0 p-0" style="height: fit-content">
                 <div class="border" style="height: fit-content"  :style="$styleStore.storyline.main">
@@ -222,12 +230,16 @@ export default {
                         {{toTitleCase($stateStore.getCurrentToolState().subsection)}}
                     </h2>
 
-                    <div v-if="showControlPanel" data-cy="magnetic-synthesis-title-control-panel" :class="(showTitle || showReference)? 'col-sm-12 col-md-6 col-lg-6 col-xl-6' : 'col-sm-12 col-md-9'">
+                    <div
+                        v-if="showControlPanel"
+                        data-cy="magnetic-synthesis-title-control-panel"
+                        :class="(showTitle || showReference)? 'col-sm-12 col-md-6 col-lg-6 col-xl-6' : 'col-sm-12 col-md-9'"
+                    >
                         <ControlPanel
                             :showExportButtons="$stateStore.getCurrentToolState().subsection == 'magneticBuilder' || 
-                                                $stateStore.getCurrentToolState().subsection == 'magneticViewer' || 
-                                                $stateStore.getCurrentToolState().subsection == 'magneticSummary'"
-                            :showResetButton="true"
+                                                $stateStore.getCurrentToolState().subsection == 'magneticViewer'"
+                            :showResetButton="$stateStore.getCurrentToolState().subsection == 'magneticBuilder'"
+                            :showAnsysButtons="showAnsysButtons"
                             @toolSelected="toolSelected"
                         />
                     </div>
@@ -236,7 +248,7 @@ export default {
                     v-else
                     class="mb-2 row px-3" >
                 </div>
-                    
+
                 <div class="row">
                     <Welcome
                         v-if="$stateStore.getCurrentToolState().subsection == 'welcome'"

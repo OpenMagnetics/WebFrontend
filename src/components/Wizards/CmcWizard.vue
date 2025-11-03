@@ -312,7 +312,7 @@ export default {
             this.$stateStore.selectTool("agnosticTool");
             this.$stateStore.setCurrentToolSubsectionStatus("designRequirements", true);
             this.$stateStore.setCurrentToolSubsectionStatus("operatingPoints", true);
-            setTimeout(() => {this.$router.push(`${import.meta.env.BASE_URL}/magnetic_tool`);}, 100);
+            setTimeout(() => {this.$router.push(`${import.meta.env.BASE_URL}magnetic_tool`);}, 100);
         },
         processAndAdvise() {
             this.process();
@@ -327,7 +327,7 @@ export default {
             this.$stateStore.setCurrentToolSubsection("toolSelector");
             this.$stateStore.setCurrentToolSubsectionStatus("designRequirements", true);
             this.$stateStore.setCurrentToolSubsectionStatus("operatingPoints", true);
-            setTimeout(() => {this.$router.push(`${import.meta.env.BASE_URL}/magnetic_tool`);}, 100);
+            setTimeout(() => {this.$router.push(`${import.meta.env.BASE_URL}magnetic_tool`);}, 100);
         },
     }
 }

@@ -58,7 +58,7 @@ export default {
             const shortenedLabels = {"numberWindings": "No. Windings"};
             designRequirementsOrdered[this.$stateStore.getCurrentApplication()].forEach((value) => {
                 var label = value;
-                if (window.innerWidth < 1050 && label.length > 10) {
+                if (window.innerWidth < 1200 && label.length > 10) {
                     var slice = 3;
                     if (window.innerWidth <= 768) {
                         slice = 8;
@@ -67,7 +67,7 @@ export default {
                         if (window.innerWidth >= 850 && window.innerWidth < 970) {
                             slice = 5;
                         }
-                        if (window.innerWidth >= 970 && window.innerWidth < 1050) {
+                        if (window.innerWidth >= 970 && window.innerWidth < 1200) {
                             slice = 7;
                         }
                     }
@@ -82,7 +82,7 @@ export default {
         },
         styleTooltip() {
             var relative_placement;
-            relative_placement = 'right'
+            relative_placement = 'bottom'
             return {
                 theme: {
                     placement: relative_placement,
@@ -190,7 +190,6 @@ export default {
                     this.masStore.resetMagnetic("filter");
                 }
             }
-
         },
     }
 }

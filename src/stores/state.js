@@ -9,7 +9,6 @@ export const useStateStore = defineStore("state", () => {
     const OperatingPointsMode = {
         Manual: 'Manual',
         CircuitSimulatorImport: 'CircuitSimulatorImport',
-        AcSweep: 'AcSweep',
         HarmonicsList: 'HarmonicsList',
     };
 

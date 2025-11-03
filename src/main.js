@@ -43,7 +43,7 @@ router.beforeEach((to, from, next) => {
         setTimeout(() => {router.push(from.path);}, 500);
     }
 
-    const nonDataViews = ['/', '/home', '/insulation_adviser']
+    const nonDataViews = [`${import.meta.env.BASE_URL}`, `${import.meta.env.BASE_URL}home`, `${import.meta.env.BASE_URL}insulation_adviser`]
 
     var loadData = !nonDataViews.includes(to.path);
 
@@ -64,11 +64,11 @@ router.beforeEach((to, from, next) => {
     if (loadData) {
         if (app.config.globalProperties.$mkf == null && to.name != "WEEngineLoader" && weWorkflow) {
             app.config.globalProperties.$userStore.loadingPath = to.path
-            router.push('/we_engine_loader')
+            router.push(`${import.meta.env.BASE_URL}we_engine_loader`)
         }
         else if (app.config.globalProperties.$mkf == null && to.name != "EngineLoader" && !weWorkflow) {
             app.config.globalProperties.$userStore.loadingPath = to.path
-            router.push('/engine_loader')
+            router.push(`${import.meta.env.BASE_URL}engine_loader`)
         }
         else if (app.config.globalProperties.$mkf == null && (to.name == "EngineLoader" || to.name == "WEEngineLoader")) {
             const loadAllParts = !weWorkflow || (weWorkflow && app.config.globalProperties.$settingsStore.catalogAdviserSettings.useAllParts);
@@ -76,9 +76,8 @@ router.beforeEach((to, from, next) => {
             const loadExternalParts = weWorkflow;
             setTimeout(() => 
                 {
-
                     console.warn("Loading core materials in backend")
-                    fetch("/core_materials.ndjson")
+                    fetch(`${import.meta.env.BASE_URL}core_materials.ndjson`)
                     .then((data) => data.text())
                     .then((data) => {
                             if (!data.startsWith("<")) {
@@ -105,7 +104,7 @@ router.beforeEach((to, from, next) => {
                                         });
 
                                         app.config.globalProperties.$mkf.ready.then(_ => {
-                                            fetch("/core_materials.ndjson")
+                                            fetch(`${import.meta.env.BASE_URL}core_materials.ndjson`)
                                             .then((data) => data.text())
                                             .then((data) => {
                                                     if (loadAllParts) {
@@ -120,7 +119,7 @@ router.beforeEach((to, from, next) => {
                                                 console.error(error)
                                             })
                                             console.warn("Loading core shapes in simulator")
-                                            fetch("/core_shapes.ndjson")
+                                            fetch(`${import.meta.env.BASE_URL}core_shapes.ndjson`)
                                             .then((data) => data.text())
                                             .then((data) => {
                                                     if (loadAllParts) {
@@ -135,7 +134,7 @@ router.beforeEach((to, from, next) => {
                                                 console.error(error)
                                             })
                                             console.warn("Loading wires in simulator")
-                                            fetch("/lab_osma_wires.ndjson")
+                                            fetch(`${import.meta.env.BASE_URL}lab_osma_wires.ndjson`)
                                             .then((data) => data.text())
                                             .then((data) => {
                                                     if (loadAllParts) {
@@ -150,7 +149,7 @@ router.beforeEach((to, from, next) => {
                                                 console.error(error)
                                             })
                                             console.warn("Loading cores in simulator")
-                                            fetch("/lab_osma_cores.ndjson")
+                                            fetch(`${import.meta.env.BASE_URL}lab_osma_cores.ndjson`)
                                             .then((data) => data.text())
                                             .then((data) => {
                                                     // console.log(data)

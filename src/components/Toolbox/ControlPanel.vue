@@ -30,6 +30,10 @@ export default {
             type: Boolean,
             default: true,
         },
+        showAnsysButtons: {
+            type: Boolean,
+            default: true,
+        },
     },
     data() {
         const masStore = useMasStore();
@@ -40,16 +44,16 @@ export default {
         const exportingLtspice = false;
         const exportingNgspice = false;
 
-        const masIcon = `${import.meta.env.BASE_URL}/images/MAS_icon.svg`;
-        const ansysIcon = `${import.meta.env.BASE_URL}/images/Ansys_icon.svg`;
-        const ansysEddyCurrentsIcon = `${import.meta.env.BASE_URL}/images/Maxwell.svg`;
-        const ansysTransientIcon = `${import.meta.env.BASE_URL}/images/Excitations_24x24.svg`;
-        const ansysThermalIcon = `${import.meta.env.BASE_URL}/images/Icepak_24x24.svg`;
-        const simbaIcon = `${import.meta.env.BASE_URL}/images/Simba_icon.svg`;
-        const ltspiceIcon = `${import.meta.env.BASE_URL}/images/Ltspice_icon.svg`;
-        const ltspiceSymbolIcon = `${import.meta.env.BASE_URL}/images/Ltspice Symbol.png`;
-        const ltspiceSubcircuitIcon = `${import.meta.env.BASE_URL}/images/Ltspice Subcircuit.png`;
-        const ngspiceIcon = `${import.meta.env.BASE_URL}/images/Ngspice_icon.svg`;
+        const masIcon = `${import.meta.env.BASE_URL}images/MAS_icon.svg`;
+        const ansysIcon = `${import.meta.env.BASE_URL}images/Ansys_icon.svg`;
+        const ansysEddyCurrentsIcon = `${import.meta.env.BASE_URL}images/Maxwell.svg`;
+        const ansysTransientIcon = `${import.meta.env.BASE_URL}images/Excitations_24x24.svg`;
+        const ansysThermalIcon = `${import.meta.env.BASE_URL}images/Icepak_24x24.svg`;
+        const simbaIcon = `${import.meta.env.BASE_URL}images/Simba_icon.svg`;
+        const ltspiceIcon = `${import.meta.env.BASE_URL}images/Ltspice_icon.svg`;
+        const ltspiceSymbolIcon = `${import.meta.env.BASE_URL}images/Ltspice Symbol.png`;
+        const ltspiceSubcircuitIcon = `${import.meta.env.BASE_URL}images/Ltspice Subcircuit.png`;
+        const ngspiceIcon = `${import.meta.env.BASE_URL}images/Ngspice_icon.svg`;
         return {
             masStore,
             historyStore,
@@ -184,7 +188,7 @@ export default {
         },
         reset() {
             this.masStore.resetMas('power')
-            setTimeout(() => {this.$router.push(`${import.meta.env.BASE_URL}/engine_loader`);}, 100);
+            setTimeout(() => {this.$router.push(`${import.meta.env.BASE_URL}engine_loader`);}, 100);
         },
         undo() {
             const newMas = this.historyStore.back();
@@ -242,12 +246,12 @@ export default {
                 class="btn col-1 offset-1 p-0"
                 @click="exportMASFile"
             >
-              <img :src='masIcon' width="40" height="40" class="d-inline-block align-top m-0 p-0" alt="El Magnetic Logo">
+              <img :src='masIcon' width="30" height="30" class="d-inline-block align-top m-0 p-0" alt="El Magnetic Logo">
             </button>
-            <img v-if="exportingMAS" class="offset-1 col-1 p-0" alt="loading" style="width: auto; height: 40px;" :src="$settingsStore.loadingGif">
+            <img v-if="exportingMAS" class="offset-1 col-1 p-0" alt="loading" style="width: auto; height: 30px;" :src="$settingsStore.loadingGif">
             
             <div
-                v-if="showExportButtons && !exportingAnsys"
+                v-if="showExportButtons && !exportingAnsys && showAnsysButtons"
                 class="dropdown col-1 m-0 p-0 row"
                 >
                 <a
@@ -258,7 +262,7 @@ export default {
                     data-bs-toggle="dropdown"
                     aria-expanded="false"
                 >
-                    <img :src='ansysIcon' width="40" height="40" class="d-inline-block align-top m-0 p-0" alt="El Magnetic Logo">
+                    <img :src='ansysIcon' width="30" height="30" class="d-inline-block align-top m-0 p-0" alt="El Magnetic Logo">
                 </a>
 
                 <ul class="dropdown-menu m-0 p-0 row col-12">
@@ -303,16 +307,16 @@ export default {
             </div>
 
 
-            <img v-if="exportingAnsys" class="col-1 p-0" alt="loading" style="width: auto; height: 40px;" :src="$settingsStore.loadingGif">
+            <img v-if="exportingAnsys" class="col-1 p-0" alt="loading" style="width: auto; height: 30px;" :src="$settingsStore.loadingGif">
             <button
                 v-if="showExportButtons && !exportingSimba"
                 :style="$styleStore.controlPanel.button"
                 class="btn col-1  m-0 p-0"
                 @click="exportSimba"
             >
-              <img :src='simbaIcon' width="40" height="40" class="d-inline-block align-top m-0 p-0" alt="El Magnetic Logo">
+              <img :src='simbaIcon' width="30" height="30" class="d-inline-block align-top m-0 p-0" alt="El Magnetic Logo">
             </button>
-            <img v-if="exportingSimba" class="col-1 p-0" alt="loading" style="width: auto; height: 40px;" :src="$settingsStore.loadingGif">
+            <img v-if="exportingSimba" class="col-1 p-0" alt="loading" style="width: auto; height: 30px;" :src="$settingsStore.loadingGif">
             <div
                 v-if="showExportButtons && !exportingLtspice"
                 class="dropdown col-1 m-0 p-0 row"
@@ -325,7 +329,7 @@ export default {
                     data-bs-toggle="dropdown"
                     aria-expanded="false"
                 >
-                    <img :src='ltspiceIcon' width="40" height="40" class="d-inline-block align-top m-0 p-0" alt="El Magnetic Logo">
+                    <img :src='ltspiceIcon' width="30" height="30" class="d-inline-block align-top m-0 p-0" alt="El Magnetic Logo">
                 </a>
 
                 <ul class="dropdown-menu m-0 p-0 col-12 row">
@@ -356,19 +360,19 @@ export default {
 
                 </ul>
             </div>
-            <img v-if="exportingLtspice" class="col-1 p-0" alt="loading" style="width: auto; height: 40px;" :src="$settingsStore.loadingGif">
+            <img v-if="exportingLtspice" class="col-1 p-0" alt="loading" style="width: auto; height: 30px;" :src="$settingsStore.loadingGif">
             <button
                 v-if="showExportButtons && !exportingNgspice"
                 :style="$styleStore.controlPanel.button"
                 class="btn col-1  m-0 p-0"
                 @click="exportNgspice"
             >
-              <img :src='ngspiceIcon' width="40" height="40" class="d-inline-block align-top m-0 p-0" alt="El Magnetic Logo">
+              <img :src='ngspiceIcon' width="30" height="30" class="d-inline-block align-top m-0 p-0" alt="El Magnetic Logo">
             </button>
-            <img v-if="exportingNgspice" class="col-1 p-0" alt="loading" style="width: auto; height: 40px;" :src="$settingsStore.loadingGif">
+            <img v-if="exportingNgspice" class="col-1 p-0" alt="loading" style="width: auto; height: 30px;" :src="$settingsStore.loadingGif">
             <div
-                
-                :class="showExportButtons? '' : 'offset-5'"
+                v-if="showExportButtons"
+                :class="showExportButtons? showAnsysButtons? '' : 'offset-1' : 'offset-5'"
                 class="dropdown col-3"
                 >
                 <a

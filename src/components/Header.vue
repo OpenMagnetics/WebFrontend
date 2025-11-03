@@ -1,5 +1,7 @@
 <script setup >
-import { combinedStyle, combinedClass } from '/WebSharedComponents/assets/js/utils.js'
+import { useMasStore } from '/MagneticBuilder/src/stores/mas'
+import { useHistoryStore } from '/MagneticBuilder/src/stores/history'
+import { combinedStyle, combinedClass, checkAndFixMas } from '/WebSharedComponents/assets/js/utils.js'
 import { defineAsyncComponent } from "vue";
 import { useElementVisibility  } from '@vueuse/core'
 import { ref } from 'vue'
@@ -18,10 +20,16 @@ export default {
         // NotificationsModal: defineAsyncComponent(() => import('/src/components/NotificationsModal.vue') ),
     },
     data() {
+        const masStore = useMasStore();
+        const historyStore = useHistoryStore();
+        const loading = false;
         return {
+            masStore,
+            historyStore,
             showModal: false,
             loggedIn: false,
             username: null,
+            loading,
         }
     },
     methods: {
@@ -35,9 +43,9 @@ export default {
             this.$stateStore.selectApplication(this.$stateStore.SupportedApplications.Power);
 
             if (this.$route.name != 'MagneticTool')
-                setTimeout(() => {this.$router.push('/magnetic_tool');}, 100);
+                setTimeout(() => {this.$router.push(`${import.meta.env.BASE_URL}magnetic_tool`);}, 100);
             else
-                setTimeout(() => {this.$router.push('/engine_loader');}, 100);
+                setTimeout(() => {this.$router.push(`${import.meta.env.BASE_URL}engine_loader`);}, 100);
         },
         onNewCommonModeChokeDesign() {
             this.$stateStore.resetMagneticTool();
@@ -46,16 +54,16 @@ export default {
             this.$stateStore.selectTool("agnosticTool");
 
             if (this.$route.name != 'MagneticTool')
-                setTimeout(() => {this.$router.push('/magnetic_tool');}, 100);
+                setTimeout(() => {this.$router.push(`${import.meta.env.BASE_URL}magnetic_tool`);}, 100);
             else
-                setTimeout(() => {this.$router.push('/engine_loader');}, 100);
+                setTimeout(() => {this.$router.push(`${import.meta.env.BASE_URL}engine_loader`);}, 100);
         },
         onWizards(wizard) {
             this.$stateStore.selectWizard(wizard);
             if (this.$route.name != 'Wizards')
-                setTimeout(() => {this.$router.push('/wizards');}, 100);
+                setTimeout(() => {this.$router.push(`${import.meta.env.BASE_URL}wizards`);}, 100);
             else
-                setTimeout(() => {this.$router.push('/engine_loader');}, 100);
+                setTimeout(() => {this.$router.push(`${import.meta.env.BASE_URL}engine_loader`);}, 100);
         },
         onInsulationCoordinator() {
             this.$stateStore.resetMagneticTool();
@@ -63,15 +71,55 @@ export default {
             this.$stateStore.selectTool("insulationAdviser");
 
             if (this.$route.name != 'InsulationAdviser')
-                setTimeout(() => {this.$router.push('/insulation_adviser');}, 100);
+                setTimeout(() => {this.$router.push(`${import.meta.env.BASE_URL}insulation_adviser`);}, 100);
             else
-                setTimeout(() => {this.$router.push('/engine_loader');}, 100);
+                setTimeout(() => {this.$router.push(`${import.meta.env.BASE_URL}engine_loader`);}, 100);
         },
         continueMagneticToolDesign() {
             if (this.$route.name != 'MagneticTool')
-                setTimeout(() => {this.$router.push('/magnetic_tool');}, 100);
+                setTimeout(() => {this.$router.push(`${import.meta.env.BASE_URL}magnetic_tool`);}, 100);
             else
-                setTimeout(() => {this.$router.push('/engine_loader');}, 100);
+                setTimeout(() => {this.$router.push(`${import.meta.env.BASE_URL}engine_loader`);}, 100);
+        },
+        load() {
+            this.loading = true;
+            this.$refs.masFileReader.click()
+            setTimeout(() => {this.loading = false;}, 2000);
+        },
+        readMASFile(event) {
+            const fr = new FileReader();
+
+            fr.onload = e => {
+                const newMas = JSON.parse(e.target.result);
+                if (newMas.magnetic != null) {
+                    checkAndFixMas(newMas, this.$mkf).then(response => {
+                        console.log("Mierda 1")
+                        this.masStore.mas = response;
+                        this.masStore.importedMas();
+
+                        this.$stateStore.selectWorkflow("design");
+                        this.$stateStore.selectTool("agnosticTool");
+                        this.$stateStore.selectApplication(this.$stateStore.SupportedApplications.Power);
+                        this.$stateStore.operatingPoints.modePerPoint = []
+                        for (var i = 0; i < this.masStore.mas.inputs.operatingPoints.length; i++) {
+                            if (this.masStore.mas.inputs.operatingPoints[i].excitationsPerWinding[0].current.processed != null) {
+                                this.$stateStore.operatingPoints.modePerPoint.push(this.$stateStore.OperatingPointsMode.Manual);
+                            }
+                            else {
+                                this.$stateStore.operatingPoints.modePerPoint.push(this.$stateStore.OperatingPointsMode.HarmonicsList);
+                            }
+                        }
+                        this.$stateStore.setCurrentToolSubsectionStatus("designRequirements", true);
+                        this.$stateStore.setCurrentToolSubsectionStatus("operatingPoints", true);
+                        this.$userStore.loadingPath = `${import.meta.env.BASE_URL}magnetic_tool`;
+                        setTimeout(() => {this.$router.push(`${import.meta.env.BASE_URL}engine_loader`);}, 100);
+                    })
+                    .catch(error => {
+                        console.error(error)
+                    });
+                }
+            }
+            fr.readAsText(this.$refs['masFileReader'].files.item(0), "ISO-8859-1");
         },
     },
     computed: {
@@ -106,8 +154,7 @@ export default {
 </script>
 
 <template>
-    <!-- <NotificationsModal/> -->
-    <nav class="navbar navbar-expand-lg mb-1 om-header" id="header_wrapper" :style="$styleStore.header.main">
+    <nav class="navbar navbar-expand-xl mb-1 om-header" id="header_wrapper" :style="$styleStore.header.main">
         <div class="container-fluid">
             <a data-cy="Header-logo-home-link" href="/" aria-label="Visit OpenMagnetics and Tear Down the Paywalls!">
                 <img src="/images/logo.svg" width="60" height="40" href="/" class="d-inline-block align-top me-3" alt="OpenMagnetics Logo">
@@ -195,7 +242,7 @@ export default {
                             data-bs-toggle="dropdown"
                             aria-expanded="false"
                         >
-                            <i class="me-2 fa-solid fa-toolbox"></i>{{'Other Tools'}}
+                            <i class="me-2 fa-solid fa-toolbox"></i>{{'Tools'}}
                         </a>
                       <ul class="dropdown-menu px-1" :style="$styleStore.header.othersSectionDropdown">
                         <li>
@@ -346,6 +393,19 @@ export default {
                                 @click="continueMagneticToolDesign"
                             >
                                 <i class="me-2 fa-solid fa-box-open"></i>{{'Continue design'}}
+                            </button>
+                        </span>
+                    </li>
+                    <li class="nav-item">
+                        <span class="nav-item">
+                            <input data-cy="Header-Load-MAS-file-button" type="file" ref="masFileReader" @change="readMASFile()" class="btn mt-1 rounded-3" hidden />
+                            <button
+                                :style="$styleStore.header.loadMasButton"
+                                :class="headerTogglerIsVisible? 'w-100' : 'mx-1' "
+                                class="btn btn-block nav-link px-2"
+                                @click="load"
+                            >
+                                {{'Load MAS'}}
                             </button>
                         </span>
                     </li>

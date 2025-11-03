@@ -187,6 +187,14 @@ export const useStyleStore = defineStore("style", () => {
             commonParameterBgColor:{
                 "background": theme["dark"],
             },
+            currentGraph:{
+                "background": theme["info"],
+                "color": theme["info"],
+            },
+            voltageGraph:{
+                "background": theme["primary"],
+                "color": theme["primary"],
+            },
             currentTextColor:{
                 "color": theme["info"],
             },
@@ -382,7 +390,7 @@ export const useStyleStore = defineStore("style", () => {
                 "color": theme["white"],
             },
             button: {
-                "background": theme["primary"],
+                "background": theme["white"],
                 "color": theme["dark"],
             },
             activeButton: {
@@ -494,6 +502,11 @@ export const useStyleStore = defineStore("style", () => {
                 "background": theme["dark"],
                 "color": theme["primary"],
                 "border-color": theme["primary"] + ' !important' ,
+            },
+            loadMasButton: {
+                "background": theme["primary"],
+                "color": theme["dark"],
+                "border-color": theme["dark"] + ' !important' ,
             },
             othersSectionDropdown: {
                 "background": theme["dark"],

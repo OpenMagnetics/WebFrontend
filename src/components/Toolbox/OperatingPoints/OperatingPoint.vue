@@ -150,10 +150,6 @@ export default {
             this.$stateStore.operatingPoints.modePerPoint[this.currentOperatingPointIndex] = this.$stateStore.OperatingPointsMode.Manual;
             this.$emit("selectedManualOrImported")
         },
-        onAcSweepTypeSelected(event) {
-            this.$stateStore.operatingPoints.modePerPoint[this.currentOperatingPointIndex] = this.$stateStore.OperatingPointsMode.AcSweep;
-            this.$emit("selectedAcSweepTypeSelected")
-        },
         onCircuitSimulatorTypeSelected(event) {
             this.$refs['OperatingPoint-CircuitSimulator-upload-ref'].click()
         },
@@ -216,8 +212,7 @@ export default {
                         data-cy="OperatingPoint-source-Manual-button"
                         type="button"
                         @click="onCircuitSimulatorTypeSelected"
-                        class="col-lg-4 col-md-12 offset-lg-1 btn mt-1 rounded-3"
-                        style="min-height: 6em"
+                        class="p-3 col-7 offset-2 btn mt-2 rounded-3"
                     >
                         {{'Circuit simulator export file or CSV'}}
                     </button>
@@ -228,8 +223,7 @@ export default {
                         data-cy="OperatingPoint-source-Manual-button"
                         type="button"
                         @click="onManualTypeSelected"
-                        class="col-lg-4 col-md-12 offset-lg-1 btn mt-1 rounded-3"
-                        style="min-height: 6em"
+                        class="p-3 col-7 offset-2 btn mt-2 rounded-3"
                     >
                         {{'I will define it manually'}}
                     </button>
@@ -239,21 +233,9 @@ export default {
                         data-cy="OperatingPoint-source-Manual-button"
                         type="button"
                         @click="onHarmoncsTypeSelected"
-                        class="col-lg-4 col-md-12 offset-lg-1 btn mt-5 rounded-3"
-                        style="min-height: 6em"
+                        class="p-3 col-7 offset-2 btn mt-2 rounded-3"
                     >
                         {{'I want to introduce a list of harmonics'}}
-                    </button>
-                    <button
-                        v-if="enableAcSweep"
-                        :style="$styleStore.operatingPoints.typeButton"
-                        data-cy="OperatingPoint-source-Ac-Sweep-button"
-                        type="button"
-                        @click="onAcSweepTypeSelected"
-                        class="col-lg-4 col-md-12 offset-lg-1 btn mt-5 rounded-3"
-                        style="min-height: 6em"
-                    >
-                        {{'I am here for the AC sweeps'}}
                     </button>
                 </div>
             </div>
