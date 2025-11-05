@@ -97,32 +97,6 @@ const routes = [
         component: () => import('../views/CrossReferencers/CrossReferencer.vue')
     },
 
-    {
-        path: '/we_home',
-        name: 'WEHome',
-        component: () => import('../views/WE/Home.vue')
-    },
-    {
-        path: '/we_catalog_tool',
-        name: 'WECatalogTool',
-        component: () => import('../views/WE/CatalogTool.vue')
-    },
-    {
-        path: '/we_catalog',
-        name: 'WECatalog',
-        component: () => import('../views/WE/Catalog.vue')
-    },
-    {
-        path: '/we_engine_loader',
-        name: 'WEEngineLoader',
-        component: () => import('../views/WE/EngineLoader.vue')
-    },
-    {
-        path: '/we_magnetic_viewer',
-        name: 'WEMagneticViewer',
-        component: () => import('../views/WE/MagneticViewer.vue')
-    },
-
 ]
 const router = createRouter({
     history: createWebHistory(),
