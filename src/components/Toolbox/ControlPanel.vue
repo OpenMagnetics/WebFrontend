@@ -238,8 +238,14 @@ export default {
                 });
             }, 100);
         },
-        reset() {
-            this.masStore.resetMas('power')
+        reset(isPlanar) {
+            this.masStore.resetMas('power');
+            if (isPlanar) {
+                this.masStore.mas.inputs.designRequirements.wiringTechnology = "Printed";
+            }
+            else {
+                this.masStore.mas.inputs.designRequirements.wiringTechnology = "Wound";
+            }
             setTimeout(() => {this.$router.push(`${import.meta.env.BASE_URL}engine_loader`);}, 100);
         },
         undo() {
@@ -285,14 +291,51 @@ export default {
             >
                 <i class="fa-solid fa-arrow-rotate-right"></i>
             </button>
-            <button 
+            <div
                 v-if="showResetButton"
-                :style="$styleStore.controlPanel.button"
-                class="btn col-1 px-md-0"
-                @click="reset" 
+                class="dropdown col-1 m-0 px-0 row"
                 >
-                <i class="fa-solid fa-power-off"></i>
-            </button>
+                <a
+                    :style="$styleStore.controlPanel.button"
+                    class="btn btn-secondary dropdown-toggle border-0 px-0 pt-2"
+                    href="#"
+                    role="button" 
+                    data-bs-toggle="dropdown"
+                    aria-expanded="false"
+                >
+                    <i class="fa-solid fa-power-off"></i>
+                </a>
+
+                <ul 
+                    :style="$styleStore.controlPanel.button"
+                    class="dropdown-menu m-0 p-0 row col-12">
+                    <li><button
+                        v-if="showResetButton"
+                        :style="$styleStore.controlPanel.button"
+                        class="btn px-0 py-0 col-12 row"
+                        @click="reset(false)"
+                    >
+                        <div class="row col-12">
+                            <i class="col-3 fa-solid fa-ring pt-1"></i>
+                            <p class="col-9 my-0">Wound</p>
+                        </div>
+                      
+                    </button></li>
+                    <li><button
+                        v-if="showResetButton"
+                        :style="$styleStore.controlPanel.button"
+                        class="btn px-0 py-0 col-12 row"
+                        @click="reset(true)"
+                    >
+                        <div class="row">
+                            <i class="col-3 fa-solid fa-layer-group pt-1"></i>
+                            <p class="col-9 my-0 py-0">Planar</p>
+                        </div>
+                      
+                    </button></li>
+
+                </ul>
+            </div>
             <button
                 v-if="showExportButtons && !exportingMAS"
                 :style="$styleStore.controlPanel.button"
