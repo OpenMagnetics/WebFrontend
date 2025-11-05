@@ -77,6 +77,22 @@ export default {
         }
     },
     computed: {
+        ambientTemperature() {
+            if (this.masStore.mas.inputs.operatingPoints[this.$stateStore.currentOperatingPoint] != null) {
+                return this.masStore.mas.inputs.operatingPoints[this.$stateStore.currentOperatingPoint].conditions.ambientTemperature;
+            }
+            else {
+                return 25;
+            }
+        },
+        reference() {
+            if (this.masStore.mas.magnetic.manufacturerInfo.reference != "") {
+                return this.masStore.mas.magnetic.manufacturerInfo.reference;
+            }
+            else {
+                return "custom_magnetic";
+            }
+        },
     },
     watch: { 
     },
@@ -98,7 +114,7 @@ export default {
             setTimeout(() => {
                 const postData = {
                     "mas": this.masStore.mas,
-                    "project_name": this.masStore.mas.magnetic.manufacturerInfo.reference,
+                    "project_name": this.reference,
                     "solution_type": solutionType,
                     "operating_point_index": this.$stateStore.currentOperatingPoint,
                 };
@@ -107,7 +123,7 @@ export default {
                 this.$axios.post(url, postData)
                 .then(response => {
                     console.warn(response);
-                    download(response.data, this.masStore.mas.magnetic.manufacturerInfo.reference + ".aedt", "text/plain; charset=utf-8");
+                    download(response.data, this.reference + ".aedt", "text/plain; charset=utf-8");
                     this.exportingAnsys = false;
                 })
                 .catch(error => {
@@ -128,7 +144,7 @@ export default {
                 const jsimba = e.target.result
 
                 this.$mkf.ready.then(_ => {
-                    var subcircuit = this.$mkf.export_magnetic_as_subcircuit(JSON.stringify(this.masStore.mas.magnetic), this.masStore.mas.inputs.operatingPoints[this.$stateStore.currentOperatingPoint].conditions.ambientTemperature, "SIMBA", jsimba);
+                    var subcircuit = this.$mkf.export_magnetic_as_subcircuit(JSON.stringify(this.masStore.mas.magnetic), this.ambientTemperature, "SIMBA", jsimba);
                     const filename = name.split(".")[0];
                     var blob = new Blob([subcircuit], {
                         type: 'text/csv; charset=utf-8'
@@ -160,11 +176,11 @@ export default {
         },
         createSimbaSubcircuit() {
             this.$mkf.ready.then(_ => {
-                var subcircuit = this.$mkf.export_magnetic_as_subcircuit(JSON.stringify(this.masStore.mas.magnetic), this.masStore.mas.inputs.operatingPoints[this.$stateStore.currentOperatingPoint].conditions.ambientTemperature, "SIMBA", "");
+                var subcircuit = this.$mkf.export_magnetic_as_subcircuit(JSON.stringify(this.masStore.mas.magnetic), this.ambientTemperature, "SIMBA", "");
                 var blob = new Blob([subcircuit], {
                     type: 'text/csv; charset=utf-8'
                 });
-                download(blob, this.masStore.mas.magnetic.manufacturerInfo.reference + ".jsimba", "text/csv; charset=utf-8");
+                download(blob, this.reference + ".jsimba", "text/csv; charset=utf-8");
 
             }).catch(error => {
                 console.error(error);
@@ -175,14 +191,14 @@ export default {
             setTimeout(() => {
                 this.$mkf.ready.then(_ => {
                     const magnetic = deepCopy(this.masStore.mas.magnetic);
-                    magnetic.manufacturerInfo.reference = magnetic.manufacturerInfo.reference.replaceAll(" ", "_").replaceAll("-", "_").replaceAll(".", "_").replaceAll(",", "_").replaceAll(":", "_").replaceAll("___", "_").replaceAll("__", "_");
+                    const reference = this.reference.replaceAll(" ", "_").replaceAll("-", "_").replaceAll(".", "_").replaceAll(",", "_").replaceAll(":", "_").replaceAll("___", "_").replaceAll("__", "_");
 
                     if (part == "subcircuit") {
-                        var subcircuit = this.$mkf.export_magnetic_as_subcircuit(JSON.stringify(magnetic), this.masStore.mas.inputs.operatingPoints[this.$stateStore.currentOperatingPoint].conditions.ambientTemperature, "LtSpice", "");
+                        var subcircuit = this.$mkf.export_magnetic_as_subcircuit(JSON.stringify(magnetic), this.ambientTemperature, "LtSpice", "");
                         var blob = new Blob([subcircuit], {
                             type: 'text/csv; charset=utf-8'
                         });
-                        const filename = magnetic.manufacturerInfo.reference;
+                        const filename = reference;
                         download(blob, filename + ".cir", "text/csv; charset=utf-8");
                     }
                     else {
@@ -190,7 +206,7 @@ export default {
                         var blob = new Blob([subcircuit], {
                             type: 'text/csv; charset=utf-8'
                         });
-                        const filename = magnetic.manufacturerInfo.reference;
+                        const filename = reference;
                         download(blob, filename + ".asy", "text/csv; charset=utf-8");
                     }
 
@@ -207,12 +223,12 @@ export default {
             setTimeout(() => {
                 this.$mkf.ready.then(_ => {
                     const magnetic = deepCopy(this.masStore.mas.magnetic);
-                    magnetic.manufacturerInfo.reference = magnetic.manufacturerInfo.reference.replaceAll(" ", "_").replaceAll("-", "_").replaceAll(".", "_").replaceAll(",", "_").replaceAll(":", "_").replaceAll("___", "_").replaceAll("__", "_");
-                    var subcircuit = this.$mkf.export_magnetic_as_subcircuit(JSON.stringify(magnetic), this.masStore.mas.inputs.operatingPoints[this.$stateStore.currentOperatingPoint].conditions.ambientTemperature, "LtSpice", "");
+                    const reference = this.reference.replaceAll(" ", "_").replaceAll("-", "_").replaceAll(".", "_").replaceAll(",", "_").replaceAll(":", "_").replaceAll("___", "_").replaceAll("__", "_");
+                    var subcircuit = this.$mkf.export_magnetic_as_subcircuit(JSON.stringify(magnetic), this.ambientTemperature, "LtSpice", "");
                     var blob = new Blob([subcircuit], {
                         type: 'text/csv; charset=utf-8'
                     });
-                    const filename = magnetic.manufacturerInfo.reference;
+                    const filename = reference;
                     download(blob, filename + ".cir", "text/csv; charset=utf-8");
                     setTimeout(() => this.exportingNgspice = false, 2000);
 
