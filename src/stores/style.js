@@ -390,8 +390,9 @@ export const useStyleStore = defineStore("style", () => {
                 "color": theme["white"],
             },
             button: {
-                "background": theme["white"],
-                "color": theme["dark"],
+                "background": theme["light"],
+                "color": theme["white"],
+                "border-color":  theme["light"] + ' !important',
             },
             activeButton: {
                 "background": theme["info"],

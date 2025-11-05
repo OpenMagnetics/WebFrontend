@@ -117,22 +117,58 @@ export default {
             }, 100);
 
         },
-        exportSimba() {
-            this.exportingSimba = true;
-            setTimeout(() => {
+        readSimbaFile(event) {
+            const fr = new FileReader();
+
+            const name = this.$refs['simbaFileReader'].files.item(0).name
+            fr.readAsText(this.$refs['simbaFileReader'].files.item(0));
+
+
+            fr.onload = e => {
+                const jsimba = e.target.result
+
                 this.$mkf.ready.then(_ => {
-                    var subcircuit = this.$mkf.export_magnetic_as_subcircuit(JSON.stringify(this.masStore.mas.magnetic), this.masStore.mas.inputs.operatingPoints[this.$stateStore.currentOperatingPoint].conditions.ambientTemperature, "SIMBA", "");
+                    var subcircuit = this.$mkf.export_magnetic_as_subcircuit(JSON.stringify(this.masStore.mas.magnetic), this.masStore.mas.inputs.operatingPoints[this.$stateStore.currentOperatingPoint].conditions.ambientTemperature, "SIMBA", jsimba);
+                    const filename = name.split(".")[0];
                     var blob = new Blob([subcircuit], {
                         type: 'text/csv; charset=utf-8'
                     });
-                    download(blob, this.masStore.mas.magnetic.manufacturerInfo.reference + ".jsimba", "text/csv; charset=utf-8");
-                    setTimeout(() => this.exportingSimba = false, 2000);
+                console.log("subcircuit")
+                console.log(subcircuit)
+                console.log("blob")
+                console.log(blob)
+                    download(blob, filename + "_with_OM_library.jsimba", "text/plain;charset=UTF-8");
+
 
                 }).catch(error => {
                     console.error(error);
-                    setTimeout(() => this.exportingSimba = false, 200);
                 });
-            }, 100);
+            }
+        },
+        exportSimba(attachToFile) {
+            if (attachToFile) {
+                this.$refs.simbaFileReader.click()
+                this.exportingSimba = true
+                setTimeout(() => this.exportingSimba = false, 2000);
+
+            }
+            else {
+                this.exportingSimba = true
+                setTimeout(() => this.createSimbaSubcircuit(), 20);
+                setTimeout(() => this.exportingSimba = false, 2000);
+            }
+        },
+        createSimbaSubcircuit() {
+            this.$mkf.ready.then(_ => {
+                var subcircuit = this.$mkf.export_magnetic_as_subcircuit(JSON.stringify(this.masStore.mas.magnetic), this.masStore.mas.inputs.operatingPoints[this.$stateStore.currentOperatingPoint].conditions.ambientTemperature, "SIMBA", "");
+                var blob = new Blob([subcircuit], {
+                    type: 'text/csv; charset=utf-8'
+                });
+                download(blob, this.masStore.mas.magnetic.manufacturerInfo.reference + ".jsimba", "text/csv; charset=utf-8");
+
+            }).catch(error => {
+                console.error(error);
+            });
         },
         exportLtspice(part) {
             this.exportingLtspice = true;
@@ -215,6 +251,7 @@ export default {
         <CoilExporter :data-cy="dataTestLabel + '-CoilExporter'" />
         <MASExporter :data-cy="dataTestLabel + '-MASExporter'" />
         <CircuitSimulatorsExporter :data-cy="dataTestLabel + '-CircuitSimulatorsExporter'" />
+        <input data-cy="ControlPanel-Simba-file-button" type="file" ref="simbaFileReader" @change="readSimbaFile()" class="btn btn-primary mt-1 rounded-3" hidden />
         <div class="row ">
             <button
                 :style="$styleStore.controlPanel.button"
@@ -265,7 +302,9 @@ export default {
                     <img :src='ansysIcon' width="30" height="30" class="d-inline-block align-top m-0 p-0" alt="El Magnetic Logo">
                 </a>
 
-                <ul class="dropdown-menu m-0 p-0 row col-12">
+                <ul 
+                    :style="$styleStore.controlPanel.button"
+                    class="dropdown-menu m-0 p-0 row col-12">
                     <li><button
                         v-if="showExportButtons && !exportingAnsys"
                         :style="$styleStore.controlPanel.button"
@@ -308,14 +347,51 @@ export default {
 
 
             <img v-if="exportingAnsys" class="col-1 p-0" alt="loading" style="width: auto; height: 30px;" :src="$settingsStore.loadingGif">
-            <button
+            <div
                 v-if="showExportButtons && !exportingSimba"
-                :style="$styleStore.controlPanel.button"
-                class="btn col-1  m-0 p-0"
-                @click="exportSimba"
-            >
-              <img :src='simbaIcon' width="30" height="30" class="d-inline-block align-top m-0 p-0" alt="El Magnetic Logo">
-            </button>
+                class="dropdown col-1 m-0 p-0 row"
+                >
+                <a
+                    :style="$styleStore.controlPanel.button"
+                    class="btn btn-secondary dropdown-toggle border-0 px-0"
+                    href="#"
+                    role="button" 
+                    data-bs-toggle="dropdown"
+                    aria-expanded="false"
+                >
+                    <img :src='simbaIcon' width="30" height="30" class="d-inline-block align-top m-0 p-0" alt="El Magnetic Logo">
+                </a>
+
+                <ul
+                    :style="$styleStore.controlPanel.button"
+                    class="dropdown-menu m-0 p-0 col-12 row">
+                    <li class=""><button
+                        v-if="showExportButtons && !exportingSimba"
+                        :style="$styleStore.controlPanel.button"
+                        class="btn px-0 py-0 col-12 row"
+                        @click="exportSimba(true)"
+                    >
+                        <div class="row col-12">
+                            <img :src='simbaIcon' width="30" height="30" class="d-inline-block align-top m-0 p-0 col-3" alt="El Magnetic Logo">
+                            <p class="col-9 my-0 py-0">Attach to file</p>
+                        </div>
+                      
+                    </button></li>
+                    <li class=""><button
+                        v-if="showExportButtons && !exportingSimba"
+                        :style="$styleStore.controlPanel.button"
+                        class="btn px-0 py-0 row col-12"
+                        @click="exportSimba(false)"
+                    >
+                        <div class="row col-12">
+                            <img :src='simbaIcon' width="30" height="30" class="d-inline-block align-top m-0 p-0 col-3" alt="El Magnetic Logo">
+                            <p class="col-9 my-0 py-0">Download library</p>
+                        </div>
+                      
+                    </button></li>
+
+                </ul>
+            </div>
             <img v-if="exportingSimba" class="col-1 p-0" alt="loading" style="width: auto; height: 30px;" :src="$settingsStore.loadingGif">
             <div
                 v-if="showExportButtons && !exportingLtspice"
@@ -332,9 +408,11 @@ export default {
                     <img :src='ltspiceIcon' width="30" height="30" class="d-inline-block align-top m-0 p-0" alt="El Magnetic Logo">
                 </a>
 
-                <ul class="dropdown-menu m-0 p-0 col-12 row">
+                <ul
+                    :style="$styleStore.controlPanel.button"
+                    class="dropdown-menu m-0 p-0 col-12 row">
                     <li class=""><button
-                        v-if="showExportButtons && !exportingAnsys"
+                        v-if="showExportButtons && !exportingLtspice"
                         :style="$styleStore.controlPanel.button"
                         class="btn px-0 py-0 col-12 row"
                         @click="exportLtspice('subcircuit')"
@@ -346,7 +424,7 @@ export default {
                       
                     </button></li>
                     <li class=""><button
-                        v-if="showExportButtons && !exportingAnsys"
+                        v-if="showExportButtons && !exportingLtspice"
                         :style="$styleStore.controlPanel.button"
                         class="btn px-0 py-0 row col-12"
                         @click="exportLtspice('symbol')"
