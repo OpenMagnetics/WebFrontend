@@ -14,6 +14,7 @@ const headerToggler = ref(null)
 const headerTogglerIsVisible = useElementVisibility(headerToggler)
 
 export default {
+    emits: ["toolSelected"],
     components: {
         BugReporterModal: defineAsyncComponent(() => import('/src/components/User/BugReporter.vue') ),
         DeadManSwitch: defineAsyncComponent(() => import('/src/components/User/DeadManSwitch.vue') ),
@@ -112,6 +113,7 @@ export default {
                         this.$stateStore.setCurrentToolSubsectionStatus("designRequirements", true);
                         this.$stateStore.setCurrentToolSubsectionStatus("operatingPoints", true);
                         this.$userStore.loadingPath = `${import.meta.env.BASE_URL}magnetic_tool`;
+                        this.$emit('toolSelected', "magneticBuilder");
                         setTimeout(() => {this.$router.push(`${import.meta.env.BASE_URL}engine_loader`);}, 100);
                     })
                     .catch(error => {

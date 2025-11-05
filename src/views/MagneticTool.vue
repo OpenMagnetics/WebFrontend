@@ -202,7 +202,9 @@ export default {
 
 <template>
     <div class="d-flex flex-column min-vh-100" :style="$styleStore.magneticBuilder.main">
-        <Header />
+        <Header
+            @toolSelected="toolSelected"
+        />
         <main role="main" class="main">
             <div class="container">
                 <GenericTool
