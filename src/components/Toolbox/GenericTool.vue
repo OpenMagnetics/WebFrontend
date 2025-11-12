@@ -226,7 +226,9 @@ export default {
                         @update="operatingPointUpdated"
                     />
                     <div v-else data-cy="magnetic-synthesis-previous-tool-button-placeholder" class=" col-sm-12 col-md-2 mt-1"></div>
-                    <h2 v-if="showTitle" data-cy="magnetic-synthesis-title-text" :class="showControlPanel? 'col-sm-12 col-md-4 col-lg-4' : 'col-sm-12 col-md-9'" class="" >
+                    <h2 
+                        :style="$styleStore.magneticBuilder.main"
+                        v-if="showTitle" data-cy="magnetic-synthesis-title-text" :class="showControlPanel? 'col-sm-12 col-md-4 col-lg-4' : 'col-sm-12 col-md-9'" class="" >
                         {{toTitleCase($stateStore.getCurrentToolState().subsection)}}
                     </h2>
 

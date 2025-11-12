@@ -95,6 +95,14 @@ export default {
                 return "custom_magnetic";
             }
         },
+        isMagneticComplete() {
+            if (this.masStore.mas.magnetic.coil.turnsDescription != null) {
+                return true;
+            }
+            else {
+                return false;
+            }
+        },
     },
     watch: { 
     },
@@ -349,17 +357,22 @@ export default {
                 </ul>
             </div>
             <button
-                v-if="showExportButtons && !exportingMAS"
+                v-if="showExportButtons && !exportingMAS && isMagneticComplete"
                 :style="$styleStore.controlPanel.button"
                 class="btn col-1 offset-1 p-0"
                 @click="exportMASFile"
             >
               <img :src='masIcon' width="30" height="30" class="d-inline-block align-top m-0 p-0" alt="El Magnetic Logo">
             </button>
+            <div
+                v-if="!isMagneticComplete"
+                class="col-1 offset-1 p-0"
+            />
+
             <img v-if="exportingMAS" class="offset-1 col-1 p-0" alt="loading" style="width: auto; height: 30px;" :src="$settingsStore.loadingGif">
             
             <div
-                v-if="showExportButtons && !exportingAnsys && showAnsysButtons"
+                v-if="showExportButtons && !exportingAnsys && showAnsysButtons && isMagneticComplete"
                 :class="isHighPerformanceBackendAvailable? 'dropdown' : ''"
                 class="col-1 m-0 p-0 row"
                 >
@@ -427,10 +440,14 @@ export default {
                 </ul>
             </div>
 
+            <div
+                v-if="!isMagneticComplete"
+                class="col-1 p-0"
+            />
 
             <img v-if="exportingAnsys" class="col-1 p-0" alt="loading" style="width: auto; height: 30px;" :src="$settingsStore.loadingGif">
             <div
-                v-if="showExportButtons && !exportingSimba"
+                v-if="showExportButtons && !exportingSimba && isMagneticComplete"
                 class="dropdown col-1 m-0 p-0 row"
                 >
                 <a
@@ -474,9 +491,13 @@ export default {
 
                 </ul>
             </div>
+            <div
+                v-if="!isMagneticComplete"
+                class="col-1 p-0"
+            />
             <img v-if="exportingSimba" class="col-1 p-0" alt="loading" style="width: auto; height: 30px;" :src="$settingsStore.loadingGif">
             <div
-                v-if="showExportButtons && !exportingLtspice"
+                v-if="showExportButtons && !exportingLtspice && isMagneticComplete"
                 class="dropdown col-1 m-0 p-0 row"
                 >
                 <a
@@ -520,18 +541,26 @@ export default {
 
                 </ul>
             </div>
+            <div
+                v-if="!isMagneticComplete"
+                class="col-1 p-0"
+            />
             <img v-if="exportingLtspice" class="col-1 p-0" alt="loading" style="width: auto; height: 30px;" :src="$settingsStore.loadingGif">
             <button
-                v-if="showExportButtons && !exportingNgspice"
+                v-if="showExportButtons && !exportingNgspice && isMagneticComplete"
                 :style="$styleStore.controlPanel.button"
                 class="btn col-1  m-0 p-0"
                 @click="exportNgspice"
             >
               <img :src='ngspiceIcon' width="30" height="30" class="d-inline-block align-top m-0 p-0" alt="El Magnetic Logo">
             </button>
+            <div
+                v-if="!isMagneticComplete"
+                class="col-1 p-0"
+            />
             <img v-if="exportingNgspice" class="col-1 p-0" alt="loading" style="width: auto; height: 30px;" :src="$settingsStore.loadingGif">
             <div
-                v-if="showExportButtons"
+                v-if="showExportButtons && isMagneticComplete"
                 :class="showExportButtons? showAnsysButtons? '' : 'offset-1' : 'offset-5'"
                 class="dropdown col-3"
                 >
@@ -585,6 +614,10 @@ export default {
                     </button></li>
                 </ul>
             </div>
+            <div
+                v-if="!isMagneticComplete"
+                class="col-3 p-0"
+            />
 
         </div>
     </div>
