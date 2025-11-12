@@ -172,7 +172,7 @@ export default {
 
                 var result;
                 if (this.localData.designLevel == 'I know the design I want') {
-                    if (converterName == "Isolated Buck") {
+                    if (this.converterName == "Isolated Buck") {
                         result = this.$mkf.calculate_advanced_isolated_buck_inputs(JSON.stringify(aux));
                     }
                     else {
@@ -180,7 +180,7 @@ export default {
                     }
                 }
                 else {
-                    if (converterName == "Isolated Buck") {
+                    if (this.converterName == "Isolated Buck") {
                         result = this.$mkf.calculate_isolated_buck_inputs(JSON.stringify(aux));
                     }
                     else {
