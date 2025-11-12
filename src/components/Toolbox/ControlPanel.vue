@@ -43,6 +43,7 @@ export default {
         const exportingSimba = false;
         const exportingLtspice = false;
         const exportingNgspice = false;
+        const isHighPerformanceBackendAvailable = false;
 
         const masIcon = `${import.meta.env.BASE_URL}images/MAS_icon.svg`;
         const ansysIcon = `${import.meta.env.BASE_URL}images/Ansys_icon.svg`;
@@ -68,6 +69,7 @@ export default {
             ltspiceSymbolIcon,
             ltspiceSubcircuitIcon,
             exportingNgspice,
+            isHighPerformanceBackendAvailable,
 
             masIcon,
             ansysIcon,
@@ -97,6 +99,15 @@ export default {
     watch: { 
     },
     mounted () {
+        const url = import.meta.env.VITE_API_ENDPOINT + '/is_high_performance_backend_available';
+
+        this.$axios.post(url, {})
+        .then(response => {
+            this.isHighPerformanceBackendAvailable = response.data;
+        })
+        .catch(error => {
+            console.error(error);
+        });
     },
     methods: {
         exportMASFile() {
@@ -120,10 +131,11 @@ export default {
                 };
                 const url = import.meta.env.VITE_API_ENDPOINT + '/create_simulation_from_mas';
 
-                this.$axios.post(url, postData)
+                this.$axios.post(url, postData, {responseType: 'arraybuffer'})
                 .then(response => {
-                    console.warn(response);
-                    download(response.data, this.reference + ".aedt", "application/json; charset=latin1");
+                    if (response.data.byteLength > 1000) {
+                        download(response.data, this.reference + ".aedt", "binary/octet-stream; charset=utf-8");
+                    }
                     this.exportingAnsys = false;
                 })
                 .catch(error => {
@@ -348,20 +360,31 @@ export default {
             
             <div
                 v-if="showExportButtons && !exportingAnsys && showAnsysButtons"
-                class="dropdown col-1 m-0 p-0 row"
+                :class="isHighPerformanceBackendAvailable? 'dropdown' : ''"
+                class="col-1 m-0 p-0 row"
                 >
                 <a
+                    v-if="isHighPerformanceBackendAvailable"
                     :style="$styleStore.controlPanel.button"
-                    class="btn btn-secondary dropdown-toggle border-0 px-0"
+                    :class="isHighPerformanceBackendAvailable? 'dropdown-toggle' : ''"
+                    class="btn btn-secondary border-0 px-0"
                     href="#"
                     role="button" 
                     data-bs-toggle="dropdown"
                     aria-expanded="false"
                 >
-                    <img :src='ansysIcon' width="30" height="30" class="d-inline-block align-top m-0 p-0" alt="El Magnetic Logo">
+                    <img :src='ansysIcon' width="30" height="30" class="d-inline-block align-top m-0 p-0" alt="El Magnetic Logo" :style="`opacity: ${isHighPerformanceBackendAvailable? 1 : 0.2}`">
                 </a>
+                <div
+                    v-else
+                    :style="$styleStore.controlPanel.button"
+                    class="border-0 px-0 py-2"
+                >
+                    <img :src='ansysIcon' width="30" height="30" class="d-inline-block align-top m-0 p-0" alt="El Magnetic Logo" :style="`opacity: ${isHighPerformanceBackendAvailable? 1 : 0.2}`">
+                </div>
 
                 <ul 
+                    v-if="isHighPerformanceBackendAvailable"
                     :style="$styleStore.controlPanel.button"
                     class="dropdown-menu m-0 p-0 row col-12">
                     <li><button

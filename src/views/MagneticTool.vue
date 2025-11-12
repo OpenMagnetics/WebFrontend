@@ -212,7 +212,7 @@ export default {
                     :currentStoryline="currentStoryline"
                     :dataTestLabel="'MagneticTool'"
                     :showControlPanel="true"
-                    :showAnsysButtons="false"
+                    :showAnsysButtons="true"
                     @toolSelected="toolSelected"
                 />
                 <GenericTool
@@ -220,7 +220,7 @@ export default {
                     :currentStoryline="magneticBuilderStoryline"
                     :dataTestLabel="'MagneticBuilder'"
                     :showControlPanel="true"
-                    :showAnsysButtons="false"
+                    :showAnsysButtons="true"
                     @toolSelected="toolSelected"
                 />
                 <GenericTool
@@ -228,7 +228,7 @@ export default {
                     :currentStoryline="magneticAdviserStoryline"
                     :dataTestLabel="'MagneticAdviser'"
                     :showControlPanel="true"
-                    :showAnsysButtons="false"
+                    :showAnsysButtons="true"
                     @toolSelected="toolSelected"
                 />
                 <GenericTool
@@ -236,7 +236,7 @@ export default {
                     :currentStoryline="magneticCoreAdviserStoryline"
                     :dataTestLabel="'MagneticCoreAdviser'"
                     :showControlPanel="true"
-                    :showAnsysButtons="false"
+                    :showAnsysButtons="true"
                     @toolSelected="toolSelected"
                 />
                 <GenericTool
@@ -244,7 +244,7 @@ export default {
                     :currentStoryline="magneticSpecificationsReportStoryline"
                     :dataTestLabel="'MagneticSpecificationsReport'"
                     :showControlPanel="true"
-                    :showAnsysButtons="false"
+                    :showAnsysButtons="true"
                     @toolSelected="toolSelected"
                 />
             </div>
