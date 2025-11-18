@@ -94,13 +94,17 @@ export default {
                 const newMas = JSON.parse(e.target.result);
                 if (newMas.magnetic != null) {
                     checkAndFixMas(newMas, this.$mkf).then(response => {
-                        console.log("Mierda 1")
+                        this.masStore.resetMas();
                         this.masStore.mas = response;
                         this.masStore.importedMas();
 
-                        this.$stateStore.selectWorkflow("design");
-                        this.$stateStore.selectTool("agnosticTool");
+
                         this.$stateStore.selectApplication(this.$stateStore.SupportedApplications.Power);
+                        // this.currentStoryline = this.magneticBuilderStoryline;
+                        this.$stateStore.selectTool("magneticBuilder");
+                        this.$stateStore.setCurrentToolSubsection("magneticBuilder");
+                        this.$stateStore.setCurrentToolSubsectionStatus("designRequirements", true);
+                        this.$stateStore.setCurrentToolSubsectionStatus("operatingPoints", true);
                         this.$stateStore.operatingPoints.modePerPoint = []
                         for (var i = 0; i < this.masStore.mas.inputs.operatingPoints.length; i++) {
                             if (this.masStore.mas.inputs.operatingPoints[i].excitationsPerWinding[0].current.processed != null) {
@@ -113,7 +117,6 @@ export default {
                         this.$stateStore.setCurrentToolSubsectionStatus("designRequirements", true);
                         this.$stateStore.setCurrentToolSubsectionStatus("operatingPoints", true);
                         this.$userStore.loadingPath = `${import.meta.env.BASE_URL}magnetic_tool`;
-                        this.$emit('toolSelected', "magneticBuilder");
                         setTimeout(() => {this.$router.push(`${import.meta.env.BASE_URL}engine_loader`);}, 100);
                     })
                     .catch(error => {
