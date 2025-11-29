@@ -275,6 +275,11 @@ export const useStyleStore = defineStore("style", () => {
                 "color": theme["white"],
                 "border-color":  theme["primary"] + ' !important',
             },
+            exporter: {
+                "background": theme["dark"],
+                "color": theme["white"],
+                "border-color":  theme["primary"] + ' !important',
+            },
             customizeButton: {
                 "background": theme["success"],
                 "color": theme["dark"],

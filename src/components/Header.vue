@@ -1,7 +1,7 @@
 <script setup >
 import { useMasStore } from '/MagneticBuilder/src/stores/mas'
 import { useHistoryStore } from '/MagneticBuilder/src/stores/history'
-import { combinedStyle, combinedClass, checkAndFixMas } from '/WebSharedComponents/assets/js/utils.js'
+import { combinedStyle, combinedClass, checkAndFixMas, deepCopy } from '/WebSharedComponents/assets/js/utils.js'
 import { defineAsyncComponent } from "vue";
 import { useElementVisibility  } from '@vueuse/core'
 import { ref } from 'vue'
@@ -58,6 +58,9 @@ export default {
                 setTimeout(() => {this.$router.push(`${import.meta.env.BASE_URL}magnetic_tool`);}, 100);
             else
                 setTimeout(() => {this.$router.push(`${import.meta.env.BASE_URL}engine_loader`);}, 100);
+        },
+        onHome() {
+            setTimeout(() => {this.$router.push(`${import.meta.env.BASE_URL}`);}, 100);
         },
         onWizards(wizard) {
             this.$stateStore.selectWizard(wizard);
@@ -116,8 +119,18 @@ export default {
                         }
                         this.$stateStore.setCurrentToolSubsectionStatus("designRequirements", true);
                         this.$stateStore.setCurrentToolSubsectionStatus("operatingPoints", true);
-                        this.$userStore.loadingPath = `${import.meta.env.BASE_URL}magnetic_tool`;
-                        setTimeout(() => {this.$router.push(`${import.meta.env.BASE_URL}engine_loader`);}, 100);
+                        this.$stateStore.loadingDesign = true;
+                        if (this.$router.currentRoute.value.path != `${import.meta.env.BASE_URL}magnetic_tool`) {
+
+                            this.$userStore.loadingPath = `${import.meta.env.BASE_URL}magnetic_tool`;
+                            setTimeout(() => {this.$router.push(`${import.meta.env.BASE_URL}engine_loader`);}, 100);
+                        }
+                        else {
+                            this.masStore.mas.magnetic.core = response.magnetic.core;
+                            this.masStore.mas.magnetic.coil = response.magnetic.coil;
+                            this.masStore.mas.magnetic.coil.functionalDescription = response.magnetic.coil.functionalDescription;
+
+                        }
                     })
                     .catch(error => {
                         console.error(error)
@@ -161,17 +174,22 @@ export default {
 <template>
     <nav class="navbar navbar-expand-xl mb-1 om-header" id="header_wrapper" :style="$styleStore.header.main">
         <div class="container-fluid">
-            <a data-cy="Header-logo-home-link" href="/" aria-label="Visit OpenMagnetics and Tear Down the Paywalls!">
+            <button
+                data-cy="Header-logo-home-link"
+                aria-label="Visit OpenMagnetics and Tear Down the Paywalls!"
+                class="btn m-0 p-0"
+                @click="onHome"
+            >
                 <img src="/images/logo.svg" width="60" height="40" href="/" class="d-inline-block align-top me-3" alt="OpenMagnetics Logo">
-            </a>
-            <a
+            </button>
+            <button
                 :style="$styleStore.header.title"
                 data-cy="Header-brand-home-link"
-                class="navbar-brand"
-                href="/"
+                class="navbar-brand btn m-0 p-0 pe-2"
+                @click="onHome"
             >
                 {{'OpenMagnetics'}}
-            </a>
+            </button>
             <button
                 :style="$styleStore.header.collapsedButton"
                 class="navbar-toggler"
