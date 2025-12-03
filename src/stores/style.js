@@ -593,6 +593,11 @@ export const useStyleStore = defineStore("style", () => {
         };
 
         this.wizard = {
+            title: {
+                "background": theme["dark"],
+                "color": theme["white"],
+                "font-size": '2rem',
+            },
             main: {
                 "background": theme["dark"],
                 "color": theme["white"],
@@ -603,6 +608,9 @@ export const useStyleStore = defineStore("style", () => {
             },
             inputTitleFontSize: {
                 "font-size": '2rem',
+            },
+            inputLabelFontSize: {
+                "font-size": '1.5rem',
             },
             inputLabelBgColor:{
                 "background": theme["dark"] + ' !important',
@@ -626,13 +634,13 @@ export const useStyleStore = defineStore("style", () => {
                 "background": theme["success"],
                 "color": theme["dark"],
                 "border-color": theme["success"],
-                "font-size": '2rem',
+                "font-size": '1.5rem',
             },
             reviewButton: {
                 "background": theme["primary"],
                 "color": theme["dark"],
                 "border-color": theme["primary"],
-                "font-size": '2rem',
+                "font-size": '1.5rem',
             },
             addButton: {
                 "background": theme["light"],
