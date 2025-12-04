@@ -38,7 +38,7 @@ export default {
                         pointRadius: this.enableDrag? 2 : 1,
                         borderWidth: 5,
                         borderColor: this.$styleStore.operatingPoints.currentGraph.color,
-                        backgroundColor: this.$styleStore.operatingPoints.currentGraph.background,
+                        backgroundColor: this.$styleStore.operatingPoints.currentGraph["background-color"],
                     },
                     {
                         label: 'Voltage',
@@ -47,7 +47,7 @@ export default {
                         pointRadius: this.enableDrag? 2 : 1,
                         borderWidth: 5,
                         borderColor: this.$styleStore.operatingPoints.voltageGraph.color,
-                        backgroundColor: this.$styleStore.operatingPoints.voltageGraph.background,
+                        backgroundColor: this.$styleStore.operatingPoints.voltageGraph["background-color"],
                     },
                     {
                         label: 'zeroLineCurrent',

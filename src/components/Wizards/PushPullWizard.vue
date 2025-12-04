@@ -402,7 +402,7 @@ export default {
                         v-model="localData.inputVoltage"
                         :severalRows="true"
                         :addButtonStyle="$styleStore.wizard.addButton"
-                        :removeButtonBgColor="$styleStore.wizard.removeButton.background"
+                        :removeButtonBgColor="$styleStore.wizard.removeButton['background-color']"
                         :titleFontSize="$styleStore.wizard.inputLabelFontSize"
                         :valueFontSize="$styleStore.wizard.inputFontSize"
                         :labelFontSize="$styleStore.wizard.inputLabelFontSize"
