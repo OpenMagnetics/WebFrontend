@@ -1,5 +1,5 @@
 <script setup>
-import { clean, download } from '/WebSharedComponents/assets/js/utils.js'
+import { clean, download, base64ToArrayBuffer } from '/WebSharedComponents/assets/js/utils.js'
 
 </script>
 <script>
@@ -56,7 +56,7 @@ export default {
 
             this.$axios.post(url, data)
             .then(response => {
-                download(response.data, coreName + ".stp", "text/plain");
+                download(base64ToArrayBuffer(response.data), coreName + ".stp", "binary/octet-stream; charset=utf-8");
                 this.$emit("export", coreName + ".stp")
                 this.exported = true
                 setTimeout(() => this.exported = false, 2000);

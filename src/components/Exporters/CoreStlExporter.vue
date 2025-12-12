@@ -1,5 +1,5 @@
 <script setup>
-import { clean, download } from '/WebSharedComponents/assets/js/utils.js'
+import { clean, download, base64ToArrayBuffer } from '/WebSharedComponents/assets/js/utils.js'
 
 </script>
 <script>
@@ -38,11 +38,11 @@ export default {
             var data;
             var coreName;
             if (!this.fullCoreModel) {
-                url = import.meta.env.VITE_API_ENDPOINT + '/core_compute_shape_obj'
+                url = import.meta.env.VITE_API_ENDPOINT + '/core_compute_shape_stl'
                 data = this.core['functionalDescription']['shape'];
             }
             else {
-                url = import.meta.env.VITE_API_ENDPOINT + '/core_compute_core_3d_model_obj'
+                url = import.meta.env.VITE_API_ENDPOINT + '/core_compute_core_3d_model_stl'
                 data = this.core;
             }
 
@@ -57,8 +57,8 @@ export default {
 
             this.$axios.post(url, data)
             .then(response => {
-                download(response.data, coreName + ".obj", "text/plain");
-                this.$emit("export", coreName + ".obj")
+                download(base64ToArrayBuffer(response.data), coreName + ".stl", "binary/octet-stream; charset=utf-8");
+                this.$emit("export", coreName + ".stl")
                 this.exported = true
                 setTimeout(() => this.exported = false, 2000);
             })
@@ -81,7 +81,7 @@ export default {
             :class="classProp"
             @click="onClick"
         >
-            Download OBJ model
+            Download STL model
         </button>
     </div>
 </template>
