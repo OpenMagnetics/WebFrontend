@@ -19,7 +19,6 @@ import MagneticCoreSummary from './MagneticCoreAdviser/MagneticCoreSummary.vue'
 import MagneticSpecificationsSummary from './MagneticSpecificationsReport/MagneticSpecificationsSummary.vue'
 import MagneticBuilder from '/MagneticBuilder/src/components/MagneticBuilder.vue'
 import ControlPanel from './ControlPanel.vue'
-import Welcome from './Welcome.vue'
 import ToolSelector from './ToolSelector.vue'
 
 import { useMasStore } from '../../stores/mas'
@@ -188,7 +187,6 @@ export default {
                         :storyline="currentStoryline"
                         :canContinue="$stateStore.getCurrentToolState().canContinue"
                         :forceUpdate="updateStoryline"
-                        :showAvoidOption="currentStoryline[$stateStore.getCurrentToolState().subsection].title=='Welcome'"
                         @changeTool="changeTool"
                         @nextTool="nextTool"
                     />
@@ -252,11 +250,6 @@ export default {
                 </div>
 
                 <div class="row">
-                    <Welcome
-                        v-if="$stateStore.getCurrentToolState().subsection == 'welcome'"
-                        :dataTestLabel="`${dataTestLabel}-Welcome`"
-                        @canContinue="updateCanContinue('welcome', $event)"
-                    />
                     <ToolSelector
                         v-if="$stateStore.getCurrentToolState().subsection == 'toolSelector'"
                         :dataTestLabel="`${dataTestLabel}-ToolSelector`"

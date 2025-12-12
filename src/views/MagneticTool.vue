@@ -97,10 +97,6 @@ export default {
         };
 
         const agnosticStoryline = {
-            "welcome": {
-                title: "Welcome",
-                nextTool: "designRequirements"
-            },
             "designRequirements": {
                 title: "Design Req.",
                 nextTool: "operatingPoints"
@@ -117,13 +113,6 @@ export default {
         };
 
         const currentStoryline = agnosticStoryline;
-
-        if (!this.$userStore.showWelcome) {
-            if (this.$stateStore.getCurrentToolState().subsection == "welcome") {
-                this.$stateStore.setCurrentToolSubsection("designRequirements");
-            }
-            delete currentStoryline.welcome;
-        }
 
         console.log("this.$stateStore.isAnyDesignLoaded()")
         console.log(this.$stateStore.isAnyDesignLoaded())

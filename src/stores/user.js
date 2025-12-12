@@ -48,9 +48,8 @@ export const useUserStore = defineStore("user", () => {
                 selectedAdvise: 0,
             },
             agnosticTool: {
-                subsection: "welcome",
+                subsection: "designRequirements",
                 canContinue: {
-                    'welcome': true,
                     'designRequirements': false,
                     'operatingPoints': false,
                     'toolSelector': false,
@@ -79,9 +78,8 @@ export const useUserStore = defineStore("user", () => {
                 },
             },
             agnosticTool: {
-                subsection: "welcome",
+                subsection: "designRequirements",
                 canContinue: {
-                    'welcome': true,
                     'designRequirements': false,
                     'operatingPoints': false,
                     'toolSelector': false,
@@ -121,7 +119,6 @@ export const useUserStore = defineStore("user", () => {
     const selectedTool = ref("agnosticTool");
 
     const anyDesignLoaded = ref(false);
-    const showWelcome = ref(true);
 
     const wire2DVisualizerState = ref({
         plotCurrentDensity: false,
@@ -213,9 +210,8 @@ export const useUserStore = defineStore("user", () => {
                     selectedAdvise: 0,
                 },
                 agnosticTool: {
-                    subsection: "welcome",
+                    subsection: "designRequirements",
                     canContinue: {
-                        'welcome': true,
                         'designRequirements': false,
                         'operatingPoints': false,
                         'toolSelector': false,
@@ -244,9 +240,8 @@ export const useUserStore = defineStore("user", () => {
                     },
                 },
                 agnosticTool: {
-                    subsection: "welcome",
+                    subsection: "designRequirements",
                     canContinue: {
-                        'welcome': true,
                         'designRequirements': false,
                         'operatingPoints': false,
                         'toolSelector': false,
@@ -403,7 +398,6 @@ export const useUserStore = defineStore("user", () => {
     }
     return {
         loadingPath,
-        showWelcome,
 
         resetMagneticTool,
         isAnyDesignLoaded,

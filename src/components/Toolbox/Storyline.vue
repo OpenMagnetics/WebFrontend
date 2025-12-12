@@ -141,9 +141,6 @@ export default {
             return btn_class
         },
         nextTool(hideForever) {
-            if (hideForever) {
-                this.$userStore.showWelcome = false;
-            }
             this.$emit("nextTool");
         },
         getInnerWidth() {
@@ -192,18 +189,8 @@ export default {
                 data-cy="magnetic-synthesis-next-tool-button" 
                 class="btn px-0 mt-4 col-6 col-sm-6 col-md-12"
                 :class="canContinue[selectedTool]? 'btn-success' : 'btn-outline-primary'"
-                @click="nextTool(false)">
+                @click="nextTool">
                 {{canContinue[selectedTool]? 'Continue' : 'Errors must be fixed'}}
-            </button>
-            <button 
-                :style="$styleStore.storyline.continueButton"
-                v-if="$userStore.showWelcome && showAvoidOption && storyline[selectedTool].nextTool != null"  
-                :disabled="!canContinue[selectedTool]" 
-                data-cy="magnetic-synthesis-next-tool-button" 
-                class="btn mt-4 col-6 col-sm-6 col-md-12"
-                :class="canContinue[selectedTool]? 'btn-success' : 'btn-outline-primary'"
-                @click="nextTool(true)">
-                {{canContinue[selectedTool]? 'Continue and don\'t show again' : 'Errors must be fixed'}}
             </button>
 <!--             <button
                 :data-cy="'settings-modal-button'"

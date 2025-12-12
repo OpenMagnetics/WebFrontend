@@ -362,7 +362,7 @@ export default {
                         :valueWidthProportionClass="'col-lg-1 col-md-2'"
                         v-model="localData.inputVoltage"
                         :addButtonStyle="$styleStore.wizard.addButton"
-                        :removeButtonBgColor="$styleStore.wizard.removeButton.background"
+                        :removeButtonBgColor="$styleStore.wizard.removeButton['background-color']"
                         :titleFontSize="$styleStore.wizard.inputLabelFontSize"
                         :valueFontSize="$styleStore.wizard.inputFontSize"
                         :labelFontSize="$styleStore.wizard.inputLabelFontSize"

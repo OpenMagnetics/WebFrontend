@@ -84,9 +84,8 @@ export const useStateStore = defineStore("state", () => {
                 selectedAdvise: 0,
             },
             agnosticTool: {
-                subsection: "welcome",
+                subsection: "designRequirements",
                 canContinue: {
-                    'welcome': true,
                     'designRequirements': false,
                     'operatingPoints': false,
                     'toolSelector': false,
@@ -115,9 +114,8 @@ export const useStateStore = defineStore("state", () => {
                 },
             },
             agnosticTool: {
-                subsection: "welcome",
+                subsection: "designRequirements",
                 canContinue: {
-                    'welcome': true,
                     'designRequirements': false,
                     'operatingPoints': false,
                     'toolSelector': false,
@@ -261,6 +259,7 @@ export const useStateStore = defineStore("state", () => {
 
     // MAS Loader
     const anyDesignLoaded = ref(false);
+    const loadingDesign = ref(false);
 
     function isAnyDesignLoaded() {
         return this.anyDesignLoaded;
@@ -325,6 +324,7 @@ export const useStateStore = defineStore("state", () => {
     function resetMagneticTool() {
         console.log("Resetting state");
         this.anyDesignLoaded = false;
+        this.loadingDesign = false;
         this.selectedTool = "agnosticTool";
         this.selectedWorkflow = "design";
         this.selectedApplication = SupportedApplications.Power;
@@ -450,6 +450,7 @@ export const useStateStore = defineStore("state", () => {
         isAnyDesignLoaded,
         designLoaded,
         anyDesignLoaded,
+        loadingDesign,
 
         toolboxStates,
         selectedWorkflow,

@@ -37,8 +37,15 @@ app.mount("#app");
 router.beforeEach((to, from, next) => {
 
     if (app.config.globalProperties.$mkf != null && (to.name == "EngineLoader" || to.name == "WEEngineLoader")) {
-        // If WASM is loaded and we go to enginer loader, we just return to where we were
-        setTimeout(() => {router.push(from.path);}, 500);
+        if (app.config.globalProperties.$userStore.loadingPath != null) {
+            const newPath = app.config.globalProperties.$userStore.loadingPath;
+            app.config.globalProperties.$userStore.loadingPath = null;
+            router.push(newPath);
+        }
+        else {
+            // If WASM is loaded and we go to enginer loader, we just return to where we were
+            setTimeout(() => {router.push(from.path);}, 500);
+        }
     }
 
     const nonDataViews = [`${import.meta.env.BASE_URL}`, `${import.meta.env.BASE_URL}home`, `${import.meta.env.BASE_URL}insulation_adviser`]
@@ -162,7 +169,9 @@ router.beforeEach((to, from, next) => {
                                                 console.error("error fetching core_shapes.ndjson")
                                                 console.error(error)
                                             })
-                                            router.push(app.config.globalProperties.$userStore.loadingPath)
+                                            const newPath = app.config.globalProperties.$userStore.loadingPath;
+                                            app.config.globalProperties.$userStore.loadingPath = null;
+                                            router.push(newPath)
                                         }).catch((error) => {
                                             console.error(error)
                                         })

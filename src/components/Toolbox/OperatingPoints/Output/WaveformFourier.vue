@@ -43,17 +43,17 @@ export default {
                     {
                         label: 'Current',
                         yAxisID: 'current',
-                        fillColor: this.$styleStore.operatingPoints.currentGraph.background,
+                        fillColor: this.$styleStore.operatingPoints.currentGraph["background-color"],
                         borderColor: this.$styleStore.operatingPoints.currentGraph.color,
-                        backgroundColor: this.$styleStore.operatingPoints.currentGraph.background,
+                        backgroundColor: this.$styleStore.operatingPoints.currentGraph["background-color"],
                         data: []
                     },
                     {
                         label: 'Voltage',
                         yAxisID: 'voltage',
-                        fillColor: this.$styleStore.operatingPoints.voltageGraph.background,
+                        fillColor: this.$styleStore.operatingPoints.voltageGraph["background-color"],
                         borderColor: this.$styleStore.operatingPoints.voltageGraph.color,
-                        backgroundColor: this.$styleStore.operatingPoints.voltageGraph.background,
+                        backgroundColor: this.$styleStore.operatingPoints.voltageGraph["background-color"],
                         data: []
                     }
                 ],

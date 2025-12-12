@@ -24,9 +24,6 @@ export default defineConfig({
             },
         },
     },
-    optimizeDeps: {
-        disabled: false,
-    },
     publicDir: 'src/public',
     plugins: [
         vue(),
