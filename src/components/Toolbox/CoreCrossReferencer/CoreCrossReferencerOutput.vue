@@ -3,7 +3,7 @@ import Module from '../../../assets/js/libCrossReferencers.wasm.js'
 import { toTitleCase, removeTrailingZeroes, processCoreTexts, deepCopy, downloadBase64asPDF, clean, download } from '/WebSharedComponents/assets/js/utils.js'
 import Core3DVisualizer from '/WebSharedComponents/Common/Core3DVisualizer.vue'
 import CoreSTPExporter from '../../Exporters/CoreSTPExporter.vue'
-import CoreOBJExporter from '../../Exporters/CoreOBJExporter.vue'
+import CoreStlExporter from '../../Exporters/CoreStlExporter.vue'
 import CoreTechnicalDrawingExporter from '../../Exporters/CoreTechnicalDrawingExporter.vue'
 
 </script>
@@ -247,7 +247,7 @@ export default {
                 :fullCoreModel="true"
                 @export="onExport"
             />
-            <CoreOBJExporter
+            <CoreStlExporter
                 class="btn btn-primary col-4 mt-4"
                 :data-cy="dataTestLabel + '-download-STP-File-button'"
                 :core="mas.magnetic.core"
