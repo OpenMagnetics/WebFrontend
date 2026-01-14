@@ -1,4 +1,5 @@
 import { defineConfig } from 'vite'
+import { fileURLToPath, URL } from 'node:url'
 import vue from '@vitejs/plugin-vue'
 import viteCompression from 'vite-plugin-compression';
 
@@ -29,6 +30,11 @@ export default defineConfig({
         vue(),
         viteCompression({filter: '/\.(js|mjs|json|css|html|wasm)$/i'}),
     ],
+    resolve: {
+        alias: {
+            '@': fileURLToPath(new URL('./src', import.meta.url)),
+        },
+    },
     server: {
         proxy: {
             '/api': {

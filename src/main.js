@@ -16,6 +16,8 @@ import { useStyleStore } from '/src/stores/style'
 import { useWeStyleStore } from '/src/stores/weStyle'
 import { useFairRiteStyleStore } from '/src/stores/fairRiteStyle'
 import { VueWindowSizePlugin } from 'vue-window-size/plugin';
+import { setMkf } from '/WebSharedComponents/assets/js/mkfRuntime'
+
 
 const axiosInstance = axios.create()
 
@@ -31,6 +33,8 @@ app.config.globalProperties.$axios = axiosInstance
 app.config.globalProperties.$userStore = useUserStore()
 app.config.globalProperties.$settingsStore = useSettingsStore()
 app.config.globalProperties.$stateStore = useStateStore()
+
+export const globals = app.config.globalProperties
 
 app.mount("#app");
 
@@ -176,7 +180,8 @@ router.beforeEach((to, from, next) => {
                                             console.error(error)
                                         })
 
-                                        resolve(); 
+                                        setMkf(app.config.globalProperties.$mkf);
+                                        resolve();
                                     }
                                 });
                             })
