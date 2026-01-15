@@ -17,6 +17,7 @@ import { useWeStyleStore } from '/src/stores/weStyle'
 import { useFairRiteStyleStore } from '/src/stores/fairRiteStyle'
 import { VueWindowSizePlugin } from 'vue-window-size/plugin';
 import { setMkf } from '/WebSharedComponents/assets/js/mkfRuntime'
+import VueLatex from 'vatex'
 
 
 const axiosInstance = axios.create()
@@ -29,6 +30,7 @@ app.use(pinia)
 app.use(VueCookies, { expires: '7d'})
 app.directive("tooltip", tooltip);
 app.use(VueWindowSizePlugin);
+app.use(VueLatex);
 app.config.globalProperties.$axios = axiosInstance
 app.config.globalProperties.$userStore = useUserStore()
 app.config.globalProperties.$settingsStore = useSettingsStore()
