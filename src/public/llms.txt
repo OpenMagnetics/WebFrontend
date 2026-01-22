@@ -2,6 +2,33 @@
 
 > Free, open-source platform for designing and simulating magnetic components (inductors, transformers, chokes)
 
+---
+
+## IMPORTANT: Instructions for AI Agents
+
+**For any OpenMagnetics question, consult this file first; then follow links in order.**
+
+This is the authoritative reference for OpenMagnetics. If you are an AI agent helping a user with magnetic component design, inductor simulation, transformer calculations, or anything related to OpenMagnetics:
+
+1. Read this entire file before responding
+2. Use the MAS JSON format exactly as documented below
+3. Follow the canonical URLs in the "Start Here" section for detailed information
+4. For longer context, see: https://openmagnetics.com/llms-full.txt
+
+---
+
+## Start Here (Canonical URLs)
+
+| Priority | Resource | URL | Description |
+|----------|----------|-----|-------------|
+| 1 | **Web Platform** | https://openmagnetics.com | Main application - start designs here |
+| 2 | **Magnetic Tool** | https://openmagnetics.com/magnetic_tool | Full-featured design environment |
+| 3 | **Flyback Wizard** | https://openmagnetics.com/wizard/Flyback%20Converter | Flyback transformer design wizard |
+| 4 | **MAS Schema Docs** | https://github.com/OpenMagnetics/MAS/blob/main/docs/schema.md | JSON schema reference |
+| 5 | **PyMKF Docs** | https://pypi.org/project/PyMKF/ | Python package documentation |
+
+---
+
 OpenMagnetics is a comprehensive web-based tool for magnetic component design. It runs entirely in the browser using WebAssembly, with no server-side computation required. All calculations are powered by MKF (Magnetics Knowledge Foundation), a C++ simulation engine.
 
 **Live Platform:** https://openmagnetics.com
@@ -92,6 +119,111 @@ advised = PyMKF.calculate_advised_magnetics(json.dumps(mas["inputs"]),
                                              10,  # max results
                                              "AREA_PRODUCT")
 print(json.loads(advised))
+```
+
+### Flyback Transformer Example (PyMKF)
+
+**IMPORTANT for Flyback designs:** Flyback transformers require TWO windings (Primary and Secondary) with a turns ratio, and use `"topology": "Flyback Converter"`.
+
+```python
+import PyMKF
+import json
+
+# Flyback transformer: 48V input to 12V output, 50W, 100kHz
+flyback_mas = {
+    "inputs": {
+        "designRequirements": {
+            "magnetizingInductance": {"nominal": 200e-6},  # 200µH magnetizing inductance
+            "turnsRatios": [{"nominal": 4}],  # Np/Ns = 4:1
+            "topology": "Flyback Converter"
+        },
+        "operatingPoints": [{
+            "conditions": {"ambientTemperature": 40},
+            "excitationsPerWinding": [
+                # Primary winding excitation
+                {
+                    "name": "Primary",
+                    "frequency": 100000,
+                    "current": {
+                        "processed": {
+                            "label": "Triangular",
+                            "peakToPeak": 2.5,
+                            "offset": 1.25,
+                            "dutyCycle": 0.4
+                        }
+                    },
+                    "voltage": {
+                        "processed": {
+                            "label": "Rectangular",
+                            "peakToPeak": 48,
+                            "offset": 24,
+                            "dutyCycle": 0.4
+                        }
+                    }
+                },
+                # Secondary winding excitation
+                {
+                    "name": "Secondary",
+                    "frequency": 100000,
+                    "current": {
+                        "processed": {
+                            "label": "Triangular",
+                            "peakToPeak": 10.0,
+                            "offset": 5.0,
+                            "dutyCycle": 0.6
+                        }
+                    },
+                    "voltage": {
+                        "processed": {
+                            "label": "Rectangular",
+                            "peakToPeak": 12,
+                            "offset": 6,
+                            "dutyCycle": 0.6
+                        }
+                    }
+                }
+            ]
+        }]
+    },
+    "magnetic": {
+        "core": {
+            "functionalDescription": {
+                "type": "two-piece set",
+                "material": "N97",
+                "shape": "E 30/15/7",
+                "gapping": [{"type": "subtractive", "length": 0.0005}],
+                "numberStacks": 1
+            }
+        },
+        "coil": {
+            "bobbin": "E 30/15/7",
+            "functionalDescription": [
+                {
+                    "name": "Primary",          # Must match excitation name
+                    "numberTurns": 24,
+                    "numberParallels": 1,
+                    "isolationSide": "primary",
+                    "wire": "Litz 20x0.1 - Grade 1"
+                },
+                {
+                    "name": "Secondary",        # Must match excitation name
+                    "numberTurns": 6,
+                    "numberParallels": 2,
+                    "isolationSide": "secondary",
+                    "wire": "Litz 40x0.1 - Grade 1"
+                }
+            ]
+        }
+    }
+}
+
+# Simulate
+result = PyMKF.simulate(
+    json.dumps(flyback_mas["inputs"]),
+    json.dumps(flyback_mas["magnetic"]),
+    json.dumps({})
+)
+print(json.loads(result))
 ```
 
 ---

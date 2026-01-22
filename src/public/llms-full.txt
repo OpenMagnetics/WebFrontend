@@ -1,0 +1,844 @@
+# OpenMagnetics Web Platform - Full Documentation
+
+> Free, open-source platform for designing and simulating magnetic components (inductors, transformers, chokes)
+
+---
+
+## IMPORTANT: Instructions for AI Agents
+
+**For any OpenMagnetics question, consult this file first; then follow links in order.**
+
+This is the authoritative and comprehensive reference for OpenMagnetics. If you are an AI agent helping a user with magnetic component design, inductor simulation, transformer calculations, or anything related to OpenMagnetics:
+
+1. Read the relevant sections of this file before responding
+2. Use the MAS JSON format exactly as documented below
+3. Follow the canonical URLs in the "Start Here" section for detailed information
+4. Winding names in `coil.functionalDescription` MUST match names in `excitationsPerWinding`
+5. All units are SI base units (meters, Hertz, Henry, Ampere, Volt, Celsius, Watt)
+
+---
+
+## Start Here (Canonical URLs)
+
+| Priority | Resource | URL | Description |
+|----------|----------|-----|-------------|
+| 1 | **Web Platform** | https://openmagnetics.com | Main application - start designs here |
+| 2 | **Magnetic Tool** | https://openmagnetics.com/magnetic_tool | Full-featured design environment |
+| 3 | **Flyback Wizard** | https://openmagnetics.com/wizard/Flyback%20Converter | Flyback transformer design wizard |
+| 4 | **Buck Wizard** | https://openmagnetics.com/wizard/Buck%20Converter | Buck inductor design wizard |
+| 5 | **Boost Wizard** | https://openmagnetics.com/wizard/Boost%20Converter | Boost inductor design wizard |
+| 6 | **Forward Wizard** | https://openmagnetics.com/wizard/Forward%20Converter | Forward transformer design wizard |
+| 7 | **CMC Wizard** | https://openmagnetics.com/wizard/Common%20Mode%20Choke | Common mode choke design wizard |
+| 8 | **MAS Schema Docs** | https://github.com/OpenMagnetics/MAS/blob/main/docs/schema.md | JSON schema reference |
+| 9 | **PyMKF Docs** | https://pypi.org/project/PyMKF/ | Python package documentation |
+| 10 | **GitHub** | https://github.com/OpenMagnetics | All source repositories |
+
+---
+
+## Overview
+
+OpenMagnetics is a comprehensive web-based tool for magnetic component design. It runs entirely in the browser using WebAssembly, with no server-side computation required. All calculations are powered by MKF (Magnetics Knowledge Foundation), a C++ simulation engine.
+
+**Key Features:**
+- Complete magnetic component simulation (losses, temperature, inductance, capacitance)
+- Database of 10,000+ cores, materials, and wires
+- AI-assisted design optimization
+- Export to circuit simulators (LTspice, ngspice, SIMBA)
+- Insulation coordination per IEC standards
+- 100% client-side computation - no data sent to servers
+
+**Live Platform:** https://openmagnetics.com
+
+**Alternative:** Use `PyMKF` (Python package) for programmatic access to all simulation capabilities.
+
+---
+
+## Quick Start
+
+### Web Platform (No Installation)
+1. Visit https://openmagnetics.com
+2. Click "New magnetic" to start a design
+3. Follow the wizard or use the Magnetic Tool for full control
+
+### Python (PyMKF)
+```bash
+pip install PyMKF
+```
+
+---
+
+## Complete Examples by Topology
+
+### Example 1: Buck Inductor (Single Winding)
+
+A buck converter inductor is a single-winding component with triangular current and rectangular voltage.
+
+```python
+import PyMKF
+import json
+
+buck_mas = {
+    "inputs": {
+        "designRequirements": {
+            "magnetizingInductance": {"nominal": 4.7e-6},  # 4.7µH
+            "turnsRatios": [],  # Empty for single winding
+            "topology": "Buck Converter"
+        },
+        "operatingPoints": [{
+            "conditions": {"ambientTemperature": 40},
+            "excitationsPerWinding": [{
+                "frequency": 500000,  # 500kHz
+                "current": {
+                    "processed": {
+                        "label": "Triangular",
+                        "peakToPeak": 3.0,   # 3A ripple
+                        "offset": 10.0,      # 10A DC
+                        "dutyCycle": 0.275   # D = Vout/Vin
+                    }
+                },
+                "voltage": {
+                    "processed": {
+                        "label": "Rectangular",
+                        "peakToPeak": 8.7,
+                        "offset": 0,
+                        "dutyCycle": 0.275
+                    }
+                }
+            }]
+        }]
+    },
+    "magnetic": {
+        "core": {
+            "functionalDescription": {
+                "type": "two-piece set",
+                "material": "High Flux 60",
+                "shape": "T 20/10/7",
+                "gapping": [],  # Powder core, no discrete gap
+                "numberStacks": 1
+            }
+        },
+        "coil": {
+            "bobbin": "T 20/10/7",
+            "functionalDescription": [{
+                "name": "Primary",
+                "numberTurns": 8,
+                "numberParallels": 3,
+                "isolationSide": "primary",
+                "wire": "Round 0.8 - Grade 1"
+            }]
+        }
+    }
+}
+
+result = PyMKF.simulate(
+    json.dumps(buck_mas["inputs"]),
+    json.dumps(buck_mas["magnetic"]),
+    json.dumps({})
+)
+print(json.loads(result))
+```
+
+### Example 2: Boost Inductor (Single Winding)
+
+```python
+boost_mas = {
+    "inputs": {
+        "designRequirements": {
+            "magnetizingInductance": {"nominal": 100e-6},  # 100µH
+            "turnsRatios": [],
+            "topology": "Boost Converter"
+        },
+        "operatingPoints": [{
+            "conditions": {"ambientTemperature": 40},
+            "excitationsPerWinding": [{
+                "frequency": 200000,  # 200kHz
+                "current": {
+                    "processed": {
+                        "label": "Triangular",
+                        "peakToPeak": 4.0,
+                        "offset": 8.0,
+                        "dutyCycle": 0.6  # D = 1 - Vin/Vout
+                    }
+                },
+                "voltage": {
+                    "processed": {
+                        "label": "Rectangular",
+                        "peakToPeak": 24.0,
+                        "offset": 0,
+                        "dutyCycle": 0.6
+                    }
+                }
+            }]
+        }]
+    },
+    "magnetic": {
+        "core": {
+            "functionalDescription": {
+                "type": "two-piece set",
+                "material": "N97",
+                "shape": "E 30/15/7",
+                "gapping": [{"type": "subtractive", "length": 0.0003}],
+                "numberStacks": 1
+            }
+        },
+        "coil": {
+            "bobbin": "E 30/15/7",
+            "functionalDescription": [{
+                "name": "Primary",
+                "numberTurns": 28,
+                "numberParallels": 1,
+                "isolationSide": "primary",
+                "wire": "Litz 40x0.1 - Grade 1"
+            }]
+        }
+    }
+}
+```
+
+### Example 3: Flyback Transformer (Two Windings)
+
+**CRITICAL:** Flyback transformers require:
+- TWO or more windings in `coil.functionalDescription`
+- A `turnsRatios` array defining primary-to-secondary ratios
+- `"topology": "Flyback Converter"`
+- Winding `name` fields must match `excitationsPerWinding` entries
+
+```python
+flyback_mas = {
+    "inputs": {
+        "designRequirements": {
+            "magnetizingInductance": {"nominal": 200e-6},  # 200µH
+            "turnsRatios": [{"nominal": 4}],  # Np:Ns = 4:1
+            "topology": "Flyback Converter"
+        },
+        "operatingPoints": [{
+            "conditions": {"ambientTemperature": 40},
+            "excitationsPerWinding": [
+                {
+                    "name": "Primary",  # Must match coil winding name
+                    "frequency": 100000,
+                    "current": {
+                        "processed": {
+                            "label": "Triangular",
+                            "peakToPeak": 2.5,
+                            "offset": 1.25,
+                            "dutyCycle": 0.4
+                        }
+                    },
+                    "voltage": {
+                        "processed": {
+                            "label": "Rectangular",
+                            "peakToPeak": 48,
+                            "offset": 24,
+                            "dutyCycle": 0.4
+                        }
+                    }
+                },
+                {
+                    "name": "Secondary",  # Must match coil winding name
+                    "frequency": 100000,
+                    "current": {
+                        "processed": {
+                            "label": "Triangular",
+                            "peakToPeak": 10.0,
+                            "offset": 5.0,
+                            "dutyCycle": 0.6
+                        }
+                    },
+                    "voltage": {
+                        "processed": {
+                            "label": "Rectangular",
+                            "peakToPeak": 12,
+                            "offset": 6,
+                            "dutyCycle": 0.6
+                        }
+                    }
+                }
+            ]
+        }]
+    },
+    "magnetic": {
+        "core": {
+            "functionalDescription": {
+                "type": "two-piece set",
+                "material": "N97",
+                "shape": "E 30/15/7",
+                "gapping": [{"type": "subtractive", "length": 0.0005}],
+                "numberStacks": 1
+            }
+        },
+        "coil": {
+            "bobbin": "E 30/15/7",
+            "functionalDescription": [
+                {
+                    "name": "Primary",
+                    "numberTurns": 24,
+                    "numberParallels": 1,
+                    "isolationSide": "primary",
+                    "wire": "Litz 20x0.1 - Grade 1"
+                },
+                {
+                    "name": "Secondary",
+                    "numberTurns": 6,
+                    "numberParallels": 2,
+                    "isolationSide": "secondary",
+                    "wire": "Litz 40x0.1 - Grade 1"
+                }
+            ]
+        }
+    }
+}
+```
+
+### Example 4: Forward Transformer (Three Windings)
+
+Forward transformers typically have Primary, Secondary, and Reset windings.
+
+```python
+forward_mas = {
+    "inputs": {
+        "designRequirements": {
+            "magnetizingInductance": {"nominal": 1e-3},  # 1mH
+            "turnsRatios": [
+                {"nominal": 5},   # Np:Ns = 5:1
+                {"nominal": 1}    # Np:Nr = 1:1 (reset winding)
+            ],
+            "topology": "Forward Converter"
+        },
+        "operatingPoints": [{
+            "conditions": {"ambientTemperature": 40},
+            "excitationsPerWinding": [
+                {
+                    "name": "Primary",
+                    "frequency": 100000,
+                    "current": {"processed": {"label": "Rectangular", "peakToPeak": 4.0, "offset": 0, "dutyCycle": 0.45}},
+                    "voltage": {"processed": {"label": "Rectangular", "peakToPeak": 400, "offset": 0, "dutyCycle": 0.45}}
+                },
+                {
+                    "name": "Secondary",
+                    "frequency": 100000,
+                    "current": {"processed": {"label": "Rectangular", "peakToPeak": 20.0, "offset": 0, "dutyCycle": 0.45}},
+                    "voltage": {"processed": {"label": "Rectangular", "peakToPeak": 80, "offset": 0, "dutyCycle": 0.45}}
+                },
+                {
+                    "name": "Reset",
+                    "frequency": 100000,
+                    "current": {"processed": {"label": "Rectangular", "peakToPeak": 0.5, "offset": 0, "dutyCycle": 0.45}},
+                    "voltage": {"processed": {"label": "Rectangular", "peakToPeak": 400, "offset": 0, "dutyCycle": 0.45}}
+                }
+            ]
+        }]
+    },
+    "magnetic": {
+        "core": {
+            "functionalDescription": {
+                "type": "two-piece set",
+                "material": "N87",
+                "shape": "ETD 49/25/16",
+                "gapping": [{"type": "subtractive", "length": 0.0001}],
+                "numberStacks": 1
+            }
+        },
+        "coil": {
+            "bobbin": "ETD 49/25/16",
+            "functionalDescription": [
+                {"name": "Primary", "numberTurns": 40, "numberParallels": 1, "isolationSide": "primary", "wire": "Litz 100x0.1 - Grade 1"},
+                {"name": "Secondary", "numberTurns": 8, "numberParallels": 3, "isolationSide": "secondary", "wire": "Litz 200x0.1 - Grade 1"},
+                {"name": "Reset", "numberTurns": 40, "numberParallels": 1, "isolationSide": "primary", "wire": "Round 0.3 - Grade 1"}
+            ]
+        }
+    }
+}
+```
+
+### Example 5: Common Mode Choke (CMC)
+
+Common mode chokes have two identical windings with equal turns.
+
+```python
+cmc_mas = {
+    "inputs": {
+        "designRequirements": {
+            "magnetizingInductance": {"nominal": 10e-3},  # 10mH
+            "turnsRatios": [{"nominal": 1}],  # 1:1 ratio
+            "topology": "Common Mode Choke"
+        },
+        "operatingPoints": [{
+            "conditions": {"ambientTemperature": 40},
+            "excitationsPerWinding": [
+                {
+                    "name": "Winding 1",
+                    "frequency": 150000,  # EMI frequency
+                    "current": {"processed": {"label": "Sinusoidal", "peakToPeak": 0.1, "offset": 5.0, "dutyCycle": 0.5}},
+                    "voltage": {"processed": {"label": "Sinusoidal", "peakToPeak": 10, "offset": 0, "dutyCycle": 0.5}}
+                },
+                {
+                    "name": "Winding 2",
+                    "frequency": 150000,
+                    "current": {"processed": {"label": "Sinusoidal", "peakToPeak": 0.1, "offset": 5.0, "dutyCycle": 0.5}},
+                    "voltage": {"processed": {"label": "Sinusoidal", "peakToPeak": 10, "offset": 0, "dutyCycle": 0.5}}
+                }
+            ]
+        }]
+    },
+    "magnetic": {
+        "core": {
+            "functionalDescription": {
+                "type": "two-piece set",
+                "material": "N30",  # High permeability for CMC
+                "shape": "T 25/15/10",
+                "gapping": [],
+                "numberStacks": 1
+            }
+        },
+        "coil": {
+            "bobbin": "T 25/15/10",
+            "functionalDescription": [
+                {"name": "Winding 1", "numberTurns": 15, "numberParallels": 1, "isolationSide": "primary", "wire": "Round 0.8 - Grade 1"},
+                {"name": "Winding 2", "numberTurns": 15, "numberParallels": 1, "isolationSide": "secondary", "wire": "Round 0.8 - Grade 1"}
+            ]
+        }
+    }
+}
+```
+
+---
+
+## Platform Features
+
+### Design Wizards
+Pre-configured wizards for common topologies:
+- **Buck Converter** - DC-DC step-down inductors
+- **Boost Converter** - DC-DC step-up inductors
+- **Flyback Converter** - Isolated DC-DC transformers
+- **Forward Converter** - Isolated DC-DC transformers
+- **Push-Pull Converter** - High-power isolated converters
+- **Isolated Buck-Boost** - Bidirectional isolated converters
+- **Common Mode Choke (CMC)** - EMI filtering
+
+### Magnetic Tool
+Full-featured design environment:
+1. **Design Requirements** - Specify inductance, turns ratios, dimensions, insulation
+2. **Operating Points** - Define voltage/current waveforms, frequency, duty cycle
+3. **Core Adviser** - AI-assisted core selection from database
+4. **Wire Adviser** - Optimal wire selection for minimal losses
+5. **Coil Adviser** - Winding arrangement optimization
+6. **Simulation** - Calculate losses, temperature, inductance, capacitance
+
+### Insulation Coordinator
+Calculate insulation requirements per IEC 61558, IEC 60664, IEC 62368:
+- Creepage distances
+- Clearance distances
+- Solid insulation thickness
+- CTI requirements
+
+---
+
+## Data Format: MAS (Magnetic Agnostic Structure)
+
+OpenMagnetics uses MAS, a JSON schema for describing magnetic components.
+
+### Complete MAS Structure
+```json
+{
+  "inputs": {
+    "designRequirements": {
+      "magnetizingInductance": {"nominal": 100e-6, "minimum": 90e-6, "maximum": 110e-6},
+      "turnsRatios": [{"nominal": 4}],
+      "topology": "Flyback Converter",
+      "maximumDimensions": {"width": 0.03, "height": 0.02, "depth": 0.025},
+      "insulationRequirements": {
+        "altitude": 2000,
+        "pollutionDegree": "P2",
+        "insulationType": "reinforced",
+        "mainSupplyVoltage": {"nominal": 230, "frequency": 50}
+      }
+    },
+    "operatingPoints": [
+      {
+        "name": "Nominal",
+        "conditions": {"ambientTemperature": 40},
+        "excitationsPerWinding": [...]
+      }
+    ]
+  },
+  "magnetic": {
+    "core": {
+      "functionalDescription": {
+        "type": "two-piece set",
+        "material": "N97",
+        "shape": "E 42/21/15",
+        "gapping": [{"type": "subtractive", "length": 0.0005}],
+        "numberStacks": 1
+      }
+    },
+    "coil": {
+      "bobbin": "E 42/21/15",
+      "functionalDescription": [...]
+    }
+  },
+  "outputs": [
+    {
+      "coreLosses": {...},
+      "windingLosses": {...},
+      "magnetizingInductance": {...},
+      "temperature": {...}
+    }
+  ]
+}
+```
+
+### Core Types
+- `"two-piece set"` - Standard E, ETD, PQ, RM cores (two halves)
+- `"toroidal"` - Toroidal cores (single piece)
+- `"closed shape"` - Pot cores, EP cores
+
+### Gapping Types
+- `"subtractive"` - Gap ground into center leg
+- `"additive"` - Spacer added (increases core height)
+- `"residual"` - Inherent gap from manufacturing
+- `"distributed"` - For powder cores (use empty array)
+
+---
+
+## PyMKF API Reference
+
+### Installation
+```bash
+pip install PyMKF
+```
+
+### Complete Function Reference
+
+```python
+import PyMKF
+import json
+
+# ============================================================
+# CORE OPERATIONS
+# ============================================================
+
+# Get all available core material names
+materials = json.loads(PyMKF.get_core_material_names())
+# Returns: ["N87", "N97", "3C90", "High Flux 60", ...]
+
+# Get all available core shape names
+shapes = json.loads(PyMKF.get_core_shape_names(True))  # True includes toroidal
+# Returns: ["E 42/21/15", "ETD 49/25/16", "T 40/24/16", ...]
+
+# Find a specific core by name
+core = json.loads(PyMKF.find_core_by_name("E 42/21/15"))
+
+# Calculate complete core data (geometry, effective parameters)
+core_data = json.loads(PyMKF.calculate_core_data(json.dumps(core), True))
+
+# ============================================================
+# SIMULATION
+# ============================================================
+
+# Full magnetic simulation (returns complete MAS with outputs)
+result = json.loads(PyMKF.simulate(
+    json.dumps(inputs),    # inputs JSON
+    json.dumps(magnetic),  # magnetic JSON
+    json.dumps({})         # models JSON (empty for defaults)
+))
+
+# Calculate core losses only
+core_losses = json.loads(PyMKF.calculate_core_losses(
+    json.dumps(magnetic),
+    json.dumps(operating_point),
+    json.dumps({})
+))
+
+# Calculate winding losses only
+winding_losses = json.loads(PyMKF.calculate_winding_losses(
+    json.dumps(magnetic),
+    json.dumps(operating_point),
+    85.0  # temperature in Celsius
+))
+
+# Calculate inductance from turns and gapping
+inductance = json.loads(PyMKF.calculate_inductance_from_number_turns_and_gapping(
+    json.dumps(core),
+    json.dumps(coil),
+    json.dumps(operating_point),
+    json.dumps({})
+))
+
+# Calculate magnetizing inductance
+mag_inductance = json.loads(PyMKF.calculate_magnetizing_inductance(
+    json.dumps(operating_point),
+    json.dumps(magnetic),
+    json.dumps({})
+))
+
+# ============================================================
+# ADVISERS
+# ============================================================
+
+# Get advised magnetic designs
+# Modes: "AREA_PRODUCT", "EFFICIENCY", "DIMENSIONS", "COST"
+advised = json.loads(PyMKF.calculate_advised_magnetics(
+    json.dumps(inputs),
+    json.dumps({"EFFICIENCY": 1.0, "COST": 0.5, "DIMENSIONS": 0.3}),
+    10,  # max results
+    "AREA_PRODUCT"  # mode
+))
+
+# ============================================================
+# EXPORT
+# ============================================================
+
+# Export as SPICE subcircuit
+subcircuit = PyMKF.export_magnetic_as_subcircuit(
+    json.dumps(magnetic),
+    85.0,        # temperature
+    "LTspice",   # simulator: "LTspice", "ngspice", "SIMBA"
+    json.dumps({})
+)
+
+# Export as simulator symbol
+symbol = PyMKF.export_magnetic_as_symbol(
+    json.dumps(magnetic),
+    "LTspice",
+    json.dumps({})
+)
+
+# ============================================================
+# INSULATION
+# ============================================================
+
+# Calculate insulation coordination (creepage, clearance)
+insulation = json.loads(PyMKF.calculate_insulation_coordination(json.dumps(inputs)))
+```
+
+---
+
+## Waveform Reference
+
+### Waveform Labels
+| Label | Description | Typical Use |
+|-------|-------------|-------------|
+| `Triangular` | Linear rise/fall | Inductor current in buck/boost |
+| `Rectangular` | Square wave | Inductor voltage, transformer current |
+| `Sinusoidal` | Sine wave | AC applications, resonant converters |
+| `Custom` | User-defined points | Complex waveforms |
+
+### Processed Waveform Parameters
+```json
+{
+  "processed": {
+    "label": "Triangular",
+    "peakToPeak": 3.0,      // Peak-to-peak amplitude (A or V)
+    "offset": 10.0,          // DC offset (A or V)
+    "dutyCycle": 0.5,        // Duty cycle (0-1)
+    "phase": 0               // Phase angle in degrees (optional)
+  }
+}
+```
+
+### Custom Waveform (Point-by-Point)
+```json
+{
+  "waveform": {
+    "data": [
+      {"time": 0, "value": 0},
+      {"time": 1e-6, "value": 10},
+      {"time": 5e-6, "value": 10},
+      {"time": 6e-6, "value": 0},
+      {"time": 10e-6, "value": 0}
+    ]
+  }
+}
+```
+
+---
+
+## Core Materials Database
+
+### Ferrites (High Frequency, Low Loss)
+| Manufacturer | Materials | Best For |
+|--------------|-----------|----------|
+| TDK/EPCOS | N87, N97, N49, N95, N27 | 25kHz - 500kHz |
+| Ferroxcube | 3C90, 3C95, 3C97, 3F36 | 25kHz - 500kHz |
+| TDG | PC40, PC95 | 100kHz - 1MHz |
+
+### Powder Cores (High DC Bias)
+| Manufacturer | Materials | Best For |
+|--------------|-----------|----------|
+| Magnetics Inc | MPP, High Flux, XFlux, Kool Mu | DC inductors |
+| Micrometals | -2, -8, -18, -26, -52 | Power inductors |
+
+### Material Selection Guidelines
+- **N87/3C90**: General purpose, good balance
+- **N97/3C97**: Lower losses at high frequency
+- **High Flux**: High saturation for DC bias
+- **MPP**: Lowest losses in powder cores
+- **Kool Mu**: Low cost, good DC bias
+
+---
+
+## Core Shapes Reference
+
+### Format
+Shape names use exact format: `"Type Size"` or `"Type Dimensions"`
+
+### Common Shapes
+| Type | Examples | Notes |
+|------|----------|-------|
+| E cores | `"E 55/28/21"`, `"E 42/21/15"`, `"E 19/8/5"` | Most common |
+| ETD cores | `"ETD 49/25/16"`, `"ETD 34/17/11"` | Optimized E cores |
+| PQ cores | `"PQ 20/16"`, `"PQ 35/35"` | Low profile |
+| RM cores | `"RM 12"`, `"RM 8"` | PCB mounting |
+| Toroids | `"T 40/24/16"`, `"T 20/10/7"` | OD/ID/Height |
+| EQ cores | `"EQ 25/6"`, `"EQ 30/8"` | Extra flat |
+| EP cores | `"EP 13"`, `"EP 17"` | Shielded |
+
+---
+
+## Wire Types Reference
+
+### Format
+`"Type Parameters - Grade N"` where Grade is insulation class (1-3)
+
+### Wire Types
+| Type | Format | Example | Notes |
+|------|--------|---------|-------|
+| Round | `"Round D"` | `"Round 1.0 - Grade 1"` | D = diameter in mm |
+| Litz | `"Litz NxD"` | `"Litz 40x0.1 - Grade 1"` | N strands × D diameter |
+| Rectangular | `"Rectangular WxH"` | `"Rectangular 2.0x0.5 - Grade 1"` | Width × Height |
+| Foil | `"Foil T"` | `"Foil 0.1"` | T = thickness in mm |
+
+### Wire Selection Guidelines
+- **Round**: Simple, low cost, up to ~100kHz
+- **Litz**: High frequency (>100kHz), reduces skin/proximity losses
+- **Rectangular**: High current, good fill factor
+- **Foil**: Very high current, planar magnetics
+
+---
+
+## Units Reference
+
+All values use SI base units:
+
+| Quantity | Unit | Symbol |
+|----------|------|--------|
+| Length | meters | m |
+| Frequency | Hertz | Hz |
+| Inductance | Henry | H |
+| Current | Ampere | A |
+| Voltage | Volt | V |
+| Temperature | Celsius | °C |
+| Power | Watt | W |
+| Resistance | Ohm | Ω |
+| Time | seconds | s |
+| Magnetic flux density | Tesla | T |
+
+**Examples:**
+- 4.7µH = `4.7e-6` Henry
+- 100kHz = `100000` Hz
+- 1mm gap = `0.001` meters
+
+---
+
+## Simulation Outputs
+
+### Output Structure
+```json
+{
+  "outputs": [{
+    "coreLosses": {
+      "magneticFluxDensityCoreLosses": {
+        "corelosses": 0.5,  // Watts
+        "temperature": 85   // Celsius
+      }
+    },
+    "windingLosses": {
+      "windingLossesPerWinding": [
+        {"name": "Primary", "losses": 0.3},
+        {"name": "Secondary", "losses": 0.2}
+      ]
+    },
+    "magnetizingInductance": {
+      "nominal": 100e-6
+    },
+    "temperature": {
+      "core": 85,
+      "winding": 90
+    }
+  }]
+}
+```
+
+---
+
+## Export Formats
+
+### Circuit Simulators
+| Simulator | Subcircuit | Symbol |
+|-----------|------------|--------|
+| LTspice | .lib file | .asy file |
+| ngspice | .lib file | - |
+| SIMBA | Component model | - |
+
+### Data Export
+- **MAS JSON** - Complete design data
+- **PDF Report** - Design summary document
+- **3D Model** - Component visualization
+
+---
+
+## Common Errors and Solutions
+
+### Error: "Winding name not found in excitations"
+**Cause:** Winding names in `coil.functionalDescription` don't match `excitationsPerWinding`
+**Solution:** Ensure `name` fields are identical
+
+### Error: "Invalid core shape"
+**Cause:** Shape name format incorrect
+**Solution:** Use exact format like `"E 42/21/15"` with spaces
+
+### Error: "Invalid material"
+**Cause:** Material name not in database
+**Solution:** Use `PyMKF.get_core_material_names()` to get valid names
+
+### Error: "Inductance calculation failed"
+**Cause:** Gapping too small or too large
+**Solution:** Adjust gap length, typically 0.1mm - 2mm
+
+---
+
+## Related Projects
+
+| Project | Description | URL |
+|---------|-------------|-----|
+| **MAS** | JSON Schema for magnetic components | https://github.com/OpenMagnetics/MAS |
+| **MKF** | C++ simulation engine | https://github.com/OpenMagnetics/MKF |
+| **PyMKF** | Python bindings for MKF | https://pypi.org/project/PyMKF/ |
+| **WebLibMKF** | WebAssembly build of MKF | https://github.com/OpenMagnetics/WebLibMKF |
+
+---
+
+## Technology Stack
+
+- **Frontend:** Vue 3 + Vite
+- **Simulation:** MKF compiled to WebAssembly
+- **State Management:** Pinia
+- **UI Framework:** Bootstrap 5
+- **Charts:** Chart.js
+
+All computation runs client-side in the browser. No data is sent to servers.
+
+---
+
+## Resources
+
+- **Web Platform:** https://openmagnetics.com
+- **GitHub Organization:** https://github.com/OpenMagnetics
+- **MAS Schema Repository:** https://github.com/OpenMagnetics/MAS
+- **MAS Schema Documentation:** https://github.com/OpenMagnetics/MAS/blob/main/docs/schema.md
+- **PyMKF on PyPI:** https://pypi.org/project/PyMKF/
+
+---
+
+*This is the extended documentation for AI agents requiring longer context. For a shorter version, see https://openmagnetics.com/llms.txt*

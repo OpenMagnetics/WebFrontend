@@ -5,3 +5,8 @@ Disallow: /operation_point/*
 Disallow: /simulation/*
 
 Sitemap: https://openmagnetics.com/sitemap.xml
+
+# LLM/AI Agent Information
+# For AI agents: see llms.txt for structured documentation
+LLMs-txt: https://openmagnetics.com/llms.txt
+LLMs-txt-full: https://openmagnetics.com/llms-full.txt
