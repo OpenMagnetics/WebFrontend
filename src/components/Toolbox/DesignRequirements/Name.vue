@@ -5,6 +5,7 @@ import * as Utils from '/WebSharedComponents/assets/js/utils.js'
 
 <script>
 export default {
+    emits: ["hasError"],
     props: {
         name:{
             type: String,

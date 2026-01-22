@@ -118,8 +118,6 @@ export default {
             setTimeout(() => {
                 this.$mkf.ready.then(_ => {
                     if (this.masStore.mas.inputs.operatingPoints.length > 0) {
-                        console.time('Execution Time');
-
                         const settings = JSON.parse(this.$mkf.get_settings());
                         settings["coreIncludeDistributedGaps"] = this.$settingsStore.adviserSettings.allowDistributedGaps;
                         settings["coreIncludeStacks"] = this.$settingsStore.adviserSettings.allowStacks;
@@ -127,7 +125,6 @@ export default {
                         settings["useOnlyCoresInStock"] = this.$settingsStore.adviserSettings.useOnlyCoresInStock;
                         this.$mkf.set_settings(JSON.stringify(settings));
 
-                        console.log(this.$settingsStore.magneticAdviserSettings.weights)
                         const result = this.$mkf.calculate_advised_magnetics(JSON.stringify(this.masStore.mas.inputs), JSON.stringify(this.$settingsStore.magneticAdviserSettings.weights), this.$settingsStore.magneticAdviserSettings.maximumNumberResults, this.$settingsStore.adviserSettings.coreAdviseMode);
 
                         if (result.startsWith("Exception")) {
@@ -136,8 +133,6 @@ export default {
                         }
                         
                         const aux = JSON.parse(result);
-
-                        console.warn(aux.data[0].mas.magnetic.coil.functionalDescription);
 
                         var data = aux["data"];
 
@@ -162,7 +157,6 @@ export default {
                         data.forEach((datum) => {
                             this.adviseCacheStore.currentMasAdvises.push(datum);
                         })
-                        console.timeEnd('Execution Time');
                         this.$userStore.magneticAdviserSelectedAdvise = 0;
                         if (this.adviseCacheStore.currentMasAdvises.length > 0) {
                             this.masStore.mas = this.adviseCacheStore.currentMasAdvises[this.$userStore.magneticAdviserSelectedAdvise].mas;

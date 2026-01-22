@@ -25,6 +25,7 @@ export default {
 </script>
 
 <template>
+    <Header/>
     <div class="container-fluid wrap p-0">
         <GenericTool
             class="container content"
@@ -33,6 +34,7 @@ export default {
             :dataTestLabel="'InsulationAdviser'"
         />
     </div>
+    <Footer/>
 </template>
 
 

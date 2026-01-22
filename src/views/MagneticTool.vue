@@ -114,8 +114,6 @@ export default {
 
         const currentStoryline = agnosticStoryline;
 
-        console.log("this.$stateStore.isAnyDesignLoaded()")
-        console.log(this.$stateStore.isAnyDesignLoaded())
         if (!this.$stateStore.isAnyDesignLoaded()) {
             this.$stateStore.designLoaded();
             const masStore = useMasStore();

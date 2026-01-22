@@ -115,11 +115,6 @@ export default {
             localData,
         }
     },
-    computed: {    },
-    watch: { 
-    },
-    mounted () {
-    },
     methods: {
         checkErrors() {
             var hasError = false;

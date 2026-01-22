@@ -150,9 +150,6 @@ export default {
                 })
                 this.coreMaterialNames = this.coreMaterialNames.sort();
 
-                console.log("this.coreMaterialNames")
-                console.log(this.coreMaterialNames)
-
 
                 if (!this.coreMaterialNames.includes(this.crossReferencerStore.coreReferenceInputs.core.functionalDescription.material)) {
                     this.crossReferencerStore.coreReferenceInputs.core.functionalDescription.material = this.coreMaterialNames[1];

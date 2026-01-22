@@ -55,7 +55,6 @@ export default {
             }
             else {
                 const url = import.meta.env.VITE_API_ENDPOINT + '/plot_core'
-                console.warn(this.mas)
 
                 this.$axios.post(url, {magnetic: this.mas.magnetic, operatingPoint: this.mas.inputs.operatingPoints[0]})
                 .then(response => {

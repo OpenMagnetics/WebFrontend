@@ -180,7 +180,6 @@ export default {
                     this.masStore.mas.inputs.designRequirements.insulation = defaultDesignRequirements.insulation;
                     this.masStore.mas.inputs.designRequirements.insulation.insulationType = this.localData.insulationType;
                 }
-                console.log(deepCopy(this.masStore.mas.inputs))
 
                 this.masStore.mas.magnetic.coil.functionalDescription = []
                 this.masStore.mas.inputs.operatingPoints[0].excitationsPerWinding.forEach((elem, index) => {
@@ -215,7 +214,8 @@ export default {
                 this.$stateStore.operatingPoints.modePerPoint.push(this.$stateStore.OperatingPointsMode.Manual);
             })
             if (this.errorMessage == "") {
-                setTimeout(() => {this.$router.push(`${import.meta.env.BASE_URL}magnetic_tool`);}, 100);
+                await this.$nextTick();
+                await this.$router.push(`${import.meta.env.BASE_URL}magnetic_tool`);
             }
             else {
                 setTimeout(() => {this.errorMessage = ""}, 5000);
@@ -233,7 +233,8 @@ export default {
             this.$stateStore.setCurrentToolSubsectionStatus("operatingPoints", true);
             this.$stateStore.operatingPoints.modePerPoint = [this.$stateStore.OperatingPointsMode.Manual];
             if (this.errorMessage == "") {
-                setTimeout(() => {this.$router.push(`${import.meta.env.BASE_URL}magnetic_tool`);}, 100);
+                await this.$nextTick();
+                await this.$router.push(`${import.meta.env.BASE_URL}magnetic_tool`);
             }
             else {
                 setTimeout(() => {this.errorMessage = ""}, 5000);

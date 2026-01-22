@@ -7,6 +7,7 @@ import { toTitleCase, removeTrailingZeroes, formatPower, formatPowerDensity, for
 var options = {};
 var chart = null;
 export default {
+    emits: ["adviseReady"],
     props: {
         adviseIndex: {
             type: Number,

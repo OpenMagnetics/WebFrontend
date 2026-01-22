@@ -11,12 +11,6 @@ export default {
             currentNotification,
         }
     },
-    methods: {
-    },
-    computed: {
-    },
-    mounted() {
-    },
     created() {
         var host = window.location.hostname;
         if(host != "localhost"){

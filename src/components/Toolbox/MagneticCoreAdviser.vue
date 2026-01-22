@@ -106,8 +106,6 @@ export default {
 
             this.$mkf.ready.then(_ => {
                 if (this.masStore.mas.inputs.operatingPoints.length > 0) {
-                    console.time('Execution Time');
-
                     const settings = JSON.parse(this.$mkf.get_settings());
                     settings["coreIncludeDistributedGaps"] = this.$settingsStore.adviserSettings.allowDistributedGaps;
                     settings["coreIncludeStacks"] = this.$settingsStore.adviserSettings.allowStacks;
@@ -150,7 +148,6 @@ export default {
                     data.forEach((datum) => {
                         this.adviseCacheStore.currentCoreAdvises.push(datum);
                     })
-                    console.timeEnd('Execution Time');
                     this.$userStore.coreAdviserSelectedAdvise = 0;
                     if (this.adviseCacheStore.currentCoreAdvises.length > 0) {
                         this.masStore.mas = this.adviseCacheStore.currentCoreAdvises[this.$userStore.coreAdviserSelectedAdvise].mas;

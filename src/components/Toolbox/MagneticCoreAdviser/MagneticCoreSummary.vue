@@ -117,7 +117,6 @@ export default {
                 mas.magnetic.core.temp["100"].magneticFluxDensitySaturation = temperatureDependantData100["magneticFluxDensitySaturation"];
                 mas.magnetic.core.temp["100"].reluctance = temperatureDependantData100["reluctance"];
                 mas.magnetic.core.temp["100"].resistivity = temperatureDependantData100["resistivity"];
-                console.log(mas.magnetic.core)
                 this.localTexts = processCoreTexts(mas);
             }).catch(error => { 
                 console.error("Error reading material data")

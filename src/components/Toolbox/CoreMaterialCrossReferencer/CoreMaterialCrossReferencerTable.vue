@@ -1,8 +1,7 @@
 <script setup >
-import { toTitleCase, formatUnit, formatPowerDensity, formatAdimensional, formatMagneticFluxDensity, formatMagneticFieldStrength, formatResistivity, formatTemperature, removeTrailingZeroes } from '/WebSharedComponents/assets/js/utils.js'
+import { toTitleCase, formatUnit, formatPowerDensity, formatAdimensional, formatMagneticFluxDensity, formatMagneticFieldStrength, formatResistivity, formatTemperature, removeTrailingZeroes, deepCopy } from '/WebSharedComponents/assets/js/utils.js'
 import '../../../assets/css/vue-good-table-next.css'
 import { VueGoodTable } from 'vue-good-table-next';
-import { deepCopy} from '/WebSharedComponents/assets/js/utils.js'
 
 </script>
 
@@ -12,7 +11,7 @@ export default {
     emits: [
         'click',
     ],
-    components: {
+    components: {e
         VueGoodTable,
     },
     props: {
@@ -131,19 +130,22 @@ export default {
     },
     created() {
         this.scaleColumns()
+        this.resizeHandler = () => {
+            if (this.$refs.CoreMaterialCrossReferencerTable.$el != null){
+                this.currentTableWidth = this.$refs.CoreMaterialCrossReferencerTable.$el.clientWidth;
+            }
+            this.scaleColumns();
+        };
     },
     mounted() {
         if (this.$refs.CoreMaterialCrossReferencerTable.$el != null){
             this.currentTableWidth = this.$refs.CoreMaterialCrossReferencerTable.$el.clientWidth;
         }
         this.scaleColumns();
-
-        window.addEventListener('resize', () => {
-            if (this.$refs.CoreMaterialCrossReferencerTable.$el != null){
-                this.currentTableWidth = this.$refs.CoreMaterialCrossReferencerTable.$el.clientWidth;
-            }
-            this.scaleColumns();
-        })
+        window.addEventListener('resize', this.resizeHandler);
+    },
+    beforeUnmount() {
+        window.removeEventListener('resize', this.resizeHandler);
     }
 }
 </script>

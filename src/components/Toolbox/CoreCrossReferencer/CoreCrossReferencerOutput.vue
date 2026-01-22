@@ -165,7 +165,7 @@ export default {
             });
         },
         onExport(filename) {
-            console.log("Exported" + filename);
+            // Export completed
         },
     
     }

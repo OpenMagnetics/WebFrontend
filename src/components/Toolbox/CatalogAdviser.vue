@@ -79,7 +79,6 @@ export default {
     created () {
     },
     mounted () {
-        console.log(this.catalogStore.advises)
         this.$emit("canContinue", true);
     },
     methods: {
@@ -103,7 +102,6 @@ export default {
             this.catalogStore.advises = [];
             this.loading = true;
             setTimeout(() => {
-                console.time('Execution Time');
                 const url = import.meta.env.VITE_API_ENDPOINT + '/calculate_advised_magnetics';
 
                 const filterFlow = [];
@@ -124,18 +122,15 @@ export default {
                     maximum_number_results:  9,
                     filter_flow: filterFlow,
                 }
-                console.log(filterFlow)
 
                 this.$axios.post(url, data)
                 .then(response => {
-                    console.log(response.data)
                     this.catalogStore.advises = [];
                     this.loading = false;
 
                     response.data.data.forEach((datum) => {
                         this.catalogStore.advises.push(datum);
                     })
-                    console.timeEnd('Execution Time');
                 })
                 .catch(error => {
                     this.loading = false;

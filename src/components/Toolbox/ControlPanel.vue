@@ -121,7 +121,6 @@ export default {
             setTimeout(() => {
                 var prunedMas = deepCopy(this.masStore.mas)
                 pruneNulls(prunedMas)
-                console.log(prunedMas)
                 download(JSON.stringify(prunedMas, null, 4), "custom_magnetic.json", "text/plain");
                 setTimeout(() => this.exportingMAS = false, 2000);
             }, 100);
@@ -167,10 +166,6 @@ export default {
                     var blob = new Blob([subcircuit], {
                         type: 'text/csv; charset=utf-8'
                     });
-                console.log("subcircuit")
-                console.log(subcircuit)
-                console.log("blob")
-                console.log(blob)
                     download(blob, filename + "_with_OM_library.jsimba", "text/plain;charset=UTF-8");
 
 
@@ -256,7 +251,7 @@ export default {
                 });
             }, 100);
         },
-        reset(isPlanar) {
+        async reset(isPlanar) {
             this.masStore.resetMas('power');
             if (isPlanar) {
                 this.masStore.mas.inputs.designRequirements.wiringTechnology = "Printed";
@@ -264,7 +259,8 @@ export default {
             else {
                 this.masStore.mas.inputs.designRequirements.wiringTechnology = "Wound";
             }
-            setTimeout(() => {this.$router.push(`${import.meta.env.BASE_URL}engine_loader`);}, 100);
+            await this.$nextTick();
+            await this.$router.push(`${import.meta.env.BASE_URL}engine_loader`);
         },
         undo() {
             const newMas = this.historyStore.back();

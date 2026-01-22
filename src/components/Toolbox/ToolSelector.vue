@@ -1,5 +1,3 @@
-<script setup>
-</script>
 <script>
 export default {
     props: {
@@ -11,13 +9,6 @@ export default {
             type: Boolean,
             default: false,
         },
-    },
-    data() {
-
-        return {
-        }
-    },
-    created() {
     },
 }
 </script>

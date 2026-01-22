@@ -1,6 +1,3 @@
-<script setup>
-</script>\\wsl.localhost\Ubuntu-22.04\home\alf\OpenMagnetics\WebFrontend\src\views\CrossReferencerSelections\CrossReferencerSelection.vue
-
 <script>
 export default {
     props: {

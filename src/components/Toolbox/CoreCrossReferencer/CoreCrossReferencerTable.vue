@@ -128,19 +128,22 @@ export default {
     },
     created() {
         this.scaleColumns()
+        this.resizeHandler = () => {
+            if (this.$refs.CoreCrossReferencerTable.$el != null){
+                this.currentTableWidth = this.$refs.CoreCrossReferencerTable.$el.clientWidth;
+            }
+            this.scaleColumns();
+        };
     },
     mounted() {
         if (this.$refs.CoreCrossReferencerTable.$el != null){
             this.currentTableWidth = this.$refs.CoreCrossReferencerTable.$el.clientWidth;
         }
         this.scaleColumns();
-
-        window.addEventListener('resize', () => {
-            if (this.$refs.CoreCrossReferencerTable.$el != null){
-                this.currentTableWidth = this.$refs.CoreCrossReferencerTable.$el.clientWidth;
-            }
-            this.scaleColumns();
-        })
+        window.addEventListener('resize', this.resizeHandler);
+    },
+    beforeUnmount() {
+        window.removeEventListener('resize', this.resizeHandler);
     }
 }
 </script>

@@ -58,8 +58,8 @@ export default {
     methods: {
         onAdviserSettingsUpdated() {
         },
-        onCatalogSettingsUpdated() {
-            setTimeout(() => {this.$router.go();}, 100);
+        async onCatalogSettingsUpdated() {
+            await this.$router.go();
         },
         onOperatingPointSettingsUpdated() {
         },

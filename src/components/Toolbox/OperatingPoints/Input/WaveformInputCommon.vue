@@ -7,6 +7,7 @@ import { removeTrailingZeroes, combinedStyle } from '/WebSharedComponents/assets
 
 <script>
 export default {
+    emits: ["updatedSwitchingFrequency", "updatedDutyCycle"],
     props: {
         modelValue:{
             type: Object,

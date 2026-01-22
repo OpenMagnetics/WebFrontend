@@ -7,21 +7,16 @@ import Footer from '../components/Footer.vue'
 <script>
 
 export default {
-    components: {
-    },
-    data() {
-        return {
-        }
-    },
     methods: {
-        newMagneticToolDesign() {
+        async newMagneticToolDesign() {
             this.$stateStore.resetMagneticTool();
             this.$stateStore.selectWorkflow("design");
             this.$stateStore.selectTool("agnosticTool");
+            await this.$nextTick();
             if (this.$route.name != 'MagneticTool')
-                setTimeout(() => {this.$router.push(`${import.meta.env.BASE_URL}magnetic_tool`);}, 100);
+                await this.$router.push(`${import.meta.env.BASE_URL}magnetic_tool`);
             else
-                setTimeout(() => {this.$router.go();}, 100);
+                await this.$router.go();
         },
         newMagneticToolDesignNewTab() {
             this.$stateStore.resetMagneticTool();
@@ -30,15 +25,15 @@ export default {
             const routeData = this.$router.resolve({name: 'MagneticTool'});
             window.open(routeData.href, '_blank');
         },
-        onInsulationCoordinator() {
+        async onInsulationCoordinator() {
             this.$stateStore.resetMagneticTool();
             this.$stateStore.selectWorkflow("insulationCoordinator");
             this.$stateStore.selectTool("insulationAdviser");
-
+            await this.$nextTick();
             if (this.$route.name != 'InsulationAdviser')
-                setTimeout(() => {this.$router.push(`${import.meta.env.BASE_URL}insulation_adviser`);}, 100);
+                await this.$router.push(`${import.meta.env.BASE_URL}insulation_adviser`);
             else
-                setTimeout(() => {this.$router.go();}, 100);
+                await this.$router.go();
         },
         onInsulationCoordinatorNewTab() {
             this.$stateStore.resetMagneticTool();
@@ -67,8 +62,8 @@ export default {
                     <div class="row my-2">
                         <div class="offset-lg-2 col-8 d-flex justify-content-evenly">
                             <a href="https://github.com/OpenMagnetics/" target="_blank" rel="noopener noreferrer" class="btn text-dark bg-success border-dark mx-2 fs-5 ">Give us a star on Github! <i class="fa-brands fa-github"></i> </a>
-                            <a href="https://discord.gg/PFpMjYNb5c" target="_blank" class="btn text-dark bg-primary border-dark mx-2 fs-5 ">Join us on Discord!<i class="ms-2 fa-brands fa-discord"></i> </a>
-                            <a href="https://www.linkedin.com/company/openmagnetics" target="_blank" class="btn text-dark bg-info border-dark mx-2 fs-5 ">Follow us on LinkedIn! <i class="fa-brands fa-linkedin"></i> </a>
+                            <a href="https://discord.gg/PFpMjYNb5c" target="_blank" rel="noopener noreferrer" class="btn text-dark bg-primary border-dark mx-2 fs-5 ">Join us on Discord!<i class="ms-2 fa-brands fa-discord"></i> </a>
+                            <a href="https://www.linkedin.com/company/openmagnetics" target="_blank" rel="noopener noreferrer" class="btn text-dark bg-info border-dark mx-2 fs-5 ">Follow us on LinkedIn! <i class="fa-brands fa-linkedin"></i> </a>
                         </div>
                     </div>
                 </div>

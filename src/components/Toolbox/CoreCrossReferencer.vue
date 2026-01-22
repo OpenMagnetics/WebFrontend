@@ -110,8 +110,6 @@ export default {
     methods: {
         calculateCrossReferencedCoresValues() {
             crossReferencers.ready.then(_ => {
-                console.time('Execution Time');
-
                 const coreAux = deepCopy(this.crossReferencerStore.coreReferenceInputs.core);
                 coreAux['geometricalDescription'] = null;
                 coreAux['processedDescription'] = null;
@@ -132,8 +130,6 @@ export default {
                                                                                         this.crossReferencerStore.coreReferenceInputs.enabledCoreTypes.includes("Only Cores In Stock"),
                                                                                         this.keepMaterialConstant);
 
-                console.log("auxString")
-                console.log(auxString)
                 const aux = JSON.parse(auxString);
                 const auxCrossReferencedCoresValues = [];
                 aux.cores.forEach((elem, index) => {
@@ -266,11 +262,11 @@ export default {
 
             return "";
         },
-        onCoreMaterialCrossReferencer() {
-            setTimeout(() => {this.$router.push('/core_material_cross_referencer' + this.suffix);}, 100);
+        async onCoreMaterialCrossReferencer() {
+            await this.$router.push('/core_material_cross_referencer' + this.suffix);
         },
-        onCoreShapeCrossReferencer() {
-            setTimeout(() => {this.$router.push('/core_shape_cross_referencer' + this.suffix);}, 100);
+        async onCoreShapeCrossReferencer() {
+            await this.$router.push('/core_shape_cross_referencer' + this.suffix);
         },
     }
 }

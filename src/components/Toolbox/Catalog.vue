@@ -67,14 +67,14 @@ export default {
         }
     },
     methods: {
-        viewMagnetic(row) {
+        async viewMagnetic(row) {
             this.masStore.mas.magnetic = row.magnetic;
             this.$stateStore.selectWorkflow("magneticViewer");
             this.$stateStore.selectTool("magneticViewer");
             this.$stateStore.setCurrentToolSubsection("magneticBuilder");
             this.$stateStore.setCurrentToolSubsectionStatus("operatingPoints", true);
-
-            setTimeout(() => {this.$router.push('/magnetic_viewer');}, 50);
+            await this.$nextTick();
+            await this.$router.push('/magnetic_viewer');
         }
     }
 }

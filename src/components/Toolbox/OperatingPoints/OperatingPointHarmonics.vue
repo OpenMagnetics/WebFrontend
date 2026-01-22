@@ -120,7 +120,6 @@ export default {
             return true;
         },
         processHarmonics(signalDescriptor) {
-            console.log("processHarmonics")
             this.masStore.mas.inputs.operatingPoints.forEach((operatingPoint, operatingPointIndex) => {
                 this.masStore.mas.inputs.operatingPoints[operatingPointIndex] = this.checkAndFixOperatingPoint(operatingPoint);
             })
@@ -151,9 +150,6 @@ export default {
 
                     parsedResult.harmonics = filteredHarmonics;
                     this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex][signalDescriptor] = parsedResult;
-                    console.warn(this.masStore.mas.inputs.operatingPoints)
-                    console.log(deepCopy(this.currentWindingIndex))
-                    console.log(deepCopy(filteredHarmonics.frequencies.length))
                 }
 
                 // this.$emit('updatedSignal');

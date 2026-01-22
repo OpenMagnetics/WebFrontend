@@ -1,11 +1,6 @@
-<script setup>
-</script>
-
 <script>
 export default {
-    emits: [],
-    props: {
-    },
+    emits: ["delete_operation_point"],
     data() {
         var requestingDelete = false
         return {
@@ -33,9 +28,7 @@ export default {
             // TODO add rest of cases 
         },
     },
-    computed: {
 
-    },
 }
 
 </script>

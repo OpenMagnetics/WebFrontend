@@ -215,11 +215,11 @@ export default {
 
             return "";
         },
-        onCoreCrossReferencer() {
-            setTimeout(() => {this.$router.push('/core_cross_referencer' + this.suffix);}, 100);
+        async onCoreCrossReferencer() {
+            await this.$router.push('/core_cross_referencer' + this.suffix);
         },
-        onCoreShapeCrossReferencer() {
-            setTimeout(() => {this.$router.push('/core_shape_cross_referencer' + this.suffix);}, 100);
+        async onCoreShapeCrossReferencer() {
+            await this.$router.push('/core_shape_cross_referencer' + this.suffix);
         },
     }
 }

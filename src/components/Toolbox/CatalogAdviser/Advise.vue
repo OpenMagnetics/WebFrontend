@@ -83,11 +83,9 @@ export default {
             //     this.localTexts.losses = `Losses:\n${removeTrailingZeroes(aux.label, 2)} ${aux.unit}`
             // }
             {
-                console.log(this.masData.magnetic)
                 this.localTexts.core = `Core: ${this.masData.magnetic.core.functionalDescription.shape.name} - ${this.masData.magnetic.core.functionalDescription.material.name}`
             }
             {
-                console.log(this.masData.magnetic)
                 this.localTexts.turnsRatios = "Turns ratios: ";
                 this.masData.magnetic.coil.functionalDescription.forEach((elem, index) => {
                     if (index > 0) {

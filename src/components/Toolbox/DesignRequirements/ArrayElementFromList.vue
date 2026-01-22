@@ -77,9 +77,6 @@ export default {
             errorMessages,
         }
     },
-    computed: {    },
-    watch: { 
-    },
     mounted () {
         if (this.masStore.mas.inputs.designRequirements[this.name] != this.fixedNumberElements &&
             this.maximumNumberElements == null &&

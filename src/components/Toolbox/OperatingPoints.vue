@@ -167,8 +167,6 @@ export default {
                 this.blockingRebounds = true;
 
                 if (this.$stateStore.hasCurrentApplicationMirroredWindings()) {
-                    console.log(this.currentWindingIndex)
-                    console.log(this.currentOperatingPointIndex)    
                     this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding.forEach((excitation, index) => {
                         if (index != this.currentWindingIndex) {
                             this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[index] = this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex];
@@ -186,7 +184,6 @@ export default {
                     })
                 }
                 this.$stateStore.updatedSignals();
-                console.log("updatedSignals!!!")
                 setTimeout(() => this.blockingRebounds = false, 10);
             }
         },
@@ -218,9 +215,7 @@ export default {
         convertFromWaveformToProcessed(operatingPointIndex, windingIndex, signalDescriptor) {
             var waveform = this.masStore.mas.inputs.operatingPoints[operatingPointIndex].excitationsPerWinding[windingIndex][signalDescriptor].waveform;
 
-                        console.time('Execution Time');
             this.$mkf.ready.then(_ => {
-                        console.timeEnd('Execution Time');
                 var processed = JSON.parse(this.$mkf.calculate_basic_processed_data(JSON.stringify(waveform)));
 
                 this.masStore.mas.inputs.operatingPoints[operatingPointIndex].excitationsPerWinding[windingIndex][signalDescriptor].processed = processed;

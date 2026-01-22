@@ -81,7 +81,6 @@ export default {
                 const diff = newNumber - this.localData.extraHarmonics.length;
                 for (let i = 0; i < diff; i++) {
                     var newHarmonic;
-                    console.log(deepCopy(defaultCmcWizardInputs))
                     if (this.localData.extraHarmonics.length == 0) {
                         newHarmonic = {
                             frequency: defaultCmcWizardInputs.extraHarmonics[0].frequency,
@@ -299,7 +298,7 @@ export default {
             this.$stateStore.operatingPoints.modePerPoint[0] = this.$stateStore.OperatingPointsMode.HarmonicsList;
 
         },
-        processAndReview() {
+        async processAndReview() {
             this.process();
             this.$stateStore.resetMagneticTool();
             this.$stateStore.designLoaded();
@@ -308,22 +307,21 @@ export default {
             this.$stateStore.selectTool("agnosticTool");
             this.$stateStore.setCurrentToolSubsectionStatus("designRequirements", true);
             this.$stateStore.setCurrentToolSubsectionStatus("operatingPoints", true);
-            setTimeout(() => {this.$router.push(`${import.meta.env.BASE_URL}magnetic_tool`);}, 100);
+            await this.$nextTick();
+            await this.$router.push(`${import.meta.env.BASE_URL}magnetic_tool`);
         },
-        processAndAdvise() {
+        async processAndAdvise() {
             this.process();
             this.$stateStore.resetMagneticTool();
             this.$stateStore.designLoaded();
-            console.log(this.$stateStore.SupportedApplications.CommonModeChoke)
-            console.log(this.$stateStore.SupportedApplications.CommonModeChoke)
-            console.log(this.$stateStore.SupportedApplications.CommonModeChoke)
             this.$stateStore.selectApplication(this.$stateStore.SupportedApplications.CommonModeChoke);
             this.$stateStore.selectWorkflow("design");
             this.$stateStore.selectTool("agnosticTool");
             this.$stateStore.setCurrentToolSubsection("toolSelector");
             this.$stateStore.setCurrentToolSubsectionStatus("designRequirements", true);
             this.$stateStore.setCurrentToolSubsectionStatus("operatingPoints", true);
-            setTimeout(() => {this.$router.push(`${import.meta.env.BASE_URL}magnetic_tool`);}, 100);
+            await this.$nextTick();
+            await this.$router.push(`${import.meta.env.BASE_URL}magnetic_tool`);
         },
     }
 }

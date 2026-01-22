@@ -99,7 +99,6 @@ export default {
         },
         processCoreShapeTexts(data) {
             const coreShapeTable = {}
-            console.log(data.magnetic.core.functionalDescription)
             {
                 coreShapeTable['name'] = {}
                 coreShapeTable['name'].text = 'Name';
@@ -388,12 +387,10 @@ export default {
             this.$mkf.ready.then(_ => {
                 const materialName = this.mas.magnetic.core.functionalDescription.material;
                 if (typeof materialName === 'string' || materialName instanceof String) {
-                    console.log(materialName)
                     var materialData = JSON.parse(this.$mkf.get_material_data(materialName));
                     this.mas.magnetic.core.functionalDescription.material = materialData;
                 }
                 var temperatureDependantData25 = JSON.parse(this.$mkf.get_core_temperature_dependant_parameters(JSON.stringify(this.mas.magnetic.core), 25));
-                console.log(temperatureDependantData25)
                 var temperatureDependantData100 = JSON.parse(this.$mkf.get_core_temperature_dependant_parameters(JSON.stringify(this.mas.magnetic.core), 100));
                 const mas = deepCopy(this.mas);
                 mas.magnetic.core.temp = {}
@@ -422,18 +419,7 @@ export default {
             });
         },
         insertMas() {
-            const url = import.meta.env.VITE_API_ENDPOINT + '/insert_mas'
-
-            console.log("Inserting Mas")
-            // this.$axios.post(url, this.mas)
-            // .then(response => {
-            //     console.log("response.data")
-            //     console.log(response.data)
-            // })
-            // .catch(error => {
-            //     console.error("Error inserting")
-            //     console.error(error)
-            // });
+            // Placeholder for future implementation
         },
     }
 }

@@ -37,79 +37,82 @@ export default {
         onShowModal() {
             this.showModal = true
         },
-        onNewPowerMagneticDesign() {
+        async onNewPowerMagneticDesign() {
             this.$stateStore.resetMagneticTool();
             this.$stateStore.selectWorkflow("design");
             this.$stateStore.selectTool("agnosticTool");
             this.$stateStore.selectApplication(this.$stateStore.SupportedApplications.Power);
 
+            await this.$nextTick();
             if (this.$route.name != 'MagneticTool')
-                setTimeout(() => {this.$router.push(`${import.meta.env.BASE_URL}magnetic_tool`);}, 100);
+                await this.$router.push(`${import.meta.env.BASE_URL}magnetic_tool`);
             else
-                setTimeout(() => {this.$router.push(`${import.meta.env.BASE_URL}engine_loader`);}, 100);
+                await this.$router.push(`${import.meta.env.BASE_URL}engine_loader`);
         },
-        onNewCommonModeChokeDesign() {
+        async onNewCommonModeChokeDesign() {
             this.$stateStore.resetMagneticTool();
             this.$stateStore.selectWorkflow("design");
             this.$stateStore.selectApplication(this.$stateStore.SupportedApplications.CommonModeChoke);
             this.$stateStore.selectTool("agnosticTool");
 
+            await this.$nextTick();
             if (this.$route.name != 'MagneticTool')
-                setTimeout(() => {this.$router.push(`${import.meta.env.BASE_URL}magnetic_tool`);}, 100);
+                await this.$router.push(`${import.meta.env.BASE_URL}magnetic_tool`);
             else
-                setTimeout(() => {this.$router.push(`${import.meta.env.BASE_URL}engine_loader`);}, 100);
+                await this.$router.push(`${import.meta.env.BASE_URL}engine_loader`);
         },
-        onHome() {
-            setTimeout(() => {this.$router.push(`${import.meta.env.BASE_URL}`);}, 100);
+        async onHome() {
+            await this.$router.push(`${import.meta.env.BASE_URL}`);
         },
-        onWizards(wizard) {
+        async onWizards(wizard) {
             this.$stateStore.selectWizard(wizard);
+            await this.$nextTick();
             if (this.$route.name != 'Wizards')
-                setTimeout(() => {this.$router.push(`${import.meta.env.BASE_URL}wizards`);}, 100);
+                await this.$router.push(`${import.meta.env.BASE_URL}wizards`);
             else
-                setTimeout(() => {this.$router.push(`${import.meta.env.BASE_URL}engine_loader`);}, 100);
+                await this.$router.push(`${import.meta.env.BASE_URL}engine_loader`);
         },
-        onInsulationCoordinator() {
+        async onInsulationCoordinator() {
             this.$stateStore.resetMagneticTool();
             this.$stateStore.selectWorkflow("insulationCoordinator");
             this.$stateStore.selectTool("insulationAdviser");
 
+            await this.$nextTick();
             if (this.$route.name != 'InsulationAdviser')
-                setTimeout(() => {this.$router.push(`${import.meta.env.BASE_URL}insulation_adviser`);}, 100);
+                await this.$router.push(`${import.meta.env.BASE_URL}insulation_adviser`);
             else
-                setTimeout(() => {this.$router.push(`${import.meta.env.BASE_URL}engine_loader`);}, 100);
+                await this.$router.push(`${import.meta.env.BASE_URL}engine_loader`);
         },
-        continueMagneticToolDesign() {
+        async continueMagneticToolDesign() {
             if (this.$route.name != 'MagneticTool')
-                setTimeout(() => {this.$router.push(`${import.meta.env.BASE_URL}magnetic_tool`);}, 100);
+                await this.$router.push(`${import.meta.env.BASE_URL}magnetic_tool`);
             else
-                setTimeout(() => {this.$router.push(`${import.meta.env.BASE_URL}engine_loader`);}, 100);
+                await this.$router.push(`${import.meta.env.BASE_URL}engine_loader`);
         },
         load() {
             this.loading = true;
-            this.$refs.masFileReader.click()
-            setTimeout(() => {this.loading = false;}, 2000);
+            this.$refs.masFileReader.click();
         },
         readMASFile(event) {
             const fr = new FileReader();
 
-            fr.onload = e => {
+            fr.onload = async (e) => {
                 const newMas = JSON.parse(e.target.result);
                 if (newMas.magnetic != null) {
-                    checkAndFixMas(newMas, this.$mkf).then(response => {
+                    try {
+                        const response = await checkAndFixMas(newMas, this.$mkf);
                         this.masStore.resetMas();
                         this.masStore.mas = response;
                         this.masStore.importedMas();
 
-
+                        this.$stateStore.selectWorkflow("design");
                         this.$stateStore.selectApplication(this.$stateStore.SupportedApplications.Power);
-                        // this.currentStoryline = this.magneticBuilderStoryline;
                         this.$stateStore.selectTool("magneticBuilder");
                         this.$stateStore.setCurrentToolSubsection("magneticBuilder");
                         this.$stateStore.setCurrentToolSubsectionStatus("designRequirements", true);
                         this.$stateStore.setCurrentToolSubsectionStatus("operatingPoints", true);
-                        this.$stateStore.operatingPoints.modePerPoint = []
-                        for (var i = 0; i < this.masStore.mas.inputs.operatingPoints.length; i++) {
+                        this.$stateStore.operatingPoints.modePerPoint = [];
+                        for (let i = 0; i < this.masStore.mas.inputs.operatingPoints.length; i++) {
                             if (this.masStore.mas.inputs.operatingPoints[i].excitationsPerWinding[0].current.processed != null) {
                                 this.$stateStore.operatingPoints.modePerPoint.push(this.$stateStore.OperatingPointsMode.Manual);
                             }
@@ -120,23 +123,36 @@ export default {
                         this.$stateStore.setCurrentToolSubsectionStatus("designRequirements", true);
                         this.$stateStore.setCurrentToolSubsectionStatus("operatingPoints", true);
                         this.$stateStore.loadingDesign = true;
+                        
                         if (this.$router.currentRoute.value.path != `${import.meta.env.BASE_URL}magnetic_tool`) {
-
                             this.$userStore.loadingPath = `${import.meta.env.BASE_URL}magnetic_tool`;
-                            setTimeout(() => {this.$router.push(`${import.meta.env.BASE_URL}engine_loader`);}, 100);
+                            
+                            // Wait for pinia-plugin-persistedstate to write to localStorage
+                            await new Promise(resolve => {
+                                const unsubscribe = this.masStore.$subscribe(() => {
+                                    unsubscribe();
+                                    resolve();
+                                }, { flush: 'sync' });
+                                // Trigger a sync by touching the store
+                                this.masStore.$patch({});
+                            });
+                            
+                            await this.$router.push(`${import.meta.env.BASE_URL}engine_loader`);
                         }
                         else {
                             this.masStore.mas.magnetic.core = response.magnetic.core;
                             this.masStore.mas.magnetic.coil = response.magnetic.coil;
                             this.masStore.mas.magnetic.coil.functionalDescription = response.magnetic.coil.functionalDescription;
-
                         }
-                    })
-                    .catch(error => {
-                        console.error(error)
-                    });
+                    } catch (error) {
+                        console.error(error);
+                    } finally {
+                        this.loading = false;
+                    }
+                } else {
+                    this.loading = false;
                 }
-            }
+            };
             fr.readAsText(this.$refs['masFileReader'].files.item(0), "ISO-8859-1");
         },
     },
@@ -212,6 +228,7 @@ export default {
                             class="nav-link me-3 text-center"
                             href="https://www.linkedin.com/newsletters/7026708624966135808/"
                             target="_blank"
+                            rel="noopener noreferrer"
                         >
                             {{"Alf's Musings"}}
                         </a>

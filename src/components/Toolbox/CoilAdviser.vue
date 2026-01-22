@@ -1,6 +1,3 @@
-<script setup>
-</script>
-
 <script>
 export default {
     props: {
@@ -9,14 +6,6 @@ export default {
             default: '',
         },
     },
-    data() {
-        return {
-        }
-    },
-    computed: {
-    },
-    methods: {
-    }
 }
 </script>
 

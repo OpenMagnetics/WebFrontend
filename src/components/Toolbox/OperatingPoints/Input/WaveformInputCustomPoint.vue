@@ -9,6 +9,7 @@ import { defaultTimeExponent } from '/WebSharedComponents/assets/js/defaults.js'
 <script>
 
 export default {
+    emits: ["updatedTime", "updatedData", "addedOrRemovedPoint"],
     props: {
         modelValue:{
             type: Object,

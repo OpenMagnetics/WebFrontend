@@ -30,6 +30,7 @@ export default {
 </script>
 
 <template>
+    <Header />
     <GenericTool
         v-if="$stateStore.selectedTool == 'magneticViewer'"
         :toolLabel="'magneticViewer'"
@@ -37,5 +38,6 @@ export default {
         :dataTestLabel="'MagneticViewer'"
         :showControlPanel="true"
     />
+    <Footer />
 </template>
 

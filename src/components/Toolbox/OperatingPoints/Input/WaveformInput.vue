@@ -9,6 +9,7 @@ import { toTitleCase, combinedStyle } from '/WebSharedComponents/assets/js/utils
 
 <script>
 export default {
+    emits: ["peakToPeakChanged", "offsetChanged", "labelChanged"],
     props: {
         modelValue:{
             type: Object,

@@ -90,6 +90,7 @@ export default {
 </script>
 
 <template>
+    <Header />
     <GenericTool
         :currentStoryline="currentStoryline"
         :dataTestLabel="'MagneticTool'"
@@ -99,5 +100,6 @@ export default {
         @editMagnetic="editMagnetic"
         @viewMagnetic="viewMagnetic"
     />
+    <Footer />
 </template>
 
