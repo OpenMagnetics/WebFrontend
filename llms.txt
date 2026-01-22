@@ -1,0 +1,423 @@
+# OpenMagnetics Web Platform
+
+> Free, open-source platform for designing and simulating magnetic components (inductors, transformers, chokes)
+
+OpenMagnetics is a comprehensive web-based tool for magnetic component design. It runs entirely in the browser using WebAssembly, with no server-side computation required. All calculations are powered by MKF (Magnetics Knowledge Foundation), a C++ simulation engine.
+
+**Live Platform:** https://openmagnetics.com
+
+**Alternative:** Use `PyMKF` (Python package) for programmatic access to all simulation capabilities.
+
+---
+
+## Quick Start
+
+### Web Platform (No Installation)
+1. Visit https://openmagnetics.com
+2. Click "New magnetic" to start a design
+3. Follow the wizard or use the Magnetic Tool for full control
+
+### Python (PyMKF)
+```bash
+pip install PyMKF
+```
+
+```python
+import PyMKF
+import json
+
+# Design a buck inductor
+mas = {
+    "inputs": {
+        "designRequirements": {
+            "magnetizingInductance": {"nominal": 4.7e-6},
+            "turnsRatios": [],
+            "topology": "Buck Converter"
+        },
+        "operatingPoints": [{
+            "conditions": {"ambientTemperature": 40},
+            "excitationsPerWinding": [{
+                "frequency": 500000,
+                "current": {
+                    "processed": {
+                        "label": "Triangular",
+                        "peakToPeak": 3.0,
+                        "offset": 10.0,
+                        "dutyCycle": 0.275
+                    }
+                },
+                "voltage": {
+                    "processed": {
+                        "label": "Rectangular",
+                        "peakToPeak": 8.7,
+                        "offset": 0,
+                        "dutyCycle": 0.275
+                    }
+                }
+            }]
+        }]
+    },
+    "magnetic": {
+        "core": {
+            "functionalDescription": {
+                "type": "two-piece set",
+                "material": "High Flux 60",
+                "shape": "T 20/10/7",
+                "gapping": [],
+                "numberStacks": 1
+            }
+        },
+        "coil": {
+            "bobbin": "T 20/10/7",
+            "functionalDescription": [{
+                "name": "Primary",
+                "numberTurns": 8,
+                "numberParallels": 3,
+                "isolationSide": "primary",
+                "wire": "Round 0.8 - Grade 1"
+            }]
+        }
+    }
+}
+
+# Simulate the magnetic component (calculates all losses, inductance, temperature, etc.)
+result = PyMKF.simulate(json.dumps(mas["inputs"]), 
+                        json.dumps(mas["magnetic"]), 
+                        json.dumps({}))
+print(json.loads(result))
+
+# Get advised complete magnetics for your requirements
+advised = PyMKF.calculate_advised_magnetics(json.dumps(mas["inputs"]), 
+                                             json.dumps({"EFFICIENCY": 1, "COST": 0.5}),
+                                             10,  # max results
+                                             "AREA_PRODUCT")
+print(json.loads(advised))
+```
+
+---
+
+## Platform Features
+
+### Design Wizards
+Pre-configured wizards for common topologies:
+- **Buck/Boost Converter** - DC-DC step-down/step-up inductors
+- **Flyback Converter** - Isolated DC-DC transformers
+- **Forward Converter** - Isolated DC-DC transformers
+- **Push-Pull Converter** - High-power isolated converters
+- **Isolated Buck-Boost** - Bidirectional isolated converters
+- **Common Mode Choke (CMC)** - EMI filtering
+
+### Magnetic Tool
+Full-featured design environment:
+1. **Design Requirements** - Specify inductance, turns ratios, dimensions, insulation
+2. **Operating Points** - Define voltage/current waveforms, frequency, duty cycle
+3. **Core Adviser** - AI-assisted core selection from database
+4. **Wire Adviser** - Optimal wire selection for minimal losses
+5. **Coil Adviser** - Winding arrangement optimization
+6. **Simulation** - Calculate losses, temperature, inductance, capacitance
+
+### Insulation Coordinator
+Calculate insulation requirements per IEC 61558, IEC 60664, IEC 62368:
+- Creepage distances
+- Clearance distances
+- Solid insulation thickness
+- CTI requirements
+
+---
+
+## Data Format: MAS (Magnetic Agnostic Structure)
+
+OpenMagnetics uses MAS, a JSON schema for describing magnetic components. See the MAS repository for full documentation.
+
+### Minimal Structure
+```json
+{
+  "inputs": {
+    "designRequirements": { ... },
+    "operatingPoints": [ ... ]
+  },
+  "magnetic": {
+    "core": { ... },
+    "coil": { ... }
+  },
+  "outputs": [ ... ]
+}
+```
+
+### Core Definition
+```json
+{
+  "core": {
+    "functionalDescription": {
+      "type": "two-piece set",
+      "material": "N97",
+      "shape": "E 55/28/21",
+      "gapping": [
+        {"type": "subtractive", "length": 0.001}
+      ],
+      "numberStacks": 1
+    }
+  }
+}
+```
+
+### Coil Definition
+```json
+{
+  "coil": {
+    "bobbin": "E 55/28/21",
+    "functionalDescription": [
+      {
+        "name": "Primary",
+        "numberTurns": 42,
+        "numberParallels": 1,
+        "wire": "Litz 40x0.1 - Grade 1",
+        "isolationSide": "primary"
+      }
+    ]
+  }
+}
+```
+
+### Operating Point
+```json
+{
+  "conditions": {"ambientTemperature": 40},
+  "excitationsPerWinding": [{
+    "frequency": 100000,
+    "current": {
+      "processed": {
+        "label": "Triangular",
+        "peakToPeak": 2.0,
+        "offset": 10.0,
+        "dutyCycle": 0.5
+      }
+    },
+    "voltage": {
+      "processed": {
+        "label": "Rectangular",
+        "peakToPeak": 12.0,
+        "offset": 0,
+        "dutyCycle": 0.5
+      }
+    }
+  }]
+}
+```
+
+---
+
+## PyMKF API Reference
+
+### Installation
+```bash
+pip install PyMKF
+```
+
+### Core Functions
+
+```python
+import PyMKF
+import json
+
+# All functions accept JSON strings and return JSON strings
+
+# === Core Operations ===
+PyMKF.calculate_core_data(core_json, include_geometrical)
+PyMKF.get_core_material_names()
+PyMKF.get_core_shape_names(include_toroidal)
+PyMKF.find_core_by_name(name)
+
+# === Simulation ===
+PyMKF.simulate(inputs_json, magnetic_json, models_json)  # Full simulation
+PyMKF.calculate_core_losses(magnetic_json, operating_point_json, models_json)
+PyMKF.calculate_winding_losses(magnetic_json, operating_point_json, temperature)
+PyMKF.calculate_inductance_from_number_turns_and_gapping(core_json, coil_json, operating_point_json, models_json)
+PyMKF.calculate_magnetizing_inductance(operating_point_json, magnetic_json, models_json)
+
+# === Advisers ===
+PyMKF.calculate_advised_magnetics(inputs_json, weights_json, max_results, mode)
+
+# === Export ===
+PyMKF.export_magnetic_as_subcircuit(magnetic_json, temperature, simulator, extra_data)
+PyMKF.export_magnetic_as_symbol(magnetic_json, simulator, extra_data)
+
+# === Insulation ===
+PyMKF.calculate_insulation_coordination(inputs_json)
+```
+
+### Example: Complete Design Flow
+```python
+import PyMKF
+import json
+
+# 1. Define requirements
+inputs = {
+    "designRequirements": {
+        "magnetizingInductance": {"nominal": 100e-6},
+        "turnsRatios": [],
+        "topology": "Boost Converter",
+        "maximumDimensions": {
+            "width": 0.025,
+            "height": 0.015,
+            "depth": 0.020
+        }
+    },
+    "operatingPoints": [{
+        "conditions": {"ambientTemperature": 40},
+        "excitationsPerWinding": [{
+            "frequency": 200000,
+            "current": {
+                "processed": {
+                    "label": "Triangular",
+                    "peakToPeak": 4.0,
+                    "offset": 8.0,
+                    "dutyCycle": 0.6
+                }
+            },
+            "voltage": {
+                "processed": {
+                    "label": "Rectangular",
+                    "peakToPeak": 24.0,
+                    "offset": 0,
+                    "dutyCycle": 0.6
+                }
+            }
+        }]
+    }]
+}
+
+# 2. Get advised magnetics (complete designs)
+weights = {
+    "EFFICIENCY": 1.0,
+    "DIMENSIONS": 0.5,
+    "COST": 0.3
+}
+
+advised_magnetics = json.loads(
+    PyMKF.calculate_advised_magnetics(json.dumps(inputs), json.dumps(weights), 5, "AREA_PRODUCT")
+)
+
+# 3. Select best design and simulate
+best_design = advised_magnetics["data"][0]
+magnetic = best_design["mas"]["magnetic"]
+
+# Full simulation returns complete MAS with outputs
+simulated = json.loads(
+    PyMKF.simulate(
+        json.dumps(inputs),
+        json.dumps(magnetic),
+        json.dumps({})
+    )
+)
+
+print(f"Core losses: {simulated['outputs'][0]['coreLosses']['magneticFluxDensityCoreLosses']['corelosses']} W")
+print(f"Winding losses: {simulated['outputs'][0]['windingLosses']['windingLossesPerWinding'][0]['losses']} W")
+```
+
+---
+
+## Waveform Labels
+
+Use these labels for the `processed.label` field:
+
+| Label | Description | Typical Use |
+|-------|-------------|-------------|
+| `Triangular` | Linear rise/fall | Inductor current |
+| `Rectangular` | Square wave | Inductor voltage, transformer current |
+| `Sinusoidal` | Sine wave | AC applications |
+| `Custom` | User-defined points | Complex waveforms |
+
+---
+
+## Core Materials
+
+### Ferrites (High Frequency)
+- **TDK/EPCOS:** N87, N97, N49, N95, N27
+- **Ferroxcube:** 3C90, 3C95, 3C97, 3F36
+- **TDG:** PC40, PC95
+
+### Powder Cores (DC Bias)
+- **Magnetics Inc:** MPP, High Flux, XFlux, Kool Mu
+- **Micrometals:** Iron Powder (-2, -8, -18, -26, -52)
+
+---
+
+## Core Shapes
+
+Use exact format in shape names:
+- **E cores:** `"E 55/28/21"`, `"E 42/21/15"`, `"E 19/8/5"`
+- **ETD cores:** `"ETD 49/25/16"`, `"ETD 34/17/11"`
+- **PQ cores:** `"PQ 20/16"`, `"PQ 35/35"`
+- **RM cores:** `"RM 12"`, `"RM 8"`
+- **Toroids:** `"T 40/24/16"`, `"T 20/10/7"`
+- **EQ cores:** `"EQ 25/6"`, `"EQ 30/8"`
+- **EP cores:** `"EP 13"`, `"EP 17"`
+
+---
+
+## Wire Types
+
+Format: `"Type Parameters - Grade N"`
+
+- **Round:** `"Round 1.0 - Grade 1"` (1.0mm conductor diameter)
+- **Litz:** `"Litz 40x0.1 - Grade 1"` (40 strands × 0.1mm each)
+- **Rectangular:** `"Rectangular 2.0x0.5 - Grade 1"` (width × height)
+- **Foil:** `"Foil 0.1"` (0.1mm thickness)
+
+---
+
+## Units
+
+All values use SI base units:
+- **Length:** meters (m)
+- **Frequency:** Hertz (Hz)
+- **Inductance:** Henry (H)
+- **Current:** Ampere (A)
+- **Voltage:** Volt (V)
+- **Temperature:** Celsius (°C)
+- **Power:** Watt (W)
+
+---
+
+## Export Formats
+
+### Circuit Simulators
+- **LTspice** - Subcircuit (.lib) and symbol (.asy)
+- **ngspice** - Subcircuit (.lib)
+- **SIMBA** - Component model
+
+### Data Export
+- **MAS JSON** - Full design data
+- **PDF Report** - Design summary document
+- **3D Model** - Component visualization
+
+---
+
+## Related Projects
+
+| Project | Description |
+|---------|-------------|
+| **MAS** | JSON Schema for magnetic components |
+| **MKF** | C++ simulation engine |
+| **PyMKF** | Python bindings for MKF |
+| **WebLibMKF** | WebAssembly build of MKF |
+
+## Resources
+
+- **Web Platform:** https://openmagnetics.com
+- **GitHub:** https://github.com/OpenMagnetics
+- **MAS Schema:** https://github.com/OpenMagnetics/MAS
+- **PyMKF on PyPI:** https://pypi.org/project/PyMKF/
+
+---
+
+## Technology Stack
+
+- **Frontend:** Vue 3 + Vite
+- **Simulation:** MKF compiled to WebAssembly
+- **State Management:** Pinia
+- **UI Framework:** Bootstrap 5
+- **Charts:** Chart.js
+
+All computation runs client-side in the browser. No data is sent to servers.

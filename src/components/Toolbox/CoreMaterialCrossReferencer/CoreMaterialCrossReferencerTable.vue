@@ -1,7 +1,6 @@
 <script setup >
 import { toTitleCase, formatUnit, formatPowerDensity, formatAdimensional, formatMagneticFluxDensity, formatMagneticFieldStrength, formatResistivity, formatTemperature, removeTrailingZeroes, deepCopy } from '/WebSharedComponents/assets/js/utils.js'
 import '../../../assets/css/vue-good-table-next.css'
-import { VueGoodTable } from 'vue-good-table-next';
 
 </script>
 
@@ -11,9 +10,6 @@ export default {
     emits: [
         'click',
     ],
-    components: {e
-        VueGoodTable,
-    },
     props: {
         dataTestLabel: {
             type: String,
