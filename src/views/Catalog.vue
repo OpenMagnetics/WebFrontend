@@ -22,16 +22,13 @@ export default {
         .then((data) => {
             this.catalogString = data;
         })
+        .catch((error) => {
+            console.error('Failed to fetch catalog core material database:', error);
+        })
 
         return {
             catalogStore,
         }
-    },
-    methods: {
-    },
-    mounted() {
-    },
-    created() {
     },
 }
 </script>

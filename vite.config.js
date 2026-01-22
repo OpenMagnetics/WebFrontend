@@ -28,7 +28,7 @@ export default defineConfig({
     publicDir: 'src/public',
     plugins: [
         vue(),
-        viteCompression({filter: '/\.(js|mjs|json|css|html|wasm)$/i'}),
+        viteCompression({filter: /\.(js|mjs|json|css|html|wasm)$/i}),
     ],
     resolve: {
         alias: {

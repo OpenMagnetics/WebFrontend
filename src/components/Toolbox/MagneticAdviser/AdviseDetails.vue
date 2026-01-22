@@ -6,8 +6,6 @@ import Magnetic2DVisualizer from '/WebSharedComponents/Common/Magnetic2DVisualiz
 
 <script>
 export default {
-    components: {
-    },
     props: {
         modelValue:{
             type: Object,
@@ -292,7 +290,7 @@ export default {
 
                 <div class="col-12 fs-5 p-0 m-0 mt-2 text-center">Number turns</div>
 
-                <div class="row" v-for="winding, windingIndex in modelValue.magnetic.coil.functionalDescription">
+                <div class="row" v-for="(winding, windingIndex) in modelValue.magnetic.coil.functionalDescription" :key="'turns-' + windingIndex">
 
                     <div v-if="windingIndex == 0" class="col-3 p-0 m-0 border">Windings</div>
                     <div v-if="windingIndex == 0" class="col-3 p-0 m-0 border">No. turns</div>
@@ -305,7 +303,7 @@ export default {
                     <div v-if="'turnsRatioTable' in localTexts" class="col-3 p-0 m-0 border">{{localTexts.turnsRatioTable[windingIndex].value}}</div>
                 </div>
 
-                <div class="row mb-2" v-for="operationPoint, operationPointIndex in modelValue.outputs">
+                <div class="row mb-2" v-for="(operationPoint, operationPointIndex) in modelValue.outputs" :key="'output-' + operationPointIndex">
                     <div class="col-12 fs-5 p-0 m-0 my-1">{{modelValue.inputs.operatingPoints[operationPointIndex].name}}</div>
                     <div class="col-12 fs-5 p-0 m-0 mt-2 text-center">Core</div>
                     <div v-if="'magnetizingInductanceTable' in localTexts" class="col-6 p-0 m-0 border">{{localTexts.magnetizingInductanceTable[operationPointIndex].text}}</div>
@@ -315,7 +313,7 @@ export default {
                     <div v-if="'coreTemperatureTable' in localTexts" class="col-6 p-0 m-0 border">{{localTexts.coreTemperatureTable[operationPointIndex].text}}</div>
                     <div v-if="'coreTemperatureTable' in localTexts" class="col-6 p-0 m-0 border">{{localTexts.coreTemperatureTable[operationPointIndex].value}}</div>
                     <div class="col-12 fs-5 p-0 m-0 mt-2 text-center">Coil</div>
-                    <div class="row" v-for="winding, windingIndex in modelValue.magnetic.coil.functionalDescription">
+                    <div class="row" v-for="(winding, windingIndex) in modelValue.magnetic.coil.functionalDescription" :key="'coil-' + windingIndex">
 
                         <div v-if="windingIndex == 0" class="col-3 p-0 m-0 border">Windings</div>
                         <div v-if="windingIndex == 0" class="col-3 p-0 m-0 border">DC Res.</div>
@@ -328,7 +326,7 @@ export default {
                         <div v-if="'leakageInductaceTable' in localTexts" class="col-3 p-0 m-0 border">{{localTexts.leakageInductaceTable[windingIndex].value}}</div>
                     </div>
                     <div class="col-12 fs-5 p-0 m-0 mt-2 text-center">Windings Losses Breakdown</div>
-                    <div class="row" v-for="winding, windingIndex in modelValue.magnetic.coil.functionalDescription">
+                    <div class="row" v-for="(winding, windingIndex) in modelValue.magnetic.coil.functionalDescription" :key="'breakdown-' + windingIndex">
 
                         <div v-if="windingIndex == 0" class="col-3 p-0 m-0 border">Windings</div>
                         <div v-if="windingIndex == 0" class="col-3 p-0 m-0 border">Ohmic Loss</div>

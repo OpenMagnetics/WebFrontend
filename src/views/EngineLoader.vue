@@ -7,17 +7,9 @@ import Footer from '../components/Footer.vue'
 
 <script>
 export default {
-    props: {
-    },
     data() {
         return {
         }
-    },
-    methods: {
-    },
-    mounted() {
-    },
-    created() {
     },
 }
 </script>

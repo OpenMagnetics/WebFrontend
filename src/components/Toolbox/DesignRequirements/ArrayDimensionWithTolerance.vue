@@ -55,7 +55,7 @@ export default {
         },
         addButtonStyle: {
             type: Object,
-            default: {},
+            default: () => ({}),
         },
         valueFontSize: {
             type: [String, Object],
@@ -163,7 +163,7 @@ export default {
                 {{toTitleCase(name)}}
             </label>
         </div>
-        <div :data-cy="dataTestLabel + '-' + requirementIndex + '-container'" class="row" v-for="requirement, requirementIndex in masStore.mas.inputs.designRequirements[name]">
+        <div :data-cy="dataTestLabel + '-' + requirementIndex + '-container'" class="row" v-for="(requirement, requirementIndex) in masStore.mas.inputs.designRequirements[name]" :key="requirementIndex">
             <DimensionWithTolerance
                 :dataTestLabel="dataTestLabel + '-' + requirementIndex" 
                 :allowNegative="allowNegative"

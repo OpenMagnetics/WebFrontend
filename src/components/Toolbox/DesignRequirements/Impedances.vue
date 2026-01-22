@@ -19,7 +19,7 @@ export default {
         },
         standardsToDisable: {
             type: Array,
-            default: [],
+            default: () => [],
         },
         valueFontSize: {
             type: [String, Object],
@@ -79,10 +79,6 @@ export default {
     },
     computed: {
     },
-    watch: { 
-    },
-    mounted () {
-    },
     methods: {
         onAddPointBelow(index) {
             const newElement = deepCopy(this.masStore.mas.inputs.designRequirements.minimumImpedance[this.masStore.mas.inputs.designRequirements.minimumImpedance.length - 1])
@@ -122,7 +118,7 @@ export default {
                 Minimum Impedance
             </label>
         </div>
-        <div class="row ms-2" v-for="row, index in masStore.mas.inputs.designRequirements.minimumImpedance">
+        <div class="row ms-2" v-for="(row, index) in masStore.mas.inputs.designRequirements.minimumImpedance" :key="index">
             <PairOfDimensions
                 class="py-2 col-10"
                 :class="index==0? '' : 'border-bottom' "

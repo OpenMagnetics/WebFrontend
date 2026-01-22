@@ -26,12 +26,6 @@ export default {
             magneticViewerStoryline,
         }
     },
-    methods: {
-    },
-    mounted() {
-    },
-    created() {
-    },
 }
 </script>
 

@@ -25,14 +25,6 @@ export default {
             modalName,
             title,
         }
-    },
-    methods: {
-    },
-    computed: {
-    },
-    mounted() {
-    },
-    created() {
     }
 }
 </script>

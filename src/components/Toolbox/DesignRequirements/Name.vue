@@ -64,10 +64,6 @@ export default {
     },
     computed: {
     },
-    watch: { 
-    },
-    mounted () {
-    },
     methods: {
         changeText(newValue) {
             if (newValue == '') {

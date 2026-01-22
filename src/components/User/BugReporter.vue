@@ -36,8 +36,6 @@ export default {
                 this.posting = false
             });
         }
-    },
-    mounted() {
     }
 }
 </script>

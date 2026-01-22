@@ -104,8 +104,6 @@ export default {
             }
         },
     },
-    watch: { 
-    },
     mounted () {
         const url = import.meta.env.VITE_API_ENDPOINT + '/is_high_performance_backend_available';
 

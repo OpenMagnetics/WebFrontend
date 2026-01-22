@@ -121,8 +121,6 @@ export default {
             return allSet;
         }
     },
-    watch: { 
-    },
     created () {
 
     },
@@ -317,7 +315,7 @@ export default {
     <div class="container">
         <div class="row" v-tooltip="styleTooltip" :style="$styleStore.operatingPoints.main">
             <div class="col-sm-12 col-md-2 text-start border m-0 px-1" :style="$styleStore.operatingPoints.main">
-                <div class="col-12 row m-0 p-0 px-1 border-bottom border-top rounded-4 border-4 mb-5 pb-2 pt-2 mt-2" :style="combinedStyle([$styleStore.operatingPoints.operatingPointBgColor, operatingPointIndex == currentOperatingPointIndex? 'opacity: 1;' : 'opacity: 0.65;'])"  v-for="operatingPoint, operatingPointIndex in masStore.mas.inputs.operatingPoints">
+                <div class="col-12 row m-0 p-0 px-1 border-bottom border-top rounded-4 border-4 mb-5 pb-2 pt-2 mt-2" :style="combinedStyle([$styleStore.operatingPoints.operatingPointBgColor, operatingPointIndex == currentOperatingPointIndex? 'opacity: 1;' : 'opacity: 0.65;'])"  v-for="(operatingPoint, operatingPointIndex) in masStore.mas.inputs.operatingPoints" :key="operatingPointIndex">
                     <Text
                         :name="'name'"
                         v-model="masStore.mas.inputs.operatingPoints[operatingPointIndex]"
@@ -355,7 +353,8 @@ export default {
                     <div
                         v-if="!$stateStore.hasCurrentApplicationMirroredWindings() && currentOperatingPointIndex == operatingPointIndex"
                         class="col-12 row m-0 p-0 py-1 border-top"
-                        v-for="winding, windingIndex in masStore.mas.magnetic.coil.functionalDescription"
+                        v-for="(winding, windingIndex) in masStore.mas.magnetic.coil.functionalDescription"
+                        :key="'winding-' + windingIndex"
                         >
                         <Text
                             :disabled="excitationSelectorDisabled"

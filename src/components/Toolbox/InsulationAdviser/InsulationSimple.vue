@@ -31,7 +31,7 @@ export default {
         },
         standardsToDisable: {
             type: Array,
-            default: [],
+            default: () => [],
         },
         valueFontSize: {
             type: [String, Object],

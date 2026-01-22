@@ -11,12 +11,6 @@ export default {
             suffix
         }
     },
-    methods: {
-    },
-    mounted() {
-    },
-    created() {
-    },
 }
 </script>
 

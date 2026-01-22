@@ -5,8 +5,6 @@ import { toTitleCase, removeTrailingZeroes, processCoreTexts} from '/WebSharedCo
 <script>
 
 export default {
-    components: {
-    },
     props: {
         modelValue:{
             type: Object,
@@ -55,7 +53,7 @@ export default {
             <div class="col-12 fs-5 p-0 m-0 mt-2 text-start">{{localTexts.coreDescription}}</div>
             <div class="col-12 fs-5 p-0 m-0 mt-2 text-start">{{localTexts.coreMaterial}}</div>
             <div class="col-12 fs-5 p-0 m-0 mt-2 text-start">{{localTexts.numberTurns}}</div>
-            <div class="row mt-4 mb-2" v-for="operationPoint, operationPointIndex in modelValue.inputs.operatingPoints">
+            <div class="row mt-4 mb-2" v-for="(operationPoint, operationPointIndex) in modelValue.inputs.operatingPoints" :key="operationPointIndex">
                 <div class="col-12 fs-5 p-0 m-0 my-1">{{operationPoint.name}}</div>
                 <div v-if="'magnetizingInductanceTable' in localTexts" class="col-6 p-0 m-0 border">{{localTexts.magnetizingInductanceTable[operationPointIndex].text}}</div>
                 <div v-if="'magnetizingInductanceTable' in localTexts" class="col-6 p-0 m-0 border">{{localTexts.magnetizingInductanceTable[operationPointIndex].value}}</div>
@@ -74,8 +72,9 @@ export default {
         <div class="row">
             <label class="fs-5 mt-3 col-12">Distributors</label>
 
-            <a v-for="distributor, distributorIndex in modelValue.magnetic.core.distributorsInfo" 
-                :href="distributor.link" target="_blank" :data-cy="'CoreAdviseDetail-buy-' + distributorIndex + '-link'" class="offset-1 col-10 mt-1 text-primary float-start fs-5 px-4">{{}}{{'Buy it at ' + distributor.name + ((distributor.cost != null)? ' for $' + distributor.cost : '')}}</a>
+            <a v-for="(distributor, distributorIndex) in modelValue.magnetic.core.distributorsInfo" 
+                :key="distributorIndex"
+                :href="distributor.link" target="_blank" rel="noopener noreferrer" :data-cy="'CoreAdviseDetail-buy-' + distributorIndex + '-link'" class="offset-1 col-10 mt-1 text-primary float-start fs-5 px-4">{{}}{{'Buy it at ' + distributor.name + ((distributor.cost != null)? ' for $' + distributor.cost : '')}}</a>
         </div>
     </div>
 </div>

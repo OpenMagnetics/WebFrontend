@@ -55,8 +55,6 @@ export default {
     },
     computed: {
     },
-    watch: { 
-    },
     mounted () {
         this.updateErrorMessage();
     },

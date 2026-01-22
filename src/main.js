@@ -156,7 +156,7 @@ router.beforeEach((to, from, next) => {
                                                     }
                                             })
                                             .catch((error) => {
-                                                console.error("error fetching core_shapes.ndjson")
+                                                console.error("error fetching lab_osma_wires.ndjson")
                                                 console.error(error)
                                             })
                                             console.warn("Loading cores in simulator")
@@ -172,7 +172,7 @@ router.beforeEach((to, from, next) => {
                                                     }
                                             })
                                             .catch((error) => {
-                                                console.error("error fetching core_shapes.ndjson")
+                                                console.error("error fetching lab_osma_cores.ndjson")
                                                 console.error(error)
                                             })
                                             const newPath = app.config.globalProperties.$userStore.loadingPath;

@@ -21,7 +21,7 @@ export default {
         },
         defaultValue:{
             type: Object,
-            default: {}
+            default: () => ({})
         },
         dataTestLabel: {
             type: String,
@@ -46,10 +46,7 @@ export default {
             }
         }
     },
-    watch: { 
-    },
-    mounted () {
-    },
+
     methods: {
         addedOrRemovedPoint() {
             this.resettingPoints = true;
@@ -83,7 +80,7 @@ export default {
             :textColor="$styleStore.operatingPoints.inputTextColor"
             @update="labelChanged"
         />
-        <div v-if="modelValue[signalDescriptor] != null" v-for="(value, key) in modelValue[signalDescriptor].waveform.data">
+        <div v-if="modelValue[signalDescriptor] != null" v-for="(value, key) in modelValue[signalDescriptor].waveform.data" :key="key">
             <WaveformInputCustomPoint
                 v-if="!resettingPoints || addedOrRemovedIndex>=key"
                 :modelValue="modelValue[signalDescriptor].waveform"

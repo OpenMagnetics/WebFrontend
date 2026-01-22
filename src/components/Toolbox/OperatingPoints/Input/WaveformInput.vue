@@ -21,7 +21,7 @@ export default {
         },
         defaultValue:{
             type: Object,
-            default: {}
+            default: () => ({})
         },
         dataTestLabel: {
             type: String,
@@ -60,8 +60,6 @@ export default {
                 this.forceUpdate += 1
             }
         },
-    },
-    mounted () {
     },
     methods: {
         peakToPeakChanged(value) {

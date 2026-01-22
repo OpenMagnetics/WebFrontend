@@ -53,10 +53,6 @@ export default {
                     var blob = new Blob([subcircuit], {
                         type: 'text/csv; charset=utf-8'
                     });
-                console.log("subcircuit")
-                console.log(subcircuit)
-                console.log("blob")
-                console.log(blob)
                     download(blob, filename + "_with_OM_library.jsimba", "text/plain;charset=UTF-8");
 
 

@@ -14,7 +14,7 @@ export default {
         },
         defaultValue:{
             type: Object,
-            default: {}
+            default: () => ({})
         },
         dataTestLabel: {
             type: String,
@@ -80,8 +80,6 @@ export default {
                 setTimeout(() => this.blockingReboundsFrequency = false, 10);
             }
         },
-    },
-    mounted () {
     },
     methods: {
         frequencyChanged(value) {

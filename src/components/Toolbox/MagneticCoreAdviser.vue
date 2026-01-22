@@ -69,8 +69,6 @@ export default {
             return titledFilters;
         },
     },
-    watch: { 
-    },
     created () {
     },
     mounted () {
@@ -224,7 +222,7 @@ export default {
     <div class="container" >
         <div class="row">
             <div class="col-sm-12 col-md-2 text-start border border-primary m-0 px-2 py-1 ">
-                <div class="row" v-for="value, key in $settingsStore.coreAdviserSettings.weights">
+                <div class="row" v-for="(value, key) in $settingsStore.coreAdviserSettings.weights" :key="key">
                     <label class="form-label col-12 py-0 my-0">{{titledFilters[key]}}</label>
                     <div class=" col-7 me-2 pt-2">
                         <Slider v-model="$settingsStore.coreAdviserSettings.weights[key]" :disabled="loading" class="col-12 text-primary slider" :height="10" :min="10" :max="80" :step="10"  id="core-adviser-weight-area-product" :tooltips="false" @change="changedSliderValue(key, $event)"/>
@@ -241,7 +239,7 @@ export default {
 
                 </div>
                 <div class="row advises" v-else>
-                    <div class="col-md-4 col-sm-12 m-0 p-0 mt-1" v-for="advise, adviseIndex in adviseCacheStore.currentCoreAdvises">
+                    <div class="col-md-4 col-sm-12 m-0 p-0 mt-1" v-for="(advise, adviseIndex) in adviseCacheStore.currentCoreAdvises" :key="adviseIndex">
                         <Advise
                             v-if="(Object.values(titledFilters).length > 0) && (currentAdviseToShow >= adviseIndex)"
                             :adviseIndex="adviseIndex"

@@ -540,7 +540,7 @@ export default {
 
                             <div class="row">
                                 <div class="col-12 fs-5 p-0 m-0 my-1 text-center">Core Gapping</div>
-                                    <div  v-if="'coreGappingTable' in localTexts" class="row p-0 m-0" v-for="gap, gapIndex in masStore.mas.magnetic.core.functionalDescription.gapping">
+                                    <div  v-if="'coreGappingTable' in localTexts" class="row p-0 m-0" v-for="(gap, gapIndex) in masStore.mas.magnetic.core.functionalDescription.gapping" :key="gapIndex">
                                         <div v-if="gapIndex == 0" class="col-4 p-0 m-0 border ps-2">Type</div>
                                         <div v-if="gapIndex == 0" class="col-4 p-0 m-0 border ps-2">Length</div>
                                         <div v-if="gapIndex == 0" class="col-4 p-0 m-0 border ps-2">Height offset</div>
@@ -595,7 +595,7 @@ export default {
                             </div>
                         </div>
                         <div class="offset-1 col-10">
-                            <div  v-if="'coilTable' in localTexts" class="row" v-for="winding, windingIndex in masStore.mas.magnetic.coil.functionalDescription">
+                            <div  v-if="'coilTable' in localTexts" class="row" v-for="(winding, windingIndex) in masStore.mas.magnetic.coil.functionalDescription" :key="windingIndex">
                                 <div class="col-12 fs-5 p-0 m-0 my-1 text-center">{{toTitleCase(winding.name.toLowerCase())}}</div>
 
                                 <div v-if="'coilTable' in localTexts" class="col-6 p-0 m-0 border ps-2">{{localTexts.coilTable.windingInfo[windingIndex].turns.text}}</div>
@@ -609,7 +609,7 @@ export default {
 
                     </div>
                     <div class="col-12 fs-4 p-0 m-0 mt-2 text-center fw-bold">Simulation result per Operating Point</div>
-                    <div class="offset-1 col-10 row mt-3" v-for="operationPoint, operationPointIndex in masStore.mas.inputs.operatingPoints">
+                    <div class="offset-1 col-10 row mt-3" v-for="(operationPoint, operationPointIndex) in masStore.mas.inputs.operatingPoints" :key="operationPointIndex">
                         <div class="col-12 fs-5 p-0 m-0 my-1 text-center">{{operationPoint.name}}</div>
                         <div class="col-12 fs-5 p-0 m-0 mt-2 text-center">Core</div>
                         <div class="col-12 p-0 m-0 mt-2">
@@ -626,7 +626,7 @@ export default {
                         </div>
                         <div class="col-12 fs-5 p-0 m-0 mt-2 text-center">Coil</div>
                         <div class="col-12 p-0 m-0 mt-2">
-                            <div class="row" v-for="winding, windingIndex in masStore.mas.magnetic.coil.functionalDescription">
+                            <div class="row" v-for="(winding, windingIndex) in masStore.mas.magnetic.coil.functionalDescription" :key="'coil-' + windingIndex">
 
                                 <div v-if="windingIndex == 0" class="col-3 p-0 m-0 border text-start ps-2">Winding</div>
                                 <div v-if="windingIndex == 0" class="col-2 p-0 m-0 border text-center ps-2">DC Res.</div>
@@ -643,7 +643,7 @@ export default {
                         </div>
                         <div class="col-12 fs-5 p-0 m-0 mt-2 text-center">Coil Losses Breakdown</div>
                         <div class="col-12 p-0 m-0 mt-2">
-                            <div class="row " v-for="winding, windingIndex in masStore.mas.magnetic.coil.functionalDescription">
+                            <div class="row " v-for="(winding, windingIndex) in masStore.mas.magnetic.coil.functionalDescription" :key="'breakdown-' + windingIndex">
 
                                 <div v-if="windingIndex == 0" class="col-3 p-0 m-0 border text-start ps-2">Winding</div>
                                 <div v-if="windingIndex == 0" class="col-3 p-0 m-0 border text-center ps-2">Ohmic Loss</div>

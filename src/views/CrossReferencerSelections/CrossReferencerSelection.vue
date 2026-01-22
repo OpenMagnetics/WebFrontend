@@ -9,16 +9,6 @@ export default {
             default: '',
         },
     },
-    data() {
-        return {
-        }
-    },
-    methods: {
-    },
-    mounted() {
-    },
-    created() {
-    },
 }
 </script>
 

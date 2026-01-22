@@ -61,6 +61,9 @@ export default {
                     })
                 })
             })
+            .catch((error) => {
+                console.error('Failed to fetch catalog input:', error);
+            })
         }
     },
     methods: {

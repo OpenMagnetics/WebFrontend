@@ -68,17 +68,17 @@ const routes = [
     },
     {
         path: '/core_cross_referencer_fair_rite',
-        name: 'CoreCrossReferencer',
+        name: 'CoreCrossReferencerFairRite',
         component: () => import('../views/CrossReferencers/CrossReferencerFairRite.vue')
     },
     {
         path: '/core_material_cross_referencer_fair_rite',
-        name: 'CoreMaterialCrossReferencer',
+        name: 'CoreMaterialCrossReferencerFairRite',
         component: () => import('../views/CrossReferencers/CrossReferencerFairRite.vue')
     },
     {
         path: '/core_shape_cross_referencer_fair_rite',
-        name: 'CoreShapeCrossReferencer',
+        name: 'CoreShapeCrossReferencerFairRite',
         component: () => import('../views/CrossReferencers/CrossReferencerFairRite.vue')
     },
     {

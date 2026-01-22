@@ -17,10 +17,6 @@ export default {
         return {
         }
     },
-    methods: {
-    },
-    mounted() {
-    },
     created() {
     },
 }

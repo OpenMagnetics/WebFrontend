@@ -12,17 +12,11 @@ export default {
         return {
         }
     },
-    methods: {
-    },
     computed: {
         currentRoute() {
             const route=useRoute();
             return route.path;
         }
-    },
-    mounted() {
-    },
-    created() {
     },
 }
 </script>

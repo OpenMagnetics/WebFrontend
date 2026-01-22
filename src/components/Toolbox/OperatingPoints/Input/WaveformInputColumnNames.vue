@@ -16,7 +16,7 @@ export default {
         },
         defaultValue:{
             type: Object,
-            default: {}
+            default: () => ({})
         },
         currentOperatingPointIndex: {
             type: Number,
@@ -63,8 +63,6 @@ export default {
                 setTimeout(() => this.blockingReboundsFrequency = false, 10);
             }
         },
-    },
-    mounted () {
     },
     methods: {
         columnNameChanged(value) {

@@ -89,8 +89,6 @@ export default {
             return this.masData.magnetic.manufacturerInfo.reference;
         },
     },
-    watch: {
-    },
     mounted () {
         options = {
             scales: {

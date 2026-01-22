@@ -29,11 +29,11 @@ export default {
         },
         standardsToDisable: {
             type: Array,
-            default: [],
+            default: () => [],
         },
         addButtonStyle: {
             type: Object,
-            default: {},
+            default: () => ({}),
         },
         removeButtonBgColor: {
             type: String,

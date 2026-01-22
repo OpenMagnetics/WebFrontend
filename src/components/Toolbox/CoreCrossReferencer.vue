@@ -93,8 +93,6 @@ export default {
             return mas;
         }
     },
-    watch: { 
-    },
     created () {
         this.masStore.$onAction((action) => {
             if (action.name == "updatedInputExcitationProcessed") {

@@ -101,7 +101,7 @@ export default {
             });
         },
         onExport(filename) {
-            console.log("Exported" + filename);
+            // Export completed
         },
     
     }
@@ -123,7 +123,7 @@ export default {
                         <div v-if="'coreMaterialManufacturerReferenceTable' in localTexts" class="col-6 p-0 m-0 border ps-2">{{localTexts.coreMaterialManufacturerReferenceTable.text}}</div>
                         <div v-if="'coreMaterialManufacturerReferenceTable' in localTexts" class="col-6 p-0 m-0 border text-end pe-1">{{localTexts.coreMaterialManufacturerReferenceTable.value}}</div>
                         <div v-if="'coreMaterialManufacturerDatasheetTable' in localTexts" class="col-6 p-0 m-0 border ps-2">{{localTexts.coreMaterialManufacturerDatasheetTable.text}}</div>
-                        <a :href="localTexts.coreMaterialManufacturerDatasheetTable.value" target="_blank" v-if="'coreMaterialManufacturerDatasheetTable' in localTexts" class="col-6 p-0 m-0 border text-end pe-1">Link</a>
+                        <a :href="localTexts.coreMaterialManufacturerDatasheetTable.value" target="_blank" rel="noopener noreferrer" v-if="'coreMaterialManufacturerDatasheetTable' in localTexts" class="col-6 p-0 m-0 border text-end pe-1">Link</a>
                         <div class="col-12 fs-5 p-0 m-0 my-1 text-center">Material Parameters</div>
                         <div class="col-6 p-0 m-0 border text-center ps-2"></div>
                         <div :class="getTempDependentGridWidth" class="p-0 m-0 border text-center">25°C</div>

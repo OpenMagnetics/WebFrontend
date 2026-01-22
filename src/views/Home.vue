@@ -14,8 +14,6 @@ export default {
         }
     },
     methods: {
-    },
-    computed: {
         newMagneticToolDesign() {
             this.$stateStore.resetMagneticTool();
             this.$stateStore.selectWorkflow("design");
@@ -50,10 +48,6 @@ export default {
             window.open(routeData.href, '_blank');
         },
     },
-    created() {
-    },
-    mounted() {
-    }
 }
 </script>
 <template>

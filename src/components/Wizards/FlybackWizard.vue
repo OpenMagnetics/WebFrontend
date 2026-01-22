@@ -46,10 +46,6 @@ export default {
     },
     computed: {
     },
-    watch: { 
-    },
-    mounted () {
-    },
     methods: {
         updateErrorMessage() {
             this.errorMessage = "";
@@ -59,7 +55,6 @@ export default {
                 const diff = newNumber - this.localData.outputsParameters.length;
                 for (let i = 0; i < diff; i++) {
                     var newOutput;
-                    console.log(deepCopy(defaultFlybackWizardInputs))
                     if (this.localData.outputsParameters.length == 0) {
                         newOutput = {
                             voltage: defaultFlybackWizardInputs.outputsParameters[0].voltage,
@@ -492,7 +487,7 @@ export default {
                     />
                 </div>
                 <div class="row mt-2 ps-2">
-                    <div class="col-12" v-for="datum, index in localData.outputsParameters">
+                    <div class="col-12" v-for="(datum, index) in localData.outputsParameters" :key="index">
                         <PairOfDimensions
                             v-if="localData.designLevel == 'Help me with the design'"
                             class="border-top border-bottom pt-2"

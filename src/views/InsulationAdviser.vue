@@ -21,12 +21,6 @@ export default {
             updateStoryline: 0,
         }
     },
-    methods: {
-    },
-    mounted() {
-    },
-    created() {
-    },
 }
 </script>
 

@@ -243,7 +243,7 @@ export default {
     <div class="container" >
         <div class="row">
             <div class="col-sm-12 col-md-2 text-start border border-primary m-0 px-2 py-1 ">
-                <div class="row" v-for="value, key in $settingsStore.magneticAdviserSettings.weights">
+                <div class="row" v-for="(value, key) in $settingsStore.magneticAdviserSettings.weights" :key="key">
                     <label class="form-label col-12 py-0 my-0">{{titledFilters[key]}}</label>
                     <div class=" col-7 me-2 pt-2">
                         <Slider v-model="$settingsStore.magneticAdviserSettings.weights[key]" :disabled="loading" class="col-12 text-primary slider" :height="10" :min="10" :max="80" :step="10" :color="theme.primary" :tooltips="false" @change="changedSliderValue(key, $event)"/>
@@ -272,7 +272,7 @@ export default {
                     <div 
                         :style="dataUptoDate? 'opacity: 100%;' : 'opacity: 20%;'"
                         v-if="adviseCacheStore.currentMasAdvises != null"
-                        class="col-md-4 col-sm-12 m-0 p-0 mt-1" v-for="advise, adviseIndex in adviseCacheStore.currentMasAdvises">
+                        class="col-md-4 col-sm-12 m-0 p-0 mt-1" v-for="(advise, adviseIndex) in adviseCacheStore.currentMasAdvises" :key="adviseIndex">
                         <Advise
                             v-if="(Object.values(titledFilters).length > 0) && (currentAdviseToShow >= adviseIndex)"
                             :adviseIndex="adviseIndex"

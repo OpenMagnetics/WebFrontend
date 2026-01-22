@@ -4,8 +4,6 @@
 <script>
 export default {
     emits: [],
-    components: {
-    },
     props: {
     },
     data() {
@@ -37,8 +35,6 @@ export default {
     },
     computed: {
 
-    },
-    mounted() {
     },
 }
 

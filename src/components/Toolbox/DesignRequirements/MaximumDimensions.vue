@@ -47,7 +47,7 @@ export default {
         },
         addButtonStyle: {
             type: Object,
-            default: {},
+            default: () => ({}),
         },
         removeButtonBgColor: {
             type: String,

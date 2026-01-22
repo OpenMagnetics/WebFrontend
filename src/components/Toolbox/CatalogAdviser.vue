@@ -172,7 +172,7 @@ export default {
                         {{loading? '\n' : '(It might take a few minutes)'}}
                     </h5>
 
-                    <div class="row text-start" v-for="weight, filter in catalogStore.filters">
+                    <div class="row text-start" v-for="(weight, filter) in catalogStore.filters" :key="filter">
                         <label class="form-label col-12 py-0 my-0">{{filter}}</label>
                         <div class=" col-7 me-2 pt-2">
                             <Slider v-model="catalogStore.filters[filter]" :disabled="loading" class="col-12 text-primary slider" :height="10" :min="0" :max="100" :step="10" :color="theme.primary" :tooltips="false" @change="changedSliderValue(filter, $event)"/>
@@ -196,7 +196,7 @@ export default {
                     <img data-cy="magneticAdviser-loading" class="mx-auto d-block col-12" alt="loading" style="width: auto; height: 20%;" :src="$settingsStore.loadingGif">
                 </div>
                 <div class="col-12 row advises">
-                    <div class="col-4 m-0 p-0 mt-1" v-for="advise, adviseIndex in catalogStore.advises">
+                    <div class="col-4 m-0 p-0 mt-1" v-for="(advise, adviseIndex) in catalogStore.advises" :key="adviseIndex">
                         <Advise
                             :adviseIndex="adviseIndex"
                             :masData="advise.mas"

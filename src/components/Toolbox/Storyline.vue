@@ -154,7 +154,7 @@ export default {
     <div class="py-2 p-0 container" v-tooltip="styleTooltip" :style="$styleStore.storyline.main">
         <h4 class="text-center py-2" :style="$styleStore.storyline.title" >Steps</h4>
         <div class="row px-1">
-            <div v-for="adventure, index in basicStoryline" class="col-3 col-sm-3 col-md-12 px-0"> 
+            <div v-for="(adventure, index) in basicStoryline" :key="index" class="col-3 col-sm-3 col-md-12 px-0"> 
                 <button
                     :style="index == selectedTool? $styleStore.storyline.activeButton : enabledAdventures[index]? $styleStore.storyline.availableButton : $styleStore.storyline.pendingButton"
                     v-if="adventure.enabled == null || adventure.enabled"

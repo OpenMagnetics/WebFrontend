@@ -8,21 +8,11 @@ import {useRoute} from 'vue-router'
 
 <script>
 export default {
-    data() {
-        return {
-        }
-    },
-    methods: {
-    },
     computed: {
         currentRoute() {
             const route=useRoute();
             return route.path;
         }
-    },
-    mounted() {
-    },
-    created() {
     },
 }
 </script>

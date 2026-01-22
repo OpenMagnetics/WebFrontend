@@ -107,8 +107,6 @@ export default {
         // });
         btRun();
     },
-    created() {
-    },
 }
 </script>
 

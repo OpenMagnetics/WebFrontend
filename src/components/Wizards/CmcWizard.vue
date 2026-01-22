@@ -41,10 +41,6 @@ export default {
     },
     computed: {
     },
-    watch: { 
-    },
-    mounted () {
-    },
     methods: {
         updateErrorMessage() {
             this.errorMessage = "";
@@ -420,7 +416,7 @@ export default {
             />
         </div>
         <div class="row mt-2 ps-2">
-            <div class="offset-2 col-9" v-for="datum, index in localData.extraHarmonics">
+            <div class="offset-2 col-9" v-for="(datum, index) in localData.extraHarmonics" :key="'harmonic-' + index">
                 <PairOfDimensions
                     class="ps-3 border-top border-bottom pt-2"
                     :names="['frequency', 'amplitude']"
@@ -478,7 +474,7 @@ export default {
             />
         </div>
         <div class="row mt-2 ps-2">
-            <div class="offset-2 col-9" v-for="datum, index in localData.impedancePoints">
+            <div class="offset-2 col-9" v-for="(datum, index) in localData.impedancePoints" :key="'impedance-' + index">
                 <PairOfDimensions
                     class="ps-3 border-top border-bottom pt-2"
                     :names="['frequency', 'impedance']"

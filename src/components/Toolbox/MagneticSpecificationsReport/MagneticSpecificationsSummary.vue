@@ -40,8 +40,6 @@ export default {
     },
     computed: {
     },
-    watch: { 
-    },
     mounted () {
         this.computeTexts();
     },
@@ -632,9 +630,9 @@ export default {
             </div>
             <div class="col-sm-12 col-md-10 text-start pe-0">
                 <h2 class="text-white fs-2 my-1">You specified the following requirements:</h2>
-                <h3 class="text-white fs-5 my-2" v-for="designRequirementText, designRequirementIndex in texts.designRequirements" v-html="designRequirementText"></h3>
+                <h3 class="text-white fs-5 my-2" v-for="(designRequirementText, designRequirementIndex) in texts.designRequirements" :key="designRequirementIndex" v-html="designRequirementText"></h3>
                 <h2 class="text-white fs-2 my-1">You specified the following operating point:</h2>
-                <h3 class="text-white fs-5 my-2" v-for="operatingPointText, operatingPointIndex in texts.operatingPoints" v-html="operatingPointText"></h3>
+                <h3 class="text-white fs-5 my-2" v-for="(operatingPointText, operatingPointIndex) in texts.operatingPoints" :key="operatingPointIndex" v-html="operatingPointText"></h3>
 
             </div>
         </div>

@@ -75,8 +75,6 @@ export default {
             }
         },
     },
-    watch: { 
-    },
     created () {
     },
     mounted () {
