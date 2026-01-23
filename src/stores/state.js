@@ -45,25 +45,6 @@ export const useStateStore = defineStore("state", () => {
 
     const toolboxDefaultStates = {
         design: {
-            magneticSpecificationsReport: {
-                subsection: "designRequirements",
-                canContinue: {
-                    'designRequirements': false,
-                    'operatingPoints': false,
-                    'magneticSpecificationsSummary': false,
-                },
-            },
-            magneticAdviser: {
-                subsection: "designRequirements",
-                canContinue: {
-                    'designRequirements': false,
-                    'operatingPoints': false,
-                    'magneticAdviser': false,
-                    'magneticBuilder': false,
-                    'magneticSummary': false,
-                },
-                selectedAdvise: 0,
-            },
             magneticBuilder: {
                 subsection: "designRequirements",
                 canContinue: {
@@ -71,24 +52,6 @@ export const useStateStore = defineStore("state", () => {
                     'operatingPoints': false,
                     'magneticBuilder': false,
                     'magneticSummary': false,
-                },
-            },
-            magneticCoreAdviser: {
-                subsection: "designRequirements",
-                canContinue: {
-                    'designRequirements': false,
-                    'operatingPoints': false,
-                    'magneticCoreAdviser': false,
-                    'magneticCoreSummary': false,
-                },
-                selectedAdvise: 0,
-            },
-            agnosticTool: {
-                subsection: "designRequirements",
-                canContinue: {
-                    'designRequirements': false,
-                    'operatingPoints': false,
-                    'toolSelector': false,
                 },
             },
         },
@@ -274,7 +237,7 @@ export const useStateStore = defineStore("state", () => {
 
     const selectedWorkflow = ref("design");
     const selectedApplication = ref(SupportedApplications.Power);
-    const selectedTool = ref("agnosticTool");
+    const selectedTool = ref("magneticBuilder");
     const selectedWizard = ref(Wizards.Flyback);
 
     function getCurrentToolBoxState() {

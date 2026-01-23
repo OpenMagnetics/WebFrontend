@@ -18,7 +18,11 @@ import { useFairRiteStyleStore } from '/src/stores/fairRiteStyle'
 import { VueWindowSizePlugin } from 'vue-window-size/plugin';
 import { setMkf } from '/WebSharedComponents/assets/js/mkfRuntime'
 import VueLatex from 'vatex'
+import { checkAndClearOutdatedStores } from '/src/stores/storeVersioning'
 
+// Check and clear outdated stores BEFORE Pinia is initialized
+// This ensures old store data with incompatible field names is cleared
+checkAndClearOutdatedStores();
 
 const axiosInstance = axios.create()
 
