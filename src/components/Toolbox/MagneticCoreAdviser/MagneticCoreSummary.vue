@@ -1,5 +1,6 @@
 <script setup>
 import { useMasStore } from '../../../stores/mas'
+import { useTaskQueueStore } from '../../../stores/taskQueue'
 import { toTitleCase, removeTrailingZeroes, processCoreTexts, deepCopy, downloadBase64asPDF, clean, download } from '/WebSharedComponents/assets/js/utils.js'
 
 </script>
@@ -14,6 +15,7 @@ export default {
     },
     data() {
         const masStore = useMasStore();
+        const taskQueueStore = useTaskQueueStore();
         const style = getComputedStyle(document.body);
         const theme = {
           primary: style.getPropertyValue('--bs-primary'),
@@ -29,6 +31,7 @@ export default {
         const localTexts = {};
         return {
             masStore,
+            taskQueueStore,
             theme,
             localTexts,
             masExported: false,
@@ -92,15 +95,15 @@ export default {
                 this.STPExported = false;
             });
         },
-        computeTexts() {
-            this.$mkf.ready.then(async (_) => {
+        async computeTexts() {
+            try {
                 const materialName = this.masStore.mas.magnetic.core.functionalDescription.material;
                 if (typeof materialName === 'string' || materialName instanceof String) {
-                    var materialData = JSON.parse(await this.$mkf.get_material_data(materialName));
+                    var materialData = await this.taskQueueStore.getMaterialData(materialName);
                     this.masStore.mas.magnetic.core.functionalDescription.material = materialData;
                 }
-                var temperatureDependantData25 = JSON.parse(await this.$mkf.get_core_temperature_dependant_parameters(JSON.stringify(this.masStore.mas.magnetic.core), 25));
-                var temperatureDependantData100 = JSON.parse(await this.$mkf.get_core_temperature_dependant_parameters(JSON.stringify(this.masStore.mas.magnetic.core), 100));
+                var temperatureDependantData25 = await this.taskQueueStore.getCoreTemperatureDependantParameters(this.masStore.mas.magnetic.core, 25);
+                var temperatureDependantData100 = await this.taskQueueStore.getCoreTemperatureDependantParameters(this.masStore.mas.magnetic.core, 100);
                 const mas = deepCopy(this.masStore.mas);
                 mas.magnetic.core.temp = {}
                 mas.magnetic.core.temp["25"] = {}
@@ -118,10 +121,10 @@ export default {
                 mas.magnetic.core.temp["100"].reluctance = temperatureDependantData100["reluctance"];
                 mas.magnetic.core.temp["100"].resistivity = temperatureDependantData100["resistivity"];
                 this.localTexts = processCoreTexts(mas);
-            }).catch(error => { 
+            } catch (error) { 
                 console.error("Error reading material data")
                 console.error(error)
-            });
+            }
         },
     
     }

@@ -1,5 +1,6 @@
 <script setup>
 import { useMasStore } from '../../../stores/mas'
+import { useTaskQueueStore } from '../../../stores/taskQueue'
 import { toTitleCase, removeTrailingZeroes, formatUnit, formatDimension, formatTemperature, formatInductance,
          formatPower, formatResistance, deepCopy, downloadBase64asPDF, clean, download } from '/WebSharedComponents/assets/js/utils.js'
 import Magnetic2DVisualizer, { PLOT_MODES } from '/WebSharedComponents/Common/Magnetic2DVisualizer.vue'
@@ -16,9 +17,11 @@ export default {
     },
     data() {
         const masStore = useMasStore();
+        const taskQueueStore = useTaskQueueStore();
         const localTexts = {};
         return {
             masStore,
+            taskQueueStore,
             localTexts,
             masExported: false,
             Core3DExported: false,
@@ -55,9 +58,8 @@ export default {
             this.masExported = true
             setTimeout(() => this.masExported = false, 2000);
         },
-        exportCore3D(format) {
-
-            this.$mkf.ready.then(_ => {
+        async exportCore3D(format) {
+            try {
                 var url;
                 if (format == "STP") {
                     url = import.meta.env.VITE_API_ENDPOINT + '/core_compute_core_3d_model_stp';
@@ -72,7 +74,7 @@ export default {
                 const aux = deepCopy( this.masStore.mas.magnetic.core);
                 aux['geometricalDescription'] = null;
                 aux['processedDescription'] = null;
-                var core = JSON.parse(this.$mkf.calculate_core_data(JSON.stringify(aux), false));
+                var core = await this.taskQueueStore.calculateCoreData(aux, false);
 
 
                 this.$axios.post(url, core)
@@ -89,11 +91,9 @@ export default {
                 .catch(error => {
                     console.error(error.data)
                 });
-
-            }).catch(error => {
+            } catch (error) {
                 console.error(error);
-            });
-
+            }
         },
         exportMASWithExcitations() {
             var mas = deepCopy(this.masStore.mas);
@@ -133,11 +133,14 @@ export default {
             });
         },
 
-        calculateLeakageInductance() {
+        async calculateLeakageInductance() {
             if (this.masStore.mas.magnetic.coil.functionalDescription.length > 1) {
-                this.$mkf.ready.then(_ => {
-
-                    const leakageInductaceOutput = JSON.parse(this.$mkf.calculate_leakage_inductance(JSON.stringify(this.masStore.mas.magnetic), this.masStore.mas.inputs.operatingPoints[0].excitationsPerWinding[0].frequency, 0));
+                try {
+                    const leakageInductaceOutput = await this.taskQueueStore.calculateLeakageInductance(
+                        this.masStore.mas.magnetic,
+                        this.masStore.mas.inputs.operatingPoints[0].excitationsPerWinding[0].frequency,
+                        0
+                    );
 
                     for (var operatingPointIndex = 0; operatingPointIndex < this.masStore.mas.outputs.length; operatingPointIndex++) {
                         this.masStore.mas.outputs[operatingPointIndex].leakageInductance = leakageInductaceOutput;
@@ -148,7 +151,9 @@ export default {
                             this.localTexts.outputsTable.coil[operatingPointIndex][windingIndex].leakageInductance.value = `${removeTrailingZeroes(aux.label, 1)} ${aux.unit}`;
                         }
                     }
-                })
+                } catch (error) {
+                    console.error('Error calculating leakage inductance:', error);
+                }
             }   
         },
         processCoreGappingTexts(data) {
@@ -455,15 +460,15 @@ export default {
             }
             return outputsTable;
         },
-        computeTexts() {
-            this.$mkf.ready.then(async (_) => {
+        async computeTexts() {
+            try {
                 const materialName = this.masStore.mas.magnetic.core.functionalDescription.material;
                 if (typeof materialName === 'string' || materialName instanceof String) {
-                    var materialData = JSON.parse(await this.$mkf.get_material_data(materialName));
+                    var materialData = await this.taskQueueStore.getMaterialData(materialName);
                     this.masStore.mas.magnetic.core.functionalDescription.material = materialData;
                 }
-                var temperatureDependantData25 = JSON.parse(await this.$mkf.get_core_temperature_dependant_parameters(JSON.stringify(this.masStore.mas.magnetic.core), 25));
-                var temperatureDependantData100 = JSON.parse(await this.$mkf.get_core_temperature_dependant_parameters(JSON.stringify(this.masStore.mas.magnetic.core), 100));
+                var temperatureDependantData25 = await this.taskQueueStore.getCoreTemperatureDependantParameters(this.masStore.mas.magnetic.core, 25);
+                var temperatureDependantData100 = await this.taskQueueStore.getCoreTemperatureDependantParameters(this.masStore.mas.magnetic.core, 100);
                 const mas = deepCopy(this.masStore.mas);
                 mas.magnetic.core.temp = {}
                 mas.magnetic.core.temp["25"] = {}
@@ -486,10 +491,10 @@ export default {
                 this.localTexts["outputsTable"] = this.processOutputsTexts(mas);
                 this.localTexts["coilTable"] = this.processCoilTexts(mas);
                 setTimeout(() => {this.calculateLeakageInductance();}, 10);
-            }).catch(error => { 
+            } catch (error) { 
                 console.error("Error reading material data")
                 console.error(error)
-            });
+            }
         },
         insertMas() {
             const url = import.meta.env.VITE_API_ENDPOINT + '/insert_mas'

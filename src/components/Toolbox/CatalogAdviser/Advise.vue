@@ -1,6 +1,7 @@
 <script setup>
 import { Chart, registerables } from 'chart.js'
 import { toTitleCase, removeTrailingZeroes, formatPower, formatDimension, formatInductance, formatResistance } from '/WebSharedComponents/assets/js/utils.js'
+import { useTaskQueueStore } from '../../../stores/taskQueue'
 </script>
 
 <script>
@@ -39,6 +40,7 @@ export default {
     },
     data() {
         const data = {};
+        const taskQueueStore = useTaskQueueStore();
         const localTexts = {
             losses: null,
             dcResistance: null,
@@ -49,6 +51,7 @@ export default {
             data,
             localTexts,
             masScore: null,
+            taskQueueStore,
         }
     },
     computed: {
@@ -77,7 +80,7 @@ export default {
         this.processLocalTexts();
     },
     methods: {
-        processLocalTexts() {
+        async processLocalTexts() {
             // {
             //     const aux = formatPower(this.masData.outputs[0].coreLosses.coreLosses + this.masData.outputs[0].windingLosses.windingLosses);
             //     this.localTexts.losses = `Losses:\n${removeTrailingZeroes(aux.label, 2)} ${aux.unit}`
@@ -105,14 +108,16 @@ export default {
                 this.localTexts.dcResistance = `DC Res.: ${removeTrailingZeroes(aux.label, 1)} ${aux.unit}`
             } 
             {
-                this.$mkf.ready.then(async (_) => {
-                    const maximumDimensions = await this.$mkf.get_maximum_dimensions(JSON.stringify(this.masData.magnetic));
+                try {
+                    const maximumDimensions = await this.taskQueueStore.getMaximumDimensions(this.masData.magnetic);
                     // maximumDimensions is now an array in worker mode
                     const maximumDimensions0 = formatDimension(maximumDimensions[0]);
                     const maximumDimensions1 = formatDimension(maximumDimensions[1]);
                     const maximumDimensions2 = formatDimension(maximumDimensions[2]);
                     this.localTexts.dimensions = `Dim.: ${removeTrailingZeroes(maximumDimensions0.label, 2)} ${maximumDimensions0.unit} x ${removeTrailingZeroes(maximumDimensions1.label, 2)} ${maximumDimensions1.unit} x ${removeTrailingZeroes(maximumDimensions2.label, 2)} ${maximumDimensions2.unit}`
-                })
+                } catch (error) {
+                    console.error('Error getting maximum dimensions:', error);
+                }
             }  
         }
     }

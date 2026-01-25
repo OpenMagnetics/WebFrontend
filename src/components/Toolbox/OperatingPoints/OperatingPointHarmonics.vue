@@ -1,5 +1,6 @@
 <script setup>
 import { useMasStore } from '../../../stores/mas'
+import { useTaskQueueStore } from '../../../stores/taskQueue'
 import WaveformInputHarmonic from './Input/WaveformInputHarmonic.vue'
 import WaveformGraph from './Output/WaveformGraph.vue'
 import WaveformFourier from './Output/WaveformFourier.vue'
@@ -53,8 +54,10 @@ export default {
         const forceUpdateCurrent = 0;
         const forceUpdateVoltage = 0;
         const blockingRebounds = false;
+        const taskQueueStore = useTaskQueueStore();
         return {
             masStore,
+            taskQueueStore,
             forceUpdateCurrent,
             forceUpdateVoltage,
             blockingRebounds,
@@ -119,42 +122,37 @@ export default {
             })
             return true;
         },
-        processHarmonics(signalDescriptor) {
+        async processHarmonics(signalDescriptor) {
             this.masStore.mas.inputs.operatingPoints.forEach((operatingPoint, operatingPointIndex) => {
                 this.masStore.mas.inputs.operatingPoints[operatingPointIndex] = this.checkAndFixOperatingPoint(operatingPoint);
             })
 
-            this.$mkf.ready.then(async (_) => {
+            try {
                 const frequency = this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex][signalDescriptor].harmonics.frequencies[1];
                 this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex][signalDescriptor].waveform = null;
                 this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex][signalDescriptor].processed = null;
-                const result = await this.$mkf.standardize_signal_descriptor(JSON.stringify(this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex][signalDescriptor]), frequency);
+                const parsedResult = await this.taskQueueStore.standardizeSignalDescriptor(this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex][signalDescriptor], frequency);
 
-                if (result.startsWith("Exception")) {
-                    console.error(result);
-                    return;
+                const aux = await this.taskQueueStore.getMainHarmonicIndexes(this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex][signalDescriptor].harmonics, 0.05, 1);
+
+                const filteredHarmonics = {
+                    amplitudes: [parsedResult.harmonics.amplitudes[0]],
+                    frequencies: [parsedResult.harmonics.frequencies[0]]
                 }
-                else {
-                    const parsedResult = JSON.parse(result);
-                    const aux = await this.$mkf.get_main_harmonic_indexes(JSON.stringify(this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex][signalDescriptor].harmonics), 0.05, 1);
-
-                    const filteredHarmonics = {
-                        amplitudes: [parsedResult.harmonics.amplitudes[0]],
-                        frequencies: [parsedResult.harmonics.frequencies[0]]
-                    }
-                    // aux is now an array in worker mode
-                    for (var i = 0; i < aux.length; i++) {
-                        filteredHarmonics.amplitudes.push(parsedResult.harmonics.amplitudes[aux[i]]);
-                        filteredHarmonics.frequencies.push(parsedResult.harmonics.frequencies[aux[i]]);
-                    }
-
-                    parsedResult.harmonics = filteredHarmonics;
-                    this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex][signalDescriptor] = parsedResult;
+                // aux is now an array in worker mode
+                for (var i = 0; i < aux.length; i++) {
+                    filteredHarmonics.amplitudes.push(parsedResult.harmonics.amplitudes[aux[i]]);
+                    filteredHarmonics.frequencies.push(parsedResult.harmonics.frequencies[aux[i]]);
                 }
+
+                parsedResult.harmonics = filteredHarmonics;
+                this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex][signalDescriptor] = parsedResult;
 
                 // this.$emit('updatedSignal');
                 this.masStore.updatedInputExcitationWaveformUpdatedFromProcessed(signalDescriptor);
-            })
+            } catch (error) {
+                console.error(error);
+            }
         },
         onFrequencyChanged(signalDescriptor) {
             if (this.checkFrequencies(signalDescriptor)) {

@@ -1,5 +1,6 @@
 <script setup>
 import { useMasStore } from '../../../../stores/mas'
+import { useTaskQueueStore } from '../../../../stores/taskQueue'
 import { Chart, registerables } from 'chart.js'
 import { formatCurrent, removeTrailingZeroes, formatFrequency, formatVoltage } from '/WebSharedComponents/assets/js/utils.js'
 import { defaultSamplingNumberPoints, defaultMaximumNumberHarmonicsShown } from '/WebSharedComponents/assets/js/defaults.js'
@@ -37,6 +38,7 @@ export default {
     },
     data() {
         const masStore = useMasStore();
+        const taskQueueStore = useTaskQueueStore();
         const data = {
                 labels: [],
                 datasets: [
@@ -61,6 +63,7 @@ export default {
         return {
             data,
             masStore,
+            taskQueueStore,
         }
     },
     computed: {
@@ -266,42 +269,50 @@ export default {
             }
         },
         async runFFT(signalDescriptor){
-            await this.$mkf.ready;
-            const result = await this.$mkf.calculate_harmonics(JSON.stringify(this.modelValue[signalDescriptor].waveform), this.modelValue.frequency);
+            try {
+                const result = await this.taskQueueStore.calculateHarmonics(this.modelValue[signalDescriptor].waveform, this.modelValue.frequency);
 
-            if (result.startsWith("Exception")) {
-                console.error(result);
-                return;
-            }
-            else {
+                if (typeof result === 'string' && result.startsWith("Exception")) {
+                    console.error(result);
+                    return;
+                }
 
-                this.modelValue[signalDescriptor].harmonics = JSON.parse(result);
+                this.modelValue[signalDescriptor].harmonics = result;
 
                 await this.chopHarmonics(signalDescriptor);
 
                 if (chart != null) {
                     this.updateChart();
                 }
+            } catch (error) {
+                console.error('Error in runFFT:', error);
             }
         },
         async chopHarmonics(signalDescriptor){
-            await this.$mkf.ready;
-            const aux = await this.$mkf.get_main_harmonic_indexes(JSON.stringify(this.modelValue[signalDescriptor].harmonics), (signalDescriptor == "current"? this.harmonicPowerThresholdCurrent : this.harmonicPowerThresholdVoltage), (this.updateHarmonics? -1 : 1));
+            try {
+                const aux = await this.taskQueueStore.getMainHarmonicIndexes(
+                    this.modelValue[signalDescriptor].harmonics,
+                    (signalDescriptor == "current"? this.harmonicPowerThresholdCurrent : this.harmonicPowerThresholdVoltage),
+                    (this.updateHarmonics? -1 : 1)
+                );
 
-            const filteredHarmonics = {
-                amplitudes: [this.modelValue[signalDescriptor].harmonics.amplitudes[0]],
-                frequencies: [this.modelValue[signalDescriptor].harmonics.frequencies[0]]
-            }
-            // aux is now an array (converted from Embind vector in worker mode)
-            for (var i = 0; i < aux.length; i++) {
-                filteredHarmonics.amplitudes.push(this.modelValue[signalDescriptor].harmonics.amplitudes[aux[i]]);
-                filteredHarmonics.frequencies.push(this.modelValue[signalDescriptor].harmonics.frequencies[aux[i]]);
-            }
+                const filteredHarmonics = {
+                    amplitudes: [this.modelValue[signalDescriptor].harmonics.amplitudes[0]],
+                    frequencies: [this.modelValue[signalDescriptor].harmonics.frequencies[0]]
+                }
+                // aux is now an array (converted from Embind vector in worker mode)
+                for (var i = 0; i < aux.length; i++) {
+                    filteredHarmonics.amplitudes.push(this.modelValue[signalDescriptor].harmonics.amplitudes[aux[i]]);
+                    filteredHarmonics.frequencies.push(this.modelValue[signalDescriptor].harmonics.frequencies[aux[i]]);
+                }
 
-            this.modelValue[signalDescriptor].harmonics = filteredHarmonics;
+                this.modelValue[signalDescriptor].harmonics = filteredHarmonics;
 
-            if (chart != null) {
-                this.updateChart();
+                if (chart != null) {
+                    this.updateChart();
+                }
+            } catch (error) {
+                console.error('Error in chopHarmonics:', error);
             }
         },
         createChart(chartId, options) {

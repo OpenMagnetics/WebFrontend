@@ -1,6 +1,7 @@
 <script setup>
 import { Chart, registerables } from 'chart.js'
 import { toTitleCase, removeTrailingZeroes, formatPower, formatPowerDensity, formatInductance, formatTemperature } from '/WebSharedComponents/assets/js/utils.js'
+import { useTaskQueueStore } from '../../../stores/taskQueue'
 </script>
 
 <script>
@@ -48,6 +49,7 @@ export default {
           white: style.getPropertyValue('--bs-white'),
         };
         const data = {};
+        const taskQueueStore = useTaskQueueStore();
         const localTexts = {
             coreLosses: null,
             powerDensity: null,
@@ -59,6 +61,7 @@ export default {
             theme,
             localTexts,
             masScore: null,
+            taskQueueStore,
         }
     },
     computed: {
@@ -160,7 +163,7 @@ export default {
                 chart.update()
             }
         },
-        processLocalTexts() {
+        async processLocalTexts() {
             if (this.masData.outputs[0].coreLosses == null) {
                 this.localTexts = {}
                 return
@@ -171,15 +174,17 @@ export default {
                 this.localTexts.coreLosses = `Core losses: ${removeTrailingZeroes(aux.label, 2)} ${aux.unit}`
             }
 
-            this.$mkf.ready.then(async (_) => {
+            try {
                 // hardcoded operation point
-                const rmsPower = await this.$mkf.calculate_rms_power(JSON.stringify(this.masData.inputs.operatingPoints[0].excitationsPerWinding[0]));
+                const rmsPower = await this.taskQueueStore.calculateRmsPower(this.masData.inputs.operatingPoints[0].excitationsPerWinding[0]);
                 const volume = this.masData.magnetic.core.processedDescription.width *
                                this.masData.magnetic.core.processedDescription.depth * 
                                this.masData.magnetic.core.processedDescription.height;
                 const aux = formatPowerDensity(rmsPower / volume);
                 this.localTexts.powerDensity = `P. dens.: ${removeTrailingZeroes(aux.label, 1)} ${aux.unit}`;
-            }); 
+            } catch (error) {
+                console.error('Error calculating power density:', error);
+            }
             {
                 var masScore = 0;
                 for (let [key, value] of Object.entries(this.scoring)) {

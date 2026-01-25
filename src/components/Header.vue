@@ -1,6 +1,7 @@
 <script setup >
 import { useMasStore } from '/MagneticBuilder/src/stores/mas'
 import { useHistoryStore } from '/MagneticBuilder/src/stores/history'
+import { useTaskQueueStore } from '../stores/taskQueue'
 import { combinedStyle, combinedClass, checkAndFixMas, deepCopy } from '/WebSharedComponents/assets/js/utils.js'
 import { defineAsyncComponent } from "vue";
 import { useElementVisibility  } from '@vueuse/core'
@@ -23,10 +24,12 @@ export default {
     data() {
         const masStore = useMasStore();
         const historyStore = useHistoryStore();
+        const taskQueueStore = useTaskQueueStore();
         const loading = false;
         return {
             masStore,
             historyStore,
+            taskQueueStore,
             showModal: false,
             loggedIn: false,
             username: null,
@@ -100,7 +103,7 @@ export default {
                 const newMas = JSON.parse(e.target.result);
                 if (newMas.magnetic != null) {
                     try {
-                        const response = await checkAndFixMas(newMas, this.$mkf);
+                        const response = await checkAndFixMas(newMas, this.taskQueueStore);
                         this.masStore.resetMas();
                         this.masStore.mas = response;
                         this.masStore.importedMas();

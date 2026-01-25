@@ -1,6 +1,7 @@
 <script setup>
 import { useMasStore } from '../../stores/mas'
 import { useAdviseCacheStore } from '../../stores/adviseCache'
+import { useTaskQueueStore } from '../../stores/taskQueue'
 import Slider from '@vueform/slider'
 import { removeTrailingZeroes, toTitleCase, toCamelCase, deepCopy } from '/WebSharedComponents/assets/js/utils.js'
 import { coreAdviserWeights } from '/WebSharedComponents/assets/js/defaults.js'
@@ -37,6 +38,7 @@ export default {
     data() {
         const adviseCacheStore = useAdviseCacheStore();
         const masStore = useMasStore();
+            const taskQueueStore = useTaskQueueStore();
 
         if (this.$settingsStore.coreAdviserSettings.weights == null) {
             this.$settingsStore.coreAdviserSettings.weights = coreAdviserWeights;
@@ -47,6 +49,7 @@ export default {
         return {
             adviseCacheStore,
             masStore,
+            taskQueueStore,
             loading,
             currentAdviseToShow: 0,
         }
@@ -101,27 +104,19 @@ export default {
               data.splice(index, 1); // 2nd parameter means remove one item only
             }
         },
-        calculateAdvisedCores() {
+        async calculateAdvisedCores() {
             this.currentAdviseToShow = 0;
 
-            this.$mkf.ready.then(async (_) => {
+            try {
                 if (this.masStore.mas.inputs.operatingPoints.length > 0) {
-                    const settings = JSON.parse(await this.$mkf.get_settings());
+                    const settings = await this.taskQueueStore.getSettings();
                     settings["coreIncludeDistributedGaps"] = this.$settingsStore.adviserSettings.allowDistributedGaps;
                     settings["coreIncludeStacks"] = this.$settingsStore.adviserSettings.allowStacks;
                     settings["useToroidalCores"] = this.$settingsStore.adviserSettings.allowToroidalCores;
                     settings["useOnlyCoresInStock"] = this.$settingsStore.adviserSettings.useOnlyCoresInStock;
-                    await this.$mkf.set_settings(JSON.stringify(settings));
+                    await this.taskQueueStore.setSettings(settings);
 
-                    var aux;
-                    const result = await this.$mkf.calculate_advised_cores(JSON.stringify(this.masStore.mas.inputs), JSON.stringify(this.$settingsStore.coreAdviserSettings.weights), 20, this.$settingsStore.adviserSettings.coreAdviseMode);
-                    if (result.startsWith("Exception")) {
-                        console.error(result)
-                        this.loading = false;
-                    }
-                    else {
-                        aux = JSON.parse(result);
-                    }
+                    var aux = await this.taskQueueStore.calculateAdvisedCores(this.masStore.mas.inputs, this.$settingsStore.coreAdviserSettings.weights, 20, this.$settingsStore.adviserSettings.coreAdviseMode);
 
                     var log = aux["log"];
                     var data = aux["data"];
@@ -161,10 +156,10 @@ export default {
                     console.error("No operating points found")
                     this.loading = false;
                 }
-            }).catch(error => {
+            } catch (error) {
                 console.error("Error calculating advising cores");
                 console.error(error);
-            });
+            }
         },
         changedInputValue(key, value) {
             this.$settingsStore.coreAdviserSettings.weights[key] = value / 100;

@@ -4,6 +4,7 @@ import DimensionReadOnly from '/WebSharedComponents/DataInput/DimensionReadOnly.
 import { removeTrailingZeroes } from '/WebSharedComponents/assets/js/utils.js'
 import { minimumMaximumScalePerParameter } from '/WebSharedComponents/assets/js/defaults.js'
 import { toTitleCase, combinedStyle } from '/WebSharedComponents/assets/js/utils.js'
+import { useTaskQueueStore } from '../../../../stores/taskQueue'
 </script>
 
 <script>
@@ -25,9 +26,11 @@ export default {
     },
     data() {
         const blockingRebounds = false;
+        const taskQueueStore = useTaskQueueStore();
 
         return {
             blockingRebounds,
+            taskQueueStore,
         }
     },
     computed: {
@@ -66,12 +69,12 @@ export default {
         this.process();
     },
     methods: {
-        process() {
-            this.$mkf.ready.then(async (_) => {
+        async process() {
+            try {
                 if (this.modelValue[this.signalDescriptor].harmonics == null) {
-                    this.modelValue[this.signalDescriptor].harmonics = JSON.parse(await this.$mkf.calculate_harmonics(JSON.stringify(this.modelValue[this.signalDescriptor].waveform), this.modelValue.frequency));
+                    this.modelValue[this.signalDescriptor].harmonics = await this.taskQueueStore.calculateHarmonics(this.modelValue[this.signalDescriptor].waveform, this.modelValue.frequency);
                 }
-                var processed = JSON.parse(await this.$mkf.calculate_processed(JSON.stringify(this.modelValue[this.signalDescriptor].harmonics), JSON.stringify(this.modelValue[this.signalDescriptor].waveform)));
+                var processed = await this.taskQueueStore.calculateProcessed(this.modelValue[this.signalDescriptor].harmonics, this.modelValue[this.signalDescriptor].waveform);
                 this.modelValue[this.signalDescriptor].processed.acEffectiveFrequency = processed.acEffectiveFrequency;
                 this.modelValue[this.signalDescriptor].processed.effectiveFrequency = processed.effectiveFrequency;
                 this.modelValue[this.signalDescriptor].processed.peak = processed.peak;
@@ -82,7 +85,9 @@ export default {
                     this.modelValue[this.signalDescriptor].processed.peakToPeak = processed.peakToPeak;
                     this.modelValue[this.signalDescriptor].processed.offset = processed.offset;
                 }
-            });
+            } catch (error) {
+                console.error('Error in process:', error);
+            }
         }
     }
 }

@@ -1,5 +1,6 @@
 <script setup>
 import { useMasStore } from '../../stores/mas'
+import { useTaskQueueStore } from '../../stores/taskQueue'
 import { combinedStyle, combinedClass, deepCopy } from '/WebSharedComponents/assets/js/utils.js'
 import Dimension from '/WebSharedComponents/DataInput/Dimension.vue'
 import ElementFromListRadio from '/WebSharedComponents/DataInput/ElementFromListRadio.vue'
@@ -27,12 +28,14 @@ export default {
     },
     data() {
         const masStore = useMasStore();
+        const taskQueueStore = useTaskQueueStore();
         const numberPhasesOptions = ['Two phases', 'Three phases'];
         const insulationTypes = ['No', 'Basic', 'Reinforced'];
         const errorMessage = "";
         const localData = deepCopy(defaultCmcWizardInputs);
         return {
             masStore,
+            taskQueueStore,
             numberPhasesOptions,
             insulationTypes,
             localData,
@@ -129,7 +132,7 @@ export default {
             }
             this.updateErrorMessage();
         },
-        process() {
+        async process() {
             this.masStore.resetMas("filter")
             this.masStore.mas.inputs.designRequirements = {
                 name: "My CMC",
@@ -192,41 +195,17 @@ export default {
             })
 
             {
-                const result = this.$mkf.standardize_signal_descriptor(JSON.stringify(excitation.current), this.localData.mainSignalFrequency);
-
-                if (result.startsWith("Exception")) {
-                    console.error(result);
-                    return;
-                }
-                else {
-                    excitation.current = JSON.parse(result);
-                }
+                excitation.current = await this.taskQueueStore.standardizeSignalDescriptor(excitation.current, this.localData.mainSignalFrequency);
             }
 
 
             {
-                const result = this.$mkf.standardize_signal_descriptor(JSON.stringify(excitation.voltage), this.localData.mainSignalFrequency);
-
-                if (result.startsWith("Exception")) {
-                    console.error(result);
-                    return;
-                }
-                else {
-                    excitation.voltage = JSON.parse(result);
-                }
+                excitation.voltage = await this.taskQueueStore.standardizeSignalDescriptor(excitation.voltage, this.localData.mainSignalFrequency);
             }
 
 
             {
-                const result = await this.$mkf.calculate_harmonics(JSON.stringify(excitation.voltage.waveform), this.localData.mainSignalFrequency);
-
-                if (result.startsWith("Exception")) {
-                    console.error(result);
-                    return;
-                }
-                else {
-                    excitation.voltage.harmonics = JSON.parse(result);
-                }
+                excitation.voltage.harmonics = await this.taskQueueStore.calculateHarmonics(excitation.voltage.waveform, this.localData.mainSignalFrequency);
             }
 
             this.masStore.mas.inputs.operatingPoints = [];

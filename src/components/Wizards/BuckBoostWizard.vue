@@ -1,5 +1,6 @@
 <script setup>
 import { useMasStore } from '../../stores/mas'
+import { useTaskQueueStore } from '../../stores/taskQueue'
 import { combinedStyle, combinedClass, deepCopy } from '/WebSharedComponents/assets/js/utils.js'
 import Dimension from '/WebSharedComponents/DataInput/Dimension.vue'
 import ElementFromListRadio from '/WebSharedComponents/DataInput/ElementFromListRadio.vue'
@@ -33,6 +34,7 @@ export default {
     },
     data() {
         const masStore = useMasStore();
+        const taskQueueStore = useTaskQueueStore();
         const designLevelOptions = ['Help me with the design', 'I know the design I want'];
         const currentOptions = ['The output current ratio', 'The maximum switch current'];
         const errorMessage = "";
@@ -47,6 +49,7 @@ export default {
         localData["currentOptions"] = currentOptions[0];
         return {
             masStore,
+            taskQueueStore,
             designLevelOptions,
             currentOptions,
             localData,
@@ -81,8 +84,7 @@ export default {
         async process() {
             this.masStore.resetMas("power");
 
-            this.$mkf.ready.then(_ => {
-
+            try {
                 const aux = {};
                 aux['inputVoltage'] = this.localData.inputVoltage;
                 aux['diodeVoltageDrop'] = this.localData.diodeVoltageDrop;
@@ -106,31 +108,25 @@ export default {
                 auxOperatingPoint['ambientTemperature'] = this.localData.ambientTemperature;
                 aux['operatingPoints'] = [auxOperatingPoint];
 
-                var result;
+                var inputs;
                 if (this.localData.designLevel == 'I know the design I want') {
                     if (this.converterName == "Buck") {
-                        result = await this.$mkf.calculate_advanced_buck_inputs(JSON.stringify(aux));
+                        inputs = await this.taskQueueStore.calculateAdvancedBuckInputs(aux);
                     }
                     else {
-                        result = await this.$mkf.calculate_advanced_boost_inputs(JSON.stringify(aux));
+                        inputs = await this.taskQueueStore.calculateAdvancedBoostInputs(aux);
                     }
                 }
                 else {
                     if (this.converterName == "Buck") {
-                        result = await this.$mkf.calculate_buck_inputs(JSON.stringify(aux));
+                        inputs = await this.taskQueueStore.calculateBuckInputs(aux);
                     }
                     else {
-                        result = await this.$mkf.calculate_boost_inputs(JSON.stringify(aux));
+                        inputs = await this.taskQueueStore.calculateBoostInputs(aux);
                     }
                 }
 
-                if (result.startsWith("Exception")) {
-                    this.errorMessage = result;
-                    return;
-                }
-                else {
-                    this.masStore.mas.inputs = JSON.parse(result);
-                }
+                this.masStore.mas.inputs = inputs;
 
                 this.masStore.mas.magnetic.coil.functionalDescription = []
                 this.masStore.mas.inputs.operatingPoints[0].excitationsPerWinding.forEach((elem, index) => {
@@ -144,12 +140,12 @@ export default {
                 })
                 this.errorMessage = "";
 
-            }).catch(error => {
+            } catch (error) {
                 console.error(error);
                 this.errorMessage = error;
             console.log(this.errorMessage);
             console.log(this.errorMessage);
-            });
+            }
 
         },
         async processAndReview() {

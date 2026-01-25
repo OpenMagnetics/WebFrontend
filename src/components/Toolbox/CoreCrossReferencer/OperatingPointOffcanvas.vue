@@ -1,5 +1,6 @@
 <script setup>
 import { useMasStore } from '../../../stores/mas'
+import { useTaskQueueStore } from '../../../stores/taskQueue'
 import OperatingPoint from '../OperatingPoints/OperatingPoint.vue'
 
 </script>
@@ -18,9 +19,11 @@ export default {
     },
     data() {
         const masStore = useMasStore();
+        const taskQueueStore = useTaskQueueStore();
 
         return {
             masStore,
+            taskQueueStore,
         }
     },
     methods: {
@@ -28,13 +31,13 @@ export default {
 
             this.convertFromWaveformToProcessed(0, 0, signalDescriptor);
         },
-        convertFromProcessedToWaveform(operatingPointIndex, windingIndex, signalDescriptor) {
+        async convertFromProcessedToWaveform(operatingPointIndex, windingIndex, signalDescriptor) {
             var processed = this.masStore.mas.inputs.operatingPoints[operatingPointIndex].excitationsPerWinding[windingIndex][signalDescriptor].processed;
             var frequency = this.masStore.mas.inputs.operatingPoints[operatingPointIndex].excitationsPerWinding[windingIndex].frequency;
 
-            this.$mkf.ready.then(_ => {
+            try {
                 if (processed.label != "Custom") {
-                    var waveform = JSON.parse(this.$mkf.create_waveform(JSON.stringify(processed), frequency));
+                    var waveform = await this.taskQueueStore.createWaveform(processed, frequency);
 
                     if (waveform.data.length > 0) {
                         this.masStore.mas.inputs.operatingPoints[operatingPointIndex].excitationsPerWinding[windingIndex][signalDescriptor].waveform = waveform;
@@ -43,18 +46,19 @@ export default {
                 }
                 else {
                     var waveform = this.masStore.mas.inputs.operatingPoints[operatingPointIndex].excitationsPerWinding[windingIndex][signalDescriptor].waveform;
-                    var scaledWaveform = JSON.parse(this.$mkf.scale_waveform_time_to_frequency(JSON.stringify(waveform), frequency));
+                    var scaledWaveform = await this.taskQueueStore.scaleWaveformTimeToFrequency(waveform, frequency);
                     this.masStore.mas.inputs.operatingPoints[operatingPointIndex].excitationsPerWinding[windingIndex][signalDescriptor].waveform = scaledWaveform;
                     this.masStore.updatedInputExcitationWaveformUpdatedFromProcessed(signalDescriptor);
                 }
-            });
-
+            } catch (error) {
+                console.error('Error in convertFromProcessedToWaveform:', error);
+            }
         },
-        convertFromWaveformToProcessed(operatingPointIndex, windingIndex, signalDescriptor) {
+        async convertFromWaveformToProcessed(operatingPointIndex, windingIndex, signalDescriptor) {
             var waveform = this.masStore.mas.inputs.operatingPoints[operatingPointIndex].excitationsPerWinding[windingIndex][signalDescriptor].waveform;
 
-            this.$mkf.ready.then(async (_) => {
-                var processed = JSON.parse(await this.$mkf.calculate_basic_processed_data(JSON.stringify(waveform)));
+            try {
+                var processed = await this.taskQueueStore.calculateBasicProcessedData(waveform);
 
                 this.masStore.mas.inputs.operatingPoints[operatingPointIndex].excitationsPerWinding[windingIndex][signalDescriptor].processed = processed;
                 this.masStore.mas.inputs.operatingPoints[operatingPointIndex].excitationsPerWinding[windingIndex].current.processed.dutyCycle = processed.dutyCycle;
@@ -62,7 +66,9 @@ export default {
                 if (signalDescriptor == 'voltage'){
                     this.convertFromProcessedToWaveform(operatingPointIndex, windingIndex, "current");
                 }
-            });
+            } catch (error) {
+                console.error('Error in convertFromWaveformToProcessed:', error);
+            }
         },
     },
     mounted() {

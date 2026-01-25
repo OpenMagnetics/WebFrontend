@@ -1,4 +1,5 @@
 <script setup>
+import { useTaskQueueStore } from '../../../../stores/taskQueue'
 import DimensionReadOnly from '/WebSharedComponents/DataInput/DimensionReadOnly.vue'
 import { removeTrailingZeroes, combinedStyle } from '/WebSharedComponents/assets/js/utils.js'
 import { minimumMaximumScalePerParameter } from '/WebSharedComponents/assets/js/defaults.js'
@@ -17,11 +18,13 @@ export default {
         },
     },
     data() {
+        const taskQueueStore = useTaskQueueStore();
         const localData = {
             instantaneousPower: null,
             rmsPower: null,
         }
         return {
+            taskQueueStore,
             localData,
         }
     },
@@ -39,11 +42,13 @@ export default {
         this.process();
     },
     methods: {
-        process() {
-            this.$mkf.ready.then(async (_) => {
-                this.localData.instantaneousPower = await this.$mkf.calculate_instantaneous_power(JSON.stringify(this.modelValue));
-                this.localData.rmsPower = await this.$mkf.calculate_rms_power(JSON.stringify(this.modelValue));
-            });
+        async process() {
+            try {
+                this.localData.instantaneousPower = await this.taskQueueStore.calculateInstantaneousPower(this.modelValue);
+                this.localData.rmsPower = await this.taskQueueStore.calculateRmsPower(this.modelValue);
+            } catch (error) {
+                console.error(error);
+            }
         }
     }
 }

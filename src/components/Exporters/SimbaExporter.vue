@@ -1,5 +1,6 @@
 <script setup>
 import { clean, download } from '/WebSharedComponents/assets/js/utils.js'
+import { useTaskQueueStore } from '../../stores/taskQueue'
 
 </script>
 <script>
@@ -28,9 +29,11 @@ export default {
         },
     },
     data() {
+        const taskQueueStore = useTaskQueueStore();
         const exported = false;
 
         return {
+            taskQueueStore,
             exported,
         }
     },
@@ -44,11 +47,11 @@ export default {
             fr.readAsText(this.$refs['simbaFileReader'].files.item(0));
 
 
-            fr.onload = e => {
+            fr.onload = async e => {
                 const jsimba = e.target.result
 
-                this.$mkf.ready.then(_ => {
-                    var subcircuit = this.$mkf.export_magnetic_as_subcircuit(JSON.stringify(this.magnetic), this.temperature, "SIMBA", jsimba);
+                try {
+                    var subcircuit = await this.taskQueueStore.exportMagneticAsSubcircuit(this.magnetic, this.temperature, "SIMBA", jsimba);
                     const filename = name.split(".")[0];
                     var blob = new Blob([subcircuit], {
                         type: 'text/csv; charset=utf-8'
@@ -56,9 +59,9 @@ export default {
                     download(blob, filename + "_with_OM_library.jsimba", "text/plain;charset=UTF-8");
 
 
-                }).catch(error => {
+                } catch (error) {
                     console.error(error);
-                });
+                }
             }
         },
         onClick() {
@@ -74,17 +77,17 @@ export default {
                 setTimeout(() => this.exported = false, 2000);
             }
         },
-        createSimbaSubcircuit() {
-            this.$mkf.ready.then(_ => {
-                var subcircuit = this.$mkf.export_magnetic_as_subcircuit(JSON.stringify(this.magnetic), this.temperature, "SIMBA", "");
+        async createSimbaSubcircuit() {
+            try {
+                var subcircuit = await this.taskQueueStore.exportMagneticAsSubcircuit(this.magnetic, this.temperature, "SIMBA", "");
                 var blob = new Blob([subcircuit], {
                     type: 'text/csv; charset=utf-8'
                 });
                 download(blob, this.magnetic.manufacturerInfo.reference + ".jsimba", "text/csv; charset=utf-8");
 
-            }).catch(error => {
+            } catch (error) {
                 console.error(error);
-            });
+            }
         },
     }
 }

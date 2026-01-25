@@ -1,6 +1,7 @@
 <script setup>
 import { useMasStore } from '../../stores/mas'
 import { useAdviseCacheStore } from '../../stores/adviseCache'
+import { useTaskQueueStore } from '../../stores/taskQueue'
 import Slider from '@vueform/slider'
 import { removeTrailingZeroes, toTitleCase, toCamelCase, deepCopy } from '/WebSharedComponents/assets/js/utils.js'
 import { magneticAdviserWeights } from '/WebSharedComponents/assets/js/defaults.js'
@@ -41,6 +42,7 @@ export default {
     data() {
         const adviseCacheStore = useAdviseCacheStore();
         const masStore = useMasStore();
+        const taskQueueStore = useTaskQueueStore();
 
         if (this.$settingsStore.magneticAdviserSettings.weights == null) {
             this.$settingsStore.magneticAdviserSettings.weights = magneticAdviserWeights;
@@ -52,6 +54,7 @@ export default {
         return {
             adviseCacheStore,
             masStore,
+            taskQueueStore,
             loading,
             dataUptoDate,
             currentAdviseToShow: 0,
@@ -116,24 +119,22 @@ export default {
             this.currentAdviseToShow = 0;
 
             // Timeout to give time to gif to load
-            setTimeout(() => {
-                this.$mkf.ready.then(async (_) => {
+            setTimeout(async () => {
+                try {
                     if (this.masStore.mas.inputs.operatingPoints.length > 0) {
-                        const settings = JSON.parse(await this.$mkf.get_settings());
+                        const settings = await this.taskQueueStore.getSettings();
                         settings["coreIncludeDistributedGaps"] = this.$settingsStore.adviserSettings.allowDistributedGaps;
                         settings["coreIncludeStacks"] = this.$settingsStore.adviserSettings.allowStacks;
                         settings["useToroidalCores"] = this.$settingsStore.adviserSettings.allowToroidalCores;
                         settings["useOnlyCoresInStock"] = this.$settingsStore.adviserSettings.useOnlyCoresInStock;
-                        await this.$mkf.set_settings(JSON.stringify(settings));
+                        await this.taskQueueStore.setSettings(settings);
 
-                        const result = await this.$mkf.calculate_advised_magnetics(JSON.stringify(this.masStore.mas.inputs), JSON.stringify(this.$settingsStore.magneticAdviserSettings.weights), this.$settingsStore.magneticAdviserSettings.maximumNumberResults, this.$settingsStore.adviserSettings.coreAdviseMode);
-
-                        if (result.startsWith("Exception")) {
-                            console.error(result);
-                            return;
-                        }
-                        
-                        const aux = JSON.parse(result);
+                        const aux = await this.taskQueueStore.calculateAdvisedMagnetics(
+                            this.masStore.mas.inputs,
+                            this.$settingsStore.magneticAdviserSettings.weights,
+                            this.$settingsStore.magneticAdviserSettings.maximumNumberResults,
+                            this.$settingsStore.adviserSettings.coreAdviseMode
+                        );
 
                         var data = aux["data"];
 
@@ -172,10 +173,11 @@ export default {
                         console.error("No operating points found")
                         this.loading = false;
                     }
-                }).catch(error => {
+                } catch (error) {
                     console.error("Error calculating advising magnetics");
                     console.error(error);
-                });
+                    this.loading = false;
+                }
             }, 10);
         },
         changedInputValue(key, value) {

@@ -1,6 +1,7 @@
 <script setup>
 import { Chart, registerables } from 'chart.js'
 import { toTitleCase, removeTrailingZeroes, formatPower, formatPowerDensity, formatInductance, formatTemperature } from '/WebSharedComponents/assets/js/utils.js'
+import { useTaskQueueStore } from '../../../stores/taskQueue'
 </script>
 
 <script>
@@ -52,6 +53,7 @@ export default {
           white: style.getPropertyValue('--bs-white'),
         };
         const data = {};
+        const taskQueueStore = useTaskQueueStore();
         const localTexts = {
             coreLosses: null,
             powerDensity: null,
@@ -64,6 +66,7 @@ export default {
             localTexts,
             masScore: null,
             processedScoring: {},
+            taskQueueStore,
         }
     },
     computed: {
@@ -183,21 +186,23 @@ export default {
                 chart.update()
             }
         },
-        processLocalTexts() {
+        async processLocalTexts() {
             {
                 const aux = formatPower(this.masData.outputs[0].coreLosses.coreLosses + this.masData.outputs[0].windingLosses.windingLosses);
                 this.localTexts.losses = `Losses:\n${removeTrailingZeroes(aux.label, 2)} ${aux.unit}`
             }
 
-            this.$mkf.ready.then(_ => {
+            try {
                 // hardcoded operation point
-                const rmsPower = this.$mkf.calculate_rms_power(JSON.stringify(this.masData.inputs.operatingPoints[0].excitationsPerWinding[0]));
+                const rmsPower = await this.taskQueueStore.calculateRmsPower(this.masData.inputs.operatingPoints[0].excitationsPerWinding[0]);
                 const volume = this.masData.magnetic.core.processedDescription.width *
                                this.masData.magnetic.core.processedDescription.depth * 
                                this.masData.magnetic.core.processedDescription.height;
                 const aux = formatPowerDensity(rmsPower / volume);
                 this.localTexts.powerDensity = `Power dens.:\n${removeTrailingZeroes(aux.label, 1)} ${aux.unit}`;
-            }); 
+            } catch (error) {
+                console.error('Error calculating power density:', error);
+            }
             {
                 const aux = formatInductance(this.masData.outputs[0].magnetizingInductance.magnetizingInductance.nominal);
                 this.localTexts.magnetizingInductance = `Mag. Ind.:\n${removeTrailingZeroes(aux.label, 1)} ${aux.unit}`

@@ -4,6 +4,7 @@ import DimensionReadOnly from '/WebSharedComponents/DataInput/DimensionReadOnly.
 import { removeTrailingZeroes } from '/WebSharedComponents/assets/js/utils.js'
 import { minimumMaximumScalePerParameter } from '/WebSharedComponents/assets/js/defaults.js'
 import { toTitleCase, combinedStyle, deepCopy } from '/WebSharedComponents/assets/js/utils.js'
+import { useTaskQueueStore } from '../../../../stores/taskQueue'
 </script>
 
 <script>
@@ -20,6 +21,7 @@ export default {
     },
     data() {
         const blockingRebounds = false;
+        const taskQueueStore = useTaskQueueStore();
 
         const localData = {
             rmsPower: null,
@@ -27,6 +29,7 @@ export default {
         return {
             blockingRebounds,
             localData,
+            taskQueueStore,
         }
     },
     computed: {
@@ -67,27 +70,29 @@ export default {
     },
     methods: {
         async process(signalDescriptor) {
-            await this.$mkf.ready;
-            if (this.modelValue[signalDescriptor].harmonics == null) {
-                this.modelValue[signalDescriptor].harmonics = JSON.parse(await this.$mkf.calculate_harmonics(JSON.stringify(this.modelValue[signalDescriptor].waveform), this.modelValue.frequency));
-            }
-            var result = await this.$mkf.calculate_processed(JSON.stringify(this.modelValue[signalDescriptor].harmonics), JSON.stringify(this.modelValue[signalDescriptor].waveform));
-            if (result.startsWith("Exception")) {
-                console.error(result);
-            }
-            else {
-                var processed = JSON.parse(result);
-                this.modelValue[signalDescriptor].processed.acEffectiveFrequency = processed.acEffectiveFrequency;
-                this.modelValue[signalDescriptor].processed.effectiveFrequency = processed.effectiveFrequency;
-                this.modelValue[signalDescriptor].processed.peak = processed.peak;
-                this.modelValue[signalDescriptor].processed.rms = processed.rms;
-                this.modelValue[signalDescriptor].processed.thd = processed.thd;
-                if (this.modelValue[signalDescriptor].processed.label == 'Custom') {
-                    this.modelValue[signalDescriptor].processed.dutyCycle = processed.dutyCycle;
-                    this.modelValue[signalDescriptor].processed.peakToPeak = processed.peakToPeak;
-                    this.modelValue[signalDescriptor].processed.offset = processed.offset;
+            try {
+                if (this.modelValue[signalDescriptor].harmonics == null) {
+                    this.modelValue[signalDescriptor].harmonics = await this.taskQueueStore.calculateHarmonics(this.modelValue[signalDescriptor].waveform, this.modelValue.frequency);
                 }
-                this.localData.rmsPower = await this.$mkf.calculate_rms_power(JSON.stringify(this.modelValue));
+                var result = await this.taskQueueStore.calculateProcessed(this.modelValue[signalDescriptor].harmonics, this.modelValue[signalDescriptor].waveform);
+                if (typeof result === 'string' && result.startsWith("Exception")) {
+                    console.error(result);
+                }
+                else {
+                    this.modelValue[signalDescriptor].processed.acEffectiveFrequency = result.acEffectiveFrequency;
+                    this.modelValue[signalDescriptor].processed.effectiveFrequency = result.effectiveFrequency;
+                    this.modelValue[signalDescriptor].processed.peak = result.peak;
+                    this.modelValue[signalDescriptor].processed.rms = result.rms;
+                    this.modelValue[signalDescriptor].processed.thd = result.thd;
+                    if (this.modelValue[signalDescriptor].processed.label == 'Custom') {
+                        this.modelValue[signalDescriptor].processed.dutyCycle = result.dutyCycle;
+                        this.modelValue[signalDescriptor].processed.peakToPeak = result.peakToPeak;
+                        this.modelValue[signalDescriptor].processed.offset = result.offset;
+                    }
+                    this.localData.rmsPower = await this.taskQueueStore.calculateRmsPower(this.modelValue);
+                }
+            } catch (error) {
+                console.error('Error in process:', error);
             }
         }
     }

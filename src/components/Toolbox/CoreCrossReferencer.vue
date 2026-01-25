@@ -1,6 +1,7 @@
 <script setup>
 import { useMasStore } from '../../stores/mas'
 import { useCrossReferencerStore } from '../../stores/crossReferencer'
+import { useTaskQueueStore } from '../../stores/taskQueue'
 import { defaultCore, defaultInputs, coreCrossReferencerPossibleLabels } from '/WebSharedComponents/assets/js/defaults.js'
 import { toCamelCase, formatUnit, removeTrailingZeroes, deepCopy } from '/WebSharedComponents/assets/js/utils.js'
 import ElementFromList from '/WebSharedComponents/DataInput/ElementFromList.vue'
@@ -52,6 +53,7 @@ export default {
     data() {
         const masStore = useMasStore();
         const crossReferencerStore = useCrossReferencerStore();
+        const taskQueueStore = useTaskQueueStore();
         const tryingToSend = false;
         const hideOutputs = true;
         const loading = false;
@@ -62,6 +64,7 @@ export default {
         return {
             masStore,
             crossReferencerStore,
+            taskQueueStore,
             tryingToSend,
             hideOutputs,
             loading,
@@ -108,14 +111,14 @@ export default {
         this.tryToSend();
     },
     methods: {
-        calculateCrossReferencedCoresValues() {
-            crossReferencers.ready.then(async (_) => {
+        async calculateCrossReferencedCoresValues() {
+            try {
+                await crossReferencers.ready;
                 const coreAux = deepCopy(this.crossReferencerStore.coreReferenceInputs.core);
                 coreAux['geometricalDescription'] = null;
                 coreAux['processedDescription'] = null;
 
-                var coreString = await this.$mkf.calculate_core_data(JSON.stringify(coreAux), false);
-                var core = JSON.parse(coreString);
+                var core = await this.taskQueueStore.calculateCoreData(coreAux, false);
                 core['functionalDescription']['shape'] = core['functionalDescription']['shape']['name'];
 
                 const inputs = this.masStore.mas.inputs;
@@ -162,11 +165,11 @@ export default {
 
                 setTimeout(() => {this.scatterChartComparatorForceUpdate += 1}, 5);
 
-            }).catch(error => {
+            } catch (error) {
                 console.error(error);
                 this.hideOutputs = false;
                 this.loading = false;
-            });
+            }
         },
         tryToSend() {
             if (!this.tryingToSend && !this.loading && !this.hasError) {

@@ -1,5 +1,6 @@
 <script setup>
 import { useMasStore } from '../../stores/mas'
+import { useTaskQueueStore } from '../../stores/taskQueue'
 import { combinedStyle, combinedClass, deepCopy } from '/WebSharedComponents/assets/js/utils.js'
 import Dimension from '/WebSharedComponents/DataInput/Dimension.vue'
 import ElementFromListRadio from '/WebSharedComponents/DataInput/ElementFromListRadio.vue'
@@ -29,6 +30,7 @@ export default {
     },
     data() {
         const masStore = useMasStore();
+        const taskQueueStore = useTaskQueueStore();
         const designLevelOptions = ['Help me with the design', 'I know the design I want'];
         const mosfetOptions = ['Its maximum duty cycle', 'Its maximum drain-source voltage'];
         const insulationTypes = ['No', 'Basic', 'Reinforced'];
@@ -37,6 +39,7 @@ export default {
         localData["mosfetInputType"] = mosfetOptions[0];
         return {
             masStore,
+            taskQueueStore,
             designLevelOptions,
             mosfetOptions,
             insulationTypes,
@@ -83,8 +86,7 @@ export default {
         async process() {
             this.masStore.resetMas("power");
 
-            this.$mkf.ready.then(_ => {
-
+            try {
                 const aux = {};
                 aux['inputVoltage'] = this.localData.inputVoltage;
                 aux['diodeVoltageDrop'] = this.localData.diodeVoltageDrop;
@@ -148,22 +150,15 @@ export default {
                 auxOperatingPoint['ambientTemperature'] = this.localData.ambientTemperature;
                 aux['operatingPoints'] = [auxOperatingPoint];
 
-                var result;
+                var inputs;
                 if (this.localData.designLevel == 'I know the design I want') {
-                    result = await this.$mkf.calculate_advanced_flyback_inputs(JSON.stringify(aux));
+                    inputs = await this.taskQueueStore.calculateAdvancedFlybackInputs(aux);
                 }
                 else {
-                    result = await this.$mkf.calculate_flyback_inputs(JSON.stringify(aux));
+                    inputs = await this.taskQueueStore.calculateFlybackInputs(aux);
                 }
 
-                if (result.startsWith("Exception")) {
-                    console.error(result);
-                    this.errorMessage = result;
-                    return;
-                }
-                else {
-                    this.masStore.mas.inputs = JSON.parse(result);
-                }
+                this.masStore.mas.inputs = inputs;
 
                 if (this.localData.insulationType != 'No') {
 
@@ -183,10 +178,10 @@ export default {
                 })
                 this.errorMessage = "";
 
-            }).catch(error => {
+            } catch (error) {
                 console.error(error);
                 this.errorMessage = error;
-            });
+            }
 
         },
         async processAndReview() {

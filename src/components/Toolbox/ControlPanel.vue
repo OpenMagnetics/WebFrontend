@@ -1,6 +1,7 @@
 <script setup>
 import { useMasStore } from '../../stores/mas'
 import { useHistoryStore } from '../../stores/history'
+import { useTaskQueueStore } from '../../stores/taskQueue'
 import { clean, checkAndFixMas, download, pruneNulls, deepCopy } from '/WebSharedComponents/assets/js/utils.js'
 import CoreExporter from '../Exporters/CoreExporter.vue'
 import CoilExporter from '../Exporters/CoilExporter.vue'
@@ -38,6 +39,7 @@ export default {
     data() {
         const masStore = useMasStore();
         const historyStore = useHistoryStore();
+        const taskQueueStore = useTaskQueueStore();
         const exportingMAS = false;
         const exportingAnsys = false;
         const exportingSimba = false;
@@ -58,6 +60,7 @@ export default {
         return {
             masStore,
             historyStore,
+            taskQueueStore,
 
             exportingMAS,
             exportingAnsys,
@@ -157,11 +160,11 @@ export default {
             fr.readAsText(this.$refs['simbaFileReader'].files.item(0));
 
 
-            fr.onload = e => {
+            fr.onload = async e => {
                 const jsimba = e.target.result
 
-                this.$mkf.ready.then(_ => {
-                    var subcircuit = this.$mkf.export_magnetic_as_subcircuit(JSON.stringify(this.masStore.mas.magnetic), this.ambientTemperature, "SIMBA", jsimba);
+                try {
+                    var subcircuit = await this.taskQueueStore.exportMagneticAsSubcircuit(this.masStore.mas.magnetic, this.ambientTemperature, "SIMBA", jsimba);
                     const filename = name.split(".")[0];
                     var blob = new Blob([subcircuit], {
                         type: 'text/csv; charset=utf-8'
@@ -169,9 +172,9 @@ export default {
                     download(blob, filename + "_with_OM_library.jsimba", "text/plain;charset=UTF-8");
 
 
-                }).catch(error => {
+                } catch (error) {
                     console.error(error);
-                });
+                }
             }
         },
         exportSimba(attachToFile) {
@@ -187,69 +190,65 @@ export default {
                 setTimeout(() => this.exportingSimba = false, 2000);
             }
         },
-        createSimbaSubcircuit() {
-            this.$mkf.ready.then(_ => {
-                var subcircuit = this.$mkf.export_magnetic_as_subcircuit(JSON.stringify(this.masStore.mas.magnetic), this.ambientTemperature, "SIMBA", "");
+        async createSimbaSubcircuit() {
+            try {
+                var subcircuit = await this.taskQueueStore.exportMagneticAsSubcircuit(this.masStore.mas.magnetic, this.ambientTemperature, "SIMBA", "");
                 var blob = new Blob([subcircuit], {
                     type: 'text/csv; charset=utf-8'
                 });
                 download(blob, this.reference + ".jsimba", "text/csv; charset=utf-8");
 
-            }).catch(error => {
+            } catch (error) {
                 console.error(error);
-            });
+            }
         },
-        exportLtspice(part) {
+        async exportLtspice(part) {
             this.exportingLtspice = true;
-            setTimeout(() => {
-                this.$mkf.ready.then(_ => {
-                    const magnetic = deepCopy(this.masStore.mas.magnetic);
-                    const reference = this.reference.replaceAll(" ", "_").replaceAll("-", "_").replaceAll(".", "_").replaceAll(",", "_").replaceAll(":", "_").replaceAll("___", "_").replaceAll("__", "_");
+            try {
+                const magnetic = deepCopy(this.masStore.mas.magnetic);
+                const reference = this.reference.replaceAll(" ", "_").replaceAll("-", "_").replaceAll(".", "_").replaceAll(",", "_").replaceAll(":", "_").replaceAll("___", "_").replaceAll("__", "_");
 
-                    if (part == "subcircuit") {
-                        var subcircuit = this.$mkf.export_magnetic_as_subcircuit(JSON.stringify(magnetic), this.ambientTemperature, "LtSpice", "");
-                        var blob = new Blob([subcircuit], {
-                            type: 'text/csv; charset=utf-8'
-                        });
-                        const filename = reference;
-                        download(blob, filename + ".cir", "text/csv; charset=utf-8");
-                    }
-                    else {
-                        var subcircuit = this.$mkf.export_magnetic_as_symbol(JSON.stringify(magnetic), "LtSpice", "");
-                        var blob = new Blob([subcircuit], {
-                            type: 'text/csv; charset=utf-8'
-                        });
-                        const filename = reference;
-                        download(blob, filename + ".asy", "text/csv; charset=utf-8");
-                    }
-
-                    setTimeout(() => this.exportingLtspice = false, 2000);
-
-                }).catch(error => {
-                    setTimeout(() => this.exportingLtspice = false, 200);
-                    console.error(error);
-                });
-            }, 100);
-        },
-        exportNgspice() {
-            this.exportingNgspice = true;
-            setTimeout(() => {
-                this.$mkf.ready.then(_ => {
-                    const magnetic = deepCopy(this.masStore.mas.magnetic);
-                    const reference = this.reference.replaceAll(" ", "_").replaceAll("-", "_").replaceAll(".", "_").replaceAll(",", "_").replaceAll(":", "_").replaceAll("___", "_").replaceAll("__", "_");
-                    var subcircuit = this.$mkf.export_magnetic_as_subcircuit(JSON.stringify(magnetic), this.ambientTemperature, "LtSpice", "");
+                if (part == "subcircuit") {
+                    var subcircuit = await this.taskQueueStore.exportMagneticAsSubcircuit(magnetic, this.ambientTemperature, "LtSpice", "");
                     var blob = new Blob([subcircuit], {
                         type: 'text/csv; charset=utf-8'
                     });
                     const filename = reference;
                     download(blob, filename + ".cir", "text/csv; charset=utf-8");
-                    setTimeout(() => this.exportingNgspice = false, 2000);
+                }
+                else {
+                    var subcircuit = await this.taskQueueStore.exportMagneticAsSymbol(magnetic, "LtSpice", "");
+                    var blob = new Blob([subcircuit], {
+                        type: 'text/csv; charset=utf-8'
+                    });
+                    const filename = reference;
+                    download(blob, filename + ".asy", "text/csv; charset=utf-8");
+                }
 
-                }).catch(error => {
-                    setTimeout(() => this.exportingNgspice = false, 200);
-                    console.error(error);
+                setTimeout(() => this.exportingLtspice = false, 2000);
+
+            } catch (error) {
+                setTimeout(() => this.exportingLtspice = false, 200);
+                console.error(error);
+            }
+        },
+        async exportNgspice() {
+            this.exportingNgspice = true;
+            try {
+                const magnetic = deepCopy(this.masStore.mas.magnetic);
+                const reference = this.reference.replaceAll(" ", "_").replaceAll("-", "_").replaceAll(".", "_").replaceAll(",", "_").replaceAll(":", "_").replaceAll("___", "_").replaceAll("__", "_");
+                var subcircuit = await this.taskQueueStore.exportMagneticAsSubcircuit(magnetic, this.ambientTemperature, "LtSpice", "");
+                var blob = new Blob([subcircuit], {
+                    type: 'text/csv; charset=utf-8'
                 });
-            }, 100);
+                const filename = reference;
+                download(blob, filename + ".cir", "text/csv; charset=utf-8");
+                setTimeout(() => this.exportingNgspice = false, 2000);
+
+            } catch (error) {
+                setTimeout(() => this.exportingNgspice = false, 200);
+                console.error(error);
+            }
         },
         async reset(isPlanar) {
             this.masStore.resetMas('power');

@@ -1,5 +1,6 @@
 <script setup>
 import { clean, download, deepCopy } from '/WebSharedComponents/assets/js/utils.js'
+import { useTaskQueueStore } from '../../stores/taskQueue'
 
 </script>
 <script>
@@ -24,9 +25,11 @@ export default {
         },
     },
     data() {
+        const taskQueueStore = useTaskQueueStore();
         const exported = false;
 
         return {
+            taskQueueStore,
             exported,
         }
     },
@@ -43,20 +46,20 @@ export default {
             }
             setTimeout(() => this.exported = false, 2000);
         },
-        createLtSpiceSubcircuit() {
-            this.$mkf.ready.then(_ => {
+        async createLtSpiceSubcircuit() {
+            try {
                 const magnetic = deepCopy(this.magnetic);
                 magnetic.manufacturerInfo.reference = magnetic.manufacturerInfo.reference.replaceAll(" ", "_").replaceAll("-", "_").replaceAll(".", "_").replaceAll(",", "_").replaceAll(":", "_").replaceAll("___", "_").replaceAll("__", "_");
-                var subcircuit = this.$mkf.export_magnetic_as_subcircuit(JSON.stringify(magnetic), this.temperature, "LtSpice", "");
+                var subcircuit = await this.taskQueueStore.exportMagneticAsSubcircuit(magnetic, this.temperature, "LtSpice", "");
                 var blob = new Blob([subcircuit], {
                     type: 'text/csv; charset=utf-8'
                 });
                 const filename = magnetic.manufacturerInfo.reference;
                 download(blob, filename + ".cir", "text/csv; charset=utf-8");
 
-            }).catch(error => {
+            } catch (error) {
                 console.error(error);
-            });
+            }
         },
     }
 }

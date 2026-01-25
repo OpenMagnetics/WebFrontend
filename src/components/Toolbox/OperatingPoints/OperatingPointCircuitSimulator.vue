@@ -1,5 +1,6 @@
 <script setup>
 import { useMasStore } from '../../../stores/mas'
+import { useTaskQueueStore } from '../../../stores/taskQueue'
 import WaveformGraph from './Output/WaveformGraph.vue'
 import WaveformFourier from './Output/WaveformFourier.vue'
 import WaveformOutput from './Output/WaveformOutput.vue'
@@ -39,6 +40,7 @@ export default {
     },
     data() {
         const masStore = useMasStore();
+        const taskQueueStore = useTaskQueueStore();
         if (masStore.mas.inputs.operatingPoints.length == 0) {
             masStore.mas.inputs.operatingPoints.push(
                 {
@@ -51,6 +53,7 @@ export default {
 
         return {
             masStore,
+            taskQueueStore,
             errorMessages: "",
         }
     },
@@ -77,28 +80,26 @@ export default {
         clearMode() {
             this.$emit("clearMode");
         },
-        extractOperatingPoint(file) {
-            this.$mkf.ready.then(_ => {
+        async extractOperatingPoint(file) {
+            try {
                 const numberWindings = this.masStore.mas.inputs.designRequirements.turnsRatios.length + 1;
                 const frequency = this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex].frequency;
-                const desiredMagnetizingInductance = this.$mkf.resolve_dimension_with_tolerance(JSON.stringify(this.masStore.mas.inputs.designRequirements.magnetizingInductance));
-                const mapColumnNamesString = JSON.stringify(this.$stateStore.operatingPointsCircuitSimulator.columnNames[this.currentOperatingPointIndex]);
+                const desiredMagnetizingInductance = await this.taskQueueStore.resolveDimensionWithTolerance(this.masStore.mas.inputs.designRequirements.magnetizingInductance);
+                const mapColumnNames = this.$stateStore.operatingPointsCircuitSimulator.columnNames[this.currentOperatingPointIndex];
 
-                var operatingPointString = this.$mkf.extract_operating_point(file, numberWindings, frequency, desiredMagnetizingInductance, mapColumnNamesString);
-                if (operatingPointString.startsWith("Error")) {
-                    this.errorMessages = operatingPointString;
-                    this.$stateStore.operatingPointsCircuitSimulator.confirmedColumns[this.currentOperatingPointIndex][this.currentWindingIndex] = true;
-                }
-                else {
-                    var operatingPoint = JSON.parse(operatingPointString);
-                    this.errorMessages = "";
-                    this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex] = operatingPoint.excitationsPerWinding[this.currentWindingIndex]
-                    this.$stateStore.operatingPointsCircuitSimulator.confirmedColumns[this.currentOperatingPointIndex][this.currentWindingIndex] = true;
-                }
+                var operatingPoint = await this.taskQueueStore.extractOperatingPoint(file, numberWindings, frequency, desiredMagnetizingInductance, mapColumnNames);
+                this.errorMessages = "";
+                this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex] = operatingPoint.excitationsPerWinding[this.currentWindingIndex]
+                this.$stateStore.operatingPointsCircuitSimulator.confirmedColumns[this.currentOperatingPointIndex][this.currentWindingIndex] = true;
                 this.$emit("importedWaveform");
                 this.$emit("updatedSignal");
 
-            });
+            } catch (error) {
+                this.errorMessages = error.toString();
+                this.$stateStore.operatingPointsCircuitSimulator.confirmedColumns[this.currentOperatingPointIndex][this.currentWindingIndex] = true;
+                this.$emit("importedWaveform");
+                this.$emit("updatedSignal");
+            }
         },
         updatedSwitchingFrequency(frequency) {
             this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding.forEach((elem) => {

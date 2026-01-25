@@ -1,5 +1,6 @@
 <script setup>
 import { useMasStore } from '../../stores/mas'
+import { useTaskQueueStore } from '../../stores/taskQueue'
 import { toTitleCase, removeTrailingZeroes, formatUnit, formatDimension, formatTemperature, formatInductance,
          formatPower, formatResistance, deepCopy, downloadBase64asPDF, clean, download, isMobile } from '/WebSharedComponents/assets/js/utils.js'
 import Magnetic2DVisualizer, { PLOT_MODES } from '/WebSharedComponents/Common/Magnetic2DVisualizer.vue'
@@ -23,6 +24,7 @@ export default {
         },
     },
     data() {
+        const taskQueueStore = useTaskQueueStore();
         const style = getComputedStyle(document.body);
         const theme = {
           primary: style.getPropertyValue('--bs-primary'),
@@ -37,6 +39,7 @@ export default {
         };
         const localTexts = {};
         return {
+            taskQueueStore,
             theme,
             localTexts,
             masExported: false,
@@ -67,13 +70,8 @@ export default {
             for (var gapIndex = 0; gapIndex < data.magnetic.core.functionalDescription.gapping.length; gapIndex++) {
                 const coreGappingRow = {}
 
-                const coreResult = await this.$mkf.calculate_core_data(JSON.stringify(data.magnetic.core), true);
-                if (coreResult.startsWith("Exception")) {
-                    console.error(coreResult);
-                }
-                else {
-                    data.magnetic.core.functionalDescription.gapping = JSON.parse(coreResult).functionalDescription.gapping;
-                }
+                const coreData = await this.taskQueueStore.calculateCoreData(data.magnetic.core, true);
+                data.magnetic.core.functionalDescription.gapping = coreData.functionalDescription.gapping;
 
                 const gap = data.magnetic.core.functionalDescription.gapping[gapIndex];
                 {
@@ -326,10 +324,10 @@ export default {
                     }
                     {
                         const currentRms = data.inputs.operatingPoints[operatingPointIndex].excitationsPerWinding[windingIndex].current.processed.rms;
-                        const wireString = JSON.stringify(this.mas.magnetic.coil.functionalDescription[windingIndex].wire);
-                        const currentString = JSON.stringify(this.mas.inputs.operatingPoints[0].excitationsPerWinding[windingIndex].current);
+                        const wire = this.mas.magnetic.coil.functionalDescription[windingIndex].wire;
+                        const current = this.mas.inputs.operatingPoints[0].excitationsPerWinding[windingIndex].current;
 
-                        const currentDensity = await this.$mkf.calculate_effective_current_density(wireString, currentString, this.mas.inputs.operatingPoints[0].conditions.ambientTemperature) / this.mas.magnetic.coil.functionalDescription[windingIndex].numberParallels;
+                        const currentDensity = await this.taskQueueStore.calculateEffectiveCurrentDensity(wire, current, this.mas.inputs.operatingPoints[0].conditions.ambientTemperature) / this.mas.magnetic.coil.functionalDescription[windingIndex].numberParallels;
 
 
                         const aux = formatUnit(currentDensity / 1000000, "A/mm²");
@@ -384,15 +382,15 @@ export default {
             }
             return outputsTable;
         },
-        computeTexts() {
-            this.$mkf.ready.then(async (_) => {
+        async computeTexts() {
+            try {
                 const materialName = this.mas.magnetic.core.functionalDescription.material;
                 if (typeof materialName === 'string' || materialName instanceof String) {
-                    var materialData = JSON.parse(await this.$mkf.get_material_data(materialName));
+                    var materialData = await this.taskQueueStore.getMaterialData(materialName);
                     this.mas.magnetic.core.functionalDescription.material = materialData;
                 }
-                var temperatureDependantData25 = JSON.parse(await this.$mkf.get_core_temperature_dependant_parameters(JSON.stringify(this.mas.magnetic.core), 25));
-                var temperatureDependantData100 = JSON.parse(await this.$mkf.get_core_temperature_dependant_parameters(JSON.stringify(this.mas.magnetic.core), 100));
+                var temperatureDependantData25 = await this.taskQueueStore.getCoreTemperatureDependantParameters(this.mas.magnetic.core, 25);
+                var temperatureDependantData100 = await this.taskQueueStore.getCoreTemperatureDependantParameters(this.mas.magnetic.core, 100);
                 const mas = deepCopy(this.mas);
                 mas.magnetic.core.temp = {}
                 mas.magnetic.core.temp["25"] = {}
@@ -414,10 +412,10 @@ export default {
                 this.localTexts["coreMaterialTable"] = this.processCoreMaterialTexts(mas);
                 this.localTexts["outputsTable"] = this.processOutputsTexts(mas);
                 this.localTexts["coilTable"] = this.processCoilTexts(mas);
-            }).catch(error => {
+            } catch (error) {
                 console.error("Error reading outputs data")
                 console.error(error)
-            });
+            }
         },
         insertMas() {
             // Placeholder for future implementation

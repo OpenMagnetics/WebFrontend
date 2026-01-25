@@ -1,5 +1,6 @@
 <script setup>
 import { useMasStore } from '../../../stores/mas'
+import { useTaskQueueStore } from '../../../stores/taskQueue'
 import { toTitleCase, removeTrailingZeroes, formatInductance, formatPower, formatTemperature, formatResistance} from '/WebSharedComponents/assets/js/utils.js'
 import Magnetic2DVisualizer, { PLOT_MODES } from '/WebSharedComponents/Common/Magnetic2DVisualizer.vue'
 </script>
@@ -19,11 +20,13 @@ export default {
     data() {
         const localTexts = {};
         const masStore = useMasStore();
+        const taskQueueStore = useTaskQueueStore();
 
 
         return {
             localTexts,
             masStore,
+            taskQueueStore,
             posting: false,
             zoomingPlot: false,
             plotMode: PLOT_MODES.BASIC,
@@ -39,11 +42,14 @@ export default {
         },
     },
     methods: {
-        calculaLeakageInductance() {
+        async calculaLeakageInductance() {
             if (this.modelValue.magnetic.coil.functionalDescription.length > 1) {
-                this.$mkf.ready.then(_ => {
-                    const leakageInductaceOutput = JSON.parse(this.$mkf.calculate_leakage_inductance(JSON.stringify(this.masStore.mas.magnetic), this.masStore.mas.inputs.operatingPoints[0].excitationsPerWinding[0].frequency, 0));
-
+                try {
+                    const leakageInductaceOutput = await this.taskQueueStore.calculateLeakageInductance(
+                        this.masStore.mas.magnetic,
+                        this.masStore.mas.inputs.operatingPoints[0].excitationsPerWinding[0].frequency,
+                        0
+                    );
 
                     for (var windingIndex = 1; windingIndex < this.masStore.mas.magnetic.coil.functionalDescription.length; windingIndex++) {
 
@@ -51,8 +57,9 @@ export default {
 
                         this.localTexts.leakageInductaceTable[windingIndex].value = `${removeTrailingZeroes(aux.label, 1)} ${aux.unit}`;
                     }
-
-                })
+                } catch (error) {
+                    console.error('Error calculating leakage inductance:', error);
+                }
             }   
         },
         processMagneticTexts(data) {

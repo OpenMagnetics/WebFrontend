@@ -1,5 +1,6 @@
 <script setup>
 import { useMasStore } from '../../../stores/mas'
+import { useTaskQueueStore } from '../../../stores/taskQueue'
 import OperatingPointManual from './OperatingPointManual.vue'
 import OperatingPointHarmonics from './OperatingPointHarmonics.vue'
 import OperatingPointCircuitSimulator from './OperatingPointCircuitSimulator.vue'
@@ -46,6 +47,7 @@ export default {
     },
     data() {
         const masStore = useMasStore();
+        const taskQueueStore = useTaskQueueStore();
         if (masStore.mas.inputs.operatingPoints.length == 0) {
             masStore.mas.inputs.operatingPoints.push(
                 {
@@ -58,6 +60,7 @@ export default {
 
         return {
             masStore,
+            taskQueueStore,
             loadedFile: "",
         }
     },
@@ -95,33 +98,25 @@ export default {
         importedWaveform() {
             this.$emit('importedWaveform');
         },
-        extractMapColumnNames(file) {
-            this.$mkf.ready.then(_ => {
+        async extractMapColumnNames(file) {
+            try {
                 const numberWindings = this.masStore.mas.inputs.designRequirements.turnsRatios.length + 1;
                 const frequency = this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex].frequency;
-                const result = this.$mkf.extract_map_column_names(file, numberWindings, frequency);
-                if (result.startsWith("Exception")) {
-                    console.error(resultMasWithCoil);
-                    return;
-                }
-                this.$stateStore.operatingPointsCircuitSimulator.columnNames[this.currentOperatingPointIndex] = JSON.parse(result);
-            })
-            .catch(error => {
+                const result = await this.taskQueueStore.extractMapColumnNames(file, numberWindings, frequency);
+                this.$stateStore.operatingPointsCircuitSimulator.columnNames[this.currentOperatingPointIndex] = result;
+            }
+            catch (error) {
                 console.error(error)
-            });
+            }
         },
-        extractAllColumnNames(file) {
-            this.$mkf.ready.then(_ => {
-                const result = this.$mkf.extract_column_names(file);
-                if (result.startsWith("Exception")) {
-                    console.error(resultMasWithCoil);
-                    return;
-                }
-                this.$stateStore.operatingPointsCircuitSimulator.allLastReadColumnNames = JSON.parse(result);
-            })
-            .catch(error => {
+        async extractAllColumnNames(file) {
+            try {
+                const result = await this.taskQueueStore.extractColumnNames(file);
+                this.$stateStore.operatingPointsCircuitSimulator.allLastReadColumnNames = result;
+            }
+            catch (error) {
                 console.error(error)
-            });
+            }
         },
         onMASFileTypeSelected(event) {
             const fr = new FileReader();
