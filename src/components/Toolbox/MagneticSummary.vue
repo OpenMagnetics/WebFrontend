@@ -2,7 +2,7 @@
 import { useMasStore } from '../../stores/mas'
 import { toTitleCase, removeTrailingZeroes, formatUnit, formatDimension, formatTemperature, formatInductance,
          formatPower, formatResistance, deepCopy, downloadBase64asPDF, clean, download, isMobile } from '/WebSharedComponents/assets/js/utils.js'
-import Magnetic2DVisualizer from '/WebSharedComponents/Common/Magnetic2DVisualizer.vue'
+import Magnetic2DVisualizer, { PLOT_MODES } from '/WebSharedComponents/Common/Magnetic2DVisualizer.vue'
 import CoreExporter from '../Exporters/CoreExporter.vue'
 import CoilExporter from '../Exporters/CoilExporter.vue'
 import MASExporter from '../Exporters/MASExporter.vue'
@@ -43,8 +43,9 @@ export default {
             magneticSectionPlotExported: false,
             magneticSectionAndFieldPlotExported: false,
             magneticSimbaSubcircuitExported: false,
-            showFieldPlot: false,
+            plotMode: PLOT_MODES.BASIC,
             includeFringing: true,
+            PLOT_MODES,
         }
     },
     computed: {
@@ -54,19 +55,19 @@ export default {
         setTimeout(() => this.insertMas(), 2000);
     },
     methods: {
-        swapFieldPlot() {
-            this.showFieldPlot = !this.showFieldPlot;
+        plotModeChange(newMode) {
+            this.plotMode = newMode;
         },
         swapIncludeFringing() {
             this.includeFringing = !this.includeFringing;
         },
 
-        processCoreGappingTexts(data) {
+        async processCoreGappingTexts(data) {
             const coreGappingTable = []
             for (var gapIndex = 0; gapIndex < data.magnetic.core.functionalDescription.gapping.length; gapIndex++) {
                 const coreGappingRow = {}
 
-                const coreResult = this.$mkf.calculate_core_data(JSON.stringify(data.magnetic.core), true);
+                const coreResult = await this.$mkf.calculate_core_data(JSON.stringify(data.magnetic.core), true);
                 if (coreResult.startsWith("Exception")) {
                     console.error(coreResult);
                 }
@@ -274,7 +275,7 @@ export default {
 
             return coilTable;
         },
-        processOutputsTexts(data) {
+        async processOutputsTexts(data) {
             const outputsTable = {}
 
 
@@ -328,7 +329,7 @@ export default {
                         const wireString = JSON.stringify(this.mas.magnetic.coil.functionalDescription[windingIndex].wire);
                         const currentString = JSON.stringify(this.mas.inputs.operatingPoints[0].excitationsPerWinding[windingIndex].current);
 
-                        const currentDensity = this.$mkf.calculate_effective_current_density(wireString, currentString, this.mas.inputs.operatingPoints[0].conditions.ambientTemperature) / this.mas.magnetic.coil.functionalDescription[windingIndex].numberParallels;
+                        const currentDensity = await this.$mkf.calculate_effective_current_density(wireString, currentString, this.mas.inputs.operatingPoints[0].conditions.ambientTemperature) / this.mas.magnetic.coil.functionalDescription[windingIndex].numberParallels;
 
 
                         const aux = formatUnit(currentDensity / 1000000, "A/mm²");
@@ -384,14 +385,14 @@ export default {
             return outputsTable;
         },
         computeTexts() {
-            this.$mkf.ready.then(_ => {
+            this.$mkf.ready.then(async (_) => {
                 const materialName = this.mas.magnetic.core.functionalDescription.material;
                 if (typeof materialName === 'string' || materialName instanceof String) {
-                    var materialData = JSON.parse(this.$mkf.get_material_data(materialName));
+                    var materialData = JSON.parse(await this.$mkf.get_material_data(materialName));
                     this.mas.magnetic.core.functionalDescription.material = materialData;
                 }
-                var temperatureDependantData25 = JSON.parse(this.$mkf.get_core_temperature_dependant_parameters(JSON.stringify(this.mas.magnetic.core), 25));
-                var temperatureDependantData100 = JSON.parse(this.$mkf.get_core_temperature_dependant_parameters(JSON.stringify(this.mas.magnetic.core), 100));
+                var temperatureDependantData25 = JSON.parse(await this.$mkf.get_core_temperature_dependant_parameters(JSON.stringify(this.mas.magnetic.core), 25));
+                var temperatureDependantData100 = JSON.parse(await this.$mkf.get_core_temperature_dependant_parameters(JSON.stringify(this.mas.magnetic.core), 100));
                 const mas = deepCopy(this.mas);
                 mas.magnetic.core.temp = {}
                 mas.magnetic.core.temp["25"] = {}
@@ -613,11 +614,13 @@ export default {
                     </div>
                 </div>
                 <div  class="col-sm-12 col-md-6 text-start pe-0">
-                    <div class="col-12 fs-5 p-0 m-0 mt-2 text-center">{{showFieldPlot? 'Core Coil and H Field' : 'Core Coil'}}</div>
+                    <div class="col-12 fs-5 p-0 m-0 mt-2 text-center">{{plotMode === PLOT_MODES.MAGNETIC_FIELD ? 'Core Coil and H Field' : plotMode === PLOT_MODES.ELECTRIC_FIELD ? 'Core Coil and E Field' : 'Core Coil'}}</div>
                     <Magnetic2DVisualizer
                         :modelValue="mas"
                         :enableZoom="false"
-                        @swapFieldPlot="swapFieldPlot"
+                        :plotModeInit="plotMode"
+                        :includeFringingInit="includeFringing"
+                        @plotModeChange="plotModeChange"
                         @swapIncludeFringing="swapIncludeFringing"
                     />
                 </div>

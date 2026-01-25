@@ -53,8 +53,8 @@ export default {
         convertFromWaveformToProcessed(operatingPointIndex, windingIndex, signalDescriptor) {
             var waveform = this.masStore.mas.inputs.operatingPoints[operatingPointIndex].excitationsPerWinding[windingIndex][signalDescriptor].waveform;
 
-            this.$mkf.ready.then(_ => {
-                var processed = JSON.parse(this.$mkf.calculate_basic_processed_data(JSON.stringify(waveform)));
+            this.$mkf.ready.then(async (_) => {
+                var processed = JSON.parse(await this.$mkf.calculate_basic_processed_data(JSON.stringify(waveform)));
 
                 this.masStore.mas.inputs.operatingPoints[operatingPointIndex].excitationsPerWinding[windingIndex][signalDescriptor].processed = processed;
                 this.masStore.mas.inputs.operatingPoints[operatingPointIndex].excitationsPerWinding[windingIndex].current.processed.dutyCycle = processed.dutyCycle;

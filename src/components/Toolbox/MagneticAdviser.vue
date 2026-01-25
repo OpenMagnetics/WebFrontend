@@ -80,11 +80,12 @@ export default {
     created () {
     },
     mounted () {
-        if (this.adviseCacheStore.noMasAdvises()) {
-            this.loading = true;
-            this.dataUptoDate = false;
-            setTimeout(() => {this.calculateAdvisedMagnetics();}, 200);
+        // If we already have advises cached, show them as up-to-date
+        if (!this.adviseCacheStore.noMasAdvises()) {
+            this.dataUptoDate = true;
+            this.currentAdviseToShow = this.adviseCacheStore.currentMasAdvises.length - 1;
         }
+        // Otherwise, don't auto-launch - let user click the button
     },
     methods: {
         getTopMagneticByFilter(data, filter) {
@@ -116,16 +117,16 @@ export default {
 
             // Timeout to give time to gif to load
             setTimeout(() => {
-                this.$mkf.ready.then(_ => {
+                this.$mkf.ready.then(async (_) => {
                     if (this.masStore.mas.inputs.operatingPoints.length > 0) {
-                        const settings = JSON.parse(this.$mkf.get_settings());
+                        const settings = JSON.parse(await this.$mkf.get_settings());
                         settings["coreIncludeDistributedGaps"] = this.$settingsStore.adviserSettings.allowDistributedGaps;
                         settings["coreIncludeStacks"] = this.$settingsStore.adviserSettings.allowStacks;
                         settings["useToroidalCores"] = this.$settingsStore.adviserSettings.allowToroidalCores;
                         settings["useOnlyCoresInStock"] = this.$settingsStore.adviserSettings.useOnlyCoresInStock;
-                        this.$mkf.set_settings(JSON.stringify(settings));
+                        await this.$mkf.set_settings(JSON.stringify(settings));
 
-                        const result = this.$mkf.calculate_advised_magnetics(JSON.stringify(this.masStore.mas.inputs), JSON.stringify(this.$settingsStore.magneticAdviserSettings.weights), this.$settingsStore.magneticAdviserSettings.maximumNumberResults, this.$settingsStore.adviserSettings.coreAdviseMode);
+                        const result = await this.$mkf.calculate_advised_magnetics(JSON.stringify(this.masStore.mas.inputs), JSON.stringify(this.$settingsStore.magneticAdviserSettings.weights), this.$settingsStore.magneticAdviserSettings.maximumNumberResults, this.$settingsStore.adviserSettings.coreAdviseMode);
 
                         if (result.startsWith("Exception")) {
                             console.error(result);
@@ -227,6 +228,11 @@ export default {
             this.loading = true;
             setTimeout(() => {this.calculateAdvisedMagnetics();}, 200);
         },
+        loadAndGoToBuilder() {
+            // The selected magnetic is already in masStore.mas from selectedMas()
+            // Just navigate back to magneticBuilder
+            this.$stateStore.getCurrentToolState().subsection = 'magneticBuilder';
+        },
 
     }
 }
@@ -255,7 +261,8 @@ export default {
 
                     <input :disabled="loading" :data-cy="dataTestLabel + '-number-input'" type="number" class="m-0 mb-2 px-0 col-3 bg-light text-white" :min="2" :step="1" @change="maximumNumberResultsChangedInputValue($event.target.value)" :value="removeTrailingZeroes($settingsStore.magneticAdviserSettings.maximumNumberResults)" ref="inputRef">
                 </div>
-                <button :disabled="loading" :data-cy="dataTestLabel + '-calculate-mas-advises-button'" class="btn btn-success mx-auto d-block mt-4" @click="calculateAdvises" >Get advised magnetics!</button>
+                <button :style="$styleStore.contextMenu.confirmButton" :disabled="loading" :data-cy="dataTestLabel + '-calculate-mas-advises-button'" class="btn mx-auto d-block mt-4" @click="calculateAdvises" >Get advised magnetics!</button>
+                <button :style="$styleStore.contextMenu.changeToolButton" :disabled="loading || !dataUptoDate || adviseCacheStore.currentMasAdvises == null || adviseCacheStore.currentMasAdvises.length == 0" :data-cy="dataTestLabel + '-load-and-go-to-builder-button'" class="btn mx-auto d-block mt-2" @click="loadAndGoToBuilder" >Load selected advise</button>
             </div>
             <div class="col-sm-12 col-md-10 text-start pe-0 container-fluid"  style="height: 70vh">
                 <div class="row" v-if="loading" >

@@ -169,18 +169,18 @@ export default {
                 var result;
                 if (this.localData.designLevel == 'I know the design I want') {
                     if (this.converterName == "Isolated Buck") {
-                        result = this.$mkf.calculate_advanced_isolated_buck_inputs(JSON.stringify(aux));
+                        result = await this.$mkf.calculate_advanced_isolated_buck_inputs(JSON.stringify(aux));
                     }
                     else {
-                        result = this.$mkf.calculate_advanced_isolated_buck_boost_inputs(JSON.stringify(aux));
+                        result = await this.$mkf.calculate_advanced_isolated_buck_boost_inputs(JSON.stringify(aux));
                     }
                 }
                 else {
                     if (this.converterName == "Isolated Buck") {
-                        result = this.$mkf.calculate_isolated_buck_inputs(JSON.stringify(aux));
+                        result = await this.$mkf.calculate_isolated_buck_inputs(JSON.stringify(aux));
                     }
                     else {
-                        result = this.$mkf.calculate_isolated_buck_boost_inputs(JSON.stringify(aux));
+                        result = await this.$mkf.calculate_isolated_buck_boost_inputs(JSON.stringify(aux));
                     }
                 }
 

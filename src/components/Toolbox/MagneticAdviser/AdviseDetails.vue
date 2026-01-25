@@ -1,7 +1,7 @@
 <script setup>
 import { useMasStore } from '../../../stores/mas'
 import { toTitleCase, removeTrailingZeroes, formatInductance, formatPower, formatTemperature, formatResistance} from '/WebSharedComponents/assets/js/utils.js'
-import Magnetic2DVisualizer from '/WebSharedComponents/Common/Magnetic2DVisualizer.vue'
+import Magnetic2DVisualizer, { PLOT_MODES } from '/WebSharedComponents/Common/Magnetic2DVisualizer.vue'
 </script>
 
 <script>
@@ -26,7 +26,8 @@ export default {
             masStore,
             posting: false,
             zoomingPlot: false,
-            showFieldPlot: false,
+            plotMode: PLOT_MODES.BASIC,
+            PLOT_MODES,
         }
     },
     watch: {
@@ -253,9 +254,6 @@ export default {
         zoomOut() {
             this.zoomingPlot = false;
         },
-        swapFieldPlot() {
-            this.showFieldPlot = !this.showFieldPlot;
-        },
     },
     computed: {
         offcanvasPosition() {
@@ -342,8 +340,8 @@ export default {
             </div>
                 
             <div :class="zoomingPlot? 'col-12' : 'col-5'">
-                <div class="col-12 fs-5 p-0 m-0 mt-2 text-center">{{showFieldPlot? 'Core Coil and H Field' : 'Core Coil'}}</div>
-                <Magnetic2DVisualizer  :modelValue="modelValue" @zoomIn="zoomIn" @zoomOut="zoomOut" @swapFieldPlot="swapFieldPlot"/>
+                <div class="col-12 fs-5 p-0 m-0 mt-2 text-center">{{plotMode === PLOT_MODES.MAGNETIC_FIELD ? 'Core Coil and H Field' : plotMode === PLOT_MODES.ELECTRIC_FIELD ? 'Core Coil and E Field' : 'Core Coil'}}</div>
+                <Magnetic2DVisualizer :modelValue="modelValue" :plotModeInit="plotMode" @zoomIn="zoomIn" @zoomOut="zoomOut" @plotModeChange="plotMode = $event"/>
             </div>
         </div>
     </div>

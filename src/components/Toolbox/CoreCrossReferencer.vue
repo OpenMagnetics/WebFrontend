@@ -109,12 +109,12 @@ export default {
     },
     methods: {
         calculateCrossReferencedCoresValues() {
-            crossReferencers.ready.then(_ => {
+            crossReferencers.ready.then(async (_) => {
                 const coreAux = deepCopy(this.crossReferencerStore.coreReferenceInputs.core);
                 coreAux['geometricalDescription'] = null;
                 coreAux['processedDescription'] = null;
 
-                var coreString = this.$mkf.calculate_core_data(JSON.stringify(coreAux), false);
+                var coreString = await this.$mkf.calculate_core_data(JSON.stringify(coreAux), false);
                 var core = JSON.parse(coreString);
                 core['functionalDescription']['shape'] = core['functionalDescription']['shape']['name'];
 

@@ -218,7 +218,7 @@ export default {
 
 
             {
-                const result = this.$mkf.calculate_harmonics(JSON.stringify(excitation.voltage.waveform), this.localData.mainSignalFrequency);
+                const result = await this.$mkf.calculate_harmonics(JSON.stringify(excitation.voltage.waveform), this.localData.mainSignalFrequency);
 
                 if (result.startsWith("Exception")) {
                     console.error(result);

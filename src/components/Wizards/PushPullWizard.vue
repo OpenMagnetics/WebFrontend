@@ -144,10 +144,10 @@ export default {
 
                 var result;
                 if (this.localData.designLevel == 'I know the design I want') {
-                    result = this.$mkf.calculate_advanced_push_pull_inputs(JSON.stringify(aux));
+                    result = await this.$mkf.calculate_advanced_push_pull_inputs(JSON.stringify(aux));
                 }
                 else {
-                    result = this.$mkf.calculate_push_pull_inputs(JSON.stringify(aux));
+                    result = await this.$mkf.calculate_push_pull_inputs(JSON.stringify(aux));
                 }
 
                 if (result.startsWith("Exception")) {

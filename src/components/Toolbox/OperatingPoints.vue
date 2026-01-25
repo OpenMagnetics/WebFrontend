@@ -215,8 +215,8 @@ export default {
         convertFromWaveformToProcessed(operatingPointIndex, windingIndex, signalDescriptor) {
             var waveform = this.masStore.mas.inputs.operatingPoints[operatingPointIndex].excitationsPerWinding[windingIndex][signalDescriptor].waveform;
 
-            this.$mkf.ready.then(_ => {
-                var processed = JSON.parse(this.$mkf.calculate_basic_processed_data(JSON.stringify(waveform)));
+            this.$mkf.ready.then(async (_) => {
+                var processed = JSON.parse(await this.$mkf.calculate_basic_processed_data(JSON.stringify(waveform)));
 
                 this.masStore.mas.inputs.operatingPoints[operatingPointIndex].excitationsPerWinding[windingIndex][signalDescriptor].processed = processed;
                 this.masStore.mas.inputs.operatingPoints[operatingPointIndex].excitationsPerWinding[windingIndex].current.processed.dutyCycle = processed.dutyCycle;
@@ -268,15 +268,15 @@ export default {
             this.$emit("canContinue", this.canContinue);
         },
         reflectWinding(windingIndexToBeReflected){
-            this.$mkf.ready.then(_ => {
+            this.$mkf.ready.then(async (_) => {
                 // Reflection only allowed with two windings
-                var turnRatio = this.$mkf.resolve_dimension_with_tolerance(JSON.stringify(this.masStore.mas.inputs.designRequirements.turnsRatios[0]));  
+                var turnRatio = await this.$mkf.resolve_dimension_with_tolerance(JSON.stringify(this.masStore.mas.inputs.designRequirements.turnsRatios[0]));  
                 if (windingIndexToBeReflected == 0) {
-                    var primaryExcitation = JSON.parse(this.$mkf.calculate_reflected_primary(JSON.stringify(this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[1]), turnRatio));
+                    var primaryExcitation = JSON.parse(await this.$mkf.calculate_reflected_primary(JSON.stringify(this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[1]), turnRatio));
                     this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[0] = primaryExcitation;
                 }
                 else {
-                    var secondaryExcitation = JSON.parse(this.$mkf.calculate_reflected_secondary(JSON.stringify(this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[0]), turnRatio));
+                    var secondaryExcitation = JSON.parse(await this.$mkf.calculate_reflected_secondary(JSON.stringify(this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[0]), turnRatio));
                     this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[1] = secondaryExcitation;
                 }
                 this.$emit("canContinue", this.canContinue);

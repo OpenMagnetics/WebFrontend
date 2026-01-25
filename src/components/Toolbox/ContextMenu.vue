@@ -80,6 +80,9 @@ export default {
         coreAdvancedModeCancelChanges() {
             this.$stateStore.cancelChanges();
         },
+        coilAdvancedModeClose() {
+            this.$stateStore.closeCoilAdvancedInfo();
+        },
     }
 }
 </script>
@@ -162,12 +165,12 @@ export default {
             </button>
             <button
                 :style="$styleStore.contextMenu.changeToolButton"
-                v-if="$stateStore.magneticBuilder.mode.core == $stateStore.MagneticBuilderModes.Basic && ($stateStore.getCurrentToolState().subsection == 'magneticCoreAdviser' || $stateStore.getCurrentToolState().subsection == 'magneticAdviser' || $stateStore.getCurrentToolState().subsection == 'magneticBuilder' || $stateStore.getCurrentToolState().subsection == 'magneticSpecificationsSummary')"  
-                :data-cy="dataTestLabel + '-change-tool-button'"
+                v-if="$stateStore.magneticBuilder.mode.coil == $stateStore.MagneticBuilderModes.Basic && $stateStore.magneticBuilder.mode.core == $stateStore.MagneticBuilderModes.Basic && $stateStore.getCurrentToolState().subsection == 'magneticBuilder'"
+                :data-cy="dataTestLabel + '-magnetics-adviser-button'"
                 class="btn mx-auto d-block mt-4 col-6 col-sm-6 col-md-12"
-                @click="$emit('toolSelected', 'agnosticTool')"
+                @click="$emit('toolSelected', 'magneticAdviser')"
             >
-                {{'Change tool'}}
+                {{'Magnetic Adviser'}}
             </button>
             <button
                 :style="$styleStore.contextMenu.customizeCoreSectionButton"
@@ -211,6 +214,14 @@ export default {
                 @click="coreAdvancedModeCancelChanges"
             >
                 {{'Cancel'}}
+            </button>
+            <button
+                :style="$styleStore.contextMenu.cancelButton"
+                v-if="$stateStore.magneticBuilder.mode.coil == $stateStore.MagneticBuilderModes.Advanced"  
+                class="btn mx-auto d-block mt-2 col-6 col-sm-6 col-md-12"
+                @click="coilAdvancedModeClose"
+            >
+                {{'Close'}}
             </button>
         </div>
     </div>

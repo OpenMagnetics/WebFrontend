@@ -80,9 +80,9 @@ export default {
         induce(sourceSignalDescriptor){
             if (sourceSignalDescriptor == 'current'){
 
-                this.$mkf.ready.then(_ => {
-                    var magnetizingInductance = this.$mkf.resolve_dimension_with_tolerance(JSON.stringify(this.masStore.mas.inputs.designRequirements.magnetizingInductance));
-                    var voltage = JSON.parse(this.$mkf.calculate_induced_voltage(JSON.stringify(this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex]), magnetizingInductance));
+                this.$mkf.ready.then(async (_) => {
+                    var magnetizingInductance = await this.$mkf.resolve_dimension_with_tolerance(JSON.stringify(this.masStore.mas.inputs.designRequirements.magnetizingInductance));
+                    var voltage = JSON.parse(await this.$mkf.calculate_induced_voltage(JSON.stringify(this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex]), magnetizingInductance));
 
                     this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex].voltage.waveform = voltage.waveform;
                     this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex].voltage.harmonics = voltage.harmonics;
@@ -93,9 +93,9 @@ export default {
             }
             else if (sourceSignalDescriptor == 'voltage'){
 
-                this.$mkf.ready.then(_ => {
-                    var magnetizingInductance = this.$mkf.resolve_dimension_with_tolerance(JSON.stringify(this.masStore.mas.inputs.designRequirements.magnetizingInductance));
-                    var current = JSON.parse(this.$mkf.calculate_induced_current(JSON.stringify(this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex]), magnetizingInductance));
+                this.$mkf.ready.then(async (_) => {
+                    var magnetizingInductance = await this.$mkf.resolve_dimension_with_tolerance(JSON.stringify(this.masStore.mas.inputs.designRequirements.magnetizingInductance));
+                    var current = JSON.parse(await this.$mkf.calculate_induced_current(JSON.stringify(this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex]), magnetizingInductance));
 
                     this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex].current.waveform = current.waveform;
                     this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex].current.harmonics = current.harmonics;

@@ -50,6 +50,7 @@ export const useStateStore = defineStore("state", () => {
                 canContinue: {
                     'designRequirements': false,
                     'operatingPoints': false,
+                    'magneticAdviser': false,
                     'magneticBuilder': false,
                     'magneticSummary': false,
                 },
@@ -72,6 +73,7 @@ export const useStateStore = defineStore("state", () => {
                 canContinue: {
                     'designRequirements': false,
                     'operatingPoints': false,
+                    'magneticAdviser': false,
                     'magneticBuilder': false,
                     'magneticSummary': false,
                 },
@@ -245,15 +247,33 @@ export const useStateStore = defineStore("state", () => {
     }
 
     function getCurrentToolState() {
-        return this.toolboxStates[this.selectedWorkflow][this.selectedTool];
+        const workflowState = this.toolboxStates[this.selectedWorkflow];
+        if (!workflowState) {
+            console.warn(`No workflow state found for: ${this.selectedWorkflow}`);
+            return null;
+        }
+        const toolState = workflowState[this.selectedTool];
+        if (!toolState) {
+            console.warn(`No tool state found for: ${this.selectedTool} in workflow: ${this.selectedWorkflow}`);
+            return null;
+        }
+        return toolState;
     }
 
     function setCurrentToolSubsection(subsection) {
-        return this.toolboxStates[this.selectedWorkflow][this.selectedTool].subsection = subsection;
+        const toolState = this.getCurrentToolState();
+        if (toolState) {
+            toolState.subsection = subsection;
+        }
+        return toolState?.subsection;
     }
 
     function setCurrentToolSubsectionStatus(subsection, canContinue) {
-        return this.toolboxStates[this.selectedWorkflow][this.selectedTool].canContinue[subsection] = canContinue;
+        const toolState = this.getCurrentToolState();
+        if (toolState && toolState.canContinue) {
+            toolState.canContinue[subsection] = canContinue;
+        }
+        return toolState?.canContinue?.[subsection];
     }
 
     function selectWorkflow(workflow) {
@@ -351,6 +371,9 @@ export const useStateStore = defineStore("state", () => {
     };
 
     function cancelChanges() {
+    };
+
+    function closeCoilAdvancedInfo() {
     };
 
     //CoilConfigurations
@@ -456,6 +479,7 @@ export const useStateStore = defineStore("state", () => {
         magneticBuilder,
         applyChanges,
         cancelChanges,
+        closeCoilAdvancedInfo,
 
         woundCoilConfiguration,
         storeWoundConfiguration,

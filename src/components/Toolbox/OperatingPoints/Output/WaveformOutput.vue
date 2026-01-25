@@ -67,11 +67,11 @@ export default {
     },
     methods: {
         process() {
-            this.$mkf.ready.then(_ => {
+            this.$mkf.ready.then(async (_) => {
                 if (this.modelValue[this.signalDescriptor].harmonics == null) {
-                    this.modelValue[this.signalDescriptor].harmonics = JSON.parse(this.$mkf.calculate_harmonics(JSON.stringify(this.modelValue[this.signalDescriptor].waveform), this.modelValue.frequency));
+                    this.modelValue[this.signalDescriptor].harmonics = JSON.parse(await this.$mkf.calculate_harmonics(JSON.stringify(this.modelValue[this.signalDescriptor].waveform), this.modelValue.frequency));
                 }
-                var processed = JSON.parse(this.$mkf.calculate_processed(JSON.stringify(this.modelValue[this.signalDescriptor].harmonics), JSON.stringify(this.modelValue[this.signalDescriptor].waveform)));
+                var processed = JSON.parse(await this.$mkf.calculate_processed(JSON.stringify(this.modelValue[this.signalDescriptor].harmonics), JSON.stringify(this.modelValue[this.signalDescriptor].waveform)));
                 this.modelValue[this.signalDescriptor].processed.acEffectiveFrequency = processed.acEffectiveFrequency;
                 this.modelValue[this.signalDescriptor].processed.effectiveFrequency = processed.effectiveFrequency;
                 this.modelValue[this.signalDescriptor].processed.peak = processed.peak;

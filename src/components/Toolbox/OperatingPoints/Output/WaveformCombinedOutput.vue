@@ -40,9 +40,9 @@ export default {
     },
     methods: {
         process() {
-            this.$mkf.ready.then(_ => {
-                this.localData.instantaneousPower = this.$mkf.calculate_instantaneous_power(JSON.stringify(this.modelValue));
-                this.localData.rmsPower = this.$mkf.calculate_rms_power(JSON.stringify(this.modelValue));
+            this.$mkf.ready.then(async (_) => {
+                this.localData.instantaneousPower = await this.$mkf.calculate_instantaneous_power(JSON.stringify(this.modelValue));
+                this.localData.rmsPower = await this.$mkf.calculate_rms_power(JSON.stringify(this.modelValue));
             });
         }
     }

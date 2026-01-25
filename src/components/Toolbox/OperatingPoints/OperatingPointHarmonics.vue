@@ -124,11 +124,11 @@ export default {
                 this.masStore.mas.inputs.operatingPoints[operatingPointIndex] = this.checkAndFixOperatingPoint(operatingPoint);
             })
 
-            this.$mkf.ready.then(_ => {
+            this.$mkf.ready.then(async (_) => {
                 const frequency = this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex][signalDescriptor].harmonics.frequencies[1];
                 this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex][signalDescriptor].waveform = null;
                 this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex][signalDescriptor].processed = null;
-                const result = this.$mkf.standardize_signal_descriptor(JSON.stringify(this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex][signalDescriptor]), frequency);
+                const result = await this.$mkf.standardize_signal_descriptor(JSON.stringify(this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex][signalDescriptor]), frequency);
 
                 if (result.startsWith("Exception")) {
                     console.error(result);
@@ -136,16 +136,16 @@ export default {
                 }
                 else {
                     const parsedResult = JSON.parse(result);
-                    const aux = this.$mkf.get_main_harmonic_indexes(JSON.stringify(this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex][signalDescriptor].harmonics), 0.05, 1);
+                    const aux = await this.$mkf.get_main_harmonic_indexes(JSON.stringify(this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex][signalDescriptor].harmonics), 0.05, 1);
 
                     const filteredHarmonics = {
                         amplitudes: [parsedResult.harmonics.amplitudes[0]],
                         frequencies: [parsedResult.harmonics.frequencies[0]]
                     }
-                    // console.log(deepCopy(filteredHarmonics.frequencies))
-                    for (var i = 0; i < aux.size(); i++) {
-                        filteredHarmonics.amplitudes.push(parsedResult.harmonics.amplitudes[aux.get(i)]);
-                        filteredHarmonics.frequencies.push(parsedResult.harmonics.frequencies[aux.get(i)]);
+                    // aux is now an array in worker mode
+                    for (var i = 0; i < aux.length; i++) {
+                        filteredHarmonics.amplitudes.push(parsedResult.harmonics.amplitudes[aux[i]]);
+                        filteredHarmonics.frequencies.push(parsedResult.harmonics.frequencies[aux[i]]);
                     }
 
                     parsedResult.harmonics = filteredHarmonics;

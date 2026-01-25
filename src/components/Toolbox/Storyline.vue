@@ -184,7 +184,7 @@ export default {
         <div class="row px-3">
             <button 
                 :style="$styleStore.storyline.continueButton"
-                v-if="storyline[selectedTool].nextTool != null"  
+                v-if="storyline[selectedTool] != null && storyline[selectedTool].nextTool != null"  
                 :disabled="!canContinue[selectedTool]" 
                 data-cy="magnetic-synthesis-next-tool-button" 
                 class="btn px-0 mt-4 col-6 col-sm-6 col-md-12"

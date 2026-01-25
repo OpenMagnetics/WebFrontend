@@ -171,9 +171,9 @@ export default {
                 this.localTexts.coreLosses = `Core losses: ${removeTrailingZeroes(aux.label, 2)} ${aux.unit}`
             }
 
-            this.$mkf.ready.then(_ => {
+            this.$mkf.ready.then(async (_) => {
                 // hardcoded operation point
-                const rmsPower = this.$mkf.calculate_rms_power(JSON.stringify(this.masData.inputs.operatingPoints[0].excitationsPerWinding[0]));
+                const rmsPower = await this.$mkf.calculate_rms_power(JSON.stringify(this.masData.inputs.operatingPoints[0].excitationsPerWinding[0]));
                 const volume = this.masData.magnetic.core.processedDescription.width *
                                this.masData.magnetic.core.processedDescription.depth * 
                                this.masData.magnetic.core.processedDescription.height;

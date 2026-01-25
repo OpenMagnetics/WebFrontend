@@ -265,45 +265,44 @@ export default {
                 chart.update()
             }
         },
-        runFFT(signalDescriptor){
-            this.$mkf.ready.then(_ => {
-                const result = this.$mkf.calculate_harmonics(JSON.stringify(this.modelValue[signalDescriptor].waveform), this.modelValue.frequency);
+        async runFFT(signalDescriptor){
+            await this.$mkf.ready;
+            const result = await this.$mkf.calculate_harmonics(JSON.stringify(this.modelValue[signalDescriptor].waveform), this.modelValue.frequency);
 
-                if (result.startsWith("Exception")) {
-                    console.error(result);
-                    return;
-                }
-                else {
+            if (result.startsWith("Exception")) {
+                console.error(result);
+                return;
+            }
+            else {
 
-                    this.modelValue[signalDescriptor].harmonics = JSON.parse(result);
+                this.modelValue[signalDescriptor].harmonics = JSON.parse(result);
 
-                    this.chopHarmonics(signalDescriptor);
-
-                    if (chart != null) {
-                        this.updateChart();
-                    }
-                }
-            });
-        },
-        chopHarmonics(signalDescriptor){
-            this.$mkf.ready.then(_ => {
-                const aux = this.$mkf.get_main_harmonic_indexes(JSON.stringify(this.modelValue[signalDescriptor].harmonics), (signalDescriptor == "current"? this.harmonicPowerThresholdCurrent : this.harmonicPowerThresholdVoltage), (this.updateHarmonics? -1 : 1));
-
-                const filteredHarmonics = {
-                    amplitudes: [this.modelValue[signalDescriptor].harmonics.amplitudes[0]],
-                    frequencies: [this.modelValue[signalDescriptor].harmonics.frequencies[0]]
-                }
-                for (var i = 0; i < aux.size(); i++) {
-                    filteredHarmonics.amplitudes.push(this.modelValue[signalDescriptor].harmonics.amplitudes[aux.get(i)]);
-                    filteredHarmonics.frequencies.push(this.modelValue[signalDescriptor].harmonics.frequencies[aux.get(i)]);
-                }
-
-                this.modelValue[signalDescriptor].harmonics = filteredHarmonics;
+                await this.chopHarmonics(signalDescriptor);
 
                 if (chart != null) {
                     this.updateChart();
                 }
-            });
+            }
+        },
+        async chopHarmonics(signalDescriptor){
+            await this.$mkf.ready;
+            const aux = await this.$mkf.get_main_harmonic_indexes(JSON.stringify(this.modelValue[signalDescriptor].harmonics), (signalDescriptor == "current"? this.harmonicPowerThresholdCurrent : this.harmonicPowerThresholdVoltage), (this.updateHarmonics? -1 : 1));
+
+            const filteredHarmonics = {
+                amplitudes: [this.modelValue[signalDescriptor].harmonics.amplitudes[0]],
+                frequencies: [this.modelValue[signalDescriptor].harmonics.frequencies[0]]
+            }
+            // aux is now an array (converted from Embind vector in worker mode)
+            for (var i = 0; i < aux.length; i++) {
+                filteredHarmonics.amplitudes.push(this.modelValue[signalDescriptor].harmonics.amplitudes[aux[i]]);
+                filteredHarmonics.frequencies.push(this.modelValue[signalDescriptor].harmonics.frequencies[aux[i]]);
+            }
+
+            this.modelValue[signalDescriptor].harmonics = filteredHarmonics;
+
+            if (chart != null) {
+                this.updateChart();
+            }
         },
         createChart(chartId, options) {
             const ctx = document.getElementById(chartId)

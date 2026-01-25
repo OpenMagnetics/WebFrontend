@@ -104,17 +104,17 @@ export default {
         calculateAdvisedCores() {
             this.currentAdviseToShow = 0;
 
-            this.$mkf.ready.then(_ => {
+            this.$mkf.ready.then(async (_) => {
                 if (this.masStore.mas.inputs.operatingPoints.length > 0) {
-                    const settings = JSON.parse(this.$mkf.get_settings());
+                    const settings = JSON.parse(await this.$mkf.get_settings());
                     settings["coreIncludeDistributedGaps"] = this.$settingsStore.adviserSettings.allowDistributedGaps;
                     settings["coreIncludeStacks"] = this.$settingsStore.adviserSettings.allowStacks;
                     settings["useToroidalCores"] = this.$settingsStore.adviserSettings.allowToroidalCores;
                     settings["useOnlyCoresInStock"] = this.$settingsStore.adviserSettings.useOnlyCoresInStock;
-                    this.$mkf.set_settings(JSON.stringify(settings));
+                    await this.$mkf.set_settings(JSON.stringify(settings));
 
                     var aux;
-                    const result = this.$mkf.calculate_advised_cores(JSON.stringify(this.masStore.mas.inputs), JSON.stringify(this.$settingsStore.coreAdviserSettings.weights), 20, this.$settingsStore.adviserSettings.coreAdviseMode);
+                    const result = await this.$mkf.calculate_advised_cores(JSON.stringify(this.masStore.mas.inputs), JSON.stringify(this.$settingsStore.coreAdviserSettings.weights), 20, this.$settingsStore.adviserSettings.coreAdviseMode);
                     if (result.startsWith("Exception")) {
                         console.error(result)
                         this.loading = false;

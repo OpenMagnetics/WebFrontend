@@ -93,14 +93,14 @@ export default {
             });
         },
         computeTexts() {
-            this.$mkf.ready.then(_ => {
+            this.$mkf.ready.then(async (_) => {
                 const materialName = this.masStore.mas.magnetic.core.functionalDescription.material;
                 if (typeof materialName === 'string' || materialName instanceof String) {
-                    var materialData = JSON.parse(this.$mkf.get_material_data(materialName));
+                    var materialData = JSON.parse(await this.$mkf.get_material_data(materialName));
                     this.masStore.mas.magnetic.core.functionalDescription.material = materialData;
                 }
-                var temperatureDependantData25 = JSON.parse(this.$mkf.get_core_temperature_dependant_parameters(JSON.stringify(this.masStore.mas.magnetic.core), 25));
-                var temperatureDependantData100 = JSON.parse(this.$mkf.get_core_temperature_dependant_parameters(JSON.stringify(this.masStore.mas.magnetic.core), 100));
+                var temperatureDependantData25 = JSON.parse(await this.$mkf.get_core_temperature_dependant_parameters(JSON.stringify(this.masStore.mas.magnetic.core), 25));
+                var temperatureDependantData100 = JSON.parse(await this.$mkf.get_core_temperature_dependant_parameters(JSON.stringify(this.masStore.mas.magnetic.core), 100));
                 const mas = deepCopy(this.masStore.mas);
                 mas.magnetic.core.temp = {}
                 mas.magnetic.core.temp["25"] = {}

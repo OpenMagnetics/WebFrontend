@@ -105,11 +105,12 @@ export default {
                 this.localTexts.dcResistance = `DC Res.: ${removeTrailingZeroes(aux.label, 1)} ${aux.unit}`
             } 
             {
-                this.$mkf.ready.then(_ => {
-                    const maximumDimensions = this.$mkf.get_maximum_dimensions(JSON.stringify(this.masData.magnetic));
-                    const maximumDimensions0 = formatDimension(maximumDimensions.get(0));
-                    const maximumDimensions1 = formatDimension(maximumDimensions.get(1));
-                    const maximumDimensions2 = formatDimension(maximumDimensions.get(2));
+                this.$mkf.ready.then(async (_) => {
+                    const maximumDimensions = await this.$mkf.get_maximum_dimensions(JSON.stringify(this.masData.magnetic));
+                    // maximumDimensions is now an array in worker mode
+                    const maximumDimensions0 = formatDimension(maximumDimensions[0]);
+                    const maximumDimensions1 = formatDimension(maximumDimensions[1]);
+                    const maximumDimensions2 = formatDimension(maximumDimensions[2]);
                     this.localTexts.dimensions = `Dim.: ${removeTrailingZeroes(maximumDimensions0.label, 2)} ${maximumDimensions0.unit} x ${removeTrailingZeroes(maximumDimensions1.label, 2)} ${maximumDimensions1.unit} x ${removeTrailingZeroes(maximumDimensions2.label, 2)} ${maximumDimensions2.unit}`
                 })
             }  

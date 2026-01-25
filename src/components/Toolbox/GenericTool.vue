@@ -110,7 +110,12 @@ export default {
             this.$stateStore.getCurrentToolState().subsection = tool;
         },
         toolSelected(tool) {
-            this.$emit('toolSelected', tool); 
+            // Handle switching between tools
+            if (tool === 'magneticAdviser' || tool === 'magneticBuilder') {
+                this.$stateStore.getCurrentToolState().subsection = tool;
+            } else {
+                this.$emit('toolSelected', tool);
+            }
         },
         operatingPointUpdated(name, ea) {
             this.masStore.mas.inputs.operatingPoints.forEach((elem, index) => {
@@ -175,7 +180,7 @@ export default {
 <template>
     <div
         :style="$styleStore.storyline.main"
-        v-if="currentStoryline[$stateStore.getCurrentToolState().subsection] != null && $stateStore.getCurrentToolState().canContinue != null"
+        v-if="$stateStore.getCurrentToolState() != null && $stateStore.getCurrentToolState().canContinue != null"
         class="container mx-auto"
     >
         <div class="row">
