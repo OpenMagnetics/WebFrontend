@@ -42,6 +42,9 @@ export default {
             const routeData = this.$router.resolve({name: 'InsulationAdviser'});
             window.open(routeData.href, '_blank');
         },
+        async onWizardsLanding() {
+            await this.$router.push(`${import.meta.env.BASE_URL}wizards_landing`);
+        },
     },
 }
 </script>
@@ -49,174 +52,243 @@ export default {
     <div class="d-flex flex-column min-vh-100">
         <Header />
         <main role="main" class="main p-0 m-0">
+            <!-- Hero Section -->
             <div class="container-fluid wrap px-0">
                 <div class="container content">
                     <div id="home-welcome" class="row pt-2 mx-1 mt-5">
-                        <div class="text-white my-1 mt-5 pt-4 pb-2 offset-sm-2 offset-lg-3 col-sm-8 col-lg-6 text-center rounded-4">
-                            <h1 data-cy="Home-title-text" class="fs-1" style="font-family: Impact;">THE FREE OPEN-SOURCE PLATFORM FOR MAGNETICS DESIGN AND SIMULATION</h1>
+                        <div class="text-white my-1 mt-5 pt-4 pb-2 offset-sm-1 offset-lg-2 col-sm-10 col-lg-8 text-center rounded-4">
+                            <h1 data-cy="Home-title-text" class="display-3 fw-bold" style="font-family: 'Segoe UI', Impact, sans-serif;">
+                                <i class="fa-solid fa-bolt text-warning me-3"></i>OpenMagnetics
+                            </h1>
+                            <h2 class="fs-3 fw-light text-info mt-3">The Free Open-Source Platform for Magnetics Design & Simulation</h2>
                         </div>
-                        <div class="text-white offset-sm-2 offset-lg-3 col-sm-8 col-lg-6 text-center rounded-4">
-                            <h5 data-cy="Home-title-text" class="text-white fw-light">We believe that the access to knowledge and tools are a right, not a privilege, so we offer the best tools in the market for free, so the whole of humanity can benefit.</h5>
+                        <div class="text-white offset-sm-1 offset-lg-2 col-sm-10 col-lg-8 text-center rounded-4 mt-3">
+                            <p class="fs-5 fw-light">We believe access to knowledge and tools is a right, not a privilege. That's why we offer the most advanced magnetics design tools for free.</p>
                         </div>
                     </div>
-                    <div class="row my-2">
-                        <div class="offset-lg-2 col-8 d-flex justify-content-evenly">
-                            <a href="https://github.com/OpenMagnetics/" target="_blank" rel="noopener noreferrer" class="btn text-dark bg-success border-dark mx-2 fs-5 ">Give us a star on Github! <i class="fa-brands fa-github"></i> </a>
-                            <a href="https://discord.gg/PFpMjYNb5c" target="_blank" rel="noopener noreferrer" class="btn text-dark bg-primary border-dark mx-2 fs-5 ">Join us on Discord!<i class="ms-2 fa-brands fa-discord"></i> </a>
-                            <a href="https://www.linkedin.com/company/openmagnetics" target="_blank" rel="noopener noreferrer" class="btn text-dark bg-info border-dark mx-2 fs-5 ">Follow us on LinkedIn! <i class="fa-brands fa-linkedin"></i> </a>
+                    
+                    <!-- Social Links -->
+                    <div class="row my-4">
+                        <div class="offset-lg-2 col-lg-8 d-flex justify-content-center flex-wrap gap-3">
+                            <a href="https://github.com/OpenMagnetics/" target="_blank" rel="noopener noreferrer" class="btn btn-lg text-dark bg-success border-0 shadow">
+                                <i class="fa-brands fa-github me-2"></i>Star on GitHub
+                            </a>
+                            <a href="https://discord.gg/PFpMjYNb5c" target="_blank" rel="noopener noreferrer" class="btn btn-lg text-white border-0 shadow" style="background-color: #5865F2;">
+                                <i class="fa-brands fa-discord me-2"></i>Join Discord
+                            </a>
+                            <a href="https://www.linkedin.com/company/openmagnetics" target="_blank" rel="noopener noreferrer" class="btn btn-lg text-white border-0 shadow" style="background-color: #0A66C2;">
+                                <i class="fa-brands fa-linkedin me-2"></i>Follow on LinkedIn
+                            </a>
                         </div>
                     </div>
                 </div>
             </div>
+
             <div class="container">
-                <div class="row mb-1 mt-5">
-                    <h3 class="text-white text-center my-2">What you can do right now</h3>
-                </div>
-                <div class="row mt-2 offset-2 col-8 mb-5">
-                    <div class="container">
-                        <div class="row">
-                            <div class="card p-0 col-lg-3 col-sm-12 mt-3">
-                                <div class="card-body">
-                                    <i class="text-white fa-solid fa-hat-wizard fa-2x mb-4"></i>
-                                    <h5 class="card-title text-white"><button @click="newMagneticToolDesign" @click.middle="newMagneticToolDesignNewTab" class="text-primary bg-light btn fs-5">Design CMCs!</button></h5>
-                                    <p class="card-text text-white">Design a Common Mode Choke using our latest wizard. Answer a few questions and get a design!</p>
-                                </div>
-
-                                
-                            </div>
-                            <div class="card p-0 mx-lg-3 mx-sm-0 col-lg col-sm-12 mt-3 container">
-                                <div class="card-body row">
-                                    <div class="col-sm-12 col-lg-6">
-                                        <i class="text-white fa-solid fa-magnet fa-2x mb-4"></i>
-                                        <h5 class="card-title text-white"><button @click="newMagneticToolDesign" @click.middle="newMagneticToolDesignNewTab" class="text-primary bg-light btn fs-5">Build your own magnetic!</button></h5>
-                                        <p class="card-text text-white">Customize any magnetic component as you like! Choose your core, wires and play with different winding distributions, and get instantaneous simulation results!</p>
-                                    </div>
-                                    <div class="col-sm-12 col-lg-6">
-                                        <button @click="newMagneticToolDesign" @click.middle="newMagneticToolDesignNewTab" class="text-primary bg-light btn m-0 p-0 fs-5"><img class="img-fluid" src="/images/MagneticBuilderPreview.png" alt="Magnetic Builder Preview" width="auto" height="auto"></button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="row ">
-                            <div class="card p-0 col-lg col-sm-12 mt-3">
-                                <div class="card-body">
-                                    <i class="text-white fa-solid fa-wand-sparkles fa-2x mb-4"></i>
-                                    <h5 class="card-title text-white"><button  @click="newMagneticToolDesign" class="text-primary bg-light btn fs-5">Magnetic Synthesis</button></h5>
-                                    <p class="card-text text-white">Input your specifications, get a full manufacturable magnetic design. That simple.</p>
-                                </div>
-                            </div>
-                            <div class="card p-0 mx-lg-3 mx-sm-0 col-lg col-sm-12 mt-3">
-                                <div class="card-body">
-                                    <i class="text-white fa-solid fa-bolt-lightning fa-2x mb-4"></i>
-                                    <h5 class="card-title text-white"><button @click="onInsulationCoordinator" @click.middle="onInsulationCoordinatorNewTab" class="text-primary bg-light btn fs-5">Calculate insulation</button></h5>
-                                    <p class="card-text text-white">Get the insulation coodination needed to comply with IEC 60664, IEC 62368, IEC 61558, and IEC 60335.</p>
-                                </div>
-                            </div>
-                            <div class="card p-0 col-lg col-sm-12 mt-3">
-                                <div class="card-body">
-                                    <i class="text-white fa-solid fa-cart-shopping fa-2x mb-4"></i>
-                                    <h5 class="card-title text-white"><button @click="newMagneticToolDesign" @click.middle="newMagneticToolDesignNewTab" class="text-primary bg-light btn fs-5">Find COTS Core</button></h5>
-                                    <p class="card-text text-white">Find the in-stock COTS core perfect for your application, along with the number of turns, core losses, and the link to buy it right now!</p>
-                                </div>
-                            </div>
-                        </div>
+                <!-- Main Tools Section -->
+                <div class="row mb-2 mt-5">
+                    <div class="col-12 text-center">
+                        <h2 class="text-white display-6 fw-bold"><i class="fa-solid fa-magnet text-info me-3"></i>Magnetic Design Tools</h2>
+                        <p class="text-white fs-5">Everything you need to design, simulate, and optimize magnetic components</p>
                     </div>
                 </div>
 
-                <div id="home-roadmap" class="row mx-1 mb-4 mt-5">
-                    <div class="offset-sm-0 col-sm-12 offset-lg-2 col-lg-8 bg-light text-center  rounded-4">
-                        <h3 class="text-white my-2">What you'll be able to do soon</h3>
-                        <ul class="text-white text-start fs-5">
-                            <li class="">Create custom core shapes, core materials, and wires for your magnetics.</li>
-                        </ul>
+                <div class="row g-4 mb-5 px-3">
+                    <!-- Magnetic Builder - Featured -->
+                    <div class="col-lg-8">
+                        <div class="card h-100 bg-gradient border-0 shadow-lg" style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);">
+                            <div class="card-body p-4">
+                                <div class="row h-100">
+                                    <div class="col-lg-7">
+                                        <div class="d-flex align-items-center mb-3">
+                                            <i class="fa-solid fa-magnet fa-2x text-primary me-3"></i>
+                                            <span class="badge bg-primary fs-6">Featured</span>
+                                        </div>
+                                        <h3 class="card-title text-white fs-2 fw-bold">Magnetic Builder</h3>
+                                        <p class="card-text text-white fs-5">Build any magnetic component from scratch! Choose your core, wires, and winding configuration. Get instant simulation results including:</p>
+                                        <div class="text-white fs-6">
+                                            <div class="mb-1"><i class="fa-solid fa-fire text-danger me-2"></i>Core & winding losses</div>
+                                            <div class="mb-1"><i class="fa-solid fa-temperature-high text-warning me-2"></i>Temperature estimation</div>
+                                            <div class="mb-1"><i class="fa-solid fa-bolt text-info me-2"></i>Leakage calculation</div>
+                                            <div class="mb-1"><i class="fa-solid fa-wave-square text-success me-2"></i>Parasitic capacitance</div>
+                                        </div>
+                                        <button @click="newMagneticToolDesign" @click.middle="newMagneticToolDesignNewTab" class="btn btn-primary btn-lg mt-3 shadow">
+                                            <i class="fa-solid fa-hammer me-2"></i>Start Building
+                                        </button>
+                                    </div>
+                                    <div class="col-lg-5 d-flex align-items-center justify-content-center">
+                                        <button @click="newMagneticToolDesign" @click.middle="newMagneticToolDesignNewTab" class="btn p-0 border-0">
+                                            <img class="img-fluid rounded shadow" src="/images/MagneticBuilderPreview.png" alt="Magnetic Builder Preview" style="max-height: 250px;">
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Design Wizards -->
+                    <div class="col-lg-4">
+                        <div class="card h-100 bg-dark border-0 shadow">
+                            <div class="card-body p-4">
+                                <i class="fa-solid fa-hat-wizard fa-2x text-warning mb-3"></i>
+                                <h4 class="card-title text-white fw-bold">Design Wizards</h4>
+                                <p class="card-text text-white">Guided design flows for power converter magnetics:</p>
+                                <div class="text-white small">
+                                    <div class="mb-1"><i class="fa-solid fa-check text-warning me-2"></i>Flyback, Buck, Boost converters</div>
+                                    <div class="mb-1"><i class="fa-solid fa-check text-warning me-2"></i>Forward converter variants</div>
+                                    <div class="mb-1"><i class="fa-solid fa-check text-warning me-2"></i>Push-Pull, Isolated Buck</div>
+                                    <div class="mb-1"><i class="fa-solid fa-check text-warning me-2"></i>Common Mode Chokes</div>
+                                </div>
+                                <button @click="onWizardsLanding" class="btn btn-warning w-100 mt-2">
+                                    <i class="fa-solid fa-wand-magic-sparkles me-2"></i>Launch Wizards
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Insulation Coordinator -->
+                    <div class="col-lg-6">
+                        <div class="card h-100 bg-dark border-0 shadow">
+                            <div class="card-body p-4">
+                                <i class="fa-solid fa-shield-halved fa-2x text-success mb-3"></i>
+                                <h4 class="card-title text-white fw-bold">Insulation Coordinator</h4>
+                                <p class="card-text text-white">Calculate insulation requirements for safety compliance:</p>
+                                <div class="text-white small">
+                                    <div class="mb-1"><i class="fa-solid fa-check text-success me-2"></i>IEC 60664</div>
+                                    <div class="mb-1"><i class="fa-solid fa-check text-success me-2"></i>IEC 62368</div>
+                                    <div class="mb-1"><i class="fa-solid fa-check text-success me-2"></i>IEC 61558</div>
+                                    <div class="mb-1"><i class="fa-solid fa-check text-success me-2"></i>IEC 60335</div>
+                                </div>
+                                <button @click="onInsulationCoordinator" @click.middle="onInsulationCoordinatorNewTab" class="btn btn-success w-100 mt-2">
+                                    <i class="fa-solid fa-bolt-lightning me-2"></i>Calculate Insulation
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Why Open Source -->
+                    <div class="col-lg-6">
+                        <div class="card h-100 bg-dark border-0 shadow">
+                            <div class="card-body p-4">
+                                <i class="fa-brands fa-osi fa-2x text-info mb-3"></i>
+                                <h4 class="card-title text-white fw-bold">100% Open Source</h4>
+                                <p class="card-text text-white">All our code is MIT licensed. You can:</p>
+                                <div class="text-white small">
+                                    <div class="mb-1"><i class="fa-solid fa-check text-info me-2"></i>See exactly how every calculation works</div>
+                                    <div class="mb-1"><i class="fa-solid fa-check text-info me-2"></i>Run it locally on your own machine</div>
+                                    <div class="mb-1"><i class="fa-solid fa-check text-info me-2"></i>Contribute improvements and new features</div>
+                                    <div class="mb-1"><i class="fa-solid fa-check text-info me-2"></i>Use it in your own projects</div>
+                                </div>
+                                <a href="https://github.com/OpenMagnetics/" target="_blank" class="btn btn-info w-100 mt-2">
+                                    <i class="fa-brands fa-github me-2"></i>View on GitHub
+                                </a>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <h2>
-                    <div id="home-how-whom" class="row pb-5 pt-3 border-bottom border-top bg-light text-center">
-                        <h2 class="text-white mb-3">OpenMagnetics is for everyone</h2>
-                        <div class="col-lg-4 text-center my-2">
-                            <div class="card box-shadow bg-dark">
-                                <div class="card-header bg-transparent">
-                                    <h3 class="text-white"><i class="me-4 fa-brands fa-searchengin fa-1x text-secondary"></i>For Researchers<i class="ms-4 fa-solid fa-flask fa-1x text-secondary"></i></h3>
-                                </div>
 
-                                <div class="card-body" style="display: flex; justify-content: space-between; p-0 m-0">
-
-                                    <div class="text-left">
-                                        <p class="text-white text-start fs-5">You are working on improving Magnetics? OpenMagnetics is for you:</p>
-                                        <ul class="text-white text-start fs-5">
-                                            <li class="">Compare your models against the state of the art.</li>
-                                            <li class="">Have access to our cured datasets to create your own models.</li>
-                                            <li class="">Your contribution is a place where it is used and not forgotten.</li>
-                                            <li class="">Talk me data! Help creating a community based on validation, not on marketing.</li>
-                                            <li class="">Have access to all our tools.</li>
-                                        </ul>
-                                    </div>
+                <!-- Who Is It For Section -->
+                <div id="home-how-whom" class="row py-5 border-top border-bottom bg-transparent">
+                    <div class="col-12 text-center mb-4">
+                        <h2 class="text-white display-6 fw-bold"><i class="fa-solid fa-users text-primary me-3"></i>Built For Power Electronics Engineers</h2>
+                    </div>
+                    
+                    <div class="col-lg-4 mb-4">
+                        <div class="card h-100 bg-dark border-0 shadow">
+                            <div class="card-header bg-transparent border-bottom border-secondary text-center py-3">
+                                <h3 class="text-white mb-0">
+                                    <i class="fa-solid fa-flask text-secondary me-2"></i>Researchers
+                                </h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="text-white">
+                                    <div class="mb-1"><i class="fa-solid fa-check text-secondary me-2"></i>Compare your models against state of the art</div>
+                                    <div class="mb-1"><i class="fa-solid fa-check text-secondary me-2"></i>Access curated datasets for model development</div>
+                                    <div class="mb-1"><i class="fa-solid fa-check text-secondary me-2"></i>Contribute to a living, used platform</div>
+                                    <div class="mb-1"><i class="fa-solid fa-check text-secondary me-2"></i>Validation-based community, not marketing</div>
                                 </div>
                             </div>
-
-                        </div>
-
-                        <div class="col-lg-4 text-center my-2">
-                            <div class="card box-shadow bg-dark">
-                                <div class="card-header bg-transparent">
-                                    <h3 class="text-white"><i class="me-4 fa-solid fa-charging-station fa-1x text-primary"></i>For Designers<i class="ms-4 fa-solid fa-screwdriver-wrench fa-1x text-primary"></i></h3>
-                                </div>
-
-                                <div class="card-body" style="display: flex; justify-content: space-between; p-0 m-0">
-
-                                    <div class="text-left">
-                                        <p class="text-white fs-5">You are creating Magnetics? OpenMagnetics is for you:</p>
-                                        <ul class="text-white text-start fs-5">
-                                            <li class="">Have access to the latests and most accurate models.</li>
-                                            <li class="">All tools are accessible and all results can be exported without registration.</li>
-                                            <li class="">No black magic, have access to the implementation of all the models and run them by yourself.</li>
-                                            <li class="">Use our advanced automatic <a class="text-secondary" href="/simulation_core_adviser">advisers</a> to help you design your magnetic.</li>
-                                            <li class="">Use, compare and access all properties from any commercially available part:</li>
-                                            <ul class="text-white text-start fs-5">
-                                                <li class="">Magnetic cores and bobbins: Ferroxcube, TDK, Magnetics, Fair-Rite, Micrometals, etc.</li>
-                                                <li class="">Wires: MWS Wire Industries, Rubadue, Elektrisola, New England Wire Technologies, etc.</li>
-                                                <li class="">Or create your own library!</li>
-                                            </ul>
-                                        </ul>
-                                    </div>
-                                </div>
-                            </div>
-
-                        </div>
-
-                        <div class="col-lg-4 text-center my-2">
-                            <div class="card box-shadow bg-dark">
-                                <div class="card-header bg-transparent">
-                                    <h3 class="text-white"><i class="me-4 fa-solid fa-pen-ruler fa-1x text-info"></i>For Manufacturers<i class="ms-4 fa-solid fa-industry fa-1x text-info"></i></h3>
-                                </div>
-
-                                <div class="card-body" style="display: flex; justify-content: space-between; p-0 m-0">
-
-                                    <div class="text-left">
-                                        <p class="text-white fs-5">You are building Magnetics? OpenMagnetics is for you:</p>
-                                        <ul class="text-white text-start fs-5">
-                                            <li class="">Have access to data from all parts distributors.</li>
-                                            <li class="">Have access to the best models to reduce iterations.</li>
-                                            <li class="">Introduce your own stock and use let our advisers help you design something you can assembly today.</li>
-                                            <li class="">Integrate your products in our Open Database, and let your users use them in our tools.</li>
-                                        </ul>
-                                    </div>
-                                </div>
-                            </div>
-
                         </div>
                     </div>
-                </h2>
-                <h2>
-                    <div id="home-tools" class="row py-5 mx-1">
-                        <div class="text-white my-1 py-4 offset-sm-0 offset-lg-2 col-sm-12 col-lg-8 text-center bg-light rounded-4">
-                            <h3>Tools and Roadmap</h3>
-                            <p class="fs-5">OpenMagnetics is maintained and developed by volunteers, and we do it because we believe in what Open Source brings to the world. Each one of us makes their living by some other meaning and works on these in our free time, so there won't be any deadlines. Despite of that, we will do our best to make this tool as good as we are capable.</p>
-                            <p class="fs-5">If you want to support this project, consider joining our <a href="https://discord.gg/PFpMjYNb5c" target="_blank" rel="noopener noreferrer">Discord server</a> and let us know what you enjoy doing the most!.</p>
+
+                    <div class="col-lg-4 mb-4">
+                        <div class="card h-100 bg-dark border-0 shadow">
+                            <div class="card-header bg-transparent border-bottom border-primary text-center py-3">
+                                <h3 class="text-white mb-0">
+                                    <i class="fa-solid fa-screwdriver-wrench text-primary me-2"></i>Design Engineers
+                                </h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="text-white">
+                                    <div class="mb-1"><i class="fa-solid fa-check text-primary me-2"></i>Latest and most accurate loss models</div>
+                                    <div class="mb-1"><i class="fa-solid fa-check text-primary me-2"></i>No black boxes - see the implementation</div>
+                                    <div class="mb-1"><i class="fa-solid fa-check text-primary me-2"></i>Export designs without registration</div>
+                                    <div class="mb-1"><i class="fa-solid fa-check text-primary me-2"></i>All commercial parts from major vendors</div>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </h2>
+
+                    <div class="col-lg-4 mb-4">
+                        <div class="card h-100 bg-dark border-0 shadow">
+                            <div class="card-header bg-transparent border-bottom border-info text-center py-3">
+                                <h3 class="text-white mb-0">
+                                    <i class="fa-solid fa-industry text-info me-2"></i>Manufacturers
+                                </h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="text-white">
+                                    <div class="mb-1"><i class="fa-solid fa-check text-info me-2"></i>Reduce prototyping iterations</div>
+                                    <div class="mb-1"><i class="fa-solid fa-check text-info me-2"></i>Use your own stock in designs</div>
+                                    <div class="mb-1"><i class="fa-solid fa-check text-info me-2"></i>Integrate your products in our database</div>
+                                    <div class="mb-1"><i class="fa-solid fa-check text-info me-2"></i>Access data from all distributors</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Supported Manufacturers -->
+                <div class="row py-5">
+                    <div class="col-12 text-center mb-4">
+                        <h2 class="text-white display-6 fw-bold"><i class="fa-solid fa-building text-warning me-3"></i>Supported Manufacturers</h2>
+                        <p class="text-white fs-5">We support parts from all major magnetic component manufacturers</p>
+                    </div>
+                    <div class="col-12">
+                        <div class="d-flex flex-wrap justify-content-center gap-3">
+                            <span class="badge bg-secondary fs-6 p-2">Ferroxcube</span>
+                            <span class="badge bg-secondary fs-6 p-2">TDK</span>
+                            <span class="badge bg-secondary fs-6 p-2">Magnetics Inc.</span>
+                            <span class="badge bg-secondary fs-6 p-2">Fair-Rite</span>
+                            <span class="badge bg-secondary fs-6 p-2">Micrometals</span>
+                            <span class="badge bg-secondary fs-6 p-2">DMEGC</span>
+                            <span class="badge bg-secondary fs-6 p-2">Cosmo Ferrites</span>
+                            <span class="badge bg-secondary fs-6 p-2">MWS Wire</span>
+                            <span class="badge bg-secondary fs-6 p-2">Elektrisola</span>
+                            <span class="badge bg-secondary fs-6 p-2">Rubadue</span>
+                            <span class="badge bg-secondary fs-6 p-2">New England Wire</span>
+                            <span class="badge bg-secondary fs-6 p-2">And many more...</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Call to Action -->
+                <div class="row py-5 mb-4">
+                    <div class="col-lg-8 offset-lg-2 text-center">
+                        <div class="card bg-gradient border-0 shadow-lg p-5" style="background: linear-gradient(135deg, #1e3a5f 0%, #0d1b2a 100%);">
+                            <h2 class="text-white display-6 fw-bold mb-3">Ready to Design?</h2>
+                            <p class="text-white fs-5 mb-4">Start building your magnetic component right now. No registration required.</p>
+                            <div class="d-flex justify-content-center gap-3 flex-wrap">
+                                <button @click="newMagneticToolDesign" class="btn btn-primary btn-lg shadow">
+                                    <i class="fa-solid fa-rocket me-2"></i>Launch Magnetic Builder
+                                </button>
+                                <a href="https://github.com/OpenMagnetics/" target="_blank" class="btn btn-outline-light btn-lg text-white">
+                                    <i class="fa-brands fa-github me-2"></i>View Source Code
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </main>
         <Footer class="mt-auto"/>
@@ -235,7 +307,7 @@ export default {
       width: 100%;
       height: 100%;
       opacity: 1;
-      background-image: linear-gradient(to bottom, rgba(26, 26, 26, 0.8), rgba(26, 26, 26, 1)),
+      background-image: linear-gradient(to bottom, rgba(26, 26, 26, 0.7), rgba(26, 26, 26, 1)),
     url('/images/background_home.png');
       background-repeat: no-repeat;
       background-position: 50% 0;
@@ -244,5 +316,22 @@ export default {
 
     .content {
       position: relative;
+    }
+
+    .card {
+        transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    }
+
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3) !important;
+    }
+
+    .btn {
+        transition: transform 0.15s ease-in-out;
+    }
+
+    .btn:hover {
+        transform: scale(1.02);
     }
 </style>

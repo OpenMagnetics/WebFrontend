@@ -12,7 +12,6 @@ import { useUserStore } from '/src/stores/user'
 import { useSettingsStore } from '/src/stores/settings'
 import { useStateStore } from '/src/stores/state'
 import { useStyleStore } from '/src/stores/style'
-import { useWeStyleStore } from '/src/stores/weStyle'
 import { useFairRiteStyleStore } from '/src/stores/fairRiteStyle'
 import { VueWindowSizePlugin } from 'vue-window-size/plugin';
 import { initWorker } from '/WebSharedComponents/assets/js/mkfRuntime'
@@ -41,18 +40,55 @@ app.config.globalProperties.$stateStore = useStateStore()
 
 export const globals = app.config.globalProperties
 
+// Preload function to start loading WASM and data in background from home page
+let preloadPromise = null;
+let preloadedMkf = null; // Store preloaded mkf separately, don't set $mkf until engine loader
+function preloadMKF() {
+    if (preloadPromise || app.config.globalProperties.$mkf != null) {
+        return preloadPromise; // Already preloading or loaded
+    }
+    
+    console.warn("Preloading MKF from home page...");
+    
+    preloadPromise = (async () => {
+        try {
+            // Initialize MKF in Web Worker
+            const wasmJsUrl = new URL('/src/assets/js/libMKF.wasm.js', window.location.origin).href;
+            const mkf = await initWorker(wasmJsUrl);
+            preloadedMkf = mkf; // Store but don't set globally yet
+            
+            // Load data and wait for completion
+            console.warn("Preload: Loading core materials, shapes and wires...");
+            await Promise.all([
+                mkf.load_core_materials("").then(() => console.log("Preload: Core materials loaded")),
+                mkf.load_core_shapes("").then(() => console.log("Preload: Core shapes loaded")),
+                mkf.load_wires("").then(() => console.log("Preload: Wires loaded"))
+            ]);
+            
+            console.warn("MKF preload complete - All data ready");
+            return mkf;
+        } catch (error) {
+            console.error("Error preloading MKF:", error);
+            preloadPromise = null; // Allow retry
+            throw error;
+        }
+    })();
+    
+    return preloadPromise;
+}
+
 app.mount("#app");
 
 router.beforeEach((to, from, next) => {
 
-    if (app.config.globalProperties.$mkf != null && (to.name == "EngineLoader" || to.name == "WEEngineLoader")) {
+    if (app.config.globalProperties.$mkf != null && !app.config.globalProperties.$mkf._loading && to.name == "EngineLoader") {
         if (app.config.globalProperties.$userStore.loadingPath != null) {
             const newPath = app.config.globalProperties.$userStore.loadingPath;
             app.config.globalProperties.$userStore.loadingPath = null;
             router.push(newPath);
         }
         else {
-            // If WASM is loaded and we go to enginer loader, we just return to where we were
+            // If WASM is loaded and we go to engine loader, we just return to where we were
             setTimeout(() => {router.push(from.path);}, 500);
         }
     }
@@ -61,36 +97,44 @@ router.beforeEach((to, from, next) => {
 
     var loadData = !nonDataViews.includes(to.path);
 
-    const weWorkflow = to.path.includes("we_") || from.path.includes("we_");
     const fairRiteWorkflow = to.path.includes("fair_rite") || from.path.includes("fair_rite");
 
     if (fairRiteWorkflow) {
         app.config.globalProperties.$styleStore = useFairRiteStyleStore()
     }
-    else if (weWorkflow) {
-        app.config.globalProperties.$styleStore = useWeStyleStore()
-    }
     else {
         app.config.globalProperties.$styleStore = useStyleStore()
     }
 
+    // Start preloading when on home page (non-data views)
+    if (!loadData && app.config.globalProperties.$mkf == null) {
+        preloadMKF();
+    }
 
     if (loadData) {
-        if (app.config.globalProperties.$mkf == null && to.name != "WEEngineLoader" && weWorkflow) {
-            app.config.globalProperties.$userStore.loadingPath = to.path
-            router.push(`${import.meta.env.BASE_URL}we_engine_loader`)
-        }
-        else if (app.config.globalProperties.$mkf == null && to.name != "EngineLoader" && !weWorkflow) {
+        if (app.config.globalProperties.$mkf == null && to.name != "EngineLoader") {
             app.config.globalProperties.$userStore.loadingPath = to.path
             router.push(`${import.meta.env.BASE_URL}engine_loader`)
         }
-        else if (app.config.globalProperties.$mkf == null && (to.name == "EngineLoader" || to.name == "WEEngineLoader")) {
-            const loadAllParts = !weWorkflow || (weWorkflow && app.config.globalProperties.$settingsStore.catalogAdviserSettings.useAllParts);
-            // const loadExternalParts = false;
-            const loadExternalParts = weWorkflow;
+        else if (app.config.globalProperties.$mkf == null && to.name == "EngineLoader") {
+            // Minimum time to display the loader (in ms)
+            const minimumLoaderTime = 500;
+            const loaderStartTime = Date.now();
             
             // Mark as loading to prevent re-entry
             app.config.globalProperties.$mkf = { ready: Promise.resolve(), _loading: true };
+            
+            // Check if preloading already completed or is in progress
+            // If preloadPromise exists, await it - it includes all data loading
+            const initPromise = preloadPromise 
+                ? preloadPromise                  // In progress or complete (includes data loading)
+                : preloadedMkf 
+                    ? Promise.resolve(preloadedMkf)  // Shouldn't happen, but just in case
+                    : (async () => {                 // Fresh init - need to load data separately
+                        console.warn("Initializing MKF in Web Worker (fresh)...")
+                        const wasmJsUrl = new URL('/src/assets/js/libMKF.wasm.js', window.location.origin).href;
+                        return await initWorker(wasmJsUrl);
+                    })();
             
             (async () => {
                 try {
@@ -113,76 +157,44 @@ router.beforeEach((to, from, next) => {
                             }
                         })
                     
-                    // Initialize MKF in Web Worker
-                    console.warn("Initializing MKF in Web Worker...")
-                    const wasmJsUrl = new URL('/src/assets/js/libMKF.wasm.js', window.location.origin).href;
-                    const mkf = await initWorker(wasmJsUrl);
+                    // Wait for MKF initialization (either from preload or fresh)
+                    // If preloadPromise exists, it includes data loading, so wait for it fully
+                    const mkf = await initPromise;
                     app.config.globalProperties.$mkf = mkf;
+                    
+                    // If preloadPromise was used, data is already loaded (preload includes data loading)
+                    // Only need to load if we did fresh init without preload
+                    const preloadWasUsed = preloadPromise != null;
 
-                    // Load core materials
-                    console.warn("Loading core materials in simulator")
-                    if (loadAllParts) {
-                        await mkf.load_core_materials("");
-                    }
-                    if (loadExternalParts) {
-                        try {
-                            const coreMaterialsData = await fetch(`${import.meta.env.BASE_URL}core_materials.ndjson`).then(r => r.text());
-                            if (!coreMaterialsData.startsWith("<")) {
-                                await mkf.load_core_materials(coreMaterialsData);
-                            }
-                        } catch (error) {
-                            console.error("error fetching core_materials.ndjson", error);
-                        }
-                    }
-
-                    // Load core shapes
-                    console.warn("Loading core shapes in simulator")
-                    if (loadAllParts) {
-                        await mkf.load_core_shapes("");
-                    }
-                    if (loadExternalParts) {
-                        try {
-                            const coreShapesData = await fetch(`${import.meta.env.BASE_URL}core_shapes.ndjson`).then(r => r.text());
-                            if (!coreShapesData.startsWith("<")) {
-                                await mkf.load_core_shapes(coreShapesData);
-                            }
-                        } catch (error) {
-                            console.error("error fetching core_shapes.ndjson", error);
-                        }
+                    // Load core materials, shapes, wires - WAIT for all to complete
+                    // Skip if preload was used (it already loaded the base data)
+                    const loadPromises = [];
+                    
+                    if (!preloadWasUsed) {
+                        console.warn("Loading core materials in simulator")
+                        loadPromises.push(mkf.load_core_materials("").then(() => console.log("Core materials loaded")));
+                        
+                        console.warn("Loading core shapes in simulator")
+                        loadPromises.push(mkf.load_core_shapes("").then(() => console.log("Core shapes loaded")));
+                        
+                        console.warn("Loading wires in simulator")
+                        loadPromises.push(mkf.load_wires("").then(() => console.log("Wires loaded")));
+                    } else {
+                        console.warn("Preload already loaded base data, skipping...");
                     }
 
-                    // Load wires
-                    console.warn("Loading wires in simulator")
-                    if (loadAllParts) {
-                        await mkf.load_wires("");
+                    // Wait for ALL loading to complete
+                    if (loadPromises.length > 0) {
+                        await Promise.all(loadPromises);
                     }
-                    if (loadExternalParts) {
-                        try {
-                            const wiresData = await fetch(`${import.meta.env.BASE_URL}lab_osma_wires.ndjson`).then(r => r.text());
-                            if (!wiresData.startsWith("<")) {
-                                await mkf.load_wires(wiresData);
-                            }
-                        } catch (error) {
-                            console.error("error fetching lab_osma_wires.ndjson", error);
-                        }
-                    }
+                    console.warn("All data loaded");
 
-                    // Load cores
-                    console.warn("Loading cores in simulator")
-                    if (loadExternalParts) {
-                        try {
-                            const coresData = await fetch(`${import.meta.env.BASE_URL}lab_osma_cores.ndjson`).then(r => r.text());
-                            if (!coresData.startsWith("<")) {
-                                await mkf.load_cores(coresData, app.config.globalProperties.$settingsStore.adviserSettings.allowToroidalCores, app.config.globalProperties.$settingsStore.adviserSettings.useOnlyCoresInStock);
-                            }
-                        } catch (error) {
-                            console.error("error fetching lab_osma_cores.ndjson", error);
-                        }
-                    }
-
+                    // Ensure minimum loader display time before navigating
                     const newPath = app.config.globalProperties.$userStore.loadingPath;
                     app.config.globalProperties.$userStore.loadingPath = null;
-                    router.push(newPath)
+                    const elapsedTime = Date.now() - loaderStartTime;
+                    const remainingTime = Math.max(0, minimumLoaderTime - elapsedTime);
+                    setTimeout(() => router.push(newPath), remainingTime)
                 } catch (error) {
                     console.error("Error initializing MKF:", error);
                 }

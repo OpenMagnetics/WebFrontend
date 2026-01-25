@@ -235,6 +235,10 @@ export default {
             // Just navigate back to magneticBuilder
             this.$stateStore.getCurrentToolState().subsection = 'magneticBuilder';
         },
+        goBackToBuilder() {
+            // Go back to magneticBuilder without selecting any new design
+            this.$stateStore.getCurrentToolState().subsection = 'magneticBuilder';
+        },
 
     }
 }
@@ -265,6 +269,7 @@ export default {
                 </div>
                 <button :style="$styleStore.contextMenu.confirmButton" :disabled="loading" :data-cy="dataTestLabel + '-calculate-mas-advises-button'" class="btn mx-auto d-block mt-4" @click="calculateAdvises" >Get advised magnetics!</button>
                 <button :style="$styleStore.contextMenu.changeToolButton" :disabled="loading || !dataUptoDate || adviseCacheStore.currentMasAdvises == null || adviseCacheStore.currentMasAdvises.length == 0" :data-cy="dataTestLabel + '-load-and-go-to-builder-button'" class="btn mx-auto d-block mt-2" @click="loadAndGoToBuilder" >Load selected advise</button>
+                <button :style="$styleStore.contextMenu.cancelButton" :disabled="loading" :data-cy="dataTestLabel + '-go-back-to-builder-button'" class="btn mx-auto d-block mt-2" @click="goBackToBuilder" >Go back</button>
             </div>
             <div class="col-sm-12 col-md-10 text-start pe-0 container-fluid"  style="height: 70vh">
                 <div class="row" v-if="loading" >

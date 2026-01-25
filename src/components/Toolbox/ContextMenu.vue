@@ -137,6 +137,15 @@ export default {
                 {{'Redraw'}}
             </button>
             <button
+                :style="$styleStore.contextMenu.resimulateButton"
+                v-if="$stateStore.getCurrentToolState().subsection == 'magneticBuilder' && $settingsStore.magneticBuilderSettings.enableSimulation && !$settingsStore.magneticBuilderSettings.enableAutoSimulation"  
+                :data-cy="dataTestLabel + 'resimulate-button'"
+                class="btn mx-auto d-block mt-4 col-6 col-sm-6 col-md-12"
+                @click="$stateStore.resimulate()"
+            >
+                {{'Resimulate'}}
+            </button>
+            <button
                 :style="$styleStore.contextMenu.editButton"
                 v-if="$stateStore.getCurrentToolState().subsection == 'magneticViewer'"  
                 :data-cy="dataTestLabel + 'edit-from-viewer-button'"

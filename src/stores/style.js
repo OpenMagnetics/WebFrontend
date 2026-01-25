@@ -455,6 +455,10 @@ export const useStyleStore = defineStore("style", () => {
                 "background-color": theme["success"],
                 "color": theme["dark"],
             },
+            resimulateButton: {
+                "background-color": theme["warning"],
+                "color": theme["dark"],
+            },
             confirmButton: {
                 "background-color": theme["success"],
                 "color": theme["dark"],

@@ -30,6 +30,9 @@ export default {
             blockingRebounds,
             localData,
             taskQueueStore,
+            processingCurrent: false,
+            processingVoltage: false,
+            pendingProcess: { current: false, voltage: false },
         }
     },
     computed: {
@@ -37,29 +40,29 @@ export default {
     watch: {
         'modelValue.current.waveform': {
             handler(newValue, oldValue) {
-                this.process("current");
-                this.process("voltage");
+                this.scheduleProcess("current");
+                this.scheduleProcess("voltage");
             },
             deep: true
         },
         'modelValue.current.processed': {
             handler(newValue, oldValue) {
-                this.process("current");
-                this.process("voltage");
+                this.scheduleProcess("current");
+                this.scheduleProcess("voltage");
             },
             deep: true
         },
         'modelValue.voltage.waveform': {
             handler(newValue, oldValue) {
-                this.process("current");
-                this.process("voltage");
+                this.scheduleProcess("current");
+                this.scheduleProcess("voltage");
             },
             deep: true
         },
         'modelValue.voltage.processed': {
             handler(newValue, oldValue) {
-                this.process("current");
-                this.process("voltage");
+                this.scheduleProcess("current");
+                this.scheduleProcess("voltage");
             },
             deep: true
         },
@@ -69,12 +72,51 @@ export default {
         this.process("voltage");
     },
     methods: {
-        async process(signalDescriptor) {
-            try {
-                if (this.modelValue[signalDescriptor].harmonics == null) {
-                    this.modelValue[signalDescriptor].harmonics = await this.taskQueueStore.calculateHarmonics(this.modelValue[signalDescriptor].waveform, this.modelValue.frequency);
+        scheduleProcess(signalDescriptor) {
+            // Debounce rapid calls to prevent overlapping worker requests
+            if (signalDescriptor === "current") {
+                if (this.processingCurrent) {
+                    this.pendingProcess.current = true;
+                    return;
                 }
-                var result = await this.taskQueueStore.calculateProcessed(this.modelValue[signalDescriptor].harmonics, this.modelValue[signalDescriptor].waveform);
+            } else {
+                if (this.processingVoltage) {
+                    this.pendingProcess.voltage = true;
+                    return;
+                }
+            }
+            this.process(signalDescriptor);
+        },
+        async process(signalDescriptor) {
+            if (signalDescriptor === "current") {
+                this.processingCurrent = true;
+            } else {
+                this.processingVoltage = true;
+            }
+            
+            try {
+                // Use deepCopy to avoid Vue reactive proxy serialization issues
+                const waveform = deepCopy(this.modelValue[signalDescriptor].waveform);
+                const frequency = this.modelValue.frequency;
+                
+                if (!waveform || !frequency) {
+                    return;
+                }
+                
+                if (this.modelValue[signalDescriptor].harmonics == null) {
+                    this.modelValue[signalDescriptor].harmonics = await this.taskQueueStore.calculateHarmonics(waveform, frequency);
+                }
+                
+                const harmonics = deepCopy(this.modelValue[signalDescriptor].harmonics);
+                // Filter out null values from harmonics arrays
+                if (harmonics.amplitudes) {
+                    harmonics.amplitudes = harmonics.amplitudes.filter(v => v !== null);
+                }
+                if (harmonics.frequencies) {
+                    harmonics.frequencies = harmonics.frequencies.filter(v => v !== null);
+                }
+                var result = await this.taskQueueStore.calculateProcessed(harmonics, waveform);
+                
                 if (typeof result === 'string' && result.startsWith("Exception")) {
                     console.error(result);
                 }
@@ -89,10 +131,39 @@ export default {
                         this.modelValue[signalDescriptor].processed.peakToPeak = result.peakToPeak;
                         this.modelValue[signalDescriptor].processed.offset = result.offset;
                     }
-                    this.localData.rmsPower = await this.taskQueueStore.calculateRmsPower(this.modelValue);
+                    // Create a clean plain object copy for power calculation
+                    const excitationCopy = JSON.parse(JSON.stringify(this.modelValue));
+                    // Filter out null values from harmonics arrays in excitation copy
+                    if (excitationCopy.current?.harmonics?.amplitudes) {
+                        excitationCopy.current.harmonics.amplitudes = excitationCopy.current.harmonics.amplitudes.filter(v => v !== null);
+                    }
+                    if (excitationCopy.current?.harmonics?.frequencies) {
+                        excitationCopy.current.harmonics.frequencies = excitationCopy.current.harmonics.frequencies.filter(v => v !== null);
+                    }
+                    if (excitationCopy.voltage?.harmonics?.amplitudes) {
+                        excitationCopy.voltage.harmonics.amplitudes = excitationCopy.voltage.harmonics.amplitudes.filter(v => v !== null);
+                    }
+                    if (excitationCopy.voltage?.harmonics?.frequencies) {
+                        excitationCopy.voltage.harmonics.frequencies = excitationCopy.voltage.harmonics.frequencies.filter(v => v !== null);
+                    }
+                    this.localData.rmsPower = await this.taskQueueStore.calculateRmsPower(excitationCopy);
                 }
             } catch (error) {
                 console.error('Error in process:', error);
+            } finally {
+                if (signalDescriptor === "current") {
+                    this.processingCurrent = false;
+                    if (this.pendingProcess.current) {
+                        this.pendingProcess.current = false;
+                        this.$nextTick(() => this.process("current"));
+                    }
+                } else {
+                    this.processingVoltage = false;
+                    if (this.pendingProcess.voltage) {
+                        this.pendingProcess.voltage = false;
+                        this.$nextTick(() => this.process("voltage"));
+                    }
+                }
             }
         }
     }

@@ -54,6 +54,11 @@ const routes = [
         name: 'Wizards',
         component: () => import('../views/Wizards.vue')
     },
+    {
+        path: '/wizards_landing',
+        name: 'WizardsLanding',
+        component: () => import('../views/WizardsLanding.vue')
+    },
 
 
     // {
