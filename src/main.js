@@ -5,8 +5,7 @@ import router from "./router";
 import { createPinia } from 'pinia'
 import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
 import VueCookies from 'vue3-cookies'
-import tooltip from "./directives/tooltip.js";
-import "/src/assets/css/tooltip.css";
+import tooltip from "/WebSharedComponents/Common/TooltipDirective.vue";
 import axios from "axios";
 import { useUserStore } from '/src/stores/user'
 import { useSettingsStore } from '/src/stores/settings'
@@ -91,6 +90,11 @@ router.beforeEach((to, from, next) => {
             // If WASM is loaded and we go to engine loader, we just return to where we were
             setTimeout(() => {router.push(from.path);}, 500);
         }
+    }
+    else if (app.config.globalProperties.$userStore.loadingPath !=null && app.config.globalProperties.$mkf != null && to.name == "EngineLoader") {
+        const newPath = app.config.globalProperties.$userStore.loadingPath;
+        app.config.globalProperties.$userStore.loadingPath = null;
+        setTimeout(() => {router.push(from.path);}, 500);
     }
 
     const nonDataViews = [`${import.meta.env.BASE_URL}`, `${import.meta.env.BASE_URL}home`, `${import.meta.env.BASE_URL}insulation_adviser`]

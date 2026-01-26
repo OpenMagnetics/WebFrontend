@@ -41,32 +41,29 @@ export default {
 </script>
 <template>
     <div class="modal fade" id="reportBugModal" aria-labelledby="reportBugModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content" :style="$styleStore.header.main">
-                <div class="modal-header">
-                    <p class="modal-title fs-5" id="reportBugModalLabel">Report bug</p>
+        <div class="modal-dialog modal-md modal-dialog-centered">
+            <div class="modal-content bg-dark border-0 shadow-lg">
+                <div class="modal-header border-bottom border-secondary px-4 py-3">
+                    <div class="d-flex align-items-center">
+                        <i class="fa-solid fa-bug text-danger me-2 fs-5"></i>
+                        <h5 data-cy="BugReporter-title" class="modal-title text-white mb-0" id="reportBugModalLabel">Report Bug</h5>
+                    </div>
                     <button data-cy="BugReporter-corner-close-modal-button" type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="reportBugModalClose"></button>
                 </div>
-                <div class="modal-body row mt-1 px-4">
-                    <label class="fs-5 mb-1" for="bugReportUserInformation">Let us know what happened and any contact info (in case you want to be contacted)</label>
-                    <textarea :style="$styleStore.header.main" data-cy="BugReporter-user-information-input" class="bg-light rounded-2 my-2" placeholder="Leave a comment here" id="bugReportUserInformation" style="height: 100px" v-model="userInformation"></textarea>
-                    <button
-                        :style="$styleStore.header.bugButton"
-                        data-cy="BugReporter-report-bug-button"
-                        :disabled="isReported || posting"
-                        class="btn mt-2 offset-1 col-5"
-                        @click="onReportBug"
-                    >
-                        {{posting? "Reporting" : isReported? "Bug reported, thanks!" : "Report bug"}}
-                    </button>
-                    <button
-                        :style="$styleStore.header.bugButton"
-                        data-cy="BugReporter-close-modal-button"
-                        :disabled="posting"
-                        class="btn btn-dark text-primary border-primary mx-auto d-block mt-2 offset-1 col-5"
-                        data-bs-dismiss="modal"
-                    >
-                        {{'Close'}}
+                <div class="modal-body px-4 py-4">
+                    <div class="mb-3">
+                        <h6 class="text-white mb-1">What happened?</h6>
+                        <small class="text-secondary">Let us know what happened and any contact info (in case you want to be contacted)</small>
+                    </div>
+                    <textarea data-cy="BugReporter-user-information-input" class="form-control bg-secondary text-white border-secondary" placeholder="Describe the issue..." id="bugReportUserInformation" rows="4" v-model="userInformation"></textarea>
+                </div>
+                <div class="modal-footer border-top border-secondary px-4 py-3">
+                    <button data-cy="BugReporter-close-modal-button" :disabled="posting" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button data-cy="BugReporter-report-bug-button" :disabled="isReported || posting" class="btn btn-primary px-4" @click="onReportBug">
+                        <i v-if="posting" class="fa-solid fa-spinner fa-spin me-2"></i>
+                        <i v-else-if="isReported" class="fa-solid fa-check me-2"></i>
+                        <i v-else class="fa-solid fa-paper-plane me-2"></i>
+                        {{posting? "Reporting..." : isReported? "Reported!" : "Report Bug"}}
                     </button>
                 </div>
             </div>

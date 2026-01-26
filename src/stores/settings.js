@@ -17,7 +17,6 @@ export const useSettingsStore = defineStore("settings", () => {
     })
 
     const adviserSettings = ref({
-        spiderBarChartNotBar: false,
         useOnlyCoresInStock: true,
         allowDistributedGaps: true,
         allowStacks: true,
@@ -47,7 +46,6 @@ export const useSettingsStore = defineStore("settings", () => {
 
     function reset() {
         this.adviserSettings ={
-            spiderBarChartNotBar: false,
             useOnlyCoresInStock: true,
             allowDistributedGaps: true,
             allowStacks: true,

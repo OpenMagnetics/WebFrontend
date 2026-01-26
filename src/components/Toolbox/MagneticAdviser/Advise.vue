@@ -1,14 +1,23 @@
 <script setup>
-import { Chart, registerables } from 'chart.js'
+import { use } from 'echarts/core'
+import { CanvasRenderer } from 'echarts/renderers'
+import { RadarChart, BarChart } from 'echarts/charts'
+import { TitleComponent, TooltipComponent, RadarComponent, GridComponent } from 'echarts/components'
+import VChart from 'vue-echarts'
+import { markRaw } from 'vue'
 import { toTitleCase, removeTrailingZeroes, formatPower, formatPowerDensity, formatInductance, formatTemperature } from '/WebSharedComponents/assets/js/utils.js'
 import { useTaskQueueStore } from '../../../stores/taskQueue'
+
+// Register ECharts components once at module level
+use([CanvasRenderer, RadarChart, BarChart, TitleComponent, TooltipComponent, RadarComponent, GridComponent]);
 </script>
 
 <script>
-var options = {};
-var chart = null;
 export default {
-    emits: ["adviseReady"],
+    components: {
+        VChart,
+    },
+    emits: ["adviseReady", "selectedMas", "showDetails"],
     props: {
         adviseIndex: {
             type: Number,
@@ -42,149 +51,203 @@ export default {
     data() {
         const style = getComputedStyle(document.body);
         const theme = {
-          primary: style.getPropertyValue('--bs-primary'),
-          secondary: style.getPropertyValue('--bs-secondary'),
-          success: style.getPropertyValue('--bs-success'),
-          info: style.getPropertyValue('--bs-info'),
-          warning: style.getPropertyValue('--bs-warning'),
-          danger: style.getPropertyValue('--bs-danger'),
-          light: style.getPropertyValue('--bs-light'),
-          dark: style.getPropertyValue('--bs-dark'),
-          white: style.getPropertyValue('--bs-white'),
+            primary: style.getPropertyValue('--bs-primary'),
+            secondary: style.getPropertyValue('--bs-secondary'),
+            success: style.getPropertyValue('--bs-success'),
+            info: style.getPropertyValue('--bs-info'),
+            warning: style.getPropertyValue('--bs-warning'),
+            danger: style.getPropertyValue('--bs-danger'),
+            light: style.getPropertyValue('--bs-light'),
+            dark: style.getPropertyValue('--bs-dark'),
+            white: style.getPropertyValue('--bs-white'),
         };
-        const data = {};
-        const taskQueueStore = useTaskQueueStore();
         const localTexts = {
-            coreLosses: null,
+            losses: null,
             powerDensity: null,
             magnetizingInductance: null,
             coreTemperature: null,
         };
         return {
-            data,
+            chartOptions: null,
             theme,
             localTexts,
-            masScore: null,
             processedScoring: {},
-            taskQueueStore,
+            taskQueueStore: useTaskQueueStore(),
         }
     },
     computed: {
-        fixedMagneticName() {
-            if (this.masData.magnetic.manufacturerInfo.reference.split("Gapped ").length > 1) {
-                var gapLength = null;
-                var extraForStacks = '';
-                if (this.masData.magnetic.manufacturerInfo.reference.split("Gapped ")[1].split(" mm").length > 0) {
-                    gapLength =  removeTrailingZeroes(Number(this.masData.magnetic.manufacturerInfo.reference.split("Gapped ")[1].split(" mm")[0]));
-                    if (this.masData.magnetic.manufacturerInfo.reference.split("Gapped ")[1].split(" mm").length > 1) {
-                        extraForStacks = this.masData.magnetic.manufacturerInfo.reference.split("Gapped ")[1].split(" mm")[1];
-                    }
+        displayMagneticName() {
+            const reference = this.masData.magnetic.manufacturerInfo.reference;
+            if (reference.includes("Gapped ")) {
+                const parts = reference.split("Gapped ");
+                const afterGapped = parts[1];
+                if (afterGapped.includes(" mm")) {
+                    const mmParts = afterGapped.split(" mm");
+                    const gapLength = removeTrailingZeroes(Number(mmParts[0]));
+                    const extraForStacks = mmParts.length > 1 ? mmParts[1] : '';
+                    return parts[0] + gapLength + " mm" + extraForStacks;
                 }
-                this.masData.magnetic.manufacturerInfo.reference = this.masData.magnetic.manufacturerInfo.reference.split("Gapped ")[0] + gapLength + " mm" + extraForStacks;
             }
-            else {
-                // this.masData.magnetic.manufacturerInfo.reference = this.masData.magnetic.manufacturerInfo.reference.replaceAll("Ungapped", "Ung.");
-            }
-            return this.masData.magnetic.manufacturerInfo.reference;
+            return reference;
+        },
+        formattedLosses() {
+            return this.localTexts.losses?.split('\n')[1] || '';
+        },
+        formattedPowerDensity() {
+            return this.localTexts.powerDensity?.split('\n')[1] || '';
         },
     },
-    watch: {
-    },
-    mounted () {
-        options = {
-            scales: {
-                r: {
-                    pointLabels: {
-                        display: true,
-                        font: {
-                            size: 12
-                        }
-                    },
-                    ticks: {
-                        display: false
-                    },
-                    grid: {
-                        color: "#636363",
-                        display: true
-                    },
-                    max: 1,
-                    min: 0,
-                },
-                y: {
-                    beginAtZero: true,
-                    display: this.graphType == "bar",
-                }
-            },
-            plugins:{
-                legend:{
-                    display: false,
-                }
-            },
-            elements: {
-                line: {
-                    borderWidth: 3
-                }
-            }
-        }
-
-        this.processedScoring = {};
-        this.processedScoring["Losses"] = 0;
-        var numberEfficiencyFilters = 0;
-        Object.entries(this.scoring).forEach((elem) => {
-            const [filter, value] = elem
-            if (filter != "Cost" && filter != "Dimensions") {
-                numberEfficiencyFilters += 1;
-                this.processedScoring["Losses"] += value;
-            }
-            else {
-                this.processedScoring[filter] = value;
-            }
-        })
-
-        this.processedScoring["Losses"] /= numberEfficiencyFilters;
-
-        this.data = {
-            labels: this.brokenLinedFilters(this.processedScoring),
-            datasets: [{
-                label: '',
-                data: Object.values(this.processedScoring),
-                fill: true,
-                backgroundColor: this.theme.primary,
-                borderColor: this.theme.primary,
-                pointBackgroundColor: this.theme.success,
-                pointBorderColor: this.theme.success,
-                pointHoverBackgroundColor: this.theme.info,
-                pointHoverBorderColor: this.theme.info
-            }]
-        }
-
+    mounted() {
+        this.initializeChart();
         this.processLocalTexts();
-
-        Chart.register(...registerables)
-        this.createChart('chartSpiderAdvise-' + this.adviseIndex, options)
-        this.$emit("adviseReady")
+        this.$emit("adviseReady");
     },
     methods: {
-        brokenLinedFilters(scoring) {
-            const titledFilters = [];
-            for (let [key, _] of Object.entries(scoring)) {
-                var aux = toTitleCase(key.toLowerCase().replaceAll("_", " "));
-                // titledFilters.push(aux.split(' ').map(item => item.length <= 8? item + ' ' : item.slice(0, 6) + '. ').map(item => toTitleCase(item)).join());
-                // titledFilters.push(aux.split(' ').map(item => item.length <= 8? item + ' ' : item.slice(0, 6) + '. ').map(item => toTitleCase(item)));
-                titledFilters.push(aux);
+        initializeChart() {
+            // Process scoring data
+            this.processedScoring = { Losses: 0 };
+            let efficiencyFilterCount = 0;
+            
+            Object.entries(this.scoring).forEach(([filter, value]) => {
+                if (filter !== "Cost" && filter !== "Dimensions") {
+                    efficiencyFilterCount++;
+                    this.processedScoring.Losses += value;
+                } else {
+                    this.processedScoring[filter] = value;
+                }
+            });
+            
+            if (efficiencyFilterCount > 0) {
+                this.processedScoring.Losses /= efficiencyFilterCount;
             }
-            return titledFilters;
+
+            const labels = this.formatFilterLabels(this.processedScoring);
+            const truncatedLabels = this.formatFilterLabels(this.processedScoring, true);
+            const values = Object.values(this.processedScoring);
+
+            if (this.graphType === 'radar') {
+                this.chartOptions = this.createRadarOptions(labels, values);
+            } else {
+                this.chartOptions = this.createBarOptions(truncatedLabels, values);
+            }
         },
-        createChart(chartId, options) {
-            const ctx = document.getElementById(chartId)
-            if (ctx != null) {
-                chart = new Chart(ctx, {
-                    type: this.graphType,
-                    data: this.data,
-                    options: options,
-                })
-                chart.update()
-            }
+        formatFilterLabels(scoring, truncate = false) {
+            return Object.keys(scoring).map(key => {
+                const label = toTitleCase(key.toLowerCase().replaceAll("_", " "));
+                return truncate ? label.substring(0, 4) : label;
+            });
+        },
+        createRadarOptions(labels, values) {
+            return {
+                radar: {
+                    indicator: labels.map(label => ({ name: label, max: 1 })),
+                    splitNumber: 3,
+                    radius: '65%',
+                    axisName: {
+                        fontSize: 10,
+                        color: 'rgba(255, 255, 255, 0.6)'
+                    },
+                    splitLine: {
+                        lineStyle: { color: 'rgba(255, 255, 255, 0.1)' }
+                    },
+                    splitArea: {
+                        show: true,
+                        areaStyle: {
+                            color: ['rgba(255, 255, 255, 0.02)', 'rgba(255, 255, 255, 0.04)']
+                        }
+                    },
+                    axisLine: {
+                        lineStyle: { color: 'rgba(255, 255, 255, 0.1)' }
+                    }
+                },
+                series: [{
+                    type: 'radar',
+                    symbol: 'circle',
+                    symbolSize: 6,
+                    data: [{
+                        value: values,
+                        areaStyle: {
+                            color: {
+                                type: 'linear',
+                                x: 0, y: 0, x2: 0, y2: 1,
+                                colorStops: [
+                                    { offset: 0, color: 'rgba(90, 127, 255, 0.6)' },
+                                    { offset: 1, color: 'rgba(90, 127, 255, 0.1)' }
+                                ]
+                            }
+                        },
+                        lineStyle: {
+                            color: '#5a7fff',
+                            width: 2,
+                            shadowColor: 'rgba(90, 127, 255, 0.5)',
+                            shadowBlur: 10
+                        },
+                        itemStyle: {
+                            color: '#00c853',
+                            borderColor: '#fff',
+                            borderWidth: 1
+                        }
+                    }]
+                }]
+            };
+        },
+        createBarOptions(labels, values) {
+            return {
+                grid: {
+                    left: '8%',
+                    right: '5%',
+                    bottom: '28%',
+                    top: '12%'
+                },
+                xAxis: {
+                    type: 'category',
+                    data: labels,
+                    axisLabel: { 
+                        fontSize: 9,
+                        rotate: 35,
+                        color: 'rgba(255, 255, 255, 0.6)'
+                    },
+                    axisLine: {
+                        lineStyle: { color: 'rgba(255, 255, 255, 0.1)' }
+                    },
+                    axisTick: { show: false }
+                },
+                yAxis: {
+                    type: 'value',
+                    min: 0,
+                    max: 1,
+                    splitNumber: 3,
+                    axisLabel: {
+                        fontSize: 9,
+                        color: 'rgba(255, 255, 255, 0.5)'
+                    },
+                    splitLine: {
+                        lineStyle: { color: 'rgba(255, 255, 255, 0.06)' }
+                    },
+                    axisLine: { show: false }
+                },
+                series: [{
+                    type: 'bar',
+                    data: values,
+                    barWidth: '60%',
+                    itemStyle: {
+                        color: {
+                            type: 'linear',
+                            x: 0, y: 0, x2: 0, y2: 1,
+                            colorStops: [
+                                { offset: 0, color: '#5a7fff' },
+                                { offset: 1, color: '#3d5afe' }
+                            ]
+                        },
+                        borderRadius: [4, 4, 0, 0]
+                    },
+                    emphasis: {
+                        itemStyle: {
+                            color: '#00c853'
+                        }
+                    }
+                }]
+            };
         },
         async processLocalTexts() {
             {
@@ -203,7 +266,7 @@ export default {
             } catch (error) {
                 console.error('Error calculating power density:', error);
             }
-            {
+            if (this.masData.outputs[0].magnetizingInductance?.magnetizingInductance?.nominal != null) {
                 const aux = formatInductance(this.masData.outputs[0].magnetizingInductance.magnetizingInductance.nominal);
                 this.localTexts.magnetizingInductance = `Mag. Ind.:\n${removeTrailingZeroes(aux.label, 1)} ${aux.unit}`
             }  
@@ -213,25 +276,85 @@ export default {
 </script>
 
 <template>
-    <div class="container">
-        <div class="card p-0 m-0">
-            <div class="card-header row p-0 m-0 mt-2 pb-2">
-                <p class="fs-6 col-10 p-0 px-1 fw-bold">{{fixedMagneticName}}</p>
-                <p class="fs-4 col-2 p-0 m-0 text-success">{{`${removeTrailingZeroes(weightedTotalScoring * 100, 1)}`}}</p>
-                <!-- <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p> -->
-            </div>
-            <div class="row py-3">
-                <div class="col-5 mx-2 text-start px-4">
-                    <div class="col-12 p-0 m-0" style="white-space: pre-line">{{localTexts.losses}}</div>
-                    <div class="col-12 p-0 m-0" style="white-space: pre-line">{{localTexts.powerDensity}}</div>
+    <div class="card h-100" :class="{ 'border-success': selected, 'border-secondary': !selected }">
+        <!-- Header with score badge -->
+        <div class="card-header bg-dark border-secondary d-flex justify-content-between align-items-center py-2">
+            <span class="text-white text-truncate fw-semibold" :title="displayMagneticName" style="max-width: 70%;">{{ displayMagneticName }}</span>
+            <span class="badge rounded-pill text-dark" :class="selected ? 'bg-success' : 'bg-primary'">
+                {{ removeTrailingZeroes(weightedTotalScoring * 100, 0) }} pts
+            </span>
+        </div>
+
+        <!-- Main content area -->
+        <div class="card-body bg-dark p-2">
+            <div class="row g-2">
+                <!-- Stats column -->
+                <div class="col-5">
+                    <div class="d-flex flex-column gap-2">
+                        <div class="d-flex align-items-center gap-2 p-2 bg-black bg-opacity-25 rounded">
+                            <span>⚡</span>
+                            <div class="d-flex flex-column">
+                                <small class="text-white-50" style="font-size: 0.65rem;">Losses</small>
+                                <span class="text-white" style="font-size: 0.8rem;">{{ formattedLosses }}</span>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-center gap-2 p-2 bg-black bg-opacity-25 rounded">
+                            <span>📦</span>
+                            <div class="d-flex flex-column">
+                                <small class="text-white-50" style="font-size: 0.65rem;">Power Density</small>
+                                <span class="text-white" style="font-size: 0.8rem;">{{ formattedPowerDensity }}</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <canvas class="col-9" :id="'chartSpiderAdvise-' + adviseIndex" style="max-width: 50%; max-height: 70%;"></canvas>
+
+                <!-- Chart -->
+                <div class="col-7">
+                    <v-chart 
+                        v-if="chartOptions"
+                        class="w-100" 
+                        style="height: 110px;"
+                        :option="chartOptions"
+                        autoresize
+                    />
+                </div>
             </div>
-            <div class="card-body">
-                <button :data-cy="dataTestLabel + '-advise-' + adviseIndex + '-details-button'" class="btn btn-primary col-4" data-bs-toggle="offcanvas" data-bs-target="#CoreAdviserDetailOffCanvas" @click="$emit('selectedMas')"> Details </button>
-                <button :data-cy="dataTestLabel + '-advise-' + adviseIndex + '-select-button'" :class="selected? 'btn-success' : 'btn-primary'" class="btn  offset-1 col-4" @click="$emit('selectedMas')">{{selected? 'Selected' : 'Select'}}</button>
+        </div>
+
+        <!-- Action buttons -->
+        <div class="card-footer bg-dark border-secondary p-2">
+            <div class="d-flex gap-2">
+                <button 
+                    :data-cy="dataTestLabel + '-advise-' + adviseIndex + '-details-button'" 
+                    class="btn btn-outline-secondary btn-sm flex-fill"
+                    @click="$emit('showDetails')"
+                >
+                    🔍 Details
+                </button>
+                <button 
+                    :data-cy="dataTestLabel + '-advise-' + adviseIndex + '-select-button'" 
+                    class="btn btn-sm flex-fill"
+                    :class="selected ? 'btn-success' : 'btn-primary'"
+                    @click="$emit('selectedMas')"
+                >
+                    {{ selected ? '✓ Selected' : '○ Select' }}
+                </button>
             </div>
         </div>
     </div>
 </template>
+
+<style scoped>
+.card {
+    transition: all 0.3s ease;
+}
+
+.card:hover {
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.border-success {
+    box-shadow: 0 0 15px rgba(var(--bs-success-rgb), 0.25);
+}
+</style>
 

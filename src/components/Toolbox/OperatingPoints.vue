@@ -71,16 +71,6 @@ export default {
         excitationSelectorDisabled() {
             return this.$stateStore.operatingPoints.modePerPoint[this.currentOperatingPointIndex] !== this.$stateStore.OperatingPointsMode.Manual && this.$stateStore.operatingPoints.modePerPoint[this.currentOperatingPointIndex] !== this.$stateStore.OperatingPointsMode.CircuitSimulatorImport && this.$stateStore.operatingPoints.modePerPoint[this.currentOperatingPointIndex] !== this.$stateStore.OperatingPointsMode.HarmonicsList;
         },
-        styleTooltip() {
-            var relativePlacement;
-            relativePlacement = 'right'
-            return {
-                theme: {
-                    placement: relativePlacement,
-                    "text-align": "start",
-                },
-            }
-        },
         canContinue() {
             var allSet = true;
 
@@ -314,7 +304,7 @@ export default {
 
 <template>
     <div class="container">
-        <div class="row" v-tooltip="styleTooltip" :style="$styleStore.operatingPoints.main">
+        <div class="row" :style="$styleStore.operatingPoints.main">
             <div class="col-sm-12 col-md-2 text-start border m-0 px-1" :style="$styleStore.operatingPoints.main">
                 <div class="col-12 row m-0 p-0 px-1 border-bottom border-top rounded-4 border-4 mb-5 pb-2 pt-2 mt-2" :style="combinedStyle([$styleStore.operatingPoints.operatingPointBgColor, operatingPointIndex == currentOperatingPointIndex? 'opacity: 1;' : 'opacity: 0.65;'])"  v-for="(operatingPoint, operatingPointIndex) in masStore.mas.inputs.operatingPoints" :key="operatingPointIndex">
 

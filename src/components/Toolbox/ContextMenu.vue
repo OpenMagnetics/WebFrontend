@@ -27,17 +27,6 @@ export default {
         }
     },
     computed: {
-        styleTooltip() {
-            var relative_placement;
-            relative_placement = 'right'
-            return {
-                theme: {
-                    placement: relative_placement,
-                    width: '150px',
-                    "text-align": "end",
-                },
-            }
-        },
         modalTarget() {
             if ((this.$stateStore.getCurrentToolState().subsection == 'magneticAdviser' || this.$stateStore.getCurrentToolState().subsection == 'magneticCoreAdviser')) {
                 return '#AdviserSettingsModal'
@@ -92,7 +81,6 @@ export default {
         v-if="$stateStore.getCurrentToolState().subsection != 'designRequirements' && $stateStore.getCurrentToolState().subsection != 'operatingPoints'"
         :style="$styleStore.contextMenu.main"
         class="pb-2 p-0 container"
-        v-tooltip="styleTooltip"
     >
         <h4 class="text-center py-2 fs-5" :style="$styleStore.contextMenu.title">Tool menu</h4>
         <MagneticBuilderSettings 

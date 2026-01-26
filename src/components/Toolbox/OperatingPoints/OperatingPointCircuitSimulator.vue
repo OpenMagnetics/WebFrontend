@@ -58,16 +58,6 @@ export default {
         }
     },
     computed: {
-        styleTooltip() {
-            var relative_placement;
-            relative_placement = 'right'
-            return {
-                theme: {
-                    placement: relative_placement,
-                    "text-align": "start",
-                },
-            }
-        },
     },
     watch: { 
     },
@@ -118,7 +108,7 @@ export default {
 
 <template>
     <div class="container">
-        <div class="row" v-tooltip="styleTooltip">
+        <div class="row">
             <div class="col-lg-4 col-md-12" style="max-width: 360px;">
 
                 <label

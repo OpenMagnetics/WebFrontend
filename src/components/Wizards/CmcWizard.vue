@@ -296,7 +296,7 @@ export default {
             this.$stateStore.selectApplication(this.$stateStore.SupportedApplications.CommonModeChoke);
             this.$stateStore.selectWorkflow("design");
             this.$stateStore.selectTool("agnosticTool");
-            this.$stateStore.setCurrentToolSubsection("toolSelector");
+            this.$stateStore.setCurrentToolSubsection("magneticBuilder");
             this.$stateStore.setCurrentToolSubsectionStatus("designRequirements", true);
             this.$stateStore.setCurrentToolSubsectionStatus("operatingPoints", true);
             await this.$nextTick();

@@ -34,9 +34,9 @@ export default {
         };
 
         const currentStoryline = magneticBuilderStoryline;
-        this.$stateStore.selectTool("magneticBuilder");
 
         if (!this.$stateStore.isAnyDesignLoaded()) {
+            this.$stateStore.selectTool("magneticBuilder");
             this.$stateStore.designLoaded();
             const masStore = useMasStore();
 

@@ -49,8 +49,10 @@ export default {
             await this.$nextTick();
             if (this.$route.name != 'MagneticTool')
                 await this.$router.push(`${import.meta.env.BASE_URL}magnetic_tool`);
-            else
+            else {
+                this.$userStore.loadingPath = `${import.meta.env.BASE_URL}magnetic_tool`;
                 await this.$router.push(`${import.meta.env.BASE_URL}engine_loader`);
+            }
         },
         async onNewCommonModeChokeDesign() {
             this.$stateStore.resetMagneticTool();
@@ -61,8 +63,10 @@ export default {
             await this.$nextTick();
             if (this.$route.name != 'MagneticTool')
                 await this.$router.push(`${import.meta.env.BASE_URL}magnetic_tool`);
-            else
+            else {
+                this.$userStore.loadingPath = `${import.meta.env.BASE_URL}magnetic_tool`;
                 await this.$router.push(`${import.meta.env.BASE_URL}engine_loader`);
+            }
         },
         async onHome() {
             await this.$router.push(`${import.meta.env.BASE_URL}`);
@@ -72,8 +76,10 @@ export default {
             await this.$nextTick();
             if (this.$route.name != 'Wizards')
                 await this.$router.push(`${import.meta.env.BASE_URL}wizards`);
-            else
+            else {
+                this.$userStore.loadingPath = `${import.meta.env.BASE_URL}wizards`;
                 await this.$router.push(`${import.meta.env.BASE_URL}engine_loader`);
+            }
         },
         async onInsulationCoordinator() {
             this.$stateStore.resetMagneticTool();
@@ -83,8 +89,10 @@ export default {
             await this.$nextTick();
             if (this.$route.name != 'InsulationAdviser')
                 await this.$router.push(`${import.meta.env.BASE_URL}insulation_adviser`);
-            else
+            else {
+                this.$userStore.loadingPath = `${import.meta.env.BASE_URL}insulation_adviser`;
                 await this.$router.push(`${import.meta.env.BASE_URL}engine_loader`);
+            }
         },
         async continueMagneticToolDesign() {
             if (this.$route.name != 'MagneticTool')
@@ -600,4 +608,18 @@ export default {
         box-shadow: none  !important;
     }
 
+    /* Fix header button hover - prevent background and text color from changing */
+    .navbar .nav-link.btn {
+        overflow: hidden;
+        transition: filter 0.15s ease-in-out, box-shadow 0.15s ease-in-out !important;
+    }
+    .navbar .nav-link.btn:hover {
+        filter: brightness(1.15);
+        background-color: inherit !important;
+        color: inherit !important;
+    }
+    .navbar .dropdown-toggle.nav-link:hover {
+        filter: brightness(1.15);
+        color: inherit !important;
+    }
 </style>

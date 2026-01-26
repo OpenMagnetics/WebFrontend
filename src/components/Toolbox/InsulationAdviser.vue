@@ -63,17 +63,6 @@ export default {
         }
     },
     computed: {
-        styleTooltip() {
-            var relative_placement;
-            relative_placement = 'right'
-            return {
-                theme: {
-                    placement: relative_placement,
-                    width: '400px',
-                    "text-align": "start",
-                },
-            }
-        },
     },
     created () {
     },
@@ -98,7 +87,7 @@ export default {
 
 <template>
     <div class="container">
-        <div v-tooltip="styleTooltip" class="row">
+        <div class="row">
             <div class="col-xl-12 col-md-12 col-sm-12 text-start pe-0">
                 <InsulationExtraInputs class="border-bottom pb-2 mt-3"
                     :dataTestLabel="dataTestLabel + '-Insulation'"

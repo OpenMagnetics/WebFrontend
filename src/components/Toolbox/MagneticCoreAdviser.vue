@@ -238,7 +238,7 @@ export default {
                             :masData="advise.mas"
                             :scoring="advise.scoringPerFilter"
                             :selected="$userStore.coreAdviserSelectedAdvise == adviseIndex"
-                            :graphType="$settingsStore.adviserSettings.spiderBarChartNotBar? 'radar' : 'bar'"
+                            graphType="bar"
                             @selectedMas="selectedMas(adviseIndex)"
                             @adviseReady="adviseReady(adviseIndex)"
                         />

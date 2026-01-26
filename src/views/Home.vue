@@ -58,7 +58,7 @@ export default {
                     <div id="home-welcome" class="row pt-2 mx-1 mt-5">
                         <div class="text-white my-1 mt-5 pt-4 pb-2 offset-sm-1 offset-lg-2 col-sm-10 col-lg-8 text-center rounded-4">
                             <h1 data-cy="Home-title-text" class="display-3 fw-bold" style="font-family: 'Segoe UI', Impact, sans-serif;">
-                                <i class="fa-solid fa-bolt text-warning me-3"></i>OpenMagnetics
+                                OpenMagnetics
                             </h1>
                             <h2 class="fs-3 fw-light text-info mt-3">The Free Open-Source Platform for Magnetics Design & Simulation</h2>
                         </div>
@@ -88,7 +88,7 @@ export default {
                 <!-- Main Tools Section -->
                 <div class="row mb-2 mt-5">
                     <div class="col-12 text-center">
-                        <h2 class="text-white display-6 fw-bold"><i class="fa-solid fa-magnet text-info me-3"></i>Magnetic Design Tools</h2>
+                        <h2 class="text-white display-6 fw-bold"><i class="fa-solid fa-bolt text-warning me-3"></i><i class="fa-solid fa-magnet text-info me-3"></i>Magnetics Design Tools</h2>
                         <p class="text-white fs-5">Everything you need to design, simulate, and optimize magnetic components</p>
                     </div>
                 </div>
@@ -267,7 +267,7 @@ export default {
                             <span class="badge bg-secondary fs-6 p-2">Elektrisola</span>
                             <span class="badge bg-secondary fs-6 p-2">Rubadue</span>
                             <span class="badge bg-secondary fs-6 p-2">New England Wire</span>
-                            <span class="badge bg-secondary fs-6 p-2">And many more...</span>
+                            <span class="badge bg-secondary fs-6 p-2">And each day more...</span>
                         </div>
                     </div>
                 </div>

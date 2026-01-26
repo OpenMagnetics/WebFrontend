@@ -2,8 +2,10 @@
 import { useMasStore } from '../../stores/mas'
 import { useAdviseCacheStore } from '../../stores/adviseCache'
 import { useTaskQueueStore } from '../../stores/taskQueue'
+import { nextTick } from 'vue'
+import { Offcanvas } from 'bootstrap'
 import Slider from '@vueform/slider'
-import { removeTrailingZeroes, toTitleCase, toCamelCase, deepCopy } from '/WebSharedComponents/assets/js/utils.js'
+import { removeTrailingZeroes, toTitleCase, deepCopy } from '/WebSharedComponents/assets/js/utils.js'
 import { magneticAdviserWeights } from '/WebSharedComponents/assets/js/defaults.js'
 import Advise from './MagneticAdviser/Advise.vue'
 import AdviseDetails from './MagneticAdviser/AdviseDetails.vue'
@@ -58,6 +60,7 @@ export default {
             loading,
             dataUptoDate,
             currentAdviseToShow: 0,
+            detailMas: null,
         }
     },
     computed: {
@@ -68,19 +71,6 @@ export default {
             }
             return titledFilters;
         },
-        brokenLinedFilters() {
-            const titledFilters = {};
-            for (let [key, _] of Object.entries(this.$settingsStore.magneticAdviserSettings.weights)) {
-                titledFilters[key] = toTitleCase(key.toLowerCase().replaceAll("_", " "));
-                titledFilters[key] = titledFilters[key].split(' ')
-                .map(item => toTitleCase(item));
-            }
-            return titledFilters;
-        },
-    },
-    watch: { 
-    },
-    created () {
     },
     mounted () {
         // If we already have advises cached, show them as up-to-date
@@ -91,31 +81,7 @@ export default {
         // Otherwise, don't auto-launch - let user click the button
     },
     methods: {
-        getTopMagneticByFilter(data, filter) {
-            data.sort(function(a, b) { 
-                if (filter == null) {
-                    return b.weightedTotalScoring - a.weightedTotalScoring;
-                }
-                else {
-                   return b.scoringPerFilter[filter] - a.scoringPerFilter[filter];
-               }
-            })
-            var topMas = deepCopy(data[0]);
-            return topMas;
-        },
-        deleteMasElementFromArray(data, datum) {
-            var index = -1;
-            for (var i = data.length - 1; i >= 0; i--) {
-                if (data[i].mas.magnetic.manufacturerInfo.name == datum.mas.magnetic.manufacturerInfo.name) {
-                    index = i;
-                    break;
-                }
-            }
-            if (index > -1) { // only splice data when item is found
-              data.splice(index, 1); // 2nd parameter means remove one item only
-            }
-        },
-        calculateAdvisedMagnetics() {
+        async calculateAdvisedMagnetics() {
             this.currentAdviseToShow = 0;
 
             // Timeout to give time to gif to load
@@ -136,32 +102,14 @@ export default {
                             this.$settingsStore.adviserSettings.coreAdviseMode
                         );
 
-                        var data = aux["data"];
-
-                        var orderedWeights = [];
-                        for (let [key, value] of Object.entries(this.$settingsStore.magneticAdviserSettings.weights)) {
-                            orderedWeights.push({
-                                filter: key,
-                                weight: value
-                            })
-                        }
-
+                        const data = aux["data"];
 
                         this.adviseCacheStore.currentMasAdvises = [];
-                        // orderedWeights.forEach((value) => {
-                        //     const topMas = this.getTopMagneticByFilter(data, value.filter);
-                        //     this.adviseCacheStore.currentMasAdvises.push(topMas);
-                        // })
-                        // this.adviseCacheStore.currentMasAdvises.forEach((mas) => {
-                        //     this.deleteMasElementFromArray(data, mas);
-                        // })
-
                         data.forEach((datum) => {
                             this.adviseCacheStore.currentMasAdvises.push(datum);
                         })
                         this.$userStore.magneticAdviserSelectedAdvise = 0;
                         if (this.adviseCacheStore.currentMasAdvises.length > 0) {
-                            this.masStore.mas = this.adviseCacheStore.currentMasAdvises[this.$userStore.magneticAdviserSelectedAdvise].mas;
                             this.$emit("canContinue", true);
                         }
 
@@ -213,13 +161,19 @@ export default {
                 }
             }
         },
-        maximumNumberResultsChangedSliderValue(newValue) {
-        },
         selectedMas(index) {
-            this.masStore.setMas(deepCopy(this.adviseCacheStore.currentMasAdvises[index].mas));
             this.$userStore.magneticAdviserSelectedAdvise = index;
             this.$emit("canContinue", true);
-
+        },
+        showDetails(index) {
+            this.detailMas = deepCopy(this.adviseCacheStore.currentMasAdvises[index].mas);
+            nextTick(() => {
+                const offcanvasEl = document.getElementById('CoreAdviserDetailOffCanvas');
+                if (offcanvasEl) {
+                    const offcanvas = Offcanvas.getOrCreateInstance(offcanvasEl);
+                    offcanvas.show();
+                }
+            });
         },
         adviseReady(index) {
             if (this.currentAdviseToShow < this.adviseCacheStore.currentMasAdvises.length - 1) {
@@ -231,8 +185,11 @@ export default {
             setTimeout(() => {this.calculateAdvisedMagnetics();}, 200);
         },
         loadAndGoToBuilder() {
-            // The selected magnetic is already in masStore.mas from selectedMas()
-            // Just navigate back to magneticBuilder
+            // Load the selected advise into masStore.mas
+            if (this.adviseCacheStore.currentMasAdvises.length > 0 && this.$userStore.magneticAdviserSelectedAdvise != null) {
+                this.masStore.setMas(deepCopy(this.adviseCacheStore.currentMasAdvises[this.$userStore.magneticAdviserSelectedAdvise].mas));
+            }
+            // Navigate back to magneticBuilder
             this.$stateStore.getCurrentToolState().subsection = 'magneticBuilder';
         },
         goBackToBuilder() {
@@ -245,80 +202,177 @@ export default {
 </script>
 
 <template>
-    <AdviseDetails :modelValue="masStore.mas"/>
-    <div class="container" >
-        <div class="row">
-            <div class="col-sm-12 col-md-2 text-start border border-primary m-0 px-2 py-1 ">
-                <div class="row" v-for="(value, key) in $settingsStore.magneticAdviserSettings.weights" :key="key">
-                    <label class="form-label col-12 py-0 my-0">{{titledFilters[key]}}</label>
-                    <div class=" col-7 me-2 pt-2">
-                        <Slider v-model="$settingsStore.magneticAdviserSettings.weights[key]" :disabled="loading" class="col-12 text-primary slider" :height="10" :min="10" :max="80" :step="10" :color="theme.primary" :tooltips="false" @change="changedSliderValue(key, $event)"/>
+    <AdviseDetails v-if="detailMas" :modelValue="detailMas"/>
+    <div class="container-fluid py-3">
+        <div class="row g-3">
+            <!-- Sidebar Panel -->
+            <aside class="col-12 col-lg-3">
+                <div class="card bg-dark border-0 shadow-lg h-100">
+                    <div class="card-header border-bottom border-secondary px-4 py-3">
+                        <div class="d-flex align-items-center">
+                            <i class="fa-solid fa-sliders text-primary me-2 fs-5"></i>
+                            <h5 class="card-title mb-0 text-white">Optimization Weights</h5>
+                        </div>
                     </div>
+                    <div class="card-body px-4 py-4">
+                        <!-- Weight sliders -->
+                        <div v-for="(value, key) in $settingsStore.magneticAdviserSettings.weights" :key="key" 
+                             class="setting-item d-flex flex-column py-3 border-bottom border-secondary">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <div>
+                                    <h6 class="text-white mb-0">{{ titledFilters[key] }}</h6>
+                                </div>
+                                <span class="badge bg-primary text-black">{{ removeTrailingZeroes($settingsStore.magneticAdviserSettings.weights[key]) }}%</span>
+                            </div>
+                            <Slider 
+                                v-model="$settingsStore.magneticAdviserSettings.weights[key]" 
+                                :disabled="loading" 
+                                class="slider-primary" 
+                                :height="6" 
+                                :min="10" 
+                                :max="80" 
+                                :step="10" 
+                                :tooltips="false" 
+                                @change="changedSliderValue(key, $event)"
+                            />
+                        </div>
 
-                <input :disabled="loading" :data-cy="dataTestLabel + '-number-input'" type="number" class="m-0 mb-2 px-0 col-3 bg-light text-white" :min="10" :step="10" @change="changedInputValue(key, $event.target.value)" :value="removeTrailingZeroes($settingsStore.magneticAdviserSettings.weights[key])" ref="inputRef">
-
-                </div>
-                <p>The sliders are designed to transmit your preferences into which criterion is most important for the design.</p>
-                <div class="row">
-                    <label class="form-label col-12 py-0 my-0">Max. No results</label>
-                    <div class=" col-7 me-2 pt-2">
-                        <Slider v-model="$settingsStore.magneticAdviserSettings.maximumNumberResults" :disabled="loading" class="col-12 text-primary  slider" :height="10" :min="2" :max="20" :step="1"  :color="theme.primary"  :tooltips="false" @change="maximumNumberResultsChangedSliderValue($event)"/>
+                        <!-- Max Results -->
+                        <div class="setting-item d-flex flex-column py-3">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <div>
+                                    <h6 class="text-white mb-0">Max Results</h6>
+                                    <small class="text-secondary">Number of designs to show</small>
+                                </div>
+                                <span class="badge bg-primary text-black">{{ $settingsStore.magneticAdviserSettings.maximumNumberResults }}</span>
+                            </div>
+                            <Slider 
+                                v-model="$settingsStore.magneticAdviserSettings.maximumNumberResults" 
+                                :disabled="loading" 
+                                class="slider-primary" 
+                                :height="6" 
+                                :min="2" 
+                                :max="20" 
+                                :step="1" 
+                                :tooltips="false"
+                            />
+                        </div>
                     </div>
-
-                    <input :disabled="loading" :data-cy="dataTestLabel + '-number-input'" type="number" class="m-0 mb-2 px-0 col-3 bg-light text-white" :min="2" :step="1" @change="maximumNumberResultsChangedInputValue($event.target.value)" :value="removeTrailingZeroes($settingsStore.magneticAdviserSettings.maximumNumberResults)" ref="inputRef">
-                </div>
-                <button :style="$styleStore.contextMenu.confirmButton" :disabled="loading" :data-cy="dataTestLabel + '-calculate-mas-advises-button'" class="btn mx-auto d-block mt-4" @click="calculateAdvises" >Get advised magnetics!</button>
-                <button :style="$styleStore.contextMenu.changeToolButton" :disabled="loading || !dataUptoDate || adviseCacheStore.currentMasAdvises == null || adviseCacheStore.currentMasAdvises.length == 0" :data-cy="dataTestLabel + '-load-and-go-to-builder-button'" class="btn mx-auto d-block mt-2" @click="loadAndGoToBuilder" >Load selected advise</button>
-                <button :style="$styleStore.contextMenu.cancelButton" :disabled="loading" :data-cy="dataTestLabel + '-go-back-to-builder-button'" class="btn mx-auto d-block mt-2" @click="goBackToBuilder" >Go back</button>
-            </div>
-            <div class="col-sm-12 col-md-10 text-start pe-0 container-fluid"  style="height: 70vh">
-                <div class="row" v-if="loading" >
-                    <img data-cy="magneticAdviser-loading" class="mx-auto d-block col-12" alt="loading" style="width: 50%; height: auto;" :src="loadingGif">
-
-                </div>
-                <div class="row advises" v-else>
-                    <div 
-                        :style="dataUptoDate? 'opacity: 100%;' : 'opacity: 20%;'"
-                        v-if="adviseCacheStore.currentMasAdvises != null"
-                        class="col-md-4 col-sm-12 m-0 p-0 mt-1" v-for="(advise, adviseIndex) in adviseCacheStore.currentMasAdvises" :key="adviseIndex">
-                        <Advise
-                            v-if="(Object.values(titledFilters).length > 0) && (currentAdviseToShow >= adviseIndex)"
-                            :adviseIndex="adviseIndex"
-                            :masData="advise.mas"
-                            :scoring="advise.scoringPerFilter"
-                            :weightedTotalScoring="advise.weightedTotalScoring"
-                            :selected="$userStore.magneticAdviserSelectedAdvise == adviseIndex"
-                            :graphType="$settingsStore.adviserSettings.spiderBarChartNotBar? 'radar' : 'bar'"
-                            @selectedMas="selectedMas(adviseIndex)"
-                            @adviseReady="adviseReady(adviseIndex)"
-                        />
+                    <div class="card-footer border-top border-secondary px-4 py-3">
+                        <!-- Action buttons -->
+                        <div class="d-grid gap-2">
+                            <button 
+                                :disabled="loading" 
+                                :data-cy="dataTestLabel + '-calculate-mas-advises-button'" 
+                                class="btn btn-primary" 
+                                @click="calculateAdvises"
+                            >
+                                <i class="fa-solid fa-rocket me-2"></i>Get Advised Magnetics
+                            </button>
+                            <button 
+                                :disabled="loading || !dataUptoDate || adviseCacheStore.currentMasAdvises == null || adviseCacheStore.currentMasAdvises.length == 0" 
+                                :data-cy="dataTestLabel + '-load-and-go-to-builder-button'" 
+                                class="btn btn-success" 
+                                @click="loadAndGoToBuilder"
+                            >
+                                <i class="fa-solid fa-check me-2"></i>Load Selected
+                            </button>
+                            <button 
+                                :disabled="loading" 
+                                :data-cy="dataTestLabel + '-go-back-to-builder-button'" 
+                                class="btn btn-outline-danger" 
+                                @click="goBackToBuilder"
+                            >
+                                <i class="fa-solid fa-arrow-left me-2"></i>Go Back
+                            </button>
+                        </div>
                     </div>
                 </div>
-            </div>
+            </aside>
+
+            <!-- Main Content Area -->
+            <main class="col-12 col-lg-9">
+                <!-- Loading State -->
+                <div v-if="loading" class="d-flex flex-column align-items-center justify-content-center" style="min-height: 400px;">
+                    <img :src="loadingGif" alt="Calculating..." class="rounded mb-3" style="width: 200px;" />
+                    <p class="text-white-50">Analyzing magnetic designs...</p>
+                </div>
+
+                <!-- Results Grid -->
+                <div v-else class="row g-3" style="max-height: calc(100vh - 220px); overflow-y: auto;">
+                    <TransitionGroup name="card-fade">
+                        <div 
+                            v-for="(advise, adviseIndex) in adviseCacheStore.currentMasAdvises" 
+                            v-if="adviseCacheStore.currentMasAdvises != null"
+                            :key="adviseIndex"
+                            class="col-12 col-md-6"
+                            :class="{ 'opacity-25': !dataUptoDate }"
+                        >
+                            <Advise
+                                v-if="Object.values(titledFilters).length > 0 && currentAdviseToShow >= adviseIndex"
+                                :adviseIndex="adviseIndex"
+                                :masData="advise.mas"
+                                :scoring="advise.scoringPerFilter"
+                                :weightedTotalScoring="advise.weightedTotalScoring"
+                                :selected="$userStore.magneticAdviserSelectedAdvise === adviseIndex"
+                                graphType="bar"
+                                @selectedMas="selectedMas(adviseIndex)"
+                                @showDetails="showDetails(adviseIndex)"
+                                @adviseReady="adviseReady(adviseIndex)"
+                            />
+                        </div>
+                    </TransitionGroup>
+
+                    <!-- Empty State -->
+                    <div v-if="!adviseCacheStore.currentMasAdvises || adviseCacheStore.currentMasAdvises.length === 0" class="col-12">
+                        <div class="d-flex flex-column align-items-center justify-content-center text-center py-5">
+                            <div style="font-size: 4rem; opacity: 0.5;">🧲</div>
+                            <h4 class="text-white-50 mt-3">No Results Yet</h4>
+                            <p class="text-muted">Configure your preferences and click "Get Advised Magnetics" to start</p>
+                        </div>
+                    </div>
+                </div>
+            </main>
         </div>
     </div>
 </template>
 
-<style type="text/css">
-.advises{
-    position: relative;
-    float: left;
-    text-align: center;
-    height:100%;
-    overflow-y: auto; 
-}
-.control{
-    position: relative;
-    float: left;
-    text-align: center;
-    overflow-y: auto; 
+<style scoped>
+/* Slider styling */
+.slider-primary {
+    --slider-connect-bg: var(--bs-primary);
+    --slider-handle-bg: var(--bs-primary);
+    --slider-bg: rgba(255, 255, 255, 0.1);
 }
 
-.slider {
-  --slider-connect-bg: var(--bs-primary);
-  --slider-handle-bg: var(--bs-primary);
+/* Setting item hover effect */
+.setting-item:hover {
+    background-color: rgba(255, 255, 255, 0.03);
+    margin-left: -1rem;
+    margin-right: -1rem;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    border-radius: 0.5rem;
 }
 
+/* Transitions */
+.card-fade-enter-active {
+    transition: all 0.4s ease-out;
+}
+
+.card-fade-leave-active {
+    transition: all 0.3s ease-in;
+}
+
+.card-fade-enter-from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+}
+
+.card-fade-leave-to {
+    opacity: 0;
+    transform: scale(0.95);
+}
 </style>
 
 <style src="@vueform/slider/themes/default.css"></style>

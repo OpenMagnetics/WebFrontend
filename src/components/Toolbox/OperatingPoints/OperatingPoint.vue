@@ -65,16 +65,6 @@ export default {
         }
     },
     computed: {
-        styleTooltip() {
-            var relative_placement;
-            relative_placement = 'right'
-            return {
-                theme: {
-                    placement: relative_placement,
-                    "text-align": "start",
-                },
-            }
-        },
     },
     watch: { 
     },
@@ -156,7 +146,7 @@ export default {
 </script>
 <template>
     <div class="container">
-        <div class="row" v-tooltip="styleTooltip">
+        <div class="row">
             <OperatingPointManual
                 v-if="$stateStore.operatingPoints.modePerPoint[currentOperatingPointIndex] === $stateStore.OperatingPointsMode.Manual"
                 :currentOperatingPointIndex="currentOperatingPointIndex"

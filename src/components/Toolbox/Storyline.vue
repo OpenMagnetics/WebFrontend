@@ -35,17 +35,6 @@ export default {
         }
     },
     computed: {
-        styleTooltip() {
-            var relative_placement;
-            relative_placement = 'right'
-            return {
-                theme: {
-                    placement: relative_placement,
-                    width: '150px',
-                    "text-align": "end",
-                },
-            }
-        },
         basicStoryline() {
             const basicStoryline = {}
 
@@ -151,7 +140,7 @@ export default {
 </script>
 
 <template>
-    <div class="py-2 p-0 container" v-tooltip="styleTooltip" :style="$styleStore.storyline.main">
+    <div class="py-2 p-0 container" :style="$styleStore.storyline.main">
         <h4 class="text-center py-2" :style="$styleStore.storyline.title" >Steps</h4>
         <div class="row px-1">
             <div v-for="(adventure, index) in basicStoryline" :key="index" class="col-3 col-sm-3 col-md-12 px-0"> 

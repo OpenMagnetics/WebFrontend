@@ -678,8 +678,10 @@ export default {
             <div class="key-params-box">
                 <div class="key-param" v-for="param in keyParameters" :key="param.label">
                     <div class="param-label">{{ param.label }}</div>
-                    <div class="param-value">{{ param.value }}</div>
-                    <div class="param-unit">{{ param.unit }}</div>
+                    <div class="param-value-row">
+                        <span class="param-value">{{ param.value }}</span>
+                        <span class="param-unit">{{ param.unit }}</span>
+                    </div>
                 </div>
             </div>
 
@@ -1077,15 +1079,22 @@ export default {
     letter-spacing: 0.5px;
 }
 
+.key-param .param-value-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 4px;
+    margin: 2px 0;
+}
+
 .key-param .param-value {
     font-size: 18px;
     font-weight: 700;
     color: #539796;
-    margin: 2px 0;
 }
 
 .key-param .param-unit {
-    font-size: 10px;
+    font-size: 12px;
     color: #adb5bd;
 }
 
