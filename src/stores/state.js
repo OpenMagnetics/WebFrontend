@@ -55,6 +55,14 @@ export const useStateStore = defineStore("state", () => {
                     'magneticSummary': false,
                 },
             },
+            agnosticTool: {
+                subsection: "designRequirements",
+                canContinue: {
+                    'designRequirements': false,
+                    'operatingPoints': false,
+                    'toolSelector': false,
+                },
+            },
         },
         filter: {
             magneticAdviser: {
