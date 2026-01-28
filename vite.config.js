@@ -5,6 +5,8 @@ import viteCompression from 'vite-plugin-compression';
 
 // https://vitejs.dev/config/
 export default defineConfig({
+    // Include WASM-related files as assets so they're copied to the build output
+    assetsInclude: ['**/*.wasm'],
     build: {
         rollupOptions: {
             output: {
@@ -18,6 +20,11 @@ export default defineConfig({
                     
                     if (/\.css$/.test(name ?? '')) {
                         return 'assets/css/[name]-[hash][extname]';
+                    }
+                    
+                    // Keep WASM files in assets/wasm without hash for predictable paths
+                    if (/\.wasm$/.test(name ?? '')) {
+                        return 'assets/wasm/[name][extname]';
                     }
  
                     return 'assets/[name]-[hash][extname]';

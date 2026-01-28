@@ -16,6 +16,8 @@ import { VueWindowSizePlugin } from 'vue-window-size/plugin';
 import { initWorker } from '/WebSharedComponents/assets/js/mkfRuntime'
 import VueLatex from 'vatex'
 import { checkAndClearOutdatedStores } from '/src/stores/storeVersioning'
+// Import WASM JS file as URL - Vite handles path resolution for dev and production
+import wasmJsUrl from './assets/js/libMKF.wasm.js?url'
 
 // Check and clear outdated stores BEFORE Pinia is initialized
 // This ensures old store data with incompatible field names is cleared
@@ -52,7 +54,7 @@ function preloadMKF() {
     preloadPromise = (async () => {
         try {
             // Initialize MKF in Web Worker
-            const wasmJsUrl = new URL('/src/assets/js/libMKF.wasm.js', window.location.origin).href;
+            // wasmJsUrl is imported at the top using Vite's ?url suffix
             const mkf = await initWorker(wasmJsUrl);
             preloadedMkf = mkf; // Store but don't set globally yet
             
@@ -136,7 +138,7 @@ router.beforeEach((to, from, next) => {
                     ? Promise.resolve(preloadedMkf)  // Shouldn't happen, but just in case
                     : (async () => {                 // Fresh init - need to load data separately
                         console.warn("Initializing MKF in Web Worker (fresh)...")
-                        const wasmJsUrl = new URL('/src/assets/js/libMKF.wasm.js', window.location.origin).href;
+                        // wasmJsUrl is imported at the top using Vite's ?url suffix
                         return await initWorker(wasmJsUrl);
                     })();
             
