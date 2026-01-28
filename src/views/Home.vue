@@ -295,7 +295,7 @@ export default {
     </div>
 </template>
 
-<style>
+<style scoped>
     .wrap {
       position: relative;
     }
