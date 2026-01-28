@@ -2,6 +2,7 @@ import { defineConfig } from 'vite'
 import { fileURLToPath, URL } from 'node:url'
 import vue from '@vitejs/plugin-vue'
 import viteCompression from 'vite-plugin-compression';
+import { viteStaticCopy } from 'vite-plugin-static-copy';
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -36,6 +37,19 @@ export default defineConfig({
     plugins: [
         vue(),
         viteCompression({filter: /\.(js|mjs|json|css|html|wasm)$/i}),
+        // Copy WASM files from assets to wasm/ folder in build output
+        viteStaticCopy({
+            targets: [
+                {
+                    src: 'src/assets/js/libMKF.wasm.js',
+                    dest: 'wasm'
+                },
+                {
+                    src: 'src/assets/js/libMKF.wasm.wasm',
+                    dest: 'wasm'
+                }
+            ]
+        }),
     ],
     resolve: {
         alias: {
