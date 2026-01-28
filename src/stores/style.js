@@ -236,6 +236,10 @@ export const useStyleStore = defineStore("style", () => {
             removeElementButtonColor: {
                 "color": theme["danger"],
             },
+            settingsButton: {
+                "background-color": theme["secondary"],
+                "color": theme["white"],
+            },
         };
 
         this.catalogAdviser = {

@@ -119,10 +119,13 @@ export default {
         onCircuitSimulatorFileTypeSelected(event) {
             const fr = new FileReader();
 
-            fr.onload = e => {
+            fr.onload = async e => {
                 this.loadedFile = e.target.result;
-                this.extractAllColumnNames(this.loadedFile);
-                this.extractMapColumnNames(this.loadedFile);
+                // Wait for both async operations to complete before setting the mode
+                await Promise.all([
+                    this.extractAllColumnNames(this.loadedFile),
+                    this.extractMapColumnNames(this.loadedFile)
+                ]);
                 this.$stateStore.operatingPoints.modePerPoint[this.currentOperatingPointIndex] = this.$stateStore.OperatingPointsMode.CircuitSimulatorImport;
             }
             fr.readAsText(this.$refs["OperatingPoint-CircuitSimulator-upload-ref"].files.item(0));

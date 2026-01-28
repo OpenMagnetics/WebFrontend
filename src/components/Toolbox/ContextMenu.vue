@@ -78,7 +78,7 @@ export default {
 
 <template>
     <div
-        v-if="$stateStore.getCurrentToolState().subsection != 'designRequirements' && $stateStore.getCurrentToolState().subsection != 'operatingPoints'"
+        v-if="$stateStore.getCurrentToolState().subsection != 'designRequirements'"
         :style="$styleStore.contextMenu.main"
         class="pb-2 p-0 container"
     >

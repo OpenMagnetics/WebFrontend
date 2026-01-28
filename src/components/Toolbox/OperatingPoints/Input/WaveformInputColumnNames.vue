@@ -9,7 +9,7 @@ import { removeTrailingZeroes, combinedStyle } from '/WebSharedComponents/assets
 
 <script>
 export default {
-    emits: ["updatedColumnName"],
+    emits: ["updatedColumnName", "updatedSwitchingFrequency"],
     props: {
         modelValue:{
             type: Object,

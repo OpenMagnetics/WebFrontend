@@ -528,7 +528,8 @@ export const useTaskQueueStore = defineStore('taskQueue', {
             await mkf.ready;
 
             const result = await mkf.extract_column_names(file);
-            const columnNames = toArray(result);
+            // Result is a JSON string, parse it to get the array
+            const columnNames = JSON.parse(result);
             setTimeout(() => { this.columnNamesExtracted(true, columnNames); }, this.task_standard_response_delay);
             return columnNames;
         },
