@@ -1,33 +1,38 @@
 import { Tooltip } from 'bootstrap';
 
 /**
- * Safely dispose a Bootstrap tooltip, hiding it first to avoid transition errors
+ * Safely dispose a Bootstrap tooltip, avoiding _isWithActiveTrigger errors
  */
 function safeDisposeTooltip(el) {
     if (!el._tooltip) return;
     
+    const tooltip = el._tooltip;
+    el._tooltip = null; // Clear reference immediately
+    
     try {
-        // Hide the tooltip first to complete any transition
-        el._tooltip.hide();
-        // Use setTimeout to allow hide transition to complete
-        setTimeout(() => {
-            if (el._tooltip) {
-                try {
-                    el._tooltip.dispose();
-                } catch (e) {
-                    // Ignore disposal errors - element may already be removed
-                }
-                el._tooltip = null;
-            }
-        }, 150);
-    } catch (e) {
-        // If hide fails, try to dispose directly
-        try {
-            el._tooltip.dispose();
-        } catch (e2) {
-            // Ignore
+        // Ensure _activeTrigger is an object to prevent Object.values() error
+        if (!tooltip._activeTrigger || typeof tooltip._activeTrigger !== 'object') {
+            tooltip._activeTrigger = {};
         }
-        el._tooltip = null;
+        
+        // Remove the tip element directly from DOM if it exists
+        const tip = tooltip.tip;
+        if (tip && tip.parentNode) {
+            tip.parentNode.removeChild(tip);
+        }
+        
+        // Now dispose - this should be safe
+        tooltip.dispose();
+    } catch (e) {
+        // Last resort: try to clean up manually
+        try {
+            const tip = tooltip.tip;
+            if (tip && tip.parentNode) {
+                tip.parentNode.removeChild(tip);
+            }
+        } catch (e2) {
+            // Ignore cleanup errors
+        }
     }
 }
 
