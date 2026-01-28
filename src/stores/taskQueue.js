@@ -308,6 +308,25 @@ export const useTaskQueueStore = defineStore('taskQueue', {
         },
 
         async calculateRmsPower(excitation) {
+            // Validate excitation has required waveform data with actual numeric values
+            const currentWaveform = excitation?.current?.waveform;
+            const voltageWaveform = excitation?.voltage?.waveform;
+            const currentData = currentWaveform?.data;
+            const voltageData = voltageWaveform?.data;
+            const currentTime = currentWaveform?.time;
+            const voltageTime = voltageWaveform?.time;
+            
+            // Check that both waveforms exist and have actual data points with valid numbers
+            if (!currentData || !voltageData || !currentTime || !voltageTime ||
+                !Array.isArray(currentData) || !Array.isArray(voltageData) ||
+                !Array.isArray(currentTime) || !Array.isArray(voltageTime) ||
+                currentData.length === 0 || voltageData.length === 0 ||
+                currentTime.length === 0 || voltageTime.length === 0 ||
+                currentData.some(v => v == null || isNaN(v)) ||
+                voltageData.some(v => v == null || isNaN(v))) {
+                return null;
+            }
+            
             const mkf = await waitForMkf();
             await mkf.ready;
 
@@ -315,12 +334,12 @@ export const useTaskQueueStore = defineStore('taskQueue', {
                 const result = await mkf.calculate_rms_power(JSON.stringify(excitation));
                 if (typeof result === 'string' && result.startsWith("Exception")) {
                     setTimeout(() => { this.rmsPowerCalculated(false, result); }, this.task_standard_response_delay);
-                    throw new Error(result);
+                    return null;
                 }
                 setTimeout(() => { this.rmsPowerCalculated(true, result); }, this.task_standard_response_delay);
                 return result;
             } catch (error) {
-                console.error('Error in calculateRmsPower:', error);
+                // Silently fail - waveform data may be incomplete during editing
                 setTimeout(() => { this.rmsPowerCalculated(false, error.message); }, this.task_standard_response_delay);
                 return null;
             }
@@ -330,6 +349,25 @@ export const useTaskQueueStore = defineStore('taskQueue', {
         },
 
         async calculateInstantaneousPower(excitation) {
+            // Validate excitation has required waveform data with actual numeric values
+            const currentWaveform = excitation?.current?.waveform;
+            const voltageWaveform = excitation?.voltage?.waveform;
+            const currentData = currentWaveform?.data;
+            const voltageData = voltageWaveform?.data;
+            const currentTime = currentWaveform?.time;
+            const voltageTime = voltageWaveform?.time;
+            
+            // Check that both waveforms exist and have actual data points with valid numbers
+            if (!currentData || !voltageData || !currentTime || !voltageTime ||
+                !Array.isArray(currentData) || !Array.isArray(voltageData) ||
+                !Array.isArray(currentTime) || !Array.isArray(voltageTime) ||
+                currentData.length === 0 || voltageData.length === 0 ||
+                currentTime.length === 0 || voltageTime.length === 0 ||
+                currentData.some(v => v == null || isNaN(v)) ||
+                voltageData.some(v => v == null || isNaN(v))) {
+                return null;
+            }
+            
             const mkf = await waitForMkf();
             await mkf.ready;
 
@@ -337,12 +375,12 @@ export const useTaskQueueStore = defineStore('taskQueue', {
                 const result = await mkf.calculate_instantaneous_power(JSON.stringify(excitation));
                 if (typeof result === 'string' && result.startsWith("Exception")) {
                     setTimeout(() => { this.instantaneousPowerCalculated(false, result); }, this.task_standard_response_delay);
-                    throw new Error(result);
+                    return null;
                 }
                 setTimeout(() => { this.instantaneousPowerCalculated(true, result); }, this.task_standard_response_delay);
                 return result;
             } catch (error) {
-                console.error('Error in calculateInstantaneousPower:', error);
+                // Silently fail - waveform data may be incomplete during editing
                 setTimeout(() => { this.instantaneousPowerCalculated(false, error.message); }, this.task_standard_response_delay);
                 return null;
             }

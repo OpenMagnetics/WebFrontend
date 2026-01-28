@@ -43,11 +43,27 @@ export default {
     },
     methods: {
         async process() {
+            // Validate that excitation has required waveform data with actual values
+            const excitation = this.modelValue;
+            const currentData = excitation?.current?.waveform?.data;
+            const voltageData = excitation?.voltage?.waveform?.data;
+            
+            // Check that both waveforms exist and have actual data points
+            if (!currentData || !voltageData || 
+                !Array.isArray(currentData) || !Array.isArray(voltageData) ||
+                currentData.length === 0 || voltageData.length === 0) {
+                this.localData.instantaneousPower = null;
+                this.localData.rmsPower = null;
+                return;
+            }
+            
             try {
-                this.localData.instantaneousPower = await this.taskQueueStore.calculateInstantaneousPower(this.modelValue);
-                this.localData.rmsPower = await this.taskQueueStore.calculateRmsPower(this.modelValue);
+                this.localData.instantaneousPower = await this.taskQueueStore.calculateInstantaneousPower(excitation);
+                this.localData.rmsPower = await this.taskQueueStore.calculateRmsPower(excitation);
             } catch (error) {
-                console.error(error);
+                // Silently fail - waveform data may be incomplete during editing
+                this.localData.instantaneousPower = null;
+                this.localData.rmsPower = null;
             }
         }
     }
