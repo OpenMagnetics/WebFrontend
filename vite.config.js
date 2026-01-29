@@ -57,6 +57,10 @@ export default defineConfig({
         },
     },
     server: {
+        // Enable symlinks to be followed
+        fs: {
+            allow: ['..'],
+        },
         proxy: {
             '/api': {
                 target: 'https://localhost:8888',
