@@ -34,9 +34,17 @@ export default {
             loggedIn: false,
             username: null,
             loading,
+            hoveredWizard: null,
         }
     },
     methods: {
+        getWizardButtonStyle(wizardName, isNewWizard = false) {
+            const baseStyle = isNewWizard ? this.$styleStore.header.newWizardButton : this.$styleStore.header.wizardButton;
+            if (this.hoveredWizard === wizardName) {
+                return { ...baseStyle, color: 'var(--bs-secondary)' };
+            }
+            return baseStyle;
+        },
         onShowModal() {
             this.showModal = true
         },
@@ -324,110 +332,130 @@ export default {
                       <ul class="dropdown-menu px-3" :style="$styleStore.header.wizardsSectionDropdown">
                         <li>
                             <button
-                                :style="$styleStore.header.wizardButton"
+                                :style="getWizardButtonStyle('CommonModeChoke')"
                                 data-cy="Wizard-CommonModeChoke-link"
                                 :class="headerTogglerIsVisible? 'w-100' : 'mx-0' "
                                 class="dropdown-item btn btn-block nav-link px-2"
                                 @click="onWizards($stateStore.Wizards.CommonModeChoke)"
+                                @mouseenter="hoveredWizard = 'CommonModeChoke'"
+                                @mouseleave="hoveredWizard = null"
                             >
                                 <i class="me-2 fa-solid fa-bolt-lightning"></i>{{'CMC Wizard'}}
                             </button>
                         </li>
                         <li>
                             <button
-                                :style="$styleStore.header.wizardButton"
+                                :style="getWizardButtonStyle('Flyback')"
                                 data-cy="Flyback-CommonModeChoke-link"
                                 :class="headerTogglerIsVisible? 'w-100' : 'mx-0' "
                                 class="dropdown-item btn btn-block nav-link px-2"
                                 @click="onWizards($stateStore.Wizards.Flyback)"
+                                @mouseenter="hoveredWizard = 'Flyback'"
+                                @mouseleave="hoveredWizard = null"
                             >
                                 <i class="me-2 fa-solid fa-bolt-lightning"></i>{{'Flyback Wizard'}}
                             </button>
                         </li>
                         <li>
                             <button
-                                :style="$styleStore.header.newWizardButton"
+                                :style="getWizardButtonStyle('Buck', true)"
                                 data-cy="Buck-CommonModeChoke-link"
                                 :class="headerTogglerIsVisible? 'w-100' : 'mx-0' "
                                 class="dropdown-item btn btn-block nav-link px-2"
                                 @click="onWizards($stateStore.Wizards.Buck)"
+                                @mouseenter="hoveredWizard = 'Buck'"
+                                @mouseleave="hoveredWizard = null"
                             >
                                 <i class="me-2 fa-solid fa-bolt-lightning"></i>{{'Buck Wizard'}}
                             </button>
                         </li>
                         <li>
                             <button
-                                :style="$styleStore.header.newWizardButton"
+                                :style="getWizardButtonStyle('Boost', true)"
                                 data-cy="Boost-CommonModeChoke-link"
                                 :class="headerTogglerIsVisible? 'w-100' : 'mx-0' "
                                 class="dropdown-item btn btn-block nav-link px-2"
                                 @click="onWizards($stateStore.Wizards.Boost)"
+                                @mouseenter="hoveredWizard = 'Boost'"
+                                @mouseleave="hoveredWizard = null"
                             >
                                 <i class="me-2 fa-solid fa-bolt-lightning"></i>{{'Boost Wizard'}}
                             </button>
                         </li>
                         <li>
                             <button
-                                :style="$styleStore.header.newWizardButton"
+                                :style="getWizardButtonStyle('IsolatedBuck', true)"
                                 data-cy="IsolatedBuck-CommonModeChoke-link"
                                 :class="headerTogglerIsVisible? 'w-100' : 'mx-0' "
                                 class="dropdown-item btn btn-block nav-link px-2"
                                 @click="onWizards($stateStore.Wizards.IsolatedBuck)"
+                                @mouseenter="hoveredWizard = 'IsolatedBuck'"
+                                @mouseleave="hoveredWizard = null"
                             >
                                 <i class="me-2 fa-solid fa-bolt-lightning"></i>{{'Isolated Buck Wizard'}}
                             </button>
                         </li>
                         <li>
                             <button
-                                :style="$styleStore.header.newWizardButton"
+                                :style="getWizardButtonStyle('IsolatedBuckBoost', true)"
                                 data-cy="IsolatedBuckBoost-CommonModeChoke-link"
                                 :class="headerTogglerIsVisible? 'w-100' : 'mx-0' "
                                 class="dropdown-item btn btn-block nav-link px-2"
                                 @click="onWizards($stateStore.Wizards.IsolatedBuckBoost)"
+                                @mouseenter="hoveredWizard = 'IsolatedBuckBoost'"
+                                @mouseleave="hoveredWizard = null"
                             >
                                 <i class="me-2 fa-solid fa-bolt-lightning"></i>{{'Isolated Buck Boost Wizard'}}
                             </button>
                         </li>
                         <li>
                             <button
-                                :style="$styleStore.header.newWizardButton"
+                                :style="getWizardButtonStyle('PushPull', true)"
                                 data-cy="PushPull-CommonModeChoke-link"
                                 :class="headerTogglerIsVisible? 'w-100' : 'mx-0' "
                                 class="dropdown-item btn btn-block nav-link px-2"
                                 @click="onWizards($stateStore.Wizards.PushPull)"
+                                @mouseenter="hoveredWizard = 'PushPull'"
+                                @mouseleave="hoveredWizard = null"
                             >
                                 <i class="me-2 fa-solid fa-bolt-lightning"></i>{{'Push-Pull Wizard'}}
                             </button>
                         </li>
                         <li>
                             <button
-                                :style="$styleStore.header.newWizardButton"
+                                :style="getWizardButtonStyle('ActiveClampForward', true)"
                                 data-cy="ActiveClampForward-CommonModeChoke-link"
                                 :class="headerTogglerIsVisible? 'w-100' : 'mx-0' "
                                 class="dropdown-item btn btn-block nav-link px-2"
                                 @click="onWizards($stateStore.Wizards.ActiveClampForward)"
+                                @mouseenter="hoveredWizard = 'ActiveClampForward'"
+                                @mouseleave="hoveredWizard = null"
                             >
                                 <i class="me-2 fa-solid fa-bolt-lightning"></i>{{'Active Clamp Forward Wizard'}}
                             </button>
                         </li>
                         <li>
                             <button
-                                :style="$styleStore.header.newWizardButton"
+                                :style="getWizardButtonStyle('SingleSwitchForward', true)"
                                 data-cy="SingleSwitchForward-CommonModeChoke-link"
                                 :class="headerTogglerIsVisible? 'w-100' : 'mx-0' "
                                 class="dropdown-item btn btn-block nav-link px-2"
                                 @click="onWizards($stateStore.Wizards.SingleSwitchForward)"
+                                @mouseenter="hoveredWizard = 'SingleSwitchForward'"
+                                @mouseleave="hoveredWizard = null"
                             >
                                 <i class="me-2 fa-solid fa-bolt-lightning"></i>{{'Single-Switch Forward Wizard'}}
                             </button>
                         </li>
                         <li>
                             <button
-                                :style="$styleStore.header.newWizardButton"
+                                :style="getWizardButtonStyle('TwoSwitchForward', true)"
                                 data-cy="TwoSwitchForward-CommonModeChoke-link"
                                 :class="headerTogglerIsVisible? 'w-100' : 'mx-0' "
                                 class="dropdown-item btn btn-block nav-link px-2"
                                 @click="onWizards($stateStore.Wizards.TwoSwitchForward)"
+                                @mouseenter="hoveredWizard = 'TwoSwitchForward'"
+                                @mouseleave="hoveredWizard = null"
                             >
                                 <i class="me-2 fa-solid fa-bolt-lightning"></i>{{'Two-Switch Forward Wizard'}}
                             </button>
@@ -621,5 +649,11 @@ export default {
     .navbar .dropdown-toggle.nav-link:hover {
         filter: brightness(1.15);
         color: inherit !important;
+    }
+
+    /* Wizard dropdown button hover - change text color to secondary */
+    .dropdown-menu .dropdown-item.nav-link:hover {
+        color: var(--bs-secondary) !important;
+        background-color: inherit !important;
     }
 </style>
