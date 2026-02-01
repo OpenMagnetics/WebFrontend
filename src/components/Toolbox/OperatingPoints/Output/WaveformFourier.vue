@@ -29,11 +29,11 @@ export default {
         },
         harmonicPowerThresholdVoltage: {
             type: Number,
-            default: 0.2,
+            default: 0.3,
         },
         harmonicPowerThresholdCurrent: {
             type: Number,
-            default: 0.05,
+            default: 0.1,
         },
     },
     data() {

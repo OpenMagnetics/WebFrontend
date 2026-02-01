@@ -121,15 +121,21 @@ export default {
                     console.error(result);
                 }
                 else {
+                    // Ensure processed object exists
+                    if (!this.modelValue[signalDescriptor].processed) {
+                        this.modelValue[signalDescriptor].processed = {};
+                    }
                     this.modelValue[signalDescriptor].processed.acEffectiveFrequency = result.acEffectiveFrequency;
                     this.modelValue[signalDescriptor].processed.effectiveFrequency = result.effectiveFrequency;
                     this.modelValue[signalDescriptor].processed.peak = result.peak;
                     this.modelValue[signalDescriptor].processed.rms = result.rms;
                     this.modelValue[signalDescriptor].processed.thd = result.thd;
-                    if (this.modelValue[signalDescriptor].processed.label == 'Custom') {
+                    const label = this.modelValue[signalDescriptor].processed.label;
+                    if (!label || label == 'Custom') {
                         this.modelValue[signalDescriptor].processed.dutyCycle = result.dutyCycle;
                         this.modelValue[signalDescriptor].processed.peakToPeak = result.peakToPeak;
                         this.modelValue[signalDescriptor].processed.offset = result.offset;
+                        this.modelValue[signalDescriptor].processed.label = 'Custom';
                     }
                     // Create a clean plain object copy for power calculation
                     const excitationCopy = JSON.parse(JSON.stringify(this.modelValue));

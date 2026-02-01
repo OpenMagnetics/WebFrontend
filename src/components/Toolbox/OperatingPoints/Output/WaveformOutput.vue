@@ -75,15 +75,21 @@ export default {
                     this.modelValue[this.signalDescriptor].harmonics = await this.taskQueueStore.calculateHarmonics(this.modelValue[this.signalDescriptor].waveform, this.modelValue.frequency);
                 }
                 var processed = await this.taskQueueStore.calculateProcessed(this.modelValue[this.signalDescriptor].harmonics, this.modelValue[this.signalDescriptor].waveform);
+                // Ensure processed object exists
+                if (!this.modelValue[this.signalDescriptor].processed) {
+                    this.modelValue[this.signalDescriptor].processed = {};
+                }
                 this.modelValue[this.signalDescriptor].processed.acEffectiveFrequency = processed.acEffectiveFrequency;
                 this.modelValue[this.signalDescriptor].processed.effectiveFrequency = processed.effectiveFrequency;
                 this.modelValue[this.signalDescriptor].processed.peak = processed.peak;
                 this.modelValue[this.signalDescriptor].processed.rms = processed.rms;
                 this.modelValue[this.signalDescriptor].processed.thd = processed.thd;
-                if (this.modelValue[this.signalDescriptor].processed.label == 'Custom') {
+                const label = this.modelValue[this.signalDescriptor].processed.label;
+                if (!label || label == 'Custom') {
                     this.modelValue[this.signalDescriptor].processed.dutyCycle = processed.dutyCycle;
                     this.modelValue[this.signalDescriptor].processed.peakToPeak = processed.peakToPeak;
                     this.modelValue[this.signalDescriptor].processed.offset = processed.offset;
+                    this.modelValue[this.signalDescriptor].processed.label = 'Custom';
                 }
             } catch (error) {
                 console.error('Error in process:', error);

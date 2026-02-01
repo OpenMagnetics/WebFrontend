@@ -156,41 +156,43 @@ export default {
                 </button>
             </div>
             <div v-if="$stateStore.operatingPointsCircuitSimulator.confirmedColumns[currentOperatingPointIndex][currentWindingIndex]" class="col-lg-8 col-md-12 row m-0 p-0" style="max-width: 800px;">
-                <WaveformGraph class=" col-12 py-2"
-                    :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex]"
-                    :dataTestLabel="dataTestLabel + '-WaveformGraph'"
-                    :enableDrag="false"
-                />
-                <WaveformFourier class="col-12 mt-1" style="max-height: 150px;"
-                    :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex]"
-                    :dataTestLabel="dataTestLabel + '-WaveformFourier'"
-                />
+                <div>
+                    <WaveformGraph class=" col-12 py-2"
+                        :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex]"
+                        :dataTestLabel="dataTestLabel + '-WaveformGraph'"
+                        :enableDrag="false"
+                    />
+                    <WaveformFourier class="col-12 mt-1" style="max-height: 150px;"
+                        :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex]"
+                        :dataTestLabel="dataTestLabel + '-WaveformFourier'"
+                    />
 
-                <WaveformSimpleOutput class="col-lg-12 col-md-12 m-0 px-2"
-                    v-if="!$settingsStore.operatingPointSettings.advancedMode"
-                    :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex]"
-                    :dataTestLabel="dataTestLabel + '-WaveformOutput-current'"
-                />
+                    <WaveformSimpleOutput class="col-lg-12 col-md-12 m-0 px-2"
+                        v-if="!$settingsStore.operatingPointSettings.advancedMode"
+                        :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex]"
+                        :dataTestLabel="dataTestLabel + '-WaveformOutput-current'"
+                    />
 
-                <WaveformOutput class="col-lg-6 col-md-6 m-0 px-2"
-                    v-if="$settingsStore.operatingPointSettings.advancedMode"
-                    :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex]"
-                    :dataTestLabel="dataTestLabel + '-WaveformOutput-current'"
-                    :signalDescriptor="'current'"
-                />
-                <WaveformOutput class="col-lg-6 col-md-6 m-0 px-2"
-                    v-if="$settingsStore.operatingPointSettings.advancedMode"
-                    :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex]"
-                    :dataTestLabel="dataTestLabel + '-WaveformOutput-voltage'"
-                    :signalDescriptor="'voltage'"
-                />
-                <WaveformCombinedOutput class="col-12 m-0 px-2 border-top"
-                    v-if="$settingsStore.operatingPointSettings.advancedMode"
-                    :dataTestLabel="dataTestLabel + '-WaveformCombinedOutput'"
-                    :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex]"
-                />
-<!--                 <button :data-cy="dataTestLabel + '-reset-button'" class="btn btn-danger fs-6 offset-md-10 col-sm-12 col-md-2  mt-2 p-0" style="max-height: 2em" @click="resetCurrentExcitation"> Reset Point
-                </button> -->
+                    <WaveformOutput class="col-lg-6 col-md-6 m-0 px-2"
+                        v-if="$settingsStore.operatingPointSettings.advancedMode"
+                        :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex]"
+                        :dataTestLabel="dataTestLabel + '-WaveformOutput-current'"
+                        :signalDescriptor="'current'"
+                    />
+                    <WaveformOutput class="col-lg-6 col-md-6 m-0 px-2"
+                        v-if="$settingsStore.operatingPointSettings.advancedMode"
+                        :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex]"
+                        :dataTestLabel="dataTestLabel + '-WaveformOutput-voltage'"
+                        :signalDescriptor="'voltage'"
+                    />
+                    <WaveformCombinedOutput class="col-12 m-0 px-2 border-top"
+                        v-if="$settingsStore.operatingPointSettings.advancedMode"
+                        :dataTestLabel="dataTestLabel + '-WaveformCombinedOutput'"
+                        :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex]"
+                    />
+    <!--                 <button :data-cy="dataTestLabel + '-reset-button'" class="btn btn-danger fs-6 offset-md-10 col-sm-12 col-md-2  mt-2 p-0" style="max-height: 2em" @click="resetCurrentExcitation"> Reset Point
+                    </button> -->
+                </div>
             </div>
         </div>
     </div>

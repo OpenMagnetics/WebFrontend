@@ -32,9 +32,11 @@ export default {
     data() {
         var resettingPoints = false;
         var addedOrRemovedIndex = 0;
+        var showAllPoints = false;
         return {
             resettingPoints,
-            addedOrRemovedIndex
+            addedOrRemovedIndex,
+            showAllPoints
         }
     },
     computed: {
@@ -43,7 +45,8 @@ export default {
                 return true;
             }
             else {
-                return this.modelValue.current.processed.label != "Rectangular" && this.modelValue.current.processed.label != "Bipolar Rectangular" && this.modelValue.current.processed.label != "Unipolar Rectangular";
+                const label = this.modelValue.current?.processed?.label;
+                return label != "Rectangular" && label != "Bipolar Rectangular" && label != "Unipolar Rectangular";
             }
         }
     },
@@ -81,18 +84,28 @@ export default {
             :textColor="$styleStore.operatingPoints.inputTextColor"
             @update="labelChanged"
         />
-        <div v-if="modelValue[signalDescriptor] != null" v-for="(value, key) in modelValue[signalDescriptor].waveform.data" :key="key">
-            <WaveformInputCustomPoint
-                v-if="!resettingPoints || addedOrRemovedIndex>=key"
-                :modelValue="modelValue[signalDescriptor].waveform"
-                :name="key"
-                :dataTestLabel="dataTestLabel + '-WaveformInputCustomPoint-' + key"
-                :signalDescriptor="signalDescriptor"
-                @updatedTime="$emit('updatedTime')"
-                @updatedData="$emit('updatedData')"
-                @addedOrRemovedPoint="addedOrRemovedPoint(key)"
-                />
-                <div v-else style="height: 40px;"></div>
+        <div v-if="modelValue[signalDescriptor] != null">
+            <template v-for="(value, key) in modelValue[signalDescriptor].waveform.data" :key="key">
+                <WaveformInputCustomPoint
+                    v-if="(!resettingPoints || addedOrRemovedIndex>=key) && (showAllPoints || key < 3 || Object.keys(modelValue[signalDescriptor].waveform.data).length <= 3)"
+                    :modelValue="modelValue[signalDescriptor].waveform"
+                    :name="key"
+                    :dataTestLabel="dataTestLabel + '-WaveformInputCustomPoint-' + key"
+                    :signalDescriptor="signalDescriptor"
+                    @updatedTime="$emit('updatedTime')"
+                    @updatedData="$emit('updatedData')"
+                    @addedOrRemovedPoint="addedOrRemovedPoint(key)"
+                    />
+                    <div v-else-if="resettingPoints && addedOrRemovedIndex<key" style="height: 40px;"></div>
+            </template>
+            <button
+                v-if="Object.keys(modelValue[signalDescriptor].waveform.data).length > 3"
+                class="btn btn-outline-secondary col-12 mt-1 py-0"
+                style="font-size: 0.75em;"
+                @click="showAllPoints = !showAllPoints">
+                <i :class="showAllPoints ? 'fa-solid fa-chevron-up' : 'fa-solid fa-chevron-down'"></i>
+                {{ showAllPoints ? 'Show less' : `Show ${Object.keys(modelValue[signalDescriptor].waveform.data).length - 3} more points` }}
+            </button>
         </div>
         <button
             v-if="induceableSignal"

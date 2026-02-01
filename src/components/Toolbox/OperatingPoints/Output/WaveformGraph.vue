@@ -90,7 +90,8 @@ export default {
 
                         e.target.style.cursor = 'grabbing';
                         const originalValue = value;
-                        if (this.modelValue[this.getSignalDescriptor(datasetIndex)].processed.label == "Sinusoidal") {
+                        const label = this.modelValue[this.getSignalDescriptor(datasetIndex)]?.processed?.label;
+                        if (label == "Sinusoidal") {
                             this.roundValue(datasetIndex, index, value, 1 / modelValue.frequency / 100, this.getYPrecision(datasetIndex));
                         }
                         this.processByType(datasetIndex, index, value)
@@ -367,32 +368,33 @@ export default {
         },
         disableDragXByType(datasetIndex, index) {
             const signalDescriptor = this.getSignalDescriptor(datasetIndex)
-            if (this.modelValue[signalDescriptor].processed.label == "Triangular") {
+            const label = this.modelValue[signalDescriptor]?.processed?.label;
+            if (label == "Triangular") {
                 if (index == 0 || index == 2) {
                     chart.options.plugins.dragData.dragX = false;
                 }
             }
-            else if (this.modelValue[signalDescriptor].processed.label == "Rectangular" ) {
+            else if (label == "Rectangular" ) {
                 if (index == 0 || index == 1 || index == 4) {
                     chart.options.plugins.dragData.dragX = false;
                 }
             }
-            else if (this.modelValue[signalDescriptor].processed.label == "Unipolar Triangular") {
+            else if (label == "Unipolar Triangular") {
                 if (index == 0 || index == 4) {
                     chart.options.plugins.dragData.dragX = false;
                 }
             }
-            else if (this.modelValue[signalDescriptor].processed.label == "Unipolar Rectangular" || this.modelValue[signalDescriptor].processed.label == "Flyback Primary") {
+            else if (label == "Unipolar Rectangular" || label == "Flyback Primary") {
                 if (index == 0 || index == 1 || index == 4) {
                     chart.options.plugins.dragData.dragX = false;
                 }
             }
-            else if (this.modelValue[signalDescriptor].processed.label == "Flyback Secondary") {
+            else if (label == "Flyback Secondary") {
                 if (index == 0 || index == 3 || index == 4) {
                     chart.options.plugins.dragData.dragX = false;
                 }
             }
-            else if (this.modelValue[signalDescriptor].processed.label == "Bipolar Rectangular") {
+            else if (label == "Bipolar Rectangular") {
                 if (index == 0 || index == 9) {
                     chart.options.plugins.dragData.dragX = false;
                 }
@@ -400,10 +402,10 @@ export default {
                     chart.options.plugins.dragData.dragY = false;
                 }
             }
-            else if (this.modelValue[signalDescriptor].processed.label == "Sinusoidal") {
+            else if (label == "Sinusoidal") {
                  chart.options.plugins.dragData.dragX = false;
             }
-            else if (this.modelValue[signalDescriptor].processed.label == "Custom") {
+            else if (!label || label == "Custom") {
                 if (index == 0 || index == (chart.data.datasets[datasetIndex].data.length - 1)) {
                     chart.options.plugins.dragData.dragX = false;
                 }
@@ -411,15 +413,16 @@ export default {
         },
         processByType(datasetIndex, index, value) {
             const signalDescriptor = this.getSignalDescriptor(datasetIndex)
-            if (this.modelValue[signalDescriptor].processed.label == "Triangular") {
+            const label = this.modelValue[signalDescriptor]?.processed?.label;
+            if (label == "Triangular") {
                 this.checkHorizontalLimits(chart.data.datasets[datasetIndex].data, index, value);
                 this.synchronizeExtremes(datasetIndex, index, value);
             }
-            else if (this.modelValue[signalDescriptor].processed.label == "Custom") {
+            else if (!label || label == "Custom") {
                 this.checkHorizontalLimits(chart.data.datasets[datasetIndex].data, index, value);
                 this.synchronizeExtremes(datasetIndex, index, value);
             }
-            else if (this.modelValue[signalDescriptor].processed.label == "Rectangular") {
+            else if (label == "Rectangular") {
                 const data = chart.data.datasets[datasetIndex].data
                 switch (index) {
                     case 0:
@@ -464,7 +467,7 @@ export default {
                     break;
                 }
             }
-            else if (this.modelValue[signalDescriptor].processed.label == "Unipolar Rectangular") {
+            else if (label == "Unipolar Rectangular") {
                 const data = chart.data.datasets[datasetIndex].data
                 switch (index) {
                     case 0:
@@ -490,7 +493,7 @@ export default {
                     break;
                 }
             }
-            else if (this.modelValue[signalDescriptor].processed.label == "Flyback Primary") {
+            else if (label == "Flyback Primary") {
                 const data = chart.data.datasets[datasetIndex].data
                 switch (index) {
                     case 0:
@@ -512,7 +515,7 @@ export default {
                     break;
                 }
             }
-            else if (this.modelValue[signalDescriptor].processed.label == "Flyback Secondary") {
+            else if (label == "Flyback Secondary") {
                 const data = chart.data.datasets[datasetIndex].data
                 switch (index) {
                     case 0:
@@ -533,7 +536,7 @@ export default {
                     break;
                 }
             }
-            else if (this.modelValue[signalDescriptor].processed.label == "Unipolar Triangular") {
+            else if (label == "Unipolar Triangular") {
                 const data = chart.data.datasets[datasetIndex].data
                 switch (index) {
                     case 0:
@@ -554,7 +557,7 @@ export default {
                     break;
                 }
             }
-            else if (this.modelValue[signalDescriptor].processed.label == "Bipolar Rectangular") {
+            else if (label == "Bipolar Rectangular") {
                 var data = chart.data.datasets[datasetIndex].data
                 var dc
                 var firstValue = data[2].y
@@ -635,7 +638,7 @@ export default {
                         {x: period, y: 0 }]
                 chart.data.datasets[datasetIndex].data = data
             }
-            else if (this.modelValue[signalDescriptor].processed.label == "Sinusoidal") {
+            else if (label == "Sinusoidal") {
                 const numberPoints = chart.data.datasets[datasetIndex].data.length - 1
                 const indexAngle = index * 2 * Math.PI / numberPoints
                 const maxMin = this.getMaxMinInPoints(chart.data.datasets[datasetIndex].data, 'y')

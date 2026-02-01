@@ -348,28 +348,30 @@ export default {
                     text += `\\subsection*{${operatingPoint.name}}\n`
                     operatingPoint.excitationsPerWinding.forEach((excitation, windingIndex) => {
                         text += `\\subsection*{${this.masStore.mas.magnetic.coil.functionalDescription[windingIndex].name}}\n`
+                        const currentProcessed = excitation.current?.processed || {};
+                        const voltageProcessed = excitation.voltage?.processed || {};
                         text += `
                             \\begin{tabular}{ |l|c|c| } 
                                 \\hline
                                 {} & \\larger[1]{Current} & \\larger[1]{Voltage} \\\\ 
                                 \\hline
-                                \\textbf{Type of signal} & ${excitation.current.processed.label} & ${excitation.voltage.processed.label} \\\\
+                                \\textbf{Type of signal} & ${currentProcessed.label || 'Custom'} & ${voltageProcessed.label || 'Custom'} \\\\
                                 \\hline
-                                \\textbf{Duty Cycle} & ${this.computeValueAndUnit(excitation.current.processed.dutyCycle, 'A', 2)} & ${this.computeValueAndUnit(excitation.voltage.processed.dutyCycle, 'V', 2)} \\\\
+                                \\textbf{Duty Cycle} & ${this.computeValueAndUnit(currentProcessed.dutyCycle, 'A', 2)} & ${this.computeValueAndUnit(voltageProcessed.dutyCycle, 'V', 2)} \\\\
                                 \\hline
-                                \\textbf{Offset} & ${this.computeValueAndUnit(excitation.current.processed.offset, 'A', 2)} & ${this.computeValueAndUnit(excitation.voltage.processed.offset, 'V', 2)} \\\\
+                                \\textbf{Offset} & ${this.computeValueAndUnit(currentProcessed.offset, 'A', 2)} & ${this.computeValueAndUnit(voltageProcessed.offset, 'V', 2)} \\\\
                                 \\hline
-                                \\textbf{Peak} & ${this.computeValueAndUnit(excitation.current.processed.peak, 'A', 2)} & ${this.computeValueAndUnit(excitation.voltage.processed.peak, 'V', 2)} \\\\
+                                \\textbf{Peak} & ${this.computeValueAndUnit(currentProcessed.peak, 'A', 2)} & ${this.computeValueAndUnit(voltageProcessed.peak, 'V', 2)} \\\\
                                 \\hline
-                                \\textbf{Peak To Peak} & ${this.computeValueAndUnit(excitation.current.processed.peakToPeak, 'A', 2)} & ${this.computeValueAndUnit(excitation.voltage.processed.peakToPeak, 'V', 2)} \\\\
+                                \\textbf{Peak To Peak} & ${this.computeValueAndUnit(currentProcessed.peakToPeak, 'A', 2)} & ${this.computeValueAndUnit(voltageProcessed.peakToPeak, 'V', 2)} \\\\
                                 \\hline
-                                \\textbf{RMS} & ${this.computeValueAndUnit(excitation.current.processed.rms, 'A', 2)} & ${this.computeValueAndUnit(excitation.voltage.processed.rms, 'V', 2)} \\\\
+                                \\textbf{RMS} & ${this.computeValueAndUnit(currentProcessed.rms, 'A', 2)} & ${this.computeValueAndUnit(voltageProcessed.rms, 'V', 2)} \\\\
                                 \\hline
-                                \\textbf{THD} & ${this.computeValueAndUnit(excitation.current.processed.thd, 'A', 2)} & ${this.computeValueAndUnit(excitation.voltage.processed.thd, 'V', 2)} \\\\
+                                \\textbf{THD} & ${this.computeValueAndUnit(currentProcessed.thd, 'A', 2)} & ${this.computeValueAndUnit(voltageProcessed.thd, 'V', 2)} \\\\
                                 \\hline
-                                \\textbf{Effective Frequency} & ${this.computeValueAndUnit(excitation.current.processed.effectiveFrequency, 'Hz', 2)} & ${this.computeValueAndUnit(excitation.voltage.processed.effectiveFrequency, 'Hz', 2)} \\\\
+                                \\textbf{Effective Frequency} & ${this.computeValueAndUnit(currentProcessed.effectiveFrequency, 'Hz', 2)} & ${this.computeValueAndUnit(voltageProcessed.effectiveFrequency, 'Hz', 2)} \\\\
                                 \\hline
-                                \\textbf{AC Effective Frequency} & ${this.computeValueAndUnit(excitation.current.processed.acEffectiveFrequency, 'Hz', 2)} & ${this.computeValueAndUnit(excitation.voltage.processed.acEffectiveFrequency, 'Hz', 2)} \\\\
+                                \\textbf{AC Effective Frequency} & ${this.computeValueAndUnit(currentProcessed.acEffectiveFrequency, 'Hz', 2)} & ${this.computeValueAndUnit(voltageProcessed.acEffectiveFrequency, 'Hz', 2)} \\\\
 
                                 \\hline
                                 \\end{tabular}\n
@@ -399,10 +401,12 @@ export default {
                 text += `&emsp;About its windings: </br>`;
                 operatingPoint.excitationsPerWinding.forEach((excitation, windingIndex) => {
                     {
-                        const auxCurrent = formatUnit(excitation.current.processed.rms, 'A');
-                        const auxVoltage = formatUnit(excitation.voltage.processed.rms, 'A');
-                        text += ` &emsp;&emsp;Winding ${this.masStore.mas.magnetic.coil.functionalDescription[windingIndex].name} has a ${this.getValueColor(excitation.current.processed.label.toLowerCase())} current, with an RMS of ${this.getValueColor(`${removeTrailingZeroes(auxCurrent.label, 2)} ${auxCurrent.unit}`)};`;
-                        text += ` and a ${this.getValueColor(excitation.current.processed.label.toLowerCase())} voltage, with an RMS of ${this.getValueColor(`${removeTrailingZeroes(auxVoltage.label, 2)} ${auxVoltage.unit}`)}; </br>`;
+                        const auxCurrent = formatUnit(excitation.current?.processed?.rms || 0, 'A');
+                        const auxVoltage = formatUnit(excitation.voltage?.processed?.rms || 0, 'A');
+                        const currentLabel = excitation.current?.processed?.label || 'Custom';
+                        const voltageLabel = excitation.voltage?.processed?.label || 'Custom';
+                        text += ` &emsp;&emsp;Winding ${this.masStore.mas.magnetic.coil.functionalDescription[windingIndex].name} has a ${this.getValueColor(currentLabel.toLowerCase())} current, with an RMS of ${this.getValueColor(`${removeTrailingZeroes(auxCurrent.label, 2)} ${auxCurrent.unit}`)};`;
+                        text += ` and a ${this.getValueColor(voltageLabel.toLowerCase())} voltage, with an RMS of ${this.getValueColor(`${removeTrailingZeroes(auxVoltage.label, 2)} ${auxVoltage.unit}`)}; </br>`;
                     }
 
                 })

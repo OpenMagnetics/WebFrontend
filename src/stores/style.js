@@ -616,13 +616,13 @@ export const useStyleStore = defineStore("style", () => {
                 "border-color":  theme["primary"] + ' !important',
             },
             inputFontSize: {
-                "font-size": '1.25rem',
+                "font-size": '1rem',
             },
             inputTitleFontSize: {
-                "font-size": '2rem',
+                "font-size": '1.25rem',
             },
             inputLabelFontSize: {
-                "font-size": '1.5rem',
+                "font-size": '1rem',
             },
             inputLabelBgColor:{
                 "background-color": theme["dark"] + ' !important',

@@ -628,6 +628,103 @@ export const useTaskQueueStore = defineStore('taskQueue', {
             return inputs;
         },
 
+        buckIdealWaveformsCalculated(success = true, dataOrMessage = '') {
+        },
+
+        async simulateBuckIdealWaveforms(params) {
+            const mkf = await waitForMkf();
+            await mkf.ready;
+
+            const result = await mkf.simulate_buck_ideal_waveforms(JSON.stringify(params));
+            if (result.startsWith('Exception')) {
+                setTimeout(() => { this.buckIdealWaveformsCalculated(false, result); }, this.task_standard_response_delay);
+                throw new Error(result);
+            }
+            const waveforms = JSON.parse(result);
+            setTimeout(() => { this.buckIdealWaveformsCalculated(true, waveforms); }, this.task_standard_response_delay);
+            return waveforms;
+        },
+
+        boostIdealWaveformsCalculated(success = true, dataOrMessage = '') {
+        },
+
+        async simulateBoostIdealWaveforms(params) {
+            const mkf = await waitForMkf();
+            await mkf.ready;
+
+            const result = await mkf.simulate_boost_ideal_waveforms(JSON.stringify(params));
+            if (result.startsWith('Exception')) {
+                setTimeout(() => { this.boostIdealWaveformsCalculated(false, result); }, this.task_standard_response_delay);
+                throw new Error(result);
+            }
+            const waveforms = JSON.parse(result);
+            setTimeout(() => { this.boostIdealWaveformsCalculated(true, waveforms); }, this.task_standard_response_delay);
+            return waveforms;
+        },
+
+        // ==========================================
+        // Wizard Simulation Methods - Forward
+        // ==========================================
+
+        forwardIdealWaveformsCalculated(success = true, dataOrMessage = '') {
+        },
+
+        async simulateForwardIdealWaveforms(params) {
+            const mkf = await waitForMkf();
+            await mkf.ready;
+
+            const result = await mkf.simulate_forward_ideal_waveforms(JSON.stringify(params));
+            if (result.startsWith('Exception')) {
+                setTimeout(() => { this.forwardIdealWaveformsCalculated(false, result); }, this.task_standard_response_delay);
+                throw new Error(result);
+            }
+            const waveforms = JSON.parse(result);
+            setTimeout(() => { this.forwardIdealWaveformsCalculated(true, waveforms); }, this.task_standard_response_delay);
+            return waveforms;
+        },
+
+        // ==========================================
+        // Wizard Simulation Methods - Push-Pull
+        // ==========================================
+
+        pushPullIdealWaveformsCalculated(success = true, dataOrMessage = '') {
+        },
+
+        async simulatePushPullIdealWaveforms(params) {
+            const mkf = await waitForMkf();
+            await mkf.ready;
+
+            const result = await mkf.simulate_push_pull_ideal_waveforms(JSON.stringify(params));
+            if (result.startsWith('Exception')) {
+                setTimeout(() => { this.pushPullIdealWaveformsCalculated(false, result); }, this.task_standard_response_delay);
+                throw new Error(result);
+            }
+            const waveforms = JSON.parse(result);
+            setTimeout(() => { this.pushPullIdealWaveformsCalculated(true, waveforms); }, this.task_standard_response_delay);
+            return waveforms;
+        },
+
+        // ==========================================
+        // Wizard Simulation Methods - Isolated Buck-Boost
+        // ==========================================
+
+        isolatedBuckBoostIdealWaveformsCalculated(success = true, dataOrMessage = '') {
+        },
+
+        async simulateIsolatedBuckBoostIdealWaveforms(params) {
+            const mkf = await waitForMkf();
+            await mkf.ready;
+
+            const result = await mkf.simulate_isolated_buck_boost_ideal_waveforms(JSON.stringify(params));
+            if (result.startsWith('Exception')) {
+                setTimeout(() => { this.isolatedBuckBoostIdealWaveformsCalculated(false, result); }, this.task_standard_response_delay);
+                throw new Error(result);
+            }
+            const waveforms = JSON.parse(result);
+            setTimeout(() => { this.isolatedBuckBoostIdealWaveformsCalculated(true, waveforms); }, this.task_standard_response_delay);
+            return waveforms;
+        },
+
         // ==========================================
         // Wizard Calculation Methods - Isolated Buck/Boost
         // ==========================================
@@ -712,6 +809,40 @@ export const useTaskQueueStore = defineStore('taskQueue', {
             const inputs = JSON.parse(result);
             setTimeout(() => { this.advancedFlybackInputsCalculated(true, inputs); }, this.task_standard_response_delay);
             return inputs;
+        },
+
+        flybackIdealWaveformsCalculated(success = true, dataOrMessage = '') {
+        },
+
+        async simulateFlybackIdealWaveforms(params) {
+            const mkf = await waitForMkf();
+            await mkf.ready;
+
+            const result = await mkf.simulate_flyback_ideal_waveforms(JSON.stringify(params));
+            if (result.startsWith('Exception')) {
+                setTimeout(() => { this.flybackIdealWaveformsCalculated(false, result); }, this.task_standard_response_delay);
+                throw new Error(result);
+            }
+            const waveforms = JSON.parse(result);
+            setTimeout(() => { this.flybackIdealWaveformsCalculated(true, waveforms); }, this.task_standard_response_delay);
+            return waveforms;
+        },
+
+        flybackRealMagneticWaveformsCalculated(success = true, dataOrMessage = '') {
+        },
+
+        async simulateFlybackWithMagnetic(flybackParams, magnetic) {
+            const mkf = await waitForMkf();
+            await mkf.ready;
+
+            const result = await mkf.simulate_flyback_with_magnetic(JSON.stringify(flybackParams), JSON.stringify(magnetic));
+            if (result.startsWith('Exception')) {
+                setTimeout(() => { this.flybackRealMagneticWaveformsCalculated(false, result); }, this.task_standard_response_delay);
+                throw new Error(result);
+            }
+            const waveforms = JSON.parse(result);
+            setTimeout(() => { this.flybackRealMagneticWaveformsCalculated(true, waveforms); }, this.task_standard_response_delay);
+            return waveforms;
         },
 
         // ==========================================

@@ -206,6 +206,18 @@ export default {
 
             {
                 excitation.voltage.harmonics = await this.taskQueueStore.calculateHarmonics(excitation.voltage.waveform, this.localData.mainSignalFrequency);
+                // Prune harmonics to reduce number shown in Fourier graph
+                const voltageThreshold = 0.3;
+                const mainIndexes = await this.taskQueueStore.getMainHarmonicIndexes(excitation.voltage.harmonics, voltageThreshold, 1);
+                const prunedHarmonics = {
+                    amplitudes: [excitation.voltage.harmonics.amplitudes[0]],
+                    frequencies: [excitation.voltage.harmonics.frequencies[0]]
+                };
+                for (let i = 0; i < mainIndexes.length; i++) {
+                    prunedHarmonics.amplitudes.push(excitation.voltage.harmonics.amplitudes[mainIndexes[i]]);
+                    prunedHarmonics.frequencies.push(excitation.voltage.harmonics.frequencies[mainIndexes[i]]);
+                }
+                excitation.voltage.harmonics = prunedHarmonics;
             }
 
             this.masStore.mas.inputs.operatingPoints = [];

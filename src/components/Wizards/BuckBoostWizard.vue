@@ -10,6 +10,7 @@ import TripleOfDimensions from '/WebSharedComponents/DataInput/TripleOfDimension
 import DimensionWithTolerance from '/WebSharedComponents/DataInput/DimensionWithTolerance.vue'
 import { defaultBuckWizardInputs, defaultBoostWizardInputs, defaultDesignRequirements, minimumMaximumScalePerParameter, filterMas } from '/WebSharedComponents/assets/js/defaults.js'
 import MaximumDimensions from '../Toolbox/DesignRequirements/MaximumDimensions.vue'
+import LineVisualizer from '/WebSharedComponents/Common/LineVisualizer.vue'
 </script>
 
 <script>
@@ -54,14 +55,71 @@ export default {
             currentOptions,
             localData,
             errorMessage,
+            simulatingWaveforms: false,
+            waveformError: "",
+            simulatedOperatingPoints: [],
+            designRequirements: null,
+            magneticWaveforms: [],
+            converterWaveforms: [],
+            waveformViewMode: 'magnetic',
+            forceWaveformUpdate: 0,
         }
     },
     computed: {
+    },
+    watch: {
+        waveformViewMode() {
+            this.$nextTick(() => {
+                this.forceWaveformUpdate += 1;
+            });
+        },
     },
     mounted () {
         this.updateErrorMessage();
     },
     methods: {
+        async pruneHarmonicsForInputs(inputs) {
+            // Prune harmonics for all operating points and excitations
+            const currentThreshold = 0.1;
+            const voltageThreshold = 0.3;
+            
+            for (const op of inputs.operatingPoints) {
+                if (op.excitationsPerWinding) {
+                    for (const excitation of op.excitationsPerWinding) {
+                        const frequency = excitation.frequency;
+                        
+                        // Prune current harmonics
+                        if (excitation.current?.harmonics?.amplitudes?.length > 1) {
+                            const mainIndexes = await this.taskQueueStore.getMainHarmonicIndexes(excitation.current.harmonics, currentThreshold, 1);
+                            const prunedHarmonics = {
+                                amplitudes: [excitation.current.harmonics.amplitudes[0]],
+                                frequencies: [excitation.current.harmonics.frequencies[0]]
+                            };
+                            for (let i = 0; i < mainIndexes.length; i++) {
+                                prunedHarmonics.amplitudes.push(excitation.current.harmonics.amplitudes[mainIndexes[i]]);
+                                prunedHarmonics.frequencies.push(excitation.current.harmonics.frequencies[mainIndexes[i]]);
+                            }
+                            excitation.current.harmonics = prunedHarmonics;
+                        }
+                        
+                        // Prune voltage harmonics
+                        if (excitation.voltage?.harmonics?.amplitudes?.length > 1) {
+                            const mainIndexes = await this.taskQueueStore.getMainHarmonicIndexes(excitation.voltage.harmonics, voltageThreshold, 1);
+                            const prunedHarmonics = {
+                                amplitudes: [excitation.voltage.harmonics.amplitudes[0]],
+                                frequencies: [excitation.voltage.harmonics.frequencies[0]]
+                            };
+                            for (let i = 0; i < mainIndexes.length; i++) {
+                                prunedHarmonics.amplitudes.push(excitation.voltage.harmonics.amplitudes[mainIndexes[i]]);
+                                prunedHarmonics.frequencies.push(excitation.voltage.harmonics.frequencies[mainIndexes[i]]);
+                            }
+                            excitation.voltage.harmonics = prunedHarmonics;
+                        }
+                    }
+                }
+            }
+            return inputs;
+        },
         updateErrorMessage() {
             this.errorMessage = "";
             if (this.converterName == "Buck") {
@@ -125,6 +183,9 @@ export default {
                         inputs = await this.taskQueueStore.calculateBoostInputs(aux);
                     }
                 }
+
+                // Prune harmonics for better Fourier graph display
+                inputs = await this.pruneHarmonicsForInputs(inputs);
 
                 this.masStore.mas.inputs = inputs;
 
@@ -196,6 +257,126 @@ export default {
                     setTimeout(() => {this.errorMessage = ""}, 5000);
                 }
             }
+        },
+        async simulateIdealWaveforms() {
+            this.simulatingWaveforms = true;
+            this.waveformError = "";
+            this.magneticWaveforms = [];
+            this.converterWaveforms = [];
+            
+            try {
+                // Build the converter parameters for simulation
+                const aux = {};
+                aux['inputVoltage'] = this.localData.inputVoltage;
+                aux['diodeVoltageDrop'] = this.localData.diodeVoltageDrop;
+                aux['efficiency'] = this.localData.efficiency;
+                
+                if (this.localData.designLevel == 'I know the design I want') {
+                    aux['desiredInductance'] = this.localData.inductance;
+                }
+                else {
+                    if (this.localData.currentOptions == 'The output current ratio') {
+                        aux['currentRippleRatio'] = this.localData.currentRippleRatio;
+                    }
+                    else {
+                        aux['maximumSwitchCurrent'] = this.localData.maximumSwitchCurrent;
+                    }
+                }
+                
+                const auxOperatingPoint = {};
+                auxOperatingPoint['outputVoltage'] = this.localData.outputsParameters.voltage;
+                auxOperatingPoint['outputCurrent'] = this.localData.outputsParameters.current;
+                auxOperatingPoint['switchingFrequency'] = this.localData.switchingFrequency;
+                auxOperatingPoint['ambientTemperature'] = this.localData.ambientTemperature;
+                aux['operatingPoints'] = [auxOperatingPoint];
+                
+                // Call the appropriate WASM simulation based on converter type
+                var result;
+                if (this.converterName == "Buck") {
+                    result = await this.taskQueueStore.simulateBuckIdealWaveforms(aux);
+                }
+                else {
+                    result = await this.taskQueueStore.simulateBoostIdealWaveforms(aux);
+                }
+                console.log("Simulation result:", result);
+                
+                this.simulatedOperatingPoints = result.operatingPoints || [];
+                this.designRequirements = result.designRequirements || null;
+                this.magneticWaveforms = result.magneticWaveforms || [];
+                this.converterWaveforms = result.converterWaveforms || [];
+                
+                this.$nextTick(() => {
+                    this.forceWaveformUpdate += 1;
+                    if (this.$refs.waveformSection) {
+                        this.$refs.waveformSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                });
+                
+            } catch (error) {
+                console.error("Error simulating waveforms:", error);
+                this.waveformError = error.message || "Failed to simulate waveforms";
+            }
+            
+            this.simulatingWaveforms = false;
+        },
+        getWaveformsList(waveforms, operatingPointIndex) {
+            if (!waveforms || !waveforms[operatingPointIndex] || !waveforms[operatingPointIndex].waveforms) {
+                return [];
+            }
+            return waveforms[operatingPointIndex].waveforms;
+        },
+        getSingleWaveformDataForVisualizer(waveforms, operatingPointIndex, waveformIndex) {
+            if (!waveforms || !waveforms[operatingPointIndex] || !waveforms[operatingPointIndex].waveforms) {
+                return [];
+            }
+            
+            const wf = waveforms[operatingPointIndex].waveforms[waveformIndex];
+            if (!wf) return [];
+            
+            let yData = wf.y;
+            const isVoltageWaveform = wf.unit === 'V';
+            const isCurrentWaveform = wf.unit === 'A';
+            
+            if (isVoltageWaveform && yData && yData.length > 0) {
+                const sorted = [...yData].sort((a, b) => a - b);
+                const p1 = sorted[Math.floor(sorted.length * 0.01)];
+                const p99 = sorted[Math.floor(sorted.length * 0.99)];
+                
+                const range = p99 - p1;
+                const margin = range * 0.2;
+                const clipMin = p1 - margin;
+                const clipMax = p99 + margin;
+                
+                yData = yData.map(v => Math.max(clipMin, Math.min(clipMax, v)));
+            }
+            
+            let waveformColor = '#ffffff';
+            if (isVoltageWaveform) {
+                waveformColor = this.$styleStore.operatingPoints?.voltageGraph?.color || '#b18aea';
+            } else if (isCurrentWaveform) {
+                waveformColor = this.$styleStore.operatingPoints?.currentGraph?.color || '#4CAF50';
+            }
+            
+            return [{
+                label: wf.label,
+                data: {
+                    x: wf.x,
+                    y: yData,
+                },
+                colorLabel: waveformColor,
+                type: 'value',
+                position: 'left',
+                unit: wf.unit,
+                numberDecimals: 6,
+            }];
+        },
+        getTimeAxisOptions() {
+            return {
+                label: 'Time',
+                colorLabel: '#d4d4d4',
+                type: 'value',
+                unit: 's',
+            };
         },
     }
 }
@@ -464,6 +645,130 @@ export default {
                     />
                 </div>
             </div>
+            
+            <!-- Waveform Simulation Section -->
+            <div class="col-12 mt-4">
+                <div class="row">
+                    <div class="col-12">
+                        <button
+                            :disabled="errorMessage != '' || simulatingWaveforms"
+                            :style="$styleStore.wizard.reviewButton"
+                            class="btn px-4 mb-3"
+                            @click="simulateIdealWaveforms"
+                        >
+                            <span v-if="simulatingWaveforms">
+                                <i class="fa-solid fa-spinner fa-spin me-2"></i>Simulating...
+                            </span>
+                            <span v-else>
+                                <i class="fa-solid fa-wave-square me-2"></i>Simulate Waveforms
+                            </span>
+                        </button>
+                    </div>
+                </div>
+                
+                <div ref="waveformSection">
+                    <div v-if="waveformError" class="alert alert-danger" role="alert">
+                        <i class="fa-solid fa-exclamation-triangle me-2"></i>{{ waveformError }}
+                    </div>
+                    
+                    <div v-if="magneticWaveforms.length > 0 || converterWaveforms.length > 0" class="row">
+                        <div class="col-12 mb-3">
+                            <div class="p-3 rounded border" :style="{ backgroundColor: $styleStore.wizard.inputLabelBgColor }">
+                                <h6 :style="$styleStore.wizard.inputLabelFontSize" class="mb-2">Design Parameters</h6>
+                                <div v-if="designRequirements" class="row mb-3">
+                                    <div class="col-6">
+                                        <strong>Inductance:</strong>
+                                        {{ designRequirements.magnetizingInductance?.nominal ? 
+                                           (designRequirements.magnetizingInductance.nominal * 1e6).toFixed(2) + ' µH' :
+                                           designRequirements.magnetizingInductance?.minimum ?
+                                           (designRequirements.magnetizingInductance.minimum * 1e6).toFixed(2) + ' µH (min)' : 'N/A' }}
+                                    </div>
+                                    <div class="col-6">
+                                        <strong>Duty Cycle:</strong>
+                                        {{ simulatedOperatingPoints.length > 0 && simulatedOperatingPoints[0].dutyCycle ?
+                                           (simulatedOperatingPoints[0].dutyCycle * 100).toFixed(1) + '%' : 'N/A' }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-12 mb-3">
+                            <div class="btn-group" role="group" aria-label="Waveform view mode">
+                                <button 
+                                    type="button" 
+                                    class="btn btn-sm"
+                                    :class="waveformViewMode === 'magnetic' ? 'btn-primary' : 'btn-outline-primary'"
+                                    @click="waveformViewMode = 'magnetic'"
+                                >
+                                    <i class="fa-solid fa-magnet me-1"></i>Magnetic View
+                                </button>
+                                <button 
+                                    type="button" 
+                                    class="btn btn-sm"
+                                    :class="waveformViewMode === 'converter' ? 'btn-primary' : 'btn-outline-primary'"
+                                    @click="waveformViewMode = 'converter'"
+                                >
+                                    <i class="fa-solid fa-plug me-1"></i>Converter View
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="col-12">
+                            <div 
+                                v-for="(op, opIndex) in (waveformViewMode === 'magnetic' ? magneticWaveforms : converterWaveforms)" 
+                                :key="'op-' + opIndex + '-' + waveformViewMode"
+                                class="mb-4"
+                            >
+                                <h6 
+                                    class="mb-2"
+                                    :style="$styleStore.wizard.inputLabelFontSize"
+                                >
+                                    Operating Point {{ opIndex + 1 }} - {{ waveformViewMode === 'magnetic' ? 'Magnetic' : 'Converter' }} Waveforms
+                                </h6>
+                                
+                                <div class="row">
+                                    <div 
+                                        v-for="(wf, wfIndex) in getWaveformsList(waveformViewMode === 'magnetic' ? magneticWaveforms : converterWaveforms, opIndex)"
+                                        :key="'wf-' + opIndex + '-' + wfIndex + '-' + waveformViewMode"
+                                        class="col-12 col-md-6 mb-3"
+                                    >
+                                        <div 
+                                            class="border rounded p-2"
+                                            :style="{ backgroundColor: $styleStore.wizard.inputValueBgColor }"
+                                        >
+                                            <LineVisualizer 
+                                                v-if="getSingleWaveformDataForVisualizer(waveformViewMode === 'magnetic' ? magneticWaveforms : converterWaveforms, opIndex, wfIndex).length > 0"
+                                                :data="getSingleWaveformDataForVisualizer(waveformViewMode === 'magnetic' ? magneticWaveforms : converterWaveforms, opIndex, wfIndex)"
+                                                :xAxisOptions="getTimeAxisOptions()"
+                                                :title="wf.label"
+                                                :titleFontSize="14"
+                                                :forceUpdate="forceWaveformUpdate"
+                                                :bgColor="$styleStore.wizard.inputValueBgColor['background-color'] || 'transparent'"
+                                                :lineColor="$styleStore.wizard.inputTextColor?.color || '#b18aea'"
+                                                :textColor="$styleStore.wizard.inputTextColor?.color || '#ffffff'"
+                                                :chartStyle="'height: 200px'"
+                                                :toolbox="true"
+                                            />
+                                            <div v-else class="text-center text-muted py-3">
+                                                No data available.
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div v-if="magneticWaveforms.length == 0 && !simulatingWaveforms && !waveformError" 
+                         class="text-muted text-center py-3"
+                         :style="$styleStore.wizard.inputFontSize"
+                    >
+                        <i class="fa-solid fa-info-circle me-2"></i>
+                        Click "Simulate Waveforms" to preview the expected voltage and current waveforms
+                    </div>
+                </div>
+            </div>
+            
             <label
                 class="text-danger col-12 pt-1"
                 :style="$styleStore.wizard.inputFontSize">
@@ -491,3 +796,16 @@ export default {
         </div>
     </div>
 </template>
+<style scoped>
+.btn-group .btn {
+    transition: all 0.2s ease-in-out;
+}
+
+.btn-group .btn-primary {
+    z-index: 2;
+}
+
+.border {
+    border-color: rgba(177, 138, 234, 0.3) !important;
+}
+</style>
