@@ -132,11 +132,18 @@ export default {
                         this.$stateStore.setCurrentToolSubsectionStatus("operatingPoints", true);
                         this.$stateStore.operatingPoints.modePerPoint = [];
                         for (let i = 0; i < this.masStore.mas.inputs.operatingPoints.length; i++) {
-                            if (this.masStore.mas.inputs.operatingPoints[i].excitationsPerWinding[0].current.processed != null) {
-                                this.$stateStore.operatingPoints.modePerPoint.push(this.$stateStore.OperatingPointsMode.Manual);
+                            const excitation = this.masStore.mas.inputs.operatingPoints[i].excitationsPerWinding[0];
+                            // Determine mode based on what data is present:
+                            // - HarmonicsList: has harmonics with multiple entries (DC + at least one harmonic)
+                            //   This means the user entered harmonics manually
+                            // - Manual: only has waveform/processed without meaningful harmonics
+                            const hasMultipleHarmonics = excitation.current?.harmonics?.amplitudes?.length > 1;
+                            
+                            if (hasMultipleHarmonics) {
+                                this.$stateStore.operatingPoints.modePerPoint.push(this.$stateStore.OperatingPointsMode.HarmonicsList);
                             }
                             else {
-                                this.$stateStore.operatingPoints.modePerPoint.push(this.$stateStore.OperatingPointsMode.HarmonicsList);
+                                this.$stateStore.operatingPoints.modePerPoint.push(this.$stateStore.OperatingPointsMode.Manual);
                             }
                         }
                         this.$stateStore.setCurrentToolSubsectionStatus("designRequirements", true);
@@ -341,6 +348,19 @@ export default {
                                 @mouseleave="hoveredWizard = null"
                             >
                                 <i class="me-2 fa-solid fa-bolt-lightning"></i>{{'CMC Wizard'}}
+                            </button>
+                        </li>
+                        <li>
+                            <button
+                                :style="getWizardButtonStyle('DifferentialModeChoke')"
+                                data-cy="Wizard-DifferentialModeChoke-link"
+                                :class="headerTogglerIsVisible? 'w-100' : 'mx-0' "
+                                class="dropdown-item btn btn-block nav-link px-2"
+                                @click="onWizards($stateStore.Wizards.DifferentialModeChoke)"
+                                @mouseenter="hoveredWizard = 'DifferentialModeChoke'"
+                                @mouseleave="hoveredWizard = null"
+                            >
+                                <i class="me-2 fa-solid fa-bolt-lightning"></i>{{'DMC Wizard'}}
                             </button>
                         </li>
                         <li>
