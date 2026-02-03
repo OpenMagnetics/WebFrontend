@@ -144,6 +144,12 @@ export default {
         clearMode(event) {
             this.$stateStore.operatingPoints.modePerPoint[this.currentOperatingPointIndex] = null
         },
+        switchToHarmonics() {
+            this.$stateStore.operatingPoints.modePerPoint[this.currentOperatingPointIndex] = this.$stateStore.OperatingPointsMode.HarmonicsList;
+        },
+        switchToManual() {
+            this.$stateStore.operatingPoints.modePerPoint[this.currentOperatingPointIndex] = this.$stateStore.OperatingPointsMode.Manual;
+        },
     }
 }
 </script>
@@ -157,6 +163,7 @@ export default {
                 @updatedWaveform="updatedWaveform"
                 @updatedSignal="$emit('updatedSignal')"
                 @clearMode="clearMode"
+                @switchToHarmonics="switchToHarmonics"
             />
             <OperatingPointCircuitSimulator
                 v-if="$stateStore.operatingPoints.modePerPoint[currentOperatingPointIndex] === $stateStore.OperatingPointsMode.CircuitSimulatorImport"
@@ -174,6 +181,7 @@ export default {
                 :currentWindingIndex="currentWindingIndex"
                 @updatedSignal="$emit('updatedSignal')"
                 @clearMode="clearMode"
+                @switchToManual="switchToManual"
             />
             <div v-if="$stateStore.operatingPoints.modePerPoint[currentOperatingPointIndex] == null" class="col-12">
                 <label

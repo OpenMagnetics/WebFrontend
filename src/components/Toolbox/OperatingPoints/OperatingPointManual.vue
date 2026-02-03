@@ -18,7 +18,7 @@ import { tooltipsMagneticSynthesisOperatingPoints } from '/WebSharedComponents/a
 <script>
 
 export default {
-    emits: ["updatedSignal", "updatedWaveform", "clearMode"],
+    emits: ["updatedSignal", "updatedWaveform", "clearMode", "switchToHarmonics"],
     props: {
         dataTestLabel: {
             type: String,
@@ -193,6 +193,15 @@ export default {
                     @click="clearMode"
                 >
                     {{'Go back to selecting mode'}}
+                </button>
+                <button
+                    :style="$styleStore.operatingPoints.goBackSelectingButton"
+                    :data-cy="dataTestLabel + '-switch-to-harmonics-button'"
+                    class="btn btn-outline-primary fs-5 col-sm-12 col-md-12 mt-2 p-0"
+                    style="max-height: 2em"
+                    @click="$emit('switchToHarmonics')"
+                >
+                    {{'Switch to Harmonics view'}}
                 </button>
             </div>
             <div class="col-lg-8 col-md-12 row m-0 p-0" style="max-width: 800px;">

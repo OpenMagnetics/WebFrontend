@@ -18,7 +18,7 @@ import { tooltipsMagneticSynthesisOperatingPoints } from '/WebSharedComponents/a
 <script>
 
 export default {
-    emits: ['clearMode', 'updatedSignal'],
+    emits: ['clearMode', 'updatedSignal', 'switchToManual'],
     props: {
         dataTestLabel: {
             type: String,
@@ -288,6 +288,14 @@ export default {
                     style="max-height: 2em"
                     @click="$emit('clearMode')">
                     {{'Go back to selecting mode'}}
+                </button>
+                <button
+                    :style="$styleStore.operatingPoints.goBackSelectingButton"
+                    :data-cy="dataTestLabel + '-switch-to-manual-button'"
+                    class="btn btn-outline-primary fs-5 col-sm-12 col-md-12 mt-2 p-0"
+                    style="max-height: 2em"
+                    @click="$emit('switchToManual')">
+                    {{'Switch to Waveform view'}}
                 </button>
             </div> 
             <div v-if="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex] !=null && masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex].current.waveform != null && masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex].current.processed != null && masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex].voltage.waveform != null && masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex].voltage.processed != null" class="col-lg-8 col-md-12 row m-0 p-0 align-items-start" style="max-width: 800px;">
