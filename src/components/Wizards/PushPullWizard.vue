@@ -1064,14 +1064,14 @@ export default {
                                 <input v-model.number="numberOfSteadyStatePeriods" type="number" min="1" max="20" class="periods-select" style="width: 60px;" />
                             </div>
                             <div class="sim-btns">
-                                <button :disabled="errorMessage != '' || simulatingWaveforms" class="sim-btn analytical" @click="getAnalyticalWaveforms" title="Get analytical waveforms">
-                                    <span v-if="simulatingWaveforms && waveformSource === 'analytical'"><i class="fa-solid fa-spinner fa-spin"></i></span>
-                                    <span v-else><i class="fa-solid fa-calculator"></i> Analytical</span>
-                                </button>
-                                <button :disabled="errorMessage != '' || simulatingWaveforms" class="sim-btn" @click="simulateIdealWaveforms" title="Simulate ideal waveforms">
-                                    <span v-if="simulatingWaveforms && waveformSource === 'simulation'"><i class="fa-solid fa-spinner fa-spin"></i></span>
-                                    <span v-else><i class="fa-solid fa-play"></i> Simulate</span>
-                                </button>
+                            <button :disabled="errorMessage != '' || simulatingWaveforms" class="sim-btn analytical" @click="getAnalyticalWaveforms" title="Get analytical waveforms">
+                                <span v-if="simulatingWaveforms && waveformSource === 'analytical'"><i class="fa-solid fa-spinner fa-spin"></i></span>
+                                <span v-else><i class="fa-solid fa-calculator"></i> Analytical waveforms</span>
+                            </button>
+                            <button :disabled="errorMessage != '' || simulatingWaveforms" class="sim-btn" @click="simulateIdealWaveforms" title="Simulate ideal waveforms">
+                                <span v-if="simulatingWaveforms && waveformSource === 'simulation'"><i class="fa-solid fa-spinner fa-spin"></i></span>
+                                <span v-else><i class="fa-solid fa-play"></i> Simulated waveforms</span>
+                            </button>
                             </div>
                         </div>
                     </div>
