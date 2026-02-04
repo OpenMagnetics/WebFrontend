@@ -779,7 +779,7 @@ export default {
                     </div>
                     <div v-else class="compact-card">
                         <div class="compact-header"><i class="fa-solid fa-microchip me-1"></i>Switch Params</div>
-                        <div class="compact-body">
+                        <div class="compact-body ps-4">
                             <Dimension
                                 :name="'maximumSwitchCurrent'"
                                 :replaceTitle="'Max I'"
