@@ -8,6 +8,7 @@ import ElementFromList from '/WebSharedComponents/DataInput/ElementFromList.vue'
 import PairOfDimensions from '/WebSharedComponents/DataInput/PairOfDimensions.vue'
 import { defaultCmcWizardInputs, defaultDesignRequirements, minimumMaximumScalePerParameter, filterMas } from '/WebSharedComponents/assets/js/defaults.js'
 import MaximumDimensions from '../Toolbox/DesignRequirements/MaximumDimensions.vue'
+import LineVisualizer from '/WebSharedComponents/Common/LineVisualizer.vue'
 </script>
 
 <script>
@@ -40,6 +41,10 @@ export default {
             insulationTypes,
             localData,
             errorMessage,
+            simulatingWaveforms: false,
+            simulationError: "",
+            simulationResults: null,
+            impedanceChartData: null,
         }
     },
     computed: {
@@ -314,6 +319,83 @@ export default {
             await this.$nextTick();
             await this.$router.push(`${import.meta.env.BASE_URL}magnetic_tool`);
         },
+        async simulateImpedance() {
+            this.simulatingWaveforms = true;
+            this.simulationError = "";
+            this.simulationResults = null;
+            this.impedanceChartData = null;
+
+            try {
+                // Build CMC parameters for backend
+                const cmcParams = {
+                    configuration: this.localData.numberPhases === 'Two phases' ? 'SINGLE_PHASE' : 'THREE_PHASE',
+                    operatingVoltage: { nominal: 230 }, // Typical mains voltage
+                    operatingCurrent: this.localData.mainSignalRmsCurrent,
+                    lineFrequency: this.localData.mainSignalFrequency,
+                    minimumImpedance: this.localData.impedancePoints.map(p => ({
+                        frequency: p.frequency,
+                        impedance: { magnitude: p.impedance }
+                    })),
+                    ambientTemperature: this.localData.ambientTemperature
+                };
+
+                // Call backend to simulate CMC waveforms
+                const inductance = this.localData.minimumInductance;
+                const waveforms = await this.taskQueueStore.simulateCmcWaveforms(cmcParams, inductance);
+
+                // Process results for display
+                this.simulationResults = waveforms.map(wf => ({
+                    frequency: wf.frequency,
+                    measuredImpedance: wf.commonModeImpedance,
+                    theoreticalImpedance: wf.theoreticalImpedance,
+                    attenuation: wf.commonModeAttenuation,
+                    requiredImpedance: this.localData.impedancePoints.find(p => Math.abs(p.frequency - wf.frequency) < wf.frequency * 0.01)?.impedance || 0,
+                    passed: wf.commonModeImpedance >= (this.localData.impedancePoints.find(p => Math.abs(p.frequency - wf.frequency) < wf.frequency * 0.01)?.impedance || 0)
+                }));
+
+                // Build impedance chart data
+                this.buildImpedanceChart(waveforms);
+
+            } catch (error) {
+                console.error("CMC simulation error:", error);
+                this.simulationError = error.message || "Simulation failed";
+            } finally {
+                this.simulatingWaveforms = false;
+            }
+        },
+        buildImpedanceChart(waveforms) {
+            if (!waveforms || waveforms.length === 0) return;
+
+            // Sort by frequency
+            const sorted = [...waveforms].sort((a, b) => a.frequency - b.frequency);
+
+            // Build chart data with frequency on x-axis, impedance on y-axis
+            const frequencies = sorted.map(wf => wf.frequency);
+            const measuredImpedance = sorted.map(wf => wf.commonModeImpedance);
+            const theoreticalImpedance = sorted.map(wf => wf.theoreticalImpedance);
+            const requiredImpedance = sorted.map(wf => {
+                const req = this.localData.impedancePoints.find(p => Math.abs(p.frequency - wf.frequency) < wf.frequency * 0.01);
+                return req ? req.impedance : null;
+            });
+
+            this.impedanceChartData = {
+                frequencies,
+                measuredImpedance,
+                theoreticalImpedance,
+                requiredImpedance
+            };
+        },
+        formatFrequency(freq) {
+            if (freq >= 1e9) return (freq / 1e9).toFixed(1) + ' GHz';
+            if (freq >= 1e6) return (freq / 1e6).toFixed(1) + ' MHz';
+            if (freq >= 1e3) return (freq / 1e3).toFixed(1) + ' kHz';
+            return freq.toFixed(0) + ' Hz';
+        },
+        formatImpedance(imp) {
+            if (imp >= 1e6) return (imp / 1e6).toFixed(1) + ' MΩ';
+            if (imp >= 1e3) return (imp / 1e3).toFixed(1) + ' kΩ';
+            return imp.toFixed(1) + ' Ω';
+        },
     }
 }
 </script>
@@ -545,6 +627,68 @@ export default {
             class="text-danger col-12 pt-1"
             :style="$styleStore.wizard.inputFontSize">
         {{errorMessage}}</label>
+
+        <!-- Impedance Verification Section -->
+        <div class="row mt-4 ps-2">
+            <div class="col-12">
+                <div class="card border-secondary">
+                    <div class="card-header d-flex justify-content-between align-items-center" :style="$styleStore.wizard.inputLabelBgColor">
+                        <span :style="$styleStore.wizard.inputTextColor"><i class="fa-solid fa-wave-square me-2"></i>Impedance Verification</span>
+                        <button
+                            :disabled="errorMessage != '' || simulatingWaveforms || localData.impedancePoints.length === 0"
+                            class="btn btn-sm"
+                            :style="$styleStore.wizard.acceptButton"
+                            @click="simulateImpedance"
+                        >
+                            <span v-if="simulatingWaveforms"><i class="fa-solid fa-spinner fa-spin me-1"></i>Simulating...</span>
+                            <span v-else><i class="fa-solid fa-play me-1"></i>Verify Impedance</span>
+                        </button>
+                    </div>
+                    <div class="card-body" :style="$styleStore.wizard.inputValueBgColor">
+                        <!-- Error message -->
+                        <div v-if="simulationError" class="alert alert-danger mb-3">
+                            <i class="fa-solid fa-exclamation-circle me-1"></i>{{ simulationError }}
+                        </div>
+                        
+                        <!-- Results table -->
+                        <div v-if="simulationResults && simulationResults.length > 0">
+                            <table class="table table-sm" :style="$styleStore.wizard.inputTextColor">
+                                <thead>
+                                    <tr>
+                                        <th>Frequency</th>
+                                        <th>Required Z</th>
+                                        <th>Measured Z</th>
+                                        <th>Theoretical Z</th>
+                                        <th>Attenuation</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-for="(result, index) in simulationResults" :key="index">
+                                        <td>{{ formatFrequency(result.frequency) }}</td>
+                                        <td>{{ result.requiredImpedance > 0 ? formatImpedance(result.requiredImpedance) : '-' }}</td>
+                                        <td>{{ formatImpedance(result.measuredImpedance) }}</td>
+                                        <td>{{ formatImpedance(result.theoreticalImpedance) }}</td>
+                                        <td>{{ result.attenuation.toFixed(1) }} dB</td>
+                                        <td>
+                                            <span v-if="result.passed" class="text-success"><i class="fa-solid fa-check-circle"></i> Pass</span>
+                                            <span v-else class="text-warning"><i class="fa-solid fa-exclamation-triangle"></i> Below req.</span>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <!-- Empty state -->
+                        <div v-else class="text-center py-3" :style="$styleStore.wizard.inputTextColor">
+                            <i class="fa-solid fa-chart-line fa-2x mb-2 opacity-50"></i>
+                            <p class="mb-0 opacity-75">Click "Verify Impedance" to simulate the CMC performance at your specified frequencies</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="row mt-4 ps-2">
             <div class="offset-1 col-10 row">
                 <button

@@ -31,7 +31,6 @@ export const useMasStore = defineStore("mas", () => {
         else if (type == "filter") {
             this.mas = MAS.Convert.toMas(JSON.stringify(Defaults.filterMas));
         }
-        console.log("Resetting MAS");
     }
 
     function resetMagnetic(type) {
@@ -41,7 +40,6 @@ export const useMasStore = defineStore("mas", () => {
         else if (type == "filter") {
             this.mas.magnetic = MAS.Convert.toMas(JSON.stringify(Defaults.filterMas)).magnetic;
         }
-        console.log("Resetting Magnetic");
     }
 
     return {

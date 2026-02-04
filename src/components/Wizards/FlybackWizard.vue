@@ -58,6 +58,7 @@ export default {
             waveformViewMode: 'magnetic', // 'magnetic' or 'converter'
             forceWaveformUpdate: 0,
             numberOfPeriods: 2,
+            numberOfSteadyStatePeriods: 50,
         }
     },
     computed: {
@@ -184,7 +185,6 @@ export default {
                 // If we have simulated operating points (from Simulate button), use those waveforms
                 // They contain more accurate waveform data from ngspice simulation
                 if (this.simulatedOperatingPoints && this.simulatedOperatingPoints.length > 0) {
-                    console.log("Using simulated operating points for Inputs");
                     // Calculate harmonics and processed data from waveforms
                     // The backend requires these fields with actual calculated values
                     for (const op of this.simulatedOperatingPoints) {
@@ -380,18 +380,15 @@ export default {
                 auxOperatingPoint['ambientTemperature'] = this.localData.ambientTemperature;
                 aux['operatingPoints'] = [auxOperatingPoint];
                 aux['numberOfPeriods'] = parseInt(this.numberOfPeriods, 10);
-                console.log("Sending numberOfPeriods:", aux['numberOfPeriods'], "type:", typeof aux['numberOfPeriods']);
+                aux['numberOfSteadyStatePeriods'] = parseInt(this.numberOfSteadyStatePeriods, 10);
                 
                 // Call the WASM simulation
                 const result = await this.taskQueueStore.simulateFlybackIdealWaveforms(aux);
-                console.log("Simulation result:", result);
                 
                 this.simulatedOperatingPoints = result.operatingPoints || [];
                 this.designRequirements = result.designRequirements || null;
                 this.simulatedMagnetizingInductance = result.magnetizingInductance || null;
                 this.simulatedTurnsRatios = result.turnsRatios || null;
-                console.log("Design requirements after assignment:", this.designRequirements);
-                console.log("Simulated L:", this.simulatedMagnetizingInductance, "n:", this.simulatedTurnsRatios);
                 this.magneticWaveforms = result.magneticWaveforms || [];
                 this.converterWaveforms = result.converterWaveforms || [];
                 
@@ -403,9 +400,6 @@ export default {
                         this.$refs.waveformSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
                     }
                 });
-                
-                console.log("Magnetic waveforms:", this.magneticWaveforms);
-                console.log("Converter waveforms:", this.converterWaveforms);
                 
             } catch (error) {
                 console.error("Error simulating waveforms:", error);
@@ -468,8 +462,7 @@ export default {
                 auxOperatingPoint['switchingFrequency'] = this.localData.switchingFrequency;
                 auxOperatingPoint['ambientTemperature'] = this.localData.ambientTemperature;
                 aux['operatingPoints'] = [auxOperatingPoint];
-                
-                console.log("Analytical - Calling calculateFlybackInputs");
+                aux['numberOfPeriods'] = parseInt(this.numberOfPeriods, 10);
                 
                 // Call the analytical calculation (not ngspice simulation)
                 let result;
@@ -478,8 +471,6 @@ export default {
                 } else {
                     result = await this.taskQueueStore.calculateFlybackInputs(aux);
                 }
-                
-                console.log("Analytical result:", result);
                 
                 // Extract design requirements and waveforms from the Inputs result
                 this.designRequirements = result.designRequirements || null;
@@ -494,10 +485,6 @@ export default {
                 this.magneticWaveforms = this.buildMagneticWaveformsFromInputs(operatingPoints);
                 // Converter waveforms not available in analytical mode
                 this.converterWaveforms = [];
-                
-                console.log("Analytical - Design requirements:", this.designRequirements);
-                console.log("Analytical - L:", this.simulatedMagnetizingInductance, "n:", this.simulatedTurnsRatios);
-                console.log("Analytical - Magnetic waveforms:", this.magneticWaveforms);
                 
                 this.$nextTick(() => {
                     this.forceWaveformUpdate += 1;
@@ -971,7 +958,7 @@ export default {
                                 />
                                 <Dimension v-if="localData.mosfetInputType == 'Its maximum duty cycle'"
                                     :name="'maximumDutyCycle'"
-                                    :replaceTitle="'Max D'"
+                                    :replaceTitle="'Max DC'"
                                     unit="%"
                                     :dataTestLabel="dataTestLabel + '-MaximumDutyCycle'"
                                     :visualScale="100"
@@ -1196,7 +1183,7 @@ export default {
                                     v-else
                                     class="ps-4"
                                     :names="['voltage', 'current', 'turnsRatio']"
-                                    :replaceTitle="['V', 'C', `n`]"
+                                    :replaceTitle="['V', 'I', 'TR']"
                                     :units="['V', 'A', null]"
                                     :dataTestLabel="dataTestLabel + '-outputsParameters'"
                                     :mins="[minimumMaximumScalePerParameter['voltage']['min'], minimumMaximumScalePerParameter['current']['min'], 0]"
@@ -1228,6 +1215,10 @@ export default {
                                 <select v-model.number="numberOfPeriods" class="periods-select">
                                     <option v-for="n in 10" :key="n" :value="n">{{ n }}</option>
                                 </select>
+                            </div>
+                            <div class="periods-selector">
+                                <label class="periods-label">Steady:</label>
+                                <input v-model.number="numberOfSteadyStatePeriods" type="number" min="1" max="20" class="periods-select" style="width: 60px;" />
                             </div>
                             <div class="sim-btns">
                             <button :disabled="errorMessage != '' || simulatingWaveforms" class="sim-btn analytical" @click="getAnalyticalWaveforms" title="Get analytical waveforms">
@@ -1291,6 +1282,7 @@ export default {
                                         :chartStyle="'height: 140px'"
                                         :toolbox="false"
                                         :showPoints="false"
+                                        :showGrid="false"
                                         :showAxisLines="false"
                                         :showAxisUnitLabels="false"
                                     />

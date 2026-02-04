@@ -27,10 +27,12 @@ export const useStateStore = defineStore("state", () => {
         Power: 'power',
         CommonModeChoke: 'commonModeChoke',
         CommonModeChokeCatalog: 'commonModeChokeCatalog',
+        Filter: 'filter',
     }
 
     const Wizards = {
         CommonModeChoke: 'commonModeChoke',
+        DifferentialModeChoke: 'differentialModeChoke',
         Flyback: 'flyback',
         Buck: 'buck',
         Boost: 'boost',
@@ -61,8 +63,6 @@ export const useStateStore = defineStore("state", () => {
                     'designRequirements': false,
                     'operatingPoints': false,
                     'toolSelector': false,
-                    'magneticBuilder': false,
-                    'magneticSummary': false,
                 },
             },
         },
@@ -94,8 +94,6 @@ export const useStateStore = defineStore("state", () => {
                     'designRequirements': false,
                     'operatingPoints': false,
                     'toolSelector': false,
-                    'magneticBuilder': false,
-                    'magneticSummary': false,
                 },
             },
         },
@@ -317,7 +315,6 @@ export const useStateStore = defineStore("state", () => {
     }
 
     function resetMagneticTool() {
-        console.log("Resetting state");
         this.anyDesignLoaded = false;
         this.loadingDesign = false;
         this.selectedTool = "agnosticTool";

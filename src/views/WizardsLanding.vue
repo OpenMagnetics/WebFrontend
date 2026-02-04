@@ -9,70 +9,77 @@ export default {
         async onCMCWizard() {
             this.$stateStore.resetMagneticTool();
             this.$stateStore.selectWorkflow("design");
-            this.$stateStore.selectTool("cmcWizard");
+            this.$stateStore.selectWizard(this.$stateStore.Wizards.CommonModeChoke);
+            await this.$nextTick();
+            await this.$router.push(`${import.meta.env.BASE_URL}wizards`);
+        },
+        async onDMCWizard() {
+            this.$stateStore.resetMagneticTool();
+            this.$stateStore.selectWorkflow("design");
+            this.$stateStore.selectWizard(this.$stateStore.Wizards.DifferentialModeChoke);
             await this.$nextTick();
             await this.$router.push(`${import.meta.env.BASE_URL}wizards`);
         },
         async onFlybackWizard() {
             this.$stateStore.resetMagneticTool();
             this.$stateStore.selectWorkflow("design");
-            this.$stateStore.selectTool("flybackWizard");
+            this.$stateStore.selectWizard(this.$stateStore.Wizards.Flyback);
             await this.$nextTick();
             await this.$router.push(`${import.meta.env.BASE_URL}wizards`);
         },
         async onBuckWizard() {
             this.$stateStore.resetMagneticTool();
             this.$stateStore.selectWorkflow("design");
-            this.$stateStore.selectTool("buckWizard");
+            this.$stateStore.selectWizard(this.$stateStore.Wizards.Buck);
             await this.$nextTick();
             await this.$router.push(`${import.meta.env.BASE_URL}wizards`);
         },
         async onBoostWizard() {
             this.$stateStore.resetMagneticTool();
             this.$stateStore.selectWorkflow("design");
-            this.$stateStore.selectTool("boostWizard");
+            this.$stateStore.selectWizard(this.$stateStore.Wizards.Boost);
             await this.$nextTick();
             await this.$router.push(`${import.meta.env.BASE_URL}wizards`);
         },
         async onIsolatedBuckWizard() {
             this.$stateStore.resetMagneticTool();
             this.$stateStore.selectWorkflow("design");
-            this.$stateStore.selectTool("isolatedBuckWizard");
+            this.$stateStore.selectWizard(this.$stateStore.Wizards.IsolatedBuck);
             await this.$nextTick();
             await this.$router.push(`${import.meta.env.BASE_URL}wizards`);
         },
         async onIsolatedBuckBoostWizard() {
             this.$stateStore.resetMagneticTool();
             this.$stateStore.selectWorkflow("design");
-            this.$stateStore.selectTool("isolatedBuckBoostWizard");
+            this.$stateStore.selectWizard(this.$stateStore.Wizards.IsolatedBuckBoost);
             await this.$nextTick();
             await this.$router.push(`${import.meta.env.BASE_URL}wizards`);
         },
         async onPushPullWizard() {
             this.$stateStore.resetMagneticTool();
             this.$stateStore.selectWorkflow("design");
-            this.$stateStore.selectTool("pushPullWizard");
+            this.$stateStore.selectWizard(this.$stateStore.Wizards.PushPull);
             await this.$nextTick();
             await this.$router.push(`${import.meta.env.BASE_URL}wizards`);
         },
         async onSingleSwitchForwardWizard() {
             this.$stateStore.resetMagneticTool();
             this.$stateStore.selectWorkflow("design");
-            this.$stateStore.selectTool("singleSwitchForwardWizard");
+            this.$stateStore.selectWizard(this.$stateStore.Wizards.SingleSwitchForward);
             await this.$nextTick();
             await this.$router.push(`${import.meta.env.BASE_URL}wizards`);
         },
         async onTwoSwitchForwardWizard() {
             this.$stateStore.resetMagneticTool();
             this.$stateStore.selectWorkflow("design");
-            this.$stateStore.selectTool("twoSwitchForwardWizard");
+            this.$stateStore.selectWizard(this.$stateStore.Wizards.TwoSwitchForward);
             await this.$nextTick();
             await this.$router.push(`${import.meta.env.BASE_URL}wizards`);
         },
         async onActiveClampForwardWizard() {
             this.$stateStore.resetMagneticTool();
             this.$stateStore.selectWorkflow("design");
-            this.$stateStore.selectTool("activeClampForwardWizard");
+            this.$stateStore.selectWizard(this.$stateStore.Wizards.ActiveClampForward);
             await this.$nextTick();
             await this.$router.push(`${import.meta.env.BASE_URL}wizards`);
         },
@@ -109,6 +116,19 @@ export default {
                                 <h4 class="card-title text-white fw-bold mb-2">Common Mode Choke</h4>
                                 <p class="card-text text-white small mb-3">Design CMCs for EMI filtering with impedance vs frequency targeting.</p>
                                 <button @click="onCMCWizard" class="btn btn-light w-100">
+                                    Start Wizard
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- DMC Wizard -->
+                    <div class="col-lg-4 col-md-6">
+                        <div class="card h-100 bg-dark border-secondary">
+                            <div class="card-body p-4">
+                                <h4 class="card-title text-white fw-bold mb-2">Differential Mode Choke</h4>
+                                <p class="card-text text-white small mb-3">Design DMCs for LC filters with attenuation verification via ngspice.</p>
+                                <button @click="onDMCWizard" class="btn btn-light w-100">
                                     Start Wizard
                                 </button>
                             </div>

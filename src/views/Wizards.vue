@@ -3,6 +3,7 @@ import Header from '../components/Header.vue'
 import Footer from '../components/Footer.vue'
 
 import CmcWizard from '../components/Wizards/CmcWizard.vue'
+import DmcWizard from '../components/Wizards/DmcWizard.vue'
 import FlybackWizard from '../components/Wizards/FlybackWizard.vue'
 import BuckBoostWizard from '../components/Wizards/BuckBoostWizard.vue'
 import IsolatedBuckBoostWizard from '../components/Wizards/IsolatedBuckBoostWizard.vue'
@@ -27,6 +28,10 @@ export default {
             <CmcWizard
                 v-if="$stateStore.getCurrentWizard() == $stateStore.Wizards.CommonModeChoke"
                 :dataTestLabel="'CmcWizard'"
+            />
+            <DmcWizard
+                v-if="$stateStore.getCurrentWizard() == $stateStore.Wizards.DifferentialModeChoke"
+                :dataTestLabel="'DmcWizard'"
             />
             <FlybackWizard
                 v-if="$stateStore.getCurrentWizard() == $stateStore.Wizards.Flyback"

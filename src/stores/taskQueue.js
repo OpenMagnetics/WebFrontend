@@ -584,6 +584,9 @@ export const useTaskQueueStore = defineStore('taskQueue', {
             await mkf.ready;
 
             const result = await mkf.calculate_buck_inputs(JSON.stringify(params));
+            if (result.startsWith('Exception')) {
+                throw new Error(result);
+            }
             const inputs = JSON.parse(result);
             setTimeout(() => { this.buckInputsCalculated(true, inputs); }, this.task_standard_response_delay);
             return inputs;
@@ -610,6 +613,9 @@ export const useTaskQueueStore = defineStore('taskQueue', {
             await mkf.ready;
 
             const result = await mkf.calculate_boost_inputs(JSON.stringify(params));
+            if (result.startsWith('Exception')) {
+                throw new Error(result);
+            }
             const inputs = JSON.parse(result);
             setTimeout(() => { this.boostInputsCalculated(true, inputs); }, this.task_standard_response_delay);
             return inputs;
@@ -680,6 +686,48 @@ export const useTaskQueueStore = defineStore('taskQueue', {
             }
             const waveforms = JSON.parse(result);
             setTimeout(() => { this.forwardIdealWaveformsCalculated(true, waveforms); }, this.task_standard_response_delay);
+            return waveforms;
+        },
+
+        // ==========================================
+        // Wizard Simulation Methods - Two Switch Forward
+        // ==========================================
+
+        twoSwitchForwardIdealWaveformsCalculated(success = true, dataOrMessage = '') {
+        },
+
+        async simulateTwoSwitchForwardIdealWaveforms(params) {
+            const mkf = await waitForMkf();
+            await mkf.ready;
+
+            const result = await mkf.simulate_two_switch_forward_ideal_waveforms(JSON.stringify(params));
+            if (result.startsWith('Exception')) {
+                setTimeout(() => { this.twoSwitchForwardIdealWaveformsCalculated(false, result); }, this.task_standard_response_delay);
+                throw new Error(result);
+            }
+            const waveforms = JSON.parse(result);
+            setTimeout(() => { this.twoSwitchForwardIdealWaveformsCalculated(true, waveforms); }, this.task_standard_response_delay);
+            return waveforms;
+        },
+
+        // ==========================================
+        // Wizard Simulation Methods - Active Clamp Forward
+        // ==========================================
+
+        activeClampForwardIdealWaveformsCalculated(success = true, dataOrMessage = '') {
+        },
+
+        async simulateActiveClampForwardIdealWaveforms(params) {
+            const mkf = await waitForMkf();
+            await mkf.ready;
+
+            const result = await mkf.simulate_active_clamp_forward_ideal_waveforms(JSON.stringify(params));
+            if (result.startsWith('Exception')) {
+                setTimeout(() => { this.activeClampForwardIdealWaveformsCalculated(false, result); }, this.task_standard_response_delay);
+                throw new Error(result);
+            }
+            const waveforms = JSON.parse(result);
+            setTimeout(() => { this.activeClampForwardIdealWaveformsCalculated(true, waveforms); }, this.task_standard_response_delay);
             return waveforms;
         },
 
@@ -955,6 +1003,116 @@ export const useTaskQueueStore = defineStore('taskQueue', {
             const inputs = JSON.parse(result);
             setTimeout(() => { this.advancedPushPullInputsCalculated(true, inputs); }, this.task_standard_response_delay);
             return inputs;
+        },
+
+        // ==========================================
+        // Wizard Calculation Methods - Common Mode Choke (CMC)
+        // ==========================================
+
+        cmcInputsCalculated(success = true, dataOrMessage = '') {
+        },
+
+        async calculateCmcInputs(params) {
+            const mkf = await waitForMkf();
+            await mkf.ready;
+
+            const result = await mkf.calculate_cmc_inputs(JSON.stringify(params));
+            if (result.startsWith('Exception')) {
+                setTimeout(() => { this.cmcInputsCalculated(false, result); }, this.task_standard_response_delay);
+                throw new Error(result);
+            }
+            const inputs = JSON.parse(result);
+            setTimeout(() => { this.cmcInputsCalculated(true, inputs); }, this.task_standard_response_delay);
+            return inputs;
+        },
+
+        cmcWaveformsSimulated(success = true, dataOrMessage = '') {
+        },
+
+        async simulateCmcWaveforms(params, inductance) {
+            const mkf = await waitForMkf();
+            await mkf.ready;
+
+            const result = await mkf.simulate_cmc_waveforms(JSON.stringify(params), inductance);
+            if (result.startsWith('Exception')) {
+                setTimeout(() => { this.cmcWaveformsSimulated(false, result); }, this.task_standard_response_delay);
+                throw new Error(result);
+            }
+            const waveforms = JSON.parse(result);
+            setTimeout(() => { this.cmcWaveformsSimulated(true, waveforms); }, this.task_standard_response_delay);
+            return waveforms;
+        },
+
+        // ==========================================
+        // Wizard Calculation Methods - Differential Mode Choke (DMC)
+        // ==========================================
+
+        dmcInputsCalculated(success = true, dataOrMessage = '') {
+        },
+
+        async calculateDmcInputs(params) {
+            const mkf = await waitForMkf();
+            await mkf.ready;
+
+            const result = await mkf.calculate_dmc_inputs(JSON.stringify(params));
+            if (result.startsWith('Exception')) {
+                setTimeout(() => { this.dmcInputsCalculated(false, result); }, this.task_standard_response_delay);
+                throw new Error(result);
+            }
+            const inputs = JSON.parse(result);
+            setTimeout(() => { this.dmcInputsCalculated(true, inputs); }, this.task_standard_response_delay);
+            return inputs;
+        },
+
+        dmcAttenuationVerified(success = true, dataOrMessage = '') {
+        },
+
+        async verifyDmcAttenuation(params, inductance, capacitance = 0) {
+            const mkf = await waitForMkf();
+            await mkf.ready;
+
+            const result = await mkf.verify_dmc_attenuation(JSON.stringify(params), inductance, capacitance);
+            if (result.startsWith('Exception')) {
+                setTimeout(() => { this.dmcAttenuationVerified(false, result); }, this.task_standard_response_delay);
+                throw new Error(result);
+            }
+            const verificationResults = JSON.parse(result);
+            setTimeout(() => { this.dmcAttenuationVerified(true, verificationResults); }, this.task_standard_response_delay);
+            return verificationResults;
+        },
+
+        dmcDesignProposed(success = true, dataOrMessage = '') {
+        },
+
+        async proposeDmcDesign(params) {
+            const mkf = await waitForMkf();
+            await mkf.ready;
+
+            const result = await mkf.propose_dmc_design(JSON.stringify(params));
+            if (result.startsWith('Exception')) {
+                setTimeout(() => { this.dmcDesignProposed(false, result); }, this.task_standard_response_delay);
+                throw new Error(result);
+            }
+            const proposal = JSON.parse(result);
+            setTimeout(() => { this.dmcDesignProposed(true, proposal); }, this.task_standard_response_delay);
+            return proposal;
+        },
+
+        dmcWaveformsSimulated(success = true, dataOrMessage = '') {
+        },
+
+        async simulateDmcWaveforms(params, inductance) {
+            const mkf = await waitForMkf();
+            await mkf.ready;
+
+            const result = await mkf.simulate_dmc_waveforms(JSON.stringify(params), inductance);
+            if (result.startsWith('Exception')) {
+                setTimeout(() => { this.dmcWaveformsSimulated(false, result); }, this.task_standard_response_delay);
+                throw new Error(result);
+            }
+            const waveforms = JSON.parse(result);
+            setTimeout(() => { this.dmcWaveformsSimulated(true, waveforms); }, this.task_standard_response_delay);
+            return waveforms;
         },
 
         // ==========================================

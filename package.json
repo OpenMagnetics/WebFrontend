@@ -24,7 +24,7 @@
     "echarts": "^6.0.0",
     "katex": "^0.13.24",
     "mathjs": "^15.1.0",
-    "open-magnetics-virtual-builder": "file:../MVB.js",
+    "@openmagnetics/magnetic-virtual-builder": "^1.0.0",
     "pinia": "^3.0.4",
     "pinia-plugin-persistedstate": "^4.7.1",
     "primeflex": "^3.3.1",

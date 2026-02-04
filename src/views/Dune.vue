@@ -63,8 +63,6 @@ const btRun = async () => {
         sim.setNetList(netList);
         resultArray = await sim.runSim();
         info = initialSimInfo + "\n\n" + (await sim.getInfo()) + "\n\n";
-        console.log(info)
-        console.log(resultArray)
         isSimRunning = false;
     } 
     else {
