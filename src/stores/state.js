@@ -42,6 +42,7 @@ export const useStateStore = defineStore("state", () => {
         SingleSwitchForward: 'singleSwitchForward',
         TwoSwitchForward: 'twoSwitchForward',
         ActiveClampForward: 'activeClampForward',
+        Pfc: 'pfc',
     };
 
 

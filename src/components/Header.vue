@@ -443,6 +443,19 @@ export default {
                         </li>
                         <li>
                             <button
+                                :style="getWizardButtonStyle('Pfc', true)"
+                                data-cy="Pfc-link"
+                                :class="headerTogglerIsVisible? 'w-100' : 'mx-0' "
+                                class="dropdown-item btn btn-block nav-link px-2"
+                                @click="onWizards($stateStore.Wizards.Pfc)"
+                                @mouseenter="hoveredWizard = 'Pfc'"
+                                @mouseleave="hoveredWizard = null"
+                            >
+                                <i class="me-2 fa-solid fa-wave-square"></i>{{'PFC Wizard'}}
+                            </button>
+                        </li>
+                        <li>
+                            <button
                                 :style="getWizardButtonStyle('ActiveClampForward', true)"
                                 data-cy="ActiveClampForward-CommonModeChoke-link"
                                 :class="headerTogglerIsVisible? 'w-100' : 'mx-0' "

@@ -62,6 +62,13 @@ export default {
             await this.$nextTick();
             await this.$router.push(`${import.meta.env.BASE_URL}wizards`);
         },
+        async onPfcWizard() {
+            this.$stateStore.resetMagneticTool();
+            this.$stateStore.selectWorkflow("design");
+            this.$stateStore.selectWizard(this.$stateStore.Wizards.Pfc);
+            await this.$nextTick();
+            await this.$router.push(`${import.meta.env.BASE_URL}wizards`);
+        },
         async onSingleSwitchForwardWizard() {
             this.$stateStore.resetMagneticTool();
             this.$stateStore.selectWorkflow("design");
@@ -181,6 +188,19 @@ export default {
                                 <h4 class="card-title text-white fw-bold mb-2">Push-Pull Converter</h4>
                                 <p class="card-text text-white small mb-3">Design transformers for push-pull topology with center-tapped primary.</p>
                                 <button @click="onPushPullWizard" class="btn btn-light w-100">
+                                    Start Wizard
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- PFC (Power Factor Correction) -->
+                    <div class="col-lg-4 col-md-6">
+                        <div class="card h-100 bg-dark border-secondary">
+                            <div class="card-body p-4">
+                                <h4 class="card-title text-white fw-bold mb-2">PFC (Power Factor Correction)</h4>
+                                <p class="card-text text-white small mb-3">Design boost inductors for AC-DC power factor correction stages.</p>
+                                <button @click="onPfcWizard" class="btn btn-light w-100">
                                     Start Wizard
                                 </button>
                             </div>

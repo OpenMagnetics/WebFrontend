@@ -9,6 +9,7 @@ import BuckBoostWizard from '../components/Wizards/BuckBoostWizard.vue'
 import IsolatedBuckBoostWizard from '../components/Wizards/IsolatedBuckBoostWizard.vue'
 import PushPullWizard from '../components/Wizards/PushPullWizard.vue'
 import ForwardWizard from '../components/Wizards/ForwardWizard.vue'
+import PfcWizard from '../components/Wizards/PfcWizard.vue'
 
 </script>
 
@@ -76,6 +77,10 @@ export default {
                 v-if="$stateStore.getCurrentWizard() == $stateStore.Wizards.ActiveClampForward"
                 :converterName="'Active Clamp Forward'"
                 :dataTestLabel="'ActiveClampForwardWizard'"
+            />
+            <PfcWizard
+                v-if="$stateStore.getCurrentWizard() == $stateStore.Wizards.Pfc"
+                :dataTestLabel="'PfcWizard'"
             />
         </main>
         <Footer class="mt-auto"/>
