@@ -156,35 +156,19 @@ export default {
                 if (this.localData.designLevel == 'I know the design I want') {
                     aux['desiredInductance'] = this.localData.inductance;
                     const auxDesiredDutyCycle = []
+                    // Use fixed user-provided duty cycle for all input voltages
+                    // Push-pull regulates output via turns ratio, not duty cycle modulation
+                    const dutyCycleValue = this.localData.dutyCycle || 0.45;
                     if (this.localData.inputVoltage.minimum != null) {
-                        if (this.localData.dutyCycle.minimum != null) {
-                            auxDesiredDutyCycle.push(this.localData.dutyCycle.minimum);   
-                        }
-                        else {
-                            this.errorMessage = "Missing duty cycle for minimum voltage";
-                            return;
-                        }
+                        auxDesiredDutyCycle.push(dutyCycleValue);   
                     }
-
                     if (this.localData.inputVoltage.nominal != null) {
-                        if (this.localData.dutyCycle.nominal != null) {
-                            auxDesiredDutyCycle.push(this.localData.dutyCycle.nominal);   
-                        }
-                        else {
-                            this.errorMessage = "Missing duty cycle for nominal voltage";
-                            return;
-                        }
+                        auxDesiredDutyCycle.push(dutyCycleValue);   
                     }
                     if (this.localData.inputVoltage.maximum != null) {
-                        if (this.localData.dutyCycle.maximum != null) {
-                            auxDesiredDutyCycle.push(this.localData.dutyCycle.maximum);   
-                        }
-                        else {
-                            this.errorMessage = "Missing duty cycle for maximum voltage";
-                            return;
-                        }
+                        auxDesiredDutyCycle.push(dutyCycleValue);   
                     }
-                    aux['desiredDutyCycle'] = [auxDesiredDutyCycle];
+                    aux['desiredDutyCycle'] = auxDesiredDutyCycle;
                     aux['desiredTurnsRatios'] = [];
                 }
 
@@ -217,6 +201,66 @@ export default {
                 inputs = await this.pruneHarmonicsForInputs(inputs);
 
                 this.masStore.mas.inputs = inputs;
+
+                // If we have simulated operating points (from Simulate button), use those waveforms
+                // They contain more accurate waveform data from ngspice simulation
+                if (this.simulatedOperatingPoints && this.simulatedOperatingPoints.length > 0) {
+                    // Calculate harmonics and processed data from waveforms
+                    for (const op of this.simulatedOperatingPoints) {
+                        if (op.excitationsPerWinding) {
+                            for (const excitation of op.excitationsPerWinding) {
+                                const frequency = excitation.frequency;
+                                if (excitation.current && excitation.current.waveform) {
+                                    try {
+                                        if (!excitation.current.harmonics || excitation.current.harmonics.amplitudes?.length === 0) {
+                                            excitation.current.harmonics = await this.taskQueueStore.calculateHarmonics(excitation.current.waveform, frequency);
+                                            const currentThreshold = 0.1;
+                                            const mainIndexes = await this.taskQueueStore.getMainHarmonicIndexes(excitation.current.harmonics, currentThreshold, 1);
+                                            const prunedHarmonics = { amplitudes: [excitation.current.harmonics.amplitudes[0]], frequencies: [excitation.current.harmonics.frequencies[0]] };
+                                            for (let i = 0; i < mainIndexes.length; i++) {
+                                                prunedHarmonics.amplitudes.push(excitation.current.harmonics.amplitudes[mainIndexes[i]]);
+                                                prunedHarmonics.frequencies.push(excitation.current.harmonics.frequencies[mainIndexes[i]]);
+                                            }
+                                            excitation.current.harmonics = prunedHarmonics;
+                                        }
+                                        if (!excitation.current.processed || !excitation.current.processed.rms) {
+                                            const processed = await this.taskQueueStore.calculateProcessed(excitation.current.harmonics, excitation.current.waveform);
+                                            excitation.current.processed = { ...processed, label: "Custom" };
+                                        }
+                                    } catch (e) {
+                                        console.error("Error calculating current harmonics/processed:", e);
+                                        excitation.current.harmonics = { amplitudes: [0], frequencies: [frequency] };
+                                        excitation.current.processed = { label: "Custom", dutyCycle: 0.5, peakToPeak: 0, offset: 0, rms: 0 };
+                                    }
+                                }
+                                if (excitation.voltage && excitation.voltage.waveform) {
+                                    try {
+                                        if (!excitation.voltage.harmonics || excitation.voltage.harmonics.amplitudes?.length === 0) {
+                                            excitation.voltage.harmonics = await this.taskQueueStore.calculateHarmonics(excitation.voltage.waveform, frequency);
+                                            const voltageThreshold = 0.3;
+                                            const mainIndexes = await this.taskQueueStore.getMainHarmonicIndexes(excitation.voltage.harmonics, voltageThreshold, 1);
+                                            const prunedHarmonics = { amplitudes: [excitation.voltage.harmonics.amplitudes[0]], frequencies: [excitation.voltage.harmonics.frequencies[0]] };
+                                            for (let i = 0; i < mainIndexes.length; i++) {
+                                                prunedHarmonics.amplitudes.push(excitation.voltage.harmonics.amplitudes[mainIndexes[i]]);
+                                                prunedHarmonics.frequencies.push(excitation.voltage.harmonics.frequencies[mainIndexes[i]]);
+                                            }
+                                            excitation.voltage.harmonics = prunedHarmonics;
+                                        }
+                                        if (!excitation.voltage.processed || !excitation.voltage.processed.rms) {
+                                            const processed = await this.taskQueueStore.calculateProcessed(excitation.voltage.harmonics, excitation.voltage.waveform);
+                                            excitation.voltage.processed = { ...processed, label: "Custom" };
+                                        }
+                                    } catch (e) {
+                                        console.error("Error calculating voltage harmonics/processed:", e);
+                                        excitation.voltage.harmonics = { amplitudes: [0], frequencies: [frequency] };
+                                        excitation.voltage.processed = { label: "Custom", dutyCycle: 0.5, peakToPeak: 0, offset: 0, rms: 0 };
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    this.masStore.mas.inputs.operatingPoints = this.simulatedOperatingPoints;
+                }
 
                 if (this.localData.insulationType != 'No') {
 
@@ -300,20 +344,25 @@ export default {
                 if (this.localData.designLevel == 'I know the design I want') {
                     aux['desiredInductance'] = this.localData.inductance;
                     const auxDesiredDutyCycle = [];
-                    if (this.localData.inputVoltage.minimum != null && this.localData.dutyCycle?.minimum != null) {
-                        auxDesiredDutyCycle.push(this.localData.dutyCycle.minimum);
+                    // Use fixed user-provided duty cycle for all input voltages
+                    // Push-pull regulates output via turns ratio, not duty cycle modulation
+                    const dutyCycleValue = this.localData.dutyCycle || 0.45;
+                    if (this.localData.inputVoltage.minimum != null) {
+                        auxDesiredDutyCycle.push(dutyCycleValue);
                     }
-                    if (this.localData.inputVoltage.nominal != null && this.localData.dutyCycle?.nominal != null) {
-                        auxDesiredDutyCycle.push(this.localData.dutyCycle.nominal);
+                    if (this.localData.inputVoltage.nominal != null) {
+                        auxDesiredDutyCycle.push(dutyCycleValue);
                     }
-                    if (this.localData.inputVoltage.maximum != null && this.localData.dutyCycle?.maximum != null) {
-                        auxDesiredDutyCycle.push(this.localData.dutyCycle.maximum);
+                    if (this.localData.inputVoltage.maximum != null) {
+                        auxDesiredDutyCycle.push(dutyCycleValue);
                     }
-                    aux['desiredDutyCycle'] = [auxDesiredDutyCycle];
+                    aux['desiredDutyCycle'] = auxDesiredDutyCycle;
                     aux['desiredTurnsRatios'] = [];
                     this.localData.outputsParameters.forEach((elem) => {
                         aux['desiredTurnsRatios'].push(elem.turnsRatio);
                     });
+                    aux['currentRippleRatio'] = this.localData.currentRippleRatio;
+                    aux['maximumSwitchCurrent'] = this.localData.maximumSwitchCurrent;
                 } else {
                     aux['currentRippleRatio'] = this.localData.currentRippleRatio;
                     aux['maximumSwitchCurrent'] = this.localData.maximumSwitchCurrent;
@@ -372,20 +421,25 @@ export default {
                 if (this.localData.designLevel == 'I know the design I want') {
                     aux['desiredInductance'] = this.localData.inductance;
                     const auxDesiredDutyCycle = [];
-                    if (this.localData.inputVoltage.minimum != null && this.localData.dutyCycle?.minimum != null) {
-                        auxDesiredDutyCycle.push(this.localData.dutyCycle.minimum);
+                    // Use fixed user-provided duty cycle for all input voltages
+                    // Push-pull regulates output via turns ratio, not duty cycle modulation
+                    const dutyCycleValue = this.localData.dutyCycle || 0.45;
+                    if (this.localData.inputVoltage.minimum != null) {
+                        auxDesiredDutyCycle.push(dutyCycleValue);
                     }
-                    if (this.localData.inputVoltage.nominal != null && this.localData.dutyCycle?.nominal != null) {
-                        auxDesiredDutyCycle.push(this.localData.dutyCycle.nominal);
+                    if (this.localData.inputVoltage.nominal != null) {
+                        auxDesiredDutyCycle.push(dutyCycleValue);
                     }
-                    if (this.localData.inputVoltage.maximum != null && this.localData.dutyCycle?.maximum != null) {
-                        auxDesiredDutyCycle.push(this.localData.dutyCycle.maximum);
+                    if (this.localData.inputVoltage.maximum != null) {
+                        auxDesiredDutyCycle.push(dutyCycleValue);
                     }
-                    aux['desiredDutyCycle'] = [auxDesiredDutyCycle];
+                    aux['desiredDutyCycle'] = auxDesiredDutyCycle;
                     aux['desiredTurnsRatios'] = [];
                     this.localData.outputsParameters.forEach((elem) => {
                         aux['desiredTurnsRatios'].push(elem.turnsRatio);
                     });
+                    aux['currentRippleRatio'] = this.localData.currentRippleRatio;
+                    aux['maximumSwitchCurrent'] = this.localData.maximumSwitchCurrent;
                 } else {
                     aux['currentRippleRatio'] = this.localData.currentRippleRatio;
                     aux['maximumSwitchCurrent'] = this.localData.maximumSwitchCurrent;
@@ -402,6 +456,7 @@ export default {
                 auxOperatingPoint['ambientTemperature'] = this.localData.ambientTemperature;
                 aux['operatingPoints'] = [auxOperatingPoint];
                 aux['numberOfPeriods'] = parseInt(this.numberOfPeriods, 10);
+                aux['numberOfSteadyStatePeriods'] = parseInt(this.numberOfSteadyStatePeriods, 10);
                 
                 let result;
                 if (this.localData.designLevel == 'I know the design I want') {
@@ -559,13 +614,13 @@ export default {
             
             if (isVoltageWaveform && yData && yData.length > 0) {
                 const sorted = [...yData].sort((a, b) => a - b);
-                const p1 = sorted[Math.floor(sorted.length * 0.01)];
-                const p99 = sorted[Math.floor(sorted.length * 0.99)];
+                const p5 = sorted[Math.floor(sorted.length * 0.05)];
+                const p95 = sorted[Math.floor(sorted.length * 0.95)];
                 
-                const range = p99 - p1;
-                const margin = range * 0.2;
-                const clipMin = p1 - margin;
-                const clipMax = p99 + margin;
+                const range = p95 - p5;
+                const margin = range * 0.1;
+                const clipMin = p5 - margin;
+                const clipMax = p95 + margin;
                 
                 yData = yData.map(v => Math.max(clipMin, Math.min(clipMax, v)));
             }
@@ -656,11 +711,11 @@ export default {
                 
                 if (yData && yData.length > 0) {
                     const sorted = [...yData].sort((a, b) => a - b);
-                    const p1 = sorted[Math.floor(sorted.length * 0.01)];
-                    const p99 = sorted[Math.floor(sorted.length * 0.99)];
-                    const range = p99 - p1;
-                    const margin = range * 0.2;
-                    yData = yData.map(v => Math.max(p1 - margin, Math.min(p99 + margin, v)));
+                    const p5 = sorted[Math.floor(sorted.length * 0.05)];
+                    const p95 = sorted[Math.floor(sorted.length * 0.95)];
+                    const range = p95 - p5;
+                    const margin = range * 0.1;
+                    yData = yData.map(v => Math.max(p5 - margin, Math.min(p95 + margin, v)));
                 }
                 
                 result.push({
@@ -1161,6 +1216,12 @@ export default {
     font-size: 0.8rem;
     font-weight: 500;
     color: #b18aea;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.compact-header > span {
+    white-space: nowrap;
 }
 
 .compact-body {

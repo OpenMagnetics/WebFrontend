@@ -697,15 +697,75 @@ export const useTaskQueueStore = defineStore('taskQueue', {
         },
 
         async simulateTwoSwitchForwardIdealWaveforms(params) {
+            console.log('=== taskQueue:simulateTwoSwitchForwardIdealWaveforms ===');
+            console.log('Input params:', params);
+            
             const mkf = await waitForMkf();
             await mkf.ready;
+            
+            console.log('MKF WASM loaded, calling simulate_two_switch_forward_ideal_waveforms...');
+            const startTime = performance.now();
 
             const result = await mkf.simulate_two_switch_forward_ideal_waveforms(JSON.stringify(params));
+            
+            const endTime = performance.now();
+            console.log('WASM call took:', (endTime - startTime).toFixed(2), 'ms');
+            console.log('Raw result length:', result.length);
+            console.log('Raw result (first 500 chars):', result.substring(0, 500));
+            
             if (result.startsWith('Exception')) {
+                console.error('WASM returned exception:', result);
                 setTimeout(() => { this.twoSwitchForwardIdealWaveformsCalculated(false, result); }, this.task_standard_response_delay);
                 throw new Error(result);
             }
             const waveforms = JSON.parse(result);
+            console.log('Parsed waveforms:', {
+                operatingPointsCount: waveforms.operatingPoints?.length,
+                magneticWaveformsCount: waveforms.magneticWaveforms?.length,
+                converterWaveformsCount: waveforms.converterWaveforms?.length,
+                designRequirements: waveforms.designRequirements ? 'present' : 'missing'
+            });
+            
+            // DEBUG: Analyze magnetic waveforms
+            if (waveforms.magneticWaveforms) {
+                console.log('=== MAGNETIC WAVEFORMS ANALYSIS ===');
+                waveforms.magneticWaveforms.forEach((op, idx) => {
+                    console.log(`Operating Point ${idx}: ${op.operatingPointName}`);
+                    if (op.waveforms) {
+                        op.waveforms.forEach(wf => {
+                            if (wf.y && wf.y.length > 0) {
+                                const min = Math.min(...wf.y);
+                                const max = Math.max(...wf.y);
+                                const first = wf.y[0];
+                                const last = wf.y[wf.y.length - 1];
+                                const mid = wf.y[Math.floor(wf.y.length / 2)];
+                                console.log(`  ${wf.label}: min=${min.toFixed(3)}, max=${max.toFixed(3)}, first=${first.toFixed(3)}, mid=${mid.toFixed(3)}, last=${last.toFixed(3)}, points=${wf.y.length}`);
+                            }
+                        });
+                    }
+                });
+            }
+            
+            // DEBUG: Analyze converter waveforms
+            if (waveforms.converterWaveforms) {
+                console.log('=== CONVERTER WAVEFORMS ANALYSIS ===');
+                waveforms.converterWaveforms.forEach((op, idx) => {
+                    console.log(`Operating Point ${idx}: ${op.operatingPointName}`);
+                    if (op.waveforms) {
+                        op.waveforms.forEach(wf => {
+                            if (wf.y && wf.y.length > 0) {
+                                const min = Math.min(...wf.y);
+                                const max = Math.max(...wf.y);
+                                const first = wf.y[0];
+                                const last = wf.y[wf.y.length - 1];
+                                const mid = wf.y[Math.floor(wf.y.length / 2)];
+                                console.log(`  ${wf.label}: min=${min.toFixed(3)}, max=${max.toFixed(3)}, first=${first.toFixed(3)}, mid=${mid.toFixed(3)}, last=${last.toFixed(3)}, points=${wf.y.length}`);
+                            }
+                        });
+                    }
+                });
+            }
+            
             setTimeout(() => { this.twoSwitchForwardIdealWaveformsCalculated(true, waveforms); }, this.task_standard_response_delay);
             return waveforms;
         },
@@ -919,6 +979,12 @@ export const useTaskQueueStore = defineStore('taskQueue', {
 
             const result = await mkf.calculate_advanced_single_switch_forward_inputs(JSON.stringify(params));
             const inputs = JSON.parse(result);
+            
+            // Check for error response
+            if (inputs.error) {
+                throw new Error(inputs.message || 'Unknown error from C++ library');
+            }
+            
             setTimeout(() => { this.advancedSingleSwitchForwardInputsCalculated(true, inputs); }, this.task_standard_response_delay);
             return inputs;
         },
@@ -945,6 +1011,12 @@ export const useTaskQueueStore = defineStore('taskQueue', {
 
             const result = await mkf.calculate_advanced_two_switch_forward_inputs(JSON.stringify(params));
             const inputs = JSON.parse(result);
+            
+            // Check for error response
+            if (inputs.error) {
+                throw new Error(inputs.message || 'Unknown error from C++ library');
+            }
+            
             setTimeout(() => { this.advancedTwoSwitchForwardInputsCalculated(true, inputs); }, this.task_standard_response_delay);
             return inputs;
         },
@@ -971,6 +1043,12 @@ export const useTaskQueueStore = defineStore('taskQueue', {
 
             const result = await mkf.calculate_advanced_active_clamp_forward_inputs(JSON.stringify(params));
             const inputs = JSON.parse(result);
+            
+            // Check for error response
+            if (inputs.error) {
+                throw new Error(inputs.message || 'Unknown error from C++ library');
+            }
+            
             setTimeout(() => { this.advancedActiveClampForwardInputsCalculated(true, inputs); }, this.task_standard_response_delay);
             return inputs;
         },

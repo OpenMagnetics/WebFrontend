@@ -58,7 +58,7 @@ export default {
             waveformViewMode: 'magnetic', // 'magnetic' or 'converter'
             forceWaveformUpdate: 0,
             numberOfPeriods: 2,
-            numberOfSteadyStatePeriods: 50,
+            numberOfSteadyStatePeriods: 10,
         }
     },
     computed: {
@@ -628,8 +628,14 @@ export default {
             for (let p = 0; p < numberOfPeriods; p++) {
                 const offset = p * period;
                 for (let i = 0; i < time.length; i++) {
-                    // Skip duplicate point at period boundary (except for first period)
-                    if (p > 0 && i === 0) continue;
+                    // Skip first point in subsequent periods ONLY if it doesn't create duplicate time
+                    if (p > 0 && i === 0) {
+                        // Check if this point would create a duplicate time value
+                        const newTimeValue = time[i] + offset;
+                        if (newTime.length > 0 && Math.abs(newTime[newTime.length - 1] - newTimeValue) < 1e-12) {
+                            continue; // Skip to avoid duplicate
+                        }
+                    }
                     newTime.push(time[i] + offset);
                     newData.push(data[i]);
                 }
@@ -661,17 +667,17 @@ export default {
             const isCurrentWaveform = wf.unit === 'A';
             
             if (isVoltageWaveform && yData && yData.length > 0) {
-                // Use 1st-99th percentile to only exclude extreme transient spikes
+                // Use 5th-95th percentile to only exclude extreme transient spikes
                 // This preserves the normal positive/negative operating range
                 const sorted = [...yData].sort((a, b) => a - b);
-                const p1 = sorted[Math.floor(sorted.length * 0.01)];
-                const p99 = sorted[Math.floor(sorted.length * 0.99)];
+                const p5 = sorted[Math.floor(sorted.length * 0.05)];
+                const p95 = sorted[Math.floor(sorted.length * 0.95)];
                 
-                // Add 20% margin to avoid clipping near the edges
-                const range = p99 - p1;
-                const margin = range * 0.2;
-                const clipMin = p1 - margin;
-                const clipMax = p99 + margin;
+                // Add 10% margin to avoid clipping near the edges
+                const range = p95 - p5;
+                const margin = range * 0.1;
+                const clipMin = p5 - margin;
+                const clipMax = p95 + margin;
                 
                 // Clip only extreme spikes (keeps full positive/negative range)
                 yData = yData.map(v => Math.max(clipMin, Math.min(clipMax, v)));
@@ -773,11 +779,11 @@ export default {
                 // Clip extreme voltage spikes
                 if (yData && yData.length > 0) {
                     const sorted = [...yData].sort((a, b) => a - b);
-                    const p1 = sorted[Math.floor(sorted.length * 0.01)];
-                    const p99 = sorted[Math.floor(sorted.length * 0.99)];
-                    const range = p99 - p1;
-                    const margin = range * 0.2;
-                    yData = yData.map(v => Math.max(p1 - margin, Math.min(p99 + margin, v)));
+                    const p5 = sorted[Math.floor(sorted.length * 0.05)];
+                    const p95 = sorted[Math.floor(sorted.length * 0.95)];
+                    const range = p95 - p5;
+                    const margin = range * 0.1;
+                    yData = yData.map(v => Math.max(p5 - margin, Math.min(p95 + margin, v)));
                 }
                 
                 result.push({
@@ -1337,6 +1343,12 @@ export default {
     font-size: 0.8rem;
     font-weight: 500;
     color: #b18aea;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.compact-header > span {
+    white-space: nowrap;
 }
 
 .compact-body {

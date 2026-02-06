@@ -66,7 +66,7 @@ export default {
             waveformViewMode: 'magnetic',
             forceWaveformUpdate: 0,
             numberOfPeriods: 1,
-            numberOfSteadyStatePeriods: 50,
+            numberOfSteadyStatePeriods: 10,
         }
     },
     computed: {
@@ -705,12 +705,12 @@ export default {
                     // Clip extreme values
                     if (yData && yData.length > 0) {
                         const sorted = [...yData].sort((a, b) => a - b);
-                        const p1 = sorted[Math.floor(sorted.length * 0.01)];
-                        const p99 = sorted[Math.floor(sorted.length * 0.99)];
-                        const range = p99 - p1;
-                        const margin = range * 0.2;
-                        const clipMin = p1 - margin;
-                        const clipMax = p99 + margin;
+                        const p5 = sorted[Math.floor(sorted.length * 0.05)];
+                        const p95 = sorted[Math.floor(sorted.length * 0.95)];
+                        const range = p95 - p5;
+                        const margin = range * 0.1;
+                        const clipMin = p5 - margin;
+                        const clipMax = p95 + margin;
                         yData = yData.map(v => Math.max(clipMin, Math.min(clipMax, v)));
                     }
                     
@@ -733,12 +733,12 @@ export default {
                     // Clip extreme values
                     if (yData && yData.length > 0) {
                         const sorted = [...yData].sort((a, b) => a - b);
-                        const p1 = sorted[Math.floor(sorted.length * 0.01)];
-                        const p99 = sorted[Math.floor(sorted.length * 0.99)];
-                        const range = p99 - p1;
-                        const margin = range * 0.2;
-                        const clipMin = p1 - margin;
-                        const clipMax = p99 + margin;
+                        const p5 = sorted[Math.floor(sorted.length * 0.05)];
+                        const p95 = sorted[Math.floor(sorted.length * 0.95)];
+                        const range = p95 - p5;
+                        const margin = range * 0.1;
+                        const clipMin = p5 - margin;
+                        const clipMax = p95 + margin;
                         yData = yData.map(v => Math.max(clipMin, Math.min(clipMax, v)));
                     }
                     
@@ -765,12 +765,12 @@ export default {
                 // Clip extreme values for voltage
                 if (yData && yData.length > 0) {
                     const sorted = [...yData].sort((a, b) => a - b);
-                    const p1 = sorted[Math.floor(sorted.length * 0.01)];
-                    const p99 = sorted[Math.floor(sorted.length * 0.99)];
-                    const range = p99 - p1;
-                    const margin = range * 0.2;
-                    const clipMin = p1 - margin;
-                    const clipMax = p99 + margin;
+                    const p5 = sorted[Math.floor(sorted.length * 0.05)];
+                    const p95 = sorted[Math.floor(sorted.length * 0.95)];
+                    const range = p95 - p5;
+                    const margin = range * 0.1;
+                    const clipMin = p5 - margin;
+                    const clipMax = p95 + margin;
                     yData = yData.map(v => Math.max(clipMin, Math.min(clipMax, v)));
                 }
                 
@@ -1287,6 +1287,12 @@ export default {
     font-size: 0.8rem;
     font-weight: 500;
     color: #b18aea;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.compact-header > span {
+    white-space: nowrap;
 }
 
 .compact-body {

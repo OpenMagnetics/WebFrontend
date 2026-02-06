@@ -59,7 +59,7 @@ export default {
             waveformViewMode: 'magnetic',
             forceWaveformUpdate: 0,
             numberOfPeriods: 2,
-            numberOfSteadyStatePeriods: 50,
+            numberOfSteadyStatePeriods: 20,
         }
     },
     computed: {
@@ -234,6 +234,66 @@ export default {
 
                 this.masStore.mas.inputs = inputs;
 
+                // If we have simulated operating points (from Simulate button), use those waveforms
+                // They contain more accurate waveform data from ngspice simulation
+                if (this.simulatedOperatingPoints && this.simulatedOperatingPoints.length > 0) {
+                    // Calculate harmonics and processed data from waveforms
+                    for (const op of this.simulatedOperatingPoints) {
+                        if (op.excitationsPerWinding) {
+                            for (const excitation of op.excitationsPerWinding) {
+                                const frequency = excitation.frequency;
+                                if (excitation.current && excitation.current.waveform) {
+                                    try {
+                                        if (!excitation.current.harmonics || excitation.current.harmonics.amplitudes?.length === 0) {
+                                            excitation.current.harmonics = await this.taskQueueStore.calculateHarmonics(excitation.current.waveform, frequency);
+                                            const currentThreshold = 0.1;
+                                            const mainIndexes = await this.taskQueueStore.getMainHarmonicIndexes(excitation.current.harmonics, currentThreshold, 1);
+                                            const prunedHarmonics = { amplitudes: [excitation.current.harmonics.amplitudes[0]], frequencies: [excitation.current.harmonics.frequencies[0]] };
+                                            for (let i = 0; i < mainIndexes.length; i++) {
+                                                prunedHarmonics.amplitudes.push(excitation.current.harmonics.amplitudes[mainIndexes[i]]);
+                                                prunedHarmonics.frequencies.push(excitation.current.harmonics.frequencies[mainIndexes[i]]);
+                                            }
+                                            excitation.current.harmonics = prunedHarmonics;
+                                        }
+                                        if (!excitation.current.processed || !excitation.current.processed.rms) {
+                                            const processed = await this.taskQueueStore.calculateProcessed(excitation.current.harmonics, excitation.current.waveform);
+                                            excitation.current.processed = { ...processed, label: "Custom" };
+                                        }
+                                    } catch (e) {
+                                        console.error("Error calculating current harmonics/processed:", e);
+                                        excitation.current.harmonics = { amplitudes: [0], frequencies: [frequency] };
+                                        excitation.current.processed = { label: "Custom", dutyCycle: 0.5, peakToPeak: 0, offset: 0, rms: 0 };
+                                    }
+                                }
+                                if (excitation.voltage && excitation.voltage.waveform) {
+                                    try {
+                                        if (!excitation.voltage.harmonics || excitation.voltage.harmonics.amplitudes?.length === 0) {
+                                            excitation.voltage.harmonics = await this.taskQueueStore.calculateHarmonics(excitation.voltage.waveform, frequency);
+                                            const voltageThreshold = 0.3;
+                                            const mainIndexes = await this.taskQueueStore.getMainHarmonicIndexes(excitation.voltage.harmonics, voltageThreshold, 1);
+                                            const prunedHarmonics = { amplitudes: [excitation.voltage.harmonics.amplitudes[0]], frequencies: [excitation.voltage.harmonics.frequencies[0]] };
+                                            for (let i = 0; i < mainIndexes.length; i++) {
+                                                prunedHarmonics.amplitudes.push(excitation.voltage.harmonics.amplitudes[mainIndexes[i]]);
+                                                prunedHarmonics.frequencies.push(excitation.voltage.harmonics.frequencies[mainIndexes[i]]);
+                                            }
+                                            excitation.voltage.harmonics = prunedHarmonics;
+                                        }
+                                        if (!excitation.voltage.processed || !excitation.voltage.processed.rms) {
+                                            const processed = await this.taskQueueStore.calculateProcessed(excitation.voltage.harmonics, excitation.voltage.waveform);
+                                            excitation.voltage.processed = { ...processed, label: "Custom" };
+                                        }
+                                    } catch (e) {
+                                        console.error("Error calculating voltage harmonics/processed:", e);
+                                        excitation.voltage.harmonics = { amplitudes: [0], frequencies: [frequency] };
+                                        excitation.voltage.processed = { label: "Custom", dutyCycle: 0.5, peakToPeak: 0, offset: 0, rms: 0 };
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    this.masStore.mas.inputs.operatingPoints = this.simulatedOperatingPoints;
+                }
+
                 if (this.localData.insulationType != 'No') {
 
                     this.masStore.mas.inputs.designRequirements.insulation = defaultDesignRequirements.insulation;
@@ -330,6 +390,8 @@ export default {
                     this.localData.outputsParameters.forEach((elem) => {
                         aux['desiredTurnsRatios'].push(elem.turnsRatio);
                     });
+                    aux['currentRippleRatio'] = this.localData.currentRippleRatio;
+                    aux['maximumSwitchCurrent'] = this.localData.maximumSwitchCurrent;
                 } else {
                     aux['currentRippleRatio'] = this.localData.currentRippleRatio;
                     aux['maximumSwitchCurrent'] = this.localData.maximumSwitchCurrent;
@@ -347,6 +409,13 @@ export default {
                 aux['operatingPoints'] = [auxOperatingPoint];
                 aux['numberOfPeriods'] = parseInt(this.numberOfPeriods, 10);
                 aux['numberOfSteadyStatePeriods'] = parseInt(this.numberOfSteadyStatePeriods, 10);
+                
+                // DEBUG: Log the params being sent to WASM
+                console.log('=== ForwardWizard:simulateIdealWaveforms ===');
+                console.log('Converter:', this.converterName);
+                console.log('Params sent to WASM:', JSON.parse(JSON.stringify(aux)));
+                console.log('numberOfPeriods:', aux.numberOfPeriods);
+                console.log('numberOfSteadyStatePeriods:', aux.numberOfSteadyStatePeriods);
                 
                 // Call the WASM simulation based on converter type
                 var result;
@@ -367,6 +436,31 @@ export default {
                 this.magneticWaveforms = result.magneticWaveforms || [];
                 this.converterWaveforms = result.converterWaveforms || [];
                 
+                console.log('[Ngspice Simulation] magneticWaveforms count:', this.magneticWaveforms.length);
+                console.log('[Ngspice Simulation] converterWaveforms count:', this.converterWaveforms.length);
+                if (this.converterWaveforms.length > 0) {
+                    console.log('[Ngspice Simulation] First converter OP waveforms:', this.converterWaveforms[0].waveforms.map(w => w.label));
+                    // DEBUG: Log actual voltage/current values
+                    this.converterWaveforms[0].waveforms.forEach(wf => {
+                        if (wf.y && wf.y.length > 0) {
+                            const min = Math.min(...wf.y);
+                            const max = Math.max(...wf.y);
+                            console.log(`[Visualizer] ${wf.label}: min=${min.toFixed(2)}, max=${max.toFixed(2)}, unit=${wf.unit}`);
+                        }
+                    });
+                }
+                if (this.magneticWaveforms.length > 0) {
+                    console.log('[Ngspice Simulation] First magnetic OP waveforms:', this.magneticWaveforms[0].waveforms.map(w => w.label));
+                    // DEBUG: Log actual voltage/current values
+                    this.magneticWaveforms[0].waveforms.forEach(wf => {
+                        if (wf.y && wf.y.length > 0) {
+                            const min = Math.min(...wf.y);
+                            const max = Math.max(...wf.y);
+                            console.log(`[Visualizer] ${wf.label}: min=${min.toFixed(2)}, max=${max.toFixed(2)}, unit=${wf.unit}`);
+                        }
+                    });
+                }
+                
                 this.$nextTick(() => {
                     this.forceWaveformUpdate += 1;
                     if (this.$refs.waveformSection) {
@@ -375,7 +469,10 @@ export default {
                 });
                 
             } catch (error) {
-                console.error("Error simulating waveforms:", error);
+                console.error("=== ForwardWizard: ERROR in simulateIdealWaveforms ===");
+                console.error("Error object:", error);
+                console.error("Error message:", error.message);
+                console.error("Error stack:", error.stack);
                 this.waveformError = error.message || "Failed to simulate waveforms";
             }
             
@@ -413,6 +510,12 @@ export default {
                     this.localData.outputsParameters.forEach((elem) => {
                         aux['desiredTurnsRatios'].push(elem.turnsRatio);
                     });
+                    // Single-Switch Forward needs an extra turns ratio for demagnetization winding
+                    if (this.converterName == "Single-Switch Forward") {
+                        aux['desiredTurnsRatios'].push(1.0);  // Demagnetization winding, typically 1:1
+                    }
+                    aux['currentRippleRatio'] = this.localData.currentRippleRatio;
+                    aux['maximumSwitchCurrent'] = this.localData.maximumSwitchCurrent;
                 } else {
                     aux['currentRippleRatio'] = this.localData.currentRippleRatio;
                     aux['maximumSwitchCurrent'] = this.localData.maximumSwitchCurrent;
@@ -429,6 +532,7 @@ export default {
                 auxOperatingPoint['ambientTemperature'] = this.localData.ambientTemperature;
                 aux['operatingPoints'] = [auxOperatingPoint];
                 aux['numberOfPeriods'] = parseInt(this.numberOfPeriods, 10);
+                aux['numberOfSteadyStatePeriods'] = parseInt(this.numberOfSteadyStatePeriods, 10);
                 
                 // Call the analytical calculation based on converter type
                 let result;
@@ -465,8 +569,8 @@ export default {
                 
                 // Build magnetic waveforms from operating points (primary winding excitation)
                 this.magneticWaveforms = this.buildMagneticWaveformsFromInputs(operatingPoints);
-                // Converter waveforms not available in analytical mode
-                this.converterWaveforms = [];
+                // Build converter waveforms from operating points (output view)
+                this.converterWaveforms = this.buildConverterWaveformsFromInputs(operatingPoints);
                 
                 this.$nextTick(() => {
                     this.forceWaveformUpdate += 1;
@@ -616,6 +720,118 @@ export default {
             
             return magneticWaveforms;
         },
+        buildConverterWaveformsFromInputs(operatingPoints) {
+            const converterWaveforms = [];
+            
+            console.log('[buildConverterWaveformsFromInputs] Building converter waveforms from', operatingPoints.length, 'operating points');
+            console.log('[buildConverterWaveformsFromInputs] Converter type:', this.converterName);
+            
+            for (let opIdx = 0; opIdx < operatingPoints.length; opIdx++) {
+                const op = operatingPoints[opIdx];
+                console.log(`[buildConverterWaveformsFromInputs] OP ${opIdx}:`, {
+                    outputVoltages: op.outputVoltages?.length || 0,
+                    outputCurrents: op.outputCurrents?.length || 0,
+                    excitations: op.excitationsPerWinding?.length || 0
+                });
+                
+                const opWaveforms = {
+                    frequency: op.excitationsPerWinding?.[0]?.frequency || this.localData.switchingFrequency,
+                    operatingPointName: op.name || `Operating Point ${opIdx + 1}`,
+                    waveforms: []
+                };
+                
+                // Add output voltages/currents from backend data
+                if (op.outputVoltages && op.outputVoltages.length > 0) {
+                    for (let outIdx = 0; outIdx < op.outputVoltages.length; outIdx++) {
+                        if (op.outputVoltages[outIdx].waveform) {
+                            const { time, data } = this.repeatWaveformForPeriods(
+                                op.outputVoltages[outIdx].waveform.time,
+                                op.outputVoltages[outIdx].waveform.data,
+                                this.numberOfPeriods
+                            );
+                            const label = op.outputVoltages.length === 1 ? 'Output Voltage' : `Output ${outIdx + 1} Voltage`;
+                            console.log(`[buildConverterWaveformsFromInputs] Adding voltage: ${label}`);
+                            opWaveforms.waveforms.push({
+                                label: label,
+                                x: time,
+                                y: data,
+                                type: 'voltage',
+                                unit: 'V'
+                            });
+                        }
+                    }
+                }
+                
+                // Get secondary currents from excitationsPerWinding
+                // For Single-Switch Forward: index 0=Primary, 1=Demagnetization, 2+=Output secondaries
+                // For Two-Switch/Active Clamp: index 0=Primary, 1+=Output secondaries
+                const excitations = op.excitationsPerWinding || [];
+                const isSingleSwitch = this.converterName === "Single-Switch Forward";
+                const firstOutputIndex = isSingleSwitch ? 2 : 1; // Skip demagnetization winding for Single-Switch
+                
+                console.log(`[buildConverterWaveformsFromInputs] Looking for currents starting at index ${firstOutputIndex} (isSingleSwitch=${isSingleSwitch})`);
+                
+                let outputCurrentIdx = 0;
+                for (let windingIdx = firstOutputIndex; windingIdx < excitations.length; windingIdx++) {
+                    const excitation = excitations[windingIdx];
+                    console.log(`[buildConverterWaveformsFromInputs] Checking excitation at index ${windingIdx}:`, {
+                        hasCurrent: !!excitation.current?.waveform,
+                        hasTime: !!excitation.current?.waveform?.time,
+                        hasData: !!excitation.current?.waveform?.data
+                    });
+                    if (excitation.current?.waveform?.time && excitation.current?.waveform?.data) {
+                        const { time, data } = this.repeatWaveformForPeriods(
+                            excitation.current.waveform.time,
+                            excitation.current.waveform.data,
+                            this.numberOfPeriods
+                        );
+                        // Label as Output Current to match Output Voltage for pairing
+                        const numOutputs = excitations.length - firstOutputIndex;
+                        const label = numOutputs === 1 ? 'Output Current' : `Output ${outputCurrentIdx + 1} Current`;
+                        console.log(`[buildConverterWaveformsFromInputs] Adding current: ${label}`);
+                        opWaveforms.waveforms.push({
+                            label: label,
+                            x: time,
+                            y: data,
+                            type: 'current',
+                            unit: 'A'
+                        });
+                        outputCurrentIdx++;
+                    }
+                }
+                
+                // Fallback: if no secondary currents found in excitations, use outputCurrents
+                if (op.outputCurrents && op.outputCurrents.length > 0) {
+                    const hasSecondaryCurrent = opWaveforms.waveforms.some(wf => wf.type === 'current');
+                    if (!hasSecondaryCurrent) {
+                        for (let outIdx = 0; outIdx < op.outputCurrents.length; outIdx++) {
+                            if (op.outputCurrents[outIdx].waveform) {
+                                const { time, data } = this.repeatWaveformForPeriods(
+                                    op.outputCurrents[outIdx].waveform.time,
+                                    op.outputCurrents[outIdx].waveform.data,
+                                    this.numberOfPeriods
+                                );
+                                const label = op.outputCurrents.length === 1 ? 'Output Current' : `Output ${outIdx + 1} Current`;
+                                opWaveforms.waveforms.push({
+                                    label: label,
+                                    x: time,
+                                    y: data,
+                                    type: 'current',
+                                    unit: 'A'
+                                });
+                            }
+                        }
+                    }
+                }
+                
+                converterWaveforms.push(opWaveforms);
+                console.log(`[buildConverterWaveformsFromInputs] OP ${opIdx} final waveforms count:`, opWaveforms.waveforms.length);
+                console.log(`[buildConverterWaveformsFromInputs] OP ${opIdx} waveform labels:`, opWaveforms.waveforms.map(w => w.label));
+            }
+            
+            console.log('[buildConverterWaveformsFromInputs] Final converter waveforms:', converterWaveforms);
+            return converterWaveforms;
+        },
         repeatWaveformForPeriods(time, data, numberOfPeriods) {
             if (!time || !data || time.length === 0 || numberOfPeriods <= 1) {
                 return { time, data };
@@ -628,7 +844,25 @@ export default {
             for (let p = 0; p < numberOfPeriods; p++) {
                 const offset = p * period;
                 for (let i = 0; i < time.length; i++) {
-                    if (p > 0 && i === 0) continue;
+                    // For first point in subsequent periods, check if we need to add a boundary point
+                    if (p > 0 && i === 0) {
+                        const newTimeValue = time[i] + offset;
+                        const lastTime = newTime.length > 0 ? newTime[newTime.length - 1] : null;
+                        const lastData = newData.length > 0 ? newData[newData.length - 1] : null;
+                        const timeDiff = lastTime !== null ? Math.abs(lastTime - newTimeValue) : Infinity;
+                        
+                        // If times are essentially the same but values differ, 
+                        // we need BOTH points to create a vertical edge (instant transition)
+                        if (newTime.length > 0 && timeDiff < 1e-12) {
+                            if (lastData !== null && Math.abs(lastData - data[i]) > 1e-9) {
+                                // Values differ - add duplicate time point with new value for vertical edge
+                                newTime.push(newTimeValue);
+                                newData.push(data[i]);
+                            }
+                            // Skip the rest of this iteration since we handled this point
+                            continue;
+                        }
+                    }
                     newTime.push(time[i] + offset);
                     newData.push(data[i]);
                 }
@@ -643,26 +877,85 @@ export default {
             return waveforms[operatingPointIndex].waveforms;
         },
         getSingleWaveformDataForVisualizer(waveforms, operatingPointIndex, waveformIndex) {
+            console.log('[getSingleWaveformDataForVisualizer] Called with:', {operatingPointIndex, waveformIndex});
             if (!waveforms || !waveforms[operatingPointIndex] || !waveforms[operatingPointIndex].waveforms) {
+                console.log('[getSingleWaveformDataForVisualizer] No waveforms found');
                 return [];
             }
             
             const wf = waveforms[operatingPointIndex].waveforms[waveformIndex];
             if (!wf) return [];
             
-            let yData = wf.y;
+            console.log('[getSingleWaveformDataForVisualizer] Processing:', wf.label, 'unit:', wf.unit, 'data length:', wf.y?.length);
+            let yData = [...wf.y]; // Clone to avoid mutating original
             const isVoltageWaveform = wf.unit === 'V';
             const isCurrentWaveform = wf.unit === 'A';
             
             if (isVoltageWaveform && yData && yData.length > 0) {
+                // Get input voltage - handle different possible structures
+                let inputVoltageMax = 200; // Default fallback
+                if (this.localData?.inputVoltage?.maximum) {
+                    inputVoltageMax = this.localData.inputVoltage.maximum;
+                } else if (this.localData?.inputVoltageRange?.maximum) {
+                    inputVoltageMax = this.localData.inputVoltageRange.maximum;
+                }
+                
+                // Determine clipping limits based on waveform type
+                let clipMin, clipMax;
+                
+                if (wf.label.toLowerCase().includes('primary')) {
+                    // Primary voltage: expected range is -Vin to +Vin (with some margin)
+                    // Use 2.5x margin for ngspice switching transients
+                    clipMax = inputVoltageMax * 2.5;
+                    clipMin = -inputVoltageMax * 2.5;
+                } else if (wf.label.toLowerCase().includes('secondary')) {
+                    // Secondary voltage: based on turns ratio
+                    // Estimate from median of positive values
+                    const positiveValues = yData.filter(v => v > 0).sort((a, b) => a - b);
+                    const medianPositive = positiveValues.length > 0 
+                        ? positiveValues[Math.floor(positiveValues.length / 2)]
+                        : inputVoltageMax;
+                    clipMax = medianPositive * 2.5;
+                    clipMin = -medianPositive * 2.5;
+                } else if (wf.label.toLowerCase().includes('output')) {
+                    // Output voltage: should be close to target output voltage
+                    const outputVoltage = this.localData?.outputsParameters?.[0]?.voltage || 12;
+                    clipMax = outputVoltage * 2;
+                    clipMin = -outputVoltage * 0.5; // Small negative allowance
+                } else {
+                    // Default: use percentile-based clipping with wider margins
+                    const sorted = [...yData].sort((a, b) => a - b);
+                    const p1 = sorted[Math.floor(sorted.length * 0.01)];
+                    const p99 = sorted[Math.floor(sorted.length * 0.99)];
+                    const range = p99 - p1;
+                    clipMin = p1 - range * 0.2;
+                    clipMax = p99 + range * 0.2;
+                }
+                
+                // Log clipping info for debugging
+                const originalMin = Math.min(...yData);
+                const originalMax = Math.max(...yData);
+                if (originalMax > clipMax || originalMin < clipMin) {
+                    console.log(`[Voltage Clipping] ${wf.label}: clipping to [${clipMin.toFixed(1)}, ${clipMax.toFixed(1)}], original range [${originalMin.toFixed(1)}, ${originalMax.toFixed(1)}]`);
+                }
+                
+                yData = yData.map(v => Math.max(clipMin, Math.min(clipMax, v)));
+            } else if (isCurrentWaveform && yData && yData.length > 0) {
+                // Also clip current waveforms to remove spikes
                 const sorted = [...yData].sort((a, b) => a - b);
                 const p1 = sorted[Math.floor(sorted.length * 0.01)];
                 const p99 = sorted[Math.floor(sorted.length * 0.99)];
-                
                 const range = p99 - p1;
-                const margin = range * 0.2;
-                const clipMin = p1 - margin;
-                const clipMax = p99 + margin;
+                
+                // Use 20% margin around 1st-99th percentile
+                const clipMin = p1 - range * 0.2;
+                const clipMax = p99 + range * 0.2;
+                
+                const originalMin = Math.min(...yData);
+                const originalMax = Math.max(...yData);
+                if (originalMax > clipMax || originalMin < clipMin) {
+                    console.log(`[Current Clipping] ${wf.label}: clipping to [${clipMin.toFixed(3)}, ${clipMax.toFixed(3)}], original range [${originalMin.toFixed(3)}, ${originalMax.toFixed(3)}]`);
+                }
                 
                 yData = yData.map(v => Math.max(clipMin, Math.min(clipMax, v)));
             }
@@ -673,6 +966,8 @@ export default {
             } else if (isCurrentWaveform) {
                 waveformColor = this.$styleStore.operatingPoints?.currentGraph?.color || '#4CAF50';
             }
+            
+            console.log('[getSingleWaveformDataForVisualizer] Returning:', wf.label, 'yRange:', [Math.min(...yData), Math.max(...yData)]);
             
             return [{
                 label: wf.label,
@@ -703,6 +998,7 @@ export default {
             const pairs = [];
             const usedIndices = new Set();
             
+            // For converter view, prioritize pairing Output Voltage with Output/Secondary Current
             allWaveforms.forEach((wf, idx) => {
                 if (usedIndices.has(idx)) return;
                 
@@ -710,10 +1006,14 @@ export default {
                 
                 if (isVoltage) {
                     const baseName = wf.label.replace(/voltage/i, '').replace(/V$/i, '').trim();
+                    
+                    // Try to find matching current waveform
                     const currentIdx = allWaveforms.findIndex((cWf, cIdx) => {
                         if (cIdx === idx || usedIndices.has(cIdx)) return false;
                         if (cWf.unit !== 'A') return false;
                         const currentBaseName = cWf.label.replace(/current/i, '').replace(/I$/i, '').trim();
+                        
+                        // Direct name matching (Output -> Output, Secondary 1 -> Secondary 1, etc.)
                         return baseName.toLowerCase() === currentBaseName.toLowerCase() || 
                                wf.label.toLowerCase().includes(cWf.label.toLowerCase().replace('current', '').trim()) ||
                                cWf.label.toLowerCase().includes(wf.label.toLowerCase().replace('voltage', '').trim());
@@ -730,6 +1030,7 @@ export default {
                 }
             });
             
+            // Add any remaining unpaired current waveforms
             allWaveforms.forEach((wf, idx) => {
                 if (usedIndices.has(idx)) return;
                 if (wf.unit === 'A') {
@@ -747,20 +1048,67 @@ export default {
             const pair = pairs[pairIndex];
             const result = [];
             
+            // Debug: log which function is being used
+            console.log('[getPairedWaveformDataForVisualizer] Processing pair:', pairIndex, 'voltage:', pair.voltage?.wf?.label, 'current:', pair.current?.wf?.label);
+            
             if (pair.voltage) {
                 const vWf = pair.voltage.wf;
-                let yData = vWf.y;
+                console.log('[getPairedWaveformDataForVisualizer] Voltage waveform data length:', vWf.y?.length, 'sample values:', vWf.y?.slice(0, 5));
+                let yData = [...vWf.y]; // Clone to avoid mutating original
                 
                 if (yData && yData.length > 0) {
-                    const sorted = [...yData].sort((a, b) => a - b);
-                    const p1 = sorted[Math.floor(sorted.length * 0.01)];
-                    const p99 = sorted[Math.floor(sorted.length * 0.99)];
-                    const range = p99 - p1;
-                    const margin = range * 0.2;
-                    yData = yData.map(v => Math.max(p1 - margin, Math.min(p99 + margin, v)));
+                    // Debug: log input voltage availability
+                    console.log('[getPairedWaveformDataForVisualizer] localData.inputVoltage:', this.localData?.inputVoltage);
+                    console.log('[getPairedWaveformDataForVisualizer] localData.inputVoltageRange:', this.localData?.inputVoltageRange);
+                    // Get input voltage - handle different possible structures
+                    let inputVoltageMax = 200; // Default fallback
+                    if (this.localData?.inputVoltage?.maximum) {
+                        inputVoltageMax = this.localData.inputVoltage.maximum;
+                    } else if (this.localData?.inputVoltageRange?.maximum) {
+                        inputVoltageMax = this.localData.inputVoltageRange.maximum;
+                    }
+                    
+                    // Determine clipping limits based on waveform type
+                    let clipMin, clipMax;
+                    
+                    if (vWf.label.toLowerCase().includes('primary')) {
+                        // Primary voltage: expected range is -Vin to +Vin
+                        // Use 2.5x margin for ngspice switching transients
+                        clipMax = inputVoltageMax * 2.5;
+                        clipMin = -inputVoltageMax * 2.5;
+                    } else if (vWf.label.toLowerCase().includes('secondary')) {
+                        // Secondary voltage: based on turns ratio
+                        const positiveValues = yData.filter(v => v > 0).sort((a, b) => a - b);
+                        const medianPositive = positiveValues.length > 0 
+                            ? positiveValues[Math.floor(positiveValues.length / 2)]
+                            : inputVoltageMax;
+                        clipMax = medianPositive * 2.5;
+                        clipMin = -medianPositive * 2.5;
+                    } else if (vWf.label.toLowerCase().includes('output')) {
+                        // Output voltage: should be close to target output voltage
+                        const outputVoltage = this.localData?.outputsParameters?.[0]?.voltage || 12;
+                        clipMax = outputVoltage * 2;
+                        clipMin = -outputVoltage * 0.5;
+                    } else {
+                        // Default: use percentile-based clipping
+                        const sorted = [...yData].sort((a, b) => a - b);
+                        const p1 = sorted[Math.floor(sorted.length * 0.01)];
+                        const p99 = sorted[Math.floor(sorted.length * 0.99)];
+                        const range = p99 - p1;
+                        clipMin = p1 - range * 0.2;
+                        clipMax = p99 + range * 0.2;
+                    }
+                    
+                    // Log clipping info for debugging
+                    const originalMin = Math.min(...yData);
+                    const originalMax = Math.max(...yData);
+                    if (originalMax > clipMax || originalMin < clipMin) {
+                        console.log(`[Paired Voltage Clipping] ${vWf.label}: clipping to [${clipMin.toFixed(1)}, ${clipMax.toFixed(1)}], original range [${originalMin.toFixed(1)}, ${originalMax.toFixed(1)}]`);
+                        yData = yData.map(v => Math.max(clipMin, Math.min(clipMax, v)));
+                    }
                 }
                 
-                result.push({
+                const voltageData = {
                     label: vWf.label,
                     data: { x: vWf.x, y: yData },
                     colorLabel: this.$styleStore.operatingPoints?.voltageGraph?.color || '#b18aea',
@@ -768,14 +1116,37 @@ export default {
                     position: 'left',
                     unit: 'V',
                     numberDecimals: 6,
-                });
+                };
+                
+                result.push(voltageData);
             }
             
             if (pair.current) {
                 const iWf = pair.current.wf;
+                let iData = [...iWf.y]; // Clone to avoid mutating original
+                
+                // Clip current spikes
+                if (iData && iData.length > 0) {
+                    const sorted = [...iData].sort((a, b) => a - b);
+                    const p1 = sorted[Math.floor(sorted.length * 0.01)];
+                    const p99 = sorted[Math.floor(sorted.length * 0.99)];
+                    const range = p99 - p1;
+                    
+                    // Use 20% margin around 1st-99th percentile
+                    const clipMin = p1 - range * 0.2;
+                    const clipMax = p99 + range * 0.2;
+                    
+                    const originalMin = Math.min(...iData);
+                    const originalMax = Math.max(...iData);
+                    if (originalMax > clipMax || originalMin < clipMin) {
+                        console.log(`[Paired Current Clipping] ${iWf.label}: clipping to [${clipMin.toFixed(3)}, ${clipMax.toFixed(3)}], original range [${originalMin.toFixed(3)}, ${originalMax.toFixed(3)}]`);
+                        iData = iData.map(v => Math.max(clipMin, Math.min(clipMax, v)));
+                    }
+                }
+                
                 result.push({
                     label: iWf.label,
-                    data: { x: iWf.x, y: iWf.y },
+                    data: { x: iWf.x, y: iData },
                     colorLabel: this.$styleStore.operatingPoints?.currentGraph?.color || '#4CAF50',
                     type: 'value',
                     position: 'right',
@@ -783,6 +1154,9 @@ export default {
                     numberDecimals: 6,
                 });
             }
+            
+            // Debug: log what we're returning
+            console.log('[getPairedWaveformDataForVisualizer] Returning result:', result.map(r => ({label: r.label, yMin: Math.min(...r.data.y), yMax: Math.max(...r.data.y)})));
             
             return result;
         },
@@ -1275,6 +1649,12 @@ export default {
     font-size: 0.8rem;
     font-weight: 500;
     color: #b18aea;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.compact-header > span {
+    white-space: nowrap;
 }
 
 .compact-body {
