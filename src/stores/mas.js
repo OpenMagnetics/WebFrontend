@@ -24,6 +24,10 @@ export const useMasStore = defineStore("mas", () => {
         this.mas = mas;
     }
 
+    function setInputs(inputs) {
+        this.mas.inputs = inputs;
+    }
+
     function resetMas(type) {
         if (type == "power") {
             this.mas = MAS.Convert.toMas(JSON.stringify(Defaults.powerMas));
@@ -44,6 +48,7 @@ export const useMasStore = defineStore("mas", () => {
 
     return {
         setMas,
+        setInputs,
         mas,
         resetMas,
         resetMagnetic,

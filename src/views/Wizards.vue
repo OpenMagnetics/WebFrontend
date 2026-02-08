@@ -10,6 +10,10 @@ import IsolatedBuckBoostWizard from '../components/Wizards/IsolatedBuckBoostWiza
 import PushPullWizard from '../components/Wizards/PushPullWizard.vue'
 import ForwardWizard from '../components/Wizards/ForwardWizard.vue'
 import PfcWizard from '../components/Wizards/PfcWizard.vue'
+import DabWizard from '../components/Wizards/DabWizard.vue'
+import LlcWizard from '../components/Wizards/LlcWizard.vue'
+import CllcWizard from '../components/Wizards/CllcWizard.vue'
+import PsfbWizard from '../components/Wizards/PsfbWizard.vue'
 
 </script>
 
@@ -81,6 +85,22 @@ export default {
             <PfcWizard
                 v-if="$stateStore.getCurrentWizard() == $stateStore.Wizards.Pfc"
                 :dataTestLabel="'PfcWizard'"
+            />
+            <DabWizard
+                v-if="$stateStore.getCurrentWizard() == $stateStore.Wizards.DualActiveBridge"
+                :dataTestLabel="'DabWizard'"
+            />
+            <LlcWizard
+                v-if="$stateStore.getCurrentWizard() == $stateStore.Wizards.LlcResonant"
+                :dataTestLabel="'LlcWizard'"
+            />
+            <CllcWizard
+                v-if="$stateStore.getCurrentWizard() == $stateStore.Wizards.CllcResonant"
+                :dataTestLabel="'CllcWizard'"
+            />
+            <PsfbWizard
+                v-if="$stateStore.getCurrentWizard() == $stateStore.Wizards.PhaseShiftFullBridge"
+                :dataTestLabel="'PsfbWizard'"
             />
         </main>
         <Footer class="mt-auto"/>

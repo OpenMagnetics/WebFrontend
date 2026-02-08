@@ -1422,10 +1422,10 @@ export default {
                         <span v-else></span>
                         <div class="action-btns">
                             <button :disabled="errorMessage != ''" class="action-btn-sm secondary" @click="processAndReview">
-                                <i class="fa-solid fa-magnifying-glass me-1"></i>Review
+                                <i class="fa-solid fa-magnifying-glass me-1"></i>Review Specs
                             </button>
                             <button :disabled="errorMessage != ''" class="action-btn-sm primary" @click="processAndAdvise">
-                                <i class="fa-solid fa-wand-magic-sparkles me-1"></i>Design
+                                <i class="fa-solid fa-wand-magic-sparkles me-1"></i>Design Magnetic
                             </button>
                         </div>
                     </div>
@@ -1753,20 +1753,19 @@ export default {
     min-width: 20px;
 }
 
-/* Action buttons */
+/* Compact Action Buttons */
 .action-btns {
     display: flex;
-    gap: 4px;
+    gap: 8px;
 }
 
 .action-btn-sm {
-    border: none;
-    border-radius: 4px;
-    padding: 4px 12px;
-    font-size: 0.75rem;
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-size: 0.8rem;
     font-weight: 500;
     cursor: pointer;
-    transition: all 0.2s;
+    border: none;
 }
 
 .action-btn-sm.primary {
@@ -1775,12 +1774,13 @@ export default {
 }
 
 .action-btn-sm.secondary {
-    background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
-    color: white;
+    background: rgba(177, 138, 234, 0.15);
+    border: 1px solid rgba(177, 138, 234, 0.3);
+    color: #b18aea;
 }
 
 .action-btn-sm:disabled {
-    opacity: 0.5;
+    opacity: 0.4;
     cursor: not-allowed;
 }
 
