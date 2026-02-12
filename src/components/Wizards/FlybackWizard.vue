@@ -389,8 +389,8 @@ export default {
                 this.designRequirements = result.designRequirements || null;
                 this.simulatedMagnetizingInductance = result.magnetizingInductance || null;
                 this.simulatedTurnsRatios = result.turnsRatios || null;
-                this.magneticWaveforms = result.magneticWaveforms || [];
-                this.converterWaveforms = result.converterWaveforms || [];
+                this.magneticWaveforms = this.repeatWaveformsForPeriods(result.magneticWaveforms || []);
+                this.converterWaveforms = this.repeatWaveformsForPeriods(result.converterWaveforms || []);
                 
                 // Increment forceWaveformUpdate after $nextTick to ensure LineVisualizer is mounted
                 this.$nextTick(() => {
@@ -642,6 +642,33 @@ export default {
             }
             
             return { time: newTime, data: newData };
+        },
+        repeatWaveformsForPeriods(waveformsData) {
+            if (this.numberOfPeriods <= 1 || !waveformsData || waveformsData.length === 0) {
+                return waveformsData;
+            }
+            
+            return waveformsData.map(op => {
+                if (!op.waveforms) return op;
+                
+                const repeatedWaveforms = op.waveforms.map(wf => {
+                    if (!wf.x || wf.x.length < 2) return wf;
+                    
+                    const period = wf.x[wf.x.length - 1] - wf.x[0];
+                    const repeatedX = [...wf.x];
+                    const repeatedY = [...wf.y];
+                    
+                    for (let p = 1; p < this.numberOfPeriods; p++) {
+                        const offset = period * p;
+                        wf.x.slice(1).forEach(x => repeatedX.push(x + offset));
+                        wf.y.slice(1).forEach(y => repeatedY.push(y));
+                    }
+                    
+                    return { ...wf, x: repeatedX, y: repeatedY };
+                });
+                
+                return { ...op, waveforms: repeatedWaveforms };
+            });
         },
         getWaveformsList(waveforms, operatingPointIndex) {
             // Get list of waveforms for an operating point

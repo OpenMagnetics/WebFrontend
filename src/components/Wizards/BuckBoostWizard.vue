@@ -65,7 +65,7 @@ export default {
             converterWaveforms: [],
             waveformViewMode: 'magnetic',
             forceWaveformUpdate: 0,
-            numberOfPeriods: 1,
+            numberOfPeriods: 2,
             numberOfSteadyStatePeriods: 10,
         }
     },
@@ -608,7 +608,9 @@ export default {
                 allWaveforms = allWaveforms.filter(wf => 
                     wf.label.toLowerCase().includes('winding') || 
                     wf.label.toLowerCase().includes('inductor') ||
-                    wf.label.toLowerCase().includes('magnetizing')
+                    wf.label.toLowerCase().includes('magnetizing') ||
+                    wf.label.toLowerCase().includes('primary') ||
+                    wf.label.toLowerCase().includes('secondary')
                 );
                 
                 const pairs = [];
@@ -665,7 +667,10 @@ export default {
             
             // Find specific waveforms by label
             const switchNodeVoltage = allWaveforms.find(wf => wf.label.toLowerCase().includes('switch node'));
-            const inductorCurrent = allWaveforms.find(wf => wf.label.toLowerCase().includes('inductor') && wf.unit === 'A');
+            const inductorCurrent = allWaveforms.find(wf => 
+                (wf.label.toLowerCase().includes('inductor') || wf.label.toLowerCase().includes('primary')) && 
+                wf.unit === 'A'
+            );
             const inputVoltage = allWaveforms.find(wf => wf.label.toLowerCase().includes('input') && wf.unit === 'V');
             const outputVoltage = allWaveforms.find(wf => wf.label.toLowerCase().includes('output') && wf.unit === 'V');
             

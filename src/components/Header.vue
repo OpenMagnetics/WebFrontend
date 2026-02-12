@@ -456,6 +456,58 @@ export default {
                         </li>
                         <li>
                             <button
+                                :style="getWizardButtonStyle('DAB', true)"
+                                data-cy="Dab-link"
+                                :class="headerTogglerIsVisible? 'w-100' : 'mx-0' "
+                                class="dropdown-item btn btn-block nav-link px-2"
+                                @click="onWizards($stateStore.Wizards.DualActiveBridge)"
+                                @mouseenter="hoveredWizard = 'DAB'"
+                                @mouseleave="hoveredWizard = null"
+                            >
+                                <i class="me-2 fa-solid fa-right-left"></i>{{'DAB Wizard'}}
+                            </button>
+                        </li>
+                        <li>
+                            <button
+                                :style="getWizardButtonStyle('LLC', true)"
+                                data-cy="Llc-link"
+                                :class="headerTogglerIsVisible? 'w-100' : 'mx-0' "
+                                class="dropdown-item btn btn-block nav-link px-2"
+                                @click="onWizards($stateStore.Wizards.LlcResonant)"
+                                @mouseenter="hoveredWizard = 'LLC'"
+                                @mouseleave="hoveredWizard = null"
+                            >
+                                <i class="me-2 fa-solid fa-wave-square"></i>{{'LLC Wizard'}}
+                            </button>
+                        </li>
+                        <li>
+                            <button
+                                :style="getWizardButtonStyle('CLLC', true)"
+                                data-cy="Cllc-link"
+                                :class="headerTogglerIsVisible? 'w-100' : 'mx-0' "
+                                class="dropdown-item btn btn-block nav-link px-2"
+                                @click="onWizards($stateStore.Wizards.CllcResonant)"
+                                @mouseenter="hoveredWizard = 'CLLC'"
+                                @mouseleave="hoveredWizard = null"
+                            >
+                                <i class="me-2 fa-solid fa-car-battery"></i>{{'CLLC Wizard'}}
+                            </button>
+                        </li>
+                        <li>
+                            <button
+                                :style="getWizardButtonStyle('PSFB', true)"
+                                data-cy="Psfb-link"
+                                :class="headerTogglerIsVisible? 'w-100' : 'mx-0' "
+                                class="dropdown-item btn btn-block nav-link px-2"
+                                @click="onWizards($stateStore.Wizards.PhaseShiftFullBridge)"
+                                @mouseenter="hoveredWizard = 'PSFB'"
+                                @mouseleave="hoveredWizard = null"
+                            >
+                                <i class="me-2 fa-solid fa-angles-right"></i>{{'PSFB Wizard'}}
+                            </button>
+                        </li>
+                        <li>
+                            <button
                                 :style="getWizardButtonStyle('ActiveClampForward', true)"
                                 data-cy="ActiveClampForward-CommonModeChoke-link"
                                 :class="headerTogglerIsVisible? 'w-100' : 'mx-0' "

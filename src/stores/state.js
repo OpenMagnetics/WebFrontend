@@ -43,6 +43,10 @@ export const useStateStore = defineStore("state", () => {
         TwoSwitchForward: 'twoSwitchForward',
         ActiveClampForward: 'activeClampForward',
         Pfc: 'pfc',
+        DualActiveBridge: 'dualActiveBridge',
+        LlcResonant: 'llcResonant',
+        CllcResonant: 'cllcResonant',
+        PhaseShiftFullBridge: 'phaseShiftFullBridge',
     };
 
 

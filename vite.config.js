@@ -53,13 +53,18 @@ export default defineConfig({
     ],
     resolve: {
         alias: {
-            '@': fileURLToPath(new URL('./src', import.meta.url)),
+            // '@': fileURLToPath(new URL('./src', import.meta.url)),
+            '@openmagnetics/magnetic-virtual-builder': fileURLToPath(new URL('../MVB.js/src', import.meta.url)),
+            // use "@openmagnetics/magnetic-virtual-builder": "file:../MVB.js", in package.json
         },
     },
     server: {
         // Enable symlinks to be followed
         fs: {
             allow: ['..'],
+        },
+        watch: {
+            ignored: ['**/node_modules/**', '!**/MVB.js/src/**']
         },
         proxy: {
             '/api': {
