@@ -347,7 +347,7 @@ export default {
                                 @mouseenter="hoveredWizard = 'CommonModeChoke'"
                                 @mouseleave="hoveredWizard = null"
                             >
-                                <i class="me-2 fa-solid fa-bolt-lightning"></i>{{'CMC Wizard'}}
+                                <i class="me-2 fa-solid fa-filter"></i>{{'CMC Wizard'}}
                             </button>
                         </li>
                         <li>
@@ -360,7 +360,7 @@ export default {
                                 @mouseenter="hoveredWizard = 'DifferentialModeChoke'"
                                 @mouseleave="hoveredWizard = null"
                             >
-                                <i class="me-2 fa-solid fa-bolt-lightning"></i>{{'DMC Wizard'}}
+                                <i class="me-2 fa-solid fa-wave-square"></i>{{'DMC Wizard'}}
                             </button>
                         </li>
                         <li>
@@ -373,7 +373,7 @@ export default {
                                 @mouseenter="hoveredWizard = 'Flyback'"
                                 @mouseleave="hoveredWizard = null"
                             >
-                                <i class="me-2 fa-solid fa-bolt-lightning"></i>{{'Flyback Wizard'}}
+                                <i class="me-2 fa-solid fa-bolt"></i>{{'Flyback Wizard'}}
                             </button>
                         </li>
                         <li>
@@ -386,7 +386,7 @@ export default {
                                 @mouseenter="hoveredWizard = 'Buck'"
                                 @mouseleave="hoveredWizard = null"
                             >
-                                <i class="me-2 fa-solid fa-bolt-lightning"></i>{{'Buck Wizard'}}
+                                <i class="me-2 fa-solid fa-arrow-down"></i>{{'Buck Wizard'}}
                             </button>
                         </li>
                         <li>
@@ -399,7 +399,7 @@ export default {
                                 @mouseenter="hoveredWizard = 'Boost'"
                                 @mouseleave="hoveredWizard = null"
                             >
-                                <i class="me-2 fa-solid fa-bolt-lightning"></i>{{'Boost Wizard'}}
+                                <i class="me-2 fa-solid fa-arrow-up"></i>{{'Boost Wizard'}}
                             </button>
                         </li>
                         <li>
@@ -412,7 +412,7 @@ export default {
                                 @mouseenter="hoveredWizard = 'IsolatedBuck'"
                                 @mouseleave="hoveredWizard = null"
                             >
-                                <i class="me-2 fa-solid fa-bolt-lightning"></i>{{'Isolated Buck Wizard'}}
+                                <i class="me-2 fa-solid fa-shield-halved"></i>{{'Isolated Buck Wizard'}}
                             </button>
                         </li>
                         <li>
@@ -425,7 +425,7 @@ export default {
                                 @mouseenter="hoveredWizard = 'IsolatedBuckBoost'"
                                 @mouseleave="hoveredWizard = null"
                             >
-                                <i class="me-2 fa-solid fa-bolt-lightning"></i>{{'Isolated Buck Boost Wizard'}}
+                                <i class="me-2 fa-solid fa-shield-virus"></i>{{'Isolated Buck Boost Wizard'}}
                             </button>
                         </li>
                         <li>
@@ -438,7 +438,7 @@ export default {
                                 @mouseenter="hoveredWizard = 'PushPull'"
                                 @mouseleave="hoveredWizard = null"
                             >
-                                <i class="me-2 fa-solid fa-bolt-lightning"></i>{{'Push-Pull Wizard'}}
+                                <i class="me-2 fa-solid fa-arrows-left-right"></i>{{'Push-Pull Wizard'}}
                             </button>
                         </li>
                         <li>
@@ -516,7 +516,7 @@ export default {
                                 @mouseenter="hoveredWizard = 'ActiveClampForward'"
                                 @mouseleave="hoveredWizard = null"
                             >
-                                <i class="me-2 fa-solid fa-bolt-lightning"></i>{{'Active Clamp Forward Wizard'}}
+                                <i class="me-2 fa-solid fa-compress"></i>{{'Active Clamp Forward Wizard'}}
                             </button>
                         </li>
                         <li>
@@ -529,7 +529,7 @@ export default {
                                 @mouseenter="hoveredWizard = 'SingleSwitchForward'"
                                 @mouseleave="hoveredWizard = null"
                             >
-                                <i class="me-2 fa-solid fa-bolt-lightning"></i>{{'Single-Switch Forward Wizard'}}
+                                <i class="me-2 fa-solid fa-toggle-off"></i>{{'Single-Switch Forward Wizard'}}
                             </button>
                         </li>
                         <li>
@@ -542,7 +542,7 @@ export default {
                                 @mouseenter="hoveredWizard = 'TwoSwitchForward'"
                                 @mouseleave="hoveredWizard = null"
                             >
-                                <i class="me-2 fa-solid fa-bolt-lightning"></i>{{'Two-Switch Forward Wizard'}}
+                                <i class="me-2 fa-solid fa-toggle-on"></i>{{'Two-Switch Forward Wizard'}}
                             </button>
                         </li>
                       </ul>

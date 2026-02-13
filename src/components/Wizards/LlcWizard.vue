@@ -6,10 +6,11 @@ import Dimension from '/WebSharedComponents/DataInput/Dimension.vue'
 import ElementFromList from '/WebSharedComponents/DataInput/ElementFromList.vue'
 import DimensionWithTolerance from '/WebSharedComponents/DataInput/DimensionWithTolerance.vue'
 import { minimumMaximumScalePerParameter } from '/WebSharedComponents/assets/js/defaults.js'
-import LineVisualizer from '/WebSharedComponents/Common/LineVisualizer.vue'
+import ConverterWizardBase from './ConverterWizardBase.vue'
 </script>
 
 <script>
+
 export default {
     props: {
         dataTestLabel: {
@@ -20,8 +21,10 @@ export default {
     data() {
         const masStore = useMasStore();
         const taskQueueStore = useTaskQueueStore();
+        const designLevelOptions = ['Help me with the design', 'I know the design I want'];
         const localData = {
             inputVoltage: { nominal: 400, tolerance: 0.1 },
+            bridgeType: 'Full Bridge',  // Full bridge gives k=1.0, so Vi_min = 360V > Vo = 200V (with n=4.17)
             outputVoltage: 48,
             outputPower: 500,
             minSwitchingFrequency: 80000,
@@ -34,11 +37,13 @@ export default {
             ambientTemperature: 25,
             efficiency: 0.97,
             insulationType: 'Basic',
+            designMode: designLevelOptions[0],  // Default to "Help me with the design"
         };
         const insulationTypes = ['No', 'Basic', 'Reinforced'];
         return {
             masStore,
             taskQueueStore,
+            designLevelOptions,
             localData,
             insulationTypes,
             errorMessage: "",
@@ -56,6 +61,11 @@ export default {
             waveformViewMode: 'magnetic',
             forceWaveformUpdate: 0,
         }
+    },
+    computed: {
+        wizardSubtitle() {
+            return "Resonant DC-DC Converter";
+        },
     },
     watch: {
         waveformViewMode() {
@@ -79,15 +89,15 @@ export default {
         async process() {
             this.masStore.resetMas("power");
             try {
+                // Build the auxiliary object based on design mode
                 const aux = {
                     inputVoltage: this.localData.inputVoltage,
+                    bridgeType: this.localData.bridgeType || 'Half Bridge',
                     minSwitchingFrequency: this.localData.minSwitchingFrequency,
                     maxSwitchingFrequency: this.localData.maxSwitchingFrequency,
                     resonantFrequency: this.localData.resonantFrequency,
                     qualityFactor: this.localData.qualityFactor,
                     integratedResonantInductor: this.localData.integratedResonantInductor,
-                    desiredInductance: this.localData.magnetizingInductance,
-                    desiredTurnsRatios: [this.localData.turnsRatio],
                     operatingPoints: [{
                         outputVoltages: [this.localData.outputVoltage],
                         outputCurrents: [this.localData.outputPower / this.localData.outputVoltage],
@@ -95,6 +105,13 @@ export default {
                         ambientTemperature: this.localData.ambientTemperature,
                     }]
                 };
+
+                // Only include desired values in "I know the design I want" mode
+                // In "Help me with the design" mode, the base Llc class will auto-calculate them
+                if (this.localData.designMode === 'I know the design I want') {
+                    aux.desiredInductance = this.localData.magnetizingInductance;
+                    aux.desiredTurnsRatios = [this.localData.turnsRatio];
+                }
                 
                 // If we have simulated operating points from simulation, use them
                 if (this.simulatedOperatingPoints && this.simulatedOperatingPoints.length > 0) {
@@ -169,10 +186,36 @@ export default {
                 } else {
                     // Use analytical calculation
                     const result = await this.taskQueueStore.calculateLlcInputs(aux);
+                    
                     if (result.error) {
                         this.errorMessage = result.error;
                         return false;
                     }
+                    
+                    // Validate waveforms for NaN/Inf values
+                    let hasInvalidData = false;
+                    if (result.magneticWaveforms) {
+                        for (const wf of result.magneticWaveforms) {
+                            if (wf.waveforms) {
+                                for (const w of wf.waveforms) {
+                                    if (w.y) {
+                                        for (let i = 0; i < w.y.length; i++) {
+                                            if (!Number.isFinite(w.y[i])) {
+                                                hasInvalidData = true;
+                                                break;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    
+                    if (hasInvalidData) {
+                        this.errorMessage = "Waveform calculation produced invalid values (NaN/Inf). This is a known issue with the LLC mathematical model for certain parameter combinations. Try adjusting the switching frequency or quality factor.";
+                        return false;
+                    }
+                    
                     this.masStore.setInputs(result.masInputs);
                     this.designRequirements = result.designRequirements;
                     this.simulatedTurnsRatios = result.simulatedTurnsRatios;
@@ -234,6 +277,7 @@ export default {
             try {
                 const aux = {
                     inputVoltage: this.localData.inputVoltage,
+                    bridgeType: this.localData.bridgeType || 'Half Bridge',
                     minSwitchingFrequency: this.localData.minSwitchingFrequency,
                     maxSwitchingFrequency: this.localData.maxSwitchingFrequency,
                     resonantFrequency: this.localData.resonantFrequency,
@@ -248,36 +292,64 @@ export default {
                         ambientTemperature: this.localData.ambientTemperature,
                     }]
                 };
+                aux['numberOfPeriods'] = parseInt(this.numberOfPeriods, 10);
                 const result = await this.taskQueueStore.calculateLlcInputs(aux);
+                console.log('ANALYTICAL RESULT:', result);
+                console.log('magneticWaveforms:', result.magneticWaveforms);
                 if (result.error) {
                     this.waveformError = result.error;
                 } else {
-                    this.designRequirements = result.designRequirements;
-                    this.simulatedMagnetizingInductance = result.computedResonantInductance || this.localData.magnetizingInductance;
-                    this.simulatedTurnsRatios = result.designRequirements?.turnsRatios?.map(tr => tr.nominal) || [this.localData.turnsRatio];
+                    // Validate waveforms for NaN/Inf values
+                    let hasInvalidData = false;
+                    if (result.magneticWaveforms) {
+                        for (const wf of result.magneticWaveforms) {
+                            if (wf.waveforms) {
+                                for (const w of wf.waveforms) {
+                                    if (w.y) {
+                                        for (let i = 0; i < w.y.length; i++) {
+                                            if (!Number.isFinite(w.y[i])) {
+                                                hasInvalidData = true;
+                                                break;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
                     
-                    // Process waveforms
-                    const processedWaveforms = (result.magneticWaveforms || []).map(wf => ({
-                        ...wf,
-                        waveforms: (wf.waveforms || []).filter(w => 
-                            w && w.x && w.y && Array.isArray(w.x) && Array.isArray(w.y) && w.x.length > 0 && w.y.length > 0
-                        ).map(w => ({
-                            label: w.label || 'Unknown',
-                            data: { x: w.x, y: w.y },
-                            colorLabel: w.color || '#b18aea',
-                            type: 'value',
-                            position: 'left',
-                            unit: w.unit || 'A',
-                            numberDecimals: 3
-                        }))
-                    })).filter(wf => wf.waveforms.length > 0);
-                    
-                    this.magneticWaveforms = processedWaveforms;
-                    this.simulatedOperatingPoints = result.operatingPoints || [];
-                    
-                    this.$nextTick(() => {
-                        this.forceWaveformUpdate += 1;
-                    });
+                    if (hasInvalidData) {
+                        this.waveformError = "Waveform calculation produced invalid values (NaN/Inf). This is a known issue with the LLC mathematical model for certain parameter combinations. Try adjusting the switching frequency or quality factor.";
+                    } else {
+                        this.designRequirements = result.designRequirements;
+                        this.simulatedMagnetizingInductance = result.computedResonantInductance || this.localData.magnetizingInductance;
+                        this.simulatedTurnsRatios = result.designRequirements?.turnsRatios?.map(tr => tr.nominal) || [this.localData.turnsRatio];
+                        
+                        // Process waveforms
+                        const rawWaveforms = result.magneticWaveforms || [];
+                        
+                        const processedWaveforms = rawWaveforms.map(wf => ({
+                            ...wf,
+                            waveforms: (wf.waveforms || []).filter(w => 
+                                w && w.x && w.y && Array.isArray(w.x) && Array.isArray(w.y) && w.x.length > 0 && w.y.length > 0
+                            ).map(w => ({
+                                label: w.label || 'Unknown',
+                                data: { x: w.x, y: w.y },
+                                colorLabel: w.color || '#b18aea',
+                                type: 'value',
+                                position: 'left',
+                                unit: w.unit || 'A',
+                                numberDecimals: 3
+                            }))
+                        })).filter(wf => wf.waveforms.length > 0);
+                        
+                        this.magneticWaveforms = processedWaveforms;
+                        this.simulatedOperatingPoints = result.operatingPoints || [];
+                        
+                        this.$nextTick(() => {
+                            this.forceWaveformUpdate += 1;
+                        });
+                    }
                 }
             } catch (error) {
                 this.waveformError = error.message || "Failed to get analytical waveforms";
@@ -295,6 +367,7 @@ export default {
             try {
                 const aux = {
                     inputVoltage: this.localData.inputVoltage,
+                    bridgeType: this.localData.bridgeType || 'Half Bridge',
                     minSwitchingFrequency: this.localData.minSwitchingFrequency,
                     maxSwitchingFrequency: this.localData.maxSwitchingFrequency,
                     resonantFrequency: this.localData.resonantFrequency,
@@ -314,15 +387,13 @@ export default {
                 
                 const result = await this.taskQueueStore.simulateLlcIdealWaveforms(aux);
                 
-                this.simulatedOperatingPoints = result.operatingPoints || [];
-                this.designRequirements = result.designRequirements || null;
+                this.simulatedOperatingPoints = result.inputs?.operatingPoints || result.operatingPoints || [];
+                this.designRequirements = result.inputs?.designRequirements || result.designRequirements || null;
                 this.simulatedMagnetizingInductance = result.magnetizingInductance || null;
                 this.simulatedTurnsRatios = result.turnsRatios || null;
                 
-                // Process magnetic waveforms
-                if (result.magneticWaveforms) {
-                    this.magneticWaveforms = this.repeatWaveformsForPeriods(result.magneticWaveforms);
-                }
+                // Build magnetic waveforms from operating points
+                this.magneticWaveforms = this.buildMagneticWaveformsFromInputs(this.simulatedOperatingPoints);
                 
                 // Process converter waveforms
                 if (result.converterWaveforms) {
@@ -341,7 +412,64 @@ export default {
             this.simulatingWaveforms = false;
         },
 
-        getInductanceDisplay() {
+        buildMagneticWaveformsFromInputs(operatingPoints) {
+            // WASM returns only 1 period, so we need to repeat for display
+            const magneticWaveforms = [];
+            
+            for (let opIdx = 0; opIdx < operatingPoints.length; opIdx++) {
+                const op = operatingPoints[opIdx];
+                const opWaveforms = {
+                    frequency: op.excitationsPerWinding?.[0]?.frequency || this.localData.resonantFrequency,
+                    operatingPointName: op.name || `Operating Point ${opIdx + 1}`,
+                    waveforms: []
+                };
+                
+                // Extract waveforms from each winding excitation
+                const excitations = op.excitationsPerWinding || [];
+                for (let windingIdx = 0; windingIdx < excitations.length; windingIdx++) {
+                    const excitation = excitations[windingIdx];
+                    const windingLabel = windingIdx === 0 ? 'Primary' : `Secondary ${windingIdx}`;
+                    
+                    // Voltage waveform - repeat for display
+                    if (excitation.voltage?.waveform?.time && excitation.voltage?.waveform?.data) {
+                        const { time, data } = this.repeatWaveformForPeriods(
+                            excitation.voltage.waveform.time,
+                            excitation.voltage.waveform.data,
+                            this.numberOfPeriods
+                        );
+                        opWaveforms.waveforms.push({
+                            label: `${windingLabel} Voltage`,
+                            x: time,
+                            y: data,
+                            type: 'voltage',
+                            unit: 'V'
+                        });
+                    }
+                    
+                    // Current waveform - repeat for display
+                    if (excitation.current?.waveform?.time && excitation.current?.waveform?.data) {
+                        const { time, data } = this.repeatWaveformForPeriods(
+                            excitation.current.waveform.time,
+                            excitation.current.waveform.data,
+                            this.numberOfPeriods
+                        );
+                        opWaveforms.waveforms.push({
+                            label: `${windingLabel} Current`,
+                            x: time,
+                            y: data,
+                            type: 'current',
+                            unit: 'A'
+                        });
+                    }
+                }
+                
+                magneticWaveforms.push(opWaveforms);
+            }
+            
+            return magneticWaveforms;
+        },
+
+        getMagnetizingInductanceDisplay() {
             if (this.simulatedMagnetizingInductance != null) {
                 return (this.simulatedMagnetizingInductance * 1e6).toFixed(1) + 'µH';
             }
@@ -374,6 +502,35 @@ export default {
                 }
             }
             return parts.join(' : ');
+        },
+
+        repeatWaveformForPeriods(time, data, numberOfPeriods) {
+            // Repeat a single-period waveform for the specified number of periods
+            if (!time || !data || time.length === 0 || numberOfPeriods <= 1) {
+                return { time, data };
+            }
+            
+            const period = time[time.length - 1] - time[0];
+            const newTime = [];
+            const newData = [];
+            
+            for (let p = 0; p < numberOfPeriods; p++) {
+                const offset = p * period;
+                for (let i = 0; i < time.length; i++) {
+                    // Skip first point in subsequent periods ONLY if it doesn't create duplicate time
+                    if (p > 0 && i === 0) {
+                        // Check if this point would create a duplicate time value
+                        const newTimeValue = time[i] + offset;
+                        if (newTime.length > 0 && Math.abs(newTime[newTime.length - 1] - newTimeValue) < 1e-12) {
+                            continue; // Skip to avoid duplicate
+                        }
+                    }
+                    newTime.push(time[i] + offset);
+                    newData.push(data[i]);
+                }
+            }
+            
+            return { time: newTime, data: newData };
         },
 
         repeatWaveformsForPeriods(waveformsData) {
@@ -619,160 +776,91 @@ export default {
         },
     },
 }
+
 </script>
 
 <template>
-    <div class="wizard-container container-fluid px-3">
-        <div class="wizard-header text-center py-2 mb-3">
-            <h4 class="wizard-title mb-0"><i class="fa-solid fa-wave-square me-2"></i>LLC Wizard</h4>
+  <ConverterWizardBase
+    title="LLC Wizard"
+    titleIcon="fa-wave-square"
+    :subtitle="wizardSubtitle"
+    :col1Width="3" :col2Width="4" :col3Width="5"
+    :magneticWaveforms="magneticWaveforms"
+    :converterWaveforms="converterWaveforms"
+    :waveformViewMode="waveformViewMode"
+    :waveformForceUpdate="forceWaveformUpdate"
+    :simulatingWaveforms="simulatingWaveforms"
+    :waveformSource="waveformSource"
+    :waveformError="waveformError"
+    :errorMessage="errorMessage"
+    :numberOfPeriods="numberOfPeriods"
+    :numberOfSteadyStatePeriods="numberOfSteadyStatePeriods"
+    :disableActions="errorMessage != ''"
+    @update:waveformViewMode="waveformViewMode = $event"
+    @update:numberOfPeriods="numberOfPeriods = $event"
+    @update:numberOfSteadyStatePeriods="numberOfSteadyStatePeriods = $event"
+    @get-analytical-waveforms="getAnalyticalWaveforms"
+    @get-simulated-waveforms="simulateIdealWaveforms"
+    @dismiss-error="errorMessage = ''; waveformError = ''"
+  >
+    <template #design-mode>
+      <div class="design-mode-selector">
+        <label v-for="(option, index) in designLevelOptions" :key="index" class="design-mode-option">
+          <input type="radio" v-model="localData.designMode" :value="option" @change="updateErrorMessage">
+          <span class="design-mode-label">{{ option }}</span>
+        </label>
+      </div>
+    </template>
+
+    <template #design-or-switch-parameters-title>
+      <div class="compact-header"><i class="fa-solid fa-cogs me-1"></i>Tank</div>
+    </template>
+
+    <template #design-or-switch-parameters>
+      <Dimension :name="'qualityFactor'" :replaceTitle="'Q Factor'" :unit="null" :min="0.1" :max="2" v-model="localData" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor" :textColor="$styleStore.wizard.inputTextColor" @update="updateErrorMessage"/>
+      <!-- Only show turns ratio and magnetizing inductance inputs in "I know the design I want" mode -->
+      <template v-if="localData.designMode === 'I know the design I want'">
+        <Dimension :name="'turnsRatio'" :replaceTitle="'Turns'" :unit="null" :min="0.1" :max="100" v-model="localData" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor" :textColor="$styleStore.wizard.inputTextColor" @update="updateErrorMessage"/>
+        <Dimension :name="'magnetizingInductance'" :replaceTitle="'Mag L'" unit="H" :min="minimumMaximumScalePerParameter['inductance']['min']" :max="minimumMaximumScalePerParameter['inductance']['max']" v-model="localData" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor" :textColor="$styleStore.wizard.inputTextColor" @update="updateErrorMessage"/>
+      </template>
+      <!-- Show computed values in "Help me with the design" mode -->
+      <template v-else>
+        <div class="compact-row"><span class="compact-label">Turns</span><span class="compact-value">{{ getTurnsRatioDisplay() }}</span></div>
+        <div class="compact-row"><span class="compact-label">Mag L</span><span class="compact-value">{{ getMagnetizingInductanceDisplay() }}</span></div>
+      </template>
+      <div class="form-check mt-2"><input class="form-check-input" type="checkbox" v-model="localData.integratedResonantInductor" id="integratedResonantInductor"><label class="form-check-label small" for="integratedResonantInductor" :style="{ color: $styleStore.wizard.inputTextColor }">Integrated Res L</label></div>
+    </template>
+
+    <template #conditions>
+      <!-- Freq Range -->
+      <Dimension :name="'minSwitchingFrequency'" :replaceTitle="'Min Freq'" unit="Hz" :min="minimumMaximumScalePerParameter['frequency']['min']" :max="minimumMaximumScalePerParameter['frequency']['max']" v-model="localData" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor" :textColor="$styleStore.wizard.inputTextColor" @update="updateErrorMessage"/>
+      <Dimension :name="'maxSwitchingFrequency'" :replaceTitle="'Max Freq'" unit="Hz" :min="minimumMaximumScalePerParameter['frequency']['min']" :max="minimumMaximumScalePerParameter['frequency']['max']" v-model="localData" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor" :textColor="$styleStore.wizard.inputTextColor" @update="updateErrorMessage"/>
+      <Dimension :name="'resonantFrequency'" :replaceTitle="'Res Freq'" unit="Hz" :min="minimumMaximumScalePerParameter['frequency']['min']" :max="minimumMaximumScalePerParameter['frequency']['max']" v-model="localData" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor" :textColor="$styleStore.wizard.inputTextColor" @update="updateErrorMessage"/>
+      <Dimension :name="'ambientTemperature'" :replaceTitle="'Temp'" unit=" C" :min="minimumMaximumScalePerParameter['temperature']['min']" :max="minimumMaximumScalePerParameter['temperature']['max']" :allowNegative="true" :allowZero="true" v-model="localData" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor" :textColor="$styleStore.wizard.inputTextColor" @update="updateErrorMessage"/>
+      <Dimension :name="'efficiency'" :replaceTitle="'Eff'" unit="%" :visualScale="100" :min="0.5" :max="1" v-model="localData" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor" :textColor="$styleStore.wizard.inputTextColor" @update="updateErrorMessage"/>
+      <ElementFromList :name="'insulationType'" :replaceTitle="'Insul'" :options="insulationTypes" :titleSameRow="true" v-model="localData" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor" :textColor="$styleStore.wizard.inputTextColor" @update="updateErrorMessage"/>
+      <!-- Bridge Type -->
+      <ElementFromList :name="'bridgeType'" :replaceTitle="'Bridge'" :options="['Half Bridge', 'Full Bridge']" :titleSameRow="true" v-model="localData" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor" :textColor="$styleStore.wizard.inputTextColor" @update="updateErrorMessage"/>
+    </template>
+
+    <template #col1-footer>
+      <div class="d-flex align-items-center justify-content-between mt-2">
+        <span v-if="errorMessage" class="error-text"><i class="fa-solid fa-exclamation-triangle me-1"></i>{{ errorMessage }}</span>
+        <span v-else></span>
+        <div class="action-btns">
+          <button :disabled="errorMessage != ''" class="action-btn-sm secondary" @click="processAndReview"><i class="fa-solid fa-magnifying-glass me-1"></i>Review Specs</button>
+          <button :disabled="errorMessage != ''" class="action-btn-sm primary" @click="processAndAdvise"><i class="fa-solid fa-wand-magic-sparkles me-1"></i>Design Magnetic</button>
         </div>
-        <div class="row g-2">
-            <div class="col-12 col-xl-3">
-                <div class="d-flex flex-column gap-2">
-                    <div class="compact-card">
-                        <div class="compact-header"><i class="fa-solid fa-gauge-high me-1"></i>Freq Range</div>
-                        <div class="compact-body ps-4">
-                            <Dimension :name="'minSwitchingFrequency'" :replaceTitle="'Min Freq'" unit="Hz" :min="minimumMaximumScalePerParameter['frequency']['min']" :max="minimumMaximumScalePerParameter['frequency']['max']" v-model="localData" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor" :textColor="$styleStore.wizard.inputTextColor" @update="updateErrorMessage"/>
-                            <Dimension :name="'maxSwitchingFrequency'" :replaceTitle="'Max Freq'" unit="Hz" :min="minimumMaximumScalePerParameter['frequency']['min']" :max="minimumMaximumScalePerParameter['frequency']['max']" v-model="localData" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor" :textColor="$styleStore.wizard.inputTextColor" @update="updateErrorMessage"/>
-                            <Dimension :name="'resonantFrequency'" :replaceTitle="'Res Freq'" unit="Hz" :min="minimumMaximumScalePerParameter['frequency']['min']" :max="minimumMaximumScalePerParameter['frequency']['max']" v-model="localData" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor" :textColor="$styleStore.wizard.inputTextColor" @update="updateErrorMessage"/>
-                        </div>
-                    </div>
-                    <div class="compact-card">
-                        <div class="compact-header"><i class="fa-solid fa-gauge-high me-1"></i>Conditions</div>
-                        <div class="compact-body ps-4">
-                            <Dimension :name="'ambientTemperature'" :replaceTitle="'Temp'" unit="°C" :min="minimumMaximumScalePerParameter['temperature']['min']" :max="minimumMaximumScalePerParameter['temperature']['max']" :allowNegative="true" :allowZero="true" v-model="localData" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor" :textColor="$styleStore.wizard.inputTextColor" @update="updateErrorMessage"/>
-                            <Dimension :name="'efficiency'" :replaceTitle="'Eff'" unit="%" :visualScale="100" :min="0.5" :max="1" v-model="localData" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor" :textColor="$styleStore.wizard.inputTextColor" @update="updateErrorMessage"/>
-                            <ElementFromList :name="'insulationType'" :replaceTitle="'Insul'" :options="insulationTypes" :titleSameRow="true" v-model="localData" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor" :textColor="$styleStore.wizard.inputTextColor" @update="updateErrorMessage"/>
-                        </div>
-                    </div>
-                    <div class="compact-card">
-                        <div class="compact-header"><i class="fa-solid fa-cogs me-1"></i>Tank</div>
-                        <div class="compact-body ps-4">
-                            <Dimension :name="'qualityFactor'" :replaceTitle="'Q Factor'" :unit="null" :min="0.1" :max="2" v-model="localData" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor" :textColor="$styleStore.wizard.inputTextColor" @update="updateErrorMessage"/>
-                            <Dimension :name="'turnsRatio'" :replaceTitle="'Turns'" :unit="null" :min="0.1" :max="100" v-model="localData" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor" :textColor="$styleStore.wizard.inputTextColor" @update="updateErrorMessage"/>
-                            <Dimension :name="'magnetizingInductance'" :replaceTitle="'Mag L'" unit="H" :min="minimumMaximumScalePerParameter['inductance']['min']" :max="minimumMaximumScalePerParameter['inductance']['max']" v-model="localData" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor" :textColor="$styleStore.wizard.inputTextColor" @update="updateErrorMessage"/>
-                            <div class="form-check mt-2"><input class="form-check-input" type="checkbox" v-model="localData.integratedResonantInductor" id="integratedResonantInductor"><label class="form-check-label small" for="integratedResonantInductor" :style="{ color: $styleStore.wizard.inputTextColor }">Integrated Res L</label></div>
-                        </div>
-                    </div>
-                    <div class="d-flex align-items-center justify-content-between mt-2">
-                        <span v-if="errorMessage" class="error-text"><i class="fa-solid fa-exclamation-triangle me-1"></i>{{ errorMessage }}</span>
-                        <span v-else></span>
-                        <div class="action-btns">
-                            <button :disabled="errorMessage != ''" class="action-btn-sm secondary" @click="processAndReview"><i class="fa-solid fa-magnifying-glass me-1"></i>Review Specs</button>
-                            <button :disabled="errorMessage != ''" class="action-btn-sm primary" @click="processAndAdvise"><i class="fa-solid fa-wand-magic-sparkles me-1"></i>Design Magnetic</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-12 col-xl-4">
-                <div class="d-flex flex-column gap-2">
-                    <div class="compact-card">
-                        <div class="compact-header"><i class="fa-solid fa-plug me-1"></i>Input Voltage</div>
-                        <div class="compact-body">
-                            <DimensionWithTolerance :name="'inputVoltage'" :replaceTitle="''" unit="V" :min="minimumMaximumScalePerParameter['voltage']['min']" :max="minimumMaximumScalePerParameter['voltage']['max']" :labelWidthProportionClass="'d-none'" :valueWidthProportionClass="'col-4'" v-model="localData.inputVoltage" :severalRows="true" :addButtonStyle="$styleStore.wizard.addButton" :removeButtonBgColor="$styleStore.wizard.removeButton['background-color']" :titleFontSize="$styleStore.wizard.inputLabelFontSize" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor" :textColor="$styleStore.wizard.inputTextColor" @update="updateErrorMessage"/>
-                        </div>
-                    </div>
-                    <div class="compact-card">
-                        <div class="compact-header"><i class="fa-solid fa-arrow-right-from-bracket me-1"></i>Output</div>
-                        <div class="compact-body ps-4">
-                            <Dimension :name="'outputVoltage'" :replaceTitle="'Voltage'" unit="V" :min="minimumMaximumScalePerParameter['voltage']['min']" :max="minimumMaximumScalePerParameter['voltage']['max']" v-model="localData" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor" :textColor="$styleStore.wizard.inputTextColor" @update="updateErrorMessage"/>
-                            <Dimension :name="'outputPower'" :replaceTitle="'Power'" unit="W" :min="1" :max="minimumMaximumScalePerParameter['power']['max']" v-model="localData" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor" :textColor="$styleStore.wizard.inputTextColor" @update="updateErrorMessage"/>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-12 col-xl-5">
-                <div class="compact-card simulation-card h-100">
-                    <div class="compact-header d-flex justify-content-between align-items-center">
-                        <span><i class="fa-solid fa-wave-square me-1"></i>Waveforms</span>
-                        <div class="d-flex align-items-center gap-2">
-                            <div class="periods-selector">
-                                <label class="periods-label">Periods:</label>
-                                <select v-model.number="numberOfPeriods" class="periods-select"><option v-for="n in 10" :key="n" :value="n">{{ n }}</option></select>
-                            </div>
-                            <div class="periods-selector">
-                                <label class="periods-label">Steady:</label>
-                                <input v-model.number="numberOfSteadyStatePeriods" type="number" min="1" max="20" class="periods-select" style="width: 50px;" />
-                            </div>
-                            <div class="sim-btns">
-                                <button :disabled="errorMessage != '' || simulatingWaveforms" class="sim-btn analytical" @click="getAnalyticalWaveforms" title="Get analytical waveforms">
-                                    <span v-if="simulatingWaveforms && waveformSource === 'analytical'"><i class="fa-solid fa-spinner fa-spin"></i></span>
-                                    <span v-else><i class="fa-solid fa-calculator"></i> Analytical</span>
-                                </button>
-                                <button :disabled="errorMessage != '' || simulatingWaveforms" class="sim-btn" @click="simulateIdealWaveforms" title="Simulate ideal waveforms">
-                                    <span v-if="simulatingWaveforms && waveformSource === 'simulation'"><i class="fa-solid fa-spinner fa-spin"></i></span>
-                                    <span v-else><i class="fa-solid fa-play"></i> Simulated</span>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="compact-body simulation-body">
-                        <div v-if="waveformError" class="error-text mb-2"><i class="fa-solid fa-exclamation-circle me-1"></i>{{ waveformError }}</div>
-                        <div v-if="(waveformViewMode === 'magnetic' && magneticWaveforms.length > 0) || (waveformViewMode === 'converter' && converterWaveforms.length > 0)">
-                            <div v-for="opIndex in (waveformViewMode === 'magnetic' ? magneticWaveforms.length : converterWaveforms.length)" :key="opIndex" class="waveform-section">
-                                <div class="operating-point-label">{{ getOperatingPointLabel(waveformViewMode === 'magnetic' ? magneticWaveforms : converterWaveforms, opIndex - 1) }}</div>
-                                <div v-for="pairIndex in getPairedWaveformsList(waveformViewMode === 'magnetic' ? magneticWaveforms : converterWaveforms, opIndex - 1).length" :key="pairIndex" class="waveform-item">
-                                    <LineVisualizer 
-                                        :data="getPairedWaveformDataForVisualizer(waveformViewMode === 'magnetic' ? magneticWaveforms : converterWaveforms, opIndex - 1, pairIndex - 1)" 
-                                        :xAxisOptions="getTimeAxisOptions()"
-                                        :title="getPairedWaveformTitle(waveformViewMode === 'magnetic' ? magneticWaveforms : converterWaveforms, opIndex - 1, pairIndex - 1)" 
-                                        :titleFontSize="14" 
-                                        :axisLabelFontSize="10" 
-                                        :chartPaddings="{top: 35, left: 45, right: 45, bottom: 25}" 
-                                        :bgColor="$styleStore.theme?.light || 'transparent'" 
-                                        :lineColor="$styleStore.theme?.primary || '#b18aea'" 
-                                        :textColor="$styleStore.wizard.inputTextColor?.color || '#ffffff'" 
-                                        :chartStyle="'height: 140px'" 
-                                        :toolbox="false" 
-                                        :showPoints="false"
-                                        :showGrid="false"
-                                        :showAxisLines="false"
-                                        :showAxisUnitLabels="false"
-                                        :forceAxisMin="getPairedWaveformAxisLimits(waveformViewMode === 'magnetic' ? magneticWaveforms : converterWaveforms, opIndex - 1, pairIndex - 1).min"
-                                        :forceAxisMax="getPairedWaveformAxisLimits(waveformViewMode === 'magnetic' ? magneticWaveforms : converterWaveforms, opIndex - 1, pairIndex - 1).max"
-                                        :forceUpdate="forceWaveformUpdate"/>
-                                </div>
-                            </div>
-                        </div>
-                        <div v-else class="empty-state-compact"><i class="fa-solid fa-wave-square"></i><span>Click <b>Analytical</b> or <b>Simulated</b> to generate</span></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+      </div>
+    </template>
+
+    <template #input-voltage>
+      <DimensionWithTolerance :name="'inputVoltage'" :replaceTitle="''" unit="V" :min="minimumMaximumScalePerParameter['voltage']['min']" :max="minimumMaximumScalePerParameter['voltage']['max']" :labelWidthProportionClass="'d-none'" :valueWidthProportionClass="'col-4'" v-model="localData.inputVoltage" :severalRows="true" :addButtonStyle="$styleStore.wizard.addButton" :removeButtonBgColor="$styleStore.wizard.removeButton['background-color']" :titleFontSize="$styleStore.wizard.inputLabelFontSize" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor" :textColor="$styleStore.wizard.inputTextColor" @update="updateErrorMessage"/>
+    </template>
+
+    <template #outputs>
+      <Dimension :name="'outputVoltage'" :replaceTitle="'Voltage'" unit="V" :min="minimumMaximumScalePerParameter['voltage']['min']" :max="minimumMaximumScalePerParameter['voltage']['max']" v-model="localData" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor" :textColor="$styleStore.wizard.inputTextColor" @update="updateErrorMessage"/>
+      <Dimension :name="'outputPower'" :replaceTitle="'Power'" unit="W" :min="1" :max="minimumMaximumScalePerParameter['power']['max']" v-model="localData" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor" :textColor="$styleStore.wizard.inputTextColor" @update="updateErrorMessage"/>
+    </template>
+  </ConverterWizardBase>
 </template>
-
-<style scoped>
-.wizard-container { max-width: 1800px; margin: 0 auto; }
-.wizard-header { background: linear-gradient(135deg, rgba(177, 138, 234, 0.12) 0%, rgba(100, 80, 180, 0.08) 100%); border-radius: 10px; border: 1px solid rgba(177, 138, 234, 0.2); }
-.wizard-title { font-size: 1.2rem; font-weight: 600; color: #b18aea; }
-.compact-card { background: rgba(30, 30, 40, 0.6); border: 1px solid rgba(177, 138, 234, 0.2); border-radius: 8px; overflow: hidden; }
-.compact-header { padding: 6px 10px; background: rgba(177, 138, 234, 0.1); border-bottom: 1px solid rgba(177, 138, 234, 0.15); font-size: 0.8rem; font-weight: 500; color: #b18aea; }
-.compact-body { padding: 8px; }
-.simulation-card { min-height: 300px; }
-.simulation-body { min-height: 250px; display: flex; flex-direction: column; }
-
-/* Action Buttons */
-.action-btns { display: flex; gap: 8px; }
-.action-btn-sm { padding: 6px 14px; border-radius: 6px; font-size: 0.8rem; font-weight: 500; cursor: pointer; border: none; }
-.action-btn-sm.primary { background: linear-gradient(135deg, #b18aea 0%, #8b5cf6 100%); color: white; }
-.action-btn-sm.secondary { background: rgba(177, 138, 234, 0.15); border: 1px solid rgba(177, 138, 234, 0.3); color: #b18aea; }
-.action-btn-sm:disabled { opacity: 0.4; cursor: not-allowed; }
-
-/* Sim Buttons */
-.sim-btns { display: flex; gap: 4px; }
-.sim-btn { background: linear-gradient(135deg, #b18aea 0%, #8b5cf6 100%); border: none; border-radius: 4px; padding: 4px 10px; color: white; font-size: 0.7rem; font-weight: 500; cursor: pointer; }
-.sim-btn.analytical { background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%); }
-.sim-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-
-.periods-selector { display: flex; align-items: center; gap: 4px; }
-.periods-label { font-size: 0.75rem; color: #888; }
-.periods-select { background: rgba(0,0,0,0.3); border: 1px solid rgba(177, 138, 234, 0.3); border-radius: 4px; padding: 2px 6px; font-size: 0.75rem; color: inherit; }
-.waveform-item { margin-bottom: 8px; }
-.waveform-section { margin-bottom: 16px; }
-.operating-point-label { font-size: 0.75rem; color: #888; margin-bottom: 8px; font-weight: 500; }
-.empty-state-compact { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: rgba(255, 255, 255, 0.3); font-size: 0.9rem; gap: 8px; }
-.empty-state-compact i { font-size: 2rem; }
-.error-text { color: #ff6b6b; font-size: 0.8rem; }
-.form-check-label.small { font-size: 0.75rem; }
-</style>

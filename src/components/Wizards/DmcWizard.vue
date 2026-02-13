@@ -7,7 +7,6 @@ import ElementFromListRadio from '/WebSharedComponents/DataInput/ElementFromList
 import ElementFromList from '/WebSharedComponents/DataInput/ElementFromList.vue'
 import PairOfDimensions from '/WebSharedComponents/DataInput/PairOfDimensions.vue'
 import { defaultDmcWizardInputs, defaultDesignRequirements, minimumMaximumScalePerParameter, filterMas } from '/WebSharedComponents/assets/js/defaults.js'
-import MaximumDimensions from '../Toolbox/DesignRequirements/MaximumDimensions.vue'
 </script>
 
 <script>
@@ -137,10 +136,6 @@ export default {
                 // Use backend to calculate inputs
                 const inputs = await this.taskQueueStore.calculateDmcInputs(dmcParams);
                 this.masStore.mas.inputs = inputs;
-
-                if (this.localData.maximumDimensions.width != null || this.localData.maximumDimensions.height != null || this.localData.maximumDimensions.depth != null) {
-                    this.masStore.mas.inputs.designRequirements.maximumDimensions = this.localData.maximumDimensions;
-                }
 
                 // Set up functional description based on configuration
                 const numWindings = this.getConfigurationEnum() === 'SINGLE_PHASE' ? 1 :
@@ -455,28 +450,6 @@ export default {
                 :labelFontSize="$styleStore.wizard.inputTitleFontSize"
                 :labelBgColor="$styleStore.wizard.inputLabelBgColor"
                 :valueBgColor="$styleStore.wizard.inputValueBgColor"
-                :textColor="$styleStore.wizard.inputTextColor"
-                @update="updateErrorMessage"
-            />
-        </div>
-
-        <!-- Maximum Dimensions -->
-        <div class="row mt-2 ps-2">
-            <MaximumDimensions class="ps-3"
-                :replaceTitle="'Do you have dimensional restrictions?'"
-                :style="$styleStore.designRequirements.inputBorderColor"
-                unit="m"
-                :dataTestLabel="dataTestLabel + '-MaximumDimensions'"
-                :defaultValue="defaultDmcWizardInputs.maximumDimensions"
-                :min="minimumMaximumScalePerParameter['dimension']['min']"
-                :max="minimumMaximumScalePerParameter['dimension']['max']"
-                v-model="localData.maximumDimensions"
-                :addButtonStyle="$styleStore.wizard.requirementButton"
-                :valueFontSize="$styleStore.wizard.inputFontSize"
-                :titleFontSize="$styleStore.wizard.inputTitleFontSize"
-                :labelBgColor="$styleStore.wizard.inputLabelBgColor"
-                :valueBgColor="$styleStore.wizard.inputValueBgColor"
-                :errorTextColor="$styleStore.wizard.inputErrorTextColor"
                 :textColor="$styleStore.wizard.inputTextColor"
                 @update="updateErrorMessage"
             />

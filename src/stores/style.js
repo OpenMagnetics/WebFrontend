@@ -547,9 +547,9 @@ export const useStyleStore = defineStore("style", () => {
                 "border-color": theme["primary"] + ' !important' ,
             },
             newWizardButton: {
-                "background-color": theme["danger"],
-                "color": theme["dark"],
-                "border-color": theme["dark"] + ' !important' ,
+                "background-color": theme["primary"],
+                "color": theme["light"],
+                "border-color": theme["primary"] + ' !important' ,
             },
             donateButton: {
                 "background-color": theme["info"],

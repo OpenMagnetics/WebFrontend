@@ -6,6 +6,7 @@ import DimensionUnit from '/WebSharedComponents/DataInput/DimensionUnit.vue'
 
 <script>
 export default {
+    inheritAttrs: false,
     props: {
         unit:{
             type: String,
@@ -127,7 +128,7 @@ export default {
             this.localData[field].multiplier = aux.multiplier;
             const hasError = this.checkErrors();
             if (!hasError) {
-                this.modelValue[field] = actualValue;
+                // Emit update event instead of directly mutating modelValue
                 this.$emit("update", field, actualValue);
             }
         },
@@ -144,7 +145,8 @@ export default {
             this.localData[field].multiplier = null;
             const hasError = this.checkErrors();
             if (!hasError) {
-                this.modelValue[field] = null;
+                // Emit update event instead of directly mutating modelValue
+                this.$emit("update", field, null);
             }
         },
         changeScaledValue(value, field) {

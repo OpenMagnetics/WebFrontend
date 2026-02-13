@@ -529,9 +529,9 @@ export const useFairRiteStyleStore = defineStore("fairRiteStyle", () => {
                 "border-color": theme["primary"] + ' !important' ,
             },
             newWizardButton: {
-                "background": theme["danger"],
-                "color": theme["dark"],
-                "border-color": theme["dark"] + ' !important' ,
+                "background": theme["primary"],
+                "color": theme["light"],
+                "border-color": theme["primary"] + ' !important' ,
             },
             donateButton: {
                 "background": theme["info"],

@@ -9,17 +9,16 @@ import PairOfDimensions from '/WebSharedComponents/DataInput/PairOfDimensions.vu
 import TripleOfDimensions from '/WebSharedComponents/DataInput/TripleOfDimensions.vue'
 import DimensionWithTolerance from '/WebSharedComponents/DataInput/DimensionWithTolerance.vue'
 import { defaultFlybackWizardInputs, defaultDesignRequirements, minimumMaximumScalePerParameter, filterMas } from '/WebSharedComponents/assets/js/defaults.js'
-import MaximumDimensions from '../Toolbox/DesignRequirements/MaximumDimensions.vue'
-import LineVisualizer from '/WebSharedComponents/Common/LineVisualizer.vue'
+import ConverterWizardBase from './ConverterWizardBase.vue'
 </script>
 
 <script>
+
 export default {
     props: {
         dataTestLabel: {
             type: String,
-            default: 'CmcWizard',
-        },
+            default: 'CmcWizard'},
         labelWidthProportionClass:{
             type: String,
             default: 'col-xs-12 col-md-9'
@@ -27,8 +26,7 @@ export default {
         valueWidthProportionClass:{
             type: String,
             default: 'col-xs-12 col-md-3'
-        },
-    },
+        }},
     data() {
         const masStore = useMasStore();
         const taskQueueStore = useTaskQueueStore();
@@ -58,8 +56,7 @@ export default {
             waveformViewMode: 'magnetic', // 'magnetic' or 'converter'
             forceWaveformUpdate: 0,
             numberOfPeriods: 2,
-            numberOfSteadyStatePeriods: 10,
-        }
+            numberOfSteadyStatePeriods: 10}
     },
     computed: {
     },
@@ -69,8 +66,7 @@ export default {
             this.$nextTick(() => {
                 this.forceWaveformUpdate += 1;
             });
-        },
-    },
+        }},
     methods: {
         updateErrorMessage() {
             this.errorMessage = "";
@@ -84,15 +80,13 @@ export default {
                         newOutput = {
                             voltage: defaultFlybackWizardInputs.outputsParameters[0].voltage,
                             current: defaultFlybackWizardInputs.outputsParameters[0].current,
-                            turnsRatio: defaultFlybackWizardInputs.outputsParameters[0].turnsRatio,
-                        }
+                            turnsRatio: defaultFlybackWizardInputs.outputsParameters[0].turnsRatio}
                     }
                     else {
                         newOutput = {
                             voltage: this.localData.outputsParameters[this.localData.outputsParameters.length - 1].voltage,
                             current: this.localData.outputsParameters[this.localData.outputsParameters.length - 1].current,
-                            turnsRatio: this.localData.outputsParameters[this.localData.outputsParameters.length - 1].turnsRatio,
-                        }
+                            turnsRatio: this.localData.outputsParameters[this.localData.outputsParameters.length - 1].turnsRatio}
                     }
 
                     this.localData.outputsParameters.push(newOutput);
@@ -385,14 +379,15 @@ export default {
                 // Call the WASM simulation
                 const result = await this.taskQueueStore.simulateFlybackIdealWaveforms(aux);
                 
-                this.simulatedOperatingPoints = result.operatingPoints || [];
-                this.designRequirements = result.designRequirements || null;
-                this.simulatedMagnetizingInductance = result.magnetizingInductance || null;
-                this.simulatedTurnsRatios = result.turnsRatios || null;
-                this.magneticWaveforms = this.repeatWaveformsForPeriods(result.magneticWaveforms || []);
-                this.converterWaveforms = this.repeatWaveformsForPeriods(result.converterWaveforms || []);
+                this.simulatedOperatingPoints = result.inputs?.operatingPoints || result.operatingPoints || [];
+                this.designRequirements = result.inputs?.designRequirements || result.designRequirements || null;
+                this.simulatedMagnetizingInductance = this.designRequirements?.magnetizingInductance?.nominal || null;
+                this.simulatedTurnsRatios = this.designRequirements?.turnsRatios?.map(tr => tr.nominal) || null;
+                // WASM doesn't return magneticWaveforms, build from operating points
+                this.magneticWaveforms = this.buildMagneticWaveformsFromInputs(this.simulatedOperatingPoints);
+                this.converterWaveforms = result.converterWaveforms || [];
                 
-                // Increment forceWaveformUpdate after $nextTick to ensure LineVisualizer is mounted
+                // Increment forceWaveformUpdate after $nextTick to ensureis mounted
                 this.$nextTick(() => {
                     this.forceWaveformUpdate += 1;
                     // Auto-scroll to waveform section
@@ -473,12 +468,12 @@ export default {
                 }
                 
                 // Extract design requirements and waveforms from the Inputs result
-                this.designRequirements = result.designRequirements || null;
-                this.simulatedMagnetizingInductance = result.designRequirements?.magnetizingInductance?.nominal || null;
-                this.simulatedTurnsRatios = result.designRequirements?.turnsRatios?.map(tr => tr.nominal) || null;
+                this.designRequirements = result.inputs?.designRequirements || result.designRequirements || null;
+                this.simulatedMagnetizingInductance = this.designRequirements?.magnetizingInductance?.nominal || null;
+                this.simulatedTurnsRatios = this.designRequirements?.turnsRatios?.map(tr => tr.nominal) || null;
                 
-                // Convert operating points to waveform format for display
-                const operatingPoints = result.operatingPoints || [];
+                // Extract design requirements and waveforms from the Inputs result
+                const operatingPoints = result.inputs?.operatingPoints || result.operatingPoints || [];
                 this.simulatedOperatingPoints = operatingPoints;
                 
                 // Build magnetic waveforms from operating points (primary winding excitation)
@@ -500,7 +495,7 @@ export default {
             
             this.simulatingWaveforms = false;
         },
-        getInductanceDisplay() {
+        getMagnetizingInductanceDisplay() {
             // Try multiple sources for inductance value
             // 1. Direct from result (raw number in Henries)
             if (this.simulatedMagnetizingInductance != null) {
@@ -557,8 +552,7 @@ export default {
             return 'N/A';
         },
         buildMagneticWaveformsFromInputs(operatingPoints) {
-            // Convert operating points from Inputs to the waveform format expected by the display
-            // The format should match what simulate_flyback_ideal_waveforms returns
+            // WASM returns only 1 period, so we need to repeat for display
             const magneticWaveforms = [];
             
             for (let opIdx = 0; opIdx < operatingPoints.length; opIdx++) {
@@ -575,9 +569,8 @@ export default {
                     const excitation = excitations[windingIdx];
                     const windingLabel = windingIdx === 0 ? 'Primary' : `Secondary ${windingIdx}`;
                     
-                    // Voltage waveform
+                    // Voltage waveform - repeat for display
                     if (excitation.voltage?.waveform?.time && excitation.voltage?.waveform?.data) {
-                        // Repeat the waveform for numberOfPeriods
                         const { time, data } = this.repeatWaveformForPeriods(
                             excitation.voltage.waveform.time,
                             excitation.voltage.waveform.data,
@@ -592,9 +585,8 @@ export default {
                         });
                     }
                     
-                    // Current waveform
+                    // Current waveform - repeat for display
                     if (excitation.current?.waveform?.time && excitation.current?.waveform?.data) {
-                        // Repeat the waveform for numberOfPeriods
                         const { time, data } = this.repeatWaveformForPeriods(
                             excitation.current.waveform.time,
                             excitation.current.waveform.data,
@@ -678,7 +670,7 @@ export default {
             return waveforms[operatingPointIndex].waveforms;
         },
         getSingleWaveformDataForVisualizer(waveforms, operatingPointIndex, waveformIndex) {
-            // Transform a single waveform to LineVisualizer format
+            // Transform a single waveform toformat
             if (!waveforms || !waveforms[operatingPointIndex] || !waveforms[operatingPointIndex].waveforms) {
                 return [];
             }
@@ -722,22 +714,19 @@ export default {
                 label: wf.label,
                 data: {
                     x: wf.x,
-                    y: yData,
-                },
+                    y: yData},
                 colorLabel: waveformColor,
                 type: 'value',
                 position: 'left',
                 unit: wf.unit,
-                numberDecimals: 6,
-            }];
+                numberDecimals: 6}];
         },
         getTimeAxisOptions() {
             return {
                 label: 'Time',
                 colorLabel: '#d4d4d4',
                 type: 'value',
-                unit: 's',
-            };
+                unit: 's'};
         },
         getPairedWaveformsList(waveforms, operatingPointIndex) {
             // Get pairs of voltage/current waveforms for an operating point
@@ -791,7 +780,7 @@ export default {
             return pairs;
         },
         getPairedWaveformDataForVisualizer(waveforms, operatingPointIndex, pairIndex) {
-            // Transform a pair of voltage/current waveforms to LineVisualizer format with dual Y-axes
+            // Transform a pair of voltage/current waveforms toformat with dual Y-axes
             const pairs = this.getPairedWaveformsList(waveforms, operatingPointIndex);
             if (!pairs[pairIndex]) return [];
             
@@ -820,8 +809,7 @@ export default {
                     type: 'value',
                     position: 'left',
                     unit: 'V',
-                    numberDecimals: 6,
-                });
+                    numberDecimals: 6});
             }
             
             // Add current data (right Y-axis)
@@ -834,16 +822,59 @@ export default {
                     type: 'value',
                     position: 'right',
                     unit: 'A',
-                    numberDecimals: 6,
-                });
+                    numberDecimals: 6});
             }
             
             return result;
         },
+        getPairedWaveformAxisLimits(waveforms, operatingPointIndex, pairIndex) {
+            const pairs = this.getPairedWaveformsList(waveforms, operatingPointIndex);
+            if (!pairs[pairIndex]) return { min: [], max: [] };
+
+            const pair = pairs[pairIndex];
+            const min = [];
+            const max = [];
+
+            if (pair.voltage) {
+                const vWf = pair.voltage.wf;
+                let yData = vWf.y;
+                if (yData && yData.length > 0) {
+                    const sorted = [...yData].sort((a, b) => a - b);
+                    const p5 = sorted[Math.floor(sorted.length * 0.05)];
+                    const p95 = sorted[Math.floor(sorted.length * 0.95)];
+                    const range = p95 - p5;
+                    const margin = range * 0.1;
+                    min.push(p5 - margin);
+                    max.push(p95 + margin);
+                } else {
+                    min.push(null);
+                    max.push(null);
+                }
+            }
+
+            if (pair.current) {
+                const iWf = pair.current.wf;
+                let yData = iWf.y;
+                if (yData && yData.length > 0) {
+                    const sorted = [...yData].sort((a, b) => a - b);
+                    const p5 = sorted[Math.floor(sorted.length * 0.05)];
+                    const p95 = sorted[Math.floor(sorted.length * 0.95)];
+                    const range = p95 - p5;
+                    const margin = range * 0.1;
+                    min.push(p5 - margin);
+                    max.push(p95 + margin);
+                } else {
+                    min.push(null);
+                    max.push(null);
+                }
+            }
+
+            return { min, max };
+        },
         getPairedWaveformTitle(waveforms, operatingPointIndex, pairIndex) {
             const pairs = this.getPairedWaveformsList(waveforms, operatingPointIndex);
             if (!pairs[pairIndex]) return '';
-            
+
             const pair = pairs[pairIndex];
             if (pair.voltage && pair.current) {
                 // Extract common name, remove "(Switch Node)" and "Voltage" suffix
@@ -866,756 +897,275 @@ export default {
             if (!waveforms || !waveforms[operatingPointIndex]) return '';
             const op = waveforms[operatingPointIndex];
             return op.operatingPointName || `Operating Point ${operatingPointIndex + 1}`;
-        },
-    }
+        }}
 }
+
 </script>
 
 <template>
-    <div class="wizard-container container-fluid px-3">
-        <!-- Compact Header -->
-        <div class="wizard-header text-center py-2 mb-3">
-            <h4 class="wizard-title mb-0">
-                <i class="fa-solid fa-bolt me-2"></i>Flyback Wizard
-            </h4>
+  <ConverterWizardBase
+    title="Flyback Wizard"
+    titleIcon="fa-bolt"
+      subtitle="Isolated DC-DC Converter with Energy Storage"
+    :col1Width="3" :col2Width="4" :col3Width="5"
+    :magneticWaveforms="magneticWaveforms"
+    :converterWaveforms="converterWaveforms"
+    :waveformViewMode="waveformViewMode"
+    :waveformForceUpdate="forceWaveformUpdate"
+    :simulatingWaveforms="simulatingWaveforms"
+    :waveformSource="waveformSource"
+    :waveformError="waveformError"
+    :errorMessage="errorMessage"
+    :numberOfPeriods="numberOfPeriods"
+    :numberOfSteadyStatePeriods="numberOfSteadyStatePeriods"
+    :disableActions="errorMessage != ''"
+    @update:waveformViewMode="waveformViewMode = $event"
+    @update:numberOfPeriods="numberOfPeriods = $event"
+    @update:numberOfSteadyStatePeriods="numberOfSteadyStatePeriods = $event"
+    @get-analytical-waveforms="getAnalyticalWaveforms"
+    @get-simulated-waveforms="simulateIdealWaveforms"
+    @dismiss-error="errorMessage = ''; waveformError = ''"
+  >
+    <template #design-mode>
+      <!-- Design Mode -->
+      <ElementFromListRadio
+        :name="'designLevel'" :dataTestLabel="dataTestLabel + '-DesignLevel'"
+        :replaceTitle="''" :options="designLevelOptions" :titleSameRow="false"
+        v-model="localData"
+        :labelWidthProportionClass="'d-none'" :valueWidthProportionClass="'col-12'"
+        :valueFontSize="$styleStore.wizard.inputFontSize"
+        :labelFontSize="$styleStore.wizard.inputLabelFontSize"
+        :labelBgColor="'transparent'" :valueBgColor="'transparent'"
+        :textColor="$styleStore.wizard.inputTextColor"
+        @update="updateErrorMessage"
+      />
+    </template>
+
+    <template #design-or-switch-parameters-title>
+        <div class="compact-header"><i class="fa-solid fa-cogs me-1"></i>{{localData.designLevel == 'I know the design I want'? "Design Parameters" : "Switch Parameters"}}</div>
+    </template>
+
+    <template #design-or-switch-parameters>
+        <div v-if="localData.designLevel == 'I know the design I want'">
+          <Dimension :name="'inductance'" :replaceTitle="'Inductance'" unit="H"
+            :dataTestLabel="dataTestLabel + '-Inductance'"
+            :min="minimumMaximumScalePerParameter['inductance']['min']"
+            :max="minimumMaximumScalePerParameter['inductance']['max']"
+            v-model="localData"
+            :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'"
+            :valueFontSize="$styleStore.wizard.inputFontSize"
+            :labelFontSize="$styleStore.wizard.inputLabelFontSize"
+            :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor"
+            :textColor="$styleStore.wizard.inputTextColor"
+            @update="updateErrorMessage"
+          />
+          <DimensionWithTolerance :name="'dutyCycle'" :replaceTitle="'Duty Cycle'" :unit="null"
+            :dataTestLabel="dataTestLabel + '-DutyCycle'"
+            :min="0.01" :max="0.99"
+            :allowUnsorted="true"
+            :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'"
+            v-model="localData.dutyCycle" :severalRows="true"
+            :addButtonStyle="$styleStore.wizard.addButton"
+            :removeButtonBgColor="$styleStore.wizard.removeButton['background-color']"
+            :titleFontSize="$styleStore.wizard.inputLabelFontSize"
+            :valueFontSize="$styleStore.wizard.inputFontSize"
+            :labelFontSize="$styleStore.wizard.inputLabelFontSize"
+            :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor"
+            :textColor="$styleStore.wizard.inputTextColor"
+            @update="updateErrorMessage"
+          />
+          <Dimension :name="'deadTime'" :replaceTitle="'Dead Time'" unit="s"
+            :dataTestLabel="dataTestLabel + '-DeadTime'"
+            :min="0" :max="1e-3"
+            v-model="localData"
+            :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'"
+            :valueFontSize="$styleStore.wizard.inputFontSize"
+            :labelFontSize="$styleStore.wizard.inputLabelFontSize"
+            :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor"
+            :textColor="$styleStore.wizard.inputTextColor"
+            @update="updateErrorMessage"
+          />
+      </div>
+        <div v-else>
+          <ElementFromListRadio
+            :name="'mosfetInputType'" :dataTestLabel="dataTestLabel + '-MosfetInputType'"
+            :replaceTitle="''" :options="mosfetOptions" :titleSameRow="false"
+            v-model="localData"
+            :labelWidthProportionClass="'d-none'" :valueWidthProportionClass="'col-12'"
+            :valueFontSize="$styleStore.wizard.inputFontSize"
+            :labelFontSize="$styleStore.wizard.inputLabelFontSize"
+            :labelBgColor="'transparent'" :valueBgColor="'transparent'"
+            :textColor="$styleStore.wizard.inputTextColor"
+            @update="updateErrorMessage"
+          />
+          <Dimension v-if="localData.mosfetInputType == 'Its maximum duty cycle'"
+          :name="'maximumDutyCycle'" :replaceTitle="'Max Duty Cycle'" :unit="null"
+          :dataTestLabel="dataTestLabel + '-MaximumDutyCycle'"
+          :min="0.01" :max="0.99"
+          v-model="localData"
+          :labelWidthProportionClass="'col-6'" :valueWidthProportionClass="'col-6'"
+          :valueFontSize="$styleStore.wizard.inputFontSize"
+          :labelFontSize="$styleStore.wizard.inputLabelFontSize"
+          :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor"
+          :textColor="$styleStore.wizard.inputTextColor"
+          @update="updateErrorMessage"
+        />
+        <Dimension v-else-if="localData.mosfetInputType == 'Its maximum drain-source voltage'"
+          :name="'maximumDrainSourceVoltage'" :replaceTitle="'Max Vds'" unit="V"
+            :dataTestLabel="dataTestLabel + '-MaximumSwitchCurrent'"
+            :min="minimumMaximumScalePerParameter['current']['min']"
+            :max="minimumMaximumScalePerParameter['current']['max']"
+            v-model="localData"
+            :labelWidthProportionClass="'col-6'" :valueWidthProportionClass="'col-6'"
+            :valueFontSize="$styleStore.wizard.inputFontSize"
+            :labelFontSize="$styleStore.wizard.inputLabelFontSize"
+            :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor"
+            :textColor="$styleStore.wizard.inputTextColor"
+            @update="updateErrorMessage"
+          />
+      </div>
+    </template>
+
+    <template #conditions>
+      <Dimension :name="'switchingFrequency'" :replaceTitle="'Sw. Freq'" unit="Hz"
+        :dataTestLabel="dataTestLabel + '-SwitchingFrequency'"
+        :min="minimumMaximumScalePerParameter['frequency']['min']"
+        :max="minimumMaximumScalePerParameter['frequency']['max']"
+        v-model="localData"
+        :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'"
+        :valueFontSize="$styleStore.wizard.inputFontSize"
+        :labelFontSize="$styleStore.wizard.inputLabelFontSize"
+        :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor"
+        :textColor="$styleStore.wizard.inputTextColor"
+        @update="updateErrorMessage"
+      />
+      <Dimension :name="'ambientTemperature'" :replaceTitle="'Temp'" unit=" C"
+        :dataTestLabel="dataTestLabel + '-AmbientTemperature'"
+        :min="minimumMaximumScalePerParameter['temperature']['min']"
+        :max="minimumMaximumScalePerParameter['temperature']['max']"
+        :allowNegative="true" :allowZero="true"
+        v-model="localData"
+        :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'"
+        :valueFontSize="$styleStore.wizard.inputFontSize"
+        :labelFontSize="$styleStore.wizard.inputLabelFontSize"
+        :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor"
+        :textColor="$styleStore.wizard.inputTextColor"
+        @update="updateErrorMessage"
+      />
+      <Dimension :name="'diodeVoltageDrop'" :replaceTitle="'Diode Vd'" unit="V"
+        :dataTestLabel="dataTestLabel + '-DiodeVoltageDrop'"
+        :min="0" :max="10"
+        v-model="localData"
+        :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'"
+        :valueFontSize="$styleStore.wizard.inputFontSize"
+        :labelFontSize="$styleStore.wizard.inputLabelFontSize"
+        :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor"
+        :textColor="$styleStore.wizard.inputTextColor"
+        @update="updateErrorMessage"
+      />
+      <Dimension :name="'efficiency'" :replaceTitle="'Eff'" unit="%" :visualScale="100"
+        :dataTestLabel="dataTestLabel + '-Efficiency'"
+        :min="0.5" :max="1"
+        v-model="localData"
+        :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'"
+        :valueFontSize="$styleStore.wizard.inputFontSize"
+        :labelFontSize="$styleStore.wizard.inputLabelFontSize"
+        :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor"
+        :textColor="$styleStore.wizard.inputTextColor"
+        @update="updateErrorMessage"
+      />
+      <ElementFromList :name="'insulationType'" :replaceTitle="'Insul'" :options="insulationTypes"
+        :titleSameRow="true" v-model="localData"
+        :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'"
+        :valueFontSize="$styleStore.wizard.inputFontSize"
+        :labelFontSize="$styleStore.wizard.inputLabelFontSize"
+        :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor"
+        :textColor="$styleStore.wizard.inputTextColor"
+        @update="updateErrorMessage"
+      />
+    </template>
+
+    <template #col1-footer>
+      <div class="d-flex align-items-center justify-content-between mt-2">
+        <span v-if="errorMessage" class="error-text"><i class="fa-solid fa-exclamation-triangle me-1"></i>{{ errorMessage }}</span>
+        <span v-else></span>
+        <div class="action-btns">
+          <button :disabled="errorMessage != ''" class="action-btn-sm secondary" @click="processAndReview"><i class="fa-solid fa-magnifying-glass me-1"></i>Review Specs</button>
+          <button :disabled="errorMessage != ''" class="action-btn-sm primary" @click="processAndAdvise"><i class="fa-solid fa-wand-magic-sparkles me-1"></i>Design Magnetic</button>
         </div>
+      </div>
+    </template>
 
-        <div class="row g-2">
-            <!-- Column 1: Design Mode, Switch/Design Params, Conditions -->
-            <div class="col-12 col-xl-3">
-                <div class="d-flex flex-column gap-2">
-                    <!-- Design Mode -->
-                    <div class="compact-card">
-                        <div class="compact-header"><i class="fa-solid fa-sliders me-1"></i>Design Mode</div>
-                            <div class="compact-body ps-4">
-                                <ElementFromListRadio
-                                    :name="'designLevel'"
-                                    :dataTestLabel="dataTestLabel + '-DesignLevel'"
-                                    :replaceTitle="''"
-                                    :options="designLevelOptions"
-                                    :titleSameRow="false"
-                                    v-model="localData"
-                                    :labelWidthProportionClass="'d-none'"
-                                    :valueWidthProportionClass="'col-12'"
-                                    :valueFontSize="$styleStore.wizard.inputFontSize"
-                                    :labelFontSize="$styleStore.wizard.inputLabelFontSize"
-                                    :labelBgColor="'transparent'"
-                                    :valueBgColor="'transparent'"
-                                    :textColor="$styleStore.wizard.inputTextColor"
-                                    @update="updateErrorMessage"
-                                />
-                            </div>
-                        </div>
+    <template #input-voltage>
+      <DimensionWithTolerance :name="'inputVoltage'" :replaceTitle="''" unit="V"
+        :dataTestLabel="dataTestLabel + '-InputVoltage'"
+        :min="minimumMaximumScalePerParameter['voltage']['min']"
+        :max="minimumMaximumScalePerParameter['voltage']['max']"
+        :labelWidthProportionClass="'d-none'" :valueWidthProportionClass="'col-4'"
+        v-model="localData.inputVoltage" :severalRows="true"
+        :addButtonStyle="$styleStore.wizard.addButton"
+        :removeButtonBgColor="$styleStore.wizard.removeButton['background-color']"
+        :titleFontSize="$styleStore.wizard.inputLabelFontSize"
+        :valueFontSize="$styleStore.wizard.inputFontSize"
+        :labelFontSize="$styleStore.wizard.inputLabelFontSize"
+        :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor"
+        :textColor="$styleStore.wizard.inputTextColor"
+        @update="updateErrorMessage"
+      />
+    </template>
 
-                    <!-- Conditional: Design Parameters (Advanced) OR Switch Parameters (Help) -->
-                        <div v-if="localData.designLevel == 'I know the design I want'" class="compact-card">
-                            <div class="compact-header"><i class="fa-solid fa-cogs me-1"></i>Design Params</div>
-                            <div class="compact-body">
-                                <DimensionWithTolerance
-                                    :name="'dutyCycle'"
-                                    :replaceTitle="'Duty Cycle'"
-                                    unit="%"
-                                    :visualScale="100"
-                                    :min="0.01"
-                                    :max="1"
-                                    :allowUnsorted="true"
-                                    :labelWidthProportionClass="'col-5'"
-                                    :valueWidthProportionClass="'col-7'"
-                                    v-model="localData.dutyCycle"
-                                    :severalRows="true"
-                                    :addButtonStyle="$styleStore.wizard.addButton"
-                                    :removeButtonBgColor="$styleStore.wizard.removeButton['background-color']"
-                                    :titleFontSize="$styleStore.wizard.inputLabelFontSize"
-                                    :valueFontSize="$styleStore.wizard.inputFontSize"
-                                    :labelFontSize="$styleStore.wizard.inputLabelFontSize"
-                                    :labelBgColor="'transparent'"
-                                    :valueBgColor="$styleStore.wizard.inputValueBgColor"
-                                    :textColor="$styleStore.wizard.inputTextColor"
-                                    @update="updateErrorMessage"
-                                />
-                                <Dimension
-                                    class="ps-3"
-                                    :name="'inductance'"
-                                    :replaceTitle="'Inductance'"
-                                    unit="H"
-                                    :dataTestLabel="dataTestLabel + '-Inductance'"
-                                    :min="minimumMaximumScalePerParameter['inductance']['min']"
-                                    :max="minimumMaximumScalePerParameter['inductance']['max']"
-                                    v-model="localData"
-                                    :labelWidthProportionClass="'col-5'"
-                                    :valueWidthProportionClass="'col-7'"
-                                    :valueFontSize="$styleStore.wizard.inputFontSize"
-                                    :labelFontSize="$styleStore.wizard.inputLabelFontSize"
-                                    :labelBgColor="'transparent'"
-                                    :valueBgColor="$styleStore.wizard.inputValueBgColor"
-                                    :textColor="$styleStore.wizard.inputTextColor"
-                                    @update="updateErrorMessage"
-                                />
-                            </div>
-                        </div>
-                        <div v-else class="compact-card">
-                            <div class="compact-header"><i class="fa-solid fa-microchip me-1"></i>Switch</div>
-                            <div class="compact-body ps-4">
-                                <ElementFromListRadio
-                                    :name="'mosfetInputType'"
-                                    :dataTestLabel="dataTestLabel + '-MosfetType'"
-                                    :replaceTitle="''"
-                                    :options="mosfetOptions"
-                                    :titleSameRow="false"
-                                    v-model="localData"
-                                    :labelWidthProportionClass="'d-none'"
-                                    :valueWidthProportionClass="'col-12'"
-                                    :valueFontSize="$styleStore.wizard.inputFontSize"
-                                    :labelFontSize="$styleStore.wizard.inputLabelFontSize"
-                                    :labelBgColor="'transparent'"
-                                    :valueBgColor="'transparent'"
-                                    :textColor="$styleStore.wizard.inputTextColor"
-                                    @update="updateErrorMessage"
-                                />
-                                <Dimension v-if="localData.mosfetInputType == 'Its maximum drain-source voltage'"
-                                    :name="'maximumDrainSourceVoltage'"
-                                    :replaceTitle="'Max Vds'"
-                                    unit="V"
-                                    :dataTestLabel="dataTestLabel + '-MaximumDrainSourceVoltage'"
-                                    :min="minimumMaximumScalePerParameter['voltage']['min']"
-                                    :max="minimumMaximumScalePerParameter['voltage']['max']"
-                                    v-model="localData"
-                                    :labelWidthProportionClass="'col-5'"
-                                    :valueWidthProportionClass="'col-7'"
-                                    :valueFontSize="$styleStore.wizard.inputFontSize"
-                                    :labelFontSize="$styleStore.wizard.inputLabelFontSize"
-                                    :labelBgColor="'transparent'"
-                                    :valueBgColor="$styleStore.wizard.inputValueBgColor"
-                                    :textColor="$styleStore.wizard.inputTextColor"
-                                    @update="updateErrorMessage"
-                                />
-                                <Dimension v-if="localData.mosfetInputType == 'Its maximum duty cycle'"
-                                    :name="'maximumDutyCycle'"
-                                    :replaceTitle="'Max DC'"
-                                    unit="%"
-                                    :dataTestLabel="dataTestLabel + '-MaximumDutyCycle'"
-                                    :visualScale="100"
-                                    :min="0.01"
-                                    :max="1"
-                                    v-model="localData"
-                                    :labelWidthProportionClass="'col-5'"
-                                    :valueWidthProportionClass="'col-7'"
-                                    :valueFontSize="$styleStore.wizard.inputFontSize"
-                                    :labelFontSize="$styleStore.wizard.inputLabelFontSize"
-                                    :labelBgColor="'transparent'"
-                                    :valueBgColor="$styleStore.wizard.inputValueBgColor"
-                                    :textColor="$styleStore.wizard.inputTextColor"
-                                    @update="updateErrorMessage"
-                                />
-                                <Dimension
-                                    :name="'currentRippleRatio'"
-                                    :replaceTitle="'Ripple'"
-                                    unit="%"
-                                    :visualScale="100"
-                                    :dataTestLabel="dataTestLabel + '-CurrentRippleRatio'"
-                                    :min="0.01"
-                                    :max="1"
-                                    v-model="localData"
-                                    :labelWidthProportionClass="'col-5'"
-                                    :valueWidthProportionClass="'col-7'"
-                                    :valueFontSize="$styleStore.wizard.inputFontSize"
-                                    :labelFontSize="$styleStore.wizard.inputLabelFontSize"
-                                    :labelBgColor="'transparent'"
-                                    :valueBgColor="$styleStore.wizard.inputValueBgColor"
-                                    :textColor="$styleStore.wizard.inputTextColor"
-                                    @update="updateErrorMessage"
-                                />
-                            </div>
-                        </div>
+    <template #number-outputs>
+      <ElementFromList :name="'numberOutputs'" :replaceTitle="''"
+        :dataTestLabel="dataTestLabel + '-NumberOutputs'"
+        :options="Array.from({length: 10}, (_, i) => i + 1)"
+        :titleSameRow="true" v-model="localData"
+        :labelWidthProportionClass="'d-none'" :valueWidthProportionClass="'col-12'"
+        :valueFontSize="$styleStore.wizard.inputFontSize"
+        :labelFontSize="$styleStore.wizard.inputLabelFontSize"
+        :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor"
+        :textColor="$styleStore.wizard.inputTextColor"
+        @update="updateNumberOutputs"
+      />
+    </template>
 
-                    <!-- Operating Conditions -->
-                        <div class="compact-card">
-                            <div class="compact-header"><i class="fa-solid fa-gauge-high me-1"></i>Conditions</div>
-                            <div class="compact-body ps-4">
-                                <div class="row g-1">
-                                    <div class="col-12">
-                                        <Dimension
-                                            :name="'switchingFrequency'"
-                                            :replaceTitle="'Sw. Frequency'"
-                                            unit="Hz"
-                                            :dataTestLabel="dataTestLabel + '-switchingFrequency'"
-                                            :min="minimumMaximumScalePerParameter['frequency']['min']"
-                                            :max="minimumMaximumScalePerParameter['frequency']['max']"
-                                            v-model="localData"
-                                            :labelWidthProportionClass="'col-6'"
-                                            :valueWidthProportionClass="'col-6'"
-                                            :valueFontSize="$styleStore.wizard.inputFontSize"
-                                            :labelFontSize="$styleStore.wizard.inputLabelFontSize"
-                                            :labelBgColor="'transparent'"
-                                            :valueBgColor="$styleStore.wizard.inputValueBgColor"
-                                            :textColor="$styleStore.wizard.inputTextColor"
-                                            @update="updateErrorMessage"
-                                        />
-                                    </div>
-                                    <div class="col-12">
-                                        <Dimension
-                                            :name="'ambientTemperature'"
-                                            :replaceTitle="'Temperature'"
-                                            unit="°C"
-                                            :dataTestLabel="dataTestLabel + '-AmbientTemperature'"
-                                            :min="minimumMaximumScalePerParameter['temperature']['min']"
-                                            :max="minimumMaximumScalePerParameter['temperature']['max']"
-                                            :allowNegative="true"
-                                            :allowZero="true"
-                                            v-model="localData"
-                                            :labelWidthProportionClass="'col-6'"
-                                            :valueWidthProportionClass="'col-6'"
-                                            :valueFontSize="$styleStore.wizard.inputFontSize"
-                                            :labelFontSize="$styleStore.wizard.inputLabelFontSize"
-                                            :labelBgColor="'transparent'"
-                                            :valueBgColor="$styleStore.wizard.inputValueBgColor"
-                                            :textColor="$styleStore.wizard.inputTextColor"
-                                            @update="updateErrorMessage"
-                                        />
-                                    </div>
-                                    <div class="col-12">
-                                        <Dimension
-                                            :name="'diodeVoltageDrop'"
-                                            :replaceTitle="'Diode Vd'"
-                                            unit="V"
-                                            :dataTestLabel="dataTestLabel + '-DiodeVoltageDrop'"
-                                            :min="minimumMaximumScalePerParameter['voltage']['min']"
-                                            :max="minimumMaximumScalePerParameter['voltage']['max']"
-                                            :allowZero="true"
-                                            v-model="localData"
-                                            :labelWidthProportionClass="'col-6'"
-                                            :valueWidthProportionClass="'col-6'"
-                                            :valueFontSize="$styleStore.wizard.inputFontSize"
-                                            :labelFontSize="$styleStore.wizard.inputLabelFontSize"
-                                            :labelBgColor="'transparent'"
-                                            :valueBgColor="$styleStore.wizard.inputValueBgColor"
-                                            :textColor="$styleStore.wizard.inputTextColor"
-                                            @update="updateErrorMessage"
-                                        />
-                                    </div>
-                                    <div class="col-12">
-                                        <Dimension
-                                            :name="'efficiency'"
-                                            :replaceTitle="'Efficiency'"
-                                            unit="%"
-                                            :visualScale="100"
-                                            :dataTestLabel="dataTestLabel + '-Efficiency'"
-                                            :min="0.01"
-                                            :max="1"
-                                            v-model="localData"
-                                            :labelWidthProportionClass="'col-6'"
-                                            :valueWidthProportionClass="'col-6'"
-                                            :valueFontSize="$styleStore.wizard.inputFontSize"
-                                            :labelFontSize="$styleStore.wizard.inputLabelFontSize"
-                                            :labelBgColor="'transparent'"
-                                            :valueBgColor="$styleStore.wizard.inputValueBgColor"
-                                            :textColor="$styleStore.wizard.inputTextColor"
-                                            @update="updateErrorMessage"
-                                        />
-                                    </div>
-                                    <div class="col-12">
-                                        <ElementFromList
-                                            :name="'insulationType'"
-                                            :replaceTitle="'Insulation type'"
-                                            :dataTestLabel="dataTestLabel + '-InsulationType'"
-                                            :options="insulationTypes"
-                                            :titleSameRow="true"
-                                            v-model="localData"
-                                            :labelWidthProportionClass="'col-6'"
-                                            :valueWidthProportionClass="'col-6'"
-                                            :valueFontSize="$styleStore.wizard.inputFontSize"
-                                            :labelFontSize="$styleStore.wizard.inputLabelFontSize"
-                                            :labelBgColor="'transparent'"
-                                            :valueBgColor="$styleStore.wizard.inputValueBgColor"
-                                            :textColor="$styleStore.wizard.inputTextColor"
-                                            @update="updateErrorMessage"
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+    <template #outputs>
+      <div v-for="(datum, index) in localData.outputsParameters" :key="'output-' + index" class="mb-2">
+        <TripleOfDimensions v-if="localData.designLevel == 'I know the design I want'"
+          :names="['voltage', 'current', 'turnsRatio']"
+          :replaceTitle="['V', 'I', 'n']"
+          :units="['V', 'A', null]"
+          :mins="[minimumMaximumScalePerParameter['voltage']['min'], minimumMaximumScalePerParameter['current']['min'], 0.01]"
+          :maxs="[minimumMaximumScalePerParameter['voltage']['max'], minimumMaximumScalePerParameter['current']['max'], 100]"
+          v-model="localData.outputsParameters[index]"
+          :dataTestLabel="dataTestLabel + '-OutputsParameters'"
+          :labelWidthProportionClass="'col-4'"
+          :valueWidthProportionClass="'col-7'"
+          :valueFontSize="$styleStore.wizard.inputFontSize"
+          :labelFontSize="$styleStore.wizard.inputLabelFontSize"
+          :labelBgColor="'transparent'"
+          :valueBgColor="$styleStore.wizard.inputValueBgColor"
+          :textColor="$styleStore.wizard.inputTextColor"
+          @update="updateErrorMessage"
+        />
+        <PairOfDimensions v-else
+          :names="['voltage', 'current']"
+          :replaceTitle="['Volt.', 'Curr.']"
+          :units="['V', 'A']"
+          :mins="[minimumMaximumScalePerParameter['voltage']['min'], minimumMaximumScalePerParameter['current']['min']]"
+          :maxs="[minimumMaximumScalePerParameter['voltage']['max'], minimumMaximumScalePerParameter['current']['max']]"
+          v-model="localData.outputsParameters[index]"
+          :dataTestLabel="dataTestLabel + '-OutputsParameters'"
+          :labelWidthProportionClass="'col-4'"
+          :valueWidthProportionClass="'col-7'"
+          :valueFontSize="$styleStore.wizard.inputFontSize"
+          :labelFontSize="$styleStore.wizard.inputLabelFontSize"
+          :labelBgColor="'transparent'"
+          :valueBgColor="$styleStore.wizard.inputValueBgColor"
+          :textColor="$styleStore.wizard.inputTextColor"
+          @update="updateErrorMessage"
+        />
+      </div>
+    </template>
 
-                    <!-- Error + Actions -->
-                    <div class="d-flex align-items-center justify-content-between mt-2">
-                        <span v-if="errorMessage" class="error-text"><i class="fa-solid fa-exclamation-triangle me-1"></i>{{ errorMessage }}</span>
-                        <span v-else></span>
-                        <div class="action-btns">
-                            <button :disabled="errorMessage != ''" class="action-btn-sm secondary" @click="processAndReview">
-                                <i class="fa-solid fa-magnifying-glass me-1"></i>Review Specs
-                            </button>
-                            <button :disabled="errorMessage != ''" class="action-btn-sm primary" @click="processAndAdvise">
-                                <i class="fa-solid fa-wand-magic-sparkles me-1"></i>Design Magnetic
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-            <!-- Column 2: Input Voltage, Outputs -->
-            <div class="col-12 col-xl-4">
-                <div class="d-flex flex-column gap-2">
-                    <!-- Input Voltage -->
-                    <div class="compact-card">
-                        <div class="compact-header"><i class="fa-solid fa-plug me-1"></i>Input Voltage</div>
-                        <div class="compact-body">
-                            <DimensionWithTolerance
-                                :name="'inputVoltage'"
-                                :replaceTitle="''"
-                                unit="V"
-                                :dataTestLabel="dataTestLabel + '-InputVoltage'"
-                                :min="minimumMaximumScalePerParameter['voltage']['min']"
-                                :max="minimumMaximumScalePerParameter['voltage']['max']"
-                                :labelWidthProportionClass="'d-none'"
-                                :valueWidthProportionClass="'col-4'"
-                                v-model="localData.inputVoltage"
-                                :severalRows="true"
-                                :addButtonStyle="$styleStore.wizard.addButton"
-                                :removeButtonBgColor="$styleStore.wizard.removeButton['background-color']"
-                                :titleFontSize="$styleStore.wizard.inputLabelFontSize"
-                                :valueFontSize="$styleStore.wizard.inputFontSize"
-                                :labelFontSize="$styleStore.wizard.inputLabelFontSize"
-                                :labelBgColor="'transparent'"
-                                :valueBgColor="$styleStore.wizard.inputValueBgColor"
-                                :textColor="$styleStore.wizard.inputTextColor"
-                                @update="updateErrorMessage"
-                            />
-                        </div>
-                    </div>
-
-                    <!-- Outputs -->
-                    <div class="compact-card">
-                        <div class="compact-header">
-                            <i class="fa-solid fa-arrow-right-from-bracket me-1"></i>Outputs
-                            <select v-model="localData.numberOutputs" @change="updateNumberOutputs(localData.numberOutputs)" class="output-select ms-2">
-                                <option v-for="n in 11" :key="n" :value="n">{{ n }}</option>
-                            </select>
-                        </div>
-                        <div class="compact-body outputs-expand">
-                            <div v-for="(datum, index) in localData.outputsParameters" :key="index" class="output-row">
-                                <span class="output-num">{{ index + 1 }}</span>
-                                <PairOfDimensions
-                                    v-if="localData.designLevel == 'Help me with the design'"
-                                    class="pe-4"
-                                    :names="['voltage', 'current']"
-                                    :replaceTitle="['Volt.', 'Curr.']"
-                                    :units="['V', 'A']"
-                                    :dataTestLabel="dataTestLabel + '-outputsParameters'"
-                                    :mins="[minimumMaximumScalePerParameter['voltage']['min'], minimumMaximumScalePerParameter['current']['min']]"
-                                    :maxs="[minimumMaximumScalePerParameter['voltage']['max'], minimumMaximumScalePerParameter['current']['max']]"
-                                    v-model="localData.outputsParameters[index]"
-                                    :labelWidthProportionClass="'col-4'"
-                                    :valueWidthProportionClass="'col-8'"
-                                    :valueFontSize="$styleStore.wizard.inputFontSize"
-                                    :labelFontSize="$styleStore.wizard.inputLabelFontSize"
-                                    :labelBgColor="'transparent'"
-                                    :valueBgColor="$styleStore.wizard.inputValueBgColor"
-                                    :textColor="localData.outputsParameters[index].voltage <= 0 || localData.outputsParameters[index].current <= 0? $styleStore.wizard.inputErrorTextColor : $styleStore.wizard.inputTextColor"
-                                    @update="updateErrorMessage"
-                                />
-                                <TripleOfDimensions
-                                    v-else
-                                    class="ps-4"
-                                    :names="['voltage', 'current', 'turnsRatio']"
-                                    :replaceTitle="['V', 'I', 'TR']"
-                                    :units="['V', 'A', null]"
-                                    :dataTestLabel="dataTestLabel + '-outputsParameters'"
-                                    :mins="[minimumMaximumScalePerParameter['voltage']['min'], minimumMaximumScalePerParameter['current']['min'], 0]"
-                                    :maxs="[minimumMaximumScalePerParameter['voltage']['max'], minimumMaximumScalePerParameter['current']['max'], 1000]"
-                                    v-model="localData.outputsParameters[index]"
-                                    :labelWidthProportionClass="'col-3'"
-                                    :valueWidthProportionClass="'col-9'"
-                                    :valueFontSize="$styleStore.wizard.inputFontSize"
-                                    :labelFontSize="$styleStore.wizard.inputLabelFontSize"
-                                    :labelBgColor="'transparent'"
-                                    :valueBgColor="$styleStore.wizard.inputValueBgColor"
-                                    :textColor="localData.outputsParameters[index].voltage <= 0 || localData.outputsParameters[index].current <= 0? $styleStore.wizard.inputErrorTextColor : $styleStore.wizard.inputTextColor"
-                                    @update="updateErrorMessage"
-                                />
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Column 3: Waveforms -->
-            <div class="col-12 col-xl-5" ref="waveformSection">
-                <div class="compact-card simulation-card h-100">
-                    <div class="compact-header d-flex justify-content-between align-items-center">
-                        <span><i class="fa-solid fa-wave-square me-1"></i>Waveforms</span>
-                        <div class="d-flex align-items-center gap-2">
-                            <div class="periods-selector">
-                                <label class="periods-label">Periods:</label>
-                                <select v-model.number="numberOfPeriods" class="periods-select">
-                                    <option v-for="n in 10" :key="n" :value="n">{{ n }}</option>
-                                </select>
-                            </div>
-                            <div class="periods-selector">
-                                <label class="periods-label">Steady:</label>
-                                <input v-model.number="numberOfSteadyStatePeriods" type="number" min="1" max="20" class="periods-select" style="width: 60px;" />
-                            </div>
-                            <div class="sim-btns">
-                            <button :disabled="errorMessage != '' || simulatingWaveforms" class="sim-btn analytical" @click="getAnalyticalWaveforms" title="Get analytical waveforms">
-                                <span v-if="simulatingWaveforms && waveformSource === 'analytical'"><i class="fa-solid fa-spinner fa-spin"></i></span>
-                                <span v-else><i class="fa-solid fa-calculator"></i> Analytical waveforms</span>
-                            </button>
-                            <button :disabled="errorMessage != '' || simulatingWaveforms" class="sim-btn" @click="simulateIdealWaveforms" title="Simulate ideal waveforms">
-                                <span v-if="simulatingWaveforms && waveformSource === 'simulation'"><i class="fa-solid fa-spinner fa-spin"></i></span>
-                                <span v-else><i class="fa-solid fa-play"></i> Simulated waveforms</span>
-                            </button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="compact-body simulation-body">
-                        <div v-if="waveformError" class="error-text mb-2">
-                            <i class="fa-solid fa-exclamation-circle me-1"></i>{{ waveformError }}
-                        </div>
-                        
-                        <!-- Waveform Display -->
-                        <div v-if="magneticWaveforms.length > 0 || converterWaveforms.length > 0">
-                            <!-- Design Summary - Compact -->
-                            <div v-if="designRequirements" class="design-summary-compact mb-2">
-                                <div class="d-flex gap-2 flex-wrap">
-                                    <span class="param-badge">
-                                        <small>L:</small> {{ getInductanceDisplay() }}
-                                    </span>
-                                    <span v-if="designRequirements.turnsRatios || simulatedTurnsRatios" class="param-badge">
-                                        <small>n:</small> {{ getTurnsRatioDisplay() }}
-                                    </span>
-                                </div>
-                            </div>
-                            
-                            <!-- View Mode Toggle - Compact (hide Converter for analytical mode) -->
-                            <div v-if="waveformSource !== 'analytical'" class="view-toggle-compact mb-2">
-                                <button type="button" class="toggle-sm" :class="{ active: waveformViewMode === 'magnetic' }" @click="waveformViewMode = 'magnetic'">Magnetic</button>
-                                <button type="button" class="toggle-sm" :class="{ active: waveformViewMode === 'converter' }" @click="waveformViewMode = 'converter'">Converter</button>
-                            </div>
-                            
-                            <!-- Waveform Charts - Paired voltage/current on same graph -->
-                            <div v-for="(op, opIndex) in (waveformViewMode === 'magnetic' ? magneticWaveforms : converterWaveforms)" :key="'op-' + opIndex + '-' + waveformViewMode" class="waveforms-grid">
-                                <!-- Operating Point Label -->
-                                <div v-if="(waveformViewMode === 'magnetic' ? magneticWaveforms : converterWaveforms).length > 1 || getOperatingPointLabel(waveformViewMode === 'magnetic' ? magneticWaveforms : converterWaveforms, opIndex)" class="op-label">
-                                    {{ getOperatingPointLabel(waveformViewMode === 'magnetic' ? magneticWaveforms : converterWaveforms, opIndex) }}
-                                </div>
-                                <div v-for="(pair, pairIndex) in getPairedWaveformsList(waveformViewMode === 'magnetic' ? magneticWaveforms : converterWaveforms, opIndex)"
-                                    :key="'pair-' + opIndex + '-' + pairIndex + '-' + waveformViewMode"
-                                    class="waveform-item">
-                                    <LineVisualizer 
-                                        v-if="getPairedWaveformDataForVisualizer(waveformViewMode === 'magnetic' ? magneticWaveforms : converterWaveforms, opIndex, pairIndex).length > 0"
-                                        :data="getPairedWaveformDataForVisualizer(waveformViewMode === 'magnetic' ? magneticWaveforms : converterWaveforms, opIndex, pairIndex)"
-                                        :xAxisOptions="getTimeAxisOptions()"
-                                        :title="getPairedWaveformTitle(waveformViewMode === 'magnetic' ? magneticWaveforms : converterWaveforms, opIndex, pairIndex)"
-                                        :titleFontSize="14"
-                                        :axisLabelFontSize="10"
-                                        :legendLabels="['V', 'I']"
-                                        :chartPaddings="{top: 35, left: 45, right: 45, bottom: 25}"
-                                        :forceUpdate="forceWaveformUpdate"
-                                        :bgColor="$styleStore.theme?.light || 'transparent'"
-                                        :lineColor="$styleStore.theme?.primary || '#b18aea'"
-                                        :textColor="$styleStore.wizard.inputTextColor?.color || '#ffffff'"
-                                        :chartStyle="'height: 140px'"
-                                        :toolbox="false"
-                                        :showPoints="false"
-                                        :showGrid="false"
-                                        :showAxisLines="false"
-                                        :showAxisUnitLabels="false"
-                                    />
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Empty State - Compact -->
-                        <div v-else class="empty-state-compact">
-                            <i class="fa-solid fa-wave-square"></i>
-                            <span>Click <b>Simulate</b> or <b>Analytical</b></span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+  </ConverterWizardBase>
 </template>
-
-<style scoped>
-/* Compact Container */
-.wizard-container {
-    max-width: 1800px;
-    margin: 0 auto;
-}
-
-/* Compact Header */
-.wizard-header {
-    background: linear-gradient(135deg, rgba(177, 138, 234, 0.12) 0%, rgba(100, 80, 180, 0.08) 100%);
-    border-radius: 10px;
-    border: 1px solid rgba(177, 138, 234, 0.2);
-}
-
-.wizard-title {
-    font-size: 1.2rem;
-    font-weight: 600;
-    color: #b18aea;
-}
-
-/* Compact Cards */
-.compact-card {
-    background: rgba(30, 30, 40, 0.6);
-    border: 1px solid rgba(177, 138, 234, 0.2);
-    border-radius: 8px;
-    overflow: hidden;
-}
-
-.compact-header {
-    padding: 6px 10px;
-    background: rgba(177, 138, 234, 0.1);
-    border-bottom: 1px solid rgba(177, 138, 234, 0.15);
-    font-size: 0.8rem;
-    font-weight: 500;
-    color: #b18aea;
-    flex-wrap: wrap;
-    gap: 8px;
-}
-
-.compact-header > span {
-    white-space: nowrap;
-}
-
-.compact-body {
-    padding: 8px;
-}
-
-/* Simulation Card */
-.simulation-card {
-    min-height: 300px;
-}
-
-.simulation-body {
-    min-height: 250px;
-    display: flex;
-    flex-direction: column;
-}
-
-.sim-btns {
-    display: flex;
-    gap: 4px;
-}
-
-.sim-btn {
-    background: linear-gradient(135deg, #b18aea 0%, #8b5cf6 100%);
-    border: none;
-    border-radius: 4px;
-    padding: 3px 10px;
-    color: white;
-    font-size: 0.75rem;
-    font-weight: 500;
-    cursor: pointer;
-}
-
-.sim-btn.analytical {
-    background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
-}
-
-.sim-btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
-
-/* Periods selector */
-.periods-selector {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-}
-
-.periods-label {
-    font-size: 0.7rem;
-    color: rgba(255, 255, 255, 0.6);
-}
-
-.periods-select {
-    background: rgba(30, 30, 40, 0.8);
-    border: 1px solid rgba(177, 138, 234, 0.3);
-    border-radius: 4px;
-    color: #b18aea;
-    font-size: 0.7rem;
-    padding: 2px 4px;
-    width: 40px;
-}
-
-/* Output section */
-.output-select {
-    background: rgba(30, 30, 40, 0.8);
-    border: 1px solid rgba(177, 138, 234, 0.3);
-    border-radius: 4px;
-    color: #b18aea;
-    font-size: 0.75rem;
-    padding: 2px 6px;
-}
-
-.outputs-expand {
-    /* No max-height or overflow - expands with content */
-}
-
-.output-row {
-    display: flex;
-    align-items: flex-start;
-    gap: 6px;
-    padding: 4px 0;
-    border-bottom: 1px solid rgba(177, 138, 234, 0.1);
-}
-
-.output-row:last-child {
-    border-bottom: none;
-}
-
-.output-num {
-    font-size: 0.7rem;
-    font-weight: 600;
-    color: #b18aea;
-    min-width: 16px;
-    height: 16px;
-    background: rgba(177, 138, 234, 0.15);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-top: 4px;
-}
-
-/* Error Text */
-.error-text {
-    color: #ff6b6b;
-    font-size: 0.75rem;
-}
-
-/* Compact Action Buttons */
-.action-btns {
-    display: flex;
-    gap: 8px;
-}
-
-.action-btn-sm {
-    padding: 6px 14px;
-    border-radius: 6px;
-    font-size: 0.8rem;
-    font-weight: 500;
-    cursor: pointer;
-    border: none;
-}
-
-.action-btn-sm.primary {
-    background: linear-gradient(135deg, #b18aea 0%, #8b5cf6 100%);
-    color: white;
-}
-
-.action-btn-sm.secondary {
-    background: rgba(177, 138, 234, 0.15);
-    border: 1px solid rgba(177, 138, 234, 0.3);
-    color: #b18aea;
-}
-
-.action-btn-sm:disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
-}
-
-/* Design Summary Compact */
-.design-summary-compact {
-    background: rgba(177, 138, 234, 0.08);
-    border-radius: 6px;
-    padding: 6px 8px;
-}
-
-.param-badge {
-    background: rgba(30, 30, 40, 0.6);
-    border-radius: 4px;
-    padding: 2px 8px;
-    font-size: 0.75rem;
-    color: #b18aea;
-}
-
-.param-badge small {
-    color: rgba(255, 255, 255, 0.5);
-    margin-right: 3px;
-}
-
-/* View Toggle Compact */
-.view-toggle-compact {
-    display: flex;
-    gap: 4px;
-    background: rgba(30, 30, 40, 0.5);
-    padding: 2px;
-    border-radius: 6px;
-    width: fit-content;
-}
-
-.toggle-sm {
-    background: transparent;
-    border: none;
-    border-radius: 4px;
-    padding: 3px 10px;
-    color: rgba(255, 255, 255, 0.5);
-    font-size: 0.7rem;
-    cursor: pointer;
-}
-
-.toggle-sm.active {
-    background: rgba(177, 138, 234, 0.25);
-    color: #b18aea;
-}
-
-/* Waveforms Grid */
-.waveforms-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 6px;
-    margin-bottom: 8px;
-}
-
-.op-label {
-    grid-column: 1 / -1;
-    font-size: 11px;
-    font-weight: 500;
-    color: rgba(177, 138, 234, 0.9);
-    padding: 2px 6px;
-    background: rgba(177, 138, 234, 0.1);
-    border-radius: 4px;
-    text-align: center;
-    margin-bottom: 4px;
-}
-
-.waveform-item {
-    background: rgba(20, 20, 30, 0.5);
-    border: 1px solid rgba(177, 138, 234, 0.1);
-    border-radius: 6px;
-    padding: 4px;
-}
-
-/* Empty State Compact */
-.empty-state-compact {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 200px;
-    color: rgba(255, 255, 255, 0.4);
-    font-size: 0.8rem;
-}
-
-.empty-state-compact i {
-    font-size: 1.5rem;
-    margin-bottom: 8px;
-    color: rgba(177, 138, 234, 0.4);
-}
-
-/* Responsive */
-@media (max-width: 1399px) {
-    .waveforms-grid {
-        grid-template-columns: 1fr;
-    }
-}
-
-@media (max-width: 991px) {
-    .compact-card {
-        margin-bottom: 8px;
-    }
-}
-</style>

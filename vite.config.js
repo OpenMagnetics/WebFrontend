@@ -33,6 +33,16 @@ export default defineConfig({
             },
         },
     },
+    // Worker configuration - use ES modules format instead of IIFE
+    worker: {
+        format: 'es',
+        rollupOptions: {
+            output: {
+                entryFileNames: 'assets/workers/[name]-[hash].js',
+                chunkFileNames: 'assets/workers/[name]-[hash].js',
+            },
+        },
+    },
     publicDir: 'src/public',
     plugins: [
         vue(),
