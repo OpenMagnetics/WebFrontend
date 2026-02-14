@@ -396,9 +396,7 @@ export default {
                 this.magneticWaveforms = this.buildMagneticWaveformsFromInputs(this.simulatedOperatingPoints);
                 
                 // Process converter waveforms
-                if (result.converterWaveforms) {
-                    this.converterWaveforms = this.repeatWaveformsForPeriods(result.converterWaveforms);
-                }
+                this.converterWaveforms = this.convertConverterWaveforms(result.converterWaveforms || []);
                 
                 this.$nextTick(() => {
                     this.forceWaveformUpdate += 1;
@@ -413,7 +411,6 @@ export default {
         },
 
         buildMagneticWaveformsFromInputs(operatingPoints) {
-            // WASM returns only 1 period, so we need to repeat for display
             const magneticWaveforms = [];
             
             for (let opIdx = 0; opIdx < operatingPoints.length; opIdx++) {
@@ -430,33 +427,23 @@ export default {
                     const excitation = excitations[windingIdx];
                     const windingLabel = windingIdx === 0 ? 'Primary' : `Secondary ${windingIdx}`;
                     
-                    // Voltage waveform - repeat for display
+                    // Voltage waveform
                     if (excitation.voltage?.waveform?.time && excitation.voltage?.waveform?.data) {
-                        const { time, data } = this.repeatWaveformForPeriods(
-                            excitation.voltage.waveform.time,
-                            excitation.voltage.waveform.data,
-                            this.numberOfPeriods
-                        );
                         opWaveforms.waveforms.push({
                             label: `${windingLabel} Voltage`,
-                            x: time,
-                            y: data,
+                            x: excitation.voltage.waveform.time,
+                            y: excitation.voltage.waveform.data,
                             type: 'voltage',
                             unit: 'V'
                         });
                     }
                     
-                    // Current waveform - repeat for display
+                    // Current waveform
                     if (excitation.current?.waveform?.time && excitation.current?.waveform?.data) {
-                        const { time, data } = this.repeatWaveformForPeriods(
-                            excitation.current.waveform.time,
-                            excitation.current.waveform.data,
-                            this.numberOfPeriods
-                        );
                         opWaveforms.waveforms.push({
                             label: `${windingLabel} Current`,
-                            x: time,
-                            y: data,
+                            x: excitation.current.waveform.time,
+                            y: excitation.current.waveform.data,
                             type: 'current',
                             unit: 'A'
                         });
@@ -467,6 +454,54 @@ export default {
             }
             
             return magneticWaveforms;
+        },
+
+        convertConverterWaveforms(converterWaveforms) {
+            return converterWaveforms.map((cw, idx) => {
+                const opWaveforms = {
+                    frequency: cw.switchingFrequency || this.localData.switchingFrequency,
+                    operatingPointName: cw.operatingPointName || `Operating Point ${idx + 1}`,
+                    waveforms: []
+                };
+                
+                if (cw.inputVoltage?.time && cw.inputVoltage?.data) {
+                    opWaveforms.waveforms.push({
+                        label: 'Input Voltage', x: cw.inputVoltage.time, y: cw.inputVoltage.data,
+                        type: 'voltage', unit: 'V'
+                    });
+                }
+                
+                if (cw.inputCurrent?.time && cw.inputCurrent?.data) {
+                    opWaveforms.waveforms.push({
+                        label: 'Input Current', x: cw.inputCurrent.time, y: cw.inputCurrent.data,
+                        type: 'current', unit: 'A'
+                    });
+                }
+                
+                if (cw.outputVoltages) {
+                    cw.outputVoltages.forEach((outV, outIdx) => {
+                        if (outV.time && outV.data) {
+                            opWaveforms.waveforms.push({
+                                label: `Output ${outIdx + 1} Voltage`, x: outV.time, y: outV.data,
+                                type: 'voltage', unit: 'V'
+                            });
+                        }
+                    });
+                }
+                
+                if (cw.outputCurrents) {
+                    cw.outputCurrents.forEach((outI, outIdx) => {
+                        if (outI.time && outI.data) {
+                            opWaveforms.waveforms.push({
+                                label: `Output ${outIdx + 1} Current`, x: outI.time, y: outI.data,
+                                type: 'current', unit: 'A'
+                            });
+                        }
+                    });
+                }
+                
+                return opWaveforms;
+            });
         },
 
         getMagnetizingInductanceDisplay() {

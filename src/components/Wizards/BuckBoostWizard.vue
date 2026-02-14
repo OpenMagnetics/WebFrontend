@@ -307,7 +307,7 @@ export default {
                 
                 // Build magnetic waveforms from operating points
                 this.magneticWaveforms = this.buildMagneticWaveformsFromInputs(this.simulatedOperatingPoints);
-                this.converterWaveforms = this.repeatWaveformForPeriods(result.converterWaveforms || []);
+                this.converterWaveforms = this.convertConverterWaveforms(result.converterWaveforms || []);
                 
                 this.$nextTick(() => {
                     this.forceWaveformUpdate += 1;
@@ -439,7 +439,6 @@ export default {
             return { x: xData, y: yData };
         },
         buildMagneticWaveformsFromInputs(operatingPoints) {
-            // WASM returns only 1 period, so we need to repeat for display
             if (!operatingPoints || operatingPoints.length === 0) return [];
             
             const result = [];
@@ -455,7 +454,7 @@ export default {
                     op.excitationsPerWinding.forEach((excitation, windingIndex) => {
                         const windingLabel = windingIndex === 0 ? 'Primary' : `Secondary ${windingIndex}`;
                         
-                        // Voltage waveform - repeat for display
+                        // Voltage waveform
                         if (excitation.voltage?.waveform) {
                             const wf = excitation.voltage.waveform;
                             let xData, yData;
@@ -463,16 +462,12 @@ export default {
                             // Handle different data formats
                             if (wf.time && wf.data) {
                                 // Format: { time: [...], data: [...] }
-                                const repeated = this.repeatWaveformForPeriods(wf.time, wf.data, this.numberOfPeriods);
-                                xData = repeated.time;
-                                yData = repeated.data;
+                                xData = wf.time;
+                                yData = wf.data;
                             } else if (Array.isArray(wf.data) && wf.data[0]?.time !== undefined) {
                                 // Format: { data: [{time, voltage}, ...] }
-                                const time = wf.data.map(p => p.time);
-                                const data = wf.data.map(p => p.voltage);
-                                const repeated = this.repeatWaveformForPeriods(time, data, this.numberOfPeriods);
-                                xData = repeated.time;
-                                yData = repeated.data;
+                                xData = wf.data.map(p => p.time);
+                                yData = wf.data.map(p => p.voltage);
                             } else {
                                 xData = null;
                                 yData = null;
@@ -501,7 +496,7 @@ export default {
                             }
                         }
                         
-                        // Current waveform - repeat for display
+                        // Current waveform
                         if (excitation.current?.waveform) {
                             const wf = excitation.current.waveform;
                             let xData, yData;
@@ -509,16 +504,12 @@ export default {
                             // Handle different data formats
                             if (wf.time && wf.data) {
                                 // Format: { time: [...], data: [...] }
-                                const repeated = this.repeatWaveformForPeriods(wf.time, wf.data, this.numberOfPeriods);
-                                xData = repeated.time;
-                                yData = repeated.data;
+                                xData = wf.time;
+                                yData = wf.data;
                             } else if (Array.isArray(wf.data) && wf.data[0]?.time !== undefined) {
                                 // Format: { data: [{time, current}, ...] }
-                                const time = wf.data.map(p => p.time);
-                                const data = wf.data.map(p => p.current);
-                                const repeated = this.repeatWaveformForPeriods(time, data, this.numberOfPeriods);
-                                xData = repeated.time;
-                                yData = repeated.data;
+                                xData = wf.data.map(p => p.time);
+                                yData = wf.data.map(p => p.current);
                             } else {
                                 xData = null;
                                 yData = null;
@@ -553,6 +544,53 @@ export default {
             }
             
             return result;
+        },
+        convertConverterWaveforms(converterWaveforms) {
+            return converterWaveforms.map((cw, idx) => {
+                const opWaveforms = {
+                    frequency: cw.switchingFrequency || this.localData.switchingFrequency,
+                    operatingPointName: cw.operatingPointName || `Operating Point ${idx + 1}`,
+                    waveforms: []
+                };
+                
+                if (cw.inputVoltage?.time && cw.inputVoltage?.data) {
+                    opWaveforms.waveforms.push({
+                        label: 'Input Voltage', x: cw.inputVoltage.time, y: cw.inputVoltage.data,
+                        type: 'voltage', unit: 'V'
+                    });
+                }
+                
+                if (cw.inputCurrent?.time && cw.inputCurrent?.data) {
+                    opWaveforms.waveforms.push({
+                        label: 'Input Current', x: cw.inputCurrent.time, y: cw.inputCurrent.data,
+                        type: 'current', unit: 'A'
+                    });
+                }
+                
+                if (cw.outputVoltages) {
+                    cw.outputVoltages.forEach((outV, outIdx) => {
+                        if (outV.time && outV.data) {
+                            opWaveforms.waveforms.push({
+                                label: `Output ${outIdx + 1} Voltage`, x: outV.time, y: outV.data,
+                                type: 'voltage', unit: 'V'
+                            });
+                        }
+                    });
+                }
+                
+                if (cw.outputCurrents) {
+                    cw.outputCurrents.forEach((outI, outIdx) => {
+                        if (outI.time && outI.data) {
+                            opWaveforms.waveforms.push({
+                                label: `Output ${outIdx + 1} Current`, x: outI.time, y: outI.data,
+                                type: 'current', unit: 'A'
+                            });
+                        }
+                    });
+                }
+                
+                return opWaveforms;
+            });
         },
         repeatWaveformForPeriods(time, data, numberOfPeriods) {
             // Repeat a single-period waveform for the specified number of periods

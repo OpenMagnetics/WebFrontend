@@ -59,7 +59,7 @@ export default {
             />
             <IsolatedBuckBoostWizard
                 v-if="$stateStore.getCurrentWizard() == $stateStore.Wizards.IsolatedBuckBoost"
-                :converterName="'Isolated Buck Boost'"
+                :converterName="'Isolated Buck-Boost'"
                 :dataTestLabel="'IsolatedBuckBoostWizard'"
             />
             <PushPullWizard

@@ -446,7 +446,7 @@ export default {
                 this.simulatedTurnsRatios = result.turnsRatios || null;
                 // Build magnetic waveforms from operating points
                 this.magneticWaveforms = this.buildMagneticWaveformsFromInputs(this.simulatedOperatingPoints);
-                this.converterWaveforms = this.repeatWaveformsForPeriods(result.converterWaveforms || []);
+                this.converterWaveforms = this.convertConverterWaveforms(result.converterWaveforms || []);
                 
                 console.log('[Ngspice Simulation] magneticWaveforms count:', this.magneticWaveforms.length);
                 console.log('[Ngspice Simulation] converterWaveforms count:', this.converterWaveforms.length);
@@ -642,7 +642,6 @@ export default {
             return 'N/A';
         },
         buildMagneticWaveformsFromInputs(operatingPoints) {
-            // WASM returns only 1 period, so we need to repeat for display
             const magneticWaveforms = [];
             
             for (let opIdx = 0; opIdx < operatingPoints.length; opIdx++) {
@@ -658,33 +657,23 @@ export default {
                     const excitation = excitations[windingIdx];
                     const windingLabel = windingIdx === 0 ? 'Primary' : `Secondary ${windingIdx}`;
                     
-                    // Voltage waveform - repeat for display
+                    // Voltage waveform
                     if (excitation.voltage?.waveform?.time && excitation.voltage?.waveform?.data) {
-                        const { time, data } = this.repeatWaveformForPeriods(
-                            excitation.voltage.waveform.time,
-                            excitation.voltage.waveform.data,
-                            this.numberOfPeriods
-                        );
                         opWaveforms.waveforms.push({
                             label: `${windingLabel} Voltage`,
-                            x: time,
-                            y: data,
+                            x: excitation.voltage.waveform.time,
+                            y: excitation.voltage.waveform.data,
                             type: 'voltage',
                             unit: 'V'
                         });
                     }
                     
-                    // Current waveform - repeat for display
+                    // Current waveform
                     if (excitation.current?.waveform?.time && excitation.current?.waveform?.data) {
-                        const { time, data } = this.repeatWaveformForPeriods(
-                            excitation.current.waveform.time,
-                            excitation.current.waveform.data,
-                            this.numberOfPeriods
-                        );
                         opWaveforms.waveforms.push({
                             label: `${windingLabel} Current`,
-                            x: time,
-                            y: data,
+                            x: excitation.current.waveform.time,
+                            y: excitation.current.waveform.data,
                             type: 'current',
                             unit: 'A'
                         });
@@ -695,15 +684,10 @@ export default {
                 if (op.outputVoltages && op.outputVoltages.length > 0) {
                     for (let outIdx = 0; outIdx < op.outputVoltages.length; outIdx++) {
                         if (op.outputVoltages[outIdx].waveform) {
-                            const { time, data } = this.repeatWaveformForPeriods(
-                                op.outputVoltages[outIdx].waveform.time,
-                                op.outputVoltages[outIdx].waveform.data,
-                                this.numberOfPeriods
-                            );
                             opWaveforms.waveforms.push({
                                 label: `Output ${outIdx + 1} Voltage`,
-                                x: time,
-                                y: data,
+                                x: op.outputVoltages[outIdx].waveform.time,
+                                y: op.outputVoltages[outIdx].waveform.data,
                                 type: 'voltage',
                                 unit: 'V'
                             });
@@ -714,15 +698,10 @@ export default {
                 if (op.outputCurrents && op.outputCurrents.length > 0) {
                     for (let outIdx = 0; outIdx < op.outputCurrents.length; outIdx++) {
                         if (op.outputCurrents[outIdx].waveform) {
-                            const { time, data } = this.repeatWaveformForPeriods(
-                                op.outputCurrents[outIdx].waveform.time,
-                                op.outputCurrents[outIdx].waveform.data,
-                                this.numberOfPeriods
-                            );
                             opWaveforms.waveforms.push({
                                 label: `Output ${outIdx + 1} Current`,
-                                x: time,
-                                y: data,
+                                x: op.outputCurrents[outIdx].waveform.time,
+                                y: op.outputCurrents[outIdx].waveform.data,
                                 type: 'current',
                                 unit: 'A'
                             });
@@ -759,17 +738,12 @@ export default {
                 if (op.outputVoltages && op.outputVoltages.length > 0) {
                     for (let outIdx = 0; outIdx < op.outputVoltages.length; outIdx++) {
                         if (op.outputVoltages[outIdx].waveform) {
-                            const { time, data } = this.repeatWaveformForPeriods(
-                                op.outputVoltages[outIdx].waveform.time,
-                                op.outputVoltages[outIdx].waveform.data,
-                                this.numberOfPeriods
-                            );
                             const label = op.outputVoltages.length === 1 ? 'Output Voltage' : `Output ${outIdx + 1} Voltage`;
                             console.log(`[buildConverterWaveformsFromInputs] Adding voltage: ${label}`);
                             opWaveforms.waveforms.push({
                                 label: label,
-                                x: time,
-                                y: data,
+                                x: op.outputVoltages[outIdx].waveform.time,
+                                y: op.outputVoltages[outIdx].waveform.data,
                                 type: 'voltage',
                                 unit: 'V'
                             });
@@ -795,19 +769,14 @@ export default {
                         hasData: !!excitation.current?.waveform?.data
                     });
                     if (excitation.current?.waveform?.time && excitation.current?.waveform?.data) {
-                        const { time, data } = this.repeatWaveformForPeriods(
-                            excitation.current.waveform.time,
-                            excitation.current.waveform.data,
-                            this.numberOfPeriods
-                        );
                         // Label as Output Current to match Output Voltage for pairing
                         const numOutputs = excitations.length - firstOutputIndex;
                         const label = numOutputs === 1 ? 'Output Current' : `Output ${outputCurrentIdx + 1} Current`;
                         console.log(`[buildConverterWaveformsFromInputs] Adding current: ${label}`);
                         opWaveforms.waveforms.push({
                             label: label,
-                            x: time,
-                            y: data,
+                            x: excitation.current.waveform.time,
+                            y: excitation.current.waveform.data,
                             type: 'current',
                             unit: 'A'
                         });
@@ -821,16 +790,11 @@ export default {
                     if (!hasSecondaryCurrent) {
                         for (let outIdx = 0; outIdx < op.outputCurrents.length; outIdx++) {
                             if (op.outputCurrents[outIdx].waveform) {
-                                const { time, data } = this.repeatWaveformForPeriods(
-                                    op.outputCurrents[outIdx].waveform.time,
-                                    op.outputCurrents[outIdx].waveform.data,
-                                    this.numberOfPeriods
-                                );
                                 const label = op.outputCurrents.length === 1 ? 'Output Current' : `Output ${outIdx + 1} Current`;
                                 opWaveforms.waveforms.push({
                                     label: label,
-                                    x: time,
-                                    y: data,
+                                    x: op.outputCurrents[outIdx].waveform.time,
+                                    y: op.outputCurrents[outIdx].waveform.data,
                                     type: 'current',
                                     unit: 'A'
                                 });
@@ -846,6 +810,53 @@ export default {
             
             console.log('[buildConverterWaveformsFromInputs] Final converter waveforms:', converterWaveforms);
             return converterWaveforms;
+        },
+        convertConverterWaveforms(converterWaveforms) {
+            return converterWaveforms.map((cw, idx) => {
+                const opWaveforms = {
+                    frequency: cw.switchingFrequency || this.localData.switchingFrequency,
+                    operatingPointName: cw.operatingPointName || `Operating Point ${idx + 1}`,
+                    waveforms: []
+                };
+                
+                if (cw.inputVoltage?.time && cw.inputVoltage?.data) {
+                    opWaveforms.waveforms.push({
+                        label: 'Input Voltage', x: cw.inputVoltage.time, y: cw.inputVoltage.data,
+                        type: 'voltage', unit: 'V'
+                    });
+                }
+                
+                if (cw.inputCurrent?.time && cw.inputCurrent?.data) {
+                    opWaveforms.waveforms.push({
+                        label: 'Input Current', x: cw.inputCurrent.time, y: cw.inputCurrent.data,
+                        type: 'current', unit: 'A'
+                    });
+                }
+                
+                if (cw.outputVoltages) {
+                    cw.outputVoltages.forEach((outV, outIdx) => {
+                        if (outV.time && outV.data) {
+                            opWaveforms.waveforms.push({
+                                label: `Output ${outIdx + 1} Voltage`, x: outV.time, y: outV.data,
+                                type: 'voltage', unit: 'V'
+                            });
+                        }
+                    });
+                }
+                
+                if (cw.outputCurrents) {
+                    cw.outputCurrents.forEach((outI, outIdx) => {
+                        if (outI.time && outI.data) {
+                            opWaveforms.waveforms.push({
+                                label: `Output ${outIdx + 1} Current`, x: outI.time, y: outI.data,
+                                type: 'current', unit: 'A'
+                            });
+                        }
+                    });
+                }
+                
+                return opWaveforms;
+            });
         },
         repeatWaveformForPeriods(time, data, numberOfPeriods) {
             if (!time || !data || time.length === 0 || numberOfPeriods <= 1) {
@@ -1452,7 +1463,7 @@ export default {
       <div v-for="(datum, index) in localData.outputsParameters" :key="'output-' + index" class="mb-2">
         <TripleOfDimensions v-if="localData.designLevel == 'I know the design I want'"
           :names="['voltage', 'current', 'turnsRatio']"
-          :replaceTitles="['V', 'I', 'n']"
+          :replaceTitle="['V', 'I', 'n']"
           :units="['V', 'A', null]"
           :mins="[minimumMaximumScalePerParameter['voltage']['min'], minimumMaximumScalePerParameter['current']['min'], 0.01]"
           :maxs="[minimumMaximumScalePerParameter['voltage']['max'], minimumMaximumScalePerParameter['current']['max'], 100]"
@@ -1469,7 +1480,7 @@ export default {
         />
         <PairOfDimensions v-else
           :names="['voltage', 'current']"
-          :replaceTitles="['V', 'I']"
+          :replaceTitle="['V', 'I']"
           :units="['V', 'A']"
           :mins="[minimumMaximumScalePerParameter['voltage']['min'], minimumMaximumScalePerParameter['current']['min']]"
           :maxs="[minimumMaximumScalePerParameter['voltage']['max'], minimumMaximumScalePerParameter['current']['max']]"

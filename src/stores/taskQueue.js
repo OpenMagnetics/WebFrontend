@@ -775,6 +775,23 @@ export const useTaskQueueStore = defineStore('taskQueue', {
             return waveforms;
         },
 
+        isolatedBuckIdealWaveformsCalculated(success = true, dataOrMessage = '') {
+        },
+
+        async simulateIsolatedBuckIdealWaveforms(params) {
+            const mkf = await waitForMkf();
+            await mkf.ready;
+
+            const result = await mkf.simulate_isolated_buck_ideal_waveforms(JSON.stringify(params));
+            if (result.startsWith('Exception')) {
+                setTimeout(() => { this.isolatedBuckIdealWaveformsCalculated(false, result); }, this.task_standard_response_delay);
+                throw new Error(result);
+            }
+            const waveforms = JSON.parse(result);
+            setTimeout(() => { this.isolatedBuckIdealWaveformsCalculated(true, waveforms); }, this.task_standard_response_delay);
+            return waveforms;
+        },
+
         // ==========================================
         // Wizard Calculation Methods - Isolated Buck/Boost
         // ==========================================

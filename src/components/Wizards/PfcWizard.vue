@@ -58,6 +58,9 @@ export default {
         }
     },
     computed: {
+        isCcmMode() {
+            return this.localData.mode === 'Continuous Conduction Mode';
+        }
     },
     watch: {
         waveformViewMode() {
@@ -127,9 +130,7 @@ export default {
                 // Build magnetic waveforms from operating points
                 this.simulatedOperatingPoints = result.inputs?.operatingPoints || result.operatingPoints || [];
                 this.magneticWaveforms = this.buildMagneticWaveformsFromInputs(this.simulatedOperatingPoints);
-                if (result.converterWaveforms) {
-                    this.converterWaveforms = this.repeatWaveformsForPeriods(result.converterWaveforms);
-                }
+                this.converterWaveforms = this.convertConverterWaveforms(result.converterWaveforms || []);
                 
                 this.simulatedInductance = result.inductance;
                 this.designRequirements = result.inputs?.designRequirements || result.designRequirements || null;
@@ -171,21 +172,17 @@ export default {
                 }
                 
                 const result = JSON.parse(await Module.simulate_pfc_waveforms(JSON.stringify(aux)));
-                
+
                 if (result.error) {
                     this.waveformError = result.error;
                     return;
                 }
-                
-                // Build magnetic waveforms from operating points
-                this.simulatedOperatingPoints = result.inputs?.operatingPoints || result.operatingPoints || [];
-                this.magneticWaveforms = this.buildMagneticWaveformsFromInputs(this.simulatedOperatingPoints);
-                if (result.converterWaveforms) {
-                    this.converterWaveforms = this.repeatWaveformsForPeriods(result.converterWaveforms);
-                }
-                
+
+                // PFC simulation returns magneticWaveforms and converterWaveforms directly (different format from other converters)
+                this.magneticWaveforms = result.magneticWaveforms || [];
+                this.converterWaveforms = result.converterWaveforms || [];
+
                 this.simulatedInductance = result.inductance;
-                this.designRequirements = result.inputs?.designRequirements || result.designRequirements || null;
                 
             } catch (error) {
                 console.error('Error simulating waveforms:', error);
@@ -196,7 +193,6 @@ export default {
         },
         
         buildMagneticWaveformsFromInputs(operatingPoints) {
-            // WASM returns only 1 period, so we need to repeat for display
             const magneticWaveforms = [];
             
             for (let opIdx = 0; opIdx < operatingPoints.length; opIdx++) {
@@ -213,33 +209,23 @@ export default {
                     const excitation = excitations[windingIdx];
                     const windingLabel = windingIdx === 0 ? 'Primary' : `Secondary ${windingIdx}`;
                     
-                    // Voltage waveform - repeat for display
+                    // Voltage waveform
                     if (excitation.voltage?.waveform?.time && excitation.voltage?.waveform?.data) {
-                        const { time, data } = this.repeatWaveformForPeriods(
-                            excitation.voltage.waveform.time,
-                            excitation.voltage.waveform.data,
-                            this.numberOfPeriods
-                        );
                         opWaveforms.waveforms.push({
                             label: `${windingLabel} Voltage`,
-                            x: time,
-                            y: data,
+                            x: excitation.voltage.waveform.time,
+                            y: excitation.voltage.waveform.data,
                             type: 'voltage',
                             unit: 'V'
                         });
                     }
                     
-                    // Current waveform - repeat for display
+                    // Current waveform
                     if (excitation.current?.waveform?.time && excitation.current?.waveform?.data) {
-                        const { time, data } = this.repeatWaveformForPeriods(
-                            excitation.current.waveform.time,
-                            excitation.current.waveform.data,
-                            this.numberOfPeriods
-                        );
                         opWaveforms.waveforms.push({
                             label: `${windingLabel} Current`,
-                            x: time,
-                            y: data,
+                            x: excitation.current.waveform.time,
+                            y: excitation.current.waveform.data,
                             type: 'current',
                             unit: 'A'
                         });
@@ -250,6 +236,54 @@ export default {
             }
             
             return magneticWaveforms;
+        },
+        
+        convertConverterWaveforms(converterWaveforms) {
+            return converterWaveforms.map((cw, idx) => {
+                const opWaveforms = {
+                    frequency: cw.switchingFrequency || this.localData.switchingFrequency,
+                    operatingPointName: cw.operatingPointName || `Operating Point ${idx + 1}`,
+                    waveforms: []
+                };
+                
+                if (cw.inputVoltage?.time && cw.inputVoltage?.data) {
+                    opWaveforms.waveforms.push({
+                        label: 'Input Voltage', x: cw.inputVoltage.time, y: cw.inputVoltage.data,
+                        type: 'voltage', unit: 'V'
+                    });
+                }
+                
+                if (cw.inputCurrent?.time && cw.inputCurrent?.data) {
+                    opWaveforms.waveforms.push({
+                        label: 'Input Current', x: cw.inputCurrent.time, y: cw.inputCurrent.data,
+                        type: 'current', unit: 'A'
+                    });
+                }
+                
+                if (cw.outputVoltages) {
+                    cw.outputVoltages.forEach((outV, outIdx) => {
+                        if (outV.time && outV.data) {
+                            opWaveforms.waveforms.push({
+                                label: `Output ${outIdx + 1} Voltage`, x: outV.time, y: outV.data,
+                                type: 'voltage', unit: 'V'
+                            });
+                        }
+                    });
+                }
+                
+                if (cw.outputCurrents) {
+                    cw.outputCurrents.forEach((outI, outIdx) => {
+                        if (outI.time && outI.data) {
+                            opWaveforms.waveforms.push({
+                                label: `Output ${outIdx + 1} Current`, x: outI.time, y: outI.data,
+                                type: 'current', unit: 'A'
+                            });
+                        }
+                    });
+                }
+                
+                return opWaveforms;
+            });
         },
         
         repeatWaveformForPeriods(time, data, numberOfPeriods) {
@@ -607,7 +641,7 @@ export default {
           :textColor="$styleStore.wizard.inputTextColor"
           @update="updateErrorMessage"
         />
-        <Dimension :name="'currentRippleRatio'" :replaceTitle="'Ripple'" unit="%" :visualScale="100"
+        <Dimension v-if="isCcmMode" :name="'currentRippleRatio'" :replaceTitle="'Ripple'" unit="%" :visualScale="100"
           :dataTestLabel="dataTestLabel + '-CurrentRippleRatio'"
           :min="0.01" :max="1"
           v-model="localData"

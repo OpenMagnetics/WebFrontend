@@ -285,7 +285,7 @@ export default {
           <!-- Outputs -->
           <div class="compact-card">
             <div class="compact-header"><i class="fa-solid fa-arrow-right-from-bracket me-1"></i>Outputs</div>
-            <div class="compact-body pe-3">
+            <div class="compact-body ps-4 pe-3">
               <slot name="outputs">
               </slot>
             </div>

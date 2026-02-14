@@ -8,7 +8,7 @@ import ElementFromList from '/WebSharedComponents/DataInput/ElementFromList.vue'
 import PairOfDimensions from '/WebSharedComponents/DataInput/PairOfDimensions.vue'
 import TripleOfDimensions from '/WebSharedComponents/DataInput/TripleOfDimensions.vue'
 import DimensionWithTolerance from '/WebSharedComponents/DataInput/DimensionWithTolerance.vue'
-import { defaultIsolatedBuckBoostWizardInputs, defaultDesignRequirements, minimumMaximumScalePerParameter, filterMas } from '/WebSharedComponents/assets/js/defaults.js'
+import { defaultIsolatedBuckWizardInputs, defaultIsolatedBuckBoostWizardInputs, defaultDesignRequirements, minimumMaximumScalePerParameter, filterMas } from '/WebSharedComponents/assets/js/defaults.js'
 import ConverterWizardBase from './ConverterWizardBase.vue'
 </script>
 
@@ -214,7 +214,9 @@ export default {
                 }
                 else {
                     if (this.localData.currentOptions == 'The on-resistance of the MOSFET') {
-                        aux['mosfetOnResistance'] = this.localData.mosfetOnResistance;
+                        // Map mosfetOnResistance to currentRippleRatio (approximation)
+                        // For Isolated Buck/BuckBoost, C++ expects currentRippleRatio or maximumSwitchCurrent
+                        aux['currentRippleRatio'] = 0.5;  // Default 50% ripple
                     }
                     else {
                         aux['maximumSwitchCurrent'] = this.localData.maximumSwitchCurrent;
@@ -417,7 +419,9 @@ export default {
                     });
                 } else {
                     if (this.localData.currentOptions == 'The on-resistance of the MOSFET') {
-                        aux['mosfetOnResistance'] = this.localData.mosfetOnResistance;
+                        // Map mosfetOnResistance to currentRippleRatio (approximation)
+                        // For Isolated Buck/BuckBoost, C++ expects currentRippleRatio or maximumSwitchCurrent
+                        aux['currentRippleRatio'] = 0.5;  // Default 50% ripple
                     } else {
                         aux['maximumSwitchCurrent'] = this.localData.maximumSwitchCurrent;
                     }
@@ -436,8 +440,13 @@ export default {
                 aux['numberOfPeriods'] = parseInt(this.numberOfPeriods, 10);
                 aux['numberOfSteadyStatePeriods'] = parseInt(this.numberOfSteadyStatePeriods, 10);
                 
-                // Call the WASM simulation
-                var result = await this.taskQueueStore.simulateIsolatedBuckBoostIdealWaveforms(aux);
+                // Call the WASM simulation - use different functions for Isolated Buck vs Isolated Buck Boost
+                var result;
+                if (this.converterName == "Isolated Buck") {
+                    result = await this.taskQueueStore.simulateIsolatedBuckIdealWaveforms(aux);
+                } else {
+                    result = await this.taskQueueStore.simulateIsolatedBuckBoostIdealWaveforms(aux);
+                }
                 
                 this.simulatedOperatingPoints = result.inputs?.operatingPoints || result.operatingPoints || [];
                 this.designRequirements = result.inputs?.designRequirements || result.designRequirements || null;
@@ -445,7 +454,7 @@ export default {
                 this.simulatedTurnsRatios = result.turnsRatios || null;
                 // Build magnetic waveforms from operating points
                 this.magneticWaveforms = this.buildMagneticWaveformsFromInputs(this.simulatedOperatingPoints);
-                this.converterWaveforms = this.repeatWaveformsForPeriods(result.converterWaveforms || []);
+                this.converterWaveforms = this.convertConverterWaveforms(result.converterWaveforms || []);
                 
                 this.$nextTick(() => {
                     this.forceWaveformUpdate += 1;
@@ -493,7 +502,9 @@ export default {
                     });
                 } else {
                     if (this.localData.currentOptions == 'The on-resistance of the MOSFET') {
-                        aux['mosfetOnResistance'] = this.localData.mosfetOnResistance;
+                        // Map mosfetOnResistance to currentRippleRatio (approximation)
+                        // For Isolated Buck/BuckBoost, C++ expects currentRippleRatio or maximumSwitchCurrent
+                        aux['currentRippleRatio'] = 0.5;  // Default 50% ripple
                     } else {
                         aux['maximumSwitchCurrent'] = this.localData.maximumSwitchCurrent;
                     }
@@ -577,7 +588,6 @@ export default {
             return parts.join(' : ');
         },
         buildMagneticWaveformsFromInputs(operatingPoints) {
-            // WASM returns only 1 period, so we need to repeat for display
             const magneticWaveforms = [];
             
             for (let opIdx = 0; opIdx < operatingPoints.length; opIdx++) {
@@ -592,67 +602,92 @@ export default {
                 const excitations = op.excitationsPerWinding || [];
                 for (let windingIdx = 0; windingIdx < excitations.length; windingIdx++) {
                     const excitation = excitations[windingIdx];
-                    const windingLabel = windingIdx === 0 ? 'Primary' : `Secondary ${windingIdx}`;
+                    // Use the name from the excitation if available, otherwise generate one
+                    let windingLabel;
+                    if (excitation.name) {
+                        windingLabel = excitation.name;
+                    } else if (windingIdx === 0) {
+                        windingLabel = 'Primary';
+                    } else if (windingIdx === 1 && excitations.length > 2) {
+                        windingLabel = 'Primary Output';
+                    } else {
+                        windingLabel = `Secondary ${windingIdx - (excitations.length > 2 ? 1 : 0)}`;
+                    }
                     
-                    // Voltage waveform - repeat for display
+                    // Voltage waveform
                     if (excitation.voltage?.waveform?.time && excitation.voltage?.waveform?.data) {
-                        const { time, data } = this.repeatWaveformForPeriods(
-                            excitation.voltage.waveform.time,
-                            excitation.voltage.waveform.data,
-                            this.numberOfPeriods
-                        );
                         opWaveforms.waveforms.push({
                             label: `${windingLabel} Voltage`,
-                            x: time,
-                            y: data,
+                            x: excitation.voltage.waveform.time,
+                            y: excitation.voltage.waveform.data,
                             type: 'voltage',
                             unit: 'V'
                         });
                     }
                     
-                    // Current waveform - repeat for display
+                    // Current waveform
                     if (excitation.current?.waveform?.time && excitation.current?.waveform?.data) {
-                        const { time, data } = this.repeatWaveformForPeriods(
-                            excitation.current.waveform.time,
-                            excitation.current.waveform.data,
-                            this.numberOfPeriods
-                        );
                         opWaveforms.waveforms.push({
                             label: `${windingLabel} Current`,
-                            x: time,
-                            y: data,
+                            x: excitation.current.waveform.time,
+                            y: excitation.current.waveform.data,
                             type: 'current',
                             unit: 'A'
                         });
                     }
                 }
                 
-                // Add Primary Output voltage/current from backend data
-                // The backend now returns outputVoltages and outputCurrents arrays in the operating point
-                if (op.outputVoltages && op.outputVoltages.length > 0 && op.outputVoltages[0].waveform) {
-                    opWaveforms.waveforms.push({
-                        label: 'Primary Output Voltage',
-                        x: op.outputVoltages[0].waveform.time,
-                        y: op.outputVoltages[0].waveform.data,
-                        type: 'voltage',
-                        unit: 'V'
-                    });
-                }
-                
-                if (op.outputCurrents && op.outputCurrents.length > 0 && op.outputCurrents[0].waveform) {
-                    opWaveforms.waveforms.push({
-                        label: 'Primary Output Current',
-                        x: op.outputCurrents[0].waveform.time,
-                        y: op.outputCurrents[0].waveform.data,
-                        type: 'current',
-                        unit: 'A'
-                    });
-                }
-                
                 magneticWaveforms.push(opWaveforms);
             }
             
             return magneticWaveforms;
+        },
+        convertConverterWaveforms(converterWaveforms) {
+            return converterWaveforms.map((cw, idx) => {
+                const opWaveforms = {
+                    frequency: cw.switchingFrequency || this.localData.switchingFrequency,
+                    operatingPointName: cw.operatingPointName || `Operating Point ${idx + 1}`,
+                    waveforms: []
+                };
+                
+                if (cw.inputVoltage?.time && cw.inputVoltage?.data) {
+                    opWaveforms.waveforms.push({
+                        label: 'Input Voltage', x: cw.inputVoltage.time, y: cw.inputVoltage.data,
+                        type: 'voltage', unit: 'V'
+                    });
+                }
+                
+                if (cw.inputCurrent?.time && cw.inputCurrent?.data) {
+                    opWaveforms.waveforms.push({
+                        label: 'Input Current', x: cw.inputCurrent.time, y: cw.inputCurrent.data,
+                        type: 'current', unit: 'A'
+                    });
+                }
+                
+                if (cw.outputVoltages) {
+                    cw.outputVoltages.forEach((outV, outIdx) => {
+                        if (outV.time && outV.data) {
+                            opWaveforms.waveforms.push({
+                                label: `Output ${outIdx + 1} Voltage`, x: outV.time, y: outV.data,
+                                type: 'voltage', unit: 'V'
+                            });
+                        }
+                    });
+                }
+                
+                if (cw.outputCurrents) {
+                    cw.outputCurrents.forEach((outI, outIdx) => {
+                        if (outI.time && outI.data) {
+                            opWaveforms.waveforms.push({
+                                label: `Output ${outIdx + 1} Current`, x: outI.time, y: outI.data,
+                                type: 'current', unit: 'A'
+                            });
+                        }
+                    });
+                }
+                
+                return opWaveforms;
+            });
         },
         repeatWaveformForPeriods(time, data, numberOfPeriods) {
             if (!time || !data || time.length === 0 || numberOfPeriods <= 1) {
@@ -1076,8 +1111,8 @@ export default {
 
 <template>
   <ConverterWizardBase
-    title="Isolated Buck-Boost Wizard"
-    titleIcon="fa-bolt"
+    :title="converterName + ' Wizard'"
+    :titleIcon="converterName === 'Isolated Buck' ? 'fa-shield-halved' : 'fa-shield-virus'"
     :subtitle="wizardSubtitle"
     :col1Width="3" :col2Width="4" :col3Width="5"
     :magneticWaveforms="magneticWaveforms"
@@ -1300,7 +1335,7 @@ export default {
       <div v-for="(datum, index) in localData.outputsParameters" :key="'output-' + index" class="mb-2">
         <TripleOfDimensions v-if="localData.designLevel == 'I know the design I want'"
           :names="['voltage', 'current', 'turnsRatio']"
-          :replaceTitles="['V', 'I', 'n']"
+          :replaceTitle="['V', 'I', 'n']"
           :units="['V', 'A', null]"
           :mins="[minimumMaximumScalePerParameter['voltage']['min'], minimumMaximumScalePerParameter['current']['min'], 0.01]"
           :maxs="[minimumMaximumScalePerParameter['voltage']['max'], minimumMaximumScalePerParameter['current']['max'], 100]"
@@ -1317,7 +1352,7 @@ export default {
         />
         <PairOfDimensions v-else
           :names="['voltage', 'current']"
-          :replaceTitles="['V', 'I']"
+          :replaceTitle="['V', 'I']"
           :units="['V', 'A']"
           :mins="[minimumMaximumScalePerParameter['voltage']['min'], minimumMaximumScalePerParameter['current']['min']]"
           :maxs="[minimumMaximumScalePerParameter['voltage']['max'], minimumMaximumScalePerParameter['current']['max']]"
