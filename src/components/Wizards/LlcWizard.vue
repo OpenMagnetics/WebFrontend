@@ -3,9 +3,10 @@ import { useMasStore } from '../../stores/mas'
 import { useTaskQueueStore } from '../../stores/taskQueue'
 import { deepCopy } from '/WebSharedComponents/assets/js/utils.js'
 import Dimension from '/WebSharedComponents/DataInput/Dimension.vue'
+import DimensionReadOnly from '/WebSharedComponents/DataInput/DimensionReadOnly.vue'
 import ElementFromList from '/WebSharedComponents/DataInput/ElementFromList.vue'
 import DimensionWithTolerance from '/WebSharedComponents/DataInput/DimensionWithTolerance.vue'
-import { minimumMaximumScalePerParameter } from '/WebSharedComponents/assets/js/defaults.js'
+import { minimumMaximumScalePerParameter, defaultDesignRequirements } from '/WebSharedComponents/assets/js/defaults.js'
 import ConverterWizardBase from './ConverterWizardBase.vue'
 </script>
 
@@ -31,9 +32,10 @@ export default {
             maxSwitchingFrequency: 120000,
             resonantFrequency: 100000,
             qualityFactor: 0.4,
+            inductanceRatio: 5,
             integratedResonantInductor: true,
-            magnetizingInductance: 200e-6,
-            turnsRatio: 4.0,
+            magnetizingInductance: 825e-6,
+            turnsRatio: 8.33,
             ambientTemperature: 25,
             efficiency: 0.97,
             insulationType: 'Basic',
@@ -97,6 +99,7 @@ export default {
                     maxSwitchingFrequency: this.localData.maxSwitchingFrequency,
                     resonantFrequency: this.localData.resonantFrequency,
                     qualityFactor: this.localData.qualityFactor,
+                    inductanceRatio: this.localData.inductanceRatio,
                     integratedResonantInductor: this.localData.integratedResonantInductor,
                     operatingPoints: [{
                         outputVoltages: [this.localData.outputVoltage],
@@ -176,15 +179,42 @@ export default {
                     }
                     
                     // Use the simulated operating points directly
+                    // Extract single period for masStore (magnetic design only needs one period)
+                    console.log('DEBUG: Before extraction, simulatedOperatingPoints excitations:', this.simulatedOperatingPoints[0]?.excitationsPerWinding?.length || 0);
+                    const singlePeriodOps = this.extractSinglePeriodFromOperatingPoints(this.simulatedOperatingPoints);
+                    console.log('DEBUG: After extraction, singlePeriodOps excitations:', singlePeriodOps[0]?.excitationsPerWinding?.length || 0);
                     const result = {
                         masInputs: {
                             designRequirements: this.designRequirements,
-                            operatingPoints: this.simulatedOperatingPoints
+                            operatingPoints: singlePeriodOps
                         }
                     };
-                    this.masStore.setInputs(result.masInputs);
+                    // Direct assignment like Flyback wizard does
+                    this.masStore.mas.inputs = result.masInputs;
+                    console.log('DEBUG: Assigned to masStore.inputs.operatingPoints[0].excitationsPerWinding:', this.masStore.mas.inputs.operatingPoints[0]?.excitationsPerWinding?.length || 0);
+                    
+                    // Set up functionalDescription for all windings (like Flyback does)
+                    this.masStore.mas.magnetic.coil.functionalDescription = []
+                    this.masStore.mas.inputs.operatingPoints[0].excitationsPerWinding.forEach((elem, index) => {
+                        this.masStore.mas.magnetic.coil.functionalDescription.push({
+                                "name": elem.name,
+                                "numberTurns": 0,
+                                "numberParallels": 0,
+                                "isolationSide": this.masStore.mas.inputs.designRequirements?.isolationSides?.[index] || 'primary',
+                                "wire": ""
+                            });
+                    })
+                    
+                    // Set up insulation and other required design requirements
+                    if (this.localData.insulationType != 'No') {
+                        this.masStore.mas.inputs.designRequirements.insulation = defaultDesignRequirements.insulation;
+                        this.masStore.mas.inputs.designRequirements.insulation.insulationType = this.localData.insulationType;
+                    }
+                    this.masStore.mas.inputs.designRequirements.topology = 'LLC Converter';
+                    this.masStore.mas.inputs.designRequirements.market = 'Industrial';
+                    this.masStore.mas.inputs.designRequirements.isolationSides = ['primary', 'secondary'];
                 } else {
-                    // Use analytical calculation
+                    // Use analytical calculation (automatically called when no waveforms loaded)
                     const result = await this.taskQueueStore.calculateLlcInputs(aux);
                     
                     if (result.error) {
@@ -216,9 +246,44 @@ export default {
                         return false;
                     }
                     
-                    this.masStore.setInputs(result.masInputs);
+                    // Backend (libMKF) already calculates harmonics and processed data via complete_excitation()
+                    // No need to recalculate them here
+                    
+                    // Extract single period for masStore (magnetic design only needs one period)
+                    const singlePeriodOps = this.extractSinglePeriodFromOperatingPoints(result.operatingPoints);
+                    console.log('DEBUG: Assigning to masStore, excitations count:', singlePeriodOps[0]?.excitationsPerWinding?.length || 0);
+                    if (singlePeriodOps[0]?.excitationsPerWinding) {
+                        singlePeriodOps[0].excitationsPerWinding.forEach((exc, i) => {
+                            console.log('DEBUG: Excitation', i, 'name:', exc.name, 'current:', !!exc.current, 'voltage:', !!exc.voltage);
+                        });
+                    }
+                    this.masStore.mas.inputs = {
+                        designRequirements: result.designRequirements,
+                        operatingPoints: singlePeriodOps
+                    };
                     this.designRequirements = result.designRequirements;
                     this.simulatedTurnsRatios = result.simulatedTurnsRatios;
+                    
+                    // Set up functionalDescription for all windings (like Flyback does)
+                    this.masStore.mas.magnetic.coil.functionalDescription = []
+                    this.masStore.mas.inputs.operatingPoints[0].excitationsPerWinding.forEach((elem, index) => {
+                        this.masStore.mas.magnetic.coil.functionalDescription.push({
+                                "name": elem.name,
+                                "numberTurns": 0,
+                                "numberParallels": 0,
+                                "isolationSide": this.masStore.mas.inputs.designRequirements?.isolationSides?.[index] || 'primary',
+                                "wire": ""
+                            });
+                    })
+                    
+                    // Set up insulation and other required design requirements
+                    if (this.localData.insulationType != 'No') {
+                        this.masStore.mas.inputs.designRequirements.insulation = defaultDesignRequirements.insulation;
+                        this.masStore.mas.inputs.designRequirements.insulation.insulationType = this.localData.insulationType;
+                    }
+                    this.masStore.mas.inputs.designRequirements.topology = 'LLC Converter';
+                    this.masStore.mas.inputs.designRequirements.market = 'Industrial';
+                    this.masStore.mas.inputs.designRequirements.isolationSides = ['primary', 'secondary'];
                 }
                 return true;
             } catch (error) {
@@ -282,6 +347,7 @@ export default {
                     maxSwitchingFrequency: this.localData.maxSwitchingFrequency,
                     resonantFrequency: this.localData.resonantFrequency,
                     qualityFactor: this.localData.qualityFactor,
+                    inductanceRatio: this.localData.inductanceRatio,
                     integratedResonantInductor: this.localData.integratedResonantInductor,
                     desiredInductance: this.localData.magnetizingInductance,
                     desiredTurnsRatios: [this.localData.turnsRatio],
@@ -324,9 +390,17 @@ export default {
                         this.designRequirements = result.designRequirements;
                         this.simulatedMagnetizingInductance = result.computedResonantInductance || this.localData.magnetizingInductance;
                         this.simulatedTurnsRatios = result.designRequirements?.turnsRatios?.map(tr => tr.nominal) || [this.localData.turnsRatio];
+                        this.simulatedOperatingPoints = result.operatingPoints || [];
                         
-                        // Process waveforms
-                        const rawWaveforms = result.magneticWaveforms || [];
+                        // Process waveforms - build from operating points if magneticWaveforms not present
+                        let rawWaveforms = result.magneticWaveforms || [];
+                        if (rawWaveforms.length === 0 && this.simulatedOperatingPoints.length > 0) {
+                            // Build from operating points (like Flyback)
+                            rawWaveforms = this.buildMagneticWaveformsFromInputs(this.simulatedOperatingPoints);
+                        }
+                        
+                        // Repeat waveforms for the requested number of periods
+                        rawWaveforms = this.repeatWaveformsForPeriods(rawWaveforms);
                         
                         const processedWaveforms = rawWaveforms.map(wf => ({
                             ...wf,
@@ -334,7 +408,8 @@ export default {
                                 w && w.x && w.y && Array.isArray(w.x) && Array.isArray(w.y) && w.x.length > 0 && w.y.length > 0
                             ).map(w => ({
                                 label: w.label || 'Unknown',
-                                data: { x: w.x, y: w.y },
+                                x: w.x,
+                                y: w.y,
                                 colorLabel: w.color || '#b18aea',
                                 type: 'value',
                                 position: 'left',
@@ -344,7 +419,9 @@ export default {
                         })).filter(wf => wf.waveforms.length > 0);
                         
                         this.magneticWaveforms = processedWaveforms;
-                        this.simulatedOperatingPoints = result.operatingPoints || [];
+                        
+                        // For analytical waveforms, converter waveforms are not available
+                        this.converterWaveforms = [];
                         
                         this.$nextTick(() => {
                             this.forceWaveformUpdate += 1;
@@ -372,6 +449,7 @@ export default {
                     maxSwitchingFrequency: this.localData.maxSwitchingFrequency,
                     resonantFrequency: this.localData.resonantFrequency,
                     qualityFactor: this.localData.qualityFactor,
+                    inductanceRatio: this.localData.inductanceRatio,
                     integratedResonantInductor: this.localData.integratedResonantInductor,
                     magnetizingInductance: this.localData.magnetizingInductance,
                     turnsRatio: this.localData.turnsRatio,
@@ -384,19 +462,48 @@ export default {
                     numberOfPeriods: parseInt(this.numberOfPeriods, 10),
                     numberOfSteadyStatePeriods: parseInt(this.numberOfSteadyStatePeriods, 10)
                 };
-                
+
                 const result = await this.taskQueueStore.simulateLlcIdealWaveforms(aux);
+
+                console.log('SIMULATED RESULT:', result);
+                console.log('Result keys:', Object.keys(result));
+                console.log('magneticWaveforms:', result.magneticWaveforms);
+                console.log('converterWaveforms:', result.converterWaveforms);
+                console.log('inputs:', result.inputs);
+
+                if (result.error) {
+                    throw new Error(result.error);
+                }
+
+                // Use magneticWaveforms directly from result (now returned by backend)
+                if (result.magneticWaveforms && result.magneticWaveforms.length > 0) {
+                    console.log('Using magneticWaveforms from result, count:', result.magneticWaveforms.length);
+                    console.log('First OP waveforms:', result.magneticWaveforms[0]?.waveforms?.length);
+                    this.magneticWaveforms = result.magneticWaveforms;
+                } else {
+                    console.error('No magneticWaveforms returned from simulation');
+                    console.error('Full result:', JSON.stringify(result, null, 2));
+                    throw new Error("Simulation did not return magnetic waveform data. Please check the input parameters and try again.");
+                }
+
+                this.simulatedOperatingPoints = result.inputs?.operatingPoints || [];
+                this.designRequirements = result.inputs?.designRequirements || null;
+
+                // Process converter waveforms if available
+                if (result.converterWaveforms && result.converterWaveforms.length > 0) {
+                    console.log('Using converterWaveforms from result');
+                    this.converterWaveforms = this.convertConverterWaveforms(result.converterWaveforms);
+                } else {
+                    this.converterWaveforms = [];
+                }
                 
-                this.simulatedOperatingPoints = result.inputs?.operatingPoints || result.operatingPoints || [];
-                this.designRequirements = result.inputs?.designRequirements || result.designRequirements || null;
-                this.simulatedMagnetizingInductance = result.magnetizingInductance || null;
-                this.simulatedTurnsRatios = result.turnsRatios || null;
+                // Check if any waveforms were generated
+                const totalWaveforms = this.magneticWaveforms.reduce((sum, op) => sum + (op.waveforms?.length || 0), 0) +
+                                      this.converterWaveforms.reduce((sum, op) => sum + (op.waveforms?.length || 0), 0);
                 
-                // Build magnetic waveforms from operating points
-                this.magneticWaveforms = this.buildMagneticWaveformsFromInputs(this.simulatedOperatingPoints);
-                
-                // Process converter waveforms
-                this.converterWaveforms = this.convertConverterWaveforms(result.converterWaveforms || []);
+                if (totalWaveforms === 0) {
+                    this.waveformError = "No waveforms were generated. The simulation may have failed or returned empty data.";
+                }
                 
                 this.$nextTick(() => {
                     this.forceWaveformUpdate += 1;
@@ -539,6 +646,33 @@ export default {
             return parts.join(' : ');
         },
 
+        // Helper to resolve dimension value (nominal/min/max) to a scalar
+        resolveDimensionValue(dimObj) {
+            if (!dimObj) return null;
+            if (dimObj.nominal !== undefined && dimObj.nominal !== null) return dimObj.nominal;
+            if (dimObj.minimum !== undefined && dimObj.minimum !== null) return dimObj.minimum;
+            if (dimObj.maximum !== undefined && dimObj.maximum !== null) return dimObj.maximum;
+            return null;
+        },
+
+        // Returns the computed magnetizing inductance value from designRequirements (in H)
+        getComputedMagnetizingInductance() {
+            if (!this.designRequirements?.magnetizingInductance) return null;
+            return this.resolveDimensionValue(this.designRequirements.magnetizingInductance);
+        },
+
+        // Returns the computed turns ratio value from designRequirements
+        getComputedTurnsRatio() {
+            if (!this.designRequirements?.turnsRatios?.length) return null;
+            const tr = this.designRequirements.turnsRatios[0];
+            return this.resolveDimensionValue(tr);
+        },
+
+        // Check if computed tank values are available
+        hasComputedTankValues() {
+            return this.designRequirements != null;
+        },
+
         repeatWaveformForPeriods(time, data, numberOfPeriods) {
             // Repeat a single-period waveform for the specified number of periods
             if (!time || !data || time.length === 0 || numberOfPeriods <= 1) {
@@ -601,6 +735,137 @@ export default {
                 return [];
             }
             return waveforms[operatingPointIndex].waveforms;
+        },
+
+        // Extract single period from operating points (for masStore - magnetic design only needs one period)
+        extractSinglePeriodFromOperatingPoints(operatingPoints) {
+            if (!operatingPoints || operatingPoints.length === 0) return operatingPoints;
+            
+            console.log('DEBUG extractSinglePeriod: Processing', operatingPoints.length, 'operating points');
+            
+            return operatingPoints.map((op, opIdx) => {
+                console.log('DEBUG extractSinglePeriod: OP', opIdx, 'has', op.excitationsPerWinding?.length || 0, 'excitations');
+                
+                if (!op.excitationsPerWinding || op.excitationsPerWinding.length === 0) return op;
+                
+                const newExcitations = op.excitationsPerWinding.map((exc, excIdx) => {
+                    console.log('DEBUG extractSinglePeriod: Processing excitation', excIdx, 'name:', exc.name);
+                    // Check if waveform data exists
+                    const hasCurrentWaveform = exc.current?.waveform?.time && exc.current?.waveform?.data;
+                    const hasVoltageWaveform = exc.voltage?.waveform?.time && exc.voltage?.waveform?.data;
+                    console.log('DEBUG extractSinglePeriod:', exc.name, '- Has current:', !!hasCurrentWaveform, 'Has voltage:', !!hasVoltageWaveform);
+                    
+                    // Debug: Log the actual keys in the excitation object
+                    console.log('DEBUG extractSinglePeriod:', exc.name, 'keys:', Object.keys(exc));
+                    if (exc.current) {
+                        console.log('DEBUG extractSinglePeriod:', exc.name, 'current keys:', Object.keys(exc.current));
+                        if (exc.current.waveform) {
+                            console.log('DEBUG extractSinglePeriod:', exc.name, 'current.waveform keys:', Object.keys(exc.current.waveform));
+                        }
+                    }
+                    if (exc.voltage) {
+                        console.log('DEBUG extractSinglePeriod:', exc.name, 'voltage keys:', Object.keys(exc.voltage));
+                        if (exc.voltage.waveform) {
+                            console.log('DEBUG extractSinglePeriod:', exc.name, 'voltage.waveform keys:', Object.keys(exc.voltage.waveform));
+                        }
+                    }
+                    
+                    if (hasCurrentWaveform) {
+                        console.log('DEBUG extractSinglePeriod: Current time length:', exc.current.waveform.time.length, 'data length:', exc.current.waveform.data.length);
+                    }
+                    if (hasVoltageWaveform) {
+                        console.log('DEBUG extractSinglePeriod: Voltage time length:', exc.voltage.waveform.time.length, 'data length:', exc.voltage.waveform.data.length);
+                    }
+                    const newExc = { ...exc };
+                    
+                    // Process current waveform - data is in exc.current.waveform.time and .data
+                    if (exc.current?.waveform?.time && exc.current?.waveform?.data) {
+                        const time = exc.current.waveform.time;
+                        const data = exc.current.waveform.data;
+                        console.log('DEBUG extractSinglePeriod: Current waveform time length:', time?.length, 'data length:', data?.length);
+                        if (time && time.length > 0 && data && data.length > 0) {
+                            const singlePeriod = this.extractSinglePeriod(time, data);
+                            console.log('DEBUG extractSinglePeriod: Extracted', singlePeriod.time.length, 'points for current');
+                            newExc.current = {
+                                ...exc.current,
+                                waveform: {
+                                    ...exc.current.waveform,
+                                    time: singlePeriod.time,
+                                    data: singlePeriod.data
+                                }
+                            };
+                        }
+                    }
+                    
+                    // Process voltage waveform - data is in exc.voltage.waveform.time and .data
+                    if (exc.voltage?.waveform?.time && exc.voltage?.waveform?.data) {
+                        const time = exc.voltage.waveform.time;
+                        const data = exc.voltage.waveform.data;
+                        console.log('DEBUG extractSinglePeriod: Voltage waveform time length:', time?.length, 'data length:', data?.length);
+                        if (time && time.length > 0 && data && data.length > 0) {
+                            const singlePeriod = this.extractSinglePeriod(time, data);
+                            console.log('DEBUG extractSinglePeriod: Extracted', singlePeriod.time.length, 'points for voltage');
+                            newExc.voltage = {
+                                ...exc.voltage,
+                                waveform: {
+                                    ...exc.voltage.waveform,
+                                    time: singlePeriod.time,
+                                    data: singlePeriod.data
+                                }
+                            };
+                        }
+                    }
+                    
+                    return newExc;
+                });
+                
+                return { ...op, excitationsPerWinding: newExcitations };
+            });
+        },
+        
+        extractSinglePeriod(time, data) {
+            if (!time || !data || time.length === 0) return { time, data };
+            if (time.length < 2) return { time, data };
+            
+            const totalDuration = time[time.length - 1] - time[0];
+            const numPoints = time.length;
+            const dt = totalDuration / (numPoints - 1);
+            
+            // Get expected period duration from switching frequency
+            // The frequency is stored in the excitation, but we can estimate from data
+            const expectedPeriod = this.localData.resonantFrequency > 0 
+                ? 1 / this.localData.resonantFrequency 
+                : totalDuration / 2; // fallback
+            
+            // Calculate how many periods we likely have
+            const numPeriodsInData = Math.round(totalDuration / expectedPeriod);
+            
+            console.log('DEBUG extractSinglePeriod: Total duration:', totalDuration, 'expectedPeriod:', expectedPeriod, 'numPeriodsInData:', numPeriodsInData);
+            
+            if (numPeriodsInData <= 1) {
+                // Already single period
+                console.log('DEBUG extractSinglePeriod: Data is already single period');
+                return { time, data };
+            }
+            
+            // Extract first period
+            const periodDuration = totalDuration / numPeriodsInData;
+            let endIndex = Math.floor(numPoints / numPeriodsInData);
+            
+            // Adjust to find exact boundary
+            for (let i = Math.floor(endIndex * 0.9); i < Math.min(numPoints, Math.floor(endIndex * 1.1)); i++) {
+                if (time[i] - time[0] >= periodDuration - dt) {
+                    endIndex = i + 1;
+                    break;
+                }
+            }
+            
+            console.log('DEBUG extractSinglePeriod: Extracting first period (1 of', numPeriodsInData, ') from 0 to', endIndex, 'of', numPoints);
+            
+            return {
+                time: time.slice(0, endIndex),
+                data: data.slice(0, endIndex)
+            };
         },
 
         getSingleWaveformDataForVisualizer(waveforms, operatingPointIndex, waveformIndex) {
@@ -820,6 +1085,7 @@ export default {
     titleIcon="fa-wave-square"
     :subtitle="wizardSubtitle"
     :col1Width="3" :col2Width="4" :col3Width="5"
+    :showNumberOutputs="false"
     :magneticWaveforms="magneticWaveforms"
     :converterWaveforms="converterWaveforms"
     :waveformViewMode="waveformViewMode"
@@ -853,15 +1119,16 @@ export default {
 
     <template #design-or-switch-parameters>
       <Dimension :name="'qualityFactor'" :replaceTitle="'Q Factor'" :unit="null" :min="0.1" :max="2" v-model="localData" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor" :textColor="$styleStore.wizard.inputTextColor" @update="updateErrorMessage"/>
+      <Dimension :name="'inductanceRatio'" :replaceTitle="'Ln Ratio'" :unit="null" :min="2" :max="20" v-model="localData" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor" :textColor="$styleStore.wizard.inputTextColor" @update="updateErrorMessage"/>
       <!-- Only show turns ratio and magnetizing inductance inputs in "I know the design I want" mode -->
       <template v-if="localData.designMode === 'I know the design I want'">
         <Dimension :name="'turnsRatio'" :replaceTitle="'Turns'" :unit="null" :min="0.1" :max="100" v-model="localData" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor" :textColor="$styleStore.wizard.inputTextColor" @update="updateErrorMessage"/>
-        <Dimension :name="'magnetizingInductance'" :replaceTitle="'Mag L'" unit="H" :min="minimumMaximumScalePerParameter['inductance']['min']" :max="minimumMaximumScalePerParameter['inductance']['max']" v-model="localData" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor" :textColor="$styleStore.wizard.inputTextColor" @update="updateErrorMessage"/>
+        <Dimension :name="'magnetizingInductance'" :replaceTitle="'Mag. Inductance'" unit="H" :min="minimumMaximumScalePerParameter['inductance']['min']" :max="minimumMaximumScalePerParameter['inductance']['max']" v-model="localData" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor" :textColor="$styleStore.wizard.inputTextColor" @update="updateErrorMessage"/>
       </template>
-      <!-- Show computed values in "Help me with the design" mode -->
-      <template v-else>
-        <div class="compact-row"><span class="compact-label">Turns</span><span class="compact-value">{{ getTurnsRatioDisplay() }}</span></div>
-        <div class="compact-row"><span class="compact-label">Mag L</span><span class="compact-value">{{ getMagnetizingInductanceDisplay() }}</span></div>
+      <!-- Show computed values using DimensionReadOnly (shows only when data available) -->
+      <template v-else-if="hasComputedTankValues()">
+        <DimensionReadOnly :name="'turnsRatio'" :replaceTitle="'Turns'" :unit="null" :value="getComputedTurnsRatio()" :numberDecimals="2" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'transparent'" :valueBgColor="'transparent'" :textColor="$styleStore.wizard.inputTextColor"/>
+        <DimensionReadOnly :name="'magnetizingInductance'" :replaceTitle="'Mag. Inductance'" unit="H" :value="getComputedMagnetizingInductance()" :numberDecimals="6" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'transparent'" :valueBgColor="'transparent'" :textColor="$styleStore.wizard.inputTextColor"/>
       </template>
       <div class="form-check mt-2"><input class="form-check-input" type="checkbox" v-model="localData.integratedResonantInductor" id="integratedResonantInductor"><label class="form-check-label small" for="integratedResonantInductor" :style="{ color: $styleStore.wizard.inputTextColor }">Integrated Res L</label></div>
     </template>

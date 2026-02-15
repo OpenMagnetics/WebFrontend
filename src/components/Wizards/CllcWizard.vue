@@ -67,7 +67,7 @@ export default {
         };
         const result = await this.taskQueueStore.calculateCllcInputs(aux);
         if (result.error) { this.errorMessage = result.error; return false; }
-        this.masStore.setInputs(result.masInputs);
+        this.masStore.mas.inputs = result.masInputs;
         this.designRequirements = result.designRequirements;
         this.simulatedTurnsRatios = result.simulatedTurnsRatios;
         return true;

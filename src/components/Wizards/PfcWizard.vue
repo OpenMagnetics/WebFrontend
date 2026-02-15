@@ -51,10 +51,12 @@ export default {
             magneticWaveforms: [],
             converterWaveforms: [],
             waveformViewMode: 'magnetic', // 'magnetic' or 'converter'
+            waveformSource: 'analytical', // 'analytical' or 'simulation'
             forceWaveformUpdate: 0,
             numberOfPeriods: 2,
             numberOfSteadyStatePeriods: 10,
-            converterName: 'Power Factor Correction (PFC)'
+            converterName: 'Power Factor Correction (PFC)',
+            detectedMode: null
         }
     },
     computed: {
@@ -63,16 +65,37 @@ export default {
         }
     },
     watch: {
+        'localData.inductance': {
+            handler(newVal) {
+                if (this.localData.designLevel === 'I know the design I want' && newVal > 0) {
+                    this.detectActualMode();
+                }
+            },
+            immediate: true
+        },
+        'localData.designLevel'(newVal) {
+            if (newVal === 'I know the design I want' && this.localData.inductance > 0) {
+                this.detectActualMode();
+            } else {
+                this.detectedMode = null;
+            }
+        },
         waveformViewMode() {
             this.$nextTick(() => {
                 this.forceWaveformUpdate += 1;
             });
         },
     },
+    mounted() {
+        // Run detection on mount if already in "I know the design I want" mode
+        if (this.localData.designLevel === 'I know the design I want' && this.localData.inductance > 0) {
+            this.detectActualMode();
+        }
+    },
     methods: {
         updateErrorMessage() {
             this.errorMessage = "";
-            
+
             // Validation checks
             if (this.localData.outputVoltage <= 0) {
                 this.errorMessage = "Output voltage must be positive";
@@ -82,13 +105,42 @@ export default {
                 this.errorMessage = "Output power must be positive";
                 return;
             }
-            
+
             // Check that output voltage > peak input voltage
             const vinMax = this.localData.inputVoltage.maximum || this.localData.inputVoltage.nominal;
             const vinPeakMax = vinMax * Math.sqrt(2);
             if (this.localData.outputVoltage <= vinPeakMax) {
                 this.errorMessage = `Output voltage (${this.localData.outputVoltage}V) must be greater than peak input (${vinPeakMax.toFixed(1)}V)`;
                 return;
+            }
+        },
+
+        async detectActualMode() {
+            if (this.localData.designLevel !== 'I know the design I want' || this.localData.inductance <= 0) {
+                this.detectedMode = null;
+                return;
+            }
+
+            try {
+                const Module = await waitForMkf();
+                await Module.ready;
+
+                const params = {
+                    inputVoltage: this.localData.inputVoltage,
+                    outputVoltage: this.localData.outputVoltage,
+                    outputPower: this.localData.outputPower,
+                    switchingFrequency: this.localData.switchingFrequency,
+                    efficiency: this.localData.efficiency,
+                    diodeVoltageDrop: this.localData.diodeVoltageDrop
+                };
+
+                const result = JSON.parse(await Module.determine_pfc_mode(JSON.stringify(params), this.localData.inductance));
+
+                if (!result.error) {
+                    this.detectedMode = result.actualMode;
+                }
+            } catch (error) {
+                console.error('Error detecting PFC mode:', error);
             }
         },
         
@@ -628,6 +680,10 @@ export default {
           :textColor="$styleStore.wizard.inputTextColor"
           @update="updateErrorMessage"
         />
+        <div v-if="detectedMode" class="mt-2 p-2 rounded" :class="$styleStore.wizard.inputValueBgColor">
+          <small class="text-muted">Detected Mode:</small><br>
+          <strong :style="{ color: $styleStore.wizard.inputTextColor }">{{ detectedMode }}</strong>
+        </div>
       </div>
       <div v-else>
         <ElementFromListRadio

@@ -19,30 +19,30 @@ export const useMasStore = defineStore("mas", () => {
     function updatedInputExcitationProcessed(signalDescriptor) {
     }
 
-    function setMas(mas) {
-        this.mas = null;
-        this.mas = mas;
+    function setMas(masValue) {
+        mas.value = null;
+        mas.value = masValue;
     }
 
     function setInputs(inputs) {
-        this.mas.inputs = inputs;
+        mas.value.inputs = inputs;
     }
 
     function resetMas(type) {
         if (type == "power") {
-            this.mas = MAS.Convert.toMas(JSON.stringify(Defaults.powerMas));
+            mas.value = MAS.Convert.toMas(JSON.stringify(Defaults.powerMas));
         }
         else if (type == "filter") {
-            this.mas = MAS.Convert.toMas(JSON.stringify(Defaults.filterMas));
+            mas.value = MAS.Convert.toMas(JSON.stringify(Defaults.filterMas));
         }
     }
 
     function resetMagnetic(type) {
         if (type == "power") {
-            this.mas.magnetic = MAS.Convert.toMas(JSON.stringify(Defaults.powerMas)).magnetic;
+            mas.value.magnetic = MAS.Convert.toMas(JSON.stringify(Defaults.powerMas)).magnetic;
         }
         else if (type == "filter") {
-            this.mas.magnetic = MAS.Convert.toMas(JSON.stringify(Defaults.filterMas)).magnetic;
+            mas.value.magnetic = MAS.Convert.toMas(JSON.stringify(Defaults.filterMas)).magnetic;
         }
     }
 

@@ -74,6 +74,16 @@ export default {
       type: [String, Number],
       default: 5
     },
+    /** Show the Input Voltage card */
+    showInputVoltage: {
+      type: Boolean,
+      default: true
+    },
+    /** Show the Number of Outputs card */
+    showNumberOutputs: {
+      type: Boolean,
+      default: true
+    },
     // --- Waveform props ---
     magneticWaveforms: {
       type: Array,
@@ -265,7 +275,7 @@ export default {
         <div class="d-flex flex-column gap-2">
 
           <!-- Input Voltage -->
-          <div class="compact-card">
+          <div v-if="showInputVoltage" class="compact-card">
             <div class="compact-header"><i class="fa-solid fa-plug me-1"></i>Input Voltage</div>
             <div class="compact-body">
               <slot name="input-voltage">
@@ -274,7 +284,7 @@ export default {
           </div>
 
           <!-- Number of Outputs -->
-          <div class="compact-card">
+          <div v-if="showNumberOutputs" class="compact-card">
             <div class="compact-header"><i class="fa-solid fa-list-ol me-1"></i>Number of Outputs</div>
             <div class="compact-body ps-4">
               <slot name="number-outputs">

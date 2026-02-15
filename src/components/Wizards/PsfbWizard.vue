@@ -92,7 +92,7 @@ export default {
       try {
         const result = await this.taskQueueStore.calculatePsfbInputs(this._buildAux());
         if (result.error) { this.errorMessage = result.error; return false; }
-        this.masStore.setInputs(result.masInputs);
+        this.masStore.mas.inputs = result.masInputs;
         this.designRequirements = result.designRequirements;
         this.simulatedTurnsRatios = result.simulatedTurnsRatios;
         return true;
@@ -142,6 +142,29 @@ export default {
       this.simulatedOperatingPoints = result.inputs?.operatingPoints || result.operatingPoints || [];
       this.magneticWaveforms = this.buildMagneticWaveformsFromInputs(this.simulatedOperatingPoints);
       this.designRequirements = result.inputs?.designRequirements || result.designRequirements || null;
+      
+      // Validate waveforms for NaN/Inf values
+      if (this.magneticWaveforms) {
+        for (const wf of this.magneticWaveforms) {
+          if (wf.waveforms) {
+            for (const w of wf.waveforms) {
+              if (w.y && w.x) {
+                for (let i = 0; i < w.y.length; i++) {
+                  if (!Number.isFinite(w.y[i])) {
+                    return "Waveform calculation produced invalid values (NaN/Inf). Try adjusting the switching frequency or phase shift.";
+                  }
+                }
+                for (let i = 0; i < w.x.length; i++) {
+                  if (!Number.isFinite(w.x[i])) {
+                    return "Waveform calculation produced invalid values (NaN/Inf). Try adjusting the switching frequency or phase shift.";
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+      
       return null;
     },
 

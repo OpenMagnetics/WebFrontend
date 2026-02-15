@@ -340,6 +340,7 @@ export default {
                         <li>
                             <button
                                 :style="getWizardButtonStyle('CommonModeChoke')"
+                                :disabled="true"
                                 data-cy="Wizard-CommonModeChoke-link"
                                 :class="headerTogglerIsVisible? 'w-100' : 'mx-0' "
                                 class="dropdown-item btn btn-block nav-link px-2"
@@ -353,6 +354,7 @@ export default {
                         <li>
                             <button
                                 :style="getWizardButtonStyle('DifferentialModeChoke')"
+                                :disabled="true"
                                 data-cy="Wizard-DifferentialModeChoke-link"
                                 :class="headerTogglerIsVisible? 'w-100' : 'mx-0' "
                                 class="dropdown-item btn btn-block nav-link px-2"
@@ -457,6 +459,7 @@ export default {
                         <li>
                             <button
                                 :style="getWizardButtonStyle('DAB', true)"
+                                :disabled="true"
                                 data-cy="Dab-link"
                                 :class="headerTogglerIsVisible? 'w-100' : 'mx-0' "
                                 class="dropdown-item btn btn-block nav-link px-2"
@@ -483,6 +486,7 @@ export default {
                         <li>
                             <button
                                 :style="getWizardButtonStyle('CLLC', true)"
+                                :disabled="true"
                                 data-cy="Cllc-link"
                                 :class="headerTogglerIsVisible? 'w-100' : 'mx-0' "
                                 class="dropdown-item btn btn-block nav-link px-2"
@@ -496,6 +500,7 @@ export default {
                         <li>
                             <button
                                 :style="getWizardButtonStyle('PSFB', true)"
+                                :disabled="true"
                                 data-cy="Psfb-link"
                                 :class="headerTogglerIsVisible? 'w-100' : 'mx-0' "
                                 class="dropdown-item btn btn-block nav-link px-2"
