@@ -453,6 +453,7 @@ export default {
                 this.simulatedMagnetizingInductance = result.magnetizingInductance || null;
                 this.simulatedTurnsRatios = result.turnsRatios || null;
                 // Build magnetic waveforms from operating points
+                // Backend already returns waveforms for requested numberOfPeriods
                 this.magneticWaveforms = this.buildMagneticWaveformsFromInputs(this.simulatedOperatingPoints);
                 this.converterWaveforms = this.convertConverterWaveforms(result.converterWaveforms || []);
                 
@@ -537,7 +538,10 @@ export default {
                 const operatingPoints = result.operatingPoints || [];
                 this.simulatedOperatingPoints = operatingPoints;
                 
-                this.magneticWaveforms = this.buildMagneticWaveformsFromInputs(operatingPoints);
+                let waveforms = this.buildMagneticWaveformsFromInputs(operatingPoints);
+                // Repeat waveforms for the requested number of periods
+                waveforms = this.repeatWaveformsForPeriods(waveforms);
+                this.magneticWaveforms = waveforms;
                 this.converterWaveforms = [];
                 
                 this.$nextTick(() => {

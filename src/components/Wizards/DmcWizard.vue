@@ -10,6 +10,11 @@ import { defaultDmcWizardInputs, defaultDesignRequirements, minimumMaximumScaleP
 </script>
 
 <script>
+// NOTE: This wizard does not yet use ConverterWizardBase layout.
+// TODO: Migrate to ConverterWizardBase for layout consistency.
+// Navigation methods (processAndReview/processAndAdvise) follow the standard pattern
+// and could use ConverterWizardBase.navigateToReview/navigateToAdvise once migrated.
+
 export default {
     props: {
         dataTestLabel: {

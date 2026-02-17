@@ -80,17 +80,7 @@ export default {
     async processAndReview() {
       const success = await this.process();
       if (!success) { setTimeout(() => { this.errorMessage = "" }, 5000); return; }
-      this.$stateStore.resetMagneticTool();
-      this.$stateStore.designLoaded();
-      this.$stateStore.selectApplication(this.$stateStore.SupportedApplications.Power);
-      this.$stateStore.selectWorkflow("design");
-      this.$stateStore.selectTool("agnosticTool");
-      this.$stateStore.setCurrentToolSubsectionStatus("designRequirements", true);
-      this.$stateStore.setCurrentToolSubsectionStatus("operatingPoints", true);
-      this.$stateStore.operatingPoints.modePerPoint = [];
-      this.masStore.mas.magnetic.coil.functionalDescription.forEach((_) => {
-        this.$stateStore.operatingPoints.modePerPoint.push(this.$stateStore.OperatingPointsMode.Manual);
-      })
+      await this.$refs.base.navigateToReview(this.$stateStore, this.masStore, "Power");
       await this.$nextTick();
       await this.$router.push(`${import.meta.env.BASE_URL}magnetic_tool`);
     },
@@ -98,140 +88,9 @@ export default {
     async processAndAdvise() {
       const success = await this.process();
       if (!success) { setTimeout(() => { this.errorMessage = "" }, 5000); return; }
-      this.$stateStore.resetMagneticTool();
-      this.$stateStore.designLoaded();
-      this.$stateStore.selectApplication(this.$stateStore.SupportedApplications.Power);
-      this.$stateStore.selectWorkflow("design");
-      this.$stateStore.selectTool("agnosticTool");
-      this.$stateStore.setCurrentToolSubsection("magneticBuilder");
-      this.$stateStore.setCurrentToolSubsectionStatus("designRequirements", true);
-      this.$stateStore.setCurrentToolSubsectionStatus("operatingPoints", true);
-      this.$stateStore.operatingPoints.modePerPoint = [this.$stateStore.OperatingPointsMode.Manual];
+      await this.$refs.base.navigateToAdvise(this.$stateStore, this.masStore, "Power");
       await this.$nextTick();
       await this.$router.push(`${import.meta.env.BASE_URL}magnetic_tool`);
-    },
-
-    buildMagneticWaveformsFromInputs(operatingPoints) {
-      const magneticWaveforms = [];
-      
-      for (let opIdx = 0; opIdx < operatingPoints.length; opIdx++) {
-        const op = operatingPoints[opIdx];
-        const opWaveforms = {
-          frequency: op.excitationsPerWinding?.[0]?.frequency || this.localData.resonantFrequency,
-          operatingPointName: op.name || `Operating Point ${opIdx + 1}`,
-          waveforms: []
-        };
-        
-        // Extract waveforms from each winding excitation
-        const excitations = op.excitationsPerWinding || [];
-        for (let windingIdx = 0; windingIdx < excitations.length; windingIdx++) {
-          const excitation = excitations[windingIdx];
-          const windingLabel = windingIdx === 0 ? 'Primary' : `Secondary ${windingIdx}`;
-          
-          // Voltage waveform
-          if (excitation.voltage?.waveform?.time && excitation.voltage?.waveform?.data) {
-            opWaveforms.waveforms.push({
-              label: `${windingLabel} Voltage`,
-              x: excitation.voltage.waveform.time,
-              y: excitation.voltage.waveform.data,
-              type: 'voltage',
-              unit: 'V'
-            });
-          }
-          
-          // Current waveform
-          if (excitation.current?.waveform?.time && excitation.current?.waveform?.data) {
-            opWaveforms.waveforms.push({
-              label: `${windingLabel} Current`,
-              x: excitation.current.waveform.time,
-              y: excitation.current.waveform.data,
-              type: 'current',
-              unit: 'A'
-            });
-          }
-        }
-        
-        magneticWaveforms.push(opWaveforms);
-      }
-      
-      return magneticWaveforms;
-    },
-
-    convertConverterWaveforms(converterWaveforms) {
-      return converterWaveforms.map((cw, idx) => {
-        const opWaveforms = {
-          frequency: cw.switchingFrequency || this.localData.switchingFrequency,
-          operatingPointName: cw.operatingPointName || `Operating Point ${idx + 1}`,
-          waveforms: []
-        };
-        
-        if (cw.inputVoltage?.time && cw.inputVoltage?.data) {
-          opWaveforms.waveforms.push({
-            label: 'Input Voltage', x: cw.inputVoltage.time, y: cw.inputVoltage.data,
-            type: 'voltage', unit: 'V'
-          });
-        }
-        
-        if (cw.inputCurrent?.time && cw.inputCurrent?.data) {
-          opWaveforms.waveforms.push({
-            label: 'Input Current', x: cw.inputCurrent.time, y: cw.inputCurrent.data,
-            type: 'current', unit: 'A'
-          });
-        }
-        
-        if (cw.outputVoltages) {
-          cw.outputVoltages.forEach((outV, outIdx) => {
-            if (outV.time && outV.data) {
-              opWaveforms.waveforms.push({
-                label: `Output ${outIdx + 1} Voltage`, x: outV.time, y: outV.data,
-                type: 'voltage', unit: 'V'
-              });
-            }
-          });
-        }
-        
-        if (cw.outputCurrents) {
-          cw.outputCurrents.forEach((outI, outIdx) => {
-            if (outI.time && outI.data) {
-              opWaveforms.waveforms.push({
-                label: `Output ${outIdx + 1} Current`, x: outI.time, y: outI.data,
-                type: 'current', unit: 'A'
-              });
-            }
-          });
-        }
-        
-        return opWaveforms;
-      });
-    },
-
-    repeatWaveformForPeriods(time, data, numberOfPeriods) {
-      // Repeat a single-period waveform for the specified number of periods
-      if (!time || !data || time.length === 0 || numberOfPeriods <= 1) {
-        return { time, data };
-      }
-      
-      const period = time[time.length - 1] - time[0];
-      const newTime = [];
-      const newData = [];
-      
-      for (let p = 0; p < numberOfPeriods; p++) {
-        const offset = p * period;
-        for (let i = 0; i < time.length; i++) {
-          // Skip first point in subsequent periods ONLY if it doesn't create duplicate time
-          if (p > 0 && i === 0) {
-            // Check if this point would create a duplicate time value
-            const newTimeValue = time[i] + offset;
-            if (newTime.length > 0 && Math.abs(newTime[newTime.length - 1] - newTimeValue) < 1e-12) {
-              continue; // Skip to avoid duplicate
-            }
-          }
-          newTime.push(time[i] + offset);
-          newData.push(data[i]);
-        }
-      }
-      
-      return { time: newTime, data: newData };
     },
 
     async getAnalyticalWaveforms() {
@@ -264,7 +123,10 @@ export default {
         else {
           // Build magnetic waveforms from operating points
           this.simulatedOperatingPoints = result.inputs?.operatingPoints || result.operatingPoints || [];
-          this.magneticWaveforms = this.buildMagneticWaveformsFromInputs(this.simulatedOperatingPoints);
+          let waveforms = this.$refs.base.buildMagneticWaveformsFromInputs(this.simulatedOperatingPoints, this.localData.resonantFrequency);
+          // Repeat waveforms for the requested number of periods
+          waveforms = this.$refs.base.repeatWaveformsForPeriods(waveforms, this.numberOfPeriods);
+          this.magneticWaveforms = waveforms;
           this.designRequirements = result.inputs?.designRequirements || result.designRequirements || null;
         }
       } catch (error) { this.waveformError = error.message || "Failed to get analytical waveforms"; }
@@ -301,8 +163,9 @@ export default {
         if (result.error) { this.waveformError = result.error; }
         else {
           // Build magnetic waveforms from operating points
+          // Backend already returns waveforms for requested numberOfPeriods
           this.simulatedOperatingPoints = result.inputs?.operatingPoints || result.operatingPoints || [];
-          this.magneticWaveforms = this.buildMagneticWaveformsFromInputs(this.simulatedOperatingPoints);
+          this.magneticWaveforms = this.$refs.base.buildMagneticWaveformsFromInputs(this.simulatedOperatingPoints, this.localData.resonantFrequency);
           this.designRequirements = result.inputs?.designRequirements || result.designRequirements || null;
         }
       } catch (error) { this.waveformError = error.message || "Failed to simulate waveforms"; }
@@ -314,6 +177,7 @@ export default {
 
 <template>
   <ConverterWizardBase
+    ref="base"
     title="CLLC Wizard"
     titleIcon="fa-charging-station"
     subtitle="Bidirectional Resonant DC-DC Converter"
