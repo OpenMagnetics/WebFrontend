@@ -236,15 +236,13 @@ export default {
                         this.simulatedTurnsRatios = result.designRequirements?.turnsRatios?.map(tr => tr.nominal) || [this.localData.turnsRatio];
                         this.simulatedOperatingPoints = result.operatingPoints || [];
                         
-                        // Process waveforms - build from operating points if magneticWaveforms not present
-                        let rawWaveforms = result.magneticWaveforms || [];
-                        if (rawWaveforms.length === 0 && this.simulatedOperatingPoints.length > 0) {
-                            // Build from operating points using base component method
-                            rawWaveforms = this.$refs.base.buildMagneticWaveformsFromInputs(this.simulatedOperatingPoints);
+                        // Check if magneticWaveforms is present and not empty
+                        if (!result.magneticWaveforms || result.magneticWaveforms.length === 0) {
+                            throw new Error("Analytical calculation did not return magnetic waveform data. Please check the input parameters and try again.");
                         }
                         
                         // Repeat waveforms for the requested number of periods
-                        rawWaveforms = this.$refs.base.repeatWaveformsForPeriods(rawWaveforms, this.numberOfPeriods);
+                        let rawWaveforms = this.$refs.base.repeatWaveformsForPeriods(result.magneticWaveforms, this.numberOfPeriods);
                         
                         const processedWaveforms = rawWaveforms.map(wf => ({
                             ...wf,
@@ -336,7 +334,9 @@ export default {
                 // Process converter waveforms if available
                 if (result.converterWaveforms && result.converterWaveforms.length > 0) {
                     console.log('Using converterWaveforms from result');
+                    console.log('First converterWaveform:', JSON.stringify(result.converterWaveforms[0], null, 2));
                     this.converterWaveforms = this.$refs.base.convertConverterWaveforms(result.converterWaveforms, this.localData.resonantFrequency);
+                    console.log('Processed converterWaveforms:', JSON.stringify(this.converterWaveforms, null, 2));
                 } else {
                     this.converterWaveforms = [];
                 }
