@@ -409,7 +409,7 @@ export default {
 
       // Standard format: { converterWaveforms: [...], inputs: { operatingPoints: [...], designRequirements: {...} } }
       // Or: { converterWaveforms: [...], operatingPoints: [...], designRequirements: {...} }
-      const converterWaveforms = result.converterWaveforms || [];
+      const rawConverterWaveforms = result.converterWaveforms || [];
       const operatingPoints = result.inputs?.operatingPoints || result.operatingPoints || [];
       const designRequirements = result.inputs?.designRequirements || result.designRequirements || null;
 
@@ -423,6 +423,9 @@ export default {
       if (magneticWaveforms.length === 0) {
         throw new Error("No magnetic waveforms were generated from operating points");
       }
+
+      // Process converter waveforms to match expected visualizer format
+      const converterWaveforms = this.convertConverterWaveforms(rawConverterWaveforms, defaultFrequency);
 
       return {
         operatingPoints,
