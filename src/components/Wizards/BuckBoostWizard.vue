@@ -82,6 +82,40 @@ export default {
         this.updateErrorMessage();
     },
     methods: {
+
+    // ===== WIZARD CONTRACT =====
+    buildParams(mode) {
+      const aux = {};
+      aux['inputVoltage'] = this.localData.inputVoltage;
+      aux['diodeVoltageDrop'] = this.localData.diodeVoltageDrop;
+      aux['efficiency'] = this.localData.efficiency;
+      if (this.localData.designLevel == 'I know the design I want') {
+        aux['desiredInductance'] = this.localData.inductance;
+      } else {
+        if (this.localData.currentOptions == 'The output current ratio') { aux['currentRippleRatio'] = this.localData.currentRippleRatio; }
+        else { aux['maximumSwitchCurrent'] = this.localData.maximumSwitchCurrent; }
+      }
+      const auxOp = {};
+      auxOp['outputVoltage'] = this.localData.outputsParameters.voltage;
+      auxOp['outputCurrent'] = this.localData.outputsParameters.current;
+      auxOp['switchingFrequency'] = this.localData.switchingFrequency;
+      auxOp['ambientTemperature'] = this.localData.ambientTemperature;
+      aux['operatingPoints'] = [auxOp];
+      return aux;
+    },
+    getCalculateFn() {
+      const n = this.converterName;
+      if (this.localData.designLevel == 'I know the design I want') return (aux) => this.taskQueueStore[`calculateAdvanced${n}Inputs`](aux);
+      return (aux) => this.taskQueueStore[`calculate${n}Inputs`](aux);
+    },
+    getSimulateFn() { const n = this.converterName; return (aux) => this.taskQueueStore[`simulate${n}IdealWaveforms`](aux); },
+    getDefaultFrequency() { return this.localData.switchingFrequency; },
+    postProcessResults(result, mode) {
+      if (this.designRequirements) this.simulatedInductance = this.designRequirements.magnetizingInductance?.nominal || null;
+    },
+    getTopology() { return this.converterName; },
+    getIsolationSides() { return ['primary']; },
+
             updateErrorMessage() {
             this.errorMessage = "";
             if (this.converterName == "Buck") {
@@ -103,80 +137,26 @@ export default {
         },
         async process() {
             this.masStore.resetMas("power");
-
+            
             try {
-                const aux = {};
-                aux['inputVoltage'] = this.localData.inputVoltage;
-                aux['diodeVoltageDrop'] = this.localData.diodeVoltageDrop;
-                aux['efficiency'] = this.localData.efficiency;
-                if (this.localData.designLevel == 'I know the design I want') {
-                    aux['desiredInductance'] = this.localData.inductance;
+                const result = await this.$refs.base.processWizardData(this, this.taskQueueStore);
+                if (!result.success) {
+                    this.errorMessage = result.error;
+                    return;
                 }
-                else {
-                    if (this.localData.currentOptions == 'The output current ratio') {
-                        aux['currentRippleRatio'] = this.localData.currentRippleRatio;
-                    }
-                    else {
-                        aux['maximumSwitchCurrent'] = this.localData.maximumSwitchCurrent;
-                    }
-                }
-
-                const auxOperatingPoint = {};
-                auxOperatingPoint['outputVoltage'] = this.localData.outputsParameters.voltage;
-                auxOperatingPoint['outputCurrent'] = this.localData.outputsParameters.current;
-                auxOperatingPoint['switchingFrequency'] = this.localData.switchingFrequency;
-                auxOperatingPoint['ambientTemperature'] = this.localData.ambientTemperature;
-                aux['operatingPoints'] = [auxOperatingPoint];
-
-                var inputs;
-                if (this.localData.designLevel == 'I know the design I want') {
-                    if (this.converterName == "Buck") {
-                        inputs = await this.taskQueueStore.calculateAdvancedBuckInputs(aux);
-                    }
-                    else {
-                        inputs = await this.taskQueueStore.calculateAdvancedBoostInputs(aux);
-                    }
-                }
-                else {
-                    if (this.converterName == "Buck") {
-                        inputs = await this.taskQueueStore.calculateBuckInputs(aux);
-                    }
-                    else {
-                        inputs = await this.taskQueueStore.calculateBoostInputs(aux);
-                    }
-                }
-
-                // Prune harmonics for better Fourier graph display
-                inputs = await this.$refs.base.pruneHarmonicsForInputs(inputs, this.taskQueueStore);
-
-                this.masStore.mas.inputs = inputs;
-
-                this.masStore.mas.magnetic.coil.functionalDescription = []
-                this.masStore.mas.inputs.operatingPoints[0].excitationsPerWinding.forEach((elem, index) => {
-                    this.masStore.mas.magnetic.coil.functionalDescription.push({
-                            "name": elem.name,
-                            "numberTurns": 0,
-                            "numberParallels": 0,
-                            "isolationSide": this.masStore.mas.inputs.designRequirements.isolationSides[index],
-                            "wire": ""
-                        });
-                })
+                
+                this.designRequirements = result.designRequirements;
                 this.errorMessage = "";
-
             } catch (error) {
                 console.error(error);
-                this.errorMessage = error;
+                this.errorMessage = error.message || error;
             }
-
         },
         async processAndReview() {
             await this.process();
 
             if (this.errorMessage == "") {
                 await this.$refs.base.navigateToReview(this.$stateStore, this.masStore, "Power");
-                this.masStore.mas.inputs.operatingPoints.forEach((_) => {
-                    this.$stateStore.operatingPoints.modePerPoint.push(this.$stateStore.OperatingPointsMode.Manual);
-                })
                 if (this.errorMessage == "") {
                     setTimeout(() => {this.$router.push(`${import.meta.env.BASE_URL}magnetic_tool`);}, 100);
                 }
@@ -189,9 +169,6 @@ export default {
             await this.process();
             if (this.errorMessage == "") {
                 await this.$refs.base.navigateToAdvise(this.$stateStore, this.masStore, "Power");
-                this.masStore.mas.inputs.operatingPoints.forEach((_) => {
-                    this.$stateStore.operatingPoints.modePerPoint.push(this.$stateStore.OperatingPointsMode.Manual);
-                })
                 if (this.errorMessage == "") {
                     setTimeout(() => {this.$router.push(`${import.meta.env.BASE_URL}magnetic_tool`);}, 100);
                 }
@@ -201,137 +178,11 @@ export default {
             }
         },
         async simulateIdealWaveforms() {
-            this.waveformSource = 'simulation';
-            this.simulatingWaveforms = true;
-            this.waveformError = "";
-            this.magneticWaveforms = [];
-            this.converterWaveforms = [];
-            
-            try {
-                // Build the converter parameters for simulation
-                const aux = {};
-                aux['inputVoltage'] = this.localData.inputVoltage;
-                aux['diodeVoltageDrop'] = this.localData.diodeVoltageDrop;
-                aux['efficiency'] = this.localData.efficiency;
-                
-                if (this.localData.designLevel == 'I know the design I want') {
-                    aux['desiredInductance'] = this.localData.inductance;
-                }
-                else {
-                    if (this.localData.currentOptions == 'The output current ratio') {
-                        aux['currentRippleRatio'] = this.localData.currentRippleRatio;
-                    }
-                    else {
-                        aux['maximumSwitchCurrent'] = this.localData.maximumSwitchCurrent;
-                    }
-                }
-                
-                const auxOperatingPoint = {};
-                auxOperatingPoint['outputVoltage'] = this.localData.outputsParameters.voltage;
-                auxOperatingPoint['outputCurrent'] = this.localData.outputsParameters.current;
-                auxOperatingPoint['switchingFrequency'] = this.localData.switchingFrequency;
-                auxOperatingPoint['ambientTemperature'] = this.localData.ambientTemperature;
-                aux['operatingPoints'] = [auxOperatingPoint];
-                aux['numberOfPeriods'] = parseInt(this.numberOfPeriods, 10);
-                aux['numberOfSteadyStatePeriods'] = parseInt(this.numberOfSteadyStatePeriods, 10);
-                
-                // Call the appropriate WASM simulation based on converter type
-                var result;
-                if (this.converterName == "Buck") {
-                    result = await this.taskQueueStore.simulateBuckIdealWaveforms(aux);
-                }
-                else {
-                    result = await this.taskQueueStore.simulateBoostIdealWaveforms(aux);
-                }
-                
-                this.simulatedOperatingPoints = result.inputs?.operatingPoints || result.operatingPoints || [];
-                this.designRequirements = result.inputs?.designRequirements || result.designRequirements || null;
-                this.simulatedInductance = this.designRequirements?.magnetizingInductance || null;
-                
-                // Build magnetic waveforms from operating points
-                // Backend already returns waveforms for requested numberOfPeriods
-                this.magneticWaveforms = this.$refs.base.buildMagneticWaveformsFromInputs(this.simulatedOperatingPoints, this.localData.switchingFrequency);
-                this.converterWaveforms = this.$refs.base.convertConverterWaveforms(result.converterWaveforms || [], this.localData.switchingFrequency);
-                
-                this.$nextTick(() => {
-                    this.forceWaveformUpdate += 1;
-                    if (this.$refs.waveformSection) {
-                        this.$refs.waveformSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                    }
-                });
-                
-            } catch (error) {
-                this.waveformError = error.message || "Failed to simulate waveforms";
-            }
-            
-            this.simulatingWaveforms = false;
-        },
+      await this.$refs.base.executeWaveformAction(this, 'simulation');
+    },
         async getAnalyticalWaveforms() {
-            this.waveformSource = 'analytical';
-            this.simulatingWaveforms = true;
-            this.waveformError = "";
-            this.magneticWaveforms = [];
-            this.converterWaveforms = [];
-            
-            try {
-                // Build the converter parameters in the format expected by WASM
-                const params = {};
-                params['inputVoltage'] = this.localData.inputVoltage;
-                params['diodeVoltageDrop'] = this.localData.diodeVoltageDrop;
-                params['efficiency'] = this.localData.efficiency;
-                
-                if (this.localData.designLevel == 'I know the design I want') {
-                    params['desiredInductance'] = this.localData.inductance;
-                }
-                else {
-                    if (this.localData.currentOptions == 'The output current ratio') {
-                        params['currentRippleRatio'] = this.localData.currentRippleRatio;
-                    }
-                    else {
-                        params['maximumSwitchCurrent'] = this.localData.maximumSwitchCurrent;
-                    }
-                }
-                
-                const operatingPoint = {};
-                operatingPoint['outputVoltage'] = this.localData.outputsParameters.voltage;
-                operatingPoint['outputCurrent'] = this.localData.outputsParameters.current;
-                operatingPoint['switchingFrequency'] = this.localData.switchingFrequency;
-                operatingPoint['ambientTemperature'] = this.localData.ambientTemperature;
-                params['operatingPoints'] = [operatingPoint];
-                params['numberOfPeriods'] = parseInt(this.numberOfPeriods, 10);
-                
-                // Call appropriate calculate*Inputs based on converter type
-                let inputs;
-                if (this.converterName == "Buck") {
-                    inputs = await this.taskQueueStore.calculateBuckInputs(params);
-                } else {
-                    inputs = await this.taskQueueStore.calculateBoostInputs(params);
-                }
-                
-                this.designRequirements = inputs.designRequirements;
-                this.simulatedInductance = inputs.designRequirements?.magnetizingInductance || null;
-                this.simulatedOperatingPoints = inputs.operatingPoints || [];
-                
-                // Build magnetic waveforms from operating points
-                let waveforms = this.$refs.base.buildMagneticWaveformsFromInputs(inputs.operatingPoints, this.localData.switchingFrequency);
-                // Repeat waveforms for the requested number of periods
-                waveforms = this.$refs.base.repeatWaveformsForPeriods(waveforms, this.numberOfPeriods);
-                this.magneticWaveforms = waveforms;
-                this.converterWaveforms = [];
-                
-                this.$nextTick(() => {
-                    this.forceWaveformUpdate += 1;
-                    if (this.$refs.waveformSection) {
-                        this.$refs.waveformSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                    }
-                });
-            } catch (error) {
-                console.error("Error getting analytical waveforms:", error);
-                this.waveformError = error.message || "Failed to get analytical waveforms";
-            }
-            
-            this.simulatingWaveforms = false;
-        },
+      await this.$refs.base.executeWaveformAction(this, 'analytical');
+    },
         getInductanceDisplay() {
             let inductance = this.simulatedInductance;
             if (!inductance && this.designRequirements?.magnetizingInductance) {

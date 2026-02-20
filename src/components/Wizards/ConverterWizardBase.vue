@@ -13,6 +13,8 @@ import ConverterWaveformVisualizer from './ConverterWaveformVisualizer.vue'
  *   getMagnetizingInductanceDisplay, getTurnsRatioDisplay,
  *   formatFrequency, formatImpedance, formatInductance, formatCapacitance,
  *   pruneHarmonicsForInputs, processSimulatedOperatingPoints,
+ *   processWaveformResults, processAnalyticalWaveforms, processSimulationWaveforms,
+ *   assignResultsToMasStore, setOperatingPointsModeToManual,
  *   navigateToReview, navigateToAdvise, validateWaveforms,
  *   extractSinglePeriod, extractSinglePeriodFromOperatingPoints
  */
@@ -172,6 +174,60 @@ export default {
   },
 
   methods: {
+
+    // ===================================================================
+    // CENTRALIZED WAVEFORM ORCHESTRATION
+    // Called by wizards: this.$refs.base.executeWaveformAction(this, 'analytical'|'simulation')
+    // Wizard must implement: buildParams(mode), getCalculateFn(), getSimulateFn(), 
+    //                        getDefaultFrequency(), and optionally postProcessResults(result, mode)
+    // ===================================================================
+    async executeWaveformAction(wizard, mode) {
+      wizard.waveformSource = mode;
+      wizard.simulatingWaveforms = true;
+      wizard.waveformError = '';
+      wizard.magneticWaveforms = [];
+      wizard.converterWaveforms = [];
+
+      try {
+        const aux = wizard.buildParams(mode);
+        aux.numberOfPeriods = parseInt(wizard.numberOfPeriods, 10);
+        if (mode === 'simulation') {
+          aux.numberOfSteadyStatePeriods = parseInt(wizard.numberOfSteadyStatePeriods, 10);
+        }
+
+        let result;
+        if (mode === 'analytical') {
+          const calculateFn = wizard.getCalculateFn();
+          result = await calculateFn(aux);
+        } else {
+          const simulateFn = wizard.getSimulateFn();
+          result = await simulateFn(aux);
+        }
+
+        await this.processWaveformResults(wizard, result, {
+          isSimulation: (mode === 'simulation'),
+          defaultFrequency: wizard.getDefaultFrequency(),
+          numberOfPeriods: wizard.numberOfPeriods,
+        });
+
+        if (wizard.postProcessResults) {
+          wizard.postProcessResults(result, mode);
+        }
+
+        wizard.forceWaveformUpdate = (wizard.forceWaveformUpdate || 0) + 1;
+        wizard.$nextTick(() => {
+          const wfSection = wizard.$refs.base?.$refs?.waveformSection;
+          if (wfSection) {
+            wfSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+        });
+      } catch (error) {
+        console.error(`Error in ${mode} waveform action:`, error);
+        wizard.waveformError = error.message || `Failed to get ${mode} waveforms`;
+      }
+
+      wizard.simulatingWaveforms = false;
+    },
     // ===== LAYOUT EMITTERS =====
     setWaveformViewMode(mode) { this.$emit('update:waveformViewMode', mode); },
     onGetAnalyticalWaveforms() { this.$emit('get-analytical-waveforms'); },
@@ -243,6 +299,137 @@ export default {
           return { ...wf, x: rX, y: rY };
         })};
       });
+    },
+
+    // ===== UNIFIED WAVEFORM PROCESSING =====
+    async processWaveformResults(wizardInstance, result, options = {}) {
+      const { isSimulation = false, defaultFrequency = 100000, numberOfPeriods = 2 } = options;
+      
+      // Determine which processing method to use
+      let processed;
+      if (isSimulation) {
+        processed = this.processSimulationWaveforms(result, { defaultFrequency, numberOfPeriods });
+      } else {
+        processed = this.processAnalyticalWaveforms(result, { numberOfPeriods });
+      }
+      
+      // Assign to wizard instance properties
+      wizardInstance.simulatedOperatingPoints = processed.operatingPoints;
+      wizardInstance.designRequirements = processed.designRequirements;
+      wizardInstance.magneticWaveforms = processed.magneticWaveforms;
+      wizardInstance.converterWaveforms = processed.converterWaveforms;
+      
+      // Assign to masStore inputs
+      this.assignResultsToMasStore(wizardInstance, processed);
+      
+      // Set operating points mode to Manual
+      this.setOperatingPointsModeToManual(wizardInstance);
+      
+      return processed;
+    },
+    
+    // Assign results to masStore
+    assignResultsToMasStore(wizardInstance, processed) {
+      const { operatingPoints, designRequirements } = processed;
+      
+      // Assign operating points
+      if (operatingPoints?.length > 0) {
+        wizardInstance.masStore.mas.inputs.operatingPoints = operatingPoints;
+      }
+      
+      // Merge design requirements
+      if (designRequirements) {
+        wizardInstance.masStore.mas.inputs.designRequirements = {
+          ...wizardInstance.masStore.mas.inputs.designRequirements,
+          ...designRequirements
+        };
+      }
+    },
+    
+    // Set all operating points to Manual mode
+    setOperatingPointsModeToManual(wizardInstance) {
+      const numPoints = wizardInstance.simulatedOperatingPoints?.length || 1;
+      wizardInstance.$stateStore.operatingPoints.modePerPoint = [];
+      for (let i = 0; i < numPoints; i++) {
+        wizardInstance.$stateStore.operatingPoints.modePerPoint.push(
+          wizardInstance.$stateStore.OperatingPointsMode.Manual
+        );
+      }
+    },
+    
+    // ===== WAVEFORM PROCESSING FROM RESULTS =====
+    processAnalyticalWaveforms(result, options = {}) {
+      const { numberOfPeriods = 2 } = options;
+      
+      if (!result?.operatingPoints?.length) {
+        throw new Error("Analytical calculation did not return operating points");
+      }
+      
+      const operatingPoints = result.operatingPoints;
+      const designRequirements = result.designRequirements;
+      
+      // Build magnetic waveforms from operating points
+      let magneticWaveforms = this.buildMagneticWaveformsFromInputs(operatingPoints);
+      
+      // Note: We do NOT repeat waveforms here because the backend MKF already
+      // applies numberOfPeriods when generating the waveforms in operatingPoints.
+      // Repeating them again would result in 2x, 3x, etc. the requested periods.
+      
+      // Process and filter waveforms
+      magneticWaveforms = magneticWaveforms.map(wf => ({
+        ...wf,
+        waveforms: (wf.waveforms || []).filter(w => 
+          w && w.x && w.y && Array.isArray(w.x) && Array.isArray(w.y) && w.x.length > 0 && w.y.length > 0
+        ).map(w => ({
+          label: w.label || 'Unknown',
+          x: w.x,
+          y: w.y,
+          colorLabel: w.color || '#b18aea',
+          type: 'value',
+          position: 'left',
+          unit: w.unit || 'A',
+          numberDecimals: 3
+        }))
+      })).filter(wf => wf.waveforms.length > 0);
+      
+      return {
+        operatingPoints,
+        designRequirements,
+        magneticWaveforms,
+        converterWaveforms: []
+      };
+    },
+    
+    processSimulationWaveforms(result, options = {}) {
+      const { defaultFrequency = 100000, numberOfPeriods = 2 } = options;
+
+      if (result.error) {
+        throw new Error(result.error);
+      }
+
+      // Standard format: { converterWaveforms: [...], inputs: { operatingPoints: [...], designRequirements: {...} } }
+      // Or: { converterWaveforms: [...], operatingPoints: [...], designRequirements: {...} }
+      const converterWaveforms = result.converterWaveforms || [];
+      const operatingPoints = result.inputs?.operatingPoints || result.operatingPoints || [];
+      const designRequirements = result.inputs?.designRequirements || result.designRequirements || null;
+
+      if (operatingPoints.length === 0) {
+        throw new Error("Simulation did not return operating points");
+      }
+
+      // Build magnetic waveforms from operating points (consistent across all topologies)
+      const magneticWaveforms = this.buildMagneticWaveformsFromInputs(operatingPoints, defaultFrequency);
+
+      if (magneticWaveforms.length === 0) {
+        throw new Error("No magnetic waveforms were generated from operating points");
+      }
+
+      return {
+        operatingPoints,
+        designRequirements,
+        magneticWaveforms,
+        converterWaveforms
+      };
     },
 
     // ===== VISUALIZER HELPERS =====
@@ -417,10 +604,14 @@ export default {
       ss.selectWorkflow("design"); ss.selectTool("agnosticTool");
       ss.setCurrentToolSubsectionStatus("designRequirements", true);
       ss.setCurrentToolSubsectionStatus("operatingPoints", true);
-      ss.operatingPoints.modePerPoint = [];
-      ms.mas.magnetic.coil.functionalDescription.forEach(() => {
-        ss.operatingPoints.modePerPoint.push(ss.OperatingPointsMode.Manual);
-      });
+      // Only set modePerPoint if not already set (preserves mode from waveform simulation)
+      if (!ss.operatingPoints.modePerPoint || ss.operatingPoints.modePerPoint.length === 0) {
+        ss.operatingPoints.modePerPoint = [];
+        const numPoints = ms.mas.inputs.operatingPoints?.length || ms.mas.magnetic.coil.functionalDescription.length || 1;
+        for (let i = 0; i < numPoints; i++) {
+          ss.operatingPoints.modePerPoint.push(ss.OperatingPointsMode.Manual);
+        }
+      }
     },
 
     async navigateToAdvise(ss, ms, appType) {
@@ -430,7 +621,14 @@ export default {
       ss.setCurrentToolSubsection("magneticBuilder");
       ss.setCurrentToolSubsectionStatus("designRequirements", true);
       ss.setCurrentToolSubsectionStatus("operatingPoints", true);
-      ss.operatingPoints.modePerPoint = [ss.OperatingPointsMode.Manual];
+      // Only set modePerPoint if not already set (preserves mode from waveform simulation)
+      if (!ss.operatingPoints.modePerPoint || ss.operatingPoints.modePerPoint.length === 0) {
+        const numPoints = ms.mas.inputs.operatingPoints?.length || 1;
+        ss.operatingPoints.modePerPoint = [];
+        for (let i = 0; i < numPoints; i++) {
+          ss.operatingPoints.modePerPoint.push(ss.OperatingPointsMode.Manual);
+        }
+      }
     },
 
     // ===== VALIDATION =====
@@ -483,26 +681,69 @@ export default {
     },
 
     // ===== PROCESS WIZARD DATA =====
-    async processWizardData(wi) {
+    /**
+     * Gets operating points for masStore, using stored waveform data if available.
+     * Falls back to analytical calculation if no stored data.
+     * Always extracts single period from waveforms before returning.
+     * Also calculates harmonics and processed data if missing from waveforms.
+     * 
+     * @param {Object} wi - Wizard instance with required methods/data
+     * @param {Object} tqs - TaskQueueStore for calculating harmonics/processed
+     * @returns {Promise<Object>} - { success: boolean, operatingPoints: Array, designRequirements: Object, error: string }
+     */
+    async processWizardData(wi, tqs) {
       try {
-        const inputs = await wi.buildInputs(); const freq = wi.getFrequency();
+        const freq = wi.getDefaultFrequency ? wi.getDefaultFrequency() : (wi.getFrequency ? wi.getFrequency() : 100000);
         let ops, dr;
-        if (wi.hasSimulatedData?.()) {
+        
+        // Check if we have stored operating points with waveforms (from Analytical or Simulated)
+        const hasStoredData = wi.simulatedOperatingPoints && wi.simulatedOperatingPoints.length > 0;
+        
+        if (hasStoredData) {
+          // Use stored data (from last Analytical or Simulated run)
           ops = this.extractSinglePeriodFromOperatingPoints(wi.simulatedOperatingPoints, freq);
           dr = wi.designRequirements;
         } else {
-          const r = await wi.getCalculateFn()(inputs);
+          // Fallback: run analytical calculation
+          const aux = wi.buildParams ? wi.buildParams('analytical') : (wi.buildInputs ? await wi.buildInputs() : null);
+          if (!aux) throw new Error("Wizard must implement buildParams() or buildInputs()");
+          
+          const calculateFn = wi.getCalculateFn();
+          const r = await calculateFn(aux);
           if (r.error) throw new Error(r.error);
+          
           ops = this.extractSinglePeriodFromOperatingPoints(r.operatingPoints, freq);
           dr = r.designRequirements;
         }
+        
+        // Calculate harmonics and processed data if missing (required for masStore)
+        ops = await this.processSimulatedOperatingPoints(ops, tqs);
+        
         await this.setupMasStore({ designRequirements: dr, operatingPoints: ops, topology: wi.getTopology(), isolationSides: wi.getIsolationSides(), insulationType: wi.getInsulationType?.(), wizardInstance: wi });
-        return { success: true, operatingPoints: ops };
-      } catch (e) { console.error('processWizardData:', e); return { success: false, error: e.message }; }
+        return { success: true, operatingPoints: ops, designRequirements: dr };
+      } catch (e) { 
+        console.error('processWizardData:', e); 
+        return { success: false, error: e.message }; 
+      }
     },
 
     async setupMasStore({ designRequirements, operatingPoints, topology, isolationSides, insulationType, wizardInstance: wi }) {
-      wi.masStore.mas.inputs = { designRequirements, operatingPoints };
+      // Normalize operating points to ensure processed data is properly structured
+      const normalizedOperatingPoints = operatingPoints.map(op => ({
+        ...op,
+        excitationsPerWinding: (op.excitationsPerWinding || []).map(exc => ({
+          ...exc,
+          current: exc.current ? {
+            ...exc.current,
+            processed: exc.current.processed || { label: 'Sinusoidal', dutyCycle: 0.5 }
+          } : undefined,
+          voltage: exc.voltage ? {
+            ...exc.voltage,
+            processed: exc.voltage.processed || { label: 'Sinusoidal', dutyCycle: 0.5 }
+          } : undefined
+        }))
+      }));
+      wi.masStore.mas.inputs = { designRequirements, operatingPoints: normalizedOperatingPoints };
       wi.masStore.mas.magnetic.coil.functionalDescription = operatingPoints[0].excitationsPerWinding.map((e, i) => ({
         name: e.name, numberTurns: 0, numberParallels: 0, isolationSide: isolationSides[i] || 'primary', wire: ""
       }));
@@ -589,15 +830,6 @@ export default {
             <div class="compact-header"><i class="fa-solid fa-plug me-1"></i>Input Voltage</div>
             <div class="compact-body">
               <slot name="input-voltage">
-              </slot>
-            </div>
-          </div>
-
-          <!-- Number of Outputs -->
-          <div v-if="showNumberOutputs" class="compact-card">
-            <div class="compact-header"><i class="fa-solid fa-list-ol me-1"></i>Number of Outputs</div>
-            <div class="compact-body ps-4">
-              <slot name="number-outputs">
               </slot>
             </div>
           </div>

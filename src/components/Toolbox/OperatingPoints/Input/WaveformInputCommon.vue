@@ -23,7 +23,8 @@ export default {
         },
     },
     data() {
-        const localData = {"frequency": this.modelValue['frequency'], "dutyCycle": this.modelValue.current.processed.dutyCycle};
+        const dutyCycle = this.modelValue?.current?.processed?.dutyCycle ?? this.modelValue?.dutyCycle ?? 0.5;
+        const localData = {"frequency": this.modelValue?.frequency, "dutyCycle": dutyCycle};
         const errorMessages = '';
         const forceUpdateDutyCycle = 0;
         const forceUpdateFrequency = 0;

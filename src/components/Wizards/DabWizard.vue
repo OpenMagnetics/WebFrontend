@@ -50,40 +50,43 @@ export default {
       simulatedTurnsRatios: null,
       numberOfPeriods: 2,
       numberOfSteadyStatePeriods: 1,
-    }
+      simulatedOperatingPoints: [],
+      waveformViewMode: 'magnetic',
+      forceWaveformUpdate: 0,
+}
   },
   methods: {
+
+    // ===== WIZARD CONTRACT =====
+    buildParams(mode) {
+      return {
+        inputVoltage: this.localData.inputVoltage, switchingFrequency: this.localData.switchingFrequency,
+        phaseShift: this.localData.phaseShift, efficiency: this.localData.efficiency,
+        seriesInductance: this.localData.seriesInductance, useLeakageInductance: this.localData.useLeakageInductance,
+        desiredInductance: this.localData.magnetizingInductance, desiredTurnsRatios: [this.localData.turnsRatio],
+        operatingPoints: [{ outputVoltages: [this.localData.outputVoltage], outputCurrents: [this.localData.outputPower / this.localData.outputVoltage], phaseShift: this.localData.phaseShift, switchingFrequency: this.localData.switchingFrequency, ambientTemperature: this.localData.ambientTemperature }],
+      };
+    },
+    getCalculateFn() { return (aux) => this.taskQueueStore.calculateDabInputs(aux); },
+    getSimulateFn() { return (aux) => this.taskQueueStore.calculateDabInputs(aux); },
+    getDefaultFrequency() { return this.localData.switchingFrequency; },
+    getTopology() { return 'DAB'; },
+    getIsolationSides() { return ['primary', 'secondary']; },
+    getInsulationType() { return this.localData.insulationType; },
+
     updateErrorMessage() { this.errorMessage = ""; },
     dismissError() { this.errorMessage = ""; this.waveformError = ""; },
 
     async process() {
       this.masStore.resetMas("power");
       try {
-        const aux = {
-          inputVoltage: this.localData.inputVoltage,
-          switchingFrequency: this.localData.switchingFrequency,
-          phaseShift: this.localData.phaseShift,
-          efficiency: this.localData.efficiency,
-          seriesInductance: this.localData.seriesInductance,
-          useLeakageInductance: this.localData.useLeakageInductance,
-          desiredInductance: this.localData.magnetizingInductance,
-          desiredTurnsRatios: [this.localData.turnsRatio],
-          operatingPoints: [{
-            outputVoltages: [this.localData.outputVoltage],
-            outputCurrents: [this.localData.outputPower / this.localData.outputVoltage],
-            phaseShift: this.localData.phaseShift,
-            switchingFrequency: this.localData.switchingFrequency,
-            ambientTemperature: this.localData.ambientTemperature,
-          }]
-        };
-        const result = await this.taskQueueStore.calculateDabInputs(aux);
-        if (result.error) {
+        const result = await this.$refs.base.processWizardData(this, this.taskQueueStore);
+        if (!result.success) {
           this.errorMessage = result.error;
           return false;
         }
-        this.masStore.mas.inputs = result.masInputs;
         this.designRequirements = result.designRequirements;
-        this.simulatedTurnsRatios = result.simulatedTurnsRatios;
+        this.simulatedTurnsRatios = result.designRequirements?.turnsRatios?.map(tr => tr.nominal) || [this.localData.turnsRatio];
         return true;
       } catch (error) {
         this.errorMessage = error.message || "Failed to process DAB inputs";
@@ -113,91 +116,12 @@ export default {
       await this.$router.push(`${import.meta.env.BASE_URL}magnetic_tool`);
     },
 
-                async getAnalyticalWaveforms() {
-      this.waveformSource = 'analytical';
-      this.simulatingWaveforms = true;
-      this.waveformError = "";
-      this.magneticWaveforms = [];
-      this.converterWaveforms = [];
-
-      try {
-        const aux = {
-          inputVoltage: this.localData.inputVoltage,
-          switchingFrequency: this.localData.switchingFrequency,
-          phaseShift: this.localData.phaseShift,
-          efficiency: this.localData.efficiency,
-          seriesInductance: this.localData.seriesInductance,
-          useLeakageInductance: this.localData.useLeakageInductance,
-          desiredInductance: this.localData.magnetizingInductance,
-          desiredTurnsRatios: [this.localData.turnsRatio],
-          operatingPoints: [{
-            outputVoltages: [this.localData.outputVoltage],
-            outputCurrents: [this.localData.outputPower / this.localData.outputVoltage],
-            phaseShift: this.localData.phaseShift,
-            switchingFrequency: this.localData.switchingFrequency,
-            ambientTemperature: this.localData.ambientTemperature,
-          }]
-        };
-        aux['numberOfPeriods'] = parseInt(this.numberOfPeriods, 10);
-        const result = await this.taskQueueStore.calculateDabInputs(aux);
-        if (result.error) {
-          this.waveformError = result.error;
-        } else {
-          // Build magnetic waveforms from operating points
-          this.simulatedOperatingPoints = result.inputs?.operatingPoints || result.operatingPoints || [];
-          let waveforms = this.$refs.base.buildMagneticWaveformsFromInputs(this.simulatedOperatingPoints, this.localData.switchingFrequency);
-          // Repeat waveforms for the requested number of periods
-          waveforms = this.$refs.base.repeatWaveformsForPeriods(waveforms, this.numberOfPeriods);
-          this.magneticWaveforms = waveforms;
-          this.designRequirements = result.inputs?.designRequirements || result.designRequirements || null;
-        }
-      } catch (error) {
-        this.waveformError = error.message || "Failed to get analytical waveforms";
-      }
-      this.simulatingWaveforms = false;
+    async getAnalyticalWaveforms() {
+      await this.$refs.base.executeWaveformAction(this, 'analytical');
     },
 
     async simulateIdealWaveforms() {
-      this.waveformSource = 'simulation';
-      this.simulatingWaveforms = true;
-      this.waveformError = "";
-      this.magneticWaveforms = [];
-      this.converterWaveforms = [];
-
-      try {
-        const aux = {
-          inputVoltage: this.localData.inputVoltage,
-          switchingFrequency: this.localData.switchingFrequency,
-          phaseShift: this.localData.phaseShift,
-          efficiency: this.localData.efficiency,
-          seriesInductance: this.localData.seriesInductance,
-          useLeakageInductance: this.localData.useLeakageInductance,
-          desiredInductance: this.localData.magnetizingInductance,
-          desiredTurnsRatios: [this.localData.turnsRatio],
-          operatingPoints: [{
-            outputVoltages: [this.localData.outputVoltage],
-            outputCurrents: [this.localData.outputPower / this.localData.outputVoltage],
-            phaseShift: this.localData.phaseShift,
-            switchingFrequency: this.localData.switchingFrequency,
-            ambientTemperature: this.localData.ambientTemperature,
-          }]
-        };
-        aux['numberOfPeriods'] = parseInt(this.numberOfPeriods, 10);
-        aux['numberOfSteadyStatePeriods'] = parseInt(this.numberOfSteadyStatePeriods, 10);
-        const result = await this.taskQueueStore.calculateDabInputs(aux);
-        if (result.error) {
-          this.waveformError = result.error;
-        } else {
-          // Build magnetic waveforms from operating points
-          // Backend already returns waveforms for requested numberOfPeriods
-          this.simulatedOperatingPoints = result.inputs?.operatingPoints || result.operatingPoints || [];
-          this.magneticWaveforms = this.$refs.base.buildMagneticWaveformsFromInputs(this.simulatedOperatingPoints, this.localData.switchingFrequency);
-          this.designRequirements = result.inputs?.designRequirements || result.designRequirements || null;
-        }
-      } catch (error) {
-        this.waveformError = error.message || "Failed to simulate waveforms";
-      }
-      this.simulatingWaveforms = false;
+      await this.$refs.base.executeWaveformAction(this, 'simulation');
     },
   },
 }

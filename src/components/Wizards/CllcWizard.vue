@@ -39,37 +39,44 @@ export default {
       errorMessage: "", simulatingWaveforms: false, waveformSource: '', waveformError: "",
       magneticWaveforms: [], converterWaveforms: [], designRequirements: null,
       simulatedTurnsRatios: null, numberOfPeriods: 2, numberOfSteadyStatePeriods: 1,
-    }
+      simulatedOperatingPoints: [],
+      waveformViewMode: 'magnetic',
+      forceWaveformUpdate: 0,
+}
   },
   methods: {
+
+    // ===== WIZARD CONTRACT =====
+    buildParams(mode) {
+      return {
+        inputVoltage: this.localData.inputVoltage, minSwitchingFrequency: this.localData.minSwitchingFrequency,
+        maxSwitchingFrequency: this.localData.maxSwitchingFrequency, resonantFrequency: this.localData.resonantFrequency,
+        qualityFactor: this.localData.qualityFactor, symmetricDesign: this.localData.symmetricDesign,
+        bidirectional: this.localData.bidirectional, desiredInductance: this.localData.magnetizingInductance,
+        desiredTurnsRatios: [this.localData.turnsRatio],
+        operatingPoints: [{ outputVoltages: [this.localData.outputVoltage], outputCurrents: [this.localData.outputPower / this.localData.outputVoltage], switchingFrequency: this.localData.resonantFrequency, ambientTemperature: this.localData.ambientTemperature }],
+      };
+    },
+    getCalculateFn() { return (aux) => this.taskQueueStore.calculateCllcInputs(aux); },
+    getSimulateFn() { return (aux) => this.taskQueueStore.calculateCllcInputs(aux); },
+    getDefaultFrequency() { return this.localData.resonantFrequency; },
+    getTopology() { return 'CLLC'; },
+    getIsolationSides() { return ['primary', 'secondary']; },
+    getInsulationType() { return this.localData.insulationType; },
+
     updateErrorMessage() { this.errorMessage = ""; },
     dismissError() { this.errorMessage = ""; this.waveformError = ""; },
 
     async process() {
       this.masStore.resetMas("power");
       try {
-        const aux = {
-          inputVoltage: this.localData.inputVoltage,
-          minSwitchingFrequency: this.localData.minSwitchingFrequency,
-          maxSwitchingFrequency: this.localData.maxSwitchingFrequency,
-          resonantFrequency: this.localData.resonantFrequency,
-          qualityFactor: this.localData.qualityFactor,
-          symmetricDesign: this.localData.symmetricDesign,
-          bidirectional: this.localData.bidirectional,
-          desiredInductance: this.localData.magnetizingInductance,
-          desiredTurnsRatios: [this.localData.turnsRatio],
-          operatingPoints: [{
-            outputVoltages: [this.localData.outputVoltage],
-            outputCurrents: [this.localData.outputPower / this.localData.outputVoltage],
-            switchingFrequency: this.localData.resonantFrequency,
-            ambientTemperature: this.localData.ambientTemperature,
-          }]
-        };
-        const result = await this.taskQueueStore.calculateCllcInputs(aux);
-        if (result.error) { this.errorMessage = result.error; return false; }
-        this.masStore.mas.inputs = result.masInputs;
+        const result = await this.$refs.base.processWizardData(this, this.taskQueueStore);
+        if (!result.success) {
+          this.errorMessage = result.error;
+          return false;
+        }
         this.designRequirements = result.designRequirements;
-        this.simulatedTurnsRatios = result.simulatedTurnsRatios;
+        this.simulatedTurnsRatios = result.designRequirements?.turnsRatios?.map(tr => tr.nominal) || [this.localData.turnsRatio];
         return true;
       } catch (error) {
         this.errorMessage = error.message || "Failed to process CLLC inputs";
@@ -94,82 +101,11 @@ export default {
     },
 
     async getAnalyticalWaveforms() {
-      this.waveformSource = 'analytical';
-      this.simulatingWaveforms = true;
-      this.waveformError = "";
-      this.magneticWaveforms = [];
-      this.converterWaveforms = [];
-      try {
-        const aux = {
-          inputVoltage: this.localData.inputVoltage,
-          minSwitchingFrequency: this.localData.minSwitchingFrequency,
-          maxSwitchingFrequency: this.localData.maxSwitchingFrequency,
-          resonantFrequency: this.localData.resonantFrequency,
-          qualityFactor: this.localData.qualityFactor,
-          symmetricDesign: this.localData.symmetricDesign,
-          bidirectional: this.localData.bidirectional,
-          desiredInductance: this.localData.magnetizingInductance,
-          desiredTurnsRatios: [this.localData.turnsRatio],
-          operatingPoints: [{
-            outputVoltages: [this.localData.outputVoltage],
-            outputCurrents: [this.localData.outputPower / this.localData.outputVoltage],
-            switchingFrequency: this.localData.resonantFrequency,
-            ambientTemperature: this.localData.ambientTemperature,
-          }]
-        };
-        aux['numberOfPeriods'] = parseInt(this.numberOfPeriods, 10);
-        const result = await this.taskQueueStore.calculateCllcInputs(aux);
-        if (result.error) { this.waveformError = result.error; }
-        else {
-          // Build magnetic waveforms from operating points
-          this.simulatedOperatingPoints = result.inputs?.operatingPoints || result.operatingPoints || [];
-          let waveforms = this.$refs.base.buildMagneticWaveformsFromInputs(this.simulatedOperatingPoints, this.localData.resonantFrequency);
-          // Repeat waveforms for the requested number of periods
-          waveforms = this.$refs.base.repeatWaveformsForPeriods(waveforms, this.numberOfPeriods);
-          this.magneticWaveforms = waveforms;
-          this.designRequirements = result.inputs?.designRequirements || result.designRequirements || null;
-        }
-      } catch (error) { this.waveformError = error.message || "Failed to get analytical waveforms"; }
-      this.simulatingWaveforms = false;
+      await this.$refs.base.executeWaveformAction(this, 'analytical');
     },
 
     async simulateIdealWaveforms() {
-      this.waveformSource = 'simulation';
-      this.simulatingWaveforms = true;
-      this.waveformError = "";
-      this.magneticWaveforms = [];
-      this.converterWaveforms = [];
-      try {
-        const aux = {
-          inputVoltage: this.localData.inputVoltage,
-          minSwitchingFrequency: this.localData.minSwitchingFrequency,
-          maxSwitchingFrequency: this.localData.maxSwitchingFrequency,
-          resonantFrequency: this.localData.resonantFrequency,
-          qualityFactor: this.localData.qualityFactor,
-          symmetricDesign: this.localData.symmetricDesign,
-          bidirectional: this.localData.bidirectional,
-          desiredInductance: this.localData.magnetizingInductance,
-          desiredTurnsRatios: [this.localData.turnsRatio],
-          operatingPoints: [{
-            outputVoltages: [this.localData.outputVoltage],
-            outputCurrents: [this.localData.outputPower / this.localData.outputVoltage],
-            switchingFrequency: this.localData.resonantFrequency,
-            ambientTemperature: this.localData.ambientTemperature,
-          }]
-        };
-        aux['numberOfPeriods'] = parseInt(this.numberOfPeriods, 10);
-        aux['numberOfSteadyStatePeriods'] = parseInt(this.numberOfSteadyStatePeriods, 10);
-        const result = await this.taskQueueStore.calculateCllcInputs(aux);
-        if (result.error) { this.waveformError = result.error; }
-        else {
-          // Build magnetic waveforms from operating points
-          // Backend already returns waveforms for requested numberOfPeriods
-          this.simulatedOperatingPoints = result.inputs?.operatingPoints || result.operatingPoints || [];
-          this.magneticWaveforms = this.$refs.base.buildMagneticWaveformsFromInputs(this.simulatedOperatingPoints, this.localData.resonantFrequency);
-          this.designRequirements = result.inputs?.designRequirements || result.designRequirements || null;
-        }
-      } catch (error) { this.waveformError = error.message || "Failed to simulate waveforms"; }
-      this.simulatingWaveforms = false;
+      await this.$refs.base.executeWaveformAction(this, 'simulation');
     },
   },
 }

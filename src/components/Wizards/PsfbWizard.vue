@@ -32,9 +32,30 @@ export default {
       errorMessage: "", simulatingWaveforms: false, waveformSource: '', waveformError: "",
       magneticWaveforms: [], converterWaveforms: [], designRequirements: null,
       simulatedTurnsRatios: null, simulatedOperatingPoints: [], numberOfPeriods: 2, numberOfSteadyStatePeriods: 1,
-    }
+      waveformViewMode: 'magnetic',
+      forceWaveformUpdate: 0,
+}
   },
   methods: {
+
+    // ===== WIZARD CONTRACT =====
+    buildParams(mode) {
+      return {
+        inputVoltage: this.localData.inputVoltage, switchingFrequency: this.localData.switchingFrequency,
+        phaseShift: this.localData.phaseShift, efficiency: this.localData.efficiency,
+        seriesInductance: this.localData.seriesInductance, useLeakageInductance: this.localData.useLeakageInductance,
+        rectifierType: this.localData.rectifierType, maximumPhaseShift: this.localData.maxPhaseShift,
+        desiredInductance: this.localData.magnetizingInductance, desiredTurnsRatios: [this.localData.turnsRatio],
+        operatingPoints: [{ outputVoltages: [this.localData.outputVoltage], outputCurrents: [this.localData.outputPower / this.localData.outputVoltage], phaseShift: this.localData.phaseShift, switchingFrequency: this.localData.switchingFrequency, ambientTemperature: this.localData.ambientTemperature }],
+      };
+    },
+    getCalculateFn() { return (aux) => this.taskQueueStore.calculatePsfbInputs(aux); },
+    getSimulateFn() { return (aux) => this.taskQueueStore.calculatePsfbInputs(aux); },
+    getDefaultFrequency() { return this.localData.switchingFrequency; },
+    getTopology() { return 'PSFB'; },
+    getIsolationSides() { return ['primary', 'secondary']; },
+    getInsulationType() { return this.localData.insulationType; },
+
     updateErrorMessage() { this.errorMessage = ""; },
     dismissError() { this.errorMessage = ""; this.waveformError = ""; },
 
@@ -90,11 +111,13 @@ export default {
     async process() {
       this.masStore.resetMas("power");
       try {
-        const result = await this.taskQueueStore.calculatePsfbInputs(this._buildAux());
-        if (result.error) { this.errorMessage = result.error; return false; }
-        this.masStore.mas.inputs = result.masInputs;
+        const result = await this.$refs.base.processWizardData(this, this.taskQueueStore);
+        if (!result.success) {
+          this.errorMessage = result.error;
+          return false;
+        }
         this.designRequirements = result.designRequirements;
-        this.simulatedTurnsRatios = result.simulatedTurnsRatios;
+        this.simulatedTurnsRatios = result.designRequirements?.turnsRatios?.map(tr => tr.nominal) || [this.localData.turnsRatio];
         return true;
       } catch (error) {
         this.errorMessage = error.message || "Failed to process PSFB inputs";
@@ -118,65 +141,14 @@ export default {
       await this.$router.push(`${import.meta.env.BASE_URL}magnetic_tool`);
     },
 
-    _processWaveformResult(result) {
-      if (result.error) return result.error;
-      // Build magnetic waveforms from operating points
-      // Backend already returns waveforms for requested numberOfPeriods
-      this.simulatedOperatingPoints = result.inputs?.operatingPoints || result.operatingPoints || [];
-      this.magneticWaveforms = this.$refs.base.buildMagneticWaveformsFromInputs(this.simulatedOperatingPoints, this.localData.switchingFrequency);
-      this.designRequirements = result.inputs?.designRequirements || result.designRequirements || null;
-      
-      // Validate waveforms for NaN/Inf values
-      if (this.magneticWaveforms) {
-        for (const wf of this.magneticWaveforms) {
-          if (wf.waveforms) {
-            for (const w of wf.waveforms) {
-              if (w.y && w.x) {
-                for (let i = 0; i < w.y.length; i++) {
-                  if (!Number.isFinite(w.y[i])) {
-                    return "Waveform calculation produced invalid values (NaN/Inf). Try adjusting the switching frequency or phase shift.";
-                  }
-                }
-                for (let i = 0; i < w.x.length; i++) {
-                  if (!Number.isFinite(w.x[i])) {
-                    return "Waveform calculation produced invalid values (NaN/Inf). Try adjusting the switching frequency or phase shift.";
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-      
-      return null;
-    },
+
 
     async getAnalyticalWaveforms() {
-      this.waveformSource = 'analytical';
-      this.simulatingWaveforms = true;
-      this.waveformError = "";
-      this.magneticWaveforms = [];
-      this.converterWaveforms = [];
-      try {
-        const result = await this.taskQueueStore.calculatePsfbInputs(this._buildAuxAnalytical());
-        const err = this._processWaveformResult(result);
-        if (err) this.waveformError = err;
-      } catch (error) { this.waveformError = error.message || "Failed to get analytical waveforms"; }
-      this.simulatingWaveforms = false;
+      await this.$refs.base.executeWaveformAction(this, 'analytical');
     },
 
     async simulateIdealWaveforms() {
-      this.waveformSource = 'simulation';
-      this.simulatingWaveforms = true;
-      this.waveformError = "";
-      this.magneticWaveforms = [];
-      this.converterWaveforms = [];
-      try {
-        const result = await this.taskQueueStore.calculatePsfbInputs(this._buildAux());
-        const err = this._processWaveformResult(result);
-        if (err) this.waveformError = err;
-      } catch (error) { this.waveformError = error.message || "Failed to simulate waveforms"; }
-      this.simulatingWaveforms = false;
+      await this.$refs.base.executeWaveformAction(this, 'simulation');
     },
   },
 }

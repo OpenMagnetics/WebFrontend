@@ -93,6 +93,43 @@ export default {
         }
     },
     methods: {
+
+    // ===== WIZARD CONTRACT =====
+    buildParams(mode) {
+      const aux = {
+        inputVoltage: this.localData.inputVoltage, outputVoltage: this.localData.outputVoltage,
+        outputPower: this.localData.outputPower, switchingFrequency: this.localData.switchingFrequency,
+        lineFrequency: this.localData.lineFrequency, currentRippleRatio: this.localData.currentRippleRatio,
+        efficiency: this.localData.efficiency, mode: this.localData.mode,
+        diodeVoltageDrop: this.localData.diodeVoltageDrop, ambientTemperature: this.localData.ambientTemperature,
+      };
+      if (this.localData.designLevel == 'I know the design I want') aux.inductance = this.localData.inductance;
+      return aux;
+    },
+    getCalculateFn() {
+      return async (aux) => {
+        const Module = await waitForMkf(); await Module.ready;
+        const result = JSON.parse(await Module.calculate_pfc_inputs(JSON.stringify(aux)));
+        if (result.error) throw new Error(result.error);
+        return result;
+      };
+    },
+    getSimulateFn() {
+      return async (aux) => {
+        const Module = await waitForMkf(); await Module.ready;
+        const result = JSON.parse(await Module.simulate_pfc_waveforms(JSON.stringify(aux)));
+        if (result.error) throw new Error(result.error);
+        return result;
+      };
+    },
+    getDefaultFrequency() { return this.localData.switchingFrequency; },
+    postProcessResults(result, mode) {
+      if (result.inductance) this.simulatedInductance = result.inductance;
+    },
+    getTopology() { return 'PFC'; },
+    getIsolationSides() { return ['primary']; },
+    getInsulationType() { return null; },
+
         updateErrorMessage() {
             this.errorMessage = "";
 
@@ -145,107 +182,12 @@ export default {
         },
         
         async getAnalyticalWaveforms() {
-            this.simulatingWaveforms = true;
-            this.waveformError = "";
-            this.waveformSource = "analytical";
-            
-            try {
-                const Module = await waitForMkf();
-                await Module.ready;
-                
-                const aux = {
-                    inputVoltage: this.localData.inputVoltage,
-                    outputVoltage: this.localData.outputVoltage,
-                    outputPower: this.localData.outputPower,
-                    switchingFrequency: this.localData.switchingFrequency,
-                    lineFrequency: this.localData.lineFrequency,
-                    currentRippleRatio: this.localData.currentRippleRatio,
-                    efficiency: this.localData.efficiency,
-                    mode: this.localData.mode,
-                    diodeVoltageDrop: this.localData.diodeVoltageDrop,
-                    ambientTemperature: this.localData.ambientTemperature,
-                    numberOfPeriods: parseInt(this.numberOfPeriods, 10),
-                    numberOfSteadyStatePeriods: parseInt(this.numberOfSteadyStatePeriods, 10)
-                };
-                
-                if (this.localData.designLevel == 'I know the design I want') {
-                    aux['inductance'] = this.localData.inductance;
-                }
-                
-                const result = JSON.parse(await Module.calculate_pfc_inputs(JSON.stringify(aux)));
-                
-                if (result.error) {
-                    this.waveformError = result.error;
-                    return;
-                }
-                
-                // Build magnetic waveforms from operating points
-                this.simulatedOperatingPoints = result.inputs?.operatingPoints || result.operatingPoints || [];
-                let waveforms = this.$refs.base.buildMagneticWaveformsFromInputs(this.simulatedOperatingPoints, this.localData.switchingFrequency);
-                // Repeat waveforms for the requested number of periods
-                waveforms = this.$refs.base.repeatWaveformsForPeriods(waveforms, this.numberOfPeriods);
-                this.magneticWaveforms = waveforms;
-                this.converterWaveforms = this.$refs.base.convertConverterWaveforms(result.converterWaveforms || [], this.localData.switchingFrequency);
-                
-                this.simulatedInductance = result.inductance;
-                this.designRequirements = result.inputs?.designRequirements || result.designRequirements || null;
-                
-            } catch (error) {
-                console.error('Error getting analytical waveforms:', error);
-                this.waveformError = error.message || String(error);
-            } finally {
-                this.simulatingWaveforms = false;
-            }
-        },
+      await this.$refs.base.executeWaveformAction(this, 'analytical');
+    },
         
         async getSimulatedWaveforms() {
-            this.simulatingWaveforms = true;
-            this.waveformError = "";
-            this.waveformSource = "simulation";
-            
-            try {
-                const Module = await waitForMkf();
-                await Module.ready;
-                
-                const aux = {
-                    inputVoltage: this.localData.inputVoltage,
-                    outputVoltage: this.localData.outputVoltage,
-                    outputPower: this.localData.outputPower,
-                    switchingFrequency: this.localData.switchingFrequency,
-                    lineFrequency: this.localData.lineFrequency,
-                    currentRippleRatio: this.localData.currentRippleRatio,
-                    efficiency: this.localData.efficiency,
-                    mode: this.localData.mode,
-                    diodeVoltageDrop: this.localData.diodeVoltageDrop,
-                    ambientTemperature: this.localData.ambientTemperature,
-                    numberOfPeriods: parseInt(this.numberOfPeriods, 10),
-                    numberOfSteadyStatePeriods: parseInt(this.numberOfSteadyStatePeriods, 10)
-                };
-                
-                if (this.localData.designLevel == 'I know the design I want') {
-                    aux['inductance'] = this.localData.inductance;
-                }
-                
-                const result = JSON.parse(await Module.simulate_pfc_waveforms(JSON.stringify(aux)));
-
-                if (result.error) {
-                    this.waveformError = result.error;
-                    return;
-                }
-
-                // PFC simulation returns magneticWaveforms and converterWaveforms directly (different format from other converters)
-                this.magneticWaveforms = result.magneticWaveforms || [];
-                this.converterWaveforms = result.converterWaveforms || [];
-
-                this.simulatedInductance = result.inductance;
-                
-            } catch (error) {
-                console.error('Error simulating waveforms:', error);
-                this.waveformError = error.message || String(error);
-            } finally {
-                this.simulatingWaveforms = false;
-            }
-        },
+      await this.$refs.base.executeWaveformAction(this, 'simulation');
+    },
         
             
             
@@ -285,37 +227,73 @@ export default {
             this.updateErrorMessage();
             if (this.errorMessage) return;
             
+            this.masStore.resetMas("power");
+            
             try {
-                const Module = await waitForMkf();
-                await Module.ready;
+                // Check if we have stored operating points with waveforms (from Analytical or Simulated)
+                const hasStoredData = this.simulatedOperatingPoints && this.simulatedOperatingPoints.length > 0;
                 
-                const aux = {
-                    inputVoltage: this.localData.inputVoltage,
-                    outputVoltage: this.localData.outputVoltage,
-                    outputPower: this.localData.outputPower,
-                    switchingFrequency: this.localData.switchingFrequency,
-                    lineFrequency: this.localData.lineFrequency,
-                    currentRippleRatio: this.localData.currentRippleRatio,
-                    efficiency: this.localData.efficiency,
-                    mode: this.localData.mode,
-                    diodeVoltageDrop: this.localData.diodeVoltageDrop,
-                    ambientTemperature: this.localData.ambientTemperature
-                };
+                let masInputs;
                 
-                if (this.localData.designLevel == 'I know the design I want') {
-                    aux['inductance'] = this.localData.inductance;
+                if (hasStoredData) {
+                    // Use stored data - extract single period from waveforms
+                    const freq = this.getDefaultFrequency();
+                    const ops = this.$refs.base.extractSinglePeriodFromOperatingPoints(this.simulatedOperatingPoints, freq);
+                    
+                    // Calculate harmonics and processed data if missing
+                    const opsWithHarmonics = await this.$refs.base.processSimulatedOperatingPoints(ops, this.taskQueueStore);
+                    
+                    // Get designRequirements from stored data or compute basic ones
+                    const dr = this.designRequirements || {
+                        topology: 'PFC',
+                        magnetizingInductance: this.simulatedInductance ? { nominal: this.simulatedInductance } : null
+                    };
+                    
+                    // Setup masStore
+                    await this.$refs.base.setupMasStore({
+                        designRequirements: dr,
+                        operatingPoints: opsWithHarmonics,
+                        topology: this.getTopology(),
+                        isolationSides: this.getIsolationSides(),
+                        insulationType: this.getInsulationType(),
+                        wizardInstance: this
+                    });
+                    
+                    this.errorMessage = "";
+                    return this.masStore.mas.inputs;
+                } else {
+                    // Fallback: run analytical calculation via MKF
+                    const Module = await waitForMkf();
+                    await Module.ready;
+                    
+                    const aux = {
+                        inputVoltage: this.localData.inputVoltage,
+                        outputVoltage: this.localData.outputVoltage,
+                        outputPower: this.localData.outputPower,
+                        switchingFrequency: this.localData.switchingFrequency,
+                        lineFrequency: this.localData.lineFrequency,
+                        currentRippleRatio: this.localData.currentRippleRatio,
+                        efficiency: this.localData.efficiency,
+                        mode: this.localData.mode,
+                        diodeVoltageDrop: this.localData.diodeVoltageDrop,
+                        ambientTemperature: this.localData.ambientTemperature
+                    };
+                    
+                    if (this.localData.designLevel == 'I know the design I want') {
+                        aux['inductance'] = this.localData.inductance;
+                    }
+                    
+                    const result = JSON.parse(await Module.calculate_pfc_inputs(JSON.stringify(aux)));
+                    
+                    if (result.error) {
+                        this.errorMessage = result.error;
+                        return null;
+                    }
+                    
+                    this.masStore.mas.inputs = result.masInputs;
+                    this.errorMessage = "";
+                    return result.masInputs;
                 }
-                
-                const result = JSON.parse(await Module.calculate_pfc_inputs(JSON.stringify(aux)));
-                
-                if (result.error) {
-                    this.errorMessage = result.error;
-                    return null;
-                }
-                
-                this.errorMessage = "";
-                return result.masInputs;
-                
             } catch (error) {
                 console.error('Error processing design:', error);
                 this.errorMessage = error.message || String(error);
@@ -326,28 +304,22 @@ export default {
         async processAndReview() {
             console.log('[PFC] processAndReview started');
             const masInputs = await this.process();
-            
+
             if (this.errorMessage || !masInputs) {
                 console.log('[PFC] processAndReview aborted - error or no masInputs');
                 return;
             }
-            
+
             console.log('[PFC] masInputs received:', JSON.stringify(masInputs, null, 2));
-            
+
             console.log('[PFC] Calling resetMagneticTool...');
             await this.$refs.base.navigateToReview(this.$stateStore, this.masStore, "Power");
             console.log('[PFC] coil.functionalDescription:', this.masStore.mas.magnetic.coil.functionalDescription);
-            
-            this.$stateStore.operatingPoints.modePerPoint = [];
-            this.masStore.mas.magnetic.coil.functionalDescription.forEach((_) => {
-                this.$stateStore.operatingPoints.modePerPoint.push(this.$stateStore.OperatingPointsMode.Manual);
-            });
-            console.log('[PFC] modePerPoint set');
-            
+
             console.log('[PFC] Calling $nextTick...');
             await this.$nextTick();
             console.log('[PFC] $nextTick done');
-            
+
             console.log('[PFC] Navigating to magnetic_tool...');
             await this.$router.push(`${import.meta.env.BASE_URL}magnetic_tool`);
             console.log('[PFC] Navigation done');
@@ -355,13 +327,11 @@ export default {
         
         async processAndAdvise() {
             const masInputs = await this.process();
-            
+
             if (this.errorMessage || !masInputs) return;
-            
+
             await this.$refs.base.navigateToAdvise(this.$stateStore, this.masStore, "Power");
 
-            this.$stateStore.operatingPoints.modePerPoint = [this.$stateStore.OperatingPointsMode.Manual];
-            
             await this.$nextTick();
             await this.$router.push(`${import.meta.env.BASE_URL}magnetic_tool`);
         }
