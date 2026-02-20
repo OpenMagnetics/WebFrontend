@@ -119,6 +119,9 @@ export default {
                         this.masStore.resetMas();
                         this.masStore.mas = response;
                         this.masStore.importedMas();
+                        
+                        // Reset coil view to Basic mode when loading a new MAS file
+                        this.$stateStore.closeCoilAdvancedInfo();
 
                         this.$stateStore.selectWorkflow("design");
                         this.$stateStore.selectApplication(this.$stateStore.SupportedApplications.Power);

@@ -228,6 +228,7 @@ export default {
             if (this.errorMessage) return;
             
             this.masStore.resetMas("power");
+            this.$stateStore.closeCoilAdvancedInfo();
             
             try {
                 // Check if we have stored operating points with waveforms (from Analytical or Simulated)

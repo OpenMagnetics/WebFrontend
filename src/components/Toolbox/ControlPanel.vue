@@ -252,6 +252,7 @@ export default {
         },
         async reset(isPlanar) {
             this.masStore.resetMas('power');
+            this.$stateStore.closeCoilAdvancedInfo();
             if (isPlanar) {
                 this.masStore.mas.inputs.designRequirements.wiringTechnology = "Printed";
             }

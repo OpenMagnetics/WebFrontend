@@ -121,6 +121,7 @@ export default {
         },
         async process() {
             this.masStore.resetMas("filter")
+            this.$stateStore.closeCoilAdvancedInfo();
             
             try {
                 // Build DMC parameters for backend

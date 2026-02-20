@@ -143,6 +143,7 @@ export default {
         },
         async process() {
             this.masStore.resetMas("filter")
+            this.$stateStore.closeCoilAdvancedInfo();
             this.masStore.mas.inputs.designRequirements = {
                 name: "My CMC",
                 magnetizingInductance: {

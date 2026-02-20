@@ -166,6 +166,7 @@ export default {
         
         async process() {
             this.masStore.resetMas("power");
+            this.$stateStore.closeCoilAdvancedInfo();
             
             const result = await this.$refs.base.processWizardData(this, this.taskQueueStore);
             
