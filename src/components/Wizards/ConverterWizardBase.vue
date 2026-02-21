@@ -388,8 +388,27 @@ export default {
       const operatingPoints = result.operatingPoints;
       const designRequirements = result.designRequirements;
       
+      // Debug: Log raw data from WASM
+      console.log('🔍 [processAnalyticalWaveforms] Raw WASM data:', {
+        excitationsCount: operatingPoints[0]?.excitationsPerWinding?.length,
+        excitationNames: operatingPoints[0]?.excitationsPerWinding?.map(e => e.name),
+        firstExcitationCurrentLength: operatingPoints[0]?.excitationsPerWinding?.[0]?.current?.waveform?.data?.length,
+        firstExcitationVoltageLength: operatingPoints[0]?.excitationsPerWinding?.[0]?.voltage?.waveform?.data?.length
+      });
+      
       // Build magnetic waveforms from operating points
       let magneticWaveforms = this.buildMagneticWaveformsFromInputs(operatingPoints);
+      
+      // Debug: Log built waveforms
+      console.log('🔍 [processAnalyticalWaveforms] Built waveforms:', {
+        operatingPointsCount: magneticWaveforms.length,
+        totalWaveforms: magneticWaveforms.reduce((sum, op) => sum + (op.waveforms?.length || 0), 0),
+        waveformsByOp: magneticWaveforms.map(op => ({
+          name: op.operatingPointName,
+          count: op.waveforms?.length,
+          labels: op.waveforms?.map(w => w.label)
+        }))
+      });
       
       // Note: We do NOT repeat waveforms here because the backend MKF already
       // applies numberOfPeriods when generating the waveforms in operatingPoints.
