@@ -1082,6 +1082,12 @@ export const useTaskQueueStore = defineStore('taskQueue', {
                 throw new Error(result);
             }
             const inputs = JSON.parse(result);
+            console.log('🔍 [calculateLlcInputs] Raw WASM result:', {
+                designRequirements: inputs.designRequirements,
+                turnsRatios: inputs.designRequirements?.turnsRatios,
+                turnsRatiosLength: inputs.designRequirements?.turnsRatios?.length,
+                operatingPoints: inputs.operatingPoints?.length
+            });
             setTimeout(() => { this.llcInputsCalculated(true, inputs); }, this.task_standard_response_delay);
             return inputs;
         },

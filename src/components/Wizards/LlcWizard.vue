@@ -178,6 +178,18 @@ export default {
             // Update local state with results
             this.designRequirements = this.masStore.mas.inputs.designRequirements;
             
+            console.log('🔍 [LLC Wizard] Process result:', {
+                designRequirements: this.designRequirements,
+                turnsRatios: this.designRequirements?.turnsRatios,
+                turnsRatiosCount: this.designRequirements?.turnsRatios?.length,
+                turnsRatiosDetails: this.designRequirements?.turnsRatios?.map((tr, i) => ({
+                    index: i,
+                    nominal: tr?.nominal,
+                    minimum: tr?.minimum,
+                    maximum: tr?.maximum
+                }))
+            });
+            
             return true;
         },
 

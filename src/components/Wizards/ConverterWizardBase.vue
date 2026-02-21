@@ -718,6 +718,13 @@ export default {
           
           const calculateFn = wi.getCalculateFn();
           const r = await calculateFn(aux);
+          console.log('🔍 [processWizardData] WASM result:', {
+            topology: wi.getTopology?.(),
+            designRequirements: r.designRequirements,
+            turnsRatios: r.designRequirements?.turnsRatios,
+            turnsRatiosCount: r.designRequirements?.turnsRatios?.length,
+            isolationSides: wi.getIsolationSides?.()
+          });
           if (r.error) throw new Error(r.error);
           
           ops = this.extractSinglePeriodFromOperatingPoints(r.operatingPoints, freq);
