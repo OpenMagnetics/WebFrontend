@@ -314,7 +314,8 @@ export default {
       }
       
       // Process operating points to calculate harmonics and set CUSTOM label for waveforms
-      if (processed.operatingPoints?.length > 0) {
+      // Only for simulated waveforms - analytical waveforms should be used as-is from WASM
+      if (isSimulation && processed.operatingPoints?.length > 0) {
         processed.operatingPoints = await this.processSimulatedOperatingPoints(processed.operatingPoints, wizardInstance.taskQueueStore || this.$taskQueueStore);
       }
       
