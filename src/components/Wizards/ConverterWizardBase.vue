@@ -199,9 +199,23 @@ export default {
         if (mode === 'analytical') {
           const calculateFn = wizard.getCalculateFn();
           result = await calculateFn(aux);
+          console.log('🔍 [executeWaveformAction] Analytical result from WASM:', {
+            topology: wizard.getTopology?.(),
+            designRequirements: result.designRequirements,
+            turnsRatios: result.designRequirements?.turnsRatios,
+            turnsRatiosCount: result.designRequirements?.turnsRatios?.length,
+            excitationsCount: result.operatingPoints?.[0]?.excitationsPerWinding?.length,
+            excitationNames: result.operatingPoints?.[0]?.excitationsPerWinding?.map(e => e.name)
+          });
         } else {
           const simulateFn = wizard.getSimulateFn();
           result = await simulateFn(aux);
+          console.log('🔍 [executeWaveformAction] Simulation result from WASM:', {
+            topology: wizard.getTopology?.(),
+            excitationsCount: result.operatingPoints?.[0]?.excitationsPerWinding?.length,
+            excitationNames: result.operatingPoints?.[0]?.excitationsPerWinding?.map(e => e.name),
+            converterWaveformsCount: result.converterWaveforms?.length
+          });
         }
 
         await this.processWaveformResults(wizard, result, {
