@@ -313,6 +313,11 @@ export default {
         processed = this.processAnalyticalWaveforms(result, { numberOfPeriods });
       }
       
+      // Process operating points to calculate harmonics and set CUSTOM label for waveforms
+      if (processed.operatingPoints?.length > 0) {
+        processed.operatingPoints = await this.processSimulatedOperatingPoints(processed.operatingPoints, wizardInstance.taskQueueStore || this.$taskQueueStore);
+      }
+      
       // Assign to wizard instance properties
       wizardInstance.simulatedOperatingPoints = processed.operatingPoints;
       wizardInstance.designRequirements = processed.designRequirements;
