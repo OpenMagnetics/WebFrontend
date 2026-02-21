@@ -80,6 +80,8 @@ export default {
 
     // ===== WIZARD CONTRACT =====
     buildParams(mode) {
+      // LLC has center-tapped secondaries, so we need 2 turns ratios (one for each secondary half)
+      const turnsRatio = this.localData.turnsRatio;
       const aux = {
         inputVoltage: this.localData.inputVoltage,
         bridgeType: this.localData.bridgeType || 'Half Bridge',
@@ -89,13 +91,20 @@ export default {
         qualityFactor: this.localData.qualityFactor,
         inductanceRatio: this.localData.inductanceRatio,
         integratedResonantInductor: this.localData.integratedResonantInductor,
-        operatingPoints: [{ outputVoltages: [this.localData.outputVoltage], outputCurrents: [this.localData.outputPower / this.localData.outputVoltage], switchingFrequency: this.localData.resonantFrequency, ambientTemperature: this.localData.ambientTemperature }],
+        // LLC is center-tapped, so we have 2 secondaries sharing the output current
+        operatingPoints: [{ outputVoltages: [this.localData.outputVoltage, this.localData.outputVoltage], outputCurrents: [this.localData.outputPower / this.localData.outputVoltage / 2, this.localData.outputPower / this.localData.outputVoltage / 2], switchingFrequency: this.localData.resonantFrequency, ambientTemperature: this.localData.ambientTemperature }],
       };
       if (this.localData.designMode === 'I know the design I want') {
         aux.desiredInductance = this.localData.magnetizingInductance;
-        aux.desiredTurnsRatios = [this.localData.turnsRatio];
+        // Pass 2 turns ratios for center-tapped secondaries
+        aux.desiredTurnsRatios = [turnsRatio, turnsRatio];
       }
-      if (mode === 'simulation') { aux.magnetizingInductance = this.localData.magnetizingInductance; aux.turnsRatio = this.localData.turnsRatio; }
+      // For simulation, pass both turns ratios
+      if (mode === 'simulation') { 
+        aux.magnetizingInductance = this.localData.magnetizingInductance; 
+        aux.turnsRatio = this.localData.turnsRatio;
+        aux.turnsRatios = [turnsRatio, turnsRatio];
+      }
       return aux;
     },
     getCalculateFn() { return (aux) => this.taskQueueStore.calculateLlcInputs(aux); },
@@ -103,7 +112,11 @@ export default {
     getDefaultFrequency() { return this.localData.resonantFrequency; },
     postProcessResults(result, mode) {
       this.simulatedMagnetizingInductance = result.computedResonantInductance || this.localData.magnetizingInductance;
-      if (this.designRequirements) this.simulatedTurnsRatios = this.designRequirements.turnsRatios?.map(tr => tr.nominal) || [this.localData.turnsRatio];
+      // LLC has center-tapped secondaries, expect 2 turns ratios
+      if (this.designRequirements) {
+        const trs = this.designRequirements.turnsRatios?.map(tr => tr.nominal);
+        this.simulatedTurnsRatios = trs?.length === 2 ? trs : [this.localData.turnsRatio, this.localData.turnsRatio];
+      }
     },
 
         updateErrorMessage() { this.errorMessage = ""; },
@@ -111,6 +124,8 @@ export default {
             
         // Wizard-specific methods for base class
         buildInputs() {
+            // LLC has center-tapped secondaries, so we need 2 turns ratios (one for each secondary half)
+            const turnsRatio = this.localData.turnsRatio;
             const aux = {
                 inputVoltage: this.localData.inputVoltage,
                 bridgeType: this.localData.bridgeType || 'Half Bridge',
@@ -120,9 +135,10 @@ export default {
                 qualityFactor: this.localData.qualityFactor,
                 inductanceRatio: this.localData.inductanceRatio,
                 integratedResonantInductor: this.localData.integratedResonantInductor,
+                // LLC is center-tapped, so we have 2 secondaries sharing the output current
                 operatingPoints: [{
-                    outputVoltages: [this.localData.outputVoltage],
-                    outputCurrents: [this.localData.outputPower / this.localData.outputVoltage],
+                    outputVoltages: [this.localData.outputVoltage, this.localData.outputVoltage],
+                    outputCurrents: [this.localData.outputPower / this.localData.outputVoltage / 2, this.localData.outputPower / this.localData.outputVoltage / 2],
                     switchingFrequency: this.localData.resonantFrequency,
                     ambientTemperature: this.localData.ambientTemperature,
                 }]
@@ -130,7 +146,8 @@ export default {
             
             if (this.localData.designMode === 'I know the design I want') {
                 aux.desiredInductance = this.localData.magnetizingInductance;
-                aux.desiredTurnsRatios = [this.localData.turnsRatio];
+                // Pass 2 turns ratios for center-tapped secondaries
+                aux.desiredTurnsRatios = [turnsRatio, turnsRatio];
             }
             
             return aux;
@@ -157,7 +174,8 @@ export default {
         },
         
         getIsolationSides() {
-            return ['primary', 'secondary'];
+            // LLC has center-tapped secondaries: 1 primary + 2 secondaries
+            return ['primary', 'secondary', 'secondary'];
         },
         
         getInsulationType() {
