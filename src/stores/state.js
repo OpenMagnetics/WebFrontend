@@ -381,7 +381,15 @@ export const useStateStore = defineStore("state", () => {
     function redraw() {
     };
 
-    function resimulate() {
+    // Store the models to use for the next simulation
+    const pendingSimulationModels = ref(null);
+
+    function resimulate(models = null) {
+        console.log('[StateStore] resimulate() called - triggering action subscribers');
+        if (models) {
+            pendingSimulationModels.value = models;
+            console.log('[StateStore] Stored pending simulation models:', models);
+        }
     };
 
     function applyChanges() {
@@ -482,6 +490,7 @@ export const useStateStore = defineStore("state", () => {
         magnetic2DVisualizerState,
         redraw,
         resimulate,
+        pendingSimulationModels,
 
         OperatingPointsMode,
         currentOperatingPoint,

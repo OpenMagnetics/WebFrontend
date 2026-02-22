@@ -1,6 +1,9 @@
 <script setup >
 import { Modal } from "bootstrap";
 import { useMagneticBuilderSettingsStore } from '/MagneticBuilder/src/stores/magneticBuilderSettings'
+import { useModelSettingsStore } from '/MagneticBuilder/src/stores/modelSettings'
+import { useMasStore } from '/src/stores/mas'
+import ElementFromList from '/WebSharedComponents/DataInput/ElementFromList.vue'
 </script>
 
 <script>
@@ -27,6 +30,8 @@ export default {
     },
     data() {
         const magneticBuilderSettingsStore = useMagneticBuilderSettingsStore();
+        const modelSettingsStore = useModelSettingsStore();
+        const masStore = useMasStore();
         const settingsChanged = false;
         const localData = {
             autoRedraw: this.$settingsStore.magneticBuilderSettings.autoRedraw,
@@ -43,6 +48,8 @@ export default {
         }
         return {
             magneticBuilderSettingsStore,
+            modelSettingsStore,
+            masStore,
             settingsChanged,
             localData,
         }
@@ -66,10 +73,80 @@ export default {
             this.$refs.closeSettingsModalRef.click();
             this.$emit('onSettingsUpdated');
         },
+        onModelChanged(modelType, value) {
+            // Handle automatic mode for winding losses ("Automatic" means don't change)
+            if (value === 'Automatic') {
+                return;
+            }
+            // All model values are now display name strings
+            this.modelSettingsStore[modelType] = value;
+            this.settingsChanged = true;
+            
+            // Note: Resimulation will be triggered by modelSettings store watcher after WASM sync
+        },
+        async initializeModels() {
+            // Always load from WASM to get fresh defaults
+            // (isInitialized persists to localStorage, so we can't rely on it alone)
+            await this.modelSettingsStore.loadFromWASM();
+            
+            // Fetch available core losses methods
+            if (this.masStore?.mas?.magnetic) {
+                await this.modelSettingsStore.fetchAvailableCoreLossesMethods(this.masStore.mas.magnetic);
+            }
+        },
+        async resetToDefaults() {
+            console.log('[MagneticBuilderSettings] Resetting all models to MKF defaults...');
+            await this.modelSettingsStore.reset();
+            this.settingsChanged = true;
+            console.log('[MagneticBuilderSettings] Models reset to defaults, winding losses set to automatic');
+        }
     },
     computed: {
+        // Helper to add "Automatic" option for winding losses when manual mode is off
+        skinEffectOptions() {
+            if (!this.modelSettingsStore.coilEnableUserWindingLossesModels) {
+                return { 'Automatic': 'Automatic' };
+            }
+            return this.modelSettingsStore.availableWindingSkinEffectModels;
+        },
+        proximityEffectOptions() {
+            if (!this.modelSettingsStore.coilEnableUserWindingLossesModels) {
+                return { 'Automatic': 'Automatic' };
+            }
+            return this.modelSettingsStore.availableWindingProximityEffectModels;
+        },
+        // Core losses options with loading/error states
+        coreLossesOptions() {
+            if (this.modelSettingsStore.availableCoreLossesMethodsLoading) {
+                return { 'Loading...': 'Loading...' };
+            }
+            if (this.modelSettingsStore.availableCoreLossesMethodsError || this.modelSettingsStore.availableCoreLossesMethods.length === 0) {
+                return { 'No material selected': 'No material selected' };
+            }
+            const options = {};
+            this.modelSettingsStore.availableCoreLossesMethods.forEach(m => {
+                options[m.displayName] = m.displayName;
+            });
+            return options;
+        },
+        isCoreLossesDisabled() {
+            return this.modelSettingsStore.availableCoreLossesMethodsLoading || 
+                   this.modelSettingsStore.availableCoreLossesMethods.length === 0 ||
+                   !this.masStore?.mas?.magnetic?.core;
+        }
+    },
+    watch: {
+        'masStore.mas.magnetic.core': {
+            immediate: true,
+            handler(newCore, oldCore) {
+                if (newCore !== oldCore && this.modelSettingsStore.isInitialized) {
+                    this.modelSettingsStore.fetchAvailableCoreLossesMethods(this.masStore?.mas?.magnetic);
+                }
+            }
+        }
     },
     mounted() {
+        this.initializeModels();
     },
     created() {
     }
@@ -271,8 +348,162 @@ export default {
                             </div>
                         </div>
                     </div>
+
+                    <!-- Simulation Models Section -->
+                    <div class="mb-2" v-if="modelSettingsStore.isInitialized">
+                        <h6 class="text-secondary text-uppercase small fw-bold mb-3">Simulation Models</h6>
+                        
+                        <!-- Magnetic Field Strength Model -->
+                        <div class="setting-item py-2 border-bottom border-secondary">
+                            <label class="text-white mb-1 d-block small">Magnetic Field Strength Model</label>
+                            <ElementFromList
+                                :name="'magneticFieldStrengthModel'"
+                                :replaceTitle="''"
+                                :options="modelSettingsStore.availableMagneticFieldStrengthModels"
+                                :titleSameRow="false"
+                                v-model="modelSettingsStore"
+                                :labelWidthProportionClass="'col-0'"
+                                :valueWidthProportionClass="'col-12'"
+                                :valueBgColor="'transparent'"
+                                :textColor="'white'"
+                                @update="(name, value) => onModelChanged(name, value)"
+                            />
+                        </div>
+
+                        <!-- Fringing Effect Model -->
+                        <div class="setting-item py-2 border-bottom border-secondary">
+                            <label class="text-white mb-1 d-block small">Fringing Effect Model</label>
+                            <ElementFromList
+                                :name="'magneticFieldStrengthFringingEffectModel'"
+                                :replaceTitle="''"
+                                :options="modelSettingsStore.availableFringingEffectModels"
+                                :titleSameRow="false"
+                                v-model="modelSettingsStore"
+                                :labelWidthProportionClass="'col-0'"
+                                :valueWidthProportionClass="'col-12'"
+                                :valueBgColor="'transparent'"
+                                :textColor="'white'"
+                                @update="(name, value) => onModelChanged(name, value)"
+                            />
+                        </div>
+
+                        <!-- Reluctance Model -->
+                        <div class="setting-item py-2 border-bottom border-secondary">
+                            <label class="text-white mb-1 d-block small">Reluctance Model</label>
+                            <ElementFromList
+                                :name="'reluctanceModel'"
+                                :replaceTitle="''"
+                                :options="modelSettingsStore.availableReluctanceModels"
+                                :titleSameRow="false"
+                                v-model="modelSettingsStore"
+                                :labelWidthProportionClass="'col-0'"
+                                :valueWidthProportionClass="'col-12'"
+                                :valueBgColor="'transparent'"
+                                :textColor="'white'"
+                                @update="(name, value) => onModelChanged(name, value)"
+                            />
+                        </div>
+
+                        <!-- Manual Winding Losses Model Selection Toggle -->
+                        <div class="setting-item d-flex justify-content-between align-items-center py-2 border-bottom border-secondary">
+                            <div>
+                                <span class="text-white">Manual wire losses models</span>
+                                <small class="text-muted d-block">Override automatic model selection</small>
+                            </div>
+                            <div class="form-check form-switch">
+                                <input 
+                                    class="form-check-input custom-switch" 
+                                    type="checkbox" 
+                                    role="switch"
+                                    :checked="modelSettingsStore.coilEnableUserWindingLossesModels"
+                                    @change="onModelChanged('coilEnableUserWindingLossesModels', $event.target.checked)"
+                                >
+                            </div>
+                        </div>
+
+                        <!-- Skin Effect Losses Model -->
+                        <div class="setting-item py-2 border-bottom border-secondary">
+                            <label class="text-white mb-1 d-block small">Skin Effect Model</label>
+                            <ElementFromList
+                                :name="'windingSkinEffectLossesModel'"
+                                :replaceTitle="''"
+                                :options="skinEffectOptions"
+                                :titleSameRow="false"
+                                v-model="modelSettingsStore"
+                                :labelWidthProportionClass="'col-0'"
+                                :valueWidthProportionClass="'col-12'"
+                                :valueBgColor="'transparent'"
+                                :textColor="modelSettingsStore.coilEnableUserWindingLossesModels ? 'white' : 'gray'"
+                                :disabled="!modelSettingsStore.coilEnableUserWindingLossesModels"
+                                @update="(name, value) => onModelChanged(name, modelSettingsStore.coilEnableUserWindingLossesModels ? value : modelSettingsStore.windingSkinEffectLossesModel)"
+                            />
+                        </div>
+
+                        <!-- Proximity Effect Losses Model -->
+                        <div class="setting-item py-2 border-bottom border-secondary">
+                            <label class="text-white mb-1 d-block small">Proximity Effect Model</label>
+                            <ElementFromList
+                                :name="'windingProximityEffectLossesModel'"
+                                :replaceTitle="''"
+                                :options="proximityEffectOptions"
+                                :titleSameRow="false"
+                                v-model="modelSettingsStore"
+                                :labelWidthProportionClass="'col-0'"
+                                :valueWidthProportionClass="'col-12'"
+                                :valueBgColor="'transparent'"
+                                :textColor="modelSettingsStore.coilEnableUserWindingLossesModels ? 'white' : 'gray'"
+                                :disabled="!modelSettingsStore.coilEnableUserWindingLossesModels"
+                                @update="(name, value) => onModelChanged(name, modelSettingsStore.coilEnableUserWindingLossesModels ? value : modelSettingsStore.windingProximityEffectLossesModel)"
+                            />
+                        </div>
+
+                        <!-- Core Losses Model -->
+                        <div class="setting-item py-2 border-bottom border-secondary">
+                            <label class="text-white mb-1 d-block small">Core Losses Model</label>
+                            <ElementFromList
+                                :name="'coreLossesModel'"
+                                :replaceTitle="''"
+                                :options="coreLossesOptions"
+                                :titleSameRow="false"
+                                v-model="modelSettingsStore"
+                                :labelWidthProportionClass="'col-0'"
+                                :valueWidthProportionClass="'col-12'"
+                                :valueBgColor="'transparent'"
+                                :textColor="isCoreLossesDisabled ? 'gray' : 'white'"
+                                :disabled="isCoreLossesDisabled"
+                                @update="(name, value) => onModelChanged(name, value)"
+                            />
+                            <small class="text-muted" v-if="modelSettingsStore.availableCoreLossesMethodsError">
+                                {{ modelSettingsStore.availableCoreLossesMethodsError }}
+                            </small>
+                        </div>
+
+                        <!-- Stray Capacitance Model -->
+                        <div class="setting-item py-2">
+                            <label class="text-white mb-1 d-block small">Stray Capacitance Model</label>
+                            <ElementFromList
+                                :name="'strayCapacitanceModel'"
+                                :replaceTitle="''"
+                                :options="modelSettingsStore.availableStrayCapacitanceModels"
+                                :titleSameRow="false"
+                                v-model="modelSettingsStore"
+                                :labelWidthProportionClass="'col-0'"
+                                :valueWidthProportionClass="'col-12'"
+                                :valueBgColor="'transparent'"
+                                :textColor="'white'"
+                                @update="(name, value) => onModelChanged(name, value)"
+                            />
+                        </div>
+                    </div>
                 </div>
                 <div class="modal-footer border-top border-secondary px-4 py-3">
+                    <button
+                        data-cy="Settings-Modal-reset-defaults-button"
+                        class="btn btn-outline-secondary px-4 me-2"
+                        @click="resetToDefaults"
+                    >
+                        Reset to Defaults
+                    </button>
                     <button
                         data-cy="Settings-Modal-update-settings-button"
                         class="btn btn-primary px-4"
