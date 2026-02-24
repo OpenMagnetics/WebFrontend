@@ -171,6 +171,7 @@ export default {
             if (this.errorMessage != "") return;
 
             this.$stateStore.resetMagneticTool();
+            this.$stateStore.closeCoilAdvancedInfo();  // Ensure coil advanced info is disabled
             this.$stateStore.designLoaded();
             this.$stateStore.selectApplication(this.$stateStore.SupportedApplications.Filter);
             this.$stateStore.selectWorkflow("design");
@@ -185,6 +186,7 @@ export default {
             if (this.errorMessage != "") return;
 
             this.$stateStore.resetMagneticTool();
+            this.$stateStore.closeCoilAdvancedInfo();  // Ensure coil advanced info is disabled
             this.$stateStore.designLoaded();
             this.$stateStore.selectApplication(this.$stateStore.SupportedApplications.Filter);
             this.$stateStore.selectWorkflow("design");

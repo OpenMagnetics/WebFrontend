@@ -642,6 +642,7 @@ export default {
     // ===== NAVIGATION =====
     async navigateToReview(ss, ms, appType) {
       ss.resetMagneticTool(); ss.designLoaded();
+      ss.closeCoilAdvancedInfo();  // Ensure coil advanced info is disabled
       ss.selectApplication(ss.SupportedApplications[appType]);
       ss.selectWorkflow("design"); ss.selectTool("agnosticTool");
       ss.setCurrentToolSubsectionStatus("designRequirements", true);
@@ -658,6 +659,7 @@ export default {
 
     async navigateToAdvise(ss, ms, appType) {
       ss.resetMagneticTool(); ss.designLoaded();
+      ss.closeCoilAdvancedInfo();  // Ensure coil advanced info is disabled
       ss.selectApplication(ss.SupportedApplications[appType]);
       ss.selectWorkflow("design"); ss.selectTool("agnosticTool");
       ss.setCurrentToolSubsection("magneticBuilder");

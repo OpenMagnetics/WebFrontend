@@ -298,6 +298,7 @@ export default {
         async processAndReview() {
             this.process();
             this.$stateStore.resetMagneticTool();
+            this.$stateStore.closeCoilAdvancedInfo();  // Ensure coil advanced info is disabled
             this.$stateStore.designLoaded();
             this.$stateStore.selectApplication(this.$stateStore.SupportedApplications.CommonModeChoke);
             this.$stateStore.selectWorkflow("design");
@@ -310,6 +311,7 @@ export default {
         async processAndAdvise() {
             this.process();
             this.$stateStore.resetMagneticTool();
+            this.$stateStore.closeCoilAdvancedInfo();  // Ensure coil advanced info is disabled
             this.$stateStore.designLoaded();
             this.$stateStore.selectApplication(this.$stateStore.SupportedApplications.CommonModeChoke);
             this.$stateStore.selectWorkflow("design");

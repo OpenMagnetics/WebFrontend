@@ -13,6 +13,7 @@ import { useSettingsStore } from '/src/stores/settings'
 import { useStateStore } from '/src/stores/state'
 import { useStyleStore } from '/src/stores/style'
 import { useFairRiteStyleStore } from '/src/stores/fairRiteStyle'
+import { useModelSettingsStore } from '/MagneticBuilder/src/stores/modelSettings'
 import { VueWindowSizePlugin } from 'vue-window-size/plugin';
 import { initWorker } from '/WebSharedComponents/assets/js/mkfRuntime'
 import VueLatex from 'vatex'
@@ -74,6 +75,12 @@ function preloadMKF() {
                 mkf.load_core_shapes("").then(() => console.log("Preload: Core shapes loaded")),
                 mkf.load_wires("").then(() => console.log("Preload: Wires loaded"))
             ]);
+            
+            // Initialize model settings from WASM during preload
+            console.warn("Preload: Initializing model settings...");
+            const modelSettingsStore = useModelSettingsStore();
+            await modelSettingsStore.loadFromWASM();
+            console.warn("Preload: Model settings initialized");
             
             console.warn("MKF preload complete - All data ready");
             return mkf;
@@ -204,6 +211,12 @@ router.beforeEach((to, from, next) => {
                         await Promise.all(loadPromises);
                     }
                     console.warn("All data loaded");
+                    
+                    // Initialize model settings from WASM
+                    console.warn("Initializing model settings...");
+                    const modelSettingsStore = useModelSettingsStore();
+                    await modelSettingsStore.loadFromWASM();
+                    console.warn("Model settings initialized");
 
                     // Ensure minimum loader display time before navigating
                     const newPath = app.config.globalProperties.$userStore.loadingPath;
