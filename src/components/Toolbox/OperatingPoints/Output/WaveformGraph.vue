@@ -29,31 +29,38 @@ export default {
     data() {
         const masStore = useMasStore();
         return {
+            dragUpdateTimeout: null, // For debouncing chart updates during drag
             data: {
                 datasets: [
                     {
+                        type: 'line',
                         label: 'Current',
                         yAxisID: 'current',
                         data:  this.convertMasToChartjs(this.modelValue.current.waveform),
                         pointRadius: this.enableDrag? 2 : 1,
                         borderWidth: 5,
+                        spanGaps: true,
                         borderColor: this.$styleStore.operatingPoints.currentGraph.color,
                         backgroundColor: this.$styleStore.operatingPoints.currentGraph["background-color"],
                     },
                     {
+                        type: 'line',
                         label: 'Voltage',
                         yAxisID: 'voltage',
                         data: this.convertMasToChartjs(this.modelValue.voltage.waveform),
                         pointRadius: this.enableDrag? 2 : 1,
                         borderWidth: 5,
+                        spanGaps: true,
                         borderColor: this.$styleStore.operatingPoints.voltageGraph.color,
                         backgroundColor: this.$styleStore.operatingPoints.voltageGraph["background-color"],
                     },
                     {
+                        type: 'line',
                         label: 'zeroLineCurrent',
                         yAxisID: 'zeroLineCurrent',
                         data: [{x: -1, y: 0}, {x: 1, y: 0}],
                         borderWidth: 2,
+                        spanGaps: true,
                         borderColor: this.$styleStore.operatingPoints.commonParameterTextColor.color,
                         backgroundColor: this.$styleStore.operatingPoints.commonParameterBgColor.background,
                     }
@@ -72,6 +79,17 @@ export default {
         const modelValue = this.modelValue;
         options = {
             responsive: true,
+            devicePixelRatio: 1, // Reduce for better performance with large datasets
+            parsing: false, // Disable data parsing for raw number arrays (much faster)
+            normalized: true, // Tell Chart.js data is already normalized
+            animation: false, // Disable animations for better performance with large datasets
+            spanGaps: true, // Skip null points instead of drawing gaps
+            decimation: {
+                enabled: true,
+                algorithm: 'lttb', // Largest Triangle Three Bucket - best for line charts
+                samples: 500, // Target 500 points after decimation
+                threshold: 1000 // Only decimate if >1000 points
+            },
             onHover: (event, chartElement) => {
                 const target = event.native ? event.native.target : event.target;
                 target.style.cursor = chartElement[0] ? 'pointer' : 'default';
@@ -87,7 +105,6 @@ export default {
                         this.disableDragXByType(datasetIndex, index);
                     },
                     onDrag: (e, datasetIndex, index, value) => {
-
                         e.target.style.cursor = 'grabbing';
                         const originalValue = value;
                         const label = this.modelValue[this.getSignalDescriptor(datasetIndex)]?.processed?.label;
@@ -96,16 +113,26 @@ export default {
                         }
                         this.processByType(datasetIndex, index, value)
                         if (originalValue != value) {
-                            chart.update()
+                            // Debounce chart updates for better performance with large datasets
+                            if (this.dragUpdateTimeout) {
+                                clearTimeout(this.dragUpdateTimeout);
+                            }
+                            this.dragUpdateTimeout = setTimeout(() => {
+                                chart.update('none'); // 'none' = no animation
+                            }, 16); // ~60fps
                         }
-
                     },
                     onDragEnd: (e, datasetIndex, index, value) => {
                         e.target.style.cursor = 'default'
+                        // Clear any pending debounced updates
+                        if (this.dragUpdateTimeout) {
+                            clearTimeout(this.dragUpdateTimeout);
+                            this.dragUpdateTimeout = null;
+                        }
                         this.updateVerticalLimits(datasetIndex);
                         chart.options.plugins.dragData.dragX = this.enableDrag;
                         chart.options.plugins.dragData.dragY = this.enableDrag;
-                        chart.update();
+                        chart.update('none'); // 'none' = no animation for better performance
                         this.modelValue[this.getSignalDescriptor(datasetIndex)].waveform = this.convertChartjsToMas(chart.data.datasets[datasetIndex].data);
                         this.$emit("updatedWaveform", this.getSignalDescriptor(datasetIndex));
                     },
@@ -205,6 +232,13 @@ export default {
                 this.updateSignal(signalDescriptor, this.modelValue);
             }
         })
+    },
+    beforeUnmount() {
+        // Clean up any pending debounced updates
+        if (this.dragUpdateTimeout) {
+            clearTimeout(this.dragUpdateTimeout);
+            this.dragUpdateTimeout = null;
+        }
     },
     methods: {
         getMaxMinInPoints(points, elem=null) {
@@ -655,10 +689,10 @@ export default {
         },
         updateSignal(signalDescriptor, excitation){
             chart.data.datasets[this.getDatasetIndex(signalDescriptor)].data = this.convertMasToChartjs(excitation[signalDescriptor].waveform, excitation.frequency);
-            chart.update();
+            chart.update('none'); // 'none' = no animation for better performance
             this.setHorizontalLimits(1 / excitation.frequency / 10);
             this.updateVerticalLimits(this.getDatasetIndex(signalDescriptor));
-            chart.update();
+            chart.update('none'); // 'none' = no animation for better performance
         },
     }
 }

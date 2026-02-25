@@ -196,6 +196,10 @@ export const useTaskQueueStore = defineStore('taskQueue', {
             await mkf.ready;
 
             const result = await mkf.calculate_harmonics(JSON.stringify(waveform), frequency);
+            if (result.startsWith("Exception")) {
+                setTimeout(() => { this.harmonicsCalculated(false, result); }, this.task_standard_response_delay);
+                throw new Error(result);
+            }
             const harmonics = JSON.parse(result);
             setTimeout(() => { this.harmonicsCalculated(true, harmonics); }, this.task_standard_response_delay);
             return harmonics;
