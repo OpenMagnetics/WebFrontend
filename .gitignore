@@ -31,3 +31,9 @@ dist-ssr
 
 cypress/videos/
 cypress/screenshots/
+
+# Vite cache
+.vite/
+
+# Agent instructions
+AGENTS.md
