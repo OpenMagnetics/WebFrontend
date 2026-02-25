@@ -12,7 +12,7 @@
 // Format: 'YYYY-MM-DD'
 // When you make breaking changes to store fields, update this date to today's date.
 // All stores saved before this date will be automatically cleared.
-export const STORE_VERSION_DATE = '2026-01-28';
+export const STORE_VERSION_DATE = '2026-02-25';
 
 // Key used in localStorage to track when stores were last saved
 const STORE_VERSION_KEY = 'openMagnetics_storeVersionDate';
@@ -107,4 +107,26 @@ export function forceResetAllStores() {
  */
 export function getStoredVersionDate() {
     return localStorage.getItem(STORE_VERSION_KEY);
+}
+
+/**
+ * Gets the cache-busting query parameter for WASM files.
+ * This should be appended to WASM URLs to force cache refresh when the version changes.
+ * @returns {string} The query parameter string (e.g., "?v=2026-01-28")
+ */
+export function getWasmCacheBuster() {
+    return `?v=${STORE_VERSION_DATE}`;
+}
+
+/**
+ * Appends cache-busting query parameter to a WASM file URL
+ * @param {string} url - The base URL to the WASM file
+ * @returns {string} The URL with cache-busting parameter appended
+ */
+export function getVersionedWasmUrl(url) {
+    // Don't add version if URL already has query params
+    if (url.includes('?')) {
+        return url;
+    }
+    return `${url}${getWasmCacheBuster()}`;
 }

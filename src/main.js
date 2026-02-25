@@ -17,7 +17,7 @@ import { useModelSettingsStore } from '/MagneticBuilder/src/stores/modelSettings
 import { VueWindowSizePlugin } from 'vue-window-size/plugin';
 import { initWorker } from '/WebSharedComponents/assets/js/mkfRuntime'
 import VueLatex from 'vatex'
-import { checkAndClearOutdatedStores } from '/src/stores/storeVersioning'
+import { checkAndClearOutdatedStores, getVersionedWasmUrl } from '/src/stores/storeVersioning'
 
 // Monkey-patch Bootstrap Tooltip to fix _activeTrigger null errors
 const originalIsWithActiveTrigger = Tooltip.prototype._isWithActiveTrigger;
@@ -64,7 +64,7 @@ function preloadMKF() {
         try {
             // Initialize MKF in Web Worker
             // WASM files are in public/wasm folder, served at /wasm/ in production
-            const wasmJsUrl = `${import.meta.env.BASE_URL}wasm/libMKF.wasm.js`;
+            const wasmJsUrl = getVersionedWasmUrl(`${import.meta.env.BASE_URL}wasm/libMKF.wasm.js`);
             const mkf = await initWorker(wasmJsUrl);
             preloadedMkf = mkf; // Store but don't set globally yet
             
@@ -155,7 +155,7 @@ router.beforeEach((to, from, next) => {
                     : (async () => {                 // Fresh init - need to load data separately
                         console.warn("Initializing MKF in Web Worker (fresh)...")
                         // WASM files are in public/wasm folder, served at /wasm/ in production
-                        const wasmJsUrl = `${import.meta.env.BASE_URL}wasm/libMKF.wasm.js`;
+                        const wasmJsUrl = getVersionedWasmUrl(`${import.meta.env.BASE_URL}wasm/libMKF.wasm.js`);
                         return await initWorker(wasmJsUrl);
                     })();
             
