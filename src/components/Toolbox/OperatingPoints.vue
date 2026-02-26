@@ -129,7 +129,9 @@ export default {
         }
         this.$emit("canContinue", this.canContinue);
 
-        if (!this.canContinue) {
+        // Only set default mode if no mode is currently selected
+        // Don't reset user-selected modes when navigating back from magnetic builder
+        if (this.$stateStore.operatingPoints.modePerPoint[this.currentOperatingPointIndex] == null) {
             this.$stateStore.operatingPoints.modePerPoint[this.currentOperatingPointIndex] = this.defaultMode
         }
 

@@ -84,8 +84,18 @@ export default {
 
     },
     mounted () {
-        this.processHarmonics("current");
-        this.processHarmonics("voltage");
+        // Only process harmonics if waveform doesn't exist (initial setup)
+        // Don't regenerate waveform when returning from other tools
+        const hasCurrentWaveform = this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex].current.waveform != null;
+        const hasVoltageWaveform = this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex].voltage.waveform != null;
+        
+        if (!hasCurrentWaveform) {
+            this.processHarmonics("current");
+        }
+        
+        if (!hasVoltageWaveform) {
+            this.processHarmonics("voltage");
+        }
     },
     methods: {
         checkAndFixOperatingPoint(operatingPoint) {
