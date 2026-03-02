@@ -919,6 +919,64 @@ export const useTaskQueueStore = defineStore('taskQueue', {
         },
 
         // ==========================================
+        // SPICE Code Generation Methods
+        // ==========================================
+
+        spiceCodeGenerated(success = true, dataOrMessage = '') {
+        },
+
+        async generateSpiceCode(topology, params, inputVoltageIndex = 0, operatingPointIndex = 0) {
+            const mkf = await waitForMkf();
+            await mkf.ready;
+
+            // Debug: Log topology and available functions
+            console.log('[generateSpiceCode] Topology:', topology);
+            console.log('[generateSpiceCode] MKF available functions:', Object.keys(mkf).filter(k => k.includes('generate')).sort());
+
+            // Map topology to WASM function name
+            const topologyMap = {
+                'Flyback': 'generate_flyback_ngspice_circuit',
+                'Buck': 'generate_buck_ngspice_circuit',
+                'Boost': 'generate_boost_ngspice_circuit',
+                'Push-Pull': 'generate_push_pull_ngspice_circuit',
+                'Single-Switch Forward': 'generate_forward_ngspice_circuit',
+                'Two-Switch Forward': 'generate_two_switch_forward_ngspice_circuit',
+                'Active Clamp Forward': 'generate_active_clamp_forward_ngspice_circuit',
+                'Isolated Buck': 'generate_isolated_buck_ngspice_circuit',
+                'Isolated Buck Boost': 'generate_isolated_buck_boost_ngspice_circuit',
+                'LLC Converter': 'generate_llc_ngspice_circuit',
+                // 'CLLC': 'generate_cllc_ngspice_circuit',  // Different signature - requires special handling
+                'DAB': 'generate_dab_ngspice_circuit',
+                'PSFB': 'generate_psfb_ngspice_circuit',
+            };
+
+            const wasmFunction = topologyMap[topology];
+            console.log('[generateSpiceCode] Mapped to function:', wasmFunction);
+            console.log('[generateSpiceCode] Function exists on mkf:', wasmFunction ? (wasmFunction in mkf) : false);
+            console.log('[generateSpiceCode] mkf[wasmFunction] truthy:', wasmFunction ? !!mkf[wasmFunction] : false);
+
+            if (!wasmFunction) {
+                console.error(`[generateSpiceCode] No mapping found for topology: ${topology}`);
+                throw new Error(`SPICE code generation not available for topology: ${topology}`);
+            }
+
+            if (!mkf[wasmFunction]) {
+                console.error(`[generateSpiceCode] Function ${wasmFunction} not found on mkf object`);
+                throw new Error(`SPICE code generation function not available: ${wasmFunction}`);
+            }
+
+            const result = await mkf[wasmFunction](JSON.stringify(params), inputVoltageIndex, operatingPointIndex);
+
+            if (result.startsWith('Exception')) {
+                setTimeout(() => { this.spiceCodeGenerated(false, result); }, this.task_standard_response_delay);
+                throw new Error(result);
+            }
+
+            setTimeout(() => { this.spiceCodeGenerated(true, result); }, this.task_standard_response_delay);
+            return result;
+        },
+
+        // ==========================================
         // Wizard Calculation Methods - Forward
         // ==========================================
 

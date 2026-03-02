@@ -283,6 +283,9 @@ export default {
         async getAnalyticalWaveforms() {
       await this.$refs.base.executeWaveformAction(this, 'analytical');
     },
+        async getSpiceCode() {
+      await this.$refs.base.generateSpiceCode(this);
+    },
         getMagnetizingInductanceDisplay() {
             if (this.simulatedMagnetizingInductance != null) {
                 return (this.simulatedMagnetizingInductance * 1e6).toFixed(1) + 'µH';
@@ -861,6 +864,7 @@ export default {
     @update:numberOfSteadyStatePeriods="numberOfSteadyStatePeriods = $event"
     @get-analytical-waveforms="getAnalyticalWaveforms"
     @get-simulated-waveforms="simulateIdealWaveforms"
+    @get-spice-code="getSpiceCode"
     @dismiss-error="errorMessage = ''; waveformError = ''"
   >
     <template #design-mode>

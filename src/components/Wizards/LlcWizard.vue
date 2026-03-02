@@ -211,6 +211,10 @@ export default {
       await this.$refs.base.executeWaveformAction(this, 'simulation');
     },
 
+        async getSpiceCode() {
+      await this.$refs.base.generateSpiceCode(this);
+    },
+
         // Helper to resolve dimension value (nominal/min/max) to a scalar
         resolveDimensionValue(dimObj) {
             if (!dimObj) return null;
@@ -267,6 +271,7 @@ export default {
     @update:numberOfSteadyStatePeriods="numberOfSteadyStatePeriods = $event"
     @get-analytical-waveforms="getAnalyticalWaveforms"
     @get-simulated-waveforms="simulateIdealWaveforms"
+    @get-spice-code="getSpiceCode"
     @dismiss-error="errorMessage = ''; waveformError = ''"
   >
     <template #design-mode>

@@ -8,7 +8,7 @@ export const useSettingsStore = defineStore("settings", () => {
     const waitingTimeForPlottingAfterChange = 500;
 
     const catalogAdviserSettings = ref({
-        advancedMode: false,
+        advancedMode: true,
         useAllParts: false,
     })
 
@@ -29,7 +29,7 @@ export const useSettingsStore = defineStore("settings", () => {
         allowDistributedGaps: true,
         allowStacks: true,
         allowToroidalCores: true,
-        advancedMode: false,
+        advancedMode: true,
         autoRedraw: true,
         enableSimulation: true,
         enableAutoSimulation: true,
@@ -41,7 +41,7 @@ export const useSettingsStore = defineStore("settings", () => {
     })
 
     const operatingPointSettings = ref({
-        advancedMode: false,
+        advancedMode: true,
     })
 
     function reset() {
@@ -57,7 +57,7 @@ export const useSettingsStore = defineStore("settings", () => {
             allowDistributedGaps: true,
             allowStacks: true,
             allowToroidalCores: true,
-            advancedMode: false,
+            advancedMode: true,
             autoRedraw: true,
             enableSimulation: true,
             enableAutoSimulation: true,
@@ -70,12 +70,12 @@ export const useSettingsStore = defineStore("settings", () => {
             maximumNumberResults: 6,
         };
         this.operatingPointSettings ={
-            advancedMode: false,
+            advancedMode: true,
         };
 
 
         this.catalogAdviserSettings = {
-            advancedMode: false,
+            advancedMode: true,
             useAllParts: null,
         };
 

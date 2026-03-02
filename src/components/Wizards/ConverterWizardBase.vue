@@ -125,6 +125,11 @@ export default {
       type: Boolean,
       default: false
     },
+    /** Whether to show the Get SPICE Code button */
+    showSpiceCodeButton: {
+      type: Boolean,
+      default: true
+    },
   },
   emits: [
     'update:waveformViewMode',
@@ -132,6 +137,7 @@ export default {
     'update:numberOfSteadyStatePeriods',
     'get-analytical-waveforms',
     'get-simulated-waveforms',
+    'get-spice-code',
     'dismiss-error',
   ],
 
@@ -171,6 +177,16 @@ export default {
     col3Class() {
       return `col-12 col-xl-${this.col3Width}`;
     }
+  },
+
+  data() {
+    return {
+      spiceCode: '',
+      showSpiceCodeModal: false,
+      spiceCodeLoading: false,
+      spiceCodeTopology: '',
+      justCopied: false,
+    };
   },
 
   methods: {
@@ -798,6 +814,64 @@ export default {
         wi.masStore.mas.inputs.designRequirements.insulation = defaultDesignRequirements.insulation;
         wi.masStore.mas.inputs.designRequirements.insulation.insulationType = insulationType;
       }
+    },
+
+    // ===== SPICE CODE GENERATION =====
+    onGetSpiceCode() {
+      this.$emit('get-spice-code');
+    },
+
+    async generateSpiceCode(wizard) {
+      this.spiceCodeLoading = true;
+      this.spiceCode = '';
+      this.spiceCodeTopology = '';
+      wizard.waveformError = '';
+
+      try {
+        // Check if wizard has required methods
+        if (!wizard.buildParams || !wizard.getTopology) {
+          throw new Error('Wizard missing required methods: buildParams or getTopology');
+        }
+
+        const aux = wizard.buildParams('spice');
+        const topology = wizard.getTopology();
+        this.spiceCodeTopology = topology;
+
+        // Use the wizard's taskQueueStore instance
+        const taskQueueStore = wizard.taskQueueStore;
+        if (!taskQueueStore) {
+          throw new Error('taskQueueStore not available on wizard instance');
+        }
+
+        console.log(`Generating SPICE code for ${topology}...`);
+        const netlist = await taskQueueStore.generateSpiceCode(topology, aux);
+
+        this.spiceCode = netlist;
+        this.showSpiceCodeModal = true;
+      } catch (error) {
+        console.error('Error generating SPICE code:', error);
+        wizard.waveformError = error.message || `Failed to generate SPICE code for ${wizard.getTopology?.() || 'unknown'}`;
+      } finally {
+        this.spiceCodeLoading = false;
+      }
+    },
+
+    async copySpiceCodeToClipboard() {
+      try {
+        await navigator.clipboard.writeText(this.spiceCode);
+        this.justCopied = true;
+        setTimeout(() => {
+          this.justCopied = false;
+        }, 2000);
+      } catch (err) {
+        console.error('Failed to copy:', err);
+      }
+    },
+
+    closeSpiceCodeModal() {
+      this.showSpiceCodeModal = false;
+      this.spiceCode = '';
+      this.spiceCodeTopology = '';
     }
   }
 }
@@ -948,6 +1022,18 @@ export default {
                       </span>
                       <span v-else><i class="fa-solid fa-play"></i> Simulated</span>
                     </button>
+                    <button
+                      v-if="showSpiceCodeButton"
+                      class="sim-btn spice"
+                      :disabled="disableActions || spiceCodeLoading"
+                      @click="onGetSpiceCode"
+                      title="Get SPICE netlist for external simulation"
+                    >
+                      <span v-if="spiceCodeLoading">
+                        <i class="fa-solid fa-spinner fa-spin"></i>
+                      </span>
+                      <span v-else><i class="fa-solid fa-file-code"></i> SPICE</span>
+                    </button>
                   </slot>
                 </div>
               </div>
@@ -974,6 +1060,40 @@ export default {
       </div>
     </div>
   </div>
+
+  <!-- SPICE Code Modal -->
+  <div v-if="showSpiceCodeModal" class="modal fade show" tabindex="-1" style="display: block; z-index: 1055;">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content" :style="{ background: 'rgba(30, 30, 40, 0.95)', border: '1px solid ' + primaryColor }">
+        <div class="modal-header" :style="{ borderBottom: '1px solid rgba(255,255,255,0.1)' }">
+          <h5 class="modal-title" :style="{ color: primaryColor }">
+            <i class="fa-solid fa-file-code me-2"></i>SPICE Netlist<span v-if="spiceCodeTopology"> - {{ spiceCodeTopology }}</span>
+          </h5>
+          <button type="button" class="btn-close btn-close-white" @click="closeSpiceCodeModal"></button>
+        </div>
+        <div class="modal-body">
+          <div style="position: relative;">
+            <button 
+              class="btn btn-sm btn-outline-light position-absolute" 
+              style="top: 8px; left: 8px; z-index: 10; padding: 4px 8px; font-size: 0.75rem;"
+              @click="copySpiceCodeToClipboard"
+              title="Copy to clipboard"
+            >
+              <i class="fa-solid fa-copy"></i>
+            </button>
+            <pre class="p-3 rounded" :style="{ background: 'rgba(0,0,0,0.5)', color: '#d4d4d4', maxHeight: '60vh', overflow: 'auto', fontSize: '0.75rem', fontFamily: 'monospace', border: '1px solid rgba(255,255,255,0.1)', paddingTop: '40px' }"><code>{{ spiceCode }}</code></pre>
+          </div>
+        </div>
+        <div class="modal-footer" :style="{ borderTop: '1px solid rgba(255,255,255,0.1)' }">
+          <button class="btn btn-sm" @click="copySpiceCodeToClipboard" :style="{ color: 'white', borderColor: 'white', backgroundColor: justCopied ? 'rgba(255,255,255,0.2)' : 'transparent' }">
+            <i class="fa-solid fa-copy me-1"></i>{{ justCopied ? 'Copied' : 'Copy to Clipboard' }}
+          </button>
+          <button class="btn btn-primary btn-sm" @click="closeSpiceCodeModal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div v-if="showSpiceCodeModal" class="modal-backdrop fade show" style="z-index: 1050;" @click="closeSpiceCodeModal"></div>
 </template>
 
 <style>
@@ -1052,6 +1172,7 @@ export default {
 .sim-btns { display: flex; gap: 4px; }
 .sim-btn { background: linear-gradient(135deg, v-bind('primaryColor') 0%, v-bind('"rgba(" + primaryRgb.r + ", " + primaryRgb.g + ", " + primaryRgb.b + ", 0.7)"') 100%); border: none; border-radius: 4px; padding: 4px 10px; color: white; font-size: 0.7rem; font-weight: 500; cursor: pointer; }
 .sim-btn.analytical { background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%); }
+.sim-btn.spice { background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); }
 .sim-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
 /* Periods selector - using primary color tones */
