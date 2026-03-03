@@ -124,6 +124,10 @@ export default {
     async simulateIdealWaveforms() {
       await this.$refs.base.executeWaveformAction(this, 'simulation');
     },
+
+    async getSpiceCode() {
+      await this.$refs.base.generateSpiceCode(this);
+    },
   },
 }
 </script>
@@ -150,6 +154,7 @@ export default {
     @update:numberOfSteadyStatePeriods="numberOfSteadyStatePeriods = $event"
     @get-analytical-waveforms="getAnalyticalWaveforms"
     @get-simulated-waveforms="simulateIdealWaveforms"
+    @get-spice-code="getSpiceCode"
     @dismiss-error="dismissError"
   >
     <template #conditions>
