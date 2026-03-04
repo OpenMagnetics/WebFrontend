@@ -55,6 +55,7 @@ export default {
             masStore,
             taskQueueStore,
             errorMessages: "",
+            loading: false,
         }
     },
     computed: {
@@ -89,6 +90,8 @@ export default {
                 this.$stateStore.operatingPointsCircuitSimulator.confirmedColumns[this.currentOperatingPointIndex][this.currentWindingIndex] = true;
                 this.$emit("importedWaveform");
                 this.$emit("updatedSignal");
+            } finally {
+                this.loading = false;
             }
         },
         updatedSwitchingFrequency(frequency) {
@@ -100,6 +103,7 @@ export default {
             // this.extractOperatingPoint(this.loadedFile);
         },
         confirmColumns() {
+            this.loading = true;
             this.extractOperatingPoint(this.loadedFile);
         },
     }
@@ -131,13 +135,16 @@ export default {
 
                 <button
                     :style="$styleStore.operatingPoints.confirmColumnsButton"
-                    :disabled='loadedFile==""'
+                    :disabled='loadedFile=="" || loading'
                     :data-cy="dataTestLabel + '-import-button'"
                     class="btn btn-success fs-5 col-sm-12 col-md-12 mt-3 p-0"
                     style="max-height: 2em"
                     @click="confirmColumns"
                 >
-                    {{$stateStore.operatingPointsCircuitSimulator.confirmedColumns[currentOperatingPointIndex][currentWindingIndex]? 'Update columns' : 'Confirm columns'}}
+                    <img v-if="loading" class="mx-auto d-block" alt="loading" style="width: auto; height: 1.5em;" :src="$settingsStore.loadingGif">
+                    <span v-else>
+                        {{$stateStore.operatingPointsCircuitSimulator.confirmedColumns[currentOperatingPointIndex][currentWindingIndex]? 'Update columns' : 'Confirm columns'}}
+                    </span>
                 </button>
                 <div v-if='loadedFile=="" && !$stateStore.operatingPointsCircuitSimulator.confirmedColumns[currentOperatingPointIndex][currentWindingIndex]' class="col-12">
                     <label :data-cy="dataTestLabel + '-error-text'" class="text-danger text-center col-12 pt-1" style="font-size: 0.9em; white-space: pre-wrap;">Please reload file</label>
