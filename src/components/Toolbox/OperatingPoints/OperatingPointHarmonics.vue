@@ -128,7 +128,13 @@ export default {
             })
 
             try {
-                const frequency = this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex][signalDescriptor].harmonics.frequencies[1];
+                // Guard against missing data
+                const excitation = this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex]?.excitationsPerWinding?.[this.currentWindingIndex]?.[signalDescriptor];
+                if (!excitation?.harmonics?.frequencies || excitation.harmonics.frequencies.length < 2) {
+                    console.warn(`[processHarmonics] Missing harmonics data for ${signalDescriptor}`);
+                    return;
+                }
+                const frequency = excitation.harmonics.frequencies[1];
                 this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex][signalDescriptor].waveform = null;
                 this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex][signalDescriptor].processed = null;
                 const parsedResult = await this.taskQueueStore.standardizeSignalDescriptor(this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex][signalDescriptor], frequency);
@@ -155,6 +161,12 @@ export default {
             }
         },
         onFrequencyChanged(signalDescriptor) {
+            // Guard against missing data
+            const excitations = this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex]?.excitationsPerWinding?.[this.currentWindingIndex];
+            if (!excitations?.current?.harmonics?.frequencies || !excitations?.voltage?.harmonics?.frequencies) {
+                return;
+            }
+
             if (this.checkFrequencies(signalDescriptor)) {
                 this.processHarmonics(signalDescriptor);
                 this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex].frequency = this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex].current.harmonics.frequencies[1]
@@ -173,6 +185,12 @@ export default {
             }
         },
         onAmplitudeChanged(signalDescriptor) {
+            // Guard against missing data
+            const excitations = this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex]?.excitationsPerWinding?.[this.currentWindingIndex];
+            if (!excitations?.[signalDescriptor]?.harmonics?.frequencies) {
+                return;
+            }
+
             if (!this.blockingRebounds) {
                 this.blockingRebounds = true;
                 setTimeout(() => this.blockingRebounds = false, 20);
