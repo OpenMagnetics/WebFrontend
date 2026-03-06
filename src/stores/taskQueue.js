@@ -157,6 +157,9 @@ export const useTaskQueueStore = defineStore('taskQueue', {
             const mkf = await waitForMkf();
             await mkf.ready;
 
+            console.log('[DEBUG calculateAdvisedCores] mode:', mode);
+            console.log('[DEBUG calculateAdvisedCores] weights:', weights);
+            console.log('[DEBUG calculateAdvisedCores] count:', count);
             const result = await mkf.calculate_advised_cores(JSON.stringify(inputs), JSON.stringify(weights), count, mode);
             if (result.startsWith('Exception')) {
                 setTimeout(() => { this.advisedCoresCalculated(false, result); }, this.task_standard_response_delay);
@@ -174,6 +177,9 @@ export const useTaskQueueStore = defineStore('taskQueue', {
             const mkf = await waitForMkf();
             await mkf.ready;
 
+            console.log('[DEBUG calculateAdvisedMagnetics] mode:', mode);
+            console.log('[DEBUG calculateAdvisedMagnetics] weights:', weights);
+            console.log('[DEBUG calculateAdvisedMagnetics] count:', count);
             const result = await mkf.calculate_advised_magnetics(JSON.stringify(inputs), JSON.stringify(weights), count, mode);
             if (result.startsWith('Exception')) {
                 setTimeout(() => { this.advisedMagneticsCalculated(false, result); }, this.task_standard_response_delay);
