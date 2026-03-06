@@ -948,6 +948,7 @@ export const useTaskQueueStore = defineStore('taskQueue', {
                 // 'CLLC': 'generate_cllc_ngspice_circuit',  // Different signature - requires special handling
                 'DAB': 'generate_dab_ngspice_circuit',
                 'PSFB': 'generate_psfb_ngspice_circuit',
+                'CommonModeChoke': 'generate_cmc_ngspice_circuit',
             };
 
             const wasmFunction = topologyMap[topology];
@@ -1243,11 +1244,25 @@ export const useTaskQueueStore = defineStore('taskQueue', {
         cmcWaveformsSimulated(success = true, dataOrMessage = '') {
         },
 
-        async simulateCmcWaveforms(params, inductance) {
+        async simulateCmcIdealWaveforms(params, inductance, parasiticCap_pF, dvdt_V_ns) {
             const mkf = await waitForMkf();
             await mkf.ready;
 
-            const result = await mkf.simulate_cmc_waveforms(JSON.stringify(params), inductance);
+            const result = await mkf.simulate_cmc_ideal_waveforms(JSON.stringify(params), inductance, parasiticCap_pF, dvdt_V_ns);
+            if (result.startsWith('Exception')) {
+                setTimeout(() => { this.cmcWaveformsSimulated(false, result); }, this.task_standard_response_delay);
+                throw new Error(result);
+            }
+            const waveforms = JSON.parse(result);
+            setTimeout(() => { this.cmcWaveformsSimulated(true, waveforms); }, this.task_standard_response_delay);
+            return waveforms;
+        },
+
+        async simulateCmcLisnWaveforms(params, inductance) {
+            const mkf = await waitForMkf();
+            await mkf.ready;
+
+            const result = await mkf.simulate_cmc_lisn_waveforms(JSON.stringify(params), inductance);
             if (result.startsWith('Exception')) {
                 setTimeout(() => { this.cmcWaveformsSimulated(false, result); }, this.task_standard_response_delay);
                 throw new Error(result);

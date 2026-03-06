@@ -5,691 +5,713 @@ import { combinedStyle, combinedClass, deepCopy } from '/WebSharedComponents/ass
 import Dimension from '/WebSharedComponents/DataInput/Dimension.vue'
 import ElementFromListRadio from '/WebSharedComponents/DataInput/ElementFromListRadio.vue'
 import ElementFromList from '/WebSharedComponents/DataInput/ElementFromList.vue'
-import PairOfDimensions from '/WebSharedComponents/DataInput/PairOfDimensions.vue'
-import { defaultCmcWizardInputs, defaultDesignRequirements, minimumMaximumScalePerParameter, filterMas } from '/WebSharedComponents/assets/js/defaults.js'
-import LineVisualizer from '/WebSharedComponents/Common/LineVisualizer.vue'
+import DimensionWithTolerance from '/WebSharedComponents/DataInput/DimensionWithTolerance.vue'
+import { defaultDesignRequirements, minimumMaximumScalePerParameter } from '/WebSharedComponents/assets/js/defaults.js'
+import ConverterWizardBase from './ConverterWizardBase.vue'
+import { waitForMkf } from '/WebSharedComponents/assets/js/mkfRuntime'
 </script>
 
 <script>
-// NOTE: This wizard does not yet use ConverterWizardBase layout.
-// TODO: Migrate to ConverterWizardBase for layout consistency.
-// Navigation methods (processAndReview/processAndAdvise) follow the standard pattern
-// and could use ConverterWizardBase.navigateToReview/navigateToAdvise once migrated.
-
 export default {
     props: {
         dataTestLabel: {
             type: String,
             default: 'CmcWizard',
         },
-        labelWidthProportionClass:{
+        labelWidthProportionClass: {
             type: String,
-            default: 'col-xs-12 col-md-8'
+            default: 'col-xs-12 col-md-9'
         },
-        valueWidthProportionClass:{
+        valueWidthProportionClass: {
             type: String,
-            default: 'col-xs-12 col-md-4'
+            default: 'col-xs-12 col-md-3'
         },
     },
     data() {
         const masStore = useMasStore();
         const taskQueueStore = useTaskQueueStore();
-        const numberPhasesOptions = ['Two phases', 'Three phases'];
-        const insulationTypes = ['No', 'Basic', 'Reinforced'];
+        const designLevelOptions = ['Help me with the design', 'I know the design I want'];
+        const specModeOptions = ['Impedance specification', 'Insertion loss (dB)', 'Estimate from noise'];
+        const windingOptions = ['2 — Single phase / DC', '3 — Three phase (delta)', '4 — Three phase + neutral (wye)'];
         const errorMessage = "";
-        const localData = deepCopy(defaultCmcWizardInputs);
+        const localData = {
+            operatingVoltage:      { nominal: 230, tolerance: 0.1 },
+            operatingCurrent:      5.0,
+            lineFrequency:         50,
+            lineImpedance:         50,
+            ambientTemperature:    25,
+            designLevel:           designLevelOptions[0],
+            specMode:              specModeOptions[0],
+            windingOption:         windingOptions[0],
+            impedancePoints:       [{ _id: 0, frequency: 150000, impedance: 1000 }],
+            insertionLossPoints:   [{ _id: 0, frequency: 150000, insertionLoss: 30 }],
+            _uidCounter: 1,
+            parasiticCap_pF:       10,
+            dvdt_V_ns:             50,
+            safetyMargin_dB:       6,
+            desiredInductance:     1e-3,
+        };
         return {
             masStore,
             taskQueueStore,
-            numberPhasesOptions,
-            insulationTypes,
+            designLevelOptions,
+            specModeOptions,
+            windingOptions,
             localData,
             errorMessage,
             simulatingWaveforms: false,
-            simulationError: "",
-            simulationResults: null,
-            impedanceChartData: null,
+            waveformSource: null,
+            waveformError: "",
+            simulatedOperatingPoints: [],
+            simulatedInductance: null,
+            designRequirements: null,
+            magneticWaveforms: [],
+            converterWaveforms: [],
+            waveformViewMode: 'magnetic',
+            forceWaveformUpdate: 0,
+            numberOfPeriods: 2,
+            numberOfSteadyStatePeriods: 10,
         }
     },
     computed: {
+        // Parse number of windings from the option string — display only, no physics.
+        numWindings() {
+            return parseInt(this.localData.windingOption.charAt(0));
+        },
+        // Format the required inductance returned by the backend (designRequirements).
+        // NO calculation here — value comes entirely from the WASM result.
+        previewInductanceFormatted() {
+            const dr = this.designRequirements;
+            if (!dr || !dr.magnetizingInductance) return '—';
+            const lm = dr.magnetizingInductance;
+            const L = lm.nominal ?? lm.minimum ?? lm.maximum ?? null;
+            if (!L || L <= 0) return '—';
+            if (L >= 1)    return L.toFixed(3) + ' H';
+            if (L >= 1e-3) return (L * 1e3).toFixed(3) + ' mH';
+            if (L >= 1e-6) return (L * 1e6).toFixed(2) + ' μH';
+            return (L * 1e9).toFixed(1) + ' nH';
+        },
+    },
+    watch: {
+        waveformViewMode() {
+            this.$nextTick(() => {
+                this.forceWaveformUpdate += 1;
+            });
+        },
+    },
+    mounted() {
+        this.updateErrorMessage();
     },
     methods: {
-        updateErrorMessage() {
-            this.errorMessage = "";
-            if (this.localData.mainSignalFrequency <= 0) {
-                if (this.errorMessage == "")
-                    this.errorMessage = "Main signal frequency must be positive";
+
+        // ===== WIZARD CONTRACT =====
+        buildParams(mode) {
+            // ── Pure data pass-through — NO calculations here. ──────────
+            // All physics (L = Z/2πf, insertion-loss conversion, noise
+            // estimation) is handled entirely in the C++ backend (Cmc.cpp).
+            const aux = {
+                operatingVoltage:    this.localData.operatingVoltage,
+                operatingCurrent:    this.localData.operatingCurrent,
+                lineFrequency:       this.localData.lineFrequency,
+                lineImpedance:       this.localData.lineImpedance,
+                ambientTemperature:  this.localData.ambientTemperature,
+                numberOfWindings:    this.numWindings,
+            };
+
+            if (this.localData.designLevel === 'I know the design I want') {
+                // AdvancedCmc path: user specifies desired inductance directly.
+                aux.desiredInductance = this.localData.desiredInductance;
+
+            } else if (this.localData.specMode === 'Impedance specification') {
+                // Pass (frequency, impedance) pairs as-is — backend computes L.
+                aux.minimumImpedance = this.localData.impedancePoints
+                    .filter(p => p.frequency > 0 && p.impedance > 0)
+                    .map(p => ({ frequency: p.frequency, impedance: p.impedance }));
+
+            } else if (this.localData.specMode === 'Insertion loss (dB)') {
+                // Pass (frequency, insertionLoss) pairs — backend converts to Z then L.
+                aux.targetInsertionLoss = this.localData.insertionLossPoints
+                    .filter(p => p.frequency > 0 && p.insertionLoss > 0)
+                    .map(p => ({ frequency: p.frequency, insertionLoss: p.insertionLoss }));
+
+            } else {
+                // Noise-estimation mode: pass raw physical params — backend does ALL math.
+                // Cmc::noiseParamsToImpedance() computes Icm → Vnoise → attenuation → Zcm.
+                aux.parasiticCap_pF = this.localData.parasiticCap_pF;
+                aux.dvdt_V_ns       = this.localData.dvdt_V_ns;
+                aux.safetyMargin_dB = this.localData.safetyMargin_dB;
             }
 
-            this.localData.extraHarmonics.forEach((elem, index) => {
-                if (elem.frequency <= 0) {
-                    if (this.errorMessage == "")
-                        this.errorMessage = "Harmonic frequency cannot be zero";
-                }
-                if (elem.amplitude <= 0) {
-                    if (this.errorMessage == "")
-                        this.errorMessage = "Harmonic amplitude cannot be zero";
-                }
-            })
-
-            this.localData.impedancePoints.forEach((elem, index) => {
-                if (elem.frequency <= 0) {
-                    if (this.errorMessage == "")
-                        this.errorMessage = "Impedance frequency cannot be zero";
-                }
-                if (elem.impedance <= 0) {
-                    if (this.errorMessage == "")
-                        this.errorMessage = "Impedance impedance cannot be zero";
-                }
-            })
-
+            return aux;
         },
-        numberPhasesSelected(numberPhases) {
-            this.localData.numberPhases = numberPhases;
-            this.updateErrorMessage();
-        },
-        updateHarmonicPoints(newNumber) {
-            if (newNumber > this.localData.extraHarmonics.length) {
-                const diff = newNumber - this.localData.extraHarmonics.length;
-                for (let i = 0; i < diff; i++) {
-                    var newHarmonic;
-                    if (this.localData.extraHarmonics.length == 0) {
-                        newHarmonic = {
-                            frequency: defaultCmcWizardInputs.extraHarmonics[0].frequency,
-                            amplitude: defaultCmcWizardInputs.extraHarmonics[0].amplitude,
-                        }
-                    }
-                    else {
-                        newHarmonic = {
-                            frequency: this.localData.extraHarmonics[this.localData.extraHarmonics.length - 1].frequency * 2,
-                            amplitude: this.localData.extraHarmonics[this.localData.extraHarmonics.length - 1].amplitude / 2,
-                        }
-                    }
-
-                    this.localData.extraHarmonics.push(newHarmonic);
-                }
-            }
-            else if (newNumber < this.localData.extraHarmonics.length) {
-                const diff = this.localData.extraHarmonics.length - newNumber;
-                this.localData.extraHarmonics.splice(-diff, diff);
-            }
-            this.updateErrorMessage();
-        },
-        updateImpedancePoints(newNumber) {
-            if (newNumber > this.localData.impedancePoints.length) {
-                const diff = newNumber - this.localData.impedancePoints.length;
-                for (let i = 0; i < diff; i++) {
-                    var newPoint;
-                    if (this.localData.impedancePoints.length == 0) {
-                        newPoint = {
-                            frequency: defaultCmcWizardInputs.impedancePoints[0].frequency,
-                            amplitude: defaultCmcWizardInputs.impedancePoints[0].impedance,
-                        }
-                    }
-                    else {
-                        newPoint = {
-                            frequency: this.localData.impedancePoints[this.localData.impedancePoints.length - 1].frequency * 2,
-                            impedance: this.localData.impedancePoints[this.localData.impedancePoints.length - 1].impedance * 2,
-                        }
-                    }
-                    this.localData.impedancePoints.push(newPoint);
-                }
-            }
-            else if (newNumber < this.localData.impedancePoints.length) {
-                const diff = this.localData.impedancePoints.length - newNumber;
-                this.localData.impedancePoints.splice(-diff, diff);
-            }
-            this.updateErrorMessage();
-        },
-        async process() {
-            this.masStore.resetMas("filter")
-            this.$stateStore.closeCoilAdvancedInfo();
-            this.masStore.mas.inputs.designRequirements = {
-                name: "My CMC",
-                magnetizingInductance: {
-                    minimum: this.localData.minimumInductance
-                },
-                minimumImpedance: [],
-                turnsRatios: [],
-                insulation: null,
-            }
-
-            if (this.localData.insulationType != 'No') {
-
-                this.masStore.mas.inputs.designRequirements.insulation = defaultDesignRequirements.insulation;
-                this.masStore.mas.inputs.designRequirements.insulation.insulationType = this.localData.insulationType;
-            }
-
-            this.localData.impedancePoints.forEach((point) => {
-                this.masStore.mas.inputs.designRequirements.minimumImpedance.push(
-                    {
-                        frequency: point.frequency,
-                        impedance: {magnitude: point.impedance}
-                    }
-                );
-            })
-            if (this.localData.numberPhases == 'Two phases') {
-                this.masStore.mas.inputs.designRequirements.turnsRatios = [{nominal: 1}];
-            }
-            else {
-                this.masStore.mas.inputs.designRequirements.turnsRatios = [{nominal: 1}, {nominal: 1}];
-            }
-            const voltageRms = this.localData.mainSignalRmsCurrent * 2 * Math.PI * this.localData.mainSignalFrequency * this.localData.minimumInductance;
-            const excitation = {
-                frequency: this.localData.mainSignalFrequency,
-                current: {
-                    harmonics: {
-                        frequencies: [0, this.localData.mainSignalFrequency],
-                        amplitudes: [0, this.localData.mainSignalRmsCurrent * Math.sqrt(2)],
-                    }
-                },
-                voltage: {
-                    processed: {
-                        dutyCycle : 0.5,
-                        peak : voltageRms * Math.sqrt(2),
-                        peakToPeak : voltageRms * Math.sqrt(2) * 2,
-                        rms : voltageRms,
-                        offset : 0,
-                        label: "Sinusoidal"
-
-                    }
-                }
-            }
-            this.localData.extraHarmonics.forEach((harmonic) => {
-                excitation.current.harmonics.frequencies.push(harmonic.frequency);
-                excitation.current.harmonics.amplitudes.push(harmonic.amplitude);
-            })
-
-            {
-                excitation.current = await this.taskQueueStore.standardizeSignalDescriptor(excitation.current, this.localData.mainSignalFrequency);
-            }
-
-
-            {
-                excitation.voltage = await this.taskQueueStore.standardizeSignalDescriptor(excitation.voltage, this.localData.mainSignalFrequency);
-            }
-
-
-            {
-                excitation.voltage.harmonics = await this.taskQueueStore.calculateHarmonics(excitation.voltage.waveform, this.localData.mainSignalFrequency);
-                // Prune harmonics to reduce number shown in Fourier graph
-                const voltageThreshold = 0.3;
-                const mainIndexes = await this.taskQueueStore.getMainHarmonicIndexes(excitation.voltage.harmonics, voltageThreshold, 1);
-                const prunedHarmonics = {
-                    amplitudes: [excitation.voltage.harmonics.amplitudes[0]],
-                    frequencies: [excitation.voltage.harmonics.frequencies[0]]
-                };
-                for (let i = 0; i < mainIndexes.length; i++) {
-                    prunedHarmonics.amplitudes.push(excitation.voltage.harmonics.amplitudes[mainIndexes[i]]);
-                    prunedHarmonics.frequencies.push(excitation.voltage.harmonics.frequencies[mainIndexes[i]]);
-                }
-                excitation.voltage.harmonics = prunedHarmonics;
-            }
-
-            this.masStore.mas.inputs.operatingPoints = [];
-            if (this.localData.numberPhases == 'Two phases') {
-                this.masStore.mas.inputs.operatingPoints.push({
-                    name: "Main op. point",
-                    conditions: {
-                        ambientTemperature: this.localData.ambientTemperature,
-                    },
-                    excitationsPerWinding: [excitation, excitation]
-                })
-            }
-            else {
-                this.masStore.mas.inputs.operatingPoints.push({
-                    name: "Main op. point",
-                    conditions: {
-                        ambientTemperature: this.localData.ambientTemperature,
-                    },
-                    excitationsPerWinding: [excitation, excitation, excitation]
-                })
-            }
-
-
-            if (this.localData.numberPhases == 'Two phases') {
-
-                this.masStore.mas.magnetic.coil.functionalDescription = [
-                    {
-                        "name": "Primary",
-                        "numberTurns": 0,
-                        "numberParallels": 0,
-                        "isolationSide": "primary",
-                        "wire": ""
-                    },
-                    {
-                        "name": "Secondary",
-                        "numberTurns": 0,
-                        "numberParallels": 0,
-                        "isolationSide": "primary",
-                        "wire": ""
-                    }
-                ];
-            }
-            else {
-                this.masStore.mas.magnetic.coil.functionalDescription = [
-                    {
-                        "name": "Primary",
-                        "numberTurns": 0,
-                        "numberParallels": 0,
-                        "isolationSide": "primary",
-                        "wire": ""
-                    },
-                    {
-                        "name": "Secondary",
-                        "numberTurns": 0,
-                        "numberParallels": 0,
-                        "isolationSide": "primary",
-                        "wire": ""
-                    },
-                    {
-                        "name": "Tertiary",
-                        "numberTurns": 0,
-                        "numberParallels": 0,
-                        "isolationSide": "primary",
-                        "wire": ""
-                    }
-                ];
-            }
-
-            this.$stateStore.operatingPoints.modePerPoint[0] = this.$stateStore.OperatingPointsMode.HarmonicsList;
-
-        },
-        async processAndReview() {
-            this.process();
-            this.$stateStore.resetMagneticTool();
-            this.$stateStore.closeCoilAdvancedInfo();  // Ensure coil advanced info is disabled
-            this.$stateStore.designLoaded();
-            this.$stateStore.selectApplication(this.$stateStore.SupportedApplications.CommonModeChoke);
-            this.$stateStore.selectWorkflow("design");
-            this.$stateStore.selectTool("agnosticTool");
-            this.$stateStore.setCurrentToolSubsectionStatus("designRequirements", true);
-            this.$stateStore.setCurrentToolSubsectionStatus("operatingPoints", true);
-            await this.$nextTick();
-            await this.$router.push(`${import.meta.env.BASE_URL}magnetic_tool`);
-        },
-        async processAndAdvise() {
-            this.process();
-            this.$stateStore.resetMagneticTool();
-            this.$stateStore.closeCoilAdvancedInfo();  // Ensure coil advanced info is disabled
-            this.$stateStore.designLoaded();
-            this.$stateStore.selectApplication(this.$stateStore.SupportedApplications.CommonModeChoke);
-            this.$stateStore.selectWorkflow("design");
-            this.$stateStore.selectTool("agnosticTool");
-            this.$stateStore.setCurrentToolSubsection("magneticBuilder");
-            this.$stateStore.setCurrentToolSubsectionStatus("designRequirements", true);
-            this.$stateStore.setCurrentToolSubsectionStatus("operatingPoints", true);
-            await this.$nextTick();
-            await this.$router.push(`${import.meta.env.BASE_URL}magnetic_tool`);
-        },
-        async simulateImpedance() {
-            this.simulatingWaveforms = true;
-            this.simulationError = "";
-            this.simulationResults = null;
-            this.impedanceChartData = null;
-
-            try {
-                // Build CMC parameters for backend
-                const cmcParams = {
-                    configuration: this.localData.numberPhases === 'Two phases' ? 'SINGLE_PHASE' : 'THREE_PHASE',
-                    operatingVoltage: { nominal: 230 }, // Typical mains voltage
-                    operatingCurrent: this.localData.mainSignalRmsCurrent,
-                    lineFrequency: this.localData.mainSignalFrequency,
-                    minimumImpedance: this.localData.impedancePoints.map(p => ({
-                        frequency: p.frequency,
-                        impedance: { magnitude: p.impedance }
-                    })),
-                    ambientTemperature: this.localData.ambientTemperature
-                };
-
-                // Call backend to simulate CMC waveforms
-                const inductance = this.localData.minimumInductance;
-                const waveforms = await this.taskQueueStore.simulateCmcWaveforms(cmcParams, inductance);
-
-                // Process results for display
-                this.simulationResults = waveforms.map(wf => ({
-                    frequency: wf.frequency,
-                    measuredImpedance: wf.commonModeImpedance,
-                    theoreticalImpedance: wf.theoreticalImpedance,
-                    attenuation: wf.commonModeAttenuation,
-                    requiredImpedance: this.localData.impedancePoints.find(p => Math.abs(p.frequency - wf.frequency) < wf.frequency * 0.01)?.impedance || 0,
-                    passed: wf.commonModeImpedance >= (this.localData.impedancePoints.find(p => Math.abs(p.frequency - wf.frequency) < wf.frequency * 0.01)?.impedance || 0)
-                }));
-
-                // Build impedance chart data
-                this.buildImpedanceChart(waveforms);
-
-            } catch (error) {
-                console.error("CMC simulation error:", error);
-                this.simulationError = error.message || "Simulation failed";
-            } finally {
-                this.simulatingWaveforms = false;
-            }
-        },
-        buildImpedanceChart(waveforms) {
-            if (!waveforms || waveforms.length === 0) return;
-
-            // Sort by frequency
-            const sorted = [...waveforms].sort((a, b) => a.frequency - b.frequency);
-
-            // Build chart data with frequency on x-axis, impedance on y-axis
-            const frequencies = sorted.map(wf => wf.frequency);
-            const measuredImpedance = sorted.map(wf => wf.commonModeImpedance);
-            const theoreticalImpedance = sorted.map(wf => wf.theoreticalImpedance);
-            const requiredImpedance = sorted.map(wf => {
-                const req = this.localData.impedancePoints.find(p => Math.abs(p.frequency - wf.frequency) < wf.frequency * 0.01);
-                return req ? req.impedance : null;
-            });
-
-            this.impedanceChartData = {
-                frequencies,
-                measuredImpedance,
-                theoreticalImpedance,
-                requiredImpedance
+        getCalculateFn() {
+            const isAdvanced = this.localData.designLevel === 'I know the design I want';
+            return async (aux) => {
+                const Module = await waitForMkf();
+                await Module.ready;
+                const fn = isAdvanced ? 'calculate_advanced_cmc_inputs' : 'calculate_cmc_inputs';
+                const raw = Module[fn](JSON.stringify(aux));
+                if (typeof raw === 'string' && raw.startsWith('Exception:'))
+                    throw new Error(raw);
+                const result = typeof raw === 'string' ? JSON.parse(raw) : raw;
+                return result;
             };
         },
-        formatFrequency(freq) {
-            if (freq >= 1e9) return (freq / 1e9).toFixed(1) + ' GHz';
-            if (freq >= 1e6) return (freq / 1e6).toFixed(1) + ' MHz';
-            if (freq >= 1e3) return (freq / 1e3).toFixed(1) + ' kHz';
-            return freq.toFixed(0) + ' Hz';
+        getSimulateFn() {
+            return async (aux) => {
+                // Get the inductance from design requirements or use a default
+                const inductance = this.designRequirements?.magnetizingInductance?.nominal ||
+                                  this.designRequirements?.magnetizingInductance?.minimum ||
+                                  1e-3; // 1mH default
+
+                // Get noise parameters for simulation
+                // Use noise estimation params if available, otherwise use defaults
+                const parasiticCap_pF = aux.parasiticCap_pF || 100; // Default 100pF
+                const dvdt_V_ns = aux.dvdt_V_ns || 1; // Default 1V/ns
+
+                // Run CMC simulation with line + switching noise
+                const result = await this.taskQueueStore.simulateCmcIdealWaveforms(
+                    aux, inductance, parasiticCap_pF, dvdt_V_ns
+                );
+
+                // Return in format expected by ConverterWizardBase
+                return result;
+            };
         },
-        formatImpedance(imp) {
-            if (imp >= 1e6) return (imp / 1e6).toFixed(1) + ' MΩ';
-            if (imp >= 1e3) return (imp / 1e3).toFixed(1) + ' kΩ';
-            return imp.toFixed(1) + ' Ω';
+        getDefaultFrequency() { return this.localData.lineFrequency; },
+        postProcessResults(result, mode) {
+            if (this.designRequirements) {
+                this.simulatedInductance = this.designRequirements.magnetizingInductance?.nominal || null;
+            }
+        },
+        getTopology() { return 'CommonModeChoke'; },
+        getIsolationSides() { return Array(this.numWindings).fill('primary'); },
+        getInsulationType() { return null; },
+
+        updateErrorMessage() {
+            this.errorMessage = "";
+            if (this.localData.operatingCurrent <= 0) {
+                this.errorMessage = "Operating current must be > 0";
+                return;
+            }
+            if (this.localData.lineFrequency <= 0) {
+                this.errorMessage = "Line frequency must be > 0";
+                return;
+            }
+            if (this.localData.designLevel === 'Help me with the design') {
+                if (this.localData.specMode === 'Impedance specification') {
+                    const valid = this.localData.impedancePoints.filter(p => p.frequency > 0 && p.impedance > 0);
+                    if (valid.length === 0) {
+                        this.errorMessage = "Add at least one impedance requirement";
+                    }
+                } else if (this.localData.specMode === 'Insertion loss (dB)') {
+                    const valid = this.localData.insertionLossPoints.filter(p => p.frequency > 0 && p.insertionLoss > 0);
+                    if (valid.length === 0) {
+                        this.errorMessage = "Add at least one insertion-loss requirement";
+                    }
+                }
+            }
+        },
+        async process() {
+            this.masStore.resetMas("power");
+            this.$stateStore.closeCoilAdvancedInfo();
+
+            try {
+                const result = await this.$refs.base.processWizardData(this, this.taskQueueStore);
+                if (!result.success) {
+                    this.errorMessage = result.error;
+                    return;
+                }
+                this.designRequirements = result.designRequirements;
+                this.errorMessage = "";
+            } catch (error) {
+                console.error(error);
+                this.errorMessage = error.message || error;
+            }
+        },
+        async processAndReview() {
+            await this.process();
+            if (this.errorMessage == "") {
+                await this.$refs.base.navigateToReview(this.$stateStore, this.masStore, "Power");
+                if (this.errorMessage == "") {
+                    setTimeout(() => { this.$router.push(`${import.meta.env.BASE_URL}magnetic_tool`); }, 100);
+                } else {
+                    setTimeout(() => { this.errorMessage = "" }, 5000);
+                }
+            }
+        },
+        async processAndAdvise() {
+            await this.process();
+            if (this.errorMessage == "") {
+                await this.$refs.base.navigateToAdvise(this.$stateStore, this.masStore, "Power");
+                if (this.errorMessage == "") {
+                    setTimeout(() => { this.$router.push(`${import.meta.env.BASE_URL}magnetic_tool`); }, 100);
+                } else {
+                    setTimeout(() => { this.errorMessage = "" }, 5000);
+                }
+            }
+        },
+        async getAnalyticalWaveforms() {
+            await this.$refs.base.executeWaveformAction(this, 'analytical');
+        },
+        async simulateWaveforms() {
+            await this.$refs.base.executeWaveformAction(this, 'simulation');
+        },
+        async getSpiceCode() {
+            await this.$refs.base.generateSpiceCode(this);
+        },
+
+        // ── Impedance / insertion-loss table row management ──────────
+        addImpedanceRow() {
+            this.localData.impedancePoints.push({ _id: this.localData._uidCounter++, frequency: 1e6, impedance: 300 });
+            this.updateErrorMessage();
+        },
+        removeImpedanceRow(idx) {
+            if (this.localData.impedancePoints.length > 1) {
+                this.localData.impedancePoints.splice(idx, 1);
+            } else {
+                // Reset to a blank row rather than leaving an empty list
+                this.localData.impedancePoints.splice(0, 1, { _id: this.localData._uidCounter++, frequency: 150000, impedance: 1000 });
+            }
+            this.updateErrorMessage();
+        },
+        updateImpedanceRow(idx, newVal) {
+            this.localData.impedancePoints.splice(idx, 1, { ...this.localData.impedancePoints[idx], ...newVal });
+            this.updateErrorMessage();
+        },
+        addInsertionLossRow() {
+            this.localData.insertionLossPoints.push({ _id: this.localData._uidCounter++, frequency: 1e6, insertionLoss: 20 });
+            this.updateErrorMessage();
+        },
+        removeInsertionLossRow(idx) {
+            if (this.localData.insertionLossPoints.length > 1) {
+                this.localData.insertionLossPoints.splice(idx, 1);
+            } else {
+                this.localData.insertionLossPoints.splice(0, 1, { _id: this.localData._uidCounter++, frequency: 150000, insertionLoss: 30 });
+            }
+            this.updateErrorMessage();
+        },
+        updateInsertionLossRow(idx, newVal) {
+            this.localData.insertionLossPoints.splice(idx, 1, { ...this.localData.insertionLossPoints[idx], ...newVal });
+            this.updateErrorMessage();
+        },
+
+        getInductanceDisplay() {
+            let inductance = this.simulatedInductance;
+            if (!inductance && this.designRequirements?.magnetizingInductance) {
+                inductance = this.designRequirements.magnetizingInductance;
+            }
+            if (!inductance) return 'N/A';
+            const value = inductance.nominal || inductance.minimum;
+            if (!value) return 'N/A';
+            if (value >= 1e-3) return (value * 1e3).toFixed(2) + ' mH';
+            if (value >= 1e-6) return (value * 1e6).toFixed(2) + ' µH';
+            return (value * 1e9).toFixed(2) + ' nH';
         },
     }
 }
 </script>
 
 <template>
-    <div class="container ps-5">
-        <div class="row my-3 ps-2">
-            <label
-                :style="combinedStyle([$styleStore.wizard.inputTitleFontSize, $styleStore.wizard.inputLabelBgColor, $styleStore.wizard.inputTextColor])"
-                :data-cy="dataTestLabel + '-title'"
-                class="rounded-2 col-12 p-0 text-center"
-                :class="combinedClass([$styleStore.wizard.inputTitleFontSize, $styleStore.wizard.inputLabelBgColor, $styleStore.wizard.inputTextColor])"
-            >
-                {{'CMC Wizard'}}
-            </label>
-        </div>
-        <div class="row mt-2 ps-2">
-            <ElementFromListRadio class="ps-3"
-                :name="'numberPhases'"
-                :dataTestLabel="dataTestLabel + '-NumberPhases'"
-                :replaceTitle="'How many phases do you need?'"
-                :options="numberPhasesOptions"
-                :titleSameRow="true"
-                v-model="localData"
-                :labelWidthProportionClass="labelWidthProportionClass"
-                :valueWidthProportionClass="'col-2'"
-                :valueFontSize="$styleStore.wizard.inputFontSize"
-                :labelFontSize="$styleStore.wizard.inputTitleFontSize"
-                :labelBgColor="$styleStore.wizard.inputLabelBgColor"
-                :valueBgColor="$styleStore.wizard.inputLabelBgColor"
-                :textColor="$styleStore.wizard.inputTextColor"
-                @update="updateErrorMessage"
-            />
-        </div>
-        <div class="row mt-2 ps-2">
-            <Dimension class="ps-3"
-                :name="'mainSignalFrequency'"
-                :replaceTitle="'What is your main frequency?'"
-                unit="Hz"
-                :dataTestLabel="dataTestLabel + '-MainSignalFrequency'"
-                :min="minimumMaximumScalePerParameter['frequency']['min']"
-                :max="minimumMaximumScalePerParameter['frequency']['max']"
-                :labelWidthProportionClass="labelWidthProportionClass"
-                :valueWidthProportionClass="'col-lg-1 col-md-2'"
-                v-model="localData"
-                :valueFontSize="$styleStore.wizard.inputFontSize"
-                :labelFontSize="$styleStore.wizard.inputTitleFontSize"
-                :labelBgColor="$styleStore.wizard.inputLabelBgColor"
-                :valueBgColor="$styleStore.wizard.inputValueBgColor"
-                :textColor="$styleStore.wizard.inputTextColor"
-                @update="updateErrorMessage"
-            />
-        </div>
-        <div class="row mt-2 ps-2">
-            <Dimension class="ps-3"
-                :name="'mainSignalRmsCurrent'"
-                :replaceTitle="'What the RMS current of main signal?'"
-                unit="A"
-                :dataTestLabel="dataTestLabel + '-MainSignalRmsCurrent'"
-                :min="minimumMaximumScalePerParameter['current']['min']"
-                :max="minimumMaximumScalePerParameter['current']['max']"
-                v-model="localData"
-                :labelWidthProportionClass="labelWidthProportionClass"
-                :valueWidthProportionClass="'col-lg-1 col-md-2'"
-                :valueFontSize="$styleStore.wizard.inputFontSize"
-                :labelFontSize="$styleStore.wizard.inputTitleFontSize"
-                :labelBgColor="$styleStore.wizard.inputLabelBgColor"
-                :valueBgColor="$styleStore.wizard.inputValueBgColor"
-                :textColor="$styleStore.wizard.inputTextColor"
-                @update="updateErrorMessage"
-            />
-        </div>
-        <div class="row mt-2 ps-2">
-            <ElementFromList class="ps-3"
-                :name="'numberExtraHarmonics'"
-                :replaceTitle="'Do you have harmonics? how many?'"
-                :dataTestLabel="dataTestLabel + '-NumberExtraHarmonics'"
-                :options="Array.from({length: 13}, (_, i) => i)"
-                :titleSameRow="true"
-                v-model="localData"
-                :labelWidthProportionClass="labelWidthProportionClass"
-                :valueWidthProportionClass="valueWidthProportionClass"
-                :valueFontSize="$styleStore.wizard.inputFontSize"
-                :labelFontSize="$styleStore.wizard.inputTitleFontSize"
-                :labelBgColor="$styleStore.wizard.inputLabelBgColor"
-                :valueBgColor="$styleStore.wizard.inputValueBgColor"
-                :textColor="$styleStore.wizard.inputTextColor"
-                @update="updateHarmonicPoints"
-            />
-        </div>
-        <div class="row mt-2 ps-2">
-            <div class="offset-2 col-9" v-for="(datum, index) in localData.extraHarmonics" :key="'harmonic-' + index">
-                <PairOfDimensions
-                    class="ps-3 border-top border-bottom pt-2"
-                    :names="['frequency', 'amplitude']"
-                    :units="['Hz', 'A']"
-                    :dataTestLabel="dataTestLabel + '-ExtraHarmonics'"
-                    :mins="[minimumMaximumScalePerParameter['frequency']['min'], minimumMaximumScalePerParameter['current']['min']]"
-                    :maxs="[minimumMaximumScalePerParameter['frequency']['max'], minimumMaximumScalePerParameter['current']['max']]"
-                    v-model="localData.extraHarmonics[index]"
-                    :labelWidthProportionClass="labelWidthProportionClass"
-                    :valueWidthProportionClass="valueWidthProportionClass"
-                    :valueFontSize="$styleStore.wizard.inputFontSize"
-                    :labelFontSize="$styleStore.wizard.inputFontSize"
-                    :labelBgColor="$styleStore.wizard.inputLabelBgColor"
-                    :valueBgColor="$styleStore.wizard.inputValueBgColor"
-                    :textColor="localData.extraHarmonics[index].frequency <= 0 || localData.extraHarmonics[index].current <= 0? $styleStore.wizard.inputErrorTextColor : $styleStore.wizard.inputTextColor"
-                    @update="updateErrorMessage"
-                />
-            </div>
-        </div>
-        <div class="row mt-2 ps-2">
-            <Dimension class="ps-3"
-                :name="'minimumInductance'"
-                :replaceTitle="'What the minimum inductance you need?'"
-                unit="H"
-                :dataTestLabel="dataTestLabel + '-MinimumInductance'"
-                :min="minimumMaximumScalePerParameter['inductance']['min']"
-                :max="minimumMaximumScalePerParameter['inductance']['max']"
-                v-model="localData"
-                :labelWidthProportionClass="labelWidthProportionClass"
-                :valueWidthProportionClass="'col-lg-1 col-md-2'"
-                :valueFontSize="$styleStore.wizard.inputFontSize"
-                :labelFontSize="$styleStore.wizard.inputTitleFontSize"
-                :labelBgColor="$styleStore.wizard.inputLabelBgColor"
-                :valueBgColor="$styleStore.wizard.inputValueBgColor"
-                :textColor="$styleStore.wizard.inputTextColor"
-                @update="updateErrorMessage"
-            />
-        </div>
-        <div class="row mt-2 ps-2">
-            <ElementFromList class="ps-3"
-                :name="'numberImpedancePoints'"
-                :replaceTitle="'How many impedance points do you want to define?'"
-                :dataTestLabel="dataTestLabel + '-NumberExtraHarmonics'"
-                :options="Array.from({length: 13}, (_, i) => i)"
-                :titleSameRow="true"
-                v-model="localData"
-                :labelWidthProportionClass="labelWidthProportionClass"
-                :valueWidthProportionClass="valueWidthProportionClass"
-                :valueFontSize="$styleStore.wizard.inputFontSize"
-                :labelFontSize="$styleStore.wizard.inputTitleFontSize"
-                :labelBgColor="$styleStore.wizard.inputLabelBgColor"
-                :valueBgColor="$styleStore.wizard.inputValueBgColor"
-                :textColor="$styleStore.wizard.inputTextColor"
-                @update="updateImpedancePoints"
-            />
-        </div>
-        <div class="row mt-2 ps-2">
-            <div class="offset-2 col-9" v-for="(datum, index) in localData.impedancePoints" :key="'impedance-' + index">
-                <PairOfDimensions
-                    class="ps-3 border-top border-bottom pt-2"
-                    :names="['frequency', 'impedance']"
-                    :units="['Hz', 'Ω']"
-                    :dataTestLabel="dataTestLabel + '-ImpedancePoints'"
-                    :mins="[minimumMaximumScalePerParameter['frequency']['min'], minimumMaximumScalePerParameter['impedance']['min']]"
-                    :maxs="[minimumMaximumScalePerParameter['frequency']['max'], minimumMaximumScalePerParameter['impedance']['max']]"
-                    v-model="localData.impedancePoints[index]"
-                    :labelWidthProportionClass="labelWidthProportionClass"
-                    :valueWidthProportionClass="valueWidthProportionClass"
-                    :valueFontSize="$styleStore.wizard.inputFontSize"
-                    :labelFontSize="$styleStore.wizard.inputFontSize"
-                    :labelBgColor="$styleStore.wizard.inputLabelBgColor"
-                    :valueBgColor="$styleStore.wizard.inputValueBgColor"
-                    :textColor="localData.impedancePoints[index].frequency <= 0 || localData.impedancePoints[index].impedance <= 0? $styleStore.wizard.inputErrorTextColor : $styleStore.wizard.inputTextColor"
-                    @update="updateErrorMessage"
-                />
-            </div>
-        </div>
-        <div class="row mt-2 ps-2">
-            <Dimension class="ps-3"
-                :name="'ambientTemperature'"
-                :replaceTitle="'What is the ambient temperature around the component?'"
-                unit="°C"
-                :dataTestLabel="dataTestLabel + '-AmbientTemperature'"
-                :min="minimumMaximumScalePerParameter['temperature']['min']"
-                :max="minimumMaximumScalePerParameter['temperature']['max']"
-                v-model="localData"
-                :labelWidthProportionClass="labelWidthProportionClass"
-                :valueWidthProportionClass="'col-lg-1 col-md-2'"
-                :valueFontSize="$styleStore.wizard.inputFontSize"
-                :labelFontSize="$styleStore.wizard.inputTitleFontSize"
-                :labelBgColor="$styleStore.wizard.inputLabelBgColor"
-                :valueBgColor="$styleStore.wizard.inputValueBgColor"
-                :textColor="$styleStore.wizard.inputTextColor"
-                @update="updateErrorMessage"
-            />
-        </div>
-        <div class="row mt-2 ps-2">
-            <ElementFromList class="ps-3"
-                :name="'insulationType'"
-                :replaceTitle="'Do you need insulation?'"
-                :dataTestLabel="dataTestLabel + '-InsulationType'"
-                :options="insulationTypes"
-                :titleSameRow="true"
-                v-model="localData"
-                :labelWidthProportionClass="labelWidthProportionClass"
-                :valueWidthProportionClass="valueWidthProportionClass"
-                :valueFontSize="$styleStore.wizard.inputFontSize"
-                :labelFontSize="$styleStore.wizard.inputTitleFontSize"
-                :labelBgColor="$styleStore.wizard.inputLabelBgColor"
-                :valueBgColor="$styleStore.wizard.inputValueBgColor"
-                :textColor="$styleStore.wizard.inputTextColor"
-                @update="updateErrorMessage"
-            />
-        </div>
-        <label
-            class="text-danger col-12 pt-1"
-            :style="$styleStore.wizard.inputFontSize">
-        {{errorMessage}}</label>
+  <ConverterWizardBase
+    ref="base"
+    title="CMC Wizard"
+    titleIcon="fa-shield-halved"
+    subtitle="Common Mode Choke — EMI Filter"
+    :col1Width="3" :col2Width="4" :col3Width="5"
+    :showNumberOutputs="false"
+    :magneticWaveforms="magneticWaveforms"
+    :converterWaveforms="converterWaveforms"
+    :waveformViewMode="waveformViewMode"
+    :waveformForceUpdate="forceWaveformUpdate"
+    :simulatingWaveforms="simulatingWaveforms"
+    :waveformSource="waveformSource"
+    :waveformError="waveformError"
+    :errorMessage="errorMessage"
+    :numberOfPeriods="numberOfPeriods"
+    :numberOfSteadyStatePeriods="numberOfSteadyStatePeriods"
+    :disableActions="errorMessage != ''"
+    @update:waveformViewMode="waveformViewMode = $event"
+    @update:numberOfPeriods="numberOfPeriods = $event"
+    @update:numberOfSteadyStatePeriods="numberOfSteadyStatePeriods = $event"
+    @get-analytical-waveforms="getAnalyticalWaveforms"
+    @get-simulated-waveforms="simulateWaveforms"
+    @get-spice-code="getSpiceCode"
+    @dismiss-error="errorMessage = ''; waveformError = ''"
+  >
 
-        <!-- Impedance Verification Section -->
-        <div class="row mt-4 ps-2">
-            <div class="col-12">
-                <div class="card border-secondary">
-                    <div class="card-header d-flex justify-content-between align-items-center" :style="$styleStore.wizard.inputLabelBgColor">
-                        <span :style="$styleStore.wizard.inputTextColor"><i class="fa-solid fa-wave-square me-2"></i>Impedance Verification</span>
-                        <button
-                            :disabled="errorMessage != '' || simulatingWaveforms || localData.impedancePoints.length === 0"
-                            class="btn btn-sm"
-                            :style="$styleStore.wizard.acceptButton"
-                            @click="simulateImpedance"
-                        >
-                            <span v-if="simulatingWaveforms"><i class="fa-solid fa-spinner fa-spin me-1"></i>Simulating...</span>
-                            <span v-else><i class="fa-solid fa-play me-1"></i>Verify Impedance</span>
-                        </button>
-                    </div>
-                    <div class="card-body" :style="$styleStore.wizard.inputValueBgColor">
-                        <!-- Error message -->
-                        <div v-if="simulationError" class="alert alert-danger mb-3">
-                            <i class="fa-solid fa-exclamation-circle me-1"></i>{{ simulationError }}
-                        </div>
-                        
-                        <!-- Results table -->
-                        <div v-if="simulationResults && simulationResults.length > 0">
-                            <table class="table table-sm" :style="$styleStore.wizard.inputTextColor">
-                                <thead>
-                                    <tr>
-                                        <th>Frequency</th>
-                                        <th>Required Z</th>
-                                        <th>Measured Z</th>
-                                        <th>Theoretical Z</th>
-                                        <th>Attenuation</th>
-                                        <th>Status</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr v-for="(result, index) in simulationResults" :key="index">
-                                        <td>{{ formatFrequency(result.frequency) }}</td>
-                                        <td>{{ result.requiredImpedance > 0 ? formatImpedance(result.requiredImpedance) : '-' }}</td>
-                                        <td>{{ formatImpedance(result.measuredImpedance) }}</td>
-                                        <td>{{ formatImpedance(result.theoreticalImpedance) }}</td>
-                                        <td>{{ result.attenuation.toFixed(1) }} dB</td>
-                                        <td>
-                                            <span v-if="result.passed" class="text-success"><i class="fa-solid fa-check-circle"></i> Pass</span>
-                                            <span v-else class="text-warning"><i class="fa-solid fa-exclamation-triangle"></i> Below req.</span>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                        
-                        <!-- Empty state -->
-                        <div v-else class="text-center py-3" :style="$styleStore.wizard.inputTextColor">
-                            <i class="fa-solid fa-chart-line fa-2x mb-2 opacity-50"></i>
-                            <p class="mb-0 opacity-75">Click "Verify Impedance" to simulate the CMC performance at your specified frequencies</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+    <!-- ══════════════════════════════════════════════════════════ -->
+    <!-- SLOT: #design-mode — design level radio (same as Buck)    -->
+    <!-- ══════════════════════════════════════════════════════════ -->
+    <template #design-mode>
+      <ElementFromListRadio
+        :name="'designLevel'"
+        :dataTestLabel="dataTestLabel + '-DesignLevel'"
+        :replaceTitle="''"
+        :options="designLevelOptions"
+        :titleSameRow="false"
+        v-model="localData"
+        :labelWidthProportionClass="'d-none'"
+        :valueWidthProportionClass="'col-12'"
+        :valueFontSize="$styleStore.wizard.inputFontSize"
+        :labelFontSize="$styleStore.wizard.inputLabelFontSize"
+        :labelBgColor="'transparent'"
+        :valueBgColor="'transparent'"
+        :textColor="$styleStore.wizard.inputTextColor"
+        @update="updateErrorMessage"
+      />
+    </template>
 
-        <div class="row mt-4 ps-2">
-            <div class="offset-1 col-10 row">
-                <button
-                    :disabled="errorMessage != ''"
-                    :style="$styleStore.wizard.reviewButton"
-                    class="col-6 m-0 px-xl-3 px-md-0 btn"
-                    @click="processAndReview"
-                >
-                {{'I want to review the specification'}}
-                </button>
-                <button
-                    :disabled="errorMessage != ''"
-                    :style="$styleStore.wizard.acceptButton"
-                    class="col-6 m-0 px-xl-3 px-md-0 btn"
-                    @click="processAndAdvise"
-                >
-                {{'I want go directly to designing'}}
-                </button>
-            </div>
+    <!-- ══════════════════════════════════════════════════════════ -->
+    <!-- SLOT: #design-or-switch-parameters-title                  -->
+    <!-- ══════════════════════════════════════════════════════════ -->
+    <template #design-or-switch-parameters-title>
+      <div class="compact-header">
+        <i class="fa-solid fa-shield-halved me-1"></i>
+        {{ localData.designLevel == 'I know the design I want' ? 'Design Params' : 'Impedance Requirements' }}
+      </div>
+    </template>
+
+    <!-- ══════════════════════════════════════════════════════════ -->
+    <!-- SLOT: #design-or-switch-parameters                        -->
+    <!-- ══════════════════════════════════════════════════════════ -->
+    <template #design-or-switch-parameters>
+
+      <!-- Winding count -->
+      <ElementFromListRadio
+        :name="'windingOption'"
+        :dataTestLabel="dataTestLabel + '-Windings'"
+        :replaceTitle="''"
+        :options="windingOptions"
+        :titleSameRow="false"
+        v-model="localData"
+        :labelWidthProportionClass="'d-none'"
+        :valueWidthProportionClass="'col-12'"
+        :valueFontSize="$styleStore.wizard.inputFontSize"
+        :labelFontSize="$styleStore.wizard.inputLabelFontSize"
+        :labelBgColor="'transparent'"
+        :valueBgColor="'transparent'"
+        :textColor="$styleStore.wizard.inputTextColor"
+        @update="updateErrorMessage"
+      />
+
+      <!-- ── "I know the design I want" ── -->
+      <div v-if="localData.designLevel == 'I know the design I want'">
+        <Dimension
+          :name="'desiredInductance'" :replaceTitle="'CM Inductance'" unit="H"
+          :dataTestLabel="dataTestLabel + '-DesiredInductance'"
+          :min="minimumMaximumScalePerParameter['inductance']['min']"
+          :max="minimumMaximumScalePerParameter['inductance']['max']"
+          v-model="localData"
+          :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'"
+          :valueFontSize="$styleStore.wizard.inputFontSize"
+          :labelFontSize="$styleStore.wizard.inputLabelFontSize"
+          :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor"
+          :textColor="$styleStore.wizard.inputTextColor"
+          @update="updateErrorMessage"
+        />
+        <div class="mt-2 p-2 rounded" :class="$styleStore.wizard.inputValueBgColor">
+          <small class="text-muted">|Z| at line freq</small><br>
+          <strong :style="{ color: $styleStore.wizard.inputTextColor }">{{ previewInductanceFormatted }}</strong>
         </div>
-    </div>
+      </div>
+
+      <!-- ── "Help me with the design" ── -->
+      <div v-else>
+        <!-- Spec mode selector -->
+        <ElementFromList
+          :name="'specMode'"
+          :replaceTitle="'Input type'"
+          :options="specModeOptions"
+          :titleSameRow="true"
+          v-model="localData"
+          :labelWidthProportionClass="'col-5'"
+          :valueWidthProportionClass="'col-7'"
+          :valueFontSize="$styleStore.wizard.inputFontSize"
+          :labelFontSize="$styleStore.wizard.inputLabelFontSize"
+          :labelBgColor="'transparent'"
+          :valueBgColor="$styleStore.wizard.inputValueBgColor"
+          :textColor="$styleStore.wizard.inputTextColor"
+          @update="updateErrorMessage"
+        />
+
+        <!-- Impedance table -->
+        <template v-if="localData.specMode === 'Impedance specification'">
+          <div class="cmc-table-header" :style="{ color: $styleStore.wizard.inputTextColor }">
+            <span>Frequency (Hz)</span><span>Min. |Z| (Ω)</span><span></span>
+          </div>
+          <div
+            v-for="(pt, idx) in localData.impedancePoints"
+            :key="'imp-' + pt._id"
+            class="cmc-table-row"
+          >
+            <Dimension
+              :name="'frequency'" :replaceTitle="''" unit="Hz"
+              :min="1" :max="1e10"
+              v-model="localData.impedancePoints[idx]"
+              :labelWidthProportionClass="'d-none'" :valueWidthProportionClass="'col-12'"
+              :valueFontSize="$styleStore.wizard.inputFontSize"
+              :labelFontSize="$styleStore.wizard.inputLabelFontSize"
+              :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor"
+              :textColor="$styleStore.wizard.inputTextColor"
+              @update="(v) => updateImpedanceRow(idx, v)"
+            />
+            <Dimension
+              :name="'impedance'" :replaceTitle="''" unit="Ω"
+              :min="1" :max="1e7"
+              v-model="localData.impedancePoints[idx]"
+              :labelWidthProportionClass="'d-none'" :valueWidthProportionClass="'col-12'"
+              :valueFontSize="$styleStore.wizard.inputFontSize"
+              :labelFontSize="$styleStore.wizard.inputLabelFontSize"
+              :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor"
+              :textColor="$styleStore.wizard.inputTextColor"
+              @update="(v) => updateImpedanceRow(idx, v)"
+            />
+            <button
+              class="cmc-remove-btn"
+              :style="{ background: $styleStore.wizard.removeButton['background-color'] }"
+              @click="removeImpedanceRow(idx)"
+            ><i class="fa-solid fa-xmark"></i></button>
+          </div>
+          <button class="cmc-add-btn" :style="$styleStore.wizard.addButton" @click="addImpedanceRow">
+            <i class="fa-solid fa-plus me-1"></i>Add point
+          </button>
+        </template>
+
+        <!-- Insertion-loss table -->
+        <template v-if="localData.specMode === 'Insertion loss (dB)'">
+          <div class="cmc-table-header" :style="{ color: $styleStore.wizard.inputTextColor }">
+            <span>Frequency (Hz)</span><span>Loss (dB)</span><span></span>
+          </div>
+          <div
+            v-for="(pt, idx) in localData.insertionLossPoints"
+            :key="'il-' + pt._id"
+            class="cmc-table-row"
+          >
+            <Dimension
+              :name="'frequency'" :replaceTitle="''" unit="Hz"
+              :min="1" :max="1e10"
+              v-model="localData.insertionLossPoints[idx]"
+              :labelWidthProportionClass="'d-none'" :valueWidthProportionClass="'col-12'"
+              :valueFontSize="$styleStore.wizard.inputFontSize"
+              :labelFontSize="$styleStore.wizard.inputLabelFontSize"
+              :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor"
+              :textColor="$styleStore.wizard.inputTextColor"
+              @update="(v) => updateInsertionLossRow(idx, v)"
+            />
+            <Dimension
+              :name="'insertionLoss'" :replaceTitle="''" unit="dB"
+              :min="0" :max="120"
+              v-model="localData.insertionLossPoints[idx]"
+              :labelWidthProportionClass="'d-none'" :valueWidthProportionClass="'col-12'"
+              :valueFontSize="$styleStore.wizard.inputFontSize"
+              :labelFontSize="$styleStore.wizard.inputLabelFontSize"
+              :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor"
+              :textColor="$styleStore.wizard.inputTextColor"
+              @update="(v) => updateInsertionLossRow(idx, v)"
+            />
+            <button
+              class="cmc-remove-btn"
+              :style="{ background: $styleStore.wizard.removeButton['background-color'] }"
+              @click="removeInsertionLossRow(idx)"
+            ><i class="fa-solid fa-xmark"></i></button>
+          </div>
+          <button class="cmc-add-btn" :style="$styleStore.wizard.addButton" @click="addInsertionLossRow">
+            <i class="fa-solid fa-plus me-1"></i>Add point
+          </button>
+        </template>
+
+        <!-- Noise estimation -->
+        <template v-if="localData.specMode === 'Estimate from noise'">
+          <Dimension
+            :name="'parasiticCap_pF'" :replaceTitle="'C parasitic'" unit="pF"
+            :min="0.01" :max="10000"
+            v-model="localData"
+            :labelWidthProportionClass="'col-6'" :valueWidthProportionClass="'col-6'"
+            :valueFontSize="$styleStore.wizard.inputFontSize"
+            :labelFontSize="$styleStore.wizard.inputLabelFontSize"
+            :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor"
+            :textColor="$styleStore.wizard.inputTextColor"
+            @update="updateErrorMessage"
+          />
+          <Dimension
+            :name="'dvdt_V_ns'" :replaceTitle="'dV/dt'" unit="V/ns"
+            :min="0.1" :max="1000"
+            v-model="localData"
+            :labelWidthProportionClass="'col-6'" :valueWidthProportionClass="'col-6'"
+            :valueFontSize="$styleStore.wizard.inputFontSize"
+            :labelFontSize="$styleStore.wizard.inputLabelFontSize"
+            :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor"
+            :textColor="$styleStore.wizard.inputTextColor"
+            @update="updateErrorMessage"
+          />
+          <Dimension
+            :name="'safetyMargin_dB'" :replaceTitle="'Safety margin'" unit="dB"
+            :min="0" :max="20"
+            v-model="localData"
+            :labelWidthProportionClass="'col-6'" :valueWidthProportionClass="'col-6'"
+            :valueFontSize="$styleStore.wizard.inputFontSize"
+            :labelFontSize="$styleStore.wizard.inputLabelFontSize"
+            :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor"
+            :textColor="$styleStore.wizard.inputTextColor"
+            @update="updateErrorMessage"
+          />
+        </template>
+
+        <!-- Live inductance preview (all help-mode variants) -->
+        <div class="mt-2 p-2 rounded" :class="$styleStore.wizard.inputValueBgColor">
+          <small class="text-muted">Required L<sub>CM</sub></small><br>
+          <strong :style="{ color: $styleStore.wizard.inputTextColor }">{{ previewInductanceFormatted }}</strong>
+        </div>
+      </div>
+
+    </template>
+
+    <!-- ══════════════════════════════════════════════════════════ -->
+    <!-- SLOT: #conditions                                         -->
+    <!-- ══════════════════════════════════════════════════════════ -->
+    <template #conditions>
+      <Dimension :name="'lineFrequency'" :replaceTitle="'Line Freq'" unit="Hz"
+        :dataTestLabel="dataTestLabel + '-LineFrequency'"
+        :min="minimumMaximumScalePerParameter['frequency']['min']"
+        :max="minimumMaximumScalePerParameter['frequency']['max']"
+        v-model="localData"
+        :labelWidthProportionClass="'col-6'" :valueWidthProportionClass="'col-6'"
+        :valueFontSize="$styleStore.wizard.inputFontSize"
+        :labelFontSize="$styleStore.wizard.inputLabelFontSize"
+        :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor"
+        :textColor="$styleStore.wizard.inputTextColor"
+        @update="updateErrorMessage"
+      />
+      <Dimension :name="'lineImpedance'" :replaceTitle="'Line Z (LISN)'" unit="Ω"
+        :dataTestLabel="dataTestLabel + '-LineImpedance'"
+        :min="1" :max="1000"
+        v-model="localData"
+        :labelWidthProportionClass="'col-6'" :valueWidthProportionClass="'col-6'"
+        :valueFontSize="$styleStore.wizard.inputFontSize"
+        :labelFontSize="$styleStore.wizard.inputLabelFontSize"
+        :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor"
+        :textColor="$styleStore.wizard.inputTextColor"
+        @update="updateErrorMessage"
+      />
+      <Dimension :name="'ambientTemperature'" :replaceTitle="'Temperature'" unit=" C"
+        :dataTestLabel="dataTestLabel + '-AmbientTemperature'"
+        :min="minimumMaximumScalePerParameter['temperature']['min']"
+        :max="minimumMaximumScalePerParameter['temperature']['max']"
+        :allowNegative="true" :allowZero="true"
+        v-model="localData"
+        :labelWidthProportionClass="'col-6'" :valueWidthProportionClass="'col-6'"
+        :valueFontSize="$styleStore.wizard.inputFontSize"
+        :labelFontSize="$styleStore.wizard.inputLabelFontSize"
+        :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor"
+        :textColor="$styleStore.wizard.inputTextColor"
+        @update="updateErrorMessage"
+      />
+    </template>
+
+    <!-- ══════════════════════════════════════════════════════════ -->
+    <!-- SLOT: #col1-footer — action buttons (identical to Buck)   -->
+    <!-- ══════════════════════════════════════════════════════════ -->
+    <template #col1-footer>
+      <div class="d-flex align-items-center justify-content-between mt-2">
+        <span v-if="errorMessage" class="error-text">
+          <i class="fa-solid fa-exclamation-triangle me-1"></i>{{ errorMessage }}
+        </span>
+        <span v-else></span>
+        <div class="action-btns">
+          <button :disabled="errorMessage != ''" class="action-btn-sm secondary" @click="processAndReview">
+            <i class="fa-solid fa-magnifying-glass me-1"></i>Review Specs
+          </button>
+          <button :disabled="errorMessage != ''" class="action-btn-sm primary" @click="processAndAdvise">
+            <i class="fa-solid fa-wand-magic-sparkles me-1"></i>Design Magnetic
+          </button>
+        </div>
+      </div>
+    </template>
+
+    <!-- ══════════════════════════════════════════════════════════ -->
+    <!-- SLOT: #input-voltage — line voltage with tolerance        -->
+    <!-- ══════════════════════════════════════════════════════════ -->
+    <template #input-voltage>
+      <DimensionWithTolerance
+        :name="'operatingVoltage'" :replaceTitle="''" unit="V"
+        :dataTestLabel="dataTestLabel + '-OperatingVoltage'"
+        :min="minimumMaximumScalePerParameter['voltage']['min']"
+        :max="minimumMaximumScalePerParameter['voltage']['max']"
+        :labelWidthProportionClass="'d-none'" :valueWidthProportionClass="'col-4'"
+        v-model="localData.operatingVoltage"
+        :severalRows="true"
+        :addButtonStyle="$styleStore.wizard.addButton"
+        :removeButtonBgColor="$styleStore.wizard.removeButton['background-color']"
+        :titleFontSize="$styleStore.wizard.inputLabelFontSize"
+        :valueFontSize="$styleStore.wizard.inputFontSize"
+        :labelFontSize="$styleStore.wizard.inputLabelFontSize"
+        :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor"
+        :textColor="$styleStore.wizard.inputTextColor"
+        @update="updateErrorMessage"
+      />
+    </template>
+
+    <!-- ══════════════════════════════════════════════════════════ -->
+    <!-- SLOT: #outputs — line current (the "load" of a CMC)       -->
+    <!-- ══════════════════════════════════════════════════════════ -->
+    <template #outputs>
+      <Dimension
+        :name="'operatingCurrent'" :replaceTitle="'Line current'" unit="A"
+        :dataTestLabel="dataTestLabel + '-OperatingCurrent'"
+        :min="minimumMaximumScalePerParameter['current']['min']"
+        :max="minimumMaximumScalePerParameter['current']['max']"
+        v-model="localData"
+        :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'"
+        :valueFontSize="$styleStore.wizard.inputFontSize"
+        :labelFontSize="$styleStore.wizard.inputLabelFontSize"
+        :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor"
+        :textColor="$styleStore.wizard.inputTextColor"
+        @update="updateErrorMessage"
+      />
+    </template>
+
+  </ConverterWizardBase>
 </template>
+
+<style scoped>
+/* ── Impedance / insertion-loss table ─────────────────────────────── */
+.cmc-table-header {
+  display: grid;
+  grid-template-columns: 1fr 1fr 28px;
+  gap: 4px;
+  font-size: 0.72rem;
+  opacity: 0.65;
+  margin-top: 6px;
+  padding: 0 2px;
+}
+.cmc-table-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 28px;
+  gap: 4px;
+  align-items: center;
+  margin-bottom: 4px;
+}
+.cmc-remove-btn {
+  border: none;
+  border-radius: 4px;
+  width: 26px;
+  height: 26px;
+  cursor: pointer;
+  font-size: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.85;
+}
+.cmc-remove-btn:hover { opacity: 1; }
+.cmc-add-btn {
+  border: none;
+  border-radius: 4px;
+  padding: 3px 8px;
+  cursor: pointer;
+  font-size: 0.75rem;
+  margin-top: 2px;
+  width: 100%;
+}
+</style>

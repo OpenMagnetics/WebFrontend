@@ -34,6 +34,9 @@ export default {
         }
     },
     computed: {
+        isDataReady() {
+            return this.modelValue?.[this.signalDescriptor]?.processed != null;
+        }
     },
     watch: {
         'modelValue.current.waveform': {
@@ -71,8 +74,18 @@ export default {
     methods: {
         async process() {
             try {
+                // Guard against missing data structure
+                if (!this.modelValue?.[this.signalDescriptor]) {
+                    console.warn(`[WaveformOutput] Missing data for ${this.signalDescriptor}`);
+                    return;
+                }
                 if (this.modelValue[this.signalDescriptor].harmonics == null) {
                     this.modelValue[this.signalDescriptor].harmonics = await this.taskQueueStore.calculateHarmonics(this.modelValue[this.signalDescriptor].waveform, this.modelValue.frequency);
+                }
+                // Guard against null harmonics or waveform before calling calculateProcessed
+                if (!this.modelValue[this.signalDescriptor].harmonics || !this.modelValue[this.signalDescriptor].waveform) {
+                    console.warn(`[WaveformOutput] Cannot calculate processed: missing harmonics or waveform for ${this.signalDescriptor}`);
+                    return;
                 }
                 var processed = await this.taskQueueStore.calculateProcessed(this.modelValue[this.signalDescriptor].harmonics, this.modelValue[this.signalDescriptor].waveform);
                 // Ensure processed object exists
@@ -103,9 +116,13 @@ export default {
     <div class="container-flex">
         <label
             :style="combinedStyle([$styleStore.operatingPoints.inputTitleFontSize, signalDescriptor == 'current'? $styleStore.operatingPoints.currentTextColor : signalDescriptor == 'voltage'? $styleStore.operatingPoints.voltageTextColor : $styleStore.operatingPoints.commonParameterTextColor])"
-        > 
+        >
             {{`Outputs for ${signalDescriptor}`}}
         </label>
+        <div v-if="!isDataReady" class="text-center py-2">
+            <span class="text-muted">Calculating...</span>
+        </div>
+        <template v-else>
         <DimensionReadOnly 
             :name="'dutyCycle'"
             :unit="null"
@@ -208,6 +225,7 @@ export default {
             :valueBgColor="$styleStore.operatingPoints.inputValueBgColor"
             :textColor="$styleStore.operatingPoints.inputTextColor"
         />
+        </template>
 
     </div>
 </template>
