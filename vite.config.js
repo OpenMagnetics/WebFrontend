@@ -117,11 +117,12 @@ export default defineConfig({
             {
                 find: '@',
                 replacement: fileURLToPath(new URL('./src', import.meta.url))
-            },
-            {
-                find: '@openmagnetics/magnetic-virtual-builder',
-                replacement: fileURLToPath(new URL('../MVB.js/src/index.js', import.meta.url))
             }
+            //,
+            //{
+                //find: '@openmagnetics/magnetic-virtual-builder',
+                //replacement: fileURLToPath(new URL('../MVB.js/src/index.js', import.meta.url))
+            //}
         ],
     },
     server: {
@@ -132,7 +133,7 @@ export default defineConfig({
         watch: {
             usePolling: true,
             interval: 1000,
-            ignored: ['**/node_modules/**', '!**/node_modules/@openmagnetics/magnetic-virtual-builder/src/**']
+            //ignored: ['**/node_modules/**', '!**/node_modules/@openmagnetics/magnetic-virtual-builder/src/**']
         },
         // Force worker to reload when MVB.js changes
         hmr: {
