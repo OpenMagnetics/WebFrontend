@@ -708,16 +708,39 @@ export default {
     // ===== PERIOD EXTRACTION =====
     extractSinglePeriod(time, data, frequency) {
       if (!time || !data || time.length < 2) return { time, data };
-      const td = time[time.length-1] - time[0];
-      const ep = frequency > 0 ? 1 / frequency : td / 2;
-      const np = Math.max(1, Math.round(td / ep));
-      if (np <= 1) return { time, data };
-      const pd = td / np; const dt = td / (time.length - 1);
-      let ei = Math.floor(time.length / np);
-      for (let i = Math.floor(ei * 0.9); i < Math.min(time.length, Math.floor(ei * 1.1)); i++) {
-        if (time[i] - time[0] >= pd - dt) { ei = i + 1; break; }
+      
+      // If we don't have a valid frequency, we can't determine the period
+      // Return the waveform as-is - it's likely already a single period
+      if (!frequency || frequency <= 0) {
+        console.log('[extractSinglePeriod] No valid frequency, returning waveform as-is');
+        return { time, data };
       }
-      return { time: time.slice(0, ei), data: data.slice(0, ei) };
+      
+      const td = time[time.length-1] - time[0];
+      const expectedPeriod = 1 / frequency;
+      const numPeriodsInData = Math.max(1, Math.round(td / expectedPeriod));
+      
+      // If we only have one period, return as-is
+      if (numPeriodsInData <= 1) {
+        return { time, data };
+      }
+      
+      // Multiple periods detected, extract just the first one
+      const periodDuration = td / numPeriodsInData;
+      const timeStep = td / (time.length - 1);
+      let endIndex = Math.floor(time.length / numPeriodsInData);
+      
+      // Find the point closest to the end of the first period
+      for (let i = Math.floor(endIndex * 0.9); i < Math.min(time.length, Math.floor(endIndex * 1.1)); i++) {
+        if (time[i] - time[0] >= periodDuration - timeStep) { 
+          endIndex = i + 1; 
+          break; 
+        }
+      }
+      
+      // Ensure we include at least 2 points and don't exceed bounds
+      endIndex = Math.max(2, Math.min(endIndex, time.length));
+      return { time: time.slice(0, endIndex), data: data.slice(0, endIndex) };
     },
 
     extractSinglePeriodFromOperatingPoints(ops, freq) {

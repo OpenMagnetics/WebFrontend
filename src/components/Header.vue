@@ -221,7 +221,7 @@ export default {
                 class="btn m-0 p-0"
                 @click="onHome"
             >
-                <img src="/images/logo.svg" width="60" height="40" href="/" class="d-inline-block align-top me-3" alt="OpenMagnetics Logo">
+                <img src="/images/newLogo.png" width="60" height="40" href="/" class="d-inline-block align-top me-3" alt="OpenMagnetics Logo">
             </button>
             <button
                 :style="$styleStore.header.title"
