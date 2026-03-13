@@ -41,6 +41,7 @@ export default {
         const exportingSimba = false;
         const exportingLtspice = false;
         const exportingNgspice = false;
+        const exportingNl5 = false;
         const isHighPerformanceBackendAvailable = false;
 
         const masIcon = `${import.meta.env.BASE_URL}images/MAS_icon.svg`;
@@ -53,6 +54,7 @@ export default {
         const ltspiceSymbolIcon = `${import.meta.env.BASE_URL}images/Ltspice Symbol.png`;
         const ltspiceSubcircuitIcon = `${import.meta.env.BASE_URL}images/Ltspice Subcircuit.png`;
         const ngspiceIcon = `${import.meta.env.BASE_URL}images/Ngspice_icon.svg`;
+        const nl5Icon = `${import.meta.env.BASE_URL}images/NL5_icon.png`;
         return {
             masStore,
             historyStore,
@@ -67,12 +69,14 @@ export default {
             ltspiceSymbolIcon,
             ltspiceSubcircuitIcon,
             exportingNgspice,
+            exportingNl5,
             isHighPerformanceBackendAvailable,
             masIcon,
             ansysIcon,
             simbaIcon,
             ltspiceIcon,
             ngspiceIcon,
+            nl5Icon,
         }
     },
     computed: {
@@ -83,7 +87,7 @@ export default {
             return 25;
         },
         reference() {
-            if (this.masStore.mas.magnetic.manufacturerInfo.reference != "") {
+            if (this.masStore.mas.magnetic?.manufacturerInfo?.reference) {
                 return this.masStore.mas.magnetic.manufacturerInfo.reference;
             }
             return "custom_magnetic";
@@ -196,12 +200,26 @@ export default {
             try {
                 const magnetic = deepCopy(this.masStore.mas.magnetic);
                 const reference = this.reference.replaceAll(" ", "_").replaceAll("-", "_").replaceAll(".", "_").replaceAll(",", "_").replaceAll(":", "_").replaceAll("___", "_").replaceAll("__", "_");
-                var subcircuit = await this.taskQueueStore.exportMagneticAsSubcircuit(magnetic, this.ambientTemperature, "LtSpice", "");
+                var subcircuit = await this.taskQueueStore.exportMagneticAsSubcircuit(magnetic, this.ambientTemperature, "NgSpice", "");
                 var blob = new Blob([subcircuit], { type: 'text/csv; charset=utf-8' });
                 download(blob, reference + ".cir", "text/csv; charset=utf-8");
                 setTimeout(() => this.exportingNgspice = false, 2000);
             } catch (error) {
                 setTimeout(() => this.exportingNgspice = false, 200);
+                console.error(error);
+            }
+        },
+        async exportNl5() {
+            this.exportingNl5 = true;
+            try {
+                const magnetic = deepCopy(this.masStore.mas.magnetic);
+                const reference = this.reference.replaceAll(" ", "_").replaceAll("-", "_").replaceAll(".", "_").replaceAll(",", "_").replaceAll(":", "_").replaceAll("___", "_").replaceAll("__", "_");
+                var subcircuit = await this.taskQueueStore.exportMagneticAsSubcircuit(magnetic, this.ambientTemperature, "NL5", "");
+                var blob = new Blob([subcircuit], { type: 'application/xml; charset=utf-8' });
+                download(blob, reference + ".nl5", "application/xml; charset=utf-8");
+                setTimeout(() => this.exportingNl5 = false, 2000);
+            } catch (error) {
+                setTimeout(() => this.exportingNl5 = false, 200);
                 console.error(error);
             }
         },
@@ -368,6 +386,19 @@ export default {
                             title="NgSpice"
                         >
                             <img :src='ngspiceIcon' width="18" height="18" alt="NgSpice">
+                        </button>
+                    </div>
+
+                    <!-- NL5 Button -->
+                    <div class="cp-group">
+                        <button 
+                            :style="$styleStore.controlPanel.button" 
+                            class="cp-btn cp-btn-nl5" 
+                            @click="exportNl5" 
+                            :disabled="exportingNl5" 
+                            title="NL5"
+                        >
+                            <img :src='nl5Icon' width="18" height="18" alt="NL5">
                         </button>
                     </div>
 
