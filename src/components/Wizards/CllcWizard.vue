@@ -60,7 +60,7 @@ export default {
     getCalculateFn() { return (aux) => this.taskQueueStore.calculateCllcInputs(aux); },
     getSimulateFn() { return (aux) => this.taskQueueStore.calculateCllcInputs(aux); },
     getDefaultFrequency() { return this.localData.resonantFrequency; },
-    getTopology() { return 'CLLC'; },
+    getTopology() { return 'CLLC Resonant Converter'; },
     getIsolationSides() { return ['primary', 'secondary']; },
     getInsulationType() { return this.localData.insulationType; },
 

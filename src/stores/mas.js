@@ -2,10 +2,14 @@ import { defineStore } from 'pinia'
 import { ref, watch, computed  } from 'vue'
 import * as MAS from '/WebSharedComponents/assets/ts/MAS.ts'
 import * as Defaults from '/WebSharedComponents/assets/js/defaults.js'
+import { useAdviseCacheStore } from './adviseCache'
 
 export const useMasStore = defineStore("mas", () => {
 
     const mas = ref(MAS.Convert.toMas(JSON.stringify(Defaults.powerMas)));
+    
+    // Get advise cache store to clear advised lists when resetting
+    const getAdviseCacheStore = () => useAdviseCacheStore();
 
 
     function importedMas() {
@@ -29,6 +33,11 @@ export const useMasStore = defineStore("mas", () => {
     }
 
     function resetMas(type) {
+        // Clear advised magnetics/cores cache when starting a new design
+        const adviseCacheStore = getAdviseCacheStore();
+        adviseCacheStore.cleanMasAdvises();
+        adviseCacheStore.cleanCoreAdvises();
+        
         if (type == "power") {
             mas.value = MAS.Convert.toMas(JSON.stringify(Defaults.powerMas));
         }

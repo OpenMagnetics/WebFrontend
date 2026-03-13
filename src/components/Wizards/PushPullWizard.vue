@@ -110,7 +110,7 @@ export default {
         this.simulatedTurnsRatios = this.designRequirements.turnsRatios?.map(tr => tr.nominal) || null;
       }
     },
-    getTopology() { return 'Push-Pull'; },
+    getTopology() { return 'Push-Pull Converter'; },
     getIsolationSides() {
       const sides = ['primary'];
       for (let i = 0; i < this.localData.outputsParameters.length; i++) sides.push('secondary');

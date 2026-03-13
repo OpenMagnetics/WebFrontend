@@ -153,7 +153,7 @@ export default {
         },
         
         getTopology() {
-            return 'LLC Converter';
+            return 'LLC Resonant Converter';
         },
         
         getIsolationSides() {

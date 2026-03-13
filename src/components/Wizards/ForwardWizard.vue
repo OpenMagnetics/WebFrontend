@@ -133,7 +133,14 @@ export default {
         this.simulatedTurnsRatios = this.designRequirements.turnsRatios?.map(tr => tr.nominal) || null;
       }
     },
-    getTopology() { return this.converterName; },
+    getTopology() { 
+      const topologyMap = {
+        'Single-Switch Forward': 'Single Switch Forward Converter',
+        'Two-Switch Forward': 'Two Switch Forward Converter',
+        'Active Clamp Forward': 'Active Clamp Forward Converter',
+      };
+      return topologyMap[this.converterName] || this.converterName + ' Converter';
+    },
     getIsolationSides() {
       const sides = ['primary'];
       for (let i = 0; i < this.localData.outputsParameters.length; i++) sides.push('secondary');

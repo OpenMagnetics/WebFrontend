@@ -408,6 +408,7 @@ export default {
       console.log('🔍 [processAnalyticalWaveforms] Raw WASM data:', {
         excitationsCount: operatingPoints[0]?.excitationsPerWinding?.length,
         excitationNames: operatingPoints[0]?.excitationsPerWinding?.map(e => e.name),
+        excitationFrequencies: operatingPoints[0]?.excitationsPerWinding?.map(e => e.frequency),
         firstExcitationCurrentLength: operatingPoints[0]?.excitationsPerWinding?.[0]?.current?.waveform?.data?.length,
         firstExcitationVoltageLength: operatingPoints[0]?.excitationsPerWinding?.[0]?.voltage?.waveform?.data?.length
       });

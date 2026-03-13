@@ -169,13 +169,18 @@ export const useTaskQueueStore = defineStore('taskQueue', {
             console.log('[DEBUG calculateAdvisedCores] count:', count);
 
             // Validate and fix frequency before calling WASM
+            // Frequency must be a reasonable value (1 Hz to 100 MHz range)
+            // Values outside this range are likely uninitialized/garbage
             const DEFAULT_FREQUENCY = 100000; // 100 kHz default
+            const MIN_VALID_FREQUENCY = 1; // 1 Hz minimum
+            const MAX_VALID_FREQUENCY = 100000000; // 100 MHz maximum
             if (inputs.operatingPoints && inputs.operatingPoints.length > 0) {
                 inputs.operatingPoints.forEach((op, opIndex) => {
                     if (op.excitationsPerWinding && op.excitationsPerWinding.length > 0) {
                         op.excitationsPerWinding.forEach((exc, excIndex) => {
-                            if (!exc.frequency || exc.frequency <= 0) {
-                                console.warn(`[DEBUG calculateAdvisedCores] Fixed frequency=0 in operating point ${opIndex}, excitation ${excIndex}. Set to ${DEFAULT_FREQUENCY}`);
+                            const freq = exc.frequency;
+                            if (!freq || !Number.isFinite(freq) || freq < MIN_VALID_FREQUENCY || freq > MAX_VALID_FREQUENCY) {
+                                console.warn(`[DEBUG calculateAdvisedCores] Invalid frequency=${freq} in operating point ${opIndex}, excitation ${excIndex}. Set to ${DEFAULT_FREQUENCY}`);
                                 exc.frequency = DEFAULT_FREQUENCY;
                             }
                         });
