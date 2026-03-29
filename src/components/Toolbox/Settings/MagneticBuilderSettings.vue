@@ -479,7 +479,7 @@ export default {
                         </div>
 
                         <!-- Stray Capacitance Model -->
-                        <div class="setting-item py-2">
+                        <div class="setting-item py-2 border-bottom border-secondary">
                             <label class="text-white mb-1 d-block small">Stray Capacitance Model</label>
                             <ElementFromList
                                 :name="'strayCapacitanceModel'"
@@ -493,6 +493,36 @@ export default {
                                 :textColor="'white'"
                                 @update="(name, value) => onModelChanged(name, value)"
                             />
+                        </div>
+
+                        <!-- Field Plot Resolution -->
+                        <div class="setting-item py-2">
+                            <label class="text-white mb-1 d-block small">Field Plot Resolution</label>
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <small class="text-muted">Horizontal (X)</small>
+                                <span class="text-primary fw-bold small">{{ modelSettingsStore.painterNumberPointsX }}</span>
+                            </div>
+                            <input
+                                type="range"
+                                class="form-range mb-2"
+                                min="10"
+                                max="200"
+                                step="5"
+                                v-model.number="modelSettingsStore.painterNumberPointsX"
+                            >
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <small class="text-muted">Vertical (Y)</small>
+                                <span class="text-primary fw-bold small">{{ modelSettingsStore.painterNumberPointsY }}</span>
+                            </div>
+                            <input
+                                type="range"
+                                class="form-range"
+                                min="10"
+                                max="200"
+                                step="5"
+                                v-model.number="modelSettingsStore.painterNumberPointsY"
+                            >
+                            <small class="text-muted d-block mt-1">Higher values = finer plots but slower rendering</small>
                         </div>
                     </div>
                 </div>

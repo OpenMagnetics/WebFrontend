@@ -221,7 +221,7 @@ export default {
                 class="btn m-0 p-0"
                 @click="onHome"
             >
-                <img src="/images/logo.svg" width="60" height="40" href="/" class="d-inline-block align-top me-3" alt="OpenMagnetics Logo">
+                <img src="/images/newLogo.png" width="60" height="40" href="/" class="d-inline-block align-top me-3" alt="OpenMagnetics Logo">
             </button>
             <button
                 :style="$styleStore.header.title"
@@ -258,44 +258,16 @@ export default {
                             {{"Alf's Musings"}}
                         </a>
                     </li>
-                    {{combinedClass([$styleStore.header.designSectionDropdown])}}
-                    <li class="nav-item dropdown">
-                        <a 
+                    <li class="nav-item">
+                        <button
                             :style="$styleStore.header.designSectionDropdown"
-                            :class="combinedClass([$styleStore.header.designSectionDropdown])"
-                            class="nav-link dropdown-toggle border rounded"
-                            href="#"
-                            role="button"
-                            data-bs-toggle="dropdown"
-                            aria-expanded="false"
+                            data-cy="Header-new-magnetic-link"
+                            :class="headerTogglerIsVisible? 'w-100' : 'mx-1' "
+                            class="btn btn-block nav-link border rounded px-2"
+                            @click="onNewPowerMagneticDesign"
                         >
-                            <i class="me-2 fa-solid fa-square-plus"></i>{{'New Design'}}
-                        </a>
-                        <ul class="dropdown-menu px-1" :style="$styleStore.header.designSectionDropdown">
-                            <li>
-                                <button
-                                    :style="$styleStore.header.designSectionDropdown"
-                                    data-cy="Header-new-magnetic-link"
-                                    :class="headerTogglerIsVisible? 'w-100' : 'mx-1' "
-                                    class="dropdown-item btn btn-block   nav-link px-2"
-                                    @click="onNewCommonModeChokeDesign"
-                                >
-                                    <i class="me-2 fa-solid fa-filter"></i>{{'New CMC'}}
-                                </button>
-                            </li>
-                            <li>
-                                <button
-                                    :style="$styleStore.header.designSectionDropdown"
-                                    data-cy="Header-new-magnetic-link"
-                                    :class="headerTogglerIsVisible? 'w-100' : 'mx-1' "
-                                    class="dropdown-item btn btn-block   nav-link px-2"
-                                    @click="onNewPowerMagneticDesign"
-                                >
-                                    <i class="me-2 fa-solid fa-toolbox"></i>{{'New Magnetic'}}
-                                </button>
-                            </li>
-                            <!-- <li><hr class="dropdown-divider"></li> -->
-                        </ul>
+                            <i class="me-2 fa-solid fa-toolbox"></i>{{'New Magnetic'}}
+                        </button>
                     </li>
                     <li class="nav-item dropdown">
                         <a

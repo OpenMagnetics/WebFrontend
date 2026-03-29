@@ -52,7 +52,7 @@ export default {
     getCalculateFn() { return (aux) => this.taskQueueStore.calculatePsfbInputs(aux); },
     getSimulateFn() { return (aux) => this.taskQueueStore.calculatePsfbInputs(aux); },
     getDefaultFrequency() { return this.localData.switchingFrequency; },
-    getTopology() { return 'PSFB'; },
+    getTopology() { return 'Phase-Shifted Full-Bridge Converter'; },
     getIsolationSides() { return ['primary', 'secondary']; },
     getInsulationType() { return this.localData.insulationType; },
 

@@ -157,7 +157,38 @@ export const useTaskQueueStore = defineStore('taskQueue', {
             const mkf = await waitForMkf();
             await mkf.ready;
 
-            const result = await mkf.calculate_advised_cores(JSON.stringify(inputs), JSON.stringify(weights), count, mode);
+            // Ensure mode is a valid string
+            let modeString = String(mode);
+            // Fix case where mode is "[object Object]" due to JS object corruption
+            if (modeString === '[object Object]' || !['available cores', 'standard cores', 'custom cores', 'hybrid cores'].includes(modeString)) {
+                console.warn('[DEBUG calculateAdvisedCores] Invalid mode detected:', modeString, '- resetting to "standard cores"');
+                modeString = 'standard cores';
+            }
+            console.log('[DEBUG calculateAdvisedCores] mode:', modeString);
+            console.log('[DEBUG calculateAdvisedCores] weights:', weights);
+            console.log('[DEBUG calculateAdvisedCores] count:', count);
+
+            // Validate and fix frequency before calling WASM
+            // Frequency must be a reasonable value (1 Hz to 100 MHz range)
+            // Values outside this range are likely uninitialized/garbage
+            const DEFAULT_FREQUENCY = 100000; // 100 kHz default
+            const MIN_VALID_FREQUENCY = 1; // 1 Hz minimum
+            const MAX_VALID_FREQUENCY = 100000000; // 100 MHz maximum
+            if (inputs.operatingPoints && inputs.operatingPoints.length > 0) {
+                inputs.operatingPoints.forEach((op, opIndex) => {
+                    if (op.excitationsPerWinding && op.excitationsPerWinding.length > 0) {
+                        op.excitationsPerWinding.forEach((exc, excIndex) => {
+                            const freq = exc.frequency;
+                            if (!freq || !Number.isFinite(freq) || freq < MIN_VALID_FREQUENCY || freq > MAX_VALID_FREQUENCY) {
+                                console.warn(`[DEBUG calculateAdvisedCores] Invalid frequency=${freq} in operating point ${opIndex}, excitation ${excIndex}. Set to ${DEFAULT_FREQUENCY}`);
+                                exc.frequency = DEFAULT_FREQUENCY;
+                            }
+                        });
+                    }
+                });
+            }
+
+            const result = await mkf.calculate_advised_cores(JSON.stringify(inputs), JSON.stringify(weights), count, modeString);
             if (result.startsWith('Exception')) {
                 setTimeout(() => { this.advisedCoresCalculated(false, result); }, this.task_standard_response_delay);
                 throw new Error(result);
@@ -174,7 +205,56 @@ export const useTaskQueueStore = defineStore('taskQueue', {
             const mkf = await waitForMkf();
             await mkf.ready;
 
-            const result = await mkf.calculate_advised_magnetics(JSON.stringify(inputs), JSON.stringify(weights), count, mode);
+            // Transform weights keys from UPPERCASE to Title Case for MKF compatibility
+            const weightsMapping = {
+                'COST': 'Cost',
+                'LOSSES': 'Losses',
+                'DIMENSIONS': 'Dimensions',
+                'EFFICIENCY': 'Efficiency',
+                'AREA_PRODUCT': 'Area Product',
+                'ENERGY_STORED': 'Energy Stored',
+                'ESTIMATED_COST': 'Estimated Cost',
+                'CORE_AND_DC_LOSSES': 'Core And DC Losses',
+                'CORE_DC_AND_SKIN_LOSSES': 'Core DC And Skin Losses',
+                'LOSSES_NO_PROXIMITY': 'Losses No Proximity',
+                'CORE_MINIMUM_IMPEDANCE': 'Core Minimum Impedance',
+                'AREA_NO_PARALLELS': 'Area No Parallels'
+            };
+            
+            const transformedWeights = {};
+            for (const [key, value] of Object.entries(weights)) {
+                const transformedKey = weightsMapping[key] || key;
+                transformedWeights[transformedKey] = value;
+            }
+            
+            console.log('[DEBUG calculateAdvisedMagnetics] Original weights:', weights);
+            console.log('[DEBUG calculateAdvisedMagnetics] Transformed weights:', transformedWeights);
+            
+            // Ensure mode is a valid string
+            let modeString = String(mode);
+            // Fix case where mode is "[object Object]" due to JS object corruption
+            if (modeString === '[object Object]' || !['available cores', 'standard cores', 'custom cores', 'hybrid cores'].includes(modeString)) {
+                console.warn('[DEBUG calculateAdvisedMagnetics] Invalid mode detected:', modeString, '- resetting to "standard cores"');
+                modeString = 'standard cores';
+            }
+            console.log('[DEBUG calculateAdvisedMagnetics] FINAL mode:', modeString);
+
+            // Validate and fix frequency before calling WASM
+            const DEFAULT_FREQUENCY = 100000; // 100 kHz default
+            if (inputs.operatingPoints && inputs.operatingPoints.length > 0) {
+                inputs.operatingPoints.forEach((op, opIndex) => {
+                    if (op.excitationsPerWinding && op.excitationsPerWinding.length > 0) {
+                        op.excitationsPerWinding.forEach((exc, excIndex) => {
+                            if (!exc.frequency || exc.frequency <= 0) {
+                                console.warn(`[DEBUG calculateAdvisedMagnetics] Fixed frequency=0 in operating point ${opIndex}, excitation ${excIndex}. Set to ${DEFAULT_FREQUENCY}`);
+                                exc.frequency = DEFAULT_FREQUENCY;
+                            }
+                        });
+                    }
+                });
+            }
+
+            const result = await mkf.calculate_advised_magnetics(JSON.stringify(inputs), JSON.stringify(transformedWeights), count, modeString);
             if (result.startsWith('Exception')) {
                 setTimeout(() => { this.advisedMagneticsCalculated(false, result); }, this.task_standard_response_delay);
                 throw new Error(result);

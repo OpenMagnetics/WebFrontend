@@ -126,7 +126,7 @@ export default {
     postProcessResults(result, mode) {
       if (result.inductance) this.simulatedInductance = result.inductance;
     },
-    getTopology() { return 'PFC'; },
+    getTopology() { return 'Boost Converter'; },  // PFC is typically implemented as a Boost topology
     getIsolationSides() { return ['primary']; },
     getInsulationType() { return null; },
 

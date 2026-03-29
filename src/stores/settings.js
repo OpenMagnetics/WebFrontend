@@ -16,12 +16,21 @@ export const useSettingsStore = defineStore("settings", () => {
         weights: null,
     })
 
+    // Validate and fix coreAdviseMode from localStorage if needed
+    const validateCoreAdviseMode = (value) => {
+        if (typeof value !== 'string' || value === '[object Object]') {
+            console.warn('[SettingsStore] Invalid coreAdviseMode detected, resetting to default');
+            return "standard cores";
+        }
+        return value;
+    };
+
     const adviserSettings = ref({
         useOnlyCoresInStock: true,
         allowDistributedGaps: true,
         allowStacks: true,
         allowToroidalCores: true,
-        coreAdviseMode: "available cores",
+        coreAdviseMode: "standard cores",
     })
 
     const magneticBuilderSettings = ref({
@@ -44,13 +53,21 @@ export const useSettingsStore = defineStore("settings", () => {
         advancedMode: true,
     })
 
+    // Watch for invalid coreAdviseMode after hydration from localStorage
+    watch(adviserSettings, (newValue) => {
+        if (newValue.coreAdviseMode && (typeof newValue.coreAdviseMode !== 'string' || String(newValue.coreAdviseMode) === '[object Object]')) {
+            console.warn('[SettingsStore] Detected invalid coreAdviseMode after hydration, resetting to default');
+            adviserSettings.value.coreAdviseMode = "standard cores";
+        }
+    }, { immediate: true, deep: true });
+
     function reset() {
         this.adviserSettings ={
             useOnlyCoresInStock: true,
             allowDistributedGaps: true,
             allowStacks: true,
             allowToroidalCores: true,
-            coreAdviseMode: "available cores",
+            coreAdviseMode: "standard cores",
         };
         this.magneticBuilderSettings = {
             useOnlyCoresInStock: true,

@@ -70,7 +70,7 @@ export default {
     getCalculateFn() { return (aux) => this.taskQueueStore.calculateDabInputs(aux); },
     getSimulateFn() { return (aux) => this.taskQueueStore.calculateDabInputs(aux); },
     getDefaultFrequency() { return this.localData.switchingFrequency; },
-    getTopology() { return 'DAB'; },
+    getTopology() { return 'Dual Active Bridge Converter'; },
     getIsolationSides() { return ['primary', 'secondary']; },
     getInsulationType() { return this.localData.insulationType; },
 

@@ -116,7 +116,15 @@ export default {
                     settings["useOnlyCoresInStock"] = this.$settingsStore.adviserSettings.useOnlyCoresInStock;
                     await this.taskQueueStore.setSettings(settings);
 
-                    var aux = await this.taskQueueStore.calculateAdvisedCores(this.masStore.mas.inputs, this.$settingsStore.coreAdviserSettings.weights, 20, this.$settingsStore.adviserSettings.coreAdviseMode);
+                    // Ensure coreAdviseMode is a string, not an object
+                    let coreAdviseMode = this.$settingsStore.adviserSettings.coreAdviseMode;
+                    if (typeof coreAdviseMode === 'object') {
+                        console.warn('[MagneticCoreAdviser] coreAdviseMode was an object, resetting to default');
+                        coreAdviseMode = "standard cores";
+                        this.$settingsStore.adviserSettings.coreAdviseMode = coreAdviseMode;
+                    }
+                    
+                    var aux = await this.taskQueueStore.calculateAdvisedCores(this.masStore.mas.inputs, this.$settingsStore.coreAdviserSettings.weights, 20, coreAdviseMode);
 
                     var log = aux["log"];
                     var data = aux["data"];

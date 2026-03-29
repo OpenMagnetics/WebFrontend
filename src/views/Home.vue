@@ -108,9 +108,10 @@ export default {
                                         <p class="card-text text-white fs-5">Build any magnetic component from scratch! Choose your core, wires, and winding configuration. Get instant simulation results including:</p>
                                         <div class="text-white fs-6">
                                             <div class="mb-1"><i class="fa-solid fa-fire text-danger me-2"></i>Core & winding losses</div>
-                                            <div class="mb-1"><i class="fa-solid fa-temperature-high text-warning me-2"></i>Temperature estimation</div>
-                                            <div class="mb-1"><i class="fa-solid fa-bolt text-info me-2"></i>Leakage calculation</div>
-                                            <div class="mb-1"><i class="fa-solid fa-wave-square text-success me-2"></i>Parasitic capacitance</div>
+                                            <div class="mb-1"><i class="fa-solid fa-temperature-high text-warning me-2"></i>Temperature simulation & thermal analysis</div>
+                                            <div class="mb-1"><i class="fa-solid fa-bolt text-info me-2"></i>Leakage inductance (Llk) matrix</div>
+                                            <div class="mb-1"><i class="fa-solid fa-wave-square text-success me-2"></i>Stray capacitance & parasitic analysis</div>
+                                            <div class="mb-1"><i class="fa-solid fa-circuit text-purple me-2"></i>Equivalent circuit export (SPICE)</div>
                                         </div>
                                         <button @click="newMagneticToolDesign" @click.middle="newMagneticToolDesignNewTab" class="btn btn-primary btn-lg mt-3 shadow">
                                             <i class="fa-solid fa-hammer me-2"></i>Start Building
@@ -135,9 +136,11 @@ export default {
                                 <p class="card-text text-white">Guided design flows for power converter magnetics:</p>
                                 <div class="text-white small">
                                     <div class="mb-1"><i class="fa-solid fa-check text-warning me-2"></i>Flyback, Buck, Boost converters</div>
-                                    <div class="mb-1"><i class="fa-solid fa-check text-warning me-2"></i>Forward converter variants</div>
-                                    <div class="mb-1"><i class="fa-solid fa-check text-warning me-2"></i>Push-Pull, Isolated Buck</div>
-                                    <div class="mb-1"><i class="fa-solid fa-check text-warning me-2"></i>Common Mode Chokes</div>
+                                    <div class="mb-1"><i class="fa-solid fa-check text-warning me-2"></i>Forward converter (Single/Two-switch/Active clamp)</div>
+                                    <div class="mb-1"><i class="fa-solid fa-check text-warning me-2"></i>Push-Pull, Isolated Buck/Boost</div>
+                                    <div class="mb-1"><i class="fa-solid fa-check text-warning me-2"></i>LLC & CLLC resonant converters</div>
+                                    <div class="mb-1"><i class="fa-solid fa-check text-warning me-2"></i>DAB, PFC, Phase-Shift Full Bridge</div>
+                                    <div class="mb-1"><i class="fa-solid fa-check text-warning me-2"></i>Common & Differential Mode Chokes</div>
                                 </div>
                                 <button @click="onWizardsLanding" class="btn btn-warning w-100 mt-2">
                                     <i class="fa-solid fa-wand-magic-sparkles me-2"></i>Launch Wizards
@@ -161,6 +164,66 @@ export default {
                                 </div>
                                 <button @click="onInsulationCoordinator" @click.middle="onInsulationCoordinatorNewTab" class="btn btn-success w-100 mt-2">
                                     <i class="fa-solid fa-bolt-lightning me-2"></i>Calculate Insulation
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- NGSpice Simulation -->
+                    <div class="col-lg-6">
+                        <div class="card h-100 bg-dark border-0 shadow">
+                            <div class="card-body p-4">
+                                <i class="fa-solid fa-wave-square fa-2x text-info mb-3"></i>
+                                <h4 class="card-title text-white fw-bold">NGSpice Simulation</h4>
+                                <p class="card-text text-white">Full circuit simulation with NGSpice:</p>
+                                <div class="text-white small">
+                                    <div class="mb-1"><i class="fa-solid fa-check text-info me-2"></i>Automated circuit netlist generation</div>
+                                    <div class="mb-1"><i class="fa-solid fa-check text-info me-2"></i>Simulate converter topologies</div>
+                                    <div class="mb-1"><i class="fa-solid fa-check text-info me-2"></i>Export magnetic subcircuits</div>
+                                    <div class="mb-1"><i class="fa-solid fa-check text-info me-2"></i>Waveform visualization</div>
+                                </div>
+                                <button @click="onWizardsLanding" class="btn btn-info w-100 mt-2">
+                                    <i class="fa-solid fa-flask me-2"></i>Run Simulation
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Equivalent Circuit -->
+                    <div class="col-lg-6">
+                        <div class="card h-100 bg-dark border-0 shadow">
+                            <div class="card-body p-4">
+                                <i class="fa-solid fa-network-wired fa-2x text-purple mb-3"></i>
+                                <h4 class="card-title text-white fw-bold">Equivalent Circuit</h4>
+                                <p class="card-text text-white">Export accurate SPICE models:</p>
+                                <div class="text-white small">
+                                    <div class="mb-1"><i class="fa-solid fa-check text-purple me-2"></i>SIMBA format</div>
+                                    <div class="mb-1"><i class="fa-solid fa-check text-purple me-2"></i>LtSpice format</div>
+                                    <div class="mb-1"><i class="fa-solid fa-check text-purple me-2"></i>NgSpice format</div>
+                                    <div class="mb-1"><i class="fa-solid fa-check text-purple me-2"></i>Temperature-dependent parameters</div>
+                                </div>
+                                <button @click="newMagneticToolDesign" class="btn btn-purple w-100 mt-2" style="background: linear-gradient(135deg, #6f42c1, #5a32a3);">
+                                    <i class="fa-solid fa-download me-2"></i>Export Subcircuit
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Temperature Simulation -->
+                    <div class="col-lg-6">
+                        <div class="card h-100 bg-dark border-0 shadow">
+                            <div class="card-body p-4">
+                                <i class="fa-solid fa-temperature-high fa-2x text-danger mb-3"></i>
+                                <h4 class="card-title text-white fw-bold">Temperature Simulation</h4>
+                                <p class="card-text text-white">Thermal analysis for reliable designs:</p>
+                                <div class="text-white small">
+                                    <div class="mb-1"><i class="fa-solid fa-check text-danger me-2"></i>Core loss vs temperature</div>
+                                    <div class="mb-1"><i class="fa-solid fa-check text-danger me-2"></i>Winding resistance vs temperature</div>
+                                    <div class="mb-1"><i class="fa-solid fa-check text-danger me-2"></i>Magnetizing inductance vs temperature</div>
+                                    <div class="mb-1"><i class="fa-solid fa-check text-danger me-2"></i>Thermal resistance modeling</div>
+                                </div>
+                                <button @click="newMagneticToolDesign" class="btn btn-danger w-100 mt-2">
+                                    <i class="fa-solid fa-temperature-up me-2"></i>Analyze Thermal
                                 </button>
                             </div>
                         </div>
@@ -333,5 +396,9 @@ export default {
 
     .btn:hover {
         transform: scale(1.02);
+    }
+
+    .text-purple {
+        color: #a855f7;
     }
 </style>

@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, watch, computed  } from 'vue'
 import { useMasStore } from './mas'
+import { useAdviseCacheStore } from './adviseCache'
 import { deepCopy } from '/WebSharedComponents/assets/js/utils.js'
 import * as Defaults from '/WebSharedComponents/assets/js/defaults.js'
 
@@ -327,6 +328,11 @@ export const useStateStore = defineStore("state", () => {
         this.selectedApplication = SupportedApplications.Power;
 
         this.toolboxStates = deepCopy(toolboxDefaultStates);
+        
+        // Clear advised magnetics/cores cache when starting a new design
+        const adviseCacheStore = useAdviseCacheStore();
+        adviseCacheStore.cleanMasAdvises();
+        adviseCacheStore.cleanCoreAdvises();
     }
 
     function reset() {

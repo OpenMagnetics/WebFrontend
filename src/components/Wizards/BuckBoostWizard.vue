@@ -113,7 +113,13 @@ export default {
     postProcessResults(result, mode) {
       if (this.designRequirements) this.simulatedInductance = this.designRequirements.magnetizingInductance?.nominal || null;
     },
-    getTopology() { return this.converterName; },
+    getTopology() { 
+      const topologyMap = {
+        'Buck': 'Buck Converter',
+        'Boost': 'Boost Converter',
+      };
+      return topologyMap[this.converterName] || this.converterName + ' Converter';
+    },
     getIsolationSides() { return ['primary']; },
 
             updateErrorMessage() {

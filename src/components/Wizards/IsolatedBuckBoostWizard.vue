@@ -133,7 +133,13 @@ export default {
         this.simulatedTurnsRatios = this.designRequirements.turnsRatios?.map(tr => tr.nominal) || null;
       }
     },
-    getTopology() { return this.converterName; },
+    getTopology() { 
+      const topologyMap = {
+        'Isolated Buck': 'Isolated Buck Converter',
+        'Isolated Buck-Boost': 'Isolated Buck-Boost Converter',
+      };
+      return topologyMap[this.converterName] || this.converterName + ' Converter';
+    },
     getIsolationSides() {
       const sides = ['primary'];
       for (let i = 0; i < this.localData.outputsParameters.length; i++) sides.push('secondary');
