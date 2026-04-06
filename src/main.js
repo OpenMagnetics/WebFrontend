@@ -18,6 +18,7 @@ import { VueWindowSizePlugin } from 'vue-window-size/plugin';
 import { initWorker } from '/WebSharedComponents/assets/js/mkfRuntime'
 import VueLatex from 'vatex'
 import { checkAndClearOutdatedStores, getVersionedWasmUrl } from '/src/stores/storeVersioning'
+import { initMCP } from '/src/mcp'
 
 // Monkey-patch Bootstrap Tooltip to fix _activeTrigger null errors
 const originalIsWithActiveTrigger = Tooltip.prototype._isWithActiveTrigger;
@@ -69,7 +70,7 @@ function preloadMKF() {
             preloadedMkf = mkf; // Store but don't set globally yet
             
             // Load data and wait for completion
-            console.warn("Preload: Loading core materials, shapes and wires...");
+            console.warn("[MAIN] Preload: Loading core materials, shapes and wires...");
             await Promise.all([
                 mkf.load_core_materials("").then(() => console.log("Preload: Core materials loaded")),
                 mkf.load_core_shapes("").then(() => console.log("Preload: Core shapes loaded")),
@@ -83,6 +84,22 @@ function preloadMKF() {
             console.warn("Preload: Model settings initialized");
             
             console.warn("MKF preload complete - All data ready");
+            
+            // Initialize MCP after MKF is ready (on home page)
+            console.warn("[MAIN] MKF loaded, about to initialize MCP...");
+            console.warn("[MAIN] Calling initMCP()...");
+            initMCP().then(mcp => {
+                console.warn("[MAIN] initMCP() returned:", !!mcp);
+                if (mcp) {
+                    console.log("[MAIN] [MCP] Ready for AI agents");
+                } else {
+                    console.warn("[MAIN] [MCP] initMCP returned null");
+                }
+            }).catch(err => {
+                console.error("[MAIN] [MCP] Initialization failed (non-critical):", err);
+                console.error("[MAIN] [MCP] Error stack:", err.stack);
+            });
+            
             return mkf;
         } catch (error) {
             console.error("Error preloading MKF:", error);
@@ -217,6 +234,16 @@ router.beforeEach((to, from, next) => {
                     const modelSettingsStore = useModelSettingsStore();
                     await modelSettingsStore.loadFromWASM();
                     console.warn("Model settings initialized");
+
+                    // Initialize MCP after MKF is ready
+                    console.warn("Initializing MCP...");
+                    initMCP().then(mcp => {
+                        if (mcp) {
+                            console.log("[MCP] Ready for AI agents");
+                        }
+                    }).catch(err => {
+                        console.warn("[MCP] Initialization failed (non-critical):", err);
+                    });
 
                     // Ensure minimum loader display time before navigating
                     const newPath = app.config.globalProperties.$userStore.loadingPath;
