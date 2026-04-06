@@ -116,8 +116,18 @@ export default {
                 if (newMas.magnetic != null) {
                     try {
                         const response = await checkAndFixMas(newMas, this.taskQueueStore);
+
+                        // Always autocomplete the MAS to resolve wire/strand string names to
+                        // full objects and populate core processedDescription, bobbin, etc.
+                        let autocompletedMas = response;
+                        try {
+                            autocompletedMas = await this.taskQueueStore.masAutocomplete(response, false, {});
+                        } catch (autocompleteError) {
+                            console.warn('masAutocomplete failed, using checkAndFixMas result:', autocompleteError);
+                        }
+
                         this.masStore.resetMas();
-                        this.masStore.mas = response;
+                        this.masStore.mas = autocompletedMas;
                         this.masStore.importedMas();
                         
                         // Reset coil view to Basic mode when loading a new MAS file
@@ -165,9 +175,9 @@ export default {
                             await this.$router.push(`${import.meta.env.BASE_URL}engine_loader`);
                         }
                         else {
-                            this.masStore.mas.magnetic.core = response.magnetic.core;
-                            this.masStore.mas.magnetic.coil = response.magnetic.coil;
-                            this.masStore.mas.magnetic.coil.functionalDescription = response.magnetic.coil.functionalDescription;
+                            this.masStore.mas.magnetic.core = autocompletedMas.magnetic.core;
+                            this.masStore.mas.magnetic.coil = autocompletedMas.magnetic.coil;
+                            this.masStore.mas.magnetic.coil.functionalDescription = autocompletedMas.magnetic.coil.functionalDescription;
                         }
                     } catch (error) {
                         console.error(error);
