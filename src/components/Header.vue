@@ -117,6 +117,13 @@ export default {
                     try {
                         const response = await checkAndFixMas(newMas, this.taskQueueStore);
 
+                        // Save coil processed data that masAutocomplete may strip
+                        const savedCoilData = {
+                            layersDescription: response.magnetic?.coil?.layersDescription,
+                            turnsDescription: response.magnetic?.coil?.turnsDescription,
+                            sectionsDescription: response.magnetic?.coil?.sectionsDescription,
+                        };
+
                         // Always autocomplete the MAS to resolve wire/strand string names to
                         // full objects and populate core processedDescription, bobbin, etc.
                         let autocompletedMas = response;
@@ -124,6 +131,19 @@ export default {
                             autocompletedMas = await this.taskQueueStore.masAutocomplete(response, false, {});
                         } catch (autocompleteError) {
                             console.warn('masAutocomplete failed, using checkAndFixMas result:', autocompleteError);
+                        }
+
+                        // Restore coil processed data if masAutocomplete stripped it
+                        if (autocompletedMas.magnetic?.coil) {
+                            if (!autocompletedMas.magnetic.coil.layersDescription && savedCoilData.layersDescription) {
+                                autocompletedMas.magnetic.coil.layersDescription = savedCoilData.layersDescription;
+                            }
+                            if (!autocompletedMas.magnetic.coil.turnsDescription && savedCoilData.turnsDescription) {
+                                autocompletedMas.magnetic.coil.turnsDescription = savedCoilData.turnsDescription;
+                            }
+                            if (!autocompletedMas.magnetic.coil.sectionsDescription && savedCoilData.sectionsDescription) {
+                                autocompletedMas.magnetic.coil.sectionsDescription = savedCoilData.sectionsDescription;
+                            }
                         }
 
                         this.masStore.resetMas();

@@ -85,16 +85,18 @@ export default {
     },
     mounted () {
         // Only process harmonics if waveform doesn't exist (initial setup)
-        // Don't regenerate waveform when returning from other tools
-        const hasCurrentWaveform = this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex].current.waveform != null;
-        const hasVoltageWaveform = this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex].voltage.waveform != null;
-        
-        if (!hasCurrentWaveform) {
-            this.processHarmonics("current");
-        }
-        
-        if (!hasVoltageWaveform) {
-            this.processHarmonics("voltage");
+        // Don't regenerate waveform when returning from other tools.
+        // Process for ALL windings, not just the currently selected one,
+        // so switching windings later still finds populated waveform/processed data.
+        const op = this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex];
+        const windingCount = op?.excitationsPerWinding?.length || 0;
+        for (let w = 0; w < windingCount; w++) {
+            const exc = op.excitationsPerWinding[w];
+            if (exc == null) continue;
+            const needsCurrent = exc.current?.waveform == null && exc.current?.harmonics?.frequencies?.length >= 2;
+            const needsVoltage = exc.voltage?.waveform == null && exc.voltage?.harmonics?.frequencies?.length >= 2;
+            if (needsCurrent) this.processHarmonics("current", w);
+            if (needsVoltage) this.processHarmonics("voltage", w);
         }
     },
     methods: {
@@ -122,24 +124,26 @@ export default {
             })
             return true;
         },
-        async processHarmonics(signalDescriptor) {
+        async processHarmonics(signalDescriptor, windingIndexOverride = null) {
             this.masStore.mas.inputs.operatingPoints.forEach((operatingPoint, operatingPointIndex) => {
                 this.masStore.mas.inputs.operatingPoints[operatingPointIndex] = this.checkAndFixOperatingPoint(operatingPoint);
             })
 
+            const windingIndex = windingIndexOverride != null ? windingIndexOverride : this.currentWindingIndex;
+
             try {
                 // Guard against missing data
-                const excitation = this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex]?.excitationsPerWinding?.[this.currentWindingIndex]?.[signalDescriptor];
+                const excitation = this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex]?.excitationsPerWinding?.[windingIndex]?.[signalDescriptor];
                 if (!excitation?.harmonics?.frequencies || excitation.harmonics.frequencies.length < 2) {
                     console.warn(`[processHarmonics] Missing harmonics data for ${signalDescriptor}`);
                     return;
                 }
                 const frequency = excitation.harmonics.frequencies[1];
-                this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex][signalDescriptor].waveform = null;
-                this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex][signalDescriptor].processed = null;
-                const parsedResult = await this.taskQueueStore.standardizeSignalDescriptor(this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex][signalDescriptor], frequency);
+                this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[windingIndex][signalDescriptor].waveform = null;
+                this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[windingIndex][signalDescriptor].processed = null;
+                const parsedResult = await this.taskQueueStore.standardizeSignalDescriptor(this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[windingIndex][signalDescriptor], frequency);
 
-                const aux = await this.taskQueueStore.getMainHarmonicIndexes(this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex][signalDescriptor].harmonics, 0.05, 1);
+                const aux = await this.taskQueueStore.getMainHarmonicIndexes(this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[windingIndex][signalDescriptor].harmonics, 0.05, 1);
 
                 const filteredHarmonics = {
                     amplitudes: [parsedResult.harmonics.amplitudes[0]],
@@ -152,10 +156,13 @@ export default {
                 }
 
                 parsedResult.harmonics = filteredHarmonics;
-                this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex][signalDescriptor] = parsedResult;
+                this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[windingIndex][signalDescriptor] = parsedResult;
 
-                // this.$emit('updatedSignal');
-                this.masStore.updatedInputExcitationWaveformUpdatedFromProcessed(signalDescriptor);
+                // Only emit reactivity action when processing for the visible winding,
+                // otherwise it would re-trigger Fourier/Graph for the wrong winding.
+                if (windingIndex === this.currentWindingIndex) {
+                    this.masStore.updatedInputExcitationWaveformUpdatedFromProcessed(signalDescriptor);
+                }
             } catch (error) {
                 console.error(error);
             }
