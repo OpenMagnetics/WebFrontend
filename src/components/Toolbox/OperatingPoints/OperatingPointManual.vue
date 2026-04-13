@@ -52,8 +52,15 @@ export default {
         }
     },
     computed: {
+        isInductor() {
+            return this.masStore.mas.inputs.designRequirements.turnsRatios.length === 0;
+        },
+        hasInductance() {
+            const ind = this.masStore.mas.inputs.designRequirements.magnetizingInductance;
+            return ind && (ind.nominal > 0 || ind.minimum > 0);
+        },
     },
-    watch: { 
+    watch: {
     },
     created () {
 
@@ -64,11 +71,48 @@ export default {
                 this.$emit('updatedSignal');
             }
         })
+        // For inductors, ensure voltage is consistent with current on mount.
+        // Use a longer delay on mount to let WASM initialize and process existing data.
+        if (this.isInductor && this.hasInductance) {
+            this._autoInduceTimer = setTimeout(async () => {
+                this._autoInduceTimer = null;
+                try {
+                    await this.induce('current');
+                } catch (e) {
+                    console.warn('Auto-induce voltage on mount failed:', e.message);
+                }
+            }, 1000);
+        }
+    },
+    beforeUnmount() {
+        if (this._autoInduceTimer) clearTimeout(this._autoInduceTimer);
     },
     methods: {
         updatedWaveform(signalDescriptor) {
             this.$emit('updatedWaveform', signalDescriptor);
             this.$emit('updatedSignal');
+        },
+        autoInduceVoltageFromCurrent() {
+            if (!this.isInductor || !this.hasInductance) return;
+            // Debounce: wait for current waveform processing to complete
+            // before deriving voltage (WASM needs fully processed harmonics).
+            if (this._autoInduceTimer) clearTimeout(this._autoInduceTimer);
+            this._autoInduceTimer = setTimeout(async () => {
+                this._autoInduceTimer = null;
+                try {
+                    await this.induce('current');
+                } catch (e) {
+                    console.warn('Auto-induce voltage from current failed:', e.message);
+                }
+            }, 500);
+        },
+        currentUpdated() {
+            this.masStore.updatedInputExcitationProcessed('current');
+            this.autoInduceVoltageFromCurrent();
+        },
+        currentWaveformUpdated() {
+            this.masStore.updatedInputExcitationWaveformUpdatedFromProcessed('current');
+            this.autoInduceVoltageFromCurrent();
         },
         async induce(sourceSignalDescriptor){
             if (sourceSignalDescriptor == 'current'){
@@ -134,7 +178,7 @@ export default {
                     @updatedDutyCycle="masStore.updatedInputExcitationProcessed()"
                 />
 
-                <WaveformInput 
+                <WaveformInput
                     :style="$styleStore.operatingPoints.main"
 
                     v-if="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex].current != null && masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex].current.processed && masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex].current.processed.label != 'Custom'" class="scrollable-column mt-5 border-bottom border-top rounded-4 border-2"
@@ -142,9 +186,9 @@ export default {
                     :defaultValue="defaultOperatingPointExcitation"
                     :dataTestLabel="dataTestLabel + '-selected-current'"
                     :signalDescriptor="'current'"
-                    @peakToPeakChanged="masStore.updatedInputExcitationProcessed('current')"
-                    @offsetChanged="masStore.updatedInputExcitationProcessed('current')"
-                    @labelChanged="masStore.updatedInputExcitationProcessed('current')"
+                    @peakToPeakChanged="currentUpdated"
+                    @offsetChanged="currentUpdated"
+                    @labelChanged="currentUpdated"
                     @induce="induce('voltage')"
                 />
                 <WaveformInputCustom
@@ -154,19 +198,20 @@ export default {
                     :defaultValue="defaultOperatingPointExcitation"
                     :dataTestLabel="dataTestLabel + '-selected-current'"
                     :signalDescriptor="'current'"
-                    @labelChanged="masStore.updatedInputExcitationProcessed('current')"
-                    @updatedTime="masStore.updatedInputExcitationWaveformUpdatedFromProcessed('current')"
-                    @updatedData="masStore.updatedInputExcitationWaveformUpdatedFromProcessed('current')"
+                    @labelChanged="currentUpdated"
+                    @updatedTime="currentWaveformUpdated"
+                    @updatedData="currentWaveformUpdated"
                     @induce="induce('voltage')"
                 />
                 <WaveformInput
-                    v-if="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex].voltage.processed && masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex].voltage.processed.label != 'Custom'" 
+                    v-if="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex].voltage.processed && masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex].voltage.processed.label != 'Custom'"
                     class="scrollable-column mt-5 border-bottom border-top rounded-4 border-2"
-                    :style="$styleStore.operatingPoints.main"
+                    :style="isInductor ? 'opacity: 0.5; pointer-events: none;' : $styleStore.operatingPoints.main"
                     :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex]"
                     :defaultValue="defaultOperatingPointExcitation"
                     :dataTestLabel="dataTestLabel + '-selected-voltage'"
                     :signalDescriptor="'voltage'"
+                    :disabled="isInductor"
                     @peakToPeakChanged="masStore.updatedInputExcitationProcessed('voltage')"
                     @offsetChanged="masStore.updatedInputExcitationProcessed('voltage')"
                     @labelChanged="masStore.updatedInputExcitationProcessed('voltage')"
@@ -175,11 +220,12 @@ export default {
                 <WaveformInputCustom
                     v-else
                     class="scrollable-column mt-5 border-bottom border-top rounded-4 border-2"
-                    :style="$styleStore.operatingPoints.main"
+                    :style="isInductor ? 'opacity: 0.5; pointer-events: none;' : $styleStore.operatingPoints.main"
                     :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex]"
                     :defaultValue="defaultOperatingPointExcitation"
                     :dataTestLabel="dataTestLabel + '-selected-voltage'"
                     :signalDescriptor="'voltage'"
+                    :disabled="isInductor"
                     @labelChanged="masStore.updatedInputExcitationProcessed('voltage')"
                     @updatedTime="masStore.updatedInputExcitationWaveformUpdatedFromProcessed('voltage')"
                     @updatedData="masStore.updatedInputExcitationWaveformUpdatedFromProcessed('voltage')"

@@ -80,6 +80,8 @@ export default {
                 :replaceTitle="''"
                 :dataTestLabel="dataTestLabel + '-HarmonicFrequency-' + index"
                 :min="0"
+                :unitMin="0.001"
+                :unitMax="1000"
                 :justifyContent="true"
                 :defaultValue="1"
                 :forceUpdate="forceUpdate"

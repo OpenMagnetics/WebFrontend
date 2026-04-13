@@ -142,6 +142,8 @@ export default {
         <DimensionReadOnly 
             :name="'peakToPeak'"
             :unit="signalDescriptor == 'current'? 'A' : 'V'"
+            :unitMin="0.001"
+            :unitMax="1000"
             :dataTestLabel="dataTestLabel + '-PeakToPeak'"
             :value="modelValue[signalDescriptor].processed.peakToPeak"
             :min="minimumMaximumScalePerParameter[signalDescriptor].min"
@@ -156,6 +158,8 @@ export default {
         <DimensionReadOnly 
             :name="'offset'"
             :unit="signalDescriptor == 'current'? 'A' : 'V'"
+            :unitMin="0.001"
+            :unitMax="1000"
             :dataTestLabel="dataTestLabel + '-Offset'"
             :value="modelValue[signalDescriptor].processed.offset"
             :min="minimumMaximumScalePerParameter[signalDescriptor].min"
@@ -184,6 +188,8 @@ export default {
         <DimensionReadOnly 
             :name="'peak'"
             :unit="signalDescriptor == 'current'? 'A' : 'V'"
+            :unitMin="0.001"
+            :unitMax="1000"
             :dataTestLabel="dataTestLabel + '-Peak'"
             :value="modelValue[signalDescriptor].processed.peak"
             :min="minimumMaximumScalePerParameter[signalDescriptor].min"
@@ -198,6 +204,8 @@ export default {
         <DimensionReadOnly 
             :name="'rms'"
             :unit="signalDescriptor == 'current'? 'A' : 'V'"
+            :unitMin="0.001"
+            :unitMax="1000"
             :dataTestLabel="dataTestLabel + '-Rms'"
             :value="modelValue[signalDescriptor].processed.rms"
             :min="minimumMaximumScalePerParameter[signalDescriptor].min"

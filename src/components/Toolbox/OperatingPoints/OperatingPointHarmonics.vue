@@ -61,6 +61,7 @@ export default {
             forceUpdateCurrent,
             forceUpdateVoltage,
             blockingRebounds,
+            processingHarmonics: false,
             errorMessages: {
                 current: "",
                 voltage: "",
@@ -111,20 +112,24 @@ export default {
         },
         checkFrequencies(signalDescriptor) {
             this.errorMessages[signalDescriptor] = "";
-            this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex][signalDescriptor].harmonics.frequencies.forEach((frequency, index) => {
-                if (index > 1 && this.errorMessages[signalDescriptor] == "") {
-                    if (frequency % this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex][signalDescriptor].harmonics.frequencies[1] != 0) {
-
-                            const frequencyAux = formatFrequency(frequency, 0.001);
-                            const mainFrequencyAux = formatFrequency(this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex][signalDescriptor].harmonics.frequencies[1], 0.001);
-                            this.errorMessages[signalDescriptor] = `Frequency ${removeTrailingZeroes(frequencyAux.label, 5)} ${frequencyAux.unit} must be a multiple of ${removeTrailingZeroes(mainFrequencyAux.label, 5)} ${mainFrequencyAux.unit}`
-                            return false;
-                    }
-                } 
-            })
+            const frequencies = this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex][signalDescriptor].harmonics.frequencies;
+            for (let index = 2; index < frequencies.length; index++) {
+                if (frequencies[index] % frequencies[1] != 0) {
+                    const frequencyAux = formatFrequency(frequencies[index], 0.001);
+                    const mainFrequencyAux = formatFrequency(frequencies[1], 0.001);
+                    this.errorMessages[signalDescriptor] = `Frequency ${removeTrailingZeroes(frequencyAux.label, 5)} ${frequencyAux.unit} must be a multiple of ${removeTrailingZeroes(mainFrequencyAux.label, 5)} ${mainFrequencyAux.unit}`
+                    return false;
+                }
+            }
             return true;
         },
         async processHarmonics(signalDescriptor, windingIndexOverride = null) {
+            if (this.processingHarmonics) {
+                console.log(`[processHarmonics] SKIPPED (already processing)`);
+                return;
+            }
+            this.processingHarmonics = true;
+
             this.masStore.mas.inputs.operatingPoints.forEach((operatingPoint, operatingPointIndex) => {
                 this.masStore.mas.inputs.operatingPoints[operatingPointIndex] = this.checkAndFixOperatingPoint(operatingPoint);
             })
@@ -139,32 +144,56 @@ export default {
                     return;
                 }
                 const frequency = excitation.harmonics.frequencies[1];
+                console.log(`[processHarmonics] START signal=${signalDescriptor} winding=${windingIndex} frequency=${frequency}`);
+                console.log(`[processHarmonics] input harmonics:`, JSON.parse(JSON.stringify(excitation.harmonics)));
+                console.log(`[processHarmonics] has waveform:`, !!excitation.waveform, 'has processed:', !!excitation.processed);
+
+                // Save the user-entered harmonics and current state before clearing
+                const userHarmonics = JSON.parse(JSON.stringify(excitation.harmonics));
+                const signalBackup = JSON.parse(JSON.stringify(this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[windingIndex][signalDescriptor]));
+
+                // Clear waveform/processed so standardize reconstructs from harmonics
                 this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[windingIndex][signalDescriptor].waveform = null;
                 this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[windingIndex][signalDescriptor].processed = null;
-                const parsedResult = await this.taskQueueStore.standardizeSignalDescriptor(this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[windingIndex][signalDescriptor], frequency);
 
-                const aux = await this.taskQueueStore.getMainHarmonicIndexes(this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[windingIndex][signalDescriptor].harmonics, 0.05, 1);
-
-                const filteredHarmonics = {
-                    amplitudes: [parsedResult.harmonics.amplitudes[0]],
-                    frequencies: [parsedResult.harmonics.frequencies[0]]
-                }
-                // aux is now an array in worker mode
-                for (var i = 0; i < aux.length; i++) {
-                    filteredHarmonics.amplitudes.push(parsedResult.harmonics.amplitudes[aux[i]]);
-                    filteredHarmonics.frequencies.push(parsedResult.harmonics.frequencies[aux[i]]);
+                console.log(`[processHarmonics] calling standardizeSignalDescriptor with frequency=${frequency}`);
+                let parsedResult;
+                try {
+                    parsedResult = await this.taskQueueStore.standardizeSignalDescriptor(this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[windingIndex][signalDescriptor], frequency);
+                } catch (e) {
+                    // WASM failed — restore the signal to its previous state
+                    console.error('[processHarmonics] standardize FAILED, restoring signal:', e);
+                    this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[windingIndex][signalDescriptor] = signalBackup;
+                    return;
                 }
 
-                parsedResult.harmonics = filteredHarmonics;
+                console.log(`[processHarmonics] standardize OK, result has waveform:`, !!parsedResult?.waveform, 'waveform size:', parsedResult?.waveform?.data?.length);
+                console.log(`[processHarmonics] result harmonics:`, parsedResult?.harmonics ? {freqs: parsedResult.harmonics.frequencies?.slice(0,5), amps: parsedResult.harmonics.amplitudes?.slice(0,5), len: parsedResult.harmonics.frequencies?.length} : 'null');
+                console.log(`[processHarmonics] result processed rms:`, parsedResult?.processed?.rms);
+
+                // Restore the user-entered harmonics directly. The round-trip through
+                // reconstruct_signal + FFT can introduce spectral leakage artifacts
+                // when harmonics have non-standard frequency spacing. The user's
+                // harmonics are already the "main" ones — no filtering needed.
+                parsedResult.harmonics = userHarmonics;
                 this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[windingIndex][signalDescriptor] = parsedResult;
+
+                console.log(`[processHarmonics] DONE, stored signal has waveform:`, !!this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[windingIndex][signalDescriptor]?.waveform);
 
                 // Only emit reactivity action when processing for the visible winding,
                 // otherwise it would re-trigger Fourier/Graph for the wrong winding.
                 if (windingIndex === this.currentWindingIndex) {
+                    console.log(`[processHarmonics] emitting updatedInputExcitationWaveformUpdatedFromProcessed`);
                     this.masStore.updatedInputExcitationWaveformUpdatedFromProcessed(signalDescriptor);
+                } else {
+                    console.log(`[processHarmonics] skipping emit, windingIndex=${windingIndex} != currentWindingIndex=${this.currentWindingIndex}`);
                 }
             } catch (error) {
-                console.error(error);
+                console.error('[processHarmonics] OUTER CATCH:', error);
+            } finally {
+                // Release after a delay so the WaveformFourier chopHarmonics
+                // writeback doesn't re-trigger processHarmonics
+                setTimeout(() => { this.processingHarmonics = false; }, 500);
             }
         },
         onFrequencyChanged(signalDescriptor) {

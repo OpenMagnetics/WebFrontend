@@ -232,12 +232,12 @@ export default {
             if (chart != null && this.modelValue.current.harmonics != null && this.modelValue.voltage.harmonics != null) {
                 const commonFrequencies = [];
                 this.modelValue.current.harmonics.frequencies.forEach((frequency) => {
-                    if (!commonFrequencies.includes(frequency)) {
+                    if (frequency != null && !commonFrequencies.includes(frequency)) {
                         commonFrequencies.push(frequency);
                     }
                 })
                 this.modelValue.voltage.harmonics.frequencies.forEach((frequency) => {
-                    if (!commonFrequencies.includes(frequency)) {
+                    if (frequency != null && !commonFrequencies.includes(frequency)) {
                         commonFrequencies.push(frequency);
                     }
                 })
@@ -250,14 +250,16 @@ export default {
                 commonFrequencies.forEach((frequency) => {
                     if (this.modelValue.current.harmonics.frequencies.includes(frequency)) {
                         const index = this.modelValue.current.harmonics.frequencies.findIndex((x) => x === frequency);
-                        chart.data.datasets[this.getDatasetIndex('current')].data.push(this.modelValue.current.harmonics.amplitudes[index]);
+                        const amp = this.modelValue.current.harmonics.amplitudes[index];
+                        chart.data.datasets[this.getDatasetIndex('current')].data.push(amp ?? 0);
                     }
                     else {
                         chart.data.datasets[this.getDatasetIndex('current')].data.push(0);
                     }
                     if (this.modelValue.voltage.harmonics.frequencies.includes(frequency)) {
                         const index = this.modelValue.voltage.harmonics.frequencies.findIndex((x) => x === frequency);
-                        chart.data.datasets[this.getDatasetIndex('voltage')].data.push(this.modelValue.voltage.harmonics.amplitudes[index]);
+                        const amp = this.modelValue.voltage.harmonics.amplitudes[index];
+                        chart.data.datasets[this.getDatasetIndex('voltage')].data.push(amp ?? 0);
                     }
                     else {
                         chart.data.datasets[this.getDatasetIndex('voltage')].data.push(0);

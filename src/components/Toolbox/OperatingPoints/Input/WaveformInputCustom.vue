@@ -84,7 +84,7 @@ export default {
             :textColor="$styleStore.operatingPoints.inputTextColor"
             @update="labelChanged"
         />
-        <div v-if="modelValue[signalDescriptor] != null">
+        <div v-if="modelValue[signalDescriptor] != null && modelValue[signalDescriptor].waveform != null && modelValue[signalDescriptor].waveform.data != null">
             <template v-for="(value, key) in modelValue[signalDescriptor].waveform.data" :key="key">
                 <WaveformInputCustomPoint
                     v-if="(!resettingPoints || addedOrRemovedIndex>=key) && (showAllPoints || key < 3 || Object.keys(modelValue[signalDescriptor].waveform.data).length <= 3)"

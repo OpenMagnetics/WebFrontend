@@ -188,6 +188,21 @@ export const useTaskQueueStore = defineStore('taskQueue', {
                 });
             }
 
+            // Sanitize harmonics in all excitations before sending to WASM
+            if (inputs.operatingPoints) {
+                inputs.operatingPoints.forEach((op) => {
+                    if (op.excitationsPerWinding) {
+                        op.excitationsPerWinding.forEach((exc) => {
+                            for (const signal of ['current', 'voltage']) {
+                                if (exc[signal]?.harmonics) {
+                                    exc[signal].harmonics = this._sanitizeHarmonics(exc[signal].harmonics);
+                                }
+                            }
+                        });
+                    }
+                });
+            }
+
             const result = await mkf.calculate_advised_cores(JSON.stringify(inputs), JSON.stringify(weights), count, modeString);
             if (result.startsWith('Exception')) {
                 setTimeout(() => { this.advisedCoresCalculated(false, result); }, this.task_standard_response_delay);
@@ -254,6 +269,21 @@ export const useTaskQueueStore = defineStore('taskQueue', {
                 });
             }
 
+            // Sanitize harmonics in all excitations before sending to WASM
+            if (inputs.operatingPoints) {
+                inputs.operatingPoints.forEach((op) => {
+                    if (op.excitationsPerWinding) {
+                        op.excitationsPerWinding.forEach((exc) => {
+                            for (const signal of ['current', 'voltage']) {
+                                if (exc[signal]?.harmonics) {
+                                    exc[signal].harmonics = this._sanitizeHarmonics(exc[signal].harmonics);
+                                }
+                            }
+                        });
+                    }
+                });
+            }
+
             const result = await mkf.calculate_advised_magnetics(JSON.stringify(inputs), JSON.stringify(transformedWeights), count, modeString);
             if (result.startsWith('Exception')) {
                 setTimeout(() => { this.advisedMagneticsCalculated(false, result); }, this.task_standard_response_delay);
@@ -280,7 +310,8 @@ export const useTaskQueueStore = defineStore('taskQueue', {
                 setTimeout(() => { this.harmonicsCalculated(false, result); }, this.task_standard_response_delay);
                 throw new Error(result);
             }
-            const harmonics = JSON.parse(result);
+            // WASM returns pre-allocated arrays padded with nulls — strip them at the source
+            const harmonics = this._sanitizeHarmonics(JSON.parse(result));
             setTimeout(() => { this.harmonicsCalculated(true, harmonics); }, this.task_standard_response_delay);
             return harmonics;
         },
@@ -292,7 +323,9 @@ export const useTaskQueueStore = defineStore('taskQueue', {
             const mkf = await waitForMkf();
             await mkf.ready;
 
-            const result = await mkf.calculate_processed(JSON.stringify(harmonics), JSON.stringify(waveform));
+            // Sanitize harmonics: strip null entries that cause WASM type errors
+            const sanitizedHarmonics = this._sanitizeHarmonics(harmonics);
+            const result = await mkf.calculate_processed(JSON.stringify(sanitizedHarmonics), JSON.stringify(waveform));
             if (result.startsWith("Exception")) {
                 setTimeout(() => { this.processedCalculated(false, result); }, this.task_standard_response_delay);
                 throw new Error(result);
@@ -366,6 +399,9 @@ export const useTaskQueueStore = defineStore('taskQueue', {
             await mkf.ready;
 
             const result = await mkf.standardize_signal_descriptor(JSON.stringify(signalDescriptor), frequency);
+            if (typeof result === 'string' && result.startsWith("Exception")) {
+                throw new Error(result);
+            }
             const standardized = JSON.parse(result);
             setTimeout(() => { this.signalDescriptorStandardized(true, standardized); }, this.task_standard_response_delay);
             return standardized;
@@ -536,7 +572,12 @@ export const useTaskQueueStore = defineStore('taskQueue', {
             const mkf = await waitForMkf();
             await mkf.ready;
 
-            const result = await mkf.calculate_induced_voltage(JSON.stringify(excitation), magnetizingInductance);
+            // Sanitize: strip null entries from harmonics before sending to WASM
+            const sanitized = this._sanitizeExcitationForInduce(excitation);
+            const result = await mkf.calculate_induced_voltage(JSON.stringify(sanitized), magnetizingInductance);
+            if (result.startsWith('Exception')) {
+                throw new Error(result);
+            }
             const voltage = JSON.parse(result);
             setTimeout(() => { this.inducedVoltageCalculated(true, voltage); }, this.task_standard_response_delay);
             return voltage;
@@ -549,10 +590,53 @@ export const useTaskQueueStore = defineStore('taskQueue', {
             const mkf = await waitForMkf();
             await mkf.ready;
 
-            const result = await mkf.calculate_induced_current(JSON.stringify(excitation), magnetizingInductance);
+            const sanitized = this._sanitizeExcitationForInduce(excitation);
+            const result = await mkf.calculate_induced_current(JSON.stringify(sanitized), magnetizingInductance);
+            if (result.startsWith('Exception')) {
+                throw new Error(result);
+            }
             const current = JSON.parse(result);
             setTimeout(() => { this.inducedCurrentCalculated(true, current); }, this.task_standard_response_delay);
             return current;
+        },
+
+        _sanitizeHarmonics(harmonics) {
+            if (!harmonics) return harmonics;
+            const h = JSON.parse(JSON.stringify(harmonics));
+            if (h.amplitudes && h.frequencies) {
+                let validLen = Math.min(h.amplitudes.length, h.frequencies.length);
+                for (let i = 0; i < validLen; i++) {
+                    if (h.amplitudes[i] == null || h.frequencies[i] == null) {
+                        validLen = i;
+                        break;
+                    }
+                }
+                h.amplitudes = h.amplitudes.slice(0, validLen);
+                h.frequencies = h.frequencies.slice(0, validLen);
+            }
+            return h;
+        },
+
+        _sanitizeExcitationForInduce(excitation) {
+            const clone = JSON.parse(JSON.stringify(excitation));
+            for (const signal of ['current', 'voltage']) {
+                if (clone[signal]?.harmonics) {
+                    const h = clone[signal].harmonics;
+                    if (h.amplitudes && h.frequencies) {
+                        // Trim both arrays at the first null in either
+                        let validLen = Math.min(h.amplitudes.length, h.frequencies.length);
+                        for (let i = 0; i < validLen; i++) {
+                            if (h.amplitudes[i] == null || h.frequencies[i] == null) {
+                                validLen = i;
+                                break;
+                            }
+                        }
+                        h.amplitudes = h.amplitudes.slice(0, validLen);
+                        h.frequencies = h.frequencies.slice(0, validLen);
+                    }
+                }
+            }
+            return clone;
         },
 
         // ==========================================
@@ -1024,7 +1108,7 @@ export const useTaskQueueStore = defineStore('taskQueue', {
                 'Active Clamp Forward': 'generate_active_clamp_forward_ngspice_circuit',
                 'Isolated Buck': 'generate_isolated_buck_ngspice_circuit',
                 'Isolated Buck Boost': 'generate_isolated_buck_boost_ngspice_circuit',
-                'LLC Converter': 'generate_llc_ngspice_circuit',
+                'LLC Resonant Converter': 'generate_llc_ngspice_circuit',
                 // 'CLLC': 'generate_cllc_ngspice_circuit',  // Different signature - requires special handling
                 'DAB': 'generate_dab_ngspice_circuit',
                 'PSFB': 'generate_psfb_ngspice_circuit',

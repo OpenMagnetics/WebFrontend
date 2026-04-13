@@ -985,6 +985,14 @@ export default {
             </div>
           </div>
 
+          <!-- Diagnostics (optional): topology-specific read-only diagnostic rows. -->
+          <div v-if="$slots.diagnostics" class="compact-card">
+            <div class="compact-header"><i class="fa-solid fa-chart-line me-1"></i>Diagnostics</div>
+            <div class="compact-body ps-4 pe-3">
+              <slot name="diagnostics"></slot>
+            </div>
+          </div>
+
         </div>
       </div>
 
