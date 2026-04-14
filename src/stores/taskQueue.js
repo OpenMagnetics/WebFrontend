@@ -530,7 +530,20 @@ export const useTaskQueueStore = defineStore('taskQueue', {
             await mkf.ready;
 
             const result = await mkf.get_maximum_dimensions(JSON.stringify(magnetic));
-            const dimensions = JSON.parse(result);
+            // In worker mode the proxy already converts Embind vectors to plain arrays,
+            // so `result` is a JS array (or an Embind vector with .get/.size in main mode).
+            // Only JSON.parse if the worker returned a JSON string (legacy main-thread path).
+            let dimensions;
+            if (Array.isArray(result)) {
+                dimensions = result;
+            } else if (typeof result === 'string') {
+                dimensions = JSON.parse(result);
+            } else if (result && typeof result.size === 'function') {
+                dimensions = [];
+                for (let i = 0; i < result.size(); i++) dimensions.push(result.get(i));
+            } else {
+                dimensions = result;
+            }
             setTimeout(() => { this.maximumDimensionsGotten(true, dimensions); }, this.task_standard_response_delay);
             return dimensions;
         },

@@ -96,7 +96,7 @@ export default {
         
         // Delay creation slightly to ensure old tooltip is fully disposed
         setTimeout(() => {
-            if (!el._tooltip) {
+            if (!el._tooltip && el.isConnected) {
                 el._tooltip = createSafeTooltip(el, {
                     title: tooltipText,
                     placement: placement,

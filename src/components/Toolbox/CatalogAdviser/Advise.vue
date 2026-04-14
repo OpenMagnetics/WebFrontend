@@ -86,7 +86,12 @@ export default {
             //     this.localTexts.losses = `Losses:\n${removeTrailingZeroes(aux.label, 2)} ${aux.unit}`
             // }
             {
-                this.localTexts.core = `Core: ${this.masData.magnetic.core.functionalDescription.shape.name} - ${this.masData.magnetic.core.functionalDescription.material.name}`
+                // After magnetic_autocomplete, shape and material are objects with .name.
+                // Guard for the un-hydrated case where they're still raw strings.
+                const fd = this.masData?.magnetic?.core?.functionalDescription;
+                const shapeName = (typeof fd?.shape === 'string') ? fd.shape : fd?.shape?.name;
+                const materialName = (typeof fd?.material === 'string') ? fd.material : fd?.material?.name;
+                this.localTexts.core = `Core: ${shapeName ?? '—'} - ${materialName ?? '—'}`;
             }
             {
                 this.localTexts.turnsRatios = "Turns ratios: ";
@@ -100,13 +105,23 @@ export default {
                 }
             }
             {
-                const aux = formatInductance(this.masData.outputs[0].magnetizingInductance.magnetizingInductance.nominal);
-                this.localTexts.magnetizingInductance = `Mag. Ind.: ${removeTrailingZeroes(aux.label, 1)} ${aux.unit}`
+                // outputs[0].inductance.magnetizingInductance.magnetizingInductance.nominal
+                // is the path produced by MagneticAdviser when it runs the MagnetizingInductance
+                // filter. Fall back to the design requirement if no simulated output is present.
+                const indNom = this.masData?.outputs?.[0]?.inductance?.magnetizingInductance?.magnetizingInductance?.nominal
+                    ?? this.masData?.inputs?.designRequirements?.magnetizingInductance?.nominal;
+                if (indNom != null) {
+                    const aux = formatInductance(indNom);
+                    this.localTexts.magnetizingInductance = `Mag. Ind.: ${removeTrailingZeroes(aux.label, 1)} ${aux.unit}`;
+                }
             }
             {
-                const aux = formatResistance(this.masData.outputs[0].windingLosses.dcResistancePerWinding[0]);
-                this.localTexts.dcResistance = `DC Res.: ${removeTrailingZeroes(aux.label, 1)} ${aux.unit}`
-            } 
+                const dcRes = this.masData?.outputs?.[0]?.windingLosses?.dcResistancePerWinding?.[0];
+                if (dcRes != null) {
+                    const aux = formatResistance(dcRes);
+                    this.localTexts.dcResistance = `DC Res.: ${removeTrailingZeroes(aux.label, 1)} ${aux.unit}`;
+                }
+            }
             {
                 try {
                     const maximumDimensions = await this.taskQueueStore.getMaximumDimensions(this.masData.magnetic);

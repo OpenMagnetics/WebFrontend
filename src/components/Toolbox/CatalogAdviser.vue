@@ -32,6 +32,14 @@ export default {
             type: String,
             default: '',
         },
+        // When true, run the adviser entirely in the browser via the MKF WASM
+        // engine (cache must be pre-populated, e.g. via load_magnetics on boot).
+        // When false (default), POST to the backend's /calculate_advised_magnetics
+        // endpoint as before.
+        useWasmCache: {
+            type: Boolean,
+            default: false,
+        },
     },
     data() {
         const adviseCacheStore = useAdviseCacheStore();
@@ -98,29 +106,37 @@ export default {
             this.$stateStore.setCurrentToolSubsection("magneticBuilder");
             this.$emit("canContinue", true);
         },
+        buildFilterFlow() {
+            const filterFlow = [];
+            for (const [key, value] of Object.entries(this.catalogStore.filters)) {
+                if (value > 0) {
+                    filterFlow.push({
+                        "filter": key,
+                        "invert": true,
+                        "log": false,
+                        "strictlyRequired": value==100,
+                        "weight": value / 100
+                    })
+                }
+            }
+            return filterFlow;
+        },
         calculateAdvisedMagnetics() {
             this.catalogStore.advises = [];
             this.loading = true;
+            if (this.useWasmCache) {
+                this.calculateAdvisedMagneticsFromWasmCache();
+            } else {
+                this.calculateAdvisedMagneticsFromBackend();
+            }
+        },
+        calculateAdvisedMagneticsFromBackend() {
             setTimeout(() => {
                 const url = import.meta.env.VITE_API_ENDPOINT + '/calculate_advised_magnetics';
-
-                const filterFlow = [];
-                for (const [key, value] of Object.entries(this.catalogStore.filters)) {
-                    if (value > 0) {
-                        filterFlow.push({
-                            "filter": key,
-                            "invert": true,
-                            "log": false,
-                            "strictlyRequired": value==100,
-                            "weight": value / 100
-                        })
-                    }
-                }
-
                 const data = {
                     inputs:  this.masStore.mas.inputs,
                     maximum_number_results:  9,
-                    filter_flow: filterFlow,
+                    filter_flow: this.buildFilterFlow(),
                 }
 
                 this.$axios.post(url, data)
@@ -138,6 +154,27 @@ export default {
                 });
 
             }, 100);
+        },
+        async calculateAdvisedMagneticsFromWasmCache() {
+            try {
+                const mkf = this.$mkf;
+                if (!mkf) throw new Error('MKF WASM engine not available');
+                const inputsJson = JSON.stringify(this.masStore.mas.inputs);
+                const filterFlowJson = JSON.stringify(this.buildFilterFlow());
+                const resultStr = await mkf.calculate_advised_magnetics_from_cache(inputsJson, filterFlowJson, 9);
+                if (typeof resultStr === 'string' && resultStr.startsWith('Exception')) {
+                    throw new Error(resultStr);
+                }
+                const parsed = typeof resultStr === 'string' ? JSON.parse(resultStr) : resultStr;
+                this.catalogStore.advises = [];
+                (parsed?.data || []).forEach((datum) => {
+                    this.catalogStore.advises.push(datum);
+                });
+            } catch (error) {
+                console.error('[CatalogAdviser] WASM advise failed:', error);
+            } finally {
+                this.loading = false;
+            }
         },
 
     }
