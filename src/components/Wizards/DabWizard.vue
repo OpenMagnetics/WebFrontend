@@ -58,7 +58,7 @@ export default {
       designRequirements: null,
       simulatedTurnsRatios: null,
       numberOfPeriods: 2,
-      numberOfSteadyStatePeriods: 1,
+      numberOfSteadyStatePeriods: 100,
       simulatedOperatingPoints: [],
       waveformViewMode: 'magnetic',
       forceWaveformUpdate: 0,
