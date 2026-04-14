@@ -1123,7 +1123,7 @@ export const useTaskQueueStore = defineStore('taskQueue', {
                 'Isolated Buck Boost': 'generate_isolated_buck_boost_ngspice_circuit',
                 'LLC Resonant Converter': 'generate_llc_ngspice_circuit',
                 // 'CLLC': 'generate_cllc_ngspice_circuit',  // Different signature - requires special handling
-                'DAB': 'generate_dab_ngspice_circuit',
+                'Dual Active Bridge Converter': 'generate_dab_ngspice_circuit',
                 'PSFB': 'generate_psfb_ngspice_circuit',
                 'CommonModeChoke': 'generate_cmc_ngspice_circuit',
             };
@@ -1303,6 +1303,23 @@ export const useTaskQueueStore = defineStore('taskQueue', {
             const inputs = JSON.parse(result);
             setTimeout(() => { this.dabInputsCalculated(true, inputs); }, this.task_standard_response_delay);
             return inputs;
+        },
+
+        dabWaveformsSimulated(success = true, dataOrMessage = '') {
+        },
+
+        async simulateDabIdealWaveforms(params) {
+            const mkf = await waitForMkf();
+            await mkf.ready;
+
+            const result = await mkf.simulate_dab_ideal_waveforms(JSON.stringify(params));
+            if (result.startsWith('Exception')) {
+                setTimeout(() => { this.dabWaveformsSimulated(false, result); }, this.task_standard_response_delay);
+                throw new Error(result);
+            }
+            const waveforms = JSON.parse(result);
+            setTimeout(() => { this.dabWaveformsSimulated(true, waveforms); }, this.task_standard_response_delay);
+            return waveforms;
         },
 
         // ==========================================

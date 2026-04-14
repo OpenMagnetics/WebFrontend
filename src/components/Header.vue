@@ -460,7 +460,6 @@ export default {
                         <li>
                             <button
                                 :style="getWizardButtonStyle('DAB', true)"
-                                :disabled="true"
                                 data-cy="Dab-link"
                                 :class="headerTogglerIsVisible? 'w-100' : 'mx-0' "
                                 class="dropdown-item btn btn-block nav-link px-2"
