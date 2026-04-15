@@ -6,6 +6,8 @@ import Dimension from '/WebSharedComponents/DataInput/Dimension.vue'
 import DimensionReadOnly from '/WebSharedComponents/DataInput/DimensionReadOnly.vue'
 import ElementFromList from '/WebSharedComponents/DataInput/ElementFromList.vue'
 import DimensionWithTolerance from '/WebSharedComponents/DataInput/DimensionWithTolerance.vue'
+import PairOfDimensions from '/WebSharedComponents/DataInput/PairOfDimensions.vue'
+import TripleOfDimensions from '/WebSharedComponents/DataInput/TripleOfDimensions.vue'
 import { minimumMaximumScalePerParameter } from '/WebSharedComponents/assets/js/defaults.js'
 import ConverterWizardBase from './ConverterWizardBase.vue'
 </script>
@@ -23,8 +25,8 @@ export default {
     const taskQueueStore = useTaskQueueStore();
     const localData = {
       inputVoltage: { nominal: 400, tolerance: 0.1 },
-      outputVoltage: 400,
-      outputPower: 1000,
+      outputsParameters: [{ voltage: 400, current: 2.5, turnsRatio: 1.0 }],
+      numberOutputs: 1,
       switchingFrequency: 100000,
       phaseShift: 30,
       efficiency: 0.97,
@@ -73,14 +75,15 @@ export default {
         ? (this.localData.inputVoltage?.nominal ?? this.localData.inputVoltage?.minimum ?? 400)
         : (this.localData.inputVoltage ?? 400);
       const knowsDesign = this.localData.designMode === 'I know the design I want';
-      // AdvancedDab always requires desiredTurnsRatios + desiredMagnetizingInductance.
-      // In "Help me" mode, derive a sensible default turns ratio from V_in/V_out.
-      const turnsRatio = knowsDesign ? this.localData.turnsRatio : vin / (this.localData.outputVoltage || 1);
+      const outs = this.localData.outputsParameters || [];
+      const desiredTurnsRatios = knowsDesign
+        ? outs.map(o => o.turnsRatio || 1.0)
+        : outs.map(o => vin / (o.voltage || 1));
       const params = {
         inputVoltage: this.localData.inputVoltage, switchingFrequency: this.localData.switchingFrequency,
         phaseShift: this.localData.phaseShift, efficiency: this.localData.efficiency,
         useLeakageInductance: this.localData.useLeakageInductance,
-        desiredTurnsRatios: [turnsRatio],
+        desiredTurnsRatios,
         desiredMagnetizingInductance: this.localData.magnetizingInductance,
         operatingPoints: [this.buildOperatingPoint()],
       };
@@ -92,8 +95,8 @@ export default {
     buildOperatingPoint() {
       const mode = this.localData.modulationType || 'SPS';
       const op = {
-        outputVoltages: [this.localData.outputVoltage],
-        outputCurrents: [this.localData.outputPower / this.localData.outputVoltage],
+        outputVoltages: this.localData.outputsParameters.map(o => o.voltage),
+        outputCurrents: this.localData.outputsParameters.map(o => o.current),
         phaseShift: this.localData.phaseShift,
         switchingFrequency: this.localData.switchingFrequency,
         ambientTemperature: this.localData.ambientTemperature,
@@ -123,10 +126,31 @@ export default {
       const vin = typeof this.localData.inputVoltage === 'object'
         ? this.localData.inputVoltage?.nominal
         : this.localData.inputVoltage;
-      return this.localData.outputPower > 0
-        && this.localData.outputVoltage > 0
+      const outs = this.localData.outputsParameters || [];
+      const outputsValid = outs.length > 0 && outs.every(o => o.voltage > 0 && o.current > 0);
+      return outputsValid
         && vin > 0
         && this.localData.switchingFrequency > 0;
+    },
+    updateNumberOutputs(newNumber) {
+      const n = parseInt(newNumber, 10);
+      if (n > this.localData.outputsParameters.length) {
+        const diff = n - this.localData.outputsParameters.length;
+        for (let i = 0; i < diff; i++) {
+          const last = this.localData.outputsParameters[this.localData.outputsParameters.length - 1] || { voltage: 400, current: 2.5, turnsRatio: 1.0 };
+          const newOutput = { voltage: last.voltage, current: last.current };
+          if (last.turnsRatio != null) {
+            newOutput.turnsRatio = last.turnsRatio;
+          } else if (this.localData.designMode === 'I know the design I want') {
+            newOutput.turnsRatio = 1.0;
+          }
+          this.localData.outputsParameters.push(newOutput);
+        }
+      } else if (n < this.localData.outputsParameters.length) {
+        const diff = this.localData.outputsParameters.length - n;
+        this.localData.outputsParameters.splice(-diff, diff);
+      }
+      this.updateErrorMessage();
     },
     updateErrorMessage() { this.errorMessage = ""; },
     dismissError() { this.errorMessage = ""; this.waveformError = ""; },
@@ -258,8 +282,52 @@ export default {
     </template>
 
     <template #outputs>
-      <Dimension :name="'outputVoltage'" :replaceTitle="'Voltage'" unit="V" :min="minimumMaximumScalePerParameter['voltage']['min']" :max="minimumMaximumScalePerParameter['voltage']['max']" v-model="localData" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor" :textColor="$styleStore.wizard.inputTextColor" @update="updateErrorMessage"/>
-      <Dimension :name="'outputPower'" :replaceTitle="'Power'" unit="W" :min="1" :max="minimumMaximumScalePerParameter['power']['max']" v-model="localData" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor" :textColor="$styleStore.wizard.inputTextColor" @update="updateErrorMessage"/>
+      <div class="mb-3">
+        <ElementFromList :name="'numberOutputs'" :replaceTitle="'Number of Outputs'"
+          :options="Array.from({length: 10}, (_, i) => i + 1)"
+          :titleSameRow="true" v-model="localData"
+          :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'"
+          :valueFontSize="$styleStore.wizard.inputFontSize"
+          :labelFontSize="$styleStore.wizard.inputLabelFontSize"
+          :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor"
+          :textColor="$styleStore.wizard.inputTextColor"
+          @update="updateNumberOutputs"
+        />
+      </div>
+      <div v-for="(datum, index) in localData.outputsParameters" :key="'output-' + index" class="mb-2">
+        <TripleOfDimensions v-if="localData.designMode === 'I know the design I want'"
+          :names="['voltage', 'current', 'turnsRatio']"
+          :replaceTitle="['V', 'I', 'n']"
+          :units="['V', 'A', null]"
+          :mins="[minimumMaximumScalePerParameter['voltage']['min'], minimumMaximumScalePerParameter['current']['min'], 0.01]"
+          :maxs="[minimumMaximumScalePerParameter['voltage']['max'], minimumMaximumScalePerParameter['current']['max'], 100]"
+          v-model="localData.outputsParameters[index]"
+          :labelWidthProportionClass="'col-4'"
+          :valueWidthProportionClass="'col-7'"
+          :valueFontSize="$styleStore.wizard.inputFontSize"
+          :labelFontSize="$styleStore.wizard.inputLabelFontSize"
+          :labelBgColor="'transparent'"
+          :valueBgColor="$styleStore.wizard.inputValueBgColor"
+          :textColor="$styleStore.wizard.inputTextColor"
+          @update="updateErrorMessage"
+        />
+        <PairOfDimensions v-else
+          :names="['voltage', 'current']"
+          :replaceTitle="['Volt.', 'Curr.']"
+          :units="['V', 'A']"
+          :mins="[minimumMaximumScalePerParameter['voltage']['min'], minimumMaximumScalePerParameter['current']['min']]"
+          :maxs="[minimumMaximumScalePerParameter['voltage']['max'], minimumMaximumScalePerParameter['current']['max']]"
+          v-model="localData.outputsParameters[index]"
+          :labelWidthProportionClass="'col-4'"
+          :valueWidthProportionClass="'col-7'"
+          :valueFontSize="$styleStore.wizard.inputFontSize"
+          :labelFontSize="$styleStore.wizard.inputLabelFontSize"
+          :labelBgColor="'transparent'"
+          :valueBgColor="$styleStore.wizard.inputValueBgColor"
+          :textColor="$styleStore.wizard.inputTextColor"
+          @update="updateErrorMessage"
+        />
+      </div>
     </template>
 
     <template v-if="dabDiagnostics" #diagnostics>
