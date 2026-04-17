@@ -45,14 +45,14 @@ test('TPS Simulated waveforms appear', async ({ page }) => {
   await modeSelect.selectOption('TPS');
   await page.waitForTimeout(300);
 
-  const d1Row = conditionsCard.locator('text=Inner Shift D1').locator('../..');
+  const d1Row = conditionsCard.locator('text=Primary D1').locator('../..');
   const d1Input = d1Row.locator('input[type="number"]').first();
   if (await d1Input.isVisible().catch(() => false)) {
     await d1Input.click({ clickCount: 3 });
     await d1Input.fill('15');
     await d1Input.press('Tab');
   }
-  const d2Row = conditionsCard.locator('text=Inner Shift D2').locator('../..');
+  const d2Row = conditionsCard.locator('text=Secondary D2').locator('../..');
   const d2Input = d2Row.locator('input[type="number"]').first();
   if (await d2Input.isVisible().catch(() => false)) {
     await d2Input.click({ clickCount: 3 });

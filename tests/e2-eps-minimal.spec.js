@@ -45,7 +45,7 @@ test('EPS Simulated waveforms appear', async ({ page }) => {
   await modeSelect.selectOption('EPS');
   await page.waitForTimeout(300);
 
-  const d1Row = conditionsCard.locator('text=Inner Shift D1').locator('../..');
+  const d1Row = conditionsCard.locator('text=Primary D1').locator('../..');
   const d1Input = d1Row.locator('input[type="number"]').first();
   if (await d1Input.isVisible().catch(() => false)) {
     await d1Input.click({ clickCount: 3 });

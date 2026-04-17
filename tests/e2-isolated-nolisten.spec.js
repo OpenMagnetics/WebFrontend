@@ -63,7 +63,7 @@ test('E2 isolated no listeners', async ({ page }) => {
   await page.waitForTimeout(300);
 
   const cCard = page.locator('.compact-card').filter({ hasText: 'Conditions' });
-  const d1Row = cCard.locator('text=Inner Shift D1').locator('../..');
+  const d1Row = cCard.locator('text=Primary D1').locator('../..');
   const d1Input = d1Row.locator('input[type="number"]').first();
   if (await d1Input.isVisible().catch(() => false)) {
     await d1Input.click({ clickCount: 3 });

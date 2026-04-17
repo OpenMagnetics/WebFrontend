@@ -23,12 +23,19 @@ export default {
   data() {
     const masStore = useMasStore();
     const taskQueueStore = useTaskQueueStore();
+    // Modulation naming follows the standard TPS convention
+    // (Huang et al., Energies 11(9):2419, 2018 — also Rosano-Maniktala
+    // "Power Supplies A to Z" 3rd ed.):
+    //   D1 = primary-bridge intra-leg shift
+    //   D2 = secondary-bridge intra-leg shift
+    //   D3 = inter-bridge (outer) shift that drives power transfer
+    // SPS uses D3 only, EPS uses D1+D3, DPS uses D1+D2+D3 (symmetric
+    // D1=D2 is the Huang convention), TPS uses all three independently.
     const localData = {
       inputVoltage: { nominal: 400, tolerance: 0.1 },
       outputsParameters: [{ voltage: 400, current: 2.5, turnsRatio: 1.0 }],
       numberOutputs: 1,
       switchingFrequency: 100000,
-      phaseShift: 30,
       efficiency: 0.97,
       seriesInductance: 0,
       useLeakageInductance: true,
@@ -37,8 +44,9 @@ export default {
       ambientTemperature: 25,
       insulationType: 'Basic',
       modulationType: 'SPS',
-      innerPhaseShift1: 15,
-      innerPhaseShift2: 15,
+      innerPhaseShift1: 15,      // D1 — primary intra-leg shift
+      innerPhaseShift2: 15,      // D2 — secondary intra-leg shift
+      innerPhaseShift3: 30,      // D3 — outer inter-bridge shift
       designMode: 'Help me with the design',
     };
     const insulationTypes = ['No', 'Basic', 'Reinforced'];
@@ -80,8 +88,9 @@ export default {
         ? outs.map(o => o.turnsRatio || 1.0)
         : outs.map(o => vin / (o.voltage || 1));
       const params = {
-        inputVoltage: this.localData.inputVoltage, switchingFrequency: this.localData.switchingFrequency,
-        phaseShift: this.localData.phaseShift, efficiency: this.localData.efficiency,
+        inputVoltage: this.localData.inputVoltage,
+        switchingFrequency: this.localData.switchingFrequency,
+        efficiency: this.localData.efficiency,
         useLeakageInductance: this.localData.useLeakageInductance,
         desiredTurnsRatios,
         desiredMagnetizingInductance: this.localData.magnetizingInductance,
@@ -92,18 +101,25 @@ export default {
       }
       return params;
     },
+    // Build one DabOperatingPoint with the right subset of shifts per mode.
+    // innerPhaseShift3 (D3, outer) is always sent. Inner shifts D1, D2 are
+    // added only for the modes that actually use them (Huang 2018 convention).
     buildOperatingPoint() {
       const mode = this.localData.modulationType || 'SPS';
       const op = {
         outputVoltages: this.localData.outputsParameters.map(o => o.voltage),
         outputCurrents: this.localData.outputsParameters.map(o => o.current),
-        phaseShift: this.localData.phaseShift,
+        innerPhaseShift3: this.localData.innerPhaseShift3,
         switchingFrequency: this.localData.switchingFrequency,
         ambientTemperature: this.localData.ambientTemperature,
         modulationType: mode,
       };
+      // EPS, DPS, TPS all use D1 (primary intra-leg shift).
       if (mode !== 'SPS') op.innerPhaseShift1 = this.localData.innerPhaseShift1;
-      if (mode === 'TPS') op.innerPhaseShift2 = this.localData.innerPhaseShift2;
+      // DPS and TPS both use D2 (secondary intra-leg shift). In DPS, standard
+      // usage is D2 = D1 (symmetric); we still send D2 explicitly so the user's
+      // value is respected.
+      if (mode === 'DPS' || mode === 'TPS') op.innerPhaseShift2 = this.localData.innerPhaseShift2;
       return op;
     },
     getCalculateFn() { return (aux) => this.taskQueueStore.calculateDabInputs(aux); },
@@ -240,9 +256,12 @@ export default {
     <template #conditions>
       <Dimension :name="'switchingFrequency'" :replaceTitle="'Sw. Freq'" unit="Hz" :min="minimumMaximumScalePerParameter['frequency']['min']" :max="minimumMaximumScalePerParameter['frequency']['max']" v-model="localData" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor" :textColor="$styleStore.wizard.inputTextColor" @update="updateErrorMessage"/>
       <ElementFromList :name="'modulationType'" :replaceTitle="'Mode'" :options="modulationTypes" :titleSameRow="true" v-model="localData" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor" :textColor="$styleStore.wizard.inputTextColor" @update="updateErrorMessage"/>
-      <Dimension :name="'phaseShift'" :replaceTitle="'Ph. Shift φ'" unit="°" :min="0" :max="90" v-model="localData" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor" :textColor="$styleStore.wizard.inputTextColor" @update="updateErrorMessage"/>
-      <Dimension v-if="localData.modulationType !== 'SPS'" :name="'innerPhaseShift1'" :replaceTitle="'Inner Shift D1'" unit="°" :min="0" :max="90" v-model="localData" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor" :textColor="$styleStore.wizard.inputTextColor" @update="updateErrorMessage"/>
-      <Dimension v-if="localData.modulationType === 'TPS'" :name="'innerPhaseShift2'" :replaceTitle="'Inner Shift D2'" unit="°" :min="0" :max="90" v-model="localData" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor" :textColor="$styleStore.wizard.inputTextColor" @update="updateErrorMessage"/>
+      <!-- D1: primary intra-leg shift. EPS, DPS and TPS. -->
+      <Dimension v-if="localData.modulationType !== 'SPS'" :name="'innerPhaseShift1'" :replaceTitle="'Primary D1'" unit="°" :min="0" :max="90" v-model="localData" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor" :textColor="$styleStore.wizard.inputTextColor" @update="updateErrorMessage"/>
+      <!-- D2: secondary intra-leg shift. DPS (usually = D1, symmetric) and TPS. -->
+      <Dimension v-if="localData.modulationType === 'DPS' || localData.modulationType === 'TPS'" :name="'innerPhaseShift2'" :replaceTitle="'Secondary D2'" unit="°" :min="0" :max="90" v-model="localData" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor" :textColor="$styleStore.wizard.inputTextColor" @update="updateErrorMessage"/>
+      <!-- D3: outer inter-bridge shift — the main power-transfer knob, used in ALL modes. -->
+      <Dimension :name="'innerPhaseShift3'" :replaceTitle="'Outer D3'" unit="°" :min="-90" :max="90" :allowNegative="true" v-model="localData" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor" :textColor="$styleStore.wizard.inputTextColor" @update="updateErrorMessage"/>
       <Dimension :name="'ambientTemperature'" :replaceTitle="'Temp'" unit=" C" :min="minimumMaximumScalePerParameter['temperature']['min']" :max="minimumMaximumScalePerParameter['temperature']['max']" :allowNegative="true" :allowZero="true" v-model="localData" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor" :textColor="$styleStore.wizard.inputTextColor" @update="updateErrorMessage"/>
       <Dimension :name="'efficiency'" :replaceTitle="'Eff'" unit="%" :visualScale="100" :min="0.5" :max="1" v-model="localData" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor" :textColor="$styleStore.wizard.inputTextColor" @update="updateErrorMessage"/>
       <ElementFromList :name="'insulationType'" :replaceTitle="'Insul'" :options="insulationTypes" :titleSameRow="true" v-model="localData" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor" :textColor="$styleStore.wizard.inputTextColor" @update="updateErrorMessage"/>
@@ -334,7 +353,7 @@ export default {
 
     <template v-if="dabDiagnostics" #diagnostics>
       <DimensionReadOnly name="dabModulation" :replaceTitle="'Modulation'" :value="dabModLabel(dabDiagnostics.modulationType)" :unit="null" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor"/>
-      <DimensionReadOnly name="dabPhaseShift" :replaceTitle="'φ computed'" :value="dabDiagnostics.computedPhaseShiftDeg" unit="°" :numberDecimals="1" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor"/>
+      <DimensionReadOnly name="dabD3" :replaceTitle="'D3 computed'" :value="dabDiagnostics.computedD3Deg" unit="°" :numberDecimals="1" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor"/>
       <DimensionReadOnly name="dabSeriesInductance" :replaceTitle="'L series'" :value="dabDiagnostics.computedSeriesInductance" unit="H" :numberDecimals="9" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor"/>
       <DimensionReadOnly name="dabVoltageRatio" :replaceTitle="'d = N·V₂/V₁'" :value="dabDiagnostics.voltageConversionRatio" :unit="null" :numberDecimals="3" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor"/>
       <DimensionReadOnly name="dabZvsPrimary" :replaceTitle="'ZVS primary'" :value="dabDiagnostics.zvsMarginPrimaryDeg" unit="°" :numberDecimals="1" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="dabDiagnostics.zvsMarginPrimaryDeg <= 0 ? 'text-warning' : $styleStore.wizard.inputTextColor"/>
