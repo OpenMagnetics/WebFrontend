@@ -17,7 +17,8 @@ import Footer from '../components/Footer.vue'
             <p>Last Updated: February 2026</p>
 
             <h2 style="font-weight: normal;">Welcome</h2>
-            <p>OpenMagnetics is a free, open-source platform for designing and simulating magnetic components. We respect your privacy and want to be transparent about the data we collect. This policy explains what data we process, why, and your rights regarding it.</p>
+            <p>OpenMagnetics exists on a simple premise: <strong>engineering knowledge is a public good, not a competitive advantage for those who can afford expensive software licences.</strong> Every student, independent engineer, and startup deserves the same quality of design tools as any large corporation. That is why the entire platform is free, open-source, and will remain so.</p>
+            <p>We respect your privacy and want to be transparent about the data we collect. This policy explains what data we process, why, and your rights regarding it.</p>
 
             <p><strong>The short version:</strong> We do not sell your personal data. When you use our design tools, the technical parameters you enter (e.g., core shapes, winding configurations, operating conditions) are anonymized and added to a public, open-source dataset for the power electronics community — free for anyone to use for research or tool development. OpenMagnetics does not itself train AI models on this data. No personal information is ever included. If you prefer to keep your design data fully private, you can self-host OpenMagnetics — it is open source. Contact us at <a href="mailto:openmagnetics@protonmail.com">openmagnetics@protonmail.com</a> if you need help setting it up.</p>
 
@@ -87,3 +88,20 @@ import Footer from '../components/Footer.vue'
    <Footer class="mt-auto"/>
 </div>
 </template>
+
+<style scoped>
+.container { max-width: 860px; padding-top: 5rem; padding-bottom: 3rem; }
+h1 { font-weight: 700; margin-bottom: 0.25rem; }
+h2 { color: var(--bs-primary); font-size: 1.1rem; font-weight: 600; margin-top: 2rem; margin-bottom: 0.5rem; letter-spacing: 0.01em; }
+p, li { font-size: 0.92rem; line-height: 1.7; color: rgba(255,255,255,0.82); }
+strong { color: rgba(255,255,255,0.95); }
+a { color: var(--bs-primary); }
+span > h2 ~ p, span > h2 ~ ul {
+    background: linear-gradient(180deg, rgba(var(--bs-primary-rgb),0.04) 0%, rgba(var(--bs-primary-rgb),0.02) 100%), var(--bs-dark);
+    border: 1px solid rgba(var(--bs-primary-rgb),0.12);
+    border-left: 3px solid rgba(var(--bs-primary-rgb),0.5);
+    border-radius: 10px;
+    padding: 0.75rem 1rem !important;
+    margin-bottom: 0.5rem;
+}
+</style>

@@ -24,6 +24,11 @@ import Footer from '../components/Footer.vue'
                 The source code is publicly available and the service is provided free of charge.
                 OpenMagnetics is operated by an individual developer, not a corporation.
             </p>
+            <p>
+                The platform was built on the belief that <strong>professional-grade engineering tools should not be locked behind paywalls.</strong>
+                Access to knowledge is a right, not a privilege — and that principle extends to the software used to apply it.
+                OpenMagnetics will always be free and open source.
+            </p>
 
             <h2 style="font-weight: normal;">2. Engineering Disclaimer — Read This</h2>
             <p>
@@ -154,10 +159,36 @@ import Footer from '../components/Footer.vue'
     padding-bottom: 3rem;
     max-width: 860px;
 }
+.tos-body h1 { font-weight: 700; margin-bottom: 0.25rem; }
 .tos-body h2 {
-    margin-top: 2rem;
-}
-.tos-body a {
     color: var(--bs-primary);
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-top: 2rem;
+    margin-bottom: 0.5rem;
+    letter-spacing: 0.01em;
+}
+.tos-body p, .tos-body li {
+    font-size: 0.92rem;
+    line-height: 1.7;
+    color: rgba(255,255,255,0.82);
+}
+.tos-body strong { color: rgba(255,255,255,0.95); }
+.tos-body a { color: var(--bs-primary); }
+.tos-body h2 + p, .tos-body h2 + ul {
+    background: linear-gradient(180deg, rgba(var(--bs-primary-rgb),0.04) 0%, rgba(var(--bs-primary-rgb),0.02) 100%), var(--bs-dark);
+    border: 1px solid rgba(var(--bs-primary-rgb),0.12);
+    border-left: 3px solid rgba(var(--bs-primary-rgb),0.5);
+    border-radius: 10px;
+    padding: 0.75rem 1rem !important;
+    margin-bottom: 0.5rem;
+}
+.tos-body h2 + p + p {
+    background: linear-gradient(180deg, rgba(var(--bs-primary-rgb),0.04) 0%, rgba(var(--bs-primary-rgb),0.02) 100%), var(--bs-dark);
+    border: 1px solid rgba(var(--bs-primary-rgb),0.12);
+    border-left: 3px solid rgba(var(--bs-primary-rgb),0.5);
+    border-radius: 10px;
+    padding: 0.75rem 1rem !important;
+    margin-bottom: 0.5rem;
 }
 </style>

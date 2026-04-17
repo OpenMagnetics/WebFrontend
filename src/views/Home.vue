@@ -131,18 +131,18 @@ export default {
                     <div class="col-lg-4">
                         <div class="card h-100 border-0 shadow home-tool-card">
                             <div class="card-body p-4">
-                                <i class="fa-solid fa-hat-wizard fa-2x text-warning mb-3"></i>
+                                <i class="fa-solid fa-hat-wizard fa-2x text-primary mb-3"></i>
                                 <h4 class="card-title text-white fw-bold">Design Wizards</h4>
                                 <p class="card-text text-white">Guided design flows for power converter magnetics:</p>
                                 <div class="text-white small">
-                                    <div class="mb-1"><i class="fa-solid fa-check text-warning me-2"></i>Flyback, Buck, Boost converters</div>
-                                    <div class="mb-1"><i class="fa-solid fa-check text-warning me-2"></i>Forward converter (Single/Two-switch/Active clamp)</div>
-                                    <div class="mb-1"><i class="fa-solid fa-check text-warning me-2"></i>Push-Pull, Isolated Buck/Boost</div>
-                                    <div class="mb-1"><i class="fa-solid fa-check text-warning me-2"></i>LLC & CLLC resonant converters</div>
-                                    <div class="mb-1"><i class="fa-solid fa-check text-warning me-2"></i>DAB, PFC, Phase-Shift Full Bridge</div>
-                                    <div class="mb-1"><i class="fa-solid fa-check text-warning me-2"></i>Common & Differential Mode Chokes</div>
+                                    <div class="mb-1"><i class="fa-solid fa-check text-primary me-2"></i>Flyback, Buck, Boost converters</div>
+                                    <div class="mb-1"><i class="fa-solid fa-check text-primary me-2"></i>Forward converter (Single/Two-switch/Active clamp)</div>
+                                    <div class="mb-1"><i class="fa-solid fa-check text-primary me-2"></i>Push-Pull, Isolated Buck/Boost</div>
+                                    <div class="mb-1"><i class="fa-solid fa-check text-primary me-2"></i>LLC & CLLC resonant converters</div>
+                                    <div class="mb-1"><i class="fa-solid fa-check text-primary me-2"></i>DAB, PFC, Phase-Shift Full Bridge</div>
+                                    <div class="mb-1"><i class="fa-solid fa-check text-primary me-2"></i>Common & Differential Mode Chokes</div>
                                 </div>
-                                <button @click="onWizardsLanding" class="btn btn-warning w-100 mt-2">
+                                <button @click="onWizardsLanding" class="btn om-home-btn w-100 mt-2">
                                     <i class="fa-solid fa-wand-magic-sparkles me-2"></i>Launch Wizards
                                 </button>
                             </div>
@@ -153,16 +153,16 @@ export default {
                     <div class="col-lg-6">
                         <div class="card h-100 border-0 shadow home-tool-card">
                             <div class="card-body p-4">
-                                <i class="fa-solid fa-shield-halved fa-2x text-success mb-3"></i>
+                                <i class="fa-solid fa-shield-halved fa-2x text-primary mb-3"></i>
                                 <h4 class="card-title text-white fw-bold">Insulation Coordinator</h4>
                                 <p class="card-text text-white">Calculate insulation requirements for safety compliance:</p>
                                 <div class="text-white small">
-                                    <div class="mb-1"><i class="fa-solid fa-check text-success me-2"></i>IEC 60664</div>
-                                    <div class="mb-1"><i class="fa-solid fa-check text-success me-2"></i>IEC 62368</div>
-                                    <div class="mb-1"><i class="fa-solid fa-check text-success me-2"></i>IEC 61558</div>
-                                    <div class="mb-1"><i class="fa-solid fa-check text-success me-2"></i>IEC 60335</div>
+                                    <div class="mb-1"><i class="fa-solid fa-check text-primary me-2"></i>IEC 60664</div>
+                                    <div class="mb-1"><i class="fa-solid fa-check text-primary me-2"></i>IEC 62368</div>
+                                    <div class="mb-1"><i class="fa-solid fa-check text-primary me-2"></i>IEC 61558</div>
+                                    <div class="mb-1"><i class="fa-solid fa-check text-primary me-2"></i>IEC 60335</div>
                                 </div>
-                                <button @click="onInsulationCoordinator" @click.middle="onInsulationCoordinatorNewTab" class="btn btn-success w-100 mt-2">
+                                <button @click="onInsulationCoordinator" @click.middle="onInsulationCoordinatorNewTab" class="btn om-home-btn w-100 mt-2">
                                     <i class="fa-solid fa-bolt-lightning me-2"></i>Calculate Insulation
                                 </button>
                             </div>
@@ -173,16 +173,16 @@ export default {
                     <div class="col-lg-6">
                         <div class="card h-100 border-0 shadow home-tool-card">
                             <div class="card-body p-4">
-                                <i class="fa-solid fa-wave-square fa-2x text-info mb-3"></i>
+                                <i class="fa-solid fa-wave-square fa-2x text-primary mb-3"></i>
                                 <h4 class="card-title text-white fw-bold">NGSpice Simulation</h4>
                                 <p class="card-text text-white">Full circuit simulation with NGSpice:</p>
                                 <div class="text-white small">
-                                    <div class="mb-1"><i class="fa-solid fa-check text-info me-2"></i>Automated circuit netlist generation</div>
-                                    <div class="mb-1"><i class="fa-solid fa-check text-info me-2"></i>Simulate converter topologies</div>
-                                    <div class="mb-1"><i class="fa-solid fa-check text-info me-2"></i>Export magnetic subcircuits</div>
-                                    <div class="mb-1"><i class="fa-solid fa-check text-info me-2"></i>Waveform visualization</div>
+                                    <div class="mb-1"><i class="fa-solid fa-check text-primary me-2"></i>Automated circuit netlist generation</div>
+                                    <div class="mb-1"><i class="fa-solid fa-check text-primary me-2"></i>Simulate converter topologies</div>
+                                    <div class="mb-1"><i class="fa-solid fa-check text-primary me-2"></i>Export magnetic subcircuits</div>
+                                    <div class="mb-1"><i class="fa-solid fa-check text-primary me-2"></i>Waveform visualization</div>
                                 </div>
-                                <button @click="onWizardsLanding" class="btn btn-info w-100 mt-2">
+                                <button @click="onWizardsLanding" class="btn om-home-btn w-100 mt-2">
                                     <i class="fa-solid fa-flask me-2"></i>Run Simulation
                                 </button>
                             </div>
@@ -193,16 +193,16 @@ export default {
                     <div class="col-lg-6">
                         <div class="card h-100 border-0 shadow home-tool-card">
                             <div class="card-body p-4">
-                                <i class="fa-solid fa-network-wired fa-2x text-purple mb-3"></i>
+                                <i class="fa-solid fa-network-wired fa-2x text-primary mb-3"></i>
                                 <h4 class="card-title text-white fw-bold">Equivalent Circuit</h4>
                                 <p class="card-text text-white">Export accurate SPICE models:</p>
                                 <div class="text-white small">
-                                    <div class="mb-1"><i class="fa-solid fa-check text-purple me-2"></i>SIMBA format</div>
-                                    <div class="mb-1"><i class="fa-solid fa-check text-purple me-2"></i>LtSpice format</div>
-                                    <div class="mb-1"><i class="fa-solid fa-check text-purple me-2"></i>NgSpice format</div>
-                                    <div class="mb-1"><i class="fa-solid fa-check text-purple me-2"></i>Temperature-dependent parameters</div>
+                                    <div class="mb-1"><i class="fa-solid fa-check text-primary me-2"></i>SIMBA format</div>
+                                    <div class="mb-1"><i class="fa-solid fa-check text-primary me-2"></i>LtSpice format</div>
+                                    <div class="mb-1"><i class="fa-solid fa-check text-primary me-2"></i>NgSpice format</div>
+                                    <div class="mb-1"><i class="fa-solid fa-check text-primary me-2"></i>Temperature-dependent parameters</div>
                                 </div>
-                                <button @click="newMagneticToolDesign" class="btn btn-purple w-100 mt-2" style="background: linear-gradient(135deg, #6f42c1, #5a32a3);">
+                                <button @click="newMagneticToolDesign" class="btn om-home-btn w-100 mt-2">
                                     <i class="fa-solid fa-download me-2"></i>Export Subcircuit
                                 </button>
                             </div>
@@ -213,16 +213,16 @@ export default {
                     <div class="col-lg-6">
                         <div class="card h-100 border-0 shadow home-tool-card">
                             <div class="card-body p-4">
-                                <i class="fa-solid fa-temperature-high fa-2x text-danger mb-3"></i>
+                                <i class="fa-solid fa-temperature-high fa-2x text-primary mb-3"></i>
                                 <h4 class="card-title text-white fw-bold">Temperature Simulation</h4>
                                 <p class="card-text text-white">Thermal analysis for reliable designs:</p>
                                 <div class="text-white small">
-                                    <div class="mb-1"><i class="fa-solid fa-check text-danger me-2"></i>Core loss vs temperature</div>
-                                    <div class="mb-1"><i class="fa-solid fa-check text-danger me-2"></i>Winding resistance vs temperature</div>
-                                    <div class="mb-1"><i class="fa-solid fa-check text-danger me-2"></i>Magnetizing inductance vs temperature</div>
-                                    <div class="mb-1"><i class="fa-solid fa-check text-danger me-2"></i>Thermal resistance modeling</div>
+                                    <div class="mb-1"><i class="fa-solid fa-check text-primary me-2"></i>Core loss vs temperature</div>
+                                    <div class="mb-1"><i class="fa-solid fa-check text-primary me-2"></i>Winding resistance vs temperature</div>
+                                    <div class="mb-1"><i class="fa-solid fa-check text-primary me-2"></i>Magnetizing inductance vs temperature</div>
+                                    <div class="mb-1"><i class="fa-solid fa-check text-primary me-2"></i>Thermal resistance modeling</div>
                                 </div>
-                                <button @click="newMagneticToolDesign" class="btn btn-danger w-100 mt-2">
+                                <button @click="newMagneticToolDesign" class="btn om-home-btn w-100 mt-2">
                                     <i class="fa-solid fa-temperature-up me-2"></i>Analyze Thermal
                                 </button>
                             </div>
@@ -233,16 +233,16 @@ export default {
                     <div class="col-lg-6">
                         <div class="card h-100 border-0 shadow home-tool-card">
                             <div class="card-body p-4">
-                                <i class="fa-brands fa-osi fa-2x text-info mb-3"></i>
+                                <i class="fa-brands fa-osi fa-2x text-primary mb-3"></i>
                                 <h4 class="card-title text-white fw-bold">100% Open Source</h4>
                                 <p class="card-text text-white">All our code is MIT licensed. You can:</p>
                                 <div class="text-white small">
-                                    <div class="mb-1"><i class="fa-solid fa-check text-info me-2"></i>See exactly how every calculation works</div>
-                                    <div class="mb-1"><i class="fa-solid fa-check text-info me-2"></i>Run it locally on your own machine</div>
-                                    <div class="mb-1"><i class="fa-solid fa-check text-info me-2"></i>Contribute improvements and new features</div>
-                                    <div class="mb-1"><i class="fa-solid fa-check text-info me-2"></i>Use it in your own projects</div>
+                                    <div class="mb-1"><i class="fa-solid fa-check text-primary me-2"></i>See exactly how every calculation works</div>
+                                    <div class="mb-1"><i class="fa-solid fa-check text-primary me-2"></i>Run it locally on your own machine</div>
+                                    <div class="mb-1"><i class="fa-solid fa-check text-primary me-2"></i>Contribute improvements and new features</div>
+                                    <div class="mb-1"><i class="fa-solid fa-check text-primary me-2"></i>Use it in your own projects</div>
                                 </div>
-                                <a href="https://github.com/OpenMagnetics/" target="_blank" class="btn btn-info w-100 mt-2">
+                                <a href="https://github.com/OpenMagnetics/" target="_blank" class="btn om-home-btn w-100 mt-2">
                                     <i class="fa-brands fa-github me-2"></i>View on GitHub
                                 </a>
                             </div>
@@ -415,7 +415,16 @@ export default {
         transform: scale(1.02);
     }
 
-    .text-purple {
-        color: #a855f7;
+    .om-home-btn {
+        color: var(--bs-dark) !important;
+        background: var(--bs-primary) !important;
+        border: 1px solid var(--bs-primary) !important;
+        font-weight: 600;
+        transition: filter 0.15s, transform 0.15s, box-shadow 0.15s !important;
+    }
+    .om-home-btn:hover {
+        filter: brightness(1.1);
+        transform: translateY(-2px) scale(1.01) !important;
+        box-shadow: 0 4px 16px rgba(var(--bs-primary-rgb), 0.4) !important;
     }
 </style>

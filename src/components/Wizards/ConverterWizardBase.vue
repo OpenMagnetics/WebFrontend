@@ -939,7 +939,7 @@ export default {
           </div>
 
           <!-- Conditional: Design Parameters OR Switch Params -->
-          <div class="compact-card">
+          <div v-if="$slots['design-or-switch-parameters']" class="compact-card">
             <slot name="design-or-switch-parameters-title">
             </slot>
             <div class="compact-body ps-4 pe-3">

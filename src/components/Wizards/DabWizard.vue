@@ -276,8 +276,8 @@ export default {
       </div>
     </template>
 
-    <template #design-or-switch-parameters-title>
-      <div v-if="localData.designMode === 'I know the design I want'" class="compact-header"><i class="fa-solid fa-cogs me-1"></i>Transformer</div>
+    <template v-if="localData.designMode === 'I know the design I want'" #design-or-switch-parameters-title>
+      <div class="compact-header"><i class="fa-solid fa-cogs me-1"></i>Transformer</div>
     </template>
 
     <template v-if="localData.designMode === 'I know the design I want'" #design-or-switch-parameters>
