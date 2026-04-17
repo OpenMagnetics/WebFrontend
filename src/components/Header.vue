@@ -38,9 +38,6 @@ export default {
         }
     },
     methods: {
-        getWizardButtonStyle(wizardName, isNewWizard = false) {
-            return this.$styleStore.header.wizardButton;
-        },
         onShowModal() {
             this.showModal = true
         },
@@ -149,7 +146,7 @@ export default {
                         this.masStore.resetMas();
                         this.masStore.mas = autocompletedMas;
                         this.masStore.importedMas();
-                        
+
                         // Reset coil view to Basic mode when loading a new MAS file
                         this.$stateStore.closeCoilAdvancedInfo();
 
@@ -167,7 +164,7 @@ export default {
                             //   This means the user entered harmonics manually
                             // - Manual: only has waveform/processed without meaningful harmonics
                             const hasMultipleHarmonics = excitation.current?.harmonics?.amplitudes?.length > 1;
-                            
+
                             if (hasMultipleHarmonics) {
                                 this.$stateStore.operatingPoints.modePerPoint.push(this.$stateStore.OperatingPointsMode.HarmonicsList);
                             }
@@ -178,10 +175,10 @@ export default {
                         this.$stateStore.setCurrentToolSubsectionStatus("designRequirements", true);
                         this.$stateStore.setCurrentToolSubsectionStatus("operatingPoints", true);
                         this.$stateStore.loadingDesign = true;
-                        
+
                         if (this.$router.currentRoute.value.path != `${import.meta.env.BASE_URL}magnetic_tool`) {
                             this.$userStore.loadingPath = `${import.meta.env.BASE_URL}magnetic_tool`;
-                            
+
                             // Wait for pinia-plugin-persistedstate to write to localStorage
                             await new Promise(resolve => {
                                 const unsubscribe = this.masStore.$subscribe(() => {
@@ -191,7 +188,7 @@ export default {
                                 // Trigger a sync by touching the store
                                 this.masStore.$patch({});
                             });
-                            
+
                             await this.$router.push(`${import.meta.env.BASE_URL}engine_loader`);
                         }
                         else {
@@ -243,7 +240,7 @@ export default {
 </script>
 
 <template>
-    <nav class="navbar navbar-expand-xl mb-1 om-header" id="header_wrapper" :style="$styleStore.header.main">
+    <nav class="navbar navbar-expand-xl mb-1 om-header" id="header_wrapper">
         <div class="container-fluid">
             <button
                 data-cy="Header-logo-home-link"
@@ -254,7 +251,6 @@ export default {
                 <img src="/images/newLogo.png" width="60" height="40" href="/" class="d-inline-block align-top me-3" alt="OpenMagnetics Logo">
             </button>
             <button
-                :style="$styleStore.header.title"
                 data-cy="Header-brand-home-link"
                 class="navbar-brand btn m-0 p-0 pe-2"
                 @click="onHome"
@@ -262,8 +258,7 @@ export default {
                 {{'OpenMagnetics'}}
             </button>
             <button
-                :style="$styleStore.header.collapsedButton"
-                class="navbar-toggler"
+                class="navbar-toggler om-toggler"
                 ref="headerToggler"
                 type="button"
                 data-bs-toggle="collapse"
@@ -271,16 +266,15 @@ export default {
                 aria-controls="navbarNavDropdown"
                 aria-expanded="false"
                 aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon text-white"></span>
+            <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNavDropdown">
                 <ul class="navbar-nav text-center">
                     <li class="nav-item" >
-                        <a 
-                            :style="$styleStore.header.musings"
+                        <a
                             data-cy="Header-alfs-musings-link"
                             :class="headerTogglerIsVisible? '' : 'mx-1'"
-                            class="nav-link me-3 text-center"
+                            class="nav-link om-nav-link me-3 text-center"
                             href="https://www.linkedin.com/newsletters/7026708624966135808/"
                             target="_blank"
                             rel="noopener noreferrer"
@@ -290,10 +284,9 @@ export default {
                     </li>
                     <li class="nav-item">
                         <button
-                            :style="$styleStore.header.designSectionDropdown"
                             data-cy="Header-new-magnetic-link"
                             :class="headerTogglerIsVisible? 'w-100' : 'mx-1' "
-                            class="btn btn-block nav-link border rounded px-2"
+                            class="btn btn-block nav-link om-nav-btn border rounded px-2"
                             @click="onNewPowerMagneticDesign"
                         >
                             <i class="me-2 fa-solid fa-toolbox"></i>{{'New Magnetic'}}
@@ -301,9 +294,8 @@ export default {
                     </li>
                     <li class="nav-item dropdown">
                         <a
-                            :style="$styleStore.header.othersSectionDropdown"
                             :class="headerTogglerIsVisible? '' : 'mx-1'"
-                            class="nav-link dropdown-toggle border rounded"
+                            class="nav-link dropdown-toggle om-nav-btn border rounded"
                             href="#"
                             role="button"
                             data-bs-toggle="dropdown"
@@ -311,10 +303,9 @@ export default {
                         >
                             <i class="me-2 fa-solid fa-toolbox"></i>{{'Tools'}}
                         </a>
-                      <ul class="dropdown-menu px-1" :style="$styleStore.header.othersSectionDropdown">
+                      <ul class="dropdown-menu px-1">
                         <li>
                             <button
-                                :style="$styleStore.header.designSectionDropdown"
                                 data-cy="Header-insulation-coordinator-link"
                                 :class="headerTogglerIsVisible? 'w-100' : 'mx-1' "
                                 class="dropdown-item btn btn-block nav-link px-2"
@@ -327,9 +318,8 @@ export default {
                     </li>
                     <li class="nav-item dropdown">
                         <a
-                            :style="$styleStore.header.wizardsSectionButton"
                             :class="headerTogglerIsVisible? '' : 'mx-1'"
-                            class="nav-link dropdown-toggle border rounded"
+                            class="nav-link dropdown-toggle om-wizard-btn border rounded"
                             href="#"
                             role="button"
                             data-bs-toggle="dropdown"
@@ -337,10 +327,9 @@ export default {
                         >
                             <i class="me-2 fa-solid fa-hat-wizard"></i>{{'Wizards'}}
                         </a>
-                      <ul class="dropdown-menu px-3" :style="$styleStore.header.wizardsSectionDropdown">
+                      <ul class="dropdown-menu px-3">
                         <li>
                             <button
-                                :style="getWizardButtonStyle('CommonModeChoke')"
                                 :disabled="true"
                                 data-cy="Wizard-CommonModeChoke-link"
                                 :class="headerTogglerIsVisible? 'w-100' : 'mx-0' "
@@ -354,7 +343,6 @@ export default {
                         </li>
                         <li>
                             <button
-                                :style="getWizardButtonStyle('DifferentialModeChoke')"
                                 :disabled="true"
                                 data-cy="Wizard-DifferentialModeChoke-link"
                                 :class="headerTogglerIsVisible? 'w-100' : 'mx-0' "
@@ -368,7 +356,6 @@ export default {
                         </li>
                         <li>
                             <button
-                                :style="getWizardButtonStyle('Flyback')"
                                 data-cy="Flyback-CommonModeChoke-link"
                                 :class="headerTogglerIsVisible? 'w-100' : 'mx-0' "
                                 class="dropdown-item btn btn-block nav-link px-2"
@@ -381,7 +368,6 @@ export default {
                         </li>
                         <li>
                             <button
-                                :style="getWizardButtonStyle('Buck', true)"
                                 data-cy="Buck-CommonModeChoke-link"
                                 :class="headerTogglerIsVisible? 'w-100' : 'mx-0' "
                                 class="dropdown-item btn btn-block nav-link px-2"
@@ -394,7 +380,6 @@ export default {
                         </li>
                         <li>
                             <button
-                                :style="getWizardButtonStyle('Boost', true)"
                                 data-cy="Boost-CommonModeChoke-link"
                                 :class="headerTogglerIsVisible? 'w-100' : 'mx-0' "
                                 class="dropdown-item btn btn-block nav-link px-2"
@@ -407,7 +392,6 @@ export default {
                         </li>
                         <li>
                             <button
-                                :style="getWizardButtonStyle('IsolatedBuck', true)"
                                 data-cy="IsolatedBuck-CommonModeChoke-link"
                                 :class="headerTogglerIsVisible? 'w-100' : 'mx-0' "
                                 class="dropdown-item btn btn-block nav-link px-2"
@@ -420,7 +404,6 @@ export default {
                         </li>
                         <li>
                             <button
-                                :style="getWizardButtonStyle('IsolatedBuckBoost', true)"
                                 data-cy="IsolatedBuckBoost-CommonModeChoke-link"
                                 :class="headerTogglerIsVisible? 'w-100' : 'mx-0' "
                                 class="dropdown-item btn btn-block nav-link px-2"
@@ -433,7 +416,6 @@ export default {
                         </li>
                         <li>
                             <button
-                                :style="getWizardButtonStyle('PushPull', true)"
                                 data-cy="PushPull-CommonModeChoke-link"
                                 :class="headerTogglerIsVisible? 'w-100' : 'mx-0' "
                                 class="dropdown-item btn btn-block nav-link px-2"
@@ -446,7 +428,6 @@ export default {
                         </li>
                         <li>
                             <button
-                                :style="getWizardButtonStyle('Pfc', true)"
                                 data-cy="Pfc-link"
                                 :class="headerTogglerIsVisible? 'w-100' : 'mx-0' "
                                 class="dropdown-item btn btn-block nav-link px-2"
@@ -459,7 +440,6 @@ export default {
                         </li>
                         <li>
                             <button
-                                :style="getWizardButtonStyle('DAB', true)"
                                 data-cy="Dab-link"
                                 :class="headerTogglerIsVisible? 'w-100' : 'mx-0' "
                                 class="dropdown-item btn btn-block nav-link px-2"
@@ -472,7 +452,6 @@ export default {
                         </li>
                         <li>
                             <button
-                                :style="getWizardButtonStyle('LLC', true)"
                                 data-cy="Llc-link"
                                 :class="headerTogglerIsVisible? 'w-100' : 'mx-0' "
                                 class="dropdown-item btn btn-block nav-link px-2"
@@ -485,7 +464,6 @@ export default {
                         </li>
                         <li>
                             <button
-                                :style="getWizardButtonStyle('CLLC', true)"
                                 :disabled="true"
                                 data-cy="Cllc-link"
                                 :class="headerTogglerIsVisible? 'w-100' : 'mx-0' "
@@ -499,7 +477,6 @@ export default {
                         </li>
                         <li>
                             <button
-                                :style="getWizardButtonStyle('PSFB', true)"
                                 :disabled="true"
                                 data-cy="Psfb-link"
                                 :class="headerTogglerIsVisible? 'w-100' : 'mx-0' "
@@ -513,7 +490,6 @@ export default {
                         </li>
                         <li>
                             <button
-                                :style="getWizardButtonStyle('ActiveClampForward', true)"
                                 data-cy="ActiveClampForward-CommonModeChoke-link"
                                 :class="headerTogglerIsVisible? 'w-100' : 'mx-0' "
                                 class="dropdown-item btn btn-block nav-link px-2"
@@ -526,7 +502,6 @@ export default {
                         </li>
                         <li>
                             <button
-                                :style="getWizardButtonStyle('SingleSwitchForward', true)"
                                 data-cy="SingleSwitchForward-CommonModeChoke-link"
                                 :class="headerTogglerIsVisible? 'w-100' : 'mx-0' "
                                 class="dropdown-item btn btn-block nav-link px-2"
@@ -539,7 +514,6 @@ export default {
                         </li>
                         <li>
                             <button
-                                :style="getWizardButtonStyle('TwoSwitchForward', true)"
                                 data-cy="TwoSwitchForward-CommonModeChoke-link"
                                 :class="headerTogglerIsVisible? 'w-100' : 'mx-0' "
                                 class="dropdown-item btn btn-block nav-link px-2"
@@ -555,10 +529,9 @@ export default {
                     <li v-if="$stateStore.isAnyDesignLoaded() && $route.name != 'MagneticTool'" class="nav-item">
                         <span class="nav-item">
                             <button
-                                :style="$styleStore.header.continueDesignButton"
                                 data-cy="Header-donate-link"
                                 :class="headerTogglerIsVisible? 'w-100' : 'mx-1' "
-                                class="btn btn-block nav-link px-2"
+                                class="btn btn-block nav-link px-2 om-continue-btn"
                                 @click="continueMagneticToolDesign"
                             >
                                 <i class="me-2 fa-solid fa-box-open"></i>{{'Continue design'}}
@@ -569,12 +542,11 @@ export default {
                         <span class="nav-item">
                             <input data-cy="Header-Load-MAS-file-button" type="file" ref="masFileReader" @change="readMASFile()" class="btn mt-1 rounded-3" hidden />
                             <button
-                                :style="$styleStore.header.loadMasButton"
                                 :class="headerTogglerIsVisible? 'w-100' : 'mx-1' "
-                                class="btn btn-block nav-link px-2"
+                                class="btn btn-block nav-link px-2 om-load-btn"
                                 @click="load"
                             >
-                                {{'Load MAS'}}
+                                <i class="me-1 fa-solid fa-upload"></i>{{'Load MAS'}}
                             </button>
                         </span>
                     </li>
@@ -583,23 +555,22 @@ export default {
                     <li class="nav-item">
                         <span class="nav-item">
                             <a
-                                :style="$styleStore.header.donateButton"
                                 data-cy="Header-donate-link"
                                 href="https://en.liberapay.com/OpenMagnetics/"
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                class="btn nav-link text-dark bg-info border-dark"
+                                class="btn nav-link om-donate-btn"
                             >
-                                {{'Donate '}}<i class="fa-solid fa-circle-dollar-to-slot"></i></a>
+                                {{'Donate '}}<i class="fa-solid fa-circle-dollar-to-slot"></i>
+                            </a>
                         </span>
                     </li>
                     <li class="nav-item">
                         <span class="nav-item">
                             <button
-                                :style="$styleStore.header.bugButton"
                                 data-cy="Header-report-bug-modal-button"
                                 :class="headerTogglerIsVisible? 'w-100' : 'mx-1' "
-                                class="btn nav-link text-danger border-dark text-center"
+                                class="btn nav-link om-bug-btn text-center"
                                 data-bs-toggle="modal"
                                 data-bs-target="#reportBugModal"
                             >
@@ -610,10 +581,9 @@ export default {
                     <li class="nav-item">
                         <span class="nav-item">
                             <a
-                                :style="$styleStore.header.githubButton"
                                 data-cy="Header-repository-link"
                                 :class="headerTogglerIsVisible? 'w-100' : 'mx-1' "
-                                class="btn nav-link text-success border-dark"
+                                class="btn nav-link om-github-btn"
                                 href="https://github.com/OpenMagnetics/"
                                 target="_blank"
                                 rel="noopener noreferrer"
@@ -641,6 +611,9 @@ export default {
       padding-bottom:160px;
     }
 
+    /* ============================================================
+       Navbar shell — glass backdrop
+       ============================================================ */
     .om-header {
         min-width: 100%;
         position: fixed;
@@ -654,6 +627,7 @@ export default {
         box-shadow: 0 4px 18px rgba(0, 0, 0, 0.45);
     }
 
+    /* Brand text — gradient teal */
     .om-header .navbar-brand {
         font-weight: 700;
         letter-spacing: 0.02em;
@@ -666,20 +640,158 @@ export default {
         text-shadow: 0 1px 6px rgba(var(--bs-primary-rgb), 0.25);
     }
 
-    .om-header > .container-fluid > .navbar-collapse > .navbar-nav > .nav-item > .nav-link.btn,
-    .om-header > .container-fluid > .navbar-collapse > .navbar-nav > .nav-item > .nav-link.dropdown-toggle {
+    /* Mobile toggler */
+    .om-toggler {
+        color: var(--bs-primary) !important;
+        border: 1px solid rgba(var(--bs-primary-rgb), 0.5) !important;
+        border-radius: 8px !important;
+        padding: 0.35rem 0.5rem !important;
+        filter: invert(55%) sepia(50%) saturate(400%) hue-rotate(130deg);
+    }
+
+    /* ============================================================
+       Nav link (text-only, no border) — Alf's Musings style
+       ============================================================ */
+    .om-nav-link {
+        color: rgba(var(--bs-primary-rgb), 0.8) !important;
+        transition: color 0.15s !important;
+        font-weight: 500;
+    }
+    .om-nav-link:hover {
+        color: var(--bs-primary) !important;
+        text-decoration: none;
+    }
+
+    /* ============================================================
+       Standard nav button — teal ghost
+       ============================================================ */
+    .om-nav-btn {
+        color: var(--bs-primary) !important;
+        background: transparent !important;
+        border: 1px solid rgba(var(--bs-primary-rgb), 0.35) !important;
         border-radius: 10px !important;
-        border: 1px solid rgba(var(--bs-light-rgb), 0.12) !important;
-        transition: filter 0.15s, transform 0.1s, box-shadow 0.2s, background 0.2s !important;
+        font-weight: 500;
+        transition: background 0.15s, border-color 0.15s, transform 0.1s, box-shadow 0.15s !important;
     }
-
-    .om-header > .container-fluid > .navbar-collapse > .navbar-nav > .nav-item > .nav-link.btn:hover,
-    .om-header > .container-fluid > .navbar-collapse > .navbar-nav > .nav-item > .nav-link.dropdown-toggle:hover {
+    .om-nav-btn:hover,
+    .om-nav-btn:focus {
+        background: rgba(var(--bs-primary-rgb), 0.1) !important;
+        border-color: rgba(var(--bs-primary-rgb), 0.6) !important;
         transform: translateY(-1px);
-        box-shadow: 0 2px 10px rgba(var(--bs-primary-rgb), 0.2);
-        border-color: rgba(var(--bs-primary-rgb), 0.45) !important;
+        box-shadow: 0 2px 10px rgba(var(--bs-primary-rgb), 0.18) !important;
+        color: var(--bs-primary) !important;
+        filter: none !important;
     }
 
+    /* ============================================================
+       Wizards nav button — teal filled accent
+       ============================================================ */
+    .om-wizard-btn {
+        color: var(--bs-dark) !important;
+        background: rgba(var(--bs-primary-rgb), 0.85) !important;
+        border: 1px solid rgba(var(--bs-primary-rgb), 0.6) !important;
+        border-radius: 10px !important;
+        font-weight: 600;
+        transition: background 0.15s, border-color 0.15s, transform 0.1s, box-shadow 0.15s !important;
+    }
+    .om-wizard-btn:hover,
+    .om-wizard-btn:focus {
+        background: var(--bs-primary) !important;
+        border-color: var(--bs-primary) !important;
+        transform: translateY(-1px);
+        box-shadow: 0 3px 14px rgba(var(--bs-primary-rgb), 0.35) !important;
+        color: var(--bs-dark) !important;
+        filter: none !important;
+    }
+
+    /* ============================================================
+       Continue design button — subtle primary ghost
+       ============================================================ */
+    .om-continue-btn {
+        color: var(--bs-primary) !important;
+        background: rgba(var(--bs-primary-rgb), 0.08) !important;
+        border: 1px solid rgba(var(--bs-primary-rgb), 0.4) !important;
+        border-radius: 10px !important;
+        font-weight: 500;
+        transition: background 0.15s, border-color 0.15s, transform 0.1s, box-shadow 0.15s !important;
+    }
+    .om-continue-btn:hover {
+        background: rgba(var(--bs-primary-rgb), 0.18) !important;
+        border-color: rgba(var(--bs-primary-rgb), 0.65) !important;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 10px rgba(var(--bs-primary-rgb), 0.2) !important;
+        filter: none !important;
+    }
+
+    /* ============================================================
+       Load MAS button — filled primary
+       ============================================================ */
+    .om-load-btn {
+        color: var(--bs-dark) !important;
+        background: var(--bs-primary) !important;
+        border: 1px solid var(--bs-primary) !important;
+        border-radius: 10px !important;
+        font-weight: 600;
+        transition: filter 0.15s, transform 0.1s, box-shadow 0.15s !important;
+    }
+    .om-load-btn:hover {
+        filter: brightness(1.12);
+        transform: translateY(-1px);
+        box-shadow: 0 3px 14px rgba(var(--bs-primary-rgb), 0.35) !important;
+    }
+
+    /* ============================================================
+       Right-side utility buttons
+       ============================================================ */
+    .om-donate-btn {
+        color: var(--bs-info) !important;
+        background: rgba(var(--bs-info-rgb), 0.12) !important;
+        border: 1px solid rgba(var(--bs-info-rgb), 0.4) !important;
+        border-radius: 10px !important;
+        font-weight: 600;
+        transition: background 0.15s, border-color 0.15s, transform 0.1s, box-shadow 0.15s !important;
+    }
+    .om-donate-btn:hover {
+        background: rgba(var(--bs-info-rgb), 0.22) !important;
+        border-color: rgba(var(--bs-info-rgb), 0.65) !important;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 10px rgba(var(--bs-info-rgb), 0.22) !important;
+        filter: none !important;
+    }
+
+    .om-bug-btn {
+        color: var(--bs-danger) !important;
+        background: rgba(var(--bs-danger-rgb), 0.08) !important;
+        border: 1px solid rgba(var(--bs-danger-rgb), 0.35) !important;
+        border-radius: 10px !important;
+        transition: background 0.15s, border-color 0.15s, transform 0.1s, box-shadow 0.15s !important;
+    }
+    .om-bug-btn:hover {
+        background: rgba(var(--bs-danger-rgb), 0.18) !important;
+        border-color: rgba(var(--bs-danger-rgb), 0.6) !important;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 10px rgba(var(--bs-danger-rgb), 0.2) !important;
+        filter: none !important;
+    }
+
+    .om-github-btn {
+        color: var(--bs-success) !important;
+        background: rgba(var(--bs-success-rgb), 0.08) !important;
+        border: 1px solid rgba(var(--bs-success-rgb), 0.35) !important;
+        border-radius: 10px !important;
+        transition: background 0.15s, border-color 0.15s, transform 0.1s, box-shadow 0.15s !important;
+    }
+    .om-github-btn:hover {
+        background: rgba(var(--bs-success-rgb), 0.18) !important;
+        border-color: rgba(var(--bs-success-rgb), 0.6) !important;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 10px rgba(var(--bs-success-rgb), 0.2) !important;
+        filter: none !important;
+    }
+
+    /* ============================================================
+       Dropdown menu — glass panel
+       ============================================================ */
     .om-header .dropdown-menu {
         background: linear-gradient(180deg,
             rgba(var(--bs-dark-rgb), 0.96) 0%,
@@ -693,12 +805,37 @@ export default {
     .om-header .dropdown-menu .dropdown-item,
     .om-header .dropdown-menu .dropdown-item.btn,
     .om-header .dropdown-menu .dropdown-item.nav-link {
+        color: var(--bs-primary) !important;
+        background: transparent !important;
         border: 0 !important;
         border-radius: 8px !important;
         margin: 0.1rem 0 !important;
+        transition: background 0.12s, color 0.12s !important;
     }
 
+    .om-header .dropdown-menu .dropdown-item:hover,
+    .om-header .dropdown-menu .dropdown-item.btn:hover,
+    .om-header .dropdown-menu .dropdown-item.nav-link:hover {
+        background: rgba(var(--bs-primary-rgb), 0.1) !important;
+        color: var(--bs-primary) !important;
+    }
 
+    .om-header .dropdown-menu .dropdown-item:disabled,
+    .om-header .dropdown-menu .dropdown-item.btn:disabled {
+        color: rgba(var(--bs-primary-rgb), 0.35) !important;
+        cursor: not-allowed;
+    }
+
+    /* Override Bootstrap dropdown CSS variables */
+    .om-header .dropdown-menu {
+        --bs-dropdown-link-color: var(--bs-primary) !important;
+        --bs-dropdown-link-hover-color: var(--bs-primary) !important;
+        --bs-dropdown-link-hover-bg: rgba(var(--bs-primary-rgb), 0.1) !important;
+    }
+
+    /* ============================================================
+       Global app styles (not header-specific)
+       ============================================================ */
     @media (max-width: 340px) {
         #title {
             display : none;
@@ -775,39 +912,5 @@ export default {
         border-color: var(--bs-primary) !important;
         outline: 0  !important;
         box-shadow: none  !important;
-    }
-
-    /* Fix header button hover - prevent background and text color from changing */
-    .navbar .nav-link.btn {
-        overflow: hidden;
-        transition: filter 0.15s ease-in-out, box-shadow 0.15s ease-in-out !important;
-    }
-    .navbar .nav-link.btn:hover {
-        filter: brightness(1.15);
-        background-color: inherit !important;
-        color: inherit !important;
-    }
-    .navbar .dropdown-toggle.nav-link:hover {
-        filter: brightness(1.15);
-        color: inherit !important;
-    }
-
-    /* Override Bootstrap dropdown-item hover - KEEP PRIMARY COLOR */
-    .dropdown-menu .dropdown-item:hover,
-    .dropdown-menu .dropdown-item:focus,
-    .dropdown-menu.show .dropdown-item.btn.nav-link:hover,
-    .dropdown-menu.show .dropdown-item.btn.nav-link:focus,
-    ul.dropdown-menu li button.dropdown-item.btn.nav-link:hover,
-    ul.dropdown-menu li button.dropdown-item.btn.nav-link:focus,
-    button.dropdown-item:hover,
-    button.dropdown-item:focus {
-        color: #539796 !important;
-        background-color: transparent !important;
-    }
-
-    /* Override Bootstrap CSS variable for dropdown hover color */
-    .dropdown-menu {
-        --bs-dropdown-link-hover-color: #539796 !important;
-        --bs-dropdown-link-hover-bg: transparent !important;
     }
 </style>

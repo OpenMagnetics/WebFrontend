@@ -744,6 +744,32 @@ test.describe('Group D – SPICE code generation', () => {
 // =====================================================================
 // GROUP E – Simulated waveforms (ngspice)
 // =====================================================================
+//
+// All three tests below are skipped because of a Playwright teardown stall,
+// NOT because ngspice is slow. From the browser-side timing logs:
+//
+//   [WASM-TIMING] DAB process() took 9 ms
+//   [WASM-TIMING] simulate_and_extract_topology_waveforms()  took 539 ms
+//   [WASM-TIMING] simulate_and_extract_operating_points()   took 565 ms
+//
+// ngspice itself finishes in ~1 s. The test body completes all assertions
+// and the screenshot in ~10–15 s. After that the test function returns,
+// but Playwright's page fixture does NOT release the test slot: it waits
+// the full `test.setTimeout` (5 min) before reporting a timeout.
+//
+// Verified *not* the cause:
+//   • trace / video capture (still hangs with trace: 'off', video: 'off')
+//   • page.on('console') / page.on('pageerror') listeners (removed — still hangs)
+//   • Vite HMR WebSocket (test still hangs after navigating to about:blank)
+//   • Explicit page.close() + context.close() inside the test
+//   • test.afterEach with `Promise.race([context.close(), timeout])`
+//
+// Most likely cause is a dangling promise inside the browser tied to the
+// Comlink MKF worker after `simulate_dab_ideal_waveforms` returns — the
+// message channel keeps the page alive from Playwright's perspective. The
+// analytical path (`calculate_dab_inputs`) uses the same worker and does
+// NOT exhibit this stall, so the ngspice invocation path is the distinct
+// factor. Needs deeper Playwright+Comlink debugging to fix properly.
 test.describe('Group E – Simulated waveforms (ngspice)', () => {
   test.setTimeout(300000); // 5 minutes — kept for if/when E tests are re-enabled
 
@@ -755,7 +781,7 @@ test.describe('Group E – Simulated waveforms (ngspice)', () => {
   }
 
   test('E1 – SPS Simulated (up to 90s)', async ({ page }) => {
-    test.skip(true, 'WASM cold load + ngspice + teardown exceeds per-test budget');
+    test.skip(true, 'ngspice runs in ~1s; Playwright test hangs post-body — see describe block comment for diagnosis');
 
     await openDabWizard(page);
     await setupN2(page);
@@ -786,10 +812,7 @@ test.describe('Group E – Simulated waveforms (ngspice)', () => {
   });
 
   test('E2 – EPS Simulated (up to 90s)', async ({ page }) => {
-    test.skip(true, 'ngspice simulation exceeds per-test time budget');
-    page.on('console', msg => console.log(`[BROWSER] ${msg.type()}: ${msg.text()}`));
-    page.on('pageerror', err => console.log(`[PAGE ERROR] ${err.message}`));
-
+    test.skip(true, 'ngspice runs in ~1s; Playwright test hangs post-body — see describe block comment for diagnosis');
     await openDabWizard(page);
     await setupN2(page);
 
@@ -831,7 +854,7 @@ test.describe('Group E – Simulated waveforms (ngspice)', () => {
   });
 
   test('E3 – TPS Simulated (up to 90s)', async ({ page }) => {
-    test.skip(true, 'ngspice simulation exceeds per-test time budget');
+    test.skip(true, 'ngspice runs in ~1s; Playwright test hangs post-body — see describe block comment for diagnosis');
     await openDabWizard(page);
     await setupN2(page);
 
