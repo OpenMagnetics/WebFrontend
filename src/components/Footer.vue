@@ -64,15 +64,16 @@ export default {
     box-shadow: 0 -4px 18px rgba(0, 0, 0, 0.35);
     backdrop-filter: blur(6px);
     -webkit-backdrop-filter: blur(6px);
-    padding: 1.5rem 0 0 0;
+    padding: 0.6rem 0 0 0;
 }
 
 .om-footer-inner {
     display: flex;
     flex-wrap: wrap;
-    gap: 2rem;
-    padding: 0 2rem 1.25rem 2rem;
+    gap: 1.25rem;
+    padding: 0 2rem 0.6rem 2rem;
     border-bottom: 1px solid rgba(var(--bs-primary-rgb), 0.12);
+    align-items: center;
 }
 
 /* Brand column */
@@ -102,19 +103,21 @@ export default {
 /* Link columns */
 .om-footer-col {
     display: flex;
-    flex-direction: column;
-    gap: 0.35rem;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.15rem 1rem;
     flex: 0 0 auto;
-    min-width: 130px;
+    flex-wrap: wrap;
 }
 
 .om-footer-section-label {
-    font-size: 0.7rem;
+    font-size: 0.68rem;
     font-weight: 600;
     letter-spacing: 0.06em;
     text-transform: uppercase;
     color: rgba(var(--bs-primary-rgb), 0.7);
-    margin-bottom: 0.25rem;
+    margin-right: 0.25rem;
+    white-space: nowrap;
 }
 
 .om-footer-link {
@@ -133,8 +136,8 @@ export default {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0.6rem 2rem;
-    font-size: 0.75rem;
+    padding: 0.35rem 2rem;
+    font-size: 0.72rem;
     color: rgba(255, 255, 255, 0.3);
     flex-wrap: wrap;
     gap: 0.5rem;
