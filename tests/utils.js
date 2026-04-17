@@ -1,5 +1,5 @@
 /**
- * Shared utilities for DAB / LLC wizard Playwright tests.
+ * Shared utilities for all wizard Playwright tests.
  */
 import path from 'path';
 
@@ -137,4 +137,97 @@ export async function switchToIKnowMode(page) {
   if (!switched) {
     console.warn('[switchToIKnowMode] Transformer card not visible after mode switch');
   }
+}
+
+// ── Generic wizard opener ──────────────────────────────────────────────────
+
+/**
+ * Open any wizard by its header data-cy link attribute.
+ * Waits for the Analytical button (or falls back to waiting for /wizards URL).
+ */
+export async function openWizard(page, dataCy) {
+  await page.goto(`${BASE_URL}/`, { waitUntil: 'domcontentloaded', timeout: 20000 });
+  await page.waitForTimeout(1000);
+
+  const clicked = await page.evaluate((cy) => {
+    const toggles = Array.from(document.querySelectorAll('.dropdown-toggle'));
+    const wizardsToggle = toggles.find(el => el.textContent.includes('Wizards'));
+    if (wizardsToggle) {
+      wizardsToggle.click();
+      const dropdown = wizardsToggle.closest('.dropdown') || wizardsToggle.parentElement;
+      const menu = dropdown?.querySelector('.dropdown-menu');
+      if (menu) menu.classList.add('show');
+    }
+    const link = document.querySelector(`[data-cy="${cy}"]`);
+    if (link) { link.click(); return true; }
+    return false;
+  }, dataCy);
+
+  console.log(`[openWizard:${dataCy}] click result: ${clicked}`);
+  await page.waitForURL('**/wizards', { timeout: 15000 }).catch(() => {});
+  await page.waitForSelector('.sim-btn.analytical', { timeout: 15000 }).catch(() => {});
+  await page.waitForTimeout(300);
+  console.log(`[openWizard:${dataCy}] wizard ready`);
+}
+
+// ── Generic Magnetic Adviser navigation ───────────────────────────────────
+
+/**
+ * Navigate from a wizard to the Magnetic Adviser tool.
+ * openFn: () => Promise<void>  – opens the wizard
+ * setupFn: (page) => Promise<void> | null  – optional extra setup before analytical
+ * Returns true on success, false on failure.
+ */
+export async function goToMagneticAdviser(page, openFn, setupFn = null) {
+  await openFn();
+  if (setupFn) await setupFn(page);
+
+  await runAnalytical(page);
+
+  const designBtn = page.locator('button').filter({ hasText: 'Design Magnetic' }).first();
+  await designBtn.waitFor({ timeout: 10000 }).catch(() => {});
+  if (await designBtn.isDisabled().catch(() => true)) {
+    console.log('[goToMagneticAdviser] Design Magnetic disabled — skipping');
+    return false;
+  }
+
+  await designBtn.click();
+  await page.waitForURL('**/magnetic_tool**', { timeout: 30000 }).catch(() => {});
+  await page.waitForTimeout(2000);
+  if (!page.url().includes('magnetic_tool')) return false;
+
+  const magneticAdviserBtn = page.locator('button').filter({ hasText: /^Magnetic Adviser$/ }).first();
+  if (await magneticAdviserBtn.isVisible().catch(() => false)) {
+    await magneticAdviserBtn.click();
+    await page.waitForTimeout(1500);
+  } else {
+    const byCy = page.locator('[data-cy$="-magnetics-adviser-button"]').first();
+    if (await byCy.isVisible().catch(() => false)) {
+      await byCy.click();
+      await page.waitForTimeout(1500);
+    }
+  }
+  return true;
+}
+
+// ── Generic Magnetic Builder navigation ───────────────────────────────────
+
+/**
+ * Navigate from a wizard to the Magnetic Builder via Review Specs.
+ * Returns true on success, false on failure.
+ */
+export async function goToMagneticBuilder(page, openFn, setupFn = null) {
+  await openFn();
+  if (setupFn) await setupFn(page);
+
+  await runAnalytical(page);
+
+  const reviewBtn = page.locator('button').filter({ hasText: 'Review Specs' }).first();
+  if (!(await reviewBtn.isVisible().catch(() => false))) return false;
+  if (await reviewBtn.isDisabled().catch(() => true)) return false;
+
+  await reviewBtn.click();
+  await page.waitForURL('**/magnetic_tool**', { timeout: 30000 }).catch(() => {});
+  await page.waitForTimeout(2000);
+  return page.url().includes('magnetic_tool');
 }
