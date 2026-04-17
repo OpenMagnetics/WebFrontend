@@ -16,40 +16,27 @@ export default {
 
 <template>
     <footer class="om-footer">
-        <div class="om-footer-inner container-fluid">
-            <div class="om-footer-brand">
-                <div class="d-flex align-items-center gap-2 mb-1">
-                    <img src="/images/newLogo.png" width="36" height="24" alt="OpenMagnetics Logo">
-                    <span class="om-footer-name">OpenMagnetics</span>
-                </div>
-                <p class="om-footer-tagline">The free, open-source platform for magnetics design &amp; simulation.</p>
+        <div class="om-footer-bar">
+            <div class="om-footer-left">
+                <img src="/images/newLogo.png" width="22" height="15" alt="OpenMagnetics Logo">
+                <span class="om-footer-name">OpenMagnetics</span>
+                <span class="om-footer-sep">·</span>
+                <span class="om-footer-copy">© 2022–{{ new Date().getFullYear() }}</span>
             </div>
 
-            <div class="om-footer-col">
-                <span class="om-footer-section-label"><i class="fa-solid fa-scale-balanced me-1"></i>Legal</span>
+            <div class="om-footer-links">
                 <a data-cy="Footer-cookie-policy-link" href="/cookie_policy" class="om-footer-link">Cookie Policy</a>
                 <a data-cy="Footer-legal-link" href="/legal_notice" class="om-footer-link">Privacy Policy</a>
-            </div>
-
-            <div class="om-footer-col">
-                <span class="om-footer-section-label"><i class="fa-solid fa-users me-1"></i>Community</span>
                 <a href="https://github.com/OpenMagnetics/" target="_blank" rel="noopener noreferrer" class="om-footer-link">
                     <i class="fa-brands fa-github me-1"></i>GitHub
-                </a>
-                <a href="https://www.linkedin.com/newsletters/7026708624966135808/" target="_blank" rel="noopener noreferrer" class="om-footer-link">
-                    <i class="fa-brands fa-linkedin me-1"></i>Alf's Musings
                 </a>
                 <a href="https://en.liberapay.com/OpenMagnetics/" target="_blank" rel="noopener noreferrer" class="om-footer-link">
                     <i class="fa-solid fa-circle-dollar-to-slot me-1"></i>Donate
                 </a>
+                <button class="om-footer-prefs-btn" @click="resetConsent">
+                    <i class="fa-solid fa-cookie-bite me-1"></i>Cookies
+                </button>
             </div>
-        </div>
-
-        <div class="om-footer-bottom">
-            <span>© 2022–{{ new Date().getFullYear() }} OpenMagnetics</span>
-            <button class="om-footer-prefs-btn" @click="resetConsent">
-                <i class="fa-solid fa-cookie-bite me-1"></i>Cookie preferences
-            </button>
         </div>
     </footer>
 </template>
@@ -57,105 +44,87 @@ export default {
 <style scoped>
 .om-footer {
     min-width: 100%;
+    height: 46px;
     background: linear-gradient(180deg,
         rgba(var(--bs-dark-rgb), 0.82) 0%,
         rgba(var(--bs-dark-rgb), 0.95) 100%);
-    border-top: 1px solid rgba(var(--bs-primary-rgb), 0.3);
-    box-shadow: 0 -4px 18px rgba(0, 0, 0, 0.35);
+    border-top: 1px solid rgba(var(--bs-primary-rgb), 0.25);
+    box-shadow: 0 -3px 12px rgba(0, 0, 0, 0.3);
     backdrop-filter: blur(6px);
     -webkit-backdrop-filter: blur(6px);
-    padding: 0.6rem 0 0 0;
 }
 
-.om-footer-inner {
+.om-footer-bar {
+    height: 100%;
     display: flex;
-    flex-wrap: wrap;
-    gap: 1.25rem;
-    padding: 0 2rem 0.6rem 2rem;
-    border-bottom: 1px solid rgba(var(--bs-primary-rgb), 0.12);
     align-items: center;
+    justify-content: space-between;
+    padding: 0 1.5rem;
+    gap: 1rem;
 }
 
-/* Brand column */
-.om-footer-brand {
-    flex: 1 1 200px;
+.om-footer-left {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-shrink: 0;
 }
 
 .om-footer-name {
+    font-size: 0.78rem;
     font-weight: 700;
-    font-size: 1rem;
-    background: linear-gradient(135deg,
-        var(--bs-primary) 0%,
-        color-mix(in srgb, var(--bs-primary) 70%, var(--bs-white) 30%) 100%);
+    background: linear-gradient(135deg, var(--bs-primary) 0%, color-mix(in srgb, var(--bs-primary) 70%, white 30%) 100%);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
 }
 
-.om-footer-tagline {
-    font-size: 0.78rem;
-    color: rgba(255, 255, 255, 0.45);
-    margin: 0;
-    max-width: 220px;
-    line-height: 1.4;
+.om-footer-sep {
+    color: rgba(255, 255, 255, 0.2);
+    font-size: 0.75rem;
 }
 
-/* Link columns */
-.om-footer-col {
+.om-footer-copy {
+    font-size: 0.72rem;
+    color: rgba(255, 255, 255, 0.28);
+}
+
+.om-footer-links {
     display: flex;
-    flex-direction: row;
     align-items: center;
-    gap: 0.15rem 1rem;
-    flex: 0 0 auto;
-    flex-wrap: wrap;
-}
-
-.om-footer-section-label {
-    font-size: 0.68rem;
-    font-weight: 600;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: rgba(var(--bs-primary-rgb), 0.7);
-    margin-right: 0.25rem;
-    white-space: nowrap;
+    gap: 0.15rem;
+    flex-wrap: nowrap;
 }
 
 .om-footer-link {
-    font-size: 0.82rem;
-    color: rgba(255, 255, 255, 0.55);
+    font-size: 0.74rem;
+    color: rgba(255, 255, 255, 0.4);
     text-decoration: none;
-    transition: color 0.15s;
+    padding: 0.2rem 0.55rem;
+    border-radius: 5px;
+    transition: color 0.15s, background 0.15s;
+    white-space: nowrap;
 }
 .om-footer-link:hover {
     color: var(--bs-primary);
+    background: rgba(var(--bs-primary-rgb), 0.07);
     text-decoration: none;
 }
 
-/* Bottom bar */
-.om-footer-bottom {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0.35rem 2rem;
-    font-size: 0.72rem;
-    color: rgba(255, 255, 255, 0.3);
-    flex-wrap: wrap;
-    gap: 0.5rem;
-}
-
 .om-footer-prefs-btn {
+    font-size: 0.74rem;
+    color: rgba(255, 255, 255, 0.35);
     background: transparent;
-    border: 1px solid rgba(var(--bs-primary-rgb), 0.25);
-    border-radius: 6px;
-    color: rgba(var(--bs-primary-rgb), 0.6);
-    font-size: 0.72rem;
-    padding: 0.2rem 0.65rem;
+    border: 1px solid rgba(var(--bs-primary-rgb), 0.2);
+    border-radius: 5px;
+    padding: 0.2rem 0.55rem;
     cursor: pointer;
     transition: color 0.15s, border-color 0.15s, background 0.15s;
+    white-space: nowrap;
 }
 .om-footer-prefs-btn:hover {
     color: var(--bs-primary);
-    border-color: rgba(var(--bs-primary-rgb), 0.55);
-    background: rgba(var(--bs-primary-rgb), 0.06);
+    border-color: rgba(var(--bs-primary-rgb), 0.5);
+    background: rgba(var(--bs-primary-rgb), 0.07);
 }
 </style>
