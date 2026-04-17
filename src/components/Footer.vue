@@ -27,6 +27,7 @@ export default {
             <div class="om-footer-links">
                 <a data-cy="Footer-cookie-policy-link" href="/cookie_policy" class="om-footer-link">Cookie Policy</a>
                 <a data-cy="Footer-legal-link" href="/legal_notice" class="om-footer-link">Privacy Policy</a>
+                <a href="/terms" class="om-footer-link">Terms</a>
                 <a href="https://github.com/OpenMagnetics/" target="_blank" rel="noopener noreferrer" class="om-footer-link">
                     <i class="fa-brands fa-github me-1"></i>GitHub
                 </a>

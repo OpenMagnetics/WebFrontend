@@ -22,6 +22,11 @@ const routes = [
         component: () => import('../views/LegalNotice.vue')
     },
     {
+        path: '/terms',
+        name: 'TermsOfService',
+        component: () => import('../views/TermsOfService.vue')
+    },
+    {
         path: '/magnetic_tool',
         name: 'MagneticTool',
         component: () => import('../views/MagneticTool.vue')

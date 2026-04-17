@@ -13,6 +13,7 @@ import Footer from '../components/Footer.vue'
 
           <span>
             <h1 style="font-weight: bold;">Privacy Policy</h1>
+            <p style="font-size: 0.85rem; opacity: 0.6;">See also: <a href="/terms">Terms of Service</a> · <a href="/cookie_policy">Cookie Policy</a></p>
             <p>Last Updated: February 2026</p>
 
             <h2 style="font-weight: normal;">Welcome</h2>
@@ -21,13 +22,14 @@ import Footer from '../components/Footer.vue'
             <p><strong>The short version:</strong> We do not sell your personal data. When you use our design tools, the technical parameters you enter (e.g., core shapes, winding configurations, operating conditions) are anonymized and added to a public database to advance magnetics research and AI training. No personal information is included. If you prefer to keep your design data fully private, you can self-host OpenMagnetics — it is open source. Contact us at <a href="mailto:openmagnetics@protonmail.com">openmagnetics@protonmail.com</a> if you need help setting it up.</p>
 
             <h2 style="font-weight: normal;">1. Controller</h2>
-            <p>OpenMagnetics<br>
+            <p>OpenMagnetics (individual developer, European Union)<br>
             E-mail: <a href="mailto:openmagnetics@protonmail.com">openmagnetics@protonmail.com</a></p>
 
             <h2 style="font-weight: normal;">2. What Data We Collect</h2>
             <p><strong>Technical design data:</strong> Parameters you enter in our design and simulation tools (e.g., core geometry, winding specifications, operating points). This data is anonymized — stripped of any link to your identity — and added to a publicly available database for magnetics research and AI model training.</p>
             <p><strong>Account data (optional):</strong> If you register, we store the information needed to maintain your account (e.g., e-mail address). Registration is never required.</p>
-            <p><strong>Usage data:</strong> We collect standard analytics data such as pages visited, access times, browser type, device information, and pseudonymized IP addresses through third-party analytics services.</p>
+            <p><strong>Usage data:</strong> We collect standard analytics data such as pages visited, access times, browser type, device information, and pseudonymized IP addresses through third-party analytics services (only after cookie consent is granted).</p>
+            <p><strong>Bug reports (optional):</strong> If you submit a bug report, the report includes the magnetic design data open at the time and an optional message. No personal information is required; the username field defaults to "Anonymous".</p>
 
             <h2 style="font-weight: normal;">3. Legal Bases (GDPR)</h2>
             <ul style="font-size: 15px;" type="disc">
