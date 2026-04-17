@@ -97,34 +97,32 @@ export default {
                 :valueBgColor="$styleStore.operatingPoints.inputValueBgColor"
                 :textColor="$styleStore.operatingPoints.inputTextColor"
             />
-            <div class="col-md-2 col-12 p-0 m-0 ps-2 container-flex" style="height: 40px;">
-                <div class="row m-0 p-0  pt-2" style="height: 40px;">
-                    <button
-                        :data-cy="dataTestLabel + '-add-point-below-button'"
-                        type="button"
-                        class="btn btn-default btn-circle mb-1 col-6"
-                        @click="$emit('onAddPointBelow')"
-                    >
-                        <i
-                            :style="combinedStyle([$styleStore.operatingPoints.addElementButtonColor])"
-                            :class="combinedClass([$styleStore.operatingPoints.addElementButtonColor])"
-                            class="fa-solid fa-circle-plus text-secondary"
-                        > </i>
-                    </button>
-                    <button
-                        :data-cy="dataTestLabel + '-remove-point-button'"
-                        v-if="!block"
-                        type="button"
-                        class="btn btn-default btn-circle mb-1 col-6 ps-1" 
-                        @click="$emit('onRemovePoint')"
-                    >
-                        <i
-                            :style="combinedStyle([$styleStore.operatingPoints.addElementButtonColor])"
-                            :class="combinedClass([$styleStore.operatingPoints.addElementButtonColor])"
-                            class="fa-solid fa-circle-minus text-danger"
-                        ></i>
-                    </button>
-                </div>
+            <div class="col-md-2 col-12 p-0 m-0 ps-2 harmonic-btn-group">
+                <button
+                    :data-cy="dataTestLabel + '-add-point-below-button'"
+                    type="button"
+                    class="btn btn-default btn-circle"
+                    @click="$emit('onAddPointBelow')"
+                >
+                    <i
+                        :style="combinedStyle([$styleStore.operatingPoints.addElementButtonColor])"
+                        :class="combinedClass([$styleStore.operatingPoints.addElementButtonColor])"
+                        class="fa-solid fa-circle-plus text-secondary"
+                    ></i>
+                </button>
+                <button
+                    :data-cy="dataTestLabel + '-remove-point-button'"
+                    v-if="!block"
+                    type="button"
+                    class="btn btn-default btn-circle"
+                    @click="$emit('onRemovePoint')"
+                >
+                    <i
+                        :style="combinedStyle([$styleStore.operatingPoints.addElementButtonColor])"
+                        :class="combinedClass([$styleStore.operatingPoints.addElementButtonColor])"
+                        class="fa-solid fa-circle-minus text-danger"
+                    ></i>
+                </button>
             </div>
         </div>
         <div v-if='errorMessages != ""' class="col-12">
@@ -133,3 +131,20 @@ export default {
     </div>
 
 </template>
+
+<style scoped>
+.harmonic-btn-group {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 2px;
+    height: 40px;
+    flex-shrink: 0;
+}
+
+.harmonic-btn-group .btn {
+    padding: 0;
+    line-height: 1;
+    flex-shrink: 0;
+}
+</style>
