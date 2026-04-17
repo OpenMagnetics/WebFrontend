@@ -67,11 +67,18 @@ import Footer from '../components/Footer.vue'
                                           </thead>
                                           <tbody>
                                                 <tr>
-                                                      <td class="CookieDeclarationTableCell">Google Analytics</td>
+                                                      <td class="CookieDeclarationTableCell">Google Analytics / GTM</td>
                                                       <td class="CookieDeclarationTableCell">_ga<br>_gid<br>_gat</td>
                                                       <td class="CookieDeclarationTableCell">Third-party, analytics, persistent</td>
-                                                      <td class="CookieDeclarationTableCell">Collects anonymized data about how visitors use the site (pages visited, visit duration, traffic sources). No personal data such as names or addresses is collected.</td>
+                                                      <td class="CookieDeclarationTableCell">Collects anonymized data about how visitors use the site (pages visited, visit duration, traffic sources). No personal data such as names or addresses is collected. Loaded only after cookie consent is granted.</td>
                                                       <td class="CookieDeclarationTableCell">Up to 2 years (<a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer">Google Privacy Policy</a>)</td>
+                                                </tr>
+                                                <tr>
+                                                      <td class="CookieDeclarationTableCell">Hotjar</td>
+                                                      <td class="CookieDeclarationTableCell">_hjSession*<br>_hjSessionUser*<br>_hjFirstSeen</td>
+                                                      <td class="CookieDeclarationTableCell">Third-party, analytics, session / persistent</td>
+                                                      <td class="CookieDeclarationTableCell">Usability analysis: records anonymized heatmaps and session replays to help us understand how users interact with the tool. No keystrokes or personal form data are recorded. Loaded only after cookie consent is granted.</td>
+                                                      <td class="CookieDeclarationTableCell">Session / up to 1 year (<a href="https://www.hotjar.com/legal/policies/privacy" target="_blank" rel="noopener noreferrer">Hotjar Privacy Policy</a>)</td>
                                                 </tr>
                                           </tbody>
                                     </table>

@@ -40,14 +40,14 @@ import Footer from '../components/Footer.vue'
             <p>Technical design data you enter is anonymized and contributed to a public database. This data is used to train AI models for magnetics design. The training data is publicly accessible. No personal information is ever included in this dataset. By using our online tools, you agree to this anonymized data collection. If you do not agree, you may self-host the open-source version of OpenMagnetics and your data will remain entirely on your own infrastructure.</p>
 
             <h2 style="font-weight: normal;">5. Cookies</h2>
-            <p>We use cookies for essential website functionality and analytics. For full details, please see our <a href="/cookies">Cookie Policy</a>. We will ask for your consent before setting non-essential cookies.</p>
+            <p>We use cookies for essential website functionality and analytics. A consent banner is shown on your first visit, and analytics cookies (Google Analytics, Hotjar) are only loaded after you accept. You can change your choice at any time via the "Cookie preferences" link in the footer. For full details, see our <a href="/cookie_policy">Cookie Policy</a>.</p>
 
             <h2 style="font-weight: normal;">6. Third-Party Services</h2>
             <p>We use the following third-party services that may process your data:</p>
             <ul style="font-size: 15px;" type="disc">
                <li><strong>Google Analytics:</strong> Web analytics. Provider: Google Ireland Limited, Gordon House, Barrow Street, Dublin 4, Ireland. <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Privacy Policy</a>. <a href="https://tools.google.com/dlpage/gaoptout?hl=en" target="_blank" rel="noopener">Opt-Out Plugin</a>.<br><br></li>
                <li><strong>Google Tag Manager:</strong> Tag management. Provider: Google Ireland Limited. <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Privacy Policy</a>.<br><br></li>
-               <li><strong>Hotjar:</strong> Usability analysis. Provider: Hotjar Ltd., Dragonara Business Centre, 5th Floor, Dragonara Road, Paceville St Julian's STJ 3141, Malta. <a href="https://www.hotjar.com/legal/policies/privacy" target="_blank" rel="noopener">Privacy Policy</a>. <a href="https://www.hotjar.com/legal/compliance/opt-out" target="_blank" rel="noopener">Opt-Out</a>.</li>
+               <li><strong>Hotjar:</strong> Usability analysis. Provider: Hotjar Ltd., Dragonara Business Centre, 5th Floor, Dragonara Road, Paceville St Julian's STJ 3141, Malta. <a href="https://www.hotjar.com/legal/policies/privacy" target="_blank" rel="noopener">Privacy Policy</a>. <a href="https://www.hotjar.com/legal/compliance/opt-out" target="_blank" rel="noopener">Opt-Out</a>. Only loaded after cookie consent.<br><br></li>
             </ul>
 
             <h2 style="font-weight: normal;">7. Data Transfers to Third Countries</h2>
