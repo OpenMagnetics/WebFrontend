@@ -645,6 +645,57 @@ export default {
         min-width: 100%;
         position: fixed;
         z-index: 999;
+        background: linear-gradient(180deg,
+            rgba(var(--bs-dark-rgb), 0.92) 0%,
+            rgba(var(--bs-dark-rgb), 0.82) 100%) !important;
+        backdrop-filter: blur(6px);
+        -webkit-backdrop-filter: blur(6px);
+        border-bottom: 1px solid rgba(var(--bs-primary-rgb), 0.35);
+        box-shadow: 0 4px 18px rgba(0, 0, 0, 0.45);
+    }
+
+    .om-header .navbar-brand {
+        font-weight: 700;
+        letter-spacing: 0.02em;
+        background: linear-gradient(135deg,
+            var(--bs-primary) 0%,
+            color-mix(in srgb, var(--bs-primary) 70%, var(--bs-white) 30%) 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent !important;
+        text-shadow: 0 1px 6px rgba(var(--bs-primary-rgb), 0.25);
+    }
+
+    .om-header > .container-fluid > .navbar-collapse > .navbar-nav > .nav-item > .nav-link.btn,
+    .om-header > .container-fluid > .navbar-collapse > .navbar-nav > .nav-item > .nav-link.dropdown-toggle {
+        border-radius: 10px !important;
+        border: 1px solid rgba(var(--bs-light-rgb), 0.12) !important;
+        transition: filter 0.15s, transform 0.1s, box-shadow 0.2s, background 0.2s !important;
+    }
+
+    .om-header > .container-fluid > .navbar-collapse > .navbar-nav > .nav-item > .nav-link.btn:hover,
+    .om-header > .container-fluid > .navbar-collapse > .navbar-nav > .nav-item > .nav-link.dropdown-toggle:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 2px 10px rgba(var(--bs-primary-rgb), 0.2);
+        border-color: rgba(var(--bs-primary-rgb), 0.45) !important;
+    }
+
+    .om-header .dropdown-menu {
+        background: linear-gradient(180deg,
+            rgba(var(--bs-dark-rgb), 0.96) 0%,
+            rgba(var(--bs-dark-rgb), 0.88) 100%) !important;
+        border: 1px solid rgba(var(--bs-primary-rgb), 0.3) !important;
+        border-radius: 12px !important;
+        box-shadow: 0 8px 28px rgba(var(--bs-dark-rgb), 0.55) !important;
+        padding: 0.4rem !important;
+    }
+
+    .om-header .dropdown-menu .dropdown-item,
+    .om-header .dropdown-menu .dropdown-item.btn,
+    .om-header .dropdown-menu .dropdown-item.nav-link {
+        border: 0 !important;
+        border-radius: 8px !important;
+        margin: 0.1rem 0 !important;
     }
 
 

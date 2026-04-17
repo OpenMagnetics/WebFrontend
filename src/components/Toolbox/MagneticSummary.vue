@@ -70,35 +70,30 @@ export default {
         keyParameters() {
             const params = [];
             const outputs = this.mas?.outputs?.[0];
-            
-            // Inductance
+
             if (outputs?.magnetizingInductance?.magnetizingInductance) {
                 const val = outputs.magnetizingInductance.magnetizingInductance.nominal || outputs.magnetizingInductance.magnetizingInductance;
                 const aux = formatInductance(val);
-                params.push({ label: 'Inductance', value: removeTrailingZeroes(aux.label, 2), unit: aux.unit });
+                params.push({ label: 'Inductance', value: removeTrailingZeroes(aux.label, 2), unit: aux.unit, icon: 'fa-infinity' });
             }
-            
-            // Core losses
+
             if (outputs?.coreLosses?.coreLosses != null) {
                 const aux = formatPower(outputs.coreLosses.coreLosses);
-                params.push({ label: 'Core Loss', value: removeTrailingZeroes(aux.label, 2), unit: aux.unit });
+                params.push({ label: 'Core Loss', value: removeTrailingZeroes(aux.label, 2), unit: aux.unit, icon: 'fa-fire' });
             }
-            
-            // Winding losses
+
             if (outputs?.windingLosses?.windingLosses != null) {
                 const aux = formatPower(outputs.windingLosses.windingLosses);
-                params.push({ label: 'Winding Loss', value: removeTrailingZeroes(aux.label, 2), unit: aux.unit });
+                params.push({ label: 'Winding Loss', value: removeTrailingZeroes(aux.label, 2), unit: aux.unit, icon: 'fa-bolt' });
             }
-            
-            // Peak flux
+
             if (outputs?.coreLosses?.magneticFluxDensity?.processed?.peak) {
                 const aux = formatUnit(outputs.coreLosses.magneticFluxDensity.processed.peak, 'T');
-                params.push({ label: 'Peak B', value: removeTrailingZeroes(aux.label, 2), unit: aux.unit });
+                params.push({ label: 'Peak B', value: removeTrailingZeroes(aux.label, 2), unit: aux.unit, icon: 'fa-magnet' });
             }
-            
-            // Core shape
-            params.push({ label: 'Core', value: this.coreShape, unit: '' });
-            
+
+            params.push({ label: 'Core', value: this.coreShape, unit: '', icon: 'fa-cube' });
+
             return params;
         },
 
@@ -637,21 +632,21 @@ export default {
         <!-- Toolbar (hidden when printing) -->
         <div class="datasheet-toolbar d-print-none">
             <div class="toolbar-left">
-                <button class="btn btn-primary btn-sm me-2" data-bs-toggle="modal" data-bs-target="#MASExporterModal">
+                <button class="summary-btn summary-btn-primary me-2" data-bs-toggle="modal" data-bs-target="#MASExporterModal">
                     <i class="fa-solid fa-file-export me-1"></i> MAS
                 </button>
-                <button class="btn btn-primary btn-sm me-2" data-bs-toggle="modal" data-bs-target="#CoreExporterModal">
+                <button class="summary-btn summary-btn-primary me-2" data-bs-toggle="modal" data-bs-target="#CoreExporterModal">
                     <i class="fa-solid fa-cube me-1"></i> Core
                 </button>
-                <button class="btn btn-primary btn-sm me-2" data-bs-toggle="modal" data-bs-target="#CoilExporterModal">
+                <button class="summary-btn summary-btn-primary me-2" data-bs-toggle="modal" data-bs-target="#CoilExporterModal">
                     <i class="fa-solid fa-coil me-1"></i> Coil
                 </button>
-                <button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#CircuitSimulatorsExporterModal">
+                <button class="summary-btn summary-btn-danger" data-bs-toggle="modal" data-bs-target="#CircuitSimulatorsExporterModal">
                     <i class="fa-solid fa-microchip me-1"></i> Circuit Sim
                 </button>
             </div>
             <div class="toolbar-right">
-                <button class="btn btn-outline-primary btn-sm" @click="printDatasheet">
+                <button class="summary-btn summary-btn-outline" @click="printDatasheet">
                     <i class="fa-solid fa-print me-1"></i> Print / Save PDF
                 </button>
             </div>
@@ -663,13 +658,17 @@ export default {
             <div class="datasheet-header">
                 <div class="header-content">
                     <div class="header-left">
+                        <div class="header-badge">
+                            <i class="fa-solid fa-microchip"></i>
+                            <span>Datasheet</span>
+                        </div>
                         <h1 class="part-number">{{ partNumber }}</h1>
                         <p class="part-description">{{ partDescription }}</p>
                         <p class="part-type">{{ componentType }}</p>
                     </div>
                     <div class="header-right">
                         <div class="company-name">OpenMagnetics</div>
-                        <div class="revision">Generated: {{ currentDate }}</div>
+                        <div class="revision">{{ currentDate }}</div>
                     </div>
                 </div>
             </div>
@@ -677,17 +676,20 @@ export default {
             <!-- Key Parameters Box -->
             <div class="key-params-box">
                 <div class="key-param" v-for="param in keyParameters" :key="param.label">
-                    <div class="param-label">{{ param.label }}</div>
-                    <div class="param-value-row">
-                        <span class="param-value">{{ param.value }}</span>
-                        <span class="param-unit">{{ param.unit }}</span>
+                    <div class="key-param-icon"><i :class="'fa-solid ' + param.icon"></i></div>
+                    <div class="key-param-body">
+                        <div class="param-label">{{ param.label }}</div>
+                        <div class="param-value-row">
+                            <span class="param-value">{{ param.value }}</span>
+                            <span class="param-unit">{{ param.unit }}</span>
+                        </div>
                     </div>
                 </div>
             </div>
 
             <!-- Visualizer Section -->
             <div class="section">
-                <h3 class="section-title">Component Visualization</h3>
+                <h3 class="section-title"><i class="fa-solid fa-cube"></i>Component Visualization</h3>
                 <div class="visualizer-container">
                     <Magnetic2DVisualizer
                         :modelValue="mas"
@@ -702,7 +704,7 @@ export default {
 
             <!-- Electrical Specifications -->
             <div class="section">
-                <h3 class="section-title">Electrical Specifications</h3>
+                <h3 class="section-title"><i class="fa-solid fa-bolt"></i>Electrical Specifications</h3>
                 <table class="spec-table">
                     <thead>
                         <tr>
@@ -727,7 +729,7 @@ export default {
 
             <!-- Operating Point Details -->
             <div class="section" v-if="operatingPointData">
-                <h3 class="section-title">Operating Point Excitation</h3>
+                <h3 class="section-title"><i class="fa-solid fa-wave-square"></i>Operating Point Excitation</h3>
                 <p class="test-conditions">
                     <template v-if="operatingPointData.conditions.ambientTemperature">
                         T<sub>amb</sub> = {{ operatingPointData.conditions.ambientTemperature }}°C
@@ -777,9 +779,10 @@ export default {
                                     </div>
                                 </div>
                                 <div class="waveform-preview" v-if="ex.voltage.waveformData?.length > 1">
-                                    <svg viewBox="0 0 120 40" class="waveform-svg voltage-waveform">
-                                        <path :d="generateWaveformPath(ex.voltage.waveformData, ex.voltage.waveformTime)" 
-                                              fill="none" stroke-width="1.5"/>
+                                    <svg viewBox="0 0 120 40" class="waveform-svg voltage-waveform" preserveAspectRatio="none">
+                                        <line x1="4" y1="20" x2="116" y2="20" class="waveform-baseline"/>
+                                        <path :d="generateWaveformPath(ex.voltage.waveformData, ex.voltage.waveformTime)"
+                                              fill="none" stroke-width="1.75" stroke-linejoin="round" stroke-linecap="round"/>
                                     </svg>
                                 </div>
                             </div>
@@ -815,9 +818,10 @@ export default {
                                     </div>
                                 </div>
                                 <div class="waveform-preview" v-if="ex.current.waveformData?.length > 1">
-                                    <svg viewBox="0 0 120 40" class="waveform-svg current-waveform">
-                                        <path :d="generateWaveformPath(ex.current.waveformData, ex.current.waveformTime)" 
-                                              fill="none" stroke-width="1.5"/>
+                                    <svg viewBox="0 0 120 40" class="waveform-svg current-waveform" preserveAspectRatio="none">
+                                        <line x1="4" y1="20" x2="116" y2="20" class="waveform-baseline"/>
+                                        <path :d="generateWaveformPath(ex.current.waveformData, ex.current.waveformTime)"
+                                              fill="none" stroke-width="1.75" stroke-linejoin="round" stroke-linecap="round"/>
                                     </svg>
                                 </div>
                             </div>
@@ -830,7 +834,7 @@ export default {
             <div class="two-column-section">
                 <div class="column">
                     <div class="section">
-                        <h3 class="section-title">Core Data</h3>
+                        <h3 class="section-title"><i class="fa-solid fa-cube"></i>Core Data</h3>
                         <table class="data-table">
                             <tbody>
                                 <tr v-for="(item, index) in coreData" :key="item.parameter" :class="{ 'alt-row': index % 2 === 1 }">
@@ -843,7 +847,7 @@ export default {
                     
                     <!-- Gapping Table -->
                     <div class="section" v-if="gappingData.length > 0">
-                        <h3 class="section-title">Core Gapping</h3>
+                        <h3 class="section-title"><i class="fa-solid fa-ruler-horizontal"></i>Core Gapping</h3>
                         <table class="spec-table compact">
                             <thead>
                                 <tr>
@@ -864,7 +868,7 @@ export default {
                     
                     <!-- Material Data -->
                     <div class="section" v-if="materialData.length > 0">
-                        <h3 class="section-title">Material Properties</h3>
+                        <h3 class="section-title"><i class="fa-solid fa-flask"></i>Material Properties</h3>
                         <table class="data-table">
                             <tbody>
                                 <tr v-for="(item, index) in materialData" :key="item.parameter" :class="{ 'alt-row': index % 2 === 1 }">
@@ -877,7 +881,7 @@ export default {
                 </div>
                 <div class="column">
                     <div class="section">
-                        <h3 class="section-title">Winding Configuration</h3>
+                        <h3 class="section-title"><i class="fa-solid fa-layer-group"></i>Winding Configuration</h3>
                         <table class="spec-table">
                             <thead>
                                 <tr>
@@ -900,7 +904,7 @@ export default {
                     
                     <!-- Performance Analysis -->
                     <div class="section">
-                        <h3 class="section-title">Performance Analysis</h3>
+                        <h3 class="section-title"><i class="fa-solid fa-gauge-high"></i>Performance Analysis</h3>
                         <p class="test-conditions">
                             Test Conditions: f = {{ operatingFrequency }}, T<sub>amb</sub> = {{ ambientTemperature }}
                         </p>
@@ -917,7 +921,7 @@ export default {
                     
                     <!-- Winding Performance -->
                     <div class="section" v-if="windingPerformance.length > 0">
-                        <h3 class="section-title">Winding Performance</h3>
+                        <h3 class="section-title"><i class="fa-solid fa-chart-line"></i>Winding Performance</h3>
                         <table class="spec-table compact">
                             <thead>
                                 <tr>
@@ -942,7 +946,7 @@ export default {
 
             <!-- Winding Construction Steps -->
             <div class="section" v-if="isWoundMagnetic && windingConstructionSteps.length > 0">
-                <h3 class="section-title">Winding Construction Steps</h3>
+                <h3 class="section-title"><i class="fa-solid fa-list-check"></i>Winding Construction Steps</h3>
                 <div class="construction-steps">
                     <div v-for="step in windingConstructionSteps" :key="step.step" 
                          class="construction-step" 
@@ -956,17 +960,10 @@ export default {
                 </div>
             </div>
 
-            <!-- Footer Notice -->
-            <div class="footer-notice">
-                <div class="notice-box">
-                    <strong>Note:</strong> This datasheet was automatically generated by OpenMagnetics based on the design specifications and simulation results. 
-                    Actual performance may vary. Please verify all specifications before production use.
-                </div>
-            </div>
-
             <div class="document-footer">
-                <span>Generated by OpenMagnetics</span>
-                <span>{{ currentDate }}</span>
+                <i class="fa-solid fa-circle-info"></i>
+                <span>Auto-generated from design specs and simulation. Verify before production use.</span>
+                <span class="footer-brand">OpenMagnetics</span>
             </div>
         </div>
     </div>
@@ -974,7 +971,7 @@ export default {
 
 <style scoped>
 .datasheet-wrapper {
-    background: #1a1a1a;
+    background: var(--bs-dark);
     min-height: 100vh;
     padding: 15px;
 }
@@ -985,10 +982,15 @@ export default {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 10px 15px;
-    background: #2a2a2a;
-    border-radius: 4px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+    padding: 0.6rem 0.85rem;
+    background: linear-gradient(180deg,
+        rgba(var(--bs-primary-rgb), 0.06) 0%,
+        rgba(var(--bs-primary-rgb), 0.02) 100%),
+        var(--bs-dark);
+    border: 1px solid rgba(var(--bs-primary-rgb), 0.2);
+    border-left: 3px solid rgba(var(--bs-primary-rgb), 0.7);
+    border-radius: 12px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 
 .toolbar-left, .toolbar-right {
@@ -1001,44 +1003,74 @@ export default {
     max-width: 210mm;
     margin: 0 auto;
     padding: 0;
-    background: #1a1a2e;
-    color: #d4d4d4;
+    background: var(--bs-dark);
+    color: #f2f2f2;
     font-size: 11px;
     line-height: 1.4;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.3);
-    border: 1px solid #343a40;
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(var(--bs-primary-rgb), 0.18);
+    border-radius: 12px;
+    overflow: hidden;
 }
 
 /* Header */
 .datasheet-header {
-    background: linear-gradient(135deg, #005f48 0%, #539796 100%);
-    color: white;
-    padding: 20px 25px;
+    background:
+        linear-gradient(180deg,
+            rgba(var(--bs-primary-rgb), 0.1) 0%,
+            rgba(var(--bs-primary-rgb), 0.03) 100%),
+        var(--bs-dark);
+    border-bottom: 1px solid rgba(var(--bs-primary-rgb), 0.18);
+    border-left: 3px solid rgba(var(--bs-primary-rgb), 0.7);
+    color: #f2f2f2;
+    padding: 18px 24px;
 }
 
 .header-content {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
+    gap: 16px;
+}
+
+.header-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.2rem 0.55rem;
+    background: rgba(var(--bs-primary-rgb), 0.12);
+    border: 1px solid rgba(var(--bs-primary-rgb), 0.3);
+    border-radius: 999px;
+    color: var(--bs-primary);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+}
+
+.header-badge i {
+    filter: drop-shadow(0 0 4px rgba(var(--bs-primary-rgb), 0.5));
 }
 
 .header-left .part-number {
-    font-size: 26px;
+    font-size: 24px;
     font-weight: 700;
-    margin: 0 0 5px 0;
-    letter-spacing: 0.5px;
+    margin: 0 0 4px 0;
+    letter-spacing: 0.3px;
+    color: #f2f2f2;
 }
 
 .header-left .part-description {
-    font-size: 15px;
-    margin: 0 0 3px 0;
-    opacity: 0.95;
+    font-size: 13px;
+    margin: 0 0 2px 0;
+    color: rgba(242, 242, 242, 0.8);
 }
 
 .header-left .part-type {
-    font-size: 12px;
+    font-size: 11px;
     margin: 0;
-    opacity: 0.8;
+    color: rgba(242, 242, 242, 0.55);
 }
 
 .header-right {
@@ -1046,56 +1078,92 @@ export default {
 }
 
 .header-right .company-name {
-    font-size: 16px;
+    font-size: 14px;
     font-weight: 600;
+    color: var(--bs-primary);
+    letter-spacing: 0.02em;
 }
 
 .header-right .revision {
-    font-size: 11px;
-    opacity: 0.8;
-    margin-top: 5px;
+    font-size: 10px;
+    color: rgba(242, 242, 242, 0.55);
+    margin-top: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
 }
 
 /* Key Parameters Box */
 .key-params-box {
-    display: flex;
-    justify-content: space-around;
-    flex-wrap: wrap;
-    background: #16213e;
-    border-bottom: 2px solid #539796;
-    padding: 12px 10px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 0.5rem;
+    padding: 12px 18px 14px;
+    background: rgba(var(--bs-primary-rgb), 0.03);
+    border-bottom: 1px solid rgba(var(--bs-primary-rgb), 0.18);
 }
 
 .key-param {
-    text-align: center;
-    padding: 5px 15px;
-    min-width: 100px;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.5rem 0.7rem;
+    background: rgba(var(--bs-primary-rgb), 0.08);
+    border: 1px solid rgba(var(--bs-primary-rgb), 0.18);
+    border-radius: 10px;
+    transition: background 0.15s, border-color 0.15s;
+}
+
+.key-param:hover {
+    background: rgba(var(--bs-primary-rgb), 0.12);
+    border-color: rgba(var(--bs-primary-rgb), 0.3);
+}
+
+.key-param-icon {
+    width: 1.8rem;
+    height: 1.8rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(var(--bs-primary-rgb), 0.18);
+    border: 1px solid rgba(var(--bs-primary-rgb), 0.4);
+    border-radius: 999px;
+    color: var(--bs-primary);
+    font-size: 0.85rem;
+    flex-shrink: 0;
+}
+
+.key-param-body {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
 }
 
 .key-param .param-label {
-    font-size: 10px;
-    color: #adb5bd;
+    font-size: 9px;
+    color: rgba(242, 242, 242, 0.65);
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.05em;
+    font-weight: 600;
+    line-height: 1.1;
 }
 
 .key-param .param-value-row {
     display: flex;
     align-items: baseline;
-    justify-content: center;
     gap: 4px;
-    margin: 2px 0;
+    margin-top: 2px;
 }
 
 .key-param .param-value {
-    font-size: 18px;
+    font-size: 15px;
     font-weight: 700;
-    color: #539796;
+    color: var(--bs-primary);
+    line-height: 1.1;
 }
 
 .key-param .param-unit {
-    font-size: 12px;
-    color: #adb5bd;
+    font-size: 11px;
+    color: rgba(242, 242, 242, 0.55);
 }
 
 /* Sections */
@@ -1104,12 +1172,23 @@ export default {
 }
 
 .section-title {
-    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-size: 12px;
     font-weight: 600;
-    color: #539796;
+    color: var(--bs-primary);
     margin: 0 0 8px 0;
-    padding-bottom: 4px;
-    border-bottom: 1px solid #539796;
+    padding: 4px 0 4px 8px;
+    border-left: 3px solid rgba(var(--bs-primary-rgb), 0.7);
+    border-bottom: 1px solid rgba(var(--bs-primary-rgb), 0.25);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.section-title i {
+    font-size: 0.85rem;
+    filter: drop-shadow(0 0 4px rgba(var(--bs-primary-rgb), 0.5));
 }
 
 /* Two column layout */
@@ -1131,17 +1210,23 @@ export default {
 /* Visualizer */
 .visualizer-container {
     background: #1a1a1a;
-    border: 1px solid #343a40;
+    border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 4px;
     min-height: 200px;
     overflow: hidden;
 }
 
-/* Spec table */
-.spec-table {
+/* Shared table system (spec + data) */
+.spec-table,
+.data-table {
     width: 100%;
-    border-collapse: collapse;
+    border-collapse: separate;
+    border-spacing: 0;
     font-size: 10px;
+    background: rgba(var(--bs-primary-rgb), 0.03);
+    border: 1px solid rgba(var(--bs-primary-rgb), 0.15);
+    border-radius: 8px;
+    overflow: hidden;
 }
 
 .spec-table.compact {
@@ -1149,71 +1234,68 @@ export default {
 }
 
 .spec-table th {
-    background: #005f48;
-    color: white;
-    padding: 5px 8px;
+    background: rgba(var(--bs-primary-rgb), 0.15);
+    color: var(--bs-primary);
+    padding: 6px 10px;
     text-align: left;
     font-weight: 600;
+    font-size: 9px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    border-bottom: 1px solid rgba(var(--bs-primary-rgb), 0.25);
 }
 
-.spec-table td {
-    padding: 4px 8px;
-    border-bottom: 1px solid #343a40;
+.spec-table td,
+.data-table td {
+    padding: 5px 10px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 
-.spec-table .alt-row {
-    background: rgba(83, 151, 150, 0.1);
+.spec-table tr:last-child td,
+.data-table tr:last-child td {
+    border-bottom: none;
+}
+
+.spec-table .alt-row,
+.data-table .alt-row {
+    background: rgba(var(--bs-primary-rgb), 0.07);
 }
 
 .spec-table .symbol {
     font-style: italic;
+    color: rgba(242, 242, 242, 0.7);
 }
 
 .spec-table .typ-value {
     font-weight: 600;
+    color: var(--bs-primary);
 }
 
 .spec-table .conditions {
     font-size: 9px;
-    color: #6c757d;
-}
-
-/* Data table */
-.data-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 10px;
-}
-
-.data-table td {
-    padding: 4px 8px;
-    border-bottom: 1px solid #343a40;
+    color: rgba(242, 242, 242, 0.45);
 }
 
 .data-table .param-name {
-    color: #adb5bd;
+    color: rgba(242, 242, 242, 0.65);
 }
 
 .data-table .param-val {
-    font-weight: 500;
+    font-weight: 600;
     text-align: right;
-    color: #d4d4d4;
-}
-
-.data-table .alt-row {
-    background: rgba(83, 151, 150, 0.1);
+    color: #e6e6e6;
 }
 
 .data-table .total-row {
     font-weight: 700;
-    background: rgba(83, 151, 150, 0.25) !important;
-    color: #539796;
+    background: rgba(var(--bs-primary-rgb), 0.2) !important;
+    color: var(--bs-primary);
 }
 
 /* Test conditions */
 .test-conditions {
     font-size: 10px;
-    color: #adb5bd;
+    color: rgba(242, 242, 242, 0.65);
     margin-bottom: 8px;
     font-style: italic;
 }
@@ -1230,21 +1312,21 @@ export default {
     align-items: center;
     gap: 8px;
     padding: 8px 12px;
-    background: rgba(83, 151, 150, 0.1);
+    background: rgba(var(--bs-primary-rgb), 0.1);
     border-radius: 4px;
-    border-left: 3px solid #539796;
+    border-left: 3px solid var(--bs-primary);
     flex: 1 1 calc(50% - 8px);
     min-width: 250px;
 }
 
 .construction-step.step-insulation {
-    background: rgba(255, 185, 78, 0.1);
-    border-left-color: #ffb94e;
+    background: rgba(var(--bs-warning-rgb), 0.1);
+    border-left-color: rgb(var(--bs-warning-rgb));
 }
 
 .construction-step.step-winding {
-    background: rgba(83, 151, 150, 0.1);
-    border-left-color: #539796;
+    background: rgba(var(--bs-primary-rgb), 0.1);
+    border-left-color: var(--bs-primary);
 }
 
 .step-number {
@@ -1253,7 +1335,7 @@ export default {
     justify-content: center;
     width: 22px;
     height: 22px;
-    background: #539796;
+    background: var(--bs-primary);
     color: white;
     border-radius: 50%;
     font-size: 11px;
@@ -1262,18 +1344,18 @@ export default {
 }
 
 .step-insulation .step-number {
-    background: #ffb94e;
-    color: #1a1a1a;
+    background: rgb(var(--bs-warning-rgb));
+    color: var(--bs-dark);
 }
 
 .step-icon {
-    color: #539796;
+    color: var(--bs-primary);
     font-size: 14px;
     flex-shrink: 0;
 }
 
 .step-insulation .step-icon {
-    color: #ffb94e;
+    color: rgb(var(--bs-warning-rgb));
 }
 
 .step-description {
@@ -1283,8 +1365,8 @@ export default {
 
 /* Operating Point Excitation */
 .excitation-card {
-    background: rgba(83, 151, 150, 0.05);
-    border: 1px solid #343a40;
+    background: rgba(var(--bs-primary-rgb), 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 6px;
     margin-bottom: 12px;
     overflow: hidden;
@@ -1295,12 +1377,12 @@ export default {
     align-items: center;
     gap: 12px;
     padding: 8px 12px;
-    background: rgba(83, 151, 150, 0.15);
-    border-bottom: 1px solid #343a40;
+    background: rgba(var(--bs-primary-rgb), 0.15);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .winding-badge {
-    background: #539796;
+    background: var(--bs-primary);
     color: white;
     padding: 2px 10px;
     border-radius: 12px;
@@ -1310,7 +1392,7 @@ export default {
 
 .frequency-badge {
     font-size: 11px;
-    color: #adb5bd;
+    color: rgba(242, 242, 242, 0.65);
     font-style: italic;
 }
 
@@ -1337,13 +1419,13 @@ export default {
 }
 
 .signal-header.voltage-header {
-    background: rgba(255, 185, 78, 0.2);
-    color: #ffb94e;
+    background: rgba(var(--bs-warning-rgb), 0.2);
+    color: rgb(var(--bs-warning-rgb));
 }
 
 .signal-header.current-header {
-    background: rgba(83, 151, 150, 0.2);
-    color: #539796;
+    background: rgba(var(--bs-primary-rgb), 0.2);
+    color: var(--bs-primary);
 }
 
 .signal-header .waveform-label {
@@ -1375,7 +1457,7 @@ export default {
 
 .signal-param .param-label {
     font-size: 9px;
-    color: #6c757d;
+    color: rgba(242, 242, 242, 0.45);
     text-transform: uppercase;
 }
 
@@ -1387,47 +1469,64 @@ export default {
 
 .waveform-preview {
     flex-shrink: 0;
-    width: 120px;
-    height: 40px;
-    background: rgba(26, 26, 30, 0.8);
-    border-radius: 4px;
-    border: 1px solid #343a40;
+    width: 140px;
+    height: 48px;
+    background:
+        radial-gradient(circle at 50% 50%,
+            rgba(var(--bs-primary-rgb), 0.08) 0%,
+            rgba(26, 26, 30, 0.9) 75%);
+    border-radius: 6px;
+    border: 1px solid rgba(var(--bs-primary-rgb), 0.18);
+    padding: 2px;
 }
 
 .waveform-svg {
     width: 100%;
     height: 100%;
+    display: block;
+    overflow: visible;
+}
+
+.waveform-baseline {
+    stroke: rgba(255, 255, 255, 0.15);
+    stroke-width: 1;
+    stroke-dasharray: 2 3;
 }
 
 .waveform-svg.voltage-waveform path {
-    stroke: #ffb94e;
+    stroke: rgb(var(--bs-warning-rgb));
+    filter: drop-shadow(0 0 3px rgba(var(--bs-warning-rgb), 0.5));
 }
 
 .waveform-svg.current-waveform path {
-    stroke: #539796;
+    stroke: var(--bs-primary);
+    filter: drop-shadow(0 0 3px rgba(var(--bs-primary-rgb), 0.5));
 }
 
 /* Footer */
-.footer-notice {
-    margin: 15px 20px;
-}
-
-.notice-box {
-    background: rgba(255, 185, 78, 0.15);
-    border: 1px solid #ffb94e;
-    border-radius: 4px;
-    padding: 10px 12px;
-    font-size: 10px;
-    color: #ffb94e;
-}
-
 .document-footer {
     display: flex;
-    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
     padding: 10px 20px;
-    border-top: 1px solid #343a40;
+    margin-top: 10px;
+    border-top: 1px solid rgba(var(--bs-primary-rgb), 0.15);
+    background: rgba(var(--bs-primary-rgb), 0.03);
     font-size: 9px;
-    color: #6c757d;
+    color: rgba(242, 242, 242, 0.55);
+    letter-spacing: 0.02em;
+}
+
+.document-footer i {
+    color: rgba(var(--bs-primary-rgb), 0.7);
+    font-size: 10px;
+}
+
+.document-footer .footer-brand {
+    margin-left: auto;
+    color: var(--bs-primary);
+    font-weight: 600;
+    letter-spacing: 0.05em;
 }
 
 /* Print styles */
@@ -1455,7 +1554,7 @@ export default {
     
     .key-param .param-label,
     .key-param .param-unit {
-        color: #6c757d;
+        color: rgba(242, 242, 242, 0.45);
     }
     
     .data-table .param-name,
@@ -1482,14 +1581,14 @@ export default {
         color: #005f48;
     }
     
-    .notice-box {
-        background: #fff3cd;
-        color: #856404;
-        border-color: #ffc107;
-    }
-    
     .document-footer {
         border-top-color: #dee2e6;
+        background: #f8f9fa;
+        color: #495057;
+    }
+
+    .document-footer .footer-brand {
+        color: #005f48;
     }
     
     .construction-step {
@@ -1615,5 +1714,87 @@ export default {
         width: 100%;
         height: 50px;
     }
+}
+
+/* Modernized pill buttons */
+.summary-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+    padding: 0.35rem 0.85rem;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: filter 0.15s, box-shadow 0.2s, transform 0.1s, background 0.15s, color 0.15s;
+    white-space: nowrap;
+    text-decoration: none;
+    line-height: 1.15;
+}
+
+.summary-btn:hover:not(:disabled) {
+    filter: brightness(1.12);
+    transform: translateY(-1px);
+}
+
+.summary-btn:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+.summary-btn-primary {
+    background: linear-gradient(135deg,
+        color-mix(in srgb, var(--bs-primary) 115%, transparent 0%) 0%,
+        var(--bs-primary) 55%,
+        rgb(var(--bs-primary-rgb) / 0.85) 100%);
+    color: var(--bs-white);
+    border: 1px solid color-mix(in srgb, var(--bs-primary) 70%, var(--bs-white) 30%);
+    box-shadow:
+        0 0 0 1px rgb(var(--bs-primary-rgb) / 0.35),
+        0 2px 8px rgb(var(--bs-primary-rgb) / 0.4),
+        inset 0 1px 0 rgba(var(--bs-light-rgb), 0.3);
+    text-shadow: 0 1px 1px rgba(var(--bs-dark-rgb), 0.25);
+}
+
+.summary-btn-success {
+    background: linear-gradient(135deg,
+        color-mix(in srgb, var(--bs-success) 115%, transparent 0%) 0%,
+        var(--bs-success) 55%,
+        rgb(var(--bs-success-rgb) / 0.85) 100%);
+    color: var(--bs-white);
+    border: 1px solid color-mix(in srgb, var(--bs-success) 70%, var(--bs-white) 30%);
+    box-shadow:
+        0 0 0 1px rgb(var(--bs-success-rgb) / 0.35),
+        0 2px 8px rgb(var(--bs-success-rgb) / 0.4),
+        inset 0 1px 0 rgba(var(--bs-light-rgb), 0.3);
+    text-shadow: 0 1px 1px rgba(var(--bs-dark-rgb), 0.25);
+}
+
+.summary-btn-danger {
+    background: rgb(var(--bs-danger-rgb) / 0.2);
+    border: 1px solid rgb(var(--bs-danger-rgb) / 0.55);
+    color: var(--bs-danger);
+    box-shadow: 0 1px 4px rgba(var(--bs-dark-rgb), 0.25);
+}
+
+.summary-btn-danger:hover:not(:disabled) {
+    background: rgb(var(--bs-danger-rgb) / 0.3);
+    border-color: rgb(var(--bs-danger-rgb) / 0.75);
+}
+
+.summary-btn-outline {
+    background: rgba(var(--bs-light-rgb), 0.08);
+    border: 1px solid rgba(var(--bs-light-rgb), 0.22);
+    color: var(--bs-light);
+    box-shadow: 0 1px 4px rgba(var(--bs-dark-rgb), 0.25);
+}
+
+.summary-btn-outline:hover:not(:disabled) {
+    background: rgba(var(--bs-light-rgb), 0.14);
+    border-color: rgba(var(--bs-light-rgb), 0.35);
+    color: var(--bs-white);
 }
 </style>

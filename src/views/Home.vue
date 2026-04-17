@@ -129,7 +129,7 @@ export default {
 
                     <!-- Design Wizards -->
                     <div class="col-lg-4">
-                        <div class="card h-100 bg-dark border-0 shadow">
+                        <div class="card h-100 border-0 shadow home-tool-card">
                             <div class="card-body p-4">
                                 <i class="fa-solid fa-hat-wizard fa-2x text-warning mb-3"></i>
                                 <h4 class="card-title text-white fw-bold">Design Wizards</h4>
@@ -151,7 +151,7 @@ export default {
 
                     <!-- Insulation Coordinator -->
                     <div class="col-lg-6">
-                        <div class="card h-100 bg-dark border-0 shadow">
+                        <div class="card h-100 border-0 shadow home-tool-card">
                             <div class="card-body p-4">
                                 <i class="fa-solid fa-shield-halved fa-2x text-success mb-3"></i>
                                 <h4 class="card-title text-white fw-bold">Insulation Coordinator</h4>
@@ -171,7 +171,7 @@ export default {
 
                     <!-- NGSpice Simulation -->
                     <div class="col-lg-6">
-                        <div class="card h-100 bg-dark border-0 shadow">
+                        <div class="card h-100 border-0 shadow home-tool-card">
                             <div class="card-body p-4">
                                 <i class="fa-solid fa-wave-square fa-2x text-info mb-3"></i>
                                 <h4 class="card-title text-white fw-bold">NGSpice Simulation</h4>
@@ -191,7 +191,7 @@ export default {
 
                     <!-- Equivalent Circuit -->
                     <div class="col-lg-6">
-                        <div class="card h-100 bg-dark border-0 shadow">
+                        <div class="card h-100 border-0 shadow home-tool-card">
                             <div class="card-body p-4">
                                 <i class="fa-solid fa-network-wired fa-2x text-purple mb-3"></i>
                                 <h4 class="card-title text-white fw-bold">Equivalent Circuit</h4>
@@ -211,7 +211,7 @@ export default {
 
                     <!-- Temperature Simulation -->
                     <div class="col-lg-6">
-                        <div class="card h-100 bg-dark border-0 shadow">
+                        <div class="card h-100 border-0 shadow home-tool-card">
                             <div class="card-body p-4">
                                 <i class="fa-solid fa-temperature-high fa-2x text-danger mb-3"></i>
                                 <h4 class="card-title text-white fw-bold">Temperature Simulation</h4>
@@ -231,7 +231,7 @@ export default {
 
                     <!-- Why Open Source -->
                     <div class="col-lg-6">
-                        <div class="card h-100 bg-dark border-0 shadow">
+                        <div class="card h-100 border-0 shadow home-tool-card">
                             <div class="card-body p-4">
                                 <i class="fa-brands fa-osi fa-2x text-info mb-3"></i>
                                 <h4 class="card-title text-white fw-bold">100% Open Source</h4>
@@ -257,7 +257,7 @@ export default {
                     </div>
                     
                     <div class="col-lg-4 mb-4">
-                        <div class="card h-100 bg-dark border-0 shadow">
+                        <div class="card h-100 border-0 shadow home-tool-card">
                             <div class="card-header bg-transparent border-bottom border-secondary text-center py-3">
                                 <h3 class="text-white mb-0">
                                     <i class="fa-solid fa-flask text-secondary me-2"></i>Researchers
@@ -275,7 +275,7 @@ export default {
                     </div>
 
                     <div class="col-lg-4 mb-4">
-                        <div class="card h-100 bg-dark border-0 shadow">
+                        <div class="card h-100 border-0 shadow home-tool-card">
                             <div class="card-header bg-transparent border-bottom border-primary text-center py-3">
                                 <h3 class="text-white mb-0">
                                     <i class="fa-solid fa-screwdriver-wrench text-primary me-2"></i>Design Engineers
@@ -293,7 +293,7 @@ export default {
                     </div>
 
                     <div class="col-lg-4 mb-4">
-                        <div class="card h-100 bg-dark border-0 shadow">
+                        <div class="card h-100 border-0 shadow home-tool-card">
                             <div class="card-header bg-transparent border-bottom border-info text-center py-3">
                                 <h3 class="text-white mb-0">
                                     <i class="fa-solid fa-industry text-info me-2"></i>Manufacturers
@@ -382,12 +382,29 @@ export default {
     }
 
     .card {
-        transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out, border-color 0.2s ease-in-out;
     }
 
     .card:hover {
         transform: translateY(-5px);
-        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3) !important;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.45) !important;
+    }
+
+    /* Lifted, primary-accented tool cards — match the rest of the revamped UI
+       instead of the flat `bg-dark` (which renders nearly black in this theme). */
+    .home-tool-card {
+        background: linear-gradient(180deg,
+            color-mix(in srgb, var(--bs-light) 92%, #ffffff 8%) 0%,
+            var(--bs-light) 100%) !important;
+        border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        border-left: 3px solid rgba(var(--bs-primary-rgb), 0.5) !important;
+        box-shadow: 0 4px 18px rgba(0, 0, 0, 0.4),
+            inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
+    }
+
+    .home-tool-card:hover {
+        border-color: rgba(255, 255, 255, 0.15) !important;
+        border-left-color: rgba(var(--bs-primary-rgb), 0.85) !important;
     }
 
     .btn {

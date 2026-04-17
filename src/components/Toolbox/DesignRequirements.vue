@@ -184,30 +184,52 @@ export default {
 
 
 <template>
-    <div class="container">
-        <div class="row" :style="$styleStore.designRequirements.main">
-            <div class="col-sm-12 col-md-4 text-start border designRequirementsList" style="max-width: 360px; height: 80vh">
-                <div class="my-2 row px-2" v-for="requirementName in designRequirementsOrdered[$stateStore.getCurrentApplication()]" :key="requirementName">
-                    <label v-tooltip="tooltipsMagneticSynthesisDesignRequirements[requirementName]"  class="rounded-2 fs-5 col-8">{{toTitleCase(shortenedLabels[requirementName])}}</label>
-                
-                    <button 
-                        :style="masStore.mas.inputs.designRequirements[requirementName]==null? $styleStore.designRequirements.addButton : $styleStore.designRequirements.removeButton"
-                        :data-cy="dataTestLabel + '-' + toPascalCase(requirementName) + '-add-remove-button'"
-                        v-if="!compulsoryRequirements[$stateStore.getCurrentApplication()].includes(requirementName)"
-                        class="btn float-end col-4"
-                        @click="requirementButtonClicked(requirementName)">
-                        {{masStore.mas.inputs.designRequirements[requirementName]==null? 'Add Req.' : 'Remove'}}
-                    </button>
-                    <button
-                        :style="$styleStore.designRequirements.requiredButton"
-                        :data-cy="dataTestLabel + '-' + toPascalCase(requirementName) + '-required-button'"
-                        v-if="compulsoryRequirements[$stateStore.getCurrentApplication()].includes(requirementName)"
-                        class="btn float-end disabled col-4">
-                        {{(requirementName == 'turnsRatios' && masStore.mas.inputs.designRequirements.turnsRatios.length == 0) ? 'Not Req.' : "Required"}}
-                    </button>
+    <div class="dr-container">
+        <div class="dr-layout">
+            <!-- Left: Requirements list panel -->
+            <div class="dr-list-panel">
+                <div class="dr-panel-header">
+                    <i class="fa-solid fa-clipboard-list"></i>
+                    <span>Requirements</span>
+                </div>
+                <div class="dr-list-body">
+                    <div class="dr-req-item"
+                         v-for="requirementName in designRequirementsOrdered[$stateStore.getCurrentApplication()]"
+                         :key="requirementName"
+                         :class="{
+                            'dr-req-item-active': masStore.mas.inputs.designRequirements[requirementName] != null
+                                && !compulsoryRequirements[$stateStore.getCurrentApplication()].includes(requirementName),
+                            'dr-req-item-required': compulsoryRequirements[$stateStore.getCurrentApplication()].includes(requirementName)
+                         }">
+                        <label v-tooltip="tooltipsMagneticSynthesisDesignRequirements[requirementName]"
+                               class="dr-req-label">{{ toTitleCase(shortenedLabels[requirementName]) }}</label>
+                        <button
+                            :data-cy="dataTestLabel + '-' + toPascalCase(requirementName) + '-add-remove-button'"
+                            v-if="!compulsoryRequirements[$stateStore.getCurrentApplication()].includes(requirementName)"
+                            :class="masStore.mas.inputs.designRequirements[requirementName]==null ? 'dr-btn dr-btn-add' : 'dr-btn dr-btn-remove'"
+                            @click="requirementButtonClicked(requirementName)">
+                            <i :class="masStore.mas.inputs.designRequirements[requirementName]==null ? 'fa-solid fa-plus' : 'fa-solid fa-xmark'"></i>
+                            <span>{{ masStore.mas.inputs.designRequirements[requirementName]==null ? 'Add' : 'Remove' }}</span>
+                        </button>
+                        <button
+                            :data-cy="dataTestLabel + '-' + toPascalCase(requirementName) + '-required-button'"
+                            v-if="compulsoryRequirements[$stateStore.getCurrentApplication()].includes(requirementName)"
+                            class="dr-btn dr-btn-required"
+                            disabled>
+                            <i class="fa-solid fa-lock"></i>
+                            <span>{{ (requirementName == 'turnsRatios' && masStore.mas.inputs.designRequirements.turnsRatios.length == 0) ? 'Not Req.' : 'Required' }}</span>
+                        </button>
+                    </div>
                 </div>
             </div>
-            <div class="col-sm-12 col-md-8 text-start pe-0">
+
+            <!-- Right: Configuration panel -->
+            <div class="dr-detail-panel">
+                <div class="dr-panel-header">
+                    <i class="fa-solid fa-sliders"></i>
+                    <span>Configuration</span>
+                </div>
+                <div class="dr-detail-body">
 <!--                 <Name class="border-bottom border-top py-2" 
                     :style = "$styleStore.designRequirements.inputBorderColor"
                     :name="'name'"
@@ -479,19 +501,214 @@ export default {
                     :textColor="$styleStore.designRequirements.inputTextColor"
                 />
 
+                </div>
             </div>
         </div>
     </div>
 </template>
 
 
-<style> 
+<style scoped>
+/* Match Magnetic Builder's palette: primary-tinted transparent panel, var(--bs-dark) input surfaces */
+.dr-container {
+    --dr-border: rgba(var(--bs-primary-rgb), 0.15);
+    --dr-border-soft: rgba(var(--bs-primary-rgb), 0.12);
+    --dr-text: #f2f2f2;
+    --dr-text-muted: rgba(242, 242, 242, 0.7);
 
-.designRequirementsList{
-    position: relative;
-    float: left;
-    text-align: center;
-    height:100%; 
-    overflow-y: auto; 
+    padding: 0.5rem 0.75rem;
+}
+
+.dr-layout {
+    display: flex;
+    gap: 0.75rem;
+    align-items: flex-start;
+}
+
+/* ============ Shared panel ============ */
+.dr-list-panel,
+.dr-detail-panel {
+    display: flex;
+    flex-direction: column;
+    background:
+        linear-gradient(145deg,
+            rgba(var(--bs-primary-rgb), 0.06) 0%,
+            rgba(var(--bs-primary-rgb), 0.02) 100%),
+        var(--bs-dark);
+    border: 1px solid var(--dr-border);
+    border-radius: 14px;
+    box-shadow:
+        0 4px 20px rgba(0, 0, 0, 0.12),
+        inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    overflow: hidden;
+}
+
+.dr-list-panel {
+    width: 340px;
+    flex-shrink: 0;
+    max-height: 80vh;
+}
+
+.dr-detail-panel {
+    flex: 1;
+    min-width: 0;
+    max-height: 80vh;
+}
+
+.dr-panel-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 0.9rem;
+    background: rgba(var(--bs-primary-rgb), 0.1);
+    border-bottom: 1px solid var(--dr-border-soft);
+    color: var(--bs-primary);
+    font-weight: 600;
+    font-size: 0.95rem;
+    letter-spacing: 0.02em;
+    flex-shrink: 0;
+}
+
+.dr-panel-header i {
+    font-size: 1rem;
+    filter: drop-shadow(0 0 4px rgba(var(--bs-primary-rgb), 0.45));
+}
+
+.dr-list-body {
+    padding: 0.45rem 0.5rem 0.6rem 0.5rem;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.dr-detail-body {
+    padding: 0;
+    overflow-y: auto;
+    flex: 1;
+}
+
+/* Neutralise Bootstrap border-top/border-bottom on the form rows and
+   draw a single clean divider between sections instead, so there are no
+   "dark holes" between them. */
+.dr-detail-body :deep(> *) {
+    border-top: 0 !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
+    padding: 0.55rem 0.85rem !important;
+    background: transparent !important;
+}
+
+.dr-detail-body :deep(> *:last-child) {
+    border-bottom: 0 !important;
+}
+
+.dr-detail-body :deep(> *:hover) {
+    background: rgba(255, 255, 255, 0.025) !important;
+}
+
+/* ============ Requirement list item ============ */
+.dr-req-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding: 0.38rem 0.55rem;
+    margin: 0;
+    background: transparent;
+    border: 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 0;
+    transition: background 0.15s;
+}
+
+.dr-req-item:last-child {
+    border-bottom: 0;
+}
+
+.dr-req-item:hover {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.dr-req-item-active {
+    background: rgba(var(--bs-primary-rgb), 0.05);
+}
+
+.dr-req-item-active:hover {
+    background: rgba(var(--bs-primary-rgb), 0.09);
+}
+
+.dr-req-item-required {
+    background: transparent;
+}
+
+.dr-req-label {
+    flex: 1;
+    min-width: 0;
+    color: var(--dr-text);
+    font-size: 0.88rem;
+    font-weight: 500;
+    cursor: help;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ============ List buttons ============ */
+.dr-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.3rem;
+    padding: 0.3rem 0.65rem;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: filter 0.15s, box-shadow 0.2s, transform 0.1s, background 0.15s, color 0.15s;
+    white-space: nowrap;
+    flex-shrink: 0;
+    min-width: 5.5rem;
+}
+
+.dr-btn:hover:not(:disabled) {
+    filter: brightness(1.15);
+    transform: translateY(-1px);
+}
+
+.dr-btn:disabled {
+    cursor: default;
+    opacity: 0.75;
+}
+
+.dr-btn-add {
+    background: linear-gradient(135deg,
+        color-mix(in srgb, var(--bs-primary) 115%, transparent 0%) 0%,
+        var(--bs-primary) 55%,
+        rgb(var(--bs-primary-rgb) / 0.85) 100%);
+    color: #ffffff;
+    border: 1px solid color-mix(in srgb, var(--bs-primary) 70%, #ffffff 30%);
+    box-shadow:
+        0 0 0 1px rgb(var(--bs-primary-rgb) / 0.3),
+        0 2px 6px rgb(var(--bs-primary-rgb) / 0.35),
+        inset 0 1px 0 rgba(255, 255, 255, 0.25);
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.25);
+}
+
+.dr-btn-remove {
+    background: rgb(var(--bs-danger-rgb) / 0.2);
+    border: 1px solid rgb(var(--bs-danger-rgb) / 0.6);
+    color: var(--bs-danger);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+}
+
+.dr-btn-remove:hover:not(:disabled) {
+    background: rgb(var(--bs-danger-rgb) / 0.3);
+    border-color: rgb(var(--bs-danger-rgb) / 0.8);
+}
+
+.dr-btn-required {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    color: rgba(255, 255, 255, 0.55);
 }
 </style>

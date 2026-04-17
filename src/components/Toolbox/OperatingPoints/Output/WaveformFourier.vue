@@ -29,11 +29,15 @@ export default {
         },
         harmonicPowerThresholdVoltage: {
             type: Number,
-            default: 0.3,
+            default: 0.05,
         },
         harmonicPowerThresholdCurrent: {
             type: Number,
-            default: 0.1,
+            default: 0.05,
+        },
+        maxHarmonicsToPlot: {
+            type: Number,
+            default: 20,
         },
     },
     data() {
@@ -64,11 +68,16 @@ export default {
             data,
             masStore,
             taskQueueStore,
+            hiddenHarmonicsCount: 0,
         }
     },
     computed: {
     },
-    watch: { 
+    watch: {
+        '$settingsStore.operatingPointSettings.maxHarmonicsToPlot'(newValue, oldValue) {
+            // Re-render the spectrum when the user changes the cap in settings.
+            if (chart != null) this.updateChart();
+        },
     },
     created () {
         this.masStore.$onAction((action) => {
@@ -96,14 +105,33 @@ export default {
         options = {
             maintainAspectRatio: false,
             responsive: true,
+            layout: {
+                padding: { top: 8, right: 8, bottom: 4, left: 8 },
+            },
             plugins: {
                 legend: {
                     position: 'top',
+                    align: 'end',
                     labels: {
                         color: this.$styleStore.operatingPoints.commonParameterTextColor.color,
+                        boxWidth: 8,
+                        boxHeight: 8,
+                        usePointStyle: true,
+                        pointStyle: 'circle',
+                        font: { size: 11, weight: '600' },
+                        padding: 12,
                     }
                 },
                 tooltip: {
+                    backgroundColor: 'rgba(20, 20, 20, 0.92)',
+                    titleColor: '#f2f2f2',
+                    bodyColor: '#f2f2f2',
+                    borderColor: 'rgba(var(--bs-primary-rgb), 0.6)',
+                    borderWidth: 1,
+                    padding: 8,
+                    cornerRadius: 6,
+                    titleFont: { size: 11, weight: '600' },
+                    bodyFont: { size: 11 },
                     callbacks: {
                         label: (val) => {
                             var peakLabel;
@@ -146,40 +174,38 @@ export default {
             scales: {
                 current: {
                     position: 'left',
+                    beginAtZero: true,
                     ticks: {
                         color: this.$styleStore.operatingPoints.currentGraph.color,
-                        font: {
-                            size: 12
-                        },
+                        font: { size: 11, weight: '500' },
+                        padding: 4,
                     },
                     grid: {
-                        color: this.$styleStore.operatingPoints.currentGraph.color,
-                        borderColor: this.$styleStore.operatingPoints.currentGraph.color,
-                        borderWidth: 2,
-                        lineWidth: 0.4
+                        color: 'rgba(177, 138, 234, 0.12)',
+                        drawBorder: false,
+                        lineWidth: 1,
                     },
+                    border: { display: false },
                 },
                 voltage: {
                     position: 'right',
+                    beginAtZero: true,
                     ticks: {
                         color: this.$styleStore.operatingPoints.voltageGraph.color,
-                        font: {
-                            size: 12
-                        },
+                        font: { size: 11, weight: '500' },
+                        padding: 4,
                     },
                     grid: {
-                        color: this.$styleStore.operatingPoints.voltageGraph.color,
-                        borderColor: this.$styleStore.operatingPoints.voltageGraph.color,
-                        borderWidth: 2,
-                        lineWidth: 0.4
+                        display: false,
                     },
+                    border: { display: false },
                 },
-                x:{
+                x: {
                     ticks: {
-                        color: this.$styleStore.operatingPoints.commonParameterTextColor.color,
-                        font: {
-                            size: 12
-                        },
+                        color: 'rgba(242, 242, 242, 0.7)',
+                        font: { size: 10, weight: '500' },
+                        padding: 4,
+                        maxRotation: 0,
                         callback: function(value, index, values) {
                             var label
                             var unit
@@ -191,17 +217,25 @@ export default {
                             else {
                                 label = value
                             }
-                            
+
                             return label + unit;
                         }
                     },
                     grid: {
-                        color: this.$styleStore.operatingPoints.commonParameterTextColor.color,
-                        borderColor: this.$styleStore.operatingPoints.commonParameterTextColor.color,
-                        borderWidth: 2,
-                        lineWidth: 0.4
+                        color: 'rgba(255, 255, 255, 0.05)',
+                        drawBorder: false,
+                        lineWidth: 1,
+                    },
+                    border: {
+                        color: 'rgba(255, 255, 255, 0.15)',
                     },
                 }
+            },
+            elements: {
+                bar: {
+                    borderRadius: 4,
+                    borderSkipped: false,
+                },
             },
         }
 
@@ -228,47 +262,106 @@ export default {
             }
             return datasetIndex
         },
-        updateChart() {
-            if (chart != null && this.modelValue.current.harmonics != null && this.modelValue.voltage.harmonics != null) {
-                const commonFrequencies = [];
-                this.modelValue.current.harmonics.frequencies.forEach((frequency) => {
-                    if (frequency != null && !commonFrequencies.includes(frequency)) {
-                        commonFrequencies.push(frequency);
-                    }
-                })
-                this.modelValue.voltage.harmonics.frequencies.forEach((frequency) => {
-                    if (frequency != null && !commonFrequencies.includes(frequency)) {
-                        commonFrequencies.push(frequency);
-                    }
-                })
-
-                commonFrequencies.sort(function(a, b) {return a - b; });
-                chart.data.labels = commonFrequencies;
-                harmonicsFrequencies = commonFrequencies;
-                chart.data.datasets[this.getDatasetIndex('current')].data = [];
-                chart.data.datasets[this.getDatasetIndex('voltage')].data = [];
-                commonFrequencies.forEach((frequency) => {
-                    if (this.modelValue.current.harmonics.frequencies.includes(frequency)) {
-                        const index = this.modelValue.current.harmonics.frequencies.findIndex((x) => x === frequency);
-                        const amp = this.modelValue.current.harmonics.amplitudes[index];
-                        chart.data.datasets[this.getDatasetIndex('current')].data.push(amp ?? 0);
-                    }
-                    else {
-                        chart.data.datasets[this.getDatasetIndex('current')].data.push(0);
-                    }
-                    if (this.modelValue.voltage.harmonics.frequencies.includes(frequency)) {
-                        const index = this.modelValue.voltage.harmonics.frequencies.findIndex((x) => x === frequency);
-                        const amp = this.modelValue.voltage.harmonics.amplitudes[index];
-                        chart.data.datasets[this.getDatasetIndex('voltage')].data.push(amp ?? 0);
-                    }
-                    else {
-                        chart.data.datasets[this.getDatasetIndex('voltage')].data.push(0);
-                    }
-                })
-
-
-                chart.update()
+        effectiveMaxHarmonics() {
+            // Per-instance prop wins; otherwise read from the operating point settings.
+            const fromSettings = this.$settingsStore?.operatingPointSettings?.maxHarmonicsToPlot;
+            if (typeof fromSettings === 'number' && fromSettings > 0) {
+                return fromSettings;
             }
+            return this.maxHarmonicsToPlot;
+        },
+        async filterRelevantHarmonics(harmonics, threshold) {
+            // Always keep DC (index 0). Use MKF Utils to decide which AC harmonics
+            // are above the power threshold; additionally apply a JS-side cap to
+            // maxHarmonicsToPlot so the bar chart stays readable for waveforms
+            // with many small harmonics (e.g. PLECS imports). Returns a
+            // non-mutating filtered copy.
+            if (harmonics == null || harmonics.frequencies == null) return harmonics;
+            try {
+                const cap = this.effectiveMaxHarmonics();
+                // Pass -1 to MKF so the threshold alone decides which harmonics
+                // are "main"; we cap on the JS side from the largest amplitudes.
+                const indexes = await this.taskQueueStore.getMainHarmonicIndexes(harmonics, threshold, -1);
+                let idxArr = Array.from(indexes ?? []);
+                let hidden = 0;
+
+                if (cap > 0 && idxArr.length > cap) {
+                    hidden = idxArr.length - cap;
+                    idxArr = idxArr
+                        .map(i => ({ i, amp: Math.abs(harmonics.amplitudes[i] ?? 0) }))
+                        .sort((a, b) => b.amp - a.amp)
+                        .slice(0, cap)
+                        .map(x => x.i)
+                        .sort((a, b) => a - b);
+                }
+
+                const filtered = {
+                    amplitudes: [harmonics.amplitudes[0]],
+                    frequencies: [harmonics.frequencies[0]],
+                };
+                for (let i = 0; i < idxArr.length; i++) {
+                    filtered.amplitudes.push(harmonics.amplitudes[idxArr[i]]);
+                    filtered.frequencies.push(harmonics.frequencies[idxArr[i]]);
+                }
+                return { filtered, hidden };
+            } catch (e) {
+                // If MKF unavailable, fall back to the raw harmonics rather than crashing.
+                return { filtered: harmonics, hidden: 0 };
+            }
+        },
+        async updateChart() {
+            if (chart == null || this.modelValue.current.harmonics == null || this.modelValue.voltage.harmonics == null) {
+                return;
+            }
+
+            // Render-time filter: only the harmonics that actually carry meaningful
+            // power (per MKF Utils + per-signal threshold) are plotted, even when
+            // updateHarmonics=false (e.g. harmonics-input view).
+            const [curRes, volRes] = await Promise.all([
+                this.filterRelevantHarmonics(this.modelValue.current.harmonics, this.harmonicPowerThresholdCurrent),
+                this.filterRelevantHarmonics(this.modelValue.voltage.harmonics, this.harmonicPowerThresholdVoltage),
+            ]);
+            const currentHarmonics = curRes.filtered;
+            const voltageHarmonics = volRes.filtered;
+            this.hiddenHarmonicsCount = (curRes.hidden || 0) + (volRes.hidden || 0);
+
+            const commonFrequencies = [];
+            currentHarmonics.frequencies.forEach((frequency) => {
+                if (frequency != null && !commonFrequencies.includes(frequency)) {
+                    commonFrequencies.push(frequency);
+                }
+            })
+            voltageHarmonics.frequencies.forEach((frequency) => {
+                if (frequency != null && !commonFrequencies.includes(frequency)) {
+                    commonFrequencies.push(frequency);
+                }
+            })
+
+            commonFrequencies.sort(function(a, b) {return a - b; });
+            chart.data.labels = commonFrequencies;
+            harmonicsFrequencies = commonFrequencies;
+            chart.data.datasets[this.getDatasetIndex('current')].data = [];
+            chart.data.datasets[this.getDatasetIndex('voltage')].data = [];
+            commonFrequencies.forEach((frequency) => {
+                if (currentHarmonics.frequencies.includes(frequency)) {
+                    const index = currentHarmonics.frequencies.findIndex((x) => x === frequency);
+                    const amp = currentHarmonics.amplitudes[index];
+                    chart.data.datasets[this.getDatasetIndex('current')].data.push(amp ?? 0);
+                }
+                else {
+                    chart.data.datasets[this.getDatasetIndex('current')].data.push(0);
+                }
+                if (voltageHarmonics.frequencies.includes(frequency)) {
+                    const index = voltageHarmonics.frequencies.findIndex((x) => x === frequency);
+                    const amp = voltageHarmonics.amplitudes[index];
+                    chart.data.datasets[this.getDatasetIndex('voltage')].data.push(amp ?? 0);
+                }
+                else {
+                    chart.data.datasets[this.getDatasetIndex('voltage')].data.push(0);
+                }
+            })
+
+            chart.update()
         },
         async runFFT(signalDescriptor){
             try {
@@ -280,8 +373,6 @@ export default {
                 }
 
                 this.modelValue[signalDescriptor].harmonics = result;
-
-                await this.chopHarmonics(signalDescriptor);
 
                 if (chart != null) {
                     this.updateChart();
@@ -340,10 +431,51 @@ export default {
 
 
 <template>
-    <div>
+    <div class="wf-wrap">
         <canvas
             :style="$styleStore.operatingPoints.graphBgColor"
             id="chartFourier"
         ></canvas>
+        <div v-if="hiddenHarmonicsCount > 0"
+             class="wf-hint"
+             v-tooltip="`${hiddenHarmonicsCount} more harmonic${hiddenHarmonicsCount === 1 ? '' : 's'} above threshold not shown — raise the &quot;Max harmonics to plot&quot; limit in Operating point settings`">
+            <i class="fa-solid fa-circle-info"></i>
+            <span>+{{ hiddenHarmonicsCount }}</span>
+        </div>
     </div>
 </template>
+
+<style scoped>
+.wf-wrap {
+    position: relative;
+}
+
+/* Small unobtrusive pill anchored to the top-left of the chart, far from
+   the Chart.js legend in the top-right and from the bottom axis labels.
+   Hover for the full explanation. */
+.wf-hint {
+    position: absolute;
+    left: 0.5rem;
+    top: 0.4rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.68rem;
+    font-weight: 600;
+    line-height: 1;
+    color: var(--bs-primary);
+    padding: 0.18rem 0.5rem;
+    background: rgba(var(--bs-primary-rgb), 0.18);
+    border: 1px solid rgba(var(--bs-primary-rgb), 0.45);
+    border-radius: 999px;
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    cursor: help;
+    z-index: 5;
+    pointer-events: auto;
+}
+
+.wf-hint i {
+    font-size: 0.65rem;
+}
+</style>

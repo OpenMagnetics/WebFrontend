@@ -80,128 +80,249 @@ export default {
 </script>
 
 <template>
-    <div :data-cy="dataTestLabel + '-container'" class="container-flex">
-        <div class="row m-0 ps-3">
-            <label
-                :style="combinedStyle([titleFontSize, textColor, labelBgColor])"
-                v-if="showTitle"
-                :data-cy="dataTestLabel + '-title'"
-                :class="combinedClass([titleFontSize, textColor, labelBgColor])"
-                class="rounded-2 col-12 p-0"
-            >
-                Insulation
-            </label>
+    <div :data-cy="dataTestLabel + '-container'" class="ins-root">
+        <div v-if="showTitle" class="ins-title" :data-cy="dataTestLabel + '-title'">
+            <i class="fa-solid fa-shield-halved"></i>
+            <span>Insulation</span>
         </div>
-        <div class="row ms-2">
-            <DimensionWithTolerance
-                class="col-6 border-end"
-                :dataTestLabel="dataTestLabel + '-Altitude'"
-                :allowNegative="true"
-                :min="minimumMaximumScalePerParameter['altitude']['min']"
-                :max="minimumMaximumScalePerParameter['altitude']['max']"
-                :defaultValue="Utils.deepCopy(defaultValue['altitude'])"
-                :halfSize="true"
-                :name="'altitude'"
-                :unit="'m'"
-                v-model="modelValue['insulation']['altitude']"
-                :addButtonStyle="addButtonStyle"
-                :removeButtonBgColor="removeButtonBgColor"
-                :titleFontSize='valueFontSize'
-                :valueFontSize="valueFontSize"
-                :labelBgColor="labelBgColor"
-                :valueBgColor="valueBgColor"
-                :textColor="textColor"
-                :unitExtraStyleClass="unitExtraStyleClass"
-                @update="$emit('update')"
-                />
-            <DimensionWithTolerance
-                class="col-6"
-                :dataTestLabel="dataTestLabel + '-MainSupplyVoltage'"
-                :min="minimumMaximumScalePerParameter['voltage']['min']"
-                :max="minimumMaximumScalePerParameter['voltage']['max']"
-                :defaultValue="Utils.deepCopy(defaultValue['mainSupplyVoltage'])"
-                :halfSize="true"
-                :name="'mainSupplyVoltage'"
-                :unit="'V'"
-                v-model="modelValue['insulation']['mainSupplyVoltage']"
-                :addButtonStyle="addButtonStyle"
-                :removeButtonBgColor="removeButtonBgColor"
-                :titleFontSize='valueFontSize'
-                :valueFontSize="valueFontSize"
-                :labelBgColor="labelBgColor"
-                :valueBgColor="valueBgColor"
-                :textColor="textColor"
-                :unitExtraStyleClass="unitExtraStyleClass"
-                @update="$emit('update')"
-                />
 
-            <ElementFromList
-                class="col-lg-6 col-xl-2"
-                :dataTestLabel="dataTestLabel + '-Cti'"
-                :name="'cti'"
-                v-model="modelValue['insulation']"
-                :options="Object.values(Cti)"
-                :labelFontSize='valueFontSize'
-                :valueFontSize="valueFontSize"
-                :labelBgColor="labelBgColor"
-                :valueBgColor="valueBgColor"
-                :textColor="textColor"
-                @update="$emit('update')"
-            />
-            <ElementFromList
-                class="col-lg-6 col-xl-3"
-                :dataTestLabel="dataTestLabel + '-InsulationType'"
-                :name="'insulationType'"
-                v-model="modelValue['insulation']"
-                :options="Object.values(InsulationType)"
-                :labelFontSize='valueFontSize'
-                :valueFontSize="valueFontSize"
-                :labelBgColor="labelBgColor"
-                :valueBgColor="valueBgColor"
-                :textColor="textColor"
-                @update="$emit('update')"
-            />
-            <ElementFromList
-                class="col-lg-6 col-xl-4"
-                :dataTestLabel="dataTestLabel + '-OvervoltageCategory'"
-                :name="'overvoltageCategory'"
-                v-model="modelValue['insulation']"
-                :options="Object.values(OvervoltageCategory)"
-                :labelFontSize='valueFontSize'
-                :valueFontSize="valueFontSize"
-                :labelBgColor="labelBgColor"
-                :valueBgColor="valueBgColor"
-                :textColor="textColor"
-                @update="$emit('update')"
-            />
-            <ElementFromList
-                class="col-lg-6 col-xl-3"
-                :dataTestLabel="dataTestLabel + '-PollutionDegree'"
-                :name="'pollutionDegree'"
-                v-model="modelValue['insulation']"
-                :options="Object.values(PollutionDegree)"
-                :labelFontSize='valueFontSize'
-                :valueFontSize="valueFontSize"
-                :labelBgColor="labelBgColor"
-                :valueBgColor="valueBgColor"
-                :textColor="textColor"
-                @update="$emit('update')"
-            />
-            <SeveralElementsFromList
-                class="col-12"
-                :name="'standards'"
-                v-model="modelValue['insulation']"
-                :options="Object.values(InsulationStandards)"
-                :optionsToDisable="standardsToDisable"
-                :labelFontSize='valueFontSize'
-                :valueFontSize="valueFontSize"
-                :labelBgColor="labelBgColor"
-                :valueBgColor="valueBgColor"
-                :textColor="textColor"
-                @update="$emit('update')"
-            />
+        <!-- Section 1: Environment (altitude + main supply voltage) -->
+        <div class="ins-section">
+            <div class="ins-section-header">
+                <i class="fa-solid fa-mountain-sun"></i>
+                <span>Environment</span>
+            </div>
+            <div class="ins-grid-2">
+                <div class="ins-cell">
+                    <DimensionWithTolerance
+                        :dataTestLabel="dataTestLabel + '-Altitude'"
+                        :allowNegative="true"
+                        :min="minimumMaximumScalePerParameter['altitude']['min']"
+                        :max="minimumMaximumScalePerParameter['altitude']['max']"
+                        :defaultValue="Utils.deepCopy(defaultValue['altitude'])"
+                        :halfSize="true"
+                        :name="'altitude'"
+                        :unit="'m'"
+                        v-model="modelValue['insulation']['altitude']"
+                        :addButtonStyle="addButtonStyle"
+                        :removeButtonBgColor="removeButtonBgColor"
+                        :titleFontSize='valueFontSize'
+                        :valueFontSize="valueFontSize"
+                        :labelBgColor="labelBgColor"
+                        :valueBgColor="valueBgColor"
+                        :textColor="textColor"
+                        :unitExtraStyleClass="unitExtraStyleClass"
+                        @update="$emit('update')"
+                    />
+                </div>
+                <div class="ins-cell">
+                    <DimensionWithTolerance
+                        :dataTestLabel="dataTestLabel + '-MainSupplyVoltage'"
+                        :min="minimumMaximumScalePerParameter['voltage']['min']"
+                        :max="minimumMaximumScalePerParameter['voltage']['max']"
+                        :defaultValue="Utils.deepCopy(defaultValue['mainSupplyVoltage'])"
+                        :halfSize="true"
+                        :name="'mainSupplyVoltage'"
+                        :unit="'V'"
+                        v-model="modelValue['insulation']['mainSupplyVoltage']"
+                        :addButtonStyle="addButtonStyle"
+                        :removeButtonBgColor="removeButtonBgColor"
+                        :titleFontSize='valueFontSize'
+                        :valueFontSize="valueFontSize"
+                        :labelBgColor="labelBgColor"
+                        :valueBgColor="valueBgColor"
+                        :textColor="textColor"
+                        :unitExtraStyleClass="unitExtraStyleClass"
+                        @update="$emit('update')"
+                    />
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 2: Classification (CTI / InsulationType / Overvoltage / Pollution) -->
+        <div class="ins-section">
+            <div class="ins-section-header">
+                <i class="fa-solid fa-list-check"></i>
+                <span>Classification</span>
+            </div>
+            <div class="ins-grid-2">
+                <div class="ins-cell">
+                    <ElementFromList
+                        :dataTestLabel="dataTestLabel + '-Cti'"
+                        :name="'cti'"
+                        :titleSameRow="true"
+                        :justifyContent="true"
+                        v-model="modelValue['insulation']"
+                        :options="Object.values(Cti)"
+                        :labelWidthProportionClass="'col-6'"
+                        :selectStyleClass="'col-6'"
+                        :labelFontSize='valueFontSize'
+                        :valueFontSize="valueFontSize"
+                        :labelBgColor="labelBgColor"
+                        :valueBgColor="valueBgColor"
+                        :textColor="textColor"
+                        @update="$emit('update')"
+                    />
+                </div>
+                <div class="ins-cell">
+                    <ElementFromList
+                        :dataTestLabel="dataTestLabel + '-InsulationType'"
+                        :name="'insulationType'"
+                        :titleSameRow="true"
+                        :justifyContent="true"
+                        v-model="modelValue['insulation']"
+                        :options="Object.values(InsulationType)"
+                        :labelWidthProportionClass="'col-6'"
+                        :selectStyleClass="'col-6'"
+                        :labelFontSize='valueFontSize'
+                        :valueFontSize="valueFontSize"
+                        :labelBgColor="labelBgColor"
+                        :valueBgColor="valueBgColor"
+                        :textColor="textColor"
+                        @update="$emit('update')"
+                    />
+                </div>
+                <div class="ins-cell">
+                    <ElementFromList
+                        :dataTestLabel="dataTestLabel + '-OvervoltageCategory'"
+                        :name="'overvoltageCategory'"
+                        :titleSameRow="true"
+                        :justifyContent="true"
+                        v-model="modelValue['insulation']"
+                        :options="Object.values(OvervoltageCategory)"
+                        :labelWidthProportionClass="'col-6'"
+                        :selectStyleClass="'col-6'"
+                        :labelFontSize='valueFontSize'
+                        :valueFontSize="valueFontSize"
+                        :labelBgColor="labelBgColor"
+                        :valueBgColor="valueBgColor"
+                        :textColor="textColor"
+                        @update="$emit('update')"
+                    />
+                </div>
+                <div class="ins-cell">
+                    <ElementFromList
+                        :dataTestLabel="dataTestLabel + '-PollutionDegree'"
+                        :name="'pollutionDegree'"
+                        :titleSameRow="true"
+                        :justifyContent="true"
+                        v-model="modelValue['insulation']"
+                        :options="Object.values(PollutionDegree)"
+                        :labelWidthProportionClass="'col-6'"
+                        :selectStyleClass="'col-6'"
+                        :labelFontSize='valueFontSize'
+                        :valueFontSize="valueFontSize"
+                        :labelBgColor="labelBgColor"
+                        :valueBgColor="valueBgColor"
+                        :textColor="textColor"
+                        @update="$emit('update')"
+                    />
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 3: Standards -->
+        <div class="ins-section">
+            <div class="ins-section-header">
+                <i class="fa-solid fa-certificate"></i>
+                <span>Standards</span>
+            </div>
+            <div class="ins-standards">
+                <SeveralElementsFromList
+                    :name="'standards'"
+                    v-model="modelValue['insulation']"
+                    :options="Object.values(InsulationStandards)"
+                    :optionsToDisable="standardsToDisable"
+                    :labelFontSize='valueFontSize'
+                    :valueFontSize="valueFontSize"
+                    :labelBgColor="labelBgColor"
+                    :valueBgColor="valueBgColor"
+                    :textColor="textColor"
+                    @update="$emit('update')"
+                />
+            </div>
         </div>
     </div>
 </template>
 
+<style scoped>
+.ins-root {
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+    padding: 0.2rem 0.1rem;
+}
 
+.ins-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--bs-primary);
+    font-weight: 700;
+    font-size: 1rem;
+    letter-spacing: 0.01em;
+    padding: 0.15rem 0.25rem 0.4rem 0.25rem;
+}
+
+.ins-title i {
+    filter: drop-shadow(0 0 4px rgba(var(--bs-primary-rgb), 0.5));
+}
+
+/* ============ Sub-section ============ */
+.ins-section {
+    background: linear-gradient(180deg,
+        rgba(var(--bs-primary-rgb), 0.05) 0%,
+        rgba(var(--bs-primary-rgb), 0.015) 100%);
+    border: 1px solid rgba(var(--bs-primary-rgb), 0.15);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.ins-section-header {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.35rem 0.7rem;
+    background: rgba(var(--bs-primary-rgb), 0.08);
+    border-bottom: 1px solid rgba(var(--bs-primary-rgb), 0.12);
+    color: var(--bs-primary);
+    font-weight: 600;
+    font-size: 0.7rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.ins-section-header i {
+    font-size: 0.78rem;
+    filter: drop-shadow(0 0 3px rgba(var(--bs-primary-rgb), 0.45));
+}
+
+/* ============ Grid layouts ============ */
+.ins-grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.4rem 0.85rem;
+    padding: 0.55rem 0.7rem;
+}
+
+.ins-cell {
+    min-width: 0;
+}
+
+.ins-standards {
+    padding: 0.55rem 0.7rem;
+}
+
+/* Tighten the inner Bootstrap rows generated by the child DataInput components */
+.ins-cell :deep(.row),
+.ins-standards :deep(.row) {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+}
+
+/* The SeveralElementsFromList component always renders its own "Standards"
+   title label — redundant since the section header already says STANDARDS. */
+.ins-standards :deep(.several-elements-label) {
+    display: none !important;
+}
+</style>

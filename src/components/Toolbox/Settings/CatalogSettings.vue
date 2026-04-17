@@ -56,7 +56,7 @@ export default {
 <template>
     <div class="modal fade" :id="modalName" tabindex="-1" aria-labelledby="settingsModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg modal-dialog-scrollable settings">
-            <div class="modal-content" :style="$styleStore.contextMenu.main">
+            <div class="modal-content border-0 shadow-lg settings-modal-bg">
                 <div class="modal-header">
                     <p data-cy="settingsModal-notification-text" class="modal-title fs-5" id="settingsModalLabel">Settings</p>
                     <button ref="closeSettingsModalRef" type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="settingsModalClose"></button>
@@ -98,5 +98,9 @@ export default {
 
     .settings {
         z-index: 9999;
+    }
+
+    .settings-modal-bg {
+        background: var(--bs-dark);
     }
 </style>

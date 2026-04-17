@@ -157,107 +157,122 @@ export default {
 </script>
 
 <template>
-    <div class="container">
-        <div class="row">
-            <div v-if="masStore.mas.inputs.operatingPoints.length > currentOperatingPointIndex" class="col-lg-4 col-md-12" style="max-width: 360px;">
+    <div class="opm-container">
+        <div class="row g-2 m-0">
+            <div v-if="masStore.mas.inputs.operatingPoints.length > currentOperatingPointIndex" class="col-lg-5 col-md-12 opm-col">
 
-                <label
-                    :style="combinedStyle([$styleStore.operatingPoints.inputTitleFontSize, $styleStore.operatingPoints.commonParameterTextColor])"
-                    data-cy="dataTestLabel + '-current-title'"
-                    class="fs-4 mx-0 p-0 mb-4"
-                >
-                    {{masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].name + ' - ' + masStore.mas.magnetic.coil.functionalDescription[currentWindingIndex].name}}
-                </label>
-                <WaveformInputCommon
-                    :style="$styleStore.operatingPoints.main"
-                    class="scrollable-column border-bottom border-top rounded-4 border-2"
-                    :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex]"
-                    :defaultValue="defaultOperatingPointExcitation"
-                    :dataTestLabel="dataTestLabel + '-selected'"
-                    @updatedSwitchingFrequency="masStore.updatedInputExcitationProcessed()"
-                    @updatedDutyCycle="masStore.updatedInputExcitationProcessed()"
-                />
+                <div class="opm-title" data-cy="dataTestLabel + '-current-title'">
+                    <i class="fa-solid fa-bullseye"></i>
+                    <span>{{masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].name + ' — ' + masStore.mas.magnetic.coil.functionalDescription[currentWindingIndex].name}}</span>
+                </div>
 
-                <WaveformInput
-                    :style="$styleStore.operatingPoints.main"
+                <div class="opm-card">
+                    <div class="opm-card-header">
+                        <i class="fa-solid fa-sliders"></i>
+                        <span>Common parameters</span>
+                    </div>
+                    <div class="opm-card-body">
+                        <WaveformInputCommon
+                            :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex]"
+                            :defaultValue="defaultOperatingPointExcitation"
+                            :dataTestLabel="dataTestLabel + '-selected'"
+                            @updatedSwitchingFrequency="masStore.updatedInputExcitationProcessed()"
+                            @updatedDutyCycle="masStore.updatedInputExcitationProcessed()"
+                        />
+                    </div>
+                </div>
 
-                    v-if="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex].current != null && masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex].current.processed && masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex].current.processed.label != 'Custom'" class="scrollable-column mt-5 border-bottom border-top rounded-4 border-2"
-                    :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex]"
-                    :defaultValue="defaultOperatingPointExcitation"
-                    :dataTestLabel="dataTestLabel + '-selected-current'"
-                    :signalDescriptor="'current'"
-                    @peakToPeakChanged="currentUpdated"
-                    @offsetChanged="currentUpdated"
-                    @labelChanged="currentUpdated"
-                    @induce="induce('voltage')"
-                />
-                <WaveformInputCustom
-                    v-else class="scrollable-column mt-5 border-bottom border-top rounded-4 border-2"
-                    :style="$styleStore.operatingPoints.main"
-                    :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex]"
-                    :defaultValue="defaultOperatingPointExcitation"
-                    :dataTestLabel="dataTestLabel + '-selected-current'"
-                    :signalDescriptor="'current'"
-                    @labelChanged="currentUpdated"
-                    @updatedTime="currentWaveformUpdated"
-                    @updatedData="currentWaveformUpdated"
-                    @induce="induce('voltage')"
-                />
-                <WaveformInput
-                    v-if="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex].voltage.processed && masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex].voltage.processed.label != 'Custom'"
-                    class="scrollable-column mt-5 border-bottom border-top rounded-4 border-2"
-                    :style="isInductor ? 'opacity: 0.5; pointer-events: none;' : $styleStore.operatingPoints.main"
-                    :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex]"
-                    :defaultValue="defaultOperatingPointExcitation"
-                    :dataTestLabel="dataTestLabel + '-selected-voltage'"
-                    :signalDescriptor="'voltage'"
-                    :disabled="isInductor"
-                    @peakToPeakChanged="masStore.updatedInputExcitationProcessed('voltage')"
-                    @offsetChanged="masStore.updatedInputExcitationProcessed('voltage')"
-                    @labelChanged="masStore.updatedInputExcitationProcessed('voltage')"
-                    @induce="induce('current')"
-                />
-                <WaveformInputCustom
-                    v-else
-                    class="scrollable-column mt-5 border-bottom border-top rounded-4 border-2"
-                    :style="isInductor ? 'opacity: 0.5; pointer-events: none;' : $styleStore.operatingPoints.main"
-                    :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex]"
-                    :defaultValue="defaultOperatingPointExcitation"
-                    :dataTestLabel="dataTestLabel + '-selected-voltage'"
-                    :signalDescriptor="'voltage'"
-                    :disabled="isInductor"
-                    @labelChanged="masStore.updatedInputExcitationProcessed('voltage')"
-                    @updatedTime="masStore.updatedInputExcitationWaveformUpdatedFromProcessed('voltage')"
-                    @updatedData="masStore.updatedInputExcitationWaveformUpdatedFromProcessed('voltage')"
-                    @induce="induce('current')"
-                />
-                <button
-                    :style="$styleStore.operatingPoints.goBackSelectingButton"
-                    :data-cy="dataTestLabel + '-import-button'"
-                    class="btn btn-success fs-5 col-sm-12 col-md-12 mt-5 p-0"
-                    style="max-height: 2em"
-                    @click="clearMode"
-                >
-                    {{'Go back to selecting mode'}}
-                </button>
-                <button
-                    :style="$styleStore.operatingPoints.goBackSelectingButton"
-                    :data-cy="dataTestLabel + '-switch-to-harmonics-button'"
-                    class="btn btn-outline-primary fs-5 col-sm-12 col-md-12 mt-2 p-0"
-                    style="max-height: 2em"
-                    @click="$emit('switchToHarmonics')"
-                >
-                    {{'Switch to Harmonics view'}}
-                </button>
+                <div class="opm-card opm-card-current">
+                    <div class="opm-card-header">
+                        <i class="fa-solid fa-wave-square"></i>
+                        <span>Current waveform</span>
+                    </div>
+                    <div class="opm-card-body">
+                        <WaveformInput
+                            v-if="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex].current != null && masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex].current.processed && masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex].current.processed.label != 'Custom'"
+                            :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex]"
+                            :defaultValue="defaultOperatingPointExcitation"
+                            :dataTestLabel="dataTestLabel + '-selected-current'"
+                            :signalDescriptor="'current'"
+                            @peakToPeakChanged="currentUpdated"
+                            @offsetChanged="currentUpdated"
+                            @labelChanged="currentUpdated"
+                            @induce="induce('voltage')"
+                        />
+                        <WaveformInputCustom
+                            v-else
+                            :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex]"
+                            :defaultValue="defaultOperatingPointExcitation"
+                            :dataTestLabel="dataTestLabel + '-selected-current'"
+                            :signalDescriptor="'current'"
+                            @labelChanged="currentUpdated"
+                            @updatedTime="currentWaveformUpdated"
+                            @updatedData="currentWaveformUpdated"
+                            @induce="induce('voltage')"
+                        />
+                    </div>
+                </div>
+
+                <div class="opm-card opm-card-voltage" :class="{ 'opm-disabled': isInductor }">
+                    <div class="opm-card-header">
+                        <i class="fa-solid fa-bolt"></i>
+                        <span>Voltage waveform</span>
+                    </div>
+                    <div class="opm-card-body">
+                        <WaveformInput
+                            v-if="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex].voltage.processed && masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex].voltage.processed.label != 'Custom'"
+                            :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex]"
+                            :defaultValue="defaultOperatingPointExcitation"
+                            :dataTestLabel="dataTestLabel + '-selected-voltage'"
+                            :signalDescriptor="'voltage'"
+                            :disabled="isInductor"
+                            @peakToPeakChanged="masStore.updatedInputExcitationProcessed('voltage')"
+                            @offsetChanged="masStore.updatedInputExcitationProcessed('voltage')"
+                            @labelChanged="masStore.updatedInputExcitationProcessed('voltage')"
+                            @induce="induce('current')"
+                        />
+                        <WaveformInputCustom
+                            v-else
+                            :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex]"
+                            :defaultValue="defaultOperatingPointExcitation"
+                            :dataTestLabel="dataTestLabel + '-selected-voltage'"
+                            :signalDescriptor="'voltage'"
+                            :disabled="isInductor"
+                            @labelChanged="masStore.updatedInputExcitationProcessed('voltage')"
+                            @updatedTime="masStore.updatedInputExcitationWaveformUpdatedFromProcessed('voltage')"
+                            @updatedData="masStore.updatedInputExcitationWaveformUpdatedFromProcessed('voltage')"
+                            @induce="induce('current')"
+                        />
+                    </div>
+                </div>
+
+                <div class="opm-actions">
+                    <button
+                        :data-cy="dataTestLabel + '-import-button'"
+                        class="opm-btn opm-btn-outline"
+                        @click="clearMode"
+                    >
+                        <i class="fa-solid fa-arrow-left"></i>
+                        <span>Go back to selecting mode</span>
+                    </button>
+                    <button
+                        :data-cy="dataTestLabel + '-switch-to-harmonics-button'"
+                        class="opm-btn opm-btn-primary"
+                        @click="$emit('switchToHarmonics')"
+                    >
+                        <i class="fa-solid fa-chart-line"></i>
+                        <span>Switch to Harmonics view</span>
+                    </button>
+                </div>
             </div>
-            <div class="col-lg-8 col-md-12 row m-0 p-0" style="max-width: 800px;">
+            <div class="col-lg-7 col-md-12 row m-0 p-0" style="max-width: 800px;">
                 <div>
                     <WaveformGraph class=" col-12 py-2"
                         :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex]"
                         :dataTestLabel="dataTestLabel + '-WaveformGraph'"
                         @updatedWaveform="updatedWaveform"
                     />
-                    <WaveformFourier class="col-12 mt-1" style="max-height: 150px;"
+                    <WaveformFourier class="col-12 mt-1 mb-3" style="max-height: 150px;"
                         :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex]"
                         :dataTestLabel="dataTestLabel + '-WaveformFourier'"
                     />
@@ -267,18 +282,18 @@ export default {
                         :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex]"
                         :dataTestLabel="dataTestLabel + '-WaveformOutput-current'"
                     />
-                    <WaveformOutput class="col-lg-6 col-md-6 m-0 px-2"
-                        v-if="$settingsStore.operatingPointSettings.advancedMode"
-                        :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex]"
-                        :dataTestLabel="dataTestLabel + '-WaveformOutput-current'"
-                        :signalDescriptor="'current'"
-                    />
-                    <WaveformOutput class="col-lg-6 col-md-6 m-0 px-2"
-                        v-if="$settingsStore.operatingPointSettings.advancedMode"
-                        :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex]"
-                        :dataTestLabel="dataTestLabel + '-WaveformOutput-voltage'"
-                        :signalDescriptor="'voltage'"
-                    />
+                    <div v-if="$settingsStore.operatingPointSettings.advancedMode" class="row m-0 p-0">
+                        <WaveformOutput class="col-lg-6 col-md-6 col-12 m-0 px-2"
+                            :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex]"
+                            :dataTestLabel="dataTestLabel + '-WaveformOutput-current'"
+                            :signalDescriptor="'current'"
+                        />
+                        <WaveformOutput class="col-lg-6 col-md-6 col-12 m-0 px-2"
+                            :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex]"
+                            :dataTestLabel="dataTestLabel + '-WaveformOutput-voltage'"
+                            :signalDescriptor="'voltage'"
+                        />
+                    </div>
                     <WaveformCombinedOutput
                         v-if="$settingsStore.operatingPointSettings.advancedMode"
                         :style="$styleStore.operatingPoints.main"
@@ -293,3 +308,171 @@ export default {
         </div>
     </div>
 </template>
+
+<style scoped>
+.opm-container {
+    width: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+.opm-col {
+    max-width: 460px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    padding-left: 0.25rem;
+    padding-right: 0.25rem;
+}
+
+.opm-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--bs-primary);
+    font-size: 1.05rem;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    padding: 0.2rem 0.2rem 0.4rem 0.2rem;
+}
+
+.opm-title i {
+    font-size: 1rem;
+    filter: drop-shadow(0 0 4px rgba(var(--bs-primary-rgb), 0.5));
+}
+
+/* ============ Sub-card ============ */
+.opm-card {
+    background:
+        linear-gradient(180deg,
+            rgba(var(--bs-primary-rgb), 0.06) 0%,
+            rgba(var(--bs-primary-rgb), 0.02) 100%),
+        var(--bs-dark);
+    border: 1px solid rgba(var(--bs-primary-rgb), 0.18);
+    border-left: 3px solid rgba(var(--bs-primary-rgb), 0.7);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+}
+
+.opm-card-current {
+    border-left-color: rgba(177, 138, 234, 0.7);
+}
+
+.opm-card-voltage {
+    border-left-color: rgba(0, 182, 255, 0.7);
+}
+
+.opm-disabled {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+.opm-card-header {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.5rem 0.75rem;
+    background: rgba(var(--bs-primary-rgb), 0.08);
+    border-bottom: 1px solid rgba(var(--bs-primary-rgb), 0.12);
+    color: var(--bs-primary);
+    font-weight: 600;
+    font-size: 0.78rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.opm-card-current .opm-card-header {
+    color: #b18aea;
+    background: rgba(177, 138, 234, 0.1);
+    border-bottom-color: rgba(177, 138, 234, 0.18);
+}
+
+.opm-card-current .opm-card-header i {
+    filter: drop-shadow(0 0 4px rgba(177, 138, 234, 0.5));
+}
+
+.opm-card-voltage .opm-card-header {
+    color: #00b6ff;
+    background: rgba(0, 182, 255, 0.1);
+    border-bottom-color: rgba(0, 182, 255, 0.18);
+}
+
+.opm-card-voltage .opm-card-header i {
+    filter: drop-shadow(0 0 4px rgba(0, 182, 255, 0.5));
+}
+
+.opm-card-header i {
+    font-size: 0.85rem;
+    filter: drop-shadow(0 0 4px rgba(var(--bs-primary-rgb), 0.5));
+}
+
+.opm-card-body {
+    padding: 0.7rem 1rem 0.85rem 1rem;
+}
+
+/* Breathing room: only neutralize the outer Bootstrap row negative margins,
+   inner inputs/selects keep their original sizing. */
+.opm-card-body :deep(> .row),
+.opm-card-body :deep(> .container-flex > .row) {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+}
+
+/* ============ Action buttons ============ */
+.opm-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-top: 0.4rem;
+}
+
+button.opm-btn {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45rem;
+    padding: 0.55rem 1rem !important;
+    border-radius: 10px !important;
+    font-size: 0.85rem !important;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    cursor: pointer;
+    transition: filter 0.15s, transform 0.1s, box-shadow 0.2s, background 0.15s;
+    width: 100%;
+    line-height: 1.2;
+    outline: none;
+}
+
+button.opm-btn:hover {
+    filter: brightness(1.15);
+    transform: translateY(-1px);
+}
+
+button.opm-btn-primary {
+    border: 1px solid rgba(var(--bs-primary-rgb), 0.85) !important;
+    background-color: var(--bs-primary) !important;
+    background-image: linear-gradient(135deg,
+        rgba(var(--bs-primary-rgb), 1) 0%,
+        rgba(var(--bs-primary-rgb), 0.8) 100%) !important;
+    color: #ffffff !important;
+    box-shadow:
+        0 0 0 1px rgba(var(--bs-primary-rgb), 0.3),
+        0 2px 8px rgba(var(--bs-primary-rgb), 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.25);
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.25);
+}
+
+button.opm-btn-outline {
+    background: rgba(255, 255, 255, 0.08) !important;
+    border: 1px solid rgba(var(--bs-primary-rgb), 0.55) !important;
+    color: var(--bs-primary) !important;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+}
+
+button.opm-btn-outline:hover {
+    background: rgba(var(--bs-primary-rgb), 0.2) !important;
+    border-color: rgba(var(--bs-primary-rgb), 0.85) !important;
+    color: #ffffff !important;
+}
+</style>

@@ -37,3 +37,9 @@ cypress/screenshots/
 
 # Agent instructions
 AGENTS.md
+
+# Playwright MCP session files
+.playwright-mcp/
+
+# Screenshot artifacts (Playwright / manual captures)
+*.png

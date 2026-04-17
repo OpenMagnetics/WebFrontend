@@ -37,32 +37,50 @@ export default {
                         label: 'Current',
                         yAxisID: 'current',
                         data:  this.convertMasToChartjs(this.modelValue.current.waveform),
-                        pointRadius: this.enableDrag? 2 : 1,
-                        borderWidth: 5,
+                        showLine: true,
+                        pointRadius: this.enableDrag ? 2.5 : 0,
+                        pointHoverRadius: this.enableDrag ? 4 : 0,
+                        pointHitRadius: this.enableDrag ? 6 : 0,
+                        pointHoverBorderColor: '#ffffff',
+                        pointHoverBorderWidth: 1,
+                        pointHoverBackgroundColor: this.$styleStore.operatingPoints.currentGraph.color,
+                        borderWidth: this.enableDrag ? 2.25 : 1.85,
+                        tension: this.enableDrag ? 0 : 0.15,
+                        cubicInterpolationMode: this.enableDrag ? 'default' : 'monotone',
                         spanGaps: true,
                         borderColor: this.$styleStore.operatingPoints.currentGraph.color,
-                        backgroundColor: this.$styleStore.operatingPoints.currentGraph["background-color"],
+                        backgroundColor: 'rgba(177, 138, 234, 0.12)',
+                        fill: this.enableDrag ? false : 'origin',
                     },
                     {
                         type: 'line',
                         label: 'Voltage',
                         yAxisID: 'voltage',
                         data: this.convertMasToChartjs(this.modelValue.voltage.waveform),
-                        pointRadius: this.enableDrag? 2 : 1,
-                        borderWidth: 5,
+                        showLine: true,
+                        pointRadius: this.enableDrag ? 2.5 : 0,
+                        pointHoverRadius: this.enableDrag ? 4 : 0,
+                        pointHitRadius: this.enableDrag ? 6 : 0,
+                        pointHoverBorderColor: '#ffffff',
+                        pointHoverBorderWidth: 1,
+                        pointHoverBackgroundColor: this.$styleStore.operatingPoints.voltageGraph.color,
+                        borderWidth: this.enableDrag ? 2.25 : 1.85,
+                        tension: this.enableDrag ? 0 : 0.05,
                         spanGaps: true,
                         borderColor: this.$styleStore.operatingPoints.voltageGraph.color,
-                        backgroundColor: this.$styleStore.operatingPoints.voltageGraph["background-color"],
+                        backgroundColor: 'rgba(0, 182, 255, 0.1)',
+                        fill: this.enableDrag ? false : 'origin',
                     },
                     {
                         type: 'line',
                         label: 'zeroLineCurrent',
                         yAxisID: 'zeroLineCurrent',
                         data: [{x: -1, y: 0}, {x: 1, y: 0}],
-                        borderWidth: 2,
+                        borderWidth: 1,
                         spanGaps: true,
-                        borderColor: this.$styleStore.operatingPoints.commonParameterTextColor.color,
-                        backgroundColor: this.$styleStore.operatingPoints.commonParameterBgColor.background,
+                        pointRadius: 0,
+                        borderColor: 'rgba(255, 255, 255, 0.18)',
+                        backgroundColor: 'transparent',
                     }
                 ]
             },
@@ -79,16 +97,32 @@ export default {
         const modelValue = this.modelValue;
         options = {
             responsive: true,
-            devicePixelRatio: 1, // Reduce for better performance with large datasets
+            devicePixelRatio: 1.25, // Sharp on HiDPI without killing perf on huge datasets
             parsing: false, // Disable data parsing for raw number arrays (much faster)
             normalized: true, // Tell Chart.js data is already normalized
-            animation: false, // Disable animations for better performance with large datasets
-            spanGaps: true, // Skip null points instead of drawing gaps
+            animation: false, // Disable animations
+            transitions: { active: { animation: { duration: 0 } } },
+            resizeDelay: 100, // Coalesce resize observer events
+            spanGaps: true,
             decimation: {
                 enabled: true,
                 algorithm: 'lttb', // Largest Triangle Three Bucket - best for line charts
-                samples: 500, // Target 500 points after decimation
-                threshold: 1000 // Only decimate if >1000 points
+                samples: 400, // Slightly tighter
+                threshold: 800, // Decimate sooner
+            },
+            interaction: {
+                mode: 'index',   // Hover hits ALL datasets at the same x
+                intersect: false,
+                axis: 'x',
+            },
+            elements: {
+                line: {
+                    borderJoinStyle: 'round',
+                    borderCapStyle: 'round',
+                },
+                point: this.enableDrag
+                    ? { hitRadius: 6, hoverRadius: 5 }
+                    : { radius: 0, hoverRadius: 0, hitRadius: 0 },
             },
             onHover: (event, chartElement) => {
                 const target = event.native ? event.native.target : event.target;
@@ -138,16 +172,35 @@ export default {
                     },
                 },
                 legend: {
+                    position: 'top',
+                    align: 'end',
                     labels: {
-                        color: this.$styleStore.operatingPoints.commonParameterTextColor.color, 
-                        font: {
-                            size: 12
-                        },
+                        color: this.$styleStore.operatingPoints.commonParameterTextColor.color,
+                        boxWidth: 8,
+                        boxHeight: 8,
+                        usePointStyle: true,
+                        pointStyle: 'circle',
+                        font: { size: 11, weight: '600' },
+                        padding: 12,
                         filter: function(item, chart) {
                             return !item.text.includes('zeroLineCurrent');
                         }
                     }
                 },
+                tooltip: {
+                    backgroundColor: 'rgba(20, 20, 20, 0.92)',
+                    titleColor: '#f2f2f2',
+                    bodyColor: '#f2f2f2',
+                    borderColor: 'rgba(var(--bs-primary-rgb), 0.6)',
+                    borderWidth: 1,
+                    padding: 8,
+                    cornerRadius: 6,
+                    titleFont: { size: 11, weight: '600' },
+                    bodyFont: { size: 11 },
+                },
+            },
+            layout: {
+                padding: { top: 8, right: 8, bottom: 4, left: 8 },
             },
             scales: {
                 current: {
@@ -156,9 +209,8 @@ export default {
                     ticks: {
                         beginAtZero: true,
                         color: this.$styleStore.operatingPoints.currentGraph.color,
-                        font: {
-                            size: 12
-                        },
+                        font: { size: 11, weight: '500' },
+                        padding: 4,
                         callback: function(value, index, values) {
                             value = removeTrailingZeroes(value)
                             return value + "A"
@@ -167,11 +219,11 @@ export default {
                     max: 15,
                     min: -15,
                     grid: {
-                        color: this.$styleStore.operatingPoints.currentGraph.color,
-                        borderColor: this.$styleStore.operatingPoints.currentGraph.color,
-                        borderWidth: 2,
-                        lineWidth: 0.4
+                        color: 'rgba(177, 138, 234, 0.12)',
+                        drawBorder: false,
+                        lineWidth: 1,
                     },
+                    border: { display: false },
                 },
                 voltage: {
                     type: 'linear',
@@ -179,9 +231,8 @@ export default {
                     ticks: {
                         beginAtZero: true,
                         color: this.$styleStore.operatingPoints.voltageGraph.color,
-                        font: {
-                            size: 12
-                        },
+                        font: { size: 11, weight: '500' },
+                        padding: 4,
                         callback: function(value, index, values) {
                             value = removeTrailingZeroes(value)
                             return value + "V"
@@ -190,20 +241,18 @@ export default {
                     max: 100,
                     min: -100,
                     grid: {
-                        color: this.$styleStore.operatingPoints.voltageGraph.color,
-                        borderColor: this.$styleStore.operatingPoints.voltageGraph.color,
-                        borderWidth: 2,
-                        lineWidth: 0.4
+                        display: false,
                     },
+                    border: { display: false },
                 },
                 x:{
                     type: 'linear',
                     ticks: {
                         beginAtZero: true,
-                        color: this.$styleStore.operatingPoints.commonParameterTextColor.color,
-                        font: {
-                            size: 12
-                        },
+                        color: 'rgba(242, 242, 242, 0.7)',
+                        font: { size: 10, weight: '500' },
+                        padding: 4,
+                        maxRotation: 0,
                         callback: function(value, index, values) {
                             const exp = Math.floor(Math.log10(modelValue.frequency))
                             const base = 10 ** exp
@@ -212,10 +261,12 @@ export default {
                         }
                     },
                     grid: {
-                        color: this.$styleStore.operatingPoints.commonParameterTextColor.color,
-                        borderColor: this.$styleStore.operatingPoints.commonParameterTextColor.color,
-                        borderWidth: 2,
-                        lineWidth: 0.4
+                        color: 'rgba(255, 255, 255, 0.05)',
+                        drawBorder: false,
+                        lineWidth: 1,
+                    },
+                    border: {
+                        color: 'rgba(255, 255, 255, 0.15)',
                     },
                 }
             },

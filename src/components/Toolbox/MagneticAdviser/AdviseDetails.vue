@@ -239,128 +239,163 @@ export default {
 </script>
 
 <template>
-    <div 
-        :class="offcanvasPosition" 
-        class="offcanvas offcanvas-size-xl" 
-        :style="styleStore.main"
-        tabindex="-1" 
-        id="CoreAdviserDetailOffCanvas" 
+    <div
+        :class="offcanvasPosition"
+        class="offcanvas offcanvas-size-xl ad-offcanvas"
+        tabindex="-1"
+        id="CoreAdviserDetailOffCanvas"
         aria-labelledby="CoreAdviserDetailOffCanvasLabel"
     >
-        <div class="offcanvas-header">
-            <button 
-                data-cy="CoreAdviseDetail-corner-close-modal-button" 
-                type="button" 
-                class="btn-close btn-close-white" 
-                data-bs-dismiss="offcanvas" 
-                aria-label="Close"
-            />
-        </div>
-
-        <div class="offcanvas-body">
-            <div v-if="modelValue.magnetic.manufacturerInfo" class="row mx-1">
-                <h3 class="col-12 p-0 m-0">{{ modelValue.magnetic.manufacturerInfo.reference }}</h3>
-                <p class="col-12 fs-5 p-0 m-0 mt-2 text-start">{{ localTexts.coreDescription }}</p>
-                
-                <!-- Data Tables Section -->
-                <div class="col-7 data-tables" style="max-width: 450px;">
-                    <!-- Number of Turns Table -->
-                    <h5 class="col-12 p-0 m-0 mt-2 text-center">Number turns</h5>
-                    <table class="table table-bordered table-sm table-dark">
-                        <thead>
-                            <tr>
-                                <th>Windings</th>
-                                <th>No. turns</th>
-                                <th>No. parallels</th>
-                                <th>Turns ratio</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr v-for="(winding, idx) in modelValue.magnetic.coil.functionalDescription" :key="'turns-' + idx">
-                                <td>{{ localTexts.numberTurnsTable?.[idx]?.text }}</td>
-                                <td>{{ localTexts.numberTurnsTable?.[idx]?.value }}</td>
-                                <td>{{ localTexts.numberParallelsTable?.[idx]?.value }}</td>
-                                <td>{{ localTexts.turnsRatioTable?.[idx]?.value }}</td>
-                            </tr>
-                        </tbody>
-                    </table>
-
-                    <!-- Operating Points -->
-                    <div v-for="(op, opIdx) in modelValue.outputs" :key="'output-' + opIdx" class="mb-3">
-                        <h5 class="mt-3">{{ modelValue.inputs.operatingPoints[opIdx].name }}</h5>
-                        
-                        <!-- Core Data -->
-                        <h6 class="text-center">Core</h6>
-                        <table class="table table-bordered table-sm table-dark">
-                            <tbody>
-                                <tr v-if="localTexts.magnetizingInductanceTable?.[opIdx]?.text">
-                                    <td>{{ localTexts.magnetizingInductanceTable[opIdx].text }}</td>
-                                    <td>{{ localTexts.magnetizingInductanceTable[opIdx].value }}</td>
-                                </tr>
-                                <tr v-if="localTexts.coreLossesTable?.[opIdx]?.text">
-                                    <td>{{ localTexts.coreLossesTable[opIdx].text }}</td>
-                                    <td>{{ localTexts.coreLossesTable[opIdx].value }}</td>
-                                </tr>
-                                <tr v-if="localTexts.coreTemperatureTable?.[opIdx]?.text">
-                                    <td>{{ localTexts.coreTemperatureTable[opIdx].text }}</td>
-                                    <td>{{ localTexts.coreTemperatureTable[opIdx].value }}</td>
-                                </tr>
-                            </tbody>
-                        </table>
-
-                        <!-- Coil Data -->
-                        <h6 class="text-center">Coil</h6>
-                        <table class="table table-bordered table-sm table-dark">
-                            <thead>
-                                <tr>
-                                    <th>Windings</th>
-                                    <th>DC Res.</th>
-                                    <th>Wind. Loss</th>
-                                    <th>Leak. Ind.</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr v-for="(winding, wIdx) in modelValue.magnetic.coil.functionalDescription" :key="'coil-' + wIdx">
-                                    <td>{{ toTitleCase(localTexts.windingLossesTable?.[opIdx]?.[wIdx]?.text?.toLowerCase() || '') }}</td>
-                                    <td>{{ localTexts.dcResistanceTable?.[opIdx]?.[wIdx]?.value }}</td>
-                                    <td>{{ localTexts.windingLossesTable?.[opIdx]?.[wIdx]?.value }}</td>
-                                    <td>{{ localTexts.leakageInductanceTable?.[wIdx]?.value }}</td>
-                                </tr>
-                            </tbody>
-                        </table>
-
-                        <!-- Winding Losses Breakdown -->
-                        <h6 class="text-center">Windings Losses Breakdown</h6>
-                        <table class="table table-bordered table-sm table-dark">
-                            <thead>
-                                <tr>
-                                    <th>Windings</th>
-                                    <th>Ohmic Loss</th>
-                                    <th>Skin Loss</th>
-                                    <th>Prox. Loss</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr v-for="(winding, wIdx) in modelValue.magnetic.coil.functionalDescription" :key="'breakdown-' + wIdx">
-                                    <td>{{ toTitleCase(localTexts.windingOhmicLossesTable?.[opIdx]?.[wIdx]?.text?.toLowerCase() || '') }}</td>
-                                    <td>{{ localTexts.windingOhmicLossesTable?.[opIdx]?.[wIdx]?.value }}</td>
-                                    <td>{{ localTexts.windingSkinLossesTable?.[opIdx]?.[wIdx]?.value }}</td>
-                                    <td>{{ localTexts.windingProximityLossesTable?.[opIdx]?.[wIdx]?.value }}</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
+        <div v-if="modelValue.magnetic.manufacturerInfo" class="ad-root">
+            <!-- Top header -->
+            <div class="ad-topbar">
+                <div class="ad-topbar-text">
+                    <div class="ad-title">{{ modelValue.magnetic.manufacturerInfo.reference }}</div>
+                    <div class="ad-subtitle">{{ localTexts.coreDescription }}</div>
                 </div>
-                    
-                <!-- Visualizer Section -->
-                <div class="col-5">
-                    <h5 class="col-12 p-0 m-0 mt-2 text-center">Core Coil</h5>
-                    <Magnetic2DVisualizer 
-                        :key="modelValue.magnetic.manufacturerInfo?.reference" 
-                        :modelValue="modelValue" 
-                        :enableZoom="false" 
-                        :enableOptions="false"
-                    />
+                <button
+                    data-cy="CoreAdviseDetail-corner-close-modal-button"
+                    type="button"
+                    class="ad-close"
+                    data-bs-dismiss="offcanvas"
+                    aria-label="Close"
+                >
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div class="ad-body">
+                <div class="row g-3">
+                    <!-- Data Tables Section -->
+                    <div class="col-12 col-lg-7 ad-tables">
+                        <!-- Number of Turns Table -->
+                        <div class="ad-card">
+                            <div class="ad-card-header">
+                                <i class="fa-solid fa-arrows-spin"></i>
+                                <span>Windings</span>
+                            </div>
+                            <table class="ad-table">
+                                <thead>
+                                    <tr>
+                                        <th>Winding</th>
+                                        <th>Turns</th>
+                                        <th>Parallels</th>
+                                        <th>Turns ratio</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-for="(winding, idx) in modelValue.magnetic.coil.functionalDescription" :key="'turns-' + idx">
+                                        <td>{{ localTexts.numberTurnsTable?.[idx]?.text }}</td>
+                                        <td>{{ localTexts.numberTurnsTable?.[idx]?.value }}</td>
+                                        <td>{{ localTexts.numberParallelsTable?.[idx]?.value }}</td>
+                                        <td>{{ localTexts.turnsRatioTable?.[idx]?.value || '—' }}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Operating Points -->
+                        <div v-for="(op, opIdx) in modelValue.outputs" :key="'output-' + opIdx" class="ad-op">
+                            <div class="ad-op-title">
+                                <i class="fa-solid fa-bullseye"></i>
+                                <span>{{ modelValue.inputs.operatingPoints[opIdx].name }}</span>
+                            </div>
+
+                            <!-- Core Data -->
+                            <div class="ad-card">
+                                <div class="ad-card-header">
+                                    <i class="fa-solid fa-cube"></i>
+                                    <span>Core</span>
+                                </div>
+                                <table class="ad-table ad-table-kv">
+                                    <tbody>
+                                        <tr v-if="localTexts.magnetizingInductanceTable?.[opIdx]?.text">
+                                            <td>{{ localTexts.magnetizingInductanceTable[opIdx].text }}</td>
+                                            <td>{{ localTexts.magnetizingInductanceTable[opIdx].value }}</td>
+                                        </tr>
+                                        <tr v-if="localTexts.coreLossesTable?.[opIdx]?.text">
+                                            <td>{{ localTexts.coreLossesTable[opIdx].text }}</td>
+                                            <td>{{ localTexts.coreLossesTable[opIdx].value }}</td>
+                                        </tr>
+                                        <tr v-if="localTexts.coreTemperatureTable?.[opIdx]?.text">
+                                            <td>{{ localTexts.coreTemperatureTable[opIdx].text }}</td>
+                                            <td>{{ localTexts.coreTemperatureTable[opIdx].value }}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <!-- Coil Data -->
+                            <div class="ad-card">
+                                <div class="ad-card-header">
+                                    <i class="fa-solid fa-wave-square"></i>
+                                    <span>Coil</span>
+                                </div>
+                                <table class="ad-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Winding</th>
+                                            <th>DC Res.</th>
+                                            <th>Wind. Loss</th>
+                                            <th>Leak. Ind.</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr v-for="(winding, wIdx) in modelValue.magnetic.coil.functionalDescription" :key="'coil-' + wIdx">
+                                            <td>{{ toTitleCase(localTexts.windingLossesTable?.[opIdx]?.[wIdx]?.text?.toLowerCase() || '') }}</td>
+                                            <td>{{ localTexts.dcResistanceTable?.[opIdx]?.[wIdx]?.value }}</td>
+                                            <td>{{ localTexts.windingLossesTable?.[opIdx]?.[wIdx]?.value }}</td>
+                                            <td>{{ localTexts.leakageInductanceTable?.[wIdx]?.value || '—' }}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <!-- Winding Losses Breakdown -->
+                            <div class="ad-card">
+                                <div class="ad-card-header">
+                                    <i class="fa-solid fa-bolt"></i>
+                                    <span>Winding Losses Breakdown</span>
+                                </div>
+                                <table class="ad-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Winding</th>
+                                            <th>Ohmic</th>
+                                            <th>Skin</th>
+                                            <th>Proximity</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr v-for="(winding, wIdx) in modelValue.magnetic.coil.functionalDescription" :key="'breakdown-' + wIdx">
+                                            <td>{{ toTitleCase(localTexts.windingOhmicLossesTable?.[opIdx]?.[wIdx]?.text?.toLowerCase() || '') }}</td>
+                                            <td>{{ localTexts.windingOhmicLossesTable?.[opIdx]?.[wIdx]?.value }}</td>
+                                            <td>{{ localTexts.windingSkinLossesTable?.[opIdx]?.[wIdx]?.value }}</td>
+                                            <td>{{ localTexts.windingProximityLossesTable?.[opIdx]?.[wIdx]?.value }}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Visualizer Section -->
+                    <div class="col-12 col-lg-5 ad-viz-col">
+                        <div class="ad-card ad-viz-card">
+                            <div class="ad-card-header">
+                                <i class="fa-solid fa-eye"></i>
+                                <span>Core &amp; Coil</span>
+                            </div>
+                            <div class="ad-viz-body">
+                                <Magnetic2DVisualizer
+                                    :key="modelValue.magnetic.manufacturerInfo?.reference"
+                                    :modelValue="modelValue"
+                                    :enableZoom="false"
+                                    :enableOptions="false"
+                                />
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -368,26 +403,231 @@ export default {
 </template>
 
 <style scoped>
-.offcanvas-size-xl {
-    --bs-offcanvas-width: 65vw !important;
-    --bs-offcanvas-height: 60vh !important;
+/* Theme shim: --bs-light is #2a2a2a, --bs-white is #d4d4d4; use literal white for text. */
+.ad-offcanvas {
+    --ad-panel-1: color-mix(in srgb, var(--bs-light) 92%, #ffffff 8%);
+    --ad-panel-2: var(--bs-light);
+    --ad-sub-1: color-mix(in srgb, var(--bs-light) 80%, var(--bs-dark) 20%);
+    --ad-sub-2: color-mix(in srgb, var(--bs-light) 88%, var(--bs-dark) 12%);
+    --ad-border: rgba(255, 255, 255, 0.1);
+    --ad-border-strong: rgba(255, 255, 255, 0.18);
+    --ad-text: #f2f2f2;
+    --ad-text-muted: rgba(242, 242, 242, 0.72);
+
+    --bs-offcanvas-width: 68vw !important;
+    --bs-offcanvas-height: 80vh !important;
+    --bs-offcanvas-bg: transparent !important;
+    --bs-offcanvas-color: var(--ad-text) !important;
+    border: none !important;
+    background: linear-gradient(180deg, var(--ad-panel-1) 0%, var(--ad-panel-2) 100%) !important;
+    color: var(--ad-text) !important;
+    box-shadow: -8px 0 30px rgba(0, 0, 0, 0.6) !important;
 }
 
-.data-tables {
+.ad-root {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+}
+
+/* ============ Top bar ============ */
+.ad-topbar {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.8rem;
+    padding: 0.55rem 0.85rem;
+    border-bottom: 1px solid var(--ad-border);
+    background: rgba(255, 255, 255, 0.04);
+    flex-shrink: 0;
+}
+
+.ad-topbar-text {
+    min-width: 0;
+    flex: 1;
+}
+
+.ad-title {
+    color: var(--ad-text);
+    font-size: 1.2rem;
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: 0.01em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.ad-subtitle {
+    color: var(--ad-text-muted);
+    font-size: 0.85rem;
+    font-weight: 500;
+    margin-top: 0.15rem;
+    line-height: 1.3;
+}
+
+.ad-close {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.6rem;
+    height: 1.6rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: var(--ad-text);
+    font-size: 0.78rem;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s, transform 0.1s;
+}
+
+.ad-close:hover {
+    background: rgb(var(--bs-danger-rgb) / 0.3);
+    border-color: rgb(var(--bs-danger-rgb) / 0.6);
+    color: #ffffff;
+    transform: rotate(90deg);
+}
+
+/* ============ Body ============ */
+.ad-body {
+    padding: 0.6rem 0.8rem;
     overflow-y: auto;
-    max-height: 60vh;
+    flex: 1;
 }
 
-.table {
-    font-size: 0.85em;
-}
-
-.table th,
-.table td {
-    padding: 0.25rem 0.5rem;
-}
-
-h5, h6 {
+/* ============ Sub-card ============ */
+.ad-card {
+    background: linear-gradient(180deg, var(--ad-sub-1) 0%, var(--ad-sub-2) 100%);
+    border: 1px solid var(--ad-border);
+    border-left: 3px solid rgba(var(--bs-primary-rgb), 0.7);
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.35);
     margin-bottom: 0.5rem;
+}
+
+.ad-card-header {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.4rem 0.7rem;
+    background: rgba(255, 255, 255, 0.04);
+    border-bottom: 1px solid var(--ad-border);
+    color: var(--bs-primary);
+    font-weight: 600;
+    font-size: 0.85rem;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+}
+
+.ad-card-header i {
+    font-size: 0.9rem;
+    filter: drop-shadow(0 0 4px rgba(var(--bs-primary-rgb), 0.5));
+}
+
+/* ============ Tables ============ */
+.ad-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0;
+    font-size: 0.88rem;
+    color: var(--ad-text);
+}
+
+.ad-table thead tr {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.ad-table thead th {
+    padding: 0.35rem 0.7rem;
+    text-align: left;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--ad-text-muted);
+    border-bottom: 1px solid var(--ad-border);
+    white-space: nowrap;
+}
+
+.ad-table tbody td {
+    padding: 0.35rem 0.7rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    font-weight: 600;
+}
+
+.ad-table tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+.ad-table tbody tr:nth-child(even) td {
+    background: rgba(var(--bs-primary-rgb), 0.08);
+}
+
+.ad-table tbody tr:hover td {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.ad-table tbody td:first-child {
+    color: var(--ad-text-muted);
+    font-weight: 500;
+}
+
+.ad-table-kv tbody td:first-child {
+    width: 45%;
+}
+
+.ad-table-kv tbody td:last-child {
+    text-align: right;
+    color: var(--ad-text);
+    font-weight: 700;
+}
+
+/* ============ Operating point block ============ */
+.ad-op {
+    margin-top: 0.5rem;
+}
+
+.ad-op-title {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    color: var(--ad-text);
+    font-size: 0.95rem;
+    font-weight: 700;
+    margin: 0.35rem 0 0.4rem 0;
+    padding-left: 0.1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.ad-op-title i {
+    color: var(--bs-primary);
+    font-size: 0.9rem;
+    filter: drop-shadow(0 0 4px rgba(var(--bs-primary-rgb), 0.5));
+}
+
+/* ============ Visualizer ============ */
+.ad-viz-col {
+    position: sticky;
+    top: 0;
+}
+
+.ad-viz-card {
+    margin-bottom: 0;
+}
+
+.ad-viz-body {
+    padding: 0.4rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 260px;
+}
+
+.ad-viz-body > :deep(*) {
+    max-width: 100%;
 }
 </style>

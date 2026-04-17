@@ -185,24 +185,19 @@ export default {
     >
         <div class="row">
             <div v-if="showStoryline" class=" text-center col-xs-12 col-sm-12 col-md-1 bg-transparent m-0 p-0" style="height: fit-content">
-                <div class="border" style="height: fit-content"  :style="$styleStore.storyline.main">
-                    <Storyline
-                        class="p-3"
-                        :selectedTool="$stateStore.getCurrentToolState().subsection"
-                        :storyline="currentStoryline"
-                        :canContinue="$stateStore.getCurrentToolState().canContinue"
-                        :forceUpdate="updateStoryline"
-                        @changeTool="changeTool"
-                        @nextTool="nextTool"
-                    />
-                </div>
-                <div class="border mt-2" style="height: fit-content" :style="$styleStore.contextMenu.main">
-                    <ContextMenu
-                        @editMagnetic="$emit('editMagnetic')"
-                        @viewMagnetic="$emit('viewMagnetic')"
-                        @toolSelected="toolSelected"
-                    />
-                </div>
+                <Storyline
+                    :selectedTool="$stateStore.getCurrentToolState().subsection"
+                    :storyline="currentStoryline"
+                    :canContinue="$stateStore.getCurrentToolState().canContinue"
+                    :forceUpdate="updateStoryline"
+                    @changeTool="changeTool"
+                    @nextTool="nextTool"
+                />
+                <ContextMenu
+                    @editMagnetic="$emit('editMagnetic')"
+                    @viewMagnetic="$emit('viewMagnetic')"
+                    @toolSelected="toolSelected"
+                />
             </div>
             <div class="text-center col-xs-12 col-sm-12 col-md-11 bg-transparent px container" >
                 <div 

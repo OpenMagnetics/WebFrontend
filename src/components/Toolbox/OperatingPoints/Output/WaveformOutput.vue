@@ -113,16 +113,16 @@ export default {
 </script>
 
 <template>
-    <div class="container-flex">
-        <label
-            :style="combinedStyle([$styleStore.operatingPoints.inputTitleFontSize, signalDescriptor == 'current'? $styleStore.operatingPoints.currentTextColor : signalDescriptor == 'voltage'? $styleStore.operatingPoints.voltageTextColor : $styleStore.operatingPoints.commonParameterTextColor])"
-        >
-            {{`Outputs for ${signalDescriptor}`}}
-        </label>
-        <div v-if="!isDataReady" class="text-center py-2">
-            <span class="text-muted">Calculating...</span>
+    <div class="wo-card" :class="signalDescriptor === 'current' ? 'wo-card-current' : 'wo-card-voltage'">
+        <div class="wo-header">
+            <i :class="signalDescriptor === 'current' ? 'fa-solid fa-wave-square' : 'fa-solid fa-bolt'"></i>
+            <span>Outputs · {{ signalDescriptor === 'current' ? 'Current' : 'Voltage' }}</span>
         </div>
-        <template v-else>
+        <div v-if="!isDataReady" class="wo-loading">
+            <i class="fa-solid fa-circle-notch fa-spin"></i>
+            <span>Calculating…</span>
+        </div>
+        <div v-else class="wo-body">
         <DimensionReadOnly 
             :name="'dutyCycle'"
             :unit="null"
@@ -233,8 +233,104 @@ export default {
             :valueBgColor="$styleStore.operatingPoints.inputValueBgColor"
             :textColor="$styleStore.operatingPoints.inputTextColor"
         />
-        </template>
+        </div>
 
     </div>
 </template>
 
+<style scoped>
+.wo-card {
+    background:
+        linear-gradient(180deg,
+            rgba(var(--bs-primary-rgb), 0.05) 0%,
+            rgba(var(--bs-primary-rgb), 0.015) 100%),
+        var(--bs-dark);
+    border: 1px solid rgba(var(--bs-primary-rgb), 0.18);
+    border-left: 3px solid rgba(var(--bs-primary-rgb), 0.7);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+    margin: 0.25rem 0;
+}
+
+.wo-card-current {
+    border-left-color: rgba(177, 138, 234, 0.7);
+}
+
+.wo-card-voltage {
+    border-left-color: rgba(0, 182, 255, 0.7);
+}
+
+.wo-header {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.4rem 0.7rem;
+    background: rgba(var(--bs-primary-rgb), 0.08);
+    border-bottom: 1px solid rgba(var(--bs-primary-rgb), 0.12);
+    color: var(--bs-primary);
+    font-weight: 600;
+    font-size: 0.72rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.wo-card-current .wo-header {
+    color: #b18aea;
+    background: rgba(177, 138, 234, 0.1);
+    border-bottom-color: rgba(177, 138, 234, 0.18);
+}
+
+.wo-card-current .wo-header i {
+    filter: drop-shadow(0 0 4px rgba(177, 138, 234, 0.5));
+}
+
+.wo-card-voltage .wo-header {
+    color: #00b6ff;
+    background: rgba(0, 182, 255, 0.1);
+    border-bottom-color: rgba(0, 182, 255, 0.18);
+}
+
+.wo-card-voltage .wo-header i {
+    filter: drop-shadow(0 0 4px rgba(0, 182, 255, 0.5));
+}
+
+.wo-header i {
+    font-size: 0.78rem;
+}
+
+.wo-body {
+    padding: 0.4rem 0.6rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+}
+
+.wo-body :deep(> *) {
+    padding: 0.25rem 0.4rem !important;
+    border-radius: 6px;
+    transition: background 0.15s;
+}
+
+.wo-body :deep(> *:hover) {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.wo-body :deep(> * + *) {
+    border-top: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.wo-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 1.2rem;
+    color: rgba(242, 242, 242, 0.6);
+    font-size: 0.85rem;
+}
+
+.wo-loading i {
+    color: var(--bs-primary);
+}
+</style>

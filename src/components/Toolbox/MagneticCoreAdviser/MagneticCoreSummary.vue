@@ -139,11 +139,11 @@ export default {
                 <h2 class="text-white fs-4 my-2 col-12">{{masStore.mas.magnetic.manufacturerInfo.reference}}</h2>
 
 
-                <button :disabled="masExported" :data-cy="dataTestLabel + '-download-MAS-File-button'" class="btn btn-primary col-12 mt-4" @click="exportMAS"> Download MAS file </button>
-                <button :disabled="masExported" :data-cy="dataTestLabel + '-download-MAS-Excitations-File-button'" class="btn btn-primary col-12 mt-4" @click="exportMASWithExcitations"> Download MAS file with excitations </button>
-                <button :disabled="STPExported" :data-cy="dataTestLabel + '-download-STP-File-button'" class="btn btn-primary col-12 mt-4" @click="exportSTP"> Download STP model </button>
-                <button :disabled="OBJExported" :data-cy="dataTestLabel + '-download-OBJ-File-button'" class="btn btn-primary col-12 mt-4" @click="exportOBJ"> Download OBJ model </button>
-                <button :disabled="technicalDrawingExported" :data-cy="dataTestLabel + '-download-TechnicalDrawing-File-button'" class="btn btn-primary col-12 mt-4" @click="exportPDF"> Download Technical Drawing</button>
+                <button :disabled="masExported" :data-cy="dataTestLabel + '-download-MAS-File-button'" class="summary-btn summary-btn-primary col-12 mt-4" @click="exportMAS"> Download MAS file </button>
+                <button :disabled="masExported" :data-cy="dataTestLabel + '-download-MAS-Excitations-File-button'" class="summary-btn summary-btn-primary col-12 mt-4" @click="exportMASWithExcitations"> Download MAS file with excitations </button>
+                <button :disabled="STPExported" :data-cy="dataTestLabel + '-download-STP-File-button'" class="summary-btn summary-btn-primary col-12 mt-4" @click="exportSTP"> Download STP model </button>
+                <button :disabled="OBJExported" :data-cy="dataTestLabel + '-download-OBJ-File-button'" class="summary-btn summary-btn-primary col-12 mt-4" @click="exportOBJ"> Download OBJ model </button>
+                <button :disabled="technicalDrawingExported" :data-cy="dataTestLabel + '-download-TechnicalDrawing-File-button'" class="summary-btn summary-btn-primary col-12 mt-4" @click="exportPDF"> Download Technical Drawing</button>
             </div>
             <div v-if="masStore.mas.magnetic.manufacturerInfo != null" class="col-sm-12 col-md-10 text-start pe-0 row">
                 <h3 class="col-12 p-0 m-0 ps-3">{{masStore.mas.magnetic.manufacturerInfo.reference}}</h3>
@@ -207,3 +207,46 @@ export default {
         </div>
     </div>
 </template>
+
+<style scoped>
+.summary-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+    padding: 0.45rem 0.9rem;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: filter 0.15s, box-shadow 0.2s, transform 0.1s, background 0.15s, color 0.15s;
+    white-space: nowrap;
+    line-height: 1.15;
+}
+
+.summary-btn:hover:not(:disabled) {
+    filter: brightness(1.12);
+    transform: translateY(-1px);
+}
+
+.summary-btn:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+.summary-btn-primary {
+    background: linear-gradient(135deg,
+        color-mix(in srgb, var(--bs-primary) 115%, transparent 0%) 0%,
+        var(--bs-primary) 55%,
+        rgb(var(--bs-primary-rgb) / 0.85) 100%);
+    color: var(--bs-white);
+    border: 1px solid color-mix(in srgb, var(--bs-primary) 70%, var(--bs-white) 30%);
+    box-shadow:
+        0 0 0 1px rgb(var(--bs-primary-rgb) / 0.35),
+        0 2px 8px rgb(var(--bs-primary-rgb) / 0.4),
+        inset 0 1px 0 rgba(var(--bs-light-rgb), 0.3);
+    text-shadow: 0 1px 1px rgba(var(--bs-dark-rgb), 0.25);
+}
+</style>

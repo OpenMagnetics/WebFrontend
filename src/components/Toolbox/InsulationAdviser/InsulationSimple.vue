@@ -78,144 +78,325 @@ export default {
 
 
 <template>
-    <div :data-cy="dataTestLabel + '-container'" class="container-flex">
-        <div class="row">
-            <label v-if="showTitle" :data-cy="dataTestLabel + '-title'"  class="rounded-2 fs-5 ms-3 col-12">Insulation</label>
-        </div>
-        <div class="row ms-2 border-bottom my-2 pb-3 pt-0">
-            <ElementFromListRadio class="col-md-5 col-xm-12 border-end"
-                :name="'wiringTechnology'"
-                :dataTestLabel="dataTestLabel + '-WiringTechnology'"
-                :options="WiringTechnology"
-                :titleSameRow="false"
-                :optionsToDisable="wiringTechnologyToDisable"
-                :modelValue="modelValue"
-                :labelFontSize='titleFontSize'
-                :valueFontSize="valueFontSize"
-                :labelBgColor="labelBgColor"
-                :valueBgColor="labelBgColor"
-                :textColor="textColor"
-                :unitExtraStyleClass="unitExtraStyleClass"
-                @input="modelValue['wiringTechnology'] = $event.target.value"
-                @update="$emit('update')"
-            />
-            <Dimension class="col-md-3 col-xm-12 ps-4"
-                :name="'maximum'"
-                :replaceTitle="'Altitude'"
-                :unit="'m'"
-                :dataTestLabel="dataTestLabel + '-Altitude'"
-                :min="minimumMaximumScalePerParameter['altitude']['min']"
-                :max="minimumMaximumScalePerParameter['altitude']['max']"
-                :defaultValue="Utils.deepCopy(defaultValue['altitude']['maximum'])"
-                :allowNegative="false"
-                :labelFontSize='titleFontSize'
-                :valueFontSize="valueFontSize"
-                :labelBgColor="labelBgColor"
-                :valueBgColor="valueBgColor"
-                :textColor="textColor"
-                :unitExtraStyleClass="unitExtraStyleClass"
-                :labelWidthProportionClass="'col-6'"
-                :valueWidthProportionClass="'col-6'"
-                :modelValue="modelValue['insulation']['altitude']"
-                @input="modelValue['insulation']['altitude']['maximum'] = $event.target.value"
-                @update="$emit('update')"
-            />
-            <Dimension class="col-md-3 col-xm-12 offset-md-1 offset-xm-0 ps-4  border-start"
-                :name="'maximum'"
-                :replaceTitle="'Main Supply Voltage'"
-                :unit="'V'"
-                :dataTestLabel="dataTestLabel + '-MainSupplyVoltage'"
-                :min="minimumMaximumScalePerParameter['voltage']['min']"
-                :max="minimumMaximumScalePerParameter['voltage']['max']"
-                :defaultValue="Utils.deepCopy(defaultValue['mainSupplyVoltage']['maximum'])"
-                :allowNegative="false"
-                :labelFontSize='titleFontSize'
-                :valueFontSize="valueFontSize"
-                :labelBgColor="labelBgColor"
-                :valueBgColor="valueBgColor"
-                :textColor="textColor"
-                :unitExtraStyleClass="unitExtraStyleClass"
-                :labelWidthProportionClass="'col-6'"
-                :valueWidthProportionClass="'col-6'"
-                :modelValue="modelValue['insulation']['mainSupplyVoltage']"
-                @input="modelValue['insulation']['mainSupplyVoltage']['maximum'] = $event.target.value"
-                @update="$emit('update')"
-            />
-        </div>
-        <div class="row ms-2">
+    <div :data-cy="dataTestLabel + '-container'" class="is-root">
+        <div v-if="showTitle" :data-cy="dataTestLabel + '-title'" class="is-section-title">Insulation</div>
 
-            <ElementFromList
-                class="col-lg-6 col-xl-2"
-                :dataTestLabel="dataTestLabel + '-Cti'"
-                :name="'cti'"
-                v-model="modelValue['insulation']"
-                :options="Object.values(Cti)"
-                :labelFontSize='titleFontSize'
-                :valueFontSize="valueFontSize"
-                :labelBgColor="labelBgColor"
-                :valueBgColor="valueBgColor"
-                :textColor="textColor"
-                :unitExtraStyleClass="unitExtraStyleClass"
-                @update="$emit('update')"
-            />
-            <ElementFromList
-                class="col-lg-6 col-xl-3"
-                :dataTestLabel="dataTestLabel + '-InsulationType'"
-                :name="'insulationType'"
-                v-model="modelValue['insulation']"
-                :options="Object.values(InsulationType)"
-                :labelFontSize='titleFontSize'
-                :valueFontSize="valueFontSize"
-                :labelBgColor="labelBgColor"
-                :valueBgColor="valueBgColor"
-                :textColor="textColor"
-                :unitExtraStyleClass="unitExtraStyleClass"
-                @update="$emit('update')"
-            />
-            <ElementFromList
-                class="col-lg-6 col-xl-4"
-                :dataTestLabel="dataTestLabel + '-OvervoltageCategory'"
-                :name="'overvoltageCategory'"
-                v-model="modelValue['insulation']"
-                :options="Object.values(OvervoltageCategory)"
-                :labelFontSize='titleFontSize'
-                :valueFontSize="valueFontSize"
-                :labelBgColor="labelBgColor"
-                :valueBgColor="valueBgColor"
-                :textColor="textColor"
-                :unitExtraStyleClass="unitExtraStyleClass"
-                @update="$emit('update')"
-            />
-            <ElementFromList
-                class="col-lg-6 col-xl-3"
-                :dataTestLabel="dataTestLabel + '-PollutionDegree'"
-                :name="'pollutionDegree'"
-                v-model="modelValue['insulation']"
-                :options="Object.values(PollutionDegree)"
-                :labelFontSize='titleFontSize'
-                :valueFontSize="valueFontSize"
-                :labelBgColor="labelBgColor"
-                :valueBgColor="valueBgColor"
-                :textColor="textColor"
-                :unitExtraStyleClass="unitExtraStyleClass"
-                @update="$emit('update')"
-            />
-            <SeveralElementsFromList
-                class="col-12"
-                :name="'standards'"
-                v-model="modelValue['insulation']"
-                :options="Object.values(InsulationStandards)"
-                :optionsToDisable="standardsToDisable"
-                :labelFontSize='titleFontSize'
-                :valueFontSize="valueFontSize"
-                :labelBgColor="labelBgColor"
-                :valueBgColor="valueBgColor"
-                :textColor="textColor"
-                :unitExtraStyleClass="unitExtraStyleClass"
-                @update="$emit('update')"
-            />
+        <!-- Section: Environment -->
+        <div class="is-subsection">
+            <div class="is-subsection-header">
+                <i class="fa-solid fa-mountain-sun"></i>
+                <span>Environment</span>
+            </div>
+            <div class="is-grid is-grid-3">
+                <div class="is-cell">
+                    <ElementFromListRadio
+                        :name="'wiringTechnology'"
+                        :dataTestLabel="dataTestLabel + '-WiringTechnology'"
+                        :options="WiringTechnology"
+                        :titleSameRow="false"
+                        :optionsToDisable="wiringTechnologyToDisable"
+                        :modelValue="modelValue"
+                        :labelFontSize='titleFontSize'
+                        :valueFontSize="valueFontSize"
+                        :labelBgColor="labelBgColor"
+                        :valueBgColor="labelBgColor"
+                        :textColor="textColor"
+                        :unitExtraStyleClass="unitExtraStyleClass"
+                        :labelWidthProportionClass="'col-12'"
+                        :valueWidthProportionClass="'col-12'"
+                        @input="modelValue['wiringTechnology'] = $event.target.value"
+                        @update="$emit('update')"
+                    />
+                </div>
+                <div class="is-cell">
+                    <Dimension
+                        :name="'maximum'"
+                        :replaceTitle="'Altitude'"
+                        :unit="'m'"
+                        :dataTestLabel="dataTestLabel + '-Altitude'"
+                        :min="minimumMaximumScalePerParameter['altitude']['min']"
+                        :max="minimumMaximumScalePerParameter['altitude']['max']"
+                        :defaultValue="Utils.deepCopy(defaultValue['altitude']['maximum'])"
+                        :allowNegative="false"
+                        :titleSameRow="false"
+                        :labelFontSize='titleFontSize'
+                        :valueFontSize="valueFontSize"
+                        :labelBgColor="labelBgColor"
+                        :valueBgColor="valueBgColor"
+                        :textColor="textColor"
+                        :unitExtraStyleClass="unitExtraStyleClass"
+                        :labelWidthProportionClass="'col-12'"
+                        :valueWidthProportionClass="'col-12'"
+                        :modelValue="modelValue['insulation']['altitude']"
+                        @input="modelValue['insulation']['altitude']['maximum'] = $event.target.value"
+                        @update="$emit('update')"
+                    />
+                </div>
+                <div class="is-cell">
+                    <Dimension
+                        :name="'maximum'"
+                        :replaceTitle="'Main Supply Voltage'"
+                        :unit="'V'"
+                        :dataTestLabel="dataTestLabel + '-MainSupplyVoltage'"
+                        :min="minimumMaximumScalePerParameter['voltage']['min']"
+                        :max="minimumMaximumScalePerParameter['voltage']['max']"
+                        :defaultValue="Utils.deepCopy(defaultValue['mainSupplyVoltage']['maximum'])"
+                        :allowNegative="false"
+                        :titleSameRow="false"
+                        :labelFontSize='titleFontSize'
+                        :valueFontSize="valueFontSize"
+                        :labelBgColor="labelBgColor"
+                        :valueBgColor="valueBgColor"
+                        :textColor="textColor"
+                        :unitExtraStyleClass="unitExtraStyleClass"
+                        :labelWidthProportionClass="'col-12'"
+                        :valueWidthProportionClass="'col-12'"
+                        :modelValue="modelValue['insulation']['mainSupplyVoltage']"
+                        @input="modelValue['insulation']['mainSupplyVoltage']['maximum'] = $event.target.value"
+                        @update="$emit('update')"
+                    />
+                </div>
+            </div>
+        </div>
+
+        <!-- Section: Classification -->
+        <div class="is-subsection">
+            <div class="is-subsection-header">
+                <i class="fa-solid fa-list-check"></i>
+                <span>Classification</span>
+            </div>
+            <div class="is-grid is-grid-2">
+                <div class="is-cell">
+                    <ElementFromList
+                        :dataTestLabel="dataTestLabel + '-Cti'"
+                        :name="'cti'"
+                        :titleSameRow="false"
+                        :justifyContent="false"
+                        v-model="modelValue['insulation']"
+                        :options="Object.values(Cti)"
+                        :labelWidthProportionClass="'col-12'"
+                        :selectStyleClass="'col-12'"
+                        :labelFontSize='titleFontSize'
+                        :valueFontSize="valueFontSize"
+                        :labelBgColor="labelBgColor"
+                        :valueBgColor="valueBgColor"
+                        :textColor="textColor"
+                        :unitExtraStyleClass="unitExtraStyleClass"
+                        @update="$emit('update')"
+                    />
+                </div>
+                <div class="is-cell">
+                    <ElementFromList
+                        :dataTestLabel="dataTestLabel + '-InsulationType'"
+                        :name="'insulationType'"
+                        :titleSameRow="false"
+                        :justifyContent="false"
+                        v-model="modelValue['insulation']"
+                        :options="Object.values(InsulationType)"
+                        :labelWidthProportionClass="'col-12'"
+                        :selectStyleClass="'col-12'"
+                        :labelFontSize='titleFontSize'
+                        :valueFontSize="valueFontSize"
+                        :labelBgColor="labelBgColor"
+                        :valueBgColor="valueBgColor"
+                        :textColor="textColor"
+                        :unitExtraStyleClass="unitExtraStyleClass"
+                        @update="$emit('update')"
+                    />
+                </div>
+                <div class="is-cell">
+                    <ElementFromList
+                        :dataTestLabel="dataTestLabel + '-OvervoltageCategory'"
+                        :name="'overvoltageCategory'"
+                        :titleSameRow="false"
+                        :justifyContent="false"
+                        v-model="modelValue['insulation']"
+                        :options="Object.values(OvervoltageCategory)"
+                        :labelWidthProportionClass="'col-12'"
+                        :selectStyleClass="'col-12'"
+                        :labelFontSize='titleFontSize'
+                        :valueFontSize="valueFontSize"
+                        :labelBgColor="labelBgColor"
+                        :valueBgColor="valueBgColor"
+                        :textColor="textColor"
+                        :unitExtraStyleClass="unitExtraStyleClass"
+                        @update="$emit('update')"
+                    />
+                </div>
+                <div class="is-cell">
+                    <ElementFromList
+                        :dataTestLabel="dataTestLabel + '-PollutionDegree'"
+                        :name="'pollutionDegree'"
+                        :titleSameRow="false"
+                        :justifyContent="false"
+                        v-model="modelValue['insulation']"
+                        :options="Object.values(PollutionDegree)"
+                        :labelWidthProportionClass="'col-12'"
+                        :selectStyleClass="'col-12'"
+                        :labelFontSize='titleFontSize'
+                        :valueFontSize="valueFontSize"
+                        :labelBgColor="labelBgColor"
+                        :valueBgColor="valueBgColor"
+                        :textColor="textColor"
+                        :unitExtraStyleClass="unitExtraStyleClass"
+                        @update="$emit('update')"
+                    />
+                </div>
+            </div>
+        </div>
+
+        <!-- Section: Standards -->
+        <div class="is-subsection">
+            <div class="is-subsection-header">
+                <i class="fa-solid fa-certificate"></i>
+                <span>Standards</span>
+            </div>
+            <div class="is-standards">
+                <SeveralElementsFromList
+                    :name="'standards'"
+                    v-model="modelValue['insulation']"
+                    :options="Object.values(InsulationStandards)"
+                    :optionsToDisable="standardsToDisable"
+                    :labelFontSize='titleFontSize'
+                    :valueFontSize="valueFontSize"
+                    :labelBgColor="labelBgColor"
+                    :valueBgColor="valueBgColor"
+                    :textColor="textColor"
+                    :unitExtraStyleClass="unitExtraStyleClass"
+                    @update="$emit('update')"
+                />
+            </div>
         </div>
     </div>
 </template>
+
+<style scoped>
+.is-root {
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+    padding: 0.1rem;
+}
+
+.is-section-title {
+    color: var(--bs-primary);
+    font-weight: 700;
+    font-size: 1rem;
+    letter-spacing: 0.01em;
+    padding: 0.15rem 0.25rem 0.4rem 0.25rem;
+}
+
+.is-subsection {
+    background: linear-gradient(180deg,
+        rgba(var(--bs-primary-rgb), 0.05) 0%,
+        rgba(var(--bs-primary-rgb), 0.015) 100%);
+    border: 1px solid rgba(var(--bs-primary-rgb), 0.15);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.is-subsection-header {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.35rem 0.7rem;
+    background: rgba(var(--bs-primary-rgb), 0.08);
+    border-bottom: 1px solid rgba(var(--bs-primary-rgb), 0.12);
+    color: var(--bs-primary);
+    font-weight: 600;
+    font-size: 0.7rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.is-subsection-header i {
+    font-size: 0.78rem;
+    filter: drop-shadow(0 0 3px rgba(var(--bs-primary-rgb), 0.45));
+}
+
+.is-grid {
+    display: grid;
+    gap: 0.4rem 0.85rem;
+    padding: 0.55rem 0.7rem;
+}
+
+.is-grid-2 {
+    grid-template-columns: 1fr 1fr;
+}
+
+.is-grid-3 {
+    grid-template-columns: 1fr 1fr 1fr;
+}
+
+@media (max-width: 768px) {
+    .is-grid-2,
+    .is-grid-3 {
+        grid-template-columns: 1fr;
+    }
+}
+
+.is-cell {
+    min-width: 0;
+    background: rgba(255, 255, 255, 0.025);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 9px;
+    padding: 0.45rem 0.6rem 0.55rem 0.6rem;
+    transition: background 0.15s, border-color 0.15s;
+}
+
+.is-cell:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(var(--bs-primary-rgb), 0.25);
+}
+
+.is-cell :deep(.row),
+.is-standards :deep(.row) {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+}
+
+/* Uppercase pill caption above each input */
+.is-cell :deep(.dim-label),
+.is-cell :deep(.efl-label),
+.is-cell :deep(label) {
+    color: rgba(242, 242, 242, 0.65) !important;
+    font-size: 0.66rem !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin-bottom: 0.2rem;
+    line-height: 1.1;
+    background: transparent !important;
+}
+
+/* Slightly larger and bolder values */
+.is-cell :deep(input[type="number"]),
+.is-cell :deep(.dim-input),
+.is-cell :deep(.efl-select) {
+    font-size: 0.92rem !important;
+    font-weight: 600;
+    height: 1.85rem !important;
+}
+
+/* Wiring Technology radio: keep its own labels readable, not uppercased */
+.is-cell :deep(.form-check-label) {
+    color: rgba(242, 242, 242, 0.85) !important;
+    font-size: 0.78rem !important;
+    font-weight: 500 !important;
+    letter-spacing: 0;
+    text-transform: none;
+    margin-bottom: 0;
+}
+
+.is-standards {
+    padding: 0.55rem 0.7rem;
+}
+
+/* Hide the redundant inner "Standards" title from SeveralElementsFromList -
+   the section header already says STANDARDS. */
+.is-standards :deep(.several-elements-label) {
+    display: none !important;
+}
+</style>
 
 

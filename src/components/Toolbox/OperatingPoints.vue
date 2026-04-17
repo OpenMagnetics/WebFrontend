@@ -302,9 +302,13 @@ export default {
 
 <template>
     <div class="container">
-        <div class="row" :style="$styleStore.operatingPoints.main">
-            <div class="col-sm-12 col-md-2 text-start border m-0 px-1" :style="$styleStore.operatingPoints.main">
-                <div class="col-12 row m-0 p-0 px-1 border-bottom border-top rounded-4 border-4 mb-5 pb-2 pt-2 mt-2" :style="combinedStyle([$styleStore.operatingPoints.operatingPointBgColor, operatingPointIndex == currentOperatingPointIndex? 'opacity: 1;' : 'opacity: 0.65;'])"  v-for="(operatingPoint, operatingPointIndex) in masStore.mas.inputs.operatingPoints" :key="operatingPointIndex">
+        <div class="row op-row">
+            <div class="col-sm-12 col-md-2 text-start m-0 px-1 op-panel">
+                <div class="op-header">
+                    <i class="fa-solid fa-list-check"></i>
+                    <span>Operating points</span>
+                </div>
+                <div class="op-card" :class="{ 'op-card-active': operatingPointIndex == currentOperatingPointIndex }" v-for="(operatingPoint, operatingPointIndex) in masStore.mas.inputs.operatingPoints" :key="operatingPointIndex">
 
                     <span v-if="$stateStore.operatingPoints.modePerPoint[operatingPointIndex] == null"> Choose a mode for this operating point first <i class="fa-solid fa-right-long ms-3"></i> </span>
                     <div v-else class="m-0 px-1">
@@ -399,41 +403,45 @@ export default {
                                 </svg>
                             </button>
                         </div>
-                        <div v-else class="col-12 row m-0 p-0">
-                            <button
-                                :data-cy="dataTestLabel + '-remove-operating-point-' + operatingPointIndex + '-button'"
-                                :style="$styleStore.operatingPoints.removeOperatingPointButton"
-                                class="btn col-6 mt-2"
-                                @click="removePoint(operatingPointIndex)"
-                            >
-                                Remove
-                            </button>
-                            <button
-                                :data-cy="dataTestLabel + '-select-operating-point-' + operatingPointIndex + '-button'"
-                                :style="$styleStore.operatingPoints.selectOperatingPointButton"
-                                class="btn col-6 mt-2"
-                                @click="currentOperatingPointIndex = operatingPointIndex"
-                            >
-                                Select
-                            </button>
+                        <div v-else class="col-12 row m-0 p-0 g-2">
+                            <div class="col-6 pe-1">
+                                <button
+                                    :data-cy="dataTestLabel + '-remove-operating-point-' + operatingPointIndex + '-button'"
+                                    class="op-btn op-btn-danger w-100 mt-2"
+                                    @click="removePoint(operatingPointIndex)"
+                                >
+                                    <i class="fa-solid fa-trash"></i>
+                                    <span>Remove</span>
+                                </button>
+                            </div>
+                            <div class="col-6 ps-1">
+                                <button
+                                    :data-cy="dataTestLabel + '-select-operating-point-' + operatingPointIndex + '-button'"
+                                    class="op-btn op-btn-primary w-100 mt-2"
+                                    @click="currentOperatingPointIndex = operatingPointIndex"
+                                >
+                                    <i class="fa-solid fa-check"></i>
+                                    <span>Select</span>
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
                 <button
                     :data-cy="dataTestLabel + '-add-operating-point-button'"
-                    :style="$styleStore.operatingPoints.addOperatingPointButton"
-                    class="btn col-12 mt-2"
+                    class="op-btn op-btn-primary mt-2"
                     @click="addNewOperatingPoint"
                 >
-                    Add New OP 
+                    <i class="fa-solid fa-plus"></i>
+                    <span>Add New OP</span>
                 </button>
                 <button
                     :data-cy="dataTestLabel + '-modify-number-windings-button'"
-                    :style="$styleStore.operatingPoints.modifyNumberWindingsButton"
-                    class="btn col-12 mt-2"
+                    class="op-btn op-btn-outline mt-2"
                     @click="$emit('changeTool', 'designRequirements')"
                 >
-                    Modify No. Windings
+                    <i class="fa-solid fa-sliders"></i>
+                    <span>Modify No. Windings</span>
                 </button>
 
                 <div class="col-12">
@@ -464,3 +472,121 @@ export default {
         </div>
     </div>
 </template>
+
+<style scoped>
+.op-row {
+    gap: 0.5rem 0;
+}
+
+.op-panel {
+    background:
+        linear-gradient(145deg,
+            rgba(var(--bs-primary-rgb), 0.06) 0%,
+            rgba(var(--bs-primary-rgb), 0.02) 100%),
+        var(--bs-dark);
+    border: 1px solid rgba(var(--bs-primary-rgb), 0.15);
+    border-radius: 14px;
+    padding: 0.6rem 0.5rem !important;
+    margin: 0.15rem 0 0.5rem 0;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.op-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.6rem;
+    margin: -0.6rem -0.5rem 0.4rem -0.5rem;
+    background: rgba(var(--bs-primary-rgb), 0.1);
+    border-bottom: 1px solid rgba(var(--bs-primary-rgb), 0.12);
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--bs-primary);
+    letter-spacing: 0.02em;
+}
+
+.op-header i {
+    filter: drop-shadow(0 0 4px rgba(var(--bs-primary-rgb), 0.45));
+}
+
+.op-card {
+    background: rgba(var(--bs-light-rgb), 0.04);
+    border: 1px solid rgba(var(--bs-light-rgb), 0.1);
+    border-radius: 12px;
+    padding: 0.55rem 0.5rem;
+    margin: 0.35rem 0;
+    transition: all 0.18s ease;
+    opacity: 0.65;
+}
+
+.op-card.op-card-active {
+    opacity: 1;
+    border-color: rgba(var(--bs-primary-rgb), 0.55);
+    background: rgba(var(--bs-primary-rgb), 0.08);
+    box-shadow: 0 2px 12px rgba(var(--bs-primary-rgb), 0.2);
+}
+
+.op-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    width: 100%;
+    padding: 0.4rem 0.7rem;
+    border-radius: 10px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: filter 0.15s, box-shadow 0.2s, transform 0.1s, background 0.15s, color 0.15s;
+    white-space: normal;
+    line-height: 1.15;
+    min-height: 2.1rem;
+}
+
+.op-btn:hover:not(:disabled) {
+    filter: brightness(1.12);
+    transform: translateY(-1px);
+}
+
+.op-btn-primary {
+    background: linear-gradient(135deg,
+        color-mix(in srgb, var(--bs-primary) 115%, transparent 0%) 0%,
+        var(--bs-primary) 55%,
+        rgb(var(--bs-primary-rgb) / 0.85) 100%);
+    color: var(--bs-white);
+    border: 1px solid color-mix(in srgb, var(--bs-primary) 70%, var(--bs-white) 30%);
+    box-shadow:
+        0 0 0 1px rgb(var(--bs-primary-rgb) / 0.35),
+        0 2px 8px rgb(var(--bs-primary-rgb) / 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.25);
+}
+
+.op-btn-outline {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(var(--bs-primary-rgb), 0.55);
+    color: var(--bs-primary);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+}
+
+.op-btn-outline:hover:not(:disabled) {
+    background: rgba(var(--bs-primary-rgb), 0.2);
+    border-color: rgba(var(--bs-primary-rgb), 0.85);
+    color: #ffffff;
+    box-shadow: 0 2px 8px rgba(var(--bs-primary-rgb), 0.3);
+}
+
+.op-btn-danger {
+    background: rgb(var(--bs-danger-rgb) / 0.2);
+    border: 1px solid rgb(var(--bs-danger-rgb) / 0.55);
+    color: var(--bs-danger);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+}
+
+.op-btn-danger:hover:not(:disabled) {
+    background: rgb(var(--bs-danger-rgb) / 0.3);
+    border-color: rgb(var(--bs-danger-rgb) / 0.75);
+}
+</style>

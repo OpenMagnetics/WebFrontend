@@ -61,9 +61,8 @@ export const useStyleStore = defineStore("style", () => {
 
         this.designRequirements = {
             main: {
-                "background-color": theme["dark"],
+                // Let the parent panel paint the background. Only text color stays.
                 "color": theme["white"],
-                "border-color":  theme["primary"] + ' !important',
             },
             requiredButton: {
                 "background-color": theme["light"],
@@ -84,21 +83,21 @@ export const useStyleStore = defineStore("style", () => {
                 "border-color": theme["primary"],
             },
             inputBorderColor: {
-                "border-color":  theme["primary"] + ' !important',
+                // No border at all — the parent panel divides sections with a hairline rule.
             },
             inputFontSize: {
-                // "font-size": '2rem',
                 "font-size": '1rem',
             },
             inputTitleFontSize: {
-                // "font-size": '2.5rem',
                 "font-size": '1.25rem',
             },
             inputLabelBgColor:{
-                "background-color": theme["dark"] + ' !important',
+                // Transparent so labels inherit the parent panel background.
+                "background-color": "transparent !important",
                 "background-image": "none !important",
             },
             inputValueBgColor:{
+                // Inputs are lighter than the panel so they pop, matching the Magnetic Builder.
                 "background-color": theme["light"],
             },
             inputTextColor:{
@@ -114,9 +113,8 @@ export const useStyleStore = defineStore("style", () => {
 
         this.operatingPoints = {
             main: {
-                "background-color": theme["dark"],
+                // Let parent panel paint the background, only text color stays.
                 "color": theme["white"],
-                "border-color":  theme["primary"] + ' !important',
             },
             windingBgColor:{
                 "background-color": theme["light"],
@@ -176,7 +174,7 @@ export const useStyleStore = defineStore("style", () => {
                 "border-color":  theme["primary"] + ' !important',
             },
             titleLabelBgColor:{
-                "background-color": theme["dark"],
+                "background-color": "transparent",
             },
             titleTextColor:{
                 "color": theme["white"],
@@ -185,7 +183,7 @@ export const useStyleStore = defineStore("style", () => {
                 "color": theme["white"],
             },
             commonParameterBgColor:{
-                "background-color": theme["dark"],
+                "background-color": "transparent",
             },
             currentGraph:{
                 "background-color": theme["info"],
@@ -221,10 +219,12 @@ export const useStyleStore = defineStore("style", () => {
                 "font-size": '1.25rem',
             },
             inputLabelBgColor:{
-                "background-color": theme["dark"] + ' !important',
+                // Transparent so labels inherit the parent panel background.
+                "background-color": "transparent !important",
                 "background-image": "none !important",
             },
             inputValueBgColor:{
+                // Slightly lighter than the panel so input values pop.
                 "background-color": theme["light"],
             },
             inputTextColor:{
@@ -574,20 +574,18 @@ export const useStyleStore = defineStore("style", () => {
 
         this.insulationAdviser = {
             main: {
-                "background-color": theme["dark"],
+                // Let parent panel paint the background.
                 "color": theme["white"],
-                "border-color":  theme["primary"] + ' !important',
             },
             inputFontSize: {
-                // "font-size": '2rem',
-                "font-size": '1.25rem',
+                "font-size": '1rem',
             },
             inputTitleFontSize: {
-                // "font-size": '2.5rem',
-                "font-size": '1.25rem',
+                "font-size": '1.1rem',
             },
             inputLabelBgColor:{
-                "background-color": theme["dark"] + ' !important',
+                // Transparent so labels inherit the parent panel.
+                "background-color": "transparent !important",
                 "background-image": "none !important",
             },
             inputValueBgColor:{

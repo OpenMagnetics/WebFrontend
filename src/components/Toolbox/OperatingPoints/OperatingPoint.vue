@@ -154,8 +154,12 @@ export default {
 }
 </script>
 <template>
-    <div class="container">
-        <div class="row">
+    <div class="op-detail-panel">
+        <div class="op-detail-header">
+            <i class="fa-solid fa-wave-square"></i>
+            <span>Operating Point</span>
+        </div>
+        <div class="op-detail-body">
             <OperatingPointManual
                 v-if="$stateStore.operatingPoints.modePerPoint[currentOperatingPointIndex] === $stateStore.OperatingPointsMode.Manual"
                 :currentOperatingPointIndex="currentOperatingPointIndex"
@@ -183,58 +187,167 @@ export default {
                 @clearMode="clearMode"
                 @switchToManual="switchToManual"
             />
-            <div v-if="$stateStore.operatingPoints.modePerPoint[currentOperatingPointIndex] == null" class="col-12">
-                <label
-                    :style="combinedStyle([$styleStore.operatingPoints.inputTitleFontSize, $styleStore.operatingPoints.commonParameterTextColor])"
-                    :data-cy="dataTestLabel + '-current-title'"
-                    class="row mx-0 p-0 mb-4"
-                >
+            <div v-if="$stateStore.operatingPoints.modePerPoint[currentOperatingPointIndex] == null" class="op-mode-select">
+                <div class="op-mode-title" :data-cy="dataTestLabel + '-current-title'">
                     {{masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].name}}
-                </label>
-                <div class="row mt-2">
-
-                    <label
-                    :style="combinedStyle([$styleStore.operatingPoints.inputTitleFontSize, $styleStore.operatingPoints.commonParameterTextColor])"
-                        class="mt-3 mb-2"
-                    > 
-                        {{'Where do you want to import your operating point from?'}}
-                    </label>
                 </div>
-                <div class="row mt-2">
+                <div class="op-mode-prompt">
+                    Where do you want to import your operating point from?
+                </div>
+                <div class="op-mode-buttons">
                     <input type="file" id="OperatingPoint-CircuitSimulator-upload-input" ref="OperatingPoint-CircuitSimulator-upload-ref" @change="onCircuitSimulatorFileTypeSelected" style="display:none" hidden/>
                     <button
                         v-if="enableManual"
-                        :style="$styleStore.operatingPoints.typeButton"
                         data-cy="OperatingPoint-source-Manual-button"
                         type="button"
                         @click="onCircuitSimulatorTypeSelected"
-                        class="p-3 col-7 offset-2 btn mt-2 rounded-3"
+                        class="op-mode-btn"
                     >
-                        {{'Circuit simulator export file or CSV'}}
+                        <i class="fa-solid fa-file-import"></i>
+                        <span>Circuit simulator export file or CSV</span>
                     </button>
-
                     <button
                         v-if="enableCircuitSimulatorImport"
-                        :style="$styleStore.operatingPoints.typeButton"
                         data-cy="OperatingPoint-source-Manual-button"
                         type="button"
                         @click="onManualTypeSelected"
-                        class="p-3 col-7 offset-2 btn mt-2 rounded-3"
+                        class="op-mode-btn"
                     >
-                        {{'I will define it manually'}}
+                        <i class="fa-solid fa-pen-to-square"></i>
+                        <span>I will define it manually</span>
                     </button>
                     <button
                         v-if="enableHarmonicsList"
-                        :style="$styleStore.operatingPoints.typeButton"
                         data-cy="OperatingPoint-source-Manual-button"
                         type="button"
                         @click="onHarmoncsTypeSelected"
-                        class="p-3 col-7 offset-2 btn mt-2 rounded-3"
+                        class="op-mode-btn"
                     >
-                        {{'I want to introduce a list of harmonics'}}
+                        <i class="fa-solid fa-chart-line"></i>
+                        <span>I want to introduce a list of harmonics</span>
                     </button>
                 </div>
             </div>
         </div>
     </div>
 </template>
+
+<style scoped>
+.op-detail-panel {
+    display: flex;
+    flex-direction: column;
+    background:
+        linear-gradient(145deg,
+            rgba(var(--bs-primary-rgb), 0.06) 0%,
+            rgba(var(--bs-primary-rgb), 0.02) 100%),
+        var(--bs-dark);
+    border: 1px solid rgba(var(--bs-primary-rgb), 0.15);
+    border-radius: 14px;
+    box-shadow:
+        0 4px 20px rgba(0, 0, 0, 0.12),
+        inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    overflow: hidden;
+    min-height: 60vh;
+}
+
+.op-detail-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 0.9rem;
+    background: rgba(var(--bs-primary-rgb), 0.1);
+    border-bottom: 1px solid rgba(var(--bs-primary-rgb), 0.12);
+    color: var(--bs-primary);
+    font-weight: 600;
+    font-size: 0.95rem;
+    letter-spacing: 0.02em;
+    flex-shrink: 0;
+}
+
+.op-detail-header i {
+    font-size: 1rem;
+    filter: drop-shadow(0 0 4px rgba(var(--bs-primary-rgb), 0.45));
+}
+
+.op-detail-body {
+    padding: 0.5rem 0.5rem 0.6rem 0.5rem;
+    flex: 1;
+    overflow-y: auto;
+}
+
+/* ============ Mode selector view ============ */
+.op-mode-select {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+    padding: 1rem 0 2rem 0;
+    max-width: 560px;
+    margin: 0 auto;
+}
+
+.op-mode-title {
+    color: var(--bs-primary);
+    font-size: 1.35rem;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    text-align: center;
+    margin-bottom: 0.5rem;
+}
+
+.op-mode-prompt {
+    color: #f2f2f2;
+    font-size: 0.95rem;
+    font-weight: 500;
+    text-align: center;
+    opacity: 0.8;
+    margin-bottom: 0.75rem;
+}
+
+.op-mode-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+}
+
+button.op-mode-btn {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    padding: 0.85rem 1.25rem !important;
+    border-radius: 12px !important;
+    font-size: 0.95rem !important;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    cursor: pointer;
+    border: 1px solid rgba(var(--bs-primary-rgb), 0.5) !important;
+    background-color: var(--bs-primary) !important;
+    background-image: linear-gradient(135deg,
+        rgba(var(--bs-primary-rgb), 1) 0%,
+        rgba(var(--bs-primary-rgb), 0.8) 100%) !important;
+    color: #ffffff !important;
+    box-shadow:
+        0 0 0 1px rgba(var(--bs-primary-rgb), 0.3),
+        0 3px 10px rgba(var(--bs-primary-rgb), 0.35),
+        inset 0 1px 0 rgba(255, 255, 255, 0.25);
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.25);
+    transition: filter 0.15s, transform 0.1s, box-shadow 0.2s;
+    width: 100%;
+    outline: none;
+    line-height: 1.2;
+}
+
+button.op-mode-btn:hover {
+    filter: brightness(1.15);
+    transform: translateY(-1px);
+    box-shadow:
+        0 0 0 1px rgba(var(--bs-primary-rgb), 0.4),
+        0 4px 14px rgba(var(--bs-primary-rgb), 0.45),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+button.op-mode-btn i {
+    font-size: 1.05rem;
+}
+</style>

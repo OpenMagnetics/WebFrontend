@@ -277,104 +277,107 @@ export default {
 </script>
 
 <template>
-    <div class="container">
-        <div class="row">
-            <div class="col-lg-4 col-md-12" style="max-width: 360px;">
+    <div class="oph-container">
+        <div class="row g-2 m-0">
+            <div class="col-lg-5 col-md-12 oph-col">
 
-                <label
-                    :style="combinedStyle([$styleStore.operatingPoints.inputTitleFontSize, $styleStore.operatingPoints.commonParameterTextColor])"
-                    :data-cy="dataTestLabel + '-current-title'"
-                    class="mx-0 p-0 mb-4"
-                >
-                    {{masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].name + ' - ' + masStore.mas.magnetic.coil.functionalDescription[currentWindingIndex].name}}
-                </label>
+                <div class="oph-title" :data-cy="dataTestLabel + '-current-title'">
+                    <i class="fa-solid fa-bullseye"></i>
+                    <span>{{masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].name + ' — ' + masStore.mas.magnetic.coil.functionalDescription[currentWindingIndex].name}}</span>
+                </div>
 
-                <label
-                    :style="combinedStyle([$styleStore.operatingPoints.inputTitleFontSize, $styleStore.operatingPoints.commonParameterTextColor])"
-                    :data-cy="dataTestLabel + '-current-title'"
-                    class="mx-0 p-0 mb-4"
-                >
-                    {{'Current harmonics'}}
-                </label>
+                <div class="oph-card oph-card-current">
+                    <div class="oph-card-header">
+                        <i class="fa-solid fa-wave-square"></i>
+                        <span>Current harmonics</span>
+                    </div>
+                    <div class="oph-card-body">
+                        <div
+                            v-if="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex] != null && masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex].current.harmonics"
+                            v-for="index in masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex].current.harmonics.amplitudes.length" :key="index">
+                            <WaveformInputHarmonic class="col-12 mb-1 text-start"
+                                :dataTestLabel="dataTestLabel + '-Harmonic-' + (index - 1)"
+                                :index="index - 1"
+                                :title="(index - 1) == 0? 'DC' : ordinalSuffixOf(index - 1)"
+                                :unit="'A'"
+                                :forceUpdate="forceUpdateCurrent"
+                                :block="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex].current.harmonics.frequencies.length < 3 || (index - 1) == 0"
+                                :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex].current.harmonics"
+                                @onFrequencyChanged="onFrequencyChanged('current')"
+                                @onAmplitudeChanged="onAmplitudeChanged('current')"
+                                @onAddPointBelow="onAddPointBelow(index - 1, 'current')"
+                                @onRemovePoint="onRemovePoint(index - 1, 'current')"
+                            />
+                        </div>
+                        <div v-if='errorMessages.current != ""' class="oph-error">
+                            <i class="fa-solid fa-triangle-exclamation"></i>
+                            <span>{{errorMessages.current}}</span>
+                        </div>
+                    </div>
+                </div>
 
-                <div 
-                    v-if="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex] != null && masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex].current.harmonics"
-                    v-for="index in masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex].current.harmonics.amplitudes.length" :key="index">
-                    <WaveformInputHarmonic class="col-12 mb-1 text-start"
-                        :dataTestLabel="dataTestLabel + '-Harmonic-' + (index - 1)"
-                        :index="index - 1"
-                        :title="(index - 1) == 0? 'DC' : ordinalSuffixOf(index - 1)"
-                        :unit="'A'"
-                        :forceUpdate="forceUpdateCurrent"
-                        :block="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex].current.harmonics.frequencies.length < 3 || (index - 1) == 0"
-                        :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex].current.harmonics"
-                        @onFrequencyChanged="onFrequencyChanged('current')"
-                        @onAmplitudeChanged="onAmplitudeChanged('current')"
-                        @onAddPointBelow="onAddPointBelow(index - 1, 'current')"
-                        @onRemovePoint="onRemovePoint(index - 1, 'current')"
-                    />
-                </div>
-                <div v-if='errorMessages.current != ""' class="col-12">
-                    <label :data-cy="dataTestLabel + '-error-text'" class="text-danger text-center col-12 pt-1" style="font-size: 0.9em; white-space: pre-wrap;">{{errorMessages.current}}</label>
-                </div>
-                <label
-                    :style="combinedStyle([$styleStore.operatingPoints.inputTitleFontSize, $styleStore.operatingPoints.commonParameterTextColor])"
-                    :data-cy="dataTestLabel + '-current-title'"
-                    class="mx-0 p-0 mb-4"
-                >
-                    {{'Voltage harmonics'}}
-                </label>
-                <div
-                    v-if="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex] != null && masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex].voltage.harmonics"
-                    v-for="index in masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex].voltage.harmonics.amplitudes.length" :key="index">
+                <div class="oph-card oph-card-voltage">
+                    <div class="oph-card-header">
+                        <i class="fa-solid fa-bolt"></i>
+                        <span>Voltage harmonics</span>
+                    </div>
+                    <div class="oph-card-body">
+                        <div
+                            v-if="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex] != null && masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex].voltage.harmonics"
+                            v-for="index in masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex].voltage.harmonics.amplitudes.length" :key="index">
 
-                    <WaveformInputHarmonic class="col-12 mb-1 text-start"
-                        :dataTestLabel="dataTestLabel + '-Harmonic-' + (index - 1)"
-                        :index="index - 1"
-                        :unit="'V'"
-                        :title="(index - 1) == 0? 'DC' : ordinalSuffixOf(index - 1)"
-                        :forceUpdate="forceUpdateVoltage"
-                        :block="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex].voltage.harmonics.frequencies.length < 3 || (index - 1) == 0"
-                        :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex].voltage.harmonics"
-                        @onFrequencyChanged="onFrequencyChanged('voltage')"
-                        @onAmplitudeChanged="onAmplitudeChanged('voltage')"
-                        @onAddPointBelow="onAddPointBelow(index - 1, 'voltage')"
-                        @onRemovePoint="onRemovePoint(index - 1, 'voltage')"
-                    />
+                            <WaveformInputHarmonic class="col-12 mb-1 text-start"
+                                :dataTestLabel="dataTestLabel + '-Harmonic-' + (index - 1)"
+                                :index="index - 1"
+                                :unit="'V'"
+                                :title="(index - 1) == 0? 'DC' : ordinalSuffixOf(index - 1)"
+                                :forceUpdate="forceUpdateVoltage"
+                                :block="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex].voltage.harmonics.frequencies.length < 3 || (index - 1) == 0"
+                                :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex].voltage.harmonics"
+                                @onFrequencyChanged="onFrequencyChanged('voltage')"
+                                @onAmplitudeChanged="onAmplitudeChanged('voltage')"
+                                @onAddPointBelow="onAddPointBelow(index - 1, 'voltage')"
+                                @onRemovePoint="onRemovePoint(index - 1, 'voltage')"
+                            />
+                        </div>
+                        <div v-if='errorMessages.voltage != ""' class="oph-error">
+                            <i class="fa-solid fa-triangle-exclamation"></i>
+                            <span>{{errorMessages.voltage}}</span>
+                        </div>
+                    </div>
                 </div>
-                <div v-if='errorMessages.voltage != ""' class="col-12">
-                    <label :data-cy="dataTestLabel + '-error-text'" class="text-danger text-center col-12 pt-1" style="font-size: 0.9em; white-space: pre-wrap;">{{errorMessages.voltage}}</label>
+
+                <div class="oph-actions">
+                    <button
+                        :data-cy="dataTestLabel + '-import-button'"
+                        class="oph-btn oph-btn-outline"
+                        @click="$emit('clearMode')">
+                        <i class="fa-solid fa-arrow-left"></i>
+                        <span>Go back to selecting mode</span>
+                    </button>
+                    <button
+                        :data-cy="dataTestLabel + '-switch-to-manual-button'"
+                        class="oph-btn oph-btn-primary"
+                        @click="$emit('switchToManual')">
+                        <i class="fa-solid fa-wave-square"></i>
+                        <span>Switch to Waveform view</span>
+                    </button>
                 </div>
-                <button
-                    :style="$styleStore.operatingPoints.goBackSelectingButton"
-                    :data-cy="dataTestLabel + '-import-button'"
-                    class="btn btn-success fs-5 col-sm-12 col-md-12 mt-3 p-0"
-                    style="max-height: 2em"
-                    @click="$emit('clearMode')">
-                    {{'Go back to selecting mode'}}
-                </button>
-                <button
-                    :style="$styleStore.operatingPoints.goBackSelectingButton"
-                    :data-cy="dataTestLabel + '-switch-to-manual-button'"
-                    class="btn btn-outline-primary fs-5 col-sm-12 col-md-12 mt-2 p-0"
-                    style="max-height: 2em"
-                    @click="$emit('switchToManual')">
-                    {{'Switch to Waveform view'}}
-                </button>
-            </div> 
-            <div v-if="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex] !=null && masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex].current.waveform != null && masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex].current.processed != null && masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex].voltage.waveform != null && masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex].voltage.processed != null" class="col-lg-8 col-md-12 row m-0 p-0 align-items-start" style="max-width: 800px;">
+            </div>
+            <div v-if="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex] != null && (masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex].current.waveform != null || masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex].voltage.waveform != null)" class="col-lg-7 col-md-12 row m-0 p-0 align-items-start" style="max-width: 800px;">
                 <div>
                     <WaveformGraph class=" col-12 py-2"
                         :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex]"
                         :dataTestLabel="dataTestLabel + '-WaveformGraph'"
                         :enableDrag="false"
                     />
-                    <WaveformFourier class="col-12 mt-1" style="max-height: 150px;"
+                    <WaveformFourier class="col-12 mt-1 mb-3" style="max-height: 150px;"
                         :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex]"
                         :updateHarmonics="false"
                         :dataTestLabel="dataTestLabel + '-WaveformFourier'"
                         :harmonicPowerThresholdVoltage="0.05"
                         :harmonicPowerThresholdCurrent="0.05"
+                        :maxHarmonicsToPlot="30"
                     />
 
                     <WaveformSimpleOutput class="col-lg-12 col-md-12 m-0 px-2"
@@ -383,27 +386,199 @@ export default {
                         :dataTestLabel="dataTestLabel + '-WaveformOutput-current'"
                     />
 
-                    <WaveformOutput class="col-lg-6 col-md-6 m-0 px-2"
-                        v-if="$settingsStore.operatingPointSettings.advancedMode"
-                        :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex]"
-                        :dataTestLabel="dataTestLabel + '-WaveformOutput-current'"
-                        :signalDescriptor="'current'"
-                    />
-                    <WaveformOutput class="col-lg-6 col-md-6 m-0 px-2"
-                        v-if="$settingsStore.operatingPointSettings.advancedMode"
-                        :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex]"
-                        :dataTestLabel="dataTestLabel + '-WaveformOutput-voltage'"
-                        :signalDescriptor="'voltage'"
-                    />
+                    <div v-if="$settingsStore.operatingPointSettings.advancedMode" class="row m-0 p-0">
+                        <WaveformOutput class="col-lg-6 col-md-6 col-12 m-0 px-2"
+                            :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex]"
+                            :dataTestLabel="dataTestLabel + '-WaveformOutput-current'"
+                            :signalDescriptor="'current'"
+                        />
+                        <WaveformOutput class="col-lg-6 col-md-6 col-12 m-0 px-2"
+                            :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex]"
+                            :dataTestLabel="dataTestLabel + '-WaveformOutput-voltage'"
+                            :signalDescriptor="'voltage'"
+                        />
+                    </div>
                     <WaveformCombinedOutput class="col-12 m-0 px-2 border-top"
                         v-if="$settingsStore.operatingPointSettings.advancedMode"
                         :dataTestLabel="dataTestLabel + '-WaveformCombinedOutput'"
                         :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex]"
                     />
-                    <!-- <button :data-cy="dataTestLabel + '-reset-button'" class="btn btn-danger fs-6 offset-md-10 col-sm-12 col-md-2  mt-2 p-0" style="max-height: 2em" @click="resetCurrentExcitation"> Reset Point -->
-                    <!-- </button> -->
                 </div>
             </div>
         </div>
     </div>
 </template>
+
+<style scoped>
+.oph-container {
+    width: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+.oph-col {
+    max-width: 460px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    padding-left: 0.25rem;
+    padding-right: 0.25rem;
+}
+
+.oph-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--bs-primary);
+    font-size: 1.05rem;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    padding: 0.2rem 0.2rem 0.4rem 0.2rem;
+}
+
+.oph-title i {
+    filter: drop-shadow(0 0 4px rgba(var(--bs-primary-rgb), 0.5));
+}
+
+.oph-card {
+    background:
+        linear-gradient(180deg,
+            rgba(var(--bs-primary-rgb), 0.06) 0%,
+            rgba(var(--bs-primary-rgb), 0.02) 100%),
+        var(--bs-dark);
+    border: 1px solid rgba(var(--bs-primary-rgb), 0.18);
+    border-left: 3px solid rgba(var(--bs-primary-rgb), 0.7);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+}
+
+.oph-card-current {
+    border-left-color: rgba(177, 138, 234, 0.7);
+}
+
+.oph-card-voltage {
+    border-left-color: rgba(0, 182, 255, 0.7);
+}
+
+.oph-card-header {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.5rem 0.75rem;
+    background: rgba(var(--bs-primary-rgb), 0.08);
+    border-bottom: 1px solid rgba(var(--bs-primary-rgb), 0.12);
+    color: var(--bs-primary);
+    font-weight: 600;
+    font-size: 0.78rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.oph-card-current .oph-card-header {
+    color: #b18aea;
+    background: rgba(177, 138, 234, 0.1);
+    border-bottom-color: rgba(177, 138, 234, 0.18);
+}
+
+.oph-card-current .oph-card-header i {
+    filter: drop-shadow(0 0 4px rgba(177, 138, 234, 0.5));
+}
+
+.oph-card-voltage .oph-card-header {
+    color: #00b6ff;
+    background: rgba(0, 182, 255, 0.1);
+    border-bottom-color: rgba(0, 182, 255, 0.18);
+}
+
+.oph-card-voltage .oph-card-header i {
+    filter: drop-shadow(0 0 4px rgba(0, 182, 255, 0.5));
+}
+
+.oph-card-header i {
+    font-size: 0.85rem;
+    filter: drop-shadow(0 0 4px rgba(var(--bs-primary-rgb), 0.5));
+}
+
+.oph-card-body {
+    padding: 0.6rem 0.7rem 0.7rem 0.7rem;
+    max-height: 28vh;
+    overflow-y: auto;
+}
+
+.oph-card-body :deep(.row) {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+}
+
+.oph-error {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-top: 0.5rem;
+    padding: 0.4rem 0.6rem;
+    background: rgb(var(--bs-danger-rgb) / 0.12);
+    border: 1px solid rgb(var(--bs-danger-rgb) / 0.4);
+    border-radius: 8px;
+    color: var(--bs-danger);
+    font-size: 0.78rem;
+    line-height: 1.3;
+    white-space: pre-wrap;
+}
+
+.oph-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-top: 0.4rem;
+}
+
+button.oph-btn {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45rem;
+    padding: 0.55rem 1rem !important;
+    border-radius: 10px !important;
+    font-size: 0.85rem !important;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    cursor: pointer;
+    transition: filter 0.15s, transform 0.1s, box-shadow 0.2s, background 0.15s;
+    width: 100%;
+    line-height: 1.2;
+    outline: none;
+}
+
+button.oph-btn:hover {
+    filter: brightness(1.15);
+    transform: translateY(-1px);
+}
+
+button.oph-btn-primary {
+    border: 1px solid rgba(var(--bs-primary-rgb), 0.85) !important;
+    background-color: var(--bs-primary) !important;
+    background-image: linear-gradient(135deg,
+        rgba(var(--bs-primary-rgb), 1) 0%,
+        rgba(var(--bs-primary-rgb), 0.8) 100%) !important;
+    color: #ffffff !important;
+    box-shadow:
+        0 0 0 1px rgba(var(--bs-primary-rgb), 0.3),
+        0 2px 8px rgba(var(--bs-primary-rgb), 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.25);
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.25);
+}
+
+button.oph-btn-outline {
+    background: rgba(255, 255, 255, 0.08) !important;
+    border: 1px solid rgba(var(--bs-primary-rgb), 0.55) !important;
+    color: var(--bs-primary) !important;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+}
+
+button.oph-btn-outline:hover {
+    background: rgba(var(--bs-primary-rgb), 0.2) !important;
+    border-color: rgba(var(--bs-primary-rgb), 0.85) !important;
+    color: #ffffff !important;
+}
+</style>

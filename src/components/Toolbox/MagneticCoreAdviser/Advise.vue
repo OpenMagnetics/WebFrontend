@@ -209,24 +209,172 @@ export default {
 
 <template>
     <div class="container">
-        <div class="card p-0 m-0">
-            <div class="card-header row p-0 m-0 mt-2 pb-2">
-                <p class="fs-5 col-10 p-0 px-1 ">{{fixedMagneticName}}</p>
-                <p class="fs-4 col-2 p-0 m-0 text-success">{{masScore}}</p>
-                <!-- <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p> -->
+        <div class="advise-option" :class="{ 'advise-option-selected': selected }">
+            <div class="advise-option-header">
+                <span class="advise-option-title col-10 px-1">{{fixedMagneticName}}</span>
+                <span class="advise-option-score col-2">{{masScore}}</span>
             </div>
-            <canvas :id="'chartSpiderAdvise-' + adviseIndex" style="max-height: 50%"></canvas>
-            <div class="row mx-1">
-                <div class="col-6 p-0 m-0">{{localTexts.coreLosses}}</div>
-                <div class="col-6 p-0 m-0">{{localTexts.coreTemperature}}</div>
-                <div class="col-6 p-0 m-0">{{localTexts.powerDensity}}</div>
-                <div class="col-6 p-0 m-0">{{localTexts.magnetizingInductance}}</div>
-            </div>
-            <div class="card-body">
-                <button :data-cy="dataTestLabel + '-advise-' + adviseIndex + '-details-button'" class="btn btn-primary col-4" data-bs-toggle="offcanvas" data-bs-target="#CoreAdviserDetailOffCanvas" @click="$emit('selectedMas')"> Details </button>
-                <button :data-cy="dataTestLabel + '-advise-' + adviseIndex + '-select-button'" :class="selected? 'btn-success' : 'btn-primary'" class="btn  offset-1 col-4" @click="$emit('selectedMas')">{{selected? 'Selected' : 'Select'}}</button>
+            <div class="advise-option-body">
+                <canvas :id="'chartSpiderAdvise-' + adviseIndex" style="max-height: 50%"></canvas>
+                <div class="row mx-1 advise-option-metrics">
+                    <div class="col-6 p-0 m-0">{{localTexts.coreLosses}}</div>
+                    <div class="col-6 p-0 m-0">{{localTexts.coreTemperature}}</div>
+                    <div class="col-6 p-0 m-0">{{localTexts.powerDensity}}</div>
+                    <div class="col-6 p-0 m-0">{{localTexts.magnetizingInductance}}</div>
+                </div>
+                <div class="row g-2 mt-2">
+                    <div class="col-6">
+                        <button
+                            :data-cy="dataTestLabel + '-advise-' + adviseIndex + '-details-button'"
+                            class="advise-btn advise-btn-outline w-100"
+                            data-bs-toggle="offcanvas"
+                            data-bs-target="#CoreAdviserDetailOffCanvas"
+                            @click="$emit('selectedMas')"
+                        >
+                            Details
+                        </button>
+                    </div>
+                    <div class="col-6">
+                        <button
+                            :data-cy="dataTestLabel + '-advise-' + adviseIndex + '-select-button'"
+                            class="advise-btn w-100"
+                            :class="selected ? 'advise-btn-success' : 'advise-btn-primary'"
+                            @click="$emit('selectedMas')"
+                        >
+                            {{selected ? 'Selected' : 'Select'}}
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </template>
+
+<style scoped>
+.advise-option {
+    display: flex;
+    flex-direction: column;
+    background: linear-gradient(180deg,
+        rgba(var(--bs-dark-rgb), 0.75) 0%,
+        rgba(var(--bs-dark-rgb), 0.55) 100%);
+    border: 1px solid rgba(var(--bs-light-rgb), 0.08);
+    border-left: 3px solid rgba(var(--bs-primary-rgb), 0.8);
+    border-radius: 14px;
+    box-shadow:
+        0 6px 24px rgba(var(--bs-dark-rgb), 0.45),
+        inset 0 1px 0 rgba(var(--bs-light-rgb), 0.04);
+    overflow: hidden;
+    transition: all 0.25s ease;
+}
+
+.advise-option-selected {
+    border-color: rgba(var(--bs-primary-rgb), 0.55);
+    background: linear-gradient(180deg,
+        rgba(var(--bs-primary-rgb), 0.1) 0%,
+        rgba(var(--bs-dark-rgb), 0.55) 100%);
+    box-shadow:
+        0 2px 12px rgba(var(--bs-primary-rgb), 0.2),
+        inset 0 1px 0 rgba(var(--bs-light-rgb), 0.05);
+}
+
+.advise-option-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.6rem 0.9rem;
+    background: rgba(var(--bs-light-rgb), 0.04);
+    border-bottom: 1px solid rgba(var(--bs-light-rgb), 0.08);
+    color: var(--bs-primary);
+    font-weight: 600;
+}
+
+.advise-option-title {
+    color: var(--bs-white);
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.advise-option-score {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.15rem 0.6rem;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    background: rgba(var(--bs-primary-rgb), 0.2);
+    color: var(--bs-primary);
+    border: 1px solid rgba(var(--bs-primary-rgb), 0.45);
+}
+
+.advise-option-body {
+    padding: 0.6rem 0.75rem;
+}
+
+.advise-option-metrics {
+    color: rgba(var(--bs-light-rgb), 0.85);
+    font-size: 0.82rem;
+}
+
+.advise-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+    padding: 0.4rem 0.85rem;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: filter 0.15s, box-shadow 0.2s, transform 0.1s, background 0.15s, color 0.15s;
+    white-space: nowrap;
+}
+
+.advise-btn:hover:not(:disabled) {
+    filter: brightness(1.12);
+    transform: translateY(-1px);
+}
+
+.advise-btn-primary {
+    background: linear-gradient(135deg,
+        color-mix(in srgb, var(--bs-primary) 115%, transparent 0%) 0%,
+        var(--bs-primary) 55%,
+        rgb(var(--bs-primary-rgb) / 0.85) 100%);
+    color: var(--bs-white);
+    border: 1px solid color-mix(in srgb, var(--bs-primary) 70%, var(--bs-white) 30%);
+    box-shadow:
+        0 0 0 1px rgb(var(--bs-primary-rgb) / 0.35),
+        0 2px 8px rgb(var(--bs-primary-rgb) / 0.4),
+        inset 0 1px 0 rgba(var(--bs-light-rgb), 0.3);
+    text-shadow: 0 1px 1px rgba(var(--bs-dark-rgb), 0.25);
+}
+
+.advise-btn-success {
+    background: linear-gradient(135deg,
+        color-mix(in srgb, var(--bs-success) 115%, transparent 0%) 0%,
+        var(--bs-success) 55%,
+        rgb(var(--bs-success-rgb) / 0.85) 100%);
+    color: var(--bs-white);
+    border: 1px solid color-mix(in srgb, var(--bs-success) 70%, var(--bs-white) 30%);
+    box-shadow:
+        0 0 0 1px rgb(var(--bs-success-rgb) / 0.35),
+        0 2px 8px rgb(var(--bs-success-rgb) / 0.4),
+        inset 0 1px 0 rgba(var(--bs-light-rgb), 0.3);
+    text-shadow: 0 1px 1px rgba(var(--bs-dark-rgb), 0.25);
+}
+
+.advise-btn-outline {
+    background: rgba(var(--bs-light-rgb), 0.08);
+    border: 1px solid rgba(var(--bs-light-rgb), 0.22);
+    color: var(--bs-light);
+}
+
+.advise-btn-outline:hover:not(:disabled) {
+    background: rgba(var(--bs-light-rgb), 0.14);
+    border-color: rgba(var(--bs-light-rgb), 0.35);
+    color: var(--bs-white);
+}
+</style>
 

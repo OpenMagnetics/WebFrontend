@@ -225,85 +225,81 @@ export default {
         <div class="row g-3">
             <!-- Sidebar Panel -->
             <aside class="col-12 col-lg-3">
-                <div class="card bg-dark border-0 shadow-lg h-100">
-                    <div class="card-header border-bottom border-secondary px-4 py-3">
-                        <div class="d-flex align-items-center">
-                            <i class="fa-solid fa-sliders text-primary me-2 fs-5"></i>
-                            <h5 class="card-title mb-0 text-white">Optimization Weights</h5>
-                        </div>
+                <div class="optim-panel h-100">
+                    <div class="optim-header">
+                        <i class="fa-solid fa-sliders"></i>
+                        <span>Optimization Weights</span>
                     </div>
-                    <div class="card-body px-4 py-4">
+                    <div class="optim-body">
                         <!-- Weight sliders -->
-                        <div v-for="(value, key) in $settingsStore.magneticAdviserSettings.weights" :key="key" 
-                             class="setting-item d-flex flex-column py-3 border-bottom border-secondary">
-                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                <div>
-                                    <h6 class="text-white mb-0">{{ titledFilters[key] }}</h6>
-                                </div>
-                                <span class="badge bg-primary text-black">{{ removeTrailingZeroes($settingsStore.magneticAdviserSettings.weights[key]) }}%</span>
+                        <div v-for="(value, key) in $settingsStore.magneticAdviserSettings.weights" :key="key"
+                             class="optim-item">
+                            <div class="optim-item-header">
+                                <span class="optim-item-title">{{ titledFilters[key] }}</span>
+                                <span class="optim-item-badge">{{ removeTrailingZeroes($settingsStore.magneticAdviserSettings.weights[key]) }}%</span>
                             </div>
-                            <Slider 
-                                v-model="$settingsStore.magneticAdviserSettings.weights[key]" 
-                                :disabled="loading" 
-                                class="slider-primary" 
-                                :height="6" 
-                                :min="10" 
-                                :max="80" 
-                                :step="10" 
-                                :tooltips="false" 
+                            <Slider
+                                v-model="$settingsStore.magneticAdviserSettings.weights[key]"
+                                :disabled="loading"
+                                class="slider-primary"
+                                :height="6"
+                                :min="10"
+                                :max="80"
+                                :step="10"
+                                :tooltips="false"
                                 @change="changedSliderValue(key, $event)"
                             />
                         </div>
 
                         <!-- Max Results -->
-                        <div class="setting-item d-flex flex-column py-3">
-                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                <div>
-                                    <h6 class="text-white mb-0">Max Results</h6>
-                                    <small class="text-secondary">Number of designs to show</small>
+                        <div class="optim-item optim-item-last">
+                            <div class="optim-item-header">
+                                <div class="d-flex flex-column">
+                                    <span class="optim-item-title">Max Results</span>
+                                    <small class="optim-item-sub">Number of designs to show</small>
                                 </div>
-                                <span class="badge bg-primary text-black">{{ $settingsStore.magneticAdviserSettings.maximumNumberResults }}</span>
+                                <span class="optim-item-badge">{{ $settingsStore.magneticAdviserSettings.maximumNumberResults }}</span>
                             </div>
-                            <Slider 
-                                v-model="$settingsStore.magneticAdviserSettings.maximumNumberResults" 
-                                :disabled="loading" 
-                                class="slider-primary" 
-                                :height="6" 
-                                :min="2" 
-                                :max="20" 
-                                :step="1" 
+                            <Slider
+                                v-model="$settingsStore.magneticAdviserSettings.maximumNumberResults"
+                                :disabled="loading"
+                                class="slider-primary"
+                                :height="6"
+                                :min="2"
+                                :max="20"
+                                :step="1"
                                 :tooltips="false"
                             />
                         </div>
                     </div>
-                    <div class="card-footer border-top border-secondary px-4 py-3">
-                        <!-- Action buttons -->
-                        <div class="d-grid gap-2">
-                            <button 
-                                :disabled="loading" 
-                                :data-cy="dataTestLabel + '-calculate-mas-advises-button'" 
-                                class="btn btn-primary" 
-                                @click="calculateAdvises"
-                            >
-                                <i class="fa-solid fa-rocket me-2"></i>Get Advised Magnetics
-                            </button>
-                            <button 
-                                :disabled="loading || !dataUptoDate || adviseCacheStore.currentMasAdvises == null || adviseCacheStore.currentMasAdvises.length == 0" 
-                                :data-cy="dataTestLabel + '-load-and-go-to-builder-button'" 
-                                class="btn btn-success" 
-                                @click="loadAndGoToBuilder"
-                            >
-                                <i class="fa-solid fa-check me-2"></i>Load Selected
-                            </button>
-                            <button 
-                                :disabled="loading" 
-                                :data-cy="dataTestLabel + '-go-back-to-builder-button'" 
-                                class="btn btn-outline-danger" 
-                                @click="goBackToBuilder"
-                            >
-                                <i class="fa-solid fa-arrow-left me-2"></i>Go Back
-                            </button>
-                        </div>
+                    <div class="optim-footer">
+                        <button
+                            :disabled="loading"
+                            :data-cy="dataTestLabel + '-calculate-mas-advises-button'"
+                            class="optim-btn optim-btn-primary"
+                            @click="calculateAdvises"
+                        >
+                            <i class="fa-solid fa-rocket"></i>
+                            <span>Get Advised Magnetics</span>
+                        </button>
+                        <button
+                            :disabled="loading || !dataUptoDate || adviseCacheStore.currentMasAdvises == null || adviseCacheStore.currentMasAdvises.length == 0"
+                            :data-cy="dataTestLabel + '-load-and-go-to-builder-button'"
+                            class="optim-btn optim-btn-success"
+                            @click="loadAndGoToBuilder"
+                        >
+                            <i class="fa-solid fa-check"></i>
+                            <span>Load Selected</span>
+                        </button>
+                        <button
+                            :disabled="loading"
+                            :data-cy="dataTestLabel + '-go-back-to-builder-button'"
+                            class="optim-btn optim-btn-outline-danger"
+                            @click="goBackToBuilder"
+                        >
+                            <i class="fa-solid fa-arrow-left"></i>
+                            <span>Go Back</span>
+                        </button>
                     </div>
                 </div>
             </aside>
@@ -323,7 +319,7 @@ export default {
                             v-for="(advise, adviseIndex) in adviseCacheStore.currentMasAdvises" 
                             v-if="adviseCacheStore.currentMasAdvises != null"
                             :key="adviseIndex"
-                            class="col-12 col-md-6"
+                            class="col-12 col-md-6 col-xl-4"
                             :class="{ 'opacity-25': !dataUptoDate }"
                         >
                             <Advise
@@ -371,6 +367,172 @@ export default {
     padding-left: 1rem;
     padding-right: 1rem;
     border-radius: 0.5rem;
+}
+
+/* ============ Optimization Weights panel ============ */
+/* Theme shim: --bs-light is actually #2a2a2a (dark) and --bs-white is #d4d4d4 in this app,
+   so semantic "light text" tokens must be built from literal rgb white. */
+.optim-panel {
+    --op-panel-1: color-mix(in srgb, var(--bs-light) 92%, #ffffff 8%);
+    --op-panel-2: var(--bs-light);
+    --op-border: rgba(255, 255, 255, 0.1);
+    --op-border-strong: rgba(255, 255, 255, 0.2);
+    --op-text: #f2f2f2;
+    --op-text-muted: rgba(242, 242, 242, 0.7);
+
+    display: flex;
+    flex-direction: column;
+    background: linear-gradient(180deg, var(--op-panel-1) 0%, var(--op-panel-2) 100%);
+    border: 1px solid var(--op-border);
+    border-left: 3px solid rgba(var(--bs-primary-rgb), 0.8);
+    border-radius: 14px;
+    box-shadow:
+        0 6px 20px rgba(0, 0, 0, 0.5),
+        inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    overflow: hidden;
+}
+
+.optim-header {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    padding: 0.75rem 1rem;
+    background: rgba(255, 255, 255, 0.04);
+    border-bottom: 1px solid var(--op-border);
+    color: var(--bs-primary);
+    font-weight: 600;
+    font-size: 0.95rem;
+    letter-spacing: 0.01em;
+}
+
+.optim-header i {
+    font-size: 1rem;
+    filter: drop-shadow(0 0 4px rgba(var(--bs-primary-rgb), 0.45));
+}
+
+.optim-body {
+    padding: 0.35rem 0.95rem 0.5rem 0.95rem;
+    flex: 1;
+}
+
+.optim-item {
+    display: flex;
+    flex-direction: column;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--op-border);
+}
+
+.optim-item.optim-item-last {
+    border-bottom: 0;
+}
+
+.optim-item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.55rem;
+    gap: 0.5rem;
+}
+
+.optim-item-title {
+    color: var(--op-text);
+    font-size: 0.88rem;
+    font-weight: 600;
+    line-height: 1.2;
+}
+
+.optim-item-sub {
+    color: var(--op-text-muted);
+    font-size: 0.7rem;
+    line-height: 1.1;
+}
+
+.optim-item-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.2rem 0.55rem;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    background: rgba(var(--bs-primary-rgb), 0.22);
+    color: var(--bs-primary);
+    border: 1px solid rgba(var(--bs-primary-rgb), 0.5);
+}
+
+.optim-footer {
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+    padding: 0.85rem 0.95rem 0.95rem 0.95rem;
+    border-top: 1px solid var(--op-border);
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.optim-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    width: 100%;
+    padding: 0.5rem 0.85rem;
+    border-radius: 10px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: filter 0.15s, box-shadow 0.2s, transform 0.1s, background 0.15s, color 0.15s;
+    white-space: normal;
+    line-height: 1.2;
+}
+
+.optim-btn:hover:not(:disabled) {
+    filter: brightness(1.15);
+    transform: translateY(-1px);
+}
+
+.optim-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.optim-btn-primary {
+    background: linear-gradient(135deg,
+        color-mix(in srgb, var(--bs-primary) 115%, transparent 0%) 0%,
+        var(--bs-primary) 55%,
+        rgb(var(--bs-primary-rgb) / 0.85) 100%);
+    color: #ffffff;
+    border: 1px solid color-mix(in srgb, var(--bs-primary) 70%, #ffffff 30%);
+    box-shadow:
+        0 0 0 1px rgb(var(--bs-primary-rgb) / 0.35),
+        0 2px 8px rgb(var(--bs-primary-rgb) / 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.25);
+}
+
+.optim-btn-success {
+    background: linear-gradient(135deg,
+        color-mix(in srgb, var(--bs-success) 115%, transparent 0%) 0%,
+        var(--bs-success) 55%,
+        rgb(var(--bs-success-rgb) / 0.85) 100%);
+    color: #ffffff;
+    border: 1px solid color-mix(in srgb, var(--bs-success) 70%, #ffffff 30%);
+    box-shadow:
+        0 0 0 1px rgb(var(--bs-success-rgb) / 0.35),
+        0 2px 8px rgb(var(--bs-success-rgb) / 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.25);
+}
+
+.optim-btn-outline-danger {
+    background: rgb(var(--bs-danger-rgb) / 0.15);
+    border: 1px solid rgb(var(--bs-danger-rgb) / 0.55);
+    color: var(--bs-danger);
+}
+
+.optim-btn-outline-danger:hover:not(:disabled) {
+    background: rgb(var(--bs-danger-rgb) / 0.25);
+    border-color: rgb(var(--bs-danger-rgb) / 0.75);
 }
 
 /* Transitions */

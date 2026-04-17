@@ -157,7 +157,7 @@ export default {
 <template>
     <div class="modal fade" :id="modalName" tabindex="-1" aria-labelledby="settingsModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-md modal-dialog-centered settings">
-            <div class="modal-content bg-dark border-0 shadow-lg">
+            <div class="modal-content border-0 shadow-lg settings-modal-bg">
                 <div class="modal-header border-bottom border-secondary px-4 py-3">
                     <div class="d-flex align-items-center">
                         <i class="fa-solid fa-gear text-primary me-2 fs-5"></i>
@@ -575,5 +575,9 @@ export default {
     padding-left: 0.5rem;
     padding-right: 0.5rem;
     border-radius: 0.375rem;
+}
+
+.settings-modal-bg {
+    background: var(--bs-dark);
 }
 </style>

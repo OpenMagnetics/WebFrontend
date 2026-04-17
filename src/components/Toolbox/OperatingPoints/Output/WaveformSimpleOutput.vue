@@ -177,10 +177,13 @@ export default {
 </script>
 
 <template>
-    <div class="container-flex">
-        <div class="row mt-3">
-            <DimensionReadOnly 
-                class="offset-1 col-11"
+    <div class="wso-card">
+        <div class="wso-header">
+            <i class="fa-solid fa-gauge-high"></i>
+            <span>Quick stats</span>
+        </div>
+        <div class="wso-body">
+            <DimensionReadOnly
                 :name="'rms'"
                 :replaceTitle="'Current RMS:'"
                 :unit="'A'"
@@ -197,8 +200,7 @@ export default {
                 :valueBgColor="$styleStore.operatingPoints.inputValueBgColor"
                 :textColor="$styleStore.operatingPoints.inputTextColor"
             />
-            <DimensionReadOnly 
-                class="offset-1 col-11"
+            <DimensionReadOnly
                 :name="'rms'"
                 :replaceTitle="'Voltage RMS:'"
                 :unit="'V'"
@@ -215,8 +217,7 @@ export default {
                 :valueBgColor="$styleStore.operatingPoints.inputValueBgColor"
                 :textColor="$styleStore.operatingPoints.inputTextColor"
             />
-            <DimensionReadOnly 
-                class="offset-1 col-11"
+            <DimensionReadOnly
                 :name="'rms'"
                 :replaceTitle="'Power:'"
                 :unit="'W'"
@@ -234,4 +235,60 @@ export default {
         </div>
     </div>
 </template>
+
+<style scoped>
+.wso-card {
+    background:
+        linear-gradient(180deg,
+            rgba(var(--bs-primary-rgb), 0.06) 0%,
+            rgba(var(--bs-primary-rgb), 0.02) 100%),
+        var(--bs-dark);
+    border: 1px solid rgba(var(--bs-primary-rgb), 0.18);
+    border-left: 3px solid rgba(var(--bs-primary-rgb), 0.7);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+    margin: 0.4rem 0;
+}
+
+.wso-header {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.4rem 0.7rem;
+    background: rgba(var(--bs-primary-rgb), 0.1);
+    border-bottom: 1px solid rgba(var(--bs-primary-rgb), 0.18);
+    color: var(--bs-primary);
+    font-weight: 600;
+    font-size: 0.72rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.wso-header i {
+    font-size: 0.85rem;
+    filter: drop-shadow(0 0 4px rgba(var(--bs-primary-rgb), 0.5));
+}
+
+.wso-body {
+    padding: 0.5rem 0.7rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+}
+
+.wso-body :deep(> *) {
+    padding: 0.3rem 0.4rem !important;
+    border-radius: 6px;
+    transition: background 0.15s;
+}
+
+.wso-body :deep(> * + *) {
+    border-top: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.wso-body :deep(> *:hover) {
+    background: rgba(255, 255, 255, 0.04);
+}
+</style>
 
