@@ -43,20 +43,26 @@ import Footer from '../components/Footer.vue'
                 <strong>In short: this is a calculator, not a certified design service. Verify everything.</strong>
             </p>
 
-            <h2 style="font-weight: normal;">3. Anonymized Design Data &amp; AI Training</h2>
+            <h2 style="font-weight: normal;">3. Anonymized Design Data &amp; Open Dataset</h2>
             <p>
                 When you use the online design tools, the technical parameters you enter
                 (core geometry, winding specifications, operating conditions, etc.) are
                 <strong>anonymized</strong> — all links to your identity are stripped before storage —
-                and contributed to a publicly available dataset used for magnetics research and
-                AI model training.
+                and contributed to a <strong>publicly available, open-source dataset</strong> for
+                the power electronics community.
+            </p>
+            <p>
+                This dataset is free for anyone to download and use — researchers, engineers,
+                universities, and open-source projects — with the shared goal of advancing
+                magnetics design in power electronics.
+                <strong>OpenMagnetics does not itself train AI models on this data</strong> and makes
+                no commercial use of it. It is simply a community resource, like the platform itself.
             </p>
             <p>
                 This is done on the basis of <strong>legitimate interest</strong> (GDPR Art. 6(1)(f)):
-                the dataset is genuinely anonymous and cannot be reversed to identify you;
-                it is already publicly available; and every user of OpenMagnetics benefits from
-                the improved models it enables. Because the data is irreversibly anonymous it is
-                not subject to erasure requests.
+                the data is irreversibly anonymous and cannot be traced back to you; it is already
+                publicly available; and the broader engineering community benefits from it.
+                Because the data is irreversibly anonymous it is not subject to erasure requests.
             </p>
             <p>
                 If you prefer that your design data remain entirely private, OpenMagnetics is
