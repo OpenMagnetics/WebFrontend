@@ -47,21 +47,22 @@ import Footer from '../components/Footer.vue'
             <p>
                 When you use the online design tools, the technical parameters you enter
                 (core geometry, winding specifications, operating conditions, etc.) are
-                <strong>anonymized</strong> — all links to your identity are stripped — and
-                contributed to a publicly available dataset used for magnetics research and
+                <strong>anonymized</strong> — all links to your identity are stripped before storage —
+                and contributed to a publicly available dataset used for magnetics research and
                 AI model training.
             </p>
             <p>
-                This anonymization is irreversible: the contributed data cannot be traced back to you
-                and therefore cannot be erased upon request. If you prefer that your design data
-                remain entirely private, you can self-host OpenMagnetics — it is fully open source
-                and your data will never leave your own infrastructure. Contact us at
-                <a href="mailto:openmagnetics@protonmail.com">openmagnetics@protonmail.com</a> if you
-                need help setting it up.
+                This is done on the basis of <strong>legitimate interest</strong> (GDPR Art. 6(1)(f)):
+                the dataset is genuinely anonymous and cannot be reversed to identify you;
+                it is already publicly available; and every user of OpenMagnetics benefits from
+                the improved models it enables. Because the data is irreversibly anonymous it is
+                not subject to erasure requests.
             </p>
             <p>
-                By using the online tools you explicitly acknowledge and accept this anonymized
-                data collection.
+                If you prefer that your design data remain entirely private, OpenMagnetics is
+                fully open source and self-hostable — your data will never leave your own
+                infrastructure. Contact <a href="mailto:openmagnetics@protonmail.com">openmagnetics@protonmail.com</a>
+                if you need help setting it up.
             </p>
 
             <h2 style="font-weight: normal;">4. Intellectual Property</h2>
@@ -125,10 +126,9 @@ import Footer from '../components/Footer.vue'
 
             <h2 style="font-weight: normal;">10. Governing Law</h2>
             <p>
-                These Terms are governed by the laws of the European Union, in particular the
-                applicable regulations on digital services and data protection (GDPR).
-                Any dispute shall be subject to the jurisdiction of the courts of the operator's
-                country of residence.
+                These Terms are governed by the laws of Spain and, where applicable, the laws of
+                the European Union (including GDPR). Any dispute shall be subject to the exclusive
+                jurisdiction of the courts of Spain.
             </p>
 
             <h2 style="font-weight: normal;">11. Contact</h2>

@@ -22,7 +22,7 @@ import Footer from '../components/Footer.vue'
             <p><strong>The short version:</strong> We do not sell your personal data. When you use our design tools, the technical parameters you enter (e.g., core shapes, winding configurations, operating conditions) are anonymized and added to a public database to advance magnetics research and AI training. No personal information is included. If you prefer to keep your design data fully private, you can self-host OpenMagnetics — it is open source. Contact us at <a href="mailto:openmagnetics@protonmail.com">openmagnetics@protonmail.com</a> if you need help setting it up.</p>
 
             <h2 style="font-weight: normal;">1. Controller</h2>
-            <p>OpenMagnetics (individual developer, European Union)<br>
+            <p>OpenMagnetics (individual developer, Spain)<br>
             E-mail: <a href="mailto:openmagnetics@protonmail.com">openmagnetics@protonmail.com</a></p>
 
             <h2 style="font-weight: normal;">2. What Data We Collect</h2>
@@ -39,7 +39,7 @@ import Footer from '../components/Footer.vue'
             </ul>
 
             <h2 style="font-weight: normal;">4. Anonymized Design Data &amp; AI Training</h2>
-            <p>Technical design data you enter is anonymized and contributed to a public database. This data is used to train AI models for magnetics design. The training data is publicly accessible. No personal information is ever included in this dataset. By using our online tools, you agree to this anonymized data collection. If you do not agree, you may self-host the open-source version of OpenMagnetics and your data will remain entirely on your own infrastructure.</p>
+            <p>Technical design data you enter is anonymized — all identity links are stripped — and contributed to a publicly available database used for magnetics research and AI model training. No personal information is ever included. This processing is carried out on the basis of <strong>legitimate interest</strong> (GDPR Art. 6(1)(f)): the data is irreversibly anonymous, publicly available, and improves the tool for all users. If you prefer your design data to remain entirely private, you can self-host the open-source version of OpenMagnetics.</p>
 
             <h2 style="font-weight: normal;">5. Cookies</h2>
             <p>We use cookies for essential website functionality and analytics. A consent banner is shown on your first visit, and analytics cookies (Google Analytics, Hotjar) are only loaded after you accept. You can change your choice at any time via the "Cookie preferences" link in the footer. For full details, see our <a href="/cookie_policy">Cookie Policy</a>.</p>
