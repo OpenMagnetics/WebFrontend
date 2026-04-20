@@ -5,6 +5,7 @@ import { toTitleCase, removeTrailingZeroes, formatUnit, formatDimension, formatT
          formatPower, formatResistance, deepCopy, downloadBase64asPDF, clean, download } from '/WebSharedComponents/assets/js/utils.js'
 import Magnetic2DVisualizer, { PLOT_MODES } from '/WebSharedComponents/Common/Magnetic2DVisualizer.vue'
 import { waitForMkf } from '/WebSharedComponents/assets/js/mkfRuntime'
+import { initMvbWorker, buildMagneticSTEP } from '/WebSharedComponents/assets/js/mvbRuntime.js'
 
 </script>
 
@@ -60,40 +61,26 @@ export default {
             setTimeout(() => this.masExported = false, 2000);
         },
         async exportCore3D(format) {
+            if (format !== 'STP') {
+                console.warn('[Finalizer] Only STP export is supported via WASM (OBJ not yet implemented)');
+                return;
+            }
             try {
-                var url;
-                if (format == "STP") {
-                    url = import.meta.env.VITE_API_ENDPOINT + '/core_compute_core_3d_model_stp';
+                await initMvbWorker();
+                const coreAux = deepCopy(this.masStore.mas.magnetic.core);
+                coreAux.geometricalDescription = null;
+                coreAux.processedDescription = null;
+                if (coreAux.functionalDescription?.shape?.familySubtype == null) {
+                    coreAux.functionalDescription.shape.familySubtype = '1';
                 }
-                else if (format == "OBJ") {
-                    url = import.meta.env.VITE_API_ENDPOINT + '/core_compute_core_3d_model_obj';
-                }
-                if (this.masStore.mas.magnetic.core.functionalDescription.shape.familySubtype == null) {
-                    this.masStore.mas.magnetic.core.functionalDescription.shape.familySubtype = "1";
-                }
-
-                const aux = deepCopy( this.masStore.mas.magnetic.core);
-                aux['geometricalDescription'] = null;
-                aux['processedDescription'] = null;
-                var core = await this.taskQueueStore.calculateCoreData(aux, false);
-
-
-                this.$axios.post(url, core)
-                .then(response => {
-                    if (format == "STP") {
-                        download(response.data, this.masStore.mas.magnetic.core.name + ".stp", "text/plain");
-                    }
-                    else if (format == "OBJ") {
-                        download(response.data, this.masStore.mas.magnetic.core.name + ".obj", "text/plain");
-                    }
-                    this.Core3DExported = true;
-                    setTimeout(() => this.Core3DExported = false, 2000);
-                })
-                .catch(error => {
-                    console.error(error.data)
-                });
+                const magnetic = { core: coreAux };
+                const buf = await buildMagneticSTEP(magnetic, { includeBobbin: true });
+                const name = this.masStore.mas.magnetic.core.name ?? 'core';
+                download(buf, name + '.stp', 'binary/octet-stream; charset=utf-8');
+                this.Core3DExported = true;
+                setTimeout(() => this.Core3DExported = false, 2000);
             } catch (error) {
-                console.error(error);
+                console.error('[Finalizer exportCore3D]', error);
             }
         },
         exportMASWithExcitations() {
