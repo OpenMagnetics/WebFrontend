@@ -1110,22 +1110,27 @@ export const useTaskQueueStore = defineStore('taskQueue', {
             console.log('[generateSpiceCode] Topology:', topology);
             console.log('[generateSpiceCode] MKF available functions:', Object.keys(mkf).filter(k => k.includes('generate')).sort());
 
-            // Map topology to WASM function name
+            // Map topology → WASM function. Keys MUST match the strings
+            // returned by each wizard's getTopology() exactly, otherwise the
+            // lookup silently falls through to "not available" for the user.
+            // Historically these keys were short ("Flyback", "Buck") while
+            // wizards returned "Flyback Converter" / "Buck Converter" — the
+            // button was broken for every non-CMC/DAB/LLC wizard.
             const topologyMap = {
-                'Flyback': 'generate_flyback_ngspice_circuit',
-                'Buck': 'generate_buck_ngspice_circuit',
-                'Boost': 'generate_boost_ngspice_circuit',
-                'Push-Pull': 'generate_push_pull_ngspice_circuit',
-                'Single-Switch Forward': 'generate_forward_ngspice_circuit',
-                'Two-Switch Forward': 'generate_two_switch_forward_ngspice_circuit',
-                'Active Clamp Forward': 'generate_active_clamp_forward_ngspice_circuit',
-                'Isolated Buck': 'generate_isolated_buck_ngspice_circuit',
-                'Isolated Buck Boost': 'generate_isolated_buck_boost_ngspice_circuit',
-                'LLC Resonant Converter': 'generate_llc_ngspice_circuit',
-                // 'CLLC': 'generate_cllc_ngspice_circuit',  // Different signature - requires special handling
-                'Dual Active Bridge Converter': 'generate_dab_ngspice_circuit',
-                'PSFB': 'generate_psfb_ngspice_circuit',
-                'CommonModeChoke': 'generate_cmc_ngspice_circuit',
+                'Flyback Converter':                 'generate_flyback_ngspice_circuit',
+                'Buck Converter':                    'generate_buck_ngspice_circuit',
+                'Boost Converter':                   'generate_boost_ngspice_circuit',
+                'Push-Pull Converter':               'generate_push_pull_ngspice_circuit',
+                'Single Switch Forward Converter':   'generate_forward_ngspice_circuit',
+                'Two Switch Forward Converter':      'generate_two_switch_forward_ngspice_circuit',
+                'Active Clamp Forward Converter':    'generate_active_clamp_forward_ngspice_circuit',
+                'Isolated Buck Converter':           'generate_isolated_buck_ngspice_circuit',
+                'Isolated Buck Boost Converter':     'generate_isolated_buck_boost_ngspice_circuit',
+                'LLC Resonant Converter':            'generate_llc_ngspice_circuit',
+                // CLLC uses a different WASM signature — handled in its own path.
+                'Dual Active Bridge Converter':      'generate_dab_ngspice_circuit',
+                'Phase-Shifted Full-Bridge Converter': 'generate_psfb_ngspice_circuit',
+                'CommonModeChoke':                   'generate_cmc_ngspice_circuit',
             };
 
             const wasmFunction = topologyMap[topology];

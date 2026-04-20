@@ -74,7 +74,7 @@ export default {
         canContinue() {
             var allSet = true;
 
-            if (this.$stateStore.hasCurrentApplicationMirroredWindings()) {
+            if (this.masStore.hasMirroredWindings) {
                 for (var operatingPointIndex = 0; operatingPointIndex < this.masStore.mas.inputs.operatingPoints.length; operatingPointIndex++) {
                     for (var windingIndex = 0; windingIndex < this.masStore.mas.magnetic.coil.functionalDescription.length; windingIndex++) {
                         this.masStore.mas.inputs.operatingPoints[operatingPointIndex].excitationsPerWinding[windingIndex] = this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex];
@@ -157,7 +157,7 @@ export default {
             if (!this.blockingRebounds) {
                 this.blockingRebounds = true;
 
-                if (this.$stateStore.hasCurrentApplicationMirroredWindings()) {
+                if (this.masStore.hasMirroredWindings) {
                     this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding.forEach((excitation, index) => {
                         if (index != this.currentWindingIndex) {
                             this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[index] = this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex];
@@ -342,12 +342,12 @@ export default {
                             :textColor="$styleStore.operatingPoints.inputTextColor"
                         />
                         <div
-                            v-if="$stateStore.hasCurrentApplicationMirroredWindings()"
+                            v-if="masStore.hasMirroredWindings"
                             class="col-12 row m-0 p-0 py-1"
                             >
                         </div>
                         <div
-                            v-if="!$stateStore.hasCurrentApplicationMirroredWindings() && currentOperatingPointIndex == operatingPointIndex"
+                            v-if="!masStore.hasMirroredWindings && currentOperatingPointIndex == operatingPointIndex"
                             class="col-12 row m-0 p-0 py-1 border-top"
                             v-for="(winding, windingIndex) in masStore.mas.magnetic.coil.functionalDescription"
                             :key="'winding-' + windingIndex"

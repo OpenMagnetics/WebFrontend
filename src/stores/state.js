@@ -312,10 +312,6 @@ export const useStateStore = defineStore("state", () => {
         return this.selectedWizard;
     }
 
-    function hasCurrentApplicationMirroredWindings() {
-        return this.selectedApplication == SupportedApplications.CommonModeChoke || this.selectedApplication == SupportedApplications.CommonModeChokeCatalog;
-    }
-
     function selectTool(tool) {
         this.selectedTool = tool;
     }
@@ -483,7 +479,6 @@ export const useStateStore = defineStore("state", () => {
         selectApplication,
         selectedApplication,
         getCurrentApplication,
-        hasCurrentApplicationMirroredWindings,
         SupportedApplications,
         updatedSignals,
         resetMagneticTool,

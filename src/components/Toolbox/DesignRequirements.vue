@@ -296,7 +296,7 @@ export default {
 
                 <ArrayDimensionWithTolerance class="border-bottom py-2"
                     :style = "$styleStore.designRequirements.inputBorderColor"
-                    v-if="!$stateStore.hasCurrentApplicationMirroredWindings() && masStore.mas.inputs.designRequirements.turnsRatios != null && masStore.mas.inputs.designRequirements.turnsRatios.length > 0"
+                    v-if="!masStore.hasMirroredWindings && masStore.mas.inputs.designRequirements.turnsRatios != null && masStore.mas.inputs.designRequirements.turnsRatios.length > 0"
                     :name="'turnsRatios'"
                     :dataTestLabel="dataTestLabel + '-TurnsRatios'"
                     :defaultField="'nominal'"
@@ -312,7 +312,7 @@ export default {
                     @hasError="hasError"
                 />
                 <ElementFromListRadio class="border-bottom py-2 ps-4"
-                    v-if="!$stateStore.hasCurrentApplicationMirroredWindings() && masStore.mas.inputs.designRequirements.wiringTechnology != null"
+                    v-if="!masStore.hasMirroredWindings && masStore.mas.inputs.designRequirements.wiringTechnology != null"
                     :name="'wiringTechnology'"
                     :dataTestLabel="dataTestLabel + '-WiringTechnology'"
                     :options="wiringTechnologyOptions"
@@ -479,6 +479,7 @@ export default {
                     :name="'topology'"
                     :dataTestLabel="dataTestLabel + '-Topology'"
                     :options="Object.values(Topologies)"
+                    titleSameRow="true"
                     v-model="masStore.mas.inputs.designRequirements"
                     :valueFontSize="$styleStore.designRequirements.inputFontSize"
                     :labelFontSize="$styleStore.designRequirements.inputTitleFontSize"

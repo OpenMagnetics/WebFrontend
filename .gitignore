@@ -43,3 +43,5 @@ AGENTS.md
 
 # Screenshot artifacts (Playwright / manual captures)
 *.png
+# Playwright global-setup storage state
+tests/.auth/

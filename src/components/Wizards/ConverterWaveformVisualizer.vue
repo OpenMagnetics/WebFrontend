@@ -217,7 +217,7 @@ export default {
                         :title="getTitleForPair(opIndex, pairIndex)"
                         :titleFontSize="14"
                         :axisLabelFontSize="10"
-                        :chartPaddings="{top: 35, left: 45, right: 45, bottom: 25}"
+                        :chartPaddings="{top: 50, left: 45, right: 45, bottom: 25}"
                         :bgColor="bgColor"
                         :lineColor="$styleStore?.theme?.primary || '#b18aea'"
                         :textColor="textColor"

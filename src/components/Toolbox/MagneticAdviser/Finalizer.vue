@@ -4,6 +4,7 @@ import { useTaskQueueStore } from '../../../stores/taskQueue'
 import { toTitleCase, removeTrailingZeroes, formatUnit, formatDimension, formatTemperature, formatInductance,
          formatPower, formatResistance, deepCopy, downloadBase64asPDF, clean, download } from '/WebSharedComponents/assets/js/utils.js'
 import Magnetic2DVisualizer, { PLOT_MODES } from '/WebSharedComponents/Common/Magnetic2DVisualizer.vue'
+import { waitForMkf } from '/WebSharedComponents/assets/js/mkfRuntime'
 
 </script>
 
@@ -104,33 +105,45 @@ export default {
             this.masExported = true
             setTimeout(() => this.masExported = false, 2000);
         },
-        exportMagneticSectionPlot() {
-            const url = import.meta.env.VITE_API_ENDPOINT + '/plot_core'
-
-            this.$axios.post(url, {magnetic: this.masStore.mas.magnetic, operatingPoint: this.masStore.mas.inputs.operatingPoints[0]})
-            .then(response => {
-                download(response.data, this.masStore.mas.magnetic.manufacturerInfo.reference + "_Magnetic_Section.svg", "image/svg+xml");
-                this.MagneticSectionPlotExported = true
+        async exportMagneticSectionPlot() {
+            try {
+                const mkf = await waitForMkf();
+                await mkf.ready;
+                const svg = await mkf.plot_turns(JSON.stringify(this.masStore.mas.magnetic));
+                if (typeof svg === 'string' && svg.startsWith('Exception')) throw new Error(svg);
+                download(svg, this.masStore.mas.magnetic.manufacturerInfo.reference + "_Magnetic_Section.svg", "image/svg+xml");
+                this.MagneticSectionPlotExported = true;
                 setTimeout(() => this.MagneticSectionPlotExported = false, 2000);
-            })
-            .catch(error => {
-                console.error("Error plotting magnetic section")
-                console.error(error)
-            });
+            } catch (error) {
+                console.error("Error plotting magnetic section");
+                console.error(error);
+            }
         },
-        exportMagneticSectionAndFieldPlot() {
-            const url = import.meta.env.VITE_API_ENDPOINT + '/plot_core_and_fields'
-
-            this.$axios.post(url, {magnetic: this.masStore.mas.magnetic, operatingPoint: this.masStore.mas.inputs.operatingPoints[0], includeFringing: this.includeFringing})
-            .then(response => {
-                download(response.data, this.masStore.mas.magnetic.manufacturerInfo.reference + "_Magnetic_Section_And_H_Field.svg", "image/svg+xml");
-                this.MagneticSectionAndFieldPlotExported = true
-                setTimeout(() => this.MagneticSectionAndFieldPlotExported = false, 2000);
-            })
-            .catch(error => {
-                console.error("Error plotting magnetic section")
-                console.error(error)
-            });
+        async exportMagneticSectionAndFieldPlot() {
+            try {
+                const mkf = await waitForMkf();
+                await mkf.ready;
+                const settings = JSON.parse(await mkf.get_settings());
+                const previousFringing = settings.painterIncludeFringing;
+                settings.painterIncludeFringing = this.includeFringing;
+                await mkf.set_settings(JSON.stringify(settings));
+                try {
+                    const svg = await mkf.plot_magnetic_field(
+                        JSON.stringify(this.masStore.mas.magnetic),
+                        JSON.stringify(this.masStore.mas.inputs.operatingPoints[0])
+                    );
+                    if (typeof svg === 'string' && svg.startsWith('Exception')) throw new Error(svg);
+                    download(svg, this.masStore.mas.magnetic.manufacturerInfo.reference + "_Magnetic_Section_And_H_Field.svg", "image/svg+xml");
+                    this.MagneticSectionAndFieldPlotExported = true;
+                    setTimeout(() => this.MagneticSectionAndFieldPlotExported = false, 2000);
+                } finally {
+                    settings.painterIncludeFringing = previousFringing;
+                    await mkf.set_settings(JSON.stringify(settings));
+                }
+            } catch (error) {
+                console.error("Error plotting magnetic section");
+                console.error(error);
+            }
         },
 
         async calculateLeakageInductance() {

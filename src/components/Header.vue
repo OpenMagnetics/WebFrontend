@@ -330,7 +330,6 @@ export default {
                       <ul class="dropdown-menu px-3">
                         <li>
                             <button
-                                :disabled="true"
                                 data-cy="Wizard-CommonModeChoke-link"
                                 :class="headerTogglerIsVisible? 'w-100' : 'mx-0' "
                                 class="dropdown-item btn btn-block nav-link px-2"

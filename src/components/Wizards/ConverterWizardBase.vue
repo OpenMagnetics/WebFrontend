@@ -125,7 +125,7 @@ export default {
       type: Boolean,
       default: false
     },
-    /** Whether to show the Get SPICE Code button */
+    /** Whether to show the Get SPICE Code button. */
     showSpiceCodeButton: {
       type: Boolean,
       default: true
@@ -263,6 +263,22 @@ export default {
     onGetAnalyticalWaveforms() { this.$emit('get-analytical-waveforms'); },
     onGetSimulatedWaveforms() { this.$emit('get-simulated-waveforms'); },
     onDismissError() { this.$emit('dismiss-error'); },
+
+    // Period/steady-state changes must re-run the waveform generator so the
+    // visible graph actually shows N periods. Without this, the dropdown
+    // updates the value but the existing cached waveform stays at the old
+    // period count (2 by default) until the user clicks Analytical/Simulated
+    // again.
+    onPeriodsChange(n) {
+      this.$emit('update:numberOfPeriods', n);
+      if (this.waveformSource === 'analytical') this.$emit('get-analytical-waveforms');
+      else if (this.waveformSource === 'simulation') this.$emit('get-simulated-waveforms');
+    },
+    onSteadyStateChange(n) {
+      this.$emit('update:numberOfSteadyStatePeriods', n);
+      // Steady-state only affects simulated waveforms; analytical is symbolic.
+      if (this.waveformSource === 'simulation') this.$emit('get-simulated-waveforms');
+    },
 
     // ===== WAVEFORM BUILDING =====
     buildMagneticWaveformsFromInputs(operatingPoints, defaultFrequency) {
@@ -908,7 +924,12 @@ export default {
       <div class="wizard-header" :style="headerBgStyle">
         <div class="wizard-header-content">
           <div class="wizard-icon-container" :style="iconContainerStyle">
-            <i :class="['fa-solid', titleIcon, 'wizard-icon']"></i>
+            <!-- titleIcon accepts either a FontAwesome name ("fa-X", we
+                 auto-prefix 'fa-solid') or a full class string with its
+                 own prefix ("bi bi-X", "fa-brands fa-X", etc.). During the
+                 Bootstrap-Icons migration, wizards can switch one at a
+                 time without breaking the others. -->
+            <i :class="[titleIcon && titleIcon.startsWith('fa-') && !titleIcon.includes(' ') ? 'fa-solid ' + titleIcon : titleIcon, 'wizard-icon']"></i>
           </div>
           <div class="wizard-title-section">
             <h4 class="wizard-title">{{ title }}</h4>
@@ -1010,7 +1031,7 @@ export default {
                   <label class="periods-label">Periods:</label>
                   <select
                     :value="numberOfPeriods"
-                    @change="$emit('update:numberOfPeriods', Number($event.target.value))"
+                    @change="onPeriodsChange(Number($event.target.value))"
                     class="periods-select"
                   >
                     <option v-for="n in 10" :key="n" :value="n">{{ n }}</option>
@@ -1022,7 +1043,7 @@ export default {
                   <input
                     type="number"
                     :value="numberOfSteadyStatePeriods"
-                    @input="$emit('update:numberOfSteadyStatePeriods', Number($event.target.value))"
+                    @input="onSteadyStateChange(Number($event.target.value))"
                     min="1"
                     max="20"
                     class="periods-select"

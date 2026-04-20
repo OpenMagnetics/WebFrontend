@@ -149,7 +149,7 @@ export default {
                     <i
                         :style="combinedStyle([removeElementButtonColor])"
                         :class="combinedClass([removeElementButtonColor])"
-                        class="fa-solid fa-2x fa-circle-minus"
+                        class="fa-solid fa-lg fa-circle-minus"
                     />
                 </button>
                 <div v-else class="col-6"/>
@@ -162,7 +162,7 @@ export default {
                     <i
                         :style="combinedStyle([addElementButtonColor])"
                         :class="combinedClass([addElementButtonColor])"
-                        class="fa-solid fa-2x fa-circle-plus"
+                        class="fa-solid fa-lg fa-circle-plus"
                     />
                 </button>
             </div>

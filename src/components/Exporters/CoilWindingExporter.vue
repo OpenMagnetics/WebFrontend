@@ -1,5 +1,6 @@
 <script setup>
 import { clean, download } from '/WebSharedComponents/assets/js/utils.js'
+import { waitForMkf } from '/WebSharedComponents/assets/js/mkfRuntime'
 
 </script>
 <script>
@@ -37,37 +38,39 @@ export default {
     computed: {
     },
     methods: {
-        onClick(event) {
-            if (this.includeHField) {
-
-                const url = import.meta.env.VITE_API_ENDPOINT + '/plot_core_and_fields'
-
-                this.$axios.post(url, {magnetic: this.mas.magnetic, operatingPoint: this.mas.inputs.operatingPoints[0], includeFringing: this.includeFringing})
-                .then(response => {
-                    download(response.data, this.mas.magnetic.manufacturerInfo.reference + "_Magnetic_Section_And_H_Field.svg", "image/svg+xml");
-                    this.magneticSectionAndFieldPlotExported = true
-                    setTimeout(() => this.magneticSectionAndFieldPlotExported = false, 2000);
-                })
-                .catch(error => {
-                    console.error("Error plotting magnetic section")
-                    console.error(error)
-                });
-            }
-            else {
-                const url = import.meta.env.VITE_API_ENDPOINT + '/plot_core'
-
-                this.$axios.post(url, {magnetic: this.mas.magnetic, operatingPoint: this.mas.inputs.operatingPoints[0]})
-                .then(response => {
-                    download(response.data, this.mas.magnetic.manufacturerInfo.reference + "_Magnetic_Section.svg", "image/svg+xml");
-                    this.exported = true
+        async onClick(event) {
+            try {
+                const mkf = await waitForMkf();
+                await mkf.ready;
+                if (this.includeHField) {
+                    const settings = JSON.parse(await mkf.get_settings());
+                    const previousFringing = settings.painterIncludeFringing;
+                    settings.painterIncludeFringing = this.includeFringing;
+                    await mkf.set_settings(JSON.stringify(settings));
+                    try {
+                        const svg = await mkf.plot_magnetic_field(
+                            JSON.stringify(this.mas.magnetic),
+                            JSON.stringify(this.mas.inputs.operatingPoints[0])
+                        );
+                        if (typeof svg === 'string' && svg.startsWith('Exception')) throw new Error(svg);
+                        download(svg, this.mas.magnetic.manufacturerInfo.reference + "_Magnetic_Section_And_H_Field.svg", "image/svg+xml");
+                        this.exported = true;
+                        setTimeout(() => this.exported = false, 2000);
+                    } finally {
+                        settings.painterIncludeFringing = previousFringing;
+                        await mkf.set_settings(JSON.stringify(settings));
+                    }
+                } else {
+                    const svg = await mkf.plot_turns(JSON.stringify(this.mas.magnetic));
+                    if (typeof svg === 'string' && svg.startsWith('Exception')) throw new Error(svg);
+                    download(svg, this.mas.magnetic.manufacturerInfo.reference + "_Magnetic_Section.svg", "image/svg+xml");
+                    this.exported = true;
                     setTimeout(() => this.exported = false, 2000);
-                })
-                .catch(error => {
-                    console.error("Error plotting magnetic section")
-                    console.error(error)
-                });
+                }
+            } catch (error) {
+                console.error("Error plotting magnetic section");
+                console.error(error);
             }
-
         },
     }
 }
