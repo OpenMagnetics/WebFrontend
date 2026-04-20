@@ -15,9 +15,21 @@ export const BENIGN_PATTERNS = [
   /vite.*client/i,
   /Failed to fetch|net::ERR_CONNECTION_REFUSED|localhost:888|localhost:800/i,
   /ERR_EMPTY_RESPONSE|ERR_CONNECTION_RESET|Network Error|AxiosError/i,
+  /ERR_SOCKET_NOT_CONNECTED|ERR_NAME_NOT_RESOLVED|ERR_ABORTED/i,
   /Request failed with status code/i,
   /ECONNREFUSED/i,
   /multi-output configuration detected/i,
+  /Failed to load resource/i,
+  // DEBUG prints from WASM modules that (incorrectly) use console.error
+  /DEBUG \[[a-z_]+\]:/i,
+  /\[DEBUG [a-z_]+\]/i,
+  // WASM adviser diagnostic logs emitted to stderr → console.error
+  /Impedance filter:/i,
+  /Saturation filter:/i,
+  /Temperature filter:/i,
+  /Loss filter:/i,
+  /Winding filter:/i,
+  /Fit filter:/i,
 ];
 export function isBenign(text) { return BENIGN_PATTERNS.some(p => p.test(text)); }
 
