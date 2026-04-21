@@ -116,13 +116,13 @@ export default {
             <div class="col-lg-5 col-md-12 opc-col">
 
                 <div class="opc-title" :data-cy="dataTestLabel + '-current-title'">
-                    <i class="fa-solid fa-file-import"></i>
+                    <i class="bi bi-file-earmark-arrow-down"></i>
                     <span>{{masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].name + ' — ' + masStore.mas.magnetic.coil.functionalDescription[currentWindingIndex].name}}</span>
                 </div>
 
                 <div class="opc-card">
                     <div class="opc-card-header">
-                        <i class="fa-solid fa-table-columns"></i>
+                        <i class="bi bi-layout-three-columns"></i>
                         <span>Imported file columns</span>
                     </div>
                     <div class="opc-card-body">
@@ -139,11 +139,11 @@ export default {
                 </div>
 
                 <div v-if='loadedFile=="" && !$stateStore.operatingPointsCircuitSimulator.confirmedColumns[currentOperatingPointIndex][currentWindingIndex]' class="opc-error">
-                    <i class="fa-solid fa-triangle-exclamation"></i>
+                    <i class="bi bi-exclamation-triangle-fill"></i>
                     <span>Please reload file</span>
                 </div>
                 <div v-if='errorMessages != ""' class="opc-error">
-                    <i class="fa-solid fa-circle-xmark"></i>
+                    <i class="bi bi-x-circle-fill"></i>
                     <span>{{errorMessages}}</span>
                 </div>
 
@@ -156,7 +156,7 @@ export default {
                     >
                         <img v-if="loading" alt="loading" class="opc-loading" :src="$settingsStore.loadingGif">
                         <template v-else>
-                            <i class="fa-solid fa-check"></i>
+                            <i class="bi bi-check-lg"></i>
                             <span>{{$stateStore.operatingPointsCircuitSimulator.confirmedColumns[currentOperatingPointIndex][currentWindingIndex]? 'Update columns' : 'Confirm columns'}}</span>
                         </template>
                     </button>
@@ -165,7 +165,7 @@ export default {
                         class="opc-btn opc-btn-outline"
                         @click="clearMode"
                     >
-                        <i class="fa-solid fa-arrow-left"></i>
+                        <i class="bi bi-arrow-left"></i>
                         <span>Go back to selecting mode</span>
                     </button>
                 </div>

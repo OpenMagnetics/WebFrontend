@@ -74,25 +74,25 @@ export default {
             if (outputs?.magnetizingInductance?.magnetizingInductance) {
                 const val = outputs.magnetizingInductance.magnetizingInductance.nominal || outputs.magnetizingInductance.magnetizingInductance;
                 const aux = formatInductance(val);
-                params.push({ label: 'Inductance', value: removeTrailingZeroes(aux.label, 2), unit: aux.unit, icon: 'fa-infinity' });
+                params.push({ label: 'Inductance', value: removeTrailingZeroes(aux.label, 2), unit: aux.unit, icon: 'bi-infinity' });
             }
 
             if (outputs?.coreLosses?.coreLosses != null) {
                 const aux = formatPower(outputs.coreLosses.coreLosses);
-                params.push({ label: 'Core Loss', value: removeTrailingZeroes(aux.label, 2), unit: aux.unit, icon: 'fa-fire' });
+                params.push({ label: 'Core Loss', value: removeTrailingZeroes(aux.label, 2), unit: aux.unit, icon: 'bi-fire' });
             }
 
             if (outputs?.windingLosses?.windingLosses != null) {
                 const aux = formatPower(outputs.windingLosses.windingLosses);
-                params.push({ label: 'Winding Loss', value: removeTrailingZeroes(aux.label, 2), unit: aux.unit, icon: 'fa-bolt' });
+                params.push({ label: 'Winding Loss', value: removeTrailingZeroes(aux.label, 2), unit: aux.unit, icon: 'bi-lightning-fill' });
             }
 
             if (outputs?.coreLosses?.magneticFluxDensity?.processed?.peak) {
                 const aux = formatUnit(outputs.coreLosses.magneticFluxDensity.processed.peak, 'T');
-                params.push({ label: 'Peak B', value: removeTrailingZeroes(aux.label, 2), unit: aux.unit, icon: 'fa-magnet' });
+                params.push({ label: 'Peak B', value: removeTrailingZeroes(aux.label, 2), unit: aux.unit, icon: 'bi-magnet-fill' });
             }
 
-            params.push({ label: 'Core', value: this.coreShape, unit: '', icon: 'fa-cube' });
+            params.push({ label: 'Core', value: this.coreShape, unit: '', icon: 'bi-box' });
 
             return params;
         },
@@ -346,7 +346,7 @@ export default {
                             description: thickness && thickness.label > 0
                                 ? `Apply ${material} (${removeTrailingZeroes(thickness.label, 2)} ${thickness.unit})` 
                                 : `Apply ${material}`,
-                            icon: 'fa-tape'
+                            icon: 'bi-record-circle'
                         });
                     } else if (layerType === 'conduction') {
                         const partialWinding = layer.partialWindings?.[0];
@@ -384,7 +384,7 @@ export default {
                             step: stepNum++,
                             type: 'winding',
                             description: `Wind ${toTitleCase(windingName)}: ${turnsDisplay} turns${parallelInfo}${wireDesc}`,
-                            icon: 'fa-rotate'
+                            icon: 'bi-arrow-repeat'
                         });
                     }
                 });
@@ -399,7 +399,7 @@ export default {
                             step: stepNum++,
                             type: 'insulation',
                             description: 'Apply insulation layer',
-                            icon: 'fa-tape'
+                            icon: 'bi-record-circle'
                         });
                     } else if (sectionType === 'conduction') {
                         const partialWinding = section.partialWindings?.[0];
@@ -411,7 +411,7 @@ export default {
                             step: stepNum++,
                             type: 'winding',
                             description: `Wind ${toTitleCase(windingName)}: ${totalTurns} turns`,
-                            icon: 'fa-rotate'
+                            icon: 'bi-arrow-repeat'
                         });
                     }
                 });
@@ -633,21 +633,21 @@ export default {
         <div class="datasheet-toolbar d-print-none">
             <div class="toolbar-left">
                 <button class="summary-btn summary-btn-primary me-2" data-bs-toggle="modal" data-bs-target="#MASExporterModal">
-                    <i class="fa-solid fa-file-export me-1"></i> MAS
+                    <i class="bi bi-file-earmark-arrow-up me-1"></i> MAS
                 </button>
                 <button class="summary-btn summary-btn-primary me-2" data-bs-toggle="modal" data-bs-target="#CoreExporterModal">
-                    <i class="fa-solid fa-cube me-1"></i> Core
+                    <i class="bi bi-box-fill me-1"></i> Core
                 </button>
                 <button class="summary-btn summary-btn-primary me-2" data-bs-toggle="modal" data-bs-target="#CoilExporterModal">
-                    <i class="fa-solid fa-coil me-1"></i> Coil
+                    <i class="bi bi-link-45deg me-1"></i> Coil
                 </button>
                 <button class="summary-btn summary-btn-danger" data-bs-toggle="modal" data-bs-target="#CircuitSimulatorsExporterModal">
-                    <i class="fa-solid fa-microchip me-1"></i> Circuit Sim
+                    <i class="bi bi-cpu-fill me-1"></i> Circuit Sim
                 </button>
             </div>
             <div class="toolbar-right">
                 <button class="summary-btn summary-btn-outline" @click="printDatasheet">
-                    <i class="fa-solid fa-print me-1"></i> Print / Save PDF
+                    <i class="bi bi-printer-fill me-1"></i> Print / Save PDF
                 </button>
             </div>
         </div>
@@ -659,7 +659,7 @@ export default {
                 <div class="header-content">
                     <div class="header-left">
                         <div class="header-badge">
-                            <i class="fa-solid fa-microchip"></i>
+                            <i class="bi bi-cpu-fill"></i>
                             <span>Datasheet</span>
                         </div>
                         <h1 class="part-number">{{ partNumber }}</h1>
@@ -676,7 +676,7 @@ export default {
             <!-- Key Parameters Box -->
             <div class="key-params-box">
                 <div class="key-param" v-for="param in keyParameters" :key="param.label">
-                    <div class="key-param-icon"><i :class="'fa-solid ' + param.icon"></i></div>
+                    <div class="key-param-icon"><i :class="'bi ' + param.icon"></i></div>
                     <div class="key-param-body">
                         <div class="param-label">{{ param.label }}</div>
                         <div class="param-value-row">
@@ -689,7 +689,7 @@ export default {
 
             <!-- Visualizer Section -->
             <div class="section">
-                <h3 class="section-title"><i class="fa-solid fa-cube"></i>Component Visualization</h3>
+                <h3 class="section-title"><i class="bi bi-box-fill"></i>Component Visualization</h3>
                 <div class="visualizer-container">
                     <Magnetic2DVisualizer
                         :modelValue="mas"
@@ -704,7 +704,7 @@ export default {
 
             <!-- Electrical Specifications -->
             <div class="section">
-                <h3 class="section-title"><i class="fa-solid fa-bolt"></i>Electrical Specifications</h3>
+                <h3 class="section-title"><i class="bi bi-lightning-fill"></i>Electrical Specifications</h3>
                 <table class="spec-table">
                     <thead>
                         <tr>
@@ -729,7 +729,7 @@ export default {
 
             <!-- Operating Point Details -->
             <div class="section" v-if="operatingPointData">
-                <h3 class="section-title"><i class="fa-solid fa-wave-square"></i>Operating Point Excitation</h3>
+                <h3 class="section-title"><i class="bi bi-soundwave"></i>Operating Point Excitation</h3>
                 <p class="test-conditions">
                     <template v-if="operatingPointData.conditions.ambientTemperature">
                         T<sub>amb</sub> = {{ operatingPointData.conditions.ambientTemperature }}°C
@@ -752,7 +752,7 @@ export default {
                         <!-- Voltage -->
                         <div class="signal-block" v-if="ex.voltage">
                             <div class="signal-header voltage-header">
-                                <i class="fa-solid fa-bolt"></i> Voltage
+                                <i class="bi bi-lightning-fill"></i> Voltage
                                 <span class="waveform-label">{{ ex.voltage.label }}</span>
                             </div>
                             <div class="signal-details">
@@ -791,7 +791,7 @@ export default {
                         <!-- Current -->
                         <div class="signal-block" v-if="ex.current">
                             <div class="signal-header current-header">
-                                <i class="fa-solid fa-wave-square"></i> Current
+                                <i class="bi bi-soundwave"></i> Current
                                 <span class="waveform-label">{{ ex.current.label }}</span>
                             </div>
                             <div class="signal-details">
@@ -834,7 +834,7 @@ export default {
             <div class="two-column-section">
                 <div class="column">
                     <div class="section">
-                        <h3 class="section-title"><i class="fa-solid fa-cube"></i>Core Data</h3>
+                        <h3 class="section-title"><i class="bi bi-box-fill"></i>Core Data</h3>
                         <table class="data-table">
                             <tbody>
                                 <tr v-for="(item, index) in coreData" :key="item.parameter" :class="{ 'alt-row': index % 2 === 1 }">
@@ -847,7 +847,7 @@ export default {
                     
                     <!-- Gapping Table -->
                     <div class="section" v-if="gappingData.length > 0">
-                        <h3 class="section-title"><i class="fa-solid fa-ruler-horizontal"></i>Core Gapping</h3>
+                        <h3 class="section-title"><i class="bi bi-rulers"></i>Core Gapping</h3>
                         <table class="spec-table compact">
                             <thead>
                                 <tr>
@@ -868,7 +868,7 @@ export default {
                     
                     <!-- Material Data -->
                     <div class="section" v-if="materialData.length > 0">
-                        <h3 class="section-title"><i class="fa-solid fa-flask"></i>Material Properties</h3>
+                        <h3 class="section-title"><i class="bi bi-beaker"></i>Material Properties</h3>
                         <table class="data-table">
                             <tbody>
                                 <tr v-for="(item, index) in materialData" :key="item.parameter" :class="{ 'alt-row': index % 2 === 1 }">
@@ -881,7 +881,7 @@ export default {
                 </div>
                 <div class="column">
                     <div class="section">
-                        <h3 class="section-title"><i class="fa-solid fa-layer-group"></i>Winding Configuration</h3>
+                        <h3 class="section-title"><i class="bi bi-stack"></i>Winding Configuration</h3>
                         <table class="spec-table">
                             <thead>
                                 <tr>
@@ -904,7 +904,7 @@ export default {
                     
                     <!-- Performance Analysis -->
                     <div class="section">
-                        <h3 class="section-title"><i class="fa-solid fa-gauge-high"></i>Performance Analysis</h3>
+                        <h3 class="section-title"><i class="bi bi-speedometer2"></i>Performance Analysis</h3>
                         <p class="test-conditions">
                             Test Conditions: f = {{ operatingFrequency }}, T<sub>amb</sub> = {{ ambientTemperature }}
                         </p>
@@ -921,7 +921,7 @@ export default {
                     
                     <!-- Winding Performance -->
                     <div class="section" v-if="windingPerformance.length > 0">
-                        <h3 class="section-title"><i class="fa-solid fa-chart-line"></i>Winding Performance</h3>
+                        <h3 class="section-title"><i class="bi bi-graph-up-arrow"></i>Winding Performance</h3>
                         <table class="spec-table compact">
                             <thead>
                                 <tr>
@@ -946,14 +946,14 @@ export default {
 
             <!-- Winding Construction Steps -->
             <div class="section" v-if="isWoundMagnetic && windingConstructionSteps.length > 0">
-                <h3 class="section-title"><i class="fa-solid fa-list-check"></i>Winding Construction Steps</h3>
+                <h3 class="section-title"><i class="bi bi-list-check"></i>Winding Construction Steps</h3>
                 <div class="construction-steps">
                     <div v-for="step in windingConstructionSteps" :key="step.step" 
                          class="construction-step" 
                          :class="{ 'step-insulation': step.type === 'insulation', 'step-winding': step.type === 'winding' }">
                         <div class="step-number">{{ step.step }}</div>
                         <div class="step-icon">
-                            <i :class="'fa-solid ' + step.icon"></i>
+                            <i :class="'bi ' + step.icon"></i>
                         </div>
                         <div class="step-description">{{ step.description }}</div>
                     </div>
@@ -961,7 +961,7 @@ export default {
             </div>
 
             <div class="document-footer">
-                <i class="fa-solid fa-circle-info"></i>
+                <i class="bi bi-info-circle-fill"></i>
                 <span>Auto-generated from design specs and simulation. Verify before production use.</span>
                 <span class="footer-brand">OpenMagnetics</span>
             </div>

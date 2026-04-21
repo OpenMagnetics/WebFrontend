@@ -189,7 +189,7 @@ export default {
             <!-- Left: Requirements list panel -->
             <div class="dr-list-panel">
                 <div class="dr-panel-header">
-                    <i class="fa-solid fa-clipboard-list"></i>
+                    <i class="bi bi-clipboard-check"></i>
                     <span>Requirements</span>
                 </div>
                 <div class="dr-list-body">
@@ -208,7 +208,7 @@ export default {
                             v-if="!compulsoryRequirements[$stateStore.getCurrentApplication()].includes(requirementName)"
                             :class="masStore.mas.inputs.designRequirements[requirementName]==null ? 'dr-btn dr-btn-add' : 'dr-btn dr-btn-remove'"
                             @click="requirementButtonClicked(requirementName)">
-                            <i :class="masStore.mas.inputs.designRequirements[requirementName]==null ? 'fa-solid fa-plus' : 'fa-solid fa-xmark'"></i>
+                            <i :class="masStore.mas.inputs.designRequirements[requirementName]==null ? 'bi bi-plus-lg' : 'bi bi-x-lg'"></i>
                             <span>{{ masStore.mas.inputs.designRequirements[requirementName]==null ? 'Add' : 'Remove' }}</span>
                         </button>
                         <button
@@ -216,7 +216,7 @@ export default {
                             v-if="compulsoryRequirements[$stateStore.getCurrentApplication()].includes(requirementName)"
                             class="dr-btn dr-btn-required"
                             disabled>
-                            <i class="fa-solid fa-lock"></i>
+                            <i class="bi bi-lock-fill"></i>
                             <span>{{ (requirementName == 'turnsRatios' && masStore.mas.inputs.designRequirements.turnsRatios.length == 0) ? 'Not Req.' : 'Required' }}</span>
                         </button>
                     </div>
@@ -226,7 +226,7 @@ export default {
             <!-- Right: Configuration panel -->
             <div class="dr-detail-panel">
                 <div class="dr-panel-header">
-                    <i class="fa-solid fa-sliders"></i>
+                    <i class="bi bi-sliders"></i>
                     <span>Configuration</span>
                 </div>
                 <div class="dr-detail-body">

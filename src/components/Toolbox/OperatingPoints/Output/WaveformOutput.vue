@@ -115,11 +115,11 @@ export default {
 <template>
     <div class="wo-card" :class="signalDescriptor === 'current' ? 'wo-card-current' : 'wo-card-voltage'">
         <div class="wo-header">
-            <i :class="signalDescriptor === 'current' ? 'fa-solid fa-wave-square' : 'fa-solid fa-bolt'"></i>
+            <i :class="signalDescriptor === 'current' ? 'bi bi-soundwave' : 'bi bi-lightning-fill'"></i>
             <span>Outputs · {{ signalDescriptor === 'current' ? 'Current' : 'Voltage' }}</span>
         </div>
         <div v-if="!isDataReady" class="wo-loading">
-            <i class="fa-solid fa-circle-notch fa-spin"></i>
+            <i class="bi bi-arrow-repeat fa-spin fa-spin"></i>
             <span>Calculating…</span>
         </div>
         <div v-else class="wo-body">

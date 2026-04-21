@@ -2,7 +2,7 @@
  * Multi-Output DAB Wizard Tests
  * Tests the Number of Outputs feature in the DAB wizard.
  */
-import { test, expect } from '@playwright/test';
+import { test, expect } from './_coverage.js';
 import {
   BASE_URL,
   isBenign,

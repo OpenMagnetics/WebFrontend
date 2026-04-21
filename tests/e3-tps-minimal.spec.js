@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './_coverage.js';
 
 const BASE_URL = 'http://localhost:5174';
 

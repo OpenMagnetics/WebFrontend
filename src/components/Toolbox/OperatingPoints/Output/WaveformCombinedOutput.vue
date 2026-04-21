@@ -73,7 +73,7 @@ export default {
 <template>
     <div class="wco-card">
         <div class="wco-header">
-            <i class="fa-solid fa-plug-circle-bolt"></i>
+            <i class="bi bi-plug-fill"></i>
             <span>Power</span>
         </div>
         <div class="wco-body">

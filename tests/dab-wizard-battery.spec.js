@@ -14,7 +14,7 @@
  *   H – Magnetic Builder / Core Adviser (Review Specs → manual core adviser)
  */
 
-import { test, expect } from '@playwright/test';
+import { test, expect } from './_coverage.js';
 import {
   BASE_URL,
   isBenign,

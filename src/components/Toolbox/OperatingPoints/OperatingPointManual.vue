@@ -119,8 +119,15 @@ export default {
 
                 try {
                     var magnetizingInductance = await this.taskQueueStore.resolveDimensionWithTolerance(this.masStore.mas.inputs.designRequirements.magnetizingInductance);
+                    // Capture user preferences before WASM overwrites them.
+                    // WASM discretizes waveforms into N points causing dutyCycle = k/N rounding
+                    // (e.g. 94.37% → 95% with N=20). WASM also returns label="Custom" which
+                    // would trigger WaveformOutput to re-overwrite dutyCycle from the discretized waveform.
+                    const userDutyCycle = this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex].current.processed.dutyCycle;
+                    const originalVoltageLabel = this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex].voltage.processed?.label;
                     var voltage = await this.taskQueueStore.calculateInducedVoltage(this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex], magnetizingInductance);
-
+                    if (userDutyCycle != null) voltage.processed.dutyCycle = userDutyCycle;
+                    if (originalVoltageLabel && originalVoltageLabel !== 'Custom') voltage.processed.label = originalVoltageLabel;
                     this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex].voltage.waveform = voltage.waveform;
                     this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex].voltage.harmonics = voltage.harmonics;
                     this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex].voltage.processed = voltage.processed;
@@ -162,13 +169,13 @@ export default {
             <div v-if="masStore.mas.inputs.operatingPoints.length > currentOperatingPointIndex" class="col-lg-5 col-md-12 opm-col">
 
                 <div class="opm-title" data-cy="dataTestLabel + '-current-title'">
-                    <i class="fa-solid fa-bullseye"></i>
+                    <i class="bi bi-bullseye"></i>
                     <span>{{masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].name + ' — ' + masStore.mas.magnetic.coil.functionalDescription[currentWindingIndex].name}}</span>
                 </div>
 
                 <div class="opm-card">
                     <div class="opm-card-header">
-                        <i class="fa-solid fa-sliders"></i>
+                        <i class="bi bi-sliders"></i>
                         <span>Common parameters</span>
                     </div>
                     <div class="opm-card-body">
@@ -184,7 +191,7 @@ export default {
 
                 <div class="opm-card opm-card-current">
                     <div class="opm-card-header">
-                        <i class="fa-solid fa-wave-square"></i>
+                        <i class="bi bi-soundwave"></i>
                         <span>Current waveform</span>
                     </div>
                     <div class="opm-card-body">
@@ -215,7 +222,7 @@ export default {
 
                 <div class="opm-card opm-card-voltage" :class="{ 'opm-disabled': isInductor }">
                     <div class="opm-card-header">
-                        <i class="fa-solid fa-bolt"></i>
+                        <i class="bi bi-lightning-fill"></i>
                         <span>Voltage waveform</span>
                     </div>
                     <div class="opm-card-body">
@@ -252,7 +259,7 @@ export default {
                         class="opm-btn opm-btn-outline"
                         @click="clearMode"
                     >
-                        <i class="fa-solid fa-arrow-left"></i>
+                        <i class="bi bi-arrow-left"></i>
                         <span>Go back to selecting mode</span>
                     </button>
                     <button
@@ -260,7 +267,7 @@ export default {
                         class="opm-btn opm-btn-primary"
                         @click="$emit('switchToHarmonics')"
                     >
-                        <i class="fa-solid fa-chart-line"></i>
+                        <i class="bi bi-graph-up-arrow"></i>
                         <span>Switch to Harmonics view</span>
                     </button>
                 </div>

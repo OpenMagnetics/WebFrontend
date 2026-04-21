@@ -210,7 +210,7 @@ export default {
   <ConverterWizardBase
     ref="base"
     title="Push-Pull Wizard"
-    titleIcon="fa-arrows-left-right"
+    titleIcon="bi bi-arrow-left-right"
     subtitle="Center-Tapped Transformer Converter"
     :col1Width="3" :col2Width="4" :col3Width="5"
     :magneticWaveforms="magneticWaveforms"
@@ -247,7 +247,7 @@ export default {
     </template>
 
     <template #design-or-switch-parameters-title>
-      <div class="compact-header"><i class="fa-solid fa-cogs me-1"></i>{{localData.designLevel == 'I know the design I want' ? "Design Params" : "Current Requirement"}}</div>
+      <div class="compact-header"><i class="bi bi-gear-wide-connected me-1"></i>{{localData.designLevel == 'I know the design I want' ? "Design Params" : "Current Requirement"}}</div>
     </template>
 
     <template #design-or-switch-parameters>
@@ -350,11 +350,11 @@ export default {
 
     <template #col1-footer>
       <div class="d-flex align-items-center justify-content-between mt-2">
-        <span v-if="errorMessage" class="error-text"><i class="fa-solid fa-exclamation-triangle me-1"></i>{{ errorMessage }}</span>
+        <span v-if="errorMessage" class="error-text"><i class="bi bi-exclamation-triangle-fill me-1"></i>{{ errorMessage }}</span>
         <span v-else></span>
         <div class="action-btns">
-          <button :disabled="errorMessage != ''" class="action-btn-sm secondary" @click="processAndReview"><i class="fa-solid fa-magnifying-glass me-1"></i>Review Specs</button>
-          <button :disabled="errorMessage != ''" class="action-btn-sm primary" @click="processAndAdvise"><i class="fa-solid fa-wand-magic-sparkles me-1"></i>Design Magnetic</button>
+          <button :disabled="errorMessage != ''" class="action-btn-sm secondary" @click="processAndReview"><i class="bi bi-search me-1"></i>Review Specs</button>
+          <button :disabled="errorMessage != ''" class="action-btn-sm primary" @click="processAndAdvise"><i class="bi bi-magic me-1"></i>Design Magnetic</button>
         </div>
       </div>
     </template>

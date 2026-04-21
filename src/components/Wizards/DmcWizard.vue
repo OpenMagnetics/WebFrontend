@@ -473,7 +473,7 @@ export default {
             <div class="col-12">
                 <div class="card border-secondary">
                     <div class="card-header d-flex justify-content-between align-items-center" :style="$styleStore.wizard.inputLabelBgColor">
-                        <span :style="$styleStore.wizard.inputTextColor"><i class="fa-solid fa-chart-line me-2"></i>LC Filter Analysis</span>
+                        <span :style="$styleStore.wizard.inputTextColor"><i class="bi bi-graph-up-arrow me-2"></i>LC Filter Analysis</span>
                         <div class="d-flex gap-2">
                             <button
                                 :disabled="errorMessage != '' || simulatingWaveforms"
@@ -481,8 +481,8 @@ export default {
                                 :style="$styleStore.wizard.reviewButton"
                                 @click="proposeDesign"
                             >
-                                <span v-if="simulatingWaveforms"><i class="fa-solid fa-spinner fa-spin me-1"></i></span>
-                                <span v-else><i class="fa-solid fa-lightbulb me-1"></i>Propose Design</span>
+                                <span v-if="simulatingWaveforms"><i class="bi bi-arrow-repeat fa-spin fa-spin me-1"></i></span>
+                                <span v-else><i class="bi bi-lightbulb-fill me-1"></i>Propose Design</span>
                             </button>
                             <button
                                 :disabled="errorMessage != '' || simulatingWaveforms || localData.attenuationPoints.length === 0"
@@ -490,20 +490,20 @@ export default {
                                 :style="$styleStore.wizard.acceptButton"
                                 @click="verifyAttenuation"
                             >
-                                <span v-if="simulatingWaveforms"><i class="fa-solid fa-spinner fa-spin me-1"></i></span>
-                                <span v-else><i class="fa-solid fa-check-circle me-1"></i>Verify Attenuation</span>
+                                <span v-if="simulatingWaveforms"><i class="bi bi-arrow-repeat fa-spin fa-spin me-1"></i></span>
+                                <span v-else><i class="bi bi-check-circle-fill me-1"></i>Verify Attenuation</span>
                             </button>
                         </div>
                     </div>
                     <div class="card-body" :style="$styleStore.wizard.inputValueBgColor">
                         <!-- Error message -->
                         <div v-if="simulationError" class="alert alert-danger mb-3">
-                            <i class="fa-solid fa-exclamation-circle me-1"></i>{{ simulationError }}
+                            <i class="bi bi-exclamation-circle-fill me-1"></i>{{ simulationError }}
                         </div>
                         
                         <!-- Design Proposal -->
                         <div v-if="designProposal" class="mb-3 p-3 border rounded" :style="$styleStore.wizard.inputTextColor">
-                            <h6><i class="fa-solid fa-lightbulb me-1 text-warning"></i>Proposed Design</h6>
+                            <h6><i class="bi bi-lightbulb-fill me-1 text-warning"></i>Proposed Design</h6>
                             <div class="row">
                                 <div class="col-md-4">
                                     <strong>Inductance:</strong> {{ formatInductance(designProposal.minimumInductance) }}
@@ -536,8 +536,8 @@ export default {
                                         <td>{{ result.measuredAttenuation.toFixed(1) }} dB</td>
                                         <td>{{ result.theoreticalAttenuation.toFixed(1) }} dB</td>
                                         <td>
-                                            <span v-if="result.passed" class="text-success"><i class="fa-solid fa-check-circle"></i> Pass</span>
-                                            <span v-else class="text-danger"><i class="fa-solid fa-times-circle"></i> Fail</span>
+                                            <span v-if="result.passed" class="text-success"><i class="bi bi-check-circle-fill"></i> Pass</span>
+                                            <span v-else class="text-danger"><i class="bi bi-x-circle-fill"></i> Fail</span>
                                         </td>
                                     </tr>
                                 </tbody>
@@ -546,7 +546,7 @@ export default {
                         
                         <!-- Empty state -->
                         <div v-else-if="!designProposal" class="text-center py-3" :style="$styleStore.wizard.inputTextColor">
-                            <i class="fa-solid fa-filter fa-2x mb-2 opacity-50"></i>
+                            <i class="bi bi-funnel-fill fa-2x mb-2 opacity-50"></i>
                             <p class="mb-0 opacity-75">Click "Propose Design" to get optimal L and C values, or "Verify Attenuation" to check your current design</p>
                         </div>
                     </div>

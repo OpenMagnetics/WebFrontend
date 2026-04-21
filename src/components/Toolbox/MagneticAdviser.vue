@@ -227,7 +227,7 @@ export default {
             <aside class="col-12 col-lg-3">
                 <div class="optim-panel h-100">
                     <div class="optim-header">
-                        <i class="fa-solid fa-sliders"></i>
+                        <i class="bi bi-sliders"></i>
                         <span>Optimization Weights</span>
                     </div>
                     <div class="optim-body">
@@ -279,7 +279,7 @@ export default {
                             class="optim-btn optim-btn-primary"
                             @click="calculateAdvises"
                         >
-                            <i class="fa-solid fa-rocket"></i>
+                            <i class="bi bi-rocket-takeoff-fill"></i>
                             <span>Get Advised Magnetics</span>
                         </button>
                         <button
@@ -288,7 +288,7 @@ export default {
                             class="optim-btn optim-btn-success"
                             @click="loadAndGoToBuilder"
                         >
-                            <i class="fa-solid fa-check"></i>
+                            <i class="bi bi-check-lg"></i>
                             <span>Load Selected</span>
                         </button>
                         <button
@@ -297,7 +297,7 @@ export default {
                             class="optim-btn optim-btn-outline-danger"
                             @click="goBackToBuilder"
                         >
-                            <i class="fa-solid fa-arrow-left"></i>
+                            <i class="bi bi-arrow-left"></i>
                             <span>Go Back</span>
                         </button>
                     </div>

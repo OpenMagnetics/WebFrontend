@@ -331,9 +331,9 @@ export default {
             <div class="advise-option-titles">
                 <span class="advise-option-title" :title="displayMagneticName">{{ displayMagneticName }}</span>
                 <span class="advise-option-subtitle" :title="coreShapeName + ' · ' + coreMaterialName">
-                    <i class="fa-solid fa-cube me-1"></i>{{ coreShapeName }}
+                    <i class="bi bi-box-fill me-1"></i>{{ coreShapeName }}
                     <span class="advise-option-subtitle-sep">·</span>
-                    <i class="fa-solid fa-atom me-1"></i>{{ coreMaterialName }}
+                    <i class="bi bi-stars me-1"></i>{{ coreMaterialName }}
                 </span>
             </div>
             <div class="advise-option-score-wrapper">
@@ -351,42 +351,42 @@ export default {
                 <div class="col-12 col-lg-6">
                     <div class="advise-stat-grid">
                         <div class="advise-stat">
-                            <i class="fa-solid fa-bolt advise-stat-icon advise-stat-icon-warning"></i>
+                            <i class="bi bi-lightning-fill advise-stat-icon advise-stat-icon-warning"></i>
                             <div class="advise-stat-content">
                                 <small class="advise-stat-label">Losses</small>
                                 <span class="advise-stat-value">{{ formattedLosses || '—' }}</span>
                             </div>
                         </div>
                         <div class="advise-stat">
-                            <i class="fa-solid fa-box advise-stat-icon advise-stat-icon-info"></i>
+                            <i class="bi bi-box advise-stat-icon advise-stat-icon-info"></i>
                             <div class="advise-stat-content">
                                 <small class="advise-stat-label">Power Density</small>
                                 <span class="advise-stat-value">{{ formattedPowerDensity || '—' }}</span>
                             </div>
                         </div>
                         <div v-if="formattedMagnetizingInductance" class="advise-stat">
-                            <i class="fa-solid fa-wave-square advise-stat-icon advise-stat-icon-primary"></i>
+                            <i class="bi bi-soundwave advise-stat-icon advise-stat-icon-primary"></i>
                             <div class="advise-stat-content">
                                 <small class="advise-stat-label">Magnetizing Ind.</small>
                                 <span class="advise-stat-value">{{ formattedMagnetizingInductance }}</span>
                             </div>
                         </div>
                         <div v-if="formattedCoreTemperature" class="advise-stat">
-                            <i class="fa-solid fa-temperature-three-quarters advise-stat-icon advise-stat-icon-danger"></i>
+                            <i class="bi bi-thermometer-half advise-stat-icon advise-stat-icon-danger"></i>
                             <div class="advise-stat-content">
                                 <small class="advise-stat-label">Core Temp.</small>
                                 <span class="advise-stat-value">{{ formattedCoreTemperature }}</span>
                             </div>
                         </div>
                         <div v-if="totalTurns > 0" class="advise-stat">
-                            <i class="fa-solid fa-arrows-spin advise-stat-icon advise-stat-icon-success"></i>
+                            <i class="bi bi-arrow-repeat fa-spin advise-stat-icon advise-stat-icon-success"></i>
                             <div class="advise-stat-content">
                                 <small class="advise-stat-label">Turns · Windings</small>
                                 <span class="advise-stat-value">{{ totalTurns }} · {{ numberOfWindings }}</span>
                             </div>
                         </div>
                         <div v-if="formattedDimensions" class="advise-stat">
-                            <i class="fa-solid fa-ruler-combined advise-stat-icon advise-stat-icon-secondary"></i>
+                            <i class="bi bi-rulers advise-stat-icon advise-stat-icon-secondary"></i>
                             <div class="advise-stat-content">
                                 <small class="advise-stat-label">Dimensions</small>
                                 <span class="advise-stat-value">{{ formattedDimensions }}</span>
@@ -417,7 +417,7 @@ export default {
                     class="advise-btn advise-btn-outline flex-fill"
                     @click="$emit('showDetails')"
                 >
-                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <i class="bi bi-search"></i>
                     <span>Details</span>
                 </button>
                 <button
@@ -426,7 +426,7 @@ export default {
                     :class="selected ? 'advise-btn-success' : 'advise-btn-primary'"
                     @click="$emit('selectedMas')"
                 >
-                    <i :class="selected ? 'fa-solid fa-circle-check' : 'fa-regular fa-circle'"></i>
+                    <i :class="selected ? 'bi bi-check-circle-fill' : 'bi bi-circle'"></i>
                     <span>{{ selected ? 'Selected' : 'Select' }}</span>
                 </button>
             </div>

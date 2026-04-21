@@ -149,7 +149,7 @@ export default {
     <div class="storyline-panel">
         <div class="storyline-header">
             <div class="storyline-header-left">
-                <i class="fa-solid fa-shoe-prints"></i>
+                <i class="bi bi-signpost"></i>
                 <span>Steps</span>
             </div>
         </div>
@@ -176,7 +176,7 @@ export default {
                         class="storyline-connector"
                         :class="getInnerWidth() > 768 ? 'storyline-connector-vertical' : 'storyline-connector-horizontal'"
                     >
-                        <i class="fa-solid" :class="getInnerWidth() > 768 ? 'fa-chevron-down' : 'fa-chevron-right'"></i>
+                        <i class="bi" :class="getInnerWidth() > 768 ? 'bi-chevron-down' : 'bi-chevron-right'"></i>
                     </div>
                 </template>
             </div>

@@ -29,13 +29,13 @@ export default {
                 <a data-cy="Footer-legal-link" href="/legal_notice" class="om-footer-link">Privacy Policy</a>
                 <a href="/terms" class="om-footer-link">Terms</a>
                 <a href="https://github.com/OpenMagnetics/" target="_blank" rel="noopener noreferrer" class="om-footer-link">
-                    <i class="fa-brands fa-github me-1"></i>GitHub
+                    <i class="bi bi-github me-1"></i>GitHub
                 </a>
                 <a href="https://en.liberapay.com/OpenMagnetics/" target="_blank" rel="noopener noreferrer" class="om-footer-link">
-                    <i class="fa-solid fa-circle-dollar-to-slot me-1"></i>Donate
+                    <i class="bi bi-piggy-bank-fill me-1"></i>Donate
                 </a>
                 <button class="om-footer-prefs-btn" @click="resetConsent">
-                    <i class="fa-solid fa-cookie-bite me-1"></i>Cookies
+                    <i class="bi bi-cookie me-1"></i>Cookies
                 </button>
             </div>
         </div>

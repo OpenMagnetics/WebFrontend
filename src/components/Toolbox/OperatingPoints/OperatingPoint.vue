@@ -156,7 +156,7 @@ export default {
 <template>
     <div class="op-detail-panel">
         <div class="op-detail-header">
-            <i class="fa-solid fa-wave-square"></i>
+            <i class="bi bi-soundwave"></i>
             <span>Operating Point</span>
         </div>
         <div class="op-detail-body">
@@ -203,7 +203,7 @@ export default {
                         @click="onCircuitSimulatorTypeSelected"
                         class="op-mode-btn"
                     >
-                        <i class="fa-solid fa-file-import"></i>
+                        <i class="bi bi-file-earmark-arrow-down"></i>
                         <span>Circuit simulator export file or CSV</span>
                     </button>
                     <button
@@ -213,7 +213,7 @@ export default {
                         @click="onManualTypeSelected"
                         class="op-mode-btn"
                     >
-                        <i class="fa-solid fa-pen-to-square"></i>
+                        <i class="bi bi-pencil-square"></i>
                         <span>I will define it manually</span>
                     </button>
                     <button
@@ -223,7 +223,7 @@ export default {
                         @click="onHarmoncsTypeSelected"
                         class="op-mode-btn"
                     >
-                        <i class="fa-solid fa-chart-line"></i>
+                        <i class="bi bi-graph-up-arrow"></i>
                         <span>I want to introduce a list of harmonics</span>
                     </button>
                 </div>

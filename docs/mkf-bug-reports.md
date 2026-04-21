@@ -235,6 +235,42 @@ That immediately tells you whether A07 is present in `scored` and, if so, what t
 
 ---
 
+## Bug H — CMC toroid sections stack concentrically instead of splitting angularly
+
+**Status:** open. Observed 2026-04-20 with WASM built from HEAD `fd49fc16` after e199814a's CMC winding-policy override.
+
+**Observed** (T 87/54.3/13.5, K10 (TDK), CMC wizard default → Advise Core → Advise all Wires):
+- 2 windings (Line, Neutral), 32 turns each, isolation sides primary/secondary.
+- `sectionsDescription` from `calculate_advised_coil`:
+  ```
+  Line section 0      coords=[0.00110, 180°]  dims=[0.0022, 154.86°]  conduction
+  Insulation Line→Line coords=[0.00220, 180°]  dims=[0,      360°]    insulation
+  Neutral section 0   coords=[0.00330, 180°]  dims=[0.0022, 169.15°]  conduction
+  Insulation Neutral  coords=[0.00440, 180°]  dims=[0,      360°]    insulation
+  ```
+- Both conduction sections share `coords[1]=180°` (same angular center) but differ in `coords[0]` (radial offset 0.0011 → 0.0033). They are radially stacked: Line on the inner layer, Neutral on the outer. Insulation is radial interfaces wrapping 360°.
+- This renders as two concentric rings of turns in the 2D viewer — windings overlap in angular space, which is physically wrong for a CMC and matches the user's "overlapping, not contiguous" complaint.
+
+**Expected** for CMC on toroid:
+- Both conduction sections at the same `coords[0]` (same radial layer), with `coords[1]=90°` and `coords[1]=270°` (or similar opposing centers), each `dims[1]≈160°`. Insulation as narrow angular wedges between them.
+
+**Root cause (confirmed):** `Coil::wind_by_sections(...)` in `src/constructive_models/Coil.cpp:2176-2183` propagates coil-level orientation/alignment to the winding window **only** when the window does not already have one set:
+```cpp
+if (!windingWindows[0].get_sections_orientation()) {
+    windingWindows[0].set_sections_orientation(_windingOrientation);
+}
+if (!windingWindows[0].get_sections_alignment()) {
+    windingWindows[0].set_sections_alignment(_sectionAlignment);
+}
+```
+Toroidal bobbins created via `create_quick_bobbin` or auto-generated in the frontend come pre-populated with `sections_orientation=OVERLAPPING` and a default alignment. So when `CoilAdviser::get_advised_coil` calls `set_winding_orientation(CONTIGUOUS)` + `set_section_alignment(SPREAD)` at lines 156-160, those settings are silently dropped by `wind_by_sections` and the bobbin's stale OVERLAPPING value wins, producing radial stacking.
+
+**Suggested fix:** force-overwrite the winding-window orientation/alignment whenever the coil has an explicitly-set `_windingOrientation` / `_sectionAlignment` (i.e. drop the `if (!…get_sections_orientation())` guard, or add a "force" path the CMC branch can take). Alternatively, clear the bobbin's winding-window orientation in the CMC branch before `wind()` runs.
+
+**Regression test (TDD):** CMC default MAS (2 windings, toroid, subApplication=COMMON_MODE_NOISE_FILTERING) → `calculate_advised_coil` → assert `sectionsDescription[0].coordinates[1] != sectionsDescription[2].coordinates[1]` AND `sectionsDescription[0].coordinates[0] == sectionsDescription[2].coordinates[0]` (same radial layer, different angular centers).
+
+---
+
 ## Cross-cutting impact
 
 Fixing Bug C is probably a precondition for ever picking a sane material (Bug B): if the model believes the core sees 1 T of flux, the adviser will prefer low-loss power ferrite to eat the losses instead of a high-µ CMC material. Once the operating-point current is differential, losses drop to ~0 and the adviser has latitude to pick the high-µ material for the impedance requirement.

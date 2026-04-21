@@ -31,10 +31,9 @@ export default {
       type: String,
       required: true
     },
-    /** FontAwesome icon class for the header */
     titleIcon: {
       type: String,
-      default: 'fa-bolt'
+      default: 'bi bi-lightning-fill'
     },
     /** Optional subtitle/description for the wizard */
     subtitle: {
@@ -924,12 +923,7 @@ export default {
       <div class="wizard-header" :style="headerBgStyle">
         <div class="wizard-header-content">
           <div class="wizard-icon-container" :style="iconContainerStyle">
-            <!-- titleIcon accepts either a FontAwesome name ("fa-X", we
-                 auto-prefix 'fa-solid') or a full class string with its
-                 own prefix ("bi bi-X", "fa-brands fa-X", etc.). During the
-                 Bootstrap-Icons migration, wizards can switch one at a
-                 time without breaking the others. -->
-            <i :class="[titleIcon && titleIcon.startsWith('fa-') && !titleIcon.includes(' ') ? 'fa-solid ' + titleIcon : titleIcon, 'wizard-icon']"></i>
+            <i :class="[titleIcon, 'wizard-icon']"></i>
           </div>
           <div class="wizard-title-section">
             <h4 class="wizard-title">{{ title }}</h4>
@@ -941,7 +935,7 @@ export default {
 
     <!-- Top-level Error Message (dismissible) -->
     <div v-if="errorMessage" class="alert alert-danger alert-dismissible fade show py-2 mt-3" role="alert" style="font-size: 0.85rem;">
-      <i class="fa-solid fa-exclamation-circle me-2"></i>{{ errorMessage }}
+      <i class="bi bi-exclamation-circle-fill me-2"></i>{{ errorMessage }}
       <button type="button" class="btn-close btn-close-sm" @click="onDismissError"></button>
     </div>
 
@@ -952,7 +946,7 @@ export default {
 
           <!-- Design Mode -->
           <div class="compact-card">
-            <div class="compact-header"><i class="fa-solid fa-sliders me-1"></i>Design Mode</div>
+            <div class="compact-header"><i class="bi bi-sliders me-1"></i>Design Mode</div>
             <div class="compact-body ps-4">
               <slot name="design-mode">
               </slot>
@@ -971,7 +965,7 @@ export default {
 
           <!-- Conditions -->
           <div class="compact-card">
-            <div class="compact-header"><i class="fa-solid fa-gauge-high me-1"></i>Conditions</div>
+            <div class="compact-header"><i class="bi bi-speedometer2 me-1"></i>Conditions</div>
             <div class="compact-body ps-4">
               <slot name="conditions">
               </slot>
@@ -990,7 +984,7 @@ export default {
 
           <!-- Input Voltage -->
           <div v-if="showInputVoltage" class="compact-card">
-            <div class="compact-header"><i class="fa-solid fa-plug me-1"></i>Input Voltage</div>
+            <div class="compact-header"><i class="bi bi-plug-fill me-1"></i>Input Voltage</div>
             <div class="compact-body">
               <slot name="input-voltage">
               </slot>
@@ -999,7 +993,7 @@ export default {
 
           <!-- Outputs -->
           <div class="compact-card">
-            <div class="compact-header"><i class="fa-solid fa-arrow-right-from-bracket me-1"></i>Outputs</div>
+            <div class="compact-header"><i class="bi bi-box-arrow-right me-1"></i>Outputs</div>
             <div class="compact-body ps-4 pe-3">
               <slot name="outputs">
               </slot>
@@ -1008,7 +1002,7 @@ export default {
 
           <!-- Diagnostics (optional): topology-specific read-only diagnostic rows. -->
           <div v-if="$slots.diagnostics" class="compact-card">
-            <div class="compact-header"><i class="fa-solid fa-chart-line me-1"></i>Diagnostics</div>
+            <div class="compact-header"><i class="bi bi-graph-up-arrow me-1"></i>Diagnostics</div>
             <div class="compact-body ps-4 pe-3">
               <slot name="diagnostics"></slot>
             </div>
@@ -1024,7 +1018,7 @@ export default {
           <!-- Waveforms Card -->
           <div class="compact-card simulation-card" :class="'h-100'">
             <div class="compact-header d-flex justify-content-between align-items-center">
-              <span><i class="fa-solid fa-wave-square me-1"></i>Waveforms</span>
+              <span><i class="bi bi-soundwave me-1"></i>Waveforms</span>
               <div class="d-flex align-items-center gap-2">
                 <!-- Periods Selector -->
                 <div v-if="showPeriodsSelector" class="periods-selector">
@@ -1060,9 +1054,9 @@ export default {
                       title="Get analytical waveforms"
                     >
                       <span v-if="simulatingWaveforms && waveformSource === 'analytical'">
-                        <i class="fa-solid fa-spinner fa-spin"></i>
+                        <i class="bi bi-arrow-repeat fa-spin fa-spin"></i>
                       </span>
-                      <span v-else><i class="fa-solid fa-calculator"></i> Analytical</span>
+                      <span v-else><i class="bi bi-calculator"></i> Analytical</span>
                     </button>
                     <button
                       class="sim-btn"
@@ -1071,9 +1065,9 @@ export default {
                       title="Simulate ideal waveforms"
                     >
                       <span v-if="simulatingWaveforms && waveformSource === 'simulation'">
-                        <i class="fa-solid fa-spinner fa-spin"></i>
+                        <i class="bi bi-arrow-repeat fa-spin fa-spin"></i>
                       </span>
-                      <span v-else><i class="fa-solid fa-play"></i> Simulated</span>
+                      <span v-else><i class="bi bi-play-fill"></i> Simulated</span>
                     </button>
                     <button
                       v-if="showSpiceCodeButton"
@@ -1083,9 +1077,9 @@ export default {
                       title="Get SPICE netlist for external simulation"
                     >
                       <span v-if="spiceCodeLoading">
-                        <i class="fa-solid fa-spinner fa-spin"></i>
+                        <i class="bi bi-arrow-repeat fa-spin fa-spin"></i>
                       </span>
-                      <span v-else><i class="fa-solid fa-file-code"></i> SPICE</span>
+                      <span v-else><i class="bi bi-file-earmark-code"></i> SPICE</span>
                     </button>
                   </slot>
                 </div>
@@ -1093,7 +1087,7 @@ export default {
             </div>
             <div class="compact-body simulation-body">
               <div v-if="waveformError" class="error-text mb-2">
-                <i class="fa-solid fa-exclamation-circle me-1"></i>{{ waveformError }}
+                <i class="bi bi-exclamation-circle-fill me-1"></i>{{ waveformError }}
               </div>
               <slot name="waveforms">
                 <ConverterWaveformVisualizer
@@ -1120,7 +1114,7 @@ export default {
       <div class="modal-content" :style="{ background: 'rgba(30, 30, 40, 0.95)', border: '1px solid ' + primaryColor }">
         <div class="modal-header" :style="{ borderBottom: '1px solid rgba(255,255,255,0.1)' }">
           <h5 class="modal-title" :style="{ color: primaryColor }">
-            <i class="fa-solid fa-file-code me-2"></i>SPICE Netlist<span v-if="spiceCodeTopology"> - {{ spiceCodeTopology }}</span>
+            <i class="bi bi-file-earmark-code me-2"></i>SPICE Netlist<span v-if="spiceCodeTopology"> - {{ spiceCodeTopology }}</span>
           </h5>
           <button type="button" class="btn-close btn-close-white" @click="closeSpiceCodeModal"></button>
         </div>
@@ -1132,14 +1126,14 @@ export default {
               @click="copySpiceCodeToClipboard"
               title="Copy to clipboard"
             >
-              <i class="fa-solid fa-copy"></i>
+              <i class="bi bi-copy"></i>
             </button>
             <pre class="p-3 rounded" :style="{ background: 'rgba(0,0,0,0.5)', color: '#d4d4d4', maxHeight: '60vh', overflow: 'auto', fontSize: '0.75rem', fontFamily: 'monospace', border: '1px solid rgba(255,255,255,0.1)', paddingTop: '40px' }"><code>{{ spiceCode }}</code></pre>
           </div>
         </div>
         <div class="modal-footer" :style="{ borderTop: '1px solid rgba(255,255,255,0.1)' }">
           <button class="btn btn-sm" @click="copySpiceCodeToClipboard" :style="{ color: 'white', borderColor: 'white', backgroundColor: justCopied ? 'rgba(255,255,255,0.2)' : 'transparent' }">
-            <i class="fa-solid fa-copy me-1"></i>{{ justCopied ? 'Copied' : 'Copy to Clipboard' }}
+            <i class="bi bi-copy me-1"></i>{{ justCopied ? 'Copied' : 'Copy to Clipboard' }}
           </button>
           <button class="btn btn-primary btn-sm" @click="closeSpiceCodeModal">Close</button>
         </div>

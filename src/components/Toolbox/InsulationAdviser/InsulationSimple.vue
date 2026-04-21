@@ -84,7 +84,7 @@ export default {
         <!-- Section: Environment -->
         <div class="is-subsection">
             <div class="is-subsection-header">
-                <i class="fa-solid fa-mountain-sun"></i>
+                <i class="bi bi-sun-fill"></i>
                 <span>Environment</span>
             </div>
             <div class="is-grid is-grid-3">
@@ -162,7 +162,7 @@ export default {
         <!-- Section: Classification -->
         <div class="is-subsection">
             <div class="is-subsection-header">
-                <i class="fa-solid fa-list-check"></i>
+                <i class="bi bi-list-check"></i>
                 <span>Classification</span>
             </div>
             <div class="is-grid is-grid-2">
@@ -248,7 +248,7 @@ export default {
         <!-- Section: Standards -->
         <div class="is-subsection">
             <div class="is-subsection-header">
-                <i class="fa-solid fa-certificate"></i>
+                <i class="bi bi-patch-check-fill"></i>
                 <span>Standards</span>
             </div>
             <div class="is-standards">

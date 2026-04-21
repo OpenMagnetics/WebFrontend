@@ -31,6 +31,8 @@ export const useSettingsStore = defineStore("settings", () => {
         allowStacks: true,
         allowToroidalCores: true,
         coreAdviseMode: "standard cores",
+        enableTemperatureFilter: false,
+        maximumTemperature: 130,
     })
 
     const magneticBuilderSettings = ref({
@@ -68,6 +70,8 @@ export const useSettingsStore = defineStore("settings", () => {
             allowStacks: true,
             allowToroidalCores: true,
             coreAdviseMode: "standard cores",
+            enableTemperatureFilter: false,
+            maximumTemperature: 130,
         };
         this.magneticBuilderSettings = {
             useOnlyCoresInStock: true,

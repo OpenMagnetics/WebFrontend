@@ -149,8 +149,8 @@ export default {
                 style="max-height: 1.7em"
             >
                 {{'Induce from ' + (signalDescriptor == 'current'? 'voltage' : 'current')}}
-                <i class="fa-solid fa-bolt"></i>
-                <i class="fa-solid fa-magnet"></i>
+                <i class="bi bi-lightning-fill"></i>
+                <i class="bi bi-magnet-fill"></i>
             </button>
 
         </div>

@@ -82,14 +82,14 @@ export default {
 <template>
     <div :data-cy="dataTestLabel + '-container'" class="ins-root">
         <div v-if="showTitle" class="ins-title" :data-cy="dataTestLabel + '-title'">
-            <i class="fa-solid fa-shield-halved"></i>
+            <i class="bi bi-shield-shaded"></i>
             <span>Insulation</span>
         </div>
 
         <!-- Section 1: Environment (altitude + main supply voltage) -->
         <div class="ins-section">
             <div class="ins-section-header">
-                <i class="fa-solid fa-mountain-sun"></i>
+                <i class="bi bi-sun-fill"></i>
                 <span>Environment</span>
             </div>
             <div class="ins-grid-2">
@@ -142,7 +142,7 @@ export default {
         <!-- Section 2: Classification (CTI / InsulationType / Overvoltage / Pollution) -->
         <div class="ins-section">
             <div class="ins-section-header">
-                <i class="fa-solid fa-list-check"></i>
+                <i class="bi bi-list-check"></i>
                 <span>Classification</span>
             </div>
             <div class="ins-grid-2">
@@ -224,7 +224,7 @@ export default {
         <!-- Section 3: Standards -->
         <div class="ins-section">
             <div class="ins-section-header">
-                <i class="fa-solid fa-certificate"></i>
+                <i class="bi bi-patch-check-fill"></i>
                 <span>Standards</span>
             </div>
             <div class="ins-standards">

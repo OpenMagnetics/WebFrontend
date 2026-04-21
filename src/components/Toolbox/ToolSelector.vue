@@ -40,7 +40,7 @@ export default {
                             class="fs-5 col-6 col-md-3 py-4 btn btn-danger"
                             @click="$emit('toolSelected', 'magneticBuilder')"
                         >
-                            {{'I want build my own magnetic'}} <i class="fa-solid fa-rocket"></i>
+                            {{'I want build my own magnetic'}} <i class="bi bi-rocket-takeoff-fill"></i>
                         </button>
                     </div>
                     <div class="my-2 p-2 text-start col-12 rounded-4 row">

@@ -40,6 +40,8 @@ export default {
             allowDistributedGaps: this.$settingsStore.magneticBuilderSettings.allowDistributedGaps,
             allowStacks: this.$settingsStore.magneticBuilderSettings.allowStacks,
             allowToroidalCores: this.$settingsStore.magneticBuilderSettings.allowToroidalCores,
+            enableTemperatureFilter: this.$settingsStore.adviserSettings.enableTemperatureFilter,
+            maximumTemperature: this.$settingsStore.adviserSettings.maximumTemperature,
             enableVisualizers: magneticBuilderSettingsStore.enableVisualizers,
             enableSimulation: this.$settingsStore.magneticBuilderSettings.enableSimulation,
             enableAutoSimulation: this.$settingsStore.magneticBuilderSettings.enableAutoSimulation,
@@ -58,6 +60,16 @@ export default {
         onSettingChanged(setting) {
             this.localData[setting] = !this.localData[setting];
             this.$settingsStore.magneticBuilderSettings[setting] = this.localData[setting];
+            this.settingsChanged = true;
+        },
+        onAdviserSettingChanged(setting) {
+            this.localData[setting] = !this.localData[setting];
+            this.$settingsStore.adviserSettings[setting] = this.localData[setting];
+            this.settingsChanged = true;
+        },
+        onMaxTemperatureChanged(value) {
+            this.localData.maximumTemperature = parseFloat(value);
+            this.$settingsStore.adviserSettings.maximumTemperature = this.localData.maximumTemperature;
             this.settingsChanged = true;
         },
         onMagneticBuilderSettingChanged(setting) {
@@ -160,7 +172,7 @@ export default {
             <div class="modal-content border-0 shadow-lg settings-modal-bg">
                 <div class="modal-header border-bottom border-secondary px-4 py-3">
                     <div class="d-flex align-items-center">
-                        <i class="fa-solid fa-gear text-primary me-2 fs-5"></i>
+                        <i class="bi bi-gear-fill text-primary me-2 fs-5"></i>
                         <h5 data-cy="settingsModal-notification-text" class="modal-title text-white mb-0" id="settingsModalLabel">Settings</h5>
                     </div>
                     <button ref="closeSettingsModalRef" type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="settingsModalClose"></button>
@@ -229,6 +241,40 @@ export default {
                                     @change="onSettingChanged('allowToroidalCores')"
                                 >
                             </div>
+                        </div>
+                    </div>
+
+                    <!-- Core Adviser Section -->
+                    <div class="mb-3">
+                        <h6 class="text-secondary text-uppercase small fw-bold mb-3">Core Adviser</h6>
+
+                        <div class="setting-item d-flex justify-content-between align-items-center py-2" :class="localData.enableTemperatureFilter ? 'border-bottom border-secondary' : ''">
+                            <div>
+                                <span class="text-white">Enable temperature filter</span>
+                            </div>
+                            <div class="form-check form-switch">
+                                <input
+                                    class="form-check-input custom-switch"
+                                    type="checkbox"
+                                    role="switch"
+                                    :checked="localData.enableTemperatureFilter"
+                                    @change="onAdviserSettingChanged('enableTemperatureFilter')"
+                                >
+                            </div>
+                        </div>
+
+                        <div v-if="localData.enableTemperatureFilter" class="setting-item d-flex justify-content-between align-items-center py-2">
+                            <div>
+                                <span class="text-white">Maximum temperature (°C)</span>
+                            </div>
+                            <input
+                                type="number"
+                                class="form-control form-control-sm bg-dark text-white border-secondary"
+                                style="width: 80px"
+                                :value="localData.maximumTemperature"
+                                :min="25" :max="300" :step="5"
+                                @change="onMaxTemperatureChanged($event.target.value)"
+                            >
                         </div>
                     </div>
 

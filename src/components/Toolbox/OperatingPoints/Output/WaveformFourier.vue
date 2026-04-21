@@ -439,7 +439,7 @@ export default {
         <div v-if="hiddenHarmonicsCount > 0"
              class="wf-hint"
              v-tooltip="`${hiddenHarmonicsCount} more harmonic${hiddenHarmonicsCount === 1 ? '' : 's'} above threshold not shown — raise the &quot;Max harmonics to plot&quot; limit in Operating point settings`">
-            <i class="fa-solid fa-circle-info"></i>
+            <i class="bi bi-info-circle-fill"></i>
             <span>+{{ hiddenHarmonicsCount }}</span>
         </div>
     </div>

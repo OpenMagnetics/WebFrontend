@@ -267,7 +267,7 @@ export default {
                         @click="undo" 
                         title="Undo"
                     >
-                        <i class="fa-solid fa-arrow-rotate-left"></i>
+                        <i class="bi bi-arrow-counterclockwise"></i>
                     </button>
                     <button 
                         :style="$styleStore.controlPanel.button" 
@@ -276,7 +276,7 @@ export default {
                         @click="redo" 
                         title="Redo"
                     >
-                        <i class="fa-solid fa-arrow-rotate-right"></i>
+                        <i class="bi bi-arrow-clockwise"></i>
                     </button>
                 </div>
 
@@ -290,11 +290,11 @@ export default {
                             data-bs-toggle="dropdown" 
                             title="Reset"
                         >
-                            <i class="fa-solid fa-power-off"></i>
+                            <i class="bi bi-power"></i>
                         </button>
                         <ul class="dropdown-menu dropdown-menu-dark">
-                            <li><button class="dropdown-item" @click="reset(false)"><i class="fa-solid fa-ring me-2"></i>Wound</button></li>
-                            <li><button class="dropdown-item" @click="reset(true)"><i class="fa-solid fa-layer-group me-2"></i>Planar</button></li>
+                            <li><button class="dropdown-item" @click="reset(false)"><i class="bi bi-circle me-2"></i>Wound</button></li>
+                            <li><button class="dropdown-item" @click="reset(true)"><i class="bi bi-stack me-2"></i>Planar</button></li>
                         </ul>
                     </div>
                 </div>
@@ -351,8 +351,8 @@ export default {
                                 <img :src='simbaIcon' width="18" height="18" alt="SIMBA">
                             </button>
                             <ul class="dropdown-menu dropdown-menu-dark">
-                                <li><button class="dropdown-item" @click="exportSimba(true)"><i class="fa-solid fa-link me-2"></i>Attach to file</button></li>
-                                <li><button class="dropdown-item" @click="exportSimba(false)"><i class="fa-solid fa-download me-2"></i>Download library</button></li>
+                                <li><button class="dropdown-item" @click="exportSimba(true)"><i class="bi bi-link-45deg me-2"></i>Attach to file</button></li>
+                                <li><button class="dropdown-item" @click="exportSimba(false)"><i class="bi bi-download me-2"></i>Download library</button></li>
                             </ul>
                         </div>
                     </div>
@@ -411,14 +411,14 @@ export default {
                                 data-bs-toggle="dropdown" 
                                 title="All Exports"
                             >
-                                <i class="fa-solid fa-list"></i>
+                                <i class="bi bi-list-ul"></i>
                             </button>
                             <ul class="dropdown-menu dropdown-menu-dark">
-                                <li><button :style="$styleStore.magneticBuilder.exportButton" :data-cy="'MAS-exports-modal-button'" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#MASExporterModal"><i class="fa-solid fa-file-code me-2"></i>MAS Exports</button></li>
-                                <li><button :style="$styleStore.magneticBuilder.exportButton" :data-cy="'Core-exports-modal-button'" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#CoreExporterModal"><i class="fa-solid fa-cube me-2"></i>Core Exports</button></li>
-                                <li><button :style="$styleStore.magneticBuilder.exportButton" :data-cy="'Coil-exports-modal-button'" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#CoilExporterModal"><i class="fa-solid fa-coil me-2"></i>Coil Exports</button></li>
+                                <li><button :style="$styleStore.magneticBuilder.exportButton" :data-cy="'MAS-exports-modal-button'" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#MASExporterModal"><i class="bi bi-file-earmark-code me-2"></i>MAS Exports</button></li>
+                                <li><button :style="$styleStore.magneticBuilder.exportButton" :data-cy="'Core-exports-modal-button'" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#CoreExporterModal"><i class="bi bi-box-fill me-2"></i>Core Exports</button></li>
+                                <li><button :style="$styleStore.magneticBuilder.exportButton" :data-cy="'Coil-exports-modal-button'" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#CoilExporterModal"><i class="bi bi-link-45deg me-2"></i>Coil Exports</button></li>
                                 <li><hr class="dropdown-divider"></li>
-                                <li><button :style="$styleStore.magneticBuilder.exportButton" :data-cy="'Circuit-Simulators-exports-modal-button'" class="dropdown-item btn btn-danger" data-bs-toggle="modal" data-bs-target="#CircuitSimulatorsExporterModal"><i class="fa-solid fa-wave-square me-2"></i>Circuit Simulators</button></li>
+                                <li><button :style="$styleStore.magneticBuilder.exportButton" :data-cy="'Circuit-Simulators-exports-modal-button'" class="dropdown-item btn btn-danger" data-bs-toggle="modal" data-bs-target="#CircuitSimulatorsExporterModal"><i class="bi bi-soundwave me-2"></i>Circuit Simulators</button></li>
                             </ul>
                         </div>
                     </div>
@@ -427,7 +427,7 @@ export default {
                 <!-- Incomplete State -->
                 <template v-else-if="showExportButtons">
                     <div class="cp-group">
-                        <span :style="$styleStore.controlPanel.setting" class="cp-incomplete"><i class="fa-solid fa-circle-info me-1"></i>Complete design to enable exports</span>
+                        <span :style="$styleStore.controlPanel.setting" class="cp-incomplete"><i class="bi bi-info-circle-fill me-1"></i>Complete design to enable exports</span>
                     </div>
                 </template>
             </div>

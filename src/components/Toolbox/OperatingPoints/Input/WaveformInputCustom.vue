@@ -103,7 +103,7 @@ export default {
                 class="btn btn-outline-secondary col-12 mt-1 py-0"
                 style="font-size: 0.75em;"
                 @click="showAllPoints = !showAllPoints">
-                <i :class="showAllPoints ? 'fa-solid fa-chevron-up' : 'fa-solid fa-chevron-down'"></i>
+                <i :class="showAllPoints ? 'bi bi-chevron-up' : 'bi bi-chevron-down'"></i>
                 {{ showAllPoints ? 'Show less' : `Show ${Object.keys(modelValue[signalDescriptor].waveform.data).length - 3} more points` }}
             </button>
         </div>
@@ -114,8 +114,8 @@ export default {
             @click="$emit('induce')"
             style="max-height: 1.7em">
             {{'Induce from ' + (signalDescriptor == 'current'? 'voltage' : 'current')}}
-            <i class="fa-solid fa-bolt"></i>
-            <i class="fa-solid fa-magnet"></i>
+            <i class="bi bi-lightning-fill"></i>
+            <i class="bi bi-magnet-fill"></i>
         </button>
     </div>
 </template>

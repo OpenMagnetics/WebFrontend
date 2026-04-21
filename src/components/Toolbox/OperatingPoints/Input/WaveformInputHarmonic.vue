@@ -107,7 +107,7 @@ export default {
                     <i
                         :style="combinedStyle([$styleStore.operatingPoints.addElementButtonColor])"
                         :class="combinedClass([$styleStore.operatingPoints.addElementButtonColor])"
-                        class="fa-solid fa-circle-plus text-secondary"
+                        class="bi bi-plus-circle-fill text-secondary"
                     ></i>
                 </button>
                 <button
@@ -120,7 +120,7 @@ export default {
                     <i
                         :style="combinedStyle([$styleStore.operatingPoints.addElementButtonColor])"
                         :class="combinedClass([$styleStore.operatingPoints.addElementButtonColor])"
-                        class="fa-solid fa-circle-minus text-danger"
+                        class="bi bi-dash-circle-fill text-danger"
                     ></i>
                 </button>
             </div>

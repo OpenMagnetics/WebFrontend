@@ -6,7 +6,7 @@ import Dimension from '/WebSharedComponents/DataInput/Dimension.vue'
 import ElementFromListRadio from '/WebSharedComponents/DataInput/ElementFromListRadio.vue'
 import ElementFromList from '/WebSharedComponents/DataInput/ElementFromList.vue'
 import DimensionWithTolerance from '/WebSharedComponents/DataInput/DimensionWithTolerance.vue'
-import { defaultDesignRequirements, minimumMaximumScalePerParameter } from '/WebSharedComponents/assets/js/defaults.js'
+import { defaultDesignRequirements, minimumMaximumScalePerParameter, isolationSideOrdered } from '/WebSharedComponents/assets/js/defaults.js'
 import ConverterWizardBase from './ConverterWizardBase.vue'
 import CmcEmiSpectrumView from './CmcEmiSpectrumView.vue'
 import { waitForMkf } from '/WebSharedComponents/assets/js/mkfRuntime'
@@ -210,7 +210,9 @@ export default {
             }
         },
         getTopology() { return 'CommonModeChoke'; },
-        getIsolationSides() { return Array(this.numWindings).fill('primary'); },
+        getIsolationSides() {
+            return isolationSideOrdered.slice(0, this.numWindings).map(s => s.toLowerCase());
+        },
         getInsulationType() { return null; },
 
         updateErrorMessage() {

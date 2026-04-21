@@ -88,7 +88,7 @@ export default {
 <template>
     <div class="ia-container">
         <div class="ia-title">
-            <i class="fa-solid fa-shield-halved"></i>
+            <i class="bi bi-shield-shaded"></i>
             <span>Insulation Coordinator</span>
         </div>
 
@@ -97,7 +97,7 @@ export default {
             <div class="col-12 col-lg-7 ia-col">
                 <div class="ia-card">
                     <div class="ia-card-header">
-                        <i class="fa-solid fa-bolt"></i>
+                        <i class="bi bi-lightning-fill"></i>
                         <span>Operating point</span>
                     </div>
                     <div class="ia-card-body">
@@ -134,12 +134,12 @@ export default {
             <div class="col-12 col-lg-5 ia-col">
                 <div class="ia-card ia-card-result">
                     <div class="ia-card-header ia-card-header-result">
-                        <i class="fa-solid fa-shield-halved"></i>
+                        <i class="bi bi-shield-shaded"></i>
                         <span>Coordination result</span>
                     </div>
                     <div class="ia-result-body">
                         <div class="ia-result-row">
-                            <div class="ia-result-icon"><i class="fa-solid fa-arrows-left-right"></i></div>
+                            <div class="ia-result-icon"><i class="bi bi-arrow-left-right"></i></div>
                             <div class="ia-result-text">
                                 <small>Clearance</small>
                                 <DimensionReadOnly
@@ -159,7 +159,7 @@ export default {
                             </div>
                         </div>
                         <div class="ia-result-row">
-                            <div class="ia-result-icon"><i class="fa-solid fa-route"></i></div>
+                            <div class="ia-result-icon"><i class="bi bi-signpost-2-fill"></i></div>
                             <div class="ia-result-text">
                                 <small>Creepage distance</small>
                                 <DimensionReadOnly
@@ -179,7 +179,7 @@ export default {
                             </div>
                         </div>
                         <div class="ia-result-row">
-                            <div class="ia-result-icon"><i class="fa-solid fa-bolt-lightning"></i></div>
+                            <div class="ia-result-icon"><i class="bi bi-lightning-charge-fill"></i></div>
                             <div class="ia-result-text">
                                 <small>Withstand voltage</small>
                                 <DimensionReadOnly
@@ -199,7 +199,7 @@ export default {
                             </div>
                         </div>
                         <div class="ia-result-row">
-                            <div class="ia-result-icon"><i class="fa-solid fa-layer-group"></i></div>
+                            <div class="ia-result-icon"><i class="bi bi-stack"></i></div>
                             <div class="ia-result-text">
                                 <small>Distance through insulation</small>
                                 <DimensionReadOnly
@@ -219,7 +219,7 @@ export default {
                             </div>
                         </div>
                         <div v-if="insulation.errorMessage" class="ia-result-error">
-                            <i class="fa-solid fa-triangle-exclamation"></i>
+                            <i class="bi bi-exclamation-triangle-fill"></i>
                             <span :data-cy="dataTestLabel + '-ErrorMessage'">{{ insulation.errorMessage }}</span>
                         </div>
                     </div>

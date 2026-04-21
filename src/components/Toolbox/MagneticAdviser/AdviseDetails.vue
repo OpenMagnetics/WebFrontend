@@ -260,7 +260,7 @@ export default {
                     data-bs-dismiss="offcanvas"
                     aria-label="Close"
                 >
-                    <i class="fa-solid fa-xmark"></i>
+                    <i class="bi bi-x-lg"></i>
                 </button>
             </div>
 
@@ -271,7 +271,7 @@ export default {
                         <!-- Number of Turns Table -->
                         <div class="ad-card">
                             <div class="ad-card-header">
-                                <i class="fa-solid fa-arrows-spin"></i>
+                                <i class="bi bi-arrow-repeat fa-spin"></i>
                                 <span>Windings</span>
                             </div>
                             <table class="ad-table">
@@ -297,14 +297,14 @@ export default {
                         <!-- Operating Points -->
                         <div v-for="(op, opIdx) in modelValue.outputs" :key="'output-' + opIdx" class="ad-op">
                             <div class="ad-op-title">
-                                <i class="fa-solid fa-bullseye"></i>
+                                <i class="bi bi-bullseye"></i>
                                 <span>{{ modelValue.inputs.operatingPoints[opIdx].name }}</span>
                             </div>
 
                             <!-- Core Data -->
                             <div class="ad-card">
                                 <div class="ad-card-header">
-                                    <i class="fa-solid fa-cube"></i>
+                                    <i class="bi bi-box-fill"></i>
                                     <span>Core</span>
                                 </div>
                                 <table class="ad-table ad-table-kv">
@@ -328,7 +328,7 @@ export default {
                             <!-- Coil Data -->
                             <div class="ad-card">
                                 <div class="ad-card-header">
-                                    <i class="fa-solid fa-wave-square"></i>
+                                    <i class="bi bi-soundwave"></i>
                                     <span>Coil</span>
                                 </div>
                                 <table class="ad-table">
@@ -354,7 +354,7 @@ export default {
                             <!-- Winding Losses Breakdown -->
                             <div class="ad-card">
                                 <div class="ad-card-header">
-                                    <i class="fa-solid fa-bolt"></i>
+                                    <i class="bi bi-lightning-fill"></i>
                                     <span>Winding Losses Breakdown</span>
                                 </div>
                                 <table class="ad-table">
@@ -383,7 +383,7 @@ export default {
                     <div class="col-12 col-lg-5 ad-viz-col">
                         <div class="ad-card ad-viz-card">
                             <div class="ad-card-header">
-                                <i class="fa-solid fa-eye"></i>
+                                <i class="bi bi-eye-fill"></i>
                                 <span>Core &amp; Coil</span>
                             </div>
                             <div class="ad-viz-body">

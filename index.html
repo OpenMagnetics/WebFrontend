@@ -11,10 +11,15 @@
 
         <title>OpenMagnetics</title>
         <link rel="icon" type="image/x-icon" href="/images/favicon.ico">
-        <!-- POC: Bootstrap Icons as an open-source replacement for the
-             FontAwesome Kit script (injected in Header.vue). Only the CMC
-             wizard is migrated so far — swap-it-all is the next step. -->
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+        <style>
+            @keyframes bi-spin { to { transform: rotate(360deg); } }
+            .fa-spin { display: inline-block; animation: bi-spin 1s linear infinite; }
+            .fa-2x { font-size: 2em; }
+            .fa-3x { font-size: 3em; }
+            .fa-9x { font-size: 9em; }
+            .fa-1x { font-size: 1em; }
+        </style>
     </head>
     <body>
         <div id="app"></div>

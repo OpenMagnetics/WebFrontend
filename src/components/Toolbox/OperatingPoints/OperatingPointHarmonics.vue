@@ -282,13 +282,13 @@ export default {
             <div class="col-lg-5 col-md-12 oph-col">
 
                 <div class="oph-title" :data-cy="dataTestLabel + '-current-title'">
-                    <i class="fa-solid fa-bullseye"></i>
+                    <i class="bi bi-bullseye"></i>
                     <span>{{masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].name + ' — ' + masStore.mas.magnetic.coil.functionalDescription[currentWindingIndex].name}}</span>
                 </div>
 
                 <div class="oph-card oph-card-current">
                     <div class="oph-card-header">
-                        <i class="fa-solid fa-wave-square"></i>
+                        <i class="bi bi-soundwave"></i>
                         <span>Current harmonics</span>
                     </div>
                     <div class="oph-card-body">
@@ -310,7 +310,7 @@ export default {
                             />
                         </div>
                         <div v-if='errorMessages.current != ""' class="oph-error">
-                            <i class="fa-solid fa-triangle-exclamation"></i>
+                            <i class="bi bi-exclamation-triangle-fill"></i>
                             <span>{{errorMessages.current}}</span>
                         </div>
                     </div>
@@ -318,7 +318,7 @@ export default {
 
                 <div class="oph-card oph-card-voltage">
                     <div class="oph-card-header">
-                        <i class="fa-solid fa-bolt"></i>
+                        <i class="bi bi-lightning-fill"></i>
                         <span>Voltage harmonics</span>
                     </div>
                     <div class="oph-card-body">
@@ -341,7 +341,7 @@ export default {
                             />
                         </div>
                         <div v-if='errorMessages.voltage != ""' class="oph-error">
-                            <i class="fa-solid fa-triangle-exclamation"></i>
+                            <i class="bi bi-exclamation-triangle-fill"></i>
                             <span>{{errorMessages.voltage}}</span>
                         </div>
                     </div>
@@ -352,14 +352,14 @@ export default {
                         :data-cy="dataTestLabel + '-import-button'"
                         class="oph-btn oph-btn-outline"
                         @click="$emit('clearMode')">
-                        <i class="fa-solid fa-arrow-left"></i>
+                        <i class="bi bi-arrow-left"></i>
                         <span>Go back to selecting mode</span>
                     </button>
                     <button
                         :data-cy="dataTestLabel + '-switch-to-manual-button'"
                         class="oph-btn oph-btn-primary"
                         @click="$emit('switchToManual')">
-                        <i class="fa-solid fa-wave-square"></i>
+                        <i class="bi bi-soundwave"></i>
                         <span>Switch to Waveform view</span>
                     </button>
                 </div>

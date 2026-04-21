@@ -52,7 +52,7 @@ export default {
             <div class="modal-content border-0 shadow-lg settings-modal-bg">
                 <div class="modal-header border-bottom border-secondary px-4 py-3">
                     <div class="d-flex align-items-center">
-                        <i class="fa-solid fa-gear text-primary me-2 fs-5"></i>
+                        <i class="bi bi-gear-fill text-primary me-2 fs-5"></i>
                         <h5 data-cy="settingsModal-notification-text" class="modal-title text-white mb-0" id="settingsModalLabel">Adviser Settings</h5>
                     </div>
                     <button ref="closeSettingsModalRef" type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="settingsModalClose"></button>

@@ -12,7 +12,7 @@
  *   G – Core Adviser (by steps)
  */
 
-import { test, expect } from '@playwright/test';
+import { test, expect } from './_coverage.js';
 import {
   BASE_URL, isBenign, screenshot,
   openWizard, runAnalytical,

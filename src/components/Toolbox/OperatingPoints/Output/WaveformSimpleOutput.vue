@@ -179,7 +179,7 @@ export default {
 <template>
     <div class="wso-card">
         <div class="wso-header">
-            <i class="fa-solid fa-gauge-high"></i>
+            <i class="bi bi-speedometer2"></i>
             <span>Quick stats</span>
         </div>
         <div class="wso-body">

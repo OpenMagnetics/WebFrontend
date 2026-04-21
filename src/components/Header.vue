@@ -217,9 +217,6 @@ export default {
     },
     mounted() {
         this.$settingsStore.loadingGif = "/images/loading.gif";
-        let fontawesome = document.createElement('script')
-        fontawesome.setAttribute('src', 'https://kit.fontawesome.com/d5a40d6941.js')
-        document.head.appendChild(fontawesome)
 
         const style = getComputedStyle(document.body);
         const theme = {
@@ -289,7 +286,7 @@ export default {
                             class="btn btn-block nav-link om-nav-btn border rounded px-2"
                             @click="onNewPowerMagneticDesign"
                         >
-                            <i class="me-2 fa-solid fa-toolbox"></i>{{'New Magnetic'}}
+                            <i class="me-2 bi bi-briefcase-fill"></i>{{'New Magnetic'}}
                         </button>
                     </li>
                     <li class="nav-item dropdown">
@@ -301,7 +298,7 @@ export default {
                             data-bs-toggle="dropdown"
                             aria-expanded="false"
                         >
-                            <i class="me-2 fa-solid fa-toolbox"></i>{{'Tools'}}
+                            <i class="me-2 bi bi-briefcase-fill"></i>{{'Tools'}}
                         </a>
                       <ul class="dropdown-menu px-1">
                         <li>
@@ -311,7 +308,7 @@ export default {
                                 class="dropdown-item btn btn-block nav-link px-2"
                                 @click="onInsulationCoordinator"
                             >
-                                <i class="me-2 fa-solid fa-bolt-lightning"></i>{{'Insulation Coordinator'}}
+                                <i class="me-2 bi bi-lightning-charge-fill"></i>{{'Insulation Coordinator'}}
                             </button>
                         </li>
                       </ul>
@@ -325,7 +322,7 @@ export default {
                             data-bs-toggle="dropdown"
                             aria-expanded="false"
                         >
-                            <i class="me-2 fa-solid fa-hat-wizard"></i>{{'Wizards'}}
+                            <i class="me-2 bi bi-magic"></i>{{'Wizards'}}
                         </a>
                       <ul class="dropdown-menu px-3">
                         <li>
@@ -337,7 +334,7 @@ export default {
                                 @mouseenter="hoveredWizard = 'CommonModeChoke'"
                                 @mouseleave="hoveredWizard = null"
                             >
-                                <i class="me-2 fa-solid fa-filter"></i>{{'CMC Wizard'}}
+                                <i class="me-2 bi bi-funnel-fill"></i>{{'CMC Wizard'}}
                             </button>
                         </li>
                         <li>
@@ -350,7 +347,7 @@ export default {
                                 @mouseenter="hoveredWizard = 'DifferentialModeChoke'"
                                 @mouseleave="hoveredWizard = null"
                             >
-                                <i class="me-2 fa-solid fa-wave-square"></i>{{'DMC Wizard'}}
+                                <i class="me-2 bi bi-soundwave"></i>{{'DMC Wizard'}}
                             </button>
                         </li>
                         <li>
@@ -362,7 +359,7 @@ export default {
                                 @mouseenter="hoveredWizard = 'Flyback'"
                                 @mouseleave="hoveredWizard = null"
                             >
-                                <i class="me-2 fa-solid fa-bolt"></i>{{'Flyback Wizard'}}
+                                <i class="me-2 bi bi-lightning-fill"></i>{{'Flyback Wizard'}}
                             </button>
                         </li>
                         <li>
@@ -374,7 +371,7 @@ export default {
                                 @mouseenter="hoveredWizard = 'Buck'"
                                 @mouseleave="hoveredWizard = null"
                             >
-                                <i class="me-2 fa-solid fa-arrow-down"></i>{{'Buck Wizard'}}
+                                <i class="me-2 bi bi-arrow-down"></i>{{'Buck Wizard'}}
                             </button>
                         </li>
                         <li>
@@ -386,7 +383,7 @@ export default {
                                 @mouseenter="hoveredWizard = 'Boost'"
                                 @mouseleave="hoveredWizard = null"
                             >
-                                <i class="me-2 fa-solid fa-arrow-up"></i>{{'Boost Wizard'}}
+                                <i class="me-2 bi bi-arrow-up"></i>{{'Boost Wizard'}}
                             </button>
                         </li>
                         <li>
@@ -398,7 +395,7 @@ export default {
                                 @mouseenter="hoveredWizard = 'IsolatedBuck'"
                                 @mouseleave="hoveredWizard = null"
                             >
-                                <i class="me-2 fa-solid fa-shield-halved"></i>{{'Isolated Buck Wizard'}}
+                                <i class="me-2 bi bi-shield-shaded"></i>{{'Isolated Buck Wizard'}}
                             </button>
                         </li>
                         <li>
@@ -410,7 +407,7 @@ export default {
                                 @mouseenter="hoveredWizard = 'IsolatedBuckBoost'"
                                 @mouseleave="hoveredWizard = null"
                             >
-                                <i class="me-2 fa-solid fa-shield-virus"></i>{{'Isolated Buck Boost Wizard'}}
+                                <i class="me-2 bi bi-shield-exclamation"></i>{{'Isolated Buck Boost Wizard'}}
                             </button>
                         </li>
                         <li>
@@ -422,7 +419,7 @@ export default {
                                 @mouseenter="hoveredWizard = 'PushPull'"
                                 @mouseleave="hoveredWizard = null"
                             >
-                                <i class="me-2 fa-solid fa-arrows-left-right"></i>{{'Push-Pull Wizard'}}
+                                <i class="me-2 bi bi-arrow-left-right"></i>{{'Push-Pull Wizard'}}
                             </button>
                         </li>
                         <li>
@@ -434,7 +431,7 @@ export default {
                                 @mouseenter="hoveredWizard = 'Pfc'"
                                 @mouseleave="hoveredWizard = null"
                             >
-                                <i class="me-2 fa-solid fa-wave-square"></i>{{'PFC Wizard'}}
+                                <i class="me-2 bi bi-soundwave"></i>{{'PFC Wizard'}}
                             </button>
                         </li>
                         <li>
@@ -446,7 +443,7 @@ export default {
                                 @mouseenter="hoveredWizard = 'DAB'"
                                 @mouseleave="hoveredWizard = null"
                             >
-                                <i class="me-2 fa-solid fa-right-left"></i>{{'DAB Wizard'}}
+                                <i class="me-2 bi bi-arrow-left-right"></i>{{'DAB Wizard'}}
                             </button>
                         </li>
                         <li>
@@ -458,7 +455,7 @@ export default {
                                 @mouseenter="hoveredWizard = 'LLC'"
                                 @mouseleave="hoveredWizard = null"
                             >
-                                <i class="me-2 fa-solid fa-wave-square"></i>{{'LLC Wizard'}}
+                                <i class="me-2 bi bi-soundwave"></i>{{'LLC Wizard'}}
                             </button>
                         </li>
                         <li>
@@ -471,7 +468,7 @@ export default {
                                 @mouseenter="hoveredWizard = 'CLLC'"
                                 @mouseleave="hoveredWizard = null"
                             >
-                                <i class="me-2 fa-solid fa-car-battery"></i>{{'CLLC Wizard'}}
+                                <i class="me-2 bi bi-ev-station"></i>{{'CLLC Wizard'}}
                             </button>
                         </li>
                         <li>
@@ -484,7 +481,7 @@ export default {
                                 @mouseenter="hoveredWizard = 'PSFB'"
                                 @mouseleave="hoveredWizard = null"
                             >
-                                <i class="me-2 fa-solid fa-angles-right"></i>{{'PSFB Wizard'}}
+                                <i class="me-2 bi bi-chevron-double-right"></i>{{'PSFB Wizard'}}
                             </button>
                         </li>
                         <li>
@@ -496,7 +493,7 @@ export default {
                                 @mouseenter="hoveredWizard = 'ActiveClampForward'"
                                 @mouseleave="hoveredWizard = null"
                             >
-                                <i class="me-2 fa-solid fa-compress"></i>{{'Active Clamp Forward Wizard'}}
+                                <i class="me-2 bi bi-fullscreen-exit"></i>{{'Active Clamp Forward Wizard'}}
                             </button>
                         </li>
                         <li>
@@ -508,7 +505,7 @@ export default {
                                 @mouseenter="hoveredWizard = 'SingleSwitchForward'"
                                 @mouseleave="hoveredWizard = null"
                             >
-                                <i class="me-2 fa-solid fa-toggle-off"></i>{{'Single-Switch Forward Wizard'}}
+                                <i class="me-2 bi bi-toggle-off"></i>{{'Single-Switch Forward Wizard'}}
                             </button>
                         </li>
                         <li>
@@ -520,7 +517,7 @@ export default {
                                 @mouseenter="hoveredWizard = 'TwoSwitchForward'"
                                 @mouseleave="hoveredWizard = null"
                             >
-                                <i class="me-2 fa-solid fa-toggle-on"></i>{{'Two-Switch Forward Wizard'}}
+                                <i class="me-2 bi bi-toggle-on"></i>{{'Two-Switch Forward Wizard'}}
                             </button>
                         </li>
                       </ul>
@@ -533,7 +530,7 @@ export default {
                                 class="btn btn-block nav-link px-2 om-continue-btn"
                                 @click="continueMagneticToolDesign"
                             >
-                                <i class="me-2 fa-solid fa-box-open"></i>{{'Continue design'}}
+                                <i class="me-2 bi bi-box-seam"></i>{{'Continue design'}}
                             </button>
                         </span>
                     </li>
@@ -545,7 +542,7 @@ export default {
                                 class="btn btn-block nav-link px-2 om-load-btn"
                                 @click="load"
                             >
-                                <i class="me-1 fa-solid fa-upload"></i>{{'Load MAS'}}
+                                <i class="me-1 bi bi-upload"></i>{{'Load MAS'}}
                             </button>
                         </span>
                     </li>
@@ -560,7 +557,7 @@ export default {
                                 rel="noopener noreferrer"
                                 class="btn nav-link om-donate-btn"
                             >
-                                {{'Donate '}}<i class="fa-solid fa-circle-dollar-to-slot"></i>
+                                {{'Donate '}}<i class="bi bi-piggy-bank-fill"></i>
                             </a>
                         </span>
                     </li>
@@ -573,7 +570,7 @@ export default {
                                 data-bs-toggle="modal"
                                 data-bs-target="#reportBugModal"
                             >
-                                {{headerTogglerIsVisible? 'Report a bug' : 'Bug?'}} <i class="fa-solid fa-bug"></i>
+                                {{headerTogglerIsVisible? 'Report a bug' : 'Bug?'}} <i class="bi bi-bug-fill"></i>
                             </button>
                         </span>
                     </li>
@@ -587,7 +584,7 @@ export default {
                                 target="_blank"
                                 rel="noopener noreferrer"
                             >
-                                {{headerTogglerIsVisible? 'GitHub ' : ''}}<i class="fa-brands fa-github"></i>
+                                {{headerTogglerIsVisible? 'GitHub ' : ''}}<i class="bi bi-github"></i>
                             </a>
                         </span>
                     </li>

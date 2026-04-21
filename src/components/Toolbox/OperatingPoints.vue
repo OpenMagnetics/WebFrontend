@@ -305,12 +305,12 @@ export default {
         <div class="row op-row">
             <div class="col-sm-12 col-md-2 text-start m-0 px-1 op-panel">
                 <div class="op-header">
-                    <i class="fa-solid fa-list-check"></i>
+                    <i class="bi bi-list-check"></i>
                     <span>Operating points</span>
                 </div>
                 <div class="op-card" :class="{ 'op-card-active': operatingPointIndex == currentOperatingPointIndex }" v-for="(operatingPoint, operatingPointIndex) in masStore.mas.inputs.operatingPoints" :key="operatingPointIndex">
 
-                    <span v-if="$stateStore.operatingPoints.modePerPoint[operatingPointIndex] == null"> Choose a mode for this operating point first <i class="fa-solid fa-right-long ms-3"></i> </span>
+                    <span v-if="$stateStore.operatingPoints.modePerPoint[operatingPointIndex] == null"> Choose a mode for this operating point first <i class="bi bi-arrow-right ms-3"></i> </span>
                     <div v-else class="m-0 px-1">
                         <Text
                             :name="'name'"
@@ -410,7 +410,7 @@ export default {
                                     class="op-btn op-btn-danger w-100 mt-2"
                                     @click="removePoint(operatingPointIndex)"
                                 >
-                                    <i class="fa-solid fa-trash"></i>
+                                    <i class="bi bi-trash-fill"></i>
                                     <span>Remove</span>
                                 </button>
                             </div>
@@ -420,7 +420,7 @@ export default {
                                     class="op-btn op-btn-primary w-100 mt-2"
                                     @click="currentOperatingPointIndex = operatingPointIndex"
                                 >
-                                    <i class="fa-solid fa-check"></i>
+                                    <i class="bi bi-check-lg"></i>
                                     <span>Select</span>
                                 </button>
                             </div>
@@ -432,7 +432,7 @@ export default {
                     class="op-btn op-btn-primary mt-2"
                     @click="addNewOperatingPoint"
                 >
-                    <i class="fa-solid fa-plus"></i>
+                    <i class="bi bi-plus-lg"></i>
                     <span>Add New OP</span>
                 </button>
                 <button
@@ -440,7 +440,7 @@ export default {
                     class="op-btn op-btn-outline mt-2"
                     @click="$emit('changeTool', 'designRequirements')"
                 >
-                    <i class="fa-solid fa-sliders"></i>
+                    <i class="bi bi-sliders"></i>
                     <span>Modify No. Windings</span>
                 </button>
 

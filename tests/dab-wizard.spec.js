@@ -4,7 +4,7 @@
  * 1. modulationType sent as string (SPS/EPS/DPS/TPS) not integer
  * 2. SPICE topology map key 'Dual Active Bridge Converter' matches getTopology()
  */
-import { test, expect } from '@playwright/test';
+import { test, expect } from './_coverage.js';
 import {
   BASE_URL,
   SS_DIR,

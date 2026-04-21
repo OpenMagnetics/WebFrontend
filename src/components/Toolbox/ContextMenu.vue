@@ -83,7 +83,7 @@ export default {
     >
         <div class="toolmenu-header">
             <div class="toolmenu-header-left">
-                <i class="fa-solid fa-toolbox"></i>
+                <i class="bi bi-briefcase-fill"></i>
                 <span>Tool menu</span>
             </div>
         </div>
@@ -119,7 +119,7 @@ export default {
                     data-bs-toggle="modal"
                     :data-bs-target="modalTarget"
                 >
-                    <i class="fa-solid fa-gear"></i>
+                    <i class="bi bi-gear-fill"></i>
                     <span>Settings</span>
                 </button>
                 <button
@@ -128,7 +128,7 @@ export default {
                     class="toolmenu-btn toolmenu-btn-outline"
                     @click="$stateStore.redraw()"
                 >
-                    <i class="fa-solid fa-pen-ruler"></i>
+                    <i class="bi bi-pencil-square"></i>
                     <span>Redraw</span>
                 </button>
                 <button
@@ -137,7 +137,7 @@ export default {
                     class="toolmenu-btn toolmenu-btn-outline"
                     @click="$stateStore.resimulate()"
                 >
-                    <i class="fa-solid fa-rotate"></i>
+                    <i class="bi bi-arrow-clockwise"></i>
                     <span>Resimulate</span>
                 </button>
                 <button
@@ -146,7 +146,7 @@ export default {
                     class="toolmenu-btn toolmenu-btn-primary"
                     @click="$emit('editMagnetic')"
                 >
-                    <i class="fa-solid fa-pen-to-square"></i>
+                    <i class="bi bi-pencil-square"></i>
                     <span>Edit</span>
                 </button>
                 <button
@@ -155,7 +155,7 @@ export default {
                     class="toolmenu-btn toolmenu-btn-primary"
                     @click="$emit('viewMagnetic')"
                 >
-                    <i class="fa-solid fa-check"></i>
+                    <i class="bi bi-check-lg"></i>
                     <span>Confirm</span>
                 </button>
                 <button
@@ -164,7 +164,7 @@ export default {
                     class="toolmenu-btn toolmenu-btn-primary"
                     @click="catalogStore.orderSample(masStore.mas)"
                 >
-                    <i class="fa-solid fa-cart-shopping"></i>
+                    <i class="bi bi-cart"></i>
                     <span>Order a sample</span>
                 </button>
                 <button
@@ -173,7 +173,7 @@ export default {
                     class="toolmenu-btn toolmenu-btn-secondary"
                     @click="$emit('toolSelected', 'magneticAdviser')"
                 >
-                    <i class="fa-solid fa-wand-magic-sparkles"></i>
+                    <i class="bi bi-magic"></i>
                     <span>Magnetic Adviser</span>
                 </button>
                 <button
@@ -205,7 +205,7 @@ export default {
                     class="toolmenu-btn toolmenu-btn-primary"
                     @click="coreAdvancedModeConfirmChanges"
                 >
-                    <i class="fa-solid fa-check"></i>
+                    <i class="bi bi-check-lg"></i>
                     <span>Apply changes</span>
                 </button>
                 <button
@@ -213,7 +213,7 @@ export default {
                     class="toolmenu-btn toolmenu-btn-danger"
                     @click="coreAdvancedModeCancelChanges"
                 >
-                    <i class="fa-solid fa-xmark"></i>
+                    <i class="bi bi-x-lg"></i>
                     <span>Cancel</span>
                 </button>
                 <button
@@ -221,7 +221,7 @@ export default {
                     class="toolmenu-btn toolmenu-btn-danger"
                     @click="coilAdvancedModeClose"
                 >
-                    <i class="fa-solid fa-xmark"></i>
+                    <i class="bi bi-x-lg"></i>
                     <span>Close</span>
                 </button>
             </div>
