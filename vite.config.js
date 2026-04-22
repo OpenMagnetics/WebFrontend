@@ -71,6 +71,10 @@ export default defineConfig({
                 find: '@',
                 replacement: fileURLToPath(new URL('./src', import.meta.url))
             },
+            {
+                find: '/WebSharedComponents',
+                replacement: fileURLToPath(new URL('./WebSharedComponents', import.meta.url))
+            },
         ],
     },
     server: {
