@@ -45,3 +45,34 @@ AGENTS.md
 *.png
 # Playwright global-setup storage state
 tests/.auth/
+
+# Test reports and coverage
+monocart-report/
+test-results/
+coverage/
+.nyc_output/
+.pytest_cache/
+
+# Temporary/debug files
+*.tmp
+*.temp
+*-debug.*
+*.json.bak
+
+# Lock files from different environments (but keep package-lock.json)
+yarn.lock
+
+# Build/cache directories
+.cache/
+.eslintcache
+
+# OS files
+Thumbs.db
+.vscode/settings.json
+.vscode/launch.json
+
+# Debug/test files
+*_debug.*
+*_test*.json
+*.xfmr.json
+.claude/settings.json
