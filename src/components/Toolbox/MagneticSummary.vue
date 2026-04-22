@@ -1530,16 +1530,21 @@ export default {
 }
 
 /* Print styles */
+@page {
+    margin: 1.2cm;
+    size: A4 portrait;
+}
+
 @media print {
     .datasheet-wrapper {
         background: white;
         padding: 0;
     }
-    
+
     .d-print-none {
         display: none !important;
     }
-    
+
     .datasheet-container {
         box-shadow: none;
         max-width: 100%;
@@ -1670,10 +1675,41 @@ export default {
     
     .section {
         page-break-inside: avoid;
+        break-inside: avoid;
     }
-    
+
     .two-column-section {
         page-break-inside: avoid;
+        break-inside: avoid;
+    }
+
+    .spec-table {
+        page-break-inside: avoid;
+        break-inside: avoid;
+    }
+
+    .spec-table tr {
+        page-break-inside: avoid;
+        break-inside: avoid;
+    }
+
+    .construction-step {
+        page-break-inside: avoid;
+        break-inside: avoid;
+    }
+
+    .excitation-card {
+        page-break-inside: avoid;
+        break-inside: avoid;
+    }
+
+    .key-params-box {
+        page-break-inside: avoid;
+        break-inside: avoid;
+    }
+
+    .section + .section {
+        break-before: auto;
     }
 }
 
@@ -1788,7 +1824,7 @@ export default {
 .summary-btn-outline {
     background: rgba(var(--bs-light-rgb), 0.08);
     border: 1px solid rgba(var(--bs-light-rgb), 0.22);
-    color: var(--bs-light);
+    color: white;
     box-shadow: 0 1px 4px rgba(var(--bs-dark-rgb), 0.25);
 }
 
