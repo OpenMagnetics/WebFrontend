@@ -1,6 +1,6 @@
 <script setup>
-import { toTitleCase, getMultiplier, combinedStyle, combinedClass } from '/WebSharedComponents/assets/js/utils.js'
-import * as Utils from '/WebSharedComponents/assets/js/utils.js'
+import { toTitleCase, getMultiplier, combinedStyle, combinedClass } from 'WebSharedComponents/assets/js/utils.js'
+import * as Utils from 'WebSharedComponents/assets/js/utils.js'
 </script>
 
 <script>

@@ -2,7 +2,7 @@
 import { useMasStore } from '/MagneticBuilder/src/stores/mas'
 import { useHistoryStore } from '/MagneticBuilder/src/stores/history'
 import { useTaskQueueStore } from '../stores/taskQueue'
-import { combinedStyle, combinedClass, checkAndFixMas, deepCopy } from '/WebSharedComponents/assets/js/utils.js'
+import { combinedStyle, combinedClass, checkAndFixMas, deepCopy } from 'WebSharedComponents/assets/js/utils.js'
 import { defineAsyncComponent } from "vue";
 import { useElementVisibility  } from '@vueuse/core'
 import { ref } from 'vue'

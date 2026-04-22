@@ -2,7 +2,7 @@
 import { useMasStore } from '../../stores/mas'
 import { useAdviseCacheStore } from '../../stores/adviseCache'
 import Slider from '@vueform/slider'
-import { removeTrailingZeroes, toTitleCase, toCamelCase, deepCopy } from '/WebSharedComponents/assets/js/utils.js'
+import { removeTrailingZeroes, toTitleCase, toCamelCase, deepCopy } from 'WebSharedComponents/assets/js/utils.js'
 import Advise from './CatalogAdviser/Advise.vue'
 import { useCatalogStore } from '../../stores/catalog'
 </script>

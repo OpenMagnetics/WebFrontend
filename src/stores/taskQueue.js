@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { waitForMkf, isWorkerMode } from '/WebSharedComponents/assets/js/mkfRuntime'
+import { waitForMkf, isWorkerMode } from 'WebSharedComponents/assets/js/mkfRuntime'
 
 /**
  * Convert Embind vector or array to JS array.

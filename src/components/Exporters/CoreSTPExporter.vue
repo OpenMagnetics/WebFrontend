@@ -1,6 +1,6 @@
 <script setup>
-import { download, deepCopy } from '/WebSharedComponents/assets/js/utils.js'
-import { initMvbWorker, buildMagneticSTEP } from '/WebSharedComponents/assets/js/mvbRuntime.js'
+import { download, deepCopy } from 'WebSharedComponents/assets/js/utils.js'
+import { initMvbWorker, buildMagneticSTEP } from 'WebSharedComponents/assets/js/mvbRuntime.js'
 </script>
 <script>
 

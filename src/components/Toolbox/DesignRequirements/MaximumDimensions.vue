@@ -1,6 +1,6 @@
 <script setup>
-import { toTitleCase, getMultiplier, combinedStyle, combinedClass } from '/WebSharedComponents/assets/js/utils.js'
-import DimensionUnit from '/WebSharedComponents/DataInput/DimensionUnit.vue'
+import { toTitleCase, getMultiplier, combinedStyle, combinedClass } from 'WebSharedComponents/assets/js/utils.js'
+import DimensionUnit from 'WebSharedComponents/DataInput/DimensionUnit.vue'
 
 </script>
 

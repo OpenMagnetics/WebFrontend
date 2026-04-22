@@ -1,6 +1,6 @@
 <script setup>
 import Module from '../../../assets/js/libCrossReferencers.wasm.js'
-import { toTitleCase, removeTrailingZeroes, processCoreMaterialTexts, deepCopy, downloadBase64asPDF, clean } from '/WebSharedComponents/assets/js/utils.js'
+import { toTitleCase, removeTrailingZeroes, processCoreMaterialTexts, deepCopy, downloadBase64asPDF, clean } from 'WebSharedComponents/assets/js/utils.js'
 
 </script>
 

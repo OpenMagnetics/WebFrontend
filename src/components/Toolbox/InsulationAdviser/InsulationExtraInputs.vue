@@ -1,8 +1,8 @@
 <script setup>
-import { minimumMaximumScalePerParameter } from '/WebSharedComponents/assets/js/defaults.js'
-import { toTitleCase, getMultiplier } from '/WebSharedComponents/assets/js/utils.js'
-import Dimension from '/WebSharedComponents/DataInput/Dimension.vue'
-import * as Utils from '/WebSharedComponents/assets/js/utils.js'
+import { minimumMaximumScalePerParameter } from 'WebSharedComponents/assets/js/defaults.js'
+import { toTitleCase, getMultiplier } from 'WebSharedComponents/assets/js/utils.js'
+import Dimension from 'WebSharedComponents/DataInput/Dimension.vue'
+import * as Utils from 'WebSharedComponents/assets/js/utils.js'
 </script>
 
 <script>

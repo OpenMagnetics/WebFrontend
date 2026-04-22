@@ -1,5 +1,5 @@
 <script>
-import LineVisualizer from '/WebSharedComponents/Common/LineVisualizer.vue'
+import LineVisualizer from 'WebSharedComponents/Common/LineVisualizer.vue'
 import { computeEmiSpectrum, EMI_F_MIN_HZ, EMI_F_MAX_HZ } from '../../composables/useCmcEmiSpectrum.js'
 
 export default {

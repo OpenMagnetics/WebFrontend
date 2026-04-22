@@ -1,8 +1,8 @@
 <script setup>
 import { useMasStore } from '../../../stores/mas'
-import { toTitleCase, getMultiplier, combinedStyle, combinedClass } from '/WebSharedComponents/assets/js/utils.js'
-import ElementFromList from '/WebSharedComponents/DataInput/ElementFromList.vue'
-import { isolationSideOrdered } from '/WebSharedComponents/assets/js/defaults.js'
+import { toTitleCase, getMultiplier, combinedStyle, combinedClass } from 'WebSharedComponents/assets/js/utils.js'
+import ElementFromList from 'WebSharedComponents/DataInput/ElementFromList.vue'
+import { isolationSideOrdered } from 'WebSharedComponents/assets/js/defaults.js'
 </script>
 
 <script>

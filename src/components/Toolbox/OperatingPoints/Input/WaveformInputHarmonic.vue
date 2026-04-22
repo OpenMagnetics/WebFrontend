@@ -1,7 +1,7 @@
 <script setup>
-import { combinedStyle, combinedClass } from '/WebSharedComponents/assets/js/utils.js'
+import { combinedStyle, combinedClass } from 'WebSharedComponents/assets/js/utils.js'
 
-import Dimension from '/WebSharedComponents/DataInput/Dimension.vue'
+import Dimension from 'WebSharedComponents/DataInput/Dimension.vue'
 
 </script>
 <script>

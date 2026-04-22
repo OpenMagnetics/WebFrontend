@@ -1,9 +1,9 @@
 <script setup>
-import Dimension from '/WebSharedComponents/DataInput/Dimension.vue'
-import ElementFromList from '/WebSharedComponents/DataInput/ElementFromList.vue'
-import { minimumMaximumScalePerParameter } from '/WebSharedComponents/assets/js/defaults.js'
-import { WaveformLabel } from '/WebSharedComponents/assets/ts/MAS.ts'
-import { toTitleCase, combinedStyle } from '/WebSharedComponents/assets/js/utils.js'
+import Dimension from 'WebSharedComponents/DataInput/Dimension.vue'
+import ElementFromList from 'WebSharedComponents/DataInput/ElementFromList.vue'
+import { minimumMaximumScalePerParameter } from 'WebSharedComponents/assets/js/defaults.js'
+import { WaveformLabel } from 'WebSharedComponents/assets/ts/MAS.ts'
+import { toTitleCase, combinedStyle } from 'WebSharedComponents/assets/js/utils.js'
 
 </script>
 

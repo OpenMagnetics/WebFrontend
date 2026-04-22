@@ -2,10 +2,10 @@
 import { useMasStore } from '../../../stores/mas'
 import { useTaskQueueStore } from '../../../stores/taskQueue'
 import { toTitleCase, removeTrailingZeroes, formatUnit, formatDimension, formatTemperature, formatInductance,
-         formatPower, formatResistance, deepCopy, downloadBase64asPDF, clean, download } from '/WebSharedComponents/assets/js/utils.js'
-import Magnetic2DVisualizer, { PLOT_MODES } from '/WebSharedComponents/Common/Magnetic2DVisualizer.vue'
-import { waitForMkf } from '/WebSharedComponents/assets/js/mkfRuntime'
-import { initMvbWorker, buildMagneticSTEP } from '/WebSharedComponents/assets/js/mvbRuntime.js'
+         formatPower, formatResistance, deepCopy, downloadBase64asPDF, clean, download } from 'WebSharedComponents/assets/js/utils.js'
+import Magnetic2DVisualizer, { PLOT_MODES } from 'WebSharedComponents/Common/Magnetic2DVisualizer.vue'
+import { waitForMkf } from 'WebSharedComponents/assets/js/mkfRuntime'
+import { initMvbWorker, buildMagneticSTEP } from 'WebSharedComponents/assets/js/mvbRuntime.js'
 
 </script>
 

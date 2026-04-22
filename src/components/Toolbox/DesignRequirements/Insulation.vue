@@ -1,11 +1,11 @@
 <script setup>
-import { toTitleCase, getMultiplier, combinedStyle, combinedClass } from '/WebSharedComponents/assets/js/utils.js'
-import DimensionWithTolerance from '/WebSharedComponents/DataInput/DimensionWithTolerance.vue'
-import ElementFromList from '/WebSharedComponents/DataInput/ElementFromList.vue'
-import SeveralElementsFromList from '/WebSharedComponents/DataInput/SeveralElementsFromList.vue'
-import { minimumMaximumScalePerParameter} from '/WebSharedComponents/assets/js/defaults.js'
-import { Cti, InsulationType, OvervoltageCategory, PollutionDegree, InsulationStandards } from '/WebSharedComponents/assets/ts/MAS.ts'
-import * as Utils from '/WebSharedComponents/assets/js/utils.js'
+import { toTitleCase, getMultiplier, combinedStyle, combinedClass } from 'WebSharedComponents/assets/js/utils.js'
+import DimensionWithTolerance from 'WebSharedComponents/DataInput/DimensionWithTolerance.vue'
+import ElementFromList from 'WebSharedComponents/DataInput/ElementFromList.vue'
+import SeveralElementsFromList from 'WebSharedComponents/DataInput/SeveralElementsFromList.vue'
+import { minimumMaximumScalePerParameter} from 'WebSharedComponents/assets/js/defaults.js'
+import { Cti, InsulationType, OvervoltageCategory, PollutionDegree, InsulationStandards } from 'WebSharedComponents/assets/ts/MAS.ts'
+import * as Utils from 'WebSharedComponents/assets/js/utils.js'
 </script>
 
 <script>

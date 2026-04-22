@@ -1,7 +1,7 @@
 <script setup>
 import { useMasStore } from '../../../stores/mas'
 import { useTaskQueueStore } from '../../../stores/taskQueue'
-import { toTitleCase, removeTrailingZeroes, processCoreTexts, deepCopy, downloadBase64asPDF, clean, download } from '/WebSharedComponents/assets/js/utils.js'
+import { toTitleCase, removeTrailingZeroes, processCoreTexts, deepCopy, downloadBase64asPDF, clean, download } from 'WebSharedComponents/assets/js/utils.js'
 
 </script>
 

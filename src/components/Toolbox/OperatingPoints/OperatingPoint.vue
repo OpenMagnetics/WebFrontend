@@ -4,11 +4,11 @@ import { useTaskQueueStore } from '../../../stores/taskQueue'
 import OperatingPointManual from './OperatingPointManual.vue'
 import OperatingPointHarmonics from './OperatingPointHarmonics.vue'
 import OperatingPointCircuitSimulator from './OperatingPointCircuitSimulator.vue'
-import { roundWithDecimals, deepCopy, removeTrailingZeroes, combinedStyle } from '/WebSharedComponents/assets/js/utils.js'
-import Dimension from '/WebSharedComponents/DataInput/Dimension.vue'
+import { roundWithDecimals, deepCopy, removeTrailingZeroes, combinedStyle } from 'WebSharedComponents/assets/js/utils.js'
+import Dimension from 'WebSharedComponents/DataInput/Dimension.vue'
 
-import { defaultOperatingPointExcitation, defaultPrecision, defaultSinusoidalNumberPoints, minimumMaximumScalePerParameter } from '/WebSharedComponents/assets/js/defaults.js'
-import { tooltipsMagneticSynthesisOperatingPoints } from '/WebSharedComponents/assets/js/texts.js'
+import { defaultOperatingPointExcitation, defaultPrecision, defaultSinusoidalNumberPoints, minimumMaximumScalePerParameter } from 'WebSharedComponents/assets/js/defaults.js'
+import { tooltipsMagneticSynthesisOperatingPoints } from 'WebSharedComponents/assets/js/texts.js'
 
 </script>
 <script>

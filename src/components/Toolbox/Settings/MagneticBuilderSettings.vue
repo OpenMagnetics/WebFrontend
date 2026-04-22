@@ -3,7 +3,7 @@ import { Modal } from "bootstrap";
 import { useMagneticBuilderSettingsStore } from '/MagneticBuilder/src/stores/magneticBuilderSettings'
 import { useModelSettingsStore } from '/MagneticBuilder/src/stores/modelSettings'
 import { useMasStore } from '/src/stores/mas'
-import ElementFromList from '/WebSharedComponents/DataInput/ElementFromList.vue'
+import ElementFromList from 'WebSharedComponents/DataInput/ElementFromList.vue'
 </script>
 
 <script>

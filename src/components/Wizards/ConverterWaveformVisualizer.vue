@@ -1,5 +1,5 @@
 <script>
-import LineVisualizer from '/WebSharedComponents/Common/LineVisualizer.vue'
+import LineVisualizer from 'WebSharedComponents/Common/LineVisualizer.vue'
 import { useConverterWaveforms } from '../../composables/useConverterWaveforms.js'
 
 export default {

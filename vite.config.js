@@ -72,7 +72,7 @@ export default defineConfig({
                 replacement: fileURLToPath(new URL('./src', import.meta.url))
             },
             {
-                find: '/WebSharedComponents',
+                find: 'WebSharedComponents',
                 replacement: fileURLToPath(new URL('./WebSharedComponents', import.meta.url))
             },
         ],

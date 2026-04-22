@@ -5,7 +5,7 @@ import { RadarChart, BarChart } from 'echarts/charts'
 import { TitleComponent, TooltipComponent, RadarComponent, GridComponent } from 'echarts/components'
 import VChart from 'vue-echarts'
 import { markRaw } from 'vue'
-import { toTitleCase, removeTrailingZeroes, formatPower, formatPowerDensity, formatInductance, formatTemperature } from '/WebSharedComponents/assets/js/utils.js'
+import { toTitleCase, removeTrailingZeroes, formatPower, formatPowerDensity, formatInductance, formatTemperature } from 'WebSharedComponents/assets/js/utils.js'
 import { useTaskQueueStore } from '../../../stores/taskQueue'
 
 // Register ECharts components once at module level

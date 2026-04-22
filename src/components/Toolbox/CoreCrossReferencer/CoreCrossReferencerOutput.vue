@@ -1,7 +1,7 @@
 <script setup>
 import Module from '../../../assets/js/libCrossReferencers.wasm.js'
-import { toTitleCase, removeTrailingZeroes, processCoreTexts, deepCopy, downloadBase64asPDF, clean, download } from '/WebSharedComponents/assets/js/utils.js'
-import Core3DVisualizer from '/WebSharedComponents/Common/Core3DVisualizer.vue'
+import { toTitleCase, removeTrailingZeroes, processCoreTexts, deepCopy, downloadBase64asPDF, clean, download } from 'WebSharedComponents/assets/js/utils.js'
+import Core3DVisualizer from 'WebSharedComponents/Common/Core3DVisualizer.vue'
 import CoreSTPExporter from '../../Exporters/CoreSTPExporter.vue'
 import CoreStlExporter from '../../Exporters/CoreStlExporter.vue'
 import CoreTechnicalDrawingExporter from '../../Exporters/CoreTechnicalDrawingExporter.vue'

@@ -2,8 +2,8 @@ import { defineStore } from 'pinia'
 import { ref, watch, computed  } from 'vue'
 import { useMasStore } from './mas'
 import { useAdviseCacheStore } from './adviseCache'
-import { deepCopy } from '/WebSharedComponents/assets/js/utils.js'
-import * as Defaults from '/WebSharedComponents/assets/js/defaults.js'
+import { deepCopy } from 'WebSharedComponents/assets/js/utils.js'
+import * as Defaults from 'WebSharedComponents/assets/js/defaults.js'
 
 
 export const useStateStore = defineStore("state", () => {

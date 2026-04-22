@@ -1,8 +1,8 @@
 <script setup>
 import { useTaskQueueStore } from '../../../../stores/taskQueue'
-import DimensionReadOnly from '/WebSharedComponents/DataInput/DimensionReadOnly.vue'
-import { removeTrailingZeroes, combinedStyle } from '/WebSharedComponents/assets/js/utils.js'
-import { minimumMaximumScalePerParameter } from '/WebSharedComponents/assets/js/defaults.js'
+import DimensionReadOnly from 'WebSharedComponents/DataInput/DimensionReadOnly.vue'
+import { removeTrailingZeroes, combinedStyle } from 'WebSharedComponents/assets/js/utils.js'
+import { minimumMaximumScalePerParameter } from 'WebSharedComponents/assets/js/defaults.js'
 </script>
 
 <script>

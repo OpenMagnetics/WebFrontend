@@ -7,12 +7,12 @@ import WaveformFourier from './Output/WaveformFourier.vue'
 import WaveformOutput from './Output/WaveformOutput.vue'
 import WaveformSimpleOutput from './Output/WaveformSimpleOutput.vue'
 import WaveformCombinedOutput from './Output/WaveformCombinedOutput.vue'
-import { formatFrequency, removeTrailingZeroes, roundWithDecimals, deepCopy, ordinalSuffixOf } from '/WebSharedComponents/assets/js/utils.js'
-import Dimension from '/WebSharedComponents/DataInput/Dimension.vue'
-import { combinedStyle, combinedClass } from '/WebSharedComponents/assets/js/utils.js'
+import { formatFrequency, removeTrailingZeroes, roundWithDecimals, deepCopy, ordinalSuffixOf } from 'WebSharedComponents/assets/js/utils.js'
+import Dimension from 'WebSharedComponents/DataInput/Dimension.vue'
+import { combinedStyle, combinedClass } from 'WebSharedComponents/assets/js/utils.js'
 
-import { defaultOperatingPointExcitationWithHarmonics, defaultPrecision, defaultSinusoidalNumberPoints } from '/WebSharedComponents/assets/js/defaults.js'
-import { tooltipsMagneticSynthesisOperatingPoints } from '/WebSharedComponents/assets/js/texts.js'
+import { defaultOperatingPointExcitationWithHarmonics, defaultPrecision, defaultSinusoidalNumberPoints } from 'WebSharedComponents/assets/js/defaults.js'
+import { tooltipsMagneticSynthesisOperatingPoints } from 'WebSharedComponents/assets/js/texts.js'
 
 </script>
 <script>

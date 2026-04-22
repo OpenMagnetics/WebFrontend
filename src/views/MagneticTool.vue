@@ -3,7 +3,7 @@ import { useMasStore } from '../stores/mas'
 import { useAdviseCacheStore } from '../stores/adviseCache'
 import Header from '../components/Header.vue'
 import Footer from '../components/Footer.vue'
-import { toTitleCase } from '/WebSharedComponents/assets/js/utils.js'
+import { toTitleCase } from 'WebSharedComponents/assets/js/utils.js'
 
 import GenericTool from '../components/Toolbox/GenericTool.vue'
 

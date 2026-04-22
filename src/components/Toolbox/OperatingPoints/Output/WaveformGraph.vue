@@ -3,7 +3,7 @@ import { useMasStore } from '../../../../stores/mas'
 import { Chart,
          registerables } from 'chart.js'
 import { removeTrailingZeroes,
-         roundWithDecimals } from '/WebSharedComponents/assets/js/utils.js'
+         roundWithDecimals } from 'WebSharedComponents/assets/js/utils.js'
 import 'chartjs-plugin-dragdata'
 </script>
 

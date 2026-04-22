@@ -2,9 +2,9 @@
 import { useMasStore } from '../../../../stores/mas'
 import { useTaskQueueStore } from '../../../../stores/taskQueue'
 import { Chart, registerables } from 'chart.js'
-import { formatCurrent, removeTrailingZeroes, formatFrequency, formatVoltage } from '/WebSharedComponents/assets/js/utils.js'
-import { defaultSamplingNumberPoints, defaultMaximumNumberHarmonicsShown } from '/WebSharedComponents/assets/js/defaults.js'
-import { deepCopy } from '/WebSharedComponents/assets/js/utils.js'
+import { formatCurrent, removeTrailingZeroes, formatFrequency, formatVoltage } from 'WebSharedComponents/assets/js/utils.js'
+import { defaultSamplingNumberPoints, defaultMaximumNumberHarmonicsShown } from 'WebSharedComponents/assets/js/defaults.js'
+import { deepCopy } from 'WebSharedComponents/assets/js/utils.js'
 </script>
 
 <script>

@@ -1,6 +1,6 @@
 <script setup>
 import { Chart, registerables } from 'chart.js'
-import { toTitleCase, removeTrailingZeroes, formatPower, formatDimension, formatInductance, formatResistance } from '/WebSharedComponents/assets/js/utils.js'
+import { toTitleCase, removeTrailingZeroes, formatPower, formatDimension, formatInductance, formatResistance } from 'WebSharedComponents/assets/js/utils.js'
 import { useTaskQueueStore } from '../../../stores/taskQueue'
 </script>
 

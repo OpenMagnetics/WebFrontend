@@ -1,9 +1,9 @@
 <script setup>
 import Storyline from './Storyline.vue'
 import ContextMenu from './ContextMenu.vue'
-import { toTitleCase } from '/WebSharedComponents/assets/js/utils.js'
+import { toTitleCase } from 'WebSharedComponents/assets/js/utils.js'
 
-import ElementFromList from '/WebSharedComponents/DataInput/ElementFromList.vue'
+import ElementFromList from 'WebSharedComponents/DataInput/ElementFromList.vue'
 import DesignRequirements from './DesignRequirements.vue'
 import OperatingPoints from './OperatingPoints.vue'
 import MagneticCoreAdviser from './MagneticCoreAdviser.vue'

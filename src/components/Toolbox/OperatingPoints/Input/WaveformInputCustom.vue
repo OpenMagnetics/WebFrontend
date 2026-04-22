@@ -1,9 +1,9 @@
 <script setup>
 import WaveformInputCustomPoint from './WaveformInputCustomPoint.vue'
-import ElementFromList from '/WebSharedComponents/DataInput/ElementFromList.vue'
-import { WaveformLabel } from '/WebSharedComponents/assets/ts/MAS.ts'
-import { minimumMaximumScalePerParameter } from '/WebSharedComponents/assets/js/defaults.js'
-import { toTitleCase, combinedStyle } from '/WebSharedComponents/assets/js/utils.js'
+import ElementFromList from 'WebSharedComponents/DataInput/ElementFromList.vue'
+import { WaveformLabel } from 'WebSharedComponents/assets/ts/MAS.ts'
+import { minimumMaximumScalePerParameter } from 'WebSharedComponents/assets/js/defaults.js'
+import { toTitleCase, combinedStyle } from 'WebSharedComponents/assets/js/utils.js'
 
 </script>
 

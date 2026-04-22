@@ -1,12 +1,12 @@
 <script setup>
 import { useCrossReferencerStore } from '../../stores/crossReferencer'
-import { defaultCore, defaultInputs, coreMaterialCrossReferencerPossibleLabels } from '/WebSharedComponents/assets/js/defaults.js'
-import { deepCopy,  formatUnit, removeTrailingZeroes } from '/WebSharedComponents/assets/js/utils.js'
-import ElementFromList from '/WebSharedComponents/DataInput/ElementFromList.vue'
+import { defaultCore, defaultInputs, coreMaterialCrossReferencerPossibleLabels } from 'WebSharedComponents/assets/js/defaults.js'
+import { deepCopy,  formatUnit, removeTrailingZeroes } from 'WebSharedComponents/assets/js/utils.js'
+import ElementFromList from 'WebSharedComponents/DataInput/ElementFromList.vue'
 import Module from '../../assets/js/libCrossReferencers.wasm.js'
 import CoreMaterialCrossReferencerInputs from './CoreMaterialCrossReferencer/CoreMaterialCrossReferencerInputs.vue'
 import CoreMaterialCrossReferencerTable from './CoreMaterialCrossReferencer/CoreMaterialCrossReferencerTable.vue'
-import ScatterChartComparator from '/WebSharedComponents/Common/ScatterChartComparator.vue'
+import ScatterChartComparator from 'WebSharedComponents/Common/ScatterChartComparator.vue'
 import CoreMaterialCrossReferencerOutput from './CoreMaterialCrossReferencer/CoreMaterialCrossReferencerOutput.vue'
 </script>
 

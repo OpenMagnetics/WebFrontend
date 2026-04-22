@@ -1,10 +1,10 @@
 <script setup>
 import { useCrossReferencerStore } from '../../../stores/crossReferencer'
-import { defaultCore, defaultInputs, coreMaterialCrossReferencerPossibleCoreTypes } from '/WebSharedComponents/assets/js/defaults.js'
-import { deepCopy } from '/WebSharedComponents/assets/js/utils.js'
-import Dimension from '/WebSharedComponents/DataInput/Dimension.vue'
-import ElementFromList from '/WebSharedComponents/DataInput/ElementFromList.vue'
-import SeveralElementsFromList from '/WebSharedComponents/DataInput/SeveralElementsFromList.vue'
+import { defaultCore, defaultInputs, coreMaterialCrossReferencerPossibleCoreTypes } from 'WebSharedComponents/assets/js/defaults.js'
+import { deepCopy } from 'WebSharedComponents/assets/js/utils.js'
+import Dimension from 'WebSharedComponents/DataInput/Dimension.vue'
+import ElementFromList from 'WebSharedComponents/DataInput/ElementFromList.vue'
+import SeveralElementsFromList from 'WebSharedComponents/DataInput/SeveralElementsFromList.vue'
 import Module from '../../../assets/js/libCrossReferencers.wasm.js'
 
 </script>

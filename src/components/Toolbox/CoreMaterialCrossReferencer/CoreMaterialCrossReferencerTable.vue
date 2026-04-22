@@ -1,5 +1,5 @@
 <script setup >
-import { toTitleCase, formatUnit, formatPowerDensity, formatAdimensional, formatMagneticFluxDensity, formatMagneticFieldStrength, formatResistivity, formatTemperature, removeTrailingZeroes, deepCopy } from '/WebSharedComponents/assets/js/utils.js'
+import { toTitleCase, formatUnit, formatPowerDensity, formatAdimensional, formatMagneticFluxDensity, formatMagneticFieldStrength, formatResistivity, formatTemperature, removeTrailingZeroes, deepCopy } from 'WebSharedComponents/assets/js/utils.js'
 import '../../../assets/css/vue-good-table-next.css'
 
 </script>

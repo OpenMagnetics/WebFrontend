@@ -1,6 +1,6 @@
 <script setup>
-import { clean, download } from '/WebSharedComponents/assets/js/utils.js'
-import { waitForMkf } from '/WebSharedComponents/assets/js/mkfRuntime'
+import { clean, download } from 'WebSharedComponents/assets/js/utils.js'
+import { waitForMkf } from 'WebSharedComponents/assets/js/mkfRuntime'
 
 </script>
 <script>

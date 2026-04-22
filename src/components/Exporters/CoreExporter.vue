@@ -4,7 +4,7 @@ import { Modal } from "bootstrap";
 import CoreSTPExporter from './CoreSTPExporter.vue'
 import CoreStlExporter from './CoreStlExporter.vue'
 import CoreTechnicalDrawingExporter from './CoreTechnicalDrawingExporter.vue'
-import { deepCopy, download } from '/WebSharedComponents/assets/js/utils.js'
+import { deepCopy, download } from 'WebSharedComponents/assets/js/utils.js'
 </script>
 
 <script>

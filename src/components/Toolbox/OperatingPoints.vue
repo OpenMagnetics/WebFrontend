@@ -2,13 +2,13 @@
 import { useMasStore } from '../../stores/mas'
 import { useTaskQueueStore } from '../../stores/taskQueue'
 import OperatingPoint from './OperatingPoints/OperatingPoint.vue'
-import { roundWithDecimals, deepCopy, combinedStyle } from '/WebSharedComponents/assets/js/utils.js'
+import { roundWithDecimals, deepCopy, combinedStyle } from 'WebSharedComponents/assets/js/utils.js'
 
-import Dimension from '/WebSharedComponents/DataInput/Dimension.vue'
-import { defaultOperatingPointExcitation, defaultPrecision, defaultSinusoidalNumberPoints, minimumMaximumScalePerParameter } from '/WebSharedComponents/assets/js/defaults.js'
-import { tooltipsMagneticSynthesisOperatingPoints } from '/WebSharedComponents/assets/js/texts.js'
+import Dimension from 'WebSharedComponents/DataInput/Dimension.vue'
+import { defaultOperatingPointExcitation, defaultPrecision, defaultSinusoidalNumberPoints, minimumMaximumScalePerParameter } from 'WebSharedComponents/assets/js/defaults.js'
+import { tooltipsMagneticSynthesisOperatingPoints } from 'WebSharedComponents/assets/js/texts.js'
 
-import Text from '/WebSharedComponents/DataInput/Text.vue'
+import Text from 'WebSharedComponents/DataInput/Text.vue'
 
 
 </script>

@@ -1,7 +1,7 @@
 <script setup>
-import Dimension from '/WebSharedComponents/DataInput/Dimension.vue'
-import { minimumMaximumScalePerParameter } from '/WebSharedComponents/assets/js/defaults.js'
-import { removeTrailingZeroes, combinedStyle } from '/WebSharedComponents/assets/js/utils.js'
+import Dimension from 'WebSharedComponents/DataInput/Dimension.vue'
+import { minimumMaximumScalePerParameter } from 'WebSharedComponents/assets/js/defaults.js'
+import { removeTrailingZeroes, combinedStyle } from 'WebSharedComponents/assets/js/utils.js'
 
 </script>
 

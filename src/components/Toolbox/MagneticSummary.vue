@@ -2,8 +2,8 @@
 import { useMasStore } from '../../stores/mas'
 import { useTaskQueueStore } from '../../stores/taskQueue'
 import { toTitleCase, removeTrailingZeroes, formatUnit, formatDimension, formatTemperature, formatInductance,
-         formatPower, formatResistance, deepCopy, downloadBase64asPDF, clean, download, isMobile } from '/WebSharedComponents/assets/js/utils.js'
-import Magnetic2DVisualizer, { PLOT_MODES } from '/WebSharedComponents/Common/Magnetic2DVisualizer.vue'
+         formatPower, formatResistance, deepCopy, downloadBase64asPDF, clean, download, isMobile } from 'WebSharedComponents/assets/js/utils.js'
+import Magnetic2DVisualizer, { PLOT_MODES } from 'WebSharedComponents/Common/Magnetic2DVisualizer.vue'
 import CoreExporter from '../Exporters/CoreExporter.vue'
 import CoilExporter from '../Exporters/CoilExporter.vue'
 import MASExporter from '../Exporters/MASExporter.vue'

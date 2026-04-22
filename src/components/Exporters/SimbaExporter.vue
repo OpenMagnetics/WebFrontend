@@ -1,5 +1,5 @@
 <script setup>
-import { clean, download } from '/WebSharedComponents/assets/js/utils.js'
+import { clean, download } from 'WebSharedComponents/assets/js/utils.js'
 import { useTaskQueueStore } from '../../stores/taskQueue'
 
 </script>

@@ -2,7 +2,7 @@
 import { useMasStore } from '../../stores/mas'
 import { useHistoryStore } from '../../stores/history'
 import { useTaskQueueStore } from '../../stores/taskQueue'
-import { deepCopy, download, pruneNulls } from '/WebSharedComponents/assets/js/utils.js'
+import { deepCopy, download, pruneNulls } from 'WebSharedComponents/assets/js/utils.js'
 import CoreExporter from '../Exporters/CoreExporter.vue'
 import CoilExporter from '../Exporters/CoilExporter.vue'
 import MASExporter from '../Exporters/MASExporter.vue'

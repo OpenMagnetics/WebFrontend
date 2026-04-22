@@ -1,8 +1,8 @@
 <script setup >
-import { toTitleCase, formatUnit, formatPower, formatPermeance, formatArea, formatVolume, formatPercentage, removeTrailingZeroes } from '/WebSharedComponents/assets/js/utils.js'
+import { toTitleCase, formatUnit, formatPower, formatPermeance, formatArea, formatVolume, formatPercentage, removeTrailingZeroes } from 'WebSharedComponents/assets/js/utils.js'
 import '../../../assets/css/vue-good-table-next.css'
 import { VueGoodTable } from 'vue-good-table-next';
-import { deepCopy} from '/WebSharedComponents/assets/js/utils.js'
+import { deepCopy} from 'WebSharedComponents/assets/js/utils.js'
 
 </script>
 

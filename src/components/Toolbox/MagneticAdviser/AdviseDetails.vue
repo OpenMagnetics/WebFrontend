@@ -1,8 +1,8 @@
 <script setup>
 import { useTaskQueueStore } from '../../../stores/taskQueue'
 import { useStyleStore } from '../../../stores/style'
-import { toTitleCase, removeTrailingZeroes, formatInductance, formatPower, formatTemperature, formatResistance } from '/WebSharedComponents/assets/js/utils.js'
-import Magnetic2DVisualizer from '/WebSharedComponents/Common/Magnetic2DVisualizer.vue'
+import { toTitleCase, removeTrailingZeroes, formatInductance, formatPower, formatTemperature, formatResistance } from 'WebSharedComponents/assets/js/utils.js'
+import Magnetic2DVisualizer from 'WebSharedComponents/Common/Magnetic2DVisualizer.vue'
 </script>
 
 <script>
