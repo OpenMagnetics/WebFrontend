@@ -78,6 +78,9 @@ export default {
             }
 
             if (outputs?.coreLosses?.coreLosses != null) {
+                if (outputs.coreLosses.coreLosses < 0) {
+                    console.error('[MagneticSummary] Negative core losses received from MKF:', outputs.coreLosses.coreLosses, 'methodUsed:', outputs.coreLosses.methodUsed, 'material:', this.mas?.magnetic?.core?.functionalDescription?.material?.name ?? this.mas?.magnetic?.core?.functionalDescription?.material);
+                }
                 const aux = formatPower(outputs.coreLosses.coreLosses);
                 params.push({ label: 'Core Loss', value: removeTrailingZeroes(aux.label, 2), unit: aux.unit, icon: 'bi-fire' });
             }
@@ -425,6 +428,9 @@ export default {
             
             // Core losses
             if (outputs?.coreLosses?.coreLosses != null) {
+                if (outputs.coreLosses.coreLosses < 0) {
+                    console.error('[MagneticSummary] Negative core losses received from MKF:', outputs.coreLosses.coreLosses, 'methodUsed:', outputs.coreLosses.methodUsed, 'material:', this.mas?.magnetic?.core?.functionalDescription?.material?.name ?? this.mas?.magnetic?.core?.functionalDescription?.material);
+                }
                 const aux = formatPower(outputs.coreLosses.coreLosses);
                 data.push({ parameter: 'Core Losses (Pcore)', value: `${removeTrailingZeroes(aux.label, 3)} ${aux.unit}` });
             }

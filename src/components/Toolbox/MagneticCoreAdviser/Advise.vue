@@ -170,7 +170,11 @@ export default {
             }
 
             {
-                const aux = formatPower(this.masData.outputs[0].coreLosses.coreLosses);
+                const rawLoss = this.masData.outputs[0].coreLosses.coreLosses;
+                if (rawLoss < 0) {
+                    console.error('[MagneticCoreAdviser] Negative core losses received from MKF:', rawLoss, 'methodUsed:', this.masData.outputs[0].coreLosses.methodUsed);
+                }
+                const aux = formatPower(rawLoss);
                 this.localTexts.coreLosses = `Core losses: ${removeTrailingZeroes(aux.label, 2)} ${aux.unit}`
             }
 

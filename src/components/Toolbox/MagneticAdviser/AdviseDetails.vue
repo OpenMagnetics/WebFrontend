@@ -179,6 +179,9 @@ export default {
         },
         fillCoreLosses(output, localTexts, opIndex) {
             if (output.coreLosses) {
+                if (output.coreLosses.coreLosses < 0) {
+                    console.error('[MagneticAdviser] Negative core losses received from MKF:', output.coreLosses.coreLosses, 'methodUsed:', output.coreLosses.methodUsed, 'opIndex:', opIndex);
+                }
                 const lossAux = formatPower(output.coreLosses.coreLosses);
                 localTexts.coreLossesTable[opIndex].text = 'Core losses';
                 localTexts.coreLossesTable[opIndex].value = `${removeTrailingZeroes(lossAux.label, 2)} ${lossAux.unit}`;

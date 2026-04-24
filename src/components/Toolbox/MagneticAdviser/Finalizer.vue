@@ -379,7 +379,11 @@ export default {
                 if (data.outputs[operatingPointIndex].coreLosses != null)
                 {
                     coreLossRow.coreLosses = {}
-                    const aux = formatPower(data.outputs[operatingPointIndex].coreLosses.coreLosses);
+                    const rawLoss = data.outputs[operatingPointIndex].coreLosses.coreLosses;
+                    if (rawLoss < 0) {
+                        console.error('[MagneticAdviser.Finalizer] Negative core losses received from MKF:', rawLoss, 'methodUsed:', data.outputs[operatingPointIndex].coreLosses.methodUsed, 'opIndex:', operatingPointIndex);
+                    }
+                    const aux = formatPower(rawLoss);
                     coreLossRow.coreLosses.text = 'Core losses';
                     coreLossRow.coreLosses.value = `${removeTrailingZeroes(aux.label, 2)} ${aux.unit}`;
                 }
