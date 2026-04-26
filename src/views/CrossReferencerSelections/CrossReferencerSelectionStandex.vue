@@ -1,6 +1,6 @@
 <script setup>
 import CrossReferencerSelection from './CrossReferencerSelection.vue'
-import '../../assets/css/standex.css'
+import '../../assets/scss/standex.scss'
 </script>
 
 <script>

@@ -21,10 +21,6 @@ import ConverterWaveformVisualizer from './ConverterWaveformVisualizer.vue'
 export default {
   name: 'ConverterWizardBase',
   components: { ConverterWaveformVisualizer },
-  name: 'ConverterWizardBase',
-  components: {
-    ConverterWaveformVisualizer,
-  },
   props: {
     /** Wizard title displayed in the header */
     title: {
@@ -214,23 +210,11 @@ export default {
         if (mode === 'analytical') {
           const calculateFn = wizard.getCalculateFn();
           result = await calculateFn(aux);
-          console.log('🔍 [executeWaveformAction] Analytical result from WASM:', {
-            topology: wizard.getTopology?.(),
-            designRequirements: result.designRequirements,
-            turnsRatios: result.designRequirements?.turnsRatios,
-            turnsRatiosCount: result.designRequirements?.turnsRatios?.length,
-            excitationsCount: result.operatingPoints?.[0]?.excitationsPerWinding?.length,
-            excitationNames: result.operatingPoints?.[0]?.excitationsPerWinding?.map(e => e.name)
-          });
+          // Debug logging removed
         } else {
           const simulateFn = wizard.getSimulateFn();
           result = await simulateFn(aux);
-          console.log('🔍 [executeWaveformAction] Simulation result from WASM:', {
-            topology: wizard.getTopology?.(),
-            excitationsCount: result.operatingPoints?.[0]?.excitationsPerWinding?.length,
-            excitationNames: result.operatingPoints?.[0]?.excitationsPerWinding?.map(e => e.name),
-            converterWaveformsCount: result.converterWaveforms?.length
-          });
+          // Debug logging removed
         }
 
         await this.processWaveformResults(wizard, result, {
@@ -419,28 +403,8 @@ export default {
       const operatingPoints = result.operatingPoints;
       const designRequirements = result.designRequirements;
       
-      // Debug: Log raw data from WASM
-      console.log('🔍 [processAnalyticalWaveforms] Raw WASM data:', {
-        excitationsCount: operatingPoints[0]?.excitationsPerWinding?.length,
-        excitationNames: operatingPoints[0]?.excitationsPerWinding?.map(e => e.name),
-        excitationFrequencies: operatingPoints[0]?.excitationsPerWinding?.map(e => e.frequency),
-        firstExcitationCurrentLength: operatingPoints[0]?.excitationsPerWinding?.[0]?.current?.waveform?.data?.length,
-        firstExcitationVoltageLength: operatingPoints[0]?.excitationsPerWinding?.[0]?.voltage?.waveform?.data?.length
-      });
-      
       // Build magnetic waveforms from operating points
       let magneticWaveforms = this.buildMagneticWaveformsFromInputs(operatingPoints);
-      
-      // Debug: Log built waveforms
-      console.log('🔍 [processAnalyticalWaveforms] Built waveforms:', {
-        operatingPointsCount: magneticWaveforms.length,
-        totalWaveforms: magneticWaveforms.reduce((sum, op) => sum + (op.waveforms?.length || 0), 0),
-        waveformsByOp: magneticWaveforms.map(op => ({
-          name: op.operatingPointName,
-          count: op.waveforms?.length,
-          labels: op.waveforms?.map(w => w.label)
-        }))
-      });
       
       // Note: We do NOT repeat waveforms here because the backend MKF already
       // applies numberOfPeriods when generating the waveforms in operatingPoints.
@@ -728,7 +692,7 @@ export default {
       // If we don't have a valid frequency, we can't determine the period
       // Return the waveform as-is - it's likely already a single period
       if (!frequency || frequency <= 0) {
-        console.log('[extractSinglePeriod] No valid frequency, returning waveform as-is');
+        // No valid frequency, returning waveform as-is
         return { time, data };
       }
       
@@ -882,7 +846,7 @@ export default {
           throw new Error('taskQueueStore not available on wizard instance');
         }
 
-        console.log(`Generating SPICE code for ${topology}...`);
+        // Generating SPICE code
         const netlist = await taskQueueStore.generateSpiceCode(topology, aux);
 
         this.spiceCode = netlist;
@@ -911,6 +875,155 @@ export default {
       this.showSpiceCodeModal = false;
       this.spiceCode = '';
       this.spiceCodeTopology = '';
+    },
+
+    // ===== SHARED WAVEFORM UTILITIES (moved from individual wizards) =====
+
+    // Synthesize time-domain waveform from harmonics (Fourier synthesis)
+    synthesizeWaveformFromHarmonics(harmonics, frequency, numPoints = 200, numberOfPeriods = 1) {
+      if (!harmonics?.amplitudes || !harmonics?.frequencies || harmonics.amplitudes.length === 0) {
+        return null;
+      }
+
+      const period = 1 / frequency;
+      const xData = [];
+      const yData = [];
+
+      for (let i = 0; i < numPoints; i++) {
+        const t = (i / numPoints) * period * numberOfPeriods;
+        xData.push(t);
+
+        let value = 0;
+        for (let h = 0; h < harmonics.amplitudes.length; h++) {
+          const amplitude = harmonics.amplitudes[h];
+          const freq = harmonics.frequencies[h];
+          const phase = harmonics.phases ? harmonics.phases[h] : 0;
+
+          if (freq === 0) {
+            value += amplitude;
+          } else {
+            value += amplitude * Math.cos(2 * Math.PI * freq * t + phase);
+          }
+        }
+        yData.push(value);
+      }
+
+      return { x: xData, y: yData };
+    },
+
+    getPairedWaveformsList(waveforms, operatingPointIndex, isMagnetic = false) {
+      if (!waveforms || !waveforms[operatingPointIndex] || !waveforms[operatingPointIndex].waveforms) {
+        return [];
+      }
+
+      let allWaveforms = waveforms[operatingPointIndex].waveforms;
+
+      if (isMagnetic) {
+        allWaveforms = allWaveforms.filter(wf =>
+          wf.label.toLowerCase().includes('winding') ||
+          wf.label.toLowerCase().includes('inductor') ||
+          wf.label.toLowerCase().includes('magnetizing') ||
+          wf.label.toLowerCase().includes('primary') ||
+          wf.label.toLowerCase().includes('secondary')
+        );
+
+        const pairs = [];
+        const used = new Set();
+
+        for (let i = 0; i < allWaveforms.length; i++) {
+          if (used.has(i)) continue;
+
+          const wf = allWaveforms[i];
+          const isVoltage = wf.unit === 'V';
+          const isCurrent = wf.unit === 'A';
+
+          let pairIndex = -1;
+          const labelPrefix = wf.label.replace(/(Voltage|Current)/i, '').trim();
+
+          for (let j = 0; j < allWaveforms.length; j++) {
+            if (i === j || used.has(j)) continue;
+            const otherWf = allWaveforms[j];
+            const otherPrefix = otherWf.label.replace(/(Voltage|Current)/i, '').trim();
+
+            if (labelPrefix === otherPrefix) {
+              if ((isVoltage && otherWf.unit === 'A') || (isCurrent && otherWf.unit === 'V')) {
+                pairIndex = j;
+                break;
+              }
+            }
+          }
+
+          if (pairIndex >= 0) {
+            used.add(i);
+            used.add(pairIndex);
+            pairs.push({
+              voltageWf: isVoltage ? allWaveforms[i] : allWaveforms[pairIndex],
+              currentWf: isCurrent ? allWaveforms[i] : allWaveforms[pairIndex]
+            });
+          } else {
+            used.add(i);
+            pairs.push({
+              voltageWf: isVoltage ? allWaveforms[i] : null,
+              currentWf: isCurrent ? allWaveforms[i] : null
+            });
+          }
+        }
+
+        return pairs;
+      }
+
+      const pairs = [];
+
+      const switchNodeVoltage = allWaveforms.find(wf => wf.label.toLowerCase().includes('switch node'));
+      const inductorCurrent = allWaveforms.find(wf =>
+        (wf.label.toLowerCase().includes('inductor') || wf.label.toLowerCase().includes('primary')) &&
+        wf.unit === 'A'
+      );
+      const inputVoltage = allWaveforms.find(wf => wf.label.toLowerCase().includes('input') && wf.unit === 'V');
+      const outputVoltage = allWaveforms.find(wf => wf.label.toLowerCase().includes('output') && wf.unit === 'V');
+
+      if (switchNodeVoltage || inductorCurrent) {
+        pairs.push({
+          voltageWf: switchNodeVoltage || null,
+          currentWf: inductorCurrent || null
+        });
+      }
+
+      if (inputVoltage || outputVoltage) {
+        pairs.push({
+          leftWf: inputVoltage || null,
+          rightWf: outputVoltage || null,
+          isVoltagePair: true
+        });
+      }
+
+      return pairs;
+    },
+
+    isVoltagePairAtIndex(waveforms, operatingPointIndex, pairIndex, isMagnetic) {
+      const pairs = this.getPairedWaveformsList(waveforms, operatingPointIndex, isMagnetic);
+      if (!pairs || pairIndex >= pairs.length) return false;
+      return pairs[pairIndex].isVoltagePair === true;
+    },
+
+    getVoltagePairAxisLimits(waveforms, operatingPointIndex, pairIndex, isMagnetic) {
+      if (!this.isVoltagePairAtIndex(waveforms, operatingPointIndex, pairIndex, isMagnetic)) {
+        return { forceAxisMin: null, forceAxisMax: null };
+      }
+
+      const data = this.getPairedWaveformDataForVisualizer(waveforms, operatingPointIndex, pairIndex, isMagnetic);
+      if (!data || data.length < 2) {
+        return { forceAxisMin: [0, 0], forceAxisMax: null };
+      }
+
+      const maxLeft = Math.max(...data[0].data.y);
+      const maxRight = Math.max(...data[1].data.y);
+      const sharedMax = Math.max(maxLeft, maxRight) * 1.1;
+
+      return {
+        forceAxisMin: [0, 0],
+        forceAxisMax: [sharedMax, sharedMax]
+      };
     }
   }
 }
@@ -1171,7 +1284,7 @@ export default {
 
 .wizard-icon {
   font-size: 1.75rem;
-  color: v-bind('primaryColor');
+  color: var(--om-primary);
 }
 
 .wizard-title-section {
@@ -1183,7 +1296,7 @@ export default {
 .wizard-title { 
   font-size: 1.4rem; 
   font-weight: 600; 
-  color: v-bind('primaryColor');
+  color: var(--om-primary);
   margin: 0;
   letter-spacing: -0.02em;
 }
@@ -1196,8 +1309,8 @@ export default {
 }
 
 /* Card styles - using primary color tones */
-.compact-card { background: rgba(30, 30, 40, 0.6); border: 1px solid v-bind('"rgba(" + primaryRgb.r + ", " + primaryRgb.g + ", " + primaryRgb.b + ", 0.2)"'); border-radius: 8px; overflow: hidden; }
-.compact-header { padding: 6px 10px; background: v-bind('"rgba(" + primaryRgb.r + ", " + primaryRgb.g + ", " + primaryRgb.b + ", 0.1)"'); border-bottom: 1px solid v-bind('"rgba(" + primaryRgb.r + ", " + primaryRgb.g + ", " + primaryRgb.b + ", 0.15)"'); font-size: 0.8rem; font-weight: 500; color: v-bind('primaryColor'); }
+.compact-card { background: rgba(30, 30, 40, 0.6); border: 1px solid rgb(from var(--om-primary) r g b / 0.2); border-radius: 8px; overflow: hidden; }
+.compact-header { padding: 6px 10px; background: rgb(from var(--om-primary) r g b / 0.1); border-bottom: 1px solid rgb(from var(--om-primary) r g b / 0.15); font-size: 0.8rem; font-weight: 500; color: var(--om-primary); }
 .compact-body { padding: 8px; }
 
 /* Schematic */
@@ -1211,13 +1324,13 @@ export default {
 /* Action Buttons - using primary color tones */
 .action-btns { display: flex; gap: 8px; }
 .action-btn-sm { padding: 6px 14px; border-radius: 6px; font-size: 0.8rem; font-weight: 500; cursor: pointer; border: none; }
-.action-btn-sm.primary { background: linear-gradient(135deg, v-bind('primaryColor') 0%, v-bind('"rgba(" + primaryRgb.r + ", " + primaryRgb.g + ", " + primaryRgb.b + ", 0.7)"') 100%); color: white; }
-.action-btn-sm.secondary { background: v-bind('"rgba(" + primaryRgb.r + ", " + primaryRgb.g + ", " + primaryRgb.b + ", 0.15)"'); border: 1px solid v-bind('"rgba(" + primaryRgb.r + ", " + primaryRgb.g + ", " + primaryRgb.b + ", 0.3)"'); color: v-bind('primaryColor'); }
+.action-btn-sm.primary { background: linear-gradient(135deg, var(--om-primary) 0%, rgb(from var(--om-primary) r g b / 0.7) 100%); color: white; }
+.action-btn-sm.secondary { background: rgb(from var(--om-primary) r g b / 0.15); border: 1px solid rgb(from var(--om-primary) r g b / 0.3); color: var(--om-primary); }
 .action-btn-sm:disabled { opacity: 0.4; cursor: not-allowed; }
 
 /* Sim Buttons - using primary color tones */
 .sim-btns { display: flex; gap: 4px; }
-.sim-btn { background: linear-gradient(135deg, v-bind('primaryColor') 0%, v-bind('"rgba(" + primaryRgb.r + ", " + primaryRgb.g + ", " + primaryRgb.b + ", 0.7)"') 100%); border: none; border-radius: 4px; padding: 4px 10px; color: white; font-size: 0.7rem; font-weight: 500; cursor: pointer; }
+.sim-btn { background: linear-gradient(135deg, var(--om-primary) 0%, rgb(from var(--om-primary) r g b / 0.7) 100%); border: none; border-radius: 4px; padding: 4px 10px; color: white; font-size: 0.7rem; font-weight: 500; cursor: pointer; }
 .sim-btn.analytical { background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%); }
 .sim-btn.spice { background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); }
 .sim-btn:disabled { opacity: 0.5; cursor: not-allowed; }
@@ -1225,18 +1338,18 @@ export default {
 /* Periods selector - using primary color tones */
 .periods-selector { display: flex; align-items: center; gap: 4px; }
 .periods-label { font-size: 0.75rem; color: #888; }
-.periods-select { background: v-bind('headerBgStyle["background-color"] || "#1a1a2e"'); border: 1px solid v-bind('"rgba(" + primaryRgb.r + ", " + primaryRgb.g + ", " + primaryRgb.b + ", 0.3)"'); border-radius: 4px; padding: 2px 6px; font-size: 0.75rem; color: inherit; }
+.periods-select { background: rgba(30, 30, 40, 0.8); border: 1px solid rgb(from var(--om-primary) r g b / 0.3); border-radius: 4px; padding: 2px 6px; font-size: 0.75rem; color: inherit; }
 
 /* Design mode radio buttons */
 .design-mode-selector { display: flex; flex-direction: column; gap: 4px; }
-.design-mode-option { display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 0.8rem; color: v-bind('$styleStore?.wizard?.inputTextColor?.color || $styleStore?.wizard?.inputTextColor || "#ccc"'); }
-.design-mode-option input[type="radio"] { accent-color: v-bind('primaryColor'); }
+.design-mode-option { display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 0.8rem; color: var(--om-white); }
+.design-mode-option input[type="radio"] { accent-color: var(--om-primary); }
 .design-mode-label { font-size: 0.8rem; }
 
 /* Computed value display */
 .computed-value-row { display: flex; justify-content: space-between; align-items: center; padding: 2px 0; font-size: 0.8rem; }
-.computed-label { color: v-bind('$styleStore?.wizard?.inputTextColor?.color || $styleStore?.wizard?.inputTextColor || "#aaa"'); }
-.computed-value { color: v-bind('primaryColor'); font-weight: 500; }
+.computed-label { color: var(--om-white); opacity: 0.7; }
+.computed-value { color: var(--om-primary); font-weight: 500; }
 
 /* Waveform items */
 .waveform-item { margin-bottom: 8px; }

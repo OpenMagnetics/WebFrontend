@@ -1,6 +1,6 @@
 <script setup>
 import CrossReferencerSelection from './CrossReferencerSelection.vue'
-import '../../assets/css/tdk.css'
+import '../../assets/scss/tdk.scss'
 </script>
 
 <script>

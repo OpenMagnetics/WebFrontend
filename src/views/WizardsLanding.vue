@@ -90,6 +90,34 @@ export default {
             await this.$nextTick();
             await this.$router.push(`${import.meta.env.BASE_URL}wizards`);
         },
+        async onDabWizard() {
+            this.$stateStore.resetMagneticTool();
+            this.$stateStore.selectWorkflow("design");
+            this.$stateStore.selectWizard(this.$stateStore.Wizards.DualActiveBridge);
+            await this.$nextTick();
+            await this.$router.push(`${import.meta.env.BASE_URL}wizards`);
+        },
+        async onLlcWizard() {
+            this.$stateStore.resetMagneticTool();
+            this.$stateStore.selectWorkflow("design");
+            this.$stateStore.selectWizard(this.$stateStore.Wizards.LlcResonant);
+            await this.$nextTick();
+            await this.$router.push(`${import.meta.env.BASE_URL}wizards`);
+        },
+        async onCllcWizard() {
+            this.$stateStore.resetMagneticTool();
+            this.$stateStore.selectWorkflow("design");
+            this.$stateStore.selectWizard(this.$stateStore.Wizards.CllcResonant);
+            await this.$nextTick();
+            await this.$router.push(`${import.meta.env.BASE_URL}wizards`);
+        },
+        async onPsfbWizard() {
+            this.$stateStore.resetMagneticTool();
+            this.$stateStore.selectWorkflow("design");
+            this.$stateStore.selectWizard(this.$stateStore.Wizards.PhaseShiftFullBridge);
+            await this.$nextTick();
+            await this.$router.push(`${import.meta.env.BASE_URL}wizards`);
+        },
         async onMagneticBuilder() {
             this.$stateStore.resetMagneticTool();
             this.$stateStore.selectWorkflow("design");
@@ -258,18 +286,69 @@ export default {
                             </div>
                         </div>
                     </div>
-                </div>
 
-                <!-- Coming Soon Section -->
-                <div class="row mb-5">
-                    <div class="col-12 mb-3">
-                        <h3 class="text-secondary fs-5">Coming Soon</h3>
+                    <!-- Isolated Buck-Boost Converter -->
+                    <div class="col-lg-4 col-md-6">
+                        <div class="card h-100 bg-dark border-secondary">
+                            <div class="card-body p-4">
+                                <h4 class="card-title text-white fw-bold mb-2">Isolated Buck-Boost Converter</h4>
+                                <p class="card-text text-white small mb-3">Design transformers for isolated buck-boost converters.</p>
+                                <button @click="onIsolatedBuckBoostWizard" class="btn btn-light w-100">
+                                    Start Wizard
+                                </button>
+                            </div>
+                        </div>
                     </div>
-                    <div class="col-lg-8">
-                        <div class="d-flex flex-wrap gap-3">
-                            <span class="badge bg-secondary p-2">LLC Converter</span>
-                            <span class="badge bg-secondary p-2">Phase-Shifted Full Bridge</span>
-                            <span class="badge bg-secondary p-2">Dual Active Bridge</span>
+
+                    <!-- Dual Active Bridge (DAB) -->
+                    <div class="col-lg-4 col-md-6">
+                        <div class="card h-100 bg-dark border-secondary">
+                            <div class="card-body p-4">
+                                <h4 class="card-title text-white fw-bold mb-2">Dual Active Bridge</h4>
+                                <p class="card-text text-white small mb-3">Bidirectional DC-DC converter with SPS/EPS/DPS/TPS modulation.</p>
+                                <button @click="onDabWizard" class="btn btn-light w-100">
+                                    Start Wizard
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- LLC Resonant Converter -->
+                    <div class="col-lg-4 col-md-6">
+                        <div class="card h-100 bg-dark border-secondary">
+                            <div class="card-body p-4">
+                                <h4 class="card-title text-white fw-bold mb-2">LLC Resonant Converter</h4>
+                                <p class="card-text text-white small mb-3">Resonant DC-DC converter with variable frequency control.</p>
+                                <button @click="onLlcWizard" class="btn btn-light w-100">
+                                    Start Wizard
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- CLLC Resonant Converter -->
+                    <div class="col-lg-4 col-md-6">
+                        <div class="card h-100 bg-dark border-secondary">
+                            <div class="card-body p-4">
+                                <h4 class="card-title text-white fw-bold mb-2">CLLC Resonant Converter</h4>
+                                <p class="card-text text-white small mb-3">Bidirectional LLC resonant converter for EV charging.</p>
+                                <button @click="onCllcWizard" class="btn btn-light w-100">
+                                    Start Wizard
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Phase-Shifted Full Bridge -->
+                    <div class="col-lg-4 col-md-6">
+                        <div class="card h-100 bg-dark border-secondary">
+                            <div class="card-body p-4">
+                                <h4 class="card-title text-white fw-bold mb-2">Phase-Shifted Full Bridge</h4>
+                                <p class="card-text text-white small mb-3">ZVS full-bridge converter with phase-shifted PWM.</p>
+                                <button @click="onPsfbWizard" class="btn btn-light w-100">
+                                    Start Wizard
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>

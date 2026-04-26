@@ -25,6 +25,20 @@ $grid-breakpoints: (
   xxl: 1400px
 );
 
+// CSS custom properties for runtime theming consistency
+// These mirror the SCSS variables so JS and CSS share the same source of truth
+:root {
+  --om-light: #{$light};
+  --om-white: #{$white};
+  --om-dark: #{$dark};
+  --om-primary: #{$primary};
+  --om-secondary: #{$secondary};
+  --om-info: #{$info};
+  --om-success: #{$success};
+  --om-warning: #{$warning};
+  --om-danger: #{$danger};
+  --om-border-color: #{$border-color};
+}
 
 @import "bootstrap/scss/bootstrap";
 

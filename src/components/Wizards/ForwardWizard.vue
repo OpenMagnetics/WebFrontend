@@ -10,6 +10,7 @@ import TripleOfDimensions from 'WebSharedComponents/DataInput/TripleOfDimensions
 import DimensionWithTolerance from 'WebSharedComponents/DataInput/DimensionWithTolerance.vue'
 import { defaultForwardWizardInputs, defaultDesignRequirements, minimumMaximumScalePerParameter, filterMas } from 'WebSharedComponents/assets/js/defaults.js'
 import ConverterWizardBase from './ConverterWizardBase.vue'
+import CompactVoltageInput from './CompactVoltageInput.vue'
 </script>
 
 <script>
@@ -235,16 +236,8 @@ export default {
         buildConverterWaveformsFromInputs(operatingPoints) {
             const converterWaveforms = [];
             
-            console.log('[buildConverterWaveformsFromInputs] Building converter waveforms from', operatingPoints.length, 'operating points');
-            console.log('[buildConverterWaveformsFromInputs] Converter type:', this.converterName);
-            
             for (let opIdx = 0; opIdx < operatingPoints.length; opIdx++) {
                 const op = operatingPoints[opIdx];
-                console.log(`[buildConverterWaveformsFromInputs] OP ${opIdx}:`, {
-                    outputVoltages: op.outputVoltages?.length || 0,
-                    outputCurrents: op.outputCurrents?.length || 0,
-                    excitations: op.excitationsPerWinding?.length || 0
-                });
                 
                 const opWaveforms = {
                     frequency: op.excitationsPerWinding?.[0]?.frequency || this.localData.switchingFrequency,
@@ -257,7 +250,6 @@ export default {
                     for (let outIdx = 0; outIdx < op.outputVoltages.length; outIdx++) {
                         if (op.outputVoltages[outIdx].waveform) {
                             const label = op.outputVoltages.length === 1 ? 'Output Voltage' : `Output ${outIdx + 1} Voltage`;
-                            console.log(`[buildConverterWaveformsFromInputs] Adding voltage: ${label}`);
                             opWaveforms.waveforms.push({
                                 label: label,
                                 x: op.outputVoltages[outIdx].waveform.time,
@@ -276,21 +268,13 @@ export default {
                 const isSingleSwitch = this.converterName === "Single-Switch Forward";
                 const firstOutputIndex = isSingleSwitch ? 2 : 1; // Skip demagnetization winding for Single-Switch
                 
-                console.log(`[buildConverterWaveformsFromInputs] Looking for currents starting at index ${firstOutputIndex} (isSingleSwitch=${isSingleSwitch})`);
-                
                 let outputCurrentIdx = 0;
                 for (let windingIdx = firstOutputIndex; windingIdx < excitations.length; windingIdx++) {
                     const excitation = excitations[windingIdx];
-                    console.log(`[buildConverterWaveformsFromInputs] Checking excitation at index ${windingIdx}:`, {
-                        hasCurrent: !!excitation.current?.waveform,
-                        hasTime: !!excitation.current?.waveform?.time,
-                        hasData: !!excitation.current?.waveform?.data
-                    });
                     if (excitation.current?.waveform?.time && excitation.current?.waveform?.data) {
                         // Label as Output Current to match Output Voltage for pairing
                         const numOutputs = excitations.length - firstOutputIndex;
                         const label = numOutputs === 1 ? 'Output Current' : `Output ${outputCurrentIdx + 1} Current`;
-                        console.log(`[buildConverterWaveformsFromInputs] Adding current: ${label}`);
                         opWaveforms.waveforms.push({
                             label: label,
                             x: excitation.current.waveform.time,
@@ -322,11 +306,7 @@ export default {
                 }
                 
                 converterWaveforms.push(opWaveforms);
-                console.log(`[buildConverterWaveformsFromInputs] OP ${opIdx} final waveforms count:`, opWaveforms.waveforms.length);
-                console.log(`[buildConverterWaveformsFromInputs] OP ${opIdx} waveform labels:`, opWaveforms.waveforms.map(w => w.label));
             }
-            
-            console.log('[buildConverterWaveformsFromInputs] Final converter waveforms:', converterWaveforms);
             return converterWaveforms;
         },
                                                 }
@@ -475,21 +455,12 @@ export default {
         </div>
       </div>
     </template>
-
     <template #input-voltage>
-      <DimensionWithTolerance :name="'inputVoltage'" :replaceTitle="''" unit="V"
+      <CompactVoltageInput
+        :name="'inputVoltage'"
         :dataTestLabel="dataTestLabel + '-InputVoltage'"
-        :min="minimumMaximumScalePerParameter['voltage']['min']"
-        :max="minimumMaximumScalePerParameter['voltage']['max']"
-        :labelWidthProportionClass="'d-none'" :valueWidthProportionClass="'col-4'"
-        v-model="localData.inputVoltage" :severalRows="true"
-        :addButtonStyle="$styleStore.wizard.addButton"
-        :removeButtonBgColor="$styleStore.wizard.removeButton['background-color']"
-        :titleFontSize="$styleStore.wizard.inputLabelFontSize"
-        :valueFontSize="$styleStore.wizard.inputFontSize"
-        :labelFontSize="$styleStore.wizard.inputLabelFontSize"
-        :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor"
-        :textColor="$styleStore.wizard.inputTextColor"
+        unit="V"
+        :modelValue="localData.inputVoltage"
         @update="updateErrorMessage"
       />
     </template>

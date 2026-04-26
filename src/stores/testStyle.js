@@ -19,6 +19,21 @@ export const useStyleStore = defineStore("style", () => {
     function setTheme(theme) {
         this.theme = theme;
 
+        // Sync CSS custom properties so components can use var(--om-primary) etc.
+        const root = document.documentElement;
+        if (root) {
+            root.style.setProperty('--om-light', theme['light'] || '');
+            root.style.setProperty('--om-white', theme['white'] || '');
+            root.style.setProperty('--om-dark', theme['dark'] || '');
+            root.style.setProperty('--om-primary', theme['primary'] || '');
+            root.style.setProperty('--om-secondary', theme['secondary'] || '');
+            root.style.setProperty('--om-info', theme['info'] || '');
+            root.style.setProperty('--om-success', theme['success'] || '');
+            root.style.setProperty('--om-warning', theme['warning'] || '');
+            root.style.setProperty('--om-danger', theme['danger'] || '');
+            root.style.setProperty('--om-border-color', theme['primary'] || '');
+        }
+
         this.main = {
             "background": theme["dark"],
             "color": theme["white"],

@@ -18,6 +18,7 @@ import { VueWindowSizePlugin } from 'vue-window-size/plugin';
 import { initWorker } from 'WebSharedComponents/assets/js/mkfRuntime'
 import VueLatex from 'vatex'
 import { checkAndClearOutdatedStores, getVersionedWasmUrl } from '/src/stores/storeVersioning'
+import { useConsoleStore } from '/src/stores/console'
 
 // Monkey-patch Bootstrap Tooltip to fix _activeTrigger null errors
 const originalIsWithActiveTrigger = Tooltip.prototype._isWithActiveTrigger;
@@ -94,6 +95,44 @@ function preloadMKF() {
     
     return preloadPromise;
 }
+
+// Console interception for debug panel
+let consoleStore = null;
+const originalConsole = {
+    log: console.log,
+    warn: console.warn,
+    error: console.error,
+    info: console.info,
+};
+
+function interceptConsole() {
+    if (!consoleStore) {
+        consoleStore = useConsoleStore();
+    }
+
+    console.log = function(...args) {
+        originalConsole.log.apply(console, args);
+        if (consoleStore) consoleStore.addLog('log', args);
+    };
+
+    console.warn = function(...args) {
+        originalConsole.warn.apply(console, args);
+        if (consoleStore) consoleStore.addLog('warn', args);
+    };
+
+    console.error = function(...args) {
+        originalConsole.error.apply(console, args);
+        if (consoleStore) consoleStore.addLog('error', args);
+    };
+
+    console.info = function(...args) {
+        originalConsole.info.apply(console, args);
+        if (consoleStore) consoleStore.addLog('log', args);
+    };
+}
+
+// Delay interception slightly to ensure Pinia is ready
+setTimeout(interceptConsole, 100);
 
 app.mount("#app");
 

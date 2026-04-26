@@ -44,6 +44,7 @@ export const useSettingsStore = defineStore("settings", () => {
         autoRedraw: true,
         enableSimulation: true,
         enableAutoSimulation: true,
+        enableDebugConsole: false,
     })
 
     const magneticAdviserSettings = ref({
@@ -82,6 +83,7 @@ export const useSettingsStore = defineStore("settings", () => {
             autoRedraw: true,
             enableSimulation: true,
             enableAutoSimulation: true,
+            enableDebugConsole: false,
         };
         this.coreAdviserSettings ={
             weights: null,

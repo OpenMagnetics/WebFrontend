@@ -1,6 +1,6 @@
 <script setup>
 import CrossReferencerSelection from './CrossReferencerSelection.vue'
-import '../../assets/css/fair-rite.css'
+import '../../assets/scss/fair-rite.scss'
 </script>
 
 <script>

@@ -1,6 +1,6 @@
 <script setup>
 import CrossReferencerSelection from './CrossReferencerSelection.vue'
-import '../../assets/css/ferroxcube.css'
+import '../../assets/scss/ferroxcube.scss'
 </script>
 
 <script>

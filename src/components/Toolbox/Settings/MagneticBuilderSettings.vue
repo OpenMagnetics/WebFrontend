@@ -47,6 +47,7 @@ export default {
             enableAutoSimulation: this.$settingsStore.magneticBuilderSettings.enableAutoSimulation,
             enableSubmenu: magneticBuilderSettingsStore.enableSubmenu,
             enableGraphs: magneticBuilderSettingsStore.enableGraphs,
+            enableDebugConsole: this.$settingsStore.magneticBuilderSettings.enableDebugConsole,
         }
         return {
             magneticBuilderSettingsStore,
@@ -568,7 +569,28 @@ export default {
                                 step="5"
                                 v-model.number="modelSettingsStore.painterNumberPointsY"
                             >
-                            <small class="text-muted d-block mt-1">Higher values = finer plots but slower rendering</small>
+                            <small class="text-white d-block mt-1" style="opacity: 0.7">Higher values = finer plots but slower rendering</small>
+                        </div>
+                    </div>
+
+                    <!-- Developer Section -->
+                    <div class="mb-2">
+                        <h6 class="text-secondary text-uppercase small fw-bold mb-3">Developer</h6>
+
+                        <div class="setting-item d-flex justify-content-between align-items-center py-2">
+                            <div>
+                                <span class="text-white">Debug console</span>
+                                <small class="text-white d-block" style="opacity: 0.7">Show floating console for MKF logs</small>
+                            </div>
+                            <div class="form-check form-switch">
+                                <input
+                                    class="form-check-input custom-switch"
+                                    type="checkbox"
+                                    role="switch"
+                                    :checked="localData.enableDebugConsole"
+                                    @change="onSettingChanged('enableDebugConsole')"
+                                >
+                            </div>
                         </div>
                     </div>
                 </div>

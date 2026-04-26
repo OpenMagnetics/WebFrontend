@@ -2,7 +2,7 @@
 import CoreCrossReferencer from '../../components/Toolbox/CoreCrossReferencer.vue'
 import CoreMaterialCrossReferencer from '../../components/Toolbox/CoreMaterialCrossReferencer.vue'
 import { toTitleCase } from 'WebSharedComponents/assets/js/utils.js'
-import '../../assets/css/micrometals.css'
+import '../../assets/scss/micrometals.scss'
 import {useRoute} from 'vue-router'
 </script>
 

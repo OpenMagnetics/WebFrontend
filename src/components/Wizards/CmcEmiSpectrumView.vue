@@ -168,7 +168,7 @@ export default {
 }
 .emi-fsw-input {
     font-size: 12px;
-    color: v-bind('textColor');
+    color: var(--om-white);
     opacity: 0.85;
 }
 .emi-fsw-input input {
@@ -178,12 +178,12 @@ export default {
     background: transparent;
     border: 1px solid #666;
     border-radius: 3px;
-    color: v-bind('textColor');
+    color: var(--om-white);
     font-size: 12px;
 }
 .emi-title {
     font-weight: 500;
-    color: v-bind('textColor');
+    color: var(--om-white);
 }
 .emi-verdict {
     font-weight: 600;

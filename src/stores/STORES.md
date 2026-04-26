@@ -24,7 +24,7 @@ These stores have multiple implementations across apps. The **public API** (what
 | `state` | WebFrontend, MagneticBuilder (+ submodule copies) | Selected tool/workflow/application, operating-points UI, subsection status |
 | `settings` | WebFrontend, MagneticBuilder, el-choker | Per-tool display settings (decimals, auto-recalc, etc.) |
 | `user` | WebFrontend, MagneticBuilder | Tool-box workflow state, visualizer state (mis-named; has nothing to do with users) |
-| `style` | Theme variants: `style`, `fairRiteStyle`, `weStyle` — host picks one and binds it to `$styleStore` | Per-consumer visual theme |
+| `style` | Theme variants: `style`, `fairRiteStyle` — host picks one and binds it to `$styleStore` | Per-consumer visual theme |
 | `storeVersioning` | Full impl in WebFrontend + MagneticBuilder; thin stubs elsewhere | Clears persisted stores when a breaking change ships (see `STORE_VERSION_DATE`) |
 
 **Before changing any of these:** list the consumer repos, confirm the API change lands in each, and run each consumer's tests.
@@ -53,7 +53,7 @@ import { useFairRiteStyleStore } from '/src/stores/fairRiteStyle'
 app.config.globalProperties.$styleStore = useFairRiteStyleStore()
 ```
 
-`style`, `fairRiteStyle`, and `weStyle` are alternative themes, not duplicates. They share the same shape (`theme`, `storyline`, `designRequirements`, …) so components can read `$styleStore.xxx` theme-agnostically. Consumer repos typically keep their own `style.js` with the branding they want.
+`style` and `fairRiteStyle` are alternative themes. They share the same shape (`theme`, `storyline`, `designRequirements`, …) so components can read `$styleStore.xxx` theme-agnostically. Consumer repos typically keep their own `style.js` with the branding they want.
 
 ## Conventions
 

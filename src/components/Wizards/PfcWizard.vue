@@ -9,6 +9,7 @@ import DimensionWithTolerance from 'WebSharedComponents/DataInput/DimensionWithT
 import { defaultPfcWizardInputs, defaultDesignRequirements, minimumMaximumScalePerParameter, filterMas } from 'WebSharedComponents/assets/js/defaults.js'
 import ConverterWizardBase from './ConverterWizardBase.vue'
 import { waitForMkf } from 'WebSharedComponents/assets/js/mkfRuntime'
+import CompactVoltageInput from './CompactVoltageInput.vue'
 </script>
 
 <script>
@@ -303,27 +304,15 @@ export default {
         },
         
         async processAndReview() {
-            console.log('[PFC] processAndReview started');
             const masInputs = await this.process();
 
             if (this.errorMessage || !masInputs) {
-                console.log('[PFC] processAndReview aborted - error or no masInputs');
                 return;
             }
 
-            console.log('[PFC] masInputs received:', JSON.stringify(masInputs, null, 2));
-
-            console.log('[PFC] Calling resetMagneticTool...');
             await this.$refs.base.navigateToReview(this.$stateStore, this.masStore, "Power");
-            console.log('[PFC] coil.functionalDescription:', this.masStore.mas.magnetic.coil.functionalDescription);
-
-            console.log('[PFC] Calling $nextTick...');
             await this.$nextTick();
-            console.log('[PFC] $nextTick done');
-
-            console.log('[PFC] Navigating to magnetic_tool...');
             await this.$router.push(`${import.meta.env.BASE_URL}magnetic_tool`);
-            console.log('[PFC] Navigation done');
         },
         
         async processAndAdvise() {
@@ -499,21 +488,12 @@ export default {
         </div>
       </div>
     </template>
-
     <template #input-voltage>
-      <DimensionWithTolerance :name="'inputVoltage'" :replaceTitle="''" unit="V"
+      <CompactVoltageInput
+        :name="'inputVoltage'"
         :dataTestLabel="dataTestLabel + '-InputVoltage'"
-        :min="minimumMaximumScalePerParameter['voltage']['min']"
-        :max="minimumMaximumScalePerParameter['voltage']['max']"
-        :labelWidthProportionClass="'d-none'" :valueWidthProportionClass="'col-4'"
-        v-model="localData.inputVoltage" :severalRows="true"
-        :addButtonStyle="$styleStore.wizard.addButton"
-        :removeButtonBgColor="$styleStore.wizard.removeButton['background-color']"
-        :titleFontSize="$styleStore.wizard.inputLabelFontSize"
-        :valueFontSize="$styleStore.wizard.inputFontSize"
-        :labelFontSize="$styleStore.wizard.inputLabelFontSize"
-        :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor"
-        :textColor="$styleStore.wizard.inputTextColor"
+        unit="V"
+        :modelValue="localData.inputVoltage"
         @update="updateErrorMessage"
       />
     </template>

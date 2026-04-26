@@ -252,8 +252,8 @@ export default {
 }
 
 .view-toggle .btn-primary {
-    background-color: v-bind('$styleStore?.theme?.primary || "#b18aea"');
-    border-color: v-bind('$styleStore?.theme?.primary || "#b18aea"');
+    background-color: var(--om-primary);
+    border-color: var(--om-primary);
 }
 
 .view-toggle .btn-outline-primary {
@@ -261,17 +261,17 @@ export default {
 }
 
 .view-toggle .btn-outline-primary:hover {
-    background-color: v-bind('$styleStore?.theme?.primary || "#b18aea"') !important;
-    border-color: v-bind('$styleStore?.theme?.primary || "#b18aea"') !important;
+    background-color: var(--om-primary) !important;
+    border-color: var(--om-primary) !important;
     color: #ffffff !important;
 }
 
 .operating-point-label {
     font-size: 0.85rem;
     font-weight: 500;
-    color: v-bind('$styleStore?.theme?.primary || "#b18aea"');
+    color: var(--om-primary);
     padding: 4px 8px;
-    background: rgba(177, 138, 234, 0.1);
+    background: rgb(from var(--om-primary) r g b / 0.1);
     border-radius: 4px;
     margin-bottom: 8px;
 }

@@ -1,6 +1,6 @@
 <script setup>
 import CrossReferencerSelection from './CrossReferencerSelection.vue'
-import '../../assets/css/micrometals.css'
+import '../../assets/scss/micrometals.scss'
 </script>
 
 <script>

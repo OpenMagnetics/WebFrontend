@@ -6,7 +6,7 @@ import { combinedStyle, combinedClass, checkAndFixMas, deepCopy } from 'WebShare
 import { defineAsyncComponent } from "vue";
 import { useElementVisibility  } from '@vueuse/core'
 import { ref } from 'vue'
-import '../assets/css/custom.css'
+import '../assets/scss/custom.scss'
 </script>
 
 <script>

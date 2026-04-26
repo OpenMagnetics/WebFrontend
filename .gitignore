@@ -66,6 +66,9 @@ yarn.lock
 .cache/
 .eslintcache
 
+# Generated CSS (built from SCSS by Vite)
+src/assets/css/
+
 # OS files
 Thumbs.db
 .vscode/settings.json

@@ -157,6 +157,12 @@ export default {
             });
         },
         inputsUpdated() {
+            // Reset numberStacks when the new shape isn't stackable, so toggling
+            // T → PQ doesn't carry the previous stack count into a non-stackable
+            // family (the input is hidden by v-if but the value would persist).
+            if (!this.isStackable) {
+                this.crossReferencerStore.coreReferenceInputs.core.functionalDescription.numberStacks = 1;
+            }
             this.$emit('inputsUpdated');
         },
         gappingUpdated(gapping) {

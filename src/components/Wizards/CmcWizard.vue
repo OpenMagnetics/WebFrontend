@@ -10,6 +10,7 @@ import { defaultDesignRequirements, minimumMaximumScalePerParameter, isolationSi
 import ConverterWizardBase from './ConverterWizardBase.vue'
 import CmcEmiSpectrumView from './CmcEmiSpectrumView.vue'
 import { waitForMkf } from 'WebSharedComponents/assets/js/mkfRuntime'
+import CompactVoltageInput from './CompactVoltageInput.vue'
 </script>
 
 <script>
@@ -674,21 +675,11 @@ export default {
     <!-- SLOT: #input-voltage — line voltage with tolerance        -->
     <!-- ══════════════════════════════════════════════════════════ -->
     <template #input-voltage>
-      <DimensionWithTolerance
-        :name="'operatingVoltage'" :replaceTitle="''" unit="V"
+      <CompactVoltageInput
+        :name="'operatingVoltage'"
         :dataTestLabel="dataTestLabel + '-OperatingVoltage'"
-        :min="minimumMaximumScalePerParameter['voltage']['min']"
-        :max="minimumMaximumScalePerParameter['voltage']['max']"
-        :labelWidthProportionClass="'d-none'" :valueWidthProportionClass="'col-4'"
-        v-model="localData.operatingVoltage"
-        :severalRows="true"
-        :addButtonStyle="$styleStore.wizard.addButton"
-        :removeButtonBgColor="$styleStore.wizard.removeButton['background-color']"
-        :titleFontSize="$styleStore.wizard.inputLabelFontSize"
-        :valueFontSize="$styleStore.wizard.inputFontSize"
-        :labelFontSize="$styleStore.wizard.inputLabelFontSize"
-        :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor"
-        :textColor="$styleStore.wizard.inputTextColor"
+        unit="V"
+        :modelValue="localData.operatingVoltage"
         @update="updateErrorMessage"
       />
     </template>

@@ -1,6 +1,6 @@
 <script setup>
 import CrossReferencerSelection from './CrossReferencerSelection.vue'
-import '../../assets/css/magnetics.css'
+import '../../assets/scss/magnetics.scss'
 </script>
 
 <script>
