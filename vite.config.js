@@ -51,6 +51,13 @@ export default defineConfig({
             ],
         },
     },
+    css: {
+        preprocessorOptions: {
+            scss: {
+                quietDeps: true,
+            },
+        },
+    },
     publicDir: 'src/public',
     plugins: [
         vue(),
