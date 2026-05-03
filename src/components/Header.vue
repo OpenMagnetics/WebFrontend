@@ -339,7 +339,6 @@ export default {
                         </li>
                         <li>
                             <button
-                                :disabled="true"
                                 data-cy="Wizard-DifferentialModeChoke-link"
                                 :class="headerTogglerIsVisible? 'w-100' : 'mx-0' "
                                 class="dropdown-item btn btn-block nav-link px-2"

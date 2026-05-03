@@ -44,6 +44,9 @@ export const useMasStore = defineStore("mas", () => {
         else if (type == "filter") {
             mas.value = MAS.Convert.toMas(JSON.stringify(Defaults.filterMas));
         }
+        else if (type == "dmc") {
+            mas.value = MAS.Convert.toMas(JSON.stringify(Defaults.dmcMas));
+        }
 
         // Null out requirements that are added by CMC / filter flows but that
         // `MAS.Convert.toMas` preserves silently. Without this, a user who
@@ -69,6 +72,9 @@ export const useMasStore = defineStore("mas", () => {
         }
         else if (type == "filter") {
             mas.value.magnetic = MAS.Convert.toMas(JSON.stringify(Defaults.filterMas)).magnetic;
+        }
+        else if (type == "dmc") {
+            mas.value.magnetic = MAS.Convert.toMas(JSON.stringify(Defaults.dmcMas)).magnetic;
         }
     }
 

@@ -1131,6 +1131,7 @@ export const useTaskQueueStore = defineStore('taskQueue', {
                 'Dual Active Bridge Converter':      'generate_dab_ngspice_circuit',
                 'Phase-Shifted Full-Bridge Converter': 'generate_psfb_ngspice_circuit',
                 'CommonModeChoke':                   'generate_cmc_ngspice_circuit',
+                'DifferentialModeChoke':             'generate_dmc_ngspice_circuit',
             };
 
             const wasmFunction = topologyMap[topology];
