@@ -808,7 +808,7 @@ export default {
       }));
       wi.masStore.mas.inputs = { designRequirements, operatingPoints: normalizedOperatingPoints };
       wi.masStore.mas.magnetic.coil.functionalDescription = operatingPoints[0].excitationsPerWinding.map((e, i) => ({
-        name: e.name, numberTurns: 0, numberParallels: 0, isolationSide: isolationSides[i] || 'primary', wire: ""
+        name: e.name, numberTurns: 0, numberParallels: 0, isolationSide: isolationSides[i] || 'primary', wire: "Dummy"
       }));
       wi.masStore.mas.inputs.designRequirements.topology = topology;
       wi.masStore.mas.inputs.designRequirements.isolationSides = isolationSides;
