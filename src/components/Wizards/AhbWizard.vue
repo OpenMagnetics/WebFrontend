@@ -92,7 +92,27 @@ export default {
     getSimulateFn() { return (aux) => this.taskQueueStore.simulateAhbIdealWaveforms(aux); },
     getDefaultFrequency() { return this.localData.switchingFrequency; },
     getTopology() { return Topologies.AsymmetricHalfBridgeConverter; },
-    getIsolationSides() { return [IsolationSide.Primary, IsolationSide.Secondary]; },
+    getIsolationSides() {
+      // Center-tapped: two physical secondaries (Sec_a, Sec_b) on the
+      // same isolation side, linked via wound_with so the section
+      // algorithm treats them as a single secondary group.
+      // FB / CD / AHB-Flyback: a single secondary winding.
+      if (this.localData.rectifierType === 'centerTapped') {
+        return [IsolationSide.Primary, IsolationSide.Secondary, IsolationSide.Secondary];
+      }
+      return [IsolationSide.Primary, IsolationSide.Secondary];
+    },
+    getCoilGroups() {
+      // Windings (by name) that must share sections — applied as
+      // functionalDescription[i].woundWith in setupMasStore. The names
+      // here MUST match the excitation labels emitted by the C++
+      // backend (process_operating_point_for_input_voltage):
+      //   "Secondary 0a" / "Secondary 0b" for CT.
+      if (this.localData.rectifierType === 'centerTapped') {
+        return [['Secondary 0a', 'Secondary 0b']];
+      }
+      return [];
+    },
     getInsulationType() { return this.localData.insulationType; },
 
     postProcessResults(result) {

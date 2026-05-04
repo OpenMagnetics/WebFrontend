@@ -621,12 +621,12 @@ export default {
                 }
                 if (!exc[sig].processed?.rms) {
                   const pr = await tqs.calculateProcessed(exc[sig].harmonics, exc[sig].waveform);
-                  exc[sig].processed = { ...pr, label: "Custom" };
+                  exc[sig].processed = { ...pr, label: "custom" };
                 }
               } catch (e) {
                 console.error(`Error ${sig}:`, e);
                 exc[sig].harmonics = { amplitudes: [0], frequencies: [freq] };
-                exc[sig].processed = { label: "Custom", dutyCycle: 0.5, peakToPeak: 0, offset: 0, rms: 0 };
+                exc[sig].processed = { label: "custom", dutyCycle: 0.5, peakToPeak: 0, offset: 0, rms: 0 };
               }
             }
           }
@@ -782,7 +782,7 @@ export default {
         // Calculate harmonics and processed data if missing (required for masStore)
         ops = await this.processSimulatedOperatingPoints(ops, tqs);
         
-        await this.setupMasStore({ designRequirements: dr, operatingPoints: ops, topology: wi.getTopology(), isolationSides: wi.getIsolationSides(), insulationType: wi.getInsulationType?.(), wizardInstance: wi });
+        await this.setupMasStore({ designRequirements: dr, operatingPoints: ops, topology: wi.getTopology(), isolationSides: wi.getIsolationSides(), coilGroups: wi.getCoilGroups?.() ?? [], insulationType: wi.getInsulationType?.(), wizardInstance: wi });
         return { success: true, operatingPoints: ops, designRequirements: dr };
       } catch (e) { 
         console.error('processWizardData:', e); 
@@ -790,7 +790,7 @@ export default {
       }
     },
 
-    async setupMasStore({ designRequirements, operatingPoints, topology, isolationSides, insulationType, wizardInstance: wi }) {
+    async setupMasStore({ designRequirements, operatingPoints, topology, isolationSides, coilGroups, insulationType, wizardInstance: wi }) {
       // Normalize operating points to ensure processed data is properly structured
       const normalizedOperatingPoints = operatingPoints.map(op => ({
         ...op,
@@ -798,11 +798,11 @@ export default {
           ...exc,
           current: exc.current ? {
             ...exc.current,
-            processed: exc.current.processed || { label: 'Sinusoidal', dutyCycle: 0.5 }
+            processed: exc.current.processed || { label: 'sinusoidal', dutyCycle: 0.5 }
           } : undefined,
           voltage: exc.voltage ? {
             ...exc.voltage,
-            processed: exc.voltage.processed || { label: 'Sinusoidal', dutyCycle: 0.5 }
+            processed: exc.voltage.processed || { label: 'sinusoidal', dutyCycle: 0.5 }
           } : undefined
         }))
       }));
@@ -810,6 +810,28 @@ export default {
       wi.masStore.mas.magnetic.coil.functionalDescription = operatingPoints[0].excitationsPerWinding.map((e, i) => ({
         name: e.name, numberTurns: 0, numberParallels: 0, isolationSide: isolationSides[i] || 'primary', wire: "Dummy"
       }));
+      // Apply coil groups (windings that share sections via wound_with).
+      // Each group is a list of winding names; every member's woundWith is
+      // set to the OTHER group members. The Coil virtualization step then
+      // collapses the group into a single virtual winding for section
+      // layout, while keeping the per-winding turn counts intact.
+      if (Array.isArray(coilGroups) && coilGroups.length > 0) {
+        const fd = wi.masStore.mas.magnetic.coil.functionalDescription;
+        const validNames = new Set(fd.map(w => w.name));
+        for (const group of coilGroups) {
+          if (!Array.isArray(group) || group.length < 2) continue;
+          for (const name of group) {
+            if (!validNames.has(name)) {
+              throw new Error(`coilGroup references unknown winding "${name}"; available: ${[...validNames].join(', ')}`);
+            }
+          }
+          for (const winding of fd) {
+            if (group.includes(winding.name)) {
+              winding.woundWith = group.filter(n => n !== winding.name);
+            }
+          }
+        }
+      }
       wi.masStore.mas.inputs.designRequirements.topology = topology;
       wi.masStore.mas.inputs.designRequirements.isolationSides = isolationSides;
       if (insulationType && insulationType !== 'No') {
