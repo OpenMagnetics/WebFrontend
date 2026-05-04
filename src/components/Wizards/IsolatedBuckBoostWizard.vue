@@ -1,4 +1,5 @@
 <script setup>
+import { IsolationSide } from 'WebSharedComponents/assets/ts/MAS.ts'
 import { useMasStore } from '../../stores/mas'
 import { useTaskQueueStore } from '../../stores/taskQueue'
 import { combinedStyle, combinedClass, deepCopy } from 'WebSharedComponents/assets/js/utils.js'
@@ -134,16 +135,19 @@ export default {
         this.simulatedTurnsRatios = this.designRequirements.turnsRatios?.map(tr => tr.nominal) || null;
       }
     },
-    getTopology() { 
+    getTopology() {
       const topologyMap = {
-        'Isolated Buck': 'Isolated Buck Converter',
-        'Isolated Buck-Boost': 'Isolated Buck-Boost Converter',
+        'Isolated Buck':       'isolatedBuckConverter',
+        'Isolated Buck-Boost': 'isolatedBuckBoostConverter',
       };
-      return topologyMap[this.converterName] || this.converterName + ' Converter';
+      if (!topologyMap[this.converterName]) {
+        throw new Error(`IsolatedBuckBoostWizard: unknown converterName '${this.converterName}'`);
+      }
+      return topologyMap[this.converterName];
     },
     getIsolationSides() {
-      const sides = ['primary'];
-      for (let i = 0; i < this.localData.outputsParameters.length; i++) sides.push('secondary');
+      const sides = [IsolationSide.Primary];
+      for (let i = 0; i < this.localData.outputsParameters.length; i++) sides.push(IsolationSide.Secondary);
       return sides;
     },
     getInsulationType() { return this.localData.insulationType; },

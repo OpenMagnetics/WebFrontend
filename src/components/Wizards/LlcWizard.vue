@@ -1,4 +1,5 @@
 <script setup>
+import { InsulationType, IsolationSide, Topologies } from 'WebSharedComponents/assets/ts/MAS.ts'
 import { useMasStore } from '../../stores/mas'
 import { useTaskQueueStore } from '../../stores/taskQueue'
 import { deepCopy } from 'WebSharedComponents/assets/js/utils.js'
@@ -41,7 +42,7 @@ export default {
             turnsRatio: 8.33,
             ambientTemperature: 25,
             efficiency: 0.97,
-            insulationType: 'Basic',
+            insulationType: InsulationType.Basic,
             designMode: designLevelOptions[0],  // Default to "Help me with the design"
             overrideSeriesInductance: false,
             seriesInductance: 40e-6,
@@ -173,7 +174,7 @@ export default {
         },
         
         getTopology() {
-            return 'LLC Resonant Converter';
+            return Topologies.LlcResonantConverter;
         },
         
         getIsolationSides() {
@@ -181,8 +182,8 @@ export default {
             // Each output's two halves share the same isolation side so the
             // coil virtualization can wind them together on a single section.
             // Side labels: primary, secondary (output 0), tertiary (output 1), ...
-            const sideAt = (i) => ['primary','secondary','tertiary','quaternary','quinary','senary','septenary','octonary','nonary','denary'][i] || ('winding' + i);
-            const sides = ['primary'];
+            const sideAt = (i) => [IsolationSide.Primary, IsolationSide.Secondary, IsolationSide.Tertiary, IsolationSide.Quaternary, IsolationSide.Quinary, IsolationSide.Senary, IsolationSide.Septenary, IsolationSide.Octonary, IsolationSide.Nonary, IsolationSide.Denary][i] || ('winding' + i);
+            const sides = [IsolationSide.Primary];
             const numOutputs = (this.localData.outputsParameters || []).length || 1;
             for (let i = 0; i < numOutputs; i++) {
                 sides.push(sideAt(i + 1));

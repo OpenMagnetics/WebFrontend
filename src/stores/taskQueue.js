@@ -1,5 +1,60 @@
 import { defineStore } from 'pinia'
 import { waitForMkf, isWorkerMode } from 'WebSharedComponents/assets/js/mkfRuntime'
+import { Convert as MasConvert } from 'WebSharedComponents/assets/ts/MAS.ts'
+import { clean } from 'WebSharedComponents/assets/js/utils'
+
+// MAS sentry. Validates an outgoing payload against the generated MAS schema
+// (via quicktype's `Convert.to*`) before we hand it to the WASM. Loud failure
+// here is far cheaper to diagnose than a generic "Input JSON does not conform
+// to schema!" coming back from C++ MAS.hpp deserialization.
+//
+// `where`: short label for the call site (e.g. "calculateAdvisedCores").
+// `kind`:  one of "Mas" | "Inputs" | "Magnetic" | "Coil" | "Wire".
+// `obj`:   the JS object we are about to JSON.stringify and send to WASM.
+//
+// We never silently downgrade — on failure we throw with the full quicktype
+// error message (which includes the offending field path).
+function masSentry(where, kind, obj) {
+    const fn = MasConvert['to' + kind];
+    if (typeof fn !== 'function') {
+        throw new Error(`[MAS sentry @ ${where}] Unknown sentry kind "${kind}" (no Convert.to${kind} in MAS.ts)`);
+    }
+    // Sentry-local cleaner. Recursively strips keys whose value is `null`,
+    // `"null"`, or `undefined` from objects (not arrays). Quicktype's optional
+    // fields are decoded as `u(undefined, ...)` and reject explicit `null`.
+    // We INTENTIONALLY do NOT strip empty arrays or empty objects: required
+    // array fields (e.g. `outputs`) must remain present even when empty.
+    function stripNulls(v) {
+        if (Array.isArray(v)) {
+            for (const item of v) stripNulls(item);
+            return v;
+        }
+        if (v && typeof v === 'object') {
+            for (const k of Object.keys(v)) {
+                const val = v[k];
+                if (val === null || val === 'null' || val === undefined) {
+                    delete v[k];
+                } else {
+                    stripNulls(val);
+                }
+            }
+        }
+        return v;
+    }
+    try {
+        const cleaned = stripNulls(JSON.parse(JSON.stringify(obj)));
+        fn(JSON.stringify(cleaned));
+    } catch (e) {
+        const cleaned = stripNulls(JSON.parse(JSON.stringify(obj)));
+        const dr = cleaned?.inputs?.designRequirements ?? cleaned?.designRequirements ?? cleaned;
+        const drKeys = dr ? Object.keys(dr) : '<no DR>';
+        const drApp = dr ? ('application' in dr ? `application=${JSON.stringify(dr.application)}` : '<no application key>') : '';
+        const msg = `[MAS sentry @ ${where}/${kind}] Frontend produced invalid payload: ${e.message} | DR keys: ${JSON.stringify(drKeys)} | ${drApp}`;
+        // eslint-disable-next-line no-console
+        console.error(msg);
+        throw new Error(msg);
+    }
+}
 
 /**
  * Convert Embind vector or array to JS array.
@@ -107,6 +162,7 @@ export const useTaskQueueStore = defineStore('taskQueue', {
             const mkf = await waitForMkf();
             await mkf.ready;
 
+            masSentry('masAutocomplete', 'Mas', mas);
             const result = await mkf.mas_autocomplete(JSON.stringify(mas), flag, JSON.stringify(settings));
             if (result.startsWith('Exception')) {
                 setTimeout(() => { this.masAutocompleted(false, result); }, this.task_standard_response_delay);
@@ -203,6 +259,7 @@ export const useTaskQueueStore = defineStore('taskQueue', {
                 });
             }
 
+            masSentry('calculateAdvisedCores', 'Inputs', inputs);
             const result = await mkf.calculate_advised_cores(JSON.stringify(inputs), JSON.stringify(weights), count, modeString);
             if (result.startsWith('Exception')) {
                 setTimeout(() => { this.advisedCoresCalculated(false, result); }, this.task_standard_response_delay);
@@ -284,6 +341,15 @@ export const useTaskQueueStore = defineStore('taskQueue', {
                 });
             }
 
+            masSentry('calculateAdvisedMagnetics', 'Inputs', inputs);
+            // [DMC-DUMP] capture exact payload for native MKF repro
+            try {
+                const dumpStr = JSON.stringify(inputs);
+                console.log('[DMC-DUMP-INPUTS-LEN]', dumpStr.length);
+                console.log('[DMC-DUMP-INPUTS]', dumpStr);
+                console.log('[DMC-DUMP-WEIGHTS]', JSON.stringify(transformedWeights));
+                console.log('[DMC-DUMP-MODE]', modeString, 'COUNT', count);
+            } catch (e) { console.error('[DMC-DUMP] failed', e); }
             const result = await mkf.calculate_advised_magnetics(JSON.stringify(inputs), JSON.stringify(transformedWeights), count, modeString);
             if (result.startsWith('Exception')) {
                 setTimeout(() => { this.advisedMagneticsCalculated(false, result); }, this.task_standard_response_delay);
@@ -529,6 +595,7 @@ export const useTaskQueueStore = defineStore('taskQueue', {
             const mkf = await waitForMkf();
             await mkf.ready;
 
+            masSentry('getMaximumDimensions', 'Magnetic', magnetic);
             const result = await mkf.get_maximum_dimensions(JSON.stringify(magnetic));
             // In worker mode the proxy already converts Embind vectors to plain arrays,
             // so `result` is a JS array (or an Embind vector with .get/.size in main mode).
@@ -663,6 +730,7 @@ export const useTaskQueueStore = defineStore('taskQueue', {
             const mkf = await waitForMkf();
             await mkf.ready;
 
+            masSentry('calculateLeakageInductance', 'Magnetic', magnetic);
             const result = await mkf.calculate_leakage_inductance(JSON.stringify(magnetic), frequency, operatingPointIndex);
             const leakage = JSON.parse(result);
             setTimeout(() => { this.leakageInductanceCalculated(true, leakage); }, this.task_standard_response_delay);
@@ -692,6 +760,7 @@ export const useTaskQueueStore = defineStore('taskQueue', {
             const mkf = await waitForMkf();
             await mkf.ready;
 
+            masSentry('exportMagneticAsSubcircuit', 'Magnetic', magnetic);
             const result = await mkf.export_magnetic_as_subcircuit(JSON.stringify(magnetic), temperature, format, extra);
             setTimeout(() => { this.magneticExportedAsSubcircuit(true, result); }, this.task_standard_response_delay);
             return result;
@@ -704,6 +773,7 @@ export const useTaskQueueStore = defineStore('taskQueue', {
             const mkf = await waitForMkf();
             await mkf.ready;
 
+            masSentry('exportMagneticAsSymbol', 'Magnetic', magnetic);
             const result = await mkf.export_magnetic_as_symbol(JSON.stringify(magnetic), format, extra);
             setTimeout(() => { this.magneticExportedAsSymbol(true, result); }, this.task_standard_response_delay);
             return result;
@@ -1085,6 +1155,7 @@ export const useTaskQueueStore = defineStore('taskQueue', {
             const mkf = await waitForMkf();
             await mkf.ready;
 
+            masSentry('simulateFlybackWithMagnetic', 'Magnetic', magnetic);
             const result = await mkf.simulate_flyback_with_magnetic(JSON.stringify(flybackParams), JSON.stringify(magnetic));
             if (result.startsWith('Exception')) {
                 setTimeout(() => { this.flybackRealMagneticWaveformsCalculated(false, result); }, this.task_standard_response_delay);
@@ -1110,28 +1181,30 @@ export const useTaskQueueStore = defineStore('taskQueue', {
             console.log('[generateSpiceCode] Topology:', topology);
             console.log('[generateSpiceCode] MKF available functions:', Object.keys(mkf).filter(k => k.includes('generate')).sort());
 
-            // Map topology → WASM function. Keys MUST match the strings
-            // returned by each wizard's getTopology() exactly, otherwise the
-            // lookup silently falls through to "not available" for the user.
-            // Historically these keys were short ("Flyback", "Buck") while
-            // wizards returned "Flyback Converter" / "Buck Converter" — the
-            // button was broken for every non-CMC/DAB/LLC wizard.
+            // Map topology → WASM function. Keys are MAS schema enum strings
+            // returned by each wizard's getTopology() (e.g. 'flybackConverter').
+            // CRITICAL: keep aligned with MAS designRequirements.topology enum
+            // and with mas.js / MagneticBuilder readers — drift silently breaks
+            // the SPICE button.
             const topologyMap = {
-                'Flyback Converter':                 'generate_flyback_ngspice_circuit',
-                'Buck Converter':                    'generate_buck_ngspice_circuit',
-                'Boost Converter':                   'generate_boost_ngspice_circuit',
-                'Push-Pull Converter':               'generate_push_pull_ngspice_circuit',
-                'Single Switch Forward Converter':   'generate_forward_ngspice_circuit',
-                'Two Switch Forward Converter':      'generate_two_switch_forward_ngspice_circuit',
-                'Active Clamp Forward Converter':    'generate_active_clamp_forward_ngspice_circuit',
-                'Isolated Buck Converter':           'generate_isolated_buck_ngspice_circuit',
-                'Isolated Buck Boost Converter':     'generate_isolated_buck_boost_ngspice_circuit',
-                'LLC Resonant Converter':            'generate_llc_ngspice_circuit',
+                'flybackConverter':                 'generate_flyback_ngspice_circuit',
+                'buckConverter':                    'generate_buck_ngspice_circuit',
+                'boostConverter':                   'generate_boost_ngspice_circuit',
+                'powerFactorCorrection':            'generate_boost_ngspice_circuit',
+                'pushPullConverter':                'generate_push_pull_ngspice_circuit',
+                'singleSwitchForwardConverter':     'generate_forward_ngspice_circuit',
+                'twoSwitchForwardConverter':        'generate_two_switch_forward_ngspice_circuit',
+                'activeClampForwardConverter':      'generate_active_clamp_forward_ngspice_circuit',
+                'isolatedBuckConverter':            'generate_isolated_buck_ngspice_circuit',
+                'isolatedBuckBoostConverter':       'generate_isolated_buck_boost_ngspice_circuit',
+                'llcResonantConverter':             'generate_llc_ngspice_circuit',
                 // CLLC uses a different WASM signature — handled in its own path.
-                'Dual Active Bridge Converter':      'generate_dab_ngspice_circuit',
-                'Phase-Shifted Full-Bridge Converter': 'generate_psfb_ngspice_circuit',
-                'CommonModeChoke':                   'generate_cmc_ngspice_circuit',
-                'DifferentialModeChoke':             'generate_dmc_ngspice_circuit',
+                'dualActiveBridgeConverter':        'generate_dab_ngspice_circuit',
+                'phaseShiftedFullBridgeConverter':  'generate_psfb_ngspice_circuit',
+                'phaseShiftedHalfBridgeConverter':  'generate_pshb_ngspice_circuit',
+                'asymmetricHalfBridgeConverter':    'generate_ahb_ngspice_circuit',
+                'commonModeChoke':                  'generate_cmc_ngspice_circuit',
+                'differentialModeChoke':            'generate_dmc_ngspice_circuit',
             };
 
             const wasmFunction = topologyMap[topology];
@@ -1420,6 +1493,23 @@ export const useTaskQueueStore = defineStore('taskQueue', {
             return inputs;
         },
 
+        psfbWaveformsSimulated(success = true, dataOrMessage = '') {
+        },
+
+        async simulatePsfbIdealWaveforms(params) {
+            const mkf = await waitForMkf();
+            await mkf.ready;
+
+            const result = await mkf.simulate_psfb_ideal_waveforms(JSON.stringify(params));
+            if (result.startsWith('Exception')) {
+                setTimeout(() => { this.psfbWaveformsSimulated(false, result); }, this.task_standard_response_delay);
+                throw new Error(result);
+            }
+            const waveforms = JSON.parse(result);
+            setTimeout(() => { this.psfbWaveformsSimulated(true, waveforms); }, this.task_standard_response_delay);
+            return waveforms;
+        },
+
         // ==========================================
         // Wizard Calculation Methods - Phase Shift Half Bridge (PSHB)
         // ==========================================
@@ -1441,6 +1531,23 @@ export const useTaskQueueStore = defineStore('taskQueue', {
             return inputs;
         },
 
+        pshbWaveformsSimulated(success = true, dataOrMessage = '') {
+        },
+
+        async simulatePshbIdealWaveforms(params) {
+            const mkf = await waitForMkf();
+            await mkf.ready;
+
+            const result = await mkf.simulate_pshb_ideal_waveforms(JSON.stringify(params));
+            if (result.startsWith('Exception')) {
+                setTimeout(() => { this.pshbWaveformsSimulated(false, result); }, this.task_standard_response_delay);
+                throw new Error(result);
+            }
+            const waveforms = JSON.parse(result);
+            setTimeout(() => { this.pshbWaveformsSimulated(true, waveforms); }, this.task_standard_response_delay);
+            return waveforms;
+        },
+
         // ==========================================
         // Wizard Calculation Methods - Asymmetric Half Bridge (AHB)
         // ==========================================
@@ -1460,6 +1567,23 @@ export const useTaskQueueStore = defineStore('taskQueue', {
             const inputs = JSON.parse(result);
             setTimeout(() => { this.ahbInputsCalculated(true, inputs); }, this.task_standard_response_delay);
             return inputs;
+        },
+
+        ahbWaveformsSimulated(success = true, dataOrMessage = '') {
+        },
+
+        async simulateAhbIdealWaveforms(params) {
+            const mkf = await waitForMkf();
+            await mkf.ready;
+
+            const result = await mkf.simulate_ahb_ideal_waveforms(JSON.stringify(params));
+            if (result.startsWith('Exception')) {
+                setTimeout(() => { this.ahbWaveformsSimulated(false, result); }, this.task_standard_response_delay);
+                throw new Error(result);
+            }
+            const waveforms = JSON.parse(result);
+            setTimeout(() => { this.ahbWaveformsSimulated(true, waveforms); }, this.task_standard_response_delay);
+            return waveforms;
         },
 
         // ==========================================

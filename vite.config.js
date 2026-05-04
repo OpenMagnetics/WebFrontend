@@ -1,8 +1,10 @@
 import { defineConfig } from 'vite'
 import { fileURLToPath, URL } from 'node:url'
+import path from 'node:path';
 import vue from '@vitejs/plugin-vue'
 import viteCompression from 'vite-plugin-compression';
 import { viteStaticCopy } from 'vite-plugin-static-copy';
+import masRegen from './WebSharedComponents/build-tools/vite-plugin-mas-regen.js';
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -60,6 +62,16 @@ export default defineConfig({
     },
     publicDir: 'src/public',
     plugins: [
+        // Auto-regenerate MAS.ts from MAS schemas when schemas are newer than
+        // the existing MAS.ts. Catches schema drift at dev-server startup
+        // (and at build time) instead of via runtime errors deep in WASM.
+        masRegen({
+            targets: [
+                fileURLToPath(new URL('./WebSharedComponents/assets/ts/MAS.ts', import.meta.url)),
+                fileURLToPath(new URL('./MagneticBuilder/src/assets/ts/MAS.ts', import.meta.url)),
+                fileURLToPath(new URL('./MagneticBuilder/WebSharedComponents/assets/ts/MAS.ts', import.meta.url)),
+            ],
+        }),
         vue(),
         viteCompression({filter: /\.(js|mjs|json|css|html|wasm)$/i}),
         // Copy WASM files from assets to wasm/ folder served at /wasm/

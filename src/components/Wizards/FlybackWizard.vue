@@ -1,4 +1,5 @@
 <script setup>
+import { IsolationSide, Topologies } from 'WebSharedComponents/assets/ts/MAS.ts'
 import { useMasStore } from '../../stores/mas'
 import { useTaskQueueStore } from '../../stores/taskQueue'
 import { combinedStyle, combinedClass, deepCopy } from 'WebSharedComponents/assets/js/utils.js'
@@ -109,10 +110,10 @@ export default {
         this.simulatedTurnsRatios = this.designRequirements.turnsRatios?.map(tr => tr.nominal) || null;
       }
     },
-    getTopology() { return 'Flyback Converter'; },
+    getTopology() { return Topologies.FlybackConverter; },
     getIsolationSides() {
-      const sides = ['primary'];
-      for (let i = 0; i < this.localData.outputsParameters.length; i++) sides.push('secondary');
+      const sides = [IsolationSide.Primary];
+      for (let i = 0; i < this.localData.outputsParameters.length; i++) sides.push(IsolationSide.Secondary);
       return sides;
     },
     getInsulationType() { return this.localData.insulationType; },

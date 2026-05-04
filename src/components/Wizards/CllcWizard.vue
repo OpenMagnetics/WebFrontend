@@ -1,4 +1,5 @@
 <script setup>
+import { InsulationType, IsolationSide, Topologies } from 'WebSharedComponents/assets/ts/MAS.ts'
 import { useMasStore } from '../../stores/mas'
 import { useTaskQueueStore } from '../../stores/taskQueue'
 import { deepCopy } from 'WebSharedComponents/assets/js/utils.js'
@@ -32,7 +33,7 @@ export default {
       turnsRatio: 1.0,
       ambientTemperature: 25,
       efficiency: 0.97,
-      insulationType: 'Basic',
+      insulationType: InsulationType.Basic,
     };
     const insulationTypes = ['No', 'Basic', 'Reinforced'];
     return {
@@ -61,8 +62,8 @@ export default {
     getCalculateFn() { return (aux) => this.taskQueueStore.calculateCllcInputs(aux); },
     getSimulateFn() { return (aux) => this.taskQueueStore.calculateCllcInputs(aux); },
     getDefaultFrequency() { return this.localData.resonantFrequency; },
-    getTopology() { return 'CLLC Resonant Converter'; },
-    getIsolationSides() { return ['primary', 'secondary']; },
+    getTopology() { return Topologies.CllcResonantConverter; },
+    getIsolationSides() { return [IsolationSide.Primary, IsolationSide.Secondary]; },
     getInsulationType() { return this.localData.insulationType; },
 
     updateErrorMessage() { this.errorMessage = ""; },

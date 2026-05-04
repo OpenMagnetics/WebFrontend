@@ -1,7 +1,9 @@
 <script setup>
+import { InsulationType, IsolationSide, Topologies } from 'WebSharedComponents/assets/ts/MAS.ts'
 import { useMasStore } from '../../stores/mas'
 import { useTaskQueueStore } from '../../stores/taskQueue'
 import Dimension from 'WebSharedComponents/DataInput/Dimension.vue'
+import DimensionReadOnly from 'WebSharedComponents/DataInput/DimensionReadOnly.vue'
 import ElementFromList from 'WebSharedComponents/DataInput/ElementFromList.vue'
 import { minimumMaximumScalePerParameter } from 'WebSharedComponents/assets/js/defaults.js'
 import ConverterWizardBase from './ConverterWizardBase.vue'
@@ -32,7 +34,7 @@ export default {
       outputInductance: 0,
       dcBlockingCapacitance: 1e-6,
       outputCapacitance: 100e-6,
-      turnsRatio: 8.0, ambientTemperature: 25, insulationType: 'Basic',
+      turnsRatio: 8.0, ambientTemperature: 25, insulationType: InsulationType.Basic,
     };
     const insulationTypes = ['No', 'Basic', 'Reinforced'];
     // The MAS schema enum strings.
@@ -44,6 +46,7 @@ export default {
       simulatedTurnsRatios: null, simulatedOperatingPoints: [], numberOfPeriods: 2, numberOfSteadyStatePeriods: 1,
       waveformViewMode: 'magnetic',
       forceWaveformUpdate: 0,
+      ahbDiagnostics: null,
     }
   },
   methods: {
@@ -86,12 +89,27 @@ export default {
       return params;
     },
     getCalculateFn() { return (aux) => this.taskQueueStore.calculateAhbInputs(aux); },
-    getSimulateFn() { return (aux) => this.taskQueueStore.calculateAhbInputs(aux); },
+    getSimulateFn() { return (aux) => this.taskQueueStore.simulateAhbIdealWaveforms(aux); },
     getDefaultFrequency() { return this.localData.switchingFrequency; },
-    getTopology() { return 'Asymmetric Half-Bridge Converter'; },
-    getIsolationSides() { return ['primary', 'secondary']; },
+    getTopology() { return Topologies.AsymmetricHalfBridgeConverter; },
+    getIsolationSides() { return [IsolationSide.Primary, IsolationSide.Secondary]; },
     getInsulationType() { return this.localData.insulationType; },
 
+    postProcessResults(result) {
+      this.ahbDiagnostics = result?.ahbDiagnostics ?? null;
+      if (result?.designRequirements) {
+        this.simulatedTurnsRatios = result.designRequirements.turnsRatios?.map(tr => tr.nominal) ?? [this.localData.turnsRatio];
+      }
+    },
+    isValid() {
+      const vin = typeof this.localData.inputVoltage === 'object'
+        ? this.localData.inputVoltage?.nominal
+        : this.localData.inputVoltage;
+      return vin > 0
+        && this.localData.outputVoltage > 0
+        && this.localData.outputPower > 0
+        && this.localData.switchingFrequency > 0;
+    },
     updateErrorMessage() { this.errorMessage = ""; },
     dismissError() { this.errorMessage = ""; this.waveformError = ""; },
 
@@ -151,7 +169,7 @@ export default {
     :simulatingWaveforms="simulatingWaveforms" :waveformSource="waveformSource"
     :waveformError="waveformError" :errorMessage="errorMessage"
     :numberOfPeriods="numberOfPeriods" :numberOfSteadyStatePeriods="numberOfSteadyStatePeriods"
-    :disableActions="errorMessage != ''"
+    :disableActions="errorMessage != '' || !isValid()"
     @update:numberOfPeriods="numberOfPeriods = $event"
     @update:numberOfSteadyStatePeriods="numberOfSteadyStatePeriods = $event"
     @get-analytical-waveforms="getAnalyticalWaveforms"
@@ -188,8 +206,8 @@ export default {
         <span v-if="errorMessage" class="error-text"><i class="bi bi-exclamation-triangle-fill me-1"></i>{{ errorMessage }}</span>
         <span v-else></span>
         <div class="action-btns">
-          <button :disabled="errorMessage != ''" class="action-btn-sm secondary" @click="processAndReview"><i class="bi bi-search me-1"></i>Review Specs</button>
-          <button :disabled="errorMessage != ''" class="action-btn-sm primary" @click="processAndAdvise"><i class="bi bi-magic me-1"></i>Design Magnetic</button>
+          <button :disabled="errorMessage != '' || !isValid()" class="action-btn-sm secondary" @click="processAndReview"><i class="bi bi-search me-1"></i>Review Specs</button>
+          <button :disabled="errorMessage != '' || !isValid()" class="action-btn-sm primary" @click="processAndAdvise"><i class="bi bi-magic me-1"></i>Design Magnetic</button>
         </div>
       </div>
     </template>
@@ -207,6 +225,35 @@ export default {
     <template #outputs>
       <Dimension :name="'outputVoltage'" :replaceTitle="'Voltage'" unit="V" :min="minimumMaximumScalePerParameter['voltage']['min']" :max="minimumMaximumScalePerParameter['voltage']['max']" v-model="localData" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor" :textColor="$styleStore.wizard.inputTextColor" @update="updateErrorMessage"/>
       <Dimension :name="'outputPower'" :replaceTitle="'Power'" unit="W" :min="1" :max="minimumMaximumScalePerParameter['power']['max']" v-model="localData" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor" :textColor="$styleStore.wizard.inputTextColor" @update="updateErrorMessage"/>
+    </template>
+
+    <template v-if="ahbDiagnostics" #diagnostics>
+      <DimensionReadOnly name="ahbMode" :replaceTitle="'Mode'" :value="ahbDiagnostics.operatingMode" :unit="null" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor"/>
+      <DimensionReadOnly name="ahbRectifier" :replaceTitle="'Rectifier'" :value="ahbDiagnostics.rectifierType" :unit="null" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor"/>
+      <DimensionReadOnly name="ahbDuty" :replaceTitle="'Duty'" :value="ahbDiagnostics.dutyCycle" :unit="null" :numberDecimals="3" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor"/>
+      <DimensionReadOnly name="ahbConvRatio" :replaceTitle="'M = Vo/Vin'" :value="ahbDiagnostics.conversionRatio" :unit="null" :numberDecimals="4" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor"/>
+      <DimensionReadOnly name="ahbCb" :replaceTitle="'V Cb'" :value="ahbDiagnostics.dcBlockingCapVoltage" unit="V" :numberDecimals="2" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor"/>
+      <DimensionReadOnly name="ahbCbRipple" :replaceTitle="'ΔV Cb'" :value="ahbDiagnostics.dcBlockingCapRipple" unit="V" :numberDecimals="3" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor"/>
+      <DimensionReadOnly name="ahbVPriPos" :replaceTitle="'V pri +'" :value="ahbDiagnostics.primaryPeakVoltagePositive" unit="V" :numberDecimals="2" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor"/>
+      <DimensionReadOnly name="ahbVPriNeg" :replaceTitle="'V pri −'" :value="ahbDiagnostics.primaryPeakVoltageNegative" unit="V" :numberDecimals="2" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor"/>
+      <DimensionReadOnly name="ahbVQ1" :replaceTitle="'V Q1'" :value="ahbDiagnostics.switchPeakVoltageQ1" unit="V" :numberDecimals="2" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor"/>
+      <DimensionReadOnly name="ahbVQ2" :replaceTitle="'V Q2'" :value="ahbDiagnostics.switchPeakVoltageQ2" unit="V" :numberDecimals="2" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor"/>
+      <DimensionReadOnly name="ahbIQ1" :replaceTitle="'I Q1 rms'" :value="ahbDiagnostics.switchRmsCurrentQ1" unit="A" :numberDecimals="3" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor"/>
+      <DimensionReadOnly name="ahbIQ2" :replaceTitle="'I Q2 rms'" :value="ahbDiagnostics.switchRmsCurrentQ2" unit="A" :numberDecimals="3" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor"/>
+      <DimensionReadOnly name="ahbZvs" :replaceTitle="'ZVS margin'" :value="ahbDiagnostics.zvsMargin" :unit="null" :numberDecimals="3" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="ahbDiagnostics.zvsMargin <= 0 ? 'text-warning' : $styleStore.wizard.inputTextColor"/>
+      <DimensionReadOnly name="ahbResTrans" :replaceTitle="'t resonant'" :value="ahbDiagnostics.resonantTransitionTime" unit="s" :numberDecimals="9" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor"/>
+      <DimensionReadOnly name="ahbFluxSS" :replaceTitle="'ΔB steady'" :value="ahbDiagnostics.steadyStateFluxExcursion" unit="T" :numberDecimals="4" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor"/>
+      <DimensionReadOnly name="ahbFluxTrans" :replaceTitle="'ΔB transient'" :value="ahbDiagnostics.transientFluxExcursionEstimate" unit="T" :numberDecimals="4" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor"/>
+      <DimensionReadOnly name="ahbIMag" :replaceTitle="'ΔI mag'" :value="ahbDiagnostics.magnetizingCurrentRipple" unit="A" :numberDecimals="3" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor"/>
+      <DimensionReadOnly name="ahbIOut" :replaceTitle="'ΔI Lo'" :value="ahbDiagnostics.outputInductorRipple" unit="A" :numberDecimals="3" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor"/>
+      <DimensionReadOnly name="ahbN" :replaceTitle="'Turns ratio'" :value="ahbDiagnostics.computedTurnsRatio" :unit="null" :numberDecimals="3" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor"/>
+      <DimensionReadOnly name="ahbLo" :replaceTitle="'L output'" :value="ahbDiagnostics.computedOutputInductance" unit="H" :numberDecimals="9" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor"/>
+      <DimensionReadOnly name="ahbLm" :replaceTitle="'L mag'" :value="ahbDiagnostics.computedMagnetizingInductance" unit="H" :numberDecimals="9" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor"/>
+      <DimensionReadOnly name="ahbLk" :replaceTitle="'L leakage'" :value="ahbDiagnostics.computedLeakageInductance" unit="H" :numberDecimals="9" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor"/>
+      <DimensionReadOnly name="ahbCblock" :replaceTitle="'C block'" :value="ahbDiagnostics.computedDcBlockingCapacitance" unit="F" :numberDecimals="9" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor"/>
+      <DimensionReadOnly name="ahbCo" :replaceTitle="'C output'" :value="ahbDiagnostics.computedOutputCapacitance" unit="F" :numberDecimals="9" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor"/>
+      <DimensionReadOnly name="ahbDutyComp" :replaceTitle="'D computed'" :value="ahbDiagnostics.computedDutyCycle" :unit="null" :numberDecimals="3" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor"/>
+      <DimensionReadOnly name="ahbDeadTime" :replaceTitle="'Dead time'" :value="ahbDiagnostics.computedDeadTime" unit="s" :numberDecimals="9" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor"/>
     </template>
   </ConverterWizardBase>
 </template>

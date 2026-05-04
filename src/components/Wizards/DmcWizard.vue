@@ -1,4 +1,5 @@
 <script setup>
+import { Topologies } from 'WebSharedComponents/assets/ts/MAS.ts'
 import { useMasStore } from '../../stores/mas'
 import { useTaskQueueStore } from '../../stores/taskQueue'
 import Dimension from 'WebSharedComponents/DataInput/Dimension.vue'
@@ -6,7 +7,7 @@ import ElementFromListRadio from 'WebSharedComponents/DataInput/ElementFromListR
 import { minimumMaximumScalePerParameter, isolationSideOrdered } from 'WebSharedComponents/assets/js/defaults.js'
 import ConverterWizardBase from './ConverterWizardBase.vue'
 import CompactVoltageInput from './CompactVoltageInput.vue'
-import DmcEmiSpectrumView from './DmcEmiSpectrumView.vue'
+import EmiSpectrumView from './EmiSpectrumView.vue'
 </script>
 
 <script>
@@ -54,6 +55,8 @@ export default {
             ripplePeakToPeak:    1.0,
             switchingFrequencyEmi: 100000,
             dutyCycleEmi:        0.5,
+            lineImpedance:       50,
+            regulatoryStandard:  'CISPR 32 Class B',
         };
         return {
             masStore,
@@ -81,12 +84,14 @@ export default {
             return parseInt(this.localData.configuration.charAt(0));
         },
         configurationEnum() {
+            // Schema enum strings (camelCase) that match
+            // schemas/inputs/topologies/differentialModeChoke.json::configuration
             switch (this.numWindings) {
-                case 1: return 'SINGLE_PHASE';
-                case 2: return 'SINGLE_PHASE_BALANCED';
-                case 3: return 'THREE_PHASE';
-                case 4: return 'THREE_PHASE_WITH_NEUTRAL';
-                default: return 'SINGLE_PHASE';
+                case 1: return 'singlePhase';
+                case 2: return 'singlePhaseBalanced';
+                case 3: return 'threePhase';
+                case 4: return 'threePhaseWithNeutral';
+                default: throw new Error(`DmcWizard: invalid numWindings ${this.numWindings}`);
             }
         },
         previewInductanceFormatted() {
@@ -138,7 +143,7 @@ export default {
                     .filter(p => p.frequency > 0 && p.attenuation > 0)
                     .map(p => ({
                         frequency: p.frequency,
-                        impedance: Z_LISN * Math.pow(10, p.attenuation / 20),
+                        impedance: { magnitude: Z_LISN * Math.pow(10, p.attenuation / 20) },
                     }));
             }
             return aux;
@@ -256,9 +261,15 @@ export default {
             }));
         },
         getDefaultFrequency() { return this.localData.lineFrequency; },
-        getTopology() { return 'DifferentialModeChoke'; },
+        getTopology() { return Topologies.DifferentialModeChoke; },
         getIsolationSides() {
-            return isolationSideOrdered.slice(0, this.numWindings).map(s => s.toLowerCase());
+            // DMC: every winding sits on the same line side (no isolation
+            // between L/N or between phases). Returning ['primary', 'secondary',
+            // ...] would make downstream code treat the choke as an isolated
+            // multi-winding transformer. Mirror DifferentialModeChoke::
+            // process_design_requirements() which sets every IsolationSide to
+            // PRIMARY.
+            return Array(this.numWindings).fill('primary');
         },
         getInsulationType() { return null; },
         postProcessResults(result, mode) {
@@ -268,6 +279,14 @@ export default {
                 this.simulatedInductance = dr.magnetizingInductance?.nominal
                     ?? dr.magnetizingInductance?.minimum
                     ?? null;
+                // DMC configuration is implied to MKF by:
+                //   · designRequirements.topology == "differentialModeChoke"
+                //   · operatingPoints[*].excitationsPerWinding.length
+                //     (1 = singlePhase, 2 = singlePhaseBalanced, 3 = threePhase,
+                //      4 = threePhaseWithNeutral)
+                // MAS DesignRequirements has no `differentialModeChoke` field,
+                // so we don't try to stamp the configuration enum here — MKF
+                // dispatches DMC routing from topology + winding count alone.
             }
         },
         windingName(i) {
@@ -665,14 +684,15 @@ export default {
     <!-- DM conducted-emissions spectrum view, mirroring CMC's #col3-extra. -->
     <template #col3-extra>
       <div v-if="emiInductance && emiInductance > 0 && localData.filterCapacitance > 0" class="dmc-emi-wrapper mt-2">
-        <DmcEmiSpectrumView
+        <EmiSpectrumView
+          mode="dm"
           :switchingFrequency="localData.switchingFrequencyEmi"
           :ripplePeakToPeak="localData.ripplePeakToPeak"
           :dutyCycle="localData.dutyCycleEmi"
           :inductance="emiInductance"
           :capacitance="localData.filterCapacitance"
-          :lineImpedance="50"
-          :regulatoryStandard="'CISPR 32 Class B'"
+          :lineImpedance="localData.lineImpedance"
+          :regulatoryStandard="localData.regulatoryStandard"
           :forceUpdate="forceWaveformUpdate"
           @update:switchingFrequency="localData.switchingFrequencyEmi = $event"
         />

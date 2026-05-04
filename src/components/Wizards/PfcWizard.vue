@@ -1,4 +1,5 @@
 <script setup>
+import { IsolationSide, Topologies } from 'WebSharedComponents/assets/ts/MAS.ts'
 import { useMasStore } from '../../stores/mas'
 import { useTaskQueueStore } from '../../stores/taskQueue'
 import { combinedStyle, combinedClass, deepCopy } from 'WebSharedComponents/assets/js/utils.js'
@@ -33,7 +34,7 @@ export default {
         const masStore = useMasStore();
         const taskQueueStore = useTaskQueueStore();
         const designLevelOptions = ['Help me with the design', 'I know the design I want'];
-        const modeOptions = ['Continuous Conduction Mode', 'Critical Conduction Mode', 'Discontinuous Conduction Mode'];
+        const modeOptions = ['continuousConductionMode', 'Critical Conduction Mode', 'discontinuousConductionMode'];
         const errorMessage = "";
         const localData = deepCopy(defaultPfcWizardInputs);
         return {
@@ -62,7 +63,7 @@ export default {
     },
     computed: {
         isCcmMode() {
-            return this.localData.mode === 'Continuous Conduction Mode';
+            return this.localData.mode === 'continuousConductionMode';
         }
     },
     watch: {
@@ -127,8 +128,8 @@ export default {
     postProcessResults(result, mode) {
       if (result.inductance) this.simulatedInductance = result.inductance;
     },
-    getTopology() { return 'Boost Converter'; },  // PFC is typically implemented as a Boost topology
-    getIsolationSides() { return ['primary']; },
+    getTopology() { return Topologies.PowerFactorCorrection; },
+    getIsolationSides() { return [IsolationSide.Primary]; },
     getInsulationType() { return null; },
 
         updateErrorMessage() {
@@ -247,7 +248,7 @@ export default {
                     
                     // Get designRequirements from stored data or compute basic ones
                     const dr = this.designRequirements || {
-                        topology: 'PFC',
+                        topology: Topologies.PowerFactorCorrection,
                         magnetizingInductance: this.simulatedInductance ? { nominal: this.simulatedInductance } : null
                     };
                     

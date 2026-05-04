@@ -1,4 +1,5 @@
 <script setup>
+import { IsolationSide } from 'WebSharedComponents/assets/ts/MAS.ts'
 import { useMasStore } from '../../stores/mas'
 import { useTaskQueueStore } from '../../stores/taskQueue'
 import { combinedStyle, combinedClass, deepCopy } from 'WebSharedComponents/assets/js/utils.js'
@@ -114,14 +115,17 @@ export default {
     postProcessResults(result, mode) {
       if (this.designRequirements) this.simulatedInductance = this.designRequirements.magnetizingInductance?.nominal || null;
     },
-    getTopology() { 
+    getTopology() {
       const topologyMap = {
-        'Buck': 'Buck Converter',
-        'Boost': 'Boost Converter',
+        'Buck': 'buckConverter',
+        'Boost': 'boostConverter',
       };
-      return topologyMap[this.converterName] || this.converterName + ' Converter';
+      if (!topologyMap[this.converterName]) {
+        throw new Error(`BuckBoostWizard: unknown converterName '${this.converterName}'`);
+      }
+      return topologyMap[this.converterName];
     },
-    getIsolationSides() { return ['primary']; },
+    getIsolationSides() { return [IsolationSide.Primary]; },
 
             updateErrorMessage() {
             this.errorMessage = "";

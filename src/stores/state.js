@@ -4,6 +4,7 @@ import { useMasStore } from './mas'
 import { useAdviseCacheStore } from './adviseCache'
 import { deepCopy } from 'WebSharedComponents/assets/js/utils.js'
 import * as Defaults from 'WebSharedComponents/assets/js/defaults.js'
+import { CoilAlignment, WindingOrientation } from 'WebSharedComponents/assets/ts/MAS.ts'
 
 
 export const useStateStore = defineStore("state", () => {
@@ -408,8 +409,8 @@ export const useStateStore = defineStore("state", () => {
 
     //CoilConfigurations
     const woundCoilConfiguration = ref({
-        sectionsOrientation: "contiguous",
-        sectionsAlignment: "spread",
+        sectionsOrientation: WindingOrientation.Contiguous,
+        sectionsAlignment: CoilAlignment.Spread,
         interlayerThickness: 0,
         intersectionThickness: 0,
         dataPerSection: [],

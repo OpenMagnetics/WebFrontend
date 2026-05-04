@@ -1,22 +1,23 @@
 import { defineStore } from 'pinia'
 import { ref, watch, computed  } from 'vue'
+import { CoreType, GapType } from 'WebSharedComponents/assets/ts/MAS.ts'
 
 export const useCrossReferencerStore = defineStore("crossReferencer", () => {
 
     const coreReferenceInputs = ref({
         core: {
             functionalDescription: {
-                type: "two-piece set",
+                type: CoreType.TwoPieceSet,
                 material: "3C97",
                 shape:  "PQ 40/40",
                 gapping: [{
-                    "type": "subtractive",
+                    "type": GapType.Subtractive,
                     "length": 0.001
                 },{
-                    "type": "residual",
+                    "type": GapType.Residual,
                     "length": 0.00001
                 },{
-                    "type": "residual",
+                    "type": GapType.Residual,
                     "length": 0.00001
                 }],
                 numberStacks: 1

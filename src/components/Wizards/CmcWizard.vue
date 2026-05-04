@@ -1,4 +1,5 @@
 <script setup>
+import { Topologies } from 'WebSharedComponents/assets/ts/MAS.ts'
 import { useMasStore } from '../../stores/mas'
 import { useTaskQueueStore } from '../../stores/taskQueue'
 import { combinedStyle, combinedClass, deepCopy } from 'WebSharedComponents/assets/js/utils.js'
@@ -8,7 +9,7 @@ import ElementFromList from 'WebSharedComponents/DataInput/ElementFromList.vue'
 import DimensionWithTolerance from 'WebSharedComponents/DataInput/DimensionWithTolerance.vue'
 import { defaultDesignRequirements, minimumMaximumScalePerParameter, isolationSideOrdered } from 'WebSharedComponents/assets/js/defaults.js'
 import ConverterWizardBase from './ConverterWizardBase.vue'
-import CmcEmiSpectrumView from './CmcEmiSpectrumView.vue'
+import EmiSpectrumView from './EmiSpectrumView.vue'
 import { waitForMkf } from 'WebSharedComponents/assets/js/mkfRuntime'
 import CompactVoltageInput from './CompactVoltageInput.vue'
 </script>
@@ -210,7 +211,7 @@ export default {
                 this.simulatedInductance = dr.magnetizingInductance?.nominal ?? null;
             }
         },
-        getTopology() { return 'CommonModeChoke'; },
+        getTopology() { return Topologies.CommonModeChoke; },
         getIsolationSides() {
             return isolationSideOrdered.slice(0, this.numWindings).map(s => s.toLowerCase());
         },
@@ -712,7 +713,8 @@ export default {
     <!-- ══════════════════════════════════════════════════════════ -->
     <template #col3-extra>
       <div v-if="emiInductance && emiInductance > 0" class="cmc-emi-wrapper mt-2">
-        <CmcEmiSpectrumView
+        <EmiSpectrumView
+          mode="cm"
           :switchingFrequency="localData.switchingFrequencyEmi"
           :voltageSwing="emiVoltageSwing"
           :parasiticCap_pF="localData.parasiticCap_pF"
