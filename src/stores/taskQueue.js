@@ -1421,6 +1421,48 @@ export const useTaskQueueStore = defineStore('taskQueue', {
         },
 
         // ==========================================
+        // Wizard Calculation Methods - Phase Shift Half Bridge (PSHB)
+        // ==========================================
+
+        pshbInputsCalculated(success = true, dataOrMessage = '') {
+        },
+
+        async calculatePshbInputs(params) {
+            const mkf = await waitForMkf();
+            await mkf.ready;
+
+            const result = await mkf.calculate_pshb_inputs(JSON.stringify(params));
+            if (result.startsWith('Exception')) {
+                setTimeout(() => { this.pshbInputsCalculated(false, result); }, this.task_standard_response_delay);
+                throw new Error(result);
+            }
+            const inputs = JSON.parse(result);
+            setTimeout(() => { this.pshbInputsCalculated(true, inputs); }, this.task_standard_response_delay);
+            return inputs;
+        },
+
+        // ==========================================
+        // Wizard Calculation Methods - Asymmetric Half Bridge (AHB)
+        // ==========================================
+
+        ahbInputsCalculated(success = true, dataOrMessage = '') {
+        },
+
+        async calculateAhbInputs(params) {
+            const mkf = await waitForMkf();
+            await mkf.ready;
+
+            const result = await mkf.calculate_ahb_inputs(JSON.stringify(params));
+            if (result.startsWith('Exception')) {
+                setTimeout(() => { this.ahbInputsCalculated(false, result); }, this.task_standard_response_delay);
+                throw new Error(result);
+            }
+            const inputs = JSON.parse(result);
+            setTimeout(() => { this.ahbInputsCalculated(true, inputs); }, this.task_standard_response_delay);
+            return inputs;
+        },
+
+        // ==========================================
         // Wizard Calculation Methods - Common Mode Choke (CMC)
         // ==========================================
 

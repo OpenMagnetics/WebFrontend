@@ -118,6 +118,20 @@ export default {
             await this.$nextTick();
             await this.$router.push(`${import.meta.env.BASE_URL}wizards`);
         },
+        async onPshbWizard() {
+            this.$stateStore.resetMagneticTool();
+            this.$stateStore.selectWorkflow("design");
+            this.$stateStore.selectWizard(this.$stateStore.Wizards.PhaseShiftHalfBridge);
+            await this.$nextTick();
+            await this.$router.push(`${import.meta.env.BASE_URL}wizards`);
+        },
+        async onAhbWizard() {
+            this.$stateStore.resetMagneticTool();
+            this.$stateStore.selectWorkflow("design");
+            this.$stateStore.selectWizard(this.$stateStore.Wizards.AsymmetricHalfBridge);
+            await this.$nextTick();
+            await this.$router.push(`${import.meta.env.BASE_URL}wizards`);
+        },
         async onMagneticBuilder() {
             this.$stateStore.resetMagneticTool();
             this.$stateStore.selectWorkflow("design");
@@ -346,6 +360,32 @@ export default {
                                 <h4 class="card-title text-white fw-bold mb-2">Phase-Shifted Full Bridge</h4>
                                 <p class="card-text text-white small mb-3">ZVS full-bridge converter with phase-shifted PWM.</p>
                                 <button @click="onPsfbWizard" class="btn btn-light w-100">
+                                    Start Wizard
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Phase-Shifted Half Bridge -->
+                    <div class="col-lg-4 col-md-6">
+                        <div class="card h-100 bg-dark border-secondary">
+                            <div class="card-body p-4">
+                                <h4 class="card-title text-white fw-bold mb-2">Phase-Shifted Half Bridge</h4>
+                                <p class="card-text text-white small mb-3">ZVS half-bridge converter with phase-shifted PWM.</p>
+                                <button @click="onPshbWizard" class="btn btn-light w-100">
+                                    Start Wizard
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Asymmetric Half Bridge -->
+                    <div class="col-lg-4 col-md-6">
+                        <div class="card h-100 bg-dark border-secondary">
+                            <div class="card-body p-4">
+                                <h4 class="card-title text-white fw-bold mb-2">Asymmetric Half Bridge</h4>
+                                <p class="card-text text-white small mb-3">Complementary-PWM half-bridge with DC-blocking cap; CT / FB / current-doubler / flyback rectifiers.</p>
+                                <button @click="onAhbWizard" class="btn btn-light w-100">
                                     Start Wizard
                                 </button>
                             </div>

@@ -14,6 +14,8 @@ import DabWizard from '../components/Wizards/DabWizard.vue'
 import LlcWizard from '../components/Wizards/LlcWizard.vue'
 import CllcWizard from '../components/Wizards/CllcWizard.vue'
 import PsfbWizard from '../components/Wizards/PsfbWizard.vue'
+import PshbWizard from '../components/Wizards/PshbWizard.vue'
+import AhbWizard from '../components/Wizards/AhbWizard.vue'
 
 </script>
 
@@ -101,6 +103,14 @@ export default {
             <PsfbWizard
                 v-if="$stateStore.getCurrentWizard() == $stateStore.Wizards.PhaseShiftFullBridge"
                 :dataTestLabel="'PsfbWizard'"
+            />
+            <PshbWizard
+                v-if="$stateStore.getCurrentWizard() == $stateStore.Wizards.PhaseShiftHalfBridge"
+                :dataTestLabel="'PshbWizard'"
+            />
+            <AhbWizard
+                v-if="$stateStore.getCurrentWizard() == $stateStore.Wizards.AsymmetricHalfBridge"
+                :dataTestLabel="'AhbWizard'"
             />
         </main>
         <Footer class="mt-auto"/>

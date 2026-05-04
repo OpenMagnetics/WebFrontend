@@ -1,0 +1,212 @@
+<script setup>
+import { useMasStore } from '../../stores/mas'
+import { useTaskQueueStore } from '../../stores/taskQueue'
+import Dimension from 'WebSharedComponents/DataInput/Dimension.vue'
+import ElementFromList from 'WebSharedComponents/DataInput/ElementFromList.vue'
+import { minimumMaximumScalePerParameter } from 'WebSharedComponents/assets/js/defaults.js'
+import ConverterWizardBase from './ConverterWizardBase.vue'
+import CompactVoltageInput from './CompactVoltageInput.vue'
+</script>
+
+<script>
+// Asymmetric Half-Bridge (AHB) wizard. Mirrors PsfbWizard.vue structure.
+// Backend: calculate_ahb_inputs (libMKF) -> AdvancedAsymmetricHalfBridge.
+// AHB uses dutyCycle (not phase shift) and supports four rectifier
+// variants (centerTapped / fullBridge / currentDoubler / ahbFlyback).
+// AhbOperatingPoint requires dutyCycle as a hint; the analytical solver
+// recomputes it from V_in / V_out internally.
+export default {
+  props: {
+    dataTestLabel: { type: String, default: 'AhbWizard' },
+  },
+  data() {
+    const masStore = useMasStore();
+    const taskQueueStore = useTaskQueueStore();
+    const localData = {
+      inputVoltage: { nominal: 400, tolerance: 0.1 },
+      outputVoltage: 12, outputPower: 200, switchingFrequency: 100000,
+      dutyCycle: 0.4, maximumDutyCycle: 0.7, efficiency: 0.95,
+      leakageInductance: 1e-6, useLeakageInductance: true,
+      rectifierType: 'centerTapped',
+      magnetizingInductance: 500e-6,
+      outputInductance: 0,
+      dcBlockingCapacitance: 1e-6,
+      outputCapacitance: 100e-6,
+      turnsRatio: 8.0, ambientTemperature: 25, insulationType: 'Basic',
+    };
+    const insulationTypes = ['No', 'Basic', 'Reinforced'];
+    // The MAS schema enum strings.
+    const rectifierOptions = ['centerTapped', 'fullBridge', 'currentDoubler', 'ahbFlyback'];
+    return {
+      masStore, taskQueueStore, localData, insulationTypes, rectifierOptions,
+      errorMessage: "", simulatingWaveforms: false, waveformSource: '', waveformError: "",
+      magneticWaveforms: [], converterWaveforms: [], designRequirements: null,
+      simulatedTurnsRatios: null, simulatedOperatingPoints: [], numberOfPeriods: 2, numberOfSteadyStatePeriods: 1,
+      waveformViewMode: 'magnetic',
+      forceWaveformUpdate: 0,
+    }
+  },
+  methods: {
+
+    // ===== WIZARD CONTRACT =====
+    buildParams(mode) {
+      const params = {
+        inputVoltage: this.localData.inputVoltage,
+        efficiency: this.localData.efficiency,
+        magnetizingInductance: this.localData.magnetizingInductance,
+        leakageInductance: this.localData.leakageInductance,
+        useLeakageInductance: this.localData.useLeakageInductance,
+        rectifierType: this.localData.rectifierType,
+        maximumDutyCycle: this.localData.maximumDutyCycle,
+        operatingPoints: [{
+          outputVoltages: [this.localData.outputVoltage],
+          outputCurrents: [this.localData.outputPower / this.localData.outputVoltage],
+          dutyCycle: this.localData.dutyCycle,
+          switchingFrequency: this.localData.switchingFrequency,
+          ambientTemperature: this.localData.ambientTemperature
+        }],
+        // Advanced* user-pinned overrides
+        desiredTurnsRatios: [this.localData.turnsRatio],
+        desiredMagnetizingInductance: this.localData.magnetizingInductance,
+      };
+      if (this.localData.leakageInductance && this.localData.leakageInductance > 0) {
+        params.desiredLeakageInductance = this.localData.leakageInductance;
+      }
+      if (this.localData.outputInductance && this.localData.outputInductance > 0) {
+        params.outputInductance = this.localData.outputInductance;
+        params.desiredOutputInductance = this.localData.outputInductance;
+      }
+      if (this.localData.dcBlockingCapacitance && this.localData.dcBlockingCapacitance > 0) {
+        params.dcBlockingCapacitance = this.localData.dcBlockingCapacitance;
+        params.desiredDcBlockingCapacitance = this.localData.dcBlockingCapacitance;
+      }
+      if (this.localData.outputCapacitance && this.localData.outputCapacitance > 0) {
+        params.desiredOutputCapacitance = this.localData.outputCapacitance;
+      }
+      return params;
+    },
+    getCalculateFn() { return (aux) => this.taskQueueStore.calculateAhbInputs(aux); },
+    getSimulateFn() { return (aux) => this.taskQueueStore.calculateAhbInputs(aux); },
+    getDefaultFrequency() { return this.localData.switchingFrequency; },
+    getTopology() { return 'Asymmetric Half-Bridge Converter'; },
+    getIsolationSides() { return ['primary', 'secondary']; },
+    getInsulationType() { return this.localData.insulationType; },
+
+    updateErrorMessage() { this.errorMessage = ""; },
+    dismissError() { this.errorMessage = ""; this.waveformError = ""; },
+
+    async process() {
+      this.masStore.resetMas("power");
+      this.$stateStore.closeCoilAdvancedInfo();
+      try {
+        const result = await this.$refs.base.processWizardData(this, this.taskQueueStore);
+        if (!result.success) {
+          this.errorMessage = result.error;
+          return false;
+        }
+        this.designRequirements = result.designRequirements;
+        this.simulatedTurnsRatios = result.designRequirements?.turnsRatios?.map(tr => tr.nominal) || [this.localData.turnsRatio];
+        return true;
+      } catch (error) {
+        this.errorMessage = error.message || "Failed to process AHB inputs";
+        return false;
+      }
+    },
+
+    async processAndReview() {
+      const success = await this.process();
+      if (!success) { setTimeout(() => { this.errorMessage = "" }, 5000); return; }
+      await this.$refs.base.navigateToReview(this.$stateStore, this.masStore, "Power");
+      await this.$nextTick();
+      await this.$router.push(`${import.meta.env.BASE_URL}magnetic_tool`);
+    },
+    async processAndAdvise() {
+      const success = await this.process();
+      if (!success) { setTimeout(() => { this.errorMessage = "" }, 5000); return; }
+      await this.$refs.base.navigateToAdvise(this.$stateStore, this.masStore, "Power");
+      await this.$nextTick();
+      await this.$router.push(`${import.meta.env.BASE_URL}magnetic_tool`);
+    },
+
+    async getAnalyticalWaveforms() {
+      await this.$refs.base.executeWaveformAction(this, 'analytical');
+    },
+    async simulateIdealWaveforms() {
+      await this.$refs.base.executeWaveformAction(this, 'simulation');
+    },
+    async getSpiceCode() {
+      await this.$refs.base.generateSpiceCode(this);
+    },
+  },
+}
+</script>
+
+<template>
+  <ConverterWizardBase
+    ref="base"
+    title="AHB Wizard" titleIcon="bi bi-chevron-double-right"
+    subtitle="Asymmetric Half Bridge Converter"
+    :col1Width="3" :col2Width="4" :col3Width="5"
+    :magneticWaveforms="magneticWaveforms" :converterWaveforms="converterWaveforms"
+    :simulatingWaveforms="simulatingWaveforms" :waveformSource="waveformSource"
+    :waveformError="waveformError" :errorMessage="errorMessage"
+    :numberOfPeriods="numberOfPeriods" :numberOfSteadyStatePeriods="numberOfSteadyStatePeriods"
+    :disableActions="errorMessage != ''"
+    @update:numberOfPeriods="numberOfPeriods = $event"
+    @update:numberOfSteadyStatePeriods="numberOfSteadyStatePeriods = $event"
+    @get-analytical-waveforms="getAnalyticalWaveforms"
+    @get-simulated-waveforms="simulateIdealWaveforms"
+    @get-spice-code="getSpiceCode"
+    @dismiss-error="dismissError"
+  >
+    <template #conditions>
+      <Dimension :name="'switchingFrequency'" :replaceTitle="'Sw. Freq'" unit="Hz" :min="minimumMaximumScalePerParameter['frequency']['min']" :max="minimumMaximumScalePerParameter['frequency']['max']" v-model="localData" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor" :textColor="$styleStore.wizard.inputTextColor" @update="updateErrorMessage"/>
+      <Dimension :name="'dutyCycle'" :replaceTitle="'Duty'" :unit="null" :min="0.05" :max="0.95" v-model="localData" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor" :textColor="$styleStore.wizard.inputTextColor" @update="updateErrorMessage"/>
+      <Dimension :name="'maximumDutyCycle'" :replaceTitle="'Max D'" :unit="null" :min="0.1" :max="0.95" v-model="localData" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor" :textColor="$styleStore.wizard.inputTextColor" @update="updateErrorMessage"/>
+      <Dimension :name="'ambientTemperature'" :replaceTitle="'Temp'" unit=" C" :min="minimumMaximumScalePerParameter['temperature']['min']" :max="minimumMaximumScalePerParameter['temperature']['max']" :allowNegative="true" :allowZero="true" v-model="localData" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor" :textColor="$styleStore.wizard.inputTextColor" @update="updateErrorMessage"/>
+      <Dimension :name="'efficiency'" :replaceTitle="'Eff'" unit="%" :visualScale="100" :min="0.5" :max="1" v-model="localData" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor" :textColor="$styleStore.wizard.inputTextColor" @update="updateErrorMessage"/>
+      <ElementFromList :name="'insulationType'" :replaceTitle="'Insul'" :options="insulationTypes" :titleSameRow="true" v-model="localData" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor" :textColor="$styleStore.wizard.inputTextColor" @update="updateErrorMessage"/>
+    </template>
+
+    <template #design-or-switch-parameters-title>
+      <div class="compact-header"><i class="bi bi-gear-wide-connected me-1"></i>Transformer</div>
+    </template>
+
+    <template #design-or-switch-parameters>
+      <Dimension :name="'turnsRatio'" :replaceTitle="'Turns'" :unit="null" :min="0.1" :max="100" v-model="localData" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor" :textColor="$styleStore.wizard.inputTextColor" @update="updateErrorMessage"/>
+      <Dimension :name="'magnetizingInductance'" :replaceTitle="'Mag L'" unit="H" :min="minimumMaximumScalePerParameter['inductance']['min']" :max="minimumMaximumScalePerParameter['inductance']['max']" v-model="localData" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor" :textColor="$styleStore.wizard.inputTextColor" @update="updateErrorMessage"/>
+      <Dimension :name="'leakageInductance'" :replaceTitle="'Lk L'" unit="H" :min="0" :max="minimumMaximumScalePerParameter['inductance']['max']" v-model="localData" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor" :textColor="$styleStore.wizard.inputTextColor" @update="updateErrorMessage"/>
+      <Dimension :name="'outputInductance'" :replaceTitle="'Out L'" unit="H" :min="0" :max="minimumMaximumScalePerParameter['inductance']['max']" v-model="localData" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor" :textColor="$styleStore.wizard.inputTextColor" @update="updateErrorMessage"/>
+      <Dimension :name="'dcBlockingCapacitance'" :replaceTitle="'Cb'" unit="F" :min="0" :max="1" v-model="localData" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor" :textColor="$styleStore.wizard.inputTextColor" @update="updateErrorMessage"/>
+      <Dimension :name="'outputCapacitance'" :replaceTitle="'Co'" unit="F" :min="0" :max="1" v-model="localData" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor" :textColor="$styleStore.wizard.inputTextColor" @update="updateErrorMessage"/>
+      <ElementFromList :name="'rectifierType'" :replaceTitle="'Rectifier'" :options="rectifierOptions" :titleSameRow="true" v-model="localData" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor" :textColor="$styleStore.wizard.inputTextColor" @update="updateErrorMessage"/>
+      <div class="form-check mt-2"><input class="form-check-input" type="checkbox" v-model="localData.useLeakageInductance" id="useLeakageInductanceAhb"><label class="form-check-label small" for="useLeakageInductanceAhb" :style="{ color: $styleStore.wizard.inputTextColor }">Use Leakage L</label></div>
+    </template>
+
+    <template #col1-footer>
+      <div class="d-flex align-items-center justify-content-between mt-2">
+        <span v-if="errorMessage" class="error-text"><i class="bi bi-exclamation-triangle-fill me-1"></i>{{ errorMessage }}</span>
+        <span v-else></span>
+        <div class="action-btns">
+          <button :disabled="errorMessage != ''" class="action-btn-sm secondary" @click="processAndReview"><i class="bi bi-search me-1"></i>Review Specs</button>
+          <button :disabled="errorMessage != ''" class="action-btn-sm primary" @click="processAndAdvise"><i class="bi bi-magic me-1"></i>Design Magnetic</button>
+        </div>
+      </div>
+    </template>
+
+    <template #input-voltage>
+      <CompactVoltageInput
+        :name="'inputVoltage'"
+        :dataTestLabel="dataTestLabel + '-InputVoltage'"
+        unit="V"
+        :modelValue="localData.inputVoltage"
+        @update="updateErrorMessage"
+      />
+    </template>
+
+    <template #outputs>
+      <Dimension :name="'outputVoltage'" :replaceTitle="'Voltage'" unit="V" :min="minimumMaximumScalePerParameter['voltage']['min']" :max="minimumMaximumScalePerParameter['voltage']['max']" v-model="localData" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor" :textColor="$styleStore.wizard.inputTextColor" @update="updateErrorMessage"/>
+      <Dimension :name="'outputPower'" :replaceTitle="'Power'" unit="W" :min="1" :max="minimumMaximumScalePerParameter['power']['max']" v-model="localData" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor" :textColor="$styleStore.wizard.inputTextColor" @update="updateErrorMessage"/>
+    </template>
+  </ConverterWizardBase>
+</template>

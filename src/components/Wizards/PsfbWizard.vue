@@ -23,11 +23,11 @@ export default {
       outputVoltage: 48, outputPower: 1000, switchingFrequency: 100000,
       phaseShift: 0.1, maxPhaseShift: 0.8, efficiency: 0.97,
       seriesInductance: 0, useLeakageInductance: true,
-      rectifierType: 'Full Bridge', magnetizingInductance: 1e-3,
+      rectifierType: 'fullBridge', magnetizingInductance: 1e-3,
       turnsRatio: 4.0, ambientTemperature: 25, insulationType: 'Basic',
     };
     const insulationTypes = ['No', 'Basic', 'Reinforced'];
-    const rectifierOptions = ['Full Bridge', 'Center Tapped', 'Current Doubler'];
+    const rectifierOptions = ['fullBridge', 'centerTapped', 'currentDoubler'];
     return {
       masStore, taskQueueStore, localData, insulationTypes, rectifierOptions,
       errorMessage: "", simulatingWaveforms: false, waveformSource: '', waveformError: "",
@@ -46,7 +46,7 @@ export default {
         phaseShift: this.localData.phaseShift, efficiency: this.localData.efficiency,
         seriesInductance: this.localData.seriesInductance, useLeakageInductance: this.localData.useLeakageInductance,
         rectifierType: this.localData.rectifierType, maximumPhaseShift: this.localData.maxPhaseShift,
-        desiredInductance: this.localData.magnetizingInductance, desiredTurnsRatios: [this.localData.turnsRatio],
+        desiredMagnetizingInductance: this.localData.magnetizingInductance, desiredTurnsRatios: [this.localData.turnsRatio],
         operatingPoints: [{ outputVoltages: [this.localData.outputVoltage], outputCurrents: [this.localData.outputPower / this.localData.outputVoltage], phaseShift: this.localData.phaseShift, switchingFrequency: this.localData.switchingFrequency, ambientTemperature: this.localData.ambientTemperature }],
       };
     },
@@ -70,7 +70,7 @@ export default {
         useLeakageInductance: this.localData.useLeakageInductance,
         rectifierType: this.localData.rectifierType,
         maximumPhaseShift: this.localData.maxPhaseShift,
-        desiredInductance: this.localData.magnetizingInductance,
+        desiredMagnetizingInductance: this.localData.magnetizingInductance,
         desiredTurnsRatios: [this.localData.turnsRatio],
         operatingPoints: [{
           outputVoltages: [this.localData.outputVoltage],
@@ -95,7 +95,7 @@ export default {
         useLeakageInductance: this.localData.useLeakageInductance,
         rectifierType: this.localData.rectifierType,
         maximumPhaseShift: this.localData.maxPhaseShift,
-        desiredInductance: this.localData.magnetizingInductance,
+        desiredMagnetizingInductance: this.localData.magnetizingInductance,
         desiredTurnsRatios: [this.localData.turnsRatio],
         operatingPoints: [{
           outputVoltages: [this.localData.outputVoltage],
