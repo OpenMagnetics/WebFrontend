@@ -142,7 +142,7 @@ export default {
                         e.target.style.cursor = 'grabbing';
                         const originalValue = value;
                         const label = this.modelValue[this.getSignalDescriptor(datasetIndex)]?.processed?.label;
-                        if (label == "Sinusoidal") {
+                        if (label == "sinusoidal") {
                             this.roundValue(datasetIndex, index, value, 1 / modelValue.frequency / 100, this.getYPrecision(datasetIndex));
                         }
                         this.processByType(datasetIndex, index, value)
@@ -454,32 +454,32 @@ export default {
         disableDragXByType(datasetIndex, index) {
             const signalDescriptor = this.getSignalDescriptor(datasetIndex)
             const label = this.modelValue[signalDescriptor]?.processed?.label;
-            if (label == "Triangular") {
+            if (label == "triangular") {
                 if (index == 0 || index == 2) {
                     chart.options.plugins.dragData.dragX = false;
                 }
             }
-            else if (label == "Rectangular" ) {
+            else if (label == "rectangular" ) {
                 if (index == 0 || index == 1 || index == 4) {
                     chart.options.plugins.dragData.dragX = false;
                 }
             }
-            else if (label == "Unipolar Triangular") {
+            else if (label == "unipolarTriangular") {
                 if (index == 0 || index == 4) {
                     chart.options.plugins.dragData.dragX = false;
                 }
             }
-            else if (label == "Unipolar Rectangular" || label == "Flyback Primary") {
+            else if (label == "unipolarRectangular" || label == "flybackPrimary") {
                 if (index == 0 || index == 1 || index == 4) {
                     chart.options.plugins.dragData.dragX = false;
                 }
             }
-            else if (label == "Flyback Secondary") {
+            else if (label == "flybackSecondary") {
                 if (index == 0 || index == 3 || index == 4) {
                     chart.options.plugins.dragData.dragX = false;
                 }
             }
-            else if (label == "Bipolar Rectangular") {
+            else if (label == "bipolarRectangular") {
                 if (index == 0 || index == 9) {
                     chart.options.plugins.dragData.dragX = false;
                 }
@@ -487,10 +487,10 @@ export default {
                     chart.options.plugins.dragData.dragY = false;
                 }
             }
-            else if (label == "Sinusoidal") {
+            else if (label == "sinusoidal") {
                  chart.options.plugins.dragData.dragX = false;
             }
-            else if (!label || label == "Custom") {
+            else if (!label || label == "custom") {
                 if (index == 0 || index == (chart.data.datasets[datasetIndex].data.length - 1)) {
                     chart.options.plugins.dragData.dragX = false;
                 }
@@ -499,15 +499,15 @@ export default {
         processByType(datasetIndex, index, value) {
             const signalDescriptor = this.getSignalDescriptor(datasetIndex)
             const label = this.modelValue[signalDescriptor]?.processed?.label;
-            if (label == "Triangular") {
+            if (label == "triangular") {
                 this.checkHorizontalLimits(chart.data.datasets[datasetIndex].data, index, value);
                 this.synchronizeExtremes(datasetIndex, index, value);
             }
-            else if (!label || label == "Custom") {
+            else if (!label || label == "custom") {
                 this.checkHorizontalLimits(chart.data.datasets[datasetIndex].data, index, value);
                 this.synchronizeExtremes(datasetIndex, index, value);
             }
-            else if (label == "Rectangular") {
+            else if (label == "rectangular") {
                 const data = chart.data.datasets[datasetIndex].data
                 switch (index) {
                     case 0:
@@ -552,7 +552,7 @@ export default {
                     break;
                 }
             }
-            else if (label == "Unipolar Rectangular") {
+            else if (label == "unipolarRectangular") {
                 const data = chart.data.datasets[datasetIndex].data
                 switch (index) {
                     case 0:
@@ -578,7 +578,7 @@ export default {
                     break;
                 }
             }
-            else if (label == "Flyback Primary") {
+            else if (label == "flybackPrimary") {
                 const data = chart.data.datasets[datasetIndex].data
                 switch (index) {
                     case 0:
@@ -600,7 +600,7 @@ export default {
                     break;
                 }
             }
-            else if (label == "Flyback Secondary") {
+            else if (label == "flybackSecondary") {
                 const data = chart.data.datasets[datasetIndex].data
                 switch (index) {
                     case 0:
@@ -621,7 +621,7 @@ export default {
                     break;
                 }
             }
-            else if (label == "Unipolar Triangular") {
+            else if (label == "unipolarTriangular") {
                 const data = chart.data.datasets[datasetIndex].data
                 switch (index) {
                     case 0:
@@ -642,7 +642,7 @@ export default {
                     break;
                 }
             }
-            else if (label == "Bipolar Rectangular") {
+            else if (label == "bipolarRectangular") {
                 var data = chart.data.datasets[datasetIndex].data
                 var dc
                 var firstValue = data[2].y
@@ -723,7 +723,7 @@ export default {
                         {x: period, y: 0 }]
                 chart.data.datasets[datasetIndex].data = data
             }
-            else if (label == "Sinusoidal") {
+            else if (label == "sinusoidal") {
                 const numberPoints = chart.data.datasets[datasetIndex].data.length - 1
                 const indexAngle = index * 2 * Math.PI / numberPoints
                 const maxMin = this.getMaxMinInPoints(chart.data.datasets[datasetIndex].data, 'y')

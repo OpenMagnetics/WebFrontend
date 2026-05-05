@@ -46,7 +46,7 @@ export default {
             }
             else {
                 const label = this.modelValue.current?.processed?.label;
-                return label != "Rectangular" && label != "Bipolar Rectangular" && label != "Unipolar Rectangular";
+                return label != "rectangular" && label != "bipolarRectangular" && label != "unipolarRectangular";
             }
         }
     },

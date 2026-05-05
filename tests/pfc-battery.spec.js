@@ -148,7 +148,7 @@ test.describe('PFC – Group B – Analytical', () => {
 
     if (!modeSelect) { console.log('[PFC-B3] Mode select not found — SKIP'); return; }
 
-    await modeSelect.selectOption({ label: 'Discontinuous Conduction Mode' }).catch(async () => {
+    await modeSelect.selectOption({ label: 'discontinuousConductionMode' }).catch(async () => {
       const opts = await modeSelect.evaluate(el => Array.from(el.options).map(o => o.value));
       const dcmOpt = opts.find(o => o.includes('Discontinuous'));
       if (dcmOpt) await modeSelect.selectOption(dcmOpt);

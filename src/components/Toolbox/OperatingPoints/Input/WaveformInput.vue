@@ -39,14 +39,14 @@ export default {
     },
     computed: {
         disableOffset() {
-            return this.modelValue[this.signalDescriptor].processed.label === "Rectangular";
+            return this.modelValue[this.signalDescriptor].processed.label === "rectangular";
         },
         induceableSignal() {
             if (this.signalDescriptor == 'current') {
                 return true;
             }
             else {
-                return this.modelValue.current.processed.label != "Rectangular" && this.modelValue.current.processed.label != "Bipolar Rectangular" && this.modelValue.current.processed.label != "Unipolar Rectangular";
+                return this.modelValue.current.processed.label != "rectangular" && this.modelValue.current.processed.label != "bipolarRectangular" && this.modelValue.current.processed.label != "unipolarRectangular";
             }
         }
     },

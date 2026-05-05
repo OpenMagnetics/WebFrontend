@@ -98,11 +98,11 @@ export default {
                 this.modelValue[this.signalDescriptor].processed.rms = processed.rms;
                 this.modelValue[this.signalDescriptor].processed.thd = processed.thd;
                 const label = this.modelValue[this.signalDescriptor].processed.label;
-                if (!label || label == 'Custom') {
+                if (!label || label == 'custom') {
                     this.modelValue[this.signalDescriptor].processed.dutyCycle = processed.dutyCycle;
                     this.modelValue[this.signalDescriptor].processed.peakToPeak = processed.peakToPeak;
                     this.modelValue[this.signalDescriptor].processed.offset = processed.offset;
-                    this.modelValue[this.signalDescriptor].processed.label = 'Custom';
+                    this.modelValue[this.signalDescriptor].processed.label = 'custom';
                 }
             } catch (error) {
                 console.error('Error in process:', error);

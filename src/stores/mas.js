@@ -79,7 +79,7 @@ export const useMasStore = defineStore("mas", () => {
     }
 
     const hasMirroredWindings = computed(() =>
-        mas.value?.inputs?.designRequirements?.topology === 'CommonModeChoke'
+        mas.value?.inputs?.designRequirements?.topology === 'commonModeChoke'
     );
 
     return {

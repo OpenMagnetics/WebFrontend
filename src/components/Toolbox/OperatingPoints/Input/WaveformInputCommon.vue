@@ -45,7 +45,7 @@ export default {
                 return false;
             if (this.modelValue.voltage == null)
                 return false;
-            if ((this.modelValue.current.processed && this.modelValue.current.processed.label != 'Custom') || (this.modelValue.voltage.processed && this.modelValue.voltage.processed.label != 'Custom'))
+            if ((this.modelValue.current.processed && this.modelValue.current.processed.label != 'custom') || (this.modelValue.voltage.processed && this.modelValue.voltage.processed.label != 'custom'))
                 return true;
             return false;
         }

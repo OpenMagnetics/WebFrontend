@@ -21,7 +21,7 @@ const SIMPLE_CORE_MAGNETIC = {
                 { type: 'residual', length: 0.0001 },
             ],
             numberStacks: 1,
-            type: 'two-piece set',
+            type: 'twoPieceSet',
         },
         geometricalDescription: null,
         processedDescription: null,

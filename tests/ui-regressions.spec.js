@@ -5,7 +5,7 @@
  *         graph shows N periods, not a stale 2-period capture.
  *   UR-2  SPICE button in the Flyback wizard produces a real netlist (the
  *         topologyMap used to have key "Flyback" while the wizard emits
- *         "Flyback Converter", so SPICE silently failed for every non-
+ *         "flybackConverter", so SPICE silently failed for every non-
  *         CMC/DAB/LLC topology).
  *   UR-3  resetMas() clears CMC-only requirements (minimumImpedance) so
  *         that a user who ran a CMC design and then switches to Buck is

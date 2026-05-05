@@ -183,7 +183,7 @@ export default {
             var frequency = this.masStore.mas.inputs.operatingPoints[operatingPointIndex].excitationsPerWinding[windingIndex].frequency;
 
             try {
-                if (processed.label != "Custom") {
+                if (processed.label != "custom") {
                     var waveform = await this.taskQueueStore.createWaveform(processed, frequency);
 
                     if (waveform.data.length > 0) {

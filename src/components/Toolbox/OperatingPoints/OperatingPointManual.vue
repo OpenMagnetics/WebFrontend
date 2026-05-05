@@ -121,7 +121,7 @@ export default {
                     var magnetizingInductance = await this.taskQueueStore.resolveDimensionWithTolerance(this.masStore.mas.inputs.designRequirements.magnetizingInductance);
                     // Capture user preferences before WASM overwrites them.
                     // WASM discretizes waveforms into N points causing dutyCycle = k/N rounding
-                    // (e.g. 94.37% → 95% with N=20). WASM also returns label="Custom" which
+                    // (e.g. 94.37% → 95% with N=20). WASM also returns label="custom" which
                     // would trigger WaveformOutput to re-overwrite dutyCycle from the discretized waveform.
                     const userDutyCycle = this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex].current.processed.dutyCycle;
                     const originalVoltageLabel = this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex].voltage.processed?.label;
@@ -196,7 +196,7 @@ export default {
                     </div>
                     <div class="opm-card-body">
                         <WaveformInput
-                            v-if="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex].current != null && masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex].current.processed && masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex].current.processed.label != 'Custom'"
+                            v-if="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex].current != null && masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex].current.processed && masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex].current.processed.label != 'custom'"
                             :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex]"
                             :defaultValue="defaultOperatingPointExcitation"
                             :dataTestLabel="dataTestLabel + '-selected-current'"
@@ -227,7 +227,7 @@ export default {
                     </div>
                     <div class="opm-card-body">
                         <WaveformInput
-                            v-if="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex].voltage.processed && masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex].voltage.processed.label != 'Custom'"
+                            v-if="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex].voltage.processed && masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex].voltage.processed.label != 'custom'"
                             :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex]"
                             :defaultValue="defaultOperatingPointExcitation"
                             :dataTestLabel="dataTestLabel + '-selected-voltage'"

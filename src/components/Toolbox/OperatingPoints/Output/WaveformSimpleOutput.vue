@@ -131,11 +131,11 @@ export default {
                     this.modelValue[signalDescriptor].processed.rms = result.rms;
                     this.modelValue[signalDescriptor].processed.thd = result.thd;
                     const label = this.modelValue[signalDescriptor].processed.label;
-                    if (!label || label == 'Custom') {
+                    if (!label || label == 'custom') {
                         this.modelValue[signalDescriptor].processed.dutyCycle = result.dutyCycle;
                         this.modelValue[signalDescriptor].processed.peakToPeak = result.peakToPeak;
                         this.modelValue[signalDescriptor].processed.offset = result.offset;
-                        this.modelValue[signalDescriptor].processed.label = 'Custom';
+                        this.modelValue[signalDescriptor].processed.label = 'custom';
                     }
                     // Create a clean plain object copy for power calculation
                     const excitationCopy = JSON.parse(JSON.stringify(this.modelValue));

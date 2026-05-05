@@ -31,7 +31,7 @@ describe('OperatingPoints', () => {
 
     it('add operating point, modify, and delete', () => {
         cy.addOperatingPoint('MagneticSpecification')
-        cy.setSelectedLabel('MagneticSpecification', 'current', 'Flyback Primary')
+        cy.setSelectedLabel('MagneticSpecification', 'current', 'flybackPrimary')
         cy.addOperatingPoint('MagneticSpecification')
         cy.setSelectedLabel('MagneticSpecification', 'current', 'Custom')
         cy.setCurrentCustomData('MagneticSpecification', 'current', 0, 55)
@@ -118,7 +118,7 @@ describe('Data persistence', () => {
     it('add operating point and select, modify, and check persistence in custom', () => {
         cy.addOperatingPoint('MagneticSpecification')
         cy.selectOperatingPoint('MagneticSpecification', 0)
-        cy.setSelectedLabel('MagneticSpecification', 'current', 'Flyback Primary')
+        cy.setSelectedLabel('MagneticSpecification', 'current', 'flybackPrimary')
         cy.selectOperatingPoint('MagneticSpecification', 1)
         cy.setSelectedLabel('MagneticSpecification', 'current', 'Custom')
         cy.setCurrentCustomData('MagneticSpecification', 'current', 0, 55)
