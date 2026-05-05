@@ -35,24 +35,29 @@ export default {
         ];
         const errorMessage = "";
         const localData = {
+            // Defaults aligned with Richtek AN008 / ASUW-1G reference
+            // benchmark: 230 V EU mains, 3 A line current, 100 kHz SMPS,
+            // 20 dB attenuation @ 150 kHz → L ≈ 530 μH (≈ ASUW-1G's 600 μH).
+            // Keeps the default in the realistic residential range
+            // (143–670 μH per ASU-1200 series) instead of CMC-class 5 mH.
             inputVoltage:        { nominal: 230, tolerance: 0.1 },
-            operatingCurrent:    10,
+            operatingCurrent:    3,
             lineFrequency:       50,
             switchingFrequency:  100000,
             ambientTemperature:  25,
             configuration:       configurationOptions[1],
             designLevel:         designLevelOptions[0],
             // "I know" mode
-            desiredInductance:   100e-6,
+            desiredInductance:   600e-6,
             designFrequency:     150000,
             // "Help me" mode
             filterCapacitance:   1e-6,
-            attenuationPoints:   [{ _id: 0, frequency: 150000, attenuation: 40 }],
+            attenuationPoints:   [{ _id: 0, frequency: 150000, attenuation: 20 }],
             _uidCounter:         1,
             // EMI spectrum view: ripple-current amplitude (DM noise source)
             // and the converter's switching fundamental (the spectrum's
             // f_sw selector starts here; user can edit inline).
-            ripplePeakToPeak:    1.0,
+            ripplePeakToPeak:    0.3,
             switchingFrequencyEmi: 100000,
             dutyCycleEmi:        0.5,
             lineImpedance:       50,
@@ -319,7 +324,7 @@ export default {
             this.localData.attenuationPoints.push({
                 _id: this.localData._uidCounter++,
                 frequency: seedFreq,
-                attenuation: last ? last.attenuation : 40,
+                attenuation: last ? last.attenuation : 20,
             });
             this.updateErrorMessage();
         },
@@ -328,7 +333,7 @@ export default {
                 this.localData.attenuationPoints.splice(idx, 1);
             } else {
                 this.localData.attenuationPoints.splice(0, 1, {
-                    _id: this.localData._uidCounter++, frequency: 150000, attenuation: 40,
+                    _id: this.localData._uidCounter++, frequency: 150000, attenuation: 20,
                 });
             }
             this.updateErrorMessage();

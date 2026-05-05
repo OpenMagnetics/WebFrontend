@@ -1,33 +1,16 @@
 /**
- * Closed-form EMI-spectrum model for the CMC wizard.
+ * Closed-form EMI-spectrum models for CMC (common-mode) and DMC (differential-mode) wizards.
  *
- * Given a switching-node trapezoidal voltage and a parasitic coupling
- * capacitance, this composable returns the conducted CM-noise voltage the
- * LISN would measure, before and after the CMC. It is a *design-stage*
- * predictor — matches the style of Würth REDEXPERT / Coilcraft Analyzer
- * rather than a full ngspice run. References:
- *   - Clayton R. Paul, Introduction to EMC (2nd ed.), §3.4
- *   - Erickson & Maksimović, Fundamentals of Power Electronics (3rd ed.), §10
- *
- * Three spectra are returned, all in dBµV (CISPR reference: 1 µV):
- *   1. source:   CM-noise voltage at the LISN with NO filter
- *   2. filtered: CM-noise voltage at the LISN WITH the CMC in series
- *   3. limit:    regulatory conducted-emission limit (CISPR 32 / FCC)
- *
- * Limits are the quasi-peak envelopes. Pass/fail is whether every filtered
- * sample sits below the limit line.
+ * Shared helpers: cisprLimitDbuV, sinc, toDbuV.
+ * CMC path: voltage trapezoid → parasitic C coupling → CMC inductor (1st-order, 20 dB/dec).
+ * DMC path: current triangle → LC low-pass filter (2nd-order, 40 dB/dec).
  */
 
-// ── Regulatory limit tables (QP, dBµV) ──────────────────────────────────
-//
-// Each table is a list of segments `{ fLo, fHi, dBLo, dBHi }`. Inside a
-// segment the limit is linear in log(f); between segments the limit may
-// step (CISPR 32 Class B has a jump at 5 MHz from 56 to 60 dBµV).
 const LIMIT_TABLES = {
     'CISPR 32 Class B': [
-        { fLo: 150e3, fHi: 500e3, dBLo: 66, dBHi: 56 },  // log-linear ramp
-        { fLo: 500e3, fHi: 5e6,   dBLo: 56, dBHi: 56 },  // flat
-        { fLo: 5e6,   fHi: 30e6,  dBLo: 60, dBHi: 60 },  // step up, then flat
+        { fLo: 150e3, fHi: 500e3, dBLo: 66, dBHi: 56 },
+        { fLo: 500e3, fHi: 5e6,   dBLo: 56, dBHi: 56 },
+        { fLo: 5e6,   fHi: 30e6,  dBLo: 60, dBHi: 60 },
     ],
     'CISPR 32 Class A': [
         { fLo: 150e3, fHi: 500e3, dBLo: 79, dBHi: 73 },
@@ -46,11 +29,8 @@ const LIMIT_TABLES = {
 
 export const EMI_F_MIN_HZ = 150e3;
 export const EMI_F_MAX_HZ = 30e6;
-const DBUV_REF = 1e-6;  // CISPR reference level: 1 µV
+const DBUV_REF = 1e-6;
 
-// Linear-in-log-f interpolation within a segment. Between segments the limit
-// takes the higher of the two adjacent values — i.e. we draw the worst-case
-// step from below, matching how QP receivers are scored in the standard.
 export function cisprLimitDbuV(standard, fHz) {
     const table = LIMIT_TABLES[standard] || LIMIT_TABLES['CISPR 32 Class B'];
     if (fHz <= table[0].fLo) return table[0].dBLo;
@@ -63,8 +43,6 @@ export function cisprLimitDbuV(standard, fHz) {
             return seg.dBLo + k * (seg.dBHi - seg.dBLo);
         }
     }
-    // Fallback: frequency lies in a gap between segments — pick the stricter
-    // (lower) of the two adjacent values.
     for (let i = 0; i < table.length - 1; i++) {
         if (fHz > table[i].fHi && fHz < table[i + 1].fLo) {
             return Math.min(table[i].dBHi, table[i + 1].dBLo);
@@ -73,54 +51,47 @@ export function cisprLimitDbuV(standard, fHz) {
     return last.dBHi;
 }
 
-// sinc(x) = sin(x)/x, with sinc(0) = 1.
 const sinc = (x) => (Math.abs(x) < 1e-12 ? 1.0 : Math.sin(x) / x);
+const toDbuV = (v_rms) => 20 * Math.log10(Math.max(Math.abs(v_rms), 1e-12) / DBUV_REF);
 
-// ── Trapezoid fundamental spectrum amplitude at frequency f ────────────
-//
-// For a repetitive trapezoid of period T, amplitude V, duty d, rise t_r,
-// the complex Fourier coefficient magnitude is (Clayton Paul eq. 3-51):
-//
-//   |c_n| = 2 V d |sinc(n π d)| |sinc(n π t_r / T)|
-//
-// The envelope is flat below 1/(π d T), rolls off 20 dB/dec until
-// 1/(π t_r), then rolls off 40 dB/dec. We sample this envelope at arbitrary
-// f, not just harmonics, so the consumer can plot a continuous curve.
+// ======== Common-Mode helpers ========
+
 function trapezoidSpectrumVolts(f, V, d, tr, fSw) {
     const T = 1 / fSw;
-    const n = f / fSw;             // treat f as n·f_sw for envelope purposes
+    const n = f / fSw;
     return 2 * V * d * Math.abs(sinc(Math.PI * n * d)) * Math.abs(sinc(Math.PI * n * tr / T));
 }
 
-// ── CM current into the coupling capacitor: I = V · jωC → |I| = V · 2πf · C
 const couplingCurrent = (V_f, f, C_p) => V_f * 2 * Math.PI * f * C_p;
 
-// ── LISN half-impedance: V_meas = I · Z_LISN/2 (standard CM measurement)
 const lisnHalf = (Z_LISN) => Z_LISN / 2;
 
-// ── CMC attenuation: |1 + jωL / Z_meas| (voltage divider inverse).
-//    At low f: ~1 (no attenuation); at high f: grows ~20 dB/dec.
 function cmcAttenuationLinear(f, L, Z_meas) {
     const omegaL = 2 * Math.PI * f * L;
     return Math.sqrt(1 + (omegaL / Z_meas) ** 2);
 }
 
-const toDbuV = (v_rms) => 20 * Math.log10(Math.max(Math.abs(v_rms), 1e-12) / DBUV_REF);
+// ======== Differential-Mode helpers ========
+
+function triangularCurrentSpectrumAmps(f, deltaIpp, fSw, duty) {
+    const n = f / fSw;
+    if (n < 1) return 0;
+    const d = (duty != null && duty > 0 && duty < 1) ? duty : 0.5;
+    const num = (deltaIpp / (Math.PI * Math.PI)) * (sinc(Math.PI * n * d) ** 2);
+    return num / (d * (1 - d));
+}
+
+function lcAttenuationLinear(f, L, C, Z_LISN) {
+    const w  = 2 * Math.PI * f;
+    const re = 1 - w * w * L * C;
+    const im = (w * L) / Z_LISN;
+    return Math.sqrt(re * re + im * im);
+}
+
+// ======== Public: CMC spectrum ========
 
 /**
- * Compute the three spectra. All inputs in SI (seconds, Hz, farads, henries,
- * ohms, volts). Returns `{ frequencies, source, filtered, limit, passing }`.
- *
- * @param {Object} p
- * @param {number} p.switchingFrequency   — f_sw (Hz)
- * @param {number} p.voltageSwing         — trapezoid amplitude V (V)
- * @param {number} p.parasiticCap_pF      — C coupling to earth (pF)
- * @param {number} p.dvdt_V_ns            — slew rate → t_r = V / (dV/dt) (V/ns)
- * @param {number} p.dutyRatio            — trapezoid duty, default 0.5
- * @param {number} p.inductance           — CMC L per winding (H)
- * @param {number} p.lineImpedance        — LISN Z (Ω), default 50
- * @param {string} p.regulatoryStandard   — which limit line to draw
- * @param {number} p.numPoints            — frequency grid points, default 200
+ * CM path: trapezoid voltage → parasitic capacitance coupling → CMC inductor.
  */
 export function computeEmiSpectrum(p) {
     const {
@@ -133,7 +104,6 @@ export function computeEmiSpectrum(p) {
     } = p;
 
     const C_p = parasiticCap_pF * 1e-12;
-    // Rise time: the switching edge covers the full voltage swing at dV/dt.
     const t_r = (dvdt_V_ns > 0 && voltageSwing > 0)
         ? (voltageSwing / (dvdt_V_ns * 1e9))
         : 10e-9;
@@ -150,11 +120,9 @@ export function computeEmiSpectrum(p) {
 
     for (let i = 0; i < numPoints; i++) {
         const f = 10 ** (logMin + (logMax - logMin) * i / (numPoints - 1));
-        // Trapezoid spectrum at f (voltage amplitude at the switching node).
         const V_src = trapezoidSpectrumVolts(f, voltageSwing, dutyRatio, t_r, switchingFrequency);
-        // Noise current through C_p, voltage at the LISN sensing half.
         const I = couplingCurrent(V_src, f, C_p);
-        const V_lisn = I * Z_meas;                          // before filter
+        const V_lisn = I * Z_meas;
         const att = cmcAttenuationLinear(f, inductance, Z_meas);
         const V_filt = V_lisn / att;
 
@@ -173,4 +141,56 @@ export function computeEmiSpectrum(p) {
     }
 
     return { frequencies, source, filtered, limit, passing, worstMarginDb };
+}
+
+// ======== Public: DMC spectrum ========
+
+/**
+ * DM path: triangle current source → LC low-pass filter → LISN.
+ * Also returns cutoffFrequency for the LC corner.
+ */
+export function computeDmcEmiSpectrum(p) {
+    const {
+        switchingFrequency, ripplePeakToPeak,
+        dutyCycle = 0.5,
+        inductance, capacitance, lineImpedance = 50,
+        regulatoryStandard = 'CISPR 32 Class B',
+        numPoints = 200,
+    } = p;
+
+    const logMin = Math.log10(EMI_F_MIN_HZ);
+    const logMax = Math.log10(EMI_F_MAX_HZ);
+    const frequencies = [];
+    const source = [];
+    const filtered = [];
+    const limit = [];
+    let passing = true;
+    let worstMarginDb = Infinity;
+
+    for (let i = 0; i < numPoints; i++) {
+        const f = 10 ** (logMin + (logMax - logMin) * i / (numPoints - 1));
+        const I_n = triangularCurrentSpectrumAmps(f, ripplePeakToPeak, switchingFrequency, dutyCycle);
+        const V_lisn_unfiltered = I_n * lineImpedance;
+        const att = lcAttenuationLinear(f, inductance, capacitance, lineImpedance);
+        const V_lisn_filtered = V_lisn_unfiltered / Math.max(att, 1e-9);
+
+        const dbSrc  = toDbuV(V_lisn_unfiltered);
+        const dbFilt = toDbuV(V_lisn_filtered);
+        const dbLim  = cisprLimitDbuV(regulatoryStandard, f);
+
+        frequencies.push(f);
+        source.push(dbSrc);
+        filtered.push(dbFilt);
+        limit.push(dbLim);
+
+        const margin = dbLim - dbFilt;
+        if (margin < worstMarginDb) worstMarginDb = margin;
+        if (margin < 0) passing = false;
+    }
+
+    const fc = (inductance > 0 && capacitance > 0)
+        ? 1 / (2 * Math.PI * Math.sqrt(inductance * capacitance))
+        : null;
+
+    return { frequencies, source, filtered, limit, passing, worstMarginDb, cutoffFrequency: fc };
 }
