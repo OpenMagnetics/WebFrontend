@@ -97,21 +97,15 @@ export default {
 
                         // Ensure coreAdviseMode is a string, not an object
                         let coreAdviseMode = this.$settingsStore.adviserSettings.coreAdviseMode;
-                        console.log('[MagneticAdviser] raw coreAdviseMode:', coreAdviseMode);
-                        console.log('[MagneticAdviser] typeof coreAdviseMode:', typeof coreAdviseMode);
-                        console.log('[MagneticAdviser] coreAdviseMode instanceof Object:', coreAdviseMode instanceof Object);
-                        console.log('[MagneticAdviser] String(coreAdviseMode):', String(coreAdviseMode));
                         
                         // Handle case where it's an object or [object Object]
                         if (typeof coreAdviseMode === 'object' || String(coreAdviseMode) === '[object Object]') {
-                            console.warn('[MagneticAdviser] coreAdviseMode was an object, resetting to default');
                             coreAdviseMode = "standard cores";
                             this.$settingsStore.adviserSettings.coreAdviseMode = coreAdviseMode;
                         }
                         
                         // Final safety: ensure it's a string
                         coreAdviseMode = String(coreAdviseMode);
-                        console.log('[MagneticAdviser] final coreAdviseMode:', coreAdviseMode);
                         
                         const aux = await this.taskQueueStore.calculateAdvisedMagnetics(
                             this.masStore.mas.inputs,

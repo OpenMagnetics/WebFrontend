@@ -299,17 +299,12 @@ export const useTaskQueueStore = defineStore('taskQueue', {
                 transformedWeights[transformedKey] = value;
             }
             
-            console.log('[DEBUG calculateAdvisedMagnetics] Original weights:', weights);
-            console.log('[DEBUG calculateAdvisedMagnetics] Transformed weights:', transformedWeights);
-            
             // Ensure mode is a valid string
             let modeString = String(mode);
             // Fix case where mode is "[object Object]" due to JS object corruption
             if (modeString === '[object Object]' || !['available cores', 'standard cores', 'custom cores', 'hybrid cores'].includes(modeString)) {
-                console.warn('[DEBUG calculateAdvisedMagnetics] Invalid mode detected:', modeString, '- resetting to "standard cores"');
                 modeString = 'standard cores';
             }
-            console.log('[DEBUG calculateAdvisedMagnetics] FINAL mode:', modeString);
 
             // Validate and fix frequency before calling WASM
             const DEFAULT_FREQUENCY = 100000; // 100 kHz default
@@ -318,7 +313,6 @@ export const useTaskQueueStore = defineStore('taskQueue', {
                     if (op.excitationsPerWinding && op.excitationsPerWinding.length > 0) {
                         op.excitationsPerWinding.forEach((exc, excIndex) => {
                             if (!exc.frequency || exc.frequency <= 0) {
-                                console.warn(`[DEBUG calculateAdvisedMagnetics] Fixed frequency=0 in operating point ${opIndex}, excitation ${excIndex}. Set to ${DEFAULT_FREQUENCY}`);
                                 exc.frequency = DEFAULT_FREQUENCY;
                             }
                         });
@@ -342,14 +336,6 @@ export const useTaskQueueStore = defineStore('taskQueue', {
             }
 
             masSentry('calculateAdvisedMagnetics', 'Inputs', inputs);
-            // [DMC-DUMP] capture exact payload for native MKF repro
-            try {
-                const dumpStr = JSON.stringify(inputs);
-                console.log('[DMC-DUMP-INPUTS-LEN]', dumpStr.length);
-                console.log('[DMC-DUMP-INPUTS]', dumpStr);
-                console.log('[DMC-DUMP-WEIGHTS]', JSON.stringify(transformedWeights));
-                console.log('[DMC-DUMP-MODE]', modeString, 'COUNT', count);
-            } catch (e) { console.error('[DMC-DUMP] failed', e); }
             const result = await mkf.calculate_advised_magnetics(JSON.stringify(inputs), JSON.stringify(transformedWeights), count, modeString);
             if (result.startsWith('Exception')) {
                 setTimeout(() => { this.advisedMagneticsCalculated(false, result); }, this.task_standard_response_delay);
