@@ -88,8 +88,28 @@ export default {
     },
     mounted () {
         this.$emit("canContinue", true);
+        // Honour a pending search request (e.g. raised by a wizard's
+        // "Find Magnetic" emit while this component was unmounted). The
+        // store's token/consumed counters are persisted together so a
+        // plain page reload won't re-trigger a stale search.
+        this.maybeRunPendingSearch();
+        this._searchTokenUnwatch = this.$watch(
+            () => this.catalogStore.searchRequestToken,
+            () => this.maybeRunPendingSearch()
+        );
+    },
+    beforeUnmount () {
+        this._searchTokenUnwatch?.();
     },
     methods: {
+        maybeRunPendingSearch() {
+            const token = this.catalogStore.searchRequestToken;
+            const consumed = this.catalogStore.searchRequestConsumed;
+            if (token > consumed) {
+                this.catalogStore.consumeSearchRequest();
+                this.calculateAdvisedMagnetics();
+            }
+        },
         maximumNumberResultsChangedInputValue(value) {
         },
         changedInputValue(filter, newValue) {

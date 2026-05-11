@@ -125,6 +125,18 @@ export default {
       type: Boolean,
       default: true
     },
+    /**
+     * Catalog-input mode. When true, the wizard is being used as a catalog
+     * lookup tool (e.g. el-choker) rather than a designer/advisor: the
+     * "Review Specs" action should be hidden and the primary action label
+     * should read "Find Magnetic" instead of "Design Magnetic".
+     *
+     * Consumed by wizards via the `col1-footer` scoped slot (see slot scope).
+     */
+    catalogMode: {
+      type: Boolean,
+      default: false
+    },
   },
   emits: [
     'update:waveformViewMode',
@@ -196,7 +208,7 @@ export default {
       wizard.waveformSource = mode;
       wizard.simulatingWaveforms = true;
       wizard.waveformError = '';
-      wizard.magneticWaveforms = [];
+      wizard.waveforms = [];
       wizard.converterWaveforms = [];
 
       try {
@@ -210,11 +222,9 @@ export default {
         if (mode === 'analytical') {
           const calculateFn = wizard.getCalculateFn();
           result = await calculateFn(aux);
-          // Debug logging removed
         } else {
           const simulateFn = wizard.getSimulateFn();
           result = await simulateFn(aux);
-          // Debug logging removed
         }
 
         await this.processWaveformResults(wizard, result, {
@@ -228,10 +238,9 @@ export default {
         }
 
         wizard.forceWaveformUpdate = (wizard.forceWaveformUpdate || 0) + 1;
-        wizard.$nextTick(() => {
-          const wfSection = wizard.$refs.base?.$refs?.waveformSection;
-          if (wfSection) {
-            wfSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        this.$nextTick(() => {
+          if (this.$refs.waveformViewer && typeof this.$refs.waveformViewer.calculate === 'function') {
+            this.$refs.waveformViewer.calculate();
           }
         });
       } catch (error) {
@@ -1108,7 +1117,7 @@ export default {
           </div>
         </div>
         <!-- Footer area below col1 (actions, inline error, etc.) -->
-        <slot name="col1-footer">
+        <slot name="col1-footer" :catalogMode="catalogMode">
           <!-- Wizard can place action buttons here -->
         </slot>
       </div>

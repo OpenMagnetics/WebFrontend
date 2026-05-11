@@ -29,7 +29,17 @@ export default {
             type: String,
             default: 'col-xs-12 col-md-3'
         },
+        /**
+         * Catalog-input mode. When true, "Review Specs" is hidden and the
+         * primary action button reads "Find Magnetic" instead of
+         * "Design Magnetic". Forwarded to ConverterWizardBase.
+         */
+        catalogMode: {
+            type: Boolean,
+            default: false,
+        },
     },
+    emits: ['reviewSpecs', 'findMagnetic'],
     data() {
         const masStore = useMasStore();
         const taskQueueStore = useTaskQueueStore();
@@ -263,6 +273,7 @@ export default {
             if (this.errorMessage == "") {
                 await this.$refs.base.navigateToReview(this.$stateStore, this.masStore, "CommonModeChoke");
                 if (this.errorMessage == "") {
+                    this.$emit('reviewSpecs');
                     setTimeout(() => { this.$router.push(`${import.meta.env.BASE_URL}magnetic_tool`); }, 100);
                 } else {
                     setTimeout(() => { this.errorMessage = "" }, 5000);
@@ -274,6 +285,7 @@ export default {
             if (this.errorMessage == "") {
                 await this.$refs.base.navigateToAdvise(this.$stateStore, this.masStore, "CommonModeChoke");
                 if (this.errorMessage == "") {
+                    this.$emit('findMagnetic');
                     setTimeout(() => { this.$router.push(`${import.meta.env.BASE_URL}magnetic_tool`); }, 100);
                 } else {
                     setTimeout(() => { this.errorMessage = "" }, 5000);
@@ -347,6 +359,7 @@ export default {
     :numberOfPeriods="numberOfPeriods"
     :numberOfSteadyStatePeriods="numberOfSteadyStatePeriods"
     :disableActions="errorMessage != ''"
+    :catalogMode="catalogMode"
     @update:waveformViewMode="waveformViewMode = $event"
     @update:numberOfPeriods="numberOfPeriods = $event"
     @update:numberOfSteadyStatePeriods="numberOfSteadyStatePeriods = $event"
@@ -662,11 +675,16 @@ export default {
         </span>
         <span v-else></span>
         <div class="action-btns">
-          <button :disabled="errorMessage != ''" class="action-btn-sm secondary" @click="processAndReview">
+          <button
+            v-if="!catalogMode"
+            :disabled="errorMessage != ''"
+            class="action-btn-sm secondary"
+            @click="processAndReview"
+          >
             <i class="bi bi-search me-1"></i>Review Specs
           </button>
           <button :disabled="errorMessage != ''" class="action-btn-sm primary" @click="processAndAdvise">
-            <i class="bi bi-magic me-1"></i>Design Magnetic
+            <i class="bi bi-magic me-1"></i>{{ catalogMode ? 'Find Magnetic' : 'Design Magnetic' }}
           </button>
         </div>
       </div>
