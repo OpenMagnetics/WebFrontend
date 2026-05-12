@@ -181,7 +181,7 @@ export default {
                 </template>
             </div>
             <button
-                v-if="storyline[selectedTool] != null && storyline[selectedTool].nextTool != null"
+                v-if="storyline[selectedTool] != null && storyline[selectedTool].nextTool != null && !storyline[selectedTool].hideContinueButton"
                 :disabled="!canContinue[selectedTool]"
                 data-cy="magnetic-synthesis-next-tool-button"
                 class="storyline-continue-btn storyline-continue-btn-bottom"
