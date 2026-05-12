@@ -121,6 +121,11 @@ export default {
             this.$stateStore.setCurrentToolSubsection("magneticBuilder");
             this.$emit("canContinue", true);
         },
+        viewMagnetic(index) {
+            this.masStore.mas = this.catalogStore.advises[index].mas
+            this.$stateStore.setCurrentToolSubsection("magneticViewer");
+            this.$emit("canContinue", true);
+        },
         editMagnetic(index) {
             this.masStore.mas = this.catalogStore.advises[index].mas
             this.$stateStore.setCurrentToolSubsection("magneticBuilder");
@@ -253,9 +258,10 @@ export default {
                             :adviseIndex="adviseIndex"
                             :masData="advise.mas"
                             :scoring="advise.scoring"
-                            :allowView="false"
-                            :allowEdit="true"
+                            :allowView="true"
+                            :allowEdit="false"
                             :allowOrder="false"
+                            @viewMagnetic="viewMagnetic(adviseIndex)"
                             @editMagnetic="editMagnetic(adviseIndex)"
                         />
                     </div>
