@@ -144,7 +144,7 @@ export default {
         <div v-if="masData.magnetic.manufacturerInfo != null" class="advise-option" :style="$styleStore.catalogAdviser.adviserHeader">
             <div class="advise-option-header" :style="$styleStore.catalogAdviser.adviserHeader">
                 <span class="advise-option-title col-9 px-1">{{fixedMagneticName}}</span>
-                <span class="advise-option-score col-3">{{removeTrailingZeroes(scoring * 100, 1)}}</span>
+                <span class="advise-option-score col-3">{{removeTrailingZeroes(scoring * 100, 2)}}</span>
             </div>
             <div class="advise-option-body" :style="$styleStore.catalogAdviser.adviserBody">
                 <div class="row p-0 m-0 py-2 advise-option-metrics">
