@@ -7,7 +7,7 @@ import fs from 'node:fs';
 import { test, expect } from './_coverage.js';
 import { BASE_URL } from './utils.js';
 
-const FIXTURE = '/home/alf/Downloads/custom_magnetic (4).json';
+const FIXTURE = new URL('./fixtures/toroid_76turns.json', import.meta.url);
 
 test.describe('3D visualizer timing', () => {
   test.describe.configure({ timeout: 120000 });
@@ -24,34 +24,36 @@ test.describe('3D visualizer timing', () => {
       { timeout: 45000 },
     );
 
-    // Boot mvbpp worker inline and call buildTurnsSTL
+    // Boot mvbpp worker inline and call drawTurns
     const result = await page.evaluate(async (mag) => {
       const code = await (await fetch('/wasm/mvbpp.js')).text();
       const createMvbpp = new Function(code + '\nreturn createMvbpp;')();
       const mvbpp = await createMvbpp({ locateFile: (f) => `/wasm/${f}` });
 
-      // Full 76-turn timing
-      const t0 = performance.now();
-      const full = mvbpp.buildTurnsSTL(JSON.stringify(mag), 1.0, 16, 0.1, 0.1, true);
-      const elapsed = performance.now() - t0;
-
-      // Geometry check: build a 2-turn slice and a 1-turn slice.
-      // Each turn in a uniform toroid is a cached rotation of the same canonical shape,
-      // so the per-turn STL contribution should be equal (same byte count / number of triangles).
-      // Support both snake_case and camelCase turns key
+      // drawTurns now accepts a full Magnetic JSON (uses bobbin context for
+      // toroidal turns). Signature:
+      //   drawTurns(json, mode, plane, offset, format, scale,
+      //             polygonSegments, symmetry, side)
       const turnsKey = mag.coil.turns_description ? 'turns_description' : 'turnsDescription';
 
+      const t0 = performance.now();
+      const full = mvbpp.drawTurns(JSON.stringify(mag), '3D', 'XY', 0.0, 'stl', 1.0, 16, 'none', '');
+      const elapsed = performance.now() - t0;
+
+      // Geometry check: build a 2-turn slice and a 1-turn slice. Each turn in
+      // a uniform toroid is a cached rotation of the same canonical shape, so
+      // the per-turn STL contribution should be equal.
       const clone2 = JSON.parse(JSON.stringify(mag));
       clone2.coil[turnsKey] = clone2.coil[turnsKey].slice(0, 2);
-      const twoTurns = mvbpp.buildTurnsSTL(JSON.stringify(clone2), 1.0, 16, 0.1, 0.1, true);
+      const twoTurns = mvbpp.drawTurns(JSON.stringify(clone2),
+                                        '3D', 'XY', 0.0, 'stl', 1.0, 16, 'none', '');
 
       const clone1 = JSON.parse(JSON.stringify(mag));
       clone1.coil[turnsKey] = clone1.coil[turnsKey].slice(0, 1);
-      const oneTurn = mvbpp.buildTurnsSTL(JSON.stringify(clone1), 1.0, 16, 0.1, 0.1, true);
+      const oneTurn  = mvbpp.drawTurns(JSON.stringify(clone1),
+                                        '3D', 'XY', 0.0, 'stl', 1.0, 16, 'none', '');
 
       // STL binary: 80-byte header + 4-byte triangle count + 50 bytes/triangle
-      // For a compound STL, byte count = header(84) + triangles * 50
-      // 2 turns should have exactly 2× triangles of 1 turn
       const triCount = (n) => n ? (n.length - 84) / 50 : 0;
 
       return {

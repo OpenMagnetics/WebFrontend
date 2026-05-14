@@ -46,7 +46,9 @@ test.describe('Core Visualizer WASM regression', () => {
             }
 
             try {
-                const svg = _mvbpp.drawDimensionedFrontView(JSON.stringify(magnetic), 400, 12, '#aaaaaa', '#4499ff');
+                // New unified API: drawView(json, dimensions, plane, offset,
+                //                            widthPx, format).  Front view = XZ.
+                const svg = _mvbpp.drawView(JSON.stringify(magnetic), true, 'XZ', 0.0, 400, 'svg');
                 return {
                     ok: true,
                     svgLength: svg ? svg.length : 0,
@@ -81,7 +83,10 @@ test.describe('Core Visualizer WASM regression', () => {
             }
 
             try {
-                const stl = _mvbpp.buildCoreSTL(JSON.stringify(magnetic), 1.0, 32, 0.1, 0.1, true);
+                // New unified API: drawCore(magnetic, mode, plane, offset,
+                //                            format, scale, polygonSegments,
+                //                            symmetry, side).
+                const stl = _mvbpp.drawCore(JSON.stringify(magnetic), '3D', 'XY', 0.0, 'stl', 1.0, 32, 'none', '');
                 return { ok: true, stlLength: stl ? stl.length : 0 };
             } catch(e) {
                 let msg = String(e);
