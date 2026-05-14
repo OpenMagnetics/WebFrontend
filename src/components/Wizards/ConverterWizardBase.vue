@@ -137,6 +137,16 @@ export default {
       type: Boolean,
       default: false
     },
+    /**
+     * Show the wizard topology header (icon + title + subtitle).
+     * Default true. Set false when the host already provides its own
+     * page header (e.g. el-choker, which has its own storyline bar
+     * above the wizard).
+     */
+    showHeader: {
+      type: Boolean,
+      default: true
+    },
   },
   emits: [
     'update:waveformViewMode',
@@ -1064,7 +1074,7 @@ export default {
   <div class="wizard-container container-fluid px-3">
     <!-- Header -->
     <slot name="header">
-      <div class="wizard-header" :style="headerBgStyle">
+      <div v-if="showHeader" class="wizard-header" :style="headerBgStyle">
         <div class="wizard-header-content">
           <div class="wizard-icon-container" :style="iconContainerStyle">
             <i :class="[titleIcon, 'wizard-icon']"></i>

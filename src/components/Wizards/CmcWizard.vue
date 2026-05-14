@@ -38,6 +38,15 @@ export default {
             type: Boolean,
             default: false,
         },
+        /**
+         * Show the wizard topology header. Default true. Set false when
+         * the host already provides its own header (e.g. el-choker).
+         * Forwarded to ConverterWizardBase.
+         */
+        showHeader: {
+            type: Boolean,
+            default: true,
+        },
     },
     emits: ['reviewSpecs', 'findMagnetic'],
     data() {
@@ -360,6 +369,7 @@ export default {
     :numberOfSteadyStatePeriods="numberOfSteadyStatePeriods"
     :disableActions="errorMessage != ''"
     :catalogMode="catalogMode"
+    :showHeader="showHeader"
     @update:waveformViewMode="waveformViewMode = $event"
     @update:numberOfPeriods="numberOfPeriods = $event"
     @update:numberOfSteadyStatePeriods="numberOfSteadyStatePeriods = $event"
