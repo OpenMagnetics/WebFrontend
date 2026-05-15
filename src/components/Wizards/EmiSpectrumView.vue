@@ -85,9 +85,10 @@ export default {
         },
         chartData() {
             if (!this.spectrum) return [];
-            const sourceColor   = '#ff7a7a';
-            const filteredColor = this.$styleStore?.operatingPoints?.voltageGraph?.color || '#539796';
-            const limitColor    = '#f5c518';
+            const emi = this.$styleStore?.emiSpectrum || {};
+            const sourceColor   = emi.sourceLineColor   || '#ff7a7a';
+            const filteredColor = emi.filteredLineColor || '#539796';
+            const limitColor    = emi.limitLineColor    || '#f5c518';
             const f = this.spectrum.frequencies;
 
             const cmLabel = `After CMC (L=${(this.inductance * 1e3).toFixed(2)} mH)`;
@@ -160,17 +161,27 @@ export default {
             return `Ideal trapezoid source at ${this.localSwitchingFreqKHz} kHz, rise ${tR} ns, coupled through ${this.parasiticCap_pF} pF. CMC attenuation modelled as |1 + jωL / (Z_LISN/2)|; self-resonance and ESR not included. For final verification use a certified EMI lab sweep.`;
         },
         textColor() {
-            return this.$styleStore?.wizard?.inputTextColor?.color || '#ffffff';
+            return this.$styleStore?.emiSpectrum?.textColor || '#ffffff';
         },
         bgColor() {
-            return this.$styleStore?.theme?.light || 'transparent';
+            return this.$styleStore?.emiSpectrum?.bgColor || 'transparent';
+        },
+        cssVars() {
+            const emi = this.$styleStore?.emiSpectrum || {};
+            return {
+                '--emi-text-color':         emi.textColor         || '#ffffff',
+                '--emi-title-color':        emi.titleColor        || '#ffffff',
+                '--emi-input-border-color': emi.inputBorderColor  || '#666666',
+                '--emi-cutoff-color':       emi.cutoffTextColor   || '#d4d4d4',
+                '--emi-note-color':         emi.noteTextColor     || '#888888',
+            };
         },
     },
 }
 </script>
 
 <template>
-    <div class="emi-spectrum-view">
+    <div class="emi-spectrum-view" :style="cssVars">
         <div class="emi-header">
             <div class="emi-title">{{ titleText }}</div>
             <label class="emi-fsw-input">
@@ -202,6 +213,7 @@ export default {
             :showAxisLines="true"
             :showAxisUnitLabels="true"
             :forceUpdate="forceUpdate"
+            :showArea="false"
         />
 
         <div class="emi-note">
@@ -226,7 +238,7 @@ export default {
 }
 .emi-fsw-input {
     font-size: 12px;
-    color: var(--om-white);
+    color: var(--emi-text-color);
     opacity: 0.85;
 }
 .emi-fsw-input input {
@@ -234,18 +246,18 @@ export default {
     margin: 0 4px;
     padding: 1px 4px;
     background: transparent;
-    border: 1px solid #666;
+    border: 1px solid var(--emi-input-border-color);
     border-radius: 3px;
-    color: var(--om-white);
+    color: var(--emi-text-color);
     font-size: 12px;
 }
 .emi-title {
     font-weight: 500;
-    color: var(--om-white);
+    color: var(--emi-title-color);
 }
 .emi-cutoff {
     font-size: 12px;
-    color: #d4d4d4;
+    color: var(--emi-cutoff-color);
     opacity: 0.85;
 }
 .emi-verdict {
@@ -255,7 +267,7 @@ export default {
 .emi-note {
     margin-top: 4px;
     font-size: 11px;
-    color: #888;
+    color: var(--emi-note-color);
     font-style: italic;
     line-height: 1.3;
 }

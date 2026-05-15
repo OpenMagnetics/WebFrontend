@@ -18,6 +18,7 @@ export const useStyleStore = defineStore("style", () => {
     const insulationAdviser = ref({});
     const catalogAdviser = ref({});
     const wizard = ref({});
+    const emiSpectrum = ref({});
 
     function setTheme(theme) {
         this.theme = theme;
@@ -677,6 +678,18 @@ export const useStyleStore = defineStore("style", () => {
                 "color": theme["dark"],
             },
         };
+
+        this.emiSpectrum = {
+            bgColor:            theme["light"],
+            textColor:          theme["white"],
+            titleColor:         theme["white"],
+            inputBorderColor:   '#666666',
+            cutoffTextColor:    '#d4d4d4',
+            noteTextColor:      '#888888',
+            sourceLineColor:    '#ff7a7a',
+            filteredLineColor:  '#539796',
+            limitLineColor:     '#f5c518',
+        };
     }
 
 
@@ -696,6 +709,7 @@ export const useStyleStore = defineStore("style", () => {
         insulationAdviser,
         catalogAdviser,
         wizard,
+        emiSpectrum,
     }
 },
 {
