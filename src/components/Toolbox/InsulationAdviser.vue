@@ -14,6 +14,7 @@ import Module from '../../assets/js/libInsulationCoordinator.wasm.js'
 var insulationCoordinator = {
     ready: new Promise(resolve => {
         Module({
+            locateFile: (filename) => `${import.meta.env.BASE_URL}wasm/${filename}`,
             onRuntimeInitialized () {
                 insulationCoordinator = Object.assign(this, {
                     ready: Promise.resolve()

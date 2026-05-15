@@ -83,7 +83,7 @@ export default {
         },
         
         bgColor() {
-            return this.$styleStore?.theme?.light || 'transparent';
+            return this.$styleStore?.operatingPoints?.graphBgColor?.['background-color'] || 'transparent';
         },
         
         textColor() {
@@ -231,6 +231,7 @@ export default {
                         :forceAxisMax="getAxisLimitsForPair(opIndex, pairIndex).max"
                         :forceAxisIndependentLimits="true"
                         :forceUpdate="forceUpdate"
+                        :showArea="false"
                     />
                 </div>
             </div>

@@ -150,11 +150,29 @@ export default {
                 this.forceWaveformUpdate += 1;
             });
         },
+        localData: {
+            deep: true,
+            handler() {
+                clearTimeout(this._analyticalDebounceTimer);
+                this._analyticalDebounceTimer = setTimeout(() => {
+                    this.runAnalyticalWaveforms();
+                }, 800);
+            }
+        },
     },
     mounted() {
-        this.updateErrorMessage();
+        this._analyticalDebounceTimer = null;
+        this.runAnalyticalWaveforms();
     },
     methods: {
+
+        // Shared by mounted() (immediate) and the localData watcher (debounced).
+        runAnalyticalWaveforms() {
+            this.updateErrorMessage();
+            if (!this.errorMessage) {
+                this.getAnalyticalWaveforms();
+            }
+        },
 
         // ===== WIZARD CONTRACT =====
         buildParams(mode) {
@@ -471,15 +489,16 @@ export default {
       <div v-else>
         <!-- Spec mode selector -->
         <ElementFromList
+          class="mt-3 mb-3"
           :name="'specMode'"
           :replaceTitle="'Input type'"
           :options="specModeOptions"
           :titleSameRow="true"
           v-model="localData"
-          :labelWidthProportionClass="'col-5'"
-          :valueWidthProportionClass="'col-7'"
+          :labelWidthProportionClass="'col-6'"
+          :selectStyleClass="'col-6'"
           :valueFontSize="$styleStore.wizard.inputFontSize"
-          :labelFontSize="$styleStore.wizard.inputLabelFontSize"
+          :labelFontSize="{ ...$styleStore.wizard.inputLabelFontSize, 'font-weight': '600' }"
           :labelBgColor="'transparent'"
           :valueBgColor="$styleStore.wizard.inputValueBgColor"
           :textColor="$styleStore.wizard.inputTextColor"
@@ -574,14 +593,15 @@ export default {
 
         <!-- Noise estimation -->
         <template v-else-if="localData.specMode === 'Estimate from noise'">
+          <div class="mt-1">
           <ElementFromList
             :name="'regulatoryStandard'"
             :replaceTitle="'Standard'"
             :options="regulatoryStandardOptions"
             :titleSameRow="true"
             v-model="localData"
-            :labelWidthProportionClass="'col-5'"
-            :valueWidthProportionClass="'col-7'"
+            :labelWidthProportionClass="'col-6'"
+            :selectStyleClass="'col-6'"
             :valueFontSize="$styleStore.wizard.inputFontSize"
             :labelFontSize="$styleStore.wizard.inputLabelFontSize"
             :labelBgColor="'transparent'"
@@ -589,6 +609,8 @@ export default {
             :textColor="$styleStore.wizard.inputTextColor"
             @update="updateErrorMessage"
           />
+          </div>
+          <div class="mt-1">
           <Dimension
             :name="'parasiticCap_pF'" :replaceTitle="'C parasitic'" unit="pF"
             :min="0.01" :max="10000"
@@ -622,6 +644,7 @@ export default {
             :textColor="$styleStore.wizard.inputTextColor"
             @update="updateErrorMessage"
           />
+          </div>
         </template>
 
         <!-- Live inductance preview (all help-mode variants) -->
@@ -637,7 +660,7 @@ export default {
     <!-- SLOT: #conditions                                         -->
     <!-- ══════════════════════════════════════════════════════════ -->
     <template #conditions>
-      <Dimension :name="'lineFrequency'" :replaceTitle="'Line Freq'" unit="Hz"
+      <Dimension :name="'lineFrequency'" :replaceTitle="'Line Frequency'" unit="Hz"
         :dataTestLabel="dataTestLabel + '-LineFrequency'"
         :min="minimumMaximumScalePerParameter['frequency']['min']"
         :max="minimumMaximumScalePerParameter['frequency']['max']"
@@ -660,7 +683,7 @@ export default {
         :textColor="$styleStore.wizard.inputTextColor"
         @update="updateErrorMessage"
       />
-      <Dimension :name="'ambientTemperature'" :replaceTitle="'Temperature'" unit=" C"
+      <Dimension :name="'ambientTemperature'" :replaceTitle="'Temperature'" unit=" ºC"
         :dataTestLabel="dataTestLabel + '-AmbientTemperature'"
         :min="minimumMaximumScalePerParameter['temperature']['min']"
         :max="minimumMaximumScalePerParameter['temperature']['max']"

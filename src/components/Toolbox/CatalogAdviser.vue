@@ -40,6 +40,13 @@ export default {
             type: Boolean,
             default: false,
         },
+        // When true (default), shows a "Continue without search" button that
+        // lets the user skip the catalogue and proceed to a custom design.
+        // Set false from a parent application that handles its own navigation.
+        showContinueButton: {
+            type: Boolean,
+            default: true,
+        },
     },
     data() {
         const adviseCacheStore = useAdviseCacheStore();
@@ -54,6 +61,8 @@ export default {
             catalogStore,
             masStore,
             loading,
+            hasSearched: false,
+            showWeights: false,
         }
     },
     computed: {
@@ -61,22 +70,26 @@ export default {
             if (this.loading) {
                 return "Looking for the best designs for you in our catalog"
             }
-            else if (this.catalogStore.advises.length > 0) {
-                if (this.catalogStore.advises[0].scoring > 0) {
-                    if (this.catalogStore.advises.length > 1) {
-                        return "We found these suitable magnetics in our standard catalog:"
-                    }
-                    else {
-                        return "We found this suitable magnetic in our standard catalog:"
-                    }
+            else if (!this.hasSearched) {
+                return null;
+            }
+            else if (this.catalogStore.advises.length === 0) {
+                return "No suitable magnetics found in the catalog matching your requirements."
+            }
+            else if (this.catalogStore.advises[0].scoring > 0) {
+                if (this.catalogStore.advises.length > 1) {
+                    return "We found these suitable magnetics in our standard catalog:"
                 }
                 else {
-                    if (this.catalogStore.advises.length > 1) {
-                        return "We didn't find any standard magnetics in catalog that complied with you requirements, but these were the closest, which means they are a good starting poing to create your own design:"
-                    }
-                    else {
-                        return "We didn't find any standard magnetics in catalog that complied with you requirements, but this was the closest, which means it is a good starting poing to create your own design:"
-                    }
+                    return "We found this suitable magnetic in our standard catalog:"
+                }
+            }
+            else {
+                if (this.catalogStore.advises.length > 1) {
+                    return "We didn't find any standard magnetics in catalog that complied with your requirements, but these were the closest, which means they are a good starting point to create your own design:"
+                }
+                else {
+                    return "We didn't find any standard magnetics in catalog that complied with your requirements, but this was the closest, which means it is a good starting point to create your own design:"
                 }
             }
 
@@ -87,12 +100,12 @@ export default {
     created () {
     },
     mounted () {
-        this.$emit("canContinue", true);
-        // Honour a pending search request (e.g. raised by a wizard's
-        // "Find Magnetic" emit while this component was unmounted). The
-        // store's token/consumed counters are persisted together so a
-        // plain page reload won't re-trigger a stale search.
-        this.maybeRunPendingSearch();
+        this.$emit("canContinue", false);
+        // Always auto-search on mount. Consume any pending token first so the
+        // watcher below doesn't fire a duplicate search immediately after.
+        this.catalogStore.consumeSearchRequest();
+        this.calculateAdvisedMagnetics();
+        // Watch for new search requests from the wizard triggered after mount.
         this._searchTokenUnwatch = this.$watch(
             () => this.catalogStore.searchRequestToken,
             () => this.maybeRunPendingSearch()
@@ -168,13 +181,17 @@ export default {
                 .then(response => {
                     this.catalogStore.advises = [];
                     this.loading = false;
+                    this.hasSearched = true;
 
                     response.data.data.forEach((datum) => {
                         this.catalogStore.advises.push(datum);
                     })
+                    this.$emit('canContinue', this.catalogStore.advises.length > 0);
                 })
                 .catch(error => {
                     this.loading = false;
+                    this.hasSearched = true;
+                    this.$emit('canContinue', false);
                     console.error(error);
                 });
 
@@ -195,10 +212,13 @@ export default {
                 (parsed?.data || []).forEach((datum) => {
                     this.catalogStore.advises.push(datum);
                 });
+                this.$emit('canContinue', this.catalogStore.advises.length > 0);
             } catch (error) {
                 console.error('[CatalogAdviser] WASM advise failed:', error);
+                this.$emit('canContinue', false);
             } finally {
                 this.loading = false;
+                this.hasSearched = true;
             }
         },
 
@@ -209,62 +229,85 @@ export default {
 <template>
     <div class="container text-start pe-0 container-fluid"  style="height: 75vh" :style="$styleStore.catalogAdviser.main">
         <div class="row">
-            <div class="col-2 border text-center p-0 m-0 row control"  style="height: 75vh">
-                <div class="col-12">
-                    <label :data-cy="dataTestLabel + '-explanation-text'" class="">Do you want to search in Midcom history for possible similar designs?</label>
+            <div class="col-2 p-1 pe-0 control" style="height: 75vh">
+                <div
+                    class="h-100 d-flex flex-column p-2"
+                    style="overflow-x: hidden; overflow-y: auto;"
+                    :style="$styleStore.catalogAdviser.adviserBody"
+                >
 
-                    <button
-                        :disabled="loading"
-                        class="btn fs-5 py-1 offset-1 col-10"
-                        :style="$styleStore.catalogAdviser.searchButton"
-                        @click="calculateAdvisedMagnetics"
-                    >
-                        {{loading? 'Searching in history' : 'Search history'}}
-                    </button>
-                    <h5
-                        v-if="!loading"
-                        :data-cy="dataTestLabel + '-history-explanation-text'"
-                        class="fw-light fs-6"
-                    >
-                        {{loading? '\n' : '(It might take a few minutes)'}}
-                    </h5>
-
-                    <div class="row text-start" v-for="(weight, filter) in catalogStore.filters" :key="filter">
-                        <label class="form-label col-12 py-0 my-0">{{filter}}</label>
-                        <div class=" col-7 me-2 pt-2">
-                            <Slider v-model="catalogStore.filters[filter]" :disabled="loading" class="col-12 text-primary slider" :height="10" :min="0" :max="100" :step="10" :color="theme.primary" :tooltips="false" @change="changedSliderValue(filter, $event)"/>
+                    <!-- Advanced weighting collapsible -->
+                    <div class="mb-2">
+                        <button
+                            class="btn btn-sm w-100 d-flex justify-content-between align-items-center py-1"
+                            :style="$styleStore.catalogAdviser.generalButton"
+                            type="button"
+                            @click="showWeights = !showWeights"
+                        >
+                            <span>Advanced weighting</span>
+                            <span>{{ showWeights ? '▲' : '▼' }}</span>
+                        </button>
+                        <div v-show="showWeights" class="mt-2">
+                            <div class="row ml-1 mx-0 text-start" v-for="(weight, filter) in catalogStore.filters" :key="filter">
+                                <label class="form-label col-12 py-0 my-0 small">{{filter}}</label>
+                                <div class="col-7 pt-2 pe-3">
+                                    <Slider v-model="catalogStore.filters[filter]" :disabled="loading" class="col-12 text-primary slider" :height="10" :min="0" :max="100" :step="10" :color="theme.primary" :tooltips="false" @change="changedSliderValue(filter, $event)"/>
+                                </div>
+                                <input :disabled="loading" :data-cy="dataTestLabel + '-number-input'" type="number" class="m-0 px-0 col-3 text-end" @change="changedInputValue(filter, $event.target.value)" :value="removeTrailingZeroes(catalogStore.filters[filter], 0)" ref="inputRef"/>
+                            </div>
+                            <!-- Search button inside collapsible -->
+                            <button
+                                :disabled="loading"
+                                class="btn btn-sm w-100 mt-2"
+                                :style="$styleStore.catalogAdviser.continueButton"
+                                :data-cy="dataTestLabel + '-search-button'"
+                                @click="calculateAdvisedMagnetics"
+                            >
+                                {{ loading ? 'Searching…' : 'Search' }}
+                            </button>
                         </div>
-
-                        <input :disabled="loading" :data-cy="dataTestLabel + '-number-input'" type="number" class="m-0 px-0 col-3" @change="changedInputValue(filter, $event.target.value)" :value="removeTrailingZeroes(catalogStore.filters[filter], 0)" ref="inputRef"/>
-
                     </div>
+
+                    <!-- Continue without search (hidden when parent sets :showContinueButton="false") -->
                     <button
+                        v-if="showContinueButton"
                         :disabled="loading"
                         class="btn fs-5 my-2 offset-1 col-10"
                         :style="$styleStore.catalogAdviser.continueButton"
                         @click="continueWithoutSearch"
                     >
-                        {{"No thanks"}}
+                        Continue without search
                     </button>
+
                 </div>
             </div>
             <div class="col-10 text-start pe-0 container-fluid"  style="height: 75vh">
                 <div class="row" v-if="loading" >
                     <img data-cy="magneticAdviser-loading" class="mx-auto d-block col-12" alt="loading" style="width: auto; height: 20%;" :src="$settingsStore.loadingGif">
                 </div>
+                <p v-if="resultsMessage && !loading" class="px-2 pt-2 mb-1 small text-muted">{{ resultsMessage }}</p>
                 <div class="col-12 row advises">
-                    <div class="col-4 m-0 p-0 mt-1" v-for="(advise, adviseIndex) in catalogStore.advises" :key="adviseIndex">
-                        <Advise
-                            :adviseIndex="adviseIndex"
-                            :masData="advise.mas"
-                            :scoring="advise.scoring"
-                            :allowView="true"
-                            :allowEdit="false"
-                            :allowOrder="false"
-                            @viewMagnetic="viewMagnetic(adviseIndex)"
-                            @editMagnetic="editMagnetic(adviseIndex)"
-                        />
+                    <!-- No-results banner -->
+                    <div v-if="hasSearched && !loading && catalogStore.advises.length === 0"
+                         class="col-12 text-center py-5">
+                        <i class="bi bi-slash-circle fs-1 text-danger"></i>
+                        <p class="mt-3 fw-semibold">No choke available in the catalog for your requirements.</p>
+                        <p class="text-muted small">Adjust your requirements or use the custom design path.</p>
                     </div>
+                    <template v-for="(advise, adviseIndex) in catalogStore.advises" :key="adviseIndex">
+                        <div class="col-4 m-0 p-0 mt-1" v-if="advise.scoring != null">
+                            <Advise
+                                :adviseIndex="adviseIndex"
+                                :masData="advise.mas"
+                                :scoring="advise.scoring"
+                                :allowView="true"
+                                :allowEdit="false"
+                                :allowOrder="false"
+                                @viewMagnetic="viewMagnetic(adviseIndex)"
+                                @editMagnetic="editMagnetic(adviseIndex)"
+                            />
+                        </div>
+                    </template>
                 </div>
             </div>
         </div>
