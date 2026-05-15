@@ -56,7 +56,7 @@ async function openDmcWizard(page) {
 
 // Wait for the specific button (by visible label) to come back out of its
 // loading/disabled state. Watching `button:disabled` globally would also match
-// permanently-disabled wizard links in the header dropdown (e.g. CLLC, PSFB),
+// permanently-disabled wizard links in the header dropdown (e.g. PSFB),
 // so always time out.
 async function waitForButtonReady(page, label, timeoutMs) {
   await page.waitForFunction(

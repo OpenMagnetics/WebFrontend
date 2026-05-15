@@ -12,6 +12,7 @@ import DimensionWithTolerance from 'WebSharedComponents/DataInput/DimensionWithT
 import { defaultIsolatedBuckWizardInputs, defaultIsolatedBuckBoostWizardInputs, defaultDesignRequirements, minimumMaximumScalePerParameter, filterMas } from 'WebSharedComponents/assets/js/defaults.js'
 import ConverterWizardBase from './ConverterWizardBase.vue'
 import CompactVoltageInput from './CompactVoltageInput.vue'
+import { tooltipsConverterWizards } from 'WebSharedComponents/assets/js/texts'
 </script>
 
 <script>
@@ -432,60 +433,6 @@ export default {
                 return opWaveforms;
             });
         },
-        repeatWaveformForPeriods(time, data, numberOfPeriods) {
-            if (!time || !data || time.length === 0 || numberOfPeriods <= 1) {
-                return { time, data };
-            }
-            
-            const period = time[time.length - 1] - time[0];
-            const newTime = [];
-            const newData = [];
-            
-            for (let p = 0; p < numberOfPeriods; p++) {
-                const offset = p * period;
-                for (let i = 0; i < time.length; i++) {
-                    // Skip first point in subsequent periods ONLY if it doesn't create duplicate time
-                    if (p > 0 && i === 0) {
-                        // Check if this point would create a duplicate time value
-                        const newTimeValue = time[i] + offset;
-                        if (newTime.length > 0 && Math.abs(newTime[newTime.length - 1] - newTimeValue) < 1e-12) {
-                            continue; // Skip to avoid duplicate
-                        }
-                    }
-                    newTime.push(time[i] + offset);
-                    newData.push(data[i]);
-                }
-            }
-            
-            return { time: newTime, data: newData };
-        },
-        repeatWaveformsForPeriods(waveformsData) {
-            if (this.numberOfPeriods <= 1 || !waveformsData || waveformsData.length === 0) {
-                return waveformsData;
-            }
-            
-            return waveformsData.map(op => {
-                if (!op.waveforms) return op;
-                
-                const repeatedWaveforms = op.waveforms.map(wf => {
-                    if (!wf.x || wf.x.length < 2) return wf;
-                    
-                    const period = wf.x[wf.x.length - 1] - wf.x[0];
-                    const repeatedX = [...wf.x];
-                    const repeatedY = [...wf.y];
-                    
-                    for (let p = 1; p < this.numberOfPeriods; p++) {
-                        const offset = period * p;
-                        wf.x.slice(1).forEach(x => repeatedX.push(x + offset));
-                        wf.y.slice(1).forEach(y => repeatedY.push(y));
-                    }
-                    
-                    return { ...wf, x: repeatedX, y: repeatedY };
-                });
-                
-                return { ...op, waveforms: repeatedWaveforms };
-            });
-        },
         getWaveformsList(waveforms, operatingPointIndex) {
             if (!waveforms || !waveforms[operatingPointIndex] || !waveforms[operatingPointIndex].waveforms) {
                 return [];
@@ -898,7 +845,7 @@ export default {
 
     <template #design-or-switch-parameters>
       <div v-if="localData.designLevel == 'I know the design I want'">
-        <Dimension :name="'inductance'" :replaceTitle="'Inductance'" unit="H"
+        <Dimension :name="'inductance'" :tooltip="tooltipsConverterWizards['inductance']" :replaceTitle="'Inductance'" unit="H"
           :dataTestLabel="dataTestLabel + '-Inductance'"
           :min="minimumMaximumScalePerParameter['inductance']['min']"
           :max="minimumMaximumScalePerParameter['inductance']['max']"
@@ -910,7 +857,7 @@ export default {
           :textColor="$styleStore.wizard.inputTextColor"
           @update="updateErrorMessage"
         />
-        <DimensionWithTolerance :name="'dutyCycle'" :replaceTitle="'Duty Cycle'" :unit="null"
+        <DimensionWithTolerance :name="'dutyCycle'" :tooltip="tooltipsConverterWizards['dutyCycle']" :replaceTitle="'Duty Cycle'" :unit="null"
           :dataTestLabel="dataTestLabel + '-DutyCycle'"
           :min="0.01" :max="0.99"
           :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'"
@@ -924,7 +871,7 @@ export default {
           :textColor="$styleStore.wizard.inputTextColor"
           @update="updateErrorMessage"
         />
-        <Dimension :name="'deadTime'" :replaceTitle="'Dead Time'" unit="s"
+        <Dimension :name="'deadTime'" :tooltip="tooltipsConverterWizards['deadTime']" :replaceTitle="'Dead Time'" unit="s"
           :dataTestLabel="dataTestLabel + '-DeadTime'"
           :min="0" :max="1e-3"
           v-model="localData"
@@ -977,7 +924,7 @@ export default {
     </template>
 
     <template #conditions>
-      <Dimension :name="'switchingFrequency'" :replaceTitle="'Sw. Freq'" unit="Hz"
+      <Dimension :name="'switchingFrequency'" :tooltip="tooltipsConverterWizards['switchingFrequency']" :replaceTitle="'Sw. Freq'" unit="Hz"
         :dataTestLabel="dataTestLabel + '-SwitchingFrequency'"
         :min="minimumMaximumScalePerParameter['frequency']['min']"
         :max="minimumMaximumScalePerParameter['frequency']['max']"
@@ -989,7 +936,7 @@ export default {
         :textColor="$styleStore.wizard.inputTextColor"
         @update="updateErrorMessage"
       />
-      <Dimension :name="'ambientTemperature'" :replaceTitle="'Temp'" unit=" C"
+      <Dimension :name="'ambientTemperature'" :tooltip="tooltipsConverterWizards['ambientTemperature']" :replaceTitle="'Temp'" unit=" C"
         :dataTestLabel="dataTestLabel + '-AmbientTemperature'"
         :min="minimumMaximumScalePerParameter['temperature']['min']"
         :max="minimumMaximumScalePerParameter['temperature']['max']"
@@ -1002,7 +949,7 @@ export default {
         :textColor="$styleStore.wizard.inputTextColor"
         @update="updateErrorMessage"
       />
-      <Dimension :name="'diodeVoltageDrop'" :replaceTitle="'Diode Vd'" unit="V"
+      <Dimension :name="'diodeVoltageDrop'" :tooltip="tooltipsConverterWizards['diodeVoltageDrop']" :replaceTitle="'Diode Vd'" unit="V"
         :dataTestLabel="dataTestLabel + '-DiodeVoltageDrop'" :min="0" :max="10"
         v-model="localData"
         :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'"
@@ -1012,7 +959,7 @@ export default {
         :textColor="$styleStore.wizard.inputTextColor"
         @update="updateErrorMessage"
       />
-      <Dimension :name="'efficiency'" :replaceTitle="'Eff'" unit="%" :visualScale="100"
+      <Dimension :name="'efficiency'" :tooltip="tooltipsConverterWizards['efficiency']" :replaceTitle="'Efficiency'" unit="%" :visualScale="100"
         :dataTestLabel="dataTestLabel + '-Efficiency'" :min="0.5" :max="1"
         v-model="localData"
         :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'"
@@ -1022,7 +969,7 @@ export default {
         :textColor="$styleStore.wizard.inputTextColor"
         @update="updateErrorMessage"
       />
-      <ElementFromList :name="'insulationType'" :replaceTitle="'Insul'" :options="insulationTypes"
+      <ElementFromList :name="'insulationType'" :tooltip="tooltipsConverterWizards['insulationType']" :replaceTitle="'Insulation'" :options="insulationTypes"
         :titleSameRow="true" v-model="localData"
         :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'"
         :valueFontSize="$styleStore.wizard.inputFontSize"
@@ -1055,7 +1002,7 @@ export default {
 
     <template #outputs>
       <div class="mb-3">
-        <ElementFromList :name="'numberOutputs'" :replaceTitle="'Number of Outputs'"
+        <ElementFromList :name="'numberOutputs'" :tooltip="tooltipsConverterWizards['numberOutputs']" :replaceTitle="'Number of Outputs'"
           :dataTestLabel="dataTestLabel + '-NumberOutputs'"
           :options="Array.from({length: 10}, (_, i) => i + 1)"
           :titleSameRow="true" v-model="localData"

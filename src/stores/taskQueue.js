@@ -1184,7 +1184,6 @@ export const useTaskQueueStore = defineStore('taskQueue', {
                 'isolatedBuckConverter':            'generate_isolated_buck_ngspice_circuit',
                 'isolatedBuckBoostConverter':       'generate_isolated_buck_boost_ngspice_circuit',
                 'llcResonantConverter':             'generate_llc_ngspice_circuit',
-                // CLLC uses a different WASM signature — handled in its own path.
                 'dualActiveBridgeConverter':        'generate_dab_ngspice_circuit',
                 'phaseShiftedFullBridgeConverter':  'generate_psfb_ngspice_circuit',
                 'phaseShiftedHalfBridgeConverter':  'generate_pshb_ngspice_circuit',
@@ -1435,27 +1434,6 @@ export const useTaskQueueStore = defineStore('taskQueue', {
             });
             setTimeout(() => { this.llcWaveformsSimulated(true, waveforms); }, this.task_standard_response_delay);
             return waveforms;
-        },
-
-        // ==========================================
-        // Wizard Calculation Methods - CLLC Resonant
-        // ==========================================
-
-        cllcInputsCalculated(success = true, dataOrMessage = '') {
-        },
-
-        async calculateCllcInputs(params) {
-            const mkf = await waitForMkf();
-            await mkf.ready;
-
-            const result = await mkf.calculate_cllc_inputs(JSON.stringify(params));
-            if (result.startsWith('Exception')) {
-                setTimeout(() => { this.cllcInputsCalculated(false, result); }, this.task_standard_response_delay);
-                throw new Error(result);
-            }
-            const inputs = JSON.parse(result);
-            setTimeout(() => { this.cllcInputsCalculated(true, inputs); }, this.task_standard_response_delay);
-            return inputs;
         },
 
         // ==========================================

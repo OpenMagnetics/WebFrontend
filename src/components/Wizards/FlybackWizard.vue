@@ -12,6 +12,7 @@ import DimensionWithTolerance from 'WebSharedComponents/DataInput/DimensionWithT
 import { defaultFlybackWizardInputs, defaultDesignRequirements, minimumMaximumScalePerParameter, filterMas } from 'WebSharedComponents/assets/js/defaults.js'
 import ConverterWizardBase from './ConverterWizardBase.vue'
 import CompactVoltageInput from './CompactVoltageInput.vue'
+import { tooltipsConverterWizards } from 'WebSharedComponents/assets/js/texts'
 </script>
 
 <script>
@@ -251,7 +252,7 @@ export default {
 
     <template #design-or-switch-parameters>
         <div v-if="localData.designLevel == 'I know the design I want'">
-          <Dimension :name="'inductance'" :replaceTitle="'Inductance'" unit="H"
+          <Dimension :name="'inductance'" :tooltip="tooltipsConverterWizards['inductance']" :replaceTitle="'Inductance'" unit="H"
             :dataTestLabel="dataTestLabel + '-Inductance'"
             :min="minimumMaximumScalePerParameter['inductance']['min']"
             :max="minimumMaximumScalePerParameter['inductance']['max']"
@@ -263,7 +264,7 @@ export default {
             :textColor="$styleStore.wizard.inputTextColor"
             @update="updateErrorMessage"
           />
-          <DimensionWithTolerance :name="'dutyCycle'" :replaceTitle="'Duty Cycle'" :unit="null"
+          <DimensionWithTolerance :name="'dutyCycle'" :tooltip="tooltipsConverterWizards['dutyCycle']" :replaceTitle="'Duty Cycle'" :unit="null"
             :dataTestLabel="dataTestLabel + '-DutyCycle'"
             :min="0.01" :max="0.99"
             :allowUnsorted="true"
@@ -278,7 +279,7 @@ export default {
             :textColor="$styleStore.wizard.inputTextColor"
             @update="updateErrorMessage"
           />
-          <Dimension :name="'deadTime'" :replaceTitle="'Dead Time'" unit="s"
+          <Dimension :name="'deadTime'" :tooltip="tooltipsConverterWizards['deadTime']" :replaceTitle="'Dead Time'" unit="s"
             :dataTestLabel="dataTestLabel + '-DeadTime'"
             :min="0" :max="1e-3"
             v-model="localData"
@@ -331,7 +332,7 @@ export default {
     </template>
 
     <template #conditions>
-      <Dimension :name="'switchingFrequency'" :replaceTitle="'Sw. Freq'" unit="Hz"
+      <Dimension :name="'switchingFrequency'" :tooltip="tooltipsConverterWizards['switchingFrequency']" :replaceTitle="'Sw. Freq'" unit="Hz"
         :dataTestLabel="dataTestLabel + '-SwitchingFrequency'"
         :min="minimumMaximumScalePerParameter['frequency']['min']"
         :max="minimumMaximumScalePerParameter['frequency']['max']"
@@ -343,7 +344,7 @@ export default {
         :textColor="$styleStore.wizard.inputTextColor"
         @update="updateErrorMessage"
       />
-      <Dimension :name="'ambientTemperature'" :replaceTitle="'Temp'" unit=" C"
+      <Dimension :name="'ambientTemperature'" :tooltip="tooltipsConverterWizards['ambientTemperature']" :replaceTitle="'Temp'" unit=" C"
         :dataTestLabel="dataTestLabel + '-AmbientTemperature'"
         :min="minimumMaximumScalePerParameter['temperature']['min']"
         :max="minimumMaximumScalePerParameter['temperature']['max']"
@@ -356,7 +357,7 @@ export default {
         :textColor="$styleStore.wizard.inputTextColor"
         @update="updateErrorMessage"
       />
-      <Dimension :name="'diodeVoltageDrop'" :replaceTitle="'Diode Vd'" unit="V"
+      <Dimension :name="'diodeVoltageDrop'" :tooltip="tooltipsConverterWizards['diodeVoltageDrop']" :replaceTitle="'Diode Vd'" unit="V"
         :dataTestLabel="dataTestLabel + '-DiodeVoltageDrop'"
         :min="0" :max="10"
         v-model="localData"
@@ -367,7 +368,7 @@ export default {
         :textColor="$styleStore.wizard.inputTextColor"
         @update="updateErrorMessage"
       />
-      <Dimension :name="'efficiency'" :replaceTitle="'Eff'" unit="%" :visualScale="100"
+      <Dimension :name="'efficiency'" :tooltip="tooltipsConverterWizards['efficiency']" :replaceTitle="'Efficiency'" unit="%" :visualScale="100"
         :dataTestLabel="dataTestLabel + '-Efficiency'"
         :min="0.5" :max="1"
         v-model="localData"
@@ -378,7 +379,7 @@ export default {
         :textColor="$styleStore.wizard.inputTextColor"
         @update="updateErrorMessage"
       />
-      <ElementFromList :name="'insulationType'" :replaceTitle="'Insul'" :options="insulationTypes"
+      <ElementFromList :name="'insulationType'" :tooltip="tooltipsConverterWizards['insulationType']" :replaceTitle="'Insulation'" :options="insulationTypes"
         :titleSameRow="true" v-model="localData"
         :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'"
         :valueFontSize="$styleStore.wizard.inputFontSize"
@@ -411,7 +412,7 @@ export default {
 
     <template #outputs>
       <div class="mb-3">
-        <ElementFromList :name="'numberOutputs'" :replaceTitle="'Number of Outputs'"
+        <ElementFromList :name="'numberOutputs'" :tooltip="tooltipsConverterWizards['numberOutputs']" :replaceTitle="'Number of Outputs'"
           :dataTestLabel="dataTestLabel + '-NumberOutputs'"
           :options="Array.from({length: 10}, (_, i) => i + 1)"
           :titleSameRow="true" v-model="localData"

@@ -459,20 +459,6 @@ export default {
                         </li>
                         <li>
                             <button
-                                :disabled="true"
-                                data-cy="Cllc-link"
-                                :class="headerTogglerIsVisible? 'w-100' : 'mx-0' "
-                                class="dropdown-item btn btn-block nav-link px-2"
-                                @click="onWizards($stateStore.Wizards.CllcResonant)"
-                                @mouseenter="hoveredWizard = 'CLLC'"
-                                @mouseleave="hoveredWizard = null"
-                            >
-                                <i class="me-2 bi bi-ev-station"></i>{{'CLLC Wizard'}}
-                            </button>
-                        </li>
-                        <li>
-                            <button
-                                :disabled="true"
                                 data-cy="Psfb-link"
                                 :class="headerTogglerIsVisible? 'w-100' : 'mx-0' "
                                 class="dropdown-item btn btn-block nav-link px-2"
@@ -481,6 +467,30 @@ export default {
                                 @mouseleave="hoveredWizard = null"
                             >
                                 <i class="me-2 bi bi-chevron-double-right"></i>{{'PSFB Wizard'}}
+                            </button>
+                        </li>
+                        <li>
+                            <button
+                                data-cy="Pshb-link"
+                                :class="headerTogglerIsVisible? 'w-100' : 'mx-0' "
+                                class="dropdown-item btn btn-block nav-link px-2"
+                                @click="onWizards($stateStore.Wizards.PhaseShiftHalfBridge)"
+                                @mouseenter="hoveredWizard = 'PSHB'"
+                                @mouseleave="hoveredWizard = null"
+                            >
+                                <i class="me-2 bi bi-chevron-right"></i>{{'PSHB Wizard'}}
+                            </button>
+                        </li>
+                        <li>
+                            <button
+                                data-cy="Ahb-link"
+                                :class="headerTogglerIsVisible? 'w-100' : 'mx-0' "
+                                class="dropdown-item btn btn-block nav-link px-2"
+                                @click="onWizards($stateStore.Wizards.AsymmetricHalfBridge)"
+                                @mouseenter="hoveredWizard = 'AHB'"
+                                @mouseleave="hoveredWizard = null"
+                            >
+                                <i class="me-2 bi bi-arrow-bar-right"></i>{{'AHB Wizard'}}
                             </button>
                         </li>
                         <li>

@@ -138,7 +138,7 @@ export default {
                                     <div class="mb-1"><i class="bi bi-check-lg text-primary me-2"></i>Flyback, Buck, Boost converters</div>
                                     <div class="mb-1"><i class="bi bi-check-lg text-primary me-2"></i>Forward converter (Single/Two-switch/Active clamp)</div>
                                     <div class="mb-1"><i class="bi bi-check-lg text-primary me-2"></i>Push-Pull, Isolated Buck/Boost</div>
-                                    <div class="mb-1"><i class="bi bi-check-lg text-primary me-2"></i>LLC & CLLC resonant converters</div>
+                                    <div class="mb-1"><i class="bi bi-check-lg text-primary me-2"></i>LLC resonant converter</div>
                                     <div class="mb-1"><i class="bi bi-check-lg text-primary me-2"></i>DAB, PFC, Phase-Shift Full Bridge</div>
                                     <div class="mb-1"><i class="bi bi-check-lg text-primary me-2"></i>Common & Differential Mode Chokes</div>
                                 </div>

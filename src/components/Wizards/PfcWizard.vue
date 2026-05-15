@@ -11,6 +11,7 @@ import { defaultPfcWizardInputs, defaultDesignRequirements, minimumMaximumScaleP
 import ConverterWizardBase from './ConverterWizardBase.vue'
 import { waitForMkf } from 'WebSharedComponents/assets/js/mkfRuntime'
 import CompactVoltageInput from './CompactVoltageInput.vue'
+import { tooltipsConverterWizards, dropdownLabelsConverterWizards } from 'WebSharedComponents/assets/js/texts'
 </script>
 
 <script>
@@ -42,6 +43,7 @@ export default {
             taskQueueStore,
             designLevelOptions,
             modeOptions,
+            dropdownLabelsConverterWizards,
             localData,
             errorMessage,
             simulatingWaveforms: false,
@@ -376,7 +378,7 @@ export default {
 
     <template #design-or-switch-parameters>
       <div v-if="localData.designLevel == 'I know the design I want'">
-        <Dimension :name="'inductance'" :replaceTitle="'Inductance'" unit="H"
+        <Dimension :name="'inductance'" :tooltip="tooltipsConverterWizards['inductance']" :replaceTitle="'Inductance'" unit="H"
           :dataTestLabel="dataTestLabel + '-Inductance'"
           :min="minimumMaximumScalePerParameter['inductance']['min']"
           :max="minimumMaximumScalePerParameter['inductance']['max']"
@@ -397,6 +399,7 @@ export default {
         <ElementFromListRadio
           :name="'mode'" :dataTestLabel="dataTestLabel + '-Mode'"
           :replaceTitle="''" :options="modeOptions" :titleSameRow="false"
+          :optionLabels="dropdownLabelsConverterWizards.pfcMode"
           v-model="localData"
           :labelWidthProportionClass="'d-none'" :valueWidthProportionClass="'col-12'"
           :valueFontSize="$styleStore.wizard.inputFontSize"
@@ -405,7 +408,7 @@ export default {
           :textColor="$styleStore.wizard.inputTextColor"
           @update="updateErrorMessage"
         />
-        <Dimension v-if="isCcmMode" :name="'currentRippleRatio'" :replaceTitle="'Ripple'" unit="%" :visualScale="100"
+        <Dimension v-if="isCcmMode" :name="'currentRippleRatio'" :tooltip="tooltipsConverterWizards['currentRippleRatio']" :replaceTitle="'Ripple'" unit="%" :visualScale="100"
           :dataTestLabel="dataTestLabel + '-CurrentRippleRatio'"
           :min="0.01" :max="1"
           v-model="localData"
@@ -420,7 +423,7 @@ export default {
     </template>
 
     <template #conditions>
-      <Dimension :name="'switchingFrequency'" :replaceTitle="'Sw. Freq'" unit="Hz"
+      <Dimension :name="'switchingFrequency'" :tooltip="tooltipsConverterWizards['switchingFrequency']" :replaceTitle="'Sw. Freq'" unit="Hz"
         :dataTestLabel="dataTestLabel + '-SwitchingFrequency'"
         :min="minimumMaximumScalePerParameter['frequency']['min']"
         :max="minimumMaximumScalePerParameter['frequency']['max']"
@@ -432,7 +435,7 @@ export default {
         :textColor="$styleStore.wizard.inputTextColor"
         @update="updateErrorMessage"
       />
-      <Dimension :name="'lineFrequency'" :replaceTitle="'Line Freq'" unit="Hz"
+      <Dimension :name="'lineFrequency'" :tooltip="tooltipsConverterWizards['lineFrequency']" :replaceTitle="'Line Freq'" unit="Hz"
         :dataTestLabel="dataTestLabel + '-LineFrequency'"
         :min="minimumMaximumScalePerParameter['frequency']['min']"
         :max="minimumMaximumScalePerParameter['frequency']['max']"
@@ -444,7 +447,7 @@ export default {
         :textColor="$styleStore.wizard.inputTextColor"
         @update="updateErrorMessage"
       />
-      <Dimension :name="'ambientTemperature'" :replaceTitle="'Temp'" unit=" C"
+      <Dimension :name="'ambientTemperature'" :tooltip="tooltipsConverterWizards['ambientTemperature']" :replaceTitle="'Temp'" unit=" C"
         :dataTestLabel="dataTestLabel + '-AmbientTemperature'"
         :min="minimumMaximumScalePerParameter['temperature']['min']"
         :max="minimumMaximumScalePerParameter['temperature']['max']"
@@ -457,7 +460,7 @@ export default {
         :textColor="$styleStore.wizard.inputTextColor"
         @update="updateErrorMessage"
       />
-      <Dimension :name="'diodeVoltageDrop'" :replaceTitle="'Diode Vd'" unit="V"
+      <Dimension :name="'diodeVoltageDrop'" :tooltip="tooltipsConverterWizards['diodeVoltageDrop']" :replaceTitle="'Diode Vd'" unit="V"
         :dataTestLabel="dataTestLabel + '-DiodeVoltageDrop'" :min="0" :max="10"
         v-model="localData"
         :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'"
@@ -467,7 +470,7 @@ export default {
         :textColor="$styleStore.wizard.inputTextColor"
         @update="updateErrorMessage"
       />
-      <Dimension :name="'efficiency'" :replaceTitle="'Eff'" unit="%" :visualScale="100"
+      <Dimension :name="'efficiency'" :tooltip="tooltipsConverterWizards['efficiency']" :replaceTitle="'Efficiency'" unit="%" :visualScale="100"
         :dataTestLabel="dataTestLabel + '-Efficiency'" :min="0.5" :max="1"
         v-model="localData"
         :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'"
@@ -500,7 +503,7 @@ export default {
     </template>
 
     <template #outputs>
-      <Dimension :name="'outputVoltage'" :replaceTitle="'Voltage'" unit="V"
+      <Dimension :name="'outputVoltage'" :tooltip="tooltipsConverterWizards['outputVoltage']" :replaceTitle="'Voltage'" unit="V"
         :dataTestLabel="dataTestLabel + '-OutputVoltage'"
         :min="minimumMaximumScalePerParameter['voltage']['min']"
         :max="minimumMaximumScalePerParameter['voltage']['max']"
@@ -512,7 +515,7 @@ export default {
         :textColor="$styleStore.wizard.inputTextColor"
         @update="updateErrorMessage"
       />
-      <Dimension :name="'outputPower'" :replaceTitle="'Power'" unit="W"
+      <Dimension :name="'outputPower'" :tooltip="tooltipsConverterWizards['outputPower']" :replaceTitle="'Power'" unit="W"
         :dataTestLabel="dataTestLabel + '-OutputPower'"
         :min="1" :max="minimumMaximumScalePerParameter['power']['max']"
         v-model="localData"

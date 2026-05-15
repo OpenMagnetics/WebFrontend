@@ -12,6 +12,7 @@ import ConverterWizardBase from './ConverterWizardBase.vue'
 import EmiSpectrumView from './EmiSpectrumView.vue'
 import { waitForMkf } from 'WebSharedComponents/assets/js/mkfRuntime'
 import CompactVoltageInput from './CompactVoltageInput.vue'
+import { tooltipsConverterWizards } from 'WebSharedComponents/assets/js/texts'
 </script>
 
 <script>
@@ -660,7 +661,7 @@ export default {
     <!-- SLOT: #conditions                                         -->
     <!-- ══════════════════════════════════════════════════════════ -->
     <template #conditions>
-      <Dimension :name="'lineFrequency'" :replaceTitle="'Line Frequency'" unit="Hz"
+      <Dimension :name="'lineFrequency'" :tooltip="tooltipsConverterWizards['lineFrequency']" :replaceTitle="'Line Frequency'" unit="Hz"
         :dataTestLabel="dataTestLabel + '-LineFrequency'"
         :min="minimumMaximumScalePerParameter['frequency']['min']"
         :max="minimumMaximumScalePerParameter['frequency']['max']"
@@ -672,7 +673,7 @@ export default {
         :textColor="$styleStore.wizard.inputTextColor"
         @update="updateErrorMessage"
       />
-      <Dimension :name="'lineImpedance'" :replaceTitle="'Line Z (LISN)'" unit="Ω"
+      <Dimension :name="'lineImpedance'" :tooltip="tooltipsConverterWizards['lineImpedance']" :replaceTitle="'Line Z (LISN)'" unit="Ω"
         :dataTestLabel="dataTestLabel + '-LineImpedance'"
         :min="1" :max="1000"
         v-model="localData"
@@ -683,7 +684,7 @@ export default {
         :textColor="$styleStore.wizard.inputTextColor"
         @update="updateErrorMessage"
       />
-      <Dimension :name="'ambientTemperature'" :replaceTitle="'Temperature'" unit=" ºC"
+      <Dimension :name="'ambientTemperature'" :tooltip="tooltipsConverterWizards['ambientTemperature']" :replaceTitle="'Temperature'" unit=" ºC"
         :dataTestLabel="dataTestLabel + '-AmbientTemperature'"
         :min="minimumMaximumScalePerParameter['temperature']['min']"
         :max="minimumMaximumScalePerParameter['temperature']['max']"

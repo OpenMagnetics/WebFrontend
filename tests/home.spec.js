@@ -120,7 +120,7 @@ test.describe('Header — wizard dropdown', () => {
   test.describe.configure({ timeout: 30000 });
 
   // Wizard links that should exist (per source inspection).
-  // Disabled entries (Wizard-DifferentialModeChoke, Cllc, Psfb) are still present
+  // Disabled entries (Wizard-DifferentialModeChoke, Psfb) are still present
   // in the DOM — just with the disabled attribute.
   const ALL_WIZARD_LINKS = [
     'Wizard-CommonModeChoke-link',
@@ -134,7 +134,6 @@ test.describe('Header — wizard dropdown', () => {
     'Pfc-link',
     'Dab-link',
     'Llc-link',
-    'Cllc-link',
     'Psfb-link',
     'ActiveClampForward-CommonModeChoke-link',
     'SingleSwitchForward-CommonModeChoke-link',

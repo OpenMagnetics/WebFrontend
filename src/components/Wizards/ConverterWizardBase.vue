@@ -5,8 +5,7 @@ import ConverterWaveformVisualizer from './ConverterWaveformVisualizer.vue'
  * Child wizards access common methods via this.$refs.base.methodName().
  *
  * COMMON METHODS:
- *   buildMagneticWaveformsFromInputs, convertConverterWaveforms,
- *   repeatWaveformForPeriods, repeatWaveformsForPeriods,
+  *   buildMagneticWaveformsFromInputs, convertConverterWaveforms,
  *   getTimeAxisOptions, getWaveformsList, getSingleWaveformDataForVisualizer,
  *   getPairedWaveformsList, getPairedWaveformDataForVisualizer,
  *   getPairedWaveformAxisLimits, getPairedWaveformTitle, getOperatingPointLabel,
@@ -313,39 +312,6 @@ export default {
           if (c.time && c.data) opWf.waveforms.push({ label: `Output ${i+1} Current`, x: c.time, y: c.data, type: 'current', unit: 'A' });
         });
         return opWf;
-      });
-    },
-
-    // ===== WAVEFORM REPETITION =====
-    repeatWaveformForPeriods(time, data, numberOfPeriods) {
-      if (!time || !data || time.length === 0 || numberOfPeriods <= 1) return { time, data };
-      const period = time[time.length-1] - time[0];
-      const nT = [], nD = [];
-      for (let p = 0; p < numberOfPeriods; p++) {
-        const off = p * period;
-        for (let i = 0; i < time.length; i++) {
-          if (p > 0 && i === 0 && nT.length > 0 && Math.abs(nT[nT.length-1] - (time[i]+off)) < 1e-12) continue;
-          nT.push(time[i] + off); nD.push(data[i]);
-        }
-      }
-      return { time: nT, data: nD };
-    },
-
-    repeatWaveformsForPeriods(waveformsData, numberOfPeriods) {
-      if (numberOfPeriods <= 1 || !waveformsData?.length) return waveformsData;
-      return waveformsData.map(op => {
-        if (!op.waveforms) return op;
-        return { ...op, waveforms: op.waveforms.map(wf => {
-          if (!wf.x || wf.x.length < 2) return wf;
-          const period = wf.x[wf.x.length-1] - wf.x[0];
-          const rX = [...wf.x], rY = [...wf.y];
-          for (let p = 1; p < numberOfPeriods; p++) {
-            const off = period * p;
-            wf.x.slice(1).forEach(x => rX.push(x + off));
-            wf.y.slice(1).forEach(y => rY.push(y));
-          }
-          return { ...wf, x: rX, y: rY };
-        })};
       });
     },
 
@@ -1098,8 +1064,9 @@ export default {
       <div :class="col1Class">
         <div class="d-flex flex-column gap-2">
 
-          <!-- Design Mode -->
-          <div class="compact-card">
+          <!-- Design Mode (only rendered if the wizard supplies the slot;
+               AHB and PSHB intentionally omit it — see WIZARDS_GUIDE §3.5) -->
+          <div v-if="$slots['design-mode']" class="compact-card">
             <div class="compact-header"><i class="bi bi-sliders me-1"></i>Design Mode</div>
             <div class="compact-body ps-4">
               <slot name="design-mode">
@@ -1118,7 +1085,7 @@ export default {
           </div>
 
           <!-- Conditions -->
-          <div class="compact-card">
+          <div v-if="$slots.conditions" class="compact-card">
             <div class="compact-header"><i class="bi bi-speedometer2 me-1"></i>Conditions</div>
             <div class="compact-body ps-4">
               <slot name="conditions">
@@ -1146,7 +1113,7 @@ export default {
           </div>
 
           <!-- Outputs -->
-          <div class="compact-card">
+          <div v-if="$slots.outputs" class="compact-card">
             <div class="compact-header"><i class="bi bi-box-arrow-right me-1"></i>Outputs</div>
             <div class="compact-body ps-4 pe-3">
               <slot name="outputs">

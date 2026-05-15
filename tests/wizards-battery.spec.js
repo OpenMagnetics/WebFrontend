@@ -3,7 +3,7 @@
  *
  * Smoke test per enabled wizard: open → Analytical → reach /magnetic_tool.
  * Buck and DAB are already exercised in magnetic-tool-battery.spec.js;
- * this file covers the other 13 enabled wizards (DMC, CLLC, PSFB are
+ * this file covers the other 13 enabled wizards (DMC and PSFB are
  * disabled in the dropdown and skipped intentionally).
  *
  * A wizard "passes" if:
@@ -39,7 +39,6 @@ const ENABLED_WIZARDS = [
 // Wizards intentionally disabled in the dropdown (per Header.vue source)
 const DISABLED_WIZARDS = [
   'Wizard-DifferentialModeChoke-link',
-  'Cllc-link',
   'Psfb-link',
 ];
 

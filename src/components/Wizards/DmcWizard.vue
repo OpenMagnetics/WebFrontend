@@ -8,6 +8,7 @@ import { minimumMaximumScalePerParameter, isolationSideOrdered } from 'WebShared
 import ConverterWizardBase from './ConverterWizardBase.vue'
 import CompactVoltageInput from './CompactVoltageInput.vue'
 import EmiSpectrumView from './EmiSpectrumView.vue'
+import { tooltipsConverterWizards } from 'WebSharedComponents/assets/js/texts'
 </script>
 
 <script>
@@ -171,12 +172,9 @@ export default {
                     const auxWithL = proposedL ? { ...aux, minimumInductance: proposedL } : aux;
                     result = await this.taskQueueStore.calculateDmcInputs(auxWithL);
                 }
-                // ConverterWizardBase.processAnalyticalWaveforms assumes the
-                // backend already applied numberOfPeriods. DMC's MKF does not
-                // (parser ignores the field), so we expand the operating-point
-                // waveforms here before returning.
-                const n = this.numberOfPeriods;
-                if (n > 1) result.operatingPoints = this.repeatOperatingPointPeriods(result.operatingPoints, n);
+                // numberOfPeriods is honored by MKF (calculate_dmc_inputs
+                // calls repeat_operating_points_waveforms), so the result is
+                // already expanded — no JS-side tiling needed.
                 return result;
             };
         },
@@ -210,12 +208,9 @@ export default {
                     result = calc;
                 } else {
                     const s = sweep[0];
-                    // mkf.simulate_dmc_waveforms returns ~20 cycles of the EMI
-                    // test frequency baked in. Extract a single period at
-                    // s.frequency so the downstream JS repetition produces
-                    // exactly numberOfPeriods cycles instead of 20*N.
-                    const singleI = this.$refs.base.extractSinglePeriod(s.time, s.inductorCurrent, s.frequency);
-                    const singleV = this.$refs.base.extractSinglePeriod(s.time, s.inputVoltage,    s.frequency);
+                    // simulate_dmc_waveforms now honors numberOfPeriods server
+                    // side (ngspice extracts exactly N cycles), so use the
+                    // returned waveforms directly.
                     const numWindings = this.numWindings;
                     const operatingPoint = {
                         name: s.operatingPointName || `Simulated @ ${s.frequency} Hz`,
@@ -223,47 +218,16 @@ export default {
                         excitationsPerWinding: Array.from({ length: numWindings }, (_, i) => ({
                             name: this.windingName(i),
                             frequency: s.frequency,
-                            current: { waveform: { time: singleI.time, data: singleI.data } },
-                            voltage: { waveform: { time: singleV.time, data: singleV.data } },
+                            current: { waveform: { time: s.time, data: s.inductorCurrent } },
+                            voltage: { waveform: { time: s.time, data: s.inputVoltage } },
                         })),
                     };
                     result = { designRequirements: calc.designRequirements, operatingPoints: [operatingPoint] };
                 }
-                // numberOfPeriods: same JS-side repetition as the analytical
-                // path (MKF DMC ignores the field). numberOfSteadyStatePeriods
-                // would need MKF to run more SPICE transient cycles before
-                // extraction — JS can't fake that, so the field is currently
-                // a no-op for DMC simulate. Tracked as a future MKF change.
-                const n = this.numberOfPeriods;
-                if (n > 1) result.operatingPoints = this.repeatOperatingPointPeriods(result.operatingPoints, n);
+                // numberOfSteadyStatePeriods is not yet wired into MKF's DMC
+                // simulation path — pending future MKF change.
                 return result;
             };
-        },
-        // Expand each excitation's current/voltage waveform to N periods by
-        // tiling it end-to-end. Mirrors ConverterWizardBase.repeatWaveformForPeriods
-        // but operates on the operating-point shape MKF returns.
-        repeatOperatingPointPeriods(operatingPoints, n) {
-            if (!Array.isArray(operatingPoints) || n <= 1) return operatingPoints;
-            const repeatSig = (sig) => {
-                if (!sig?.waveform?.time || !sig?.waveform?.data) return sig;
-                const t = sig.waveform.time, d = sig.waveform.data;
-                if (t.length < 2) return sig;
-                const period = t[t.length - 1] - t[0];
-                const nT = [...t], nD = [...d];
-                for (let p = 1; p < n; p++) {
-                    const off = period * p;
-                    for (let i = 1; i < t.length; i++) { nT.push(t[i] + off); nD.push(d[i]); }
-                }
-                return { ...sig, waveform: { ...sig.waveform, time: nT, data: nD } };
-            };
-            return operatingPoints.map(op => ({
-                ...op,
-                excitationsPerWinding: (op.excitationsPerWinding || []).map(exc => ({
-                    ...exc,
-                    current: repeatSig(exc.current),
-                    voltage: repeatSig(exc.voltage),
-                })),
-            }));
         },
         getDefaultFrequency() { return this.localData.lineFrequency; },
         getTopology() { return Topologies.DifferentialModeChoke; },
@@ -604,7 +568,7 @@ export default {
     </template>
 
     <template #conditions>
-      <Dimension :name="'lineFrequency'" :replaceTitle="'Line Freq'" unit="Hz"
+      <Dimension :name="'lineFrequency'" :tooltip="tooltipsConverterWizards['lineFrequency']" :replaceTitle="'Line Freq'" unit="Hz"
         :dataTestLabel="dataTestLabel + '-LineFrequency'"
         :min="minimumMaximumScalePerParameter['frequency']['min']"
         :max="minimumMaximumScalePerParameter['frequency']['max']"
@@ -616,7 +580,7 @@ export default {
         :textColor="$styleStore.wizard.inputTextColor"
         @update="updateErrorMessage"
       />
-      <Dimension :name="'switchingFrequency'" :replaceTitle="'Switching Freq'" unit="Hz"
+      <Dimension :name="'switchingFrequency'" :tooltip="tooltipsConverterWizards['switchingFrequency']" :replaceTitle="'Switching Freq'" unit="Hz"
         :dataTestLabel="dataTestLabel + '-SwitchingFrequency'"
         :min="minimumMaximumScalePerParameter['frequency']['min']"
         :max="minimumMaximumScalePerParameter['frequency']['max']"
@@ -628,7 +592,7 @@ export default {
         :textColor="$styleStore.wizard.inputTextColor"
         @update="updateErrorMessage"
       />
-      <Dimension :name="'ambientTemperature'" :replaceTitle="'Temperature'" unit=" C"
+      <Dimension :name="'ambientTemperature'" :tooltip="tooltipsConverterWizards['ambientTemperature']" :replaceTitle="'Temperature'" unit=" C"
         :dataTestLabel="dataTestLabel + '-AmbientTemperature'"
         :min="minimumMaximumScalePerParameter['temperature']['min']"
         :max="minimumMaximumScalePerParameter['temperature']['max']"
