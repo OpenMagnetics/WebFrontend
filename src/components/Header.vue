@@ -387,6 +387,18 @@ export default {
                         </li>
                         <li>
                             <button
+                                data-cy="Sepic-CommonModeChoke-link"
+                                :class="headerTogglerIsVisible? 'w-100' : 'mx-0' "
+                                class="dropdown-item btn btn-block nav-link px-2"
+                                @click="onWizards($stateStore.Wizards.Sepic)"
+                                @mouseenter="hoveredWizard = 'Sepic'"
+                                @mouseleave="hoveredWizard = null"
+                            >
+                                <i class="me-2 bi bi-arrow-down-up"></i>{{'SEPIC Wizard'}}
+                            </button>
+                        </li>
+                        <li>
+                            <button
                                 data-cy="IsolatedBuck-CommonModeChoke-link"
                                 :class="headerTogglerIsVisible? 'w-100' : 'mx-0' "
                                 class="dropdown-item btn btn-block nav-link px-2"

@@ -41,6 +41,13 @@ export default {
             await this.$nextTick();
             await this.$router.push(`${import.meta.env.BASE_URL}wizards`);
         },
+        async onSepicWizard() {
+            this.$stateStore.resetMagneticTool();
+            this.$stateStore.selectWorkflow("design");
+            this.$stateStore.selectWizard(this.$stateStore.Wizards.Sepic);
+            await this.$nextTick();
+            await this.$router.push(`${import.meta.env.BASE_URL}wizards`);
+        },
         async onIsolatedBuckWizard() {
             this.$stateStore.resetMagneticTool();
             this.$stateStore.selectWorkflow("design");
@@ -217,6 +224,19 @@ export default {
                                 <h4 class="card-title text-white fw-bold mb-2">Boost Converter</h4>
                                 <p class="card-text text-white small mb-3">Design inductors for step-up DC-DC converters.</p>
                                 <button @click="onBoostWizard" class="btn btn-light w-100">
+                                    Start Wizard
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SEPIC Converter -->
+                    <div class="col-lg-4 col-md-6">
+                        <div class="card h-100 bg-dark border-secondary">
+                            <div class="card-body p-4">
+                                <h4 class="card-title text-white fw-bold mb-2">SEPIC Converter</h4>
+                                <p class="card-text text-white small mb-3">Non-inverting buck-boost via coupling capacitor; optional coupled inductor and synchronous rectifier.</p>
+                                <button @click="onSepicWizard" class="btn btn-light w-100" data-cy="Sepic-card">
                                     Start Wizard
                                 </button>
                             </div>

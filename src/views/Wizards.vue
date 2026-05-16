@@ -6,6 +6,7 @@ import CmcWizard from '../components/Wizards/CmcWizard.vue'
 import DmcWizard from '../components/Wizards/DmcWizard.vue'
 import FlybackWizard from '../components/Wizards/FlybackWizard.vue'
 import BuckBoostWizard from '../components/Wizards/BuckBoostWizard.vue'
+import SepicWizard from '../components/Wizards/SepicWizard.vue'
 import IsolatedBuckBoostWizard from '../components/Wizards/IsolatedBuckBoostWizard.vue'
 import PushPullWizard from '../components/Wizards/PushPullWizard.vue'
 import ForwardWizard from '../components/Wizards/ForwardWizard.vue'
@@ -53,6 +54,10 @@ export default {
                 v-if="$stateStore.getCurrentWizard() == $stateStore.Wizards.Boost"
                 :converterName="'Boost'"
                 :dataTestLabel="'BoostWizard'"
+            />
+            <SepicWizard
+                v-if="$stateStore.getCurrentWizard() == $stateStore.Wizards.Sepic"
+                :dataTestLabel="'SepicWizard'"
             />
             <IsolatedBuckBoostWizard
                 v-if="$stateStore.getCurrentWizard() == $stateStore.Wizards.IsolatedBuck"

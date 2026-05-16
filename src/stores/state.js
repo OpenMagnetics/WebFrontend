@@ -38,6 +38,7 @@ export const useStateStore = defineStore("state", () => {
         Flyback: 'flyback',
         Buck: 'buck',
         Boost: 'boost',
+        Sepic: 'sepic',
         IsolatedBuck: 'isolatedBuck',
         IsolatedBuckBoost: 'isolatedBuckBoost',
         PushPull: 'pushPull',

@@ -906,6 +906,59 @@ export const useTaskQueueStore = defineStore('taskQueue', {
         },
 
         // ==========================================
+        // Wizard Calculation/Simulation Methods - SEPIC
+        // ==========================================
+
+        sepicInputsCalculated(success = true, dataOrMessage = '') {
+        },
+
+        async calculateSepicInputs(params) {
+            const mkf = await waitForMkf();
+            await mkf.ready;
+
+            const result = await mkf.calculate_sepic_inputs(JSON.stringify(params));
+            if (result.startsWith('Exception')) {
+                throw new Error(result);
+            }
+            const inputs = JSON.parse(result);
+            setTimeout(() => { this.sepicInputsCalculated(true, inputs); }, this.task_standard_response_delay);
+            return inputs;
+        },
+
+        advancedSepicInputsCalculated(success = true, dataOrMessage = '') {
+        },
+
+        async calculateAdvancedSepicInputs(params) {
+            const mkf = await waitForMkf();
+            await mkf.ready;
+
+            const result = await mkf.calculate_advanced_sepic_inputs(JSON.stringify(params));
+            if (result.startsWith('Exception')) {
+                throw new Error(result);
+            }
+            const inputs = JSON.parse(result);
+            setTimeout(() => { this.advancedSepicInputsCalculated(true, inputs); }, this.task_standard_response_delay);
+            return inputs;
+        },
+
+        sepicIdealWaveformsCalculated(success = true, dataOrMessage = '') {
+        },
+
+        async simulateSepicIdealWaveforms(params) {
+            const mkf = await waitForMkf();
+            await mkf.ready;
+
+            const result = await mkf.simulate_sepic_ideal_waveforms(JSON.stringify(params));
+            if (result.startsWith('Exception')) {
+                setTimeout(() => { this.sepicIdealWaveformsCalculated(false, result); }, this.task_standard_response_delay);
+                throw new Error(result);
+            }
+            const waveforms = JSON.parse(result);
+            setTimeout(() => { this.sepicIdealWaveformsCalculated(true, waveforms); }, this.task_standard_response_delay);
+            return waveforms;
+        },
+
+        // ==========================================
         // Wizard Simulation Methods - Forward
         // ==========================================
 
@@ -1176,6 +1229,7 @@ export const useTaskQueueStore = defineStore('taskQueue', {
                 'flybackConverter':                 'generate_flyback_ngspice_circuit',
                 'buckConverter':                    'generate_buck_ngspice_circuit',
                 'boostConverter':                   'generate_boost_ngspice_circuit',
+                'sepicConverter':                   'generate_sepic_ngspice_circuit',
                 'powerFactorCorrection':            'generate_boost_ngspice_circuit',
                 'pushPullConverter':                'generate_push_pull_ngspice_circuit',
                 'singleSwitchForwardConverter':     'generate_forward_ngspice_circuit',
