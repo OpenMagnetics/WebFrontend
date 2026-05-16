@@ -124,13 +124,57 @@ export async function findModeSelect(page) {
  * Uses triple-click (clickCount:3) to select existing value before filling.
  */
 export async function fillRowInput(card, labelText, value) {
-  const row = card.locator(`text=${labelText}`).locator('../..');
-  const input = row.locator('input[type="number"]').first();
-  if (await input.isVisible().catch(() => false)) {
-    await input.click({ clickCount: 3 });
-    await input.fill(String(value));
-    await input.press('Tab');
+  // Throw loudly when the label is missing — silent skips hide stale tests
+  // (a renamed label means the test stops exercising what its name advertises).
+  // Check count first to avoid Playwright's 30s auto-wait on a non-existent locator.
+  const labelLoc = card.locator(`text=${labelText}`);
+  const labelCount = await labelLoc.count();
+  if (labelCount === 0) {
+    throw new Error(`fillRowInput: label "${labelText}" not found in card`);
   }
+  const row = labelLoc.first().locator('../..');
+  const input = row.locator('input[type="number"]').first();
+  if (!(await input.isVisible().catch(() => false))) {
+    throw new Error(`fillRowInput: number input under label "${labelText}" is not visible`);
+  }
+  await input.click({ clickCount: 3 });
+  await input.fill(String(value));
+  await input.press('Tab');
+}
+
+/**
+ * Fill one field of a specific output row in the Outputs card.
+ * Number inputs are laid out row-by-row inside PairOfDimensions / TripleOfDimensions:
+ *   - "I know" mode → Triple → 3 inputs/row [voltage, current, turnsRatio]
+ *   - "Help me" mode → Pair → 2 inputs/row [voltage, current]
+ * Cols are detected from the total number of inputs and the visible row count.
+ */
+export async function fillOutput(oCard, rowIndex, field, value) {
+  const fieldOrder = ['voltage', 'current', 'turnsRatio'];
+  const fieldIdx = fieldOrder.indexOf(field);
+  if (fieldIdx < 0) {
+    throw new Error(`fillOutput: unknown field "${field}" (expected voltage|current|turnsRatio)`);
+  }
+  const inputs = oCard.locator('input[type="number"]');
+  const total = await inputs.count();
+  if (total === 0) throw new Error('fillOutput: no number inputs in outputs card');
+  // Detect cols by checking for a turnsRatio data-cy (Triple mode → 3 cols, Pair → 2).
+  const hasTurns = (await oCard.locator('input[data-cy*="turnsRatio"]').count()) > 0;
+  const cols = hasTurns ? 3 : 2;
+  if (field === 'turnsRatio' && !hasTurns) {
+    throw new Error(`fillOutput: turnsRatio requested but outputs card is in 2-col mode (not "I know" mode?)`);
+  }
+  const absIdx = rowIndex * cols + fieldIdx;
+  if (absIdx >= total) {
+    throw new Error(`fillOutput: row ${rowIndex} field "${field}" → input ${absIdx} out of range (${total} inputs, ${cols} cols)`);
+  }
+  const input = inputs.nth(absIdx);
+  if (!(await input.isVisible().catch(() => false))) {
+    throw new Error(`fillOutput: input #${absIdx} (row ${rowIndex} ${field}) is not visible`);
+  }
+  await input.click({ clickCount: 3 });
+  await input.fill(String(value));
+  await input.press('Tab');
 }
 
 /**

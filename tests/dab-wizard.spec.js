@@ -164,7 +164,7 @@ test.describe('DAB Wizard Smoke Tests', () => {
     await switchToIKnowMode(page);
     const tCard = transformerCard(page);
     await fillRowInput(tCard, 'Turns', '2');
-    await fillRowInput(tCard, 'Ser L', '5e-5');
+    await fillRowInput(tCard, 'Series Ind.', '5e-5');
     await runAnalytical(page);
 
     const spiceBtn = page.locator('.sim-btn.spice');

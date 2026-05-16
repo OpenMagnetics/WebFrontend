@@ -29,6 +29,7 @@ import {
   inputVoltageCard,
   findModeSelect,
   fillRowInput,
+  fillOutput,
   switchToIKnowMode,
 } from './utils.js';
 
@@ -192,8 +193,8 @@ test.describe('Group A – Layout and UI controls', () => {
     // Now Transformer card should be visible with N/Lm/Ser L
     await expect(tCard).toBeVisible();
     await expect(tCard.locator('text=Turns').first()).toBeVisible();
-    await expect(tCard.locator('text=Mag L').first()).toBeVisible();
-    await expect(tCard.locator('text=Ser L').first()).toBeVisible();
+    await expect(tCard.locator('text=Mag. Ind.').first()).toBeVisible();
+    await expect(tCard.locator('text=Series Ind.').first()).toBeVisible();
 
     await ss(page, 'A7-design-mode-i-know');
   });
@@ -280,11 +281,11 @@ test.describe('Group B – SPS Analytical', () => {
     await openDabWizard(page);
     await switchToIKnowMode(page);
 
-    const leakage = page.locator('#useLeakageInductance');
+    const leakage = page.locator('#useLeakageInductanceDab');
     if (await leakage.isChecked().catch(() => false)) await leakage.uncheck();
 
     const tCard = transformerCard(page);
-    await fillRowInput(tCard, 'Ser L', '5e-5');
+    await fillRowInput(tCard, 'Series Ind.', '5e-5');
     await page.waitForTimeout(300);
 
     const cCard = conditionsCard(page);
@@ -328,11 +329,11 @@ test.describe('Group B – SPS Analytical', () => {
     await openDabWizard(page);
     await switchToIKnowMode(page);
 
-    const leakage = page.locator('#useLeakageInductance');
+    const leakage = page.locator('#useLeakageInductanceDab');
     if (await leakage.isChecked().catch(() => false)) await leakage.uncheck();
 
     const tCard = transformerCard(page);
-    await fillRowInput(tCard, 'Ser L', '5e-5');
+    await fillRowInput(tCard, 'Series Ind.', '5e-5');
     await page.waitForTimeout(300);
 
     await runAnalytical(page);
@@ -355,13 +356,13 @@ test.describe('Group B – SPS Analytical', () => {
     await openDabWizard(page);
     await switchToIKnowMode(page);
 
-    const leakage = page.locator('#useLeakageInductance');
+    const leakage = page.locator('#useLeakageInductanceDab');
     if (await leakage.isChecked().catch(() => false)) await leakage.uncheck();
 
     const tCard = transformerCard(page);
     await fillRowInput(tCard, 'Turns', '2');
-    await fillRowInput(tCard, 'Mag L', '5e-4');
-    await fillRowInput(tCard, 'Ser L', '5e-5');
+    await fillRowInput(tCard, 'Mag. Ind.', '5e-4');
+    await fillRowInput(tCard, 'Series Ind.', '5e-5');
     await page.waitForTimeout(300);
 
     await runAnalytical(page);
@@ -401,17 +402,18 @@ test.describe('Group B – SPS Analytical', () => {
     await openDabWizard(page);
     await switchToIKnowMode(page);
 
-    const leakage = page.locator('#useLeakageInductance');
+    const leakage = page.locator('#useLeakageInductanceDab');
     if (await leakage.isChecked().catch(() => false)) await leakage.uncheck();
 
     const tCard = transformerCard(page);
     await fillRowInput(tCard, 'Turns', '2');
-    await fillRowInput(tCard, 'Mag L', '5e-4');
-    await fillRowInput(tCard, 'Ser L', '5e-5');
+    await fillRowInput(tCard, 'Mag. Ind.', '5e-4');
+    await fillRowInput(tCard, 'Series Ind.', '5e-5');
 
     const oCard = outputsCard(page);
-    await fillRowInput(oCard, 'Voltage', '200');
-    await fillRowInput(oCard, 'Power', '500');
+    await fillOutput(oCard, 0, 'voltage', '200');
+    await fillOutput(oCard, 0, 'current', '2.5'); // P=500 / V=200
+    await fillOutput(oCard, 0, 'turnsRatio', '2'); // N=2 per-output drives d=N·V₂/V₁
 
     const cCard = conditionsCard(page);
     const phRow = cCard.locator('text=Outer D3').locator('../..');
@@ -431,10 +433,13 @@ test.describe('Group B – SPS Analytical', () => {
 
     const diagCard = diagnosticsCard(page);
     if (await diagCard.isVisible().catch(() => false)) {
-      const inputs = await diagCard.locator('input[type="number"]').all();
-      const dVal = inputs.length >= 4 ? parseFloat(await inputs[3].inputValue()) : NaN;
-      console.log(`[B7] d = ${dVal} (expected ≈ 1.0)`);
-      if (!isNaN(dVal)) expect(dVal).toBeCloseTo(1.0, 1);
+      // d = N·V₂/V₁ is the dabVoltageRatio row; target by its label, not index.
+      const dInput = diagCard.locator('text=d = N').locator('../..').locator('input[type="number"]').first();
+      if (await dInput.isVisible().catch(() => false)) {
+        const dVal = parseFloat(await dInput.inputValue());
+        console.log(`[B7] d = ${dVal} (expected ≈ 1.0)`);
+        if (!isNaN(dVal)) expect(dVal).toBeCloseTo(1.0, 1);
+      }
     }
 
     await ss(page, 'B7-vout200-n2');
@@ -449,17 +454,17 @@ test.describe('Group C – EPS/DPS/TPS Analytical', () => {
 
   async function setupAsymmetricParams(page) {
     await switchToIKnowMode(page);
-    const leakage = page.locator('#useLeakageInductance');
+    const leakage = page.locator('#useLeakageInductanceDab');
     if (await leakage.isChecked().catch(() => false)) await leakage.uncheck();
 
     const tCard = transformerCard(page);
     await fillRowInput(tCard, 'Turns', '2');
-    await fillRowInput(tCard, 'Mag L', '5e-4');
-    await fillRowInput(tCard, 'Ser L', '5e-5');
+    await fillRowInput(tCard, 'Mag. Ind.', '5e-4');
+    await fillRowInput(tCard, 'Series Ind.', '5e-5');
 
     const oCard = outputsCard(page);
-    await fillRowInput(oCard, 'Voltage', '200');
-    await fillRowInput(oCard, 'Power', '500');
+    await fillOutput(oCard, 0, 'voltage', '200');
+    await fillOutput(oCard, 0, 'current', '2.5'); // P=500 / V=200
 
     const cCard = conditionsCard(page);
     const phRow = cCard.locator('text=Outer D3').locator('../..');
@@ -595,15 +600,15 @@ test.describe('Group D – SPICE code generation', () => {
 
   async function setupAndAnalytical(page) {
     await switchToIKnowMode(page);
-    const leakage = page.locator('#useLeakageInductance');
+    const leakage = page.locator('#useLeakageInductanceDab');
     if (await leakage.isChecked().catch(() => false)) await leakage.uncheck();
 
     const tCard = transformerCard(page);
     await fillRowInput(tCard, 'Turns', '2');
-    await fillRowInput(tCard, 'Ser L', '5e-5');
+    await fillRowInput(tCard, 'Series Ind.', '5e-5');
 
     const oCard = outputsCard(page);
-    await fillRowInput(oCard, 'Voltage', '200');
+    await fillOutput(oCard, 0, 'voltage', '200');
     await page.waitForTimeout(300);
 
     await runAnalytical(page);
@@ -658,13 +663,13 @@ test.describe('Group D – SPICE code generation', () => {
     await openDabWizard(page);
     await switchToIKnowMode(page);
 
-    const leakage = page.locator('#useLeakageInductance');
+    const leakage = page.locator('#useLeakageInductanceDab');
     if (await leakage.isChecked().catch(() => false)) await leakage.uncheck();
     const tCard = transformerCard(page);
     await fillRowInput(tCard, 'Turns', '2');
-    await fillRowInput(tCard, 'Ser L', '5e-5');
+    await fillRowInput(tCard, 'Series Ind.', '5e-5');
     const oCard = outputsCard(page);
-    await fillRowInput(oCard, 'Voltage', '200');
+    await fillOutput(oCard, 0, 'voltage', '200');
 
     const modeSelect = await findModeSelect(page);
     await modeSelect.selectOption('EPS');
@@ -700,13 +705,13 @@ test.describe('Group D – SPICE code generation', () => {
     await openDabWizard(page);
     await switchToIKnowMode(page);
 
-    const leakage = page.locator('#useLeakageInductance');
+    const leakage = page.locator('#useLeakageInductanceDab');
     if (await leakage.isChecked().catch(() => false)) await leakage.uncheck();
     const tCard = transformerCard(page);
     await fillRowInput(tCard, 'Turns', '2');
-    await fillRowInput(tCard, 'Ser L', '5e-5');
+    await fillRowInput(tCard, 'Series Ind.', '5e-5');
     const oCard = outputsCard(page);
-    await fillRowInput(oCard, 'Voltage', '200');
+    await fillOutput(oCard, 0, 'voltage', '200');
 
     const modeSelect = await findModeSelect(page);
     await modeSelect.selectOption('TPS');
@@ -775,7 +780,7 @@ test.describe('Group E – Simulated waveforms (ngspice)', () => {
 
   async function setupN2(page) {
     await switchToIKnowMode(page);
-    const leakage = page.locator('#useLeakageInductance');
+    const leakage = page.locator('#useLeakageInductanceDab');
     if (await leakage.isChecked().catch(() => false)) await leakage.uncheck();
     await page.waitForTimeout(300);
   }
@@ -973,15 +978,15 @@ test.describe('Group F – Navigation buttons', () => {
     await openDabWizard(page);
     await switchToIKnowMode(page);
 
-    const leakage = page.locator('#useLeakageInductance');
+    const leakage = page.locator('#useLeakageInductanceDab');
     if (await leakage.isChecked().catch(() => false)) await leakage.uncheck();
     const tCard = transformerCard(page);
     await fillRowInput(tCard, 'Turns', '2');
-    await fillRowInput(tCard, 'Mag L', '5e-4');
-    await fillRowInput(tCard, 'Ser L', '5e-5');
+    await fillRowInput(tCard, 'Mag. Ind.', '5e-4');
+    await fillRowInput(tCard, 'Series Ind.', '5e-5');
     const oCard = outputsCard(page);
-    await fillRowInput(oCard, 'Voltage', '200');
-    await fillRowInput(oCard, 'Power', '500');
+    await fillOutput(oCard, 0, 'voltage', '200');
+    await fillOutput(oCard, 0, 'current', '2.5'); // P=500 / V=200
     await page.waitForTimeout(300);
 
     await runAnalytical(page);
@@ -999,13 +1004,13 @@ test.describe('Group F – Navigation buttons', () => {
     await openDabWizard(page);
     await switchToIKnowMode(page);
 
-    const leakage = page.locator('#useLeakageInductance');
+    const leakage = page.locator('#useLeakageInductanceDab');
     if (await leakage.isChecked().catch(() => false)) await leakage.uncheck();
     const tCard = transformerCard(page);
     await fillRowInput(tCard, 'Turns', '2');
-    await fillRowInput(tCard, 'Ser L', '5e-5');
+    await fillRowInput(tCard, 'Series Ind.', '5e-5');
     const oCard = outputsCard(page);
-    await fillRowInput(oCard, 'Voltage', '200');
+    await fillOutput(oCard, 0, 'voltage', '200');
 
     const modeSelect = await findModeSelect(page);
     await modeSelect.selectOption('TPS');
@@ -1046,15 +1051,15 @@ test.describe('Group G – Magnetic Adviser end-to-end', () => {
       await setupFn(page);
     } else {
       await switchToIKnowMode(page);
-      const leakage = page.locator('#useLeakageInductance');
+      const leakage = page.locator('#useLeakageInductanceDab');
       if (await leakage.isChecked().catch(() => false)) await leakage.uncheck();
       const tCard = transformerCard(page);
       await fillRowInput(tCard, 'Turns', '2');
-      await fillRowInput(tCard, 'Mag L', '5e-4');
-      await fillRowInput(tCard, 'Ser L', '5e-5');
+      await fillRowInput(tCard, 'Mag. Ind.', '5e-4');
+      await fillRowInput(tCard, 'Series Ind.', '5e-5');
       const oCard = outputsCard(page);
-      await fillRowInput(oCard, 'Voltage', '200');
-      await fillRowInput(oCard, 'Power', '500');
+      await fillOutput(oCard, 0, 'voltage', '200');
+      await fillOutput(oCard, 0, 'current', '2.5'); // P=500 / V=200
     }
 
     await runAnalytical(page);
@@ -1181,7 +1186,7 @@ test.describe('Group G – Magnetic Adviser end-to-end', () => {
 
     const navigated = await goToAdviser(page, async (pg) => {
       await switchToIKnowMode(pg);
-      const leakage = pg.locator('#useLeakageInductance');
+      const leakage = pg.locator('#useLeakageInductanceDab');
       if (await leakage.isChecked().catch(() => false)) await leakage.uncheck();
 
       const ivCard = inputVoltageCard(pg);
@@ -1194,12 +1199,12 @@ test.describe('Group G – Magnetic Adviser end-to-end', () => {
 
       const tCard = transformerCard(pg);
       await fillRowInput(tCard, 'Turns', '2');
-      await fillRowInput(tCard, 'Mag L', '1e-3');
-      await fillRowInput(tCard, 'Ser L', '1e-4');
+      await fillRowInput(tCard, 'Mag. Ind.', '1e-3');
+      await fillRowInput(tCard, 'Series Ind.', '1e-4');
 
       const oCard = outputsCard(pg);
-      await fillRowInput(oCard, 'Voltage', '400');
-      await fillRowInput(oCard, 'Power', '10000');
+      await fillOutput(oCard, 0, 'voltage', '400');
+      await fillOutput(oCard, 0, 'current', '25'); // P=10000 / V=400
       await pg.waitForTimeout(300);
     });
 
@@ -1228,17 +1233,17 @@ test.describe('Group G – Magnetic Adviser end-to-end', () => {
 
     const navigated = await goToAdviser(page, async (pg) => {
       await switchToIKnowMode(pg);
-      const leakage = pg.locator('#useLeakageInductance');
+      const leakage = pg.locator('#useLeakageInductanceDab');
       if (await leakage.isChecked().catch(() => false)) await leakage.uncheck();
 
       const tCard = transformerCard(pg);
       await fillRowInput(tCard, 'Turns', '1.6');
-      await fillRowInput(tCard, 'Mag L', '6e-4');
-      await fillRowInput(tCard, 'Ser L', '6e-5');
+      await fillRowInput(tCard, 'Mag. Ind.', '6e-4');
+      await fillRowInput(tCard, 'Series Ind.', '6e-5');
 
       const oCard = outputsCard(pg);
-      await fillRowInput(oCard, 'Voltage', '160');
-      await fillRowInput(oCard, 'Power', '1000');
+      await fillOutput(oCard, 0, 'voltage', '160');
+      await fillOutput(oCard, 0, 'current', '6.25'); // P=1000 / V=160
 
       const modeSelect = await findModeSelect(pg);
       await modeSelect.selectOption('EPS');
@@ -1326,15 +1331,15 @@ test.describe('Group H – Magnetic Builder / Core Adviser', () => {
       await setupFn(page);
     } else {
       await switchToIKnowMode(page);
-      const leakage = page.locator('#useLeakageInductance');
+      const leakage = page.locator('#useLeakageInductanceDab');
       if (await leakage.isChecked().catch(() => false)) await leakage.uncheck();
       const tCard = transformerCard(page);
       await fillRowInput(tCard, 'Turns', '2');
-      await fillRowInput(tCard, 'Mag L', '5e-4');
-      await fillRowInput(tCard, 'Ser L', '5e-5');
+      await fillRowInput(tCard, 'Mag. Ind.', '5e-4');
+      await fillRowInput(tCard, 'Series Ind.', '5e-5');
       const oCard = outputsCard(page);
-      await fillRowInput(oCard, 'Voltage', '200');
-      await fillRowInput(oCard, 'Power', '500');
+      await fillOutput(oCard, 0, 'voltage', '200');
+      await fillOutput(oCard, 0, 'current', '2.5'); // P=500 / V=200
     }
 
     await runAnalytical(page);
@@ -1368,15 +1373,15 @@ test.describe('Group H – Magnetic Builder / Core Adviser', () => {
   test('H2 – Magnetic builder shows correct winding count for DAB', async ({ page }) => {
     await openDabWizard(page);
     await switchToIKnowMode(page);
-    const leakage = page.locator('#useLeakageInductance');
+    const leakage = page.locator('#useLeakageInductanceDab');
     if (await leakage.isChecked().catch(() => false)) await leakage.uncheck();
     const tCard = transformerCard(page);
     await fillRowInput(tCard, 'Turns', '2');
-    await fillRowInput(tCard, 'Mag L', '5e-4');
-    await fillRowInput(tCard, 'Ser L', '5e-5');
+    await fillRowInput(tCard, 'Mag. Ind.', '5e-4');
+    await fillRowInput(tCard, 'Series Ind.', '5e-5');
     const oCard = outputsCard(page);
-    await fillRowInput(oCard, 'Voltage', '200');
-    await fillRowInput(oCard, 'Power', '500');
+    await fillOutput(oCard, 0, 'voltage', '200');
+    await fillOutput(oCard, 0, 'current', '2.5'); // P=500 / V=200
 
     await runAnalytical(page);
     const reviewBtn = page.locator('button').filter({ hasText: 'Review Specs' }).first();
@@ -1470,7 +1475,7 @@ test.describe('Group H – Magnetic Builder / Core Adviser', () => {
 
     const navigated = await goToBuilder(page, async (pg) => {
       await switchToIKnowMode(pg);
-      const leakage = pg.locator('#useLeakageInductance');
+      const leakage = pg.locator('#useLeakageInductanceDab');
       if (await leakage.isChecked().catch(() => false)) await leakage.uncheck();
 
       const ivCard = inputVoltageCard(pg);
@@ -1483,12 +1488,12 @@ test.describe('Group H – Magnetic Builder / Core Adviser', () => {
 
       const tCard = transformerCard(pg);
       await fillRowInput(tCard, 'Turns', '2');
-      await fillRowInput(tCard, 'Mag L', '1e-3');
-      await fillRowInput(tCard, 'Ser L', '1e-4');
+      await fillRowInput(tCard, 'Mag. Ind.', '1e-3');
+      await fillRowInput(tCard, 'Series Ind.', '1e-4');
 
       const oCard = outputsCard(pg);
-      await fillRowInput(oCard, 'Voltage', '400');
-      await fillRowInput(oCard, 'Power', '5000');
+      await fillOutput(oCard, 0, 'voltage', '400');
+      await fillOutput(oCard, 0, 'current', '12.5'); // P=5000 / V=400
       await pg.waitForTimeout(300);
     });
 

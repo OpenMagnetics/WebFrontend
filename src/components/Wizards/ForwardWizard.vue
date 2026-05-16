@@ -99,6 +99,9 @@ export default {
       aux['diodeVoltageDrop'] = this.localData.diodeVoltageDrop;
       aux['efficiency'] = this.localData.efficiency;
       aux['converterType'] = this.converterName;
+      // currentRippleRatio is required by both regular and Advanced from_json
+      // (used for output current ripple even when desiredInductance is given)
+      aux['currentRippleRatio'] = this.localData.currentRippleRatio;
       if (this.localData.designLevel == 'I know the design I want') {
         aux['desiredInductance'] = this.localData.inductance;
         const auxDesiredDutyCycle = [];
@@ -106,10 +109,17 @@ export default {
         if (this.localData.inputVoltage.nominal != null && this.localData.dutyCycle.nominal != null) auxDesiredDutyCycle.push(this.localData.dutyCycle.nominal);
         if (this.localData.inputVoltage.maximum != null && this.localData.dutyCycle.maximum != null) auxDesiredDutyCycle.push(this.localData.dutyCycle.maximum);
         aux['desiredDutyCycle'] = [auxDesiredDutyCycle];
-        aux['desiredTurnsRatios'] = this.localData.outputsParameters.map(e => e.turnsRatio);
+        const secondaryTurnsRatios = this.localData.outputsParameters.map(e => e.turnsRatio);
+        // Single-Switch Forward requires an extra leading turns ratio for the
+        // demagnetization winding (1:1 with primary is the standard choice).
+        // Two-Switch Forward and Active Clamp Forward use one ratio per output.
+        if (this.converterName === 'Single-Switch Forward') {
+          aux['desiredTurnsRatios'] = [1.0, ...secondaryTurnsRatios];
+        } else {
+          aux['desiredTurnsRatios'] = secondaryTurnsRatios;
+        }
       } else {
         aux['maximumDutyCycle'] = this.localData.maximumDutyCycle;
-        aux['currentRippleRatio'] = this.localData.currentRippleRatio;
       }
       const auxOp = { outputVoltages: [], outputCurrents: [] };
       this.localData.outputsParameters.forEach(e => { auxOp.outputVoltages.push(e.voltage); auxOp.outputCurrents.push(e.current); });
