@@ -79,6 +79,8 @@ export default defineConfig({
             targets: [
                 { src: 'src/assets/js/libMKF.wasm.js',   dest: 'wasm' },
                 { src: 'src/assets/js/libMKF.wasm.wasm',  dest: 'wasm' },
+                { src: 'src/assets/js/libInsulationCoordinator.wasm.js',   dest: 'wasm' },
+                { src: 'src/assets/js/libInsulationCoordinator.wasm.wasm', dest: 'wasm' },
                 { src: 'src/assets/js/mvbpp.js',           dest: 'wasm' },
                 { src: 'src/assets/js/mvbpp.wasm',         dest: 'wasm' },
             ]

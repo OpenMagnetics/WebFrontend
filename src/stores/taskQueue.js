@@ -1184,6 +1184,7 @@ export const useTaskQueueStore = defineStore('taskQueue', {
                 'isolatedBuckConverter':            'generate_isolated_buck_ngspice_circuit',
                 'isolatedBuckBoostConverter':       'generate_isolated_buck_boost_ngspice_circuit',
                 'llcResonantConverter':             'generate_llc_ngspice_circuit',
+                'cllcResonantConverter':            'generate_cllc_ngspice_circuit',
                 'dualActiveBridgeConverter':        'generate_dab_ngspice_circuit',
                 'phaseShiftedFullBridgeConverter':  'generate_psfb_ngspice_circuit',
                 'phaseShiftedHalfBridgeConverter':  'generate_pshb_ngspice_circuit',
@@ -1437,6 +1438,54 @@ export const useTaskQueueStore = defineStore('taskQueue', {
         },
 
         // ==========================================
+        // Wizard Calculation Methods - CLLC Resonant
+        // ==========================================
+
+        cllcInputsCalculated(success = true, dataOrMessage = '') {
+        },
+
+        async calculateCllcInputs(params) {
+            const mkf = await waitForMkf();
+            await mkf.ready;
+
+            const result = await mkf.calculate_cllc_inputs(JSON.stringify(params));
+            if (result.startsWith('Exception')) {
+                setTimeout(() => { this.cllcInputsCalculated(false, result); }, this.task_standard_response_delay);
+                throw new Error(result);
+            }
+            const inputs = JSON.parse(result);
+            // CLLC backend may also return {"error": "..."} JSON on validation failure
+            // (libMKF.cpp:8396). Surface those too — no silent fallback.
+            if (inputs.error) {
+                setTimeout(() => { this.cllcInputsCalculated(false, inputs.error); }, this.task_standard_response_delay);
+                throw new Error(inputs.error);
+            }
+            setTimeout(() => { this.cllcInputsCalculated(true, inputs); }, this.task_standard_response_delay);
+            return inputs;
+        },
+
+        cllcWaveformsSimulated(success = true, dataOrMessage = '') {
+        },
+
+        async simulateCllcIdealWaveforms(params) {
+            const mkf = await waitForMkf();
+            await mkf.ready;
+
+            const result = await mkf.simulate_cllc_ideal_waveforms(JSON.stringify(params));
+            if (result.startsWith('Exception')) {
+                setTimeout(() => { this.cllcWaveformsSimulated(false, result); }, this.task_standard_response_delay);
+                throw new Error(result);
+            }
+            const waveforms = JSON.parse(result);
+            if (waveforms.error) {
+                setTimeout(() => { this.cllcWaveformsSimulated(false, waveforms.error); }, this.task_standard_response_delay);
+                throw new Error(waveforms.error);
+            }
+            setTimeout(() => { this.cllcWaveformsSimulated(true, waveforms); }, this.task_standard_response_delay);
+            return waveforms;
+        },
+
+        // ==========================================
         // Wizard Calculation Methods - Phase Shift Full Bridge (PSFB)
         // ==========================================
 
@@ -1453,6 +1502,10 @@ export const useTaskQueueStore = defineStore('taskQueue', {
                 throw new Error(result);
             }
             const inputs = JSON.parse(result);
+            if (inputs.error) {
+                setTimeout(() => { this.psfbInputsCalculated(false, inputs.error); }, this.task_standard_response_delay);
+                throw new Error(inputs.error);
+            }
             setTimeout(() => { this.psfbInputsCalculated(true, inputs); }, this.task_standard_response_delay);
             return inputs;
         },

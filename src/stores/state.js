@@ -47,6 +47,7 @@ export const useStateStore = defineStore("state", () => {
         Pfc: 'pfc',
         DualActiveBridge: 'dualActiveBridge',
         LlcResonant: 'llcResonant',
+        CllcResonant: 'cllcResonant',
         PhaseShiftFullBridge: 'phaseShiftFullBridge',
         PhaseShiftHalfBridge: 'phaseShiftHalfBridge',
         AsymmetricHalfBridge: 'asymmetricHalfBridge',

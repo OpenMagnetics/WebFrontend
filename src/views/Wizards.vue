@@ -12,6 +12,7 @@ import ForwardWizard from '../components/Wizards/ForwardWizard.vue'
 import PfcWizard from '../components/Wizards/PfcWizard.vue'
 import DabWizard from '../components/Wizards/DabWizard.vue'
 import LlcWizard from '../components/Wizards/LlcWizard.vue'
+import CllcWizard from '../components/Wizards/CllcWizard.vue'
 import PsfbWizard from '../components/Wizards/PsfbWizard.vue'
 import PshbWizard from '../components/Wizards/PshbWizard.vue'
 import AhbWizard from '../components/Wizards/AhbWizard.vue'
@@ -94,6 +95,10 @@ export default {
             <LlcWizard
                 v-if="$stateStore.getCurrentWizard() == $stateStore.Wizards.LlcResonant"
                 :dataTestLabel="'LlcWizard'"
+            />
+            <CllcWizard
+                v-if="$stateStore.getCurrentWizard() == $stateStore.Wizards.CllcResonant"
+                :dataTestLabel="'CllcWizard'"
             />
             <PsfbWizard
                 v-if="$stateStore.getCurrentWizard() == $stateStore.Wizards.PhaseShiftFullBridge"

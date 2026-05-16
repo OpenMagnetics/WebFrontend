@@ -92,9 +92,11 @@ export default {
     buildParams(mode) {
       const opFreq = this.localData.operatingSwitchingFrequency || this.localData.resonantFrequency;
       const outs = this.localData.outputsParameters || [];
+      const bridgeMap = { 'Full Bridge': 'fullBridge', 'Half Bridge': 'halfBridge', 'fullBridge': 'fullBridge', 'halfBridge': 'halfBridge' };
+      const bridgeRaw = this.localData.bridgeType || 'Half Bridge';
       const aux = {
         inputVoltage: this.localData.inputVoltage,
-        bridgeType: this.localData.bridgeType || 'Half Bridge',
+        bridgeType: bridgeMap[bridgeRaw] || 'halfBridge',
         minSwitchingFrequency: this.localData.minSwitchingFrequency,
         maxSwitchingFrequency: this.localData.maxSwitchingFrequency,
         resonantFrequency: this.localData.resonantFrequency,

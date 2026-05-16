@@ -459,6 +459,18 @@ export default {
                         </li>
                         <li>
                             <button
+                                data-cy="Cllc-link"
+                                :class="headerTogglerIsVisible? 'w-100' : 'mx-0' "
+                                class="dropdown-item btn btn-block nav-link px-2"
+                                @click="onWizards($stateStore.Wizards.CllcResonant)"
+                                @mouseenter="hoveredWizard = 'CLLC'"
+                                @mouseleave="hoveredWizard = null"
+                            >
+                                <i class="me-2 bi bi-arrow-left-right"></i>{{'CLLC Wizard'}}
+                            </button>
+                        </li>
+                        <li>
+                            <button
                                 data-cy="Psfb-link"
                                 :class="headerTogglerIsVisible? 'w-100' : 'mx-0' "
                                 class="dropdown-item btn btn-block nav-link px-2"
