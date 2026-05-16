@@ -450,7 +450,7 @@ export default {
       <!-- "I know the design I want" -->
       <div v-if="localData.designLevel === 'I know the design I want'">
         <Dimension
-          :name="'desiredInductance'" :replaceTitle="'Inductance'" unit="H"
+          :name="'desiredInductance'" :tooltip="tooltipsConverterWizards['desiredInductance']" :replaceTitle="'Inductance'" unit="H"
           :dataTestLabel="dataTestLabel + '-DesiredInductance'"
           :min="minimumMaximumScalePerParameter['inductance']['min']"
           :max="minimumMaximumScalePerParameter['inductance']['max']"
@@ -463,7 +463,7 @@ export default {
           @update="updateErrorMessage"
         />
         <Dimension
-          :name="'designFrequency'" :replaceTitle="'Design freq'" unit="Hz"
+          :name="'designFrequency'" :tooltip="tooltipsConverterWizards['designFrequency']" :replaceTitle="'Design freq'" unit="Hz"
           :dataTestLabel="dataTestLabel + '-DesignFrequency'"
           :min="1" :max="1e10"
           v-model="localData"
@@ -475,7 +475,7 @@ export default {
           @update="updateErrorMessage"
         />
         <Dimension
-          :name="'filterCapacitance'" :replaceTitle="'Filter C'" unit="F"
+          :name="'filterCapacitance'" :tooltip="tooltipsConverterWizards['filterCapacitance']" :replaceTitle="'Filter C'" unit="F"
           :dataTestLabel="dataTestLabel + '-FilterCapacitance'"
           :min="minimumMaximumScalePerParameter['capacitance']['min']"
           :max="minimumMaximumScalePerParameter['capacitance']['max']"
@@ -492,7 +492,7 @@ export default {
       <!-- "Help me with the design" -->
       <div v-else>
         <Dimension
-          :name="'filterCapacitance'" :replaceTitle="'Filter C'" unit="F"
+          :name="'filterCapacitance'" :tooltip="tooltipsConverterWizards['filterCapacitance']" :replaceTitle="'Filter C'" unit="F"
           :dataTestLabel="dataTestLabel + '-FilterCapacitance'"
           :min="minimumMaximumScalePerParameter['capacitance']['min']"
           :max="minimumMaximumScalePerParameter['capacitance']['max']"
@@ -514,7 +514,7 @@ export default {
           class="dmc-table-row"
         >
           <Dimension
-            :name="'frequency'" :replaceTitle="''" unit="Hz"
+            :name="'frequency'" :tooltip="tooltipsConverterWizards['frequency']" :replaceTitle="''" unit="Hz"
             :min="1" :max="1e10"
             v-model="localData.attenuationPoints[idx]"
             :labelWidthProportionClass="'d-none'" :valueWidthProportionClass="'col-12'"
@@ -525,7 +525,7 @@ export default {
             @update="(v) => updateAttenuationRow(idx, v)"
           />
           <Dimension
-            :name="'attenuation'" :replaceTitle="''" unit="dB"
+            :name="'attenuation'" :tooltip="tooltipsConverterWizards['attenuation']" :replaceTitle="''" unit="dB"
             :min="0" :max="120"
             v-model="localData.attenuationPoints[idx]"
             :labelWidthProportionClass="'d-none'" :valueWidthProportionClass="'col-12'"
@@ -548,7 +548,7 @@ export default {
 
       <!-- Ripple current (DM noise source amplitude for the EMI spectrum) -->
       <Dimension
-        :name="'ripplePeakToPeak'" :replaceTitle="'Ripple ΔIpp'" unit="A"
+        :name="'ripplePeakToPeak'" :tooltip="tooltipsConverterWizards['ripplePeakToPeak']" :replaceTitle="'Ripple ΔIpp'" unit="A"
         :dataTestLabel="dataTestLabel + '-RipplePeakToPeak'"
         :min="1e-6" :max="1e3"
         v-model="localData"
@@ -636,7 +636,7 @@ export default {
 
     <template #outputs>
       <Dimension
-        :name="'operatingCurrent'" :replaceTitle="'Line current'" unit="A"
+        :name="'operatingCurrent'" :tooltip="tooltipsConverterWizards['operatingCurrent']" :replaceTitle="'Line current'" unit="A"
         :dataTestLabel="dataTestLabel + '-OperatingCurrent'"
         :min="minimumMaximumScalePerParameter['current']['min']"
         :max="minimumMaximumScalePerParameter['current']['max']"

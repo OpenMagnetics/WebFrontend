@@ -304,7 +304,7 @@ export default {
             @update="updateErrorMessage"
           />
           <Dimension v-if="localData.mosfetInputType == 'Its maximum duty cycle'"
-          :name="'maximumDutyCycle'" :replaceTitle="'Max Duty Cycle'" :unit="null"
+          :name="'maximumDutyCycle'" :tooltip="tooltipsConverterWizards['maximumDutyCycle']" :replaceTitle="'Max Duty Cycle'" :unit="null"
           :dataTestLabel="dataTestLabel + '-MaximumDutyCycle'"
           :min="0.01" :max="0.99"
           v-model="localData"
@@ -316,7 +316,7 @@ export default {
           @update="updateErrorMessage"
         />
         <Dimension v-else-if="localData.mosfetInputType == 'Its maximum drain-source voltage'"
-          :name="'maximumDrainSourceVoltage'" :replaceTitle="'Max Vds'" unit="V"
+          :name="'maximumDrainSourceVoltage'" :tooltip="tooltipsConverterWizards['maximumDrainSourceVoltage']" :replaceTitle="'Max Vds'" unit="V"
             :dataTestLabel="dataTestLabel + '-MaximumSwitchCurrent'"
             :min="minimumMaximumScalePerParameter['current']['min']"
             :max="minimumMaximumScalePerParameter['current']['max']"

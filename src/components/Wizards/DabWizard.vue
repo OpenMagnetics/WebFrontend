@@ -244,6 +244,7 @@ export default {
     :waveformSource="waveformSource"
     :waveformError="waveformError"
     :waveformViewMode="waveformViewMode"
+    :waveformForceUpdate="forceWaveformUpdate"
     :errorMessage="errorMessage"
     :numberOfPeriods="numberOfPeriods"
     :numberOfSteadyStatePeriods="numberOfSteadyStatePeriods"

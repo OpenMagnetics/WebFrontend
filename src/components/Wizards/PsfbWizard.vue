@@ -197,6 +197,7 @@ export default {
     :waveformError="waveformError" :errorMessage="errorMessage"
     :numberOfPeriods="numberOfPeriods" :numberOfSteadyStatePeriods="numberOfSteadyStatePeriods"
     :waveformViewMode="waveformViewMode"
+    :waveformForceUpdate="forceWaveformUpdate"
     :disableActions="errorMessage != '' || !isValid()"
     @update:numberOfPeriods="numberOfPeriods = $event"
     @update:numberOfSteadyStatePeriods="numberOfSteadyStatePeriods = $event"

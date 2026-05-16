@@ -456,7 +456,7 @@ export default {
       <!-- ── "I know the design I want" ── -->
       <div v-if="localData.designLevel == 'I know the design I want'">
         <Dimension
-          :name="'desiredInductance'" :replaceTitle="'CM Inductance'" unit="H"
+          :name="'desiredInductance'" :tooltip="tooltipsConverterWizards['desiredInductance']" :replaceTitle="'CM Inductance'" unit="H"
           :dataTestLabel="dataTestLabel + '-DesiredInductance'"
           :min="minimumMaximumScalePerParameter['inductance']['min']"
           :max="minimumMaximumScalePerParameter['inductance']['max']"
@@ -469,7 +469,7 @@ export default {
           @update="updateErrorMessage"
         />
         <Dimension
-          :name="'designFrequency'" :replaceTitle="'Design freq'" unit="Hz"
+          :name="'designFrequency'" :tooltip="tooltipsConverterWizards['designFrequency']" :replaceTitle="'Design freq'" unit="Hz"
           :dataTestLabel="dataTestLabel + '-DesignFrequency'"
           :min="1" :max="1e10"
           v-model="localData"
@@ -492,6 +492,7 @@ export default {
         <ElementFromList
           class="mt-3 mb-3"
           :name="'specMode'"
+          :tooltip="tooltipsConverterWizards['specMode']"
           :replaceTitle="'Input type'"
           :options="specModeOptions"
           :titleSameRow="true"
@@ -517,7 +518,7 @@ export default {
             class="cmc-table-row"
           >
             <Dimension
-              :name="'frequency'" :replaceTitle="''" unit="Hz"
+              :name="'frequency'" :tooltip="tooltipsConverterWizards['frequency']" :replaceTitle="''" unit="Hz"
               :min="1" :max="1e10"
               v-model="localData.impedancePoints[idx]"
               :labelWidthProportionClass="'d-none'" :valueWidthProportionClass="'col-12'"
@@ -528,7 +529,7 @@ export default {
               @update="(v) => updateImpedanceRow(idx, v)"
             />
             <Dimension
-              :name="'impedance'" :replaceTitle="''" unit="Ω"
+              :name="'impedance'" :tooltip="tooltipsConverterWizards['impedance']" :replaceTitle="''" unit="Ω"
               :min="1" :max="1e7"
               v-model="localData.impedancePoints[idx]"
               :labelWidthProportionClass="'d-none'" :valueWidthProportionClass="'col-12'"
@@ -560,7 +561,7 @@ export default {
             class="cmc-table-row"
           >
             <Dimension
-              :name="'frequency'" :replaceTitle="''" unit="Hz"
+              :name="'frequency'" :tooltip="tooltipsConverterWizards['frequency']" :replaceTitle="''" unit="Hz"
               :min="1" :max="1e10"
               v-model="localData.insertionLossPoints[idx]"
               :labelWidthProportionClass="'d-none'" :valueWidthProportionClass="'col-12'"
@@ -571,7 +572,7 @@ export default {
               @update="(v) => updateInsertionLossRow(idx, v)"
             />
             <Dimension
-              :name="'insertionLoss'" :replaceTitle="''" unit="dB"
+              :name="'insertionLoss'" :tooltip="tooltipsConverterWizards['insertionLoss']" :replaceTitle="''" unit="dB"
               :min="0" :max="120"
               v-model="localData.insertionLossPoints[idx]"
               :labelWidthProportionClass="'d-none'" :valueWidthProportionClass="'col-12'"
@@ -597,6 +598,7 @@ export default {
           <div class="mt-1">
           <ElementFromList
             :name="'regulatoryStandard'"
+            :tooltip="tooltipsConverterWizards['regulatoryStandard']"
             :replaceTitle="'Standard'"
             :options="regulatoryStandardOptions"
             :titleSameRow="true"
@@ -613,7 +615,7 @@ export default {
           </div>
           <div class="mt-1">
           <Dimension
-            :name="'parasiticCap_pF'" :replaceTitle="'C parasitic'" unit="pF"
+            :name="'parasiticCap_pF'" :tooltip="tooltipsConverterWizards['parasiticCap_pF']" :replaceTitle="'C parasitic'" unit="pF"
             :min="0.01" :max="10000"
             v-model="localData"
             :labelWidthProportionClass="'col-6'" :valueWidthProportionClass="'col-6'"
@@ -624,7 +626,7 @@ export default {
             @update="updateErrorMessage"
           />
           <Dimension
-            :name="'dvdt_V_ns'" :replaceTitle="'dV/dt'" unit="V/ns"
+            :name="'dvdt_V_ns'" :tooltip="tooltipsConverterWizards['dvdt_V_ns']" :replaceTitle="'dV/dt'" unit="V/ns"
             :min="0.1" :max="1000"
             v-model="localData"
             :labelWidthProportionClass="'col-6'" :valueWidthProportionClass="'col-6'"
@@ -635,7 +637,7 @@ export default {
             @update="updateErrorMessage"
           />
           <Dimension
-            :name="'safetyMargin_dB'" :replaceTitle="'Safety margin'" unit="dB"
+            :name="'safetyMargin_dB'" :tooltip="tooltipsConverterWizards['safetyMargin_dB']" :replaceTitle="'Safety margin'" unit="dB"
             :min="0" :max="20"
             v-model="localData"
             :labelWidthProportionClass="'col-6'" :valueWidthProportionClass="'col-6'"
@@ -742,7 +744,7 @@ export default {
     <!-- ══════════════════════════════════════════════════════════ -->
     <template #outputs>
       <Dimension
-        :name="'operatingCurrent'" :replaceTitle="'Line current'" unit="A"
+        :name="'operatingCurrent'" :tooltip="tooltipsConverterWizards['operatingCurrent']" :replaceTitle="'Line current'" unit="A"
         :dataTestLabel="dataTestLabel + '-OperatingCurrent'"
         :min="minimumMaximumScalePerParameter['current']['min']"
         :max="minimumMaximumScalePerParameter['current']['max']"

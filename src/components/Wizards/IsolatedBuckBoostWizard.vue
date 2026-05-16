@@ -896,7 +896,7 @@ export default {
           @update="updateErrorMessage"
         />
         <Dimension v-if="localData.currentOptions == 'The on-resistance of the MOSFET'"
-          :name="'mosfetOnResistance'" :replaceTitle="'Rds(on)'" unit="Ω"
+          :name="'mosfetOnResistance'" :tooltip="tooltipsConverterWizards['mosfetOnResistance']" :replaceTitle="'Rds(on)'" unit="Ω"
           :dataTestLabel="dataTestLabel + '-MosfetOnResistance'"
           :min="0" :max="100"
           v-model="localData"
@@ -908,7 +908,7 @@ export default {
           @update="updateErrorMessage"
         />
         <Dimension v-else
-          :name="'maximumSwitchCurrent'" :replaceTitle="'Max Isw'" unit="A"
+          :name="'maximumSwitchCurrent'" :tooltip="tooltipsConverterWizards['maximumSwitchCurrent']" :replaceTitle="'Max Isw'" unit="A"
           :dataTestLabel="dataTestLabel + '-MaximumSwitchCurrent'"
           :min="minimumMaximumScalePerParameter['current']['min']"
           :max="minimumMaximumScalePerParameter['current']['max']"

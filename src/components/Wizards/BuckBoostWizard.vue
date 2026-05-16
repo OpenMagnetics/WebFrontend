@@ -434,7 +434,7 @@ export default {
     <template #design-or-switch-parameters>
       <div v-if="localData.designLevel == 'I know the design I want'">
         <Dimension
-          :name="'inductance'" :replaceTitle="'Inductance'" unit="H"
+          :name="'inductance'" :tooltip="tooltipsConverterWizards['inductance']" :replaceTitle="'Inductance'" unit="H"
           :dataTestLabel="dataTestLabel + '-Inductance'"
           :min="minimumMaximumScalePerParameter['inductance']['min']"
           :max="minimumMaximumScalePerParameter['inductance']['max']"
@@ -463,7 +463,7 @@ export default {
           @update="updateErrorMessage"
         />
         <Dimension v-if="localData.currentOptions == 'The maximum switch current'"
-          :name="'maximumSwitchCurrent'" :replaceTitle="'Max Isw'" unit="A"
+          :name="'maximumSwitchCurrent'" :tooltip="tooltipsConverterWizards['maximumSwitchCurrent']" :replaceTitle="'Max Isw'" unit="A"
           :dataTestLabel="dataTestLabel + '-MaximumSwitchCurrent'"
           :min="minimumMaximumScalePerParameter['current']['min']"
           :max="minimumMaximumScalePerParameter['current']['max']"
@@ -476,7 +476,7 @@ export default {
           @update="updateErrorMessage"
         />
         <Dimension v-if="localData.currentOptions == 'The output current ratio'"
-          :name="'currentRippleRatio'" :replaceTitle="'Ripple'" unit="%" :visualScale="100"
+          :name="'currentRippleRatio'" :tooltip="tooltipsConverterWizards['currentRippleRatio']" :replaceTitle="'Ripple'" unit="%" :visualScale="100"
           :dataTestLabel="dataTestLabel + '-CurrentRippleRatio'"
           :min="0.01" :max="1"
           v-model="localData"
@@ -562,7 +562,7 @@ export default {
 
     <template #outputs>
       <Dimension
-        :name="'voltage'" :replaceTitle="'Voltage'" unit="V"
+        :name="'voltage'" :tooltip="tooltipsConverterWizards['voltage']" :replaceTitle="'Voltage'" unit="V"
         :dataTestLabel="dataTestLabel + '-OutputVoltage'"
         :min="minimumMaximumScalePerParameter['voltage']['min']"
         :max="minimumMaximumScalePerParameter['voltage']['max']"
@@ -575,7 +575,7 @@ export default {
         @update="updateErrorMessage"
       />
       <Dimension
-        :name="'current'" :replaceTitle="'Current'" unit="A"
+        :name="'current'" :tooltip="tooltipsConverterWizards['current']" :replaceTitle="'Current'" unit="A"
         :dataTestLabel="dataTestLabel + '-OutputCurrent'"
         :min="minimumMaximumScalePerParameter['current']['min']"
         :max="minimumMaximumScalePerParameter['current']['max']"
