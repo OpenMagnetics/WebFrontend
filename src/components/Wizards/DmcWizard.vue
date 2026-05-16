@@ -404,6 +404,7 @@ export default {
     <template #design-mode>
       <ElementFromListRadio
         :name="'designLevel'"
+        :tooltip="tooltipsConverterWizards['designLevel']"
         :dataTestLabel="dataTestLabel + '-DesignLevel'"
         :replaceTitle="''"
         :options="designLevelOptions"
@@ -432,6 +433,7 @@ export default {
       <!-- Configuration -->
       <ElementFromListRadio
         :name="'configuration'"
+        :tooltip="tooltipsConverterWizards['configuration']"
         :dataTestLabel="dataTestLabel + '-Configuration'"
         :replaceTitle="''"
         :options="configurationOptions"
@@ -627,6 +629,7 @@ export default {
     <template #input-voltage>
       <CompactVoltageInput
         :name="'inputVoltage'"
+        :tooltip="tooltipsConverterWizards['inputVoltage']"
         :dataTestLabel="dataTestLabel + '-InputVoltage'"
         unit="V"
         :modelValue="localData.inputVoltage"

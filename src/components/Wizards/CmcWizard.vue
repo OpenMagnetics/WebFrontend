@@ -404,6 +404,7 @@ export default {
     <template #design-mode>
       <ElementFromListRadio
         :name="'designLevel'"
+        :tooltip="tooltipsConverterWizards['designLevel']"
         :dataTestLabel="dataTestLabel + '-DesignLevel'"
         :replaceTitle="''"
         :options="designLevelOptions"
@@ -438,6 +439,7 @@ export default {
       <!-- Winding count -->
       <ElementFromListRadio
         :name="'windingOption'"
+        :tooltip="tooltipsConverterWizards['windingOption']"
         :dataTestLabel="dataTestLabel + '-Windings'"
         :replaceTitle="''"
         :options="windingOptions"
@@ -732,6 +734,7 @@ export default {
     <template #input-voltage>
       <CompactVoltageInput
         :name="'operatingVoltage'"
+        :tooltip="tooltipsConverterWizards['operatingVoltage']"
         :dataTestLabel="dataTestLabel + '-OperatingVoltage'"
         unit="V"
         :modelValue="localData.operatingVoltage"

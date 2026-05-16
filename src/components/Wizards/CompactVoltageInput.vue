@@ -16,6 +16,7 @@ export default {
         min: { type: Number, default: 1e-12 },
         max: { type: Number, default: 1e+9 },
         dataTestLabel: { type: String, default: '' },
+        tooltip: { type: String, default: null },
     },
     data() {
         return {
@@ -137,7 +138,7 @@ export default {
 </script>
 
 <template>
-    <div class="compact-voltage-input">
+    <div class="compact-voltage-input" v-tooltip="tooltip">
         <div class="cv-row">
             <!-- Min (left) -->
             <div class="cv-section cv-left">

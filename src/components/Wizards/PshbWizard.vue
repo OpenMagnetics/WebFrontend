@@ -213,6 +213,7 @@ export default {
     <template #input-voltage>
       <CompactVoltageInput
         :name="'inputVoltage'"
+        :tooltip="tooltipsConverterWizards['inputVoltage']"
         :dataTestLabel="dataTestLabel + '-InputVoltage'"
         unit="V"
         :modelValue="localData.inputVoltage"

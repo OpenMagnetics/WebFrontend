@@ -827,7 +827,7 @@ export default {
   >
     <template #design-mode>
       <ElementFromListRadio
-        :name="'designLevel'" :dataTestLabel="dataTestLabel + '-DesignLevel'"
+        :name="'designLevel'" :tooltip="tooltipsConverterWizards['designLevel']" :dataTestLabel="dataTestLabel + '-DesignLevel'"
         :replaceTitle="''" :options="designLevelOptions" :titleSameRow="false"
         v-model="localData"
         :labelWidthProportionClass="'d-none'" :valueWidthProportionClass="'col-12'"
@@ -885,7 +885,7 @@ export default {
       </div>
       <div v-else>
         <ElementFromListRadio
-          :name="'currentOptions'" :dataTestLabel="dataTestLabel + '-MosfetInputType'"
+          :name="'currentOptions'" :tooltip="tooltipsConverterWizards['currentOptions']" :dataTestLabel="dataTestLabel + '-MosfetInputType'"
           :replaceTitle="''" :options="currentOptions" :titleSameRow="false"
           v-model="localData"
           :labelWidthProportionClass="'d-none'" :valueWidthProportionClass="'col-12'"
@@ -993,6 +993,7 @@ export default {
     <template #input-voltage>
       <CompactVoltageInput
         :name="'inputVoltage'"
+        :tooltip="tooltipsConverterWizards['inputVoltage']"
         :dataTestLabel="dataTestLabel + '-InputVoltage'"
         unit="V"
         :modelValue="localData.inputVoltage"
