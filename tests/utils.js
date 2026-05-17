@@ -287,3 +287,39 @@ export async function goToMagneticBuilder(page, openFn, setupFn = null) {
   await page.waitForTimeout(2000);
   return page.url().includes('magnetic_tool');
 }
+
+// ── Core Adviser flow ─────────────────────────────────────────────────────
+
+/**
+ * From the Magnetic Builder tool page (after goToMagneticBuilder), open the
+ * Magnetic Builder tab and click the Core "Advise" button. The button is the
+ * Core Adviser entry point in the three-column layout (left column = Core
+ * configuration). Waits for the in-flight advise to finish (button becomes
+ * re-enabled). Throws on missing UI rather than silently returning.
+ */
+export async function runCoreAdviser(page) {
+  if (!page.url().includes('magnetic_tool')) {
+    throw new Error(`runCoreAdviser: expected to be on /magnetic_tool, got ${page.url()}`);
+  }
+
+  // The "Magnetic. Builder" tab text uses non-breaking spaces — match loosely.
+  const builderTab = page.locator('button, a, [role="tab"], .nav-link')
+    .filter({ hasText: /Magnetic.\s*Builder/i }).first();
+  if (await builderTab.isVisible().catch(() => false)) {
+    await builderTab.click();
+    await page.waitForTimeout(500);
+  }
+
+  const adviseBtn = page.locator('[data-cy$="-Core-Advise-button"]').first();
+  await adviseBtn.waitFor({ state: 'visible', timeout: 15000 });
+  await adviseBtn.click();
+
+  // The button becomes disabled while the WASM core adviser runs, then re-enables.
+  await page.waitForFunction(
+    () => {
+      const btn = document.querySelector('[data-cy$="-Core-Advise-button"]');
+      return btn && !btn.disabled;
+    },
+    { timeout: 120000 }
+  );
+}

@@ -16,7 +16,7 @@ import {
   BASE_URL, isBenign, screenshot,
   openWizard, runAnalytical, waitForAnalytical,
   conditionsCard, outputsCard, fillRowInput,
-  goToMagneticAdviser, goToMagneticBuilder,
+  goToMagneticAdviser, goToMagneticBuilder, runCoreAdviser,
 } from './utils.js';
 
 const BUCK_CY  = 'Buck-CommonModeChoke-link';
@@ -26,6 +26,23 @@ const ss = (page, name) => screenshot(page, 'buck-boost-battery', name);
 
 const openBuck  = (page) => openWizard(page, BUCK_CY);
 const openBoost = (page) => openWizard(page, BOOST_CY);
+
+// Set "I know the design I want" design-level via the radio data-cy. Throws if
+// the radio is missing rather than silently returning.
+async function setIKnowMode(page, label) {
+  const radio = page.locator(`[data-cy="${label}-DesignLevel-I know the design I want-radio-input"]`);
+  await expect(radio).toBeAttached();
+  await radio.evaluate(el => { el.checked = true; el.dispatchEvent(new Event('change', { bubbles: true })); });
+  await page.waitForTimeout(400);
+}
+
+async function setNumberInput(page, dataCy, value) {
+  const input = page.locator(`[data-cy="${dataCy}"]`);
+  await expect(input).toBeVisible();
+  await input.click({ clickCount: 3 });
+  await input.fill(String(value));
+  await input.press('Tab');
+}
 
 // =====================================================================
 // BUCK – Group A: Layout
@@ -43,35 +60,27 @@ test.describe('Buck – Group A – Layout', () => {
     await expect(conditionsCard(page)).toBeVisible();
     await expect(page.locator('.sim-btn.analytical')).toBeVisible();
 
-    console.log(`[Buck-A1] Errors: ${errors.length}`);
     expect(errors.length).toBe(0);
     await ss(page, 'Buck-A1-layout');
   });
 
-  test('Buck-A2 – Design mode toggle shows/hides inductance field', async ({ page }) => {
+  test('Buck-A2 – Design mode toggle exposes Inductance field in I-know mode', async ({ page }) => {
     await openBuck(page);
 
-    const helpMeActive = await page.locator('.design-mode-label, text=Help me').first().isVisible().catch(() => false);
-    console.log(`[Buck-A2] Help me mode visible: ${helpMeActive}`);
+    // In default ("Help me") mode the Inductance input must NOT be present.
+    const inductanceInput = page.locator('[data-cy="BuckWizard-Inductance-number-input"]');
+    expect(await inductanceInput.count()).toBe(0);
 
-    const iKnowLabel = page.locator('.design-mode-label').filter({ hasText: 'I know' }).first();
-    if (await iKnowLabel.isVisible().catch(() => false)) {
-      await iKnowLabel.click();
-      await page.waitForTimeout(400);
-      const inductanceField = await page.locator('text=Inductance').first().isVisible().catch(() => false);
-      console.log(`[Buck-A2] Inductance field visible in I know mode: ${inductanceField}`);
-    }
+    await setIKnowMode(page, 'BuckWizard');
+    await expect(inductanceInput).toBeVisible();
     await ss(page, 'Buck-A2-design-mode');
   });
 
   test('Buck-A3 – Output voltage and current inputs visible', async ({ page }) => {
     await openBuck(page);
 
-    const oCard = outputsCard(page);
-    await expect(oCard).toBeVisible();
-    const numInputs = await oCard.locator('input[type="number"]').count();
-    console.log(`[Buck-A3] Output card inputs: ${numInputs}`);
-    expect(numInputs).toBeGreaterThan(0);
+    await expect(page.locator('[data-cy="BuckWizard-OutputVoltage-number-input"]')).toBeVisible();
+    await expect(page.locator('[data-cy="BuckWizard-OutputCurrent-number-input"]')).toBeVisible();
     await ss(page, 'Buck-A3-output-card');
   });
 });
@@ -91,53 +100,30 @@ test.describe('Buck – Group B – Analytical', () => {
     await runAnalytical(page);
     await ss(page, 'Buck-B1-after');
 
-    const hasError = await page.locator('.error-text, .alert-danger').first().isVisible().catch(() => false);
-    console.log(`[Buck-B1] Analytical error: ${hasError}`);
-    expect(hasError).toBe(false);
-
-    const canvasCount = await page.locator('canvas').count();
-    console.log(`[Buck-B1] Canvas count: ${canvasCount}`);
-    expect(canvasCount).toBeGreaterThan(0);
-
-    console.log(`[Buck-B1] Errors: ${errors.length}`);
+    await expect(page.locator('.error-text, .alert-danger').first()).toBeHidden();
+    expect(await page.locator('canvas').count()).toBeGreaterThan(0);
     expect(errors.length).toBe(0);
   });
 
-  test('Buck-B2 – Analytical with I know mode (custom inductance)', async ({ page }) => {
+  test('Buck-B2 – Analytical with I-know mode and custom inductance 100µH', async ({ page }) => {
     await openBuck(page);
+    await setIKnowMode(page, 'BuckWizard');
 
-    const iKnowLabel = page.locator('.design-mode-label').filter({ hasText: 'I know' }).first();
-    if (await iKnowLabel.isVisible().catch(() => false)) {
-      await iKnowLabel.click();
-      await page.waitForTimeout(400);
-    }
-
-    const inductanceInput = page.locator('input[type="number"]').nth(0);
-    if (await inductanceInput.isVisible().catch(() => false)) {
-      await inductanceInput.click({ clickCount: 3 });
-      await inductanceInput.fill('1e-4');
-      await inductanceInput.press('Tab');
-    }
+    await setNumberInput(page, 'BuckWizard-Inductance-number-input', '1e-4');
 
     await runAnalytical(page);
-    const hasError = await page.locator('.error-text').first().isVisible().catch(() => false);
-    console.log(`[Buck-B2] I know mode error: ${hasError}`);
-    expect(hasError).toBe(false);
+    await expect(page.locator('.error-text').first()).toBeHidden();
     await ss(page, 'Buck-B2-iknow-analytical');
   });
 
-  test('Buck-B3 – Analytical: magnetic vs converter waveform view toggle', async ({ page }) => {
+  test('Buck-B3 – Analytical produces at least one waveform canvas', async ({ page }) => {
     await openBuck(page);
     await runAnalytical(page);
 
-    const converterViewBtn = page.locator('button, label').filter({ hasText: /[Cc]onverter/ }).first();
-    if (await converterViewBtn.isVisible().catch(() => false)) {
-      await converterViewBtn.click();
-      await page.waitForTimeout(500);
-      const canvasAfter = await page.locator('canvas').count();
-      console.log(`[Buck-B3] Canvas after converter view: ${canvasAfter}`);
-    }
-    await ss(page, 'Buck-B3-waveform-view-toggle');
+    // Don't depend on a (possibly nonexistent) "converter view" toggle; just
+    // assert that analytical results render at least one canvas.
+    expect(await page.locator('canvas').count()).toBeGreaterThan(0);
+    await ss(page, 'Buck-B3-analytical-canvas');
   });
 });
 
@@ -147,16 +133,15 @@ test.describe('Buck – Group B – Analytical', () => {
 test.describe('Buck – Group D – Simulated', () => {
   test.setTimeout(60000);
 
-  test('Buck-D1 – Simulated button is present and clickable', async ({ page }) => {
+  test('Buck-D1 – Simulated button is present, enabled and clickable', async ({ page }) => {
     await openBuck(page);
 
     const simBtn = page.locator('.sim-btn').filter({ hasText: 'Simulated' }).first();
     await expect(simBtn).toBeVisible();
-    expect(await simBtn.isDisabled().catch(() => true)).toBe(false);
+    await expect(simBtn).toBeEnabled();
 
     await simBtn.click();
     await page.waitForTimeout(2000);
-    console.log('[Buck-D1] Simulated button clicked');
     await ss(page, 'Buck-D1-simulated-clicked');
   });
 });
@@ -177,9 +162,9 @@ test.describe('Buck – Group E – Navigation', () => {
     const reviewBtn = page.locator('button').filter({ hasText: 'Review Specs' }).first();
     await expect(reviewBtn).toBeVisible();
     await reviewBtn.click();
-    await page.waitForURL('**/magnetic_tool**', { timeout: 30000 }).catch(() => {});
+    await page.waitForURL('**/magnetic_tool**', { timeout: 30000 });
 
-    expect(page.url().includes('magnetic_tool')).toBe(true);
+    expect(page.url()).toContain('magnetic_tool');
     await ss(page, 'Buck-E1-review-specs');
     expect(errors.length).toBe(0);
   });
@@ -194,9 +179,9 @@ test.describe('Buck – Group E – Navigation', () => {
     const designBtn = page.locator('button').filter({ hasText: 'Design Magnetic' }).first();
     await expect(designBtn).toBeVisible();
     await designBtn.click();
-    await page.waitForURL('**/magnetic_tool**', { timeout: 30000 }).catch(() => {});
+    await page.waitForURL('**/magnetic_tool**', { timeout: 30000 });
 
-    expect(page.url().includes('magnetic_tool')).toBe(true);
+    expect(page.url()).toContain('magnetic_tool');
     await ss(page, 'Buck-E2-design-magnetic');
     expect(errors.length).toBe(0);
   });
@@ -213,11 +198,10 @@ test.describe('Buck – Group F – Magnetic Adviser', () => {
     page.on('console', msg => { if (msg.type() === 'error' && !isBenign(msg.text())) errors.push(msg.text()); });
 
     const navigated = await goToMagneticAdviser(page, () => openBuck(page));
-    console.log(`[Buck-F1] Navigated: ${navigated}`);
     expect(navigated).toBe(true);
 
     const adviseBtn = page.locator('button').filter({ hasText: /Get Advised Magnetics/i }).first();
-    expect(await adviseBtn.isVisible().catch(() => false)).toBe(true);
+    await expect(adviseBtn).toBeVisible();
 
     await ss(page, 'Buck-F1-adviser-loaded');
     expect(errors.length).toBe(0);
@@ -228,22 +212,21 @@ test.describe('Buck – Group F – Magnetic Adviser', () => {
     page.on('console', msg => { if (msg.type() === 'error' && !isBenign(msg.text())) errors.push(msg.text()); });
 
     const navigated = await goToMagneticAdviser(page, () => openBuck(page));
-    if (!navigated) { console.log('[Buck-F2] Navigation failed — SKIP'); return; }
+    expect(navigated).toBe(true);
 
     const adviseBtn = page.locator('button').filter({ hasText: /Get Advised Magnetics/i }).first();
-    if (!(await adviseBtn.isVisible().catch(() => false))) return;
+    await expect(adviseBtn).toBeVisible();
 
     await adviseBtn.click();
-    console.log('[Buck-F2] Waiting for adviser results (up to 180s)...');
     await ss(page, 'Buck-F2-adviser-running');
 
     await page.waitForFunction(
       () => !document.querySelector('.fa-spinner, [class*="loading"]'),
       { timeout: 180000 }
-    ).catch(() => {});
+    );
     await page.waitForTimeout(2000);
     await ss(page, 'Buck-F2-adviser-results');
-
+    expect(page.url()).toContain('magnetic_tool');
     expect(errors.length).toBe(0);
   });
 });
@@ -259,7 +242,6 @@ test.describe('Buck – Group G – Core Adviser', () => {
     page.on('console', msg => { if (msg.type() === 'error' && !isBenign(msg.text())) errors.push(msg.text()); });
 
     const navigated = await goToMagneticBuilder(page, () => openBuck(page));
-    console.log(`[Buck-G1] Navigated: ${navigated}`);
     expect(navigated).toBe(true);
 
     await ss(page, 'Buck-G1-builder');
@@ -271,49 +253,26 @@ test.describe('Buck – Group G – Core Adviser', () => {
     page.on('console', msg => { if (msg.type() === 'error' && !isBenign(msg.text())) errors.push(msg.text()); });
 
     const navigated = await goToMagneticBuilder(page, () => openBuck(page));
-    if (!navigated) { console.log('[Buck-G2] Navigation failed — SKIP'); return; }
+    expect(navigated).toBe(true);
 
-    const coreAdviserLink = page.locator('button, a, [role="button"]').filter({ hasText: /Core Adviser/i }).first();
-    if (!(await coreAdviserLink.isVisible().catch(() => false))) {
-      console.log('[Buck-G2] Core Adviser link not found — SKIP');
-      await ss(page, 'Buck-G2-no-core-adviser');
-      return;
-    }
-
-    await coreAdviserLink.click();
-    await page.waitForTimeout(1000);
-
-    const getAdvisedBtn = page.locator('button').filter({ hasText: /Get advised cores/i }).first();
-    if (!(await getAdvisedBtn.isVisible().catch(() => false))) {
-      console.log('[Buck-G2] Get advised cores not visible — SKIP');
-      return;
-    }
-
-    await getAdvisedBtn.click();
-    console.log('[Buck-G2] Waiting for core adviser results (up to 120s)...');
-    await ss(page, 'Buck-G2-core-adviser-running');
-
-    await page.waitForFunction(
-      () => !document.querySelector('[data-cy="CoreAdviser-loading"], .fa-spinner'),
-      { timeout: 120000 }
-    ).catch(() => {});
-    await page.waitForTimeout(1500);
+    await runCoreAdviser(page);
     await ss(page, 'Buck-G2-core-adviser-results');
-
     expect(errors.length).toBe(0);
   });
 
-  test('Buck-G3 – Wire Adviser shows Coming soon placeholder', async ({ page }) => {
+  // TODO(wizard-ui-gap): No "Wire Adviser" entry point currently exists in
+  // the Magnetic Builder UI reachable from the Buck wizard. The previous
+  // assertion was a silent .catch(()=>false) that always returned. Skipping
+  // until a Wire Adviser button is added or its data-cy is identified.
+  test.skip('Buck-G3 – Wire Adviser shows Coming soon placeholder', async ({ page }) => {
     const navigated = await goToMagneticBuilder(page, () => openBuck(page));
-    if (!navigated) return;
+    expect(navigated).toBe(true);
 
     const wireAdviserLink = page.locator('button, a, [role="button"]').filter({ hasText: /Wire Adviser/i }).first();
-    if (await wireAdviserLink.isVisible().catch(() => false)) {
-      await wireAdviserLink.click();
-      await page.waitForTimeout(800);
-      const comingSoon = await page.locator('text=Coming soon').first().isVisible().catch(() => false);
-      console.log(`[Buck-G3] Coming soon visible: ${comingSoon}`);
-    }
+    await expect(wireAdviserLink).toBeVisible();
+    await wireAdviserLink.click();
+    await page.waitForTimeout(800);
+    await expect(page.getByText(/Coming soon/i).first()).toBeVisible();
     await ss(page, 'Buck-G3-wire-adviser');
   });
 });
@@ -334,7 +293,6 @@ test.describe('Boost – Group A – Layout', () => {
     await expect(conditionsCard(page)).toBeVisible();
     await expect(page.locator('.sim-btn.analytical')).toBeVisible();
 
-    console.log(`[Boost-A1] Errors: ${errors.length}`);
     expect(errors.length).toBe(0);
     await ss(page, 'Boost-A1-layout');
   });
@@ -353,11 +311,8 @@ test.describe('Boost – Group B – Analytical', () => {
     await openBoost(page);
     await runAnalytical(page);
 
-    const hasError = await page.locator('.error-text').first().isVisible().catch(() => false);
-    expect(hasError).toBe(false);
-
-    const canvasCount = await page.locator('canvas').count();
-    expect(canvasCount).toBeGreaterThan(0);
+    await expect(page.locator('.error-text').first()).toBeHidden();
+    expect(await page.locator('canvas').count()).toBeGreaterThan(0);
     expect(errors.length).toBe(0);
     await ss(page, 'Boost-B1-analytical');
   });
@@ -365,15 +320,12 @@ test.describe('Boost – Group B – Analytical', () => {
   test('Boost-B2 – Analytical with custom output voltage 48V / 10A', async ({ page }) => {
     await openBoost(page);
 
-    const oCard = outputsCard(page);
-    await fillRowInput(oCard, 'Voltage', '48');
-    await fillRowInput(oCard, 'Current', '10');
+    await setNumberInput(page, 'BoostWizard-OutputVoltage-number-input', '48');
+    await setNumberInput(page, 'BoostWizard-OutputCurrent-number-input', '10');
     await page.waitForTimeout(300);
 
     await runAnalytical(page);
-    const hasError = await page.locator('.error-text').first().isVisible().catch(() => false);
-    console.log(`[Boost-B2] Error with Vout=48V: ${hasError}`);
-    expect(hasError).toBe(false);
+    await expect(page.locator('.error-text').first()).toBeHidden();
     await ss(page, 'Boost-B2-vout48');
   });
 });
@@ -406,9 +358,10 @@ test.describe('Boost – Group E – Navigation', () => {
     await runAnalytical(page);
 
     const reviewBtn = page.locator('button').filter({ hasText: 'Review Specs' }).first();
+    await expect(reviewBtn).toBeVisible();
     await reviewBtn.click();
-    await page.waitForURL('**/magnetic_tool**', { timeout: 30000 }).catch(() => {});
-    expect(page.url().includes('magnetic_tool')).toBe(true);
+    await page.waitForURL('**/magnetic_tool**', { timeout: 30000 });
+    expect(page.url()).toContain('magnetic_tool');
     await ss(page, 'Boost-E1-review-specs');
   });
 
@@ -417,9 +370,10 @@ test.describe('Boost – Group E – Navigation', () => {
     await runAnalytical(page);
 
     const designBtn = page.locator('button').filter({ hasText: 'Design Magnetic' }).first();
+    await expect(designBtn).toBeVisible();
     await designBtn.click();
-    await page.waitForURL('**/magnetic_tool**', { timeout: 30000 }).catch(() => {});
-    expect(page.url().includes('magnetic_tool')).toBe(true);
+    await page.waitForURL('**/magnetic_tool**', { timeout: 30000 });
+    expect(page.url()).toContain('magnetic_tool');
     await ss(page, 'Boost-E2-design-magnetic');
   });
 });
@@ -438,7 +392,7 @@ test.describe('Boost – Group F – Magnetic Adviser', () => {
     expect(navigated).toBe(true);
 
     const adviseBtn = page.locator('button').filter({ hasText: /Get Advised Magnetics/i }).first();
-    expect(await adviseBtn.isVisible().catch(() => false)).toBe(true);
+    await expect(adviseBtn).toBeVisible();
     await ss(page, 'Boost-F1-adviser-loaded');
     expect(errors.length).toBe(0);
   });
@@ -448,18 +402,19 @@ test.describe('Boost – Group F – Magnetic Adviser', () => {
     page.on('console', msg => { if (msg.type() === 'error' && !isBenign(msg.text())) errors.push(msg.text()); });
 
     const navigated = await goToMagneticAdviser(page, () => openBoost(page));
-    if (!navigated) return;
+    expect(navigated).toBe(true);
 
     const adviseBtn = page.locator('button').filter({ hasText: /Get Advised Magnetics/i }).first();
-    if (!(await adviseBtn.isVisible().catch(() => false))) return;
+    await expect(adviseBtn).toBeVisible();
 
     await adviseBtn.click();
     await page.waitForFunction(
       () => !document.querySelector('.fa-spinner, [class*="loading"]'),
       { timeout: 180000 }
-    ).catch(() => {});
+    );
     await page.waitForTimeout(2000);
     await ss(page, 'Boost-F2-adviser-results');
+    expect(page.url()).toContain('magnetic_tool');
     expect(errors.length).toBe(0);
   });
 });
@@ -477,24 +432,14 @@ test.describe('Boost – Group G – Core Adviser', () => {
   });
 
   test('Boost-G2 – Core Adviser accessible and runs', async ({ page }) => {
+    const errors = [];
+    page.on('console', msg => { if (msg.type() === 'error' && !isBenign(msg.text())) errors.push(msg.text()); });
+
     const navigated = await goToMagneticBuilder(page, () => openBoost(page));
-    if (!navigated) return;
+    expect(navigated).toBe(true);
 
-    const coreAdviserLink = page.locator('button, a, [role="button"]').filter({ hasText: /Core Adviser/i }).first();
-    if (!(await coreAdviserLink.isVisible().catch(() => false))) return;
-
-    await coreAdviserLink.click();
-    await page.waitForTimeout(1000);
-
-    const getAdvisedBtn = page.locator('button').filter({ hasText: /Get advised cores/i }).first();
-    if (!(await getAdvisedBtn.isVisible().catch(() => false))) return;
-
-    await getAdvisedBtn.click();
-    await page.waitForFunction(
-      () => !document.querySelector('[data-cy="CoreAdviser-loading"], .fa-spinner'),
-      { timeout: 120000 }
-    ).catch(() => {});
-    await page.waitForTimeout(1500);
+    await runCoreAdviser(page);
     await ss(page, 'Boost-G2-core-adviser-results');
+    expect(errors.length).toBe(0);
   });
 });

@@ -371,6 +371,7 @@ export default {
                             </div>
                             <div class="form-check form-switch">
                                 <input 
+                                    data-cy="Settings-Modal-enable-simulation-button"
                                     class="form-check-input custom-switch" 
                                     type="checkbox" 
                                     role="switch"

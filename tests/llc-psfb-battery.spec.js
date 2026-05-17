@@ -7,7 +7,6 @@
  * Groups:
  *   A – Layout and UI controls
  *   B – Analytical simulation (Help me / I know)
- *   C – Design mode / resonant parameters
  *   D – Simulated waveforms
  *   E – Navigation buttons
  *   F – Magnetic Adviser end-to-end
@@ -18,8 +17,9 @@ import { test, expect } from './_coverage.js';
 import {
   BASE_URL, isBenign, screenshot,
   openWizard, runAnalytical,
-  conditionsCard, outputsCard, fillRowInput,
+  conditionsCard, outputsCard,
   goToMagneticAdviser, goToMagneticBuilder,
+  runCoreAdviser,
 } from './utils.js';
 
 const LLC_CY  = 'Llc-link';
@@ -28,6 +28,28 @@ const PSFB_CY = 'Psfb-link';
 const ss = (page, name) => screenshot(page, 'llc-psfb-battery', name);
 const openLlc  = (page) => openWizard(page, LLC_CY);
 const openPsfb = (page) => openWizard(page, PSFB_CY);
+
+// Both LLC and PSFB use the same custom `<label class="design-mode-option">
+// <input radio><span class="design-mode-label">` markup as CLLC.
+async function setDesignMode(page, modeText) {
+  const label = page.locator('.design-mode-label').filter({ hasText: modeText }).first();
+  await expect(label).toBeVisible();
+  await label.click();
+  await page.waitForTimeout(400);
+}
+
+// Find the number input inside the Dimension row whose visible title matches
+// `titleText` and set it. Throws if the row/input cannot be located.
+async function setDimensionByTitle(page, titleText, value) {
+  const input = page.locator('.container-flex')
+    .filter({ hasText: new RegExp(`^\\s*${titleText}`) })
+    .locator('input[type="number"]')
+    .first();
+  await expect(input).toBeVisible();
+  await input.click({ clickCount: 3 });
+  await input.fill(String(value));
+  await input.press('Tab');
+}
 
 // =====================================================================
 // LLC – Group A: Layout
@@ -45,39 +67,28 @@ test.describe('LLC – Group A – Layout', () => {
     await expect(conditionsCard(page)).toBeVisible();
     await expect(page.locator('.sim-btn.analytical')).toBeVisible();
 
-    console.log(`[LLC-A1] Errors: ${errors.length}`);
     expect(errors.length).toBe(0);
     await ss(page, 'LLC-A1-layout');
   });
 
-  test('LLC-A2 – Resonant parameters visible (frequency, quality factor, inductance ratio)', async ({ page }) => {
+  test('LLC-A2 – Tank parameters visible (Q Factor, Ln Ratio)', async ({ page }) => {
     await openLlc(page);
-
-    const resonantText = await page.locator('text=resonant, text=Resonant, text=quality, text=Quality').first().isVisible().catch(() => false);
-    console.log(`[LLC-A2] Resonant parameter visible: ${resonantText}`);
-
-    const numInputs = await page.locator('input[type="number"]').count();
-    console.log(`[LLC-A2] Number inputs: ${numInputs}`);
-    expect(numInputs).toBeGreaterThan(0);
-    await ss(page, 'LLC-A2-resonant-params');
+    // Q Factor and Ln Ratio are LLC's distinguishing tank inputs.
+    await expect(page.getByText(/^Q Factor/).first()).toBeVisible();
+    await expect(page.getByText(/^Ln Ratio/).first()).toBeVisible();
+    await ss(page, 'LLC-A2-tank-params');
   });
 
-  test('LLC-A3 – Design mode toggle (Help me / I know)', async ({ page }) => {
+  test('LLC-A3 – Design mode toggle reveals Mag. Inductance input', async ({ page }) => {
     await openLlc(page);
-
-    const iKnow = page.locator('.design-mode-label').filter({ hasText: 'I know' }).first();
-    if (await iKnow.isVisible().catch(() => false)) {
-      await iKnow.click();
-      await page.waitForTimeout(400);
-    }
+    await setDesignMode(page, 'I know');
+    await expect(page.getByText(/Mag\.?\s*Inductance/i).first()).toBeVisible();
     await ss(page, 'LLC-A3-design-mode');
   });
 
-  test('LLC-A4 – Output card visible with power input', async ({ page }) => {
+  test('LLC-A4 – Outputs card visible', async ({ page }) => {
     await openLlc(page);
-
-    const oCard = outputsCard(page);
-    await expect(oCard).toBeVisible();
+    await expect(outputsCard(page)).toBeVisible();
     await ss(page, 'LLC-A4-outputs');
   });
 });
@@ -86,85 +97,46 @@ test.describe('LLC – Group A – Layout', () => {
 // LLC – Group B: Analytical
 // =====================================================================
 test.describe('LLC – Group B – Analytical', () => {
-  test.setTimeout(90000);
+  test.setTimeout(120000);
 
-  test('LLC-B1 – Default Help me analytical runs without error', async ({ page }) => {
+  test('LLC-B1 – Default Help me analytical runs without error, canvas appears', async ({ page }) => {
     const errors = [];
     page.on('console', msg => { if (msg.type() === 'error' && !isBenign(msg.text())) errors.push(msg.text()); });
 
     await openLlc(page);
-    await ss(page, 'LLC-B1-before');
     await runAnalytical(page);
-    await ss(page, 'LLC-B1-after');
 
-    const hasError = await page.locator('.error-text').first().isVisible().catch(() => false);
-    console.log(`[LLC-B1] Error: ${hasError}`);
-    expect(hasError).toBe(false);
-
+    await expect(page.locator('.error-text').first()).toBeHidden();
     const canvasCount = await page.locator('canvas').count();
-    console.log(`[LLC-B1] Canvas count: ${canvasCount}`);
     expect(canvasCount).toBeGreaterThan(0);
     expect(errors.length).toBe(0);
+    await ss(page, 'LLC-B1-analytical');
   });
 
-  test('LLC-B2 – I know mode analytical', async ({ page }) => {
+  test('LLC-B2 – I know mode analytical runs without error', async ({ page }) => {
     await openLlc(page);
-
-    const iKnow = page.locator('.design-mode-label').filter({ hasText: 'I know' }).first();
-    if (await iKnow.isVisible().catch(() => false)) await iKnow.click();
-    else await page.locator('text=I know the design I want').first().click().catch(() => {});
-    await page.waitForTimeout(400);
-
+    await setDesignMode(page, 'I know');
     await runAnalytical(page);
-    const hasError = await page.locator('.error-text').first().isVisible().catch(() => false);
-    console.log(`[LLC-B2] I know error: ${hasError}`);
-    expect(hasError).toBe(false);
+    await expect(page.locator('.error-text').first()).toBeHidden();
+    expect(await page.locator('canvas').count()).toBeGreaterThan(0);
     await ss(page, 'LLC-B2-iknow');
   });
 
-  test('LLC-B3 – Different quality factor value analytical', async ({ page }) => {
+  test('LLC-B3 – Q Factor = 0.6 analytical runs without error', async ({ page }) => {
     await openLlc(page);
-
-    const allInputs = await page.locator('input[type="number"]').all();
-    // Try to find quality factor field (usually a decimal like 0.4)
-    for (const inp of allInputs) {
-      const val = await inp.inputValue().catch(() => '');
-      if (parseFloat(val) >= 0.1 && parseFloat(val) <= 1.0) {
-        await inp.click({ clickCount: 3 });
-        await inp.fill('0.6');
-        await inp.press('Tab');
-        break;
-      }
-    }
-    await page.waitForTimeout(300);
-
+    await setDimensionByTitle(page, 'Q Factor', '0.6');
     await runAnalytical(page);
-    const hasError = await page.locator('.error-text').first().isVisible().catch(() => false);
-    console.log(`[LLC-B3] QF=0.6 error: ${hasError}`);
-    expect(hasError).toBe(false);
+    await expect(page.locator('.error-text').first()).toBeHidden();
+    expect(await page.locator('canvas').count()).toBeGreaterThan(0);
     await ss(page, 'LLC-B3-quality-factor');
   });
 
-  test('LLC-B4 – LLC diagnostics card visible after analytical', async ({ page }) => {
+  test('LLC-B4 – Diagnostics card appears after analytical', async ({ page }) => {
     await openLlc(page);
     await runAnalytical(page);
-
-    const diagCard = page.locator('.compact-card, .card').filter({ hasText: /[Dd]iagnostic/ }).first();
-    const hasDiag = await diagCard.isVisible().catch(() => false);
-    console.log(`[LLC-B4] Diagnostics card: ${hasDiag}`);
+    const diagCard = page.locator('.compact-card').filter({ hasText: /Diagnostics/ }).first();
+    await expect(diagCard).toBeVisible();
     await ss(page, 'LLC-B4-diagnostics');
-  });
-
-  test('LLC-B5 – Waveform view toggle', async ({ page }) => {
-    await openLlc(page);
-    await runAnalytical(page);
-
-    const converterBtn = page.locator('button, label').filter({ hasText: /[Cc]onverter/ }).first();
-    if (await converterBtn.isVisible().catch(() => false)) {
-      await converterBtn.click();
-      await page.waitForTimeout(500);
-    }
-    await ss(page, 'LLC-B5-waveform-toggle');
   });
 });
 
@@ -174,13 +146,11 @@ test.describe('LLC – Group B – Analytical', () => {
 test.describe('LLC – Group D – Simulated', () => {
   test.setTimeout(60000);
 
-  test('LLC-D1 – Simulated button present and clickable', async ({ page }) => {
+  test('LLC-D1 – Simulated button present and enabled', async ({ page }) => {
     await openLlc(page);
-
     const simBtn = page.locator('.sim-btn').filter({ hasText: 'Simulated' }).first();
     await expect(simBtn).toBeVisible();
-    expect(await simBtn.isDisabled().catch(() => true)).toBe(false);
-
+    await expect(simBtn).toBeEnabled();
     await simBtn.click();
     await page.waitForTimeout(2000);
     await ss(page, 'LLC-D1-simulated-clicked');
@@ -203,9 +173,8 @@ test.describe('LLC – Group E – Navigation', () => {
     const reviewBtn = page.locator('button').filter({ hasText: 'Review Specs' }).first();
     await expect(reviewBtn).toBeVisible();
     await reviewBtn.click();
-    await page.waitForURL('**/magnetic_tool**', { timeout: 30000 }).catch(() => {});
-
-    expect(page.url().includes('magnetic_tool')).toBe(true);
+    await page.waitForURL('**/magnetic_tool**', { timeout: 30000 });
+    expect(page.url()).toContain('magnetic_tool');
     await ss(page, 'LLC-E1-review-specs');
     expect(errors.length).toBe(0);
   });
@@ -220,9 +189,8 @@ test.describe('LLC – Group E – Navigation', () => {
     const designBtn = page.locator('button').filter({ hasText: 'Design Magnetic' }).first();
     await expect(designBtn).toBeVisible();
     await designBtn.click();
-    await page.waitForURL('**/magnetic_tool**', { timeout: 30000 }).catch(() => {});
-
-    expect(page.url().includes('magnetic_tool')).toBe(true);
+    await page.waitForURL('**/magnetic_tool**', { timeout: 30000 });
+    expect(page.url()).toContain('magnetic_tool');
     await ss(page, 'LLC-E2-design-magnetic');
     expect(errors.length).toBe(0);
   });
@@ -242,31 +210,26 @@ test.describe('LLC – Group F – Magnetic Adviser', () => {
     expect(navigated).toBe(true);
 
     const adviseBtn = page.locator('button').filter({ hasText: /Get Advised Magnetics/i }).first();
-    expect(await adviseBtn.isVisible().catch(() => false)).toBe(true);
+    await expect(adviseBtn).toBeVisible();
     await ss(page, 'LLC-F1-adviser-loaded');
     expect(errors.length).toBe(0);
   });
 
   test('LLC-F2 – Adviser runs and returns results', async ({ page }) => {
-    const errors = [];
-    page.on('console', msg => { if (msg.type() === 'error' && !isBenign(msg.text())) errors.push(msg.text()); });
-
     const navigated = await goToMagneticAdviser(page, () => openLlc(page));
-    if (!navigated) return;
+    expect(navigated).toBe(true);
 
     const adviseBtn = page.locator('button').filter({ hasText: /Get Advised Magnetics/i }).first();
-    if (!(await adviseBtn.isVisible().catch(() => false))) return;
-
+    await expect(adviseBtn).toBeVisible();
     await adviseBtn.click();
     await ss(page, 'LLC-F2-adviser-running');
 
     await page.waitForFunction(
       () => !document.querySelector('.fa-spinner, [class*="loading"]'),
       { timeout: 180000 }
-    ).catch(() => {});
+    );
     await page.waitForTimeout(2000);
     await ss(page, 'LLC-F2-adviser-results');
-    expect(errors.length).toBe(0);
   });
 });
 
@@ -276,42 +239,32 @@ test.describe('LLC – Group F – Magnetic Adviser', () => {
 test.describe('LLC – Group G – Core Adviser', () => {
   test.setTimeout(240000);
 
-  test('LLC-G1 – Review Specs reaches builder', async ({ page }) => {
+  test('LLC-G1 – Review Specs reaches Magnetic Builder', async ({ page }) => {
     const navigated = await goToMagneticBuilder(page, () => openLlc(page));
     expect(navigated).toBe(true);
     await ss(page, 'LLC-G1-builder');
   });
 
-  test('LLC-G2 – Core Adviser accessible and runs', async ({ page }) => {
+  test('LLC-G2 – Core Adviser runs from Magnetic Builder', async ({ page }) => {
     const navigated = await goToMagneticBuilder(page, () => openLlc(page));
-    if (!navigated) return;
+    expect(navigated).toBe(true);
 
-    const coreAdviserLink = page.locator('button, a, [role="button"]').filter({ hasText: /Core Adviser/i }).first();
-    if (!(await coreAdviserLink.isVisible().catch(() => false))) return;
-
-    await coreAdviserLink.click();
-    await page.waitForTimeout(1000);
-
-    const getAdvisedBtn = page.locator('button').filter({ hasText: /Get advised cores/i }).first();
-    if (!(await getAdvisedBtn.isVisible().catch(() => false))) return;
-
-    await getAdvisedBtn.click();
-    await page.waitForFunction(
-      () => !document.querySelector('[data-cy="CoreAdviser-loading"], .fa-spinner'),
-      { timeout: 120000 }
-    ).catch(() => {});
-    await page.waitForTimeout(1500);
+    await runCoreAdviser(page);
     await ss(page, 'LLC-G2-core-adviser-results');
   });
+
+  // TODO(wizard-ui-gap): There is no Wire Adviser entry point exposed from
+  // the wizard / Magnetic Builder. Re-enable when one is added.
+  test.skip('LLC-G3 – Wire Adviser shows Coming soon', async () => {});
 });
 
 // =====================================================================
-// PSFB – Groups A-G
+// PSFB – Group A: Layout
 // =====================================================================
 test.describe('PSFB – Group A – Layout', () => {
   test.setTimeout(60000);
 
-  test('PSFB-A1 – Loads without console errors', async ({ page }) => {
+  test('PSFB-A1 – Loads without console errors, title and analytical button visible', async ({ page }) => {
     const errors = [];
     page.on('console', msg => { if (msg.type() === 'error' && !isBenign(msg.text())) errors.push(msg.text()); });
 
@@ -323,20 +276,28 @@ test.describe('PSFB – Group A – Layout', () => {
     await ss(page, 'PSFB-A1-layout');
   });
 
-  test('PSFB-A2 – Phase shift parameters visible', async ({ page }) => {
+  test('PSFB-A2 – Phase-shift parameters visible (Ph. Shift, Max Phase)', async ({ page }) => {
     await openPsfb(page);
-
-    const phaseText = await page.locator('text=phase, text=Phase, text=shift').first().isVisible().catch(() => false);
-    console.log(`[PSFB-A2] Phase shift text visible: ${phaseText}`);
-
-    const numInputs = await page.locator('input[type="number"]').count();
-    expect(numInputs).toBeGreaterThan(0);
+    await expect(page.getByText(/^Ph\.?\s*Shift/).first()).toBeVisible();
+    await expect(page.getByText(/^Max Phase/).first()).toBeVisible();
     await ss(page, 'PSFB-A2-phase-params');
+  });
+
+  test('PSFB-A3 – Design mode toggle reveals Transformer card and Mag. Ind. input', async ({ page }) => {
+    await openPsfb(page);
+    await setDesignMode(page, 'I know');
+    // PSFB switches the design-or-switch-parameters compact-header to "Transformer" in I-know mode.
+    await expect(page.locator('.compact-header').filter({ hasText: 'Transformer' }).first()).toBeVisible();
+    await expect(page.getByText(/Mag\.?\s*Ind/).first()).toBeVisible();
+    await ss(page, 'PSFB-A3-design-mode');
   });
 });
 
+// =====================================================================
+// PSFB – Group B: Analytical
+// =====================================================================
 test.describe('PSFB – Group B – Analytical', () => {
-  test.setTimeout(90000);
+  test.setTimeout(120000);
 
   test('PSFB-B1 – Default analytical runs without error, canvas appears', async ({ page }) => {
     const errors = [];
@@ -345,80 +306,71 @@ test.describe('PSFB – Group B – Analytical', () => {
     await openPsfb(page);
     await runAnalytical(page);
 
-    const hasError = await page.locator('.error-text').first().isVisible().catch(() => false);
-    expect(hasError).toBe(false);
-    const canvasCount = await page.locator('canvas').count();
-    expect(canvasCount).toBeGreaterThan(0);
+    await expect(page.locator('.error-text').first()).toBeHidden();
+    expect(await page.locator('canvas').count()).toBeGreaterThan(0);
     expect(errors.length).toBe(0);
     await ss(page, 'PSFB-B1-analytical');
   });
 
-  test('PSFB-B2 – I know mode analytical', async ({ page }) => {
+  test('PSFB-B2 – I know mode analytical runs without error', async ({ page }) => {
     await openPsfb(page);
-
-    const iKnow = page.locator('.design-mode-label').filter({ hasText: 'I know' }).first();
-    if (await iKnow.isVisible().catch(() => false)) await iKnow.click();
-    else await page.locator('text=I know the design I want').first().click().catch(() => {});
-    await page.waitForTimeout(400);
-
+    await setDesignMode(page, 'I know');
     await runAnalytical(page);
-    const hasError = await page.locator('.error-text').first().isVisible().catch(() => false);
-    expect(hasError).toBe(false);
+    await expect(page.locator('.error-text').first()).toBeHidden();
+    expect(await page.locator('canvas').count()).toBeGreaterThan(0);
     await ss(page, 'PSFB-B2-iknow');
-  });
-
-  test('PSFB-B3 – Waveform view toggle', async ({ page }) => {
-    await openPsfb(page);
-    await runAnalytical(page);
-
-    const converterBtn = page.locator('button, label').filter({ hasText: /[Cc]onverter/ }).first();
-    if (await converterBtn.isVisible().catch(() => false)) {
-      await converterBtn.click();
-      await page.waitForTimeout(500);
-    }
-    await ss(page, 'PSFB-B3-waveform-toggle');
   });
 });
 
+// =====================================================================
+// PSFB – Group D: Simulated
+// =====================================================================
 test.describe('PSFB – Group D – Simulated', () => {
   test.setTimeout(60000);
 
-  test('PSFB-D1 – Simulated button present and clickable', async ({ page }) => {
+  test('PSFB-D1 – Simulated button present and enabled', async ({ page }) => {
     await openPsfb(page);
     const simBtn = page.locator('.sim-btn').filter({ hasText: 'Simulated' }).first();
     await expect(simBtn).toBeVisible();
+    await expect(simBtn).toBeEnabled();
     await simBtn.click();
     await page.waitForTimeout(2000);
     await ss(page, 'PSFB-D1-simulated');
   });
 });
 
+// =====================================================================
+// PSFB – Group E: Navigation
+// =====================================================================
 test.describe('PSFB – Group E – Navigation', () => {
   test.setTimeout(120000);
 
   test('PSFB-E1 – Review Specs navigates to magnetic_tool', async ({ page }) => {
     await openPsfb(page);
     await runAnalytical(page);
-
     const reviewBtn = page.locator('button').filter({ hasText: 'Review Specs' }).first();
+    await expect(reviewBtn).toBeVisible();
     await reviewBtn.click();
-    await page.waitForURL('**/magnetic_tool**', { timeout: 30000 }).catch(() => {});
-    expect(page.url().includes('magnetic_tool')).toBe(true);
+    await page.waitForURL('**/magnetic_tool**', { timeout: 30000 });
+    expect(page.url()).toContain('magnetic_tool');
     await ss(page, 'PSFB-E1-review-specs');
   });
 
   test('PSFB-E2 – Design Magnetic navigates to magnetic_tool', async ({ page }) => {
     await openPsfb(page);
     await runAnalytical(page);
-
     const designBtn = page.locator('button').filter({ hasText: 'Design Magnetic' }).first();
+    await expect(designBtn).toBeVisible();
     await designBtn.click();
-    await page.waitForURL('**/magnetic_tool**', { timeout: 30000 }).catch(() => {});
-    expect(page.url().includes('magnetic_tool')).toBe(true);
+    await page.waitForURL('**/magnetic_tool**', { timeout: 30000 });
+    expect(page.url()).toContain('magnetic_tool');
     await ss(page, 'PSFB-E2-design-magnetic');
   });
 });
 
+// =====================================================================
+// PSFB – Group F: Magnetic Adviser
+// =====================================================================
 test.describe('PSFB – Group F – Magnetic Adviser', () => {
   test.setTimeout(240000);
 
@@ -430,64 +382,42 @@ test.describe('PSFB – Group F – Magnetic Adviser', () => {
     expect(navigated).toBe(true);
 
     const adviseBtn = page.locator('button').filter({ hasText: /Get Advised Magnetics/i }).first();
-    expect(await adviseBtn.isVisible().catch(() => false)).toBe(true);
+    await expect(adviseBtn).toBeVisible();
     await ss(page, 'PSFB-F1-adviser-loaded');
     expect(errors.length).toBe(0);
   });
 
   test('PSFB-F2 – Adviser runs and returns results', async ({ page }) => {
     const navigated = await goToMagneticAdviser(page, () => openPsfb(page));
-    if (!navigated) return;
+    expect(navigated).toBe(true);
 
     const adviseBtn = page.locator('button').filter({ hasText: /Get Advised Magnetics/i }).first();
-    if (!(await adviseBtn.isVisible().catch(() => false))) return;
-
+    await expect(adviseBtn).toBeVisible();
     await adviseBtn.click();
     await page.waitForFunction(
       () => !document.querySelector('.fa-spinner, [class*="loading"]'),
       { timeout: 180000 }
-    ).catch(() => {});
+    );
     await page.waitForTimeout(2000);
     await ss(page, 'PSFB-F2-adviser-results');
   });
 });
 
+// =====================================================================
+// PSFB – Group G: Core Adviser
+// =====================================================================
 test.describe('PSFB – Group G – Core Adviser', () => {
   test.setTimeout(240000);
 
-  test('PSFB-G1 – Review Specs reaches builder and Core Adviser runs', async ({ page }) => {
+  test('PSFB-G1 – Review Specs reaches Magnetic Builder and Core Adviser runs', async ({ page }) => {
     const navigated = await goToMagneticBuilder(page, () => openPsfb(page));
-    if (!navigated) return;
+    expect(navigated).toBe(true);
 
-    const coreAdviserLink = page.locator('button, a, [role="button"]').filter({ hasText: /Core Adviser/i }).first();
-    if (!(await coreAdviserLink.isVisible().catch(() => false))) return;
-
-    await coreAdviserLink.click();
-    await page.waitForTimeout(1000);
-
-    const getAdvisedBtn = page.locator('button').filter({ hasText: /Get advised cores/i }).first();
-    if (!(await getAdvisedBtn.isVisible().catch(() => false))) return;
-
-    await getAdvisedBtn.click();
-    await page.waitForFunction(
-      () => !document.querySelector('[data-cy="CoreAdviser-loading"], .fa-spinner'),
-      { timeout: 120000 }
-    ).catch(() => {});
-    await page.waitForTimeout(1500);
+    await runCoreAdviser(page);
     await ss(page, 'PSFB-G1-core-adviser-results');
   });
 
-  test('PSFB-G2 – Wire Adviser shows Coming soon', async ({ page }) => {
-    const navigated = await goToMagneticBuilder(page, () => openPsfb(page));
-    if (!navigated) return;
-
-    const wireAdviserLink = page.locator('button, a, [role="button"]').filter({ hasText: /Wire Adviser/i }).first();
-    if (await wireAdviserLink.isVisible().catch(() => false)) {
-      await wireAdviserLink.click();
-      await page.waitForTimeout(800);
-      const comingSoon = await page.locator('text=Coming soon').first().isVisible().catch(() => false);
-      console.log(`[PSFB-G2] Coming soon: ${comingSoon}`);
-    }
-    await ss(page, 'PSFB-G2-wire-adviser');
-  });
+  // TODO(wizard-ui-gap): There is no Wire Adviser entry point exposed from
+  // the wizard / Magnetic Builder. Re-enable when one is added.
+  test.skip('PSFB-G2 – Wire Adviser shows Coming soon', async () => {});
 });

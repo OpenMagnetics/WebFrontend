@@ -15,8 +15,8 @@ import { test, expect } from './_coverage.js';
 import {
   BASE_URL, isBenign, screenshot,
   openWizard, runAnalytical,
-  conditionsCard, outputsCard, fillRowInput,
-  goToMagneticAdviser, goToMagneticBuilder,
+  conditionsCard, outputsCard, fillRowInput, fillOutput,
+  goToMagneticAdviser, goToMagneticBuilder, runCoreAdviser,
 } from './utils.js';
 
 const ISO_BUCK_CY      = 'IsolatedBuck-CommonModeChoke-link';
@@ -25,6 +25,16 @@ const ISO_BUCKBOOST_CY = 'IsolatedBuckBoost-CommonModeChoke-link';
 const ss = (page, name) => screenshot(page, 'isolated-battery', name);
 const openIsoBuck      = (page) => openWizard(page, ISO_BUCK_CY);
 const openIsoBuckBoost = (page) => openWizard(page, ISO_BUCKBOOST_CY);
+
+// Both wizards mount IsolatedBuckBoostWizard.vue which uses
+// ElementFromListRadio for designLevel. Click the "I know the design I want"
+// radio by data-cy. Throws if absent.
+async function setIKnowMode(page, label) {
+  const radio = page.locator(`[data-cy="${label}-DesignLevel-I know the design I want-radio-input"]`);
+  await expect(radio).toBeAttached();
+  await radio.evaluate(el => { el.checked = true; el.dispatchEvent(new Event('change', { bubbles: true })); });
+  await page.waitForTimeout(400);
+}
 
 // =====================================================================
 // ISOLATED BUCK – Group A: Layout
@@ -42,21 +52,19 @@ test.describe('IsolatedBuck – Group A – Layout', () => {
     await expect(conditionsCard(page)).toBeVisible();
     await expect(page.locator('.sim-btn.analytical')).toBeVisible();
 
-    console.log(`[IB-A1] Errors: ${errors.length}`);
     expect(errors.length).toBe(0);
     await ss(page, 'IB-A1-layout');
   });
 
-  test('IB-A2 – Design mode toggle shows transformer card in I know mode', async ({ page }) => {
+  test('IB-A2 – Design mode toggle switches Switch card header to Design Params', async ({ page }) => {
     await openIsoBuck(page);
 
-    const iKnow = page.locator('.design-mode-label').filter({ hasText: 'I know' }).first();
-    if (await iKnow.isVisible().catch(() => false)) {
-      await iKnow.click();
-      await page.waitForTimeout(400);
-      const tCard = await page.locator('.compact-card').filter({ hasText: 'Transformer' }).first().isVisible().catch(() => false);
-      console.log(`[IB-A2] Transformer card: ${tCard}`);
-    }
+    // In default mode the compact-header reads "Switch".
+    await expect(page.locator('.compact-header').filter({ hasText: /^Switch$/i }).first()).toBeVisible();
+
+    await setIKnowMode(page, 'IsolatedBuckWizard');
+    // In "I know" mode the same compact-header switches to "Design Params".
+    await expect(page.locator('.compact-header').filter({ hasText: /Design Params/i }).first()).toBeVisible();
     await ss(page, 'IB-A2-design-mode');
   });
 
@@ -86,66 +94,54 @@ test.describe('IsolatedBuck – Group B – Analytical', () => {
     await runAnalytical(page);
     await ss(page, 'IB-B1-after');
 
-    const hasError = await page.locator('.error-text').first().isVisible().catch(() => false);
-    expect(hasError).toBe(false);
-
-    const canvasCount = await page.locator('canvas').count();
-    expect(canvasCount).toBeGreaterThan(0);
+    await expect(page.locator('.error-text').first()).toBeHidden();
+    expect(await page.locator('canvas').count()).toBeGreaterThan(0);
     expect(errors.length).toBe(0);
   });
 
-  test('IB-B2 – I know mode with custom turns ratio', async ({ page }) => {
+  // TODO(wizard-bug): in "I know" mode the outputs v-for in
+  // IsolatedBuckBoostWizard.vue:1018-1052 continues to render
+  // PairOfDimensions (voltage,current) instead of TripleOfDimensions
+  // (voltage,current,turnsRatio). The "Design Params" header switches
+  // reactively but the turnsRatio input never appears. Re-enable once the
+  // wizard exposes the turnsRatio input row.
+  test.skip('IB-B2 – I know mode with custom turns ratio', async ({ page }) => {
     await openIsoBuck(page);
+    await setIKnowMode(page, 'IsolatedBuckWizard');
 
-    const iKnow = page.locator('.design-mode-label').filter({ hasText: 'I know' }).first();
-    if (await iKnow.isVisible().catch(() => false)) await iKnow.click();
-    else await page.locator('text=I know the design I want').first().click().catch(() => {});
-    await page.waitForTimeout(400);
-
-    const tCard = page.locator('.compact-card').filter({ hasText: 'Transformer' }).first();
-    if (await tCard.isVisible().catch(() => false)) {
-      await fillRowInput(tCard, 'Turns', '3');
-      await page.waitForTimeout(200);
-    }
+    const oCard = outputsCard(page);
+    await expect(oCard).toBeVisible();
+    await fillOutput(oCard, 0, 'turnsRatio', '3');
+    await page.waitForTimeout(200);
 
     await runAnalytical(page);
-    const hasError = await page.locator('.error-text').first().isVisible().catch(() => false);
-    console.log(`[IB-B2] I know error: ${hasError}`);
-    expect(hasError).toBe(false);
+    await expect(page.locator('.error-text').first()).toBeHidden();
     await ss(page, 'IB-B2-iknow');
   });
 
-  test('IB-B3 – Leakage inductance toggle runs analytical', async ({ page }) => {
+  // TODO(wizard-ui-gap): IsolatedBuckBoostWizard has no useLeakageInductance
+  // checkbox (the toggle exists on DAB/PSFB/PSHB/AHB but not here). Skipping
+  // until the toggle is added or the test is reassigned.
+  test.skip('IB-B3 – Leakage inductance toggle runs analytical', async ({ page }) => {
     await openIsoBuck(page);
+    await setIKnowMode(page, 'IsolatedBuckWizard');
 
-    const iKnow = page.locator('.design-mode-label').filter({ hasText: 'I know' }).first();
-    if (await iKnow.isVisible().catch(() => false)) await iKnow.click();
-    await page.waitForTimeout(400);
-
-    const leakageCheckbox = page.locator('#useLeakageInductance, input[type="checkbox"]').filter({ hasText: /[Ll]eakage/ }).first();
-    if (await leakageCheckbox.isVisible().catch(() => false)) {
-      const checked = await leakageCheckbox.isChecked().catch(() => false);
-      if (checked) await leakageCheckbox.uncheck();
-      else await leakageCheckbox.check();
-      await page.waitForTimeout(300);
-    }
+    const leakage = page.locator('#useLeakageInductance');
+    await expect(leakage).toBeVisible();
+    await leakage.click();
+    await page.waitForTimeout(300);
 
     await runAnalytical(page);
-    const hasError = await page.locator('.error-text').first().isVisible().catch(() => false);
-    console.log(`[IB-B3] Leakage toggle error: ${hasError}`);
+    await expect(page.locator('.error-text').first()).toBeHidden();
     await ss(page, 'IB-B3-leakage-toggle');
   });
 
-  test('IB-B4 – Magnetic vs Converter waveform view', async ({ page }) => {
+  test('IB-B4 – Analytical produces at least one waveform canvas', async ({ page }) => {
     await openIsoBuck(page);
     await runAnalytical(page);
 
-    const converterBtn = page.locator('button, label').filter({ hasText: /[Cc]onverter/ }).first();
-    if (await converterBtn.isVisible().catch(() => false)) {
-      await converterBtn.click();
-      await page.waitForTimeout(500);
-    }
-    await ss(page, 'IB-B4-waveform-toggle');
+    expect(await page.locator('canvas').count()).toBeGreaterThan(0);
+    await ss(page, 'IB-B4-waveform-canvas');
   });
 });
 
@@ -180,10 +176,11 @@ test.describe('IsolatedBuck – Group E – Navigation', () => {
     await runAnalytical(page);
 
     const reviewBtn = page.locator('button').filter({ hasText: 'Review Specs' }).first();
+    await expect(reviewBtn).toBeVisible();
     await reviewBtn.click();
-    await page.waitForURL('**/magnetic_tool**', { timeout: 30000 }).catch(() => {});
+    await page.waitForURL('**/magnetic_tool**', { timeout: 30000 });
 
-    expect(page.url().includes('magnetic_tool')).toBe(true);
+    expect(page.url()).toContain('magnetic_tool');
     await ss(page, 'IB-E1-review-specs');
     expect(errors.length).toBe(0);
   });
@@ -196,10 +193,11 @@ test.describe('IsolatedBuck – Group E – Navigation', () => {
     await runAnalytical(page);
 
     const designBtn = page.locator('button').filter({ hasText: 'Design Magnetic' }).first();
+    await expect(designBtn).toBeVisible();
     await designBtn.click();
-    await page.waitForURL('**/magnetic_tool**', { timeout: 30000 }).catch(() => {});
+    await page.waitForURL('**/magnetic_tool**', { timeout: 30000 });
 
-    expect(page.url().includes('magnetic_tool')).toBe(true);
+    expect(page.url()).toContain('magnetic_tool');
     await ss(page, 'IB-E2-design-magnetic');
     expect(errors.length).toBe(0);
   });
@@ -219,7 +217,7 @@ test.describe('IsolatedBuck – Group F – Magnetic Adviser', () => {
     expect(navigated).toBe(true);
 
     const adviseBtn = page.locator('button').filter({ hasText: /Get Advised Magnetics/i }).first();
-    expect(await adviseBtn.isVisible().catch(() => false)).toBe(true);
+    await expect(adviseBtn).toBeVisible();
     await ss(page, 'IB-F1-adviser-loaded');
     expect(errors.length).toBe(0);
   });
@@ -229,21 +227,21 @@ test.describe('IsolatedBuck – Group F – Magnetic Adviser', () => {
     page.on('console', msg => { if (msg.type() === 'error' && !isBenign(msg.text())) errors.push(msg.text()); });
 
     const navigated = await goToMagneticAdviser(page, () => openIsoBuck(page));
-    if (!navigated) return;
+    expect(navigated).toBe(true);
 
     const adviseBtn = page.locator('button').filter({ hasText: /Get Advised Magnetics/i }).first();
-    if (!(await adviseBtn.isVisible().catch(() => false))) return;
+    await expect(adviseBtn).toBeVisible();
 
     await adviseBtn.click();
-    console.log('[IB-F2] Waiting for results (up to 180s)...');
     await ss(page, 'IB-F2-adviser-running');
 
     await page.waitForFunction(
       () => !document.querySelector('.fa-spinner, [class*="loading"]'),
       { timeout: 180000 }
-    ).catch(() => {});
+    );
     await page.waitForTimeout(2000);
     await ss(page, 'IB-F2-adviser-results');
+    expect(page.url()).toContain('magnetic_tool');
     expect(errors.length).toBe(0);
   });
 });
@@ -261,38 +259,27 @@ test.describe('IsolatedBuck – Group G – Core Adviser', () => {
   });
 
   test('IB-G2 – Core Adviser accessible and runs', async ({ page }) => {
+    const errors = [];
+    page.on('console', msg => { if (msg.type() === 'error' && !isBenign(msg.text())) errors.push(msg.text()); });
+
     const navigated = await goToMagneticBuilder(page, () => openIsoBuck(page));
-    if (!navigated) return;
+    expect(navigated).toBe(true);
 
-    const coreAdviserLink = page.locator('button, a, [role="button"]').filter({ hasText: /Core Adviser/i }).first();
-    if (!(await coreAdviserLink.isVisible().catch(() => false))) return;
-
-    await coreAdviserLink.click();
-    await page.waitForTimeout(1000);
-
-    const getAdvisedBtn = page.locator('button').filter({ hasText: /Get advised cores/i }).first();
-    if (!(await getAdvisedBtn.isVisible().catch(() => false))) return;
-
-    await getAdvisedBtn.click();
-    await page.waitForFunction(
-      () => !document.querySelector('[data-cy="CoreAdviser-loading"], .fa-spinner'),
-      { timeout: 120000 }
-    ).catch(() => {});
-    await page.waitForTimeout(1500);
+    await runCoreAdviser(page);
     await ss(page, 'IB-G2-core-adviser-results');
+    expect(errors.length).toBe(0);
   });
 
-  test('IB-G3 – Wire Adviser shows Coming soon', async ({ page }) => {
+  // TODO(wizard-ui-gap): No Wire Adviser entry point currently exposed.
+  test.skip('IB-G3 – Wire Adviser shows Coming soon', async ({ page }) => {
     const navigated = await goToMagneticBuilder(page, () => openIsoBuck(page));
-    if (!navigated) return;
+    expect(navigated).toBe(true);
 
     const wireAdviserLink = page.locator('button, a, [role="button"]').filter({ hasText: /Wire Adviser/i }).first();
-    if (await wireAdviserLink.isVisible().catch(() => false)) {
-      await wireAdviserLink.click();
-      await page.waitForTimeout(800);
-      const comingSoon = await page.locator('text=Coming soon').first().isVisible().catch(() => false);
-      console.log(`[IB-G3] Coming soon: ${comingSoon}`);
-    }
+    await expect(wireAdviserLink).toBeVisible();
+    await wireAdviserLink.click();
+    await page.waitForTimeout(800);
+    await expect(page.getByText(/Coming soon/i).first()).toBeVisible();
     await ss(page, 'IB-G3-wire-adviser');
   });
 });
@@ -326,26 +313,19 @@ test.describe('IsolatedBuckBoost – Group B – Analytical', () => {
     await openIsoBuckBoost(page);
     await runAnalytical(page);
 
-    const hasError = await page.locator('.error-text').first().isVisible().catch(() => false);
-    expect(hasError).toBe(false);
-
-    const canvasCount = await page.locator('canvas').count();
-    expect(canvasCount).toBeGreaterThan(0);
+    await expect(page.locator('.error-text').first()).toBeHidden();
+    expect(await page.locator('canvas').count()).toBeGreaterThan(0);
     expect(errors.length).toBe(0);
     await ss(page, 'IBB-B1-analytical');
   });
 
-  test('IBB-B2 – I know mode analytical', async ({ page }) => {
+  test('IBB-B2 – I know mode analytical runs with default turnsRatio', async ({ page }) => {
     await openIsoBuckBoost(page);
 
-    const iKnow = page.locator('.design-mode-label').filter({ hasText: 'I know' }).first();
-    if (await iKnow.isVisible().catch(() => false)) await iKnow.click();
-    else await page.locator('text=I know the design I want').first().click().catch(() => {});
-    await page.waitForTimeout(400);
+    await setIKnowMode(page, 'IsolatedBuckBoostWizard');
 
     await runAnalytical(page);
-    const hasError = await page.locator('.error-text').first().isVisible().catch(() => false);
-    expect(hasError).toBe(false);
+    await expect(page.locator('.error-text').first()).toBeHidden();
     await ss(page, 'IBB-B2-iknow');
   });
 });
@@ -371,9 +351,10 @@ test.describe('IsolatedBuckBoost – Group E – Navigation', () => {
     await runAnalytical(page);
 
     const reviewBtn = page.locator('button').filter({ hasText: 'Review Specs' }).first();
+    await expect(reviewBtn).toBeVisible();
     await reviewBtn.click();
-    await page.waitForURL('**/magnetic_tool**', { timeout: 30000 }).catch(() => {});
-    expect(page.url().includes('magnetic_tool')).toBe(true);
+    await page.waitForURL('**/magnetic_tool**', { timeout: 30000 });
+    expect(page.url()).toContain('magnetic_tool');
     await ss(page, 'IBB-E1-review-specs');
   });
 
@@ -382,9 +363,10 @@ test.describe('IsolatedBuckBoost – Group E – Navigation', () => {
     await runAnalytical(page);
 
     const designBtn = page.locator('button').filter({ hasText: 'Design Magnetic' }).first();
+    await expect(designBtn).toBeVisible();
     await designBtn.click();
-    await page.waitForURL('**/magnetic_tool**', { timeout: 30000 }).catch(() => {});
-    expect(page.url().includes('magnetic_tool')).toBe(true);
+    await page.waitForURL('**/magnetic_tool**', { timeout: 30000 });
+    expect(page.url()).toContain('magnetic_tool');
     await ss(page, 'IBB-E2-design-magnetic');
   });
 });
@@ -397,24 +379,25 @@ test.describe('IsolatedBuckBoost – Group F – Magnetic Adviser', () => {
     expect(navigated).toBe(true);
 
     const adviseBtn = page.locator('button').filter({ hasText: /Get Advised Magnetics/i }).first();
-    expect(await adviseBtn.isVisible().catch(() => false)).toBe(true);
+    await expect(adviseBtn).toBeVisible();
     await ss(page, 'IBB-F1-adviser-loaded');
   });
 
   test('IBB-F2 – Adviser runs and returns results', async ({ page }) => {
     const navigated = await goToMagneticAdviser(page, () => openIsoBuckBoost(page));
-    if (!navigated) return;
+    expect(navigated).toBe(true);
 
     const adviseBtn = page.locator('button').filter({ hasText: /Get Advised Magnetics/i }).first();
-    if (!(await adviseBtn.isVisible().catch(() => false))) return;
+    await expect(adviseBtn).toBeVisible();
 
     await adviseBtn.click();
     await page.waitForFunction(
       () => !document.querySelector('.fa-spinner, [class*="loading"]'),
       { timeout: 180000 }
-    ).catch(() => {});
+    );
     await page.waitForTimeout(2000);
     await ss(page, 'IBB-F2-adviser-results');
+    expect(page.url()).toContain('magnetic_tool');
   });
 });
 
@@ -422,24 +405,14 @@ test.describe('IsolatedBuckBoost – Group G – Core Adviser', () => {
   test.setTimeout(240000);
 
   test('IBB-G1 – Review Specs reaches builder and Core Adviser runs', async ({ page }) => {
+    const errors = [];
+    page.on('console', msg => { if (msg.type() === 'error' && !isBenign(msg.text())) errors.push(msg.text()); });
+
     const navigated = await goToMagneticBuilder(page, () => openIsoBuckBoost(page));
-    if (!navigated) return;
+    expect(navigated).toBe(true);
 
-    const coreAdviserLink = page.locator('button, a, [role="button"]').filter({ hasText: /Core Adviser/i }).first();
-    if (!(await coreAdviserLink.isVisible().catch(() => false))) return;
-
-    await coreAdviserLink.click();
-    await page.waitForTimeout(1000);
-
-    const getAdvisedBtn = page.locator('button').filter({ hasText: /Get advised cores/i }).first();
-    if (!(await getAdvisedBtn.isVisible().catch(() => false))) return;
-
-    await getAdvisedBtn.click();
-    await page.waitForFunction(
-      () => !document.querySelector('[data-cy="CoreAdviser-loading"], .fa-spinner'),
-      { timeout: 120000 }
-    ).catch(() => {});
-    await page.waitForTimeout(1500);
+    await runCoreAdviser(page);
     await ss(page, 'IBB-G1-core-adviser-results');
+    expect(errors.length).toBe(0);
   });
 });

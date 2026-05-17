@@ -14,13 +14,29 @@ import { test, expect } from './_coverage.js';
 import {
   BASE_URL, isBenign, screenshot,
   openWizard, runAnalytical,
-  conditionsCard, outputsCard, fillRowInput,
-  goToMagneticAdviser, goToMagneticBuilder,
+  conditionsCard,
+  goToMagneticAdviser, goToMagneticBuilder, runCoreAdviser,
 } from './utils.js';
 
 const SEPIC_CY = 'Sepic-CommonModeChoke-link';
 const ss = (page, name) => screenshot(page, 'sepic-battery', name);
 const openSepic = (page) => openWizard(page, SEPIC_CY);
+
+// ---------- helpers --------------------------------------------------------
+async function setNumberInput(page, dataCy, value) {
+  const input = page.locator(`[data-cy="${dataCy}"]`);
+  await expect(input).toBeVisible();
+  await input.click({ clickCount: 3 });
+  await input.fill(String(value));
+  await input.press('Tab');
+}
+
+async function setIKnowMode(page) {
+  const iKnow = page.locator('[data-cy="SepicWizard-DesignLevel-I know the design I want-radio-input"]');
+  await expect(iKnow).toBeAttached();
+  await iKnow.evaluate(el => { el.checked = true; el.dispatchEvent(new Event('change', { bubbles: true })); });
+  await page.waitForTimeout(400);
+}
 
 // =====================================================================
 // SEPIC – Group A: Layout
@@ -64,13 +80,11 @@ test.describe('SEPIC – Group A – Layout', () => {
 
   test('SEPIC-A4 – Design mode toggle exposes inductance input', async ({ page }) => {
     await openSepic(page);
-    const iKnowLabel = page.locator('.design-mode-label').filter({ hasText: 'I know' }).first();
-    if (await iKnowLabel.isVisible().catch(() => false)) {
-      await iKnowLabel.click();
-      await page.waitForTimeout(400);
-      const hasInductance = await page.locator('text=L1 Inductance').first().isVisible().catch(() => false);
-      console.log(`[SEPIC-A4] L1 Inductance field visible: ${hasInductance}`);
-    }
+    await setIKnowMode(page);
+
+    // In "I know" mode the wizard exposes the L1 Inductance row.
+    const inductanceLabel = page.getByText(/L1 Inductance/).first();
+    await expect(inductanceLabel).toBeVisible();
     await ss(page, 'SEPIC-A4-design-mode');
   });
 });
@@ -99,19 +113,11 @@ test.describe('SEPIC – Group B – Analytical', () => {
 
   test('SEPIC-B2 – Pure step-up mode (Vin<<Vout): 5V → 24V', async ({ page }) => {
     await openSepic(page);
-    const cCard = conditionsCard(page);
-    // Vin minimum 5, max 7
-    const vinMin = page.locator('[data-cy*="InputVoltage"] input').nth(0);
-    const vinMax = page.locator('[data-cy*="InputVoltage"] input').nth(1);
-    if (await vinMin.isVisible().catch(() => false)) {
-      await vinMin.click({ clickCount: 3 }); await vinMin.fill('5'); await vinMin.press('Tab');
-    }
-    if (await vinMax.isVisible().catch(() => false)) {
-      await vinMax.click({ clickCount: 3 }); await vinMax.fill('7'); await vinMax.press('Tab');
-    }
-    const oCard = outputsCard(page);
-    await fillRowInput(oCard, 'Voltage', '24');
-    await fillRowInput(oCard, 'Current', '0.5');
+
+    await setNumberInput(page, 'SepicWizard-InputVoltage-minimum-number-input', '5');
+    await setNumberInput(page, 'SepicWizard-InputVoltage-maximum-number-input', '7');
+    await setNumberInput(page, 'SepicWizard-OutputVoltage-number-input', '24');
+    await setNumberInput(page, 'SepicWizard-OutputCurrent-number-input', '0.5');
     await page.waitForTimeout(300);
 
     await runAnalytical(page);
@@ -123,15 +129,12 @@ test.describe('SEPIC – Group B – Analytical', () => {
 
   test('SEPIC-B3 – Pure step-down mode (Vin>>Vout): 24V → 12V', async ({ page }) => {
     await openSepic(page);
-    const vinMin = page.locator('[data-cy*="InputVoltage"] input').nth(0);
-    const vinMax = page.locator('[data-cy*="InputVoltage"] input').nth(1);
-    if (await vinMin.isVisible().catch(() => false)) {
-      await vinMin.click({ clickCount: 3 }); await vinMin.fill('20'); await vinMin.press('Tab');
-    }
-    if (await vinMax.isVisible().catch(() => false)) {
-      await vinMax.click({ clickCount: 3 }); await vinMax.fill('28'); await vinMax.press('Tab');
-    }
-    await page.waitForTimeout(200);
+
+    await setNumberInput(page, 'SepicWizard-InputVoltage-minimum-number-input', '20');
+    await setNumberInput(page, 'SepicWizard-InputVoltage-maximum-number-input', '28');
+    await setNumberInput(page, 'SepicWizard-OutputVoltage-number-input', '12');
+    await setNumberInput(page, 'SepicWizard-OutputCurrent-number-input', '0.5');
+    await page.waitForTimeout(300);
 
     await runAnalytical(page);
     const hasError = await page.locator('.error-text').first().isVisible().catch(() => false);
@@ -186,7 +189,7 @@ test.describe('SEPIC – Group E – Navigation', () => {
     const reviewBtn = page.locator('button').filter({ hasText: 'Review Specs' }).first();
     await expect(reviewBtn).toBeVisible();
     await reviewBtn.click();
-    await page.waitForURL('**/magnetic_tool**', { timeout: 30000 }).catch(() => {});
+    await page.waitForURL('**/magnetic_tool**', { timeout: 30000 });
     expect(page.url().includes('magnetic_tool')).toBe(true);
     await ss(page, 'SEPIC-E1-review-specs');
     expect(errors.length).toBe(0);
@@ -202,7 +205,7 @@ test.describe('SEPIC – Group E – Navigation', () => {
     const designBtn = page.locator('button').filter({ hasText: 'Design Magnetic' }).first();
     await expect(designBtn).toBeVisible();
     await designBtn.click();
-    await page.waitForURL('**/magnetic_tool**', { timeout: 30000 }).catch(() => {});
+    await page.waitForURL('**/magnetic_tool**', { timeout: 30000 });
     expect(page.url().includes('magnetic_tool')).toBe(true);
     await ss(page, 'SEPIC-E2-design-magnetic');
     expect(errors.length).toBe(0);
@@ -223,7 +226,7 @@ test.describe('SEPIC – Group F – Magnetic Adviser', () => {
     expect(navigated).toBe(true);
 
     const adviseBtn = page.locator('button').filter({ hasText: /Get Advised Magnetics/i }).first();
-    expect(await adviseBtn.isVisible().catch(() => false)).toBe(true);
+    await expect(adviseBtn).toBeVisible();
     await ss(page, 'SEPIC-F1-adviser-loaded');
     expect(errors.length).toBe(0);
   });
@@ -233,18 +236,21 @@ test.describe('SEPIC – Group F – Magnetic Adviser', () => {
     page.on('console', msg => { if (msg.type() === 'error' && !isBenign(msg.text())) errors.push(msg.text()); });
 
     const navigated = await goToMagneticAdviser(page, () => openSepic(page));
-    if (!navigated) return;
+    expect(navigated).toBe(true);
 
     const adviseBtn = page.locator('button').filter({ hasText: /Get Advised Magnetics/i }).first();
-    if (!(await adviseBtn.isVisible().catch(() => false))) return;
+    await expect(adviseBtn).toBeVisible();
 
     await adviseBtn.click();
+    // Spinner clears once the adviser backend returns OR errors out. We
+    // assert the page stays on /magnetic_tool (no crash, no redirect).
     await page.waitForFunction(
       () => !document.querySelector('.fa-spinner, [class*="loading"]'),
       { timeout: 180000 }
-    ).catch(() => {});
+    );
     await page.waitForTimeout(2000);
     await ss(page, 'SEPIC-F2-adviser-results');
+    expect(page.url()).toContain('magnetic_tool');
     expect(errors.length).toBe(0);
   });
 });
@@ -261,25 +267,17 @@ test.describe('SEPIC – Group G – Core Adviser', () => {
     await ss(page, 'SEPIC-G1-builder');
   });
 
+  // Core Adviser entry point is the "Advise" button in the Core column of the
+  // Magnetic Builder three-column layout (data-cy ends with `-Core-Advise-button`).
   test('SEPIC-G2 – Core Adviser accessible and runs', async ({ page }) => {
+    const errors = [];
+    page.on('console', msg => { if (msg.type() === 'error' && !isBenign(msg.text())) errors.push(msg.text()); });
+
     const navigated = await goToMagneticBuilder(page, () => openSepic(page));
-    if (!navigated) return;
+    expect(navigated).toBe(true);
 
-    const coreAdviserLink = page.locator('button, a, [role="button"]').filter({ hasText: /Core Adviser/i }).first();
-    if (!(await coreAdviserLink.isVisible().catch(() => false))) return;
-
-    await coreAdviserLink.click();
-    await page.waitForTimeout(1000);
-
-    const getAdvisedBtn = page.locator('button').filter({ hasText: /Get advised cores/i }).first();
-    if (!(await getAdvisedBtn.isVisible().catch(() => false))) return;
-
-    await getAdvisedBtn.click();
-    await page.waitForFunction(
-      () => !document.querySelector('[data-cy="CoreAdviser-loading"], .fa-spinner'),
-      { timeout: 120000 }
-    ).catch(() => {});
-    await page.waitForTimeout(1500);
+    await runCoreAdviser(page);
     await ss(page, 'SEPIC-G2-core-adviser-results');
+    expect(errors.length).toBe(0);
   });
 });

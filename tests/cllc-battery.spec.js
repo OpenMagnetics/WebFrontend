@@ -17,14 +17,37 @@ import { test, expect } from './_coverage.js';
 import {
   BASE_URL, isBenign, screenshot,
   openWizard, runAnalytical,
-  conditionsCard, outputsCard, fillRowInput,
-  goToMagneticAdviser, goToMagneticBuilder,
+  conditionsCard, outputsCard,
+  goToMagneticAdviser, goToMagneticBuilder, runCoreAdviser,
 } from './utils.js';
 
 const CLLC_CY = 'Cllc-link';
 
 const ss = (page, name) => screenshot(page, 'cllc-battery', name);
 const openCllc = (page) => openWizard(page, CLLC_CY);
+
+// CLLC uses a custom <label class="design-mode-option"><input radio> ... </label>
+// markup (not ElementFromListRadio). Click the `.design-mode-label` span that
+// matches the requested mode. Throws if the control is absent.
+async function setDesignMode(page, modeText) {
+  const label = page.locator('.design-mode-label').filter({ hasText: modeText }).first();
+  await expect(label).toBeVisible();
+  await label.click();
+  await page.waitForTimeout(400);
+}
+
+// Find the number input inside the Dimension row whose visible title matches
+// `titleText` and set it. Throws if the row/input cannot be located.
+async function setDimensionByTitle(page, titleText, value) {
+  const input = page.locator('.container-flex')
+    .filter({ hasText: new RegExp(`^\\s*${titleText}`) })
+    .locator('input[type="number"]')
+    .first();
+  await expect(input).toBeVisible();
+  await input.click({ clickCount: 3 });
+  await input.fill(String(value));
+  await input.press('Tab');
+}
 
 // =====================================================================
 // CLLC - Group A: Layout
@@ -42,28 +65,26 @@ test.describe('CLLC - Group A - Layout', () => {
     await expect(conditionsCard(page)).toBeVisible();
     await expect(page.locator('.sim-btn.analytical')).toBeVisible();
 
-    console.log(`[CLLC-A1] Errors: ${errors.length}`);
     expect(errors.length).toBe(0);
     await ss(page, 'CLLC-A1-layout');
   });
 
-  test('CLLC-A2 - Tank parameters visible (Q, Ln, a, b)', async ({ page }) => {
+  test('CLLC-A2 - Tank parameters visible (Q Factor)', async ({ page }) => {
     await openCllc(page);
 
+    // Q Factor is the distinguishing CLLC tank input; it must be visible.
+    await expect(page.getByText(/^Q Factor/i).first()).toBeVisible();
     const numInputs = await page.locator('input[type="number"]').count();
-    console.log(`[CLLC-A2] Number inputs: ${numInputs}`);
     expect(numInputs).toBeGreaterThan(0);
     await ss(page, 'CLLC-A2-tank-params');
   });
 
-  test('CLLC-A3 - Design mode toggle (Help me / I know)', async ({ page }) => {
+  test('CLLC-A3 - Design mode toggle switches to I know mode', async ({ page }) => {
     await openCllc(page);
 
-    const iKnow = page.locator('.design-mode-label').filter({ hasText: 'I know' }).first();
-    if (await iKnow.isVisible().catch(() => false)) {
-      await iKnow.click();
-      await page.waitForTimeout(400);
-    }
+    await setDesignMode(page, 'I know');
+    // In "I know" mode the wizard exposes the "Mag. Inductance" input.
+    await expect(page.getByText(/Mag\.?\s*Inductance/i).first()).toBeVisible();
     await ss(page, 'CLLC-A3-design-mode');
   });
 
@@ -74,8 +95,7 @@ test.describe('CLLC - Group A - Layout', () => {
     await expect(oCard).toBeVisible();
 
     // CLLC must NOT show a numberOutputs dropdown.
-    const numOutDropdown = page.locator('text=Number of Outputs').first();
-    expect(await numOutDropdown.isVisible().catch(() => false)).toBe(false);
+    await expect(page.getByText('Number of Outputs').first()).toBeHidden();
 
     await ss(page, 'CLLC-A4-single-output');
   });
@@ -96,77 +116,41 @@ test.describe('CLLC - Group B - Analytical', () => {
     await runAnalytical(page);
     await ss(page, 'CLLC-B1-after');
 
-    const hasError = await page.locator('.error-text').first().isVisible().catch(() => false);
-    console.log(`[CLLC-B1] Error: ${hasError}`);
-    expect(hasError).toBe(false);
-
-    const canvasCount = await page.locator('canvas').count();
-    console.log(`[CLLC-B1] Canvas count: ${canvasCount}`);
-    expect(canvasCount).toBeGreaterThan(0);
+    await expect(page.locator('.error-text').first()).toBeHidden();
+    expect(await page.locator('canvas').count()).toBeGreaterThan(0);
     expect(errors.length).toBe(0);
   });
 
   test('CLLC-B2 - I know mode analytical', async ({ page }) => {
     await openCllc(page);
 
-    const iKnow = page.locator('.design-mode-label').filter({ hasText: 'I know' }).first();
-    if (await iKnow.isVisible().catch(() => false)) await iKnow.click();
-    else await page.locator('text=I know the design I want').first().click().catch(() => {});
-    await page.waitForTimeout(400);
+    await setDesignMode(page, 'I know');
 
     await runAnalytical(page);
-    const hasError = await page.locator('.error-text').first().isVisible().catch(() => false);
-    console.log(`[CLLC-B2] I know error: ${hasError}`);
-    expect(hasError).toBe(false);
+    await expect(page.locator('.error-text').first()).toBeHidden();
     await ss(page, 'CLLC-B2-iknow');
   });
 
-  test('CLLC-B3 - Different quality factor value analytical', async ({ page }) => {
+  test('CLLC-B3 - Q Factor=0.6 analytical', async ({ page }) => {
     await openCllc(page);
 
-    const allInputs = await page.locator('input[type="number"]').all();
-    for (const inp of allInputs) {
-      const val = await inp.inputValue().catch(() => '');
-      if (parseFloat(val) >= 0.1 && parseFloat(val) <= 1.0) {
-        await inp.click({ clickCount: 3 });
-        await inp.fill('0.6');
-        await inp.press('Tab');
-        break;
-      }
-    }
+    await setDimensionByTitle(page, 'Q Factor', '0.6');
     await page.waitForTimeout(300);
 
     await runAnalytical(page);
-    const hasError = await page.locator('.error-text').first().isVisible().catch(() => false);
-    console.log(`[CLLC-B3] QF=0.6 error: ${hasError}`);
-    expect(hasError).toBe(false);
+    await expect(page.locator('.error-text').first()).toBeHidden();
     await ss(page, 'CLLC-B3-quality-factor');
   });
 
-  test('CLLC-B4 - CLLC diagnostics card with ZVS primary and secondary visible after analytical', async ({ page }) => {
+  test('CLLC-B4 - Diagnostics card present after analytical', async ({ page }) => {
     await openCllc(page);
     await runAnalytical(page);
     await page.waitForTimeout(800);
 
-    // CLLC's distinguishing diagnostic: two ZVS margins (primary + secondary).
-    const zvsPri = page.locator('text=ZVS Primary').first();
-    const zvsSec = page.locator('text=ZVS Secondary').first();
-    const hasPri = await zvsPri.isVisible().catch(() => false);
-    const hasSec = await zvsSec.isVisible().catch(() => false);
-    console.log(`[CLLC-B4] ZVS Primary visible: ${hasPri}, ZVS Secondary visible: ${hasSec}`);
+    // ZVS Primary / Secondary diagnostics may render conditionally; assert
+    // that AT LEAST the diagnostics card itself appears (canvas + results).
+    expect(await page.locator('canvas').count()).toBeGreaterThan(0);
     await ss(page, 'CLLC-B4-diagnostics');
-  });
-
-  test('CLLC-B5 - Waveform view toggle', async ({ page }) => {
-    await openCllc(page);
-    await runAnalytical(page);
-
-    const converterBtn = page.locator('button, label').filter({ hasText: /[Cc]onverter/ }).first();
-    if (await converterBtn.isVisible().catch(() => false)) {
-      await converterBtn.click();
-      await page.waitForTimeout(500);
-    }
-    await ss(page, 'CLLC-B5-waveform-toggle');
   });
 });
 
@@ -179,54 +163,43 @@ test.describe('CLLC - Group C - CLLC-specific', () => {
   test('CLLC-C1 - Toggle bidirectional and run analytical', async ({ page }) => {
     await openCllc(page);
 
-    const bidir = page.locator('#bidirectional');
-    if (await bidir.isVisible().catch(() => false)) {
-      await bidir.click();
-      await page.waitForTimeout(200);
-    }
+    const bidir = page.locator('#bidirectionalCllc');
+    await expect(bidir).toBeVisible();
+    await bidir.click();
+    await page.waitForTimeout(200);
     await runAnalytical(page);
-    const hasError = await page.locator('.error-text').first().isVisible().catch(() => false);
-    console.log(`[CLLC-C1] bidirectional error: ${hasError}`);
-    expect(hasError).toBe(false);
+    await expect(page.locator('.error-text').first()).toBeHidden();
     await ss(page, 'CLLC-C1-bidirectional');
   });
 
-  test('CLLC-C2 - Asymmetric tank (a=0.95, b=1.05) runs analytical', async ({ page }) => {
+  test('CLLC-C2 - Asymmetric tank (Inductor Ratio + Capacitor Ratio) runs analytical', async ({ page }) => {
     await openCllc(page);
 
-    // Find input rows for a and b by tooltip / label text.
-    const setByLabel = async (labelText, value) => {
-      const row = page.locator('div, label, span').filter({ hasText: labelText }).first();
-      const inp = row.locator('xpath=ancestor::*[descendant::input[@type="number"]][1]').locator('input[type="number"]').first();
-      if (await inp.isVisible().catch(() => false)) {
-        await inp.click({ clickCount: 3 });
-        await inp.fill(String(value));
-        await inp.press('Tab');
-      }
-    };
-    await setByLabel('Inductor Ratio', 0.95);
-    await setByLabel('Capacitor Ratio', 1.05);
+    await setDimensionByTitle(page, 'Inductor Ratio', '0.95');
+    await setDimensionByTitle(page, 'Capacitor Ratio', '1.05');
     await page.waitForTimeout(300);
 
     await runAnalytical(page);
-    const hasError = await page.locator('.error-text').first().isVisible().catch(() => false);
-    console.log(`[CLLC-C2] asymmetric error: ${hasError}`);
-    expect(hasError).toBe(false);
+    await expect(page.locator('.error-text').first()).toBeHidden();
     await ss(page, 'CLLC-C2-asymmetric');
   });
 
   test('CLLC-C3 - Half-bridge type runs analytical', async ({ page }) => {
     await openCllc(page);
 
-    // Bridge Type is a select / ElementFromList — try switching it.
-    const bridgeSelect = page.locator('select').filter({ has: page.locator('option', { hasText: /Half Bridge/ }) }).first();
-    if (await bridgeSelect.isVisible().catch(() => false)) {
-      await bridgeSelect.selectOption({ label: 'Half Bridge' });
-      await page.waitForTimeout(300);
+    // Bridge Type is rendered by ElementFromList (a native <select>).
+    // The option label is 'Half Bridge'; underlying value is 'halfBridge'.
+    const selects = await page.locator('select').all();
+    let bridgeSelect = null;
+    for (const sel of selects) {
+      const labels = await sel.evaluate(el => Array.from(el.options).map(o => o.textContent.trim()));
+      if (labels.includes('Half Bridge')) { bridgeSelect = sel; break; }
     }
+    if (!bridgeSelect) throw new Error('[CLLC-C3] Bridge Type select with "Half Bridge" option not found');
+    await bridgeSelect.selectOption({ label: 'Half Bridge' });
+    await page.waitForTimeout(300);
     await runAnalytical(page);
-    const hasError = await page.locator('.error-text').first().isVisible().catch(() => false);
-    console.log(`[CLLC-C3] halfBridge error: ${hasError}`);
+    await expect(page.locator('.error-text').first()).toBeHidden();
     await ss(page, 'CLLC-C3-half-bridge');
   });
 });
@@ -242,7 +215,7 @@ test.describe('CLLC - Group D - Simulated', () => {
 
     const simBtn = page.locator('.sim-btn').filter({ hasText: 'Simulated' }).first();
     await expect(simBtn).toBeVisible();
-    expect(await simBtn.isDisabled().catch(() => true)).toBe(false);
+    await expect(simBtn).toBeEnabled();
 
     await simBtn.click();
     // SPICE-based simulation is slower than analytical; wait longer.
@@ -267,9 +240,9 @@ test.describe('CLLC - Group E - Navigation', () => {
     const reviewBtn = page.locator('button').filter({ hasText: 'Review Specs' }).first();
     await expect(reviewBtn).toBeVisible();
     await reviewBtn.click();
-    await page.waitForURL('**/magnetic_tool**', { timeout: 30000 }).catch(() => {});
+    await page.waitForURL('**/magnetic_tool**', { timeout: 30000 });
 
-    expect(page.url().includes('magnetic_tool')).toBe(true);
+    expect(page.url()).toContain('magnetic_tool');
     await ss(page, 'CLLC-E1-review-specs');
     expect(errors.length).toBe(0);
   });
@@ -284,9 +257,9 @@ test.describe('CLLC - Group E - Navigation', () => {
     const designBtn = page.locator('button').filter({ hasText: 'Design Magnetic' }).first();
     await expect(designBtn).toBeVisible();
     await designBtn.click();
-    await page.waitForURL('**/magnetic_tool**', { timeout: 30000 }).catch(() => {});
+    await page.waitForURL('**/magnetic_tool**', { timeout: 30000 });
 
-    expect(page.url().includes('magnetic_tool')).toBe(true);
+    expect(page.url()).toContain('magnetic_tool');
     await ss(page, 'CLLC-E2-design-magnetic');
     expect(errors.length).toBe(0);
   });
@@ -306,7 +279,7 @@ test.describe('CLLC - Group F - Magnetic Adviser', () => {
     expect(navigated).toBe(true);
 
     const adviseBtn = page.locator('button').filter({ hasText: /Get Advised Magnetics/i }).first();
-    expect(await adviseBtn.isVisible().catch(() => false)).toBe(true);
+    await expect(adviseBtn).toBeVisible();
     await ss(page, 'CLLC-F1-adviser-loaded');
     expect(errors.length).toBe(0);
   });
@@ -316,10 +289,10 @@ test.describe('CLLC - Group F - Magnetic Adviser', () => {
     page.on('console', msg => { if (msg.type() === 'error' && !isBenign(msg.text())) errors.push(msg.text()); });
 
     const navigated = await goToMagneticAdviser(page, () => openCllc(page));
-    if (!navigated) return;
+    expect(navigated).toBe(true);
 
     const adviseBtn = page.locator('button').filter({ hasText: /Get Advised Magnetics/i }).first();
-    if (!(await adviseBtn.isVisible().catch(() => false))) return;
+    await expect(adviseBtn).toBeVisible();
 
     await adviseBtn.click();
     await ss(page, 'CLLC-F2-adviser-running');
@@ -327,9 +300,10 @@ test.describe('CLLC - Group F - Magnetic Adviser', () => {
     await page.waitForFunction(
       () => !document.querySelector('.fa-spinner, [class*="loading"]'),
       { timeout: 180000 }
-    ).catch(() => {});
+    );
     await page.waitForTimeout(2000);
     await ss(page, 'CLLC-F2-adviser-results');
+    expect(page.url()).toContain('magnetic_tool');
     expect(errors.length).toBe(0);
   });
 });
@@ -347,24 +321,14 @@ test.describe('CLLC - Group G - Core Adviser', () => {
   });
 
   test('CLLC-G2 - Core Adviser accessible and runs', async ({ page }) => {
+    const errors = [];
+    page.on('console', msg => { if (msg.type() === 'error' && !isBenign(msg.text())) errors.push(msg.text()); });
+
     const navigated = await goToMagneticBuilder(page, () => openCllc(page));
-    if (!navigated) return;
+    expect(navigated).toBe(true);
 
-    const coreAdviserLink = page.locator('button, a, [role="button"]').filter({ hasText: /Core Adviser/i }).first();
-    if (!(await coreAdviserLink.isVisible().catch(() => false))) return;
-
-    await coreAdviserLink.click();
-    await page.waitForTimeout(1000);
-
-    const getAdvisedBtn = page.locator('button').filter({ hasText: /Get advised cores/i }).first();
-    if (!(await getAdvisedBtn.isVisible().catch(() => false))) return;
-
-    await getAdvisedBtn.click();
-    await page.waitForFunction(
-      () => !document.querySelector('[data-cy="CoreAdviser-loading"], .fa-spinner'),
-      { timeout: 120000 }
-    ).catch(() => {});
-    await page.waitForTimeout(1500);
+    await runCoreAdviser(page);
     await ss(page, 'CLLC-G2-core-adviser-results');
+    expect(errors.length).toBe(0);
   });
 });
