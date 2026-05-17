@@ -26,6 +26,66 @@ export default {
         const historyStore = useHistoryStore();
         const taskQueueStore = useTaskQueueStore();
         const loading = false;
+        // Grouped wizard menu — keeps the header dropdown compact by hiding
+        // each topology family behind a fly-out submenu. Keys (cy, store,
+        // hoverKey, icon, label) match the prior flat menu 1:1 so existing
+        // tests and behaviour are unchanged.
+        const wizardGroups = [
+            {
+                label: 'Filters / PFC',
+                icon: 'bi-funnel-fill',
+                items: [
+                    { cy: 'Wizard-CommonModeChoke-link',       store: 'CommonModeChoke',       hoverKey: 'CommonModeChoke',       icon: 'bi-funnel-fill',         label: 'CMC Wizard' },
+                    { cy: 'Wizard-DifferentialModeChoke-link', store: 'DifferentialModeChoke', hoverKey: 'DifferentialModeChoke', icon: 'bi-soundwave',           label: 'DMC Wizard' },
+                    { cy: 'Pfc-link',                          store: 'Pfc',                   hoverKey: 'Pfc',                   icon: 'bi-soundwave',           label: 'PFC Wizard' },
+                ],
+            },
+            {
+                label: 'Non-Isolated DC-DC',
+                icon: 'bi-arrow-down-up',
+                items: [
+                    { cy: 'Buck-CommonModeChoke-link',                store: 'Buck',                hoverKey: 'Buck',                icon: 'bi-arrow-down',     label: 'Buck Wizard' },
+                    { cy: 'Boost-CommonModeChoke-link',               store: 'Boost',               hoverKey: 'Boost',               icon: 'bi-arrow-up',       label: 'Boost Wizard' },
+                    { cy: 'Sepic-CommonModeChoke-link',               store: 'Sepic',               hoverKey: 'Sepic',               icon: 'bi-arrow-down-up',  label: 'SEPIC Wizard' },
+                    { cy: 'Cuk-CommonModeChoke-link',                 store: 'Cuk',                 hoverKey: 'Cuk',                 icon: 'bi-arrow-down-up',  label: 'Cuk Wizard' },
+                    { cy: 'Zeta-CommonModeChoke-link',                store: 'Zeta',                hoverKey: 'Zeta',                icon: 'bi-arrow-down-up',  label: 'Zeta Wizard' },
+                    { cy: 'FourSwitchBuckBoost-CommonModeChoke-link', store: 'FourSwitchBuckBoost', hoverKey: 'FourSwitchBuckBoost', icon: 'bi-arrow-down-up',  label: 'Four-Switch Buck-Boost Wizard' },
+                ],
+            },
+            {
+                label: 'Isolated Single-Switch',
+                icon: 'bi-shield-shaded',
+                items: [
+                    { cy: 'Flyback-CommonModeChoke-link',             store: 'Flyback',             hoverKey: 'Flyback',             icon: 'bi-lightning-fill',   label: 'Flyback Wizard' },
+                    { cy: 'IsolatedBuck-CommonModeChoke-link',        store: 'IsolatedBuck',        hoverKey: 'IsolatedBuck',        icon: 'bi-shield-shaded',    label: 'Isolated Buck Wizard' },
+                    { cy: 'IsolatedBuckBoost-CommonModeChoke-link',   store: 'IsolatedBuckBoost',   hoverKey: 'IsolatedBuckBoost',   icon: 'bi-shield-exclamation', label: 'Isolated Buck Boost Wizard' },
+                    { cy: 'ActiveClampForward-CommonModeChoke-link',  store: 'ActiveClampForward',  hoverKey: 'ActiveClampForward',  icon: 'bi-fullscreen-exit',  label: 'Active Clamp Forward Wizard' },
+                    { cy: 'SingleSwitchForward-CommonModeChoke-link', store: 'SingleSwitchForward', hoverKey: 'SingleSwitchForward', icon: 'bi-toggle-off',       label: 'Single-Switch Forward Wizard' },
+                    { cy: 'TwoSwitchForward-CommonModeChoke-link',    store: 'TwoSwitchForward',    hoverKey: 'TwoSwitchForward',    icon: 'bi-toggle-on',        label: 'Two-Switch Forward Wizard' },
+                ],
+            },
+            {
+                label: 'Isolated Bridge / Push-Pull',
+                icon: 'bi-arrow-left-right',
+                items: [
+                    { cy: 'PushPull-CommonModeChoke-link', store: 'PushPull',             hoverKey: 'PushPull', icon: 'bi-arrow-left-right',     label: 'Push-Pull Wizard' },
+                    { cy: 'Weinberg-CommonModeChoke-link', store: 'Weinberg',             hoverKey: 'Weinberg', icon: 'bi-arrow-left-right',     label: 'Weinberg Wizard' },
+                    { cy: 'Psfb-link',                     store: 'PhaseShiftFullBridge', hoverKey: 'PSFB',     icon: 'bi-chevron-double-right', label: 'PSFB Wizard' },
+                    { cy: 'Pshb-link',                     store: 'PhaseShiftHalfBridge', hoverKey: 'PSHB',     icon: 'bi-chevron-right',        label: 'PSHB Wizard' },
+                    { cy: 'Ahb-link',                      store: 'AsymmetricHalfBridge', hoverKey: 'AHB',      icon: 'bi-arrow-bar-right',      label: 'AHB Wizard' },
+                    { cy: 'Dab-link',                      store: 'DualActiveBridge',     hoverKey: 'DAB',      icon: 'bi-arrow-left-right',     label: 'DAB Wizard' },
+                ],
+            },
+            {
+                label: 'Resonant',
+                icon: 'bi-soundwave',
+                items: [
+                    { cy: 'Llc-link',   store: 'LlcResonant',  hoverKey: 'LLC',   icon: 'bi-soundwave',        label: 'LLC Wizard' },
+                    { cy: 'Cllc-link',  store: 'CllcResonant', hoverKey: 'CLLC',  icon: 'bi-arrow-left-right', label: 'CLLC Wizard' },
+                    { cy: 'Clllc-link', store: 'Clllc',        hoverKey: 'CLLLC', icon: 'bi-arrow-left-right', label: 'CLLLC Wizard' },
+                ],
+            },
+        ];
         return {
             masStore,
             historyStore,
@@ -35,6 +95,8 @@ export default {
             username: null,
             loading,
             hoveredWizard: null,
+            openWizardGroup: null,
+            wizardGroups,
         }
     },
     methods: {
@@ -74,6 +136,7 @@ export default {
         },
         async onWizards(wizard) {
             this.$stateStore.selectWizard(wizard);
+            this.openWizardGroup = null;
             await this.$nextTick();
             if (this.$route.name != 'Wizards')
                 await this.$router.push(`${import.meta.env.BASE_URL}wizards`);
@@ -81,6 +144,14 @@ export default {
                 this.$userStore.loadingPath = `${import.meta.env.BASE_URL}wizards`;
                 await this.$router.push(`${import.meta.env.BASE_URL}engine_loader`);
             }
+        },
+        // Toggle the click-driven submenu open state. Hover still expands
+        // the panel via CSS (.dropdown-submenu:hover > .submenu-panel);
+        // the click path is the touch-friendly fallback and the explicit
+        // signal Playwright tests use to open a group before clicking an
+        // item inside.
+        toggleWizardGroup(label) {
+            this.openWizardGroup = this.openWizardGroup === label ? null : label;
         },
         async onInsulationCoordinator() {
             this.$stateStore.resetMagneticTool();
@@ -325,293 +396,38 @@ export default {
                             <i class="me-2 bi bi-magic"></i>{{'Wizards'}}
                         </a>
                       <ul class="dropdown-menu px-3">
-                        <li>
+                        <li
+                            v-for="group in wizardGroups"
+                            :key="group.label"
+                            class="dropdown-submenu"
+                        >
                             <button
-                                data-cy="Wizard-CommonModeChoke-link"
+                                :data-cy="'WizardGroup-' + group.label.replace(/[^A-Za-z0-9]/g, '') + '-toggle'"
                                 :class="headerTogglerIsVisible? 'w-100' : 'mx-0' "
-                                class="dropdown-item btn btn-block nav-link px-2"
-                                @click="onWizards($stateStore.Wizards.CommonModeChoke)"
-                                @mouseenter="hoveredWizard = 'CommonModeChoke'"
-                                @mouseleave="hoveredWizard = null"
+                                class="dropdown-item dropdown-submenu-toggle btn btn-block nav-link px-2"
+                                type="button"
+                                @click.stop="toggleWizardGroup(group.label)"
                             >
-                                <i class="me-2 bi bi-funnel-fill"></i>{{'CMC Wizard'}}
+                                <span><i class="me-2 bi" :class="group.icon"></i>{{ group.label }}</span>
+                                <i class="bi bi-chevron-right submenu-caret ms-2"></i>
                             </button>
-                        </li>
-                        <li>
-                            <button
-                                data-cy="Wizard-DifferentialModeChoke-link"
-                                :class="headerTogglerIsVisible? 'w-100' : 'mx-0' "
-                                class="dropdown-item btn btn-block nav-link px-2"
-                                @click="onWizards($stateStore.Wizards.DifferentialModeChoke)"
-                                @mouseenter="hoveredWizard = 'DifferentialModeChoke'"
-                                @mouseleave="hoveredWizard = null"
+                            <ul
+                                class="dropdown-menu submenu-panel px-3"
+                                :class="{ 'submenu-open': openWizardGroup === group.label }"
                             >
-                                <i class="me-2 bi bi-soundwave"></i>{{'DMC Wizard'}}
-                            </button>
-                        </li>
-                        <li>
-                            <button
-                                data-cy="Flyback-CommonModeChoke-link"
-                                :class="headerTogglerIsVisible? 'w-100' : 'mx-0' "
-                                class="dropdown-item btn btn-block nav-link px-2"
-                                @click="onWizards($stateStore.Wizards.Flyback)"
-                                @mouseenter="hoveredWizard = 'Flyback'"
-                                @mouseleave="hoveredWizard = null"
-                            >
-                                <i class="me-2 bi bi-lightning-fill"></i>{{'Flyback Wizard'}}
-                            </button>
-                        </li>
-                        <li>
-                            <button
-                                data-cy="Buck-CommonModeChoke-link"
-                                :class="headerTogglerIsVisible? 'w-100' : 'mx-0' "
-                                class="dropdown-item btn btn-block nav-link px-2"
-                                @click="onWizards($stateStore.Wizards.Buck)"
-                                @mouseenter="hoveredWizard = 'Buck'"
-                                @mouseleave="hoveredWizard = null"
-                            >
-                                <i class="me-2 bi bi-arrow-down"></i>{{'Buck Wizard'}}
-                            </button>
-                        </li>
-                        <li>
-                            <button
-                                data-cy="Boost-CommonModeChoke-link"
-                                :class="headerTogglerIsVisible? 'w-100' : 'mx-0' "
-                                class="dropdown-item btn btn-block nav-link px-2"
-                                @click="onWizards($stateStore.Wizards.Boost)"
-                                @mouseenter="hoveredWizard = 'Boost'"
-                                @mouseleave="hoveredWizard = null"
-                            >
-                                <i class="me-2 bi bi-arrow-up"></i>{{'Boost Wizard'}}
-                            </button>
-                        </li>
-                        <li>
-                            <button
-                                data-cy="Sepic-CommonModeChoke-link"
-                                :class="headerTogglerIsVisible? 'w-100' : 'mx-0' "
-                                class="dropdown-item btn btn-block nav-link px-2"
-                                @click="onWizards($stateStore.Wizards.Sepic)"
-                                @mouseenter="hoveredWizard = 'Sepic'"
-                                @mouseleave="hoveredWizard = null"
-                            >
-                                <i class="me-2 bi bi-arrow-down-up"></i>{{'SEPIC Wizard'}}
-                            </button>
-                        </li>
-                        <li>
-                            <button
-                                data-cy="IsolatedBuck-CommonModeChoke-link"
-                                :class="headerTogglerIsVisible? 'w-100' : 'mx-0' "
-                                class="dropdown-item btn btn-block nav-link px-2"
-                                @click="onWizards($stateStore.Wizards.IsolatedBuck)"
-                                @mouseenter="hoveredWizard = 'IsolatedBuck'"
-                                @mouseleave="hoveredWizard = null"
-                            >
-                                <i class="me-2 bi bi-shield-shaded"></i>{{'Isolated Buck Wizard'}}
-                            </button>
-                        </li>
-                        <li>
-                            <button
-                                data-cy="IsolatedBuckBoost-CommonModeChoke-link"
-                                :class="headerTogglerIsVisible? 'w-100' : 'mx-0' "
-                                class="dropdown-item btn btn-block nav-link px-2"
-                                @click="onWizards($stateStore.Wizards.IsolatedBuckBoost)"
-                                @mouseenter="hoveredWizard = 'IsolatedBuckBoost'"
-                                @mouseleave="hoveredWizard = null"
-                            >
-                                <i class="me-2 bi bi-shield-exclamation"></i>{{'Isolated Buck Boost Wizard'}}
-                            </button>
-                        </li>
-                        <li>
-                            <button
-                                data-cy="PushPull-CommonModeChoke-link"
-                                :class="headerTogglerIsVisible? 'w-100' : 'mx-0' "
-                                class="dropdown-item btn btn-block nav-link px-2"
-                                @click="onWizards($stateStore.Wizards.PushPull)"
-                                @mouseenter="hoveredWizard = 'PushPull'"
-                                @mouseleave="hoveredWizard = null"
-                            >
-                                <i class="me-2 bi bi-arrow-left-right"></i>{{'Push-Pull Wizard'}}
-                            </button>
-                        </li>
-                        <li>
-                            <button
-                                data-cy="Pfc-link"
-                                :class="headerTogglerIsVisible? 'w-100' : 'mx-0' "
-                                class="dropdown-item btn btn-block nav-link px-2"
-                                @click="onWizards($stateStore.Wizards.Pfc)"
-                                @mouseenter="hoveredWizard = 'Pfc'"
-                                @mouseleave="hoveredWizard = null"
-                            >
-                                <i class="me-2 bi bi-soundwave"></i>{{'PFC Wizard'}}
-                            </button>
-                        </li>
-                        <li>
-                            <button
-                                data-cy="Dab-link"
-                                :class="headerTogglerIsVisible? 'w-100' : 'mx-0' "
-                                class="dropdown-item btn btn-block nav-link px-2"
-                                @click="onWizards($stateStore.Wizards.DualActiveBridge)"
-                                @mouseenter="hoveredWizard = 'DAB'"
-                                @mouseleave="hoveredWizard = null"
-                            >
-                                <i class="me-2 bi bi-arrow-left-right"></i>{{'DAB Wizard'}}
-                            </button>
-                        </li>
-                        <li>
-                            <button
-                                data-cy="Llc-link"
-                                :class="headerTogglerIsVisible? 'w-100' : 'mx-0' "
-                                class="dropdown-item btn btn-block nav-link px-2"
-                                @click="onWizards($stateStore.Wizards.LlcResonant)"
-                                @mouseenter="hoveredWizard = 'LLC'"
-                                @mouseleave="hoveredWizard = null"
-                            >
-                                <i class="me-2 bi bi-soundwave"></i>{{'LLC Wizard'}}
-                            </button>
-                        </li>
-                        <li>
-                            <button
-                                data-cy="Cllc-link"
-                                :class="headerTogglerIsVisible? 'w-100' : 'mx-0' "
-                                class="dropdown-item btn btn-block nav-link px-2"
-                                @click="onWizards($stateStore.Wizards.CllcResonant)"
-                                @mouseenter="hoveredWizard = 'CLLC'"
-                                @mouseleave="hoveredWizard = null"
-                            >
-                                <i class="me-2 bi bi-arrow-left-right"></i>{{'CLLC Wizard'}}
-                            </button>
-                        </li>
-                        <li>
-                            <button
-                                data-cy="Psfb-link"
-                                :class="headerTogglerIsVisible? 'w-100' : 'mx-0' "
-                                class="dropdown-item btn btn-block nav-link px-2"
-                                @click="onWizards($stateStore.Wizards.PhaseShiftFullBridge)"
-                                @mouseenter="hoveredWizard = 'PSFB'"
-                                @mouseleave="hoveredWizard = null"
-                            >
-                                <i class="me-2 bi bi-chevron-double-right"></i>{{'PSFB Wizard'}}
-                            </button>
-                        </li>
-                        <li>
-                            <button
-                                data-cy="Pshb-link"
-                                :class="headerTogglerIsVisible? 'w-100' : 'mx-0' "
-                                class="dropdown-item btn btn-block nav-link px-2"
-                                @click="onWizards($stateStore.Wizards.PhaseShiftHalfBridge)"
-                                @mouseenter="hoveredWizard = 'PSHB'"
-                                @mouseleave="hoveredWizard = null"
-                            >
-                                <i class="me-2 bi bi-chevron-right"></i>{{'PSHB Wizard'}}
-                            </button>
-                        </li>
-                        <li>
-                            <button
-                                data-cy="Ahb-link"
-                                :class="headerTogglerIsVisible? 'w-100' : 'mx-0' "
-                                class="dropdown-item btn btn-block nav-link px-2"
-                                @click="onWizards($stateStore.Wizards.AsymmetricHalfBridge)"
-                                @mouseenter="hoveredWizard = 'AHB'"
-                                @mouseleave="hoveredWizard = null"
-                            >
-                                <i class="me-2 bi bi-arrow-bar-right"></i>{{'AHB Wizard'}}
-                            </button>
-                        </li>
-                        <li>
-                            <button
-                                data-cy="ActiveClampForward-CommonModeChoke-link"
-                                :class="headerTogglerIsVisible? 'w-100' : 'mx-0' "
-                                class="dropdown-item btn btn-block nav-link px-2"
-                                @click="onWizards($stateStore.Wizards.ActiveClampForward)"
-                                @mouseenter="hoveredWizard = 'ActiveClampForward'"
-                                @mouseleave="hoveredWizard = null"
-                            >
-                                <i class="me-2 bi bi-fullscreen-exit"></i>{{'Active Clamp Forward Wizard'}}
-                            </button>
-                        </li>
-                        <li>
-                            <button
-                                data-cy="SingleSwitchForward-CommonModeChoke-link"
-                                :class="headerTogglerIsVisible? 'w-100' : 'mx-0' "
-                                class="dropdown-item btn btn-block nav-link px-2"
-                                @click="onWizards($stateStore.Wizards.SingleSwitchForward)"
-                                @mouseenter="hoveredWizard = 'SingleSwitchForward'"
-                                @mouseleave="hoveredWizard = null"
-                            >
-                                <i class="me-2 bi bi-toggle-off"></i>{{'Single-Switch Forward Wizard'}}
-                            </button>
-                        </li>
-                        <li>
-                            <button
-                                data-cy="TwoSwitchForward-CommonModeChoke-link"
-                                :class="headerTogglerIsVisible? 'w-100' : 'mx-0' "
-                                class="dropdown-item btn btn-block nav-link px-2"
-                                @click="onWizards($stateStore.Wizards.TwoSwitchForward)"
-                                @mouseenter="hoveredWizard = 'TwoSwitchForward'"
-                                @mouseleave="hoveredWizard = null"
-                            >
-                                <i class="me-2 bi bi-toggle-on"></i>{{'Two-Switch Forward Wizard'}}
-                            </button>
-                        </li>
-                        <li>
-                            <button
-                                data-cy="Cuk-CommonModeChoke-link"
-                                :class="headerTogglerIsVisible? 'w-100' : 'mx-0' "
-                                class="dropdown-item btn btn-block nav-link px-2"
-                                @click="onWizards($stateStore.Wizards.Cuk)"
-                                @mouseenter="hoveredWizard = 'Cuk'"
-                                @mouseleave="hoveredWizard = null"
-                            >
-                                <i class="me-2 bi bi-arrow-down-up"></i>{{'Cuk Wizard'}}
-                            </button>
-                        </li>
-                        <li>
-                            <button
-                                data-cy="Zeta-CommonModeChoke-link"
-                                :class="headerTogglerIsVisible? 'w-100' : 'mx-0' "
-                                class="dropdown-item btn btn-block nav-link px-2"
-                                @click="onWizards($stateStore.Wizards.Zeta)"
-                                @mouseenter="hoveredWizard = 'Zeta'"
-                                @mouseleave="hoveredWizard = null"
-                            >
-                                <i class="me-2 bi bi-arrow-down-up"></i>{{'Zeta Wizard'}}
-                            </button>
-                        </li>
-                        <li>
-                            <button
-                                data-cy="FourSwitchBuckBoost-CommonModeChoke-link"
-                                :class="headerTogglerIsVisible? 'w-100' : 'mx-0' "
-                                class="dropdown-item btn btn-block nav-link px-2"
-                                @click="onWizards($stateStore.Wizards.FourSwitchBuckBoost)"
-                                @mouseenter="hoveredWizard = 'FourSwitchBuckBoost'"
-                                @mouseleave="hoveredWizard = null"
-                            >
-                                <i class="me-2 bi bi-arrow-down-up"></i>{{'Four-Switch Buck-Boost Wizard'}}
-                            </button>
-                        </li>
-                        <li>
-                            <button
-                                data-cy="Weinberg-CommonModeChoke-link"
-                                :class="headerTogglerIsVisible? 'w-100' : 'mx-0' "
-                                class="dropdown-item btn btn-block nav-link px-2"
-                                @click="onWizards($stateStore.Wizards.Weinberg)"
-                                @mouseenter="hoveredWizard = 'Weinberg'"
-                                @mouseleave="hoveredWizard = null"
-                            >
-                                <i class="me-2 bi bi-arrow-left-right"></i>{{'Weinberg Wizard'}}
-                            </button>
-                        </li>
-                        <li>
-                            <button
-                                data-cy="Clllc-link"
-                                :class="headerTogglerIsVisible? 'w-100' : 'mx-0' "
-                                class="dropdown-item btn btn-block nav-link px-2"
-                                @click="onWizards($stateStore.Wizards.Clllc)"
-                                @mouseenter="hoveredWizard = 'CLLLC'"
-                                @mouseleave="hoveredWizard = null"
-                            >
-                                <i class="me-2 bi bi-arrow-left-right"></i>{{'CLLLC Wizard'}}
-                            </button>
+                                <li v-for="item in group.items" :key="item.cy">
+                                    <button
+                                        :data-cy="item.cy"
+                                        :class="headerTogglerIsVisible? 'w-100' : 'mx-0' "
+                                        class="dropdown-item btn btn-block nav-link px-2"
+                                        @click="onWizards($stateStore.Wizards[item.store])"
+                                        @mouseenter="hoveredWizard = item.hoverKey"
+                                        @mouseleave="hoveredWizard = null"
+                                    >
+                                        <i class="me-2 bi" :class="item.icon"></i>{{ item.label }}
+                                    </button>
+                                </li>
+                            </ul>
                         </li>
                       </ul>
                     </li>
@@ -920,6 +736,54 @@ export default {
         --bs-dropdown-link-color: var(--bs-primary) !important;
         --bs-dropdown-link-hover-color: var(--bs-primary) !important;
         --bs-dropdown-link-hover-bg: rgba(var(--bs-primary-rgb), 0.1) !important;
+    }
+
+    /* ============================================================
+       Fly-out submenu for the Wizards dropdown
+       ============================================================ */
+    .om-header .dropdown-submenu {
+        position: relative;
+    }
+    .om-header .dropdown-submenu-toggle {
+        display: flex !important;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
+    }
+    .om-header .dropdown-submenu-toggle .submenu-caret {
+        font-size: 0.75rem;
+        opacity: 0.75;
+        transition: transform 0.15s;
+    }
+    .om-header .dropdown-submenu:hover > .dropdown-submenu-toggle .submenu-caret,
+    .om-header .dropdown-submenu > .submenu-panel.submenu-open ~ * .submenu-caret {
+        transform: translateX(2px);
+    }
+    /* Hidden by default; appears on parent hover OR when .submenu-open is set */
+    .om-header .submenu-panel {
+        display: none;
+        position: absolute;
+        top: -0.4rem;          /* align with the parent item top */
+        left: 100%;
+        margin-left: 0.25rem;
+        min-width: 14rem;
+        z-index: 1100;
+    }
+    .om-header .dropdown-submenu:hover > .submenu-panel,
+    .om-header .submenu-panel.submenu-open {
+        display: block;
+    }
+    /* Mobile / collapsed-navbar: fall back to inline expansion (no flyout) */
+    @media (max-width: 991.98px) {
+        .om-header .submenu-panel {
+            position: static;
+            left: auto;
+            margin-left: 0;
+            box-shadow: none !important;
+            border: none !important;
+            background: transparent !important;
+            padding-left: 1rem !important;
+        }
     }
 
     /* ============================================================

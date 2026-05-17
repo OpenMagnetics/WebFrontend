@@ -45,31 +45,12 @@ export async function screenshot(page, prefix, name) {
 // ── Navigation ─────────────────────────────────────────────────────────────
 
 /**
- * Navigate to the DAB Wizard by clicking the Wizards header dropdown.
- * Waits until the Analytical button is visible so callers can act immediately.
+ * Navigate to the DAB Wizard by clicking the Wizards header dropdown and
+ * the Isolated Bridge / Push-Pull submenu. Thin wrapper around openWizard
+ * kept for callers that still reference it by name.
  */
 export async function openDabWizard(page) {
-  await page.goto(`${BASE_URL}/`, { waitUntil: 'domcontentloaded', timeout: 20000 });
-  await page.waitForTimeout(1000);
-
-  const clicked = await page.evaluate(() => {
-    const toggles = Array.from(document.querySelectorAll('.dropdown-toggle'));
-    const wizardsToggle = toggles.find(el => el.textContent.includes('Wizards'));
-    if (wizardsToggle) {
-      wizardsToggle.click();
-      const dropdown = wizardsToggle.closest('.dropdown') || wizardsToggle.parentElement;
-      const menu = dropdown?.querySelector('.dropdown-menu');
-      if (menu) menu.classList.add('show');
-    }
-    const dabLink = document.querySelector('[data-cy="Dab-link"]');
-    if (dabLink) { dabLink.click(); return true; }
-    return false;
-  });
-
-  console.log(`[openDabWizard] click result: ${clicked}`);
-  await page.waitForURL('**/wizards', { timeout: 15000 }).catch(() => {});
-  await page.waitForSelector('.sim-btn.analytical', { timeout: 15000 }).catch(() => {});
-  await page.waitForTimeout(300);
+  await openWizard(page, 'Dab-link');
   console.log('[openDabWizard] DAB wizard ready');
 }
 
@@ -199,6 +180,15 @@ export async function switchToIKnowMode(page) {
 
 /**
  * Open any wizard by its header data-cy link attribute.
+ *
+ * The Wizards menu is now organised into 5 fly-out submenus
+ * (Filters / PFC, Non-Isolated DC-DC, Isolated Single-Switch,
+ * Isolated Bridge / Push-Pull, Resonant). Each item lives inside a
+ * `.submenu-panel` that is hidden by default; we find the item's
+ * parent `.dropdown-submenu` toggle and click it to open the panel
+ * before clicking the item, so the navigation matches what a real
+ * user would do.
+ *
  * Waits for the Analytical button (or falls back to waiting for /wizards URL).
  */
 export async function openWizard(page, dataCy) {
@@ -206,6 +196,7 @@ export async function openWizard(page, dataCy) {
   await page.waitForTimeout(1000);
 
   const clicked = await page.evaluate((cy) => {
+    // 1. Open the Wizards top-level dropdown.
     const toggles = Array.from(document.querySelectorAll('.dropdown-toggle'));
     const wizardsToggle = toggles.find(el => el.textContent.includes('Wizards'));
     if (wizardsToggle) {
@@ -214,9 +205,21 @@ export async function openWizard(page, dataCy) {
       const menu = dropdown?.querySelector('.dropdown-menu');
       if (menu) menu.classList.add('show');
     }
+
+    // 2. Locate the target item and open its parent submenu group.
     const link = document.querySelector(`[data-cy="${cy}"]`);
-    if (link) { link.click(); return true; }
-    return false;
+    if (!link) return false;
+    const groupLi = link.closest('.dropdown-submenu');
+    if (groupLi) {
+      const groupToggle = groupLi.querySelector('.dropdown-submenu-toggle');
+      if (groupToggle) groupToggle.click();
+      const panel = groupLi.querySelector('.submenu-panel');
+      if (panel) panel.classList.add('submenu-open');
+    }
+
+    // 3. Click the item.
+    link.click();
+    return true;
   }, dataCy);
 
   console.log(`[openWizard:${dataCy}] click result: ${clicked}`);
