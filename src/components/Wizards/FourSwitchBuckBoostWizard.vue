@@ -27,12 +27,14 @@ export default {
         const masStore = useMasStore();
         const taskQueueStore = useTaskQueueStore();
         const currentOptions = ['The output current ratio', 'The maximum switch current'];
+        const designLevelOptions = ['Help me with the design', 'I know the design I want'];
         const localData = deepCopy(defaultFourSwitchBuckBoostWizardInputs);
         localData["currentOptions"] = currentOptions[0];
         return {
             masStore,
             taskQueueStore,
             currentOptions,
+            designLevelOptions,
             localData,
             errorMessage: "",
             simulatingWaveforms: false,
@@ -61,7 +63,9 @@ export default {
             aux['inputVoltage'] = this.localData.inputVoltage;
             aux['diodeVoltageDrop'] = this.localData.diodeVoltageDrop;
             aux['efficiency'] = this.localData.efficiency;
-            if (this.localData.currentOptions == 'The output current ratio') {
+            if (this.localData.designLevel === 'I know the design I want') {
+                aux['desiredInductance'] = this.localData.inductance;
+            } else if (this.localData.currentOptions == 'The output current ratio') {
                 aux['currentRippleRatio'] = this.localData.currentRippleRatio;
             } else {
                 aux['maximumSwitchCurrent'] = this.localData.maximumSwitchCurrent;
@@ -75,7 +79,12 @@ export default {
             aux['operatingPoints'] = [auxOp];
             return aux;
         },
-        getCalculateFn() { return (aux) => this.taskQueueStore.calculateFourSwitchBuckBoostInputs(aux); },
+        getCalculateFn() {
+            if (this.localData.designLevel === 'I know the design I want') {
+                return (aux) => this.taskQueueStore.calculateAdvancedFourSwitchBuckBoostInputs(aux);
+            }
+            return (aux) => this.taskQueueStore.calculateFourSwitchBuckBoostInputs(aux);
+        },
         getSimulateFn() { return (aux) => this.taskQueueStore.simulateFourSwitchBuckBoostIdealWaveforms(aux); },
         getDefaultFrequency() { return this.localData.switchingFrequency; },
         postProcessResults(result, mode) {
@@ -162,15 +171,11 @@ export default {
     @get-spice-code="getSpiceCode"
     @dismiss-error="errorMessage = ''; waveformError = ''"
   >
-    <template #design-or-switch-parameters-title>
-      <div class="compact-header"><i class="bi bi-gear-wide-connected me-1"></i>Current Requirement</div>
-    </template>
-
-    <template #design-or-switch-parameters>
+    <template #design-mode>
       <ElementFromListRadio
-        :name="'currentOptions'" :tooltip="tooltipsConverterWizards['currentOptions']"
-        :dataTestLabel="dataTestLabel + '-CurrentOptions'"
-        :replaceTitle="''" :options="currentOptions" :titleSameRow="false"
+        :name="'designLevel'" :tooltip="tooltipsConverterWizards['designLevel']"
+        :dataTestLabel="dataTestLabel + '-DesignLevel'"
+        :replaceTitle="''" :options="designLevelOptions" :titleSameRow="false"
         v-model="localData"
         :labelWidthProportionClass="'d-none'" :valueWidthProportionClass="'col-12'"
         :valueFontSize="$styleStore.wizard.inputFontSize"
@@ -179,31 +184,67 @@ export default {
         :textColor="$styleStore.wizard.inputTextColor"
         @update="updateErrorMessage"
       />
-      <Dimension v-if="localData.currentOptions == 'The maximum switch current'"
-        :name="'maximumSwitchCurrent'" :tooltip="tooltipsConverterWizards['maximumSwitchCurrent']" :replaceTitle="'Max Isw'" unit="A"
-        :dataTestLabel="dataTestLabel + '-MaximumSwitchCurrent'"
-        :min="minimumMaximumScalePerParameter['current']['min']"
-        :max="minimumMaximumScalePerParameter['current']['max']"
-        v-model="localData"
-        :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'"
-        :valueFontSize="$styleStore.wizard.inputFontSize"
-        :labelFontSize="$styleStore.wizard.inputLabelFontSize"
-        :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor"
-        :textColor="$styleStore.wizard.inputTextColor"
-        @update="updateErrorMessage"
-      />
-      <Dimension v-if="localData.currentOptions == 'The output current ratio'"
-        :name="'currentRippleRatio'" :tooltip="tooltipsConverterWizards['currentRippleRatio']" :replaceTitle="'Ripple'" unit="%" :visualScale="100"
-        :dataTestLabel="dataTestLabel + '-CurrentRippleRatio'"
-        :min="0.01" :max="1"
-        v-model="localData"
-        :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'"
-        :valueFontSize="$styleStore.wizard.inputFontSize"
-        :labelFontSize="$styleStore.wizard.inputLabelFontSize"
-        :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor"
-        :textColor="$styleStore.wizard.inputTextColor"
-        @update="updateErrorMessage"
-      />
+    </template>
+
+    <template #design-or-switch-parameters-title>
+      <div class="compact-header"><i class="bi bi-gear-wide-connected me-1"></i>{{ localData.designLevel == 'I know the design I want' ? 'Design Params' : 'Current Requirement' }}</div>
+    </template>
+
+    <template #design-or-switch-parameters>
+      <div v-if="localData.designLevel == 'I know the design I want'">
+        <Dimension
+          :name="'inductance'" :tooltip="tooltipsConverterWizards['inductance']" :replaceTitle="'Inductance'" unit="H"
+          :dataTestLabel="dataTestLabel + '-Inductance'"
+          :min="minimumMaximumScalePerParameter['inductance']['min']"
+          :max="minimumMaximumScalePerParameter['inductance']['max']"
+          v-model="localData"
+          :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'"
+          :valueFontSize="$styleStore.wizard.inputFontSize"
+          :labelFontSize="$styleStore.wizard.inputLabelFontSize"
+          :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor"
+          :textColor="$styleStore.wizard.inputTextColor"
+          @update="updateErrorMessage"
+        />
+      </div>
+      <div v-else>
+        <ElementFromListRadio
+          :name="'currentOptions'" :tooltip="tooltipsConverterWizards['currentOptions']"
+          :dataTestLabel="dataTestLabel + '-CurrentOptions'"
+          :replaceTitle="''" :options="currentOptions" :titleSameRow="false"
+          v-model="localData"
+          :labelWidthProportionClass="'d-none'" :valueWidthProportionClass="'col-12'"
+          :valueFontSize="$styleStore.wizard.inputFontSize"
+          :labelFontSize="$styleStore.wizard.inputLabelFontSize"
+          :labelBgColor="'transparent'" :valueBgColor="'transparent'"
+          :textColor="$styleStore.wizard.inputTextColor"
+          @update="updateErrorMessage"
+        />
+        <Dimension v-if="localData.currentOptions == 'The maximum switch current'"
+          :name="'maximumSwitchCurrent'" :tooltip="tooltipsConverterWizards['maximumSwitchCurrent']" :replaceTitle="'Max Isw'" unit="A"
+          :dataTestLabel="dataTestLabel + '-MaximumSwitchCurrent'"
+          :min="minimumMaximumScalePerParameter['current']['min']"
+          :max="minimumMaximumScalePerParameter['current']['max']"
+          v-model="localData"
+          :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'"
+          :valueFontSize="$styleStore.wizard.inputFontSize"
+          :labelFontSize="$styleStore.wizard.inputLabelFontSize"
+          :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor"
+          :textColor="$styleStore.wizard.inputTextColor"
+          @update="updateErrorMessage"
+        />
+        <Dimension v-if="localData.currentOptions == 'The output current ratio'"
+          :name="'currentRippleRatio'" :tooltip="tooltipsConverterWizards['currentRippleRatio']" :replaceTitle="'Ripple'" unit="%" :visualScale="100"
+          :dataTestLabel="dataTestLabel + '-CurrentRippleRatio'"
+          :min="0.01" :max="1"
+          v-model="localData"
+          :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'"
+          :valueFontSize="$styleStore.wizard.inputFontSize"
+          :labelFontSize="$styleStore.wizard.inputLabelFontSize"
+          :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor"
+          :textColor="$styleStore.wizard.inputTextColor"
+          @update="updateErrorMessage"
+        />
+      </div>
     </template>
 
     <template #conditions>

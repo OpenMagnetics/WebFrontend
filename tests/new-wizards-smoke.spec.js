@@ -1,23 +1,43 @@
 /**
  * Smoke tests for the 5 new wizards (Cuk, Zeta, FourSwitchBuckBoost, Weinberg, CLLLC).
  *
- * Each test opens the wizard via its header link, asserts the title is shown,
- * and runs the Analytical compute path. Headless-only — never run with --headed.
+ * Per WIZARDS_GUIDE §0 hard-rules, every wizard MUST expose both
+ * "Help me with the design" and "I know the design I want" flows. Each test
+ * opens the wizard, runs Analytical in help-me mode, switches to advanced
+ * mode via the radio, and runs Analytical again. Headless-only — never
+ * run with --headed.
  */
 
 import { test, expect } from './_coverage.js';
 import { openWizard, runAnalytical, isBenign } from './utils.js';
 
 const WIZARDS = [
-  { cy: 'Cuk-CommonModeChoke-link',                title: 'Cuk Wizard' },
-  { cy: 'Zeta-CommonModeChoke-link',               title: 'Zeta Wizard' },
-  { cy: 'FourSwitchBuckBoost-CommonModeChoke-link',title: 'Four-Switch Buck-Boost Wizard' },
-  { cy: 'Weinberg-CommonModeChoke-link',           title: 'Weinberg Wizard' },
-  { cy: 'Clllc-link',                              title: 'CLLLC Wizard' },
+  { cy: 'Cuk-CommonModeChoke-link',                title: 'Cuk Wizard',                advanced: true },
+  { cy: 'Zeta-CommonModeChoke-link',               title: 'Zeta Wizard',               advanced: true },
+  { cy: 'FourSwitchBuckBoost-CommonModeChoke-link',title: 'Four-Switch Buck-Boost Wizard', advanced: true },
+  { cy: 'Weinberg-CommonModeChoke-link',           title: 'Weinberg Wizard',           advanced: true },
+  // CLLLC advanced wrapper exists in libMKF but AdvancedClllc::process is a
+  // stub in MKF/src/converter_models/Clllc.cpp ("not yet implemented.
+  // Depends on Clllc::process_operating_points"). Help-me flow still works.
+  // Re-enable advanced once that C++ algorithm is implemented.
+  { cy: 'Clllc-link',                              title: 'CLLLC Wizard',              advanced: false },
 ];
 
+/**
+ * Click the "I know the design I want" radio in the #design-mode slot.
+ * The ElementFromListRadio renders the option label as text; clicking the
+ * label (or its wrapper) selects the radio. Throws if the toggle is missing,
+ * per WIZARDS_GUIDE §0 Rule 1 (every wizard MUST have the designLevel radio).
+ */
+async function switchToAdvancedMode(page) {
+  const label = page.locator('text=I know the design I want').first();
+  await label.waitFor({ timeout: 5000 });
+  await label.click();
+  await page.waitForTimeout(400);
+}
+
 for (const w of WIZARDS) {
-  test(`${w.title} – opens and runs analytical`, async ({ page }) => {
+  test(`${w.title} – help-me and advanced flows`, async ({ page }) => {
     const errors = [];
     page.on('pageerror', e => { if (!isBenign(e.message)) errors.push(e.message); });
     page.on('console', m => { if (m.type() === 'error' && !isBenign(m.text())) errors.push(m.text()); });
@@ -25,10 +45,14 @@ for (const w of WIZARDS) {
     await openWizard(page, w.cy);
     await expect(page.locator('.wizard-title')).toContainText(w.title, { timeout: 10000 });
 
-    // Analytical compute should run without throwing. Some wizards may surface
-    // a benign error banner (e.g. backend missing for CLLLC sim path) — we only
-    // assert the button click does not raise an unhandled pageerror.
+    // Help-me mode (default).
     await runAnalytical(page, 60000);
+
+    if (w.advanced) {
+      // Advanced mode — required by WIZARDS_GUIDE §0 hard rules.
+      await switchToAdvancedMode(page);
+      await runAnalytical(page, 60000);
+    }
 
     expect(errors, `Unhandled errors: ${errors.join('\n')}`).toEqual([]);
   });

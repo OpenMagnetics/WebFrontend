@@ -16,8 +16,10 @@ import { tooltipsConverterWizards } from 'WebSharedComponents/assets/js/texts'
 // Weinberg wizard — isolated push-pull-derived, non-inverting Vo positive.
 // Two primary windings + center-tapped secondary, single output inductor.
 // MKF Weinberg simulate uses a SCALAR turnsRatio (not vector), so the
-// wizard exposes a single secondary output. No advanced "desiredInductance"
-// variant exposed via embind yet, so only the help-me-design flow is shown.
+// wizard exposes a single secondary output. The advanced ("desiredInductance"
+// + "desiredTurnsRatio" singular) variant is exposed via embind through
+// calculate_advanced_weinberg_inputs so the designLevel toggle drives both
+// flows.
 export default {
     props: {
         dataTestLabel: {
@@ -29,6 +31,7 @@ export default {
         const masStore = useMasStore();
         const taskQueueStore = useTaskQueueStore();
         const currentOptions = ['The output current ratio', 'The maximum switch current'];
+        const designLevelOptions = ['Help me with the design', 'I know the design I want'];
         const insulationTypes = ['No', 'Basic', 'Reinforced'];
         const localData = deepCopy(defaultWeinbergWizardInputs);
         localData["currentOptions"] = currentOptions[0];
@@ -36,6 +39,7 @@ export default {
             masStore,
             taskQueueStore,
             currentOptions,
+            designLevelOptions,
             insulationTypes,
             localData,
             errorMessage: "",
@@ -66,11 +70,16 @@ export default {
             aux['inputVoltage'] = this.localData.inputVoltage;
             aux['diodeVoltageDrop'] = this.localData.diodeVoltageDrop;
             aux['efficiency'] = this.localData.efficiency;
-            aux['desiredTurnsRatios'] = [this.localData.turnsRatio];
-            if (this.localData.currentOptions == 'The output current ratio') {
-                aux['currentRippleRatio'] = this.localData.currentRippleRatio;
+            if (this.localData.designLevel === 'I know the design I want') {
+                aux['desiredInductance'] = this.localData.inductance;
+                aux['desiredTurnsRatio'] = this.localData.turnsRatio;
             } else {
-                aux['maximumSwitchCurrent'] = this.localData.maximumSwitchCurrent;
+                aux['desiredTurnsRatios'] = [this.localData.turnsRatio];
+                if (this.localData.currentOptions == 'The output current ratio') {
+                    aux['currentRippleRatio'] = this.localData.currentRippleRatio;
+                } else {
+                    aux['maximumSwitchCurrent'] = this.localData.maximumSwitchCurrent;
+                }
             }
             const auxOp = {
                 outputVoltages: [this.localData.outputsParameters.voltage],
@@ -81,7 +90,12 @@ export default {
             aux['operatingPoints'] = [auxOp];
             return aux;
         },
-        getCalculateFn() { return (aux) => this.taskQueueStore.calculateWeinbergInputs(aux); },
+        getCalculateFn() {
+            if (this.localData.designLevel === 'I know the design I want') {
+                return (aux) => this.taskQueueStore.calculateAdvancedWeinbergInputs(aux);
+            }
+            return (aux) => this.taskQueueStore.calculateWeinbergInputs(aux);
+        },
         getSimulateFn() { return (aux) => this.taskQueueStore.simulateWeinbergIdealWaveforms(aux); },
         getDefaultFrequency() { return this.localData.switchingFrequency; },
         postProcessResults(result, mode) {
@@ -175,15 +189,11 @@ export default {
     @get-spice-code="getSpiceCode"
     @dismiss-error="errorMessage = ''; waveformError = ''"
   >
-    <template #design-or-switch-parameters-title>
-      <div class="compact-header"><i class="bi bi-gear-wide-connected me-1"></i>Current Requirement</div>
-    </template>
-
-    <template #design-or-switch-parameters>
+    <template #design-mode>
       <ElementFromListRadio
-        :name="'currentOptions'" :tooltip="tooltipsConverterWizards['currentOptions']"
-        :dataTestLabel="dataTestLabel + '-CurrentOptions'"
-        :replaceTitle="''" :options="currentOptions" :titleSameRow="false"
+        :name="'designLevel'" :tooltip="tooltipsConverterWizards['designLevel']"
+        :dataTestLabel="dataTestLabel + '-DesignLevel'"
+        :replaceTitle="''" :options="designLevelOptions" :titleSameRow="false"
         v-model="localData"
         :labelWidthProportionClass="'d-none'" :valueWidthProportionClass="'col-12'"
         :valueFontSize="$styleStore.wizard.inputFontSize"
@@ -192,31 +202,67 @@ export default {
         :textColor="$styleStore.wizard.inputTextColor"
         @update="updateErrorMessage"
       />
-      <Dimension v-if="localData.currentOptions == 'The maximum switch current'"
-        :name="'maximumSwitchCurrent'" :tooltip="tooltipsConverterWizards['maximumSwitchCurrent']" :replaceTitle="'Max Isw'" unit="A"
-        :dataTestLabel="dataTestLabel + '-MaximumSwitchCurrent'"
-        :min="minimumMaximumScalePerParameter['current']['min']"
-        :max="minimumMaximumScalePerParameter['current']['max']"
-        v-model="localData"
-        :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'"
-        :valueFontSize="$styleStore.wizard.inputFontSize"
-        :labelFontSize="$styleStore.wizard.inputLabelFontSize"
-        :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor"
-        :textColor="$styleStore.wizard.inputTextColor"
-        @update="updateErrorMessage"
-      />
-      <Dimension v-if="localData.currentOptions == 'The output current ratio'"
-        :name="'currentRippleRatio'" :tooltip="tooltipsConverterWizards['currentRippleRatio']" :replaceTitle="'Ripple'" unit="%" :visualScale="100"
-        :dataTestLabel="dataTestLabel + '-CurrentRippleRatio'"
-        :min="0.01" :max="1"
-        v-model="localData"
-        :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'"
-        :valueFontSize="$styleStore.wizard.inputFontSize"
-        :labelFontSize="$styleStore.wizard.inputLabelFontSize"
-        :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor"
-        :textColor="$styleStore.wizard.inputTextColor"
-        @update="updateErrorMessage"
-      />
+    </template>
+
+    <template #design-or-switch-parameters-title>
+      <div class="compact-header"><i class="bi bi-gear-wide-connected me-1"></i>{{ localData.designLevel == 'I know the design I want' ? 'Design Params' : 'Current Requirement' }}</div>
+    </template>
+
+    <template #design-or-switch-parameters>
+      <div v-if="localData.designLevel == 'I know the design I want'">
+        <Dimension
+          :name="'inductance'" :tooltip="tooltipsConverterWizards['inductance']" :replaceTitle="'L Inductance'" unit="H"
+          :dataTestLabel="dataTestLabel + '-Inductance'"
+          :min="minimumMaximumScalePerParameter['inductance']['min']"
+          :max="minimumMaximumScalePerParameter['inductance']['max']"
+          v-model="localData"
+          :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'"
+          :valueFontSize="$styleStore.wizard.inputFontSize"
+          :labelFontSize="$styleStore.wizard.inputLabelFontSize"
+          :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor"
+          :textColor="$styleStore.wizard.inputTextColor"
+          @update="updateErrorMessage"
+        />
+      </div>
+      <div v-else>
+        <ElementFromListRadio
+          :name="'currentOptions'" :tooltip="tooltipsConverterWizards['currentOptions']"
+          :dataTestLabel="dataTestLabel + '-CurrentOptions'"
+          :replaceTitle="''" :options="currentOptions" :titleSameRow="false"
+          v-model="localData"
+          :labelWidthProportionClass="'d-none'" :valueWidthProportionClass="'col-12'"
+          :valueFontSize="$styleStore.wizard.inputFontSize"
+          :labelFontSize="$styleStore.wizard.inputLabelFontSize"
+          :labelBgColor="'transparent'" :valueBgColor="'transparent'"
+          :textColor="$styleStore.wizard.inputTextColor"
+          @update="updateErrorMessage"
+        />
+        <Dimension v-if="localData.currentOptions == 'The maximum switch current'"
+          :name="'maximumSwitchCurrent'" :tooltip="tooltipsConverterWizards['maximumSwitchCurrent']" :replaceTitle="'Max Isw'" unit="A"
+          :dataTestLabel="dataTestLabel + '-MaximumSwitchCurrent'"
+          :min="minimumMaximumScalePerParameter['current']['min']"
+          :max="minimumMaximumScalePerParameter['current']['max']"
+          v-model="localData"
+          :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'"
+          :valueFontSize="$styleStore.wizard.inputFontSize"
+          :labelFontSize="$styleStore.wizard.inputLabelFontSize"
+          :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor"
+          :textColor="$styleStore.wizard.inputTextColor"
+          @update="updateErrorMessage"
+        />
+        <Dimension v-if="localData.currentOptions == 'The output current ratio'"
+          :name="'currentRippleRatio'" :tooltip="tooltipsConverterWizards['currentRippleRatio']" :replaceTitle="'Ripple'" unit="%" :visualScale="100"
+          :dataTestLabel="dataTestLabel + '-CurrentRippleRatio'"
+          :min="0.01" :max="1"
+          v-model="localData"
+          :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'"
+          :valueFontSize="$styleStore.wizard.inputFontSize"
+          :labelFontSize="$styleStore.wizard.inputLabelFontSize"
+          :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor"
+          :textColor="$styleStore.wizard.inputTextColor"
+          @update="updateErrorMessage"
+        />
+      </div>
       <Dimension
         :name="'turnsRatio'" :tooltip="tooltipsConverterWizards['turnsRatio']" :replaceTitle="'Turns ratio (Np/Ns)'" :unit="null"
         :dataTestLabel="dataTestLabel + '-TurnsRatio'"

@@ -5,6 +5,7 @@ import { useTaskQueueStore } from '../../stores/taskQueue'
 import { deepCopy } from 'WebSharedComponents/assets/js/utils.js'
 import Dimension from 'WebSharedComponents/DataInput/Dimension.vue'
 import ElementFromList from 'WebSharedComponents/DataInput/ElementFromList.vue'
+import ElementFromListRadio from 'WebSharedComponents/DataInput/ElementFromListRadio.vue'
 import PairOfDimensions from 'WebSharedComponents/DataInput/PairOfDimensions.vue'
 import { defaultClllcWizardInputs, minimumMaximumScalePerParameter } from 'WebSharedComponents/assets/js/defaults.js'
 import ConverterWizardBase from './ConverterWizardBase.vue'
@@ -14,9 +15,20 @@ import { tooltipsConverterWizards } from 'WebSharedComponents/assets/js/texts'
 
 <script>
 // CLLLC wizard — bidirectional 5-element symmetric resonant converter
-// (Lr_p / Cr_p / Lm / Cr_s / Lr_s). The embind wrapper only exposes
-// the help-me-design flow (process() / process_design_requirements()
-// driven from the inputs JSON). Single output (backend enforces).
+// (Lr_p / Cr_p / Lm / Cr_s / Lr_s). Help-me-design flow drives the
+// solver from Q + primaryResonantFrequency; advanced flow takes
+// desiredTurnsRatios + desiredMagnetizingInductance (+ optional Lr_p
+// and Cr_p) and calls calculate_advanced_clllc_inputs via embind.
+// Single output (backend enforces).
+//
+// KNOWN GAP: AdvancedClllc::process is a stub in
+// MKF/src/converter_models/Clllc.cpp and throws
+// "not yet implemented. Depends on Clllc::process_operating_points".
+// The designLevel toggle is kept exposed so the UI stays consistent with
+// the other 4 new wizards (WIZARDS_GUIDE §0 Rule 1); the advanced branch
+// will start working once the MKF algorithm lands. The dual-mode smoke
+// test (tests/new-wizards-smoke.spec.js) intentionally skips the advanced
+// click for CLLLC until then.
 export default {
     props: {
         dataTestLabel: {
@@ -28,11 +40,13 @@ export default {
         const masStore = useMasStore();
         const taskQueueStore = useTaskQueueStore();
         const insulationTypes = ['No', 'Basic', 'Reinforced'];
+        const designLevelOptions = ['Help me with the design', 'I know the design I want'];
         const localData = deepCopy(defaultClllcWizardInputs);
         return {
             masStore,
             taskQueueStore,
             insulationTypes,
+            designLevelOptions,
             localData,
             errorMessage: "",
             simulatingWaveforms: false,
@@ -64,8 +78,6 @@ export default {
                 efficiency: this.localData.efficiency,
                 minSwitchingFrequency: this.localData.minSwitchingFrequency,
                 maxSwitchingFrequency: this.localData.maxSwitchingFrequency,
-                primaryResonantFrequency: this.localData.nominalSwitchingFrequency,
-                qualityFactor: this.localData.qualityFactor,
                 operatingPoints: [{
                     outputVoltages: [this.localData.outputsParameters.voltage],
                     outputCurrents: [this.localData.outputsParameters.current],
@@ -73,9 +85,27 @@ export default {
                     ambientTemperature: this.localData.ambientTemperature,
                 }],
             };
+            if (this.localData.designLevel === 'I know the design I want') {
+                aux['desiredTurnsRatios'] = [this.localData.turnsRatio];
+                aux['desiredMagnetizingInductance'] = this.localData.magnetizingInductance;
+                if (this.localData.primarySeriesInductance != null) {
+                    aux['desiredPrimarySeriesInductance'] = this.localData.primarySeriesInductance;
+                }
+                if (this.localData.primaryResonantCapacitance != null) {
+                    aux['desiredPrimaryResonantCapacitance'] = this.localData.primaryResonantCapacitance;
+                }
+            } else {
+                aux['primaryResonantFrequency'] = this.localData.nominalSwitchingFrequency;
+                aux['qualityFactor'] = this.localData.qualityFactor;
+            }
             return aux;
         },
-        getCalculateFn() { return (aux) => this.taskQueueStore.calculateClllcInputs(aux); },
+        getCalculateFn() {
+            if (this.localData.designLevel === 'I know the design I want') {
+                return (aux) => this.taskQueueStore.calculateAdvancedClllcInputs(aux);
+            }
+            return (aux) => this.taskQueueStore.calculateClllcInputs(aux);
+        },
         getSimulateFn() { return (aux) => this.taskQueueStore.simulateClllcIdealWaveforms(aux); },
         getDefaultFrequency() { return this.localData.nominalSwitchingFrequency; },
         postProcessResults(result, mode) {
@@ -175,12 +205,75 @@ export default {
     @get-spice-code="getSpiceCode"
     @dismiss-error="errorMessage = ''; waveformError = ''"
   >
+    <template #design-mode>
+      <ElementFromListRadio
+        :name="'designLevel'" :tooltip="tooltipsConverterWizards['designLevel']"
+        :dataTestLabel="dataTestLabel + '-DesignLevel'"
+        :replaceTitle="''" :options="designLevelOptions" :titleSameRow="false"
+        v-model="localData"
+        :labelWidthProportionClass="'d-none'" :valueWidthProportionClass="'col-12'"
+        :valueFontSize="$styleStore.wizard.inputFontSize"
+        :labelFontSize="$styleStore.wizard.inputLabelFontSize"
+        :labelBgColor="'transparent'" :valueBgColor="'transparent'"
+        :textColor="$styleStore.wizard.inputTextColor"
+        @update="updateErrorMessage"
+      />
+    </template>
+
     <template #design-or-switch-parameters-title>
-      <div class="compact-header"><i class="bi bi-gear-wide-connected me-1"></i>Tank</div>
+      <div class="compact-header"><i class="bi bi-gear-wide-connected me-1"></i>{{ localData.designLevel == 'I know the design I want' ? 'Design Params' : 'Tank' }}</div>
     </template>
 
     <template #design-or-switch-parameters>
-      <Dimension :name="'qualityFactor'" :tooltip="tooltipsConverterWizards['qualityFactor']" :replaceTitle="'Q Factor'" :unit="null"
+      <div v-if="localData.designLevel == 'I know the design I want'">
+        <Dimension :name="'magnetizingInductance'" :tooltip="tooltipsConverterWizards['magnetizingInductance']" :replaceTitle="'Lm'" unit="H"
+          :dataTestLabel="dataTestLabel + '-MagnetizingInductance'"
+          :min="minimumMaximumScalePerParameter['inductance']['min']"
+          :max="minimumMaximumScalePerParameter['inductance']['max']"
+          v-model="localData"
+          :labelWidthProportionClass="'col-6'" :valueWidthProportionClass="'col-6'"
+          :valueFontSize="$styleStore.wizard.inputFontSize"
+          :labelFontSize="$styleStore.wizard.inputLabelFontSize"
+          :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor"
+          :textColor="$styleStore.wizard.inputTextColor"
+          @update="updateErrorMessage"
+        />
+        <Dimension :name="'turnsRatio'" :tooltip="tooltipsConverterWizards['turnsRatio']" :replaceTitle="'Turns ratio'" :unit="null"
+          :dataTestLabel="dataTestLabel + '-TurnsRatio'"
+          :min="0.01" :max="100"
+          v-model="localData"
+          :labelWidthProportionClass="'col-6'" :valueWidthProportionClass="'col-6'"
+          :valueFontSize="$styleStore.wizard.inputFontSize"
+          :labelFontSize="$styleStore.wizard.inputLabelFontSize"
+          :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor"
+          :textColor="$styleStore.wizard.inputTextColor"
+          @update="updateErrorMessage"
+        />
+        <Dimension :name="'primarySeriesInductance'" :tooltip="tooltipsConverterWizards['primarySeriesInductance']" :replaceTitle="'Lr_p'" unit="H"
+          :dataTestLabel="dataTestLabel + '-PrimarySeriesInductance'"
+          :min="minimumMaximumScalePerParameter['inductance']['min']"
+          :max="minimumMaximumScalePerParameter['inductance']['max']"
+          v-model="localData"
+          :labelWidthProportionClass="'col-6'" :valueWidthProportionClass="'col-6'"
+          :valueFontSize="$styleStore.wizard.inputFontSize"
+          :labelFontSize="$styleStore.wizard.inputLabelFontSize"
+          :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor"
+          :textColor="$styleStore.wizard.inputTextColor"
+          @update="updateErrorMessage"
+        />
+        <Dimension :name="'primaryResonantCapacitance'" :tooltip="tooltipsConverterWizards['primaryResonantCapacitance']" :replaceTitle="'Cr_p'" unit="F"
+          :dataTestLabel="dataTestLabel + '-PrimaryResonantCapacitance'"
+          :min="1e-12" :max="1e-3"
+          v-model="localData"
+          :labelWidthProportionClass="'col-6'" :valueWidthProportionClass="'col-6'"
+          :valueFontSize="$styleStore.wizard.inputFontSize"
+          :labelFontSize="$styleStore.wizard.inputLabelFontSize"
+          :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor"
+          :textColor="$styleStore.wizard.inputTextColor"
+          @update="updateErrorMessage"
+        />
+      </div>
+      <Dimension v-else :name="'qualityFactor'" :tooltip="tooltipsConverterWizards['qualityFactor']" :replaceTitle="'Q Factor'" :unit="null"
         :dataTestLabel="dataTestLabel + '-QualityFactor'"
         :min="0.1" :max="2"
         v-model="localData"

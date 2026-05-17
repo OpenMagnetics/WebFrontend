@@ -1066,6 +1066,58 @@ export const useTaskQueueStore = defineStore('taskQueue', {
             return parsed;
         },
 
+        // ----- Advanced (I-know-the-design) variants for the 5 new wizards -----
+        async calculateAdvancedCukInputs(params) {
+            const mkf = await waitForMkf();
+            await mkf.ready;
+            const result = await mkf.calculate_advanced_cuk_inputs(JSON.stringify(params));
+            if (result.startsWith('Exception')) { throw new Error(result); }
+            const parsed = JSON.parse(result);
+            if (parsed.error) { throw new Error(parsed.error); }
+            setTimeout(() => { this.cukInputsCalculated(true, parsed); }, this.task_standard_response_delay);
+            return parsed;
+        },
+        async calculateAdvancedZetaInputs(params) {
+            const mkf = await waitForMkf();
+            await mkf.ready;
+            const result = await mkf.calculate_advanced_zeta_inputs(JSON.stringify(params));
+            if (result.startsWith('Exception')) { throw new Error(result); }
+            const parsed = JSON.parse(result);
+            if (parsed.error) { throw new Error(parsed.error); }
+            setTimeout(() => { this.zetaInputsCalculated(true, parsed); }, this.task_standard_response_delay);
+            return parsed;
+        },
+        async calculateAdvancedFourSwitchBuckBoostInputs(params) {
+            const mkf = await waitForMkf();
+            await mkf.ready;
+            const result = await mkf.calculate_advanced_four_switch_buck_boost_inputs(JSON.stringify(params));
+            if (result.startsWith('Exception')) { throw new Error(result); }
+            const parsed = JSON.parse(result);
+            if (parsed.error) { throw new Error(parsed.error); }
+            setTimeout(() => { this.fourSwitchBuckBoostInputsCalculated(true, parsed); }, this.task_standard_response_delay);
+            return parsed;
+        },
+        async calculateAdvancedWeinbergInputs(params) {
+            const mkf = await waitForMkf();
+            await mkf.ready;
+            const result = await mkf.calculate_advanced_weinberg_inputs(JSON.stringify(params));
+            if (result.startsWith('Exception')) { throw new Error(result); }
+            const parsed = JSON.parse(result);
+            if (parsed.error) { throw new Error(parsed.error); }
+            setTimeout(() => { this.weinbergInputsCalculated(true, parsed); }, this.task_standard_response_delay);
+            return parsed;
+        },
+        async calculateAdvancedClllcInputs(params) {
+            const mkf = await waitForMkf();
+            await mkf.ready;
+            const result = await mkf.calculate_advanced_clllc_inputs(JSON.stringify(params));
+            if (result.startsWith('Exception')) { throw new Error(result); }
+            const parsed = JSON.parse(result);
+            if (parsed.error) { throw new Error(parsed.error); }
+            setTimeout(() => { this.clllcInputsCalculated(true, parsed); }, this.task_standard_response_delay);
+            return parsed;
+        },
+
         // ==========================================
         // Wizard Calculation/Simulation Methods - SEPIC
         // ==========================================
