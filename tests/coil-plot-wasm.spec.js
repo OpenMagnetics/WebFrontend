@@ -18,7 +18,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
 import { test, expect } from './_coverage.js';
-import { BASE_URL, screenshot } from './utils.js';
+import { BASE_URL, screenshot, pause } from './utils.js';
 
 const MAS_FIXTURE = '/home/alf/OpenMagnetics/WebFrontend/MagneticBuilder/src/public/test_wound_coil.json';
 const ss = (page, name) => screenshot(page, 'coil-plot-wasm', name);
@@ -30,7 +30,7 @@ async function goToRoute(page, routePath, { timeout = 45000 } = {}) {
     null,
     { timeout },
   );
-  await page.waitForTimeout(800);
+  await pause(page, 800, 'mechanical: settle');
 }
 
 /**
@@ -42,7 +42,7 @@ async function setupCompleteMagnetic(page) {
   const parsed = JSON.parse(fs.readFileSync(MAS_FIXTURE, 'utf-8'));
 
   await goToRoute(page, '/magnetic_tool');
-  await page.waitForTimeout(1000);
+  await pause(page, 1000, 'mechanical: settle');
 
   await page.evaluate((parsedMas) => {
     const pinia = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia;
@@ -71,12 +71,12 @@ async function setupCompleteMagnetic(page) {
     state.setCurrentToolSubsectionStatus('operatingPoints', true);
   }, parsed);
 
-  await page.waitForTimeout(2500);
+  await pause(page, 2500, 'mechanical: settle');
 
   const dropdown = page.locator('.cp-btn-all').first();
   await expect(dropdown).toBeVisible({ timeout: 5000 });
   await dropdown.click();
-  await page.waitForTimeout(400);
+  await pause(page, 400, 'mechanical: settle');
   return true;
 }
 
@@ -84,7 +84,7 @@ async function openCoilModal(page) {
   const btn = page.locator('[data-cy="Coil-exports-modal-button"]');
   await expect(btn).toBeVisible({ timeout: 5000 });
   await btn.click();
-  await page.waitForTimeout(700);
+  await pause(page, 700, 'mechanical: settle');
   await expect(page.locator('.modal.show').first()).toBeVisible({ timeout: 3000 });
 }
 
@@ -110,7 +110,7 @@ async function captureDownloadAndPlotCalls(page, locator, timeoutMs = 20000) {
     const tmpPath = path.join(os.tmpdir(), `om-svg-${Date.now()}-${download.suggestedFilename()}`);
     await download.saveAs(tmpPath);
     // Give any late-firing backend request time to appear before we stop listening
-    await page.waitForTimeout(500);
+    await pause(page, 500, 'mechanical: settle');
     return { filename: download.suggestedFilename(), path: tmpPath, plotCalls };
   } finally {
     page.off('request', onRequest);
@@ -221,7 +221,7 @@ test.describe('Wire2DVisualizer — litz uses WASM', () => {
 
     // Give Wire2DVisualizer's watcher time to fire and either paint locally or
     // — in the old behaviour — POST to the backend.
-    await page.waitForTimeout(2000);
+    await pause(page, 2000, 'mechanical: settle');
     await ss(page, 'CP4-after-litz-swap');
 
     expect(plotWireCalls).toEqual([]);

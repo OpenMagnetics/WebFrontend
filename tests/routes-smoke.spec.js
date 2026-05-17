@@ -11,7 +11,7 @@
  */
 
 import { test, expect } from './_coverage.js';
-import { BASE_URL, isBenign, screenshot } from './utils.js';
+import { BASE_URL, isBenign, screenshot, pause } from './utils.js';
 
 const ss = (page, name) => screenshot(page, 'routes', name);
 
@@ -22,7 +22,7 @@ const ss = (page, name) => screenshot(page, 'routes', name);
  */
 async function navigate(page, path) {
   await page.goto(`${BASE_URL}${path}`, { waitUntil: 'domcontentloaded', timeout: 20000 });
-  await page.waitForTimeout(1200);
+  await pause(page, 1200, 'mechanical: settle');
 }
 
 /** Collect non-benign console errors during navigation. */
@@ -97,7 +97,7 @@ test.describe('Routes — loader & landing pages', () => {
   test('R6: /wizards_landing shows wizard cards', async ({ page }) => {
     const errors = trackErrors(page);
     await navigate(page, '/wizards_landing');
-    await page.waitForTimeout(1500);
+    await pause(page, 1500, 'mechanical: settle');
     await expect(page.locator('body')).toBeVisible();
     // Should contain at least some wizard-related text
     const text = await page.locator('body').textContent();
@@ -108,7 +108,7 @@ test.describe('Routes — loader & landing pages', () => {
 
   test('R7: /wizards renders', async ({ page }) => {
     await navigate(page, '/wizards');
-    await page.waitForTimeout(1500);
+    await pause(page, 1500, 'mechanical: settle');
     await expect(page.locator('body')).toBeVisible();
     await ss(page, 'R7-wizards');
   });
@@ -121,7 +121,7 @@ test.describe('Routes — tool pages', () => {
 
   test('R8: /magnetic_tool reachable', async ({ page }) => {
     await navigate(page, '/magnetic_tool');
-    await page.waitForTimeout(2000);
+    await pause(page, 2000, 'mechanical: settle');
     // Accept either the tool itself or engine_loader (as gate)
     expect(page.url()).toMatch(/magnetic_tool|engine_loader/);
     await ss(page, 'R8-magnetic-tool');
@@ -129,28 +129,28 @@ test.describe('Routes — tool pages', () => {
 
   test('R9: /magnetic_viewer reachable', async ({ page }) => {
     await navigate(page, '/magnetic_viewer');
-    await page.waitForTimeout(2000);
+    await pause(page, 2000, 'mechanical: settle');
     expect(page.url()).toMatch(/magnetic_viewer|engine_loader/);
     await ss(page, 'R9-magnetic-viewer');
   });
 
   test('R10: /insulation_adviser reachable', async ({ page }) => {
     await navigate(page, '/insulation_adviser');
-    await page.waitForTimeout(2000);
+    await pause(page, 2000, 'mechanical: settle');
     expect(page.url()).toMatch(/insulation_adviser|engine_loader/);
     await ss(page, 'R10-insulation-adviser');
   });
 
   test('R11: /catalog_tool reachable', async ({ page }) => {
     await navigate(page, '/catalog_tool');
-    await page.waitForTimeout(2000);
+    await pause(page, 2000, 'mechanical: settle');
     expect(page.url()).toMatch(/catalog_tool|engine_loader/);
     await ss(page, 'R11-catalog-tool');
   });
 
   test('R12: /catalog reachable', async ({ page }) => {
     await navigate(page, '/catalog');
-    await page.waitForTimeout(2000);
+    await pause(page, 2000, 'mechanical: settle');
     expect(page.url()).toMatch(/catalog|engine_loader/);
     await ss(page, 'R12-catalog');
   });
@@ -163,49 +163,49 @@ test.describe('Routes — cross-referencer pages', () => {
 
   test('R13: /cross_referencer_selection reachable', async ({ page }) => {
     await navigate(page, '/cross_referencer_selection');
-    await page.waitForTimeout(1500);
+    await pause(page, 1500, 'mechanical: settle');
     await expect(page.locator('body')).toBeVisible();
     await ss(page, 'R13-xref-selection');
   });
 
   test('R14: /core_cross_referencer_fair_rite reachable', async ({ page }) => {
     await navigate(page, '/core_cross_referencer_fair_rite');
-    await page.waitForTimeout(1500);
+    await pause(page, 1500, 'mechanical: settle');
     await expect(page.locator('body')).toBeVisible();
     await ss(page, 'R14-core-xref-fr');
   });
 
   test('R15: /core_material_cross_referencer_fair_rite reachable', async ({ page }) => {
     await navigate(page, '/core_material_cross_referencer_fair_rite');
-    await page.waitForTimeout(1500);
+    await pause(page, 1500, 'mechanical: settle');
     await expect(page.locator('body')).toBeVisible();
     await ss(page, 'R15-mat-xref-fr');
   });
 
   test('R16: /core_shape_cross_referencer_fair_rite reachable', async ({ page }) => {
     await navigate(page, '/core_shape_cross_referencer_fair_rite');
-    await page.waitForTimeout(1500);
+    await pause(page, 1500, 'mechanical: settle');
     await expect(page.locator('body')).toBeVisible();
     await ss(page, 'R16-shape-xref-fr');
   });
 
   test('R17: /core_cross_referencer reachable', async ({ page }) => {
     await navigate(page, '/core_cross_referencer');
-    await page.waitForTimeout(1500);
+    await pause(page, 1500, 'mechanical: settle');
     await expect(page.locator('body')).toBeVisible();
     await ss(page, 'R17-core-xref');
   });
 
   test('R18: /core_material_cross_referencer reachable', async ({ page }) => {
     await navigate(page, '/core_material_cross_referencer');
-    await page.waitForTimeout(1500);
+    await pause(page, 1500, 'mechanical: settle');
     await expect(page.locator('body')).toBeVisible();
     await ss(page, 'R18-mat-xref');
   });
 
   test('R19: /core_shape_cross_referencer reachable', async ({ page }) => {
     await navigate(page, '/core_shape_cross_referencer');
-    await page.waitForTimeout(1500);
+    await pause(page, 1500, 'mechanical: settle');
     await expect(page.locator('body')).toBeVisible();
     await ss(page, 'R19-shape-xref');
   });
@@ -217,7 +217,7 @@ test.describe('Routes — unknown path', () => {
   test('R20: unknown path does not crash app', async ({ page }) => {
     const errors = trackErrors(page);
     await navigate(page, '/this-route-does-not-exist-xyz');
-    await page.waitForTimeout(800);
+    await pause(page, 800, 'mechanical: settle');
     await expect(page.locator('body')).toBeVisible();
     // Vue router without a catch-all just shows blank — just check app didn't throw
     expect(errors.filter(e => /vue.*warn|error.*render/i.test(e))).toEqual([]);

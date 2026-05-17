@@ -11,12 +11,7 @@
  */
 
 import { test, expect } from './_coverage.js';
-import {
-  BASE_URL, isBenign, screenshot,
-  openWizard, runAnalytical,
-  conditionsCard,
-  goToMagneticAdviser, goToMagneticBuilder, runCoreAdviser,
-} from './utils.js';
+import { BASE_URL, isBenign, screenshot, openWizard, runAnalytical, conditionsCard, goToMagneticAdviser, goToMagneticBuilder, runCoreAdviser, softVisible, pause } from './utils.js';
 
 const SEPIC_CY = 'Sepic-CommonModeChoke-link';
 const ss = (page, name) => screenshot(page, 'sepic-battery', name);
@@ -35,7 +30,7 @@ async function setIKnowMode(page) {
   const iKnow = page.locator('[data-cy="SepicWizard-DesignLevel-I know the design I want-radio-input"]');
   await expect(iKnow).toBeAttached();
   await iKnow.evaluate(el => { el.checked = true; el.dispatchEvent(new Event('change', { bubbles: true })); });
-  await page.waitForTimeout(400);
+  await pause(page, 400, 'mechanical: settle');
 }
 
 // =====================================================================
@@ -72,7 +67,7 @@ test.describe('SEPIC – Group A – Layout', () => {
     await openSepic(page);
     const coupled = page.locator('[data-cy="SepicWizard-CoupledInductor"]').first();
     await coupled.check();
-    await page.waitForTimeout(300);
+    await pause(page, 300, 'mechanical: settle');
     const kInput = page.locator('[data-cy="SepicWizard-CouplingCoefficient-container"]').first();
     await expect(kInput).toBeVisible();
     await ss(page, 'SEPIC-A3-coupled-k');
@@ -102,7 +97,7 @@ test.describe('SEPIC – Group B – Analytical', () => {
     await openSepic(page);
     await runAnalytical(page);
 
-    const hasError = await page.locator('.error-text, .alert-danger').first().isVisible().catch(() => false);
+    const hasError = await softVisible(page.locator('.error-text, .alert-danger').first());
     expect(hasError).toBe(false);
 
     const canvasCount = await page.locator('canvas').count();
@@ -118,10 +113,10 @@ test.describe('SEPIC – Group B – Analytical', () => {
     await setNumberInput(page, 'SepicWizard-InputVoltage-maximum-number-input', '7');
     await setNumberInput(page, 'SepicWizard-OutputVoltage-number-input', '24');
     await setNumberInput(page, 'SepicWizard-OutputCurrent-number-input', '0.5');
-    await page.waitForTimeout(300);
+    await pause(page, 300, 'mechanical: settle');
 
     await runAnalytical(page);
-    const hasError = await page.locator('.error-text').first().isVisible().catch(() => false);
+    const hasError = await softVisible(page.locator('.error-text').first());
     console.log(`[SEPIC-B2] Step-up 5V→24V error: ${hasError}`);
     expect(hasError).toBe(false);
     await ss(page, 'SEPIC-B2-stepup');
@@ -134,10 +129,10 @@ test.describe('SEPIC – Group B – Analytical', () => {
     await setNumberInput(page, 'SepicWizard-InputVoltage-maximum-number-input', '28');
     await setNumberInput(page, 'SepicWizard-OutputVoltage-number-input', '12');
     await setNumberInput(page, 'SepicWizard-OutputCurrent-number-input', '0.5');
-    await page.waitForTimeout(300);
+    await pause(page, 300, 'mechanical: settle');
 
     await runAnalytical(page);
-    const hasError = await page.locator('.error-text').first().isVisible().catch(() => false);
+    const hasError = await softVisible(page.locator('.error-text').first());
     console.log(`[SEPIC-B3] Step-down 24V→12V error: ${hasError}`);
     expect(hasError).toBe(false);
     await ss(page, 'SEPIC-B3-stepdown');
@@ -147,10 +142,10 @@ test.describe('SEPIC – Group B – Analytical', () => {
     await openSepic(page);
     const coupled = page.locator('[data-cy="SepicWizard-CoupledInductor"]').first();
     await coupled.check();
-    await page.waitForTimeout(300);
+    await pause(page, 300, 'mechanical: settle');
 
     await runAnalytical(page);
-    const hasError = await page.locator('.error-text').first().isVisible().catch(() => false);
+    const hasError = await softVisible(page.locator('.error-text').first());
     console.log(`[SEPIC-B4] Coupled-inductor analytical error: ${hasError}`);
     expect(hasError).toBe(false);
     await ss(page, 'SEPIC-B4-coupled');
@@ -168,7 +163,7 @@ test.describe('SEPIC – Group D – Simulated', () => {
     const simBtn = page.locator('.sim-btn').filter({ hasText: 'Simulated' }).first();
     await expect(simBtn).toBeVisible();
     await simBtn.click();
-    await page.waitForTimeout(3000);
+    await pause(page, 3000, 'mechanical: settle');
     await ss(page, 'SEPIC-D1-simulated-clicked');
   });
 });
@@ -248,7 +243,7 @@ test.describe('SEPIC – Group F – Magnetic Adviser', () => {
       () => !document.querySelector('.fa-spinner, [class*="loading"]'),
       { timeout: 180000 }
     );
-    await page.waitForTimeout(2000);
+    await pause(page, 2000, 'mechanical: settle');
     await ss(page, 'SEPIC-F2-adviser-results');
     expect(page.url()).toContain('magnetic_tool');
     expect(errors.length).toBe(0);

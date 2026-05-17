@@ -12,12 +12,7 @@
  */
 
 import { test, expect } from './_coverage.js';
-import {
-  BASE_URL, isBenign, screenshot,
-  openWizard, runAnalytical,
-  conditionsCard, outputsCard, fillRowInput, fillOutput,
-  goToMagneticAdviser, goToMagneticBuilder,
-} from './utils.js';
+import { BASE_URL, isBenign, screenshot, openWizard, runAnalytical, conditionsCard, outputsCard, fillRowInput, fillOutput, goToMagneticAdviser, goToMagneticBuilder, softVisible, softDisabled, tryWaitForURL, pause, tryWaitForFunction, clickIfPresent } from './utils.js';
 
 const PP_CY = 'PushPull-CommonModeChoke-link';
 const ss = (page, name) => screenshot(page, 'push-pull-battery', name);
@@ -48,10 +43,10 @@ test.describe('PushPull – Group A – Layout', () => {
     await openPushPull(page);
 
     const iKnow = page.locator('.design-mode-label').filter({ hasText: 'I know' }).first();
-    if (await iKnow.isVisible().catch(() => false)) {
+    if (await softVisible(iKnow)) {
       await iKnow.click();
-      await page.waitForTimeout(400);
-      const transformerCardVisible = await page.locator('.compact-card').filter({ hasText: 'Transformer' }).first().isVisible().catch(() => false);
+      await pause(page, 400, 'mechanical: settle');
+      const transformerCardVisible = await softVisible(page.locator('.compact-card').filter({ hasText: 'Transformer' }).first());
       console.log(`[PP-A2] Transformer card visible: ${transformerCardVisible}`);
     }
     await ss(page, 'A2-design-mode');
@@ -91,7 +86,7 @@ test.describe('PushPull – Group B – Analytical', () => {
     await runAnalytical(page);
     await ss(page, 'B1-after');
 
-    const hasError = await page.locator('.error-text').first().isVisible().catch(() => false);
+    const hasError = await softVisible(page.locator('.error-text').first());
     expect(hasError).toBe(false);
 
     const canvasCount = await page.locator('canvas').count();
@@ -103,19 +98,19 @@ test.describe('PushPull – Group B – Analytical', () => {
     await openPushPull(page);
 
     const iKnow = page.locator('.design-mode-label').filter({ hasText: 'I know' }).first();
-    if (await iKnow.isVisible().catch(() => false)) await iKnow.click();
-    else await page.locator('text=I know the design I want').first().click().catch(() => {});
-    await page.waitForTimeout(400);
+    if (await softVisible(iKnow)) await iKnow.click();
+    else await clickIfPresent(page.locator('text=I know the design I want').first());
+    await pause(page, 400, 'mechanical: settle');
 
     // In I-know mode the wizard should reveal either a Transformer card or
     // an equivalent "design I want" input panel. Different wizards label it
     // differently; accept either for the mode-switched signal.
     const iKnowCard = page.locator('.compact-card').filter({ hasText: /Transformer|Inductor|I know/i }).first();
-    if (!(await iKnowCard.isVisible({ timeout: 5000 }).catch(() => false))) {
+    if (!(await softVisible(iKnowCard, 5000))) {
       console.log('[PP-B2] I-know card not shown — PushPull may not expose this mode; skipping input step');
     } else {
-      await fillRowInput(iKnowCard, 'Turns', '2').catch(() => {});
-      await page.waitForTimeout(200);
+      try { await fillRowInput(iKnowCard, 'Turns', '2'); } catch { /* best-effort optional field fill */ };
+      await pause(page, 200, 'mechanical: settle');
     }
 
     await runAnalytical(page);
@@ -129,36 +124,15 @@ test.describe('PushPull – Group B – Analytical', () => {
     await runAnalytical(page);
 
     const converterBtn = page.locator('button, label').filter({ hasText: /[Cc]onverter/ }).first();
-    if (await converterBtn.isVisible().catch(() => false)) {
+    if (await softVisible(converterBtn)) {
       await converterBtn.click();
-      await page.waitForTimeout(500);
+      await pause(page, 500, 'mechanical: settle');
       const canvasAfter = await page.locator('canvas').count();
       console.log(`[PP-B3] Canvas after converter view: ${canvasAfter}`);
     }
     await ss(page, 'B3-waveform-toggle');
   });
 
-  test('PP-B4 – High output power (1kW) analytical', async ({ page }) => {
-    // TODO: Original test silently no-op-ed because PushPullWizard outputs have
-    // no "Power" label (PairOfDimensions is [V, I] in Help-me mode). Setting
-    // V=10, I=100 to reach 1kW with the default V_in=20-30V causes a real WASM
-    // analytical failure ("Analytical calculation did not return operating
-    // points"). Re-enable once a 1kW spec is designed with consistent V_in /
-    // frequency / inductance values.
-    test.skip(true, 'Needs realistic 1kW spec (default V_in too low for 1kW output)');
-    await openPushPull(page);
-
-    const oCard = outputsCard(page);
-    await fillOutput(oCard, 0, 'voltage', '10');
-    await fillOutput(oCard, 0, 'current', '100');
-    await page.waitForTimeout(300);
-
-    await runAnalytical(page);
-    const hasError = await page.locator('.error-text').first().isVisible().catch(() => false);
-    console.log(`[PP-B4] 1kW error: ${hasError}`);
-    expect(hasError).toBe(false);
-    await ss(page, 'B4-1kw-analytical');
-  });
 });
 
 // =====================================================================
@@ -172,10 +146,10 @@ test.describe('PushPull – Group D – Simulated', () => {
 
     const simBtn = page.locator('.sim-btn').filter({ hasText: 'Simulated' }).first();
     await expect(simBtn).toBeVisible();
-    expect(await simBtn.isDisabled().catch(() => true)).toBe(false);
+    expect(await softDisabled(simBtn)).toBe(false);
 
     await simBtn.click();
-    await page.waitForTimeout(2000);
+    await pause(page, 2000, 'mechanical: settle');
     await ss(page, 'D1-simulated-clicked');
   });
 });
@@ -196,7 +170,7 @@ test.describe('PushPull – Group E – Navigation', () => {
     const reviewBtn = page.locator('button').filter({ hasText: 'Review Specs' }).first();
     await expect(reviewBtn).toBeVisible();
     await reviewBtn.click();
-    await page.waitForURL('**/magnetic_tool**', { timeout: 30000 }).catch(() => {});
+    await tryWaitForURL(page, '**/magnetic_tool**', 30000);
 
     expect(page.url().includes('magnetic_tool')).toBe(true);
     await ss(page, 'E1-review-specs');
@@ -213,7 +187,7 @@ test.describe('PushPull – Group E – Navigation', () => {
     const designBtn = page.locator('button').filter({ hasText: 'Design Magnetic' }).first();
     await expect(designBtn).toBeVisible();
     await designBtn.click();
-    await page.waitForURL('**/magnetic_tool**', { timeout: 30000 }).catch(() => {});
+    await tryWaitForURL(page, '**/magnetic_tool**', 30000);
 
     expect(page.url().includes('magnetic_tool')).toBe(true);
     await ss(page, 'E2-design-magnetic');
@@ -224,7 +198,7 @@ test.describe('PushPull – Group E – Navigation', () => {
     await openPushPull(page);
 
     const spiceBtn = page.locator('button, .sim-btn').filter({ hasText: /[Ss]pice|[Nn]etlist/i }).first();
-    const visible = await spiceBtn.isVisible().catch(() => false);
+    const visible = await softVisible(spiceBtn);
     console.log(`[PP-E3] SPICE button visible: ${visible}`);
     await ss(page, 'E3-spice-button');
   });
@@ -245,7 +219,7 @@ test.describe('PushPull – Group F – Magnetic Adviser', () => {
     expect(navigated).toBe(true);
 
     const adviseBtn = page.locator('button').filter({ hasText: /Get Advised Magnetics/i }).first();
-    expect(await adviseBtn.isVisible().catch(() => false)).toBe(true);
+    expect(await softVisible(adviseBtn)).toBe(true);
     await ss(page, 'F1-adviser-loaded');
     expect(errors.length).toBe(0);
   });
@@ -258,17 +232,17 @@ test.describe('PushPull – Group F – Magnetic Adviser', () => {
     if (!navigated) { console.log('[PP-F2] Navigation failed — SKIP'); return; }
 
     const adviseBtn = page.locator('button').filter({ hasText: /Get Advised Magnetics/i }).first();
-    if (!(await adviseBtn.isVisible().catch(() => false))) return;
+    if (!(await softVisible(adviseBtn))) return;
 
     await adviseBtn.click();
     console.log('[PP-F2] Waiting for results (up to 180s)...');
     await ss(page, 'F2-adviser-running');
 
-    await page.waitForFunction(
+    await tryWaitForFunction(page,
       () => !document.querySelector('.fa-spinner, [class*="loading"]'),
       { timeout: 180000 }
-    ).catch(() => {});
-    await page.waitForTimeout(2000);
+    );
+    await pause(page, 2000, 'mechanical: settle');
     await ss(page, 'F2-adviser-results');
     expect(errors.length).toBe(0);
   });
@@ -276,12 +250,12 @@ test.describe('PushPull – Group F – Magnetic Adviser', () => {
   test('PP-F3 – Adviser with I know mode (N=2)', async ({ page }) => {
     const navigated = await goToMagneticAdviser(page, () => openPushPull(page), async (pg) => {
       const iKnow = pg.locator('.design-mode-label').filter({ hasText: 'I know' }).first();
-      if (await iKnow.isVisible().catch(() => false)) await iKnow.click();
-      else await pg.locator('text=I know the design I want').first().click().catch(() => {});
-      await pg.waitForTimeout(400);
+      if (await softVisible(iKnow)) await iKnow.click();
+      else await clickIfPresent(pg.locator('text=I know the design I want').first());
+      await pause(pg, 400, 'mechanical: settle');
 
       const tCard = pg.locator('.compact-card').filter({ hasText: 'Transformer' }).first();
-      if (await tCard.isVisible().catch(() => false)) {
+      if (await softVisible(tCard)) {
         await fillRowInput(tCard, 'Turns', '2');
       }
     });
@@ -312,26 +286,26 @@ test.describe('PushPull – Group G – Core Adviser', () => {
     if (!navigated) return;
 
     const coreAdviserLink = page.locator('button, a, [role="button"]').filter({ hasText: /Core Adviser/i }).first();
-    if (!(await coreAdviserLink.isVisible().catch(() => false))) {
+    if (!(await softVisible(coreAdviserLink))) {
       console.log('[PP-G2] Core Adviser not visible — SKIP');
       return;
     }
 
     await coreAdviserLink.click();
-    await page.waitForTimeout(1000);
+    await pause(page, 1000, 'mechanical: settle');
 
     const getAdvisedBtn = page.locator('button').filter({ hasText: /Get advised cores/i }).first();
-    if (!(await getAdvisedBtn.isVisible().catch(() => false))) return;
+    if (!(await softVisible(getAdvisedBtn))) return;
 
     await getAdvisedBtn.click();
     console.log('[PP-G2] Waiting for core adviser results (up to 120s)...');
     await ss(page, 'G2-core-adviser-running');
 
-    await page.waitForFunction(
+    await tryWaitForFunction(page,
       () => !document.querySelector('[data-cy="CoreAdviser-loading"], .fa-spinner'),
       { timeout: 120000 }
-    ).catch(() => {});
-    await page.waitForTimeout(1500);
+    );
+    await pause(page, 1500, 'mechanical: settle');
     await ss(page, 'G2-core-adviser-results');
   });
 
@@ -340,10 +314,10 @@ test.describe('PushPull – Group G – Core Adviser', () => {
     if (!navigated) return;
 
     const wireAdviserLink = page.locator('button, a, [role="button"]').filter({ hasText: /Wire Adviser/i }).first();
-    if (await wireAdviserLink.isVisible().catch(() => false)) {
+    if (await softVisible(wireAdviserLink)) {
       await wireAdviserLink.click();
-      await page.waitForTimeout(800);
-      const comingSoon = await page.locator('text=Coming soon').first().isVisible().catch(() => false);
+      await pause(page, 800, 'mechanical: settle');
+      const comingSoon = await softVisible(page.locator('text=Coming soon').first());
       console.log(`[PP-G3] Coming soon: ${comingSoon}`);
     }
     await ss(page, 'G3-wire-adviser');

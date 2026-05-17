@@ -7,7 +7,7 @@
  */
 
 import { test, expect } from './_coverage.js';
-import { BASE_URL, isBenign, screenshot } from './utils.js';
+import { BASE_URL, isBenign, screenshot, softVisible, pause } from './utils.js';
 
 const ss = (page, name) => screenshot(page, 'home', name);
 
@@ -21,7 +21,7 @@ async function clearConsent(page) {
 /** Navigate to home and wait for it to render. */
 async function openHome(page) {
   await page.goto(`${BASE_URL}/`, { waitUntil: 'domcontentloaded', timeout: 20000 });
-  await page.waitForTimeout(1000);
+  await pause(page, 1000, 'mechanical: settle');
 }
 
 // ── Home hero ─────────────────────────────────────────────────────────────
@@ -77,7 +77,7 @@ test.describe('Header — static links', () => {
   test('H7: Insulation Coordinator link visible', async ({ page }) => {
     await openHome(page);
     const btn = page.locator('[data-cy="Header-insulation-coordinator-link"]');
-    if (await btn.isVisible({ timeout: 3000 }).catch(() => false)) {
+    if (await softVisible(btn, 3000)) {
       await expect(btn).toBeVisible();
     } else {
       // Link may be behind a sub-menu — non-fatal, document state
@@ -104,11 +104,11 @@ test.describe('Header — static links', () => {
   test('H10: logo click navigates to home', async ({ page }) => {
     // Navigate away first, then click logo
     await page.goto(`${BASE_URL}/legal_notice`, { waitUntil: 'domcontentloaded', timeout: 15000 });
-    await page.waitForTimeout(800);
+    await pause(page, 800, 'mechanical: settle');
     const logo = page.locator('[data-cy="Header-logo-home-link"]');
-    if (await logo.isVisible({ timeout: 5000 }).catch(() => false)) {
+    if (await softVisible(logo, 5000)) {
       await logo.click();
-      await page.waitForTimeout(800);
+      await pause(page, 800, 'mechanical: settle');
       expect(page.url()).toMatch(/\/($|#|\?)/);
     }
   });
@@ -152,7 +152,7 @@ test.describe('Header — wizard dropdown', () => {
         if (menu) menu.classList.add('show');
       }
     });
-    await page.waitForTimeout(400);
+    await pause(page, 400, 'mechanical: settle');
   }
 
   test('H11: Wizards toggle exists in header', async ({ page }) => {
@@ -199,7 +199,7 @@ test.describe('Header — Bug Reporter modal', () => {
     await openHome(page);
     const btn = page.locator('[data-cy="Header-report-bug-modal-button"]');
     await btn.click();
-    await page.waitForTimeout(500);
+    await pause(page, 500, 'mechanical: settle');
 
     await expect(page.locator('[data-cy="BugReporter-title"]')).toBeVisible({ timeout: 5000 });
     await expect(page.locator('[data-cy="BugReporter-user-information-input"]')).toBeVisible();
@@ -210,9 +210,9 @@ test.describe('Header — Bug Reporter modal', () => {
   test('H16: modal can be dismissed via Cancel', async ({ page }) => {
     await openHome(page);
     await page.locator('[data-cy="Header-report-bug-modal-button"]').click();
-    await page.waitForTimeout(500);
+    await pause(page, 500, 'mechanical: settle');
     await page.locator('[data-cy="BugReporter-close-modal-button"]').click();
-    await page.waitForTimeout(500);
+    await pause(page, 500, 'mechanical: settle');
     // Modal backdrop should be gone
     await expect(page.locator('[data-cy="BugReporter-title"]')).not.toBeVisible({ timeout: 3000 });
   });
@@ -227,7 +227,7 @@ test.describe('Cookie banner', () => {
     await clearConsent(page);
     await openHome(page);
     const banner = page.locator('.om-consent-banner, [role="dialog"][aria-label*="Cookie"]').first();
-    const visible = await banner.isVisible({ timeout: 5000 }).catch(() => false);
+    const visible = await softVisible(banner, 5000);
     // Banner may be below-the-fold; at minimum the container should exist in DOM
     const exists = await banner.count() > 0;
     expect(exists).toBe(true);
@@ -238,26 +238,20 @@ test.describe('Cookie banner', () => {
     await clearConsent(page);
     await openHome(page);
     const accept = page.locator('.om-consent-accept').first();
-    if (await accept.isVisible({ timeout: 5000 }).catch(() => false)) {
-      await accept.click();
-      await page.waitForTimeout(500);
-      await expect(accept).not.toBeVisible({ timeout: 3000 });
-    } else {
-      test.skip();
-    }
+    await expect(accept, 'consent accept button must appear after clearing consent').toBeVisible({ timeout: 10000 });
+    await accept.click();
+    await pause(page, 500, 'mechanical: settle');
+    await expect(accept).not.toBeVisible({ timeout: 3000 });
   });
 
   test('H19: decline button click dismisses banner', async ({ page }) => {
     await clearConsent(page);
     await openHome(page);
     const decline = page.locator('.om-consent-decline').first();
-    if (await decline.isVisible({ timeout: 5000 }).catch(() => false)) {
-      await decline.click();
-      await page.waitForTimeout(500);
-      await expect(decline).not.toBeVisible({ timeout: 3000 });
-    } else {
-      test.skip();
-    }
+    await expect(decline, 'consent decline button must appear after clearing consent').toBeVisible({ timeout: 10000 });
+    await decline.click();
+    await pause(page, 500, 'mechanical: settle');
+    await expect(decline).not.toBeVisible({ timeout: 3000 });
   });
 });
 

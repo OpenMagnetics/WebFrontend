@@ -9,7 +9,9 @@
     "build": "node --max-old-space-size=4096 node_modules/.bin/vite build",
     "preview": "vite preview",
     "build:css": "sass --load-path=node_modules --quiet --quiet-deps src/assets/scss:src/assets/css",
-    "test:coverage": "COVERAGE=1 playwright test"
+    "test:coverage": "COVERAGE=1 playwright test",
+    "test:lint": "node tests/lint-tests.js",
+    "test:lint:ci": "node tests/lint-tests.js --mode=error"
   },
   "dependencies": {
     "@chenfengyuan/vue-number-input": "^2.0.1",

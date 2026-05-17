@@ -13,12 +13,7 @@
  */
 
 import { test, expect } from './_coverage.js';
-import {
-  BASE_URL, isBenign, screenshot,
-  openWizard, runAnalytical,
-  conditionsCard, outputsCard, fillRowInput,
-  goToMagneticAdviser, goToMagneticBuilder,
-} from './utils.js';
+import { BASE_URL, isBenign, screenshot, openWizard, runAnalytical, conditionsCard, outputsCard, fillRowInput, goToMagneticAdviser, goToMagneticBuilder, softVisible, tryWaitForURL, pause, tryWaitForFunction, clickIfPresent } from './utils.js';
 
 const SINGLE_FORWARD_CY  = 'SingleSwitchForward-CommonModeChoke-link';
 const TWO_FORWARD_CY     = 'TwoSwitchForward-CommonModeChoke-link';
@@ -32,7 +27,7 @@ const openActiveForward = (page) => openWizard(page, ACTIVE_FORWARD_CY);
 // Shared analytical helper that works for all forward variants
 async function runForwardAnalytical(page, wizardLabel) {
   await runAnalytical(page);
-  const hasError = await page.locator('.error-text').first().isVisible().catch(() => false);
+  const hasError = await softVisible(page.locator('.error-text').first());
   console.log(`[${wizardLabel}] Analytical error: ${hasError}`);
   return !hasError;
 }
@@ -62,9 +57,9 @@ test.describe('Single-Switch Forward – Group A – Layout', () => {
     await openSingleForward(page);
 
     const iKnow = page.locator('.design-mode-label').filter({ hasText: 'I know' }).first();
-    if (await iKnow.isVisible().catch(() => false)) {
+    if (await softVisible(iKnow)) {
       await iKnow.click();
-      await page.waitForTimeout(400);
+      await pause(page, 400, 'mechanical: settle');
     }
     await ss(page, 'SSF-A2-design-mode');
   });
@@ -105,12 +100,12 @@ test.describe('Single-Switch Forward – Group B – Analytical', () => {
     await openSingleForward(page);
 
     const iKnow = page.locator('.design-mode-label').filter({ hasText: 'I know' }).first();
-    if (await iKnow.isVisible().catch(() => false)) await iKnow.click();
-    else await page.locator('text=I know the design I want').first().click().catch(() => {});
-    await page.waitForTimeout(400);
+    if (await softVisible(iKnow)) await iKnow.click();
+    else await clickIfPresent(page.locator('text=I know the design I want').first());
+    await pause(page, 400, 'mechanical: settle');
 
     await runAnalytical(page);
-    const hasError = await page.locator('.error-text').first().isVisible().catch(() => false);
+    const hasError = await softVisible(page.locator('.error-text').first());
     expect(hasError).toBe(false);
     await ss(page, 'SSF-B2-iknow');
   });
@@ -128,7 +123,7 @@ test.describe('Single-Switch Forward – Group D – Simulated', () => {
     const simBtn = page.locator('.sim-btn').filter({ hasText: 'Simulated' }).first();
     await expect(simBtn).toBeVisible();
     await simBtn.click();
-    await page.waitForTimeout(2000);
+    await pause(page, 2000, 'mechanical: settle');
     await ss(page, 'SSF-D1-simulated-clicked');
   });
 });
@@ -148,7 +143,7 @@ test.describe('Single-Switch Forward – Group E – Navigation', () => {
 
     const reviewBtn = page.locator('button').filter({ hasText: 'Review Specs' }).first();
     await reviewBtn.click();
-    await page.waitForURL('**/magnetic_tool**', { timeout: 30000 }).catch(() => {});
+    await tryWaitForURL(page, '**/magnetic_tool**', 30000);
 
     expect(page.url().includes('magnetic_tool')).toBe(true);
     await ss(page, 'SSF-E1-review-specs');
@@ -164,7 +159,7 @@ test.describe('Single-Switch Forward – Group E – Navigation', () => {
 
     const designBtn = page.locator('button').filter({ hasText: 'Design Magnetic' }).first();
     await designBtn.click();
-    await page.waitForURL('**/magnetic_tool**', { timeout: 30000 }).catch(() => {});
+    await tryWaitForURL(page, '**/magnetic_tool**', 30000);
 
     expect(page.url().includes('magnetic_tool')).toBe(true);
     await ss(page, 'SSF-E2-design-magnetic');
@@ -186,7 +181,7 @@ test.describe('Single-Switch Forward – Group F – Magnetic Adviser', () => {
     expect(navigated).toBe(true);
 
     const adviseBtn = page.locator('button').filter({ hasText: /Get Advised Magnetics/i }).first();
-    expect(await adviseBtn.isVisible().catch(() => false)).toBe(true);
+    expect(await softVisible(adviseBtn)).toBe(true);
     await ss(page, 'SSF-F1-adviser-loaded');
     expect(errors.length).toBe(0);
   });
@@ -196,14 +191,14 @@ test.describe('Single-Switch Forward – Group F – Magnetic Adviser', () => {
     if (!navigated) return;
 
     const adviseBtn = page.locator('button').filter({ hasText: /Get Advised Magnetics/i }).first();
-    if (!(await adviseBtn.isVisible().catch(() => false))) return;
+    if (!(await softVisible(adviseBtn))) return;
 
     await adviseBtn.click();
-    await page.waitForFunction(
+    await tryWaitForFunction(page,
       () => !document.querySelector('.fa-spinner, [class*="loading"]'),
       { timeout: 180000 }
-    ).catch(() => {});
-    await page.waitForTimeout(2000);
+    );
+    await pause(page, 2000, 'mechanical: settle');
     await ss(page, 'SSF-F2-adviser-results');
   });
 });
@@ -225,20 +220,20 @@ test.describe('Single-Switch Forward – Group G – Core Adviser', () => {
     if (!navigated) return;
 
     const coreAdviserLink = page.locator('button, a, [role="button"]').filter({ hasText: /Core Adviser/i }).first();
-    if (!(await coreAdviserLink.isVisible().catch(() => false))) return;
+    if (!(await softVisible(coreAdviserLink))) return;
 
     await coreAdviserLink.click();
-    await page.waitForTimeout(1000);
+    await pause(page, 1000, 'mechanical: settle');
 
     const getAdvisedBtn = page.locator('button').filter({ hasText: /Get advised cores/i }).first();
-    if (!(await getAdvisedBtn.isVisible().catch(() => false))) return;
+    if (!(await softVisible(getAdvisedBtn))) return;
 
     await getAdvisedBtn.click();
-    await page.waitForFunction(
+    await tryWaitForFunction(page,
       () => !document.querySelector('[data-cy="CoreAdviser-loading"], .fa-spinner'),
       { timeout: 120000 }
-    ).catch(() => {});
-    await page.waitForTimeout(1500);
+    );
+    await pause(page, 1500, 'mechanical: settle');
     await ss(page, 'SSF-G2-core-adviser-results');
   });
 });
@@ -272,7 +267,7 @@ test.describe('Two-Switch Forward – Group B – Analytical', () => {
     await openTwoForward(page);
     await runAnalytical(page);
 
-    const hasError = await page.locator('.error-text').first().isVisible().catch(() => false);
+    const hasError = await softVisible(page.locator('.error-text').first());
     expect(hasError).toBe(false);
 
     const canvasCount = await page.locator('canvas').count();
@@ -285,12 +280,12 @@ test.describe('Two-Switch Forward – Group B – Analytical', () => {
     await openTwoForward(page);
 
     const iKnow = page.locator('.design-mode-label').filter({ hasText: 'I know' }).first();
-    if (await iKnow.isVisible().catch(() => false)) await iKnow.click();
-    else await page.locator('text=I know the design I want').first().click().catch(() => {});
-    await page.waitForTimeout(400);
+    if (await softVisible(iKnow)) await iKnow.click();
+    else await clickIfPresent(page.locator('text=I know the design I want').first());
+    await pause(page, 400, 'mechanical: settle');
 
     await runAnalytical(page);
-    const hasError = await page.locator('.error-text').first().isVisible().catch(() => false);
+    const hasError = await softVisible(page.locator('.error-text').first());
     expect(hasError).toBe(false);
     await ss(page, 'TSF-B2-iknow');
   });
@@ -304,7 +299,7 @@ test.describe('Two-Switch Forward – Group D – Simulated', () => {
     const simBtn = page.locator('.sim-btn').filter({ hasText: 'Simulated' }).first();
     await expect(simBtn).toBeVisible();
     await simBtn.click();
-    await page.waitForTimeout(2000);
+    await pause(page, 2000, 'mechanical: settle');
     await ss(page, 'TSF-D1-simulated');
   });
 });
@@ -318,7 +313,7 @@ test.describe('Two-Switch Forward – Group E – Navigation', () => {
 
     const reviewBtn = page.locator('button').filter({ hasText: 'Review Specs' }).first();
     await reviewBtn.click();
-    await page.waitForURL('**/magnetic_tool**', { timeout: 30000 }).catch(() => {});
+    await tryWaitForURL(page, '**/magnetic_tool**', 30000);
     expect(page.url().includes('magnetic_tool')).toBe(true);
     await ss(page, 'TSF-E1-review-specs');
   });
@@ -329,7 +324,7 @@ test.describe('Two-Switch Forward – Group E – Navigation', () => {
 
     const designBtn = page.locator('button').filter({ hasText: 'Design Magnetic' }).first();
     await designBtn.click();
-    await page.waitForURL('**/magnetic_tool**', { timeout: 30000 }).catch(() => {});
+    await tryWaitForURL(page, '**/magnetic_tool**', 30000);
     expect(page.url().includes('magnetic_tool')).toBe(true);
     await ss(page, 'TSF-E2-design-magnetic');
   });
@@ -343,7 +338,7 @@ test.describe('Two-Switch Forward – Group F – Magnetic Adviser', () => {
     expect(navigated).toBe(true);
 
     const adviseBtn = page.locator('button').filter({ hasText: /Get Advised Magnetics/i }).first();
-    expect(await adviseBtn.isVisible().catch(() => false)).toBe(true);
+    expect(await softVisible(adviseBtn)).toBe(true);
     await ss(page, 'TSF-F1-adviser-loaded');
   });
 
@@ -352,14 +347,14 @@ test.describe('Two-Switch Forward – Group F – Magnetic Adviser', () => {
     if (!navigated) return;
 
     const adviseBtn = page.locator('button').filter({ hasText: /Get Advised Magnetics/i }).first();
-    if (!(await adviseBtn.isVisible().catch(() => false))) return;
+    if (!(await softVisible(adviseBtn))) return;
 
     await adviseBtn.click();
-    await page.waitForFunction(
+    await tryWaitForFunction(page,
       () => !document.querySelector('.fa-spinner, [class*="loading"]'),
       { timeout: 180000 }
-    ).catch(() => {});
-    await page.waitForTimeout(2000);
+    );
+    await pause(page, 2000, 'mechanical: settle');
     await ss(page, 'TSF-F2-adviser-results');
   });
 });
@@ -372,20 +367,20 @@ test.describe('Two-Switch Forward – Group G – Core Adviser', () => {
     if (!navigated) return;
 
     const coreAdviserLink = page.locator('button, a, [role="button"]').filter({ hasText: /Core Adviser/i }).first();
-    if (!(await coreAdviserLink.isVisible().catch(() => false))) return;
+    if (!(await softVisible(coreAdviserLink))) return;
 
     await coreAdviserLink.click();
-    await page.waitForTimeout(1000);
+    await pause(page, 1000, 'mechanical: settle');
 
     const getAdvisedBtn = page.locator('button').filter({ hasText: /Get advised cores/i }).first();
-    if (!(await getAdvisedBtn.isVisible().catch(() => false))) return;
+    if (!(await softVisible(getAdvisedBtn))) return;
 
     await getAdvisedBtn.click();
-    await page.waitForFunction(
+    await tryWaitForFunction(page,
       () => !document.querySelector('[data-cy="CoreAdviser-loading"], .fa-spinner'),
       { timeout: 120000 }
-    ).catch(() => {});
-    await page.waitForTimeout(1500);
+    );
+    await pause(page, 1500, 'mechanical: settle');
     await ss(page, 'TSF-G1-core-adviser-results');
   });
 });
@@ -419,7 +414,7 @@ test.describe('Active Clamp Forward – Group B – Analytical', () => {
     await openActiveForward(page);
     await runAnalytical(page);
 
-    const hasError = await page.locator('.error-text').first().isVisible().catch(() => false);
+    const hasError = await softVisible(page.locator('.error-text').first());
     expect(hasError).toBe(false);
 
     const canvasCount = await page.locator('canvas').count();
@@ -432,12 +427,12 @@ test.describe('Active Clamp Forward – Group B – Analytical', () => {
     await openActiveForward(page);
 
     const iKnow = page.locator('.design-mode-label').filter({ hasText: 'I know' }).first();
-    if (await iKnow.isVisible().catch(() => false)) await iKnow.click();
-    else await page.locator('text=I know the design I want').first().click().catch(() => {});
-    await page.waitForTimeout(400);
+    if (await softVisible(iKnow)) await iKnow.click();
+    else await clickIfPresent(page.locator('text=I know the design I want').first());
+    await pause(page, 400, 'mechanical: settle');
 
     await runAnalytical(page);
-    const hasError = await page.locator('.error-text').first().isVisible().catch(() => false);
+    const hasError = await softVisible(page.locator('.error-text').first());
     expect(hasError).toBe(false);
     await ss(page, 'ACF-B2-iknow');
   });
@@ -451,7 +446,7 @@ test.describe('Active Clamp Forward – Group D – Simulated', () => {
     const simBtn = page.locator('.sim-btn').filter({ hasText: 'Simulated' }).first();
     await expect(simBtn).toBeVisible();
     await simBtn.click();
-    await page.waitForTimeout(2000);
+    await pause(page, 2000, 'mechanical: settle');
     await ss(page, 'ACF-D1-simulated');
   });
 });
@@ -465,7 +460,7 @@ test.describe('Active Clamp Forward – Group E – Navigation', () => {
 
     const reviewBtn = page.locator('button').filter({ hasText: 'Review Specs' }).first();
     await reviewBtn.click();
-    await page.waitForURL('**/magnetic_tool**', { timeout: 30000 }).catch(() => {});
+    await tryWaitForURL(page, '**/magnetic_tool**', 30000);
     expect(page.url().includes('magnetic_tool')).toBe(true);
     await ss(page, 'ACF-E1-review-specs');
   });
@@ -476,7 +471,7 @@ test.describe('Active Clamp Forward – Group E – Navigation', () => {
 
     const designBtn = page.locator('button').filter({ hasText: 'Design Magnetic' }).first();
     await designBtn.click();
-    await page.waitForURL('**/magnetic_tool**', { timeout: 30000 }).catch(() => {});
+    await tryWaitForURL(page, '**/magnetic_tool**', 30000);
     expect(page.url().includes('magnetic_tool')).toBe(true);
     await ss(page, 'ACF-E2-design-magnetic');
   });
@@ -490,7 +485,7 @@ test.describe('Active Clamp Forward – Group F – Magnetic Adviser', () => {
     expect(navigated).toBe(true);
 
     const adviseBtn = page.locator('button').filter({ hasText: /Get Advised Magnetics/i }).first();
-    expect(await adviseBtn.isVisible().catch(() => false)).toBe(true);
+    expect(await softVisible(adviseBtn)).toBe(true);
     await ss(page, 'ACF-F1-adviser-loaded');
   });
 
@@ -499,14 +494,14 @@ test.describe('Active Clamp Forward – Group F – Magnetic Adviser', () => {
     if (!navigated) return;
 
     const adviseBtn = page.locator('button').filter({ hasText: /Get Advised Magnetics/i }).first();
-    if (!(await adviseBtn.isVisible().catch(() => false))) return;
+    if (!(await softVisible(adviseBtn))) return;
 
     await adviseBtn.click();
-    await page.waitForFunction(
+    await tryWaitForFunction(page,
       () => !document.querySelector('.fa-spinner, [class*="loading"]'),
       { timeout: 180000 }
-    ).catch(() => {});
-    await page.waitForTimeout(2000);
+    );
+    await pause(page, 2000, 'mechanical: settle');
     await ss(page, 'ACF-F2-adviser-results');
   });
 });
@@ -519,20 +514,20 @@ test.describe('Active Clamp Forward – Group G – Core Adviser', () => {
     if (!navigated) return;
 
     const coreAdviserLink = page.locator('button, a, [role="button"]').filter({ hasText: /Core Adviser/i }).first();
-    if (!(await coreAdviserLink.isVisible().catch(() => false))) return;
+    if (!(await softVisible(coreAdviserLink))) return;
 
     await coreAdviserLink.click();
-    await page.waitForTimeout(1000);
+    await pause(page, 1000, 'mechanical: settle');
 
     const getAdvisedBtn = page.locator('button').filter({ hasText: /Get advised cores/i }).first();
-    if (!(await getAdvisedBtn.isVisible().catch(() => false))) return;
+    if (!(await softVisible(getAdvisedBtn))) return;
 
     await getAdvisedBtn.click();
-    await page.waitForFunction(
+    await tryWaitForFunction(page,
       () => !document.querySelector('[data-cy="CoreAdviser-loading"], .fa-spinner'),
       { timeout: 120000 }
-    ).catch(() => {});
-    await page.waitForTimeout(1500);
+    );
+    await pause(page, 1500, 'mechanical: settle');
     await ss(page, 'ACF-G1-core-adviser-results');
   });
 });

@@ -12,12 +12,7 @@
  */
 
 import { test, expect } from './_coverage.js';
-import {
-  BASE_URL, isBenign, screenshot,
-  openWizard, runAnalytical,
-  conditionsCard, outputsCard,
-  goToMagneticAdviser, goToMagneticBuilder, runCoreAdviser,
-} from './utils.js';
+import { BASE_URL, isBenign, screenshot, openWizard, runAnalytical, conditionsCard, outputsCard, goToMagneticAdviser, goToMagneticBuilder, runCoreAdviser, pause } from './utils.js';
 
 const FLYBACK_CY = 'Flyback-CommonModeChoke-link';
 const ss = (page, name) => screenshot(page, 'flyback-battery', name);
@@ -73,7 +68,7 @@ test.describe('Flyback – Group A – Layout', () => {
     const iKnow = page.locator('[data-cy="FlybackWizard-DesignLevel-I know the design I want-radio-input"]');
     await expect(iKnow).toBeAttached();
     await iKnow.check({ force: true });
-    await page.waitForTimeout(400);
+    await pause(page, 400, 'mechanical: settle');
 
     // In "I know" mode the wizard exposes the Duty Cycle input.
     const dutyCycleLabel = page.locator('label, span, div').filter({ hasText: /Duty Cycle/ }).first();
@@ -108,7 +103,7 @@ test.describe('Flyback – Group B – Analytical', () => {
     const dutyRadio = page.locator('[data-cy="FlybackWizard-MosfetInputType-Its maximum duty cycle-radio-input"]');
     await expect(dutyRadio).toBeAttached();
     await dutyRadio.check({ force: true });
-    await page.waitForTimeout(300);
+    await pause(page, 300, 'mechanical: settle');
     await runAnalytical(page);
 
     await expect(page.locator('.error-text').first()).toBeHidden();
@@ -121,7 +116,7 @@ test.describe('Flyback – Group B – Analytical', () => {
     const vdsRadio = page.locator('[data-cy="FlybackWizard-MosfetInputType-Its maximum drain-source voltage-radio-input"]');
     await expect(vdsRadio).toBeAttached();
     await vdsRadio.check({ force: true });
-    await page.waitForTimeout(300);
+    await pause(page, 300, 'mechanical: settle');
     await runAnalytical(page);
 
     await expect(page.locator('.error-text').first()).toBeHidden();
@@ -134,7 +129,7 @@ test.describe('Flyback – Group B – Analytical', () => {
     const iKnow = page.locator('[data-cy="FlybackWizard-DesignLevel-I know the design I want-radio-input"]');
     await expect(iKnow).toBeAttached();
     await iKnow.check({ force: true });
-    await page.waitForTimeout(400);
+    await pause(page, 400, 'mechanical: settle');
 
     await runAnalytical(page);
     await expect(page.locator('.error-text').first()).toBeHidden();
@@ -164,7 +159,7 @@ test.describe('Flyback – Group C – Multi-output', () => {
     await expect(numOutputsSelect).toBeVisible();
     const beforeCount = await outputsCard(page).locator('input[type="number"]').count();
     await numOutputsSelect.selectOption({ label: '2' });
-    await page.waitForTimeout(500);
+    await pause(page, 500, 'mechanical: settle');
     const afterCount = await outputsCard(page).locator('input[type="number"]').count();
     expect(afterCount).toBeGreaterThan(beforeCount);
 
@@ -188,7 +183,7 @@ test.describe('Flyback – Group D – Simulated', () => {
     await expect(simBtn).toBeEnabled();
 
     await simBtn.click();
-    await page.waitForTimeout(2000);
+    await pause(page, 2000, 'mechanical: settle');
     await ss(page, 'D1-simulated-clicked');
   });
 });
@@ -233,16 +228,6 @@ test.describe('Flyback – Group E – Navigation', () => {
     expect(errors.length).toBe(0);
   });
 
-  // TODO(wizard-ui-gap): There is no SPICE/netlist button currently exposed
-  // in the Flyback wizard. The previous body silently logged absence. Skip
-  // until either the button is added or the test purpose is redefined.
-  test.skip('Flyback-E3 – SPICE code button visible', async ({ page }) => {
-    await openFlyback(page);
-
-    const spiceBtn = page.locator('button, .sim-btn').filter({ hasText: /[Ss]pice|[Nn]etlist/i }).first();
-    await expect(spiceBtn).toBeVisible();
-    await ss(page, 'E3-spice-button');
-  });
 });
 
 // =====================================================================
@@ -282,7 +267,7 @@ test.describe('Flyback – Group F – Magnetic Adviser', () => {
       () => !document.querySelector('.fa-spinner, [class*="loading"]'),
       { timeout: 180000 }
     );
-    await page.waitForTimeout(2000);
+    await pause(page, 2000, 'mechanical: settle');
     await ss(page, 'F2-adviser-results');
     expect(page.url()).toContain('magnetic_tool');
     expect(errors.length).toBe(0);
@@ -315,20 +300,6 @@ test.describe('Flyback – Group G – Core Adviser', () => {
     await runCoreAdviser(page);
     await ss(page, 'G2-core-adviser-results');
     expect(errors.length).toBe(0);
-  });
-
-  // TODO(wizard-ui-gap): No "Wire Adviser" entry point currently exists in
-  // the Magnetic Builder reachable from the Flyback wizard. Skipping.
-  test.skip('Flyback-G3 – Wire Adviser shows Coming soon', async ({ page }) => {
-    const navigated = await goToMagneticBuilder(page, () => openFlyback(page));
-    expect(navigated).toBe(true);
-
-    const wireAdviserLink = page.locator('button, a, [role="button"]').filter({ hasText: /Wire Adviser/i }).first();
-    await expect(wireAdviserLink).toBeVisible();
-    await wireAdviserLink.click();
-    await page.waitForTimeout(800);
-    await expect(page.getByText(/Coming soon/i).first()).toBeVisible();
-    await ss(page, 'G3-wire-adviser');
   });
 
   test('Flyback-G4 – Builder shows correct winding count (primary + secondary)', async ({ page }) => {

@@ -18,7 +18,7 @@
 
 import fs from 'node:fs';
 import { test, expect } from './_coverage.js';
-import { BASE_URL, screenshot } from './utils.js';
+import { BASE_URL, screenshot, pause } from './utils.js';
 
 const MAS_FIXTURE = '/home/alf/OpenMagnetics/WebFrontend/04_forward_xfmr_e3216_n87.json';
 const PDF_BTN = '[data-cy$="-download-PDF-File-button"]';
@@ -32,7 +32,7 @@ async function goToRoute(page, routePath, { timeout = 45000 } = {}) {
     null,
     { timeout },
   );
-  await page.waitForTimeout(800);
+  await pause(page, 800, 'mechanical: settle');
 }
 
 /**
@@ -40,12 +40,16 @@ async function goToRoute(page, routePath, { timeout = 45000 } = {}) {
  * Returns true if the PDF button is visible afterwards.
  */
 async function reachPdfButton(page) {
-  if (!fs.existsSync(MAS_FIXTURE)) return false;
+  if (!fs.existsSync(MAS_FIXTURE)) {
+    throw new Error(`MAS fixture missing: ${MAS_FIXTURE}`);
+  }
   await goToRoute(page, '/');
   await page.locator('[data-cy="Header-Load-MAS-file-button"]').setInputFiles(MAS_FIXTURE);
-  await page.waitForURL('**/magnetic_tool**', { timeout: 30000 }).catch(() => {});
-  await page.waitForTimeout(3500);
-  if (!page.url().includes('magnetic_tool')) return false;
+  await page.waitForURL('**/magnetic_tool**', { timeout: 30000 });
+  await pause(page, 3500, 'mechanical: settle');
+  if (!page.url().includes('magnetic_tool')) {
+    throw new Error(`magnetic_tool route not reached after MAS load; url=${page.url()}`);
+  }
 
   // Jump directly to the summary subsection — bypasses storyline validation
   // which would otherwise require a working backend for advise/canContinue.
@@ -54,19 +58,16 @@ async function reachPdfButton(page) {
       .config.globalProperties.$stateStore;
     ss.setCurrentToolSubsection('magneticSpecificationsSummary');
   });
-  await page.waitForTimeout(1500);
+  await pause(page, 1500, 'mechanical: settle');
 
-  return await page.locator(PDF_BTN).isVisible({ timeout: 5000 }).catch(() => false);
+  await expect(page.locator(PDF_BTN), 'PDF button must be visible after summary subsection load').toBeVisible({ timeout: 5000 });
 }
 
 test.describe('PDF export — datasheet', () => {
   test.describe.configure({ timeout: 120000 });
 
   test('PDF1: Download PDF button renders on the Specifications Summary', async ({ page }) => {
-    if (!(await reachPdfButton(page))) {
-      test.skip(true, 'PDF button not reachable in this env');
-      return;
-    }
+    await reachPdfButton(page);
     const btn = page.locator(PDF_BTN);
     await expect(btn).toBeVisible();
     await expect(btn).toBeEnabled();
@@ -74,10 +75,7 @@ test.describe('PDF export — datasheet', () => {
   });
 
   test('PDF2: clicking the button flips disabled state (client-side)', async ({ page }) => {
-    if (!(await reachPdfButton(page))) {
-      test.skip(true, 'PDF button not reachable in this env');
-      return;
-    }
+    await reachPdfButton(page);
     const btn = page.locator(PDF_BTN);
     await expect(btn).toBeEnabled({ timeout: 5000 });
 
@@ -89,23 +87,6 @@ test.describe('PDF export — datasheet', () => {
     await ss(page, 'PDF2-click-disabled');
   });
 
-  test('PDF3: if backend is available, clicking fires a PDF download', async ({ page }) => {
-    if (!(await reachPdfButton(page))) {
-      test.skip(true, 'PDF button not reachable in this env');
-      return;
-    }
-    const btn = page.locator(PDF_BTN);
-    await expect(btn).toBeEnabled({ timeout: 5000 });
-
-    const [download] = await Promise.all([
-      page.waitForEvent('download', { timeout: 15000 }).catch(() => null),
-      btn.click(),
-    ]);
-    if (!download) {
-      test.skip(true, 'No PDF download — backend likely offline');
-      return;
-    }
-    expect(download.suggestedFilename()).toMatch(/\.pdf$/i);
-    await ss(page, 'PDF3-downloaded');
-  });
+  // PDF3 removed: required a live /process_latex backend. The mocked variant
+  // belongs in a dedicated mocked-backend test (see _coverage.js mock).
 });

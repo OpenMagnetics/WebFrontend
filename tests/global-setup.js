@@ -1,24 +1,30 @@
 /**
  * Playwright globalSetup — runs once per test run, before any test.
  *
- * Produces a storageState file with the cookie-consent flag pre-accepted so
- * every subsequent test context starts without the consent banner blocking
- * clicks. Also primes the MKF WASM by navigating once to /magnetic_tool and
- * waiting past the engine_loader screen — this doesn't persist WASM state
- * (each new browser context re-instantiates the wasm in a new worker), but
- * it does confirm early that the dev server is reachable.
+ * Pre-accepts the cookie-consent flag in localStorage so every test context
+ * starts without the banner blocking clicks, and confirms the dev server is
+ * reachable.
  *
- * Wired in playwright.config.js via globalSetup + use.storageState.
+ * Per-worker storage state:
+ *   We write storage-state-${i}.json for each configured worker index (and a
+ *   default storage-state.json that the single-project config can fall back
+ *   to). Each worker's context loads its own file so parallel runs don't
+ *   race on shared cookie state.
+ *
+ *   The number of files we produce is max(workers, 4) — enough headroom for
+ *   the 4-project layout introduced in Phase 9 without re-running setup.
  */
 import fs from 'node:fs';
 import path from 'node:path';
 import { chromium } from '@playwright/test';
+import { BASE_URL, workerStorageStatePath, assertHeadlessEnv } from './utils/env.js';
 
-const BASE_URL = process.env.BASE_URL || 'http://localhost:5173';
-const STORAGE_PATH = path.resolve('tests/.auth/storage-state.json');
+const LEGACY_STORAGE = path.resolve('tests/.auth/storage-state.json');
 
-export default async function globalSetup() {
-  fs.mkdirSync(path.dirname(STORAGE_PATH), { recursive: true });
+export default async function globalSetup(config) {
+  assertHeadlessEnv();
+
+  fs.mkdirSync(path.dirname(LEGACY_STORAGE), { recursive: true });
 
   const browser = await chromium.launch({ headless: true });
   const context = await browser.newContext();
@@ -29,6 +35,17 @@ export default async function globalSetup() {
     try { localStorage.setItem('om_cookie_consent', 'accepted'); } catch { /* ignore */ }
   });
 
-  await context.storageState({ path: STORAGE_PATH });
+  // Write the legacy single-state file (used by current single-project config)…
+  await context.storageState({ path: LEGACY_STORAGE });
+
+  // …and one per worker, so the Phase 9 parallel projects can pick them up
+  // without re-running globalSetup. Cheap (a few KB each).
+  const wantWorkers = Math.max(config?.workers ?? 1, 4);
+  for (let i = 0; i < wantWorkers; i++) {
+    const p = workerStorageStatePath(i);
+    fs.mkdirSync(path.dirname(p), { recursive: true });
+    await context.storageState({ path: p });
+  }
+
   await browser.close();
 }

@@ -14,12 +14,7 @@
  */
 
 import { test, expect } from './_coverage.js';
-import {
-  BASE_URL, isBenign, screenshot,
-  openWizard, runAnalytical,
-  conditionsCard, outputsCard,
-  goToMagneticAdviser, goToMagneticBuilder, runCoreAdviser,
-} from './utils.js';
+import { BASE_URL, isBenign, screenshot, openWizard, runAnalytical, conditionsCard, outputsCard, goToMagneticAdviser, goToMagneticBuilder, runCoreAdviser, pause } from './utils.js';
 
 const CLLC_CY = 'Cllc-link';
 
@@ -33,7 +28,7 @@ async function setDesignMode(page, modeText) {
   const label = page.locator('.design-mode-label').filter({ hasText: modeText }).first();
   await expect(label).toBeVisible();
   await label.click();
-  await page.waitForTimeout(400);
+  await pause(page, 400, 'mechanical: settle');
 }
 
 // Find the number input inside the Dimension row whose visible title matches
@@ -135,7 +130,7 @@ test.describe('CLLC - Group B - Analytical', () => {
     await openCllc(page);
 
     await setDimensionByTitle(page, 'Q Factor', '0.6');
-    await page.waitForTimeout(300);
+    await pause(page, 300, 'mechanical: settle');
 
     await runAnalytical(page);
     await expect(page.locator('.error-text').first()).toBeHidden();
@@ -145,7 +140,7 @@ test.describe('CLLC - Group B - Analytical', () => {
   test('CLLC-B4 - Diagnostics card present after analytical', async ({ page }) => {
     await openCllc(page);
     await runAnalytical(page);
-    await page.waitForTimeout(800);
+    await pause(page, 800, 'mechanical: settle');
 
     // ZVS Primary / Secondary diagnostics may render conditionally; assert
     // that AT LEAST the diagnostics card itself appears (canvas + results).
@@ -166,7 +161,7 @@ test.describe('CLLC - Group C - CLLC-specific', () => {
     const bidir = page.locator('#bidirectionalCllc');
     await expect(bidir).toBeVisible();
     await bidir.click();
-    await page.waitForTimeout(200);
+    await pause(page, 200, 'mechanical: settle');
     await runAnalytical(page);
     await expect(page.locator('.error-text').first()).toBeHidden();
     await ss(page, 'CLLC-C1-bidirectional');
@@ -177,7 +172,7 @@ test.describe('CLLC - Group C - CLLC-specific', () => {
 
     await setDimensionByTitle(page, 'Inductor Ratio', '0.95');
     await setDimensionByTitle(page, 'Capacitor Ratio', '1.05');
-    await page.waitForTimeout(300);
+    await pause(page, 300, 'mechanical: settle');
 
     await runAnalytical(page);
     await expect(page.locator('.error-text').first()).toBeHidden();
@@ -197,7 +192,7 @@ test.describe('CLLC - Group C - CLLC-specific', () => {
     }
     if (!bridgeSelect) throw new Error('[CLLC-C3] Bridge Type select with "Half Bridge" option not found');
     await bridgeSelect.selectOption({ label: 'Half Bridge' });
-    await page.waitForTimeout(300);
+    await pause(page, 300, 'mechanical: settle');
     await runAnalytical(page);
     await expect(page.locator('.error-text').first()).toBeHidden();
     await ss(page, 'CLLC-C3-half-bridge');
@@ -219,7 +214,7 @@ test.describe('CLLC - Group D - Simulated', () => {
 
     await simBtn.click();
     // SPICE-based simulation is slower than analytical; wait longer.
-    await page.waitForTimeout(5000);
+    await pause(page, 5000, 'mechanical: settle');
     await ss(page, 'CLLC-D1-simulated-clicked');
   });
 });
@@ -301,7 +296,7 @@ test.describe('CLLC - Group F - Magnetic Adviser', () => {
       () => !document.querySelector('.fa-spinner, [class*="loading"]'),
       { timeout: 180000 }
     );
-    await page.waitForTimeout(2000);
+    await pause(page, 2000, 'mechanical: settle');
     await ss(page, 'CLLC-F2-adviser-results');
     expect(page.url()).toContain('magnetic_tool');
     expect(errors.length).toBe(0);

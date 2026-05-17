@@ -9,7 +9,7 @@
  */
 
 import { test, expect } from './_coverage.js';
-import { openWizard } from './utils.js';
+import { openWizard, pause } from './utils.js';
 
 const CMC_CY = 'Wizard-CommonModeChoke-link';
 
@@ -19,7 +19,7 @@ async function runAnalyticalToPopulateL(page) {
     () => !!document.querySelector('.emi-spectrum-view'),
     { timeout: 30000 },
   );
-  await page.waitForTimeout(500);
+  await pause(page, 500, 'mechanical: settle');
 }
 
 test.describe('CMC — EMI spectrum view', () => {
@@ -53,7 +53,7 @@ test.describe('CMC — EMI spectrum view', () => {
     // and the filtered spectrum can change margin / verdict.
     await fInput.fill('3000');
     await fInput.press('Tab');
-    await page.waitForTimeout(500);
+    await pause(page, 500, 'mechanical: settle');
 
     const verdict2 = await page.locator('.emi-verdict').textContent();
     console.log(`[CMC-EMI-2] verdict 100 kHz → ${verdict1}`);

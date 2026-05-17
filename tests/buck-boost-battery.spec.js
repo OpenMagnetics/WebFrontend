@@ -12,12 +12,7 @@
  */
 
 import { test, expect } from './_coverage.js';
-import {
-  BASE_URL, isBenign, screenshot,
-  openWizard, runAnalytical, waitForAnalytical,
-  conditionsCard, outputsCard, fillRowInput,
-  goToMagneticAdviser, goToMagneticBuilder, runCoreAdviser,
-} from './utils.js';
+import { BASE_URL, isBenign, screenshot, openWizard, runAnalytical, waitForAnalytical, conditionsCard, outputsCard, fillRowInput, goToMagneticAdviser, goToMagneticBuilder, runCoreAdviser, pause } from './utils.js';
 
 const BUCK_CY  = 'Buck-CommonModeChoke-link';
 const BOOST_CY = 'Boost-CommonModeChoke-link';
@@ -33,7 +28,7 @@ async function setIKnowMode(page, label) {
   const radio = page.locator(`[data-cy="${label}-DesignLevel-I know the design I want-radio-input"]`);
   await expect(radio).toBeAttached();
   await radio.evaluate(el => { el.checked = true; el.dispatchEvent(new Event('change', { bubbles: true })); });
-  await page.waitForTimeout(400);
+  await pause(page, 400, 'mechanical: settle');
 }
 
 async function setNumberInput(page, dataCy, value) {
@@ -141,7 +136,7 @@ test.describe('Buck – Group D – Simulated', () => {
     await expect(simBtn).toBeEnabled();
 
     await simBtn.click();
-    await page.waitForTimeout(2000);
+    await pause(page, 2000, 'mechanical: settle');
     await ss(page, 'Buck-D1-simulated-clicked');
   });
 });
@@ -224,7 +219,7 @@ test.describe('Buck – Group F – Magnetic Adviser', () => {
       () => !document.querySelector('.fa-spinner, [class*="loading"]'),
       { timeout: 180000 }
     );
-    await page.waitForTimeout(2000);
+    await pause(page, 2000, 'mechanical: settle');
     await ss(page, 'Buck-F2-adviser-results');
     expect(page.url()).toContain('magnetic_tool');
     expect(errors.length).toBe(0);
@@ -260,21 +255,6 @@ test.describe('Buck – Group G – Core Adviser', () => {
     expect(errors.length).toBe(0);
   });
 
-  // TODO(wizard-ui-gap): No "Wire Adviser" entry point currently exists in
-  // the Magnetic Builder UI reachable from the Buck wizard. The previous
-  // assertion was a silent .catch(()=>false) that always returned. Skipping
-  // until a Wire Adviser button is added or its data-cy is identified.
-  test.skip('Buck-G3 – Wire Adviser shows Coming soon placeholder', async ({ page }) => {
-    const navigated = await goToMagneticBuilder(page, () => openBuck(page));
-    expect(navigated).toBe(true);
-
-    const wireAdviserLink = page.locator('button, a, [role="button"]').filter({ hasText: /Wire Adviser/i }).first();
-    await expect(wireAdviserLink).toBeVisible();
-    await wireAdviserLink.click();
-    await page.waitForTimeout(800);
-    await expect(page.getByText(/Coming soon/i).first()).toBeVisible();
-    await ss(page, 'Buck-G3-wire-adviser');
-  });
 });
 
 // =====================================================================
@@ -322,7 +302,7 @@ test.describe('Boost – Group B – Analytical', () => {
 
     await setNumberInput(page, 'BoostWizard-OutputVoltage-number-input', '48');
     await setNumberInput(page, 'BoostWizard-OutputCurrent-number-input', '10');
-    await page.waitForTimeout(300);
+    await pause(page, 300, 'mechanical: settle');
 
     await runAnalytical(page);
     await expect(page.locator('.error-text').first()).toBeHidden();
@@ -342,7 +322,7 @@ test.describe('Boost – Group D – Simulated', () => {
     const simBtn = page.locator('.sim-btn').filter({ hasText: 'Simulated' }).first();
     await expect(simBtn).toBeVisible();
     await simBtn.click();
-    await page.waitForTimeout(2000);
+    await pause(page, 2000, 'mechanical: settle');
     await ss(page, 'Boost-D1-simulated-clicked');
   });
 });
@@ -412,7 +392,7 @@ test.describe('Boost – Group F – Magnetic Adviser', () => {
       () => !document.querySelector('.fa-spinner, [class*="loading"]'),
       { timeout: 180000 }
     );
-    await page.waitForTimeout(2000);
+    await pause(page, 2000, 'mechanical: settle');
     await ss(page, 'Boost-F2-adviser-results');
     expect(page.url()).toContain('magnetic_tool');
     expect(errors.length).toBe(0);

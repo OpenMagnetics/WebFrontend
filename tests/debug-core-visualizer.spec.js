@@ -8,7 +8,7 @@
  *  3. applyMachining: zero-length gap created degenerate OCCT box → crash in WASM
  */
 import { test, expect } from '@playwright/test';
-import { BASE_URL } from './utils.js';
+import { BASE_URL, pause } from './utils.js';
 
 const SIMPLE_CORE_MAGNETIC = {
     core: {
@@ -33,7 +33,7 @@ test.describe('Core Visualizer WASM regression', () => {
 
     test('drawDimensionedFrontView core-only returns SVG', async ({ page }) => {
         await page.goto(`${BASE_URL}/magnetic_tool`, { waitUntil: 'networkidle', timeout: 30000 });
-        await page.waitForTimeout(1000);
+        await pause(page, 1000, 'mechanical: settle');
 
         const result = await page.evaluate(async (magnetic) => {
             let _mvbpp = null;
@@ -70,7 +70,7 @@ test.describe('Core Visualizer WASM regression', () => {
 
     test('buildCoreSTL core-only returns binary data', async ({ page }) => {
         await page.goto(`${BASE_URL}/magnetic_tool`, { waitUntil: 'networkidle', timeout: 30000 });
-        await page.waitForTimeout(1000);
+        await pause(page, 1000, 'mechanical: settle');
 
         const result = await page.evaluate(async (magnetic) => {
             let _mvbpp = null;

@@ -14,13 +14,7 @@
  */
 
 import { test, expect } from './_coverage.js';
-import {
-  BASE_URL, isBenign, screenshot,
-  openWizard, runAnalytical,
-  conditionsCard, outputsCard,
-  goToMagneticAdviser, goToMagneticBuilder,
-  runCoreAdviser,
-} from './utils.js';
+import { BASE_URL, isBenign, screenshot, openWizard, runAnalytical, conditionsCard, outputsCard, goToMagneticAdviser, goToMagneticBuilder, runCoreAdviser, pause } from './utils.js';
 
 const LLC_CY  = 'Llc-link';
 const PSFB_CY = 'Psfb-link';
@@ -35,7 +29,7 @@ async function setDesignMode(page, modeText) {
   const label = page.locator('.design-mode-label').filter({ hasText: modeText }).first();
   await expect(label).toBeVisible();
   await label.click();
-  await page.waitForTimeout(400);
+  await pause(page, 400, 'mechanical: settle');
 }
 
 // Find the number input inside the Dimension row whose visible title matches
@@ -152,7 +146,7 @@ test.describe('LLC – Group D – Simulated', () => {
     await expect(simBtn).toBeVisible();
     await expect(simBtn).toBeEnabled();
     await simBtn.click();
-    await page.waitForTimeout(2000);
+    await pause(page, 2000, 'mechanical: settle');
     await ss(page, 'LLC-D1-simulated-clicked');
   });
 });
@@ -228,7 +222,7 @@ test.describe('LLC – Group F – Magnetic Adviser', () => {
       () => !document.querySelector('.fa-spinner, [class*="loading"]'),
       { timeout: 180000 }
     );
-    await page.waitForTimeout(2000);
+    await pause(page, 2000, 'mechanical: settle');
     await ss(page, 'LLC-F2-adviser-results');
   });
 });
@@ -252,10 +246,6 @@ test.describe('LLC – Group G – Core Adviser', () => {
     await runCoreAdviser(page);
     await ss(page, 'LLC-G2-core-adviser-results');
   });
-
-  // TODO(wizard-ui-gap): There is no Wire Adviser entry point exposed from
-  // the wizard / Magnetic Builder. Re-enable when one is added.
-  test.skip('LLC-G3 – Wire Adviser shows Coming soon', async () => {});
 });
 
 // =====================================================================
@@ -334,7 +324,7 @@ test.describe('PSFB – Group D – Simulated', () => {
     await expect(simBtn).toBeVisible();
     await expect(simBtn).toBeEnabled();
     await simBtn.click();
-    await page.waitForTimeout(2000);
+    await pause(page, 2000, 'mechanical: settle');
     await ss(page, 'PSFB-D1-simulated');
   });
 });
@@ -398,7 +388,7 @@ test.describe('PSFB – Group F – Magnetic Adviser', () => {
       () => !document.querySelector('.fa-spinner, [class*="loading"]'),
       { timeout: 180000 }
     );
-    await page.waitForTimeout(2000);
+    await pause(page, 2000, 'mechanical: settle');
     await ss(page, 'PSFB-F2-adviser-results');
   });
 });
@@ -416,8 +406,4 @@ test.describe('PSFB – Group G – Core Adviser', () => {
     await runCoreAdviser(page);
     await ss(page, 'PSFB-G1-core-adviser-results');
   });
-
-  // TODO(wizard-ui-gap): There is no Wire Adviser entry point exposed from
-  // the wizard / Magnetic Builder. Re-enable when one is added.
-  test.skip('PSFB-G2 – Wire Adviser shows Coming soon', async () => {});
 });

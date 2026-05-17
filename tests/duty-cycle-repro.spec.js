@@ -10,16 +10,17 @@
  */
 import { test, expect } from './_coverage.js';
 
+import { softVisible, tryWaitForURL, pause } from './utils/wait.js';
 const BASE_URL = process.env.BASE_URL || 'http://localhost:5173';
 
 async function openFresh(page) {
     await page.goto(`${BASE_URL}/`, { waitUntil: 'domcontentloaded', timeout: 20000 });
-    await page.waitForTimeout(800);
+    await pause(page, 800, 'mechanical: settle');
     const link = page.locator('[data-cy="Header-new-magnetic-link"]');
     await link.waitFor({ timeout: 10000 });
     await link.click();
-    await page.waitForURL('**/magnetic_tool**', { timeout: 15000 }).catch(() => {});
-    await page.waitForTimeout(1500);
+    await tryWaitForURL(page, '**/magnetic_tool**', 15000);
+    await pause(page, 1500, 'mechanical: settle');
 }
 
 test('duty cycle 94.37% does not round after changing current', async ({ page }) => {
@@ -28,13 +29,13 @@ test('duty cycle 94.37% does not round after changing current', async ({ page })
     const opTab = page.locator('[data-cy="storyline-Op.Points-button"]');
     await opTab.waitFor({ timeout: 10000 });
     await opTab.click();
-    await page.waitForTimeout(1000);
+    await pause(page, 1000, 'mechanical: settle');
 
     const manualBtn = page.locator('[data-cy="OperatingPoint-source-Manual-button"]')
         .filter({ hasText: /manually/i }).first();
     await manualBtn.waitFor({ timeout: 5000 });
     await manualBtn.click();
-    await page.waitForTimeout(800);
+    await pause(page, 800, 'mechanical: settle');
 
     const dutyCycleInput = page.locator('[data-cy$="-DutyCycle-number-input"]').first();
     await dutyCycleInput.waitFor({ timeout: 8000 });
@@ -42,10 +43,10 @@ test('duty cycle 94.37% does not round after changing current', async ({ page })
     await dutyCycleInput.click({ clickCount: 3 });
     await dutyCycleInput.fill('94.37');
     await dutyCycleInput.press('Tab');
-    await page.waitForTimeout(300);
+    await pause(page, 300, 'mechanical: settle');
 
     const peakToPeakInput = page.locator('[data-cy$="-current-peakToPeak-number-input"]').first();
-    const peakVisible = await peakToPeakInput.isVisible({ timeout: 2000 }).catch(() => false);
+    const peakVisible = await softVisible(peakToPeakInput, 2000);
 
     if (peakVisible) {
         await peakToPeakInput.click({ clickCount: 3 });
@@ -63,7 +64,7 @@ test('duty cycle 94.37% does not round after changing current', async ({ page })
     }
 
     // Wait for autoInduceVoltageFromCurrent debounce (500ms) + processing
-    await page.waitForTimeout(1500);
+    await pause(page, 1500, 'mechanical: settle');
 
     const dutyCycleAfterChange = await dutyCycleInput.inputValue();
     const dcValue = parseFloat(dutyCycleAfterChange);

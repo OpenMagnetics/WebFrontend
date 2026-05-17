@@ -8,13 +8,13 @@
  * every winding.
  */
 import { test, expect } from './_coverage.js';
-import { BASE_URL, isBenign } from './utils.js';
+import { BASE_URL, isBenign, softVisible, softEnabled, softText, tryWaitForURL, pause, tryWaitForFunction, tryWaitForSelector, clickIfPresent } from './utils.js';
 
 const TIMEOUT = 360000;
 
 async function openDmcWizard(page) {
   await page.goto(`${BASE_URL}/`, { waitUntil: 'domcontentloaded', timeout: 30000 });
-  await page.waitForTimeout(1500);
+  await pause(page, 1500, 'mechanical: settle');
   await page.evaluate(() => {
     const toggles = Array.from(document.querySelectorAll('.dropdown-toggle'));
     const wt = toggles.find(el => el.textContent.includes('Wizards'));
@@ -27,16 +27,16 @@ async function openDmcWizard(page) {
     const link = document.querySelector('[data-cy="Wizard-DifferentialModeChoke-link"]');
     if (link) link.click();
   });
-  await page.waitForSelector('[data-cy="DmcWizard-title"]', { timeout: 60000 });
-  await page.waitForTimeout(500);
+  await tryWaitForSelector(page,'[data-cy="DmcWizard-title"]', { timeout: 60000 });
+  await pause(page, 500, 'mechanical: settle');
 }
 
 async function clickDesignMagnetic(page) {
   const btn = page.locator('button').filter({ hasText: 'Design Magnetic' }).first();
   await btn.waitFor({ timeout: 10000 });
   await btn.click();
-  await page.waitForURL('**/magnetic_tool**', { timeout: 90000 }).catch(() => {});
-  await page.waitForTimeout(2000);
+  await tryWaitForURL(page, '**/magnetic_tool**', 90000);
+  await pause(page, 2000, 'mechanical: settle');
 }
 
 async function readMas(page) {
@@ -84,7 +84,7 @@ test('DMC → Magnetic Adviser produces a complete magnetic without console erro
   const adviserNav = page.locator('button, a').filter({ hasText: /Magnetic Adviser/i }).first();
   await adviserNav.waitFor({ timeout: 10000 });
   await adviserNav.click();
-  await page.waitForTimeout(1500);
+  await pause(page, 1500, 'mechanical: settle');
   await page.screenshot({ path: 'tests/screenshots/dmc-magn-A1-adviser-blank.png', fullPage: true });
 
   // Click "Get Advised Magnetics" to run the auto-design.
@@ -94,7 +94,7 @@ test('DMC → Magnetic Adviser produces a complete magnetic without console erro
 
   // Wait for the adviser to produce a results list. Either a result card
   // appears or the "Load Selected" button enables.
-  await page.waitForFunction(
+  await tryWaitForFunction(page,
     () => {
       const txt = document.body.innerText;
       const loadBtn = Array.from(document.querySelectorAll('button')).find(
@@ -111,7 +111,7 @@ test('DMC → Magnetic Adviser produces a complete magnetic without console erro
   // Click "Load Selected" to apply the first design.
   const loadBtn = page.locator('button').filter({ hasText: /Load Selected/i }).first();
   await loadBtn.click();
-  await page.waitForTimeout(3000);
+  await pause(page, 3000, 'mechanical: settle');
   await page.screenshot({ path: 'tests/screenshots/dmc-magn-A3-loaded.png', fullPage: true });
 
   const result = await readMas(page);
@@ -143,9 +143,9 @@ test('DMC → Advise Core + Advise Wire produces a complete magnetic without con
 
   // Make sure we're on the Magnetic Builder subsection.
   const builderNav = page.locator('button, a').filter({ hasText: /Magnetic.*Builder/i }).first();
-  if (await builderNav.isVisible().catch(() => false)) {
+  if (await softVisible(builderNav)) {
     await builderNav.click();
-    await page.waitForTimeout(1000);
+    await pause(page, 1000, 'mechanical: settle');
   }
   await page.screenshot({ path: 'tests/screenshots/dmc-magn-B1-builder.png', fullPage: true });
 
@@ -153,7 +153,7 @@ test('DMC → Advise Core + Advise Wire produces a complete magnetic without con
   const adviseCoreBtn = page.locator('button').filter({ hasText: /^Advise$/i }).first();
   await adviseCoreBtn.waitFor({ timeout: 10000 });
   await adviseCoreBtn.click();
-  await page.waitForTimeout(1500);
+  await pause(page, 1500, 'mechanical: settle');
 
   // Wait for core to populate (shape + material non-empty).
   await page.waitForFunction(
@@ -165,7 +165,7 @@ test('DMC → Advise Core + Advise Wire produces a complete magnetic without con
       return core && core.shape && core.shape !== '' && core.material && core.material !== '';
     },
     { timeout: 240000 },
-  ).catch(() => {});
+  );
   await page.screenshot({ path: 'tests/screenshots/dmc-magn-B2-after-advise-core.png', fullPage: true });
 
   // For each winding, click "Advise" or the wire-side adviser button and wait
@@ -174,22 +174,22 @@ test('DMC → Advise Core + Advise Wire produces a complete magnetic without con
   const adviseWireForCurrent = async () => {
     const buttons = await page.locator('button').filter({ hasText: /Advise|Get Wire/i }).all();
     for (const b of buttons) {
-      const txt = (await b.textContent().catch(() => '')) || '';
+      const txt = (await softText(b)) || '';
       if (/wire/i.test(txt) || /Advise All/i.test(txt) || /^Advise$/i.test(txt)) {
-        if (await b.isVisible().catch(() => false) && await b.isEnabled().catch(() => false)) {
-          await b.click().catch(() => {});
+        if (await softVisible(b) && await softEnabled(b)) {
+          await b.click();
           break;
         }
       }
     }
-    await page.waitForTimeout(1500);
+    await pause(page, 1500, 'mechanical: settle');
   };
 
   // First, try "Advise All Wires" if it exists (common helper button).
   const adviseAllBtn = page.locator('button').filter({ hasText: /Advise All Wires/i }).first();
-  if (await adviseAllBtn.isVisible().catch(() => false)) {
+  if (await softVisible(adviseAllBtn)) {
     await adviseAllBtn.click();
-    await page.waitForTimeout(3000);
+    await pause(page, 3000, 'mechanical: settle');
   } else {
     // Fall back: per-winding advise. Try clicking each winding tab/button and
     // running its advise.
@@ -202,16 +202,16 @@ test('DMC → Advise Core + Advise Wire produces a complete magnetic without con
     for (let i = 0; i < numWindings; i++) {
       // Click the i-th winding-selector tab if it exists
       const tab = page.locator('[class*="winding"] button, [data-cy*="WindingSelector"] button').nth(i);
-      if (await tab.isVisible().catch(() => false)) {
-        await tab.click().catch(() => {});
-        await page.waitForTimeout(800);
+      if (await softVisible(tab)) {
+        await clickIfPresent(tab);
+        await pause(page, 800, 'mechanical: settle');
       }
       await adviseWireForCurrent();
     }
   }
 
   // Wait for ALL windings to have a wire populated.
-  await page.waitForFunction(
+  await tryWaitForFunction(page,
     () => {
       const app = document.querySelector('#app').__vue_app__;
       const pinia = app._context?.config?.globalProperties?.$pinia || app.config?.globalProperties?.$pinia;
@@ -220,7 +220,7 @@ test('DMC → Advise Core + Advise Wire produces a complete magnetic without con
       return fd.length > 0 && fd.every(w => w.wire && w.wire !== 'Dummy' && w.wire !== '');
     },
     { timeout: 240000 },
-  ).catch(() => {});
+  );
   await page.screenshot({ path: 'tests/screenshots/dmc-magn-B3-after-advise-wires.png', fullPage: true });
 
   const result = await readMas(page);

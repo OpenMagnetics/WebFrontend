@@ -5,11 +5,11 @@
  * "Help me with the design" and "I know the design I want" flows. Each test
  * opens the wizard, runs Analytical in help-me mode, switches to advanced
  * mode via the radio, and runs Analytical again. Headless-only — never
- * run with --headed.
+ * run in headed mode.
  */
 
 import { test, expect } from './_coverage.js';
-import { openWizard, runAnalytical, isBenign } from './utils.js';
+import { openWizard, runAnalytical, isBenign, pause } from './utils.js';
 
 const WIZARDS = [
   { cy: 'Cuk-CommonModeChoke-link',                title: 'Cuk Wizard',                advanced: true },
@@ -33,7 +33,7 @@ async function switchToAdvancedMode(page) {
   const label = page.locator('text=I know the design I want').first();
   await label.waitFor({ timeout: 5000 });
   await label.click();
-  await page.waitForTimeout(400);
+  await pause(page, 400, 'mechanical: settle');
 }
 
 for (const w of WIZARDS) {

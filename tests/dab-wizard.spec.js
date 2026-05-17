@@ -5,21 +5,7 @@
  * 2. SPICE topology map key 'Dual Active Bridge Converter' matches getTopology()
  */
 import { test, expect } from './_coverage.js';
-import {
-  BASE_URL,
-  SS_DIR,
-  isBenign,
-  openDabWizard,
-  runAnalytical,
-  waitForAnalytical,
-  findModeSelect,
-  conditionsCard,
-  diagnosticsCard,
-  switchToIKnowMode,
-  fillRowInput,
-  transformerCard,
-  screenshot,
-} from './utils.js';
+import { BASE_URL, SS_DIR, isBenign, openDabWizard, runAnalytical, waitForAnalytical, findModeSelect, conditionsCard, diagnosticsCard, switchToIKnowMode, fillRowInput, transformerCard, screenshot, softVisible, tryWaitForURL, pause } from './utils.js';
 
 const ss = (page, name) => screenshot(page, 'dab-tc', name);
 
@@ -38,7 +24,7 @@ test.describe('DAB Wizard Smoke Tests', () => {
     await runAnalytical(page);
     await ss(page, '1-after-analytical');
 
-    const hasError = await page.locator('.error-text').first().isVisible().catch(() => false);
+    const hasError = await softVisible(page.locator('.error-text').first());
     const errorText = hasError ? await page.locator('.error-text').first().innerText().catch(() => '') : '';
     console.log(`[TC1] Error: ${hasError} "${errorText}"`);
     console.log(`[TC1] Critical console errors: ${errors.length}`);
@@ -69,7 +55,7 @@ test.describe('DAB Wizard Smoke Tests', () => {
     const cCard = conditionsCard(page);
     const phRow = cCard.locator('text=Outer D3').locator('../..');
     const phInput = phRow.locator('input[type="number"]').first();
-    const phInputExists = await phInput.isVisible().catch(() => false);
+    const phInputExists = await softVisible(phInput);
     console.log(`[TC3] Ph. Shift input found: ${phInputExists}`);
 
     if (phInputExists) {
@@ -97,11 +83,11 @@ test.describe('DAB Wizard Smoke Tests', () => {
     const modeSelect = await findModeSelect(page);
     expect(modeSelect, 'Mode select not found').not.toBeNull();
     await modeSelect.selectOption('EPS');
-    await page.waitForTimeout(400);
+    await pause(page, 400, 'mechanical: settle');
 
     await runAnalytical(page);
 
-    const hasError = await page.locator('.error-text').first().isVisible().catch(() => false);
+    const hasError = await softVisible(page.locator('.error-text').first());
     const errorText = hasError ? await page.locator('.error-text').first().innerText().catch(() => '') : '';
     console.log(`[TC4] EPS error: ${hasError} "${errorText}"`);
     expect(hasError, `EPS analytical error: "${errorText}"`).toBe(false);
@@ -119,11 +105,11 @@ test.describe('DAB Wizard Smoke Tests', () => {
     const modeSelect = await findModeSelect(page);
     expect(modeSelect, 'Mode select not found').not.toBeNull();
     await modeSelect.selectOption('DPS');
-    await page.waitForTimeout(400);
+    await pause(page, 400, 'mechanical: settle');
 
     await runAnalytical(page);
 
-    const hasError = await page.locator('.error-text').first().isVisible().catch(() => false);
+    const hasError = await softVisible(page.locator('.error-text').first());
     console.log(`[TC5] DPS error: ${hasError}`);
     expect(hasError).toBe(false);
     expect(errors.length).toBe(0);
@@ -140,11 +126,11 @@ test.describe('DAB Wizard Smoke Tests', () => {
     const modeSelect = await findModeSelect(page);
     expect(modeSelect, 'Mode select not found').not.toBeNull();
     await modeSelect.selectOption('TPS');
-    await page.waitForTimeout(400);
+    await pause(page, 400, 'mechanical: settle');
 
     await runAnalytical(page);
 
-    const hasError = await page.locator('.error-text').first().isVisible().catch(() => false);
+    const hasError = await softVisible(page.locator('.error-text').first());
     console.log(`[TC6] TPS error: ${hasError}`);
     expect(hasError).toBe(false);
     expect(errors.length).toBe(0);
@@ -172,11 +158,11 @@ test.describe('DAB Wizard Smoke Tests', () => {
     await spiceBtn.click();
 
     const modal = page.locator('.modal.fade.show, .modal.show');
-    const modalVisible = await modal.waitFor({ timeout: 20000, state: 'visible' }).then(() => true).catch(() => false);
+    const modalVisible = await modal.waitFor({ timeout: 20000, state: 'visible' }).then(() => true, () => false);
     console.log(`[TC7] SPICE modal visible: ${modalVisible}`);
 
     if (modalVisible) {
-      await page.waitForTimeout(1500);
+      await pause(page, 1500, 'mechanical: settle');
       const netlist = await page.locator('.modal pre code, .modal-body pre code, .modal-body code').first()
         .innerText().catch(async () => page.locator('.modal-body').innerText().catch(() => ''));
       console.log(`[TC7] Netlist length: ${netlist.length}, snippet: "${netlist.substring(0, 200)}"`);
@@ -184,7 +170,7 @@ test.describe('DAB Wizard Smoke Tests', () => {
 
       await ss(page, '7-spice-modal');
       const closeBtn = page.locator('.modal .btn-close, .modal button.btn-primary').first();
-      if (await closeBtn.isVisible().catch(() => false)) await closeBtn.click();
+      if (await softVisible(closeBtn)) await closeBtn.click();
     } else {
       const errText = await page.locator('.error-text, .waveform-error').first().innerText().catch(() => '');
       console.log(`[TC7] No modal — error: "${errText}"`);
@@ -207,7 +193,7 @@ test.describe('DAB Wizard Smoke Tests', () => {
     await openDabWizard(page);
 
     const simBtn = page.locator('.sim-btn').filter({ hasText: 'Simulated' }).first();
-    const simExists = await simBtn.isVisible().catch(() => false);
+    const simExists = await softVisible(simBtn);
     console.log(`[TC8] Simulated button visible: ${simExists}`);
     expect(simExists, 'Simulated button should be present').toBe(true);
 
@@ -229,7 +215,7 @@ test.describe('DAB Wizard Smoke Tests', () => {
     expect(isDisabled).toBe(false);
 
     await designBtn.click();
-    await page.waitForURL('**/magnetic_tool**', { timeout: 30000 }).catch(() => {});
+    await tryWaitForURL(page, '**/magnetic_tool**', 30000);
 
     const url = page.url();
     console.log(`[TC9] URL after click: ${url}`);

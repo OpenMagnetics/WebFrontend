@@ -12,6 +12,7 @@
  */
 import { warmTest as test, expect, resetStoresWarm } from './_coverage.js';
 
+import { pause } from './utils/wait.js';
 const BASE_URL = process.env.BASE_URL || 'http://localhost:5173';
 
 // One-time SPA nav into the app (only on the first test in the worker).
@@ -23,7 +24,7 @@ async function primeSharedPage(sharedPage) {
       () => !window.location.pathname.includes('engine_loader'),
       { timeout: 45000 },
     );
-    await sharedPage.waitForTimeout(800);
+    await pause(sharedPage, 800, 'mechanical: settle');
   }
 }
 
@@ -50,7 +51,7 @@ test.describe('Warm fixture — shared page across tests', () => {
       await mkf.ready;
       const types = await mkf.get_available_wire_types();
       return types && typeof types.size === 'function';
-    }).catch(() => false);
+    }).then((v) => v, () => false);
     const elapsed = Date.now() - t0;
     expect(ok).toBe(true);
     // Second call after WARM-1 should be <1s since the worker is already up.

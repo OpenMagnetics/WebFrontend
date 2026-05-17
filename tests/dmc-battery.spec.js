@@ -17,10 +17,7 @@
  */
 
 import { test, expect } from './_coverage.js';
-import {
-  BASE_URL, isBenign, screenshot,
-  openWizard,
-} from './utils.js';
+import { BASE_URL, isBenign, screenshot, openWizard, softVisible, softDisabled, tryWaitForURL, pause, tryWaitForFunction, tryWaitForSelector, softWaitFor, clickIfPresent } from './utils.js';
 
 const DMC_CY = 'Wizard-DifferentialModeChoke-link';
 const ss = (page, name) => screenshot(page, 'dmc-battery', name);
@@ -29,7 +26,7 @@ const openDmc = (page) => openWizard(page, DMC_CY);
 // DMC doesn't use .sim-btn.analytical – override openWizard wait
 async function openDmcWizard(page) {
   await page.goto(`${BASE_URL}/`, { waitUntil: 'domcontentloaded', timeout: 20000 });
-  await page.waitForTimeout(1000);
+  await pause(page, 1000, 'mechanical: settle');
 
   const clicked = await page.evaluate((cy) => {
     const toggles = Array.from(document.querySelectorAll('.dropdown-toggle'));
@@ -46,11 +43,11 @@ async function openDmcWizard(page) {
   }, DMC_CY);
 
   console.log(`[openDmcWizard] click: ${clicked}`);
-  await page.waitForURL('**/wizards', { timeout: 15000 }).catch(() => {});
+  await tryWaitForURL(page, '**/wizards', 15000);
   // Wait for the wizard title to confirm DmcWizard mounted (replaces the
   // analytical-button wait used by other wizards).
-  await page.waitForSelector('[data-cy="DmcWizard-title"]', { timeout: 15000 }).catch(() => {});
-  await page.waitForTimeout(500);
+  await tryWaitForSelector(page,'[data-cy="DmcWizard-title"]', { timeout: 15000 });
+  await pause(page, 500, 'mechanical: settle');
   console.log('[openDmcWizard] ready');
 }
 
@@ -59,7 +56,7 @@ async function openDmcWizard(page) {
 // permanently-disabled wizard links in the header dropdown (e.g. PSFB),
 // so always time out.
 async function waitForButtonReady(page, label, timeoutMs) {
-  await page.waitForFunction(
+  await tryWaitForFunction(page,
     (text) => {
       const btns = Array.from(document.querySelectorAll('button'));
       const target = btns.find(b => b.textContent && b.textContent.includes(text));
@@ -67,7 +64,7 @@ async function waitForButtonReady(page, label, timeoutMs) {
     },
     label,
     { timeout: timeoutMs }
-  ).catch(() => {});
+  );
 }
 
 
@@ -83,7 +80,7 @@ test.describe('DMC – Group A – Layout', () => {
 
     await openDmcWizard(page);
 
-    const titleVisible = await page.locator('[data-cy="DmcWizard-title"]').first().isVisible().catch(() => false);
+    const titleVisible = await softVisible(page.locator('[data-cy="DmcWizard-title"]').first());
     console.log(`[DMC-A1] Title visible: ${titleVisible}`);
     expect(titleVisible).toBe(true);
 
@@ -98,7 +95,7 @@ test.describe('DMC – Group A – Layout', () => {
   test('DMC-A2 – Configuration selector visible (Single/Three phase)', async ({ page }) => {
     await openDmcWizard(page);
 
-    const configText = await page.locator('text=Single phase, text=configuration').first().isVisible().catch(() => false);
+    const configText = await softVisible(page.locator('text=Single phase, text=configuration').first());
     console.log(`[DMC-A2] Config text visible: ${configText}`);
 
     const allSelects = await page.locator('select').all();
@@ -142,18 +139,18 @@ test.describe('DMC – Group A – Layout', () => {
 // =====================================================================
 async function clickAnalytical(page, timeoutMs = 60000) {
   const btn = page.locator('button').filter({ hasText: 'Analytical' }).first();
-  if (!(await btn.isVisible().catch(() => false))) return;
+  if (!(await softVisible(btn))) return;
   await btn.click();
   await waitForButtonReady(page, 'Analytical', timeoutMs);
-  await page.waitForTimeout(500);
+  await pause(page, 500, 'mechanical: settle');
 }
 
 async function clickSimulated(page, timeoutMs = 60000) {
   const btn = page.locator('button').filter({ hasText: 'Simulated' }).first();
-  if (!(await btn.isVisible().catch(() => false))) return;
+  if (!(await softVisible(btn))) return;
   await btn.click();
   await waitForButtonReady(page, 'Simulated', timeoutMs);
-  await page.waitForTimeout(500);
+  await pause(page, 500, 'mechanical: settle');
 }
 
 test.describe('DMC – Group B – Waveforms', () => {
@@ -168,7 +165,7 @@ test.describe('DMC – Group B – Waveforms', () => {
     await clickAnalytical(page);
     await ss(page, 'B1-after-analytical');
 
-    const hasError = await page.locator('.error-text, .alert-danger').first().isVisible().catch(() => false);
+    const hasError = await softVisible(page.locator('.error-text, .alert-danger').first());
     console.log(`[DMC-B1] Error after analytical: ${hasError}`);
     expect(errors.length).toBe(0);
   });
@@ -181,7 +178,7 @@ test.describe('DMC – Group B – Waveforms', () => {
     await clickSimulated(page);
     await ss(page, 'B2-after-simulated');
 
-    const hasError = await page.locator('.error-text, .alert-danger').first().isVisible().catch(() => false);
+    const hasError = await softVisible(page.locator('.error-text, .alert-danger').first());
     console.log(`[DMC-B2] Error after simulated: ${hasError}`);
     expect(errors.length).toBe(0);
   });
@@ -192,7 +189,7 @@ test.describe('DMC – Group B – Waveforms', () => {
     await ss(page, 'B3-after-analytical');
     await clickSimulated(page);
     await ss(page, 'B3-after-simulated');
-    const hasError = await page.locator('.error-text').first().isVisible().catch(() => false);
+    const hasError = await softVisible(page.locator('.error-text').first());
     console.log(`[DMC-B3] Full cycle error: ${hasError}`);
   });
 
@@ -205,15 +202,15 @@ test.describe('DMC – Group B – Waveforms', () => {
     await clickAnalytical(page);
 
     const spiceBtn = page.locator('button').filter({ hasText: /SPICE|Get SPICE|Get Spice/i }).first();
-    if (!(await spiceBtn.isVisible().catch(() => false))) {
+    if (!(await softVisible(spiceBtn))) {
       console.log('[DMC-B4] SPICE button not visible — wizard or base may have hidden it');
       return;
     }
     await spiceBtn.click();
     // SPICE modal should appear within ~30s
     const modal = page.locator('.modal, [role="dialog"], pre, code').filter({ hasText: /\.tran|Vdc|\.end|Ldmc/i }).first();
-    await modal.waitFor({ timeout: 30000 }).catch(() => {});
-    const visible = await modal.isVisible().catch(() => false);
+    await softWaitFor(modal, { timeout: 30000 });
+    const visible = await softVisible(modal);
     console.log(`[DMC-B4] SPICE netlist visible: ${visible}`);
     expect(errors.length).toBe(0);
     await ss(page, 'B4-spice-netlist');
@@ -232,13 +229,13 @@ test.describe('DMC – Group C – Configuration', () => {
     // Configuration is rendered via radio buttons (ElementFromListRadio), not
     // a <select> — pick the "Three phase" radio if present.
     const threeRadio = page.locator('label, button').filter({ hasText: /Three phase/i }).first();
-    if (await threeRadio.isVisible().catch(() => false)) {
-      await threeRadio.click().catch(() => {});
+    if (await softVisible(threeRadio)) {
+      await clickIfPresent(threeRadio);
     }
-    await page.waitForTimeout(300);
+    await pause(page, 300, 'mechanical: settle');
 
     await clickAnalytical(page);
-    const hasError = await page.locator('.error-text').first().isVisible().catch(() => false);
+    const hasError = await softVisible(page.locator('.error-text').first());
     console.log(`[DMC-C1] Three-phase error: ${hasError}`);
     await ss(page, 'C1-three-phase');
   });
@@ -247,10 +244,10 @@ test.describe('DMC – Group C – Configuration', () => {
     await openDmcWizard(page);
 
     const withNeutral = page.locator('label, button').filter({ hasText: /neutral|wye/i }).first();
-    if (await withNeutral.isVisible().catch(() => false)) {
-      await withNeutral.click().catch(() => {});
+    if (await softVisible(withNeutral)) {
+      await clickIfPresent(withNeutral);
     }
-    await page.waitForTimeout(300);
+    await pause(page, 300, 'mechanical: settle');
     await ss(page, 'C2-three-phase-neutral');
   });
 });
@@ -265,10 +262,10 @@ test.describe('DMC – Group D – Attenuation Points', () => {
     await openDmcWizard(page);
 
     const addBtn = page.locator('button').filter({ hasText: /[Aa]dd/i }).first();
-    if (await addBtn.isVisible().catch(() => false)) {
+    if (await softVisible(addBtn)) {
       const inputsBefore = await page.locator('input[type="number"]').count();
       await addBtn.click();
-      await page.waitForTimeout(400);
+      await pause(page, 400, 'mechanical: settle');
       const inputsAfter = await page.locator('input[type="number"]').count();
       console.log(`[DMC-D1] Inputs before: ${inputsBefore}, after: ${inputsAfter}`);
     }
@@ -304,7 +301,7 @@ test.describe('DMC – Group E – Navigation', () => {
     const reviewBtn = page.locator('button').filter({ hasText: 'Review Specs' }).first();
     await expect(reviewBtn).toBeVisible();
     await reviewBtn.click();
-    await page.waitForURL('**/magnetic_tool**', { timeout: 30000 }).catch(() => {});
+    await tryWaitForURL(page, '**/magnetic_tool**', 30000);
 
     expect(page.url().includes('magnetic_tool')).toBe(true);
     await ss(page, 'E1-review-specs');
@@ -320,7 +317,7 @@ test.describe('DMC – Group E – Navigation', () => {
     const designBtn = page.locator('button').filter({ hasText: 'Design Magnetic' }).first();
     await expect(designBtn).toBeVisible();
     await designBtn.click();
-    await page.waitForURL('**/magnetic_tool**', { timeout: 30000 }).catch(() => {});
+    await tryWaitForURL(page, '**/magnetic_tool**', 30000);
 
     expect(page.url().includes('magnetic_tool')).toBe(true);
     await ss(page, 'E2-design-magnetic');
@@ -338,18 +335,18 @@ test.describe('DMC – Group F – Magnetic Adviser', () => {
     await openDmcWizard(page);
 
     const designBtn = page.locator('button').filter({ hasText: 'Design Magnetic' }).first();
-    if (!(await designBtn.isVisible().catch(() => false))) return false;
-    if (await designBtn.isDisabled().catch(() => true)) return false;
+    if (!(await softVisible(designBtn))) return false;
+    if (await softDisabled(designBtn)) return false;
 
     await designBtn.click();
-    await page.waitForURL('**/magnetic_tool**', { timeout: 30000 }).catch(() => {});
-    await page.waitForTimeout(2000);
+    await tryWaitForURL(page, '**/magnetic_tool**', 30000);
+    await pause(page, 2000, 'mechanical: settle');
     if (!page.url().includes('magnetic_tool')) return false;
 
     const magneticAdviserBtn = page.locator('button').filter({ hasText: /^Magnetic Adviser$/ }).first();
-    if (await magneticAdviserBtn.isVisible().catch(() => false)) {
+    if (await softVisible(magneticAdviserBtn)) {
       await magneticAdviserBtn.click();
-      await page.waitForTimeout(1500);
+      await pause(page, 1500, 'mechanical: settle');
     }
     return true;
   }
@@ -363,7 +360,7 @@ test.describe('DMC – Group F – Magnetic Adviser', () => {
     expect(navigated).toBe(true);
 
     const adviseBtn = page.locator('button').filter({ hasText: /Get Advised Magnetics/i }).first();
-    expect(await adviseBtn.isVisible().catch(() => false)).toBe(true);
+    expect(await softVisible(adviseBtn)).toBe(true);
     await ss(page, 'F1-adviser-loaded');
     expect(errors.length).toBe(0);
   });
@@ -376,17 +373,17 @@ test.describe('DMC – Group F – Magnetic Adviser', () => {
     if (!navigated) { console.log('[DMC-F2] Navigation failed — SKIP'); return; }
 
     const adviseBtn = page.locator('button').filter({ hasText: /Get Advised Magnetics/i }).first();
-    if (!(await adviseBtn.isVisible().catch(() => false))) return;
+    if (!(await softVisible(adviseBtn))) return;
 
     await adviseBtn.click();
     console.log('[DMC-F2] Waiting for results (up to 180s)...');
     await ss(page, 'F2-adviser-running');
 
-    await page.waitForFunction(
+    await tryWaitForFunction(page,
       () => !document.querySelector('.fa-spinner, [class*="loading"]'),
       { timeout: 180000 }
-    ).catch(() => {});
-    await page.waitForTimeout(2000);
+    );
+    await pause(page, 2000, 'mechanical: settle');
     await ss(page, 'F2-adviser-results');
     expect(errors.length).toBe(0);
   });
@@ -402,10 +399,10 @@ test.describe('DMC – Group G – Core Adviser', () => {
     await openDmcWizard(page);
 
     const reviewBtn = page.locator('button').filter({ hasText: 'Review Specs' }).first();
-    if (!(await reviewBtn.isVisible().catch(() => false))) return false;
+    if (!(await softVisible(reviewBtn))) return false;
     await reviewBtn.click();
-    await page.waitForURL('**/magnetic_tool**', { timeout: 30000 }).catch(() => {});
-    await page.waitForTimeout(2000);
+    await tryWaitForURL(page, '**/magnetic_tool**', 30000);
+    await pause(page, 2000, 'mechanical: settle');
     return page.url().includes('magnetic_tool');
   }
 
@@ -420,26 +417,26 @@ test.describe('DMC – Group G – Core Adviser', () => {
     if (!navigated) return;
 
     const coreAdviserLink = page.locator('button, a, [role="button"]').filter({ hasText: /Core Adviser/i }).first();
-    if (!(await coreAdviserLink.isVisible().catch(() => false))) {
+    if (!(await softVisible(coreAdviserLink))) {
       console.log('[DMC-G2] Core Adviser not visible — SKIP');
       return;
     }
 
     await coreAdviserLink.click();
-    await page.waitForTimeout(1000);
+    await pause(page, 1000, 'mechanical: settle');
 
     const getAdvisedBtn = page.locator('button').filter({ hasText: /Get advised cores/i }).first();
-    if (!(await getAdvisedBtn.isVisible().catch(() => false))) return;
+    if (!(await softVisible(getAdvisedBtn))) return;
 
     await getAdvisedBtn.click();
     console.log('[DMC-G2] Waiting for core adviser results (up to 120s)...');
     await ss(page, 'G2-core-adviser-running');
 
-    await page.waitForFunction(
+    await tryWaitForFunction(page,
       () => !document.querySelector('[data-cy="CoreAdviser-loading"], .fa-spinner'),
       { timeout: 120000 }
-    ).catch(() => {});
-    await page.waitForTimeout(1500);
+    );
+    await pause(page, 1500, 'mechanical: settle');
     await ss(page, 'G2-core-adviser-results');
   });
 
@@ -448,10 +445,10 @@ test.describe('DMC – Group G – Core Adviser', () => {
     if (!navigated) return;
 
     const wireAdviserLink = page.locator('button, a, [role="button"]').filter({ hasText: /Wire Adviser/i }).first();
-    if (await wireAdviserLink.isVisible().catch(() => false)) {
+    if (await softVisible(wireAdviserLink)) {
       await wireAdviserLink.click();
-      await page.waitForTimeout(800);
-      const comingSoon = await page.locator('text=Coming soon').first().isVisible().catch(() => false);
+      await pause(page, 800, 'mechanical: settle');
+      const comingSoon = await softVisible(page.locator('text=Coming soon').first());
       console.log(`[DMC-G3] Coming soon: ${comingSoon}`);
     }
     await ss(page, 'G3-wire-adviser');

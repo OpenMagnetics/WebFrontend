@@ -25,10 +25,7 @@
 
 import fs from 'node:fs';
 import { test, expect } from './_coverage.js';
-import {
-  BASE_URL, isBenign, screenshot,
-  openWizard, runAnalytical, goToMagneticAdviser,
-} from './utils.js';
+import { BASE_URL, isBenign, screenshot, openWizard, runAnalytical, goToMagneticAdviser, softVisible, softDisabled, softText, tryWaitForURL, pause, tryWaitForFunction, softWaitFor } from './utils.js';
 
 const BUCK_CY = 'Buck-CommonModeChoke-link';
 const DAB_CY  = 'Dab-link';
@@ -51,12 +48,12 @@ const ss = (page, name) => screenshot(page, 'mt-battery', name);
 /** Navigate to /magnetic_tool via the header "New Magnetic" link (fresh state). */
 async function openFresh(page) {
   await page.goto(`${BASE_URL}/`, { waitUntil: 'domcontentloaded', timeout: 20000 });
-  await page.waitForTimeout(800);
+  await pause(page, 800, 'mechanical: settle');
   const link = page.locator('[data-cy="Header-new-magnetic-link"]');
-  await link.waitFor({ timeout: 10000 }).catch(() => {});
+  await softWaitFor(link, { timeout: 10000 });
   await link.click();
-  await page.waitForURL('**/magnetic_tool**', { timeout: 15000 }).catch(() => {});
-  await page.waitForTimeout(1500);
+  await tryWaitForURL(page, '**/magnetic_tool**', 15000);
+  await pause(page, 1500, 'mechanical: settle');
 }
 
 /** Open wizard → run analytical → Review Specs → arrive at magnetic_tool DR step. */
@@ -64,20 +61,20 @@ async function openViaWizard(page, wizardCy = BUCK_CY) {
   await openWizard(page, wizardCy);
   await runAnalytical(page);
   const reviewBtn = page.locator('button').filter({ hasText: 'Review Specs' }).first();
-  if (!(await reviewBtn.isVisible().catch(() => false))) return false;
+  if (!(await softVisible(reviewBtn))) return false;
   await reviewBtn.click();
-  await page.waitForURL('**/magnetic_tool**', { timeout: 30000 }).catch(() => {});
-  await page.waitForTimeout(1500);
+  await tryWaitForURL(page, '**/magnetic_tool**', 30000);
+  await pause(page, 1500, 'mechanical: settle');
   return page.url().includes('magnetic_tool');
 }
 
 /** Click Continue if enabled. Returns true if clicked. */
 async function clickContinue(page) {
   const btn = page.locator('[data-cy="magnetic-synthesis-next-tool-button"]');
-  await btn.waitFor({ timeout: 5000 }).catch(() => {});
-  if (await btn.isDisabled().catch(() => true)) return false;
+  await softWaitFor(btn, { timeout: 5000 });
+  if (await softDisabled(btn)) return false;
   await btn.click();
-  await page.waitForTimeout(1200);
+  await pause(page, 1200, 'mechanical: settle');
   return true;
 }
 
@@ -88,16 +85,16 @@ async function clickContinue(page) {
 async function goToToolSelector(page) {
   // Try clicking the AC Sweep option if visible
   const acSweepOpt = page.locator('[data-cy$="-ac-sweep-type"]').first();
-  if (await acSweepOpt.isVisible({ timeout: 3000 }).catch(() => false)) {
+  if (await softVisible(acSweepOpt, 3000)) {
     await acSweepOpt.click();
-    await page.waitForTimeout(800);
+    await pause(page, 800, 'mechanical: settle');
     return true;
   }
   // Fallback: look for a text-labelled AC Sweep selector
   const acText = page.locator('text=AC Sweep').first();
-  if (await acText.isVisible({ timeout: 3000 }).catch(() => false)) {
+  if (await softVisible(acText, 3000)) {
     await acText.click();
-    await page.waitForTimeout(800);
+    await pause(page, 800, 'mechanical: settle');
     return true;
   }
   return false;
@@ -107,25 +104,25 @@ async function goToToolSelector(page) {
 async function runCoreAdviser(page, timeoutMs = 90000) {
   // Use suffix match to tolerate the dataTestLabel typo
   const btn = page.locator('[data-cy$="-calculate-mas-advises-button"]').first();
-  await btn.waitFor({ timeout: 10000 }).catch(() => {});
+  await softWaitFor(btn, { timeout: 10000 });
   await btn.click();
-  await page.waitForFunction(
+  await tryWaitForFunction(page,
     () => !document.querySelector('[data-cy="CoreAdviser-loading"]'),
     { timeout: timeoutMs }
-  ).catch(() => {});
-  await page.waitForTimeout(500);
+  );
+  await pause(page, 500, 'mechanical: settle');
 }
 
 /** Run Magnetic Adviser "Get Advised Magnetics" and wait for loading to finish. */
 async function runMagneticAdviser(page, timeoutMs = 90000) {
   const btn = page.locator(`[data-cy="${MA_PFX}-calculate-mas-advises-button"]`);
-  await btn.waitFor({ timeout: 10000 }).catch(() => {});
+  await softWaitFor(btn, { timeout: 10000 });
   await btn.click();
-  await page.waitForFunction(
+  await tryWaitForFunction(page,
     () => !document.querySelector('[data-cy="magneticAdviser-loading"]'),
     { timeout: timeoutMs }
-  ).catch(() => {});
-  await page.waitForTimeout(500);
+  );
+  await pause(page, 500, 'mechanical: settle');
 }
 
 // ── Group A — Layout & Navigation ────────────────────────────────────────────
@@ -177,9 +174,9 @@ test.describe('Group A — Layout & Navigation', () => {
   test('A6: navigate to magnetic_tool from wizard page via New Magnetic link', async ({ page }) => {
     await openWizard(page, BUCK_CY);
     const newMagLink = page.locator('[data-cy="Header-new-magnetic-link"]');
-    if (await newMagLink.isVisible({ timeout: 5000 }).catch(() => false)) {
+    if (await softVisible(newMagLink, 5000)) {
       await newMagLink.click();
-      await page.waitForURL('**/magnetic_tool**', { timeout: 15000 }).catch(() => {});
+      await tryWaitForURL(page, '**/magnetic_tool**', 15000);
       expect(page.url()).toContain('magnetic_tool');
     }
   });
@@ -192,7 +189,7 @@ test.describe('Group B — Design Requirements', () => {
   test.beforeEach(async ({ page }) => {
     await openFresh(page);
     // Wait for DR to load
-    await page.locator(`[data-cy="${DR_PFX}-Topology"]`).waitFor({ timeout: 15000 }).catch(() => {});
+    await softWaitFor(page.locator(`[data-cy="${DR_PFX}-Topology"]`), { timeout: 15000 });
   });
 
   test('B1: topology selector visible', async ({ page }) => {
@@ -208,13 +205,13 @@ test.describe('Group B — Design Requirements', () => {
 
   test('B3: changing winding count makes turns ratios section appear', async ({ page }) => {
     const windingsEl = page.locator(`[data-cy="${DR_PFX}-NumberWindings"]`);
-    await windingsEl.waitFor({ timeout: 10000 }).catch(() => {});
+    await softWaitFor(windingsEl, { timeout: 10000 });
     const numInput = windingsEl.locator('input[type="number"]').first();
-    if (await numInput.isVisible().catch(() => false)) {
+    if (await softVisible(numInput)) {
       await numInput.click({ clickCount: 3 });
       await numInput.fill('3');
       await numInput.press('Tab');
-      await page.waitForTimeout(600);
+      await pause(page, 600, 'mechanical: settle');
       const turnsRatios = page.locator(`[data-cy="${DR_PFX}-TurnsRatios"]`);
       await expect(turnsRatios).toBeVisible({ timeout: 5000 });
     }
@@ -263,10 +260,10 @@ test.describe('Group C — Operating Points', () => {
     await openViaWizard(page, BUCK_CY);
     await clickContinue(page);
     const addBtn = page.locator(`[data-cy="${OP_PFX}-add-operating-point-button"]`);
-    await addBtn.waitFor({ timeout: 10000 }).catch(() => {});
+    await softWaitFor(addBtn, { timeout: 10000 });
     const before = await page.locator(`[data-cy^="${OP_PFX}-select-operating-point-"]`).count();
     await addBtn.click();
-    await page.waitForTimeout(400);
+    await pause(page, 400, 'mechanical: settle');
     const after = await page.locator(`[data-cy^="${OP_PFX}-select-operating-point-"]`).count();
     expect(after).toBeGreaterThanOrEqual(before);
   });
@@ -275,15 +272,15 @@ test.describe('Group C — Operating Points', () => {
     await openViaWizard(page, BUCK_CY);
     await clickContinue(page);
     const addBtn = page.locator(`[data-cy="${OP_PFX}-add-operating-point-button"]`);
-    await addBtn.waitFor({ timeout: 10000 }).catch(() => {});
+    await softWaitFor(addBtn, { timeout: 10000 });
     // Ensure at least 2 OPs
     await addBtn.click();
-    await page.waitForTimeout(300);
+    await pause(page, 300, 'mechanical: settle');
     const before = await page.locator(`[data-cy^="${OP_PFX}-select-operating-point-"]`).count();
     const removeBtn = page.locator(`[data-cy="${OP_PFX}-remove-operating-point-1-button"]`);
-    if (await removeBtn.isVisible().catch(() => false)) {
+    if (await softVisible(removeBtn)) {
       await removeBtn.click();
-      await page.waitForTimeout(300);
+      await pause(page, 300, 'mechanical: settle');
       const after = await page.locator(`[data-cy^="${OP_PFX}-select-operating-point-"]`).count();
       expect(after).toBeLessThanOrEqual(before);
     }
@@ -296,8 +293,8 @@ test.describe('Group C — Operating Points', () => {
     // wizards like Buck render a "select" button instead. Accept either.
     const reflect = page.locator(`[data-cy="${OP_PFX}-operating-point-0-winding-0-reflect-button"]`);
     const select  = page.locator(`[data-cy="${OP_PFX}-operating-point-0-winding-0-select-button"]`);
-    const visible = await reflect.isVisible({ timeout: 10000 }).catch(() => false)
-      || await select.isVisible({ timeout: 2000 }).catch(() => false);
+    const visible = await softVisible(reflect, 10000)
+      || await softVisible(select, 2000);
     expect(visible).toBe(true);
   });
 
@@ -306,8 +303,8 @@ test.describe('Group C — Operating Points', () => {
     await clickContinue(page);
     const selectBtn  = page.locator(`[data-cy="${OP_PFX}-operating-point-0-winding-0-select-button"]`);
     const reflectBtn = page.locator(`[data-cy="${OP_PFX}-operating-point-0-winding-0-reflect-button"]`);
-    const visible = await selectBtn.isVisible().catch(() => false) ||
-                    await reflectBtn.isVisible().catch(() => false);
+    const visible = await softVisible(selectBtn) ||
+                    await softVisible(reflectBtn);
     expect(visible).toBe(true);
   });
 
@@ -323,14 +320,9 @@ test.describe('Group C — Operating Points', () => {
     await openViaWizard(page, BUCK_CY);
     await clickContinue(page); // → operatingPoints
     const reached = await goToToolSelector(page);
-    if (reached) {
-      // ToolSelector should show tool choice buttons
-      const builderBtn = page.locator(`[data-cy="${TS_PFX}-magnetic-builder-button"]`);
-      await expect(builderBtn).toBeVisible({ timeout: 10000 });
-    } else {
-      // AC Sweep not reachable from this wizard – acceptable
-      test.skip();
-    }
+    expect(reached, 'AC Sweep selector must be reachable from OP step').toBe(true);
+    const builderBtn = page.locator(`[data-cy="${TS_PFX}-magnetic-builder-button"]`);
+    await expect(builderBtn).toBeVisible({ timeout: 10000 });
     await ss(page, 'C7-tool-selector');
   });
 });
@@ -346,35 +338,31 @@ test.describe('Group D — Core Adviser (standalone, via ToolSelector)', () => {
     await openViaWizard(page, BUCK_CY);
     await clickContinue(page); // → operatingPoints
     const tsReached = await goToToolSelector(page);
-    if (!tsReached) return false;
-    // Click the Core Adviser button in ToolSelector
+    expect(tsReached, 'ToolSelector must be reachable via AC Sweep').toBe(true);
     const coreAdvBtn = page.locator(`[data-cy="${TS_PFX}-magnetic-core-adviser-button"]`);
-    if (!(await coreAdvBtn.isVisible({ timeout: 5000 }).catch(() => false))) return false;
+    await expect(coreAdvBtn, 'Core Adviser button must be visible in ToolSelector').toBeVisible({ timeout: 5000 });
     await coreAdvBtn.click();
-    await page.waitForTimeout(1000);
-    return true;
+    await pause(page, 1000, 'mechanical: settle');
   }
 
   test('D1: ToolSelector shows Core Adviser button', async ({ page }) => {
     await openViaWizard(page, BUCK_CY);
     await clickContinue(page);
     const reached = await goToToolSelector(page);
-    if (!reached) { test.skip(); return; }
+    expect(reached, 'ToolSelector must be reachable via AC Sweep').toBe(true);
     await expect(
       page.locator(`[data-cy="${TS_PFX}-magnetic-core-adviser-button"]`)
     ).toBeVisible({ timeout: 10000 });
   });
 
   test('D2: Core Adviser loads and shows calculate button', async ({ page }) => {
-    const ok = await goToCoreAdviser(page);
-    if (!ok) { test.skip(); return; }
+    await goToCoreAdviser(page);
     const calcBtn = page.locator('[data-cy$="-calculate-mas-advises-button"]').first();
     await expect(calcBtn).toBeVisible({ timeout: 10000 });
   });
 
   test('D3: filter weight number inputs visible (cost / losses / size)', async ({ page }) => {
-    const ok = await goToCoreAdviser(page);
-    if (!ok) { test.skip(); return; }
+    await goToCoreAdviser(page);
     // Each weight row has a number input
     const numberInputs = page.locator('[data-cy$="-number-input"]');
     await expect(numberInputs.first()).toBeVisible({ timeout: 10000 });
@@ -383,8 +371,7 @@ test.describe('Group D — Core Adviser (standalone, via ToolSelector)', () => {
   });
 
   test('D4: running Core Adviser returns results', async ({ page }) => {
-    const ok = await goToCoreAdviser(page);
-    if (!ok) { test.skip(); return; }
+    await goToCoreAdviser(page);
     await runCoreAdviser(page);
     await ss(page, 'D4-core-adviser-results');
     // At least advise index 0 select button should appear
@@ -393,37 +380,32 @@ test.describe('Group D — Core Adviser (standalone, via ToolSelector)', () => {
   });
 
   test('D5: details button visible for first core result', async ({ page }) => {
-    const ok = await goToCoreAdviser(page);
-    if (!ok) { test.skip(); return; }
+    await goToCoreAdviser(page);
     await runCoreAdviser(page);
     const detailsBtn = page.locator('[data-cy$="-advise-0-details-button"]').first();
     await expect(detailsBtn).toBeVisible({ timeout: 10000 });
   });
 
   test('D6: selecting a core result enables Continue', async ({ page }) => {
-    const ok = await goToCoreAdviser(page);
-    if (!ok) { test.skip(); return; }
+    await goToCoreAdviser(page);
     await runCoreAdviser(page);
     const selectBtn = page.locator('[data-cy$="-advise-0-select-button"]').first();
-    if (await selectBtn.isVisible().catch(() => false)) {
-      await selectBtn.click();
-      await page.waitForTimeout(800);
-      const continueBtn = page.locator('[data-cy="magnetic-synthesis-next-tool-button"]');
-      await expect(continueBtn).not.toBeDisabled({ timeout: 5000 });
-    }
+    await expect(selectBtn).toBeVisible();
+    await selectBtn.click();
+    await pause(page, 800, 'mechanical: settle');
+    const continueBtn = page.locator('[data-cy="magnetic-synthesis-next-tool-button"]');
+    await expect(continueBtn).not.toBeDisabled({ timeout: 5000 });
   });
 
   test('D7: Adviser Settings modal opens from context menu', async ({ page }) => {
-    const ok = await goToCoreAdviser(page);
-    if (!ok) { test.skip(); return; }
+    await goToCoreAdviser(page);
     const settingsBtn = page.locator('[data-cy$="settings-modal-button"]').first();
-    if (await settingsBtn.isVisible().catch(() => false)) {
-      await settingsBtn.click();
-      await page.waitForTimeout(500);
-      const modal = page.locator('.modal.show, [role="dialog"]').first();
-      await expect(modal).toBeVisible({ timeout: 5000 });
-      await ss(page, 'D7-adviser-settings-modal');
-    }
+    await expect(settingsBtn).toBeVisible();
+    await settingsBtn.click();
+    await pause(page, 500, 'mechanical: settle');
+    const modal = page.locator('.modal.show, [role="dialog"]').first();
+    await expect(modal).toBeVisible({ timeout: 5000 });
+    await ss(page, 'D7-adviser-settings-modal');
   });
 });
 
@@ -432,7 +414,7 @@ test.describe('Group D — Core Adviser (standalone, via ToolSelector)', () => {
 test.describe('Group E — Magnetic Adviser', () => {
   test('E1: Magnetic Adviser accessible via "Design Magnetic" from wizard', async ({ page }) => {
     const ok = await goToMagneticAdviser(page, () => openWizard(page, BUCK_CY));
-    if (!ok) { test.skip(); return; }
+    expect(ok, 'Design Magnetic flow must reach the Magnetic Adviser').toBe(true);
     const btn = page.locator(`[data-cy="${MA_PFX}-calculate-mas-advises-button"]`);
     await expect(btn).toBeVisible({ timeout: 10000 });
     await ss(page, 'E1-magnetic-adviser');
@@ -442,70 +424,61 @@ test.describe('Group E — Magnetic Adviser', () => {
     await openViaWizard(page, BUCK_CY);
     await clickContinue(page); // → OP
     await clickContinue(page); // → builder
-    // Context menu Magnetic Adviser button (only in basic mode)
     const adviserBtn = page.locator('[data-cy$="-magnetics-adviser-button"]').first();
-    if (await adviserBtn.isVisible({ timeout: 5000 }).catch(() => false)) {
-      await adviserBtn.click();
-      await page.waitForTimeout(1000);
-      const calcBtn = page.locator(`[data-cy="${MA_PFX}-calculate-mas-advises-button"]`);
-      await expect(calcBtn).toBeVisible({ timeout: 10000 });
-    }
+    await expect(adviserBtn, 'magnetics-adviser-button must be visible in builder context menu').toBeVisible({ timeout: 5000 });
+    await adviserBtn.click();
+    await pause(page, 1000, 'mechanical: settle');
+    const calcBtn = page.locator(`[data-cy="${MA_PFX}-calculate-mas-advises-button"]`);
+    await expect(calcBtn).toBeVisible({ timeout: 10000 });
     await ss(page, 'E2-adviser-from-builder');
   });
 
   test('E3: running Get Advised Magnetics shows results or finishes loading', async ({ page }) => {
     const ok = await goToMagneticAdviser(page, () => openWizard(page, BUCK_CY));
-    if (!ok) { test.skip(); return; }
+    expect(ok).toBe(true);
     await runMagneticAdviser(page);
     await ss(page, 'E3-magnetic-adviser-results');
-    // Pass regardless — confirms loading cycle completed
-    expect(true).toBe(true);
   });
 
   test('E4: Load Selected button visible after selecting a result', async ({ page }) => {
     const ok = await goToMagneticAdviser(page, () => openWizard(page, BUCK_CY));
-    if (!ok) { test.skip(); return; }
+    expect(ok).toBe(true);
     await runMagneticAdviser(page);
     const selectBtn = page.locator('[data-cy$="-advise-0-select-button"]').first();
-    if (await selectBtn.isVisible().catch(() => false)) {
-      await selectBtn.click();
-      await page.waitForTimeout(500);
-      const loadBtn = page.locator(`[data-cy="${MA_PFX}-load-and-go-to-builder-button"]`);
-      await expect(loadBtn).toBeVisible({ timeout: 5000 });
-    }
+    await expect(selectBtn, 'first advise select button must be visible').toBeVisible();
+    await selectBtn.click();
+    await pause(page, 500, 'mechanical: settle');
+    const loadBtn = page.locator(`[data-cy="${MA_PFX}-load-and-go-to-builder-button"]`);
+    await expect(loadBtn).toBeVisible({ timeout: 5000 });
   });
 
   test('E5: Load Selected navigates to builder step', async ({ page }) => {
     const ok = await goToMagneticAdviser(page, () => openWizard(page, BUCK_CY));
-    if (!ok) { test.skip(); return; }
+    expect(ok).toBe(true);
     await runMagneticAdviser(page);
     const selectBtn = page.locator('[data-cy$="-advise-0-select-button"]').first();
-    if (await selectBtn.isVisible().catch(() => false)) {
-      await selectBtn.click();
-      await page.waitForTimeout(500);
-      const loadBtn = page.locator(`[data-cy="${MA_PFX}-load-and-go-to-builder-button"]`);
-      if (await loadBtn.isVisible().catch(() => false)) {
-        await loadBtn.click();
-        await page.waitForTimeout(2000);
-        // Should now be at magneticBuilder subsection
-        const coreAdvise = page.locator('[data-cy$="-Core-Advise-button"]').first();
-        await expect(coreAdvise).toBeVisible({ timeout: 15000 });
-        await ss(page, 'E5-loaded-into-builder');
-      }
-    }
+    await expect(selectBtn).toBeVisible();
+    await selectBtn.click();
+    await pause(page, 500, 'mechanical: settle');
+    const loadBtn = page.locator(`[data-cy="${MA_PFX}-load-and-go-to-builder-button"]`);
+    await expect(loadBtn).toBeVisible();
+    await loadBtn.click();
+    await pause(page, 2000, 'mechanical: settle');
+    const coreAdvise = page.locator('[data-cy$="-Core-Advise-button"]').first();
+    await expect(coreAdvise).toBeVisible({ timeout: 15000 });
+    await ss(page, 'E5-loaded-into-builder');
   });
 
   test('E6: Adviser Settings modal opens from context menu in Magnetic Adviser', async ({ page }) => {
     const ok = await goToMagneticAdviser(page, () => openWizard(page, BUCK_CY));
-    if (!ok) { test.skip(); return; }
+    expect(ok).toBe(true);
     const settingsBtn = page.locator('[data-cy$="settings-modal-button"]').first();
-    if (await settingsBtn.isVisible().catch(() => false)) {
-      await settingsBtn.click();
-      await page.waitForTimeout(500);
-      const modal = page.locator('.modal.show, [role="dialog"]').first();
-      await expect(modal).toBeVisible({ timeout: 5000 });
-      await ss(page, 'E6-adviser-settings-modal');
-    }
+    await expect(settingsBtn).toBeVisible();
+    await settingsBtn.click();
+    await pause(page, 500, 'mechanical: settle');
+    const modal = page.locator('.modal.show, [role="dialog"]').first();
+    await expect(modal).toBeVisible({ timeout: 5000 });
+    await ss(page, 'E6-adviser-settings-modal');
   });
 });
 
@@ -520,14 +493,14 @@ test.describe('Group F — Catalog Adviser (ToolSelector)', () => {
     const catBtn = page.locator(`[data-cy="${TS_PFX}-magnetic-adviser-button"]`);
     // Note: CatalogAdviser is via a separate catalog workflow; ToolSelector has a
     // "Magnetic Adviser" option — use it to check the ToolSelector buttons here.
-    return await catBtn.isVisible({ timeout: 5000 }).catch(() => false);
+    return await softVisible(catBtn, 5000);
   }
 
   test('F1: ToolSelector shows Magnetic Adviser button (reachable when AC Sweep)', async ({ page }) => {
     await openViaWizard(page, BUCK_CY);
     await clickContinue(page);
     const reached = await goToToolSelector(page);
-    if (!reached) { test.skip(); return; }
+    expect(reached, 'ToolSelector must be reachable via AC Sweep').toBe(true);
     await expect(
       page.locator(`[data-cy="${TS_PFX}-magnetic-adviser-button"]`)
     ).toBeVisible({ timeout: 10000 });
@@ -537,7 +510,7 @@ test.describe('Group F — Catalog Adviser (ToolSelector)', () => {
     await openViaWizard(page, BUCK_CY);
     await clickContinue(page);
     const reached = await goToToolSelector(page);
-    if (!reached) { test.skip(); return; }
+    expect(reached, 'ToolSelector must be reachable via AC Sweep').toBe(true);
     await expect(
       page.locator(`[data-cy="${TS_PFX}-magnetic-builder-button"]`)
     ).toBeVisible({ timeout: 10000 });
@@ -547,15 +520,14 @@ test.describe('Group F — Catalog Adviser (ToolSelector)', () => {
     await openViaWizard(page, BUCK_CY);
     await clickContinue(page);
     const reached = await goToToolSelector(page);
-    if (!reached) { test.skip(); return; }
+    expect(reached, 'ToolSelector must be reachable via AC Sweep').toBe(true);
     const builderBtn = page.locator(`[data-cy="${TS_PFX}-magnetic-builder-button"]`);
-    if (await builderBtn.isVisible().catch(() => false)) {
-      await builderBtn.click();
-      await page.waitForTimeout(1000);
-      const coreAdvise = page.locator('[data-cy$="-Core-Advise-button"]').first();
-      await expect(coreAdvise).toBeVisible({ timeout: 10000 });
-      await ss(page, 'F3-builder-from-tool-selector');
-    }
+    await expect(builderBtn).toBeVisible();
+    await builderBtn.click();
+    await pause(page, 1000, 'mechanical: settle');
+    const coreAdvise = page.locator('[data-cy$="-Core-Advise-button"]').first();
+    await expect(coreAdvise).toBeVisible({ timeout: 10000 });
+    await ss(page, 'F3-builder-from-tool-selector');
   });
 });
 
@@ -565,16 +537,15 @@ test.describe('Group G — Magnetic Builder step', () => {
   test.describe.configure({ timeout: 120000 });
   async function goToBuilder(page) {
     const ok = await openViaWizard(page, BUCK_CY);
-    if (!ok) return false;
+    expect(ok, 'wizard → Review Specs must reach /magnetic_tool').toBe(true);
     await clickContinue(page); // → OP
     await clickContinue(page); // → builder
     const coreAdvise = page.locator('[data-cy$="-Core-Advise-button"]').first();
-    return await coreAdvise.isVisible({ timeout: 10000 }).catch(() => false);
+    await expect(coreAdvise, 'Core-Advise-button must be visible on builder step').toBeVisible({ timeout: 10000 });
   }
 
   test('G1: builder step accessible after DR + OP via Continue × 2', async ({ page }) => {
-    const ok = await goToBuilder(page);
-    expect(ok).toBe(true);
+    await goToBuilder(page);
     await ss(page, 'G1-builder-step');
   });
 
@@ -598,10 +569,10 @@ test.describe('Group G — Magnetic Builder step', () => {
       'utf-8',
     ));
     await page.goto(`${BASE_URL}/magnetic_tool`, { waitUntil: 'domcontentloaded', timeout: 20000 });
-    await page.waitForFunction(
+    await tryWaitForFunction(page,
       () => !window.location.pathname.includes('engine_loader'), null, { timeout: 45000 },
     );
-    await page.waitForTimeout(1000);
+    await pause(page, 1000, 'mechanical: settle');
     await page.evaluate((parsedMas) => {
       const pinia = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia;
       const mas = pinia._s.get('mas');
@@ -625,7 +596,7 @@ test.describe('Group G — Magnetic Builder step', () => {
       state.setCurrentToolSubsectionStatus('operatingPoints', true);
       state.setCurrentToolSubsection('magneticBuilder');
     }, parsed);
-    await page.waitForTimeout(2500);
+    await pause(page, 2500, 'mechanical: settle');
 
     // Accept either the single-winding or multi-winding advise trigger.
     // Extra wait + retry cycle handles the coverage-run slowness where the
@@ -634,9 +605,9 @@ test.describe('Group G — Magnetic Builder step', () => {
     const multi  = page.locator('[data-cy$="Wire-Advise-All-button"]').first();
     let visible = false;
     for (let i = 0; i < 4 && !visible; i++) {
-      visible = await single.isVisible({ timeout: 5000 }).catch(() => false)
-        || await multi.isVisible({ timeout: 2000 }).catch(() => false);
-      if (!visible) await page.waitForTimeout(2000);
+      visible = await softVisible(single, 5000)
+        || await softVisible(multi, 2000);
+      if (!visible) await pause(page, 2000, 'mechanical: settle');
     }
     expect(visible).toBe(true);
   });
@@ -647,13 +618,11 @@ test.describe('Group G — Magnetic Builder step', () => {
     const parasiticsBtn = page.locator('[data-cy$="-Coil-ShowParasiticsView-button"]').first();
     const customizeBtn  = page.locator('[data-cy$="-Coil-Customize-button"]').first();
     const tempBtn       = page.locator('[data-cy$="-Coil-ToggleTemperaturePlot-button"]').first();
-    const vis = await parasiticsBtn.isVisible({ timeout: 5000 }).catch(() => false) ||
-                await customizeBtn.isVisible({ timeout: 2000 }).catch(() => false) ||
-                await tempBtn.isVisible({ timeout: 2000 }).catch(() => false);
+    const vis = await softVisible(parasiticsBtn, 5000) ||
+                await softVisible(customizeBtn, 2000) ||
+                await softVisible(tempBtn, 2000);
     await ss(page, 'G5-coil-button');
-    // Coil buttons only appear after winding is complete; skip if not yet visible
-    if (!vis) test.skip();
-    expect(vis).toBe(true);
+    expect(vis, 'a coil action button (Parasitics/Customize/Temperature) must be visible once winding is complete').toBe(true);
   });
 
   test('G6: Settings modal button visible in context menu (builder subsection)', async ({ page }) => {
@@ -684,36 +653,36 @@ test.describe('Group H — Magnetic Summary', () => {
 
     // Advise core
     const coreBtn = page.locator('[data-cy$="-Core-Advise-button"]').first();
-    if (await coreBtn.isVisible({ timeout: 5000 }).catch(() => false)) {
+    if (await softVisible(coreBtn, 5000)) {
       await coreBtn.click();
       await page.waitForFunction(
         () => !document.querySelector('[data-cy$="-BasicCoreSelector-loading"]'),
         { timeout: 60000 }
-      ).catch(() => {});
-      await page.waitForTimeout(500);
+      );
+      await pause(page, 500, 'mechanical: settle');
     }
 
     // Advise wire
     const wireBtn = page.locator('[data-cy$="-Wire-Advise-button"]').first();
-    if (await wireBtn.isVisible({ timeout: 5000 }).catch(() => false)) {
+    if (await softVisible(wireBtn, 5000)) {
       await wireBtn.click();
-      await page.waitForFunction(
+      await tryWaitForFunction(page,
         () => !document.querySelector('[data-cy$="-BasicWireSelector-loading"]'),
         { timeout: 60000 }
-      ).catch(() => {});
-      await page.waitForTimeout(500);
+      );
+      await pause(page, 500, 'mechanical: settle');
     }
 
     // Continue to summary
     await clickContinue(page);
-    await page.waitForTimeout(1000);
+    await pause(page, 1000, 'mechanical: settle');
 
     // Try storyline tab if Continue didn't navigate us there
     const summaryTab = page.locator('[data-cy="storyline-Summary-button"]');
-    if (!(await page.locator(`[data-cy="${SUM_PFX}-download-MAS-File-button"]`).isVisible({ timeout: 3000 }).catch(() => false))) {
-      if (await summaryTab.isVisible().catch(() => false) && !(await summaryTab.isDisabled().catch(() => true))) {
+    if (!(await softVisible(page.locator(`[data-cy="${SUM_PFX}-download-MAS-File-button"]`), 3000))) {
+      if (await softVisible(summaryTab) && !(await softDisabled(summaryTab))) {
         await summaryTab.click();
-        await page.waitForTimeout(1500);
+        await pause(page, 1500, 'mechanical: settle');
       }
     }
   }
@@ -727,19 +696,15 @@ test.describe('Group H — Magnetic Summary', () => {
   test('H2: download MAS File button visible at Summary step', async ({ page }) => {
     await goToSummary(page);
     const btn = page.locator(`[data-cy="${SUM_PFX}-download-MAS-File-button"]`);
-    const visible = await btn.isVisible({ timeout: 10000 }).catch(() => false);
+    await expect(btn, 'download MAS File button must be visible on Summary').toBeVisible({ timeout: 10000 });
     await ss(page, 'H2-summary-mas-btn');
-    if (!visible) { test.skip(); return; }
-    await expect(btn).toBeVisible();
   });
 
   test('H3: download PDF button visible at Summary step', async ({ page }) => {
     await goToSummary(page);
     const btn = page.locator(`[data-cy="${SUM_PFX}-download-PDF-File-button"]`);
-    const visible = await btn.isVisible({ timeout: 8000 }).catch(() => false);
+    await expect(btn, 'download PDF File button must be visible on Summary').toBeVisible({ timeout: 8000 });
     await ss(page, 'H3-summary-pdf-btn');
-    if (!visible) { test.skip(); return; }
-    await expect(btn).toBeVisible();
   });
 
   test('H4: STP and OBJ download buttons visible', async ({ page }) => {
@@ -751,7 +716,7 @@ test.describe('Group H — Magnetic Summary', () => {
     await page.waitForFunction(
       () => !window.location.pathname.includes('engine_loader'), null, { timeout: 45000 },
     );
-    await page.waitForTimeout(10000);
+    await pause(page, 10000, 'mechanical: settle');
     await page.evaluate(() => {
       const pinia = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia;
       const mas = pinia._s.get('mas');
@@ -766,12 +731,12 @@ test.describe('Group H — Magnetic Summary', () => {
       state.selectTool?.('magneticBuilder');
       state.setCurrentToolSubsection('magneticCoreSummary');
     });
-    await page.waitForTimeout(2500);
+    await pause(page, 2500, 'mechanical: settle');
 
     const stpBtn = page.locator('[data-cy$="-download-STP-File-button"]');
     const objBtn = page.locator('[data-cy$="-download-OBJ-File-button"]');
-    const stpVis = await stpBtn.first().isVisible({ timeout: 10000 }).catch(() => false);
-    const objVis = await objBtn.first().isVisible({ timeout: 2000 }).catch(() => false);
+    const stpVis = await softVisible(stpBtn.first(), 10000);
+    const objVis = await softVisible(objBtn.first(), 2000);
     await ss(page, 'H4-summary-3d-buttons');
     expect(stpVis || objVis).toBe(true);
   });
@@ -795,7 +760,7 @@ test.describe('Group I — Exports & Control Panel', () => {
       null,
       { timeout: 45000 },
     );
-    await page.waitForTimeout(1000);
+    await pause(page, 1000, 'mechanical: settle');
 
     await page.evaluate((parsedMas) => {
       const pinia = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia;
@@ -830,7 +795,7 @@ test.describe('Group I — Exports & Control Panel', () => {
     // re-injection time to propagate even under a loaded dev server.
     for (let i = 0; i < 8; i++) {
       if (await page.locator('.cp-btn-all').count() > 0) break;
-      await page.waitForTimeout(1500);
+      await pause(page, 1500, 'mechanical: settle');
     }
     expect(await page.locator('.cp-btn-all').count()).toBeGreaterThan(0);
   });
@@ -856,7 +821,7 @@ test.describe('Group I — Exports & Control Panel', () => {
     await page.evaluate(() => {
       document.querySelector('[data-cy="MAS-exports-modal-button"]')?.click();
     });
-    await page.waitForTimeout(500);
+    await pause(page, 500, 'mechanical: settle');
     const modal = page.locator('.modal.show, [role="dialog"]').first();
     await expect(modal).toBeVisible({ timeout: 5000 });
     // Also assert the button exists in DOM (even if hidden by dropdown CSS).
@@ -868,7 +833,7 @@ test.describe('Group I — Exports & Control Panel', () => {
     await page.evaluate(() => {
       document.querySelector('[data-cy="Core-exports-modal-button"]')?.click();
     });
-    await page.waitForTimeout(500);
+    await pause(page, 500, 'mechanical: settle');
     const modal = page.locator('.modal.show, [role="dialog"]').first();
     await expect(modal).toBeVisible({ timeout: 5000 });
     await expect(page.locator('[data-cy="Core-exports-modal-button"]')).toHaveCount(1);
@@ -879,7 +844,7 @@ test.describe('Group I — Exports & Control Panel', () => {
     await page.evaluate(() => {
       document.querySelector('[data-cy="Coil-exports-modal-button"]')?.click();
     });
-    await page.waitForTimeout(500);
+    await pause(page, 500, 'mechanical: settle');
     const modal = page.locator('.modal.show, [role="dialog"]').first();
     await expect(modal).toBeVisible({ timeout: 5000 });
     await expect(page.locator('[data-cy="Coil-exports-modal-button"]')).toHaveCount(1);
@@ -890,10 +855,10 @@ test.describe('Group I — Exports & Control Panel', () => {
     await page.evaluate(() => {
       document.querySelector('[data-cy="Circuit-Simulators-exports-modal-button"]')?.click();
     });
-    await page.waitForTimeout(500);
+    await pause(page, 500, 'mechanical: settle');
     const modal = page.locator('.modal.show, [role="dialog"]').first();
     await expect(modal).toBeVisible({ timeout: 5000 });
-    const text = await modal.textContent().catch(() => '');
+    const text = await softText(modal);
     const hasSimulator = ['ANSYS', 'SIMBA', 'LtSpice', 'NgSpice', 'NL5'].some(s => text.includes(s));
     expect(hasSimulator).toBe(true);
     await ss(page, 'I6-circuit-simulators-modal');
@@ -952,10 +917,10 @@ test.describe('Group J — End-to-end flows', () => {
     await openWizard(page, DAB_CY);
     await runAnalytical(page);
     const reviewBtn = page.locator('button').filter({ hasText: 'Review Specs' }).first();
-    if (!(await reviewBtn.isVisible().catch(() => false))) { test.skip(); return; }
+    await expect(reviewBtn, 'DAB analytical must produce Review Specs button').toBeVisible({ timeout: 15000 });
     await reviewBtn.click();
-    await page.waitForURL('**/magnetic_tool**', { timeout: 30000 }).catch(() => {});
-    await page.waitForTimeout(1500);
+    await page.waitForURL('**/magnetic_tool**', { timeout: 30000 });
+    await pause(page, 1500, 'mechanical: settle');
     for (const cy of [
       'storyline-DesignReq.-button',
       'storyline-Op.Points-button',
@@ -978,19 +943,18 @@ test.describe('Group J — End-to-end flows', () => {
 
   test('J5: Magnetic Adviser load → builder loaded with core + wire columns', async ({ page }) => {
     const ok = await goToMagneticAdviser(page, () => openWizard(page, BUCK_CY));
-    if (!ok) { test.skip(); return; }
+    expect(ok, 'goToMagneticAdviser must succeed').toBe(true);
     await runMagneticAdviser(page);
     const selectBtn = page.locator('[data-cy$="-advise-0-select-button"]').first();
-    if (!(await selectBtn.isVisible({ timeout: 10000 }).catch(() => false))) { test.skip(); return; }
+    await expect(selectBtn, 'Magnetic Adviser must produce at least one advise').toBeVisible({ timeout: 15000 });
     await selectBtn.click();
-    await page.waitForTimeout(500);
+    await pause(page, 500, 'mechanical: settle');
     const loadBtn = page.locator(`[data-cy="${MA_PFX}-load-and-go-to-builder-button"]`);
-    if (await loadBtn.isVisible().catch(() => false)) {
-      await loadBtn.click();
-      await page.waitForTimeout(2000);
-      await expect(page.locator('[data-cy$="-Core-Advise-button"]').first()).toBeVisible({ timeout: 15000 });
-      await expect(page.locator('[data-cy$="Wire-Advise-button"]').first()).toBeVisible({ timeout: 5000 });
-      await ss(page, 'J5-adviser-to-builder');
-    }
+    await expect(loadBtn, 'load-and-go-to-builder button must appear after selecting advise').toBeVisible({ timeout: 10000 });
+    await loadBtn.click();
+    await pause(page, 2000, 'mechanical: settle');
+    await expect(page.locator('[data-cy$="-Core-Advise-button"]').first()).toBeVisible({ timeout: 15000 });
+    await expect(page.locator('[data-cy$="Wire-Advise-button"]').first()).toBeVisible({ timeout: 5000 });
+    await ss(page, 'J5-adviser-to-builder');
   });
 });

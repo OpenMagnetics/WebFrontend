@@ -12,12 +12,7 @@
  */
 
 import { test, expect } from './_coverage.js';
-import {
-  BASE_URL, isBenign, screenshot,
-  openWizard, runAnalytical,
-  conditionsCard, outputsCard, fillRowInput, fillOutput,
-  goToMagneticAdviser, goToMagneticBuilder, runCoreAdviser,
-} from './utils.js';
+import { BASE_URL, isBenign, screenshot, openWizard, runAnalytical, conditionsCard, outputsCard, fillRowInput, fillOutput, goToMagneticAdviser, goToMagneticBuilder, runCoreAdviser, pause } from './utils.js';
 
 const ISO_BUCK_CY      = 'IsolatedBuck-CommonModeChoke-link';
 const ISO_BUCKBOOST_CY = 'IsolatedBuckBoost-CommonModeChoke-link';
@@ -33,7 +28,7 @@ async function setIKnowMode(page, label) {
   const radio = page.locator(`[data-cy="${label}-DesignLevel-I know the design I want-radio-input"]`);
   await expect(radio).toBeAttached();
   await radio.evaluate(el => { el.checked = true; el.dispatchEvent(new Event('change', { bubbles: true })); });
-  await page.waitForTimeout(400);
+  await pause(page, 400, 'mechanical: settle');
 }
 
 // =====================================================================
@@ -99,43 +94,6 @@ test.describe('IsolatedBuck – Group B – Analytical', () => {
     expect(errors.length).toBe(0);
   });
 
-  // TODO(wizard-bug): in "I know" mode the outputs v-for in
-  // IsolatedBuckBoostWizard.vue:1018-1052 continues to render
-  // PairOfDimensions (voltage,current) instead of TripleOfDimensions
-  // (voltage,current,turnsRatio). The "Design Params" header switches
-  // reactively but the turnsRatio input never appears. Re-enable once the
-  // wizard exposes the turnsRatio input row.
-  test.skip('IB-B2 – I know mode with custom turns ratio', async ({ page }) => {
-    await openIsoBuck(page);
-    await setIKnowMode(page, 'IsolatedBuckWizard');
-
-    const oCard = outputsCard(page);
-    await expect(oCard).toBeVisible();
-    await fillOutput(oCard, 0, 'turnsRatio', '3');
-    await page.waitForTimeout(200);
-
-    await runAnalytical(page);
-    await expect(page.locator('.error-text').first()).toBeHidden();
-    await ss(page, 'IB-B2-iknow');
-  });
-
-  // TODO(wizard-ui-gap): IsolatedBuckBoostWizard has no useLeakageInductance
-  // checkbox (the toggle exists on DAB/PSFB/PSHB/AHB but not here). Skipping
-  // until the toggle is added or the test is reassigned.
-  test.skip('IB-B3 – Leakage inductance toggle runs analytical', async ({ page }) => {
-    await openIsoBuck(page);
-    await setIKnowMode(page, 'IsolatedBuckWizard');
-
-    const leakage = page.locator('#useLeakageInductance');
-    await expect(leakage).toBeVisible();
-    await leakage.click();
-    await page.waitForTimeout(300);
-
-    await runAnalytical(page);
-    await expect(page.locator('.error-text').first()).toBeHidden();
-    await ss(page, 'IB-B3-leakage-toggle');
-  });
-
   test('IB-B4 – Analytical produces at least one waveform canvas', async ({ page }) => {
     await openIsoBuck(page);
     await runAnalytical(page);
@@ -157,7 +115,7 @@ test.describe('IsolatedBuck – Group D – Simulated', () => {
     const simBtn = page.locator('.sim-btn').filter({ hasText: 'Simulated' }).first();
     await expect(simBtn).toBeVisible();
     await simBtn.click();
-    await page.waitForTimeout(2000);
+    await pause(page, 2000, 'mechanical: settle');
     await ss(page, 'IB-D1-simulated-clicked');
   });
 });
@@ -239,7 +197,7 @@ test.describe('IsolatedBuck – Group F – Magnetic Adviser', () => {
       () => !document.querySelector('.fa-spinner, [class*="loading"]'),
       { timeout: 180000 }
     );
-    await page.waitForTimeout(2000);
+    await pause(page, 2000, 'mechanical: settle');
     await ss(page, 'IB-F2-adviser-results');
     expect(page.url()).toContain('magnetic_tool');
     expect(errors.length).toBe(0);
@@ -268,19 +226,6 @@ test.describe('IsolatedBuck – Group G – Core Adviser', () => {
     await runCoreAdviser(page);
     await ss(page, 'IB-G2-core-adviser-results');
     expect(errors.length).toBe(0);
-  });
-
-  // TODO(wizard-ui-gap): No Wire Adviser entry point currently exposed.
-  test.skip('IB-G3 – Wire Adviser shows Coming soon', async ({ page }) => {
-    const navigated = await goToMagneticBuilder(page, () => openIsoBuck(page));
-    expect(navigated).toBe(true);
-
-    const wireAdviserLink = page.locator('button, a, [role="button"]').filter({ hasText: /Wire Adviser/i }).first();
-    await expect(wireAdviserLink).toBeVisible();
-    await wireAdviserLink.click();
-    await page.waitForTimeout(800);
-    await expect(page.getByText(/Coming soon/i).first()).toBeVisible();
-    await ss(page, 'IB-G3-wire-adviser');
   });
 });
 
@@ -338,7 +283,7 @@ test.describe('IsolatedBuckBoost – Group D – Simulated', () => {
     const simBtn = page.locator('.sim-btn').filter({ hasText: 'Simulated' }).first();
     await expect(simBtn).toBeVisible();
     await simBtn.click();
-    await page.waitForTimeout(2000);
+    await pause(page, 2000, 'mechanical: settle');
     await ss(page, 'IBB-D1-simulated');
   });
 });
@@ -395,7 +340,7 @@ test.describe('IsolatedBuckBoost – Group F – Magnetic Adviser', () => {
       () => !document.querySelector('.fa-spinner, [class*="loading"]'),
       { timeout: 180000 }
     );
-    await page.waitForTimeout(2000);
+    await pause(page, 2000, 'mechanical: settle');
     await ss(page, 'IBB-F2-adviser-results');
     expect(page.url()).toContain('magnetic_tool');
   });

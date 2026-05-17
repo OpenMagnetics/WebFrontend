@@ -19,7 +19,7 @@
  * server is running at BASE_URL.
  */
 import { test, expect } from './_coverage.js';
-import { BASE_URL, isBenign, screenshot } from './utils.js';
+import { BASE_URL, isBenign, screenshot, pause } from './utils.js';
 
 const ss = (page, name) => screenshot(page, 'ui-regressions', name);
 
@@ -32,7 +32,7 @@ async function goToRoute(page, pathname, { timeout = 45000 } = {}) {
     null,
     { timeout },
   );
-  await page.waitForTimeout(600);
+  await pause(page, 600, 'mechanical: settle');
 }
 
 // ── UR-1: Periods dropdown change re-runs waveform ─────────────────────
@@ -49,12 +49,12 @@ test.describe('UR-1 — Periods control re-runs waveform generator', () => {
     await goToRoute(page, '/wizards');
     // Buck Converter is a stable wizard with switching-period waveforms.
     await page.evaluate(() => document.querySelector('[data-cy="Buck-link"]')?.click());
-    await page.waitForTimeout(1500);
+    await pause(page, 1500, 'mechanical: settle');
 
     // Click Analytical so there's a waveform rendered.
     await page.evaluate(() => [...document.querySelectorAll('button')]
       .find(b => b.textContent.includes('Analytical'))?.click());
-    await page.waitForTimeout(4000);
+    await pause(page, 4000, 'mechanical: settle');
 
     // Baseline — note it's 2 periods by default. Change to 5 and confirm
     // the graph DOM updates to show more canvases/periods.
@@ -70,7 +70,7 @@ test.describe('UR-1 — Periods control re-runs waveform generator', () => {
     expect(set).toBe(true);
 
     // Give the re-run time to complete.
-    await page.waitForTimeout(4000);
+    await pause(page, 4000, 'mechanical: settle');
 
     // Verify the store observed the update AND simulation has re-run. We
     // detect the re-run via the Pinia reactive `numberOfPeriods` value
@@ -96,18 +96,18 @@ test.describe('UR-2 — SPICE button works for Flyback', () => {
   test('UR-2-1: Flyback SPICE opens modal with a Flyback netlist', async ({ page }) => {
     await goToRoute(page, '/wizards');
     await page.evaluate(() => document.querySelector('[data-cy="Flyback-CommonModeChoke-link"]')?.click());
-    await page.waitForTimeout(1500);
+    await pause(page, 1500, 'mechanical: settle');
 
     // Flyback SPICE requires the wizard's topology to be populated; click
     // Analytical first so the MAS/inputs are computed.
     await page.evaluate(() => [...document.querySelectorAll('button')]
       .find(b => b.textContent.includes('Analytical'))?.click());
-    await page.waitForTimeout(4000);
+    await pause(page, 4000, 'mechanical: settle');
 
     // Click SPICE button.
     await page.evaluate(() => [...document.querySelectorAll('button')]
       .find(b => b.textContent.trim() === 'SPICE' || b.textContent.includes('SPICE'))?.click());
-    await page.waitForTimeout(4000);
+    await pause(page, 4000, 'mechanical: settle');
 
     // Modal should open with "SPICE Netlist - Flyback Converter" header
     // and a body containing flyback-specific markers.
@@ -193,36 +193,36 @@ test.describe('UR-4 — SVG viewBox fits content (no clipping)', () => {
     await goToRoute(page, '/wizards');
     await page.evaluate(() =>
       document.querySelector('[data-cy="Wizard-CommonModeChoke-link"]')?.click());
-    await page.waitForTimeout(1500);
+    await pause(page, 1500, 'mechanical: settle');
 
     await page.evaluate(() =>
       [...document.querySelectorAll('button')].find(b => b.textContent.includes('Analytical'))?.click());
-    await page.waitForTimeout(3500);
+    await pause(page, 3500, 'mechanical: settle');
 
     await page.evaluate(() =>
       [...document.querySelectorAll('button')].find(b => b.textContent.includes('Design Magnetic'))?.click());
-    await page.waitForTimeout(3500);
+    await pause(page, 3500, 'mechanical: settle');
 
     // Open the Magnetic Builder step, run Advise, load selected.
     await page.evaluate(() =>
       [...document.querySelectorAll('.storyline-step')].find(b => b.textContent.includes('Builder'))?.click());
-    await page.waitForTimeout(1500);
+    await pause(page, 1500, 'mechanical: settle');
 
     await page.evaluate(() => {
       const b = [...document.querySelectorAll('button')].filter(b => b.textContent.trim() === 'Advise')[0];
       b?.click();
     });
     // Give the core adviser time to run (it can take ~10s on first run).
-    await page.waitForTimeout(12000);
+    await pause(page, 12000, 'mechanical: settle');
 
     await page.evaluate(() =>
       [...document.querySelectorAll('button')].find(b => b.textContent.includes('Advise all'))?.click());
-    await page.waitForTimeout(10000);
+    await pause(page, 10000, 'mechanical: settle');
 
     // With a complete magnetic loaded, flip to temperature view.
     await page.evaluate(() =>
       [...document.querySelectorAll('button')].find(b => b.textContent.includes('Show Temperature'))?.click());
-    await page.waitForTimeout(3000);
+    await pause(page, 3000, 'mechanical: settle');
 
     const report = await page.evaluate(() => {
       const svgs = [...document.querySelectorAll('.Magnetic2DVisualizer svg, [data-cy*="plot-image"] svg')];

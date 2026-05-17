@@ -18,12 +18,7 @@
  */
 
 import { test, expect } from './_coverage.js';
-import {
-  BASE_URL, isBenign, screenshot,
-  openWizard, runAnalytical,
-  conditionsCard, outputsCard,
-  goToMagneticAdviser, goToMagneticBuilder,
-} from './utils.js';
+import { BASE_URL, isBenign, screenshot, openWizard, runAnalytical, conditionsCard, outputsCard, goToMagneticAdviser, goToMagneticBuilder, softVisible, softDisabled, tryWaitForURL, pause, tryWaitForFunction, clickIfPresent } from './utils.js';
 
 const CMC_CY = 'Wizard-CommonModeChoke-link';
 const ss = (page, name) => screenshot(page, 'cmc-battery', name);
@@ -73,7 +68,7 @@ test.describe('CMC – Group A – Layout', () => {
   test('CMC-A3 – Winding option selector visible (2/3/4 wire)', async ({ page }) => {
     await openCmc(page);
 
-    const windingText = await page.locator('text=2 —, text=Single phase').first().isVisible().catch(() => false);
+    const windingText = await softVisible(page.locator('text=2 —, text=Single phase').first());
     console.log(`[CMC-A3] Winding option text visible: ${windingText}`);
 
     const allSelects = await page.locator('select').all();
@@ -93,9 +88,9 @@ test.describe('CMC – Group A – Layout', () => {
     await openCmc(page);
 
     const iKnow = page.locator('.design-mode-label').filter({ hasText: 'I know' }).first();
-    if (await iKnow.isVisible().catch(() => false)) {
+    if (await softVisible(iKnow)) {
       await iKnow.click();
-      await page.waitForTimeout(400);
+      await pause(page, 400, 'mechanical: settle');
     }
     await ss(page, 'A4-design-mode');
   });
@@ -116,7 +111,7 @@ test.describe('CMC – Group B – Analytical', () => {
     await runAnalytical(page);
     await ss(page, 'B1-after');
 
-    const hasError = await page.locator('.error-text').first().isVisible().catch(() => false);
+    const hasError = await softVisible(page.locator('.error-text').first());
     console.log(`[CMC-B1] Error: ${hasError}`);
     expect(hasError).toBe(false);
 
@@ -138,10 +133,10 @@ test.describe('CMC – Group B – Analytical', () => {
         break;
       }
     }
-    await page.waitForTimeout(400);
+    await pause(page, 400, 'mechanical: settle');
 
     await runAnalytical(page);
-    const hasError = await page.locator('.error-text').first().isVisible().catch(() => false);
+    const hasError = await softVisible(page.locator('.error-text').first());
     console.log(`[CMC-B2] Insertion loss error: ${hasError}`);
     expect(hasError).toBe(false);
     await ss(page, 'B2-insertion-loss');
@@ -159,10 +154,10 @@ test.describe('CMC – Group B – Analytical', () => {
         break;
       }
     }
-    await page.waitForTimeout(400);
+    await pause(page, 400, 'mechanical: settle');
 
     await runAnalytical(page);
-    const hasError = await page.locator('.error-text').first().isVisible().catch(() => false);
+    const hasError = await softVisible(page.locator('.error-text').first());
     console.log(`[CMC-B3] Noise estimate error: ${hasError}`);
     expect(hasError).toBe(false);
     await ss(page, 'B3-noise-estimate');
@@ -177,13 +172,13 @@ test.describe('CMC – Group B – Analytical', () => {
       const threePhase = opts.find(o => o.includes('Three') || o.includes('three') || o.includes('3'));
       if (threePhase) {
         await sel.selectOption({ label: threePhase });
-        await page.waitForTimeout(300);
+        await pause(page, 300, 'mechanical: settle');
         break;
       }
     }
 
     await runAnalytical(page);
-    const hasError = await page.locator('.error-text').first().isVisible().catch(() => false);
+    const hasError = await softVisible(page.locator('.error-text').first());
     console.log(`[CMC-B4] Three-phase error: ${hasError}`);
     expect(hasError).toBe(false);
     await ss(page, 'B4-three-phase');
@@ -193,12 +188,12 @@ test.describe('CMC – Group B – Analytical', () => {
     await openCmc(page);
 
     const iKnow = page.locator('.design-mode-label').filter({ hasText: 'I know' }).first();
-    if (await iKnow.isVisible().catch(() => false)) await iKnow.click();
-    else await page.locator('text=I know the design I want').first().click().catch(() => {});
-    await page.waitForTimeout(400);
+    if (await softVisible(iKnow)) await iKnow.click();
+    else await clickIfPresent(page.locator('text=I know the design I want').first());
+    await pause(page, 400, 'mechanical: settle');
 
     await runAnalytical(page);
-    const hasError = await page.locator('.error-text').first().isVisible().catch(() => false);
+    const hasError = await softVisible(page.locator('.error-text').first());
     console.log(`[CMC-B5] I know error: ${hasError}`);
     expect(hasError).toBe(false);
     await ss(page, 'B5-iknow');
@@ -214,10 +209,10 @@ test.describe('CMC – Group C – Spec Modes', () => {
   test('CMC-C1 – Impedance spec: frequency and impedance inputs visible', async ({ page }) => {
     await openCmc(page);
 
-    const freqInput = await page.locator('input[type="number"]').first().isVisible().catch(() => false);
+    const freqInput = await softVisible(page.locator('input[type="number"]').first());
     console.log(`[CMC-C1] Frequency input visible: ${freqInput}`);
 
-    const impedanceText = await page.locator('text=impedance, text=Impedance').first().isVisible().catch(() => false);
+    const impedanceText = await softVisible(page.locator('text=impedance, text=Impedance').first());
     console.log(`[CMC-C1] Impedance text visible: ${impedanceText}`);
     await ss(page, 'C1-impedance-spec');
   });
@@ -226,10 +221,10 @@ test.describe('CMC – Group C – Spec Modes', () => {
     await openCmc(page);
 
     const addPointBtn = page.locator('button').filter({ hasText: /[Aa]dd|[Aa]dd [Pp]oint|\+/i }).first();
-    if (await addPointBtn.isVisible().catch(() => false)) {
+    if (await softVisible(addPointBtn)) {
       const inputsBefore = await page.locator('input[type="number"]').count();
       await addPointBtn.click();
-      await page.waitForTimeout(400);
+      await pause(page, 400, 'mechanical: settle');
       const inputsAfter = await page.locator('input[type="number"]').count();
       console.log(`[CMC-C2] Inputs before: ${inputsBefore}, after: ${inputsAfter}`);
     }
@@ -248,10 +243,10 @@ test.describe('CMC – Group D – Simulated', () => {
 
     const simBtn = page.locator('.sim-btn').filter({ hasText: 'Simulated' }).first();
     await expect(simBtn).toBeVisible();
-    expect(await simBtn.isDisabled().catch(() => true)).toBe(false);
+    expect(await softDisabled(simBtn)).toBe(false);
 
     await simBtn.click();
-    await page.waitForTimeout(2000);
+    await pause(page, 2000, 'mechanical: settle');
     await ss(page, 'D1-simulated-clicked');
   });
 });
@@ -272,7 +267,7 @@ test.describe('CMC – Group E – Navigation', () => {
     const reviewBtn = page.locator('button').filter({ hasText: 'Review Specs' }).first();
     await expect(reviewBtn).toBeVisible();
     await reviewBtn.click();
-    await page.waitForURL('**/magnetic_tool**', { timeout: 30000 }).catch(() => {});
+    await tryWaitForURL(page, '**/magnetic_tool**', 30000);
 
     expect(page.url().includes('magnetic_tool')).toBe(true);
     await ss(page, 'E1-review-specs');
@@ -289,7 +284,7 @@ test.describe('CMC – Group E – Navigation', () => {
     const designBtn = page.locator('button').filter({ hasText: 'Design Magnetic' }).first();
     await expect(designBtn).toBeVisible();
     await designBtn.click();
-    await page.waitForURL('**/magnetic_tool**', { timeout: 30000 }).catch(() => {});
+    await tryWaitForURL(page, '**/magnetic_tool**', 30000);
 
     expect(page.url().includes('magnetic_tool')).toBe(true);
     await ss(page, 'E2-design-magnetic');
@@ -312,7 +307,7 @@ test.describe('CMC – Group F – Magnetic Adviser', () => {
     expect(navigated).toBe(true);
 
     const adviseBtn = page.locator('button').filter({ hasText: /Get Advised Magnetics/i }).first();
-    expect(await adviseBtn.isVisible().catch(() => false)).toBe(true);
+    expect(await softVisible(adviseBtn)).toBe(true);
     await ss(page, 'F1-adviser-loaded');
     expect(errors.length).toBe(0);
   });
@@ -325,17 +320,17 @@ test.describe('CMC – Group F – Magnetic Adviser', () => {
     if (!navigated) { console.log('[CMC-F2] Navigation failed — SKIP'); return; }
 
     const adviseBtn = page.locator('button').filter({ hasText: /Get Advised Magnetics/i }).first();
-    if (!(await adviseBtn.isVisible().catch(() => false))) return;
+    if (!(await softVisible(adviseBtn))) return;
 
     await adviseBtn.click();
     console.log('[CMC-F2] Waiting for results (up to 180s)...');
     await ss(page, 'F2-adviser-running');
 
-    await page.waitForFunction(
+    await tryWaitForFunction(page,
       () => !document.querySelector('.fa-spinner, [class*="loading"]'),
       { timeout: 180000 }
-    ).catch(() => {});
-    await page.waitForTimeout(2000);
+    );
+    await pause(page, 2000, 'mechanical: settle');
     await ss(page, 'F2-adviser-results');
     expect(errors.length).toBe(0);
   });
@@ -348,19 +343,19 @@ test.describe('CMC – Group F – Magnetic Adviser', () => {
         const threePhase = opts.find(o => o.includes('Three') || o.includes('three'));
         if (threePhase) { await sel.selectOption({ label: threePhase }); break; }
       }
-      await pg.waitForTimeout(300);
+      await pause(pg, 300, 'mechanical: settle');
     });
     if (!navigated) return;
 
     await ss(page, 'F3-adviser-three-phase');
     const adviseBtn = page.locator('button').filter({ hasText: /Get Advised Magnetics/i }).first();
-    if (await adviseBtn.isVisible().catch(() => false)) {
+    if (await softVisible(adviseBtn)) {
       await adviseBtn.click();
-      await page.waitForFunction(
+      await tryWaitForFunction(page,
         () => !document.querySelector('.fa-spinner, [class*="loading"]'),
         { timeout: 180000 }
-      ).catch(() => {});
-      await page.waitForTimeout(2000);
+      );
+      await pause(page, 2000, 'mechanical: settle');
       await ss(page, 'F3-adviser-three-phase-results');
     }
   });
@@ -383,26 +378,26 @@ test.describe('CMC – Group G – Core Adviser', () => {
     if (!navigated) return;
 
     const coreAdviserLink = page.locator('button, a, [role="button"]').filter({ hasText: /Core Adviser/i }).first();
-    if (!(await coreAdviserLink.isVisible().catch(() => false))) {
+    if (!(await softVisible(coreAdviserLink))) {
       console.log('[CMC-G2] Core Adviser not visible — SKIP');
       return;
     }
 
     await coreAdviserLink.click();
-    await page.waitForTimeout(1000);
+    await pause(page, 1000, 'mechanical: settle');
 
     const getAdvisedBtn = page.locator('button').filter({ hasText: /Get advised cores/i }).first();
-    if (!(await getAdvisedBtn.isVisible().catch(() => false))) return;
+    if (!(await softVisible(getAdvisedBtn))) return;
 
     await getAdvisedBtn.click();
     console.log('[CMC-G2] Waiting for core adviser results (up to 120s)...');
     await ss(page, 'G2-core-adviser-running');
 
-    await page.waitForFunction(
+    await tryWaitForFunction(page,
       () => !document.querySelector('[data-cy="CoreAdviser-loading"], .fa-spinner'),
       { timeout: 120000 }
-    ).catch(() => {});
-    await page.waitForTimeout(1500);
+    );
+    await pause(page, 1500, 'mechanical: settle');
     await ss(page, 'G2-core-adviser-results');
   });
 
@@ -411,10 +406,10 @@ test.describe('CMC – Group G – Core Adviser', () => {
     if (!navigated) return;
 
     const wireAdviserLink = page.locator('button, a, [role="button"]').filter({ hasText: /Wire Adviser/i }).first();
-    if (await wireAdviserLink.isVisible().catch(() => false)) {
+    if (await softVisible(wireAdviserLink)) {
       await wireAdviserLink.click();
-      await page.waitForTimeout(800);
-      const comingSoon = await page.locator('text=Coming soon').first().isVisible().catch(() => false);
+      await pause(page, 800, 'mechanical: settle');
+      const comingSoon = await softVisible(page.locator('text=Coming soon').first());
       console.log(`[CMC-G3] Coming soon: ${comingSoon}`);
     }
     await ss(page, 'G3-wire-adviser');

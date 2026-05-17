@@ -178,14 +178,7 @@ test.describe('CMC — toolbox advisers', () => {
     }, inputs);
 
     if (!result.ok) {
-      console.log(`[CMC-TOOLBOX-2] Wire Adviser backend error: ${result.error}`);
-      // Wire Adviser needs an attached bobbin / winding context that isn't
-      // trivially available from this test harness. Treat as a tooling limit,
-      // not a regression: the CMC code path in CoilAdviser is the one that
-      // matters for end-to-end design, and that's already covered in
-      // TestTopologyCmc.cpp (MKF). Skip with diagnostic, don't fail.
-      test.skip(true, `Wire Adviser requires a fuller winding context: ${result.error}`);
-      return;
+      throw new Error(`Wire Adviser backend error: ${result.error}`);
     }
 
     console.log(`[CMC-TOOLBOX-2] Wire Adviser returned ${result.list.length} wire(s)`);

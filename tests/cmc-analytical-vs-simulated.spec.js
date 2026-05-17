@@ -14,7 +14,7 @@
  */
 
 import { test, expect } from './_coverage.js';
-import { openWizard } from './utils.js';
+import { openWizard, pause } from './utils.js';
 
 const CMC_CY = 'Wizard-CommonModeChoke-link';
 
@@ -139,7 +139,7 @@ test.describe('CMC wizard — UI wiring', () => {
     await openWizard(page, CMC_CY);
     await page.locator('.sim-btn.analytical').click();
     // Give the post-processing and chart mount some time.
-    await page.waitForTimeout(2000);
+    await pause(page, 2000, 'mechanical: settle');
     const canvasCount = await page.locator('canvas').count();
     console.log(`[CMC-UI-6] canvas count after Analytical = ${canvasCount}`);
     expect(canvasCount).toBeGreaterThan(0);

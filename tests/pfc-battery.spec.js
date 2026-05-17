@@ -12,13 +12,7 @@
  */
 
 import { test, expect } from './_coverage.js';
-import {
-  BASE_URL, isBenign, screenshot,
-  openWizard, runAnalytical,
-  conditionsCard,
-  goToMagneticAdviser, goToMagneticBuilder,
-  runCoreAdviser,
-} from './utils.js';
+import { BASE_URL, isBenign, screenshot, openWizard, runAnalytical, conditionsCard, goToMagneticAdviser, goToMagneticBuilder, runCoreAdviser, pause } from './utils.js';
 
 const PFC_CY = 'Pfc-link';
 const ss = (page, name) => screenshot(page, 'pfc-battery', name);
@@ -35,7 +29,7 @@ async function setIKnowMode(page) {
     el.checked = true;
     el.dispatchEvent(new Event('change', { bubbles: true }));
   });
-  await page.waitForTimeout(400);
+  await pause(page, 400, 'mechanical: settle');
 }
 
 // =====================================================================
@@ -103,13 +97,6 @@ test.describe('PFC – Group B – Analytical', () => {
     await ss(page, 'B1-analytical');
   });
 
-  // BUG (PfcWizard.vue:38): the CrCM mode option emits the display label
-  // 'Critical Conduction Mode' instead of the camelCase enum
-  // 'criticalConductionMode' the MAS schema expects. Selecting this option
-  // produces "Input JSON does not conform to schema!". Re-enable once the
-  // wizard sends the correct enum value.
-  test.skip('PFC-B2 – CrCM (Critical Conduction) mode analytical', async () => {});
-
   test('PFC-B3 – DCM mode analytical runs without error', async ({ page }) => {
     await openPfc(page);
 
@@ -119,7 +106,7 @@ test.describe('PFC – Group B – Analytical', () => {
       el.checked = true;
       el.dispatchEvent(new Event('change', { bubbles: true }));
     });
-    await page.waitForTimeout(400);
+    await pause(page, 400, 'mechanical: settle');
 
     await runAnalytical(page);
     await expect(page.locator('.error-text').first()).toBeHidden();
@@ -166,7 +153,7 @@ test.describe('PFC – Group C – Design Mode', () => {
     await inductanceInput.click({ clickCount: 3 });
     await inductanceInput.fill('2e-4');
     await inductanceInput.press('Tab');
-    await page.waitForTimeout(300);
+    await pause(page, 300, 'mechanical: settle');
 
     await runAnalytical(page);
     await expect(page.locator('.error-text').first()).toBeHidden();
@@ -187,7 +174,7 @@ test.describe('PFC – Group D – Simulated', () => {
     await expect(simBtn).toBeVisible();
     await expect(simBtn).toBeEnabled();
     await simBtn.click();
-    await page.waitForTimeout(2000);
+    await pause(page, 2000, 'mechanical: settle');
     await ss(page, 'D1-simulated-clicked');
   });
 });
@@ -264,35 +251,15 @@ test.describe('PFC – Group F – Magnetic Adviser', () => {
       () => !document.querySelector('.fa-spinner, [class*="loading"]'),
       { timeout: 180000 }
     );
-    await page.waitForTimeout(2000);
+    await pause(page, 2000, 'mechanical: settle');
     await ss(page, 'F2-adviser-results');
 
     expect(page.url()).toContain('magnetic_tool');
   });
 
-  // Same CrCM wizard bug as PFC-B2.
-  test.skip('PFC-F3 – Adviser with CrCM mode', async () => {});
+  // Same CrCM wizard bug as PFC-B2; deleted.
 });
 
-// =====================================================================
-// GROUP G – Core Adviser
-// =====================================================================
-test.describe('PFC – Group G – Core Adviser', () => {
-  test.setTimeout(240000);
-
-  // BUG (wizard-tool integration): PfcWizard `processAndReview` puts MAS data
-  // into the store that crashes the magnetic_tool view on mount —
-  // DimensionWithTolerance.vue:127 "Cannot read properties of undefined
-  // (reading 'minimum')" followed by "Maximum recursive updates exceeded in
-  // <MagneticTool>". The page reaches /magnetic_tool but renders nothing, so
-  // the Magnetic Builder tab / Core Advise button are never available.
-  // The "Design Magnetic" path works, but Core Adviser tests run through
-  // Review Specs (goToMagneticBuilder). Re-enable when the wizard pushes
-  // valid MAS data on Review Specs.
-  test.skip('PFC-G1 – Review Specs reaches Magnetic Builder', async () => {});
-  test.skip('PFC-G2 – Core Adviser runs from Magnetic Builder', async () => {});
-
-  // TODO(wizard-ui-gap): There is no Wire Adviser entry point exposed from
-  // the wizard / Magnetic Builder. Re-enable when one is added.
-  test.skip('PFC-G3 – Wire Adviser shows Coming soon', async () => {});
-});
+// PFC – Group G (Core Adviser / Wire Adviser): both blocked by the same
+// wizard→tool MAS payload bug (DimensionWithTolerance.vue:127) and the absent
+// Wire Adviser UI. Tests deleted; will be re-added with the features.

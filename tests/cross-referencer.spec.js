@@ -12,13 +12,13 @@
  */
 
 import { test, expect } from './_coverage.js';
-import { BASE_URL, isBenign, screenshot } from './utils.js';
+import { BASE_URL, isBenign, screenshot, softVisible, pause } from './utils.js';
 
 const ss = (page, name) => screenshot(page, 'xref', name);
 
 async function navigate(page, path) {
   await page.goto(`${BASE_URL}${path}`, { waitUntil: 'domcontentloaded', timeout: 20000 });
-  await page.waitForTimeout(2000);
+  await pause(page, 2000, 'mechanical: settle');
 }
 
 // ── Selection landing ─────────────────────────────────────────────────────
@@ -46,7 +46,7 @@ test.describe('Cross-Referencer — selection landing', () => {
     ];
     let found = 0;
     for (const cy of buttons) {
-      if (await page.locator(`[data-cy="${cy}"]`).isVisible({ timeout: 5000 }).catch(() => false)) found++;
+      if (await softVisible(page.locator(`[data-cy="${cy}"]`), 5000)) found++;
     }
     expect(found).toBeGreaterThanOrEqual(1);
     await ss(page, 'L2-buttons');
@@ -63,8 +63,8 @@ test.describe('Cross-Referencer — generic core', () => {
     // Shape selector should appear once WASM is ready
     const shape = page.locator('[data-cy$="-ShapeNames"]').first();
     const material = page.locator('[data-cy$="-MaterialNames"]').first();
-    const shapeVis = await shape.isVisible({ timeout: 15000 }).catch(() => false);
-    const matVis = await material.isVisible({ timeout: 5000 }).catch(() => false);
+    const shapeVis = await softVisible(shape, 15000);
+    const matVis = await softVisible(material, 5000);
     expect(shapeVis || matVis).toBe(true);
     await ss(page, 'GC1-inputs');
   });
@@ -72,9 +72,7 @@ test.describe('Cross-Referencer — generic core', () => {
   test('XR-GC2: calculate button present', async ({ page }) => {
     await navigate(page, '/core_cross_referencer');
     const btn = page.locator('[data-cy$="-calculate"]').first();
-    const vis = await btn.isVisible({ timeout: 15000 }).catch(() => false);
-    if (!vis) { test.skip(); return; }
-    await expect(btn).toBeVisible();
+    await expect(btn, 'calculate button must appear once WASM is ready').toBeVisible({ timeout: 20000 });
     await ss(page, 'GC2-calculate');
   });
 });
@@ -111,9 +109,7 @@ test.describe('Cross-Referencer — generic material', () => {
   test('XR-GM2: material selector is reachable', async ({ page }) => {
     await navigate(page, '/core_material_cross_referencer');
     const material = page.locator('[data-cy$="-MaterialNames"]').first();
-    const vis = await material.isVisible({ timeout: 15000 }).catch(() => false);
-    if (!vis) { test.skip(); return; }
-    await expect(material).toBeVisible();
+    await expect(material, 'material selector must appear once WASM is ready').toBeVisible({ timeout: 20000 });
   });
 });
 
@@ -164,24 +160,22 @@ test.describe('Cross-Referencer — run generic core flow', () => {
   test('XR-RUN: click calculate and wait for results or error', async ({ page }) => {
     await navigate(page, '/core_cross_referencer');
     const calc = page.locator('[data-cy$="-calculate"]').first();
-    if (!(await calc.isVisible({ timeout: 15000 }).catch(() => false))) { test.skip(); return; }
+    await expect(calc, 'calculate button must be visible').toBeVisible({ timeout: 20000 });
 
-    // Click even if disabled - skip if truly disabled
-    if (await calc.isDisabled().catch(() => true)) {
-      console.log('[XR-RUN] calculate button disabled — need form filled first');
-      test.skip();
-      return;
+    // Form may need to be filled; if disabled, the test fails loudly
+    if (await calc.isDisabled()) {
+      throw new Error('calculate button is disabled on initial load — form auto-fill regression');
     }
     await calc.click();
-    await page.waitForTimeout(3000);
+    await pause(page, 3000, 'mechanical: settle');
 
     // Either results appear (table rows) or an error message
     const error = page.locator('[data-cy$="-ErrorMessage"]').first();
-    const hasError = await error.isVisible({ timeout: 2000 }).catch(() => false);
+    const hasError = await error.isVisible({ timeout: 2000 });
     const hasTable = await page.locator('table tbody tr').first()
-      .isVisible({ timeout: 5000 }).catch(() => false);
+      .isVisible({ timeout: 5000 });
 
-    expect(hasError || hasTable).toBe(true);
+    expect(hasError || hasTable, 'expected either error or results after calculate').toBe(true);
     await ss(page, 'RUN-after-calc');
   });
 });

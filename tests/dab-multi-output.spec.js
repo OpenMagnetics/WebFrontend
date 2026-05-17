@@ -3,15 +3,7 @@
  * Tests the Number of Outputs feature in the DAB wizard.
  */
 import { test, expect } from './_coverage.js';
-import {
-  BASE_URL,
-  isBenign,
-  screenshot,
-  openDabWizard,
-  runAnalytical,
-  outputsCard,
-  switchToIKnowMode,
-} from './utils.js';
+import { BASE_URL, isBenign, screenshot, openDabWizard, runAnalytical, outputsCard, switchToIKnowMode, softVisible, softDisabled, tryWaitForURL, pause } from './utils.js';
 
 const ss = (page, name) => screenshot(page, 'dab-multi-output', name);
 
@@ -23,11 +15,11 @@ const ss = (page, name) => screenshot(page, 'dab-multi-output', name);
  */
 async function setNumberOfOutputs(page, n) {
   const card = outputsCard(page);
-  const cardVisible = await card.isVisible().catch(() => false);
+  const cardVisible = await softVisible(card);
 
   if (cardVisible) {
     const sel = card.locator('select').first();
-    if (await sel.isVisible().catch(() => false)) {
+    if (await softVisible(sel)) {
       await sel.selectOption(String(n));
       console.log(`[setOutputs] Selected ${n} via card select`);
       return;
@@ -72,13 +64,13 @@ test.describe('Multi-Output DAB Wizard', () => {
 
     // Step 2: Verify "Number of Outputs" selector is present
     const numberOutputsLabel = page.locator('text=Number of Outputs').first();
-    const hasLabel = await numberOutputsLabel.isVisible().catch(() => false);
+    const hasLabel = await softVisible(numberOutputsLabel);
     console.log(`[MO1] Number of Outputs label visible: ${hasLabel}`);
     expect(hasLabel, 'Number of Outputs selector should be visible').toBe(true);
 
     // Step 3: Change to 2 outputs
     await setNumberOfOutputs(page, 2);
-    await page.waitForTimeout(800);
+    await pause(page, 800, 'mechanical: settle');
     await ss(page, '02-two-outputs-selected');
 
     // Step 4: Count inputs in Outputs card — expect exactly 4 (V1, I1, V2, I2)
@@ -102,7 +94,7 @@ test.describe('Multi-Output DAB Wizard', () => {
 
     // Step 7: No error banner
     const errorBanner = page.locator('.error-text').first();
-    const hasError = await errorBanner.isVisible().catch(() => false);
+    const hasError = await softVisible(errorBanner);
     const errorText = hasError ? await errorBanner.innerText().catch(() => '') : '';
     const hasRealError = hasError && errorText.trim().length > 0;
     console.log(`[MO1] Error banner: ${hasRealError} "${errorText}"`);
@@ -110,13 +102,13 @@ test.describe('Multi-Output DAB Wizard', () => {
 
     // Step 8: Design Magnetic should be enabled
     const designBtn = page.locator('button').filter({ hasText: 'Design Magnetic' }).first();
-    const designVisible  = await designBtn.isVisible().catch(() => false);
-    const designDisabled = await designBtn.isDisabled().catch(() => true);
+    const designVisible  = await softVisible(designBtn);
+    const designDisabled = await softDisabled(designBtn);
     console.log(`[MO1] Design Magnetic visible: ${designVisible}, disabled: ${designDisabled}`);
 
     if (designVisible && !designDisabled) {
       await designBtn.click();
-      await page.waitForURL('**/magnetic_tool**', { timeout: 30000 }).catch(() => {});
+      await tryWaitForURL(page, '**/magnetic_tool**', 30000);
       console.log(`[MO1] Navigated to: ${page.url()}`);
       expect(page.url().includes('magnetic_tool'), 'Should navigate to magnetic_tool').toBe(true);
       await ss(page, '06-after-design-magnetic');
@@ -136,11 +128,11 @@ test.describe('Multi-Output DAB Wizard', () => {
     // Navigate and switch to "I know" mode first
     await openDabWizard(page);
     await switchToIKnowMode(page);
-    await page.waitForTimeout(500);
+    await pause(page, 500, 'mechanical: settle');
 
     // Change to 2 outputs
     await setNumberOfOutputs(page, 2);
-    await page.waitForTimeout(800);
+    await pause(page, 800, 'mechanical: settle');
     await ss(page, '07-i-know-mode-2-outputs');
 
     // In "I know" mode: expect 6 inputs (V, I, n per output × 2 outputs)
@@ -165,7 +157,7 @@ test.describe('Multi-Output DAB Wizard', () => {
 
     // No errors
     const errorBanner = page.locator('.error-text').first();
-    const hasError = await errorBanner.isVisible().catch(() => false);
+    const hasError = await softVisible(errorBanner);
     const errorText = hasError ? await errorBanner.innerText().catch(() => '') : '';
     const hasRealError = hasError && errorText.trim().length > 0;
     console.log(`[MO2] Error: ${hasRealError} "${errorText}"`);

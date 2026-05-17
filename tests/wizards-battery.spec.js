@@ -13,10 +13,7 @@
  */
 
 import { test, expect } from './_coverage.js';
-import {
-  BASE_URL, isBenign, screenshot,
-  openWizard, runAnalytical,
-} from './utils.js';
+import { BASE_URL, isBenign, screenshot, openWizard, runAnalytical, softVisible, softDisabled, softAttr, tryWaitForURL, pause } from './utils.js';
 
 const ss = (page, name) => screenshot(page, 'wiz-battery', name);
 
@@ -63,20 +60,20 @@ test.describe('Wizards — smoke (enabled)', () => {
       const reviewBtn = page.locator('button').filter({ hasText: 'Review Specs' }).first();
       const designBtn = page.locator('button').filter({ hasText: 'Design Magnetic' }).first();
 
-      const hasReview = await reviewBtn.isVisible({ timeout: 3000 }).catch(() => false);
-      const hasDesign = await designBtn.isVisible({ timeout: 3000 }).catch(() => false);
+      const hasReview = await softVisible(reviewBtn, 3000);
+      const hasDesign = await softVisible(designBtn, 3000);
       expect(hasReview || hasDesign).toBe(true);
 
       // Click whichever is available (prefer Review Specs)
       const target = hasReview ? reviewBtn : designBtn;
-      if (await target.isDisabled().catch(() => true)) {
+      if (await softDisabled(target)) {
         console.log(`[W-${label}] target button disabled — stopping after Analytical`);
         return;
       }
 
       await target.click();
-      await page.waitForURL('**/magnetic_tool**', { timeout: 30000 }).catch(() => {});
-      await page.waitForTimeout(1500);
+      await tryWaitForURL(page, '**/magnetic_tool**', 30000);
+      await pause(page, 1500, 'mechanical: settle');
 
       expect(page.url()).toContain('magnetic_tool');
       await ss(page, `${label}-magnetic-tool`);
@@ -94,7 +91,7 @@ test.describe('Wizards — disabled entries present but disabled', () => {
 
   test.beforeEach(async ({ page }) => {
     await page.goto(`${BASE_URL}/`, { waitUntil: 'domcontentloaded', timeout: 15000 });
-    await page.waitForTimeout(800);
+    await pause(page, 800, 'mechanical: settle');
     // Toggle dropdown via direct DOM click
     await page.evaluate(() => {
       const toggles = Array.from(document.querySelectorAll('.dropdown-toggle'));
@@ -105,7 +102,7 @@ test.describe('Wizards — disabled entries present but disabled', () => {
         d?.querySelector('.dropdown-menu')?.classList.add('show');
       }
     });
-    await page.waitForTimeout(300);
+    await pause(page, 300, 'mechanical: settle');
   });
 
   for (const cy of DISABLED_WIZARDS) {
@@ -115,7 +112,7 @@ test.describe('Wizards — disabled entries present but disabled', () => {
       expect(count).toBeGreaterThan(0);
       // Check disabled state (either attribute or class)
       const el0 = el.first();
-      const disabled = await el0.getAttribute('disabled').catch(() => null);
+      const disabled = await softAttr(el0, 'disabled');
       const cls = await el0.getAttribute('class').catch(() => '');
       const isDisabled = disabled !== null || /disabled/i.test(cls || '');
       expect(isDisabled).toBe(true);
@@ -144,9 +141,9 @@ test.describe('Wizards — wizard-specific sanity', () => {
     await ss(page, 'Flyback-analytical');
     // After analytical, "Review Specs" or "Design Magnetic" should exist
     const hasReview = await page.locator('button').filter({ hasText: 'Review Specs' }).first()
-      .isVisible({ timeout: 5000 }).catch(() => false);
+      .waitFor({ state: 'visible', timeout: 5000 }).then(() => true, () => false);
     const hasDesign = await page.locator('button').filter({ hasText: 'Design Magnetic' }).first()
-      .isVisible({ timeout: 5000 }).catch(() => false);
+      .waitFor({ state: 'visible', timeout: 5000 }).then(() => true, () => false);
     expect(hasReview || hasDesign).toBe(true);
   });
 
@@ -156,7 +153,7 @@ test.describe('Wizards — wizard-specific sanity', () => {
       if (msg.type() === 'error' && !isBenign(msg.text())) errors.push(msg.text());
     });
     await openWizard(page, 'Llc-link');
-    await page.waitForTimeout(1500);
+    await pause(page, 1500, 'mechanical: settle');
     expect(errors).toEqual([]);
   });
 
@@ -166,7 +163,7 @@ test.describe('Wizards — wizard-specific sanity', () => {
       if (msg.type() === 'error' && !isBenign(msg.text())) errors.push(msg.text());
     });
     await openWizard(page, 'Pfc-link');
-    await page.waitForTimeout(1500);
+    await pause(page, 1500, 'mechanical: settle');
     expect(errors).toEqual([]);
   });
 
@@ -179,7 +176,7 @@ test.describe('Wizards — wizard-specific sanity', () => {
       await openWizard(page, cy);
       expect(page.url()).toContain('wizards');
       await expect(page.locator('.sim-btn.analytical')).toBeVisible({ timeout: 10000 });
-      await page.waitForTimeout(500);
+      await pause(page, 500, 'mechanical: settle');
     }
   });
 });

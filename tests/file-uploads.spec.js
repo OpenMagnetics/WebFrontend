@@ -17,7 +17,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { test, expect } from './_coverage.js';
-import { BASE_URL, screenshot } from './utils.js';
+import { BASE_URL, screenshot, pause } from './utils.js';
 
 const MAS_FIXTURE = path.resolve(
   '/home/alf/OpenMagnetics/WebFrontend/04_forward_xfmr_e3216_n87.json',
@@ -35,7 +35,7 @@ async function goToRoute(page, routePath, { timeout = 45000 } = {}) {
     null,
     { timeout },
   );
-  await page.waitForTimeout(800);
+  await pause(page, 800, 'mechanical: settle');
 }
 
 // ── MAS JSON import ──────────────────────────────────────────────────────
@@ -45,7 +45,7 @@ test.describe('File uploads — MAS JSON import (Header)', () => {
 
   test.beforeAll(() => {
     if (!fs.existsSync(MAS_FIXTURE)) {
-      console.warn(`[MAS] fixture missing at ${MAS_FIXTURE}; tests will skip`);
+      throw new Error(`[MAS] fixture missing at ${MAS_FIXTURE}`);
     }
   });
 
@@ -57,22 +57,15 @@ test.describe('File uploads — MAS JSON import (Header)', () => {
   });
 
   test('FU-MAS2: uploading a MAS JSON populates the magnetic tool', async ({ page }) => {
-    if (!fs.existsSync(MAS_FIXTURE)) { test.skip(); return; }
     await goToRoute(page, '/');
 
     const input = page.locator('[data-cy="Header-Load-MAS-file-button"]');
     await input.setInputFiles(MAS_FIXTURE);
 
     // MAS import navigates to /magnetic_tool (via Header.vue::readMASFile).
-    await page.waitForURL('**/magnetic_tool**', { timeout: 30000 }).catch(() => {});
-    await page.waitForTimeout(3000);
-
-    const url = page.url();
-    if (!url.includes('magnetic_tool')) {
-      // Backend autocomplete may have failed silently; still expect a state
-      // change away from the home route.
-      expect(url).not.toMatch(/\/$|engine_loader/);
-    }
+    await page.waitForURL('**/magnetic_tool**', { timeout: 30000 });
+    await pause(page, 3000, 'mechanical: settle');
+    expect(page.url()).toContain('magnetic_tool');
     await ss(page, 'MAS2-imported');
   });
 });
@@ -84,7 +77,10 @@ test.describe('File uploads — Circuit Simulator CSV (OperatingPoint)', () => {
 
   test.beforeAll(() => {
     if (!fs.existsSync(CSV_FIXTURE)) {
-      console.warn(`[CSV] fixture missing at ${CSV_FIXTURE}; tests will skip`);
+      throw new Error(`[CSV] fixture missing at ${CSV_FIXTURE}`);
+    }
+    if (!fs.existsSync(MAS_FIXTURE)) {
+      throw new Error(`[CSV] companion MAS fixture missing at ${MAS_FIXTURE}`);
     }
   });
 
@@ -92,27 +88,28 @@ test.describe('File uploads — Circuit Simulator CSV (OperatingPoint)', () => {
    * Drive from home to a state where an OperatingPoint component is mounted:
    * import the MAS fixture (it includes operatingPoints), which is the
    * cheapest path to surface the Operating Point UI without a wizard run.
+   * Throws on failure.
    */
   async function reachOperatingPoint(page) {
-    if (!fs.existsSync(MAS_FIXTURE)) return false;
     await goToRoute(page, '/');
     await page.locator('[data-cy="Header-Load-MAS-file-button"]').setInputFiles(MAS_FIXTURE);
-    await page.waitForURL('**/magnetic_tool**', { timeout: 30000 }).catch(() => {});
-    await page.waitForTimeout(3500);
-    if (!page.url().includes('magnetic_tool')) return false;
+    await page.waitForURL('**/magnetic_tool**', { timeout: 30000 });
+    await pause(page, 3500, 'mechanical: settle');
+    if (!page.url().includes('magnetic_tool')) {
+      throw new Error(`expected magnetic_tool URL after MAS import, got: ${page.url()}`);
+    }
 
     // Advance past DesignRequirements to reach OperatingPoints step.
     const continueBtn = page.locator('[data-cy="magnetic-synthesis-next-tool-button"]');
-    if (!(await continueBtn.isDisabled().catch(() => true))) {
+    await expect(continueBtn, 'DR continue button must be present').toBeVisible({ timeout: 10000 });
+    if (!(await continueBtn.isDisabled())) {
       await continueBtn.click();
-      await page.waitForTimeout(1500);
+      await pause(page, 1500, 'mechanical: settle');
     }
-    return true;
   }
 
   test('FU-CSV1: CircuitSimulator upload input is reachable via OperatingPoint', async ({ page }) => {
-    if (!fs.existsSync(CSV_FIXTURE)) { test.skip(); return; }
-    if (!(await reachOperatingPoint(page))) { test.skip(); return; }
+    await reachOperatingPoint(page);
 
     // Hidden upload input lives in OperatingPoint.vue with ref name
     // OperatingPoint-CircuitSimulator-upload-ref — addressing directly by
@@ -123,8 +120,7 @@ test.describe('File uploads — Circuit Simulator CSV (OperatingPoint)', () => {
   });
 
   test('FU-CSV2: uploading a CSV triggers the ingestion handler', async ({ page }) => {
-    if (!fs.existsSync(CSV_FIXTURE)) { test.skip(); return; }
-    if (!(await reachOperatingPoint(page))) { test.skip(); return; }
+    await reachOperatingPoint(page);
 
     // There can be multiple file inputs on the page (MAS, CSV, SIMBA).
     // Filter by accept="*" + visibility context — use the last one, which in
@@ -143,11 +139,11 @@ test.describe('File uploads — Circuit Simulator CSV (OperatingPoint)', () => {
         break;
       } catch { /* wrong input — try next */ }
     }
-    expect(uploaded).toBe(true);
+    expect(uploaded, 'at least one file input must accept the CSV fixture').toBe(true);
 
     // Ingestion mounts OperatingPointCircuitSimulator (~1s); UI should reflect
     // that either a new canvas/chart appears or the source selector flips.
-    await page.waitForTimeout(4000);
+    await pause(page, 4000, 'mechanical: settle');
     await ss(page, 'CSV2-uploaded');
   });
 });

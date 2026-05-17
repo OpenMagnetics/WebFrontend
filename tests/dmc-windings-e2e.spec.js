@@ -1,5 +1,5 @@
 import { test, expect } from './_coverage.js';
-import { BASE_URL } from './utils.js';
+import { BASE_URL, softVisible, tryWaitForURL, pause } from './utils.js';
 
 async function openDmcWizard(page) {
   page.on('console', msg => {
@@ -8,7 +8,7 @@ async function openDmcWizard(page) {
   page.on('pageerror', err => console.log(`[pageerror] ${err.message}`));
 
   await page.goto(`${BASE_URL}/`, { waitUntil: 'domcontentloaded' });
-  await page.waitForTimeout(1000);
+  await pause(page, 1000, 'mechanical: settle');
 
   await page.evaluate(() => {
     const toggles = Array.from(document.querySelectorAll('.dropdown-toggle'));
@@ -24,13 +24,13 @@ async function openDmcWizard(page) {
   });
 
   await page.waitForSelector('[data-cy="DmcWizard-title"]', { timeout: 30000 });
-  await page.waitForTimeout(500);
+  await pause(page, 500, 'mechanical: settle');
 }
 
 // Click a configuration radio by its visible label.
 async function selectConfiguration(page, labelMatch) {
   const labelLocator = page.locator('label, .form-check-label, span').filter({ hasText: labelMatch }).first();
-  if (await labelLocator.isVisible().catch(() => false)) {
+  if (await softVisible(labelLocator)) {
     await labelLocator.click();
   } else {
     // Fallback: click on the radio input itself
@@ -49,15 +49,15 @@ async function selectConfiguration(page, labelMatch) {
       }
     }
   }
-  await page.waitForTimeout(300);
+  await pause(page, 300, 'mechanical: settle');
 }
 
 async function clickDesignMagnetic(page) {
   const btn = page.locator('button').filter({ hasText: 'Design Magnetic' }).first();
   await btn.waitFor({ timeout: 5000 });
   await btn.click();
-  await page.waitForURL('**/magnetic_tool**', { timeout: 60000 }).catch(() => {});
-  await page.waitForTimeout(1500);
+  await tryWaitForURL(page, '**/magnetic_tool**', 60000);
+  await pause(page, 1500, 'mechanical: settle');
 }
 
 async function readFunctionalDescription(page) {
@@ -175,9 +175,9 @@ test('DMC-windings - three phase produces 3 windings', async ({ page }) => {
 
   // Drive into Design Requirements, wait for content, count visible isolation rows.
   const designReq = page.locator('button').filter({ hasText: /Design.*Req/i }).first();
-  if (await designReq.isVisible().catch(() => false)) {
+  if (await softVisible(designReq)) {
     await designReq.click();
-    await page.waitForTimeout(3000);
+    await pause(page, 3000, 'mechanical: settle');
     // Scroll the IsolationSides label into view so the screenshot captures
     // all of its rows (some pages use internal-overflow scrolling that
     // fullPage doesn't traverse).
@@ -186,7 +186,7 @@ test('DMC-windings - three phase produces 3 windings', async ({ page }) => {
       const target = labels.find(el => /Isolation Sides/i.test(el.textContent || ''));
       if (target) target.scrollIntoView({ behavior: 'instant', block: 'start' });
     });
-    await page.waitForTimeout(500);
+    await pause(page, 500, 'mechanical: settle');
     await page.screenshot({ path: 'tests/screenshots/dmc-3phase-design-req-v2.png', fullPage: true });
     const rows = await page.evaluate(() => {
       const labels = Array.from(document.querySelectorAll('label, span, div')).map(el => el.textContent?.trim() || '');
