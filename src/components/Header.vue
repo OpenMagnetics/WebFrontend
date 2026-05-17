@@ -553,6 +553,66 @@ export default {
                                 <i class="me-2 bi bi-toggle-on"></i>{{'Two-Switch Forward Wizard'}}
                             </button>
                         </li>
+                        <li>
+                            <button
+                                data-cy="Cuk-CommonModeChoke-link"
+                                :class="headerTogglerIsVisible? 'w-100' : 'mx-0' "
+                                class="dropdown-item btn btn-block nav-link px-2"
+                                @click="onWizards($stateStore.Wizards.Cuk)"
+                                @mouseenter="hoveredWizard = 'Cuk'"
+                                @mouseleave="hoveredWizard = null"
+                            >
+                                <i class="me-2 bi bi-arrow-down-up"></i>{{'Cuk Wizard'}}
+                            </button>
+                        </li>
+                        <li>
+                            <button
+                                data-cy="Zeta-CommonModeChoke-link"
+                                :class="headerTogglerIsVisible? 'w-100' : 'mx-0' "
+                                class="dropdown-item btn btn-block nav-link px-2"
+                                @click="onWizards($stateStore.Wizards.Zeta)"
+                                @mouseenter="hoveredWizard = 'Zeta'"
+                                @mouseleave="hoveredWizard = null"
+                            >
+                                <i class="me-2 bi bi-arrow-down-up"></i>{{'Zeta Wizard'}}
+                            </button>
+                        </li>
+                        <li>
+                            <button
+                                data-cy="FourSwitchBuckBoost-CommonModeChoke-link"
+                                :class="headerTogglerIsVisible? 'w-100' : 'mx-0' "
+                                class="dropdown-item btn btn-block nav-link px-2"
+                                @click="onWizards($stateStore.Wizards.FourSwitchBuckBoost)"
+                                @mouseenter="hoveredWizard = 'FourSwitchBuckBoost'"
+                                @mouseleave="hoveredWizard = null"
+                            >
+                                <i class="me-2 bi bi-arrow-down-up"></i>{{'Four-Switch Buck-Boost Wizard'}}
+                            </button>
+                        </li>
+                        <li>
+                            <button
+                                data-cy="Weinberg-CommonModeChoke-link"
+                                :class="headerTogglerIsVisible? 'w-100' : 'mx-0' "
+                                class="dropdown-item btn btn-block nav-link px-2"
+                                @click="onWizards($stateStore.Wizards.Weinberg)"
+                                @mouseenter="hoveredWizard = 'Weinberg'"
+                                @mouseleave="hoveredWizard = null"
+                            >
+                                <i class="me-2 bi bi-arrow-left-right"></i>{{'Weinberg Wizard'}}
+                            </button>
+                        </li>
+                        <li>
+                            <button
+                                data-cy="Clllc-link"
+                                :class="headerTogglerIsVisible? 'w-100' : 'mx-0' "
+                                class="dropdown-item btn btn-block nav-link px-2"
+                                @click="onWizards($stateStore.Wizards.Clllc)"
+                                @mouseenter="hoveredWizard = 'CLLLC'"
+                                @mouseleave="hoveredWizard = null"
+                            >
+                                <i class="me-2 bi bi-arrow-left-right"></i>{{'CLLLC Wizard'}}
+                            </button>
+                        </li>
                       </ul>
                     </li>
                     <li v-if="$stateStore.isAnyDesignLoaded() && $route.name != 'MagneticTool'" class="nav-item">

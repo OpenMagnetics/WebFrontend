@@ -139,6 +139,41 @@ export default {
             await this.$nextTick();
             await this.$router.push(`${import.meta.env.BASE_URL}wizards`);
         },
+        async onCukWizard() {
+            this.$stateStore.resetMagneticTool();
+            this.$stateStore.selectWorkflow("design");
+            this.$stateStore.selectWizard(this.$stateStore.Wizards.Cuk);
+            await this.$nextTick();
+            await this.$router.push(`${import.meta.env.BASE_URL}wizards`);
+        },
+        async onZetaWizard() {
+            this.$stateStore.resetMagneticTool();
+            this.$stateStore.selectWorkflow("design");
+            this.$stateStore.selectWizard(this.$stateStore.Wizards.Zeta);
+            await this.$nextTick();
+            await this.$router.push(`${import.meta.env.BASE_URL}wizards`);
+        },
+        async onFourSwitchBuckBoostWizard() {
+            this.$stateStore.resetMagneticTool();
+            this.$stateStore.selectWorkflow("design");
+            this.$stateStore.selectWizard(this.$stateStore.Wizards.FourSwitchBuckBoost);
+            await this.$nextTick();
+            await this.$router.push(`${import.meta.env.BASE_URL}wizards`);
+        },
+        async onWeinbergWizard() {
+            this.$stateStore.resetMagneticTool();
+            this.$stateStore.selectWorkflow("design");
+            this.$stateStore.selectWizard(this.$stateStore.Wizards.Weinberg);
+            await this.$nextTick();
+            await this.$router.push(`${import.meta.env.BASE_URL}wizards`);
+        },
+        async onClllcWizard() {
+            this.$stateStore.resetMagneticTool();
+            this.$stateStore.selectWorkflow("design");
+            this.$stateStore.selectWizard(this.$stateStore.Wizards.Clllc);
+            await this.$nextTick();
+            await this.$router.push(`${import.meta.env.BASE_URL}wizards`);
+        },
         async onMagneticBuilder() {
             this.$stateStore.resetMagneticTool();
             this.$stateStore.selectWorkflow("design");
@@ -406,6 +441,71 @@ export default {
                                 <h4 class="card-title text-white fw-bold mb-2">Asymmetric Half Bridge</h4>
                                 <p class="card-text text-white small mb-3">Complementary-PWM half-bridge with DC-blocking cap; CT / FB / current-doubler / flyback rectifiers.</p>
                                 <button @click="onAhbWizard" class="btn btn-light w-100">
+                                    Start Wizard
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Cuk Converter -->
+                    <div class="col-lg-4 col-md-6">
+                        <div class="card h-100 bg-dark border-secondary">
+                            <div class="card-body p-4">
+                                <h4 class="card-title text-white fw-bold mb-2">Cuk Converter</h4>
+                                <p class="card-text text-white small mb-3">Inverting buck-boost via coupling capacitor; continuous input and output currents.</p>
+                                <button @click="onCukWizard" class="btn btn-light w-100" data-cy="Cuk-card">
+                                    Start Wizard
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Zeta Converter -->
+                    <div class="col-lg-4 col-md-6">
+                        <div class="card h-100 bg-dark border-secondary">
+                            <div class="card-body p-4">
+                                <h4 class="card-title text-white fw-bold mb-2">Zeta Converter</h4>
+                                <p class="card-text text-white small mb-3">Non-inverting buck-boost via coupling capacitor with continuous output current.</p>
+                                <button @click="onZetaWizard" class="btn btn-light w-100" data-cy="Zeta-card">
+                                    Start Wizard
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Four-Switch Buck-Boost -->
+                    <div class="col-lg-4 col-md-6">
+                        <div class="card h-100 bg-dark border-secondary">
+                            <div class="card-body p-4">
+                                <h4 class="card-title text-white fw-bold mb-2">Four-Switch Buck-Boost</h4>
+                                <p class="card-text text-white small mb-3">Non-inverting H-bridge buck-boost; buck, boost, or passthrough mode automatically.</p>
+                                <button @click="onFourSwitchBuckBoostWizard" class="btn btn-light w-100" data-cy="FourSwitchBuckBoost-card">
+                                    Start Wizard
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Weinberg Converter -->
+                    <div class="col-lg-4 col-md-6">
+                        <div class="card h-100 bg-dark border-secondary">
+                            <div class="card-body p-4">
+                                <h4 class="card-title text-white fw-bold mb-2">Weinberg Converter</h4>
+                                <p class="card-text text-white small mb-3">Isolated push-pull-derived topology with center-tapped secondary and output inductor.</p>
+                                <button @click="onWeinbergWizard" class="btn btn-light w-100" data-cy="Weinberg-card">
+                                    Start Wizard
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- CLLLC Resonant Converter -->
+                    <div class="col-lg-4 col-md-6">
+                        <div class="card h-100 bg-dark border-secondary">
+                            <div class="card-body p-4">
+                                <h4 class="card-title text-white fw-bold mb-2">CLLLC Resonant Converter</h4>
+                                <p class="card-text text-white small mb-3">Bidirectional 5-element symmetric resonant DC-DC converter.</p>
+                                <button @click="onClllcWizard" class="btn btn-light w-100" data-cy="Clllc-card">
                                     Start Wizard
                                 </button>
                             </div>

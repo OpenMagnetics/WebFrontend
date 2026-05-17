@@ -52,6 +52,11 @@ export const useStateStore = defineStore("state", () => {
         PhaseShiftFullBridge: 'phaseShiftFullBridge',
         PhaseShiftHalfBridge: 'phaseShiftHalfBridge',
         AsymmetricHalfBridge: 'asymmetricHalfBridge',
+        Cuk: 'cuk',
+        Zeta: 'zeta',
+        FourSwitchBuckBoost: 'fourSwitchBuckBoost',
+        Weinberg: 'weinberg',
+        Clllc: 'clllc',
     };
 
 

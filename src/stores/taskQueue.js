@@ -906,6 +906,167 @@ export const useTaskQueueStore = defineStore('taskQueue', {
         },
 
         // ==========================================
+        // Wizard Calculation/Simulation - Cuk / Zeta / FSBB / Weinberg / Clllc
+        // ==========================================
+        // Backend: WebLibMKF 17916ff exposes calculate_*_inputs (analytical
+        // .process()) and simulate_*_ideal_waveforms (ngspice) for each.
+        // No "advanced" variants yet — those wizards skip the design-level radio
+        // and always use the analytical/help-me-design path. If the result
+        // string starts with "Exception" the MKF wrapper caught a std::exception
+        // and returned it as text; we surface that as a thrown Error so the
+        // wizard's executeWaveformAction shows it in waveformError.
+
+        // ----- Cuk -----
+        cukInputsCalculated(success = true, dataOrMessage = '') {},
+        async calculateCukInputs(params) {
+            const mkf = await waitForMkf();
+            await mkf.ready;
+            const result = await mkf.calculate_cuk_inputs(JSON.stringify(params));
+            if (result.startsWith('Exception')) { throw new Error(result); }
+            const parsed = JSON.parse(result);
+            if (parsed.error) { throw new Error(parsed.error); }
+            setTimeout(() => { this.cukInputsCalculated(true, parsed); }, this.task_standard_response_delay);
+            return parsed;
+        },
+        cukIdealWaveformsCalculated(success = true, dataOrMessage = '') {},
+        async simulateCukIdealWaveforms(params) {
+            const mkf = await waitForMkf();
+            await mkf.ready;
+            const result = await mkf.simulate_cuk_ideal_waveforms(JSON.stringify(params));
+            if (result.startsWith('Exception')) {
+                setTimeout(() => { this.cukIdealWaveformsCalculated(false, result); }, this.task_standard_response_delay);
+                throw new Error(result);
+            }
+            const parsed = JSON.parse(result);
+            if (parsed.error) {
+                setTimeout(() => { this.cukIdealWaveformsCalculated(false, parsed.error); }, this.task_standard_response_delay);
+                throw new Error(parsed.error);
+            }
+            setTimeout(() => { this.cukIdealWaveformsCalculated(true, parsed); }, this.task_standard_response_delay);
+            return parsed;
+        },
+
+        // ----- Zeta -----
+        zetaInputsCalculated(success = true, dataOrMessage = '') {},
+        async calculateZetaInputs(params) {
+            const mkf = await waitForMkf();
+            await mkf.ready;
+            const result = await mkf.calculate_zeta_inputs(JSON.stringify(params));
+            if (result.startsWith('Exception')) { throw new Error(result); }
+            const parsed = JSON.parse(result);
+            if (parsed.error) { throw new Error(parsed.error); }
+            setTimeout(() => { this.zetaInputsCalculated(true, parsed); }, this.task_standard_response_delay);
+            return parsed;
+        },
+        zetaIdealWaveformsCalculated(success = true, dataOrMessage = '') {},
+        async simulateZetaIdealWaveforms(params) {
+            const mkf = await waitForMkf();
+            await mkf.ready;
+            const result = await mkf.simulate_zeta_ideal_waveforms(JSON.stringify(params));
+            if (result.startsWith('Exception')) {
+                setTimeout(() => { this.zetaIdealWaveformsCalculated(false, result); }, this.task_standard_response_delay);
+                throw new Error(result);
+            }
+            const parsed = JSON.parse(result);
+            if (parsed.error) {
+                setTimeout(() => { this.zetaIdealWaveformsCalculated(false, parsed.error); }, this.task_standard_response_delay);
+                throw new Error(parsed.error);
+            }
+            setTimeout(() => { this.zetaIdealWaveformsCalculated(true, parsed); }, this.task_standard_response_delay);
+            return parsed;
+        },
+
+        // ----- FourSwitchBuckBoost -----
+        fourSwitchBuckBoostInputsCalculated(success = true, dataOrMessage = '') {},
+        async calculateFourSwitchBuckBoostInputs(params) {
+            const mkf = await waitForMkf();
+            await mkf.ready;
+            const result = await mkf.calculate_four_switch_buck_boost_inputs(JSON.stringify(params));
+            if (result.startsWith('Exception')) { throw new Error(result); }
+            const parsed = JSON.parse(result);
+            if (parsed.error) { throw new Error(parsed.error); }
+            setTimeout(() => { this.fourSwitchBuckBoostInputsCalculated(true, parsed); }, this.task_standard_response_delay);
+            return parsed;
+        },
+        fourSwitchBuckBoostIdealWaveformsCalculated(success = true, dataOrMessage = '') {},
+        async simulateFourSwitchBuckBoostIdealWaveforms(params) {
+            const mkf = await waitForMkf();
+            await mkf.ready;
+            const result = await mkf.simulate_four_switch_buck_boost_ideal_waveforms(JSON.stringify(params));
+            if (result.startsWith('Exception')) {
+                setTimeout(() => { this.fourSwitchBuckBoostIdealWaveformsCalculated(false, result); }, this.task_standard_response_delay);
+                throw new Error(result);
+            }
+            const parsed = JSON.parse(result);
+            if (parsed.error) {
+                setTimeout(() => { this.fourSwitchBuckBoostIdealWaveformsCalculated(false, parsed.error); }, this.task_standard_response_delay);
+                throw new Error(parsed.error);
+            }
+            setTimeout(() => { this.fourSwitchBuckBoostIdealWaveformsCalculated(true, parsed); }, this.task_standard_response_delay);
+            return parsed;
+        },
+
+        // ----- Weinberg -----
+        weinbergInputsCalculated(success = true, dataOrMessage = '') {},
+        async calculateWeinbergInputs(params) {
+            const mkf = await waitForMkf();
+            await mkf.ready;
+            const result = await mkf.calculate_weinberg_inputs(JSON.stringify(params));
+            if (result.startsWith('Exception')) { throw new Error(result); }
+            const parsed = JSON.parse(result);
+            if (parsed.error) { throw new Error(parsed.error); }
+            setTimeout(() => { this.weinbergInputsCalculated(true, parsed); }, this.task_standard_response_delay);
+            return parsed;
+        },
+        weinbergIdealWaveformsCalculated(success = true, dataOrMessage = '') {},
+        async simulateWeinbergIdealWaveforms(params) {
+            const mkf = await waitForMkf();
+            await mkf.ready;
+            const result = await mkf.simulate_weinberg_ideal_waveforms(JSON.stringify(params));
+            if (result.startsWith('Exception')) {
+                setTimeout(() => { this.weinbergIdealWaveformsCalculated(false, result); }, this.task_standard_response_delay);
+                throw new Error(result);
+            }
+            const parsed = JSON.parse(result);
+            if (parsed.error) {
+                setTimeout(() => { this.weinbergIdealWaveformsCalculated(false, parsed.error); }, this.task_standard_response_delay);
+                throw new Error(parsed.error);
+            }
+            setTimeout(() => { this.weinbergIdealWaveformsCalculated(true, parsed); }, this.task_standard_response_delay);
+            return parsed;
+        },
+
+        // ----- Clllc (bidirectional symmetric resonant) -----
+        clllcInputsCalculated(success = true, dataOrMessage = '') {},
+        async calculateClllcInputs(params) {
+            const mkf = await waitForMkf();
+            await mkf.ready;
+            const result = await mkf.calculate_clllc_inputs(JSON.stringify(params));
+            if (result.startsWith('Exception')) { throw new Error(result); }
+            const parsed = JSON.parse(result);
+            if (parsed.error) { throw new Error(parsed.error); }
+            setTimeout(() => { this.clllcInputsCalculated(true, parsed); }, this.task_standard_response_delay);
+            return parsed;
+        },
+        clllcIdealWaveformsCalculated(success = true, dataOrMessage = '') {},
+        async simulateClllcIdealWaveforms(params) {
+            const mkf = await waitForMkf();
+            await mkf.ready;
+            const result = await mkf.simulate_clllc_ideal_waveforms(JSON.stringify(params));
+            if (result.startsWith('Exception')) {
+                setTimeout(() => { this.clllcIdealWaveformsCalculated(false, result); }, this.task_standard_response_delay);
+                throw new Error(result);
+            }
+            const parsed = JSON.parse(result);
+            if (parsed.error) {
+                setTimeout(() => { this.clllcIdealWaveformsCalculated(false, parsed.error); }, this.task_standard_response_delay);
+                throw new Error(parsed.error);
+            }
+            setTimeout(() => { this.clllcIdealWaveformsCalculated(true, parsed); }, this.task_standard_response_delay);
+            return parsed;
+        },
+
+        // ==========================================
         // Wizard Calculation/Simulation Methods - SEPIC
         // ==========================================
 
