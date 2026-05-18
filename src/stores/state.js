@@ -425,6 +425,14 @@ export const useStateStore = defineStore("state", () => {
         proportionPerWinding: [],
     });
 
+    // Winding counts (e.g. 2, 3) that are actually represented in the WASM
+    // catalog cache. Populated by main.js after the cache load completes.
+    // CatalogAdviser uses this to skip the C++ adviser call when no catalog
+    // entry matches the user's requested winding count, preventing the C++
+    // backend from throwing "Exception: vector" (or NaN scoring) on empty
+    // candidate sets.
+    const catalogAvailableWindingCounts = ref([]);
+
     const planarCoilConfiguration = ref({
         stackUp: [],
         insulationThichnessPerLayer: {},
@@ -526,6 +534,7 @@ export const useStateStore = defineStore("state", () => {
         storePlanarConfiguration,
         loadPlanarConfiguration,
         wiringTechnologyChanged,
+        catalogAvailableWindingCounts,
     }
 },
 {

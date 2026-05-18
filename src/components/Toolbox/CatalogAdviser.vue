@@ -201,7 +201,29 @@ export default {
             try {
                 const mkf = this.$mkf;
                 if (!mkf) throw new Error('MKF WASM engine not available');
-                const inputsJson = JSON.stringify(this.masStore.mas.inputs);
+
+                // Short-circuit: if the requested winding count isn't present
+                // in the cache, the C++ scorer either crashes ("Exception:
+                // vector" on empty candidate set) or produces NaN scores.
+                // We surface "No choke available" instead.
+                const inputs = this.masStore.mas.inputs;
+                const dr = inputs?.designRequirements || {};
+                const requestedWindings =
+                    (Array.isArray(dr.isolationSides) && dr.isolationSides.length)
+                    || (Array.isArray(dr.turnsRatios) ? dr.turnsRatios.length + 1 : null);
+                const available = this.$stateStore?.catalogAvailableWindingCounts || [];
+                if (requestedWindings && available.length > 0
+                        && !available.includes(requestedWindings)) {
+                    console.info(
+                        `[CatalogAdviser] No catalog entry has ${requestedWindings} windings ` +
+                        `(available: ${available.join(', ')}); skipping C++ adviser.`
+                    );
+                    this.catalogStore.advises = [];
+                    this.$emit('canContinue', false);
+                    return;
+                }
+
+                const inputsJson = JSON.stringify(inputs);
                 const filterFlowJson = JSON.stringify(this.buildFilterFlow());
                 const resultStr = await mkf.calculate_advised_magnetics_from_cache(inputsJson, filterFlowJson, 9);
                 if (typeof resultStr === 'string' && resultStr.startsWith('Exception')) {
