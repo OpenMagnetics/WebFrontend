@@ -396,30 +396,14 @@ export default {
     @get-simulated-waveforms="simulateWaveforms"
     @get-spice-code="getSpiceCode"
     @dismiss-error="errorMessage = ''; waveformError = ''"
-  >
+   >
 
     <!-- ══════════════════════════════════════════════════════════ -->
-    <!-- SLOT: #design-mode — design level radio (same as Buck)    -->
+    <!-- #design-mode slot intentionally omitted — El Choker (CMC)   -->
+    <!-- always uses "Help me with the design", so the Design Mode   -->
+    <!-- card auto-hides via ConverterWizardBase's $slots check.     -->
     <!-- ══════════════════════════════════════════════════════════ -->
-    <template #design-mode>
-      <ElementFromListRadio
-        :name="'designLevel'"
-        :tooltip="tooltipsConverterWizards['designLevel']"
-        :dataTestLabel="dataTestLabel + '-DesignLevel'"
-        :replaceTitle="''"
-        :options="designLevelOptions"
-        :titleSameRow="false"
-        v-model="localData"
-        :labelWidthProportionClass="'d-none'"
-        :valueWidthProportionClass="'col-12'"
-        :valueFontSize="$styleStore.wizard.inputFontSize"
-        :labelFontSize="$styleStore.wizard.inputLabelFontSize"
-        :labelBgColor="'transparent'"
-        :valueBgColor="'transparent'"
-        :textColor="$styleStore.wizard.inputTextColor"
-        @update="updateErrorMessage"
-      />
-    </template>
+
 
     <!-- ══════════════════════════════════════════════════════════ -->
     <!-- SLOT: #design-or-switch-parameters-title                  -->
