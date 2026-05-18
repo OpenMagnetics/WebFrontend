@@ -45,6 +45,13 @@ export const useSettingsStore = defineStore("settings", () => {
         enableSimulation: true,
         enableAutoSimulation: true,
         enableDebugConsole: false,
+        // Optional whitelist of core shape families (case-insensitive codes
+        // like "t", "e", "etd"). When null (default) all families MKF reports
+        // are shown. When set to an array, both Basic and Advanced core
+        // selectors only list families whose lowercase code is in the array.
+        // Used by host apps (e.g. el-choker which only supports toroidal
+        // cores) to restrict the catalog without forking MagneticBuilder.
+        restrictedShapeFamilies: null,
     })
 
     const magneticAdviserSettings = ref({
@@ -84,6 +91,7 @@ export const useSettingsStore = defineStore("settings", () => {
             enableSimulation: true,
             enableAutoSimulation: true,
             enableDebugConsole: false,
+            restrictedShapeFamilies: null,
         };
         this.coreAdviserSettings ={
             weights: null,
