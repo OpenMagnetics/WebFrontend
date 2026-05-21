@@ -199,7 +199,31 @@ export default {
         loadAndGoToBuilder() {
             // Load the selected advise into masStore.mas
             if (this.adviseCacheStore.currentMasAdvises.length > 0 && this.$userStore.magneticAdviserSelectedAdvise != null) {
+                // Snapshot wound_with groups by winding name from the current
+                // (pre-advise) coil so we can re-apply them after setMas. The
+                // adviser regenerates functionalDescription from scratch and
+                // strips woundWith; without re-applying, center-tap wizards
+                // (AHB-CT, Push-Pull, Forward-CT) lose the section-sharing
+                // hint and a subsequent BasicCoilSelector.wind() throws
+                // "Number of slots cannot be less than 1".
+                const woundWithByName = {};
+                const fdBefore = this.masStore.mas?.magnetic?.coil?.functionalDescription;
+                if (Array.isArray(fdBefore)) {
+                    for (const w of fdBefore) {
+                        if (w?.name && Array.isArray(w.woundWith) && w.woundWith.length > 0) {
+                            woundWithByName[w.name] = [...w.woundWith];
+                        }
+                    }
+                }
                 this.masStore.setMas(deepCopy(this.adviseCacheStore.currentMasAdvises[this.$userStore.magneticAdviserSelectedAdvise].mas));
+                const fdAfter = this.masStore.mas?.magnetic?.coil?.functionalDescription;
+                if (Array.isArray(fdAfter) && Object.keys(woundWithByName).length > 0) {
+                    for (const w of fdAfter) {
+                        if (w?.name && woundWithByName[w.name]) {
+                            w.woundWith = woundWithByName[w.name];
+                        }
+                    }
+                }
             }
             // Navigate back to magneticBuilder
             this.$stateStore.getCurrentToolState().subsection = 'magneticBuilder';

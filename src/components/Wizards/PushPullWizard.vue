@@ -115,11 +115,34 @@ export default {
     },
     getTopology() { return Topologies.PushPullConverter; },
     getIsolationSides() {
-      const sides = [IsolationSide.Primary];
-      for (let i = 0; i < this.localData.outputsParameters.length; i++) sides.push(IsolationSide.Secondary);
+      // Push-Pull is center-tapped on BOTH primary and secondary, so MKF
+      // models it as 2 primary halves + 2 secondary halves per output. The
+      // isolation-sides array MUST match that physical winding count or
+      // CoreAdviser fails with "Windings wound together must have the same
+      // isolation side" (see MKF PushPull.cpp:957-965 for the canonical
+      // ordering MKF generates internally).
+      const sides = [IsolationSide.Primary, IsolationSide.Primary];
+      for (let i = 0; i < this.localData.outputsParameters.length; i++) {
+        sides.push(IsolationSide.Secondary, IsolationSide.Secondary);
+      }
       return sides;
     },
     getInsulationType() { return this.localData.insulationType; },
+    getCoilGroups() {
+      // Push-Pull is center-tapped on BOTH primary and secondary: the two
+      // primary halves share one section and each output's two secondary
+      // halves share another. Without this, the post-adviser
+      // BasicCoilSelector.wind() builds a pattern that omits the "Half 2"
+      // windings and trips "Number of slots cannot be less than 1".
+      // Names MUST match what MKF emits (see PushPull.cpp:957-965):
+      // "Primary Half 1" / "Primary Half 2" and "Secondary N Half 1" /
+      // "Secondary N Half 2".
+      const groups = [['Primary Half 1', 'Primary Half 2']];
+      for (let i = 0; i < this.localData.outputsParameters.length; i++) {
+        groups.push([`Secondary ${i} Half 1`, `Secondary ${i} Half 2`]);
+      }
+      return groups;
+    },
 
             updateErrorMessage() {
             this.errorMessage = "";
