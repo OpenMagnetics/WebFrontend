@@ -8,6 +8,7 @@ export default {
     props: {
         dataTestLabel: { type: String, default: '' },
         core: { type: Object, required: true },
+        coil: { type: Object, default: null },
         fullCoreModel: { type: Boolean, default: true },
         classProp: { type: String, default: 'btn-primary m-0 p-0' },
     },
@@ -30,11 +31,31 @@ export default {
                         String(coreAux.functionalDescription.shape.familySubtype);
                 }
                 const magnetic = { core: coreAux };
+                if (this.fullCoreModel && this.coil) {
+                    magnetic.coil = deepCopy(this.coil);
+                }
                 const stlOpts = { tolMm: 0.1, angTol: 0.2, binary: true };
 
-                const buf = this.fullCoreModel
-                    ? await buildMagneticSTL(magnetic, stlOpts)
-                    : await buildCoreSTL(magnetic, stlOpts);
+                let buf;
+                if (this.fullCoreModel && this.coil) {
+                    const turnCount = magnetic.coil?.turnsDescription?.length ?? magnetic.coil?.turns_description?.length ?? 0;
+                    // Full-magnetic STL with many turns generates geometry that
+                    // crashes the WASM renderer (OOM in OCCT meshing / boolean
+                    // ops). Skip to core-only when the coil is very complex.
+                    if (turnCount > 60) {
+                        console.warn('[CoreStlExporter] coil has', turnCount, 'turns; using core-only STL to avoid renderer crash');
+                        buf = await buildCoreSTL(magnetic, stlOpts);
+                    } else {
+                        try {
+                            buf = await buildMagneticSTL(magnetic, stlOpts);
+                        } catch (e) {
+                            console.warn('[CoreStlExporter] full-magnetic STL failed, falling back to core-only:', e);
+                            buf = await buildCoreSTL(magnetic, stlOpts);
+                        }
+                    }
+                } else {
+                    buf = await buildCoreSTL(magnetic, stlOpts);
+                }
 
                 download(buf, coreName + '.stl', 'binary/octet-stream; charset=utf-8');
                 this.$emit('export', coreName + '.stl');
