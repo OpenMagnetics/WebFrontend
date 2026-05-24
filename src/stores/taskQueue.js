@@ -1429,10 +1429,6 @@ export const useTaskQueueStore = defineStore('taskQueue', {
             const mkf = await waitForMkf();
             await mkf.ready;
 
-            // Debug: Log topology and available functions
-            console.log('[generateSpiceCode] Topology:', topology);
-            console.log('[generateSpiceCode] MKF available functions:', Object.keys(mkf).filter(k => k.includes('generate')).sort());
-
             // Map topology → WASM function. Keys are MAS schema enum strings
             // returned by each wizard's getTopology() (e.g. 'flybackConverter').
             // CRITICAL: keep aligned with MAS designRequirements.topology enum
@@ -1456,14 +1452,17 @@ export const useTaskQueueStore = defineStore('taskQueue', {
                 'phaseShiftedFullBridgeConverter':  'generate_psfb_ngspice_circuit',
                 'phaseShiftedHalfBridgeConverter':  'generate_pshb_ngspice_circuit',
                 'asymmetricHalfBridgeConverter':    'generate_ahb_ngspice_circuit',
+                'clllcResonantConverter':           'generate_clllc_ngspice_circuit',
+                'seriesResonantConverter':          'generate_src_ngspice_circuit',
+                'weinbergConverter':                'generate_weinberg_ngspice_circuit',
+                'cukConverter':                     'generate_cuk_ngspice_circuit',
+                'zetaConverter':                    'generate_zeta_ngspice_circuit',
+                'fourSwitchBuckBoostConverter':     'generate_four_switch_buck_boost_ngspice_circuit',
                 'commonModeChoke':                  'generate_cmc_ngspice_circuit',
                 'differentialModeChoke':            'generate_dmc_ngspice_circuit',
             };
 
             const wasmFunction = topologyMap[topology];
-            console.log('[generateSpiceCode] Mapped to function:', wasmFunction);
-            console.log('[generateSpiceCode] Function exists on mkf:', wasmFunction ? (wasmFunction in mkf) : false);
-            console.log('[generateSpiceCode] mkf[wasmFunction] truthy:', wasmFunction ? !!mkf[wasmFunction] : false);
 
             if (!wasmFunction) {
                 console.error(`[generateSpiceCode] No mapping found for topology: ${topology}`);
@@ -1868,6 +1867,107 @@ export const useTaskQueueStore = defineStore('taskQueue', {
             const waveforms = JSON.parse(result);
             setTimeout(() => { this.ahbWaveformsSimulated(true, waveforms); }, this.task_standard_response_delay);
             return waveforms;
+        },
+
+        // ==========================================
+        // Wizard Calculation Methods - Series Resonant Converter (SRC)
+        // ==========================================
+
+        srcInputsCalculated(success = true, dataOrMessage = '') {
+        },
+
+        async calculateSrcInputs(params) {
+            const mkf = await waitForMkf();
+            await mkf.ready;
+
+            const result = await mkf.calculate_src_inputs(JSON.stringify(params));
+            if (result.startsWith('Exception')) {
+                setTimeout(() => { this.srcInputsCalculated(false, result); }, this.task_standard_response_delay);
+                throw new Error(result);
+            }
+            const inputs = JSON.parse(result);
+            setTimeout(() => { this.srcInputsCalculated(true, inputs); }, this.task_standard_response_delay);
+            return inputs;
+        },
+
+        srcWaveformsSimulated(success = true, dataOrMessage = '') {
+        },
+
+        async simulateSrcIdealWaveforms(params) {
+            const mkf = await waitForMkf();
+            await mkf.ready;
+
+            const result = await mkf.simulate_src_ideal_waveforms(JSON.stringify(params));
+            if (result.startsWith('Exception')) {
+                setTimeout(() => { this.srcWaveformsSimulated(false, result); }, this.task_standard_response_delay);
+                throw new Error(result);
+            }
+            const waveforms = JSON.parse(result);
+            setTimeout(() => { this.srcWaveformsSimulated(true, waveforms); }, this.task_standard_response_delay);
+            return waveforms;
+        },
+
+        // ==========================================
+        // Wizard Calculation Methods - Vienna Rectifier
+        // ==========================================
+
+        viennaInputsCalculated(success = true, dataOrMessage = '') {
+        },
+
+        async calculateViennaInputs(params) {
+            const mkf = await waitForMkf();
+            await mkf.ready;
+
+            const result = await mkf.calculate_vienna_inputs(JSON.stringify(params));
+            if (result.startsWith('Exception')) {
+                setTimeout(() => { this.viennaInputsCalculated(false, result); }, this.task_standard_response_delay);
+                throw new Error(result);
+            }
+            const inputs = JSON.parse(result);
+            setTimeout(() => { this.viennaInputsCalculated(true, inputs); }, this.task_standard_response_delay);
+            return inputs;
+        },
+
+        viennaWaveformsSimulated(success = true, dataOrMessage = '') {
+        },
+
+        async simulateViennaIdealWaveforms(params) {
+            // Vienna SPICE in MKF is currently a single-phase emulation:
+            // one phase solved at peak-of-line, replicated to B/C by 120-deg
+            // symmetry. The wizard surfaces this via `viennaDiagnostics.note`
+            // on the returned payload. Full 3-phase netlist is MKF Phase 3+.
+            const mkf = await waitForMkf();
+            await mkf.ready;
+
+            const result = await mkf.simulate_vienna_ideal_waveforms(JSON.stringify(params));
+            if (result.startsWith('Exception')) {
+                setTimeout(() => { this.viennaWaveformsSimulated(false, result); }, this.task_standard_response_delay);
+                throw new Error(result);
+            }
+            const waveforms = JSON.parse(result);
+            setTimeout(() => { this.viennaWaveformsSimulated(true, waveforms); }, this.task_standard_response_delay);
+            return waveforms;
+        },
+
+        // ==========================================
+        // Wizard Calculation Methods - Current Transformer
+        // ==========================================
+
+        currentTransformerProcessed(success = true, dataOrMessage = '') {
+        },
+
+        async processCurrentTransformer(params) {
+            const mkf = await waitForMkf();
+            await mkf.ready;
+
+            const result = await mkf.process_current_transformer(JSON.stringify(params));
+            if (result.startsWith('Exception')) {
+                setTimeout(() => { this.currentTransformerProcessed(false, result); }, this.task_standard_response_delay);
+                throw new Error(result);
+            }
+            const inputs = JSON.parse(result);
+            setTimeout(() => { this.currentTransformerProcessed(true, inputs); }, this.task_standard_response_delay);
+            return inputs;
         },
 
         // ==========================================
