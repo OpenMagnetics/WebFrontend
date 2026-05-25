@@ -69,6 +69,20 @@ export default {
     },
     watch: {
         waveformViewMode() { this.$nextTick(() => { this.forceWaveformUpdate += 1; }); },
+        // Re-validate and re-run on every input edit. Without this, the
+        // wizard would silently keep showing the stale waveforms from
+        // the initial mount run after the user changed V_LL / V_DC /
+        // power / etc. Debounced like CmcWizard's pattern.
+        localData: {
+            deep: true,
+            handler() {
+                clearTimeout(this._analyticalDebounceTimer);
+                this._analyticalDebounceTimer = setTimeout(() => {
+                    this.updateErrorMessage();
+                    if (!this.errorMessage) this.getAnalyticalWaveforms();
+                }, 800);
+            },
+        },
     },
     mounted() {
         this.$nextTick(() => {
@@ -164,9 +178,33 @@ export default {
         },
         updateErrorMessage() {
             this.errorMessage = "";
-            const vll = this.localData.lineToLineVoltage?.nominal ?? this.localData.lineToLineVoltage?.maximum;
-            if (vll && this.localData.outputDcVoltage <= vll * Math.SQRT2) {
-                this.errorMessage = `Vdc (${this.localData.outputDcVoltage}V) must exceed √2·V_LL (${(vll * Math.SQRT2).toFixed(0)}V)`;
+            const vll = this.localData.lineToLineVoltage?.nominal
+                ?? this.localData.lineToLineVoltage?.maximum
+                ?? this.localData.lineToLineVoltage?.minimum;
+            // V_LL is required — the previous version short-circuited the
+            // relation check when vll was undefined, silently accepting an
+            // empty input field. Vienna's analytical solver needs V_LL to
+            // compute the boost inductance and peak phase current, so
+            // bail out loudly.
+            if (!(vll > 0)) {
+                this.errorMessage = "V_LL (AC line-to-line RMS) is required — enter the nominal value.";
+                return;
+            }
+            if (!(this.localData.outputDcVoltage > 0)) {
+                this.errorMessage = "V_DC (output bus voltage) must be set and > 0.";
+                return;
+            }
+            if (this.localData.outputDcVoltage <= vll * Math.SQRT2) {
+                this.errorMessage = `Vdc (${this.localData.outputDcVoltage}V) must exceed √2·V_LL (${(vll * Math.SQRT2).toFixed(0)}V) — Vienna is a boost-type PFC.`;
+                return;
+            }
+            if (!(this.localData.outputPower > 0)) {
+                this.errorMessage = "Output power must be > 0.";
+                return;
+            }
+            if (!(this.localData.switchingFrequency > 0)) {
+                this.errorMessage = "Switching frequency must be > 0.";
+                return;
             }
         },
         buildInputs() { return this.buildParams('analytical'); },
