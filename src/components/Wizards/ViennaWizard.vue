@@ -4,6 +4,7 @@ import { useMasStore } from '../../stores/mas'
 import { useTaskQueueStore } from '../../stores/taskQueue'
 import Dimension from 'WebSharedComponents/DataInput/Dimension.vue'
 import DimensionReadOnly from 'WebSharedComponents/DataInput/DimensionReadOnly.vue'
+import DimensionWithTolerance from 'WebSharedComponents/DataInput/DimensionWithTolerance.vue'
 import ElementFromList from 'WebSharedComponents/DataInput/ElementFromList.vue'
 import { minimumMaximumScalePerParameter } from 'WebSharedComponents/assets/js/defaults.js'
 import ConverterWizardBase from './ConverterWizardBase.vue'
@@ -81,11 +82,25 @@ export default {
         buildParams(mode) {
             if (mode === 'spice') {
                 // generate_boost_ngspice_circuit (single-phase emulation) needs
-                // boost-style params. Per-leg input peak ≈ VLL × √(2/3).
-                const phasePeakVoltage = this.localData.lineToLineVoltage * Math.sqrt(2 / 3);
+                // boost-style params. Per-leg input peak ≈ V_LL,RMS × √(2/3).
+                // lineToLineVoltage is a DimensionWithTolerance object — pull
+                // the nominal RMS value out before scaling (the original code
+                // multiplied the object by a scalar and silently produced NaN).
+                const vllNominal = this.localData.lineToLineVoltage?.nominal
+                    ?? this.localData.lineToLineVoltage?.maximum
+                    ?? this.localData.lineToLineVoltage?.minimum;
+                if (!(vllNominal > 0)) {
+                    throw new Error('Vienna: lineToLineVoltage.nominal is required for SPICE export');
+                }
+                const tol = this.localData.lineToLineVoltage?.tolerance ?? 0.1;
+                const phasePeakVoltage = vllNominal * Math.sqrt(2 / 3);
                 const outputCurrent = this.localData.outputPower / this.localData.outputDcVoltage;
                 return {
-                    inputVoltage: { minimum: phasePeakVoltage * 0.9, nominal: phasePeakVoltage, maximum: phasePeakVoltage * 1.1 },
+                    inputVoltage: {
+                        minimum: phasePeakVoltage * (1 - tol),
+                        nominal: phasePeakVoltage,
+                        maximum: phasePeakVoltage * (1 + tol),
+                    },
                     switchingFrequency: this.localData.switchingFrequency,
                     efficiency: this.localData.efficiency,
                     currentRippleRatio: this.localData.currentRippleRatio,
@@ -279,13 +294,26 @@ export default {
     </template>
 
     <template #input-voltage>
-      <CompactVoltageInput
+      <!-- Vienna line voltage is an AC line-to-line RMS, not a DC range —
+           use DimensionWithTolerance so the UI shows "nominal V_LL ± tol%"
+           instead of three independent min/nominal/max fields. -->
+      <DimensionWithTolerance
         :name="'lineToLineVoltage'"
         :tooltip="tooltipsConverterWizards['lineToLineVoltage']"
-        :dataTestLabel="dataTestLabel + '-LineToLineVoltage'"
+        :replaceTitle="'V_LL (AC RMS)'"
         unit="V"
-        :modelValue="localData.lineToLineVoltage"
+        :min="minimumMaximumScalePerParameter['voltage']['min']"
+        :max="minimumMaximumScalePerParameter['voltage']['max']"
+        v-model="localData"
+        :labelWidthProportionClass="'col-5'"
+        :valueWidthProportionClass="'col-7'"
+        :valueFontSize="$styleStore.wizard.inputFontSize"
+        :labelFontSize="$styleStore.wizard.inputLabelFontSize"
+        :labelBgColor="'transparent'"
+        :valueBgColor="$styleStore.wizard.inputValueBgColor"
+        :textColor="$styleStore.wizard.inputTextColor"
         @update="updateErrorMessage"
+        :dataTestLabel="dataTestLabel + '-LineToLineVoltage'"
       />
     </template>
 
