@@ -101,10 +101,29 @@ export default {
     },
     mounted () {
         this.$emit("canContinue", false);
-        // Always auto-search on mount. Consume any pending token first so the
-        // watcher below doesn't fire a duplicate search immediately after.
+        // Consume any pending search token so the watcher below doesn't fire
+        // a duplicate search immediately after.
+        const hadPendingSearch =
+            this.catalogStore.searchRequestToken > this.catalogStore.searchRequestConsumed;
         this.catalogStore.consumeSearchRequest();
-        this.calculateAdvisedMagnetics();
+
+        // Cache short-circuit: if we already have results computed from the
+        // exact same inputs + filters + maxResults, don't recompute. The user
+        // typically lands here after navigating back from the viewer with no
+        // changes — recomputing wastes seconds and rebuilds an identical list.
+        // An explicit "Find Magnetic" (token bump) always forces a re-run.
+        const cachedKey = this.catalogStore.advisesKey;
+        const currentKey = this.buildAdvisesKey();
+        if (!hadPendingSearch
+                && cachedKey
+                && cachedKey === currentKey
+                && this.catalogStore.advises.length > 0) {
+            this.hasSearched = true;
+            this.loading = false;
+            this.$emit('canContinue', true);
+        } else {
+            this.calculateAdvisedMagnetics();
+        }
         // Watch for new search requests from the wizard triggered after mount.
         this._searchTokenUnwatch = this.$watch(
             () => this.catalogStore.searchRequestToken,
@@ -159,8 +178,24 @@ export default {
             }
             return filterFlow;
         },
+        // Stable cache key for the current search inputs. Anything that would
+        // change the scorer's output must be in here. JSON.stringify on the
+        // inputs and filterFlow is sufficient — Pinia keeps property order
+        // stable across reads, and `maximum_number_results` is hardcoded to 9.
+        buildAdvisesKey() {
+            try {
+                return JSON.stringify({
+                    inputs: this.masStore.mas.inputs,
+                    filterFlow: this.buildFilterFlow(),
+                    max: 9,
+                });
+            } catch {
+                return "";
+            }
+        },
         calculateAdvisedMagnetics() {
             this.catalogStore.advises = [];
+            this.catalogStore.advisesKey = "";
             this.loading = true;
             if (this.useWasmCache) {
                 this.calculateAdvisedMagneticsFromWasmCache();
@@ -186,6 +221,7 @@ export default {
                     response.data.data.forEach((datum) => {
                         this.catalogStore.advises.push(datum);
                     })
+                    this.catalogStore.advisesKey = this.buildAdvisesKey();
                     this.$emit('canContinue', this.catalogStore.advises.length > 0);
                 })
                 .catch(error => {
@@ -219,6 +255,7 @@ export default {
                         `(available: ${available.join(', ')}); skipping C++ adviser.`
                     );
                     this.catalogStore.advises = [];
+                    this.catalogStore.advisesKey = "";
                     this.$emit('canContinue', false);
                     return;
                 }
@@ -234,6 +271,7 @@ export default {
                 (parsed?.data || []).forEach((datum) => {
                     this.catalogStore.advises.push(datum);
                 });
+                this.catalogStore.advisesKey = this.buildAdvisesKey();
                 this.$emit('canContinue', this.catalogStore.advises.length > 0);
             } catch (error) {
                 console.error('[CatalogAdviser] WASM advise failed:', error);

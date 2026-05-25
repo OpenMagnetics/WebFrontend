@@ -22,6 +22,11 @@ export const useCatalogStore = defineStore("catalog", () => {
         "Losses No Proximity": 10,
     });
     const advises = ref([]);
+    // Cache key of the inputs+filters that produced the current `advises` list.
+    // CatalogAdviser sets it after a successful search and checks it on mount
+    // to skip recomputation when the user comes back from the viewer without
+    // having changed anything. Cleared anywhere `advises` is invalidated.
+    const advisesKey = ref("");
 
     // Search-request signal. Consumers (CatalogAdviser) compare `token` against
     // `consumed`: when token > consumed they run a fresh search and bump
@@ -42,6 +47,7 @@ export const useCatalogStore = defineStore("catalog", () => {
     return {
         filters,
         advises,
+        advisesKey,
         searchRequestToken,
         searchRequestConsumed,
         requestSearch,
