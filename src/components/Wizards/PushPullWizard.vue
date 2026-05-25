@@ -461,12 +461,37 @@ export default {
       </div>
     </template>
       <template v-if="pushPullDiagnostics" #diagnostics>
+      <table
+        v-if="Array.isArray(pushPullDiagnostics.perOp) && pushPullDiagnostics.perOp.length > 1"
+        class="diagnostics-perop-table"
+        :data-cy="dataTestLabel + '-PushPull-perOp-table'"
+        :style="{ color: $styleStore.wizard.inputTextColor, fontSize: $styleStore.wizard.inputFontSize, width: '100%', borderCollapse: 'collapse' }"
+      >
+        <thead>
+          <tr>
+            <th :style="{ textAlign: 'left', padding: '2px 4px', fontSize: $styleStore.wizard.inputLabelFontSize, opacity: 0.85 }"></th>
+            <th v-for="(op, i) in pushPullDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px', fontSize: $styleStore.wizard.inputLabelFontSize, opacity: 0.85 }">
+              {{ op.operatingPointName || ('OP ' + i) }}
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Duty</td><td v-for="(op, i) in pushPullDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px' }">{{ Number(op.dutyCycle).toFixed(3) }}</td></tr>
+          <tr><td>Sw. Freq (Hz)</td><td v-for="(op, i) in pushPullDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px' }">{{ Number(op.switchingFrequency).toFixed(3) }}</td></tr>
+          <tr><td>Mode</td><td v-for="(op, i) in pushPullDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px' }">{{ op.isCcm ? 'CCM' : 'DCM' }}</td></tr>
+          <tr><td>I_pri avg (A)</td><td v-for="(op, i) in pushPullDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px' }">{{ Number(op.primaryAverageCurrent).toFixed(3) }}</td></tr>
+          <tr><td>I_pri peak (A)</td><td v-for="(op, i) in pushPullDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px' }">{{ Number(op.primaryPeakCurrent).toFixed(3) }}</td></tr>
+          <tr><td>I_mag peak (A)</td><td v-for="(op, i) in pushPullDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px' }">{{ Number(op.magnetizingPeakCurrent).toFixed(3) }}</td></tr>
+        </tbody>
+      </table>
+      <template v-else>
       <DimensionReadOnly name="ppDuty" :tooltip="tooltipsConverterWizards['ppDuty']" :replaceTitle="'Duty'" :value="pushPullDiagnostics.dutyCycle" :unit="null" :numberDecimals="3":labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-PpDuty'" />
       <DimensionReadOnly name="ppFsw" :tooltip="tooltipsConverterWizards['ppFsw']" :replaceTitle="'Sw. Freq'" :value="pushPullDiagnostics.switchingFrequency" unit="Hz" :numberDecimals="0":labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-PpFsw'" />
       <DimensionReadOnly name="ppMode" :tooltip="tooltipsConverterWizards['ppMode']" :replaceTitle="'Mode'" :value="pushPullDiagnostics.isCcm ? 'CCM' : 'DCM'" :unit="null" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-PpMode'" />
       <DimensionReadOnly name="ppIprimAvg" :tooltip="tooltipsConverterWizards['ppIprimAvg']" :replaceTitle="'I_pri avg'" :value="pushPullDiagnostics.primaryAverageCurrent" unit="A" :numberDecimals="3":labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-PpIprimAvg'" />
       <DimensionReadOnly name="ppIprimPk" :tooltip="tooltipsConverterWizards['ppIprimPk']" :replaceTitle="'I_pri peak'" :value="pushPullDiagnostics.primaryPeakCurrent" unit="A" :numberDecimals="3":labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-PpIprimPk'" />
       <DimensionReadOnly name="ppImagPk" :tooltip="tooltipsConverterWizards['ppImagPk']" :replaceTitle="'I_mag peak'" :value="pushPullDiagnostics.magnetizingPeakCurrent" unit="A" :numberDecimals="3":labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-PpImagPk'" />
+    </template>
     </template>
   </ConverterWizardBase>
 </template>

@@ -355,6 +355,36 @@ export default {
       />
     </template>
       <template v-if="zetaDiagnostics" #diagnostics>
+      <table
+        v-if="Array.isArray(zetaDiagnostics.perOp) && zetaDiagnostics.perOp.length > 1"
+        class="diagnostics-perop-table"
+        :data-cy="dataTestLabel + '-Zeta-perOp-table'"
+        :style="{ color: $styleStore.wizard.inputTextColor, fontSize: $styleStore.wizard.inputFontSize, width: '100%', borderCollapse: 'collapse' }"
+      >
+        <thead>
+          <tr>
+            <th :style="{ textAlign: 'left', padding: '2px 4px', fontSize: $styleStore.wizard.inputLabelFontSize, opacity: 0.85 }"></th>
+            <th v-for="(op, i) in zetaDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px', fontSize: $styleStore.wizard.inputLabelFontSize, opacity: 0.85 }">
+              {{ op.operatingPointName || ('OP ' + i) }}
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Duty</td><td v-for="(op, i) in zetaDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px' }">{{ Number(op.dutyCycle).toFixed(3) }}</td></tr>
+          <tr><td>Conv. Ratio M</td><td v-for="(op, i) in zetaDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px' }">{{ Number(op.conversionRatio).toFixed(3) }}</td></tr>
+          <tr><td>Mode</td><td v-for="(op, i) in zetaDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px' }">{{ op.isCcm ? 'CCM' : 'DCM' }}</td></tr>
+          <tr><td>Coupling Cap. V (V)</td><td v-for="(op, i) in zetaDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px' }">{{ Number(op.couplingCapVoltage).toFixed(3) }}</td></tr>
+          <tr><td>L1 I avg (A)</td><td v-for="(op, i) in zetaDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px' }">{{ Number(op.inputInductorAverage).toFixed(3) }}</td></tr>
+          <tr><td>L2 I avg (A)</td><td v-for="(op, i) in zetaDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px' }">{{ Number(op.outputInductorAverage).toFixed(3) }}</td></tr>
+          <tr><td>Input I ripple (A)</td><td v-for="(op, i) in zetaDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px' }">{{ Number(op.inputCurrentRipple).toFixed(3) }}</td></tr>
+          <tr><td>Vout ripple (V)</td><td v-for="(op, i) in zetaDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px' }">{{ Number(op.outputVoltageRipple).toFixed(3) }}</td></tr>
+          <tr><td>Sw. Peak V (V)</td><td v-for="(op, i) in zetaDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px' }">{{ Number(op.switchPeakVoltage).toFixed(3) }}</td></tr>
+          <tr><td>Sw. Peak I (A)</td><td v-for="(op, i) in zetaDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px' }">{{ Number(op.switchPeakCurrent).toFixed(3) }}</td></tr>
+          <tr><td>Diode Peak V (V)</td><td v-for="(op, i) in zetaDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px' }">{{ Number(op.diodePeakReverseVoltage).toFixed(3) }}</td></tr>
+          <tr><td>Diode Peak I (A)</td><td v-for="(op, i) in zetaDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px' }">{{ Number(op.diodePeakCurrent).toFixed(3) }}</td></tr>
+        </tbody>
+      </table>
+      <template v-else>
       <DimensionReadOnly name="zetaDuty" :tooltip="tooltipsConverterWizards['zetaDuty']" :replaceTitle="'Duty'" :value="zetaDiagnostics.dutyCycle" :unit="null" :numberDecimals="3":labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-ZetaDuty'" />
       <DimensionReadOnly name="zetaConvRatio" :tooltip="tooltipsConverterWizards['zetaConvRatio']" :replaceTitle="'Conv. Ratio M'" :value="zetaDiagnostics.conversionRatio" :unit="null" :numberDecimals="3":labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-ZetaConvRatio'" />
       <DimensionReadOnly name="zetaMode" :tooltip="tooltipsConverterWizards['zetaMode']" :replaceTitle="'Mode'" :value="zetaDiagnostics.isCcm ? 'CCM' : 'DCM'" :unit="null" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-ZetaMode'" />
@@ -367,6 +397,7 @@ export default {
       <DimensionReadOnly name="zetaIsw" :tooltip="tooltipsConverterWizards['zetaIsw']" :replaceTitle="'Sw. Peak I'" :value="zetaDiagnostics.switchPeakCurrent" unit="A" :numberDecimals="3":labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-ZetaIsw'" />
       <DimensionReadOnly name="zetaVd" :tooltip="tooltipsConverterWizards['zetaVd']" :replaceTitle="'Diode Peak V'" :value="zetaDiagnostics.diodePeakReverseVoltage" unit="V" :numberDecimals="2":labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-ZetaVd'" />
       <DimensionReadOnly name="zetaId" :tooltip="tooltipsConverterWizards['zetaId']" :replaceTitle="'Diode Peak I'" :value="zetaDiagnostics.diodePeakCurrent" unit="A" :numberDecimals="3":labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-ZetaId'" />
+    </template>
     </template>
   </ConverterWizardBase>
 </template>

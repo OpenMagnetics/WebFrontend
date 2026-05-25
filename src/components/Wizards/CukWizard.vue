@@ -363,6 +363,36 @@ export default {
       />
     </template>
       <template v-if="cukDiagnostics" #diagnostics>
+      <table
+        v-if="Array.isArray(cukDiagnostics.perOp) && cukDiagnostics.perOp.length > 1"
+        class="diagnostics-perop-table"
+        :data-cy="dataTestLabel + '-Cuk-perOp-table'"
+        :style="{ color: $styleStore.wizard.inputTextColor, fontSize: $styleStore.wizard.inputFontSize, width: '100%', borderCollapse: 'collapse' }"
+      >
+        <thead>
+          <tr>
+            <th :style="{ textAlign: 'left', padding: '2px 4px', fontSize: $styleStore.wizard.inputLabelFontSize, opacity: 0.85 }"></th>
+            <th v-for="(op, i) in cukDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px', fontSize: $styleStore.wizard.inputLabelFontSize, opacity: 0.85 }">
+              {{ op.operatingPointName || ('OP ' + i) }}
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Duty</td><td v-for="(op, i) in cukDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px' }">{{ Number(op.dutyCycle).toFixed(3) }}</td></tr>
+          <tr><td>Conv. Ratio M</td><td v-for="(op, i) in cukDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px' }">{{ Number(op.conversionRatio).toFixed(3) }}</td></tr>
+          <tr><td>Mode</td><td v-for="(op, i) in cukDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px' }">{{ op.isCcm ? 'CCM' : 'DCM' }}</td></tr>
+          <tr><td>Coupling Cap. V (V)</td><td v-for="(op, i) in cukDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px' }">{{ Number(op.couplingCapVoltage).toFixed(3) }}</td></tr>
+          <tr><td>L1 I avg (A)</td><td v-for="(op, i) in cukDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px' }">{{ Number(op.inputInductorAverage).toFixed(3) }}</td></tr>
+          <tr><td>L2 I avg (A)</td><td v-for="(op, i) in cukDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px' }">{{ Number(op.outputInductorAverage).toFixed(3) }}</td></tr>
+          <tr><td>L1 I ripple (A)</td><td v-for="(op, i) in cukDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px' }">{{ Number(op.inputInductorRipple).toFixed(3) }}</td></tr>
+          <tr><td>L2 I ripple (A)</td><td v-for="(op, i) in cukDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px' }">{{ Number(op.outputInductorRipple).toFixed(3) }}</td></tr>
+          <tr><td>Sw. Peak V (V)</td><td v-for="(op, i) in cukDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px' }">{{ Number(op.switchPeakVoltage).toFixed(3) }}</td></tr>
+          <tr><td>Sw. Peak I (A)</td><td v-for="(op, i) in cukDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px' }">{{ Number(op.switchPeakCurrent).toFixed(3) }}</td></tr>
+          <tr><td>Diode Peak V (V)</td><td v-for="(op, i) in cukDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px' }">{{ Number(op.diodePeakReverseVoltage).toFixed(3) }}</td></tr>
+          <tr><td>Diode Peak I (A)</td><td v-for="(op, i) in cukDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px' }">{{ Number(op.diodePeakCurrent).toFixed(3) }}</td></tr>
+        </tbody>
+      </table>
+      <template v-else>
       <DimensionReadOnly name="cukDuty" :tooltip="tooltipsConverterWizards['cukDuty']" :replaceTitle="'Duty'" :value="cukDiagnostics.dutyCycle" :unit="null" :numberDecimals="3":labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-CukDuty'" />
       <DimensionReadOnly name="cukConvRatio" :tooltip="tooltipsConverterWizards['cukConvRatio']" :replaceTitle="'Conv. Ratio M'" :value="cukDiagnostics.conversionRatio" :unit="null" :numberDecimals="3":labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-CukConvRatio'" />
       <DimensionReadOnly name="cukMode" :tooltip="tooltipsConverterWizards['cukMode']" :replaceTitle="'Mode'" :value="cukDiagnostics.isCcm ? 'CCM' : 'DCM'" :unit="null" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-CukMode'" />
@@ -375,6 +405,7 @@ export default {
       <DimensionReadOnly name="cukIsw" :tooltip="tooltipsConverterWizards['cukIsw']" :replaceTitle="'Sw. Peak I'" :value="cukDiagnostics.switchPeakCurrent" unit="A" :numberDecimals="3":labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-CukIsw'" />
       <DimensionReadOnly name="cukVd" :tooltip="tooltipsConverterWizards['cukVd']" :replaceTitle="'Diode Peak V'" :value="cukDiagnostics.diodePeakReverseVoltage" unit="V" :numberDecimals="2":labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-CukVd'" />
       <DimensionReadOnly name="cukId" :tooltip="tooltipsConverterWizards['cukId']" :replaceTitle="'Diode Peak I'" :value="cukDiagnostics.diodePeakCurrent" unit="A" :numberDecimals="3":labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-CukId'" />
+    </template>
     </template>
   </ConverterWizardBase>
 </template>

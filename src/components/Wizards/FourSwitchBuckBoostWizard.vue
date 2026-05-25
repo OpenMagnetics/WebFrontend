@@ -344,8 +344,29 @@ export default {
       />
     </template>
       <template v-if="fsbbDiagnostics" #diagnostics>
+      <table
+        v-if="Array.isArray(fsbbDiagnostics.perOp) && fsbbDiagnostics.perOp.length > 1"
+        class="diagnostics-perop-table"
+        :data-cy="dataTestLabel + '-Fsbb-perOp-table'"
+        :style="{ color: $styleStore.wizard.inputTextColor, fontSize: $styleStore.wizard.inputFontSize, width: '100%', borderCollapse: 'collapse' }"
+      >
+        <thead>
+          <tr>
+            <th :style="{ textAlign: 'left', padding: '2px 4px', fontSize: $styleStore.wizard.inputLabelFontSize, opacity: 0.85 }"></th>
+            <th v-for="(op, i) in fsbbDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px', fontSize: $styleStore.wizard.inputLabelFontSize, opacity: 0.85 }">
+              {{ op.operatingPointName || ('OP ' + i) }}
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Inductor I avg (A)</td><td v-for="(op, i) in fsbbDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px' }">{{ Number(op.inductorAverageCurrent).toFixed(3) }}</td></tr>
+          <tr><td>Sized C_out (F)</td><td v-for="(op, i) in fsbbDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px' }">{{ Number(op.sizedOutputCapacitance).toFixed(3) }}</td></tr>
+        </tbody>
+      </table>
+      <template v-else>
       <DimensionReadOnly name="fsbbIlAvg" :tooltip="tooltipsConverterWizards['fsbbIlAvg']" :replaceTitle="'Inductor I avg'" :value="fsbbDiagnostics.inductorAverageCurrent" unit="A" :numberDecimals="3":labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-FsbbIlAvg'" />
       <DimensionReadOnly name="fsbbCo" :tooltip="tooltipsConverterWizards['fsbbCo']" :replaceTitle="'Sized C_out'" :value="fsbbDiagnostics.sizedOutputCapacitance" unit="F" :numberDecimals="9":labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-FsbbCo'" />
+    </template>
     </template>
   </ConverterWizardBase>
 </template>

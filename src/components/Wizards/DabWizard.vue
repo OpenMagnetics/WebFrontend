@@ -373,12 +373,39 @@ export default {
     </template>
 
     <template v-if="dabDiagnostics" #diagnostics>
-      <DimensionReadOnly name="dabModulation" :tooltip="tooltipsConverterWizards['dabModulation']" :replaceTitle="'Modulation'" :value="dabModLabel(dabDiagnostics.modulationType)" :unit="null" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-DabModulation'" />
-      <DimensionReadOnly name="dabD3" :tooltip="tooltipsConverterWizards['dabD3']" :replaceTitle="'D3 computed'" :value="dabDiagnostics.computedD3Deg" unit="°" :numberDecimals="1" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-DabD3'" />
+      <!-- Single-design computed quantities always flat. -->
       <DimensionReadOnly name="dabSeriesInductance" :tooltip="tooltipsConverterWizards['dabSeriesInductance']" :replaceTitle="'L series'" :value="dabDiagnostics.computedSeriesInductance" unit="H" :numberDecimals="9" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-DabSeriesInductance'" />
-      <DimensionReadOnly name="dabVoltageRatio" :tooltip="tooltipsConverterWizards['dabVoltageRatio']" :replaceTitle="'d = N·V₂/V₁'" :value="dabDiagnostics.voltageConversionRatio" :unit="null" :numberDecimals="3" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-DabVoltageRatio'" />
-      <DimensionReadOnly name="dabZvsPrimary" :tooltip="tooltipsConverterWizards['dabZvsPrimary']" :replaceTitle="'ZVS primary'" :value="dabDiagnostics.zvsMarginPrimaryDeg" unit="°" :numberDecimals="1" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="dabDiagnostics.zvsMarginPrimaryDeg <= 0 ? 'text-warning' : $styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-DabZvsPrimary'" />
-      <DimensionReadOnly name="dabZvsSecondary" :tooltip="tooltipsConverterWizards['dabZvsSecondary']" :replaceTitle="'ZVS secondary'" :value="dabDiagnostics.zvsMarginSecondaryDeg" unit="°" :numberDecimals="1" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="dabDiagnostics.zvsMarginSecondaryDeg <= 0 ? 'text-warning' : $styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-DabZvsSecondary'" />
+
+      <!-- Per-OP table for the last_* fields that vary across V_in. -->
+      <table
+        v-if="Array.isArray(dabDiagnostics.perOp) && dabDiagnostics.perOp.length > 1"
+        class="diagnostics-perop-table"
+        :data-cy="dataTestLabel + '-Dab-perOp-table'"
+        :style="{ color: $styleStore.wizard.inputTextColor, fontSize: $styleStore.wizard.inputFontSize, width: '100%', borderCollapse: 'collapse', marginTop: '4px' }"
+      >
+        <thead>
+          <tr>
+            <th :style="{ textAlign: 'left', padding: '2px 4px', fontSize: $styleStore.wizard.inputLabelFontSize, opacity: 0.85 }"></th>
+            <th v-for="(op, i) in dabDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px', fontSize: $styleStore.wizard.inputLabelFontSize, opacity: 0.85 }">
+              {{ op.operatingPointName || ('OP ' + i) }}
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Modulation</td><td v-for="(op, i) in dabDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px' }">{{ dabModLabel(op.modulationType) }}</td></tr>
+          <tr><td>D3 (°)</td><td v-for="(op, i) in dabDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px' }">{{ Number(op.computedD3Deg).toFixed(1) }}</td></tr>
+          <tr><td>d = N·V₂/V₁</td><td v-for="(op, i) in dabDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px' }">{{ Number(op.voltageConversionRatio).toFixed(3) }}</td></tr>
+          <tr><td>ZVS primary (°)</td><td v-for="(op, i) in dabDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px', color: op.zvsMarginPrimaryDeg <= 0 ? '#e0b020' : 'inherit' }">{{ Number(op.zvsMarginPrimaryDeg).toFixed(1) }}</td></tr>
+          <tr><td>ZVS secondary (°)</td><td v-for="(op, i) in dabDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px', color: op.zvsMarginSecondaryDeg <= 0 ? '#e0b020' : 'inherit' }">{{ Number(op.zvsMarginSecondaryDeg).toFixed(1) }}</td></tr>
+        </tbody>
+      </table>
+      <template v-else>
+        <DimensionReadOnly name="dabModulation" :tooltip="tooltipsConverterWizards['dabModulation']" :replaceTitle="'Modulation'" :value="dabModLabel(dabDiagnostics.modulationType)" :unit="null" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-DabModulation'" />
+        <DimensionReadOnly name="dabD3" :tooltip="tooltipsConverterWizards['dabD3']" :replaceTitle="'D3 computed'" :value="dabDiagnostics.computedD3Deg" unit="°" :numberDecimals="1" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-DabD3'" />
+        <DimensionReadOnly name="dabVoltageRatio" :tooltip="tooltipsConverterWizards['dabVoltageRatio']" :replaceTitle="'d = N·V₂/V₁'" :value="dabDiagnostics.voltageConversionRatio" :unit="null" :numberDecimals="3" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-DabVoltageRatio'" />
+        <DimensionReadOnly name="dabZvsPrimary" :tooltip="tooltipsConverterWizards['dabZvsPrimary']" :replaceTitle="'ZVS primary'" :value="dabDiagnostics.zvsMarginPrimaryDeg" unit="°" :numberDecimals="1" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="dabDiagnostics.zvsMarginPrimaryDeg <= 0 ? 'text-warning' : $styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-DabZvsPrimary'" />
+        <DimensionReadOnly name="dabZvsSecondary" :tooltip="tooltipsConverterWizards['dabZvsSecondary']" :replaceTitle="'ZVS secondary'" :value="dabDiagnostics.zvsMarginSecondaryDeg" unit="°" :numberDecimals="1" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="dabDiagnostics.zvsMarginSecondaryDeg <= 0 ? 'text-warning' : $styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-DabZvsSecondary'" />
+      </template>
     </template>
   </ConverterWizardBase>
 </template>

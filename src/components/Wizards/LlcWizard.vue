@@ -398,14 +398,40 @@ export default {
 
     <!-- Diagnostics slot: rendered by ConverterWizardBase as a generic .compact-card. -->
     <template v-if="llcDiagnostics" #diagnostics>
-      <DimensionReadOnly :name="'llcMode'" :tooltip="tooltipsConverterWizards['llcMode']" :replaceTitle="'Mode'" :unit="null" :value="llcModeLabel(llcDiagnostics.lastMode)" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-LlcMode'" />
+      <!-- Session/computed tank values are single-design; always single column. -->
       <DimensionReadOnly :name="'llcLs'" :tooltip="tooltipsConverterWizards['llcLs']" :replaceTitle="'Series Ind.'" unit="H" :value="llcDiagnostics.computedResonantInductance" :numberDecimals="6" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-LlcLs'" />
       <DimensionReadOnly :name="'llcCr'" :tooltip="tooltipsConverterWizards['llcCr']" :replaceTitle="'Resonant Cap.'" unit="F" :value="llcDiagnostics.computedResonantCapacitance" :numberDecimals="9" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-LlcCr'" />
       <DimensionReadOnly :name="'llcLn'" :tooltip="tooltipsConverterWizards['llcLn']" :replaceTitle="'Ln'" :unit="null" :value="llcDiagnostics.computedInductanceRatio" :numberDecimals="3" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-LlcLn'" />
       <DimensionReadOnly :name="'llcLipFreq'" :tooltip="tooltipsConverterWizards['llcLipFreq']" :replaceTitle="'LIP freq'" unit="Hz" :value="llcDiagnostics.lipFrequency" :numberDecimals="0" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-LlcLipFreq'" />
       <DimensionReadOnly :name="'llcLipVin'" :tooltip="tooltipsConverterWizards['llcLipVin']" :replaceTitle="'LIP Vin'" unit="V" :value="llcDiagnostics.lipInputVoltage" :numberDecimals="1" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-LlcLipVin'" />
-      <DimensionReadOnly :name="'llcResidual'" :tooltip="tooltipsConverterWizards['llcResidual']" :replaceTitle="'Residual'" :unit="null" :value="llcDiagnostics.lastSteadyStateResidual" :numberDecimals="6" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="llcDiagnostics.lastSteadyStateResidual > 1e-4 ? 'text-warning' : $styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-LlcResidual'" />
       <DimensionReadOnly v-if="llcDiagnostics.lastSubStateSequence && llcDiagnostics.lastSubStateSequence.length" :name="'llcSubStates'" :tooltip="tooltipsConverterWizards['llcSubStates']" :replaceTitle="'Sub-states'" :unit="null" :value="llcDiagnostics.lastSubStateSequence.join(' → ')" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-LlcSubStates'" />
+
+      <!-- Per-OP table for the last_* fields that vary across V_in. -->
+      <table
+        v-if="Array.isArray(llcDiagnostics.perOp) && llcDiagnostics.perOp.length > 1"
+        class="diagnostics-perop-table"
+        :data-cy="dataTestLabel + '-Llc-perOp-table'"
+        :style="{ color: $styleStore.wizard.inputTextColor, fontSize: $styleStore.wizard.inputFontSize, width: '100%', borderCollapse: 'collapse', marginTop: '4px' }"
+      >
+        <thead>
+          <tr>
+            <th :style="{ textAlign: 'left', padding: '2px 4px', fontSize: $styleStore.wizard.inputLabelFontSize, opacity: 0.85 }"></th>
+            <th v-for="(op, i) in llcDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px', fontSize: $styleStore.wizard.inputLabelFontSize, opacity: 0.85 }">
+              {{ op.operatingPointName || ('OP ' + i) }}
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Mode</td><td v-for="(op, i) in llcDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px' }">{{ llcModeLabel(op.lastMode) }}</td></tr>
+          <tr><td>Residual</td><td v-for="(op, i) in llcDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px', color: op.steadyStateResidual > 1e-4 ? '#e0b020' : 'inherit' }">{{ Number(op.steadyStateResidual).toExponential(2) }}</td></tr>
+          <tr><td>ZVS margin (A)</td><td v-for="(op, i) in llcDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px' }">{{ Number(op.zvsMarginLagging).toFixed(3) }}</td></tr>
+          <tr><td>I_pri peak (A)</td><td v-for="(op, i) in llcDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px' }">{{ Number(op.primaryPeakCurrent).toFixed(3) }}</td></tr>
+        </tbody>
+      </table>
+      <template v-else>
+        <DimensionReadOnly :name="'llcMode'" :tooltip="tooltipsConverterWizards['llcMode']" :replaceTitle="'Mode'" :unit="null" :value="llcModeLabel(llcDiagnostics.lastMode)" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-LlcMode'" />
+        <DimensionReadOnly :name="'llcResidual'" :tooltip="tooltipsConverterWizards['llcResidual']" :replaceTitle="'Residual'" :unit="null" :value="llcDiagnostics.lastSteadyStateResidual" :numberDecimals="6" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="llcDiagnostics.lastSteadyStateResidual > 1e-4 ? 'text-warning' : $styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-LlcResidual'" />
+      </template>
     </template>
 
     <template #conditions>

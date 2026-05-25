@@ -551,6 +551,33 @@ export default {
       </div>
     </template>
     <template v-if="forwardDiagnostics" #diagnostics>
+      <table
+        v-if="Array.isArray(forwardDiagnostics.perOp) && forwardDiagnostics.perOp.length > 1"
+        class="diagnostics-perop-table"
+        :data-cy="dataTestLabel + '-Forward-perOp-table'"
+        :style="{ color: $styleStore.wizard.inputTextColor, fontSize: $styleStore.wizard.inputFontSize, width: '100%', borderCollapse: 'collapse' }"
+      >
+        <thead>
+          <tr>
+            <th :style="{ textAlign: 'left', padding: '2px 4px', fontSize: $styleStore.wizard.inputLabelFontSize, opacity: 0.85 }"></th>
+            <th v-for="(op, i) in forwardDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px', fontSize: $styleStore.wizard.inputLabelFontSize, opacity: 0.85 }">
+              {{ op.operatingPointName || ('OP ' + i) }}
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Duty max</td><td v-for="(op, i) in forwardDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px' }">{{ Number(op.maximumDutyCycle).toFixed(3) }}</td></tr>
+          <tr><td>Mag. Ind. (H)</td><td v-for="(op, i) in forwardDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px' }">{{ Number(op.magnetizingInductance).toFixed(3) }}</td></tr>
+          <tr><td>Turns ratio</td><td v-for="(op, i) in forwardDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px' }">{{ Number(op.secondaryTurnsRatio).toFixed(3) }}</td></tr>
+          <tr><td>Mode</td><td v-for="(op, i) in forwardDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px' }">{{ op.isCcm ? 'CCM' : 'DCM' }}</td></tr>
+          <tr><td>I_pri peak (A)</td><td v-for="(op, i) in forwardDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px' }">{{ Number(op.primaryPeakCurrent).toFixed(3) }}</td></tr>
+          <tr><td>I_sec peak (A)</td><td v-for="(op, i) in forwardDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px' }">{{ Number(op.secondaryPeakCurrent).toFixed(3) }}</td></tr>
+          <tr><td>I_mag peak (A)</td><td v-for="(op, i) in forwardDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px' }">{{ Number(op.magnetizingPeakCurrent).toFixed(3) }}</td></tr>
+          <tr v-if="forwardDiagnostics.perOp[0] && forwardDiagnostics.perOp[0].resetVoltage !== undefined"><td>Reset V (V)</td><td v-for="(op, i) in forwardDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px' }">{{ Number(op.resetVoltage).toFixed(3) }}</td></tr>
+          <tr v-if="forwardDiagnostics.perOp[0] && forwardDiagnostics.perOp[0].clampCapVoltage !== undefined"><td>Clamp Cap. V (V)</td><td v-for="(op, i) in forwardDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px' }">{{ Number(op.clampCapVoltage).toFixed(3) }}</td></tr>
+        </tbody>
+      </table>
+      <template v-else>
       <DimensionReadOnly name="fwdDuty"          :tooltip="tooltipsConverterWizards['fwdDuty']"          :replaceTitle="'Duty max'"        :value="forwardDiagnostics.maximumDutyCycle"            :unit="null" :numberDecimals="3" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-FwdDuty'" />
       <DimensionReadOnly name="fwdLm"            :tooltip="tooltipsConverterWizards['fwdLm']"            :replaceTitle="'Mag. Ind.'"       :value="forwardDiagnostics.magnetizingInductance"       unit="H" :numberDecimals="9" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-FwdLm'" />
       <DimensionReadOnly name="fwdN"             :tooltip="tooltipsConverterWizards['fwdN']"             :replaceTitle="'Turns ratio'"     :value="forwardDiagnostics.secondaryTurnsRatio"         :unit="null" :numberDecimals="3" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-FwdN'" />
@@ -562,6 +589,7 @@ export default {
       <DimensionReadOnly v-if="forwardDiagnostics.resetVoltage !== undefined" name="fwdReset" :tooltip="tooltipsConverterWizards['fwdReset']" :replaceTitle="'Reset V'" :value="forwardDiagnostics.resetVoltage" unit="V" :numberDecimals="2" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-FwdReset'" />
       <!-- ACF-only: clamp-cap steady-state voltage -->
       <DimensionReadOnly v-if="forwardDiagnostics.clampCapVoltage !== undefined" name="fwdClamp" :tooltip="tooltipsConverterWizards['fwdClamp']" :replaceTitle="'Clamp Cap. V'" :value="forwardDiagnostics.clampCapVoltage" unit="V" :numberDecimals="2" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-FwdClamp'" />
+    </template>
     </template>
   </ConverterWizardBase>
 </template>

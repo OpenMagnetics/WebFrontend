@@ -445,6 +445,37 @@ export default {
       />
     </template>
       <template v-if="weinbergDiagnostics" #diagnostics>
+      <table
+        v-if="Array.isArray(weinbergDiagnostics.perOp) && weinbergDiagnostics.perOp.length > 1"
+        class="diagnostics-perop-table"
+        :data-cy="dataTestLabel + '-Weinberg-perOp-table'"
+        :style="{ color: $styleStore.wizard.inputTextColor, fontSize: $styleStore.wizard.inputFontSize, width: '100%', borderCollapse: 'collapse' }"
+      >
+        <thead>
+          <tr>
+            <th :style="{ textAlign: 'left', padding: '2px 4px', fontSize: $styleStore.wizard.inputLabelFontSize, opacity: 0.85 }"></th>
+            <th v-for="(op, i) in weinbergDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px', fontSize: $styleStore.wizard.inputLabelFontSize, opacity: 0.85 }">
+              {{ op.operatingPointName || ('OP ' + i) }}
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Duty</td><td v-for="(op, i) in weinbergDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px' }">{{ Number(op.dutyCycle).toFixed(3) }}</td></tr>
+          <tr><td>Conv. Ratio M</td><td v-for="(op, i) in weinbergDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px' }">{{ Number(op.conversionRatio).toFixed(3) }}</td></tr>
+          <tr><td>Mode</td><td v-for="(op, i) in weinbergDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px' }">{{ op.isCcm ? 'CCM' : 'DCM' }}</td></tr>
+          <tr><td>Overlap fraction</td><td v-for="(op, i) in weinbergDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px' }">{{ Number(op.overlapFraction).toFixed(3) }}</td></tr>
+          <tr><td>Input I avg (A)</td><td v-for="(op, i) in weinbergDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px' }">{{ Number(op.inputInductorAverage).toFixed(3) }}</td></tr>
+          <tr><td>Input I ripple (A)</td><td v-for="(op, i) in weinbergDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px' }">{{ Number(op.inputInductorRipple).toFixed(3) }}</td></tr>
+          <tr><td>Mag. I ripple (A)</td><td v-for="(op, i) in weinbergDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px' }">{{ Number(op.magnetizingRipple).toFixed(3) }}</td></tr>
+          <tr><td>Recovery I avg (A)</td><td v-for="(op, i) in weinbergDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px' }">{{ Number(op.energyRecoveryAvgCurrent).toFixed(3) }}</td></tr>
+          <tr><td>Flux margin</td><td v-for="(op, i) in weinbergDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px' }">{{ Number(op.fluxImbalanceMargin).toFixed(3) }}</td></tr>
+          <tr><td>Sw. Peak V (V)</td><td v-for="(op, i) in weinbergDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px' }">{{ Number(op.switchPeakVoltage).toFixed(3) }}</td></tr>
+          <tr><td>Sw. Peak I (A)</td><td v-for="(op, i) in weinbergDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px' }">{{ Number(op.switchPeakCurrent).toFixed(3) }}</td></tr>
+          <tr><td>Diode Peak V (V)</td><td v-for="(op, i) in weinbergDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px' }">{{ Number(op.diodePeakReverseVoltage).toFixed(3) }}</td></tr>
+          <tr><td>Vout ripple (V)</td><td v-for="(op, i) in weinbergDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px' }">{{ Number(op.outputVoltageRipple).toFixed(3) }}</td></tr>
+        </tbody>
+      </table>
+      <template v-else>
       <DimensionReadOnly name="weinDuty" :tooltip="tooltipsConverterWizards['weinDuty']" :replaceTitle="'Duty'" :value="weinbergDiagnostics.dutyCycle" :unit="null" :numberDecimals="3":labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-WeinDuty'" />
       <DimensionReadOnly name="weinConvRatio" :tooltip="tooltipsConverterWizards['weinConvRatio']" :replaceTitle="'Conv. Ratio M'" :value="weinbergDiagnostics.conversionRatio" :unit="null" :numberDecimals="3":labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-WeinConvRatio'" />
       <DimensionReadOnly name="weinMode" :tooltip="tooltipsConverterWizards['weinMode']" :replaceTitle="'Mode'" :value="weinbergDiagnostics.isCcm ? 'CCM' : 'DCM'" :unit="null" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-WeinMode'" />
@@ -458,6 +489,7 @@ export default {
       <DimensionReadOnly name="weinIsw" :tooltip="tooltipsConverterWizards['weinIsw']" :replaceTitle="'Sw. Peak I'" :value="weinbergDiagnostics.switchPeakCurrent" unit="A" :numberDecimals="3":labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-WeinIsw'" />
       <DimensionReadOnly name="weinVd" :tooltip="tooltipsConverterWizards['weinVd']" :replaceTitle="'Diode Peak V'" :value="weinbergDiagnostics.diodePeakReverseVoltage" unit="V" :numberDecimals="2":labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-WeinVd'" />
       <DimensionReadOnly name="weinVo" :tooltip="tooltipsConverterWizards['weinVo']" :replaceTitle="'Vout ripple'" :value="weinbergDiagnostics.outputVoltageRipple" unit="V" :numberDecimals="3":labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-WeinVo'" />
+    </template>
     </template>
   </ConverterWizardBase>
 </template>

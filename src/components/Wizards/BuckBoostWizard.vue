@@ -603,11 +603,36 @@ export default {
       />
     </template>
     <template v-if="buckBoostDiagnostics" #diagnostics>
-      <DimensionReadOnly name="bbDuty"     :tooltip="tooltipsConverterWizards['bbDuty']"     :replaceTitle="'Duty'"               :value="buckBoostDiagnostics.dutyCycle"              :unit="null" :numberDecimals="3" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-BbDuty'" />
-      <DimensionReadOnly name="bbMode"     :tooltip="tooltipsConverterWizards['bbMode']"     :replaceTitle="'Mode'"               :value="buckBoostDiagnostics.conductionRatio >= 1 ? 'CCM' : 'DCM (' + buckBoostDiagnostics.conductionRatio.toFixed(2) + ')'" :unit="null" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-BbMode'" />
-      <DimensionReadOnly name="bbIlAvg"    :tooltip="tooltipsConverterWizards['bbIlAvg']"    :replaceTitle="'Inductor I avg'"     :value="buckBoostDiagnostics.inductorAverageCurrent" unit="A" :numberDecimals="3" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-BbIlAvg'" />
-      <DimensionReadOnly name="bbIlPk"     :tooltip="tooltipsConverterWizards['bbIlPk']"     :replaceTitle="'Inductor I peak'"    :value="buckBoostDiagnostics.peakInductorCurrent"    unit="A" :numberDecimals="3" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-BbIlPk'" />
-      <DimensionReadOnly name="bbIlRipple" :tooltip="tooltipsConverterWizards['bbIlRipple']" :replaceTitle="'Inductor I ripple'"  :value="buckBoostDiagnostics.inductorPeakToPeak"     unit="A" :numberDecimals="3" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-BbIlRipple'" />
+      <!-- Multi-OP table when perOp[] is present; otherwise single-column rows. -->
+      <table
+        v-if="Array.isArray(buckBoostDiagnostics.perOp) && buckBoostDiagnostics.perOp.length > 1"
+        class="diagnostics-perop-table"
+        :data-cy="dataTestLabel + '-BuckBoost-perOp-table'"
+        :style="{ color: $styleStore.wizard.inputTextColor, fontSize: $styleStore.wizard.inputFontSize, width: '100%', borderCollapse: 'collapse' }"
+      >
+        <thead>
+          <tr>
+            <th :style="{ textAlign: 'left', padding: '2px 4px', fontSize: $styleStore.wizard.inputLabelFontSize, opacity: 0.85 }"></th>
+            <th v-for="(op, i) in buckBoostDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px', fontSize: $styleStore.wizard.inputLabelFontSize, opacity: 0.85 }">
+              {{ op.operatingPointName || ('OP ' + i) }}
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Duty</td>              <td v-for="(op, i) in buckBoostDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px' }">{{ Number(op.dutyCycle).toFixed(3) }}</td></tr>
+          <tr><td>Mode</td>              <td v-for="(op, i) in buckBoostDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px' }">{{ op.isCcm ? 'CCM' : ('DCM (' + Number(op.conductionRatio).toFixed(2) + ')') }}</td></tr>
+          <tr><td>Inductor I avg (A)</td>    <td v-for="(op, i) in buckBoostDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px' }">{{ Number(op.inductorAverageCurrent).toFixed(3) }}</td></tr>
+          <tr><td>Inductor I peak (A)</td>   <td v-for="(op, i) in buckBoostDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px' }">{{ Number(op.peakInductorCurrent).toFixed(3) }}</td></tr>
+          <tr><td>Inductor I ripple (A)</td> <td v-for="(op, i) in buckBoostDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px' }">{{ Number(op.inductorPeakToPeak).toFixed(3) }}</td></tr>
+        </tbody>
+      </table>
+      <template v-else>
+        <DimensionReadOnly name="bbDuty"     :tooltip="tooltipsConverterWizards['bbDuty']"     :replaceTitle="'Duty'"               :value="buckBoostDiagnostics.dutyCycle"              :unit="null" :numberDecimals="3" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-BbDuty'" />
+        <DimensionReadOnly name="bbMode"     :tooltip="tooltipsConverterWizards['bbMode']"     :replaceTitle="'Mode'"               :value="buckBoostDiagnostics.conductionRatio >= 1 ? 'CCM' : 'DCM (' + buckBoostDiagnostics.conductionRatio.toFixed(2) + ')'" :unit="null" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-BbMode'" />
+        <DimensionReadOnly name="bbIlAvg"    :tooltip="tooltipsConverterWizards['bbIlAvg']"    :replaceTitle="'Inductor I avg'"     :value="buckBoostDiagnostics.inductorAverageCurrent" unit="A" :numberDecimals="3" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-BbIlAvg'" />
+        <DimensionReadOnly name="bbIlPk"     :tooltip="tooltipsConverterWizards['bbIlPk']"     :replaceTitle="'Inductor I peak'"    :value="buckBoostDiagnostics.peakInductorCurrent"    unit="A" :numberDecimals="3" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-BbIlPk'" />
+        <DimensionReadOnly name="bbIlRipple" :tooltip="tooltipsConverterWizards['bbIlRipple']" :replaceTitle="'Inductor I ripple'"  :value="buckBoostDiagnostics.inductorPeakToPeak"     unit="A" :numberDecimals="3" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-BbIlRipple'" />
+      </template>
     </template>
   </ConverterWizardBase>
 </template>
