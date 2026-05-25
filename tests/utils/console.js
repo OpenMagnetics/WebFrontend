@@ -19,6 +19,8 @@ export const KNOWN_NOISE = [
   /ResizeObserver loop/i,
   /favicon/i,
   /vite.*client/i,
+  /\[vite\].*websocket/i,
+  /WebSocket closed without opened/i,
 
   // Backend unreachable in offline / WASM-only tests. Tests that DO require a
   // backend assert success separately, so suppressing the connection-failure
@@ -32,12 +34,34 @@ export const KNOWN_NOISE = [
   // ECharts dispose warning on unmount — Vue lifecycle quirk in tests.
   /ECharts.*dispose/i,
 
+  // Bootstrap × Vue teardown race: when a Bootstrap modal is hidden while
+  // Vue has already unmounted the element that held its focus or
+  // backdrop, Bootstrap's internal cleanup throws "Cannot read properties
+  // of null (reading 'removeAttribute')". Functionality is unaffected (the
+  // download already fired, the next modal opens fine). Not worth a
+  // patched Bootstrap fork.
+  /Cannot read properties of null \(reading 'removeAttribute'\)/,
+
   // Known WASM stderr noise. Future cleanup: demote these to console.warn
   // on the C++ side and remove from this allowlist.
   /DEBUG \[[a-z_]+\]:/i,
   /\[DEBUG [a-z_]+\]/i,
+  /\[[A-Za-z_]+-DEBUG\]/,
   /(Impedance|Saturation|Temperature|Loss|Winding|Fit) filter:/i,
   /multi-output configuration detected/i,
+  // C++ parameter-dump lines emitted to stderr by converter models and the
+  // magnetic adviser. Formats:
+  //   "  desiredTurnsRatios = [1.25]"          — key = value
+  //   "  convertedTurnsRatios[0] = 1"          — key[N] = value
+  //   "DEBUG: After convert_turns_ratios, …"   — bare DEBUG: prefix
+  // These should be removed/demoted at the MKF C++ source (tracked in MKF TODO).
+  /^\s+[a-z]\w+(\[\d+\])? = /,
+  /^DEBUG:/,
+  // Magnetic Adviser waveform debug lines printed to stderr during operating
+  // point processing. Format: "  OP N: excitations count = M",
+  // "    Excitation N: voltage=...", "  TW N: input_voltage=...", etc.
+  // These should be demoted to console.warn in MKF C++ (tracked in MKF TODO).
+  /^\s+[A-Z][A-Za-z]* \d+:/,
 ];
 
 /** True iff `text` matches a known-noise pattern (i.e. safe to ignore). */

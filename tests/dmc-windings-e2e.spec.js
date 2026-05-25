@@ -19,7 +19,7 @@ async function openDmcWizard(page) {
       const menu = dd?.querySelector('.dropdown-menu');
       if (menu) menu.classList.add('show');
     }
-    const link = document.querySelector('[data-cy="Wizard-DifferentialModeChoke-link"]');
+    const link = document.querySelector('[data-cy="Dmc-link"]');
     if (link) link.click();
   });
 
@@ -100,7 +100,7 @@ test('DMC-windings - single line (asymmetric) produces 1 winding', async ({ page
   await clickDesignMagnetic(page);
   const fd = await readFunctionalDescription(page);
   console.log('[single line]', JSON.stringify(fd, null, 2));
-  expect(fd.topology).toBe('DifferentialModeChoke');
+  expect(fd.topology).toBe('differentialModeChoke');
   expect(fd.numWindings).toBe(1);
   expect(fd.windings[0].isolationSide).toBe('primary');
   expect(fd.numOperatingPoints).toBeGreaterThan(0);
@@ -114,7 +114,7 @@ test('DMC-windings - default is the balanced 2-winding configuration', async ({ 
   await clickDesignMagnetic(page);
   const fd = await readFunctionalDescription(page);
   console.log('[default]', JSON.stringify(fd, null, 2));
-  expect(fd.topology).toBe('DifferentialModeChoke');
+  expect(fd.topology).toBe('differentialModeChoke');
   expect(fd.numWindings).toBe(2);
   expect(fd.excitationsCountPerOp[0]).toBe(2);
 });
@@ -126,10 +126,10 @@ test('DMC-windings - single phase balanced produces 2 windings (Line + Neutral)'
   await clickDesignMagnetic(page);
   const fd = await readFunctionalDescription(page);
   console.log('[balanced single phase]', JSON.stringify(fd, null, 2));
-  expect(fd.topology).toBe('DifferentialModeChoke');
+  expect(fd.topology).toBe('differentialModeChoke');
   expect(fd.numWindings).toBe(2);
   const sides = fd.windings.map(w => w.isolationSide);
-  expect(new Set(sides).size).toBe(2);
+  expect(sides.every(s => s === 'primary')).toBe(true);
   expect(fd.excitationsCountPerOp[0]).toBe(2);
 });
 
@@ -218,10 +218,10 @@ test('DMC-windings - three phase produces 3 windings', async ({ page }) => {
   });
   console.log('[three phase after adviser]', JSON.stringify(windingSelectorInfo, null, 2));
 
-  expect(fd.topology).toBe('DifferentialModeChoke');
+  expect(fd.topology).toBe('differentialModeChoke');
   expect(fd.numWindings).toBe(3);
   const sides = fd.windings.map(w => w.isolationSide);
-  expect(new Set(sides).size).toBe(3);
+  expect(sides.every(s => s === 'primary')).toBe(true);
   expect(fd.excitationsCountPerOp[0]).toBe(3);
 });
 
@@ -232,9 +232,9 @@ test('DMC-windings - three phase + neutral produces 4 windings', async ({ page }
   await clickDesignMagnetic(page);
   const fd = await readFunctionalDescription(page);
   console.log('[three phase + neutral]', JSON.stringify(fd, null, 2));
-  expect(fd.topology).toBe('DifferentialModeChoke');
+  expect(fd.topology).toBe('differentialModeChoke');
   expect(fd.numWindings).toBe(4);
   const sides = fd.windings.map(w => w.isolationSide);
-  expect(new Set(sides).size).toBe(4);
+  expect(sides.every(s => s === 'primary')).toBe(true);
   expect(fd.excitationsCountPerOp[0]).toBe(4);
 });

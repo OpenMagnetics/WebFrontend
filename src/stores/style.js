@@ -19,6 +19,7 @@ export const useStyleStore = defineStore("style", () => {
     const catalogAdviser = ref({});
     const wizard = ref({});
     const emiSpectrum = ref({});
+    const crossReferencer = ref({});
 
     function setTheme(theme) {
         this.theme = theme;
@@ -690,6 +691,25 @@ export const useStyleStore = defineStore("style", () => {
             filteredLineColor:  '#539796',
             limitLineColor:     '#f5c518',
         };
+
+        this.crossReferencer = {
+            inputFontSize: {
+                "font-size": '1rem',
+            },
+            inputTitleFontSize: {
+                "font-size": '1.25rem',
+            },
+            inputLabelBgColor: {
+                "background-color": "transparent !important",
+                "background-image": "none !important",
+            },
+            inputValueBgColor: {
+                "background-color": theme["light"],
+            },
+            inputTextColor: {
+                "color": theme["white"],
+            },
+        };
     }
 
 
@@ -710,6 +730,7 @@ export const useStyleStore = defineStore("style", () => {
         catalogAdviser,
         wizard,
         emiSpectrum,
+        crossReferencer,
     }
 },
 {

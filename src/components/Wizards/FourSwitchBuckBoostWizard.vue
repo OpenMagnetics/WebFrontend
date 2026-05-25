@@ -48,7 +48,7 @@ export default {
             waveformViewMode: 'magnetic',
             forceWaveformUpdate: 0,
             numberOfPeriods: 2,
-            numberOfSteadyStatePeriods: 10,
+            numberOfSteadyStatePeriods: 50,
         }
     },
     watch: {
@@ -56,12 +56,19 @@ export default {
             this.$nextTick(() => { this.forceWaveformUpdate += 1; });
         },
     },
-    mounted () { this.updateErrorMessage(); },
+    mounted() {
+        this.$nextTick(() => {
+            if (this._autoRunDone) return;
+            this._autoRunDone = true;
+            try { this.updateErrorMessage?.(); } catch (e) { return; }
+            if (!this.errorMessage) this.getAnalyticalWaveforms?.();
+        });
+    },
     methods: {
         buildParams(mode) {
             const aux = {};
             aux['inputVoltage'] = this.localData.inputVoltage;
-            aux['diodeVoltageDrop'] = this.localData.diodeVoltageDrop;
+            aux['switchingFrequency'] = this.localData.switchingFrequency;
             aux['efficiency'] = this.localData.efficiency;
             if (this.localData.designLevel === 'I know the design I want') {
                 aux['desiredInductance'] = this.localData.inductance;
@@ -265,17 +272,6 @@ export default {
         :min="minimumMaximumScalePerParameter['temperature']['min']"
         :max="minimumMaximumScalePerParameter['temperature']['max']"
         :allowNegative="true" :allowZero="true"
-        v-model="localData"
-        :labelWidthProportionClass="'col-6'" :valueWidthProportionClass="'col-6'"
-        :valueFontSize="$styleStore.wizard.inputFontSize"
-        :labelFontSize="$styleStore.wizard.inputLabelFontSize"
-        :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor"
-        :textColor="$styleStore.wizard.inputTextColor"
-        @update="updateErrorMessage"
-      />
-      <Dimension :name="'diodeVoltageDrop'" :tooltip="tooltipsConverterWizards['diodeVoltageDrop']" :replaceTitle="'Diode Vd'" unit="V"
-        :dataTestLabel="dataTestLabel + '-DiodeVoltageDrop'"
-        :min="0" :max="10"
         v-model="localData"
         :labelWidthProportionClass="'col-6'" :valueWidthProportionClass="'col-6'"
         :valueFontSize="$styleStore.wizard.inputFontSize"

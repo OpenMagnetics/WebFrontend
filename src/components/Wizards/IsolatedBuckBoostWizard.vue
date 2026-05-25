@@ -12,7 +12,7 @@ import DimensionWithTolerance from 'WebSharedComponents/DataInput/DimensionWithT
 import { defaultIsolatedBuckWizardInputs, defaultIsolatedBuckBoostWizardInputs, defaultDesignRequirements, minimumMaximumScalePerParameter, filterMas } from 'WebSharedComponents/assets/js/defaults.js'
 import ConverterWizardBase from './ConverterWizardBase.vue'
 import CompactVoltageInput from './CompactVoltageInput.vue'
-import { tooltipsConverterWizards } from 'WebSharedComponents/assets/js/texts'
+import { tooltipsConverterWizards, dropdownLabelsConverterWizards } from 'WebSharedComponents/assets/js/texts'
 </script>
 
 <script>
@@ -41,7 +41,7 @@ export default {
         const taskQueueStore = useTaskQueueStore();
         const designLevelOptions = ['Help me with the design', 'I know the design I want'];
         const currentOptions = ['The on-resistance of the MOSFET', 'The maximum switch current'];
-        const insulationTypes = ['No', 'Basic', 'Reinforced'];
+        const insulationTypes = ['no', 'basic', 'reinforced'];
         const errorMessage = "";
         var localData;
         if (this.converterName == "Isolated Buck") {
@@ -53,7 +53,7 @@ export default {
         localData["currentOptions"] = currentOptions[0];
         return {
             masStore,
-            taskQueueStore,
+            taskQueueStore, dropdownLabelsConverterWizards,
             designLevelOptions,
             currentOptions,
             insulationTypes,
@@ -71,7 +71,7 @@ export default {
             waveformViewMode: 'magnetic',
             forceWaveformUpdate: 0,
             numberOfPeriods: 2,
-            numberOfSteadyStatePeriods: 10,
+            numberOfSteadyStatePeriods: 50,
         }
     },
     computed: {
@@ -90,12 +90,21 @@ export default {
             });
         },
     },
+    mounted() {
+        this.$nextTick(() => {
+            if (this._autoRunDone) return;
+            this._autoRunDone = true;
+            try { this.updateErrorMessage?.(); } catch (e) { return; }
+            if (!this.errorMessage) this.getAnalyticalWaveforms?.();
+        });
+    },
     methods: {
 
     // ===== WIZARD CONTRACT =====
     buildParams(mode) {
       const aux = {};
       aux['inputVoltage'] = this.localData.inputVoltage;
+      aux['switchingFrequency'] = this.localData.switchingFrequency;
       aux['diodeVoltageDrop'] = this.localData.diodeVoltageDrop;
       aux['efficiency'] = this.localData.efficiency;
       if (this.localData.designLevel == 'I know the design I want') {
@@ -108,12 +117,11 @@ export default {
         aux['desiredDeadTime'] = [this.localData.deadTime];
         aux['desiredTurnsRatios'] = this.localData.outputsParameters.map(e => e.turnsRatio);
       } else {
-        if (this.localData.currentOptions == 'The on-resistance of the MOSFET') {
-          aux['currentRippleRatio'] = 0.5;
-        } else {
+        if (this.localData.currentOptions == 'The maximum switch current') {
           aux['maximumSwitchCurrent'] = this.localData.maximumSwitchCurrent;
+        } else {
+          aux['currentRippleRatio'] = this.localData.currentRippleRatio;
         }
-        aux['currentRippleRatio'] = this.localData.currentRippleRatio;
       }
       const auxOp = { outputVoltages: [], outputCurrents: [] };
       this.localData.outputsParameters.forEach(e => { auxOp.outputVoltages.push(e.voltage); auxOp.outputCurrents.push(e.current); });
@@ -147,8 +155,14 @@ export default {
       return topologyMap[this.converterName];
     },
     getIsolationSides() {
+      // IsolatedBuck/IsolatedBuckBoost convention (MKF): outputsParameters[0] is the
+      // primary output (post-buck/boost stage), outputsParameters[1..] are secondaries.
+      // The magnetic has one winding per outputsParameter — NOT one extra.
+      if (!this.localData.outputsParameters?.length) {
+        throw new Error('IsolatedBuck/BuckBoost wizard: outputsParameters must have at least 1 entry');
+      }
       const sides = [IsolationSide.Primary];
-      for (let i = 0; i < this.localData.outputsParameters.length; i++) sides.push(IsolationSide.Secondary);
+      for (let i = 1; i < this.localData.outputsParameters.length; i++) sides.push(IsolationSide.Secondary);
       return sides;
     },
     getInsulationType() { return this.localData.insulationType; },
@@ -238,56 +252,40 @@ export default {
         async process() {
             this.masStore.resetMas("power");
             this.$stateStore.closeCoilAdvancedInfo();
-            
             try {
                 const result = await this.$refs.base.processWizardData(this, this.taskQueueStore);
                 if (!result.success) {
                     this.errorMessage = result.error;
-                    return;
+                    return false;
                 }
-                
                 this.designRequirements = result.designRequirements;
                 this.errorMessage = "";
+                return true;
             } catch (error) {
                 console.error(error);
                 this.errorMessage = error.message || error;
+                return false;
             }
         },
         async processAndReview() {
-            await this.process();
-
-            this.$stateStore.resetMagneticTool();
-            this.$stateStore.designLoaded();
-            this.$stateStore.selectApplication(this.$stateStore.SupportedApplications.Power);
-            this.$stateStore.selectWorkflow("design");
-            this.$stateStore.selectTool("agnosticTool");
-            this.$stateStore.setCurrentToolSubsectionStatus("designRequirements", true);
-            this.$stateStore.setCurrentToolSubsectionStatus("operatingPoints", true);
-            if (this.errorMessage == "") {
-                await this.$nextTick();
-                await this.$router.push(`${import.meta.env.BASE_URL}magnetic_tool`);
+            const success = await this.process();
+            if (!success) {
+                setTimeout(() => { this.errorMessage = "" }, 5000);
+                return;
             }
-            else {
-                setTimeout(() => {this.errorMessage = ""}, 5000);
-            }
+            await this.$refs.base.navigateToReview(this.$stateStore, this.masStore, "Power");
+            await this.$nextTick();
+            await this.$router.push(`${import.meta.env.BASE_URL}magnetic_tool`);
         },
         async processAndAdvise() {
-            await this.process();
-            this.$stateStore.resetMagneticTool();
-            this.$stateStore.designLoaded();
-            this.$stateStore.selectApplication(this.$stateStore.SupportedApplications.Power);
-            this.$stateStore.selectWorkflow("design");
-            this.$stateStore.selectTool("agnosticTool");
-            this.$stateStore.setCurrentToolSubsection("magneticBuilder");
-            this.$stateStore.setCurrentToolSubsectionStatus("designRequirements", true);
-            this.$stateStore.setCurrentToolSubsectionStatus("operatingPoints", true);
-            if (this.errorMessage == "") {
-                await this.$nextTick();
-                await this.$router.push(`${import.meta.env.BASE_URL}magnetic_tool`);
+            const success = await this.process();
+            if (!success) {
+                setTimeout(() => { this.errorMessage = "" }, 5000);
+                return;
             }
-            else {
-                setTimeout(() => {this.errorMessage = ""}, 5000);
-            }
+            await this.$refs.base.navigateToAdvise(this.$stateStore, this.masStore, "Power");
+            await this.$nextTick();
+            await this.$router.push(`${import.meta.env.BASE_URL}magnetic_tool`);
         },
         async simulateIdealWaveforms() {
       await this.$refs.base.executeWaveformAction(this, 'simulation');
@@ -969,7 +967,7 @@ export default {
         :textColor="$styleStore.wizard.inputTextColor"
         @update="updateErrorMessage"
       />
-      <ElementFromList :name="'insulationType'" :tooltip="tooltipsConverterWizards['insulationType']" :replaceTitle="'Insulation'" :options="insulationTypes"
+      <ElementFromList :name="'insulationType'" :tooltip="tooltipsConverterWizards['insulationType']" :replaceTitle="'Insulation'" :options="insulationTypes" :optionLabels="dropdownLabelsConverterWizards.insulationType"
         :titleSameRow="true" v-model="localData"
         :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'"
         :valueFontSize="$styleStore.wizard.inputFontSize"

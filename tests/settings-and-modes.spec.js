@@ -205,14 +205,16 @@ test.describe('Operating Points — input modes', () => {
     await ss(page, 'OP-M2-after-add');
   });
 
-  test('OP-M3: AC Sweep selector exists on initial OP', async ({ page }) => {
+  test('OP-M3: initial OP shows the mode selection prompt', async ({ page }) => {
     await goToOP(page);
-    const acSweep = page.locator('[data-cy$="-ac-sweep-type"]').first();
-    const text = page.locator('text=AC Sweep').first();
-    const hasAC = (await acSweep.isVisible({ timeout: 3000 })) ||
-                  (await text.isVisible({ timeout: 2000 }));
-    expect(hasAC, 'AC Sweep selector or label must be present on initial OP').toBe(true);
-    await ss(page, 'OP-M3-ac-sweep');
+    // modePerPoint starts null — the component renders "Choose a mode" text
+    // and the Manual / import mode-selection buttons.
+    const prompt = page.locator('text=Where do you want to import your operating point from').first();
+    const modeBtn = page.locator('[data-cy="OperatingPoint-source-Manual-button"]').first();
+    const hasPrompt = (await prompt.isVisible({ timeout: 3000 })) ||
+                      (await modeBtn.isVisible({ timeout: 2000 }));
+    expect(hasPrompt, 'OP mode-selection prompt must be present on initial OP').toBe(true);
+    await ss(page, 'OP-M3-mode-prompt');
   });
 
   test('OP-M4: Operating Points UI surfaces add/modify controls', async ({ page }) => {
@@ -228,10 +230,11 @@ test.describe('Operating Points — input modes', () => {
   test('OP-M5: add operating point button increases OP count', async ({ page }) => {
     await goToOP(page);
     const addBtn = page.locator(`[data-cy="${OP_PFX}-add-operating-point-button"]`);
-    const before = await page.locator(`[data-cy^="${OP_PFX}-select-operating-point-"]`).count();
+    // .op-card is rendered once per operating point regardless of mode state.
+    const before = await page.locator('.op-card').count();
     await addBtn.click();
     await pause(page, 600, 'mechanical: settle');
-    const after = await page.locator(`[data-cy^="${OP_PFX}-select-operating-point-"]`).count();
+    const after = await page.locator('.op-card').count();
     expect(after).toBeGreaterThan(before);
   });
 });

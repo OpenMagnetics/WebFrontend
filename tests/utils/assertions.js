@@ -65,29 +65,26 @@ export function expectStlNonEmpty({ size, path }) {
   expect(size, `STL too small (${size} bytes) — likely empty mesh`).toBeGreaterThan(120);
 }
 
-/**
- * Assert numerical agreement between two metric maps within per-key tolerance.
- *
- *   expectNumericalAgreement(
- *     { magnetizingInductance: 102e-6, peakCurrent: 1.8 },
- *     { magnetizingInductance: { value: 100e-6, tol: 0.05 },
- *       peakCurrent:           { value: 1.75,   tol: 0.05 } });
- */
-export function expectNumericalAgreement(actual, expected) {
-  for (const [key, { value: target, tol }] of Object.entries(expected)) {
-    expect(actual, `numerical assertion: result missing "${key}"`).toHaveProperty(key);
-    const got = Number(actual[key]);
-    expect(Number.isFinite(got), `metric "${key}" not finite: ${actual[key]}`).toBe(true);
-    const rel = Math.abs(got - target) / Math.max(Math.abs(target), 1e-12);
-    expect(
-      rel,
-      `metric "${key}" out of tolerance: got ${got}, expected ${target} ±${tol * 100}% (rel=${rel.toFixed(4)})`
-    ).toBeLessThanOrEqual(tol);
-  }
-}
-
 /** Assert that no console errors were captured by collectConsoleErrors. */
 export function expectNoConsoleErrors(getErrors) {
   const errs = getErrors();
   expect(errs, `unexpected console errors:\n  ${errs.join('\n  ')}`).toEqual([]);
+}
+
+/** Domain assertion for the SPICE-netlist modal. A valid ngspice netlist
+ *  has a `.tran` directive, a `.end` terminator, and at least three
+ *  topology elements (V/L/C/R/I/M/E/B/S/D — single-letter device prefixes
+ *  followed by a name). A 50-char placeholder string would pass a naive
+ *  length check; this catches that. */
+export function expectValidSpiceNetlist(text) {
+  expect(text, 'SPICE netlist empty').toBeTruthy();
+  const t = text || '';
+  expect(t.length, `SPICE netlist suspiciously short (${t.length} chars)`).toBeGreaterThanOrEqual(120);
+  expect(t, 'SPICE netlist missing .tran directive').toMatch(/^\s*\.tran\b/im);
+  expect(t, 'SPICE netlist missing .end terminator').toMatch(/^\s*\.end\b/im);
+  const components = t.match(/^\s*[VLCRIMEBSDQ]\w+/gim) ?? [];
+  expect(
+    components.length,
+    `SPICE netlist needs ≥3 topology elements (got ${components.length})`
+  ).toBeGreaterThanOrEqual(3);
 }

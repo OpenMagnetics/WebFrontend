@@ -16,7 +16,7 @@
 import { test, expect } from './_coverage.js';
 import { openWizard, pause } from './utils.js';
 
-const CMC_CY = 'Wizard-CommonModeChoke-link';
+const CMC_CY = 'Cmc-link';
 
 const makeAux = (numPeriods = 2, numSteady = 10) => ({
   operatingVoltage:   { nominal: 230 },

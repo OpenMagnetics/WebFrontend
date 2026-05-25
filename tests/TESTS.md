@@ -29,7 +29,8 @@ tests/
   _coverage.js            Playwright fixture wrapper (cookie pre-accept,
                           /cmcs.ndjson + /process_latex mocks, warm fixture)
   _baseline.md            snapshot of suite state before each refactor wave
-  _skips.json             allowlist of test.skip()s pending an issue URL
+  _scratch/               capture/debug specs excluded from every project
+                          (testIgnore'd in playwright.config.js)
   global-setup.js         writes per-worker storage-state-${i}.json
   lint-tests.js           static lint (no-waitForTimeout, no-silent-catch, …)
   TESTS.md                this file
@@ -45,7 +46,8 @@ tests/
     steps.js              composable verbs: runMagneticAdviser, dumpMAS,
                           download2DCoilSVG, build3DCoreSTL, runSimulated, …
     assertions.js         expectValidMagnetic, expect2DSvgFits,
-                          expectStlNonEmpty, expectNumericalAgreement
+                          expectStlNonEmpty, expectValidSpiceNetlist,
+                          expectNoConsoleErrors
     scenarios.js          end-to-end flows: fullMagneticViaAdviser,
                           fullMagneticViaCoreAndWireAdvisers, …
     catalog.js            WIZARD_CATALOG — one entry per wizard
@@ -145,13 +147,12 @@ to the worker page rather than per-test, which is a known limitation.
 
 ## Skipping a test
 
-Every `test.skip(...)` / `test.fixme(...)` MUST carry a `https://…` issue
-URL in its reason, OR be listed in `tests/_skips.json` with the same
-`file:line` coordinates. The lint rule `skip-needs-issue-url` enforces.
+**Phase 11: banned.** `test.skip(...)` and `test.fixme(...)` are forbidden
+in `*.spec.js`. The lint rule `no-test-skip` (`lint-tests.js:104`) enforces.
+Convert any "we don't have the data yet" / "this is flaky" precondition
+into an explicit `expect()` or `throw` so failures surface loudly.
 
-`_skips.json` is a transitional allowlist created in Phase 6; entries
-without a real `issue` field are technical debt that must be paid down
-before the suite is considered green.
+The legacy `tests/_skips.json` allowlist from Phase 6 no longer exists.
 
 ## Console-error policy
 

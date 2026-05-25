@@ -16,7 +16,7 @@
 import { test, expect } from './_coverage.js';
 import { BASE_URL, isBenign, screenshot, openWizard, runAnalytical, pause } from './utils.js';
 
-const BUCK_CY = 'Buck-CommonModeChoke-link';
+const BUCK_CY = 'Buck-link';
 const ss = (page, name) => screenshot(page, 'exporters', name);
 
 // ── Shared setup: drive through wizard to a complete magnetic design ──────

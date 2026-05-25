@@ -22,6 +22,9 @@ import ZetaWizard from '../components/Wizards/ZetaWizard.vue'
 import FourSwitchBuckBoostWizard from '../components/Wizards/FourSwitchBuckBoostWizard.vue'
 import WeinbergWizard from '../components/Wizards/WeinbergWizard.vue'
 import ClllcWizard from '../components/Wizards/ClllcWizard.vue'
+import SrcWizard from '../components/Wizards/SrcWizard.vue'
+import ViennaWizard from '../components/Wizards/ViennaWizard.vue'
+import CurrentTransformerWizard from '../components/Wizards/CurrentTransformerWizard.vue'
 
 </script>
 
@@ -141,6 +144,18 @@ export default {
             <ClllcWizard
                 v-if="$stateStore.getCurrentWizard() == $stateStore.Wizards.Clllc"
                 :dataTestLabel="'ClllcWizard'"
+            />
+            <SrcWizard
+                v-if="$stateStore.getCurrentWizard() == $stateStore.Wizards.SeriesResonant"
+                :dataTestLabel="'SrcWizard'"
+            />
+            <ViennaWizard
+                v-if="$stateStore.getCurrentWizard() == $stateStore.Wizards.Vienna"
+                :dataTestLabel="'ViennaWizard'"
+            />
+            <CurrentTransformerWizard
+                v-if="$stateStore.getCurrentWizard() == $stateStore.Wizards.CurrentTransformer"
+                :dataTestLabel="'CurrentTransformerWizard'"
             />
         </main>
         <Footer class="mt-auto"/>

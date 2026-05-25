@@ -44,7 +44,7 @@ export default {
             waveformViewMode: 'magnetic',
             forceWaveformUpdate: 0,
             numberOfPeriods: 2,
-            numberOfSteadyStatePeriods: 10,
+            numberOfSteadyStatePeriods: 5,
         }
     },
     watch: {
@@ -54,14 +54,20 @@ export default {
             });
         },
     },
-    mounted () {
-        this.updateErrorMessage();
+    mounted() {
+        this.$nextTick(() => {
+            if (this._autoRunDone) return;
+            this._autoRunDone = true;
+            try { this.updateErrorMessage?.(); } catch (e) { return; }
+            if (!this.errorMessage) this.getAnalyticalWaveforms?.();
+        });
     },
     methods: {
         // ===== WIZARD CONTRACT =====
         buildParams(mode) {
             const aux = {};
             aux['inputVoltage'] = this.localData.inputVoltage;
+            aux['switchingFrequency'] = this.localData.switchingFrequency;
             aux['diodeVoltageDrop'] = this.localData.diodeVoltageDrop;
             aux['efficiency'] = this.localData.efficiency;
             aux['coupledInductor'] = this.localData.coupledInductor === true;

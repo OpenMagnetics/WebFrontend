@@ -19,7 +19,7 @@
 import { test, expect } from './_coverage.js';
 import { BASE_URL, isBenign, screenshot, openWizard, softVisible, softDisabled, tryWaitForURL, pause, tryWaitForFunction, tryWaitForSelector, softWaitFor, clickIfPresent } from './utils.js';
 
-const DMC_CY = 'Wizard-DifferentialModeChoke-link';
+const DMC_CY = 'Dmc-link';
 const ss = (page, name) => screenshot(page, 'dmc-battery', name);
 const openDmc = (page) => openWizard(page, DMC_CY);
 

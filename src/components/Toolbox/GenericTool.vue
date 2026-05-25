@@ -111,7 +111,7 @@ export default {
         },
         toolSelected(tool) {
             // Handle switching between tools
-            if (tool === 'magneticAdviser' || tool === 'magneticBuilder') {
+            if (tool === 'magneticAdviser' || tool === 'magneticBuilder' || tool === 'magneticCoreAdviser') {
                 this.$stateStore.getCurrentToolState().subsection = tool;
             } else {
                 this.$emit('toolSelected', tool);
@@ -151,7 +151,6 @@ export default {
             }
             else{
                 return true;
-                // return this.$stateStore.operatingPoints.modePerPoint[this.$stateStore.currentOperatingPoint] === this.$stateStore.OperatingPointsMode.AcSweep;
             }
         },
         enableInsertIntermediateMas() {
@@ -253,7 +252,6 @@ export default {
                     <ToolSelector
                         v-if="$stateStore.getCurrentToolState().subsection == 'toolSelector'"
                         :dataTestLabel="`${dataTestLabel}-ToolSelector`"
-                        :acSweepSelected="$stateStore.operatingPoints.modePerPoint[$stateStore.currentOperatingPoint] === $stateStore.OperatingPointsMode.AcSweep"
                         @toolSelected="toolSelected"
                     />
                     <DesignRequirements
@@ -308,8 +306,8 @@ export default {
                         :enableCoil="true"
                         :readOnly="$stateStore.getCurrentToolState().subsection == 'magneticViewer'"
                         :enableGraphs="enableGraphs"
-                        :enableAdvisers="$stateStore.operatingPoints.modePerPoint[$stateStore.currentOperatingPoint] !== $stateStore.OperatingPointsMode.AcSweep"
-                        :enableSimulation="$stateStore.operatingPoints.modePerPoint[$stateStore.currentOperatingPoint] !== $stateStore.OperatingPointsMode.AcSweep"
+                        :enableAdvisers="true"
+                        :enableSimulation="true"
                         :enableInsertIntermediateMas="enableInsertIntermediateMas"
                         @canContinue="updateCanContinue('magneticBuilder', $event)"
                     />

@@ -14,7 +14,7 @@
 import { test, expect } from './_coverage.js';
 import { BASE_URL, isBenign, screenshot, openWizard, runAnalytical, goToMagneticAdviser, pause } from './utils.js';
 
-const BUCK_CY = 'Buck-CommonModeChoke-link';
+const BUCK_CY = 'Buck-link';
 const ss = (page, name) => screenshot(page, 'advisers', name);
 
 // ── Helpers ───────────────────────────────────────────────────────────────

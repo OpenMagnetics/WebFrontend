@@ -29,10 +29,6 @@ export default {
             type: Boolean,
             default: true,
         },
-        enableAcSweep: {
-            type: Boolean,
-            default: true,
-        },
         enableHarmonicsList: {
             type: Boolean,
             default: true,
@@ -240,10 +236,6 @@ export default {
                 this.masStore.updatedInputExcitationWaveformUpdatedFromProcessed('current');
             }, 100);
             this.$emit("canContinue", this.canContinue);
-        },
-        selectedAcSweepTypeSelected() {
-            this.$emit("canContinue", true);
-            this.$emit('changeTool', 'toolSelector')
         },
         changeWinding(windingIndex) {
 
@@ -457,13 +449,11 @@ export default {
                             :currentWindingIndex="currentWindingIndex"
                             :enableManual="enableManual"
                             :enableCircuitSimulatorImport="enableCircuitSimulatorImport"
-                            :enableAcSweep="enableAcSweep"
                             :enableHarmonicsList="enableHarmonicsList"
                             @updatedSignal="updatedSignal"
                             @updatedWaveform="updatedWaveform"
                             @importedWaveform="importedWaveform"
                             @selectedManualOrImported="selectedManualOrImported"
-                            @selectedAcSweepTypeSelected="selectedAcSweepTypeSelected"
                         />
                     </div>
                 </div>

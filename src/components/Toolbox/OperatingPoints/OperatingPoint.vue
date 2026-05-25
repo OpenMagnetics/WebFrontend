@@ -14,7 +14,7 @@ import { tooltipsMagneticSynthesisOperatingPoints } from 'WebSharedComponents/as
 <script>
 
 export default {
-    emits: ["updatedSignal", "updatedWaveform", "importedWaveform", "selectedManualOrImported", "selectedAcSweepTypeSelected"],
+    emits: ["updatedSignal", "updatedWaveform", "importedWaveform", "selectedManualOrImported"],
     props: {
         dataTestLabel: {
             type: String,
@@ -33,10 +33,6 @@ export default {
             default: true,
         },
         enableCircuitSimulatorImport: {
-            type: Boolean,
-            default: true,
-        },
-        enableAcSweep: {
             type: Boolean,
             default: true,
         },
@@ -147,9 +143,6 @@ export default {
             this.$stateStore.operatingPoints.modePerPoint[this.currentOperatingPointIndex] = this.$stateStore.OperatingPointsMode.Manual;
             this.$emit("selectedManualOrImported")
         },
-        onAcSweepTypeSelected() {
-            this.$emit("selectedAcSweepTypeSelected")
-        },
         onCircuitSimulatorTypeSelected(event) {
             this.$refs['OperatingPoint-CircuitSimulator-upload-ref'].click()
         },
@@ -242,16 +235,6 @@ export default {
                     >
                         <i class="bi bi-graph-up-arrow"></i>
                         <span>I want to introduce a list of harmonics</span>
-                    </button>
-                    <button
-                        v-if="enableAcSweep"
-                        :data-cy="dataTestLabel + '-ac-sweep-type'"
-                        type="button"
-                        @click="onAcSweepTypeSelected"
-                        class="op-mode-btn"
-                    >
-                        <i class="bi bi-activity"></i>
-                        <span>AC Sweep</span>
                     </button>
                 </div>
             </div>

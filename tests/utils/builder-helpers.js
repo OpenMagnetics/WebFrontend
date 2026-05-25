@@ -13,9 +13,9 @@ import { expect } from '@playwright/test';
 import { openWizard, runAnalytical, screenshot } from '../utils.js';
 import { pause } from './wait.js';
 
-export const BUCK_CY    = 'Buck-CommonModeChoke-link';
-export const FLYBACK_CY = 'Flyback-CommonModeChoke-link';
-export const PP_CY      = 'PushPull-CommonModeChoke-link';
+export const BUCK_CY    = 'Buck-link';
+export const FLYBACK_CY = 'Flyback-link';
+export const PP_CY      = 'PushPull-link';
 
 /** Screenshot helper bound to the legacy "mb-battery" subdir so file paths stay stable. */
 export const ss = (page, name) => screenshot(page, 'mb-battery', name);

@@ -35,54 +35,62 @@ export default {
                 label: 'Filters / PFC',
                 icon: 'bi-funnel-fill',
                 items: [
-                    { cy: 'Wizard-CommonModeChoke-link',       store: 'CommonModeChoke',       hoverKey: 'CommonModeChoke',       icon: 'bi-funnel-fill',         label: 'CMC Wizard' },
-                    { cy: 'Wizard-DifferentialModeChoke-link', store: 'DifferentialModeChoke', hoverKey: 'DifferentialModeChoke', icon: 'bi-soundwave',           label: 'DMC Wizard' },
-                    { cy: 'Pfc-link',                          store: 'Pfc',                   hoverKey: 'Pfc',                   icon: 'bi-soundwave',           label: 'PFC Wizard' },
+                    { cy: 'Cmc-link',       store: 'CommonModeChoke',       hoverKey: 'CommonModeChoke',       icon: 'bi-funnel-fill',         label: 'CMC' },
+                    { cy: 'Dmc-link', store: 'DifferentialModeChoke', hoverKey: 'DifferentialModeChoke', icon: 'bi-soundwave',           label: 'DMC' },
+                    { cy: 'Pfc-link',                          store: 'Pfc',                   hoverKey: 'Pfc',                   icon: 'bi-soundwave',           label: 'PFC' },
                 ],
             },
             {
                 label: 'Non-Isolated DC-DC',
                 icon: 'bi-arrow-down-up',
                 items: [
-                    { cy: 'Buck-CommonModeChoke-link',                store: 'Buck',                hoverKey: 'Buck',                icon: 'bi-arrow-down',     label: 'Buck Wizard' },
-                    { cy: 'Boost-CommonModeChoke-link',               store: 'Boost',               hoverKey: 'Boost',               icon: 'bi-arrow-up',       label: 'Boost Wizard' },
-                    { cy: 'Sepic-CommonModeChoke-link',               store: 'Sepic',               hoverKey: 'Sepic',               icon: 'bi-arrow-down-up',  label: 'SEPIC Wizard' },
-                    { cy: 'Cuk-CommonModeChoke-link',                 store: 'Cuk',                 hoverKey: 'Cuk',                 icon: 'bi-arrow-down-up',  label: 'Cuk Wizard' },
-                    { cy: 'Zeta-CommonModeChoke-link',                store: 'Zeta',                hoverKey: 'Zeta',                icon: 'bi-arrow-down-up',  label: 'Zeta Wizard' },
-                    { cy: 'FourSwitchBuckBoost-CommonModeChoke-link', store: 'FourSwitchBuckBoost', hoverKey: 'FourSwitchBuckBoost', icon: 'bi-arrow-down-up',  label: 'Four-Switch Buck-Boost Wizard' },
+                    { cy: 'Buck-link',                store: 'Buck',                hoverKey: 'Buck',                icon: 'bi-arrow-down',     label: 'Buck' },
+                    { cy: 'Boost-link',               store: 'Boost',               hoverKey: 'Boost',               icon: 'bi-arrow-up',       label: 'Boost' },
+                    { cy: 'Sepic-link',               store: 'Sepic',               hoverKey: 'Sepic',               icon: 'bi-arrow-down-up',  label: 'SEPIC' },
+                    { cy: 'Cuk-link',                 store: 'Cuk',                 hoverKey: 'Cuk',                 icon: 'bi-arrow-down-up',  label: 'Cuk' },
+                    { cy: 'Zeta-link',                store: 'Zeta',                hoverKey: 'Zeta',                icon: 'bi-arrow-down-up',  label: 'Zeta' },
+                    { cy: 'FourSwitchBuckBoost-link', store: 'FourSwitchBuckBoost', hoverKey: 'FourSwitchBuckBoost', icon: 'bi-arrow-down-up',  label: 'Four-Switch Buck-Boost' },
                 ],
             },
             {
-                label: 'Isolated Single-Switch',
+                label: 'Isolated Forward / Flyback',
                 icon: 'bi-shield-shaded',
                 items: [
-                    { cy: 'Flyback-CommonModeChoke-link',             store: 'Flyback',             hoverKey: 'Flyback',             icon: 'bi-lightning-fill',   label: 'Flyback Wizard' },
-                    { cy: 'IsolatedBuck-CommonModeChoke-link',        store: 'IsolatedBuck',        hoverKey: 'IsolatedBuck',        icon: 'bi-shield-shaded',    label: 'Isolated Buck Wizard' },
-                    { cy: 'IsolatedBuckBoost-CommonModeChoke-link',   store: 'IsolatedBuckBoost',   hoverKey: 'IsolatedBuckBoost',   icon: 'bi-shield-exclamation', label: 'Isolated Buck Boost Wizard' },
-                    { cy: 'ActiveClampForward-CommonModeChoke-link',  store: 'ActiveClampForward',  hoverKey: 'ActiveClampForward',  icon: 'bi-fullscreen-exit',  label: 'Active Clamp Forward Wizard' },
-                    { cy: 'SingleSwitchForward-CommonModeChoke-link', store: 'SingleSwitchForward', hoverKey: 'SingleSwitchForward', icon: 'bi-toggle-off',       label: 'Single-Switch Forward Wizard' },
-                    { cy: 'TwoSwitchForward-CommonModeChoke-link',    store: 'TwoSwitchForward',    hoverKey: 'TwoSwitchForward',    icon: 'bi-toggle-on',        label: 'Two-Switch Forward Wizard' },
+                    { cy: 'Flyback-link',             store: 'Flyback',             hoverKey: 'Flyback',             icon: 'bi-lightning-fill',   label: 'Flyback' },
+                    { cy: 'IsolatedBuck-link',        store: 'IsolatedBuck',        hoverKey: 'IsolatedBuck',        icon: 'bi-shield-shaded',    label: 'Isolated Buck' },
+                    { cy: 'IsolatedBuckBoost-link',   store: 'IsolatedBuckBoost',   hoverKey: 'IsolatedBuckBoost',   icon: 'bi-shield-exclamation', label: 'Isolated Buck-Boost' },
+                    { cy: 'SingleSwitchForward-link', store: 'SingleSwitchForward', hoverKey: 'SingleSwitchForward', icon: 'bi-toggle-off',       label: 'Single-Switch Forward' },
+                    { cy: 'TwoSwitchForward-link',    store: 'TwoSwitchForward',    hoverKey: 'TwoSwitchForward',    icon: 'bi-toggle-on',        label: 'Two-Switch Forward' },
+                    { cy: 'ActiveClampForward-link',  store: 'ActiveClampForward',  hoverKey: 'ActiveClampForward',  icon: 'bi-fullscreen-exit',  label: 'Active Clamp Forward' },
                 ],
             },
             {
                 label: 'Isolated Bridge / Push-Pull',
                 icon: 'bi-arrow-left-right',
                 items: [
-                    { cy: 'PushPull-CommonModeChoke-link', store: 'PushPull',             hoverKey: 'PushPull', icon: 'bi-arrow-left-right',     label: 'Push-Pull Wizard' },
-                    { cy: 'Weinberg-CommonModeChoke-link', store: 'Weinberg',             hoverKey: 'Weinberg', icon: 'bi-arrow-left-right',     label: 'Weinberg Wizard' },
-                    { cy: 'Psfb-link',                     store: 'PhaseShiftFullBridge', hoverKey: 'PSFB',     icon: 'bi-chevron-double-right', label: 'PSFB Wizard' },
-                    { cy: 'Pshb-link',                     store: 'PhaseShiftHalfBridge', hoverKey: 'PSHB',     icon: 'bi-chevron-right',        label: 'PSHB Wizard' },
-                    { cy: 'Ahb-link',                      store: 'AsymmetricHalfBridge', hoverKey: 'AHB',      icon: 'bi-arrow-bar-right',      label: 'AHB Wizard' },
-                    { cy: 'Dab-link',                      store: 'DualActiveBridge',     hoverKey: 'DAB',      icon: 'bi-arrow-left-right',     label: 'DAB Wizard' },
+                    { cy: 'PushPull-link', store: 'PushPull',             hoverKey: 'PushPull', icon: 'bi-arrow-left-right',     label: 'Push-Pull' },
+                    { cy: 'Weinberg-link', store: 'Weinberg',             hoverKey: 'Weinberg', icon: 'bi-arrow-left-right',     label: 'Weinberg' },
+                    { cy: 'Psfb-link',                     store: 'PhaseShiftFullBridge', hoverKey: 'PSFB',     icon: 'bi-chevron-double-right', label: 'PSFB' },
+                    { cy: 'Pshb-link',                     store: 'PhaseShiftHalfBridge', hoverKey: 'PSHB',     icon: 'bi-chevron-right',        label: 'PSHB' },
+                    { cy: 'Ahb-link',                      store: 'AsymmetricHalfBridge', hoverKey: 'AHB',      icon: 'bi-arrow-bar-right',      label: 'AHB' },
+                    { cy: 'Dab-link',                      store: 'DualActiveBridge',     hoverKey: 'DAB',      icon: 'bi-arrow-left-right',     label: 'DAB' },
                 ],
             },
             {
                 label: 'Resonant',
                 icon: 'bi-soundwave',
                 items: [
-                    { cy: 'Llc-link',   store: 'LlcResonant',  hoverKey: 'LLC',   icon: 'bi-soundwave',        label: 'LLC Wizard' },
-                    { cy: 'Cllc-link',  store: 'CllcResonant', hoverKey: 'CLLC',  icon: 'bi-arrow-left-right', label: 'CLLC Wizard' },
-                    { cy: 'Clllc-link', store: 'Clllc',        hoverKey: 'CLLLC', icon: 'bi-arrow-left-right', label: 'CLLLC Wizard' },
+                    { cy: 'Llc-link',   store: 'LlcResonant',    hoverKey: 'LLC',   icon: 'bi-soundwave',        label: 'LLC' },
+                    { cy: 'Cllc-link',  store: 'CllcResonant',   hoverKey: 'CLLC',  icon: 'bi-arrow-left-right', label: 'CLLC' },
+                    { cy: 'Clllc-link', store: 'Clllc',          hoverKey: 'CLLLC', icon: 'bi-arrow-left-right', label: 'CLLLC' },
+                    { cy: 'Src-link',   store: 'SeriesResonant', hoverKey: 'SRC',   icon: 'bi-soundwave',        label: 'SRC' },
+                ],
+            },
+            {
+                label: 'Three-Phase PFC',
+                icon: 'bi-lightning-charge',
+                items: [
+                    { cy: 'Vienna-link', store: 'Vienna', hoverKey: 'Vienna', icon: 'bi-lightning-charge', label: 'Vienna Rectifier' },
                 ],
             },
         ];
@@ -765,12 +773,17 @@ export default {
         position: absolute;
         top: -0.4rem;          /* align with the parent item top */
         left: 100%;
-        margin-left: 0.25rem;
+        margin-left: 0;        /* no gap — gap causes hover loss mid-mouse-travel */
+        padding-left: 0.25rem; /* visual offset without dead hover zone */
         min-width: 14rem;
         z-index: 1100;
     }
     .om-header .dropdown-submenu:hover > .submenu-panel,
     .om-header .submenu-panel.submenu-open {
+        display: block;
+    }
+    /* Open top-level wizard/tool dropdown on hover — no click required */
+    .om-header .nav-item.dropdown:hover > .dropdown-menu {
         display: block;
     }
     /* Mobile / collapsed-navbar: fall back to inline expansion (no flyout) */

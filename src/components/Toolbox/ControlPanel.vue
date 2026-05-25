@@ -42,6 +42,7 @@ export default {
         const exportingLtspice = false;
         const exportingNgspice = false;
         const exportingNl5 = false;
+        const exportingPlecs = false;
         const isHighPerformanceBackendAvailable = false;
 
         const masIcon = `${import.meta.env.BASE_URL}images/MAS_icon.svg`;
@@ -55,6 +56,7 @@ export default {
         const ltspiceSubcircuitIcon = `${import.meta.env.BASE_URL}images/Ltspice Subcircuit.png`;
         const ngspiceIcon = `${import.meta.env.BASE_URL}images/Ngspice_icon.svg`;
         const nl5Icon = `${import.meta.env.BASE_URL}images/NL5_icon.png`;
+        const plecsIcon = `${import.meta.env.BASE_URL}images/PLECS_icon.png`;
         return {
             masStore,
             historyStore,
@@ -70,6 +72,7 @@ export default {
             ltspiceSubcircuitIcon,
             exportingNgspice,
             exportingNl5,
+            exportingPlecs,
             isHighPerformanceBackendAvailable,
             masIcon,
             ansysIcon,
@@ -77,6 +80,7 @@ export default {
             ltspiceIcon,
             ngspiceIcon,
             nl5Icon,
+            plecsIcon,
         }
     },
     computed: {
@@ -220,6 +224,20 @@ export default {
                 setTimeout(() => this.exportingNl5 = false, 2000);
             } catch (error) {
                 setTimeout(() => this.exportingNl5 = false, 200);
+                console.error(error);
+            }
+        },
+        async exportPlecs() {
+            this.exportingPlecs = true;
+            try {
+                const magnetic = deepCopy(this.masStore.mas.magnetic);
+                const reference = this.reference.replaceAll(" ", "_").replaceAll("-", "_").replaceAll(".", "_").replaceAll(",", "_").replaceAll(":", "_").replaceAll("___", "_").replaceAll("__", "_");
+                var subcircuit = await this.taskQueueStore.exportMagneticAsSubcircuit(magnetic, this.ambientTemperature, "PLECS", "");
+                var blob = new Blob([subcircuit], { type: 'text/plain; charset=utf-8' });
+                download(blob, reference + ".plecs", "text/plain; charset=utf-8");
+                setTimeout(() => this.exportingPlecs = false, 2000);
+            } catch (error) {
+                setTimeout(() => this.exportingPlecs = false, 200);
                 console.error(error);
             }
         },
@@ -391,14 +409,28 @@ export default {
 
                     <!-- NL5 Button -->
                     <div class="cp-group">
-                        <button 
-                            :style="$styleStore.controlPanel.button" 
-                            class="cp-btn cp-btn-nl5" 
-                            @click="exportNl5" 
-                            :disabled="exportingNl5" 
+                        <button
+                            :style="$styleStore.controlPanel.button"
+                            class="cp-btn cp-btn-nl5"
+                            @click="exportNl5"
+                            :disabled="exportingNl5"
                             title="NL5"
                         >
                             <img :src='nl5Icon' width="18" height="18" alt="NL5">
+                        </button>
+                    </div>
+
+                    <!-- PLECS Button -->
+                    <div class="cp-group">
+                        <button
+                            :style="$styleStore.controlPanel.button"
+                            class="cp-btn cp-btn-plecs"
+                            @click="exportPlecs"
+                            :disabled="exportingPlecs"
+                            title="PLECS"
+                            data-cy="ControlPanel-export-plecs-button"
+                        >
+                            <img :src='plecsIcon' width="18" height="18" alt="PLECS">
                         </button>
                     </div>
 

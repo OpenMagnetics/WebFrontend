@@ -14,8 +14,8 @@
 import { test, expect } from './_coverage.js';
 import { BASE_URL, isBenign, screenshot, openWizard, runAnalytical, waitForAnalytical, conditionsCard, outputsCard, fillRowInput, goToMagneticAdviser, goToMagneticBuilder, runCoreAdviser, pause } from './utils.js';
 
-const BUCK_CY  = 'Buck-CommonModeChoke-link';
-const BOOST_CY = 'Boost-CommonModeChoke-link';
+const BUCK_CY  = 'Buck-link';
+const BOOST_CY = 'Boost-link';
 
 const ss = (page, name) => screenshot(page, 'buck-boost-battery', name);
 

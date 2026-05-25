@@ -48,6 +48,17 @@ export default {
             type: Boolean,
             default: true,
         },
+        /**
+         * Show the Help-me / I-know design-mode toggle. Default true so the
+         * standalone OpenMagnetics wizard exposes both paths. Branded
+         * consumers that want to lock the wizard to "Help me with the
+         * design" (e.g. el-choker, which only ships the help-me path) pass
+         * :showDesignModeToggle="false".
+         */
+        showDesignModeToggle: {
+            type: Boolean,
+            default: true,
+        },
     },
     emits: ['reviewSpecs', 'findMagnetic'],
     data() {
@@ -107,7 +118,7 @@ export default {
             waveformViewMode: 'magnetic',
             forceWaveformUpdate: 0,
             numberOfPeriods: 2,
-            numberOfSteadyStatePeriods: 10,
+            numberOfSteadyStatePeriods: 50,
         }
     },
     computed: {
@@ -399,10 +410,21 @@ export default {
    >
 
     <!-- ══════════════════════════════════════════════════════════ -->
-    <!-- #design-mode slot intentionally omitted — El Choker (CMC)   -->
-    <!-- always uses "Help me with the design", so the Design Mode   -->
-    <!-- card auto-hides via ConverterWizardBase's $slots check.     -->
+    <!-- SLOT: #design-mode — Help-me / I-know toggle               -->
+    <!-- Standalone OpenMagnetics exposes both. Branded consumers   -->
+    <!-- can hide via :showDesignModeToggle="false" prop (e.g.      -->
+    <!-- el-choker, which ships only the help-me path).             -->
+    <!-- The slot is conditionally emitted so the base's $slots     -->
+    <!-- check auto-hides the Design Mode card when the prop is off.-->
     <!-- ══════════════════════════════════════════════════════════ -->
+    <template v-if="showDesignModeToggle" #design-mode>
+      <div class="design-mode-selector">
+        <label v-for="(option, index) in designLevelOptions" :key="index" class="design-mode-option">
+          <input type="radio" v-model="localData.designLevel" :value="option" :data-cy="dataTestLabel + '-DesignLevel-' + index" @change="updateErrorMessage">
+          <span class="design-mode-label">{{ option }}</span>
+        </label>
+      </div>
+    </template>
 
 
     <!-- ══════════════════════════════════════════════════════════ -->
@@ -467,7 +489,7 @@ export default {
           @update="updateErrorMessage"
         />
         <div class="mt-2 p-2 rounded" :class="$styleStore.wizard.inputValueBgColor">
-          <small class="text-muted">CM Inductance</small><br>
+          <small :style="{ color: $styleStore.wizard.inputTextColor }">CM Inductance</small><br>
           <strong :style="{ color: $styleStore.wizard.inputTextColor }">{{ previewInductanceFormatted }}</strong>
         </div>
       </div>
@@ -638,7 +660,7 @@ export default {
 
         <!-- Live inductance preview (all help-mode variants) -->
         <div class="mt-2 p-2 rounded" :class="$styleStore.wizard.inputValueBgColor">
-          <small class="text-muted">Required L<sub>CM</sub></small><br>
+          <small :style="{ color: $styleStore.wizard.inputTextColor }">Required L<sub>CM</sub></small><br>
           <strong :style="{ color: $styleStore.wizard.inputTextColor }">{{ previewInductanceFormatted }}</strong>
         </div>
       </div>

@@ -17,13 +17,11 @@
  *   capabilities   object of feature flags this wizard supports
  *     adviser        true  → Magnetic Adviser end-to-end works
  *     coreAdviser    true  → Core Adviser button reachable from builder
- *     wireAdviser    true  → Wire Adviser reachable (most: false today)
- *     simulated      true  → Simulated waveform button present
+ *     simulated      true  → Simulated waveform button present (fallback to
+ *                            Analytical when false)
  *     iKnowMode      true  → Has DesignLevel radio for "I know the design"
- *     inductanceCy   data-cy suffix for inductance input in iKnow mode (e.g. 'Inductance')
- *   numericalCase  optional reference design used by the numerical battery
- *     inputs       map of data-cy suffix → value (set before analytical)
- *     expects      map of metric name → { value, tol }
+ *     spice          true  → Get SPICE Code button wired through to a WASM
+ *                            generator (excludes PFC, Vienna, CurrentTransformer)
  *
  * Keep entries alphabetised by key. Do NOT add per-wizard quirks in spec
  * files — they belong here.
@@ -39,94 +37,91 @@
  *   capabilities: {
  *     adviser: boolean,
  *     coreAdviser: boolean,
- *     wireAdviser: boolean,
  *     simulated: boolean,
  *     iKnowMode: boolean,
- *     inductanceCy?: string,
- *   },
- *   numericalCase?: {
- *     inputs: Record<string, string|number>,
- *     expects: Record<string, { value: number, tol: number }>,
+ *     spice: boolean,
  *   },
  * }} WizardSpec */
 
+/**
+ * Helper to keep wizard rows short. All 24 wizards in the Header dropdown
+ * share the same "supports everything by default" capability set; only
+ * exceptions need overrides (see PFC.simulated).
+ */
+const FULL = Object.freeze({
+  adviser: true, coreAdviser: true, simulated: true, iKnowMode: true, spice: true,
+});
+
+const w = (key, title, linkCy, wizardPrefix, topology, tags = ['scenario'], capOverrides = {}) => ({
+  key, title, linkCy, wizardPrefix, topology,
+  tags: Object.freeze(tags),
+  capabilities: Object.freeze({ ...FULL, ...capOverrides }),
+});
+
+/**
+ * All wizards from Header.vue (source of truth). Order matches the dropdown
+ * grouping (Filters/PFC → Non-isolated → Isolated single-switch → Isolated
+ * bridge → Resonant) so failures map intuitively to UI sections.
+ *
+ * Every wizard is expected to support analytical + simulated + Core Adviser
+ * + Magnetic Adviser with its shipped defaults. A wizard that doesn't is a
+ * product gap — the test failing loudly is the desired behaviour. Never add
+ * capability flags (adviser: false, spice: false, etc.) to hide a broken path
+ * without fixing the underlying problem and getting explicit approval.
+ */
 /** @type {ReadonlyArray<WizardSpec>} */
 export const WIZARD_CATALOG = Object.freeze([
-  {
-    key: 'buck',
-    title: 'Buck',
-    linkCy: 'Buck-CommonModeChoke-link',
-    wizardPrefix: 'BuckWizard',
-    topology: 'dc-dc',
-    tags: ['smoke', 'scenario'],
-    capabilities: {
-      adviser: true, coreAdviser: true, wireAdviser: false,
-      simulated: true, iKnowMode: true, inductanceCy: 'Inductance',
-    },
-  },
-  {
-    key: 'boost',
-    title: 'Boost',
-    linkCy: 'Boost-CommonModeChoke-link',
-    wizardPrefix: 'BoostWizard',
-    topology: 'dc-dc',
-    tags: ['smoke', 'scenario'],
-    capabilities: {
-      adviser: true, coreAdviser: true, wireAdviser: false,
-      simulated: true, iKnowMode: true, inductanceCy: 'Inductance',
-    },
-  },
-  {
-    key: 'flyback',
-    title: 'Flyback',
-    linkCy: 'Flyback-CommonModeChoke-link',
-    wizardPrefix: 'FlybackWizard',
-    topology: 'isolated',
-    tags: ['scenario'],
-    capabilities: {
-      adviser: true, coreAdviser: true, wireAdviser: false,
-      simulated: true, iKnowMode: true,
-    },
-  },
-  {
-    key: 'pfc',
-    title: 'PFC',
-    linkCy: 'Pfc-link',
-    wizardPrefix: 'PfcWizard',
-    topology: 'pfc',
-    tags: ['scenario'],
-    capabilities: {
-      adviser: true, coreAdviser: true, wireAdviser: false,
-      simulated: false, iKnowMode: true, inductanceCy: 'Inductance',
-    },
-  },
-  {
-    key: 'sepic',
-    title: 'SEPIC',
-    linkCy: 'Sepic-link',
-    wizardPrefix: 'SepicWizard',
-    topology: 'dc-dc',
-    tags: ['scenario'],
-    capabilities: {
-      adviser: true, coreAdviser: true, wireAdviser: false,
-      simulated: true, iKnowMode: true,
-    },
-  },
-  {
-    key: 'dab',
-    title: 'DAB',
-    linkCy: 'Dab-link',
-    wizardPrefix: 'DabWizard',
-    topology: 'dab',
-    tags: ['heavy', 'scenario'],
-    capabilities: {
-      adviser: true, coreAdviser: true, wireAdviser: false,
-      simulated: true, iKnowMode: true,
-    },
-  },
-  // Future expansions: add isolated-battery (push-pull, forward), llc/psfb,
-  // cuk/zeta/four-switch-bb/weinberg/cllllc as their batteries migrate.
-  // Each is a one-entry append + a one-line spec file using makeBatterySpec.
+  // ── Filters / PFC ──────────────────────────────────────────────────
+  w('cmc',                 'CMC',                       'Cmc-link',           'CmcWizard',                'filter',   ['smoke', 'scenario']),
+  w('dmc',                 'DMC',                       'Dmc-link',     'DmcWizard',                'filter',   ['scenario']),
+  // PFC's simulated mode is not implemented in the WASM backend yet; the
+  // wizard hides the Simulated button. Mark explicitly so flows.js falls
+  // back to Analytical instead of throwing on a missing button.
+  w('pfc',                 'PFC',                       'Pfc-link',                              'PfcWizard',                'pfc',      ['heavy', 'scenario'], { simulated: false }),
+
+  // ── Non-Isolated DC-DC ─────────────────────────────────────────────
+  w('buck',                'Buck',                      'Buck-link',             'BuckWizard',               'dc-dc',    ['smoke', 'scenario']),
+  w('boost',               'Boost',                     'Boost-link',            'BoostWizard',              'dc-dc',    ['smoke', 'scenario']),
+  w('sepic',               'SEPIC',                     'Sepic-link',            'SepicWizard',              'dc-dc',    ['heavy', 'scenario']),
+  w('cuk',                 'Cuk',                       'Cuk-link',              'CukWizard',                'dc-dc',    ['scenario']),
+  w('zeta',                'Zeta',                      'Zeta-link',             'ZetaWizard',               'dc-dc',    ['scenario']),
+  w('fsbb',                'Four-Switch Buck-Boost',    'FourSwitchBuckBoost-link', 'FourSwitchBuckBoostWizard', 'dc-dc', ['scenario']),
+
+  // ── Isolated Single-Switch ─────────────────────────────────────────
+  w('flyback',             'Flyback',                   'Flyback-link',          'FlybackWizard',            'isolated', ['heavy', 'scenario']),
+  w('isolated-buck',       'Isolated Buck',             'IsolatedBuck-link',     'IsolatedBuckWizard',       'isolated', ['scenario']),
+  w('isolated-buckboost',  'Isolated Buck-Boost',       'IsolatedBuckBoost-link','IsolatedBuckBoostWizard',  'isolated', ['heavy', 'scenario']),
+  w('active-clamp-forward','Active Clamp Forward',      'ActiveClampForward-link','ActiveClampForwardWizard','isolated', ['heavy', 'scenario']),
+  w('single-switch-forward','Single-Switch Forward',    'SingleSwitchForward-link','SingleSwitchForwardWizard','isolated', ['heavy', 'scenario']),
+  w('two-switch-forward',  'Two-Switch Forward',        'TwoSwitchForward-link', 'TwoSwitchForwardWizard',   'isolated', ['scenario']),
+
+  // ── Isolated Bridge / Push-Pull ────────────────────────────────────
+  w('push-pull',           'Push-Pull',                 'PushPull-link',         'PushPullWizard',           'isolated', ['heavy', 'scenario']),
+  w('weinberg',            'Weinberg',                  'Weinberg-link',         'WeinbergWizard',           'isolated', ['scenario']),
+  w('psfb',                'PSFB',                      'Psfb-link',                             'PsfbWizard',               'isolated', ['scenario']),
+  w('pshb',                'PSHB',                      'Pshb-link',                             'PshbWizard',               'isolated', ['heavy', 'scenario']),
+  w('ahb',                 'AHB',                       'Ahb-link',                              'AhbWizard',                'isolated', ['heavy', 'scenario']),
+  w('dab',                 'DAB',                       'Dab-link',                              'DabWizard',                'dab',      ['heavy', 'scenario']),
+
+  // ── Resonant ──────────────────────────────────────────────────────
+  w('llc',                 'LLC',                       'Llc-link',                              'LlcWizard',                'resonant', ['heavy', 'scenario']),
+  w('cllc',                'CLLC',                      'Cllc-link',                             'CllcWizard',               'resonant', ['heavy', 'scenario']),
+  w('clllc',               'CLLLC',                     'Clllc-link',                            'ClllcWizard',              'resonant', ['heavy', 'scenario']),
+  w('src',                 'SRC',                       'Src-link',                              'SrcWizard',                'resonant', ['heavy', 'scenario']),
+
+  // ── 3-phase PFC ───────────────────────────────────────────────────
+  // Vienna SPICE is single-phase boost emulation (MKF Phase-1): one phase
+  // solved at peak-of-line and replicated across B/C by 120-deg symmetry.
+  // Returned payload carries `viennaDiagnostics.note` explaining the
+  // limitation. Full 3-phase netlist deferred to MKF Phase 3+.
+  // Vienna's SPICE is wired in the wizard but the `@get-spice-code` listener is
+  // intentionally omitted (single-phase emulation only). Skip in tests.
+  w('vienna',              'Vienna Rectifier',          'Vienna-link',                           'ViennaWizard',             'pfc',      ['scenario']),
+
+  // ── Measurement (hidden from UI) ──────────────────────────────────
+  // Current Transformer wizard exists but is intentionally not exposed in
+  // the Header dropdown or WizardsLanding cards. Re-add an entry here when
+  // the UI is re-enabled.
 ]);
 
 /** Lookup by `key`. Throws if absent — never returns undefined silently. */

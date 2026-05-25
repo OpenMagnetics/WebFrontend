@@ -120,11 +120,14 @@ const RULES = [
 
 /* ── Walker ─────────────────────────────────────────────────────────────── */
 
-/** Recursively list all .js files under dir, skipping node_modules and .auth. */
+/** Recursively list all .js files under dir, skipping node_modules / .auth /
+ *  _scratch. `_scratch/` holds capture+debug specs that are testIgnore'd in
+ *  every Playwright project; they're tracked technical debt, not part of the
+ *  suite's lint surface. */
 function listJsFiles(dir) {
   const out = [];
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
-    if (entry.name === 'node_modules' || entry.name === '.auth' || entry.name.startsWith('.')) continue;
+    if (entry.name === 'node_modules' || entry.name === '.auth' || entry.name === '_scratch' || entry.name.startsWith('.')) continue;
     const full = path.join(dir, entry.name);
     if (entry.isDirectory()) out.push(...listJsFiles(full));
     else if (entry.isFile() && (entry.name.endsWith('.js') || entry.name.endsWith('.mjs'))) out.push(full);

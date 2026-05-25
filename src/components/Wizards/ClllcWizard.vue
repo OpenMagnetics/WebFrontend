@@ -10,7 +10,7 @@ import PairOfDimensions from 'WebSharedComponents/DataInput/PairOfDimensions.vue
 import { defaultClllcWizardInputs, minimumMaximumScalePerParameter } from 'WebSharedComponents/assets/js/defaults.js'
 import ConverterWizardBase from './ConverterWizardBase.vue'
 import CompactVoltageInput from './CompactVoltageInput.vue'
-import { tooltipsConverterWizards } from 'WebSharedComponents/assets/js/texts'
+import { tooltipsConverterWizards, dropdownLabelsConverterWizards } from 'WebSharedComponents/assets/js/texts'
 </script>
 
 <script>
@@ -39,12 +39,12 @@ export default {
     data() {
         const masStore = useMasStore();
         const taskQueueStore = useTaskQueueStore();
-        const insulationTypes = ['No', 'Basic', 'Reinforced'];
+        const insulationTypes = ['no', 'basic', 'reinforced'];
         const designLevelOptions = ['Help me with the design', 'I know the design I want'];
         const localData = deepCopy(defaultClllcWizardInputs);
         return {
             masStore,
-            taskQueueStore,
+            taskQueueStore, dropdownLabelsConverterWizards,
             insulationTypes,
             designLevelOptions,
             localData,
@@ -69,7 +69,14 @@ export default {
             this.$nextTick(() => { this.forceWaveformUpdate += 1; });
         },
     },
-    mounted () { this.updateErrorMessage(); },
+    mounted() {
+        this.$nextTick(() => {
+            if (this._autoRunDone) return;
+            this._autoRunDone = true;
+            try { this.updateErrorMessage?.(); } catch (e) { return; }
+            if (!this.errorMessage) this.getAnalyticalWaveforms?.();
+        });
+    },
     methods: {
         buildParams(mode) {
             const aux = {
@@ -311,7 +318,7 @@ export default {
         :textColor="$styleStore.wizard.inputTextColor"
         @update="updateErrorMessage"
       />
-      <Dimension :name="'nominalSwitchingFrequency'" :tooltip="tooltipsConverterWizards['resonantFrequency']" :replaceTitle="'Nom. Frequency'" unit="Hz"
+      <Dimension :name="'nominalSwitchingFrequency'" :tooltip="tooltipsConverterWizards['nominalSwitchingFrequency']" :replaceTitle="'Nom. Frequency'" unit="Hz"
         :dataTestLabel="dataTestLabel + '-NominalSwitchingFrequency'"
         :min="minimumMaximumScalePerParameter['frequency']['min']"
         :max="minimumMaximumScalePerParameter['frequency']['max']"
@@ -358,7 +365,7 @@ export default {
         :textColor="$styleStore.wizard.inputTextColor"
         @update="updateErrorMessage"
       />
-      <ElementFromList :name="'insulationType'" :tooltip="tooltipsConverterWizards['insulationType']" :replaceTitle="'Insulation'" :options="insulationTypes"
+      <ElementFromList :name="'insulationType'" :tooltip="tooltipsConverterWizards['insulationType']" :replaceTitle="'Insulation'" :options="insulationTypes" :optionLabels="dropdownLabelsConverterWizards.insulationType"
         :dataTestLabel="dataTestLabel + '-InsulationType'"
         :titleSameRow="true" v-model="localData"
         :labelWidthProportionClass="'col-6'" :valueWidthProportionClass="'col-6'"

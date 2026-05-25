@@ -174,6 +174,20 @@ export default {
             await this.$nextTick();
             await this.$router.push(`${import.meta.env.BASE_URL}wizards`);
         },
+        async onSrcWizard() {
+            this.$stateStore.resetMagneticTool();
+            this.$stateStore.selectWorkflow("design");
+            this.$stateStore.selectWizard(this.$stateStore.Wizards.SeriesResonant);
+            await this.$nextTick();
+            await this.$router.push(`${import.meta.env.BASE_URL}wizards`);
+        },
+        async onViennaWizard() {
+            this.$stateStore.resetMagneticTool();
+            this.$stateStore.selectWorkflow("design");
+            this.$stateStore.selectWizard(this.$stateStore.Wizards.Vienna);
+            await this.$nextTick();
+            await this.$router.push(`${import.meta.env.BASE_URL}wizards`);
+        },
         async onMagneticBuilder() {
             this.$stateStore.resetMagneticTool();
             this.$stateStore.selectWorkflow("design");
@@ -511,6 +525,33 @@ export default {
                             </div>
                         </div>
                     </div>
+
+                    <!-- Series Resonant Converter (SRC) -->
+                    <div class="col-lg-4 col-md-6">
+                        <div class="card h-100 bg-dark border-secondary">
+                            <div class="card-body p-4">
+                                <h4 class="card-title text-white fw-bold mb-2">Series Resonant Converter (SRC)</h4>
+                                <p class="card-text text-white small mb-3">Above-resonance LC-tank converter (no parallel Lm). HB or FB bridge; CT / FB / current-doubler rectifiers.</p>
+                                <button @click="onSrcWizard" class="btn btn-light w-100" data-cy="Src-card">
+                                    Start Wizard
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Vienna Rectifier (3-phase PFC) -->
+                    <div class="col-lg-4 col-md-6">
+                        <div class="card h-100 bg-dark border-secondary">
+                            <div class="card-body p-4">
+                                <h4 class="card-title text-white fw-bold mb-2">Vienna Rectifier (3-phase PFC)</h4>
+                                <p class="card-text text-white small mb-3">Three-phase three-level boost PFC. Per-phase boost inductor design (Phase A shown; B/C identical by symmetry).</p>
+                                <button @click="onViennaWizard" class="btn btn-light w-100" data-cy="Vienna-card">
+                                    Start Wizard
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
 
                 <!-- Alternative Option -->

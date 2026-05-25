@@ -11,7 +11,7 @@
 import { test, expect } from './_coverage.js';
 import { openWizard, pause } from './utils.js';
 
-const CMC_CY = 'Wizard-CommonModeChoke-link';
+const CMC_CY = 'Cmc-link';
 
 async function runAnalyticalToPopulateL(page) {
   await page.locator('.sim-btn.analytical').click();

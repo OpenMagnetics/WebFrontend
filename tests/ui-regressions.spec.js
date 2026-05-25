@@ -95,7 +95,7 @@ test.describe('UR-2 — SPICE button works for Flyback', () => {
 
   test('UR-2-1: Flyback SPICE opens modal with a Flyback netlist', async ({ page }) => {
     await goToRoute(page, '/wizards');
-    await page.evaluate(() => document.querySelector('[data-cy="Flyback-CommonModeChoke-link"]')?.click());
+    await page.evaluate(() => document.querySelector('[data-cy="Flyback-link"]')?.click());
     await pause(page, 1500, 'mechanical: settle');
 
     // Flyback SPICE requires the wizard's topology to be populated; click
@@ -192,7 +192,7 @@ test.describe('UR-4 — SVG viewBox fits content (no clipping)', () => {
     // Visualizer to render a temperature SVG (the bug surfaced there).
     await goToRoute(page, '/wizards');
     await page.evaluate(() =>
-      document.querySelector('[data-cy="Wizard-CommonModeChoke-link"]')?.click());
+      document.querySelector('[data-cy="Cmc-link"]')?.click());
     await pause(page, 1500, 'mechanical: settle');
 
     await page.evaluate(() =>

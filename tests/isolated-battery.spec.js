@@ -14,8 +14,8 @@
 import { test, expect } from './_coverage.js';
 import { BASE_URL, isBenign, screenshot, openWizard, runAnalytical, conditionsCard, outputsCard, fillRowInput, fillOutput, goToMagneticAdviser, goToMagneticBuilder, runCoreAdviser, pause } from './utils.js';
 
-const ISO_BUCK_CY      = 'IsolatedBuck-CommonModeChoke-link';
-const ISO_BUCKBOOST_CY = 'IsolatedBuckBoost-CommonModeChoke-link';
+const ISO_BUCK_CY      = 'IsolatedBuck-link';
+const ISO_BUCKBOOST_CY = 'IsolatedBuckBoost-link';
 
 const ss = (page, name) => screenshot(page, 'isolated-battery', name);
 const openIsoBuck      = (page) => openWizard(page, ISO_BUCK_CY);

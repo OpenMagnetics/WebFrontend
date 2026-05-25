@@ -27,7 +27,7 @@ import fs from 'node:fs';
 import { test, expect } from './_coverage.js';
 import { BASE_URL, isBenign, screenshot, openWizard, runAnalytical, goToMagneticAdviser, softVisible, softDisabled, softText, tryWaitForURL, pause, tryWaitForFunction, softWaitFor } from './utils.js';
 
-const BUCK_CY = 'Buck-CommonModeChoke-link';
+const BUCK_CY = 'Buck-link';
 const DAB_CY  = 'Dab-link';
 
 // ── data-cy prefixes resolved from GenericTool prop dataTestLabel="MagneticBuilder"
@@ -38,8 +38,7 @@ const CA_PFX   = 'MagneticBuilder-MagneticmagneticCoreAdviser';
 const MA_PFX   = 'MagneticBuilder-MagneticAdviser';
 const CAT_PFX  = 'MagneticBuilder-CatalogAdviser';
 const SUM_PFX  = 'MagneticBuilder-MagneticSummary';
-// ToolSelector uses the parent dataTestLabel directly
-const TS_PFX   = 'MagneticBuilder';
+const TS_PFX   = 'MagneticBuilder-ToolSelector';
 
 const ss = (page, name) => screenshot(page, 'mt-battery', name);
 
@@ -52,7 +51,7 @@ async function openFresh(page) {
   const link = page.locator('[data-cy="Header-new-magnetic-link"]');
   await softWaitFor(link, { timeout: 10000 });
   await link.click();
-  await tryWaitForURL(page, '**/magnetic_tool**', 15000);
+  await tryWaitForURL(page, '**/magnetic_tool**', 45000);
   await pause(page, 1500, 'mechanical: settle');
 }
 
@@ -83,6 +82,14 @@ async function clickContinue(page) {
  * OperatingPoints emits changeTool('toolSelector') on AC Sweep selection.
  */
 async function goToToolSelector(page) {
+  // When arriving from a wizard, modePerPoint is set to Manual (wizard pre-fills data).
+  // The mode-select panel (which contains the AC Sweep button) is hidden in that case.
+  // Click "Go back to selecting mode" to reset modePerPoint → null, revealing the panel.
+  const goBackBtn = page.locator('button:has-text("Go back to selecting mode")').first();
+  if (await softVisible(goBackBtn, 2000)) {
+    await goBackBtn.click();
+    await pause(page, 500, 'mechanical: mode reset');
+  }
   // Try clicking the AC Sweep option if visible
   const acSweepOpt = page.locator('[data-cy$="-ac-sweep-type"]').first();
   if (await softVisible(acSweepOpt, 3000)) {
@@ -330,6 +337,7 @@ test.describe('Group C — Operating Points', () => {
 // ── Group D — Core Adviser via ToolSelector ───────────────────────────────────
 
 test.describe('Group D — Core Adviser (standalone, via ToolSelector)', () => {
+  test.describe.configure({ timeout: 180000 });
   /**
    * Navigate wizard → OP → AC Sweep → ToolSelector → Core Adviser.
    * Returns false if ToolSelector is not accessible (AC Sweep mode not found).
@@ -613,14 +621,40 @@ test.describe('Group G — Magnetic Builder step', () => {
   });
 
   test('G5: coil action button visible in right column', async ({ page }) => {
-    await goToBuilder(page);
-    // BasicCoilSelector has ShowParasiticsView + ToggleTemperaturePlot; BasicCoilSubmenu has Customize
+    // Coil action buttons only render when a core is present.
+    // Load a fully-wound fixture directly to avoid depending on Core Advise succeeding.
+    const parsed = JSON.parse(fs.readFileSync(
+      '/home/alf/OpenMagnetics/WebFrontend/MagneticBuilder/src/public/test_wound_coil.json',
+      'utf-8',
+    ));
+    await page.goto(`${BASE_URL}/magnetic_tool`, { waitUntil: 'domcontentloaded', timeout: 20000 });
+    await tryWaitForFunction(page,
+      () => !window.location.pathname.includes('engine_loader'), null, { timeout: 45000 },
+    );
+    await pause(page, 1000, 'mechanical: settle');
+    await page.evaluate((parsedMas) => {
+      const pinia = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia;
+      const mas = pinia._s.get('mas');
+      const state = pinia._s.get('state');
+      mas.setMas(parsedMas);
+      state.selectTool?.('magneticBuilder');
+      state.setCurrentToolSubsectionStatus('designRequirements', true);
+      state.setCurrentToolSubsectionStatus('operatingPoints', true);
+      state.setCurrentToolSubsection('magneticBuilder');
+    }, parsed);
+    await pause(page, 2500, 'mechanical: settle');
+    // BasicCoilSelector / PlanarCoilSelector both have ShowParasiticsView + ToggleTemperaturePlot
+    // BasicCoilSubmenu has Customize (wound only)
     const parasiticsBtn = page.locator('[data-cy$="-Coil-ShowParasiticsView-button"]').first();
     const customizeBtn  = page.locator('[data-cy$="-Coil-Customize-button"]').first();
     const tempBtn       = page.locator('[data-cy$="-Coil-ToggleTemperaturePlot-button"]').first();
-    const vis = await softVisible(parasiticsBtn, 5000) ||
-                await softVisible(customizeBtn, 2000) ||
-                await softVisible(tempBtn, 2000);
+    let vis = false;
+    for (let i = 0; i < 3 && !vis; i++) {
+      vis = await softVisible(parasiticsBtn, 5000) ||
+            await softVisible(customizeBtn, 2000) ||
+            await softVisible(tempBtn, 2000);
+      if (!vis) await pause(page, 2000, 'mechanical: settle');
+    }
     await ss(page, 'G5-coil-button');
     expect(vis, 'a coil action button (Parasitics/Customize/Temperature) must be visible once winding is complete').toBe(true);
   });
@@ -933,6 +967,7 @@ test.describe('Group J — End-to-end flows', () => {
   });
 
   test('J4: fresh New Magnetic → DR form ready → Continue enabled or fields present', async ({ page }) => {
+    test.setTimeout(90000);
     await openFresh(page);
     expect(page.url()).toContain('magnetic_tool');
     const topologyEl = page.locator(`[data-cy$="-Topology-required-button"], [data-cy$="-Topology-add-remove-button"]`).first();

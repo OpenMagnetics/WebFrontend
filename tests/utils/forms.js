@@ -83,8 +83,12 @@ export async function fillOutput(oCard, rowIndex, field, value) {
 }
 
 /**
- * Switch the wizard to "I know the design I want" mode. Verifies that the
- * Transformer card appears (which is gated on the mode switch).
+ * Switch the wizard to "I know the design I want" mode. Verifies the radio
+ * is selected after the click. The post-switch UI differs per topology:
+ * isolated wizards reveal a Transformer card, non-isolated wizards (Buck /
+ * Boost / Sepic / Cuk / Zeta / FSBB) reveal an Inductance input instead —
+ * so this helper does NOT assert any specific card, only that the mode
+ * actually switched.
  */
 export async function switchToIKnowMode(page) {
   const label = page.locator('.design-mode-label').filter({ hasText: 'I know' }).first();
@@ -98,8 +102,29 @@ export async function switchToIKnowMode(page) {
     await fallback.click();
   }
   await settleAnimations(page, 300);
-  const switched = await transformerCard(page).isVisible().catch(() => false);
+  // Verify the I-know radio is now checked. Two wizard styles render this:
+  //  (a) DAB/PSFB/PSHB/AHB: inline <label class="design-mode-option">
+  //      <input type="radio" v-model="localData.designMode" value="..."/>
+  //      <span class="design-mode-label">I know the design I want</span></label>
+  //  (b) BuckBoost/Forward/IsolatedBuckBoost/PushPull/etc.: ElementFromListRadio
+  //      renders <input type="radio" id="<value>-radio-input"> with a sibling
+  //      <label for="<value>-radio-input">option text</label>.
+  // Walk every checked radio, look at its associated label (either wrapping
+  // <label> ancestor or sibling label[for=id]) and confirm the text matches.
+  const switched = await page.evaluate(() => {
+    const checked = [...document.querySelectorAll('input[type="radio"]:checked')];
+    for (const input of checked) {
+      const wrap = input.closest('label')?.textContent || '';
+      const id = input.id;
+      const forLbl = id ? (document.querySelector(`label[for="${CSS.escape(id)}"]`)?.textContent || '') : '';
+      const valueAttr = input.getAttribute('value') || '';
+      if (/I know the design I want/i.test(wrap) || /I know the design I want/i.test(forLbl) || /I know the design I want/i.test(valueAttr)) {
+        return true;
+      }
+    }
+    return false;
+  });
   if (!switched) {
-    throw new Error('switchToIKnowMode: Transformer card not visible after mode switch');
+    throw new Error('switchToIKnowMode: I-know radio not selected after click');
   }
 }

@@ -12,10 +12,10 @@ import { test, expect } from './_coverage.js';
 import { openWizard, runAnalytical, isBenign, pause } from './utils.js';
 
 const WIZARDS = [
-  { cy: 'Cuk-CommonModeChoke-link',                title: 'Cuk Wizard',                advanced: true },
-  { cy: 'Zeta-CommonModeChoke-link',               title: 'Zeta Wizard',               advanced: true },
-  { cy: 'FourSwitchBuckBoost-CommonModeChoke-link',title: 'Four-Switch Buck-Boost Wizard', advanced: true },
-  { cy: 'Weinberg-CommonModeChoke-link',           title: 'Weinberg Wizard',           advanced: true },
+  { cy: 'Cuk-link',                title: 'Cuk Wizard',                advanced: true },
+  { cy: 'Zeta-link',               title: 'Zeta Wizard',               advanced: true },
+  { cy: 'FourSwitchBuckBoost-link',title: 'Four-Switch Buck-Boost Wizard', advanced: true },
+  { cy: 'Weinberg-link',           title: 'Weinberg Wizard',           advanced: true },
   // CLLLC advanced wrapper exists in libMKF but AdvancedClllc::process is a
   // stub in MKF/src/converter_models/Clllc.cpp ("not yet implemented.
   // Depends on Clllc::process_operating_points"). Help-me flow still works.

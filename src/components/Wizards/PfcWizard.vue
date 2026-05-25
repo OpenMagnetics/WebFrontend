@@ -35,7 +35,7 @@ export default {
         const masStore = useMasStore();
         const taskQueueStore = useTaskQueueStore();
         const designLevelOptions = ['Help me with the design', 'I know the design I want'];
-        const modeOptions = ['continuousConductionMode', 'Critical Conduction Mode', 'discontinuousConductionMode'];
+        const modeOptions = ['continuousConductionMode', 'criticalConductionMode', 'discontinuousConductionMode'];
         const errorMessage = "";
         const localData = deepCopy(defaultPfcWizardInputs);
         return {
@@ -58,7 +58,7 @@ export default {
             waveformSource: 'analytical', // 'analytical' or 'simulation'
             forceWaveformUpdate: 0,
             numberOfPeriods: 2,
-            numberOfSteadyStatePeriods: 10,
+            numberOfSteadyStatePeriods: 50,
             converterName: 'Power Factor Correction (PFC)',
             detectedMode: null
         }
@@ -108,6 +108,15 @@ export default {
         diodeVoltageDrop: this.localData.diodeVoltageDrop, ambientTemperature: this.localData.ambientTemperature,
       };
       if (this.localData.designLevel == 'I know the design I want') aux.inductance = this.localData.inductance;
+      if (mode === 'spice') {
+        const outputCurrent = this.localData.outputPower / this.localData.outputVoltage;
+        aux.operatingPoints = [{
+          outputVoltage: this.localData.outputVoltage,
+          outputCurrent,
+          switchingFrequency: this.localData.switchingFrequency,
+          ambientTemperature: this.localData.ambientTemperature,
+        }];
+      }
       return aux;
     },
     getCalculateFn() {
@@ -129,6 +138,12 @@ export default {
     getDefaultFrequency() { return this.localData.switchingFrequency; },
     postProcessResults(result, mode) {
       if (result.inductance) this.simulatedInductance = result.inductance;
+      // calculate_pfc_inputs returns { masInputs: {designRequirements,
+      // operatingPoints}, inductance, ... }. Capture DR so the Adviser path
+      // (process()) doesn't fall through to its skeleton-DR fallback, which
+      // omits required keys like turnsRatios.
+      const dr = result?.masInputs?.designRequirements ?? result?.designRequirements;
+      if (dr) this.designRequirements = dr;
     },
     getTopology() { return Topologies.PowerFactorCorrection; },
     getIsolationSides() { return [IsolationSide.Primary]; },
@@ -191,6 +206,9 @@ export default {
         
         async getSimulatedWaveforms() {
       await this.$refs.base.executeWaveformAction(this, 'simulation');
+    },
+    async getSpiceCode() {
+      await this.$refs.base.generateSpiceCode(this);
     },
         
             
@@ -339,6 +357,7 @@ export default {
     title="PFC Wizard"
     titleIcon="bi bi-tree-fill"
     subtitle="Power Factor Correction Rectifier"
+
     :col1Width="3" :col2Width="4" :col3Width="5"
     :magneticWaveforms="magneticWaveforms"
     :converterWaveforms="converterWaveforms"
@@ -356,6 +375,7 @@ export default {
     @update:numberOfSteadyStatePeriods="numberOfSteadyStatePeriods = $event"
     @get-analytical-waveforms="getAnalyticalWaveforms"
     @get-simulated-waveforms="getSimulatedWaveforms"
+    @get-spice-code="getSpiceCode"
     @dismiss-error="errorMessage = ''; waveformError = ''"
   >
     <template #design-mode>

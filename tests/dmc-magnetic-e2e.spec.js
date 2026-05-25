@@ -24,7 +24,7 @@ async function openDmcWizard(page) {
       const menu = dd?.querySelector('.dropdown-menu');
       if (menu) menu.classList.add('show');
     }
-    const link = document.querySelector('[data-cy="Wizard-DifferentialModeChoke-link"]');
+    const link = document.querySelector('[data-cy="Dmc-link"]');
     if (link) link.click();
   });
   await tryWaitForSelector(page,'[data-cy="DmcWizard-title"]', { timeout: 60000 });

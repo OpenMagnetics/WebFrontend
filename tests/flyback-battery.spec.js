@@ -14,7 +14,7 @@
 import { test, expect } from './_coverage.js';
 import { BASE_URL, isBenign, screenshot, openWizard, runAnalytical, conditionsCard, outputsCard, goToMagneticAdviser, goToMagneticBuilder, runCoreAdviser, pause } from './utils.js';
 
-const FLYBACK_CY = 'Flyback-CommonModeChoke-link';
+const FLYBACK_CY = 'Flyback-link';
 const ss = (page, name) => screenshot(page, 'flyback-battery', name);
 const openFlyback = (page) => openWizard(page, FLYBACK_CY);
 

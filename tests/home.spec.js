@@ -123,24 +123,24 @@ test.describe('Header — wizard dropdown', () => {
   // Disabled entries (Wizard-DifferentialModeChoke, Psfb) are still present
   // in the DOM — just with the disabled attribute.
   const ALL_WIZARD_LINKS = [
-    'Wizard-CommonModeChoke-link',
-    'Wizard-DifferentialModeChoke-link',
-    'Flyback-CommonModeChoke-link',
-    'Buck-CommonModeChoke-link',
-    'Boost-CommonModeChoke-link',
-    'IsolatedBuck-CommonModeChoke-link',
-    'IsolatedBuckBoost-CommonModeChoke-link',
-    'PushPull-CommonModeChoke-link',
+    'Cmc-link',
+    'Dmc-link',
+    'Flyback-link',
+    'Buck-link',
+    'Boost-link',
+    'IsolatedBuck-link',
+    'IsolatedBuckBoost-link',
+    'PushPull-link',
     'Pfc-link',
     'Dab-link',
     'Llc-link',
     'Psfb-link',
-    'ActiveClampForward-CommonModeChoke-link',
-    'SingleSwitchForward-CommonModeChoke-link',
-    'TwoSwitchForward-CommonModeChoke-link',
+    'ActiveClampForward-link',
+    'SingleSwitchForward-link',
+    'TwoSwitchForward-link',
   ];
 
-  /** Open the wizard dropdown by toggling it via Bootstrap. */
+  /** Open the wizard dropdown and the first submenu group (needed by the submenu-panel design). */
   async function openWizardDropdown(page) {
     await page.evaluate(() => {
       const toggles = Array.from(document.querySelectorAll('.dropdown-toggle'));
@@ -150,6 +150,9 @@ test.describe('Header — wizard dropdown', () => {
         const dropdown = wizardsToggle.closest('.dropdown') || wizardsToggle.parentElement;
         const menu = dropdown?.querySelector('.dropdown-menu');
         if (menu) menu.classList.add('show');
+        // Also open the first submenu group so its items become visible.
+        const firstGroupToggle = menu?.querySelector('.dropdown-submenu-toggle');
+        if (firstGroupToggle) firstGroupToggle.click();
       }
     });
     await pause(page, 400, 'mechanical: settle');
@@ -164,9 +167,9 @@ test.describe('Header — wizard dropdown', () => {
   test('H12: opening dropdown reveals at least one wizard link', async ({ page }) => {
     await openHome(page);
     await openWizardDropdown(page);
-    // Buck-CommonModeChoke-link is always enabled
+    // Cmc-link is in the first submenu group opened by openWizardDropdown
     await expect(
-      page.locator('[data-cy="Buck-CommonModeChoke-link"]')
+      page.locator('[data-cy="Cmc-link"]')
     ).toBeVisible({ timeout: 5000 });
     await ss(page, 'H12-wizard-dropdown');
   });

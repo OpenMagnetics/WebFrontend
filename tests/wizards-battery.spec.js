@@ -19,18 +19,18 @@ const ss = (page, name) => screenshot(page, 'wiz-battery', name);
 
 // Enabled wizards NOT covered by magnetic-tool-battery.spec.js.
 const ENABLED_WIZARDS = [
-  { cy: 'Wizard-CommonModeChoke-link',            label: 'CMC' },
-  { cy: 'Flyback-CommonModeChoke-link',           label: 'Flyback' },
-  { cy: 'Boost-CommonModeChoke-link',             label: 'Boost' },
-  { cy: 'IsolatedBuck-CommonModeChoke-link',      label: 'IsolatedBuck' },
-  { cy: 'IsolatedBuckBoost-CommonModeChoke-link', label: 'IsolatedBuckBoost' },
-  { cy: 'PushPull-CommonModeChoke-link',          label: 'PushPull' },
+  { cy: 'Cmc-link',            label: 'CMC' },
+  { cy: 'Flyback-link',           label: 'Flyback' },
+  { cy: 'Boost-link',             label: 'Boost' },
+  { cy: 'IsolatedBuck-link',      label: 'IsolatedBuck' },
+  { cy: 'IsolatedBuckBoost-link', label: 'IsolatedBuckBoost' },
+  { cy: 'PushPull-link',          label: 'PushPull' },
   { cy: 'Pfc-link',                               label: 'PFC' },
   { cy: 'Llc-link',                               label: 'LLC' },
-  { cy: 'ActiveClampForward-CommonModeChoke-link', label: 'ActiveClampForward' },
-  { cy: 'SingleSwitchForward-CommonModeChoke-link', label: 'SingleSwitchForward' },
-  { cy: 'TwoSwitchForward-CommonModeChoke-link',  label: 'TwoSwitchForward' },
-  { cy: 'Wizard-DifferentialModeChoke-link',      label: 'DMC' },
+  { cy: 'ActiveClampForward-link', label: 'ActiveClampForward' },
+  { cy: 'SingleSwitchForward-link', label: 'SingleSwitchForward' },
+  { cy: 'TwoSwitchForward-link',  label: 'TwoSwitchForward' },
+  { cy: 'Dmc-link',      label: 'DMC' },
   { cy: 'Psfb-link',                              label: 'PSFB' },
 ];
 
@@ -126,7 +126,7 @@ test.describe('Wizards — wizard-specific sanity', () => {
   test.describe.configure({ timeout: 120000 });
 
   test('W-PushPull: shows wizard-specific controls', async ({ page }) => {
-    await openWizard(page, 'PushPull-CommonModeChoke-link');
+    await openWizard(page, 'PushPull-link');
     expect(page.url()).toContain('wizards');
     // Should have analytical and at least one card
     await expect(page.locator('.sim-btn.analytical')).toBeVisible({ timeout: 10000 });
@@ -136,7 +136,7 @@ test.describe('Wizards — wizard-specific sanity', () => {
   });
 
   test('W-Flyback: analytical produces some output', async ({ page }) => {
-    await openWizard(page, 'Flyback-CommonModeChoke-link');
+    await openWizard(page, 'Flyback-link');
     await runAnalytical(page, 30000);
     await ss(page, 'Flyback-analytical');
     // After analytical, "Review Specs" or "Design Magnetic" should exist
@@ -169,9 +169,9 @@ test.describe('Wizards — wizard-specific sanity', () => {
 
   test('W-Forward-3variants: all three Forward wizards open independently', async ({ page }) => {
     for (const cy of [
-      'SingleSwitchForward-CommonModeChoke-link',
-      'TwoSwitchForward-CommonModeChoke-link',
-      'ActiveClampForward-CommonModeChoke-link',
+      'SingleSwitchForward-link',
+      'TwoSwitchForward-link',
+      'ActiveClampForward-link',
     ]) {
       await openWizard(page, cy);
       expect(page.url()).toContain('wizards');

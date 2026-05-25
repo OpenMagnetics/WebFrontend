@@ -5,10 +5,6 @@ export default {
             type: String,
             default: '',
         },
-        acSweepSelected: {
-            type: Boolean,
-            default: false,
-        },
     },
 }
 </script>
@@ -53,12 +49,11 @@ export default {
                         </h5>
                         <button
                             :style="$styleStore.toolSelector.button"
-                            :disabled="acSweepSelected"
                             :data-cy="dataTestLabel + '-magnetic-Report-button'"
                             class="col-6 col-md-3 fs-5 py-4 btn btn-primary px-xs-0 px-sm-0 px-md-2"
                             @click="$emit('toolSelected', 'magneticSpecificationsReport')"
                         >
-                            {{acSweepSelected? 'Not available with AC Sweep' : 'I want to download a report'}}
+                            {{'I want to download a report'}}
                         </button>
                     </div>
                     <div class="my-2 p-2 text-start col-12 rounded-4 row">
@@ -71,12 +66,11 @@ export default {
                         </h5>
                         <button
                             :style="$styleStore.toolSelector.button"
-                            :disabled="acSweepSelected"
                             :data-cy="dataTestLabel + '-magnetic-core-adviser-button'"
                             class="fs-5 col-6 col-md-3 py-4 btn btn-primary"
                             @click="$emit('toolSelected', 'magneticCoreAdviser')"
                         >
-                            {{acSweepSelected? 'Not available with AC Sweep' : 'Recommend me some COTS cores'}}
+                            {{'Recommend me some COTS cores'}}
                         </button>
                     </div>
                     <div class="my-2 p-2 text-start col-12 rounded-4 row">
@@ -89,12 +83,11 @@ export default {
                         </h5>
                         <button
                             :style="$styleStore.toolSelector.button"
-                            :disabled="acSweepSelected"
                             :data-cy="dataTestLabel + '-magnetic-adviser-button'"
                             class="fs-5 col-6 col-md-3 py-4 btn btn-primary"
                             @click="$emit('toolSelected', 'magneticAdviser')"
                         >
-                            {{acSweepSelected? 'Not available with AC Sweep' : 'Advise me some magnetic designs'}}
+                            {{'Advise me some magnetic designs'}}
                         </button>
                     </div>
                 </div>

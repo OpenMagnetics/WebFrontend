@@ -819,6 +819,14 @@ export default {
       }
       wi.masStore.mas.inputs.designRequirements.topology = topology;
       wi.masStore.mas.inputs.designRequirements.isolationSides = isolationSides;
+      // turnsRatios is required-array on the MAS DesignRequirements schema
+      // (quicktype validator rejects undefined). For non-isolated topologies
+      // there is no transformer ratio, so an empty array is the correct
+      // value. Wizards that DO have a real ratio set it on `dr` before
+      // calling setupMasStore; we never overwrite.
+      if (!Array.isArray(wi.masStore.mas.inputs.designRequirements.turnsRatios)) {
+        wi.masStore.mas.inputs.designRequirements.turnsRatios = [];
+      }
       if (insulationType && insulationType !== 'No') {
         const { defaultDesignRequirements } = await import('/WebSharedComponents/assets/js/defaults.js');
         wi.masStore.mas.inputs.designRequirements.insulation = defaultDesignRequirements.insulation;
@@ -1180,7 +1188,7 @@ export default {
                       <span v-else><i class="bi bi-calculator"></i> Analytical</span>
                     </button>
                     <button
-                      class="sim-btn"
+                      class="sim-btn simulated"
                       :disabled="disableActions || simulatingWaveforms"
                       @click="onGetSimulatedWaveforms"
                       title="Simulate ideal waveforms"

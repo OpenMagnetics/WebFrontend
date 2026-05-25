@@ -268,7 +268,7 @@ test.describe('PSFB – Group A – Layout', () => {
 
   test('PSFB-A2 – Phase-shift parameters visible (Ph. Shift, Max Phase)', async ({ page }) => {
     await openPsfb(page);
-    await expect(page.getByText(/^Ph\.?\s*Shift/).first()).toBeVisible();
+    await expect(page.getByText(/^Ph(?:ase)?\.?\s*Shift/).first()).toBeVisible();
     await expect(page.getByText(/^Max Phase/).first()).toBeVisible();
     await ss(page, 'PSFB-A2-phase-params');
   });

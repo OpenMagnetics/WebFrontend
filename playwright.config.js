@@ -69,7 +69,7 @@ const projects = [
   {
     name: 'wizards-light',
     testDir: './tests',
-    testIgnore: ['scenarios/**', 'wizards/**', 'magnetic-builder-battery.spec.js', 'dab-wizard-battery.spec.js'],
+    testIgnore: ['scenarios/**', 'wizards/**', '_scratch/**'],
     grepInvert: /@scenario|@heavy/,
     use: common,
   },
@@ -77,6 +77,7 @@ const projects = [
     name: 'scenarios',
     testDir: './tests',
     testMatch: ['scenarios/**/*.spec.js', 'wizards/**/*.spec.js'],
+    testIgnore: ['_scratch/**'],
     grepInvert: /@heavy/,
     use: common,
   },
@@ -84,7 +85,7 @@ const projects = [
     name: 'heavy',
     testDir: './tests',
     grep: /@heavy/,
-    testMatch: ['scenarios/**/*.spec.js', 'wizards/**/*.spec.js', 'dab-wizard-battery.spec.js'],
+    testMatch: ['scenarios/**/*.spec.js', 'wizards/**/*.spec.js'],
     use: common,
   },
 ];

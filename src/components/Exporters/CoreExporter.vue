@@ -58,6 +58,7 @@ export default {
                         class="btn offset-1 col-4 mt-4"
                         :data-cy="dataTestLabel + '-download-STP-File-button'"
                         :core="masStore.mas.magnetic.core"
+                        :coil="masStore.mas.magnetic.coil"
                         :fullCoreModel="true"
                     />
 <!--                     <CoreTechnicalDrawingExporter

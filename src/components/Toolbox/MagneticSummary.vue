@@ -638,7 +638,7 @@ export default {
         <!-- Toolbar (hidden when printing) -->
         <div class="datasheet-toolbar d-print-none">
             <div class="toolbar-left">
-                <button class="summary-btn summary-btn-primary me-2" data-bs-toggle="modal" data-bs-target="#MASExporterModal">
+                <button :data-cy="dataTestLabel + '-download-MAS-File-button'" class="summary-btn summary-btn-primary me-2" data-bs-toggle="modal" data-bs-target="#MASExporterModal">
                     <i class="bi bi-file-earmark-arrow-up me-1"></i> MAS
                 </button>
                 <button class="summary-btn summary-btn-primary me-2" data-bs-toggle="modal" data-bs-target="#CoreExporterModal">
@@ -652,7 +652,7 @@ export default {
                 </button>
             </div>
             <div class="toolbar-right">
-                <button class="summary-btn summary-btn-outline" @click="printDatasheet">
+                <button :data-cy="dataTestLabel + '-download-PDF-File-button'" class="summary-btn summary-btn-outline" @click="printDatasheet">
                     <i class="bi bi-printer-fill me-1"></i> Print / Save PDF
                 </button>
             </div>

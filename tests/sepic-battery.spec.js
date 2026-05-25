@@ -13,7 +13,7 @@
 import { test, expect } from './_coverage.js';
 import { BASE_URL, isBenign, screenshot, openWizard, runAnalytical, conditionsCard, goToMagneticAdviser, goToMagneticBuilder, runCoreAdviser, softVisible, pause } from './utils.js';
 
-const SEPIC_CY = 'Sepic-CommonModeChoke-link';
+const SEPIC_CY = 'Sepic-link';
 const ss = (page, name) => screenshot(page, 'sepic-battery', name);
 const openSepic = (page) => openWizard(page, SEPIC_CY);
 

@@ -20,7 +20,7 @@
 import { test, expect } from './_coverage.js';
 import { openWizard } from './utils.js';
 
-const CMC_CY = 'Wizard-CommonModeChoke-link';
+const CMC_CY = 'Cmc-link';
 
 // Design cases mirror the MKF `CMC_DESIGN_CASES` table in TestTopologyCmc.cpp.
 const CASES = [

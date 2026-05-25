@@ -82,7 +82,7 @@ export default {
             simulatedInductance: null,
             designRequirements: null,
             numberOfPeriods: 2,
-            numberOfSteadyStatePeriods: 10,
+            numberOfSteadyStatePeriods: 50,
         }
     },
     computed: {
@@ -564,7 +564,7 @@ export default {
 
       <!-- Live inductance preview -->
       <div class="mt-2 p-2 rounded" :class="$styleStore.wizard.inputValueBgColor">
-        <small class="text-muted">Required L</small><br>
+        <small :style="{ color: $styleStore.wizard.inputTextColor }">Required L</small><br>
         <strong :style="{ color: $styleStore.wizard.inputTextColor }">{{ previewInductanceFormatted }}</strong>
       </div>
     </template>

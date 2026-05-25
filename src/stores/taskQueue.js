@@ -213,6 +213,9 @@ export const useTaskQueueStore = defineStore('taskQueue', {
             const mkf = await waitForMkf();
             await mkf.ready;
 
+            // Deep-clone so sanitization below never mutates the caller's MAS store
+            inputs = JSON.parse(JSON.stringify(inputs));
+
             // Ensure mode is a valid string
             let modeString = String(mode);
             // Fix case where mode is "[object Object]" due to JS object corruption
@@ -244,14 +247,32 @@ export const useTaskQueueStore = defineStore('taskQueue', {
                 });
             }
 
-            // Sanitize harmonics in all excitations before sending to WASM
+            // Sanitize harmonics and waveforms before sending to WASM.
+            // calculate_buck_inputs returns zero-freq harmonics and null-padded waveform
+            // time arrays for some operating points; strip them before WASM validation.
             if (inputs.operatingPoints) {
                 inputs.operatingPoints.forEach((op) => {
                     if (op.excitationsPerWinding) {
                         op.excitationsPerWinding.forEach((exc) => {
                             for (const signal of ['current', 'voltage']) {
-                                if (exc[signal]?.harmonics) {
-                                    exc[signal].harmonics = this._sanitizeHarmonics(exc[signal].harmonics);
+                                if (!exc[signal]) continue;
+                                if (exc[signal].harmonics) {
+                                    const sanitized = this._sanitizeHarmonics(exc[signal].harmonics);
+                                    if (this._hasValidHarmonics(sanitized)) {
+                                        exc[signal].harmonics = sanitized;
+                                    } else {
+                                        delete exc[signal].harmonics;
+                                    }
+                                }
+                                const waveform = exc[signal].waveform;
+                                if (waveform?.time) {
+                                    const firstNull = waveform.time.indexOf(null);
+                                    if (firstNull === 0) {
+                                        delete exc[signal].waveform;
+                                    } else if (firstNull > 0) {
+                                        waveform.time = waveform.time.slice(0, firstNull);
+                                        if (waveform.data) waveform.data = waveform.data.slice(0, firstNull);
+                                    }
                                 }
                             }
                         });
@@ -276,6 +297,9 @@ export const useTaskQueueStore = defineStore('taskQueue', {
         async calculateAdvisedMagnetics(inputs, weights, count, mode) {
             const mkf = await waitForMkf();
             await mkf.ready;
+
+            // Deep-clone so sanitization below never mutates the caller's MAS store
+            inputs = JSON.parse(JSON.stringify(inputs));
 
             // Transform weights keys from UPPERCASE to Title Case for MKF compatibility
             const weightsMapping = {
@@ -320,14 +344,32 @@ export const useTaskQueueStore = defineStore('taskQueue', {
                 });
             }
 
-            // Sanitize harmonics in all excitations before sending to WASM
+            // Sanitize harmonics and waveforms before sending to WASM.
+            // calculate_buck_inputs can return zero-freq harmonics and null-padded waveform
+            // time arrays for some operating points; strip them before WASM validation.
             if (inputs.operatingPoints) {
                 inputs.operatingPoints.forEach((op) => {
                     if (op.excitationsPerWinding) {
                         op.excitationsPerWinding.forEach((exc) => {
                             for (const signal of ['current', 'voltage']) {
-                                if (exc[signal]?.harmonics) {
-                                    exc[signal].harmonics = this._sanitizeHarmonics(exc[signal].harmonics);
+                                if (!exc[signal]) continue;
+                                if (exc[signal].harmonics) {
+                                    const sanitized = this._sanitizeHarmonics(exc[signal].harmonics);
+                                    if (this._hasValidHarmonics(sanitized)) {
+                                        exc[signal].harmonics = sanitized;
+                                    } else {
+                                        delete exc[signal].harmonics;
+                                    }
+                                }
+                                const waveform = exc[signal].waveform;
+                                if (waveform?.time) {
+                                    const firstNull = waveform.time.indexOf(null);
+                                    if (firstNull === 0) {
+                                        delete exc[signal].waveform;
+                                    } else if (firstNull > 0) {
+                                        waveform.time = waveform.time.slice(0, firstNull);
+                                        if (waveform.data) waveform.data = waveform.data.slice(0, firstNull);
+                                    }
                                 }
                             }
                         });
@@ -679,14 +721,19 @@ export const useTaskQueueStore = defineStore('taskQueue', {
                 }
                 h.amplitudes = h.amplitudes.slice(0, validLen);
                 h.frequencies = h.frequencies.slice(0, validLen);
-                // Strip zero-frequency entries past index 0 — WASM calculate_buck_inputs
-                // returns all-zero freq arrays for some operating points (DC/min-voltage case).
-                // Index 0 at freq=0 is the valid DC component; duplicates at i>0 cause MKF to throw.
+                // Strip duplicate zero-frequency entries past index 0.
+                // calculate_buck_inputs returns all-zero freq arrays for some operating points;
+                // MKF rejects freq=0 past the DC slot. Index 0 at freq=0 is the valid DC
+                // component and must be kept.
                 const keep = h.frequencies.map((f, i) => i === 0 || f !== 0);
                 h.amplitudes  = h.amplitudes.filter((_, i) => keep[i]);
                 h.frequencies = h.frequencies.filter((_, i) => keep[i]);
             }
             return h;
+        },
+
+        _hasValidHarmonics(harmonics) {
+            return harmonics?.amplitudes?.length > 0 && harmonics?.frequencies?.length > 0;
         },
 
         _sanitizeExcitationForInduce(excitation) {

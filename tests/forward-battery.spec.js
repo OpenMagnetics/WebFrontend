@@ -15,9 +15,9 @@
 import { test, expect } from './_coverage.js';
 import { BASE_URL, isBenign, screenshot, openWizard, runAnalytical, conditionsCard, outputsCard, fillRowInput, goToMagneticAdviser, goToMagneticBuilder, softVisible, tryWaitForURL, pause, tryWaitForFunction, clickIfPresent } from './utils.js';
 
-const SINGLE_FORWARD_CY  = 'SingleSwitchForward-CommonModeChoke-link';
-const TWO_FORWARD_CY     = 'TwoSwitchForward-CommonModeChoke-link';
-const ACTIVE_FORWARD_CY  = 'ActiveClampForward-CommonModeChoke-link';
+const SINGLE_FORWARD_CY  = 'SingleSwitchForward-link';
+const TWO_FORWARD_CY     = 'TwoSwitchForward-link';
+const ACTIVE_FORWARD_CY  = 'ActiveClampForward-link';
 
 const ss = (page, name) => screenshot(page, 'forward-battery', name);
 const openSingleForward = (page) => openWizard(page, SINGLE_FORWARD_CY);

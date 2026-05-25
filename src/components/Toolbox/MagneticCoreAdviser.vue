@@ -167,6 +167,7 @@ export default {
             } catch (error) {
                 console.error("Error calculating advising cores");
                 console.error(error);
+                this.loading = false;
             }
         },
         changedInputValue(key, value) {

@@ -426,9 +426,10 @@ unfamiliar with that one wizard's local jargon), and turn every help-me
 form into a guessing game. The maintainer's intent must be readable from
 the rendered page alone.
 
-Currently violating: `AhbWizard.vue` and `PshbWizard.vue` both use
-`Lk L`, `Mag L`, `Cb`, `Co`, `Eff`, `Insul`, `Out L` — they are on the
-clean-up list. Audit any new wizard for the same.
+Status: AHB / PSHB / PSFB / SRC diagnostic labels were cleaned up in the
+2026-05 audit pass (see `WIZARDS_AUDIT_PLAN.md`). Inputs across all wizards
+are clean. Audit any new wizard for the same; cryptic 1- or 2-letter
+labels must not regress.
 
 ### 3.4c Tooltips on every input field
 
@@ -587,7 +588,7 @@ still contain the raw camelCase key, not the pretty label.
 | Slot | Purpose |
 |---|---|
 | `header` | Override the entire header. Use the `wizard-header`, `wizard-header-content`, `wizard-icon-container` classes; put `data-cy="<dataTestLabel>-title"` on the title for tests. **DMC is currently the only wizard that overrides this.** |
-| `design-mode` | Help-me / I-know radio group. Required on every isolated-converter wizard. Only chokes (CMC, DMC) and PFC reasonably omit it. AHB and PSHB previously omitted it (mode was implicitly always "I know") — that has been fixed; both now match the DAB pattern. |
+| `design-mode` | Help-me / I-know radio group. Required on every isolated-converter wizard. Chokes (CMC, DMC) and CurrentTransformer (passive sensor) omit it. PFC was historically listed as exempt but now exposes the standard radio at `PfcWizard.vue:368`. AHB and PSHB previously omitted it (mode was implicitly always "I know") — both now match the DAB pattern. |
 | `design-or-switch-parameters-title` | Title row above the I-know panel. |
 | `design-or-switch-parameters` | Turns ratio, magnetizing/series inductance, rectifier type, etc. |
 | `conditions` | Operating conditions (freq, mode, temp, efficiency, insulation). |
@@ -1154,23 +1155,28 @@ same treatment AHB received in `MKF/src/converter_models/AsymmetricHalfBridge.cp
 | `Boost` | clean | clean | n/a (non-isolated) |
 | `Flyback` | clean | clean | clean |
 | `AsymmetricHalfBridge` | **fixed** (`v(vin_dc)`) | **fixed** (`Vq1_sense` + clamp) | **fixed** (`Evpri_w`, `Evsec_*_w`) |
-| `Dab` | clean (`vin_dc1`) | **bug B** (`vpri_sense#branch` averages to 0) | check |
-| `PhaseShiftedFullBridge` | **bug A** (`vab` lumps L_series + L_pri) | **bug B** | **bug C** (`out_node_oN` = post-rectifier DC) |
-| `PhaseShiftedHalfBridge` | **bug A** | **bug B** | **bug C** |
-| `Cllc` | **bug A** (`pri_trafo_in` downstream of Cr+Lr) | **bug B** (in series with C1) | **bug C** (lumps C1+L1+Lpri) |
+| `Dab` | clean (`vin_dc1`) | **fixed** (`Vq1_sense`+`Vq3_sense` summed; clamped; bidirectional sign flips naturally) | clean (already differential — `Evab` + `Bvsec_o<i>_diff`) |
+| `PhaseShiftedFullBridge` | **fixed** (`v(vin_dc)`) | **fixed** (`Vq1_sense` + clamp; covers SW1 and BEHAVIORAL_PULSE modes) | **fixed** (`Evpri_w`, `Evsec_w_o<i>`) |
+| `PhaseShiftedHalfBridge` | **fixed** (`v(vin_dc)`) | **fixed** (`Vq1_sense` + clamp; SW1 and BEHAVIORAL_PULSE modes) | **fixed** (`Evpri_w`, `Evsec_w_o<i>`) |
+| `Cllc` | clean (`v(vin_p)` — already DC rail) | **fixed** (`Vq1_sense` + `Vq3_sense` summed; clamped) | **fixed** (`Evpri_w`, `Evsec_w`; works both power-flow directions) |
 | `Llc` | **bug A** (synthetic disconnected `Vdc_supply` w/ 1 MΩ) | **bug B** (tank current avg 0) | check |
-| `PushPull` | **bug A** (winding excitation node) | **bug B** (top half only — misses bottom) | check |
-| `ActiveClampForward` | check (likely bug A — switch-node mislabeled as input) | check | check |
-| `SingleSwitchForward` | check (likely bug A) | check | check |
-| `TwoSwitchForward` | check (likely bug A) | check | check |
-| `IsolatedBuckBoost` | check | check | check |
-| `IsolatedBuck` | check | check | check |
-| `Buck` | check (likely bug A — switch-node) | check | n/a |
+| `PushPull` | clean (already `Vin vin_dc 0`) | **fixed** (single center-tap ammeter `Vct_sense` captures sum of both half-winding draws; clamped) | clean (already differential B-sources / electrically-grounded center tap) |
+| `ActiveClampForward` | clean (`v(vin_dc)`) | **fixed** (`Vq1_sense`; clamp branch doesn't touch `vin_dc`) | clean (`Lpri` winding-to-ground) |
+| `SingleSwitchForward` | clean (`v(vin_dc)`) | **fixed** (`Vq1_sense`; demag-return D bypasses ammeter) | clean (`Lpri` winding-to-ground) |
+| `TwoSwitchForward` | clean (`v(vin_dc)`) | **fixed** (`Vq1_sense`; D1/D2 bypass) | **fixed** (`Evpri_w` — `pri_gnd` floats between 0 and Vin) |
+| `IsolatedBuckBoost` | clean | **fixed** (`Vq1_sense` — template consistency; prior `i(Vin)` was numerically equivalent) | clean (`Lpri` winding-to-ground) |
+| `IsolatedBuck` | clean | **fixed** (`Vq1_sense` — template consistency) | clean (`Bvpri_diff`; secondaries winding-to-GND) |
+| `Buck` | clean | **fixed** (`Vq1_sense` — separates S1 from snubber loop) | n/a |
 
-Fix priority order: **PSFB → PSHB → Cllc → LLC → DAB (Input I only) →
-PushPull → the four forward-family converters → Buck/IsolatedBuck/IBB.**
-PSFB+PSHB are literal copies of the pre-fix AHB and should be the
-fastest to clean up using the AHB diff as a template.
+**Status (2026-05-23 sweep):** queue completed. Every converter in the
+table now has §8a.5-compliant probes. The standard fix pattern is
+encoded as: dedicated `Vq*_sense` zero-V sense source upstream of each
+input-side switch, summed in the extractor with a `±2·max|i(Vpri_sense)|`
+clamp documented as a numerical guard against ngspice SW-model di/dt
+spikes; differential `Evpri_w` / `Evsec_w_o<i>` E-source winding probes
+when the bare-node mapping would lump tank or floating-ground offsets.
+The post-fix `AsymmetricHalfBridge.cpp` remains the canonical template
+for any future converter additions.
 
 ---
 
@@ -1236,3 +1242,49 @@ fastest to clean up using the AHB diff as a template.
   - [ ] SPICE Code button opens a modal with non-empty netlist.
   - [ ] Review Specs and Design Magnetic both navigate to `magnetic_tool`
         with the correct category section open.
+
+---
+
+## 12. Recently added wizards (May 2026)
+
+Three converter/measurement wizards added in the catalog-parity pass — see
+`MISSING_WIZARDS_PLAN.md` §7 for the full status table. Use them as
+templates for the patterns they introduce:
+
+- **`SrcWizard.vue`** — Series Resonant Converter. Resonant family
+  (`Llc`/`Cllc`/`Clllc` siblings). Demonstrates `rectifierType` +
+  `useSynchronousRectifier` variant selectors hooked into a single MKF
+  calculate/simulate path (`calculate_src_inputs` /
+  `simulate_src_ideal_waveforms`). Two-winding isolated transformer when
+  `isolated=true`, otherwise single inductor.
+
+- **`ViennaWizard.vue`** — 3-phase 3-level Vienna PFC. New "Three-Phase
+  PFC" submenu in the header. **Convention: Phase A only.** The wizard
+  displays a single-phase view labelled "per-phase, identical by symmetry"
+  because the 3-phase Vienna is balanced. Send `phaseCount: 1` to MKF
+  (= interleaving count per leg, NOT grid phase count); the grid is
+  hard-coded as 3 in the UI label. Variant / switchType / samplingStrategy
+  selectors are exposed but MKF's Phase-1+2 implementation only accepts
+  the default triplet (`viennaI` / `tType` / `peakOfLineOnly`); other
+  combinations throw server-side, by design (no silent fallback).
+  Analytical + SPICE both wired (`simulate_vienna_ideal_waveforms`); the
+  SPICE path is a **single-phase emulation** (MKF `Vienna.h:173-184`
+  FIXME-vienna-1: Phases B/C are 120° rotations of Phase A, not solved
+  legs). Result diagnostics include
+  `viennaDiagnostics.spiceMode = "singlePhaseEmulation"` so the UI can
+  badge the limitation. Full 3-phase netlist deferred.
+
+- **`CurrentTransformerWizard.vue`** — passive measurement magnetic. New
+  "Measurement" submenu in the header. **Has no design-mode toggle**
+  (passive sensor — no "Help me design"/"I know the design" split — the
+  only design lever is the turns ratio). Uses MKF
+  `process_current_transformer`. `iKnowMode: false` in the catalog;
+  `simulated: false` (no SPICE). Wires through `Topologies.CurrentTransformer`
+  and calls `masStore.resetMas("power")` (the store accepts only
+  `power|filter|dmc`; "measurement" is a UI grouping only).
+
+The plan doc (`MISSING_WIZARDS_PLAN.md` §7) lists the deferred variant
+selectors (CLLC / CLLLC / Flyback / IsolatedBuckBoost / PFC / FSBB) — pick
+one up by following the `LlcWizard.vue` `rectifierType` pattern: add the
+field to MKF `Advanced<X>::{from,to}_json`, expose a radio in the wizard,
+include in `buildParams`. Rebuild WASM and copy to both asset dirs.

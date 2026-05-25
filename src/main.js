@@ -263,7 +263,14 @@ router.beforeEach((to, from, next) => {
                     app.config.globalProperties.$userStore.loadingPath = null;
                     const elapsedTime = Date.now() - loaderStartTime;
                     const remainingTime = Math.max(0, minimumLoaderTime - elapsedTime);
-                    setTimeout(() => router.push(newPath), remainingTime)
+                    setTimeout(() => {
+                        // Only redirect to the original destination if the user hasn't
+                        // navigated away from the engine_loader in the meantime (e.g. by
+                        // clicking the home logo while WASM was still loading).
+                        if (router.currentRoute.value.name === 'EngineLoader') {
+                            router.push(newPath);
+                        }
+                    }, remainingTime)
                 } catch (error) {
                     console.error("Error initializing MKF:", error);
                 }

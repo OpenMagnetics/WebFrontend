@@ -57,6 +57,9 @@ export const useStateStore = defineStore("state", () => {
         FourSwitchBuckBoost: 'fourSwitchBuckBoost',
         Weinberg: 'weinberg',
         Clllc: 'clllc',
+        SeriesResonant: 'seriesResonant',
+        Vienna: 'vienna',
+        CurrentTransformer: 'currentTransformer',
     };
 
 

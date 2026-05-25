@@ -22,8 +22,10 @@ import { waitForAnalyticalDone, settleAnimations } from './wait.js';
  */
 export async function openWizard(page, dataCy) {
   await page.goto(`${BASE_URL}/`, { waitUntil: 'domcontentloaded', timeout: 20000 });
-  // Header dropdowns are mounted synchronously after DOMContentLoaded but
-  // the Wizards menu uses a Vue transition; give it a beat to attach handlers.
+
+  // The home page (/) is a non-data view: no engine_loader redirect, no $mkf
+  // assignment. Give Vue's router a moment to mount and attach the nav handlers
+  // before we try to click a wizard link.
   await settleAnimations(page, 500);
 
   const clicked = await page.evaluate((cy) => {
@@ -52,7 +54,10 @@ export async function openWizard(page, dataCy) {
     throw new Error(`openWizard: link with [data-cy="${dataCy}"] not found in nav`);
   }
 
-  await page.waitForURL('**/wizards', { timeout: 15000 });
+  // Clicking the wizard link navigates to /wizards, but the router may redirect
+  // through /engine_loader first (WASM init + data load). On a cold browser this
+  // takes 30-90 s; 120 s covers the worst case without masking real failures.
+  await page.waitForURL('**/wizards', { timeout: 120_000 });
   await analyticalBtn(page).waitFor({ state: 'visible', timeout: 15000 });
   await settleAnimations(page, 200);
 }

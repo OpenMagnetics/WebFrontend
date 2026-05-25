@@ -25,8 +25,19 @@ export async function settleAnimations(page, ms = 250) {
  * completion signal; the trailing 200ms settles the resulting chart redraw.
  */
 export async function waitForAnalyticalDone(page, timeoutMs = 30000) {
+  // The simulating-state UI is a <button class="sim-btn analytical"
+  // :disabled="simulatingWaveforms"> with a spinning <i class="bi
+  // bi-arrow-repeat fa-spin"></i> inside. Done = button no longer disabled
+  // AND no spinner present. Either signal alone is sufficient (the prior
+  // selector .fa-spinner matched nothing → wait returned instantly).
   await page.waitForFunction(
-    () => !document.querySelector('.sim-btn.analytical .fa-spinner'),
+    () => {
+      const btn = document.querySelector('.sim-btn.analytical');
+      if (!btn) return true; // wizard left the page / no button → nothing to wait on
+      const spinning = btn.querySelector('.fa-spin');
+      const disabled = btn.hasAttribute('disabled') || btn.disabled === true;
+      return !spinning && !disabled;
+    },
     { timeout: timeoutMs }
   );
   await page.waitForTimeout(200); // chart redraw — guaranteed signal already met

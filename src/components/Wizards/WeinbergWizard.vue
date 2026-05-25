@@ -9,7 +9,7 @@ import ElementFromListRadio from 'WebSharedComponents/DataInput/ElementFromListR
 import { defaultWeinbergWizardInputs, minimumMaximumScalePerParameter } from 'WebSharedComponents/assets/js/defaults.js'
 import ConverterWizardBase from './ConverterWizardBase.vue'
 import CompactVoltageInput from './CompactVoltageInput.vue'
-import { tooltipsConverterWizards } from 'WebSharedComponents/assets/js/texts'
+import { tooltipsConverterWizards, dropdownLabelsConverterWizards } from 'WebSharedComponents/assets/js/texts'
 </script>
 
 <script>
@@ -32,15 +32,17 @@ export default {
         const taskQueueStore = useTaskQueueStore();
         const currentOptions = ['The output current ratio', 'The maximum switch current'];
         const designLevelOptions = ['Help me with the design', 'I know the design I want'];
-        const insulationTypes = ['No', 'Basic', 'Reinforced'];
+        const insulationTypes = ['no', 'basic', 'reinforced'];
+        const variantOptions = ['classic', 'bridge'];
         const localData = deepCopy(defaultWeinbergWizardInputs);
         localData["currentOptions"] = currentOptions[0];
         return {
             masStore,
-            taskQueueStore,
+            taskQueueStore, dropdownLabelsConverterWizards,
             currentOptions,
             designLevelOptions,
             insulationTypes,
+            variantOptions,
             localData,
             errorMessage: "",
             simulatingWaveforms: false,
@@ -55,7 +57,7 @@ export default {
             waveformViewMode: 'magnetic',
             forceWaveformUpdate: 0,
             numberOfPeriods: 2,
-            numberOfSteadyStatePeriods: 10,
+            numberOfSteadyStatePeriods: 5,
         }
     },
     watch: {
@@ -63,13 +65,28 @@ export default {
             this.$nextTick(() => { this.forceWaveformUpdate += 1; });
         },
     },
-    mounted () { this.updateErrorMessage(); },
+    mounted() {
+        this.$nextTick(() => {
+            if (this._autoRunDone) return;
+            this._autoRunDone = true;
+            try { this.updateErrorMessage?.(); } catch (e) { return; }
+            if (!this.errorMessage) this.getAnalyticalWaveforms?.();
+        });
+    },
     methods: {
         buildParams(mode) {
             const aux = {};
             aux['inputVoltage'] = this.localData.inputVoltage;
             aux['diodeVoltageDrop'] = this.localData.diodeVoltageDrop;
             aux['efficiency'] = this.localData.efficiency;
+            aux['variant'] = this.localData.variant;
+            aux['synchronousRectifier'] = this.localData.synchronousRectifier;
+            if (this.localData.couplingCoefficientInput > 0) {
+                aux['couplingCoefficientInput'] = this.localData.couplingCoefficientInput;
+            }
+            if (this.localData.couplingCoefficientMain > 0) {
+                aux['couplingCoefficientMain'] = this.localData.couplingCoefficientMain;
+            }
             if (this.localData.designLevel === 'I know the design I want') {
                 aux['desiredInductance'] = this.localData.inductance;
                 aux['desiredTurnsRatio'] = this.localData.turnsRatio;
@@ -275,6 +292,46 @@ export default {
         :textColor="$styleStore.wizard.inputTextColor"
         @update="updateErrorMessage"
       />
+      <ElementFromList
+        :name="'variant'" :tooltip="tooltipsConverterWizards['weinbergVariant']"
+        :dataTestLabel="dataTestLabel + '-Variant'"
+        :replaceTitle="'Primary'" :options="variantOptions" :titleSameRow="true"
+        v-model="localData"
+        :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'"
+        :valueFontSize="$styleStore.wizard.inputFontSize"
+        :labelFontSize="$styleStore.wizard.inputLabelFontSize"
+        :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor"
+        :textColor="$styleStore.wizard.inputTextColor"
+        @update="updateErrorMessage"
+      />
+      <Dimension
+        :name="'couplingCoefficientInput'" :tooltip="tooltipsConverterWizards['couplingCoefficientInput']" :replaceTitle="'Input k'" :unit="null"
+        :dataTestLabel="dataTestLabel + '-CouplingCoefficientInput'"
+        :min="0.9" :max="1"
+        v-model="localData"
+        :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'"
+        :valueFontSize="$styleStore.wizard.inputFontSize"
+        :labelFontSize="$styleStore.wizard.inputLabelFontSize"
+        :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor"
+        :textColor="$styleStore.wizard.inputTextColor"
+        @update="updateErrorMessage"
+      />
+      <Dimension
+        :name="'couplingCoefficientMain'" :tooltip="tooltipsConverterWizards['couplingCoefficientMain']" :replaceTitle="'Main k'" :unit="null"
+        :dataTestLabel="dataTestLabel + '-CouplingCoefficientMain'"
+        :min="0.9" :max="1"
+        v-model="localData"
+        :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'"
+        :valueFontSize="$styleStore.wizard.inputFontSize"
+        :labelFontSize="$styleStore.wizard.inputLabelFontSize"
+        :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor"
+        :textColor="$styleStore.wizard.inputTextColor"
+        @update="updateErrorMessage"
+      />
+      <div class="form-check mt-2">
+        <input class="form-check-input" type="checkbox" v-model="localData.synchronousRectifier" id="syncRectWeinberg" :data-cy="dataTestLabel + '-SynchronousRectifier'">
+        <label class="form-check-label small" for="syncRectWeinberg" :style="{ color: $styleStore.wizard.inputTextColor }">Sync. Rect.</label>
+      </div>
     </template>
 
     <template #conditions>
@@ -325,7 +382,7 @@ export default {
         :textColor="$styleStore.wizard.inputTextColor"
         @update="updateErrorMessage"
       />
-      <ElementFromList :name="'insulationType'" :tooltip="tooltipsConverterWizards['insulationType']" :replaceTitle="'Insulation'" :options="insulationTypes"
+      <ElementFromList :name="'insulationType'" :tooltip="tooltipsConverterWizards['insulationType']" :replaceTitle="'Insulation'" :options="insulationTypes" :optionLabels="dropdownLabelsConverterWizards.insulationType"
         :dataTestLabel="dataTestLabel + '-InsulationType'"
         :titleSameRow="true" v-model="localData"
         :labelWidthProportionClass="'col-6'" :valueWidthProportionClass="'col-6'"

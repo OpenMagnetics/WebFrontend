@@ -36,26 +36,9 @@ export default {
                 }
                 const stlOpts = { tolMm: 0.1, angTol: 0.2, binary: true };
 
-                let buf;
-                if (this.fullCoreModel && this.coil) {
-                    const turnCount = magnetic.coil?.turnsDescription?.length ?? magnetic.coil?.turns_description?.length ?? 0;
-                    // Full-magnetic STL with many turns generates geometry that
-                    // crashes the WASM renderer (OOM in OCCT meshing / boolean
-                    // ops). Skip to core-only when the coil is very complex.
-                    if (turnCount > 60) {
-                        console.warn('[CoreStlExporter] coil has', turnCount, 'turns; using core-only STL to avoid renderer crash');
-                        buf = await buildCoreSTL(magnetic, stlOpts);
-                    } else {
-                        try {
-                            buf = await buildMagneticSTL(magnetic, stlOpts);
-                        } catch (e) {
-                            console.warn('[CoreStlExporter] full-magnetic STL failed, falling back to core-only:', e);
-                            buf = await buildCoreSTL(magnetic, stlOpts);
-                        }
-                    }
-                } else {
-                    buf = await buildCoreSTL(magnetic, stlOpts);
-                }
+                const buf = (this.fullCoreModel && this.coil)
+                    ? await buildMagneticSTL(magnetic, stlOpts)
+                    : await buildCoreSTL(magnetic, stlOpts);
 
                 download(buf, coreName + '.stl', 'binary/octet-stream; charset=utf-8');
                 this.$emit('export', coreName + '.stl');

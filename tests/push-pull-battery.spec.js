@@ -14,7 +14,7 @@
 import { test, expect } from './_coverage.js';
 import { BASE_URL, isBenign, screenshot, openWizard, runAnalytical, conditionsCard, outputsCard, fillRowInput, fillOutput, goToMagneticAdviser, goToMagneticBuilder, softVisible, softDisabled, tryWaitForURL, pause, tryWaitForFunction, clickIfPresent } from './utils.js';
 
-const PP_CY = 'PushPull-CommonModeChoke-link';
+const PP_CY = 'PushPull-link';
 const ss = (page, name) => screenshot(page, 'push-pull-battery', name);
 const openPushPull = (page) => openWizard(page, PP_CY);
 

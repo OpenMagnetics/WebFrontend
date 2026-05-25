@@ -20,7 +20,7 @@
 import { test, expect } from './_coverage.js';
 import { BASE_URL, isBenign, screenshot, openWizard, runAnalytical, conditionsCard, outputsCard, goToMagneticAdviser, goToMagneticBuilder, softVisible, softDisabled, tryWaitForURL, pause, tryWaitForFunction, clickIfPresent } from './utils.js';
 
-const CMC_CY = 'Wizard-CommonModeChoke-link';
+const CMC_CY = 'Cmc-link';
 const ss = (page, name) => screenshot(page, 'cmc-battery', name);
 const openCmc = (page) => openWizard(page, CMC_CY);
 

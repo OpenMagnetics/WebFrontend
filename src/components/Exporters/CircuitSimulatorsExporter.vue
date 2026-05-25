@@ -3,6 +3,8 @@ import { useMasStore } from '../../stores/mas'
 import SimbaExporter from './SimbaExporter.vue'
 import LtSpiceExporter from './LtSpiceExporter.vue'
 import NgSpiceExporter from './NgSpiceExporter.vue'
+import NL5Exporter from './NL5Exporter.vue'
+import PlecsExporter from './PlecsExporter.vue'
 </script>
 
 <script>
@@ -21,6 +23,7 @@ export default {
             masStore,
             modalName,
             title,
+            plecsIcon: `${import.meta.env.BASE_URL}images/PLECS_icon.png`,
         }
     }
 }
@@ -117,6 +120,48 @@ export default {
                         <div class="circ-btn-row">
                             <NgSpiceExporter
                                 :data-cy="dataTestLabel + '-NgSpice-Subcircuit'"
+                                :magnetic="masStore.mas.magnetic"
+                                :temperature="masStore.mas.inputs.operatingPoints[$stateStore.currentOperatingPoint].conditions.ambientTemperature"
+                                classProp="circ-export-btn"
+                            />
+                        </div>
+                    </div>
+
+                    <!-- NL5 -->
+                    <div class="circ-section">
+                        <div class="circ-section-header">
+                            <div class="circ-section-icon nl5-icon">
+                                <i class="bi bi-activity"></i>
+                            </div>
+                            <div>
+                                <div class="circ-section-title">NL5</div>
+                                <div class="circ-section-desc">Ideal-switch circuit simulator</div>
+                            </div>
+                        </div>
+                        <div class="circ-btn-row">
+                            <NL5Exporter
+                                :data-cy="dataTestLabel + '-NL5-Subcircuit'"
+                                :magnetic="masStore.mas.magnetic"
+                                :temperature="masStore.mas.inputs.operatingPoints[$stateStore.currentOperatingPoint].conditions.ambientTemperature"
+                                classProp="circ-export-btn"
+                            />
+                        </div>
+                    </div>
+
+                    <!-- PLECS -->
+                    <div class="circ-section">
+                        <div class="circ-section-header">
+                            <div class="circ-section-icon plecs-icon">
+                                <img :src="plecsIcon" width="24" height="24" alt="PLECS">
+                            </div>
+                            <div>
+                                <div class="circ-section-title">PLECS</div>
+                                <div class="circ-section-desc">Plexim power-electronics simulator</div>
+                            </div>
+                        </div>
+                        <div class="circ-btn-row">
+                            <PlecsExporter
+                                :data-cy="dataTestLabel + '-PLECS-Subcircuit'"
                                 :magnetic="masStore.mas.magnetic"
                                 :temperature="masStore.mas.inputs.operatingPoints[$stateStore.currentOperatingPoint].conditions.ambientTemperature"
                                 classProp="circ-export-btn"
@@ -239,6 +284,18 @@ export default {
     background: rgba(var(--bs-success-rgb), 0.12);
     color: rgb(var(--bs-success-rgb));
     border: 1px solid rgba(var(--bs-success-rgb), 0.25);
+}
+
+.nl5-icon {
+    background: rgba(var(--bs-info-rgb), 0.12);
+    color: rgb(var(--bs-info-rgb));
+    border: 1px solid rgba(var(--bs-info-rgb), 0.25);
+}
+
+.plecs-icon {
+    background: rgba(var(--bs-danger-rgb), 0.12);
+    color: rgb(var(--bs-danger-rgb));
+    border: 1px solid rgba(var(--bs-danger-rgb), 0.25);
 }
 
 .circ-section-title {
