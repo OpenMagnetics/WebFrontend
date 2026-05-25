@@ -679,6 +679,12 @@ export const useTaskQueueStore = defineStore('taskQueue', {
                 }
                 h.amplitudes = h.amplitudes.slice(0, validLen);
                 h.frequencies = h.frequencies.slice(0, validLen);
+                // Strip zero-frequency entries past index 0 — WASM calculate_buck_inputs
+                // returns all-zero freq arrays for some operating points (DC/min-voltage case).
+                // Index 0 at freq=0 is the valid DC component; duplicates at i>0 cause MKF to throw.
+                const keep = h.frequencies.map((f, i) => i === 0 || f !== 0);
+                h.amplitudes  = h.amplitudes.filter((_, i) => keep[i]);
+                h.frequencies = h.frequencies.filter((_, i) => keep[i]);
             }
             return h;
         },
@@ -777,6 +783,13 @@ export const useTaskQueueStore = defineStore('taskQueue', {
             await mkf.ready;
 
             const result = await mkf.extract_operating_point(file, numberWindings, frequency, magnetizingInductance, JSON.stringify(mapColumnNames));
+            // WASM bindings return "ERROR:<message>" on failure. Surface the real reason
+            // instead of letting JSON.parse choke on the prefix.
+            if (typeof result === 'string' && result.startsWith('ERROR:')) {
+                const reason = result.slice('ERROR:'.length).trim();
+                setTimeout(() => { this.operatingPointExtracted(false, reason); }, this.task_standard_response_delay);
+                throw new Error(reason || 'Could not extract operating point from the uploaded file.');
+            }
             const operatingPoint = JSON.parse(result);
             setTimeout(() => { this.operatingPointExtracted(true, operatingPoint); }, this.task_standard_response_delay);
             return operatingPoint;
@@ -790,6 +803,11 @@ export const useTaskQueueStore = defineStore('taskQueue', {
             await mkf.ready;
 
             const result = await mkf.extract_map_column_names(file, numberWindings, frequency);
+            if (typeof result === 'string' && result.startsWith('ERROR:')) {
+                const reason = result.slice('ERROR:'.length).trim();
+                setTimeout(() => { this.mapColumnNamesExtracted(false, reason); }, this.task_standard_response_delay);
+                throw new Error(reason || 'Could not auto-detect columns in the uploaded file.');
+            }
             const mapColumnNames = JSON.parse(result);
             setTimeout(() => { this.mapColumnNamesExtracted(true, mapColumnNames); }, this.task_standard_response_delay);
             return mapColumnNames;
@@ -803,6 +821,11 @@ export const useTaskQueueStore = defineStore('taskQueue', {
             await mkf.ready;
 
             const result = await mkf.extract_column_names(file);
+            if (typeof result === 'string' && result.startsWith('ERROR:')) {
+                const reason = result.slice('ERROR:'.length).trim();
+                setTimeout(() => { this.columnNamesExtracted(false, reason); }, this.task_standard_response_delay);
+                throw new Error(reason || 'Could not read columns from the uploaded file.');
+            }
             // Result is a JSON string, parse it to get the array
             const columnNames = JSON.parse(result);
             setTimeout(() => { this.columnNamesExtracted(true, columnNames); }, this.task_standard_response_delay);

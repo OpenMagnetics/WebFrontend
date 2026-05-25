@@ -75,8 +75,23 @@ export default {
             try {
                 const numberWindings = this.masStore.mas.inputs.designRequirements.turnsRatios.length + 1;
                 const frequency = this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex].frequency;
-                const desiredMagnetizingInductance = await this.taskQueueStore.resolveDimensionWithTolerance(this.masStore.mas.inputs.designRequirements.magnetizingInductance);
+
                 const mapColumnNames = this.$stateStore.operatingPointsCircuitSimulator.columnNames[this.currentOperatingPointIndex];
+                if (!Array.isArray(mapColumnNames) || mapColumnNames.length === 0) {
+                    throw new Error("Please pick the time / current / voltage columns before confirming.");
+                }
+                const windingPicks = mapColumnNames[this.currentWindingIndex];
+                if (!windingPicks || !windingPicks.time) {
+                    throw new Error("Please pick a time column for this winding.");
+                }
+                if (!windingPicks.current && !windingPicks.voltage) {
+                    throw new Error("Please pick at least one of a current or a voltage column for this winding.");
+                }
+                if (!Number.isFinite(frequency) || frequency <= 0) {
+                    throw new Error("Please enter a positive switching frequency for this operating point before importing.");
+                }
+
+                const desiredMagnetizingInductance = await this.taskQueueStore.resolveDimensionWithTolerance(this.masStore.mas.inputs.designRequirements.magnetizingInductance);
 
                 var operatingPoint = await this.taskQueueStore.extractOperatingPoint(file, numberWindings, frequency, desiredMagnetizingInductance, mapColumnNames);
                 this.errorMessages = "";
@@ -86,7 +101,7 @@ export default {
                 this.$emit("updatedSignal");
 
             } catch (error) {
-                this.errorMessages = error.toString();
+                this.errorMessages = error?.message || String(error);
                 this.$stateStore.operatingPointsCircuitSimulator.confirmedColumns[this.currentOperatingPointIndex][this.currentWindingIndex] = true;
                 this.$emit("importedWaveform");
                 this.$emit("updatedSignal");

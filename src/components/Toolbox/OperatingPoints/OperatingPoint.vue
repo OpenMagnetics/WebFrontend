@@ -62,6 +62,7 @@ export default {
             masStore,
             taskQueueStore,
             loadedFile: "",
+            importErrorMessage: "",
         }
     },
     computed: {
@@ -96,6 +97,7 @@ export default {
                 this.$stateStore.operatingPointsCircuitSimulator.columnNames[this.currentOperatingPointIndex] = result;
             }
             catch (error) {
+                this.importErrorMessage = "Could not auto-detect columns: " + (error?.message || error);
                 console.error(error)
             }
         },
@@ -105,6 +107,7 @@ export default {
                 this.$stateStore.operatingPointsCircuitSimulator.allLastReadColumnNames = result;
             }
             catch (error) {
+                this.importErrorMessage = "Could not read columns from the uploaded file: " + (error?.message || error);
                 console.error(error)
             }
         },
@@ -117,18 +120,24 @@ export default {
             fr.readAsText(this.$refs["OperatingPoint-MAS-upload-ref"].files.item(0));
         },
         onCircuitSimulatorFileTypeSelected(event) {
+            this.importErrorMessage = "";
+            const fileObj = this.$refs["OperatingPoint-CircuitSimulator-upload-ref"].files.item(0);
+            if (!fileObj) return;
+            const allowedExt = /\.(csv|txt|tsv)$/i;
+            if (!allowedExt.test(fileObj.name)) {
+                this.importErrorMessage = "Unsupported file type: " + fileObj.name +
+                    ". Please upload a .csv, .txt, or .tsv file exported from your circuit simulator.";
+                return;
+            }
             const fr = new FileReader();
 
             fr.onload = async e => {
                 this.loadedFile = e.target.result;
-                // Wait for both async operations to complete before setting the mode
-                await Promise.all([
-                    this.extractAllColumnNames(this.loadedFile),
-                    this.extractMapColumnNames(this.loadedFile)
-                ]);
+                await this.extractAllColumnNames(this.loadedFile);
+                await this.extractMapColumnNames(this.loadedFile);
                 this.$stateStore.operatingPoints.modePerPoint[this.currentOperatingPointIndex] = this.$stateStore.OperatingPointsMode.CircuitSimulatorImport;
             }
-            fr.readAsText(this.$refs["OperatingPoint-CircuitSimulator-upload-ref"].files.item(0));
+            fr.readAsText(fileObj);
         },
         onHarmoncsTypeSelected(event) {
             this.$stateStore.operatingPoints.modePerPoint[this.currentOperatingPointIndex] = this.$stateStore.OperatingPointsMode.HarmonicsList;
@@ -137,6 +146,9 @@ export default {
         onManualTypeSelected(event) {
             this.$stateStore.operatingPoints.modePerPoint[this.currentOperatingPointIndex] = this.$stateStore.OperatingPointsMode.Manual;
             this.$emit("selectedManualOrImported")
+        },
+        onAcSweepTypeSelected() {
+            this.$emit("selectedAcSweepTypeSelected")
         },
         onCircuitSimulatorTypeSelected(event) {
             this.$refs['OperatingPoint-CircuitSimulator-upload-ref'].click()
@@ -194,8 +206,13 @@ export default {
                 <div class="op-mode-prompt">
                     Where do you want to import your operating point from?
                 </div>
+                <div v-if="importErrorMessage" class="op-mode-error">
+                    <label data-cy="OperatingPoint-import-error" class="text-danger" style="white-space: pre-wrap;">
+                        {{ importErrorMessage }}
+                    </label>
+                </div>
                 <div class="op-mode-buttons">
-                    <input type="file" id="OperatingPoint-CircuitSimulator-upload-input" ref="OperatingPoint-CircuitSimulator-upload-ref" @change="onCircuitSimulatorFileTypeSelected" style="display:none" hidden/>
+                    <input type="file" id="OperatingPoint-CircuitSimulator-upload-input" ref="OperatingPoint-CircuitSimulator-upload-ref" accept=".csv,.txt,.tsv,text/csv,text/plain" @change="onCircuitSimulatorFileTypeSelected" style="display:none" hidden/>
                     <button
                         v-if="enableManual"
                         data-cy="OperatingPoint-source-Manual-button"
@@ -225,6 +242,16 @@ export default {
                     >
                         <i class="bi bi-graph-up-arrow"></i>
                         <span>I want to introduce a list of harmonics</span>
+                    </button>
+                    <button
+                        v-if="enableAcSweep"
+                        :data-cy="dataTestLabel + '-ac-sweep-type'"
+                        type="button"
+                        @click="onAcSweepTypeSelected"
+                        class="op-mode-btn"
+                    >
+                        <i class="bi bi-activity"></i>
+                        <span>AC Sweep</span>
                     </button>
                 </div>
             </div>
