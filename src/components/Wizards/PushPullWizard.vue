@@ -44,6 +44,7 @@ export default {
         const errorMessage = "";
         var localData = deepCopy(defaultPushPullWizardInputs);
         return {
+            pushPullDiagnostics: null,
             masStore,
             taskQueueStore, dropdownLabelsConverterWizards,
             designLevelOptions,
@@ -119,6 +120,7 @@ export default {
     getSimulateFn() { return (aux) => this.taskQueueStore.simulatePushPullIdealWaveforms(aux); },
     getDefaultFrequency() { return this.localData.switchingFrequency; },
     postProcessResults(result, mode) {
+            this.pushPullDiagnostics = result?.pushPullDiagnostics ?? null;
       if (this.designRequirements) {
         this.simulatedMagnetizingInductance = this.designRequirements.magnetizingInductance?.nominal || null;
         this.simulatedTurnsRatios = this.designRequirements.turnsRatios?.map(tr => tr.nominal) || null;
@@ -456,6 +458,14 @@ export default {
           @update="updateErrorMessage"
         />
       </div>
+    </template>
+      <template v-if="pushPullDiagnostics" #diagnostics>
+      <DimensionReadOnly name="ppDuty" :tooltip="tooltipsConverterWizards['ppDuty']" :replaceTitle="'Duty'" :value="pushPullDiagnostics.dutyCycle" :unit="null" :numberDecimals="3":labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-PpDuty'" />
+      <DimensionReadOnly name="ppFsw" :tooltip="tooltipsConverterWizards['ppFsw']" :replaceTitle="'Sw. Freq'" :value="pushPullDiagnostics.switchingFrequency" unit="Hz" :numberDecimals="0":labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-PpFsw'" />
+      <DimensionReadOnly name="ppMode" :tooltip="tooltipsConverterWizards['ppMode']" :replaceTitle="'Mode'" :value="pushPullDiagnostics.isCcm ? 'CCM' : 'DCM'" :unit="null" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-PpMode'" />
+      <DimensionReadOnly name="ppIprimAvg" :tooltip="tooltipsConverterWizards['ppIprimAvg']" :replaceTitle="'I_pri avg'" :value="pushPullDiagnostics.primaryAverageCurrent" unit="A" :numberDecimals="3":labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-PpIprimAvg'" />
+      <DimensionReadOnly name="ppIprimPk" :tooltip="tooltipsConverterWizards['ppIprimPk']" :replaceTitle="'I_pri peak'" :value="pushPullDiagnostics.primaryPeakCurrent" unit="A" :numberDecimals="3":labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-PpIprimPk'" />
+      <DimensionReadOnly name="ppImagPk" :tooltip="tooltipsConverterWizards['ppImagPk']" :replaceTitle="'I_mag peak'" :value="pushPullDiagnostics.magnetizingPeakCurrent" unit="A" :numberDecimals="3":labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-PpImagPk'" />
     </template>
   </ConverterWizardBase>
 </template>

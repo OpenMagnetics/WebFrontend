@@ -35,6 +35,7 @@ export default {
         const localData = deepCopy(defaultCukWizardInputs);
         localData["currentOptions"] = currentOptions[0];
         return {
+            cukDiagnostics: null,
             masStore,
             taskQueueStore,
             currentOptions,
@@ -103,6 +104,7 @@ export default {
         getSimulateFn() { return (aux) => this.taskQueueStore.simulateCukIdealWaveforms(aux); },
         getDefaultFrequency() { return this.localData.switchingFrequency; },
         postProcessResults(result, mode) {
+            this.cukDiagnostics = result?.cukDiagnostics ?? null;
             if (this.designRequirements) {
                 this.simulatedInductance = this.designRequirements.magnetizingInductance?.nominal || null;
             }
@@ -358,6 +360,20 @@ export default {
         :textColor="$styleStore.wizard.inputTextColor"
         @update="updateErrorMessage"
       />
+    </template>
+      <template v-if="cukDiagnostics" #diagnostics>
+      <DimensionReadOnly name="cukDuty" :tooltip="tooltipsConverterWizards['cukDuty']" :replaceTitle="'Duty'" :value="cukDiagnostics.dutyCycle" :unit="null" :numberDecimals="3":labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-CukDuty'" />
+      <DimensionReadOnly name="cukConvRatio" :tooltip="tooltipsConverterWizards['cukConvRatio']" :replaceTitle="'Conv. Ratio M'" :value="cukDiagnostics.conversionRatio" :unit="null" :numberDecimals="3":labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-CukConvRatio'" />
+      <DimensionReadOnly name="cukMode" :tooltip="tooltipsConverterWizards['cukMode']" :replaceTitle="'Mode'" :value="cukDiagnostics.isCcm ? 'CCM' : 'DCM'" :unit="null" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-CukMode'" />
+      <DimensionReadOnly name="cukVcc" :tooltip="tooltipsConverterWizards['cukVcc']" :replaceTitle="'Coupling Cap. V'" :value="cukDiagnostics.couplingCapVoltage" unit="V" :numberDecimals="2":labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-CukVcc'" />
+      <DimensionReadOnly name="cukIL1Avg" :tooltip="tooltipsConverterWizards['cukIL1Avg']" :replaceTitle="'L1 I avg'" :value="cukDiagnostics.inputInductorAverage" unit="A" :numberDecimals="3":labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-CukIL1Avg'" />
+      <DimensionReadOnly name="cukIL2Avg" :tooltip="tooltipsConverterWizards['cukIL2Avg']" :replaceTitle="'L2 I avg'" :value="cukDiagnostics.outputInductorAverage" unit="A" :numberDecimals="3":labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-CukIL2Avg'" />
+      <DimensionReadOnly name="cukIL1Ripple" :tooltip="tooltipsConverterWizards['cukIL1Ripple']" :replaceTitle="'L1 I ripple'" :value="cukDiagnostics.inputInductorRipple" unit="A" :numberDecimals="3":labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-CukIL1Ripple'" />
+      <DimensionReadOnly name="cukIL2Ripple" :tooltip="tooltipsConverterWizards['cukIL2Ripple']" :replaceTitle="'L2 I ripple'" :value="cukDiagnostics.outputInductorRipple" unit="A" :numberDecimals="3":labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-CukIL2Ripple'" />
+      <DimensionReadOnly name="cukVsw" :tooltip="tooltipsConverterWizards['cukVsw']" :replaceTitle="'Sw. Peak V'" :value="cukDiagnostics.switchPeakVoltage" unit="V" :numberDecimals="2":labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-CukVsw'" />
+      <DimensionReadOnly name="cukIsw" :tooltip="tooltipsConverterWizards['cukIsw']" :replaceTitle="'Sw. Peak I'" :value="cukDiagnostics.switchPeakCurrent" unit="A" :numberDecimals="3":labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-CukIsw'" />
+      <DimensionReadOnly name="cukVd" :tooltip="tooltipsConverterWizards['cukVd']" :replaceTitle="'Diode Peak V'" :value="cukDiagnostics.diodePeakReverseVoltage" unit="V" :numberDecimals="2":labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-CukVd'" />
+      <DimensionReadOnly name="cukId" :tooltip="tooltipsConverterWizards['cukId']" :replaceTitle="'Diode Peak I'" :value="cukDiagnostics.diodePeakCurrent" unit="A" :numberDecimals="3":labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-CukId'" />
     </template>
   </ConverterWizardBase>
 </template>

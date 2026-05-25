@@ -27,6 +27,7 @@ export default {
         const localData = deepCopy(defaultSepicWizardInputs);
         localData["currentOptions"] = currentOptions[0];
         return {
+            sepicDiagnostics: null,
             masStore,
             taskQueueStore,
             designLevelOptions,
@@ -103,6 +104,7 @@ export default {
         },
         getDefaultFrequency() { return this.localData.switchingFrequency; },
         postProcessResults(result, mode) {
+            this.sepicDiagnostics = result?.sepicDiagnostics ?? null;
             if (this.designRequirements) {
                 this.simulatedInductance = this.designRequirements.magnetizingInductance?.nominal || null;
             }
@@ -524,6 +526,19 @@ export default {
         :textColor="$styleStore.wizard.inputTextColor"
         @update="updateErrorMessage"
       />
+    </template>
+      <template v-if="sepicDiagnostics" #diagnostics>
+      <DimensionReadOnly name="sepicDuty" :tooltip="tooltipsConverterWizards['sepicDuty']" :replaceTitle="'Duty'" :value="sepicDiagnostics.dutyCycle" :unit="null" :numberDecimals="3":labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-SepicDuty'" />
+      <DimensionReadOnly name="sepicConvRatio" :tooltip="tooltipsConverterWizards['sepicConvRatio']" :replaceTitle="'Conv. Ratio M'" :value="sepicDiagnostics.conversionRatio" :unit="null" :numberDecimals="3":labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-SepicConvRatio'" />
+      <DimensionReadOnly name="sepicMode" :tooltip="tooltipsConverterWizards['sepicMode']" :replaceTitle="'Mode'" :value="sepicDiagnostics.isCcm ? 'CCM' : 'DCM'" :unit="null" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-SepicMode'" />
+      <DimensionReadOnly name="sepicVcc" :tooltip="tooltipsConverterWizards['sepicVcc']" :replaceTitle="'Coupling Cap. V'" :value="sepicDiagnostics.couplingCapVoltage" unit="V" :numberDecimals="2":labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-SepicVcc'" />
+      <DimensionReadOnly name="sepicIL1Avg" :tooltip="tooltipsConverterWizards['sepicIL1Avg']" :replaceTitle="'L1 I avg'" :value="sepicDiagnostics.inputInductorAverage" unit="A" :numberDecimals="3":labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-SepicIL1Avg'" />
+      <DimensionReadOnly name="sepicIL2Avg" :tooltip="tooltipsConverterWizards['sepicIL2Avg']" :replaceTitle="'L2 I avg'" :value="sepicDiagnostics.outputInductorAverage" unit="A" :numberDecimals="3":labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-SepicIL2Avg'" />
+      <DimensionReadOnly name="sepicIL1Ripple" :tooltip="tooltipsConverterWizards['sepicIL1Ripple']" :replaceTitle="'L1 I ripple'" :value="sepicDiagnostics.inputInductorRipple" unit="A" :numberDecimals="3":labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-SepicIL1Ripple'" />
+      <DimensionReadOnly name="sepicVsw" :tooltip="tooltipsConverterWizards['sepicVsw']" :replaceTitle="'Sw. Peak V'" :value="sepicDiagnostics.switchPeakVoltage" unit="V" :numberDecimals="2":labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-SepicVsw'" />
+      <DimensionReadOnly name="sepicIsw" :tooltip="tooltipsConverterWizards['sepicIsw']" :replaceTitle="'Sw. Peak I'" :value="sepicDiagnostics.switchPeakCurrent" unit="A" :numberDecimals="3":labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-SepicIsw'" />
+      <DimensionReadOnly name="sepicVd" :tooltip="tooltipsConverterWizards['sepicVd']" :replaceTitle="'Diode Peak V'" :value="sepicDiagnostics.diodePeakReverseVoltage" unit="V" :numberDecimals="2":labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-SepicVd'" />
+      <DimensionReadOnly name="sepicId" :tooltip="tooltipsConverterWizards['sepicId']" :replaceTitle="'Diode Peak I'" :value="sepicDiagnostics.diodePeakCurrent" unit="A" :numberDecimals="3":labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-SepicId'" />
     </template>
   </ConverterWizardBase>
 </template>

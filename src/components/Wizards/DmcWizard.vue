@@ -65,6 +65,7 @@ export default {
             regulatoryStandard:  'CISPR 32 Class B',
         };
         return {
+            dmcDiagnostics: null,
             masStore,
             taskQueueStore,
             designLevelOptions,
@@ -242,6 +243,7 @@ export default {
         },
         getInsulationType() { return null; },
         postProcessResults(result, mode) {
+            this.dmcDiagnostics = result?.dmcDiagnostics ?? null;
             const dr = result?.designRequirements ?? this.designRequirements;
             if (dr) {
                 this.designRequirements = dr;
@@ -671,6 +673,13 @@ export default {
       </div>
     </template>
 
+      <template v-if="dmcDiagnostics" #diagnostics>
+      <DimensionReadOnly name="dmcInd" :tooltip="tooltipsConverterWizards['dmcInd']" :replaceTitle="'Computed L'" :value="dmcDiagnostics.computedInductance" unit="H" :numberDecimals="9":labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-DmcInd'" />
+      <DimensionReadOnly name="dmcFmin" :tooltip="tooltipsConverterWizards['dmcFmin']" :replaceTitle="'Min freq'" :value="dmcDiagnostics.computedMinFrequency" unit="Hz" :numberDecimals="0":labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-DmcFmin'" />
+      <DimensionReadOnly name="dmcFmax" :tooltip="tooltipsConverterWizards['dmcFmax']" :replaceTitle="'Max freq'" :value="dmcDiagnostics.computedMaxFrequency" unit="Hz" :numberDecimals="0":labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-DmcFmax'" />
+      <DimensionReadOnly name="dmcZmin" :tooltip="tooltipsConverterWizards['dmcZmin']" :replaceTitle="'Z at min freq'" :value="dmcDiagnostics.impedanceAtMinFrequency" unit="Ω" :numberDecimals="2":labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-DmcZmin'" />
+      <DimensionReadOnly name="dmcNwind" :tooltip="tooltipsConverterWizards['dmcNwind']" :replaceTitle="'Windings'" :value="dmcDiagnostics.numberWindings" :unit="null" :numberDecimals="0":labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-DmcNwind'" />
+    </template>
   </ConverterWizardBase>
 </template>
 

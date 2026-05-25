@@ -4,6 +4,7 @@ import { useMasStore } from '../../stores/mas'
 import { useTaskQueueStore } from '../../stores/taskQueue'
 import { combinedStyle, combinedClass, deepCopy } from 'WebSharedComponents/assets/js/utils.js'
 import Dimension from 'WebSharedComponents/DataInput/Dimension.vue'
+import DimensionReadOnly from 'WebSharedComponents/DataInput/DimensionReadOnly.vue'
 import ElementFromListRadio from 'WebSharedComponents/DataInput/ElementFromListRadio.vue'
 import ElementFromList from 'WebSharedComponents/DataInput/ElementFromList.vue'
 import PairOfDimensions from 'WebSharedComponents/DataInput/PairOfDimensions.vue'
@@ -52,6 +53,7 @@ export default {
         }
         localData["currentOptions"] = currentOptions[0];
         return {
+            isolatedBuckBoostDiagnostics: null,
             masStore,
             taskQueueStore, dropdownLabelsConverterWizards,
             designLevelOptions,
@@ -139,6 +141,10 @@ export default {
     getSimulateFn() { const b = this._getIbbApiBase(); return (aux) => this.taskQueueStore[`simulate${b}IdealWaveforms`](aux); },
     getDefaultFrequency() { return this.localData.switchingFrequency; },
     postProcessResults(result, mode) {
+      // C++ emits the topology-specific key (isolatedBuckDiagnostics for Isolated
+      // Buck, isolatedBuckBoostDiagnostics for Isolated Buck-Boost). Pick whichever
+      // is present in the result.
+      this.isolatedBuckBoostDiagnostics = result?.isolatedBuckDiagnostics ?? result?.isolatedBuckBoostDiagnostics ?? null;
       if (this.designRequirements) {
         this.simulatedMagnetizingInductance = this.designRequirements.magnetizingInductance?.nominal || null;
         this.simulatedTurnsRatios = this.designRequirements.turnsRatios?.map(tr => tr.nominal) || null;
@@ -1049,6 +1055,14 @@ export default {
           @update="updateErrorMessage"
         />
       </div>
+    </template>
+    <template v-if="isolatedBuckBoostDiagnostics" #diagnostics>
+      <DimensionReadOnly name="ibbDuty"        :tooltip="tooltipsConverterWizards['ibbDuty']"        :replaceTitle="'Duty'"            :value="isolatedBuckBoostDiagnostics.dutyCycle"                :unit="null" :numberDecimals="3" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-IbbDuty'" />
+      <DimensionReadOnly name="ibbMode"        :tooltip="tooltipsConverterWizards['ibbMode']"        :replaceTitle="'Mode'"            :value="isolatedBuckBoostDiagnostics.isCcm ? 'CCM' : 'DCM'" :unit="null" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-IbbMode'" />
+      <DimensionReadOnly name="ibbIprimAvg"    :tooltip="tooltipsConverterWizards['ibbIprimAvg']"    :replaceTitle="'I_pri avg'"       :value="isolatedBuckBoostDiagnostics.primaryAverageCurrent"    unit="A" :numberDecimals="3" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-IbbIprimAvg'" />
+      <DimensionReadOnly name="ibbIprimPk"     :tooltip="tooltipsConverterWizards['ibbIprimPk']"     :replaceTitle="'I_pri peak'"      :value="isolatedBuckBoostDiagnostics.primaryPeakCurrent"       unit="A" :numberDecimals="3" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-IbbIprimPk'" />
+      <DimensionReadOnly name="ibbIsecPk"      :tooltip="tooltipsConverterWizards['ibbIsecPk']"      :replaceTitle="'I_sec peak'"      :value="isolatedBuckBoostDiagnostics.secondaryPeakCurrent"     unit="A" :numberDecimals="3" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-IbbIsecPk'" />
+      <DimensionReadOnly name="ibbImagRipple" :tooltip="tooltipsConverterWizards['ibbImagRipple']" :replaceTitle="'Mag I ripple'"   :value="isolatedBuckBoostDiagnostics.magnetizingCurrentRipple" unit="A" :numberDecimals="3" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-IbbImagRipple'" />
     </template>
   </ConverterWizardBase>
 </template>

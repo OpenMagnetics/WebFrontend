@@ -4,6 +4,7 @@ import { useMasStore } from '../../stores/mas'
 import { useTaskQueueStore } from '../../stores/taskQueue'
 import { combinedStyle, combinedClass, deepCopy } from 'WebSharedComponents/assets/js/utils.js'
 import Dimension from 'WebSharedComponents/DataInput/Dimension.vue'
+import DimensionReadOnly from 'WebSharedComponents/DataInput/DimensionReadOnly.vue'
 import ElementFromListRadio from 'WebSharedComponents/DataInput/ElementFromListRadio.vue'
 import ElementFromList from 'WebSharedComponents/DataInput/ElementFromList.vue'
 import PairOfDimensions from 'WebSharedComponents/DataInput/PairOfDimensions.vue'
@@ -44,6 +45,7 @@ export default {
         const errorMessage = "";
         var localData = deepCopy(defaultForwardWizardInputs);
         return {
+            forwardDiagnostics: null,
             masStore,
             taskQueueStore, dropdownLabelsConverterWizards,
             designLevelOptions,
@@ -156,6 +158,7 @@ export default {
     getSimulateFn() { return (aux) => this.taskQueueStore.simulateForwardIdealWaveforms(aux); },
     getDefaultFrequency() { return this.localData.switchingFrequency; },
     postProcessResults(result, mode) {
+            this.forwardDiagnostics = result?.singleSwitchForwardDiagnostics ?? result?.twoSwitchForwardDiagnostics ?? result?.activeClampForwardDiagnostics ?? null;
       if (this.designRequirements) {
         this.simulatedMagnetizingInductance = this.designRequirements.magnetizingInductance?.nominal || null;
         this.simulatedTurnsRatios = this.designRequirements.turnsRatios?.map(tr => tr.nominal) || null;
@@ -546,6 +549,19 @@ export default {
           @update="updateErrorMessage"
         />
       </div>
+    </template>
+    <template v-if="forwardDiagnostics" #diagnostics>
+      <DimensionReadOnly name="fwdDuty"          :tooltip="tooltipsConverterWizards['fwdDuty']"          :replaceTitle="'Duty max'"        :value="forwardDiagnostics.maximumDutyCycle"            :unit="null" :numberDecimals="3" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-FwdDuty'" />
+      <DimensionReadOnly name="fwdLm"            :tooltip="tooltipsConverterWizards['fwdLm']"            :replaceTitle="'Mag. Ind.'"       :value="forwardDiagnostics.magnetizingInductance"       unit="H" :numberDecimals="9" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-FwdLm'" />
+      <DimensionReadOnly name="fwdN"             :tooltip="tooltipsConverterWizards['fwdN']"             :replaceTitle="'Turns ratio'"     :value="forwardDiagnostics.secondaryTurnsRatio"         :unit="null" :numberDecimals="3" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-FwdN'" />
+      <DimensionReadOnly name="fwdMode"          :tooltip="tooltipsConverterWizards['fwdMode']"          :replaceTitle="'Mode'"            :value="forwardDiagnostics.isCcm ? 'CCM' : 'DCM'"       :unit="null" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-FwdMode'" />
+      <DimensionReadOnly name="fwdIprimPk"       :tooltip="tooltipsConverterWizards['fwdIprimPk']"       :replaceTitle="'I_pri peak'"      :value="forwardDiagnostics.primaryPeakCurrent"          unit="A" :numberDecimals="3" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-FwdIprimPk'" />
+      <DimensionReadOnly name="fwdIsecPk"        :tooltip="tooltipsConverterWizards['fwdIsecPk']"        :replaceTitle="'I_sec peak'"      :value="forwardDiagnostics.secondaryPeakCurrent"        unit="A" :numberDecimals="3" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-FwdIsecPk'" />
+      <DimensionReadOnly name="fwdImagPk"        :tooltip="tooltipsConverterWizards['fwdImagPk']"        :replaceTitle="'I_mag peak'"      :value="forwardDiagnostics.magnetizingPeakCurrent"      unit="A" :numberDecimals="3" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-FwdImagPk'" />
+      <!-- SSF-only: reset voltage on demag winding -->
+      <DimensionReadOnly v-if="forwardDiagnostics.resetVoltage !== undefined" name="fwdReset" :tooltip="tooltipsConverterWizards['fwdReset']" :replaceTitle="'Reset V'" :value="forwardDiagnostics.resetVoltage" unit="V" :numberDecimals="2" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-FwdReset'" />
+      <!-- ACF-only: clamp-cap steady-state voltage -->
+      <DimensionReadOnly v-if="forwardDiagnostics.clampCapVoltage !== undefined" name="fwdClamp" :tooltip="tooltipsConverterWizards['fwdClamp']" :replaceTitle="'Clamp Cap. V'" :value="forwardDiagnostics.clampCapVoltage" unit="V" :numberDecimals="2" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-FwdClamp'" />
     </template>
   </ConverterWizardBase>
 </template>

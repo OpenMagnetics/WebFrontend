@@ -4,6 +4,7 @@ import { useMasStore } from '../../stores/mas'
 import { useTaskQueueStore } from '../../stores/taskQueue'
 import { combinedStyle, combinedClass, deepCopy } from 'WebSharedComponents/assets/js/utils.js'
 import Dimension from 'WebSharedComponents/DataInput/Dimension.vue'
+import DimensionReadOnly from 'WebSharedComponents/DataInput/DimensionReadOnly.vue'
 import ElementFromListRadio from 'WebSharedComponents/DataInput/ElementFromListRadio.vue'
 import ElementFromList from 'WebSharedComponents/DataInput/ElementFromList.vue'
 import PairOfDimensions from 'WebSharedComponents/DataInput/PairOfDimensions.vue'
@@ -40,6 +41,7 @@ export default {
         const localData = deepCopy(defaultFlybackWizardInputs);
         localData["mosfetInputType"] = mosfetOptions[0];
         return {
+            flybackDiagnostics: null,
             masStore,
             taskQueueStore, dropdownLabelsConverterWizards,
             designLevelOptions,
@@ -115,6 +117,7 @@ export default {
     getSimulateFn() { return (aux) => this.taskQueueStore.simulateFlybackIdealWaveforms(aux); },
     getDefaultFrequency() { return this.localData.switchingFrequency; },
     postProcessResults(result, mode) {
+            this.flybackDiagnostics = result?.flybackDiagnostics ?? null;
       if (this.designRequirements) {
         this.simulatedMagnetizingInductance = this.designRequirements.magnetizingInductance?.nominal || null;
         this.simulatedTurnsRatios = this.designRequirements.turnsRatios?.map(tr => tr.nominal) || null;
@@ -472,5 +475,13 @@ export default {
       </div>
     </template>
 
+    <template v-if="flybackDiagnostics" #diagnostics>
+      <DimensionReadOnly name="flybackDuty"          :tooltip="tooltipsConverterWizards['flybackDuty']"          :replaceTitle="'Duty'"            :value="flybackDiagnostics.dutyCycle"             :unit="null" :numberDecimals="3" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-FlybackDuty'" />
+      <DimensionReadOnly name="flybackMode"          :tooltip="tooltipsConverterWizards['flybackMode']"          :replaceTitle="'Mode'"            :value="flybackDiagnostics.isCcm ? 'CCM' : 'DCM'" :unit="null" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-FlybackMode'" />
+      <DimensionReadOnly name="flybackIprimAvg"      :tooltip="tooltipsConverterWizards['flybackIprimAvg']"      :replaceTitle="'I_pri avg'"       :value="flybackDiagnostics.primaryAverageCurrent" unit="A" :numberDecimals="3" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-FlybackIprimAvg'" />
+      <DimensionReadOnly name="flybackIprimPk"       :tooltip="tooltipsConverterWizards['flybackIprimPk']"       :replaceTitle="'I_pri peak'"      :value="flybackDiagnostics.primaryPeakCurrent"    unit="A" :numberDecimals="3" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-FlybackIprimPk'" />
+      <DimensionReadOnly name="flybackIprimRipple"   :tooltip="tooltipsConverterWizards['flybackIprimRipple']"   :replaceTitle="'I_pri ripple'"    :value="flybackDiagnostics.primaryPeakToPeak"     unit="A" :numberDecimals="3" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-FlybackIprimRipple'" />
+      <DimensionReadOnly name="flybackIsecPk"        :tooltip="tooltipsConverterWizards['flybackIsecPk']"        :replaceTitle="'I_sec peak'"      :value="flybackDiagnostics.secondaryPeakCurrent"  unit="A" :numberDecimals="3" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-FlybackIsecPk'" />
+    </template>
   </ConverterWizardBase>
 </template>

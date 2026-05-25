@@ -39,6 +39,7 @@ export default {
         const errorMessage = "";
         const localData = deepCopy(defaultPfcWizardInputs);
         return {
+            pfcDiagnostics: null,
             masStore,
             taskQueueStore,
             designLevelOptions,
@@ -137,6 +138,7 @@ export default {
     },
     getDefaultFrequency() { return this.localData.switchingFrequency; },
     postProcessResults(result, mode) {
+            this.pfcDiagnostics = result?.pfcDiagnostics ?? null;
       if (result.inductance) this.simulatedInductance = result.inductance;
       // calculate_pfc_inputs returns { masInputs: {designRequirements,
       // operatingPoints}, inductance, ... }. Capture DR so the Adviser path
@@ -547,6 +549,15 @@ export default {
         :textColor="$styleStore.wizard.inputTextColor"
         @update="updateErrorMessage"
       />
+    </template>
+      <template v-if="pfcDiagnostics" #diagnostics>
+      <DimensionReadOnly name="pfcInd" :tooltip="tooltipsConverterWizards['pfcInd']" :replaceTitle="'Computed L'" :value="pfcDiagnostics.computedInductance" unit="H" :numberDecimals="9":labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-PfcInd'" />
+      <DimensionReadOnly name="pfcMode" :tooltip="tooltipsConverterWizards['pfcMode']" :replaceTitle="'Actual mode'" :value="pfcDiagnostics.actualMode" :unit="null" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-PfcMode'" />
+      <DimensionReadOnly name="pfcDuty" :tooltip="tooltipsConverterWizards['pfcDuty']" :replaceTitle="'Duty @ peak'" :value="pfcDiagnostics.dutyCyclePeak" :unit="null" :numberDecimals="3":labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-PfcDuty'" />
+      <DimensionReadOnly name="pfcIlPk" :tooltip="tooltipsConverterWizards['pfcIlPk']" :replaceTitle="'I_L peak'" :value="pfcDiagnostics.peakInductorCurrent" unit="A" :numberDecimals="3":labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-PfcIlPk'" />
+      <DimensionReadOnly name="pfcIlRipple" :tooltip="tooltipsConverterWizards['pfcIlRipple']" :replaceTitle="'I_L ripple'" :value="pfcDiagnostics.inductorRipple" unit="A" :numberDecimals="3":labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-PfcIlRipple'" />
+      <DimensionReadOnly name="pfcIline" :tooltip="tooltipsConverterWizards['pfcIline']" :replaceTitle="'I_line rms'" :value="pfcDiagnostics.lineRmsCurrent" unit="A" :numberDecimals="3":labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-PfcIline'" />
+      <DimensionReadOnly name="pfcPin" :tooltip="tooltipsConverterWizards['pfcPin']" :replaceTitle="'P_in'" :value="pfcDiagnostics.inputPower" unit="W" :numberDecimals="1":labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-PfcPin'" />
     </template>
   </ConverterWizardBase>
 </template>

@@ -4,6 +4,7 @@ import { useMasStore } from '../../stores/mas'
 import { useTaskQueueStore } from '../../stores/taskQueue'
 import { combinedStyle, combinedClass, deepCopy } from 'WebSharedComponents/assets/js/utils.js'
 import Dimension from 'WebSharedComponents/DataInput/Dimension.vue'
+import DimensionReadOnly from 'WebSharedComponents/DataInput/DimensionReadOnly.vue'
 import ElementFromListRadio from 'WebSharedComponents/DataInput/ElementFromListRadio.vue'
 import ElementFromList from 'WebSharedComponents/DataInput/ElementFromList.vue'
 import PairOfDimensions from 'WebSharedComponents/DataInput/PairOfDimensions.vue'
@@ -52,6 +53,7 @@ export default {
 
         localData["currentOptions"] = currentOptions[0];
         return {
+            buckBoostDiagnostics: null,
             masStore,
             taskQueueStore,
             designLevelOptions,
@@ -120,6 +122,9 @@ export default {
     getSimulateFn() { const n = this.converterName; return (aux) => this.taskQueueStore[`simulate${n}IdealWaveforms`](aux); },
     getDefaultFrequency() { return this.localData.switchingFrequency; },
     postProcessResults(result, mode) {
+      // C++ emits the topology-specific key (buckDiagnostics / boostDiagnostics
+      // / buckBoostDiagnostics). Pick whichever is present.
+      this.buckBoostDiagnostics = result?.buckDiagnostics ?? result?.boostDiagnostics ?? result?.buckBoostDiagnostics ?? null;
       if (this.designRequirements) this.simulatedInductance = this.designRequirements.magnetizingInductance?.nominal || null;
     },
     getTopology() {
@@ -596,6 +601,13 @@ export default {
         :textColor="$styleStore.wizard.inputTextColor"
         @update="updateErrorMessage"
       />
+    </template>
+    <template v-if="buckBoostDiagnostics" #diagnostics>
+      <DimensionReadOnly name="bbDuty"     :tooltip="tooltipsConverterWizards['bbDuty']"     :replaceTitle="'Duty'"               :value="buckBoostDiagnostics.dutyCycle"              :unit="null" :numberDecimals="3" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-BbDuty'" />
+      <DimensionReadOnly name="bbMode"     :tooltip="tooltipsConverterWizards['bbMode']"     :replaceTitle="'Mode'"               :value="buckBoostDiagnostics.conductionRatio >= 1 ? 'CCM' : 'DCM (' + buckBoostDiagnostics.conductionRatio.toFixed(2) + ')'" :unit="null" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-BbMode'" />
+      <DimensionReadOnly name="bbIlAvg"    :tooltip="tooltipsConverterWizards['bbIlAvg']"    :replaceTitle="'Inductor I avg'"     :value="buckBoostDiagnostics.inductorAverageCurrent" unit="A" :numberDecimals="3" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-BbIlAvg'" />
+      <DimensionReadOnly name="bbIlPk"     :tooltip="tooltipsConverterWizards['bbIlPk']"     :replaceTitle="'Inductor I peak'"    :value="buckBoostDiagnostics.peakInductorCurrent"    unit="A" :numberDecimals="3" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-BbIlPk'" />
+      <DimensionReadOnly name="bbIlRipple" :tooltip="tooltipsConverterWizards['bbIlRipple']" :replaceTitle="'Inductor I ripple'"  :value="buckBoostDiagnostics.inductorPeakToPeak"     unit="A" :numberDecimals="3" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-BbIlRipple'" />
     </template>
   </ConverterWizardBase>
 </template>

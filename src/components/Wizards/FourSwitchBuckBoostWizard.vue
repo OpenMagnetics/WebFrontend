@@ -31,6 +31,7 @@ export default {
         const localData = deepCopy(defaultFourSwitchBuckBoostWizardInputs);
         localData["currentOptions"] = currentOptions[0];
         return {
+            fsbbDiagnostics: null,
             masStore,
             taskQueueStore,
             currentOptions,
@@ -95,6 +96,7 @@ export default {
         getSimulateFn() { return (aux) => this.taskQueueStore.simulateFourSwitchBuckBoostIdealWaveforms(aux); },
         getDefaultFrequency() { return this.localData.switchingFrequency; },
         postProcessResults(result, mode) {
+            this.fsbbDiagnostics = result?.fsbbDiagnostics ?? null;
             if (this.designRequirements) {
                 this.simulatedInductance = this.designRequirements.magnetizingInductance?.nominal || null;
             }
@@ -339,6 +341,10 @@ export default {
         :textColor="$styleStore.wizard.inputTextColor"
         @update="updateErrorMessage"
       />
+    </template>
+      <template v-if="fsbbDiagnostics" #diagnostics>
+      <DimensionReadOnly name="fsbbIlAvg" :tooltip="tooltipsConverterWizards['fsbbIlAvg']" :replaceTitle="'Inductor I avg'" :value="fsbbDiagnostics.inductorAverageCurrent" unit="A" :numberDecimals="3":labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-FsbbIlAvg'" />
+      <DimensionReadOnly name="fsbbCo" :tooltip="tooltipsConverterWizards['fsbbCo']" :replaceTitle="'Sized C_out'" :value="fsbbDiagnostics.sizedOutputCapacitance" unit="F" :numberDecimals="9":labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-FsbbCo'" />
     </template>
   </ConverterWizardBase>
 </template>

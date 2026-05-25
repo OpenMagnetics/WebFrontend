@@ -99,6 +99,7 @@ export default {
             switchingFrequencyEmi: 100000,
         };
         return {
+            cmcDiagnostics: null,
             masStore,
             taskQueueStore,
             designLevelOptions,
@@ -254,6 +255,7 @@ export default {
         },
         getDefaultFrequency() { return this.localData.lineFrequency; },
         postProcessResults(result, mode) {
+            this.cmcDiagnostics = result?.cmcDiagnostics ?? null;
             const dr = result?.designRequirements ?? this.designRequirements;
             if (dr) {
                 this.designRequirements = dr;
@@ -791,6 +793,9 @@ export default {
       </div>
     </template>
 
+      <template v-if="cmcDiagnostics" #diagnostics>
+      <DimensionReadOnly name="cmcInd" :tooltip="tooltipsConverterWizards['cmcInd']" :replaceTitle="'Computed L'" :value="cmcDiagnostics.computedInductance" unit="H" :numberDecimals="9":labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-CmcInd'" />
+    </template>
   </ConverterWizardBase>
 </template>
 
