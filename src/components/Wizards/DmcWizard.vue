@@ -3,6 +3,7 @@ import { Topologies } from 'WebSharedComponents/assets/ts/MAS.ts'
 import { useMasStore } from '../../stores/mas'
 import { useTaskQueueStore } from '../../stores/taskQueue'
 import Dimension from 'WebSharedComponents/DataInput/Dimension.vue'
+import DimensionReadOnly from 'WebSharedComponents/DataInput/DimensionReadOnly.vue'
 import ElementFromListRadio from 'WebSharedComponents/DataInput/ElementFromListRadio.vue'
 import { minimumMaximumScalePerParameter, isolationSideOrdered } from 'WebSharedComponents/assets/js/defaults.js'
 import ConverterWizardBase from './ConverterWizardBase.vue'
@@ -223,7 +224,7 @@ export default {
                             voltage: { waveform: { time: s.time, data: s.inputVoltage } },
                         })),
                     };
-                    result = { designRequirements: calc.designRequirements, operatingPoints: [operatingPoint] };
+                    result = { designRequirements: calc.designRequirements, operatingPoints: [operatingPoint], dmcDiagnostics: calc?.dmcDiagnostics ?? null };
                 }
                 // numberOfSteadyStatePeriods is not yet wired into MKF's DMC
                 // simulation path — pending future MKF change.

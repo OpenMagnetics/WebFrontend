@@ -4,7 +4,6 @@ import { useMasStore } from '../../stores/mas'
 import { useTaskQueueStore } from '../../stores/taskQueue'
 import Dimension from 'WebSharedComponents/DataInput/Dimension.vue'
 import DimensionReadOnly from 'WebSharedComponents/DataInput/DimensionReadOnly.vue'
-import DimensionWithTolerance from 'WebSharedComponents/DataInput/DimensionWithTolerance.vue'
 import ElementFromList from 'WebSharedComponents/DataInput/ElementFromList.vue'
 import { minimumMaximumScalePerParameter } from 'WebSharedComponents/assets/js/defaults.js'
 import ConverterWizardBase from './ConverterWizardBase.vue'
@@ -25,7 +24,7 @@ export default {
         // 400 Vac LL EU industrial → 800 Vdc bus (Vdc > sqrt(2)*VLL = 566 V required).
         // 20 kHz default (SiC-comfortable, audible-immune). 10 kW reference.
         const localData = {
-            lineToLineVoltage: { nominal: 400, tolerance: 0.1 },
+            lineToLineVoltage: { minimum: 360, nominal: 400, maximum: 440 },
             lineFrequency: 50,
             outputDcVoltage: 800,
             outputPower: 10000,
@@ -100,21 +99,22 @@ export default {
                 // lineToLineVoltage is a DimensionWithTolerance object — pull
                 // the nominal RMS value out before scaling (the original code
                 // multiplied the object by a scalar and silently produced NaN).
-                const vllNominal = this.localData.lineToLineVoltage?.nominal
-                    ?? this.localData.lineToLineVoltage?.maximum
-                    ?? this.localData.lineToLineVoltage?.minimum;
+                const vll = this.localData.lineToLineVoltage ?? {};
+                const vllNominal = vll.nominal ?? ((vll.minimum != null && vll.maximum != null) ? (vll.minimum + vll.maximum) / 2 : (vll.maximum ?? vll.minimum));
                 if (!(vllNominal > 0)) {
                     throw new Error('Vienna: lineToLineVoltage.nominal is required for SPICE export');
                 }
-                const tol = this.localData.lineToLineVoltage?.tolerance ?? 0.1;
-                const phasePeakVoltage = vllNominal * Math.sqrt(2 / 3);
+                const k = Math.sqrt(2 / 3);
+                // Phase peak voltage seen by each boost inductor in the
+                // single-phase emulation = V_LL,RMS × √(2/3). Carry
+                // min/max through so the boost SPICE generator has a
+                // proper input-voltage range.
+                const vMin = (vll.minimum ?? vllNominal * 0.9) * k;
+                const vMax = (vll.maximum ?? vllNominal * 1.1) * k;
+                const vNom = vllNominal * k;
                 const outputCurrent = this.localData.outputPower / this.localData.outputDcVoltage;
                 return {
-                    inputVoltage: {
-                        minimum: phasePeakVoltage * (1 - tol),
-                        nominal: phasePeakVoltage,
-                        maximum: phasePeakVoltage * (1 + tol),
-                    },
+                    inputVoltage: { minimum: vMin, nominal: vNom, maximum: vMax },
                     switchingFrequency: this.localData.switchingFrequency,
                     efficiency: this.localData.efficiency,
                     currentRippleRatio: this.localData.currentRippleRatio,
@@ -191,11 +191,11 @@ export default {
                 return;
             }
             if (!(this.localData.outputDcVoltage > 0)) {
-                this.errorMessage = "V_DC (output bus voltage) must be set and > 0.";
+                this.errorMessage = "DC bus voltage must be set and > 0.";
                 return;
             }
             if (this.localData.outputDcVoltage <= vll * Math.SQRT2) {
-                this.errorMessage = `Vdc (${this.localData.outputDcVoltage}V) must exceed √2·V_LL (${(vll * Math.SQRT2).toFixed(0)}V) — Vienna is a boost-type PFC.`;
+                this.errorMessage = `DC bus voltage (${this.localData.outputDcVoltage} V) must exceed √2·V_LL (${(vll * Math.SQRT2).toFixed(0)} V) — Vienna is a boost-type PFC.`;
                 return;
             }
             if (!(this.localData.outputPower > 0)) {
@@ -204,6 +204,11 @@ export default {
             }
             if (!(this.localData.switchingFrequency > 0)) {
                 this.errorMessage = "Switching frequency must be > 0.";
+                return;
+            }
+            const lineF = this.localData.lineFrequency;
+            if (!(lineF >= 40 && lineF <= 500)) {
+                this.errorMessage = `Line frequency (${lineF} Hz) must be in 40–500 Hz.`;
                 return;
             }
         },
@@ -313,8 +318,7 @@ export default {
 
     <template #conditions>
       <Dimension :name="'switchingFrequency'" :tooltip="tooltipsConverterWizards['switchingFrequency']" :replaceTitle="'Sw. Freq.'" unit="Hz" :min="minimumMaximumScalePerParameter['frequency']['min']" :max="minimumMaximumScalePerParameter['frequency']['max']" v-model="localData" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor" :textColor="$styleStore.wizard.inputTextColor" @update="updateErrorMessage" :dataTestLabel="dataTestLabel + '-SwitchingFrequency'" />
-      <Dimension :name="'lineFrequency'" :tooltip="tooltipsConverterWizards['lineFrequency']" :replaceTitle="'Line Freq.'" unit="Hz" :min="40" :max="500" v-model="localData" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor" :textColor="$styleStore.wizard.inputTextColor" @update="updateErrorMessage" :dataTestLabel="dataTestLabel + '-LineFrequency'" />
-      <Dimension :name="'phaseCount'" :tooltip="tooltipsConverterWizards['phaseCount']" :replaceTitle="'Phases'" :unit="null" :min="3" :max="3" v-model="localData" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor" :textColor="$styleStore.wizard.inputTextColor" @update="updateErrorMessage" :dataTestLabel="dataTestLabel + '-PhaseCount'" />
+      <Dimension :name="'lineFrequency'" :tooltip="tooltipsConverterWizards['lineFrequency']" :replaceTitle="'Line Freq.'" unit="Hz" :min="minimumMaximumScalePerParameter['frequency']['min']" :max="minimumMaximumScalePerParameter['frequency']['max']" v-model="localData" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor" :textColor="$styleStore.wizard.inputTextColor" @update="updateErrorMessage" :dataTestLabel="dataTestLabel + '-LineFrequency'" />
       <Dimension :name="'powerFactor'" :tooltip="tooltipsConverterWizards['powerFactor']" :replaceTitle="'PF'" :unit="null" :min="0.5" :max="1" v-model="localData" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor" :textColor="$styleStore.wizard.inputTextColor" @update="updateErrorMessage" :dataTestLabel="dataTestLabel + '-PowerFactor'" />
       <Dimension :name="'ambientTemperature'" :tooltip="tooltipsConverterWizards['ambientTemperature']" :replaceTitle="'Temp.'" unit=" C" :min="minimumMaximumScalePerParameter['temperature']['min']" :max="minimumMaximumScalePerParameter['temperature']['max']" :allowNegative="true" :allowZero="true" v-model="localData" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor" :textColor="$styleStore.wizard.inputTextColor" @update="updateErrorMessage" :dataTestLabel="dataTestLabel + '-AmbientTemperature'" />
       <Dimension :name="'efficiency'" :tooltip="tooltipsConverterWizards['efficiency']" :replaceTitle="'Efficiency'" unit="%" :visualScale="100" :min="0.5" :max="1" v-model="localData" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor" :textColor="$styleStore.wizard.inputTextColor" @update="updateErrorMessage" :dataTestLabel="dataTestLabel + '-Efficiency'" />
@@ -332,31 +336,18 @@ export default {
     </template>
 
     <template #input-voltage>
-      <!-- Vienna line voltage is an AC line-to-line RMS, not a DC range —
-           use DimensionWithTolerance so the UI shows "nominal V_LL ± tol%"
-           instead of three independent min/nominal/max fields. -->
-      <DimensionWithTolerance
+      <CompactVoltageInput
         :name="'lineToLineVoltage'"
         :tooltip="tooltipsConverterWizards['lineToLineVoltage']"
-        :replaceTitle="'V_LL (AC RMS)'"
-        unit="V"
-        :min="minimumMaximumScalePerParameter['voltage']['min']"
-        :max="minimumMaximumScalePerParameter['voltage']['max']"
-        v-model="localData"
-        :labelWidthProportionClass="'col-5'"
-        :valueWidthProportionClass="'col-7'"
-        :valueFontSize="$styleStore.wizard.inputFontSize"
-        :labelFontSize="$styleStore.wizard.inputLabelFontSize"
-        :labelBgColor="'transparent'"
-        :valueBgColor="$styleStore.wizard.inputValueBgColor"
-        :textColor="$styleStore.wizard.inputTextColor"
-        @update="updateErrorMessage"
         :dataTestLabel="dataTestLabel + '-LineToLineVoltage'"
+        unit="V"
+        :modelValue="localData.lineToLineVoltage"
+        @update="updateErrorMessage"
       />
     </template>
 
     <template #outputs>
-      <Dimension :name="'outputDcVoltage'" :tooltip="tooltipsConverterWizards['outputDcVoltage']" :replaceTitle="'V_DC'" unit="V" :min="minimumMaximumScalePerParameter['voltage']['min']" :max="minimumMaximumScalePerParameter['voltage']['max']" v-model="localData" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor" :textColor="$styleStore.wizard.inputTextColor" @update="updateErrorMessage" :dataTestLabel="dataTestLabel + '-OutputDcVoltage'" />
+      <Dimension :name="'outputDcVoltage'" :tooltip="tooltipsConverterWizards['outputDcVoltage']" :replaceTitle="'DC Bus V.'" unit="V" :min="minimumMaximumScalePerParameter['voltage']['min']" :max="minimumMaximumScalePerParameter['voltage']['max']" v-model="localData" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor" :textColor="$styleStore.wizard.inputTextColor" @update="updateErrorMessage" :dataTestLabel="dataTestLabel + '-OutputDcVoltage'" />
       <Dimension :name="'outputPower'" :tooltip="tooltipsConverterWizards['outputPower']" :replaceTitle="'Power'" unit="W" :min="1" :max="minimumMaximumScalePerParameter['power']['max']" v-model="localData" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor" :textColor="$styleStore.wizard.inputTextColor" @update="updateErrorMessage" :dataTestLabel="dataTestLabel + '-OutputPower'" />
     </template>
   </ConverterWizardBase>
