@@ -50,12 +50,29 @@
  */
 const FULL = Object.freeze({
   adviser: true, coreAdviser: true, simulated: true, iKnowMode: true, spice: true,
+  wireAdviser: true, multiOutput: false,
 });
 
-const w = (key, title, linkCy, wizardPrefix, topology, tags = ['scenario'], capOverrides = {}) => ({
+/**
+ * @param key, title, linkCy, wizardPrefix, topology, tags, capOverrides
+ * @param extras  { smokeDeep?: boolean, smokeBuilder?: boolean, options?: string[] }
+ *   smokeDeep     include B1/E1 in the @smoke project (defaults false; on for
+ *                 6 representative wizards across topology families)
+ *   smokeBuilder  also tag F1 (Magnetic Builder via Magnetic Adviser) as @smoke
+ *                 for this wizard so the smoke suite exercises the builder
+ *                 once. Set on exactly one wizard (buck) — the long pole that
+ *                 caps smoke wall time at ~60s.
+ *   options       names of UI toggles the H-group option-matrix should flip
+ *                 and re-run analytical for. Defaults to []. When non-empty
+ *                 the battery emits one H test per option.
+ */
+const w = (key, title, linkCy, wizardPrefix, topology, tags = ['scenario'], capOverrides = {}, extras = {}) => ({
   key, title, linkCy, wizardPrefix, topology,
   tags: Object.freeze(tags),
   capabilities: Object.freeze({ ...FULL, ...capOverrides }),
+  smokeDeep: Boolean(extras.smokeDeep),
+  smokeBuilder: Boolean(extras.smokeBuilder),
+  options: Object.freeze(extras.options ?? []),
 });
 
 /**
@@ -72,15 +89,15 @@ const w = (key, title, linkCy, wizardPrefix, topology, tags = ['scenario'], capO
 /** @type {ReadonlyArray<WizardSpec>} */
 export const WIZARD_CATALOG = Object.freeze([
   // ── Filters / PFC ──────────────────────────────────────────────────
-  w('cmc',                 'CMC',                       'Cmc-link',           'CmcWizard',                'filter',   ['smoke', 'scenario']),
+  w('cmc',                 'CMC',                       'Cmc-link',           'CmcWizard',                'filter',   ['smoke', 'scenario'], {}, { smokeDeep: true }),
   w('dmc',                 'DMC',                       'Dmc-link',     'DmcWizard',                'filter',   ['scenario']),
   // PFC's simulated mode is not implemented in the WASM backend yet; the
   // wizard hides the Simulated button. Mark explicitly so flows.js falls
   // back to Analytical instead of throwing on a missing button.
-  w('pfc',                 'PFC',                       'Pfc-link',                              'PfcWizard',                'pfc',      ['heavy', 'scenario'], { simulated: false }),
+  w('pfc',                 'PFC',                       'Pfc-link',                              'PfcWizard',                'pfc',      ['heavy', 'scenario'], { simulated: false }, { smokeDeep: true }),
 
   // ── Non-Isolated DC-DC ─────────────────────────────────────────────
-  w('buck',                'Buck',                      'Buck-link',             'BuckWizard',               'dc-dc',    ['smoke', 'scenario']),
+  w('buck',                'Buck',                      'Buck-link',             'BuckWizard',               'dc-dc',    ['smoke', 'scenario'], {}, { smokeDeep: true, smokeBuilder: true }),
   w('boost',               'Boost',                     'Boost-link',            'BoostWizard',              'dc-dc',    ['smoke', 'scenario']),
   w('sepic',               'SEPIC',                     'Sepic-link',            'SepicWizard',              'dc-dc',    ['heavy', 'scenario']),
   w('cuk',                 'Cuk',                       'Cuk-link',              'CukWizard',                'dc-dc',    ['scenario']),
@@ -88,7 +105,7 @@ export const WIZARD_CATALOG = Object.freeze([
   w('fsbb',                'Four-Switch Buck-Boost',    'FourSwitchBuckBoost-link', 'FourSwitchBuckBoostWizard', 'dc-dc', ['scenario']),
 
   // ── Isolated Single-Switch ─────────────────────────────────────────
-  w('flyback',             'Flyback',                   'Flyback-link',          'FlybackWizard',            'isolated', ['heavy', 'scenario']),
+  w('flyback',             'Flyback',                   'Flyback-link',          'FlybackWizard',            'isolated', ['heavy', 'scenario'], {}, { smokeDeep: true }),
   w('isolated-buck',       'Isolated Buck',             'IsolatedBuck-link',     'IsolatedBuckWizard',       'isolated', ['scenario']),
   w('isolated-buckboost',  'Isolated Buck-Boost',       'IsolatedBuckBoost-link','IsolatedBuckBoostWizard',  'isolated', ['heavy', 'scenario']),
   w('active-clamp-forward','Active Clamp Forward',      'ActiveClampForward-link','ActiveClampForwardWizard','isolated', ['heavy', 'scenario']),
@@ -101,10 +118,10 @@ export const WIZARD_CATALOG = Object.freeze([
   w('psfb',                'PSFB',                      'Psfb-link',                             'PsfbWizard',               'isolated', ['scenario']),
   w('pshb',                'PSHB',                      'Pshb-link',                             'PshbWizard',               'isolated', ['heavy', 'scenario']),
   w('ahb',                 'AHB',                       'Ahb-link',                              'AhbWizard',                'isolated', ['heavy', 'scenario']),
-  w('dab',                 'DAB',                       'Dab-link',                              'DabWizard',                'dab',      ['heavy', 'scenario']),
+  w('dab',                 'DAB',                       'Dab-link',                              'DabWizard',                'dab',      ['heavy', 'scenario'], {}, { smokeDeep: true }),
 
   // ── Resonant ──────────────────────────────────────────────────────
-  w('llc',                 'LLC',                       'Llc-link',                              'LlcWizard',                'resonant', ['heavy', 'scenario']),
+  w('llc',                 'LLC',                       'Llc-link',                              'LlcWizard',                'resonant', ['heavy', 'scenario'], {}, { smokeDeep: true }),
   w('cllc',                'CLLC',                      'Cllc-link',                             'CllcWizard',               'resonant', ['heavy', 'scenario']),
   w('clllc',               'CLLLC',                     'Clllc-link',                            'ClllcWizard',              'resonant', ['heavy', 'scenario']),
   w('src',                 'SRC',                       'Src-link',                              'SrcWizard',                'resonant', ['heavy', 'scenario']),

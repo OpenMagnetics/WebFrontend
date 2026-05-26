@@ -61,9 +61,20 @@ const common = {
  */
 const projects = [
   {
+    // Fast smoke: A1 layout for every wizard, B1/E1 for smokeDeep wizards,
+    // one F1 (Magnetic Builder) run for buck. Target wall time: <60s.
+    name: 'smoke',
+    testDir: './tests',
+    testMatch: ['wizards/**/*.spec.js'],
+    grep: /@smoke/,
+    fullyParallel: true,
+    use: common,
+  },
+  {
     name: 'site',
     testDir: './tests',
-    testMatch: ['home.spec.js', 'settings-and-modes.spec.js', 'ui-regressions.spec.js', 'new-wizards-smoke.spec.js'],
+    testMatch: ['home.spec.js', 'settings-and-modes.spec.js', 'ui-regressions.spec.js'],
+    fullyParallel: true,
     use: common,
   },
   {
@@ -71,21 +82,27 @@ const projects = [
     testDir: './tests',
     testIgnore: ['scenarios/**', 'wizards/**', '_scratch/**'],
     grepInvert: /@scenario|@heavy/,
+    fullyParallel: true,
     use: common,
   },
   {
+    // Full coverage minus the long adviser runs.
     name: 'scenarios',
     testDir: './tests',
     testMatch: ['scenarios/**/*.spec.js', 'wizards/**/*.spec.js'],
     testIgnore: ['_scratch/**'],
     grepInvert: /@heavy/,
+    fullyParallel: true,
     use: common,
   },
   {
+    // Long WASM adviser runs (F1/G1/G2). Lower worker count to avoid WASM
+    // memory thrash.
     name: 'heavy',
     testDir: './tests',
     grep: /@heavy/,
     testMatch: ['scenarios/**/*.spec.js', 'wizards/**/*.spec.js'],
+    fullyParallel: true,
     use: common,
   },
 ];
@@ -93,13 +110,18 @@ const projects = [
 export default defineConfig({
   testDir: './tests',
   globalSetup: './tests/global-setup.js',
-  // Per-project parallel — global `workers` is overridden by --workers in CI.
-  // Today we keep workers:1 until per-worker storage state is validated end
-  // to end. Phase 9 acceptance criterion: flip to workers:4 + fullyParallel:true.
-  fullyParallel: false,
+  // Phase 10: parallel is on by default. Per-worker storage state is cloned
+  // via the _coverage fixture and the mocks installed there are page-scoped,
+  // so 4 workers is safe. CI can override with --workers=N if memory pressure
+  // shows up (the `heavy` project runs WASM-intensive adviser flows; a 16-GB
+  // CI runner can take 4, anything smaller should drop to 2).
+  fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
-  workers: 1,
+  workers: process.env.CI ? 2 : 4,
+  // No global expect.timeout — many legacy specs wait on slow WASM panels
+  // (Magnetic Adviser loading, AC Sweep tab, advise-N select buttons) that
+  // take well over 5s. Per-locator timeouts are the right knob; trust them.
   reporter: reporters,
   use: common,
   projects,

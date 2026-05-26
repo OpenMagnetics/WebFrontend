@@ -59,7 +59,7 @@ export default {
         },
     },
     data() {
-        const wiringTechnologyToDisable = ["Deposition"]
+        const wiringTechnologyToDisable = [WiringTechnology.Deposition]
 
         return {
             wiringTechnologyToDisable,

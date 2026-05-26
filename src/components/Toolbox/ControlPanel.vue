@@ -3,6 +3,7 @@ import { useMasStore } from '../../stores/mas'
 import { useHistoryStore } from '../../stores/history'
 import { useTaskQueueStore } from '../../stores/taskQueue'
 import { deepCopy, download, pruneNulls } from 'WebSharedComponents/assets/js/utils.js'
+import { WiringTechnology } from 'WebSharedComponents/assets/ts/MAS.ts'
 import CoreExporter from '../Exporters/CoreExporter.vue'
 import CoilExporter from '../Exporters/CoilExporter.vue'
 import MASExporter from '../Exporters/MASExporter.vue'
@@ -244,7 +245,7 @@ export default {
         async reset(isPlanar) {
             this.masStore.resetMas('power');
             this.$stateStore.closeCoilAdvancedInfo();
-            this.masStore.mas.inputs.designRequirements.wiringTechnology = isPlanar ? "Printed" : "Wound";
+            this.masStore.mas.inputs.designRequirements.wiringTechnology = isPlanar ? WiringTechnology.Printed : WiringTechnology.Wound;
             await this.$nextTick();
             await this.$router.push(`${import.meta.env.BASE_URL}engine_loader`);
         },

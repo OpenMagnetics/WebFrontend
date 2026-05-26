@@ -4,7 +4,7 @@ import { useMasStore } from '../../stores/mas'
 import { toTitleCase, toPascalCase, deepCopy } from 'WebSharedComponents/assets/js/utils.js'
 import { tooltipsMagneticSynthesisDesignRequirements } from 'WebSharedComponents/assets/js/texts.js'
 import { defaultDesignRequirements, compulsoryRequirements, designRequirementsOrdered, isolationSideOrdered, IsolationSideOrdered, minimumMaximumScalePerParameter} from 'WebSharedComponents/assets/js/defaults.js'
-import { Market, ConnectionType, Topologies } from 'WebSharedComponents/assets/ts/MAS.ts'
+import { Market, ConnectionType, Topologies, WiringTechnology } from 'WebSharedComponents/assets/ts/MAS.ts'
 import Insulation from './DesignRequirements/Insulation.vue'
 import Dimension from 'WebSharedComponents/DataInput/Dimension.vue'
 import MaximumDimensions from './DesignRequirements/MaximumDimensions.vue'
@@ -34,8 +34,8 @@ export default {
             numberWindings: numberWindings
         }
         const wiringTechnologyOptions = {
-            "Planar": "Printed",
-            "Wound": "Wound",
+            "Planar": WiringTechnology.Printed,
+            "Wound": WiringTechnology.Wound,
         }
 
         return {
