@@ -26,7 +26,7 @@
     "cors": "^2.8.5",
     "datatables.net-vue3": "^3.0.4",
     "echarts": "^6.0.0",
-    "katex": "^0.13.24",
+    "katex": "^0.16.21",
     "mathjs": "^15.1.0",
     "pinia": "^3.0.4",
     "pinia-plugin-persistedstate": "^4.7.1",
@@ -53,5 +53,8 @@
     "vite": "^7.2.2",
     "vite-plugin-compression": "^0.5.1",
     "vite-plugin-static-copy": "^3.2.0"
+  },
+  "overrides": {
+    "katex": "^0.16.21"
   }
 }
