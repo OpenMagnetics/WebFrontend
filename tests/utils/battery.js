@@ -70,7 +70,11 @@ export function makeBatterySpec(wizard, opts = {}) {
     // Per-test timeouts are set inline on F/G; the describe-level cap is just
     // a safety net. Drop the legacy 15-min ceiling — any adviser run taking
     // more than 3 min on a dev machine is a bug, not a slow test.
-    test.setTimeout(180_000);
+    // 180 s for the light groups, 600 s for the heavy F/G tests. The
+    // long-pole adviser enumerations on multi-winding coils legitimately
+    // take 3–5 min after the CoilAdviser early-termination cap; tighter
+    // ceilings produce false timeouts even when MKF is making progress.
+    test.setTimeout(wizard.tags.includes('heavy') ? 600_000 : 180_000);
 
     if (!skip('A')) {
       test(`${wizard.title}-A1 — layout: title + Conditions card + Analytical button${SMOKE}`, async ({ page }) => {

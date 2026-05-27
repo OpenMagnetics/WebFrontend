@@ -38,6 +38,11 @@ export default {
         }
     },
     computed: {
+        waveformLabelOptions() {
+            const result = {};
+            Object.values(WaveformLabel).forEach(v => { result[v] = toTitleCase(v); });
+            return result;
+        },
         disableOffset() {
             return this.modelValue[this.signalDescriptor].processed.label === "rectangular";
         },
@@ -89,10 +94,13 @@ export default {
                 :name="'label'"
                 :dataTestLabel="dataTestLabel + '-Label'"
                 :options="Object.values(WaveformLabel)"
+                :optionLabels="waveformLabelOptions"
                 :titleSameRow="true"
                 :replaceTitle="'Waveform'"
                 v-model="modelValue[signalDescriptor].processed"
                 @update="labelChanged"
+                :labelWidthProportionClass="'col-sm-12 col-md-7'"
+                :valueWidthProportionClass="'col-sm-12 col-md-5'"
                 :valueFontSize="$styleStore.operatingPoints.inputFontSize"
                 :labelFontSize="$styleStore.operatingPoints.inputTitleFontSize"
                 :labelBgColor="$styleStore.operatingPoints.inputLabelBgColor"
@@ -112,6 +120,8 @@ export default {
                 :forceUpdate="forceUpdate"
                 v-model="modelValue[signalDescriptor].processed"
                 @update="peakToPeakChanged"
+                :labelWidthProportionClass="'col-sm-12 col-md-7'"
+                :valueWidthProportionClass="'col-sm-12 col-md-5'"
                 :valueFontSize="$styleStore.operatingPoints.inputFontSize"
                 :labelFontSize="$styleStore.operatingPoints.inputTitleFontSize"
                 :labelBgColor="$styleStore.operatingPoints.inputLabelBgColor"
@@ -134,6 +144,8 @@ export default {
                 :forceUpdate="forceUpdate"
                 v-model="modelValue[signalDescriptor].processed"
                 @update="offsetChanged"
+                :labelWidthProportionClass="'col-sm-12 col-md-7'"
+                :valueWidthProportionClass="'col-sm-12 col-md-5'"
                 :valueFontSize="$styleStore.operatingPoints.inputFontSize"
                 :labelFontSize="$styleStore.operatingPoints.inputTitleFontSize"
                 :labelBgColor="$styleStore.operatingPoints.inputLabelBgColor"

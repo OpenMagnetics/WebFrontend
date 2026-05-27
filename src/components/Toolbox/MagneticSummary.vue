@@ -307,13 +307,13 @@ export default {
             const groups = this.mas?.magnetic?.coil?.groupsDescription || [];
             if (groups.length > 0) {
                 // If any group is "Printed", "Stamped", or "Deposition", it's not wound
-                const nonWoundTypes = ['Printed', 'Stamped', 'Deposition'];
-                const hasNonWound = groups.some(g => nonWoundTypes.includes(g.type));
+                const nonWoundTypes = ['printed', 'stamped', 'deposition'];
+                const hasNonWound = groups.some(g => nonWoundTypes.includes(g.type?.toLowerCase()));
                 return !hasNonWound;
             }
             // Also check design requirements wiring technology
             const wiringTech = this.mas?.inputs?.designRequirements?.wiringTechnology;
-            if (wiringTech && wiringTech !== 'Wound') {
+            if (wiringTech && wiringTech.toLowerCase() !== 'wound') {
                 return false;
             }
             return true;

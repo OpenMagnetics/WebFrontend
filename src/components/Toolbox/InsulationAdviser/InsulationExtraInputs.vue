@@ -79,7 +79,7 @@ export default {
                 :unitExtraStyleClass="unitExtraStyleClass"
                 :labelWidthProportionClass="'col-12'"
                 :valueWidthProportionClass="'col-12'"
-                @input="modelValue.frequency = $event.target.value"
+                @input="modelValue.frequency = Number($event.target.value)"
                 @update="$emit('update')"
             />
         </div>
@@ -90,31 +90,6 @@ export default {
                 :replaceTitle="'Voltage Peak'"
                 :unit="'V'"
                 :dataTestLabel="dataTestLabel + '-VoltagePeak'"
-                :min="minimumMaximumScalePerParameter['voltage']['min']"
-                :max="minimumMaximumScalePerParameter['voltage']['max']"
-                :defaultValue="defaultValue.voltage.processed.rms"
-                :allowNegative="false"
-                :modelValue="modelValue.voltage.processed"
-                :titleSameRow="false"
-                :labelFontSize='titleFontSize'
-                :valueFontSize="valueFontSize"
-                :labelBgColor="labelBgColor"
-                :valueBgColor="valueBgColor"
-                :textColor="textColor"
-                :unitExtraStyleClass="unitExtraStyleClass"
-                :labelWidthProportionClass="'col-12'"
-                :valueWidthProportionClass="'col-12'"
-                @input="modelValue.voltage.processed.peak = $event.target.value"
-                @update="$emit('update')"
-            />
-        </div>
-
-        <div class="iei-cell">
-            <Dimension
-                :name="'rms'"
-                :replaceTitle="'Voltage RMS'"
-                :unit="'V'"
-                :dataTestLabel="dataTestLabel + '-VoltageRms'"
                 :min="minimumMaximumScalePerParameter['voltage']['min']"
                 :max="minimumMaximumScalePerParameter['voltage']['max']"
                 :defaultValue="defaultValue.voltage.processed.peak"
@@ -129,7 +104,32 @@ export default {
                 :unitExtraStyleClass="unitExtraStyleClass"
                 :labelWidthProportionClass="'col-12'"
                 :valueWidthProportionClass="'col-12'"
-                @input="modelValue.voltage.processed.rms = $event.target.value"
+                @input="modelValue.voltage.processed.peak = Number($event.target.value)"
+                @update="$emit('update')"
+            />
+        </div>
+
+        <div class="iei-cell">
+            <Dimension
+                :name="'rms'"
+                :replaceTitle="'Voltage RMS'"
+                :unit="'V'"
+                :dataTestLabel="dataTestLabel + '-VoltageRms'"
+                :min="minimumMaximumScalePerParameter['voltage']['min']"
+                :max="minimumMaximumScalePerParameter['voltage']['max']"
+                :defaultValue="defaultValue.voltage.processed.rms"
+                :allowNegative="false"
+                :modelValue="modelValue.voltage.processed"
+                :titleSameRow="false"
+                :labelFontSize='titleFontSize'
+                :valueFontSize="valueFontSize"
+                :labelBgColor="labelBgColor"
+                :valueBgColor="valueBgColor"
+                :textColor="textColor"
+                :unitExtraStyleClass="unitExtraStyleClass"
+                :labelWidthProportionClass="'col-12'"
+                :valueWidthProportionClass="'col-12'"
+                @input="modelValue.voltage.processed.rms = Number($event.target.value)"
                 @update="$emit('update')"
             />
         </div>

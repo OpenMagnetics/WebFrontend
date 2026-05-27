@@ -61,8 +61,8 @@ test.describe('Cross-Referencer — generic core', () => {
   test('XR-GC1: page loads and main input containers visible', async ({ page }) => {
     await navigate(page, '/core_cross_referencer');
     // Shape selector should appear once WASM is ready
-    const shape = page.locator('[data-cy$="-ShapeNames"]').first();
-    const material = page.locator('[data-cy$="-MaterialNames"]').first();
+    const shape = page.locator('[data-cy*="-ShapeNames"]').first();
+    const material = page.locator('[data-cy*="-MaterialNames"]').first();
     const shapeVis = await softVisible(shape, 15000);
     const matVis = await softVisible(material, 5000);
     expect(shapeVis || matVis).toBe(true);
@@ -108,7 +108,7 @@ test.describe('Cross-Referencer — generic material', () => {
 
   test('XR-GM2: material selector is reachable', async ({ page }) => {
     await navigate(page, '/core_material_cross_referencer');
-    const material = page.locator('[data-cy$="-MaterialNames"]').first();
+    const material = page.locator('[data-cy*="-MaterialNames"]').first();
     await expect(material, 'material selector must appear once WASM is ready').toBeVisible({ timeout: 20000 });
   });
 });
@@ -160,12 +160,11 @@ test.describe('Cross-Referencer — run generic core flow', () => {
   test('XR-RUN: click calculate and wait for results or error', async ({ page }) => {
     await navigate(page, '/core_cross_referencer');
     const calc = page.locator('[data-cy$="-calculate"]').first();
-    await expect(calc, 'calculate button must be visible').toBeVisible({ timeout: 20000 });
+    await expect(calc, 'calculate button must be visible').toBeVisible({ timeout: 30000 });
 
-    // Form may need to be filled; if disabled, the test fails loudly
-    if (await calc.isDisabled()) {
-      throw new Error('calculate button is disabled on initial load — form auto-fill regression');
-    }
+    // The Cross-Referencer WASM (libCrossReferencers.wasm) loads asynchronously
+    // and gates the button via :disabled="loading". Wait until it flips false.
+    await expect(calc, 'calculate button must enable once WASM is ready').toBeEnabled({ timeout: 30000 });
     await calc.click();
     await pause(page, 3000, 'mechanical: settle');
 

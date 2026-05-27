@@ -207,20 +207,20 @@ export const useStyleStore = defineStore("style", () => {
                 "color": theme["info"],
             },
             voltageGraph:{
-                "background-color": theme["primary"],
-                "color": theme["primary"],
+                "background-color": theme["success"],
+                "color": theme["success"],
             },
             currentTextColor:{
                 "color": theme["info"],
             },
             voltageTextColor:{
-                "color": theme["primary"],
+                "color": theme["success"],
             },
             currentBgColor:{
                 "background-color": theme["info"],
             },
             voltageBgColor:{
-                "background-color": theme["primary"],
+                "background-color": theme["success"],
             },
             graphBgColor:{
                 "background-color": theme["light"],

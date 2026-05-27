@@ -66,6 +66,22 @@ export default {
             type: [String, Object],
             default: "text-white",
         },
+        optionLabels: {
+            type: Object,
+            default: null,
+        },
+        labelWidthProportionClass: {
+            type: String,
+            default: '',
+        },
+        selectStyleClass: {
+            type: String,
+            default: '',
+        },
+        justifyContent: {
+            type: Boolean,
+            default: false,
+        },
     },
     data() {
         const masStore = useMasStore();
@@ -138,13 +154,17 @@ export default {
                 :min="min"
                 :max="max"
                 :titleSameRow="titleSameRow"
+                :justifyContent="justifyContent"
                 v-for="requirementIndex in masStore.mas.inputs.designRequirements[name].length"
                 :defaultValue="defaultValue[requirementIndex - 1]"
                 class="py-2 col-12"
                 :name="requirementIndex - 1"
                 v-model="masStore.mas.inputs.designRequirements[name]"
                 :options="options"
+                :optionLabels="optionLabels"
                 :replaceTitle="isolationSideOrdered[requirementIndex - 1]"
+                :labelWidthProportionClass="labelWidthProportionClass"
+                :selectStyleClass="selectStyleClass"
                 :labelFontSize='valueFontSize'
                 :valueFontSize='valueFontSize'
                 :labelBgColor='labelBgColor'

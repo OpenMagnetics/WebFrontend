@@ -78,10 +78,11 @@ export default {
         // expected by MAS enum is camelCase (sinusoidal / unipolarRectangular
         // / unipolarTriangular).
         waveformEnum() {
-            switch (this.localData.waveformLabel) {
-                case 'Sinusoidal': return 'sinusoidal';
-                case 'Unipolar Rectangular': return 'unipolarRectangular';
-                case 'Unipolar Triangular': return 'unipolarTriangular';
+            const label = (this.localData.waveformLabel || '').toLowerCase().replace(/\s+/g, '');
+            switch (label) {
+                case 'sinusoidal': return 'sinusoidal';
+                case 'unipolarrectangular': return 'unipolarRectangular';
+                case 'unipolartriangular': return 'unipolarTriangular';
                 default: return 'sinusoidal';
             }
         },

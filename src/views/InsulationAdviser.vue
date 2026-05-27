@@ -21,6 +21,16 @@ export default {
             updateStoryline: 0,
         }
     },
+    mounted() {
+        // The workflow / tool selection is normally set by the Header click
+        // handler (onInsulationCoordinator). Replay it here so that visiting
+        // /insulation_adviser directly (deep-link, refresh, automated test)
+        // mounts the InsulationAdviser panel instead of the default
+        // Magnetic Builder Design Requirements view.
+        this.$stateStore.resetMagneticTool();
+        this.$stateStore.selectWorkflow("insulationCoordinator");
+        this.$stateStore.selectTool("insulationAdviser");
+    },
 }
 </script>
 

@@ -40,6 +40,11 @@ export default {
         }
     },
     computed: {
+        waveformLabelOptions() {
+            const result = {};
+            Object.values(WaveformLabel).forEach(v => { result[v] = toTitleCase(v); });
+            return result;
+        },
         induceableSignal() {
             if (this.signalDescriptor == 'current') {
                 return true;
@@ -74,6 +79,7 @@ export default {
             :name="'label'"
             :dataTestLabel="dataTestLabel + '-Label'"
             :options="Object.values(WaveformLabel)"
+            :optionLabels="waveformLabelOptions"
             :titleSameRow="true"
             :replaceTitle="'Waveform'"
             v-model="modelValue[signalDescriptor].processed"

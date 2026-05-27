@@ -38,7 +38,6 @@ const CA_PFX   = 'MagneticBuilder-MagneticmagneticCoreAdviser';
 const MA_PFX   = 'MagneticBuilder-MagneticAdviser';
 const CAT_PFX  = 'MagneticBuilder-CatalogAdviser';
 const SUM_PFX  = 'MagneticBuilder-MagneticSummary';
-const TS_PFX   = 'MagneticBuilder-ToolSelector';
 
 const ss = (page, name) => screenshot(page, 'mt-battery', name);
 
@@ -75,49 +74,6 @@ async function clickContinue(page) {
   await btn.click();
   await pause(page, 1200, 'mechanical: settle');
   return true;
-}
-
-/**
- * Navigate from OP step to ToolSelector by switching to AC Sweep mode.
- * OperatingPoints emits changeTool('toolSelector') on AC Sweep selection.
- */
-async function goToToolSelector(page) {
-  // When arriving from a wizard, modePerPoint is set to Manual (wizard pre-fills data).
-  // The mode-select panel (which contains the AC Sweep button) is hidden in that case.
-  // Click "Go back to selecting mode" to reset modePerPoint → null, revealing the panel.
-  const goBackBtn = page.locator('button:has-text("Go back to selecting mode")').first();
-  if (await softVisible(goBackBtn, 2000)) {
-    await goBackBtn.click();
-    await pause(page, 500, 'mechanical: mode reset');
-  }
-  // Try clicking the AC Sweep option if visible
-  const acSweepOpt = page.locator('[data-cy$="-ac-sweep-type"]').first();
-  if (await softVisible(acSweepOpt, 3000)) {
-    await acSweepOpt.click();
-    await pause(page, 800, 'mechanical: settle');
-    return true;
-  }
-  // Fallback: look for a text-labelled AC Sweep selector
-  const acText = page.locator('text=AC Sweep').first();
-  if (await softVisible(acText, 3000)) {
-    await acText.click();
-    await pause(page, 800, 'mechanical: settle');
-    return true;
-  }
-  return false;
-}
-
-/** Run MagneticCoreAdviser "Get advised cores" and wait for loading to finish. */
-async function runCoreAdviser(page, timeoutMs = 90000) {
-  // Use suffix match to tolerate the dataTestLabel typo
-  const btn = page.locator('[data-cy$="-calculate-mas-advises-button"]').first();
-  await softWaitFor(btn, { timeout: 10000 });
-  await btn.click();
-  await tryWaitForFunction(page,
-    () => !document.querySelector('[data-cy="CoreAdviser-loading"]'),
-    { timeout: timeoutMs }
-  );
-  await pause(page, 500, 'mechanical: settle');
 }
 
 /** Run Magnetic Adviser "Get Advised Magnetics" and wait for loading to finish. */
@@ -323,99 +279,11 @@ test.describe('Group C — Operating Points', () => {
     await ss(page, 'C6-op-tab-active');
   });
 
-  test('C7: AC Sweep mode navigates to ToolSelector', async ({ page }) => {
-    await openViaWizard(page, BUCK_CY);
-    await clickContinue(page); // → operatingPoints
-    const reached = await goToToolSelector(page);
-    expect(reached, 'AC Sweep selector must be reachable from OP step').toBe(true);
-    const builderBtn = page.locator(`[data-cy="${TS_PFX}-magnetic-builder-button"]`);
-    await expect(builderBtn).toBeVisible({ timeout: 10000 });
-    await ss(page, 'C7-tool-selector');
-  });
 });
 
-// ── Group D — Core Adviser via ToolSelector ───────────────────────────────────
-
-test.describe('Group D — Core Adviser (standalone, via ToolSelector)', () => {
-  test.describe.configure({ timeout: 180000 });
-  /**
-   * Navigate wizard → OP → AC Sweep → ToolSelector → Core Adviser.
-   * Returns false if ToolSelector is not accessible (AC Sweep mode not found).
-   */
-  async function goToCoreAdviser(page) {
-    await openViaWizard(page, BUCK_CY);
-    await clickContinue(page); // → operatingPoints
-    const tsReached = await goToToolSelector(page);
-    expect(tsReached, 'ToolSelector must be reachable via AC Sweep').toBe(true);
-    const coreAdvBtn = page.locator(`[data-cy="${TS_PFX}-magnetic-core-adviser-button"]`);
-    await expect(coreAdvBtn, 'Core Adviser button must be visible in ToolSelector').toBeVisible({ timeout: 5000 });
-    await coreAdvBtn.click();
-    await pause(page, 1000, 'mechanical: settle');
-  }
-
-  test('D1: ToolSelector shows Core Adviser button', async ({ page }) => {
-    await openViaWizard(page, BUCK_CY);
-    await clickContinue(page);
-    const reached = await goToToolSelector(page);
-    expect(reached, 'ToolSelector must be reachable via AC Sweep').toBe(true);
-    await expect(
-      page.locator(`[data-cy="${TS_PFX}-magnetic-core-adviser-button"]`)
-    ).toBeVisible({ timeout: 10000 });
-  });
-
-  test('D2: Core Adviser loads and shows calculate button', async ({ page }) => {
-    await goToCoreAdviser(page);
-    const calcBtn = page.locator('[data-cy$="-calculate-mas-advises-button"]').first();
-    await expect(calcBtn).toBeVisible({ timeout: 10000 });
-  });
-
-  test('D3: filter weight number inputs visible (cost / losses / size)', async ({ page }) => {
-    await goToCoreAdviser(page);
-    // Each weight row has a number input
-    const numberInputs = page.locator('[data-cy$="-number-input"]');
-    await expect(numberInputs.first()).toBeVisible({ timeout: 10000 });
-    const count = await numberInputs.count();
-    expect(count).toBeGreaterThanOrEqual(1);
-  });
-
-  test('D4: running Core Adviser returns results', async ({ page }) => {
-    await goToCoreAdviser(page);
-    await runCoreAdviser(page);
-    await ss(page, 'D4-core-adviser-results');
-    // At least advise index 0 select button should appear
-    const selectBtn = page.locator('[data-cy$="-advise-0-select-button"]').first();
-    await expect(selectBtn).toBeVisible({ timeout: 15000 });
-  });
-
-  test('D5: details button visible for first core result', async ({ page }) => {
-    await goToCoreAdviser(page);
-    await runCoreAdviser(page);
-    const detailsBtn = page.locator('[data-cy$="-advise-0-details-button"]').first();
-    await expect(detailsBtn).toBeVisible({ timeout: 10000 });
-  });
-
-  test('D6: selecting a core result enables Continue', async ({ page }) => {
-    await goToCoreAdviser(page);
-    await runCoreAdviser(page);
-    const selectBtn = page.locator('[data-cy$="-advise-0-select-button"]').first();
-    await expect(selectBtn).toBeVisible();
-    await selectBtn.click();
-    await pause(page, 800, 'mechanical: settle');
-    const continueBtn = page.locator('[data-cy="magnetic-synthesis-next-tool-button"]');
-    await expect(continueBtn).not.toBeDisabled({ timeout: 5000 });
-  });
-
-  test('D7: Adviser Settings modal opens from context menu', async ({ page }) => {
-    await goToCoreAdviser(page);
-    const settingsBtn = page.locator('[data-cy$="settings-modal-button"]').first();
-    await expect(settingsBtn).toBeVisible();
-    await settingsBtn.click();
-    await pause(page, 500, 'mechanical: settle');
-    const modal = page.locator('.modal.show, [role="dialog"]').first();
-    await expect(modal).toBeVisible({ timeout: 5000 });
-    await ss(page, 'D7-adviser-settings-modal');
-  });
-});
+// ── Group D removed: Core Adviser was reached via ToolSelector after AC Sweep,
+// which no longer exists. The Core Adviser flow now lives inside the Magnetic
+// Builder step; cover it there if needed.
 
 // ── Group E — Magnetic Adviser ────────────────────────────────────────────────
 
@@ -490,54 +358,8 @@ test.describe('Group E — Magnetic Adviser', () => {
   });
 });
 
-// ── Group F — Catalog Adviser ─────────────────────────────────────────────────
-
-test.describe('Group F — Catalog Adviser (ToolSelector)', () => {
-  async function goToCatalogAdviser(page) {
-    await openViaWizard(page, BUCK_CY);
-    await clickContinue(page); // → operatingPoints
-    const tsReached = await goToToolSelector(page);
-    if (!tsReached) return false;
-    const catBtn = page.locator(`[data-cy="${TS_PFX}-magnetic-adviser-button"]`);
-    // Note: CatalogAdviser is via a separate catalog workflow; ToolSelector has a
-    // "Magnetic Adviser" option — use it to check the ToolSelector buttons here.
-    return await softVisible(catBtn, 5000);
-  }
-
-  test('F1: ToolSelector shows Magnetic Adviser button (reachable when AC Sweep)', async ({ page }) => {
-    await openViaWizard(page, BUCK_CY);
-    await clickContinue(page);
-    const reached = await goToToolSelector(page);
-    expect(reached, 'ToolSelector must be reachable via AC Sweep').toBe(true);
-    await expect(
-      page.locator(`[data-cy="${TS_PFX}-magnetic-adviser-button"]`)
-    ).toBeVisible({ timeout: 10000 });
-  });
-
-  test('F2: ToolSelector shows Magnetic Builder button', async ({ page }) => {
-    await openViaWizard(page, BUCK_CY);
-    await clickContinue(page);
-    const reached = await goToToolSelector(page);
-    expect(reached, 'ToolSelector must be reachable via AC Sweep').toBe(true);
-    await expect(
-      page.locator(`[data-cy="${TS_PFX}-magnetic-builder-button"]`)
-    ).toBeVisible({ timeout: 10000 });
-  });
-
-  test('F3: ToolSelector builder button navigates to builder step', async ({ page }) => {
-    await openViaWizard(page, BUCK_CY);
-    await clickContinue(page);
-    const reached = await goToToolSelector(page);
-    expect(reached, 'ToolSelector must be reachable via AC Sweep').toBe(true);
-    const builderBtn = page.locator(`[data-cy="${TS_PFX}-magnetic-builder-button"]`);
-    await expect(builderBtn).toBeVisible();
-    await builderBtn.click();
-    await pause(page, 1000, 'mechanical: settle');
-    const coreAdvise = page.locator('[data-cy$="-Core-Advise-button"]').first();
-    await expect(coreAdvise).toBeVisible({ timeout: 10000 });
-    await ss(page, 'F3-builder-from-tool-selector');
-  });
-});
+// ── Group F removed: Catalog/Magnetic Adviser via ToolSelector required the
+// AC Sweep → ToolSelector navigation, which was deleted from the OP step.
 
 // ── Group G — Magnetic Builder step ──────────────────────────────────────────
 

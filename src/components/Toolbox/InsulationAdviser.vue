@@ -51,6 +51,20 @@ export default {
         if (masStore.mas.inputs.operatingPoints[0].excitationsPerWinding[0] == null) {
             masStore.mas.inputs.operatingPoints[0].excitationsPerWinding[0] = defaultOperatingPointExcitationForInsulation;
         }
+        // A previously-active operatingPoint may have no `voltage` block at
+        // all (e.g. coming from MagneticAdviser, which only sets `current`).
+        // The calc needs voltage.processed.peak — patch in the insulation
+        // defaults for any missing pieces so we never feed NaN to the WASM.
+        const exc = masStore.mas.inputs.operatingPoints[0].excitationsPerWinding[0];
+        if (exc.voltage == null) {
+            exc.voltage = defaultOperatingPointExcitationForInsulation.voltage;
+        }
+        if (exc.voltage.processed == null) {
+            exc.voltage.processed = defaultOperatingPointExcitationForInsulation.voltage.processed;
+        }
+        if (exc.frequency == null) {
+            exc.frequency = defaultOperatingPointExcitationForInsulation.frequency;
+        }
 
         const standardsToDisable = []
 
@@ -73,9 +87,19 @@ export default {
     methods: {
         calculateInsulation() {
             insulationCoordinator.ready.then(_ => {
-                this.masStore.mas.inputs.operatingPoints[0].excitationsPerWinding[0].voltage.processed.peakToPeak = 2 * this.masStore.mas.inputs.operatingPoints[0].excitationsPerWinding[0].voltage.processed.peak;
-
-                this.insulation = JSON.parse(insulationCoordinator.calculate_insulation(JSON.stringify(this.masStore.mas.inputs)));
+                try {
+                    const exc = this.masStore.mas.inputs.operatingPoints?.[0]?.excitationsPerWinding?.[0];
+                    if (exc?.voltage?.processed && Number.isFinite(Number(exc.voltage.processed.peak))) {
+                        exc.voltage.processed.peakToPeak = 2 * Number(exc.voltage.processed.peak);
+                    }
+                    const raw = insulationCoordinator.calculate_insulation(JSON.stringify(this.masStore.mas.inputs));
+                    this.insulation = JSON.parse(raw);
+                } catch (e) {
+                    const message = (e && e.message)
+                        || (typeof e === 'string' ? e : 'Insulation calculation failed; check inputs.');
+                    console.error('[InsulationAdviser] calculate_insulation:', e);
+                    this.insulation = { errorMessage: message };
+                }
             });
         },
         onChange() {
@@ -379,6 +403,14 @@ export default {
 .ia-result-text :deep(.row) {
     margin-left: 0 !important;
     margin-right: 0 !important;
+}
+
+/* Force the numeric value and unit shown by DimensionReadOnly to white. */
+.ia-result-text :deep(.dim-ro-input),
+.ia-result-text :deep(.dim-ro-unit),
+.ia-result-text :deep(.dim-ro-alt-unit) {
+    color: #ffffff !important;
+    background: transparent !important;
 }
 
 .ia-result-error {

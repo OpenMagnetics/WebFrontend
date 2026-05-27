@@ -141,6 +141,18 @@ export default {
             />
             <div class="col-2 row">
                 <button
+                    :data-cy="dataTestLabel + '-add-point-below-button'"
+                    type="button"
+                    class="btn btn-circle h-100 w-50 col-6"
+                    @click="onAddPointBelow(index)"
+                    >
+                    <i
+                        :style="combinedStyle([addElementButtonColor])"
+                        :class="combinedClass([addElementButtonColor])"
+                        class="bi bi-plus-circle fs-5"
+                    />
+                </button>
+                <button
                     :data-cy="dataTestLabel + '-remove-point-button'"
                     v-if="masStore.mas.inputs.designRequirements.minimumImpedance.length > 1"
                     type="button"
@@ -153,18 +165,6 @@ export default {
                     />
                 </button>
                 <div v-else class="col-6"/>
-                <button
-                    :data-cy="dataTestLabel + '-add-point-below-button'"
-                    type="button"
-                    class="btn btn-circle h-100 w-50 col-6"
-                    @click=" onAddPointBelow(index)"
-                    >
-                    <i
-                        :style="combinedStyle([addElementButtonColor])"
-                        :class="combinedClass([addElementButtonColor])"
-                        class="bi bi-plus-circle fs-5"
-                    />
-                </button>
             </div>
         </div>
     </div>

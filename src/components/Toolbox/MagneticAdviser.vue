@@ -325,7 +325,7 @@ export default {
             <!-- Main Content Area -->
             <main class="col-12 col-lg-9">
                 <!-- Loading State -->
-                <div v-if="loading" class="d-flex flex-column align-items-center justify-content-center" style="min-height: 400px;">
+                <div v-if="loading" data-cy="magneticAdviser-loading" class="d-flex flex-column align-items-center justify-content-center" style="min-height: 400px;">
                     <img :src="loadingGif" alt="Calculating..." class="rounded mb-3" style="width: 200px;" />
                     <p class="text-white-50">Analyzing magnetic designs...</p>
                 </div>

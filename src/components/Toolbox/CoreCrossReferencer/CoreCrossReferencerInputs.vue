@@ -105,8 +105,9 @@ export default {
                 }
 
                 this.coreShapeFamilies.forEach((shapeFamily) => {
-                    if (!shapeFamily.includes("PQI") && !shapeFamily.includes("UT") &&
-                        !shapeFamily.includes("UI") && !shapeFamily.includes("H") && !shapeFamily.includes("DRUM")) {
+                    const sf = shapeFamily.toLowerCase();
+                    if (!sf.includes("pqi") && !sf.includes("ut") &&
+                        !sf.includes("ui") && !sf.includes("h") && !sf.includes("drum")) {
                         this.coreShapeNames.push(shapeFamily);
                         var numberShapes = 0;
                         for (var i = coreShapeNamesHandle.size() - 1; i >= 0; i--) {

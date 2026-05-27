@@ -66,6 +66,24 @@ export default {
         }
     },
     computed: {
+        ctiLabels() {
+            return { groupI: 'Group I', groupII: 'Group II', groupIIIA: 'Group IIIA', groupIIIB: 'Group IIIB' };
+        },
+        insulationTypeLabels() {
+            const out = {};
+            Object.values(InsulationType).forEach(v => { out[v] = v.charAt(0).toUpperCase() + v.slice(1); });
+            return out;
+        },
+        overvoltageCategoryLabels() {
+            const out = {};
+            Object.values(OvervoltageCategory).forEach(v => { out[v] = `OVC ${v}`; });
+            return out;
+        },
+        pollutionDegreeLabels() {
+            const out = {};
+            Object.values(PollutionDegree).forEach(v => { out[v] = v.replace(/^PD/, 'PD '); });
+            return out;
+        },
     },
     watch: { 
     },
@@ -174,6 +192,7 @@ export default {
                         :justifyContent="false"
                         v-model="modelValue['insulation']"
                         :options="Object.values(Cti)"
+                        :optionLabels="ctiLabels"
                         :labelWidthProportionClass="'col-12'"
                         :selectStyleClass="'col-12'"
                         :labelFontSize='titleFontSize'
@@ -193,6 +212,7 @@ export default {
                         :justifyContent="false"
                         v-model="modelValue['insulation']"
                         :options="Object.values(InsulationType)"
+                        :optionLabels="insulationTypeLabels"
                         :labelWidthProportionClass="'col-12'"
                         :selectStyleClass="'col-12'"
                         :labelFontSize='titleFontSize'
@@ -212,6 +232,7 @@ export default {
                         :justifyContent="false"
                         v-model="modelValue['insulation']"
                         :options="Object.values(OvervoltageCategory)"
+                        :optionLabels="overvoltageCategoryLabels"
                         :labelWidthProportionClass="'col-12'"
                         :selectStyleClass="'col-12'"
                         :labelFontSize='titleFontSize'
@@ -231,6 +252,7 @@ export default {
                         :justifyContent="false"
                         v-model="modelValue['insulation']"
                         :options="Object.values(PollutionDegree)"
+                        :optionLabels="pollutionDegreeLabels"
                         :labelWidthProportionClass="'col-12'"
                         :selectStyleClass="'col-12'"
                         :labelFontSize='titleFontSize'

@@ -4,7 +4,7 @@ import { useMasStore } from '../../stores/mas'
 import { toTitleCase, toPascalCase, deepCopy } from 'WebSharedComponents/assets/js/utils.js'
 import { tooltipsMagneticSynthesisDesignRequirements } from 'WebSharedComponents/assets/js/texts.js'
 import { defaultDesignRequirements, compulsoryRequirements, designRequirementsOrdered, isolationSideOrdered, IsolationSideOrdered, minimumMaximumScalePerParameter} from 'WebSharedComponents/assets/js/defaults.js'
-import { Market, ConnectionType, Topologies, WiringTechnology } from 'WebSharedComponents/assets/ts/MAS.ts'
+import { Market, ConnectionType, Topologies, WiringTechnology, IsolationSide } from 'WebSharedComponents/assets/ts/MAS.ts'
 import Insulation from './DesignRequirements/Insulation.vue'
 import Dimension from 'WebSharedComponents/DataInput/Dimension.vue'
 import MaximumDimensions from './DesignRequirements/MaximumDimensions.vue'
@@ -45,6 +45,34 @@ export default {
         }
     },
     computed: {
+        topologyLabels() {
+            const out = {};
+            Object.values(Topologies).forEach(v => {
+                // camelCase → "Camel Case"
+                out[v] = v.replace(/([A-Z])/g, ' $1').replace(/^./, c => c.toUpperCase()).trim();
+            });
+            return out;
+        },
+        marketLabels() {
+            const out = {};
+            Object.values(Market).forEach(v => { out[v] = v.charAt(0).toUpperCase() + v.slice(1); });
+            return out;
+        },
+        connectionTypeLabels() {
+            return {
+                flyingLead: 'Flying Lead',
+                pcbPad: 'PCB Pad',
+                pin: 'Pin',
+                smt: 'SMT',
+                screw: 'Screw',
+                tht: 'THT',
+            };
+        },
+        isolationSideLabels() {
+            const out = {};
+            Object.values(IsolationSide).forEach(v => { out[v] = v.charAt(0).toUpperCase() + v.slice(1); });
+            return out;
+        },
         getNumberPossibleWindings() {
             if (this.$stateStore.getCurrentApplication() == this.$stateStore.SupportedApplications.Power) {
                 return Array.from({length: 12}, (_, i) => i + 1);
@@ -250,6 +278,9 @@ export default {
                     :dataTestLabel="dataTestLabel + '-NumberWindings'"
                     :options="getNumberPossibleWindings"
                     :titleSameRow="true"
+                    :justifyContent="true"
+                    :labelWidthProportionClass="'col-sm-12 col-md-7'"
+                    :selectStyleClass="'col-sm-12 col-md-5'"
                     :valueFontSize="$styleStore.designRequirements.inputFontSize"
                     :labelFontSize="$styleStore.designRequirements.inputTitleFontSize"
                     :labelBgColor="$styleStore.designRequirements.inputLabelBgColor"
@@ -413,6 +444,9 @@ export default {
                     :min="minimumMaximumScalePerParameter['weight']['min']"
                     :max="minimumMaximumScalePerParameter['weight']['max']"
                     :defaultValue="300"
+                    :justifyContent="true"
+                    :labelWidthProportionClass="'col-sm-12 col-md-7'"
+                    :valueWidthProportionClass="'col-sm-12 col-md-5'"
                     v-model="masStore.mas.inputs.designRequirements"
                     :valueFontSize="$styleStore.designRequirements.inputFontSize"
                     :labelFontSize="$styleStore.designRequirements.inputTitleFontSize"
@@ -443,9 +477,13 @@ export default {
                     v-if="masStore.mas.inputs.designRequirements.terminalType != null"
                     :name="'terminalType'"
                     :dataTestLabel="dataTestLabel + '-TerminalType'"
-                    :defaultValue="new Array(Object.keys(ConnectionType).length).fill(Object.keys(ConnectionType)[0])"
-                    :options="Object.values(ConnectionType)" 
+                    :defaultValue="new Array(Object.keys(ConnectionType).length).fill(ConnectionType.FlyingLead)"
+                    :options="Object.values(ConnectionType)"
+                    :optionLabels="connectionTypeLabels"
                     :titleSameRow="true"
+                    :justifyContent="false"
+                    :labelWidthProportionClass="'col-sm-12 col-md-3'"
+                    :selectStyleClass="'col-sm-12 col-md-4'"
                     :fixedNumberElements="masStore.mas.inputs.designRequirements.turnsRatios.length + 1"
                     v-model="masStore.mas.inputs.designRequirements"
                     :valueFontSize="$styleStore.designRequirements.inputFontSize"
@@ -461,8 +499,12 @@ export default {
                     :name="'isolationSides'"
                     :dataTestLabel="dataTestLabel + '-IsolationSides'"
                     :defaultValue="Object.keys(IsolationSideOrdered)"
-                    :options="IsolationSideOrdered" 
+                    :options="IsolationSideOrdered"
+                    :optionLabels="isolationSideLabels"
                     :titleSameRow="true"
+                    :justifyContent="false"
+                    :labelWidthProportionClass="'col-sm-12 col-md-3'"
+                    :selectStyleClass="'col-sm-12 col-md-4'"
                     :fixedNumberElements="masStore.mas.inputs.designRequirements.turnsRatios.length + 1"
                     v-model="masStore.mas.inputs.designRequirements"
                     :valueFontSize="$styleStore.designRequirements.inputFontSize"
@@ -479,7 +521,11 @@ export default {
                     :name="'topology'"
                     :dataTestLabel="dataTestLabel + '-Topology'"
                     :options="Object.values(Topologies)"
-                    titleSameRow="true"
+                    :optionLabels="topologyLabels"
+                    :titleSameRow="true"
+                    :justifyContent="true"
+                    :labelWidthProportionClass="'col-sm-12 col-md-7'"
+                    :selectStyleClass="'col-sm-12 col-md-5'"
                     v-model="masStore.mas.inputs.designRequirements"
                     :valueFontSize="$styleStore.designRequirements.inputFontSize"
                     :labelFontSize="$styleStore.designRequirements.inputTitleFontSize"
@@ -494,6 +540,11 @@ export default {
                     v-if="masStore.mas.inputs.designRequirements.market != null"
                     :dataTestLabel="dataTestLabel + '-Market'"
                     :options="Object.values(Market)"
+                    :optionLabels="marketLabels"
+                    :titleSameRow="true"
+                    :justifyContent="true"
+                    :labelWidthProportionClass="'col-sm-12 col-md-7'"
+                    :selectStyleClass="'col-sm-12 col-md-5'"
                     v-model="masStore.mas.inputs.designRequirements"
                     :valueFontSize="$styleStore.designRequirements.inputFontSize"
                     :labelFontSize="$styleStore.designRequirements.inputTitleFontSize"

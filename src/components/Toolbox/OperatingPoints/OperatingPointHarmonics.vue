@@ -69,6 +69,13 @@ export default {
         }
     },
     computed: {
+        isInductor() {
+            return this.masStore.mas.inputs.designRequirements.turnsRatios.length === 0;
+        },
+        hasInductance() {
+            const ind = this.masStore.mas.inputs.designRequirements.magnetizingInductance;
+            return ind && (ind.nominal > 0 || ind.minimum > 0);
+        },
     },
     watch: { 
         'currentOperatingPointIndex'(newValue, oldValue) {
@@ -122,6 +129,24 @@ export default {
                 }
             }
             return true;
+        },
+        async induceVoltageFromCurrent() {
+            // Inductor (single-winding) mode: voltage is derived from current via
+            // magnetizing inductance. Mirror OperatingPointManual.induce('current').
+            if (!this.isInductor || !this.hasInductance) return;
+            try {
+                const magnetizingInductance = await this.taskQueueStore.resolveDimensionWithTolerance(this.masStore.mas.inputs.designRequirements.magnetizingInductance);
+                const excitation = this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex];
+                const voltage = await this.taskQueueStore.calculateInducedVoltage(excitation, magnetizingInductance);
+                excitation.voltage.waveform = voltage.waveform;
+                excitation.voltage.harmonics = voltage.harmonics;
+                excitation.voltage.processed = voltage.processed;
+                this.masStore.updatedInputExcitationWaveformUpdatedFromProcessed('voltage');
+                this.masStore.updatedInputExcitationProcessed('voltage');
+                this.forceUpdateVoltage += 1;
+            } catch (error) {
+                console.error('[induceVoltageFromCurrent] failed:', error);
+            }
         },
         async processHarmonics(signalDescriptor, windingIndexOverride = null) {
             if (this.processingHarmonics) {
@@ -205,6 +230,9 @@ export default {
 
             if (this.checkFrequencies(signalDescriptor)) {
                 this.processHarmonics(signalDescriptor);
+                if (signalDescriptor == "current" && this.isInductor) {
+                    setTimeout(() => this.induceVoltageFromCurrent(), 600);
+                }
                 this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex].frequency = this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex].current.harmonics.frequencies[1]
 
                 if (this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex].voltage.harmonics.frequencies[1] != this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex].current.harmonics.frequencies[1]) {
@@ -235,6 +263,11 @@ export default {
                     this.processHarmonics(signalDescriptor);
                     if (signalDescriptor == "current") {
                         this.forceUpdateCurrent += 1;
+                        if (this.isInductor) {
+                            // Voltage is locked to current via L; recompute after WASM
+                            // reconstructs the standardized current signal.
+                            setTimeout(() => this.induceVoltageFromCurrent(), 600);
+                        }
                     }
                     else {
                         this.forceUpdateVoltage += 1;
@@ -257,6 +290,10 @@ export default {
             this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex][signalDescriptor].harmonics.amplitudes.splice(index + 1, 0, newAmplitude);
             if (signalDescriptor == "current") {
                 this.forceUpdateCurrent += 1;
+                if (this.isInductor) {
+                    this.processHarmonics('current');
+                    setTimeout(() => this.induceVoltageFromCurrent(), 600);
+                }
             }
             else {
                 this.forceUpdateVoltage += 1;
@@ -267,6 +304,10 @@ export default {
             this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex][signalDescriptor].harmonics.amplitudes.splice(index, 1);
             if (signalDescriptor == "current") {
                 this.forceUpdateCurrent += 1;
+                if (this.isInductor) {
+                    this.processHarmonics('current');
+                    setTimeout(() => this.induceVoltageFromCurrent(), 600);
+                }
             }
             else {
                 this.forceUpdateVoltage += 1;
@@ -316,7 +357,7 @@ export default {
                     </div>
                 </div>
 
-                <div class="oph-card oph-card-voltage">
+                <div class="oph-card oph-card-voltage" :class="{ 'oph-disabled': isInductor }">
                     <div class="oph-card-header">
                         <i class="bi bi-lightning-fill"></i>
                         <span>Voltage harmonics</span>
@@ -459,6 +500,11 @@ export default {
 
 .oph-card-voltage {
     border-left-color: rgba(0, 182, 255, 0.7);
+}
+
+.oph-disabled {
+    opacity: 0.5;
+    pointer-events: none;
 }
 
 .oph-card-header {

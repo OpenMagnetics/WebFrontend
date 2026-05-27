@@ -127,7 +127,7 @@ export default {
                     const originalVoltageLabel = this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex].voltage.processed?.label;
                     var voltage = await this.taskQueueStore.calculateInducedVoltage(this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex], magnetizingInductance);
                     if (userDutyCycle != null) voltage.processed.dutyCycle = userDutyCycle;
-                    if (originalVoltageLabel && originalVoltageLabel !== 'Custom') voltage.processed.label = originalVoltageLabel;
+                    if (originalVoltageLabel && originalVoltageLabel.toLowerCase() !== 'custom') voltage.processed.label = originalVoltageLabel;
                     this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex].voltage.waveform = voltage.waveform;
                     this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex].voltage.harmonics = voltage.harmonics;
                     this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex].voltage.processed = voltage.processed;

@@ -1,55 +1,25 @@
 /**
  * Adviser Flow Tests
  *
- * Covers the four adviser entry points:
+ * Covers the adviser entry points still reachable from the UI:
  *   - Magnetic Adviser (from wizard "Design Magnetic" or builder context menu)
- *   - Core Adviser (via ToolSelector after AC Sweep)
- *   - Catalog Adviser (via ToolSelector)
  *   - Insulation Adviser (standalone page — WASM-based, no backend)
  *
- * Magnetic/Core/Catalog advisers require the Python backend (POST
- * to localhost:8000). Insulation Adviser is local-only.
+ * The Core Adviser / Catalog Adviser flows that used to be reached through
+ * the AC Sweep → ToolSelector navigation were removed when AC Sweep was cut
+ * from Operating Points. The corresponding tests were deleted with them.
+ *
+ * Magnetic Adviser requires the Python backend (POST to localhost:8000).
+ * Insulation Adviser is local-only.
  */
 
 import { test, expect } from './_coverage.js';
-import { BASE_URL, isBenign, screenshot, openWizard, runAnalytical, goToMagneticAdviser, pause } from './utils.js';
+import { BASE_URL, isBenign, screenshot, openWizard, goToMagneticAdviser, pause } from './utils.js';
 
 const BUCK_CY = 'Buck-link';
 const ss = (page, name) => screenshot(page, 'advisers', name);
 
 // ── Helpers ───────────────────────────────────────────────────────────────
-
-/** Navigate wizard → OP, then switch to AC Sweep to reach ToolSelector. Throws on failure. */
-async function reachToolSelector(page) {
-  await openWizard(page, BUCK_CY);
-  await runAnalytical(page, 30000);
-  const reviewBtn = page.locator('button').filter({ hasText: 'Review Specs' }).first();
-  await expect(reviewBtn, 'Buck analytical must produce Review Specs button').toBeVisible({ timeout: 15000 });
-  await reviewBtn.click();
-  await page.waitForURL('**/magnetic_tool**', { timeout: 30000 });
-  await pause(page, 1500, 'mechanical: settle');
-
-  // Continue DR → OP
-  const continueBtn = page.locator('[data-cy="magnetic-synthesis-next-tool-button"]');
-  await expect(continueBtn).toBeVisible({ timeout: 10000 });
-  if (!(await continueBtn.isDisabled())) await continueBtn.click();
-  await pause(page, 1200, 'mechanical: settle');
-
-  // Switch to AC Sweep
-  const acSweep = page.locator('[data-cy$="-ac-sweep-type"]').first();
-  if (await acSweep.isVisible({ timeout: 3000 })) {
-    await acSweep.click();
-  } else {
-    const text = page.locator('text=AC Sweep').first();
-    await expect(text, 'AC Sweep option must be reachable from OP step').toBeVisible({ timeout: 5000 });
-    await text.click();
-  }
-  await pause(page, 1200, 'mechanical: settle');
-
-  // ToolSelector should now be showing; check for its builder button
-  const tsBuilder = page.locator('[data-cy="MagneticBuilder-magnetic-builder-button"]');
-  await expect(tsBuilder, 'ToolSelector magnetic-builder-button must appear after AC Sweep').toBeVisible({ timeout: 10000 });
-}
 
 /** Open standalone Insulation Adviser. Throws if URL navigation fails. */
 async function openInsulation(page) {
@@ -105,70 +75,6 @@ test.describe('Adviser — Magnetic Adviser', () => {
   });
 });
 
-// ── Core Adviser (via ToolSelector) ───────────────────────────────────────
-
-test.describe('Adviser — Core Adviser (ToolSelector)', () => {
-  test.describe.configure({ timeout: 180000 });
-
-  test('AD-C1: Core Adviser button exists in ToolSelector', async ({ page }) => {
-    await reachToolSelector(page);
-    await expect(
-      page.locator('[data-cy="MagneticBuilder-magnetic-core-adviser-button"]')
-    ).toBeVisible({ timeout: 10000 });
-  });
-
-  test('AD-C2: clicking Core Adviser loads its UI', async ({ page }) => {
-    await reachToolSelector(page);
-    await page.locator('[data-cy="MagneticBuilder-magnetic-core-adviser-button"]').click();
-    await pause(page, 1500, 'mechanical: settle');
-    // Calculate button (suffix match to tolerate dataTestLabel typo noted in existing tests)
-    await expect(
-      page.locator('[data-cy$="-calculate-mas-advises-button"]').first()
-    ).toBeVisible({ timeout: 10000 });
-    await ss(page, 'C2-core-adviser');
-  });
-
-  test('AD-C3: running Core Adviser completes and shows results', async ({ page }) => {
-    await reachToolSelector(page);
-    await page.locator('[data-cy="MagneticBuilder-magnetic-core-adviser-button"]').click();
-    await pause(page, 1500, 'mechanical: settle');
-
-    const calcBtn = page.locator('[data-cy$="-calculate-mas-advises-button"]').first();
-    await calcBtn.click();
-    await page.waitForFunction(
-      () => !document.querySelector('[data-cy="CoreAdviser-loading"]'),
-      { timeout: 90000 }
-    );
-    await pause(page, 500, 'mechanical: settle');
-    await ss(page, 'C3-core-results');
-  });
-});
-
-// ── Catalog Adviser (via ToolSelector) ────────────────────────────────────
-
-test.describe('Adviser — Catalog (ToolSelector)', () => {
-  test.describe.configure({ timeout: 180000 });
-
-  test('AD-CAT1: Magnetic Adviser button exists in ToolSelector', async ({ page }) => {
-    await reachToolSelector(page);
-    await expect(
-      page.locator('[data-cy="MagneticBuilder-magnetic-adviser-button"]')
-    ).toBeVisible({ timeout: 10000 });
-  });
-
-  test('AD-CAT2: Magnetic Builder button in ToolSelector navigates to builder', async ({ page }) => {
-    await reachToolSelector(page);
-    const btn = page.locator('[data-cy="MagneticBuilder-magnetic-builder-button"]');
-    await btn.click();
-    await pause(page, 1500, 'mechanical: settle');
-    // Builder step shows Core Advise button
-    await expect(
-      page.locator('[data-cy$="-Core-Advise-button"]').first()
-    ).toBeVisible({ timeout: 10000 });
-    await ss(page, 'CAT2-to-builder');
-  });
-});
-
 // ── Insulation Adviser (standalone, WASM-based) ──────────────────────────
 
 test.describe('Adviser — Insulation Adviser (standalone)', () => {
@@ -186,11 +92,13 @@ test.describe('Adviser — Insulation Adviser (standalone)', () => {
 
   test('AD-INS2: input containers are visible', async ({ page }) => {
     await openInsulation(page);
-    // At least one of the expected inputs must be present in the DOM
+    // At least one of the expected inputs must be present in the DOM.
+    // Use *= (contains) because data-cy values include suffixes like
+    // "-container", "-number-input", etc. appended by Dimension components.
     const anyPresent = await Promise.any([
-      page.locator('[data-cy$="-SwitchingFrequency"]').waitFor({ timeout: 8000 }).then(() => true),
-      page.locator('[data-cy$="-VoltagePeak"]').waitFor({ timeout: 8000 }).then(() => true),
-      page.locator('[data-cy$="-Altitude"]').waitFor({ timeout: 8000 }).then(() => true),
+      page.locator('[data-cy*="-SwitchingFrequency"]').first().waitFor({ timeout: 8000 }).then(() => true),
+      page.locator('[data-cy*="-VoltagePeak"]').first().waitFor({ timeout: 8000 }).then(() => true),
+      page.locator('[data-cy*="-Altitude"]').first().waitFor({ timeout: 8000 }).then(() => true),
     ]);
     expect(anyPresent).toBe(true);
     await ss(page, 'INS2-inputs');
@@ -199,12 +107,13 @@ test.describe('Adviser — Insulation Adviser (standalone)', () => {
   test('AD-INS3: result output fields present', async ({ page }) => {
     await openInsulation(page);
     await pause(page, 1500, 'mechanical: settle');
-    // Check for any of the 4 output fields
+    // Check for any of the 4 output fields (use *= for the same suffix reason
+    // explained in AD-INS2).
     const outputs = [
-      '[data-cy$="-Clearance"]',
-      '[data-cy$="-CreepageDistance"]',
-      '[data-cy$="-WithstandVoltage"]',
-      '[data-cy$="-DistanceThroughInsulation"]',
+      '[data-cy*="-Clearance"]',
+      '[data-cy*="-CreepageDistance"]',
+      '[data-cy*="-WithstandVoltage"]',
+      '[data-cy*="-DistanceThroughInsulation"]',
     ];
     let found = 0;
     for (const sel of outputs) {
