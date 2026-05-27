@@ -39,10 +39,35 @@ const pinia = createPinia()
 pinia.use(piniaPluginPersistedstate)
 {
     const v = new URLSearchParams(window.location.search).get('colortest');
+    let testColor = null;
     if (v === '1' || v === 'white') {
         import('./assets/scss/color-test.scss');
+        testColor = '#ffffff';
     } else if (v === 'black') {
         import('./assets/scss/color-test-black.scss');
+        testColor = '#000000';
+    }
+    if (testColor) {
+        const COLOR_RX = /^\s*(#[0-9a-fA-F]{3,8}|rgba?\(|hsla?\()/;
+        const replaceColors = (obj, seen = new WeakSet()) => {
+            if (!obj || typeof obj !== 'object' || seen.has(obj)) return;
+            seen.add(obj);
+            for (const k of Object.keys(obj)) {
+                const val = obj[k];
+                if (typeof val === 'string' && COLOR_RX.test(val)) {
+                    obj[k] = testColor;
+                } else if (val && typeof val === 'object') {
+                    replaceColors(val, seen);
+                }
+            }
+        };
+        pinia.use(({ store }) => {
+            if (store.$id !== 'style' && store.$id !== 'fairRiteStyle') return;
+            store.$onAction(({ after }) => {
+                after(() => replaceColors(store.$state));
+            });
+            replaceColors(store.$state);
+        });
     }
 }
 
