@@ -171,9 +171,9 @@ import Footer from '../components/Footer.vue'
 .tos-body p, .tos-body li {
     font-size: 0.92rem;
     line-height: 1.7;
-    color: rgba(255,255,255,0.82);
+    color: rgba(var(--bs-white-rgb), 0.82);
 }
-.tos-body strong { color: rgba(255,255,255,0.95); }
+.tos-body strong { color: rgba(var(--bs-white-rgb), 0.95); }
 .tos-body a { color: var(--bs-primary); }
 .tos-body h2 + p, .tos-body h2 + ul {
     background: linear-gradient(180deg, rgba(var(--bs-primary-rgb),0.04) 0%, rgba(var(--bs-primary-rgb),0.02) 100%), var(--bs-dark);

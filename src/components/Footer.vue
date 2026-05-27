@@ -50,7 +50,7 @@ export default {
         rgba(var(--bs-dark-rgb), 0.82) 0%,
         rgba(var(--bs-dark-rgb), 0.95) 100%);
     border-top: 1px solid rgba(var(--bs-primary-rgb), 0.25);
-    box-shadow: 0 -3px 12px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 -3px 12px rgba(var(--bs-black-rgb), 0.3);
     backdrop-filter: blur(6px);
     -webkit-backdrop-filter: blur(6px);
 }
@@ -81,13 +81,13 @@ export default {
 }
 
 .om-footer-sep {
-    color: rgba(255, 255, 255, 0.2);
+    color: rgba(var(--bs-white-rgb), 0.2);
     font-size: 0.75rem;
 }
 
 .om-footer-copy {
     font-size: 0.72rem;
-    color: rgba(255, 255, 255, 0.28);
+    color: rgba(var(--bs-white-rgb), 0.28);
 }
 
 .om-footer-links {
@@ -99,7 +99,7 @@ export default {
 
 .om-footer-link {
     font-size: 0.74rem;
-    color: rgba(255, 255, 255, 0.4);
+    color: rgba(var(--bs-white-rgb), 0.4);
     text-decoration: none;
     padding: 0.2rem 0.55rem;
     border-radius: 5px;
@@ -114,7 +114,7 @@ export default {
 
 .om-footer-prefs-btn {
     font-size: 0.74rem;
-    color: rgba(255, 255, 255, 0.35);
+    color: rgba(var(--bs-white-rgb), 0.35);
     background: transparent;
     border: 1px solid rgba(var(--bs-primary-rgb), 0.2);
     border-radius: 5px;

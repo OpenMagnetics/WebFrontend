@@ -537,7 +537,7 @@ export default {
         backdrop-filter: blur(6px);
         -webkit-backdrop-filter: blur(6px);
         border-bottom: 1px solid rgba(var(--bs-primary-rgb), 0.35);
-        box-shadow: 0 4px 18px rgba(0, 0, 0, 0.45);
+        box-shadow: 0 4px 18px rgba(var(--bs-black-rgb), 0.45);
     }
 
     /* Brand text — gradient teal */
@@ -827,14 +827,14 @@ export default {
     }
     .jumbotron{
         border-radius: 1em;
-        box-shadow: 0 5px 10px rgba(0,0,0,.2);
+        box-shadow: 0 5px 10px rgba(var(--bs-black-rgb), .2);
     }
     .card{
         padding: 1.5em .5em .5em;
         background-color: var(--bs-light);
         border-radius: 1em;
         text-align: center;
-        box-shadow: 0 5px 10px rgba(0,0,0,.2);
+        box-shadow: 0 5px 10px rgba(var(--bs-black-rgb), .2);
     }
     .form-control:disabled {
         background-color: var(--bs-dark) !important;

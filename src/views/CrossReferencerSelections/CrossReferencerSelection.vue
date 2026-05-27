@@ -71,7 +71,7 @@ export default {
       width: 100%;
       height: 100%;
       opacity: 1;
-      background-image: linear-gradient(to bottom, rgba(26, 26, 26, 0.666), var(--bs-dark)),
+      background-image: linear-gradient(to bottom, rgba(var(--bs-dark-rgb), 0.666), var(--bs-dark)),
     url('/images/background_cross_reference.png');
       background-repeat: no-repeat;
       background-position: 50% 0;
@@ -117,14 +117,14 @@ export default {
     }
     .jumbotron{
         border-radius: 1em;
-        box-shadow: 0 5px 10px rgba(0,0,0,.2);
+        box-shadow: 0 5px 10px rgba(var(--bs-black-rgb), .2);
     }
     .card{
         padding: 1.5em .5em .5em;
         background-color: var(--bs-light);
         border-radius: 1em;
         text-align: center;
-        box-shadow: 0 5px 10px rgba(0,0,0,.2);
+        box-shadow: 0 5px 10px rgba(var(--bs-black-rgb), .2);
     }
     .form-control:disabled {
         background-color: var(--bs-dark) !important;

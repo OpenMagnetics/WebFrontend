@@ -468,11 +468,11 @@ export default {
                 yData = yData.map(v => Math.max(clipMin, Math.min(clipMax, v)));
             }
             
-            let waveformColor = '#ffffff';
+            let waveformColor = 'var(--bs-white)';
             if (isVoltageWaveform) {
-                waveformColor = this.$styleStore.operatingPoints?.voltageGraph?.color || '#b18aea';
+                waveformColor = this.$styleStore.operatingPoints?.voltageGraph?.color;
             } else if (isCurrentWaveform) {
-                waveformColor = this.$styleStore.operatingPoints?.currentGraph?.color || '#4CAF50';
+                waveformColor = this.$styleStore.operatingPoints?.currentGraph?.color;
             }
             
             return [{
@@ -491,7 +491,7 @@ export default {
         getTimeAxisOptions() {
             return {
                 label: 'Time',
-                colorLabel: '#d4d4d4',
+                colorLabel: 'var(--bs-light)',
                 type: 'value',
                 unit: 's',
             };
@@ -617,7 +617,7 @@ export default {
                     result.push({
                         label: wf.label,
                         data: { x: wf.x, y: yData },
-                        colorLabel: this.$styleStore.operatingPoints?.voltageGraph?.color || '#b18aea',
+                        colorLabel: this.$styleStore.operatingPoints?.voltageGraph?.color,
                         type: 'value',
                         position: 'left',
                         unit: 'V',
@@ -645,7 +645,7 @@ export default {
                     result.push({
                         label: wf.label,
                         data: { x: wf.x, y: yData },
-                        colorLabel: '#FF9800',  // Orange for output voltage
+                        colorLabel: getComputedStyle(document.documentElement).getPropertyValue('--bs-warning').trim() ,
                         type: 'value',
                         position: 'right',
                         unit: 'V',
@@ -673,7 +673,7 @@ export default {
                 result.push({
                     label: vWf.label,
                     data: { x: vWf.x, y: yData },
-                    colorLabel: this.$styleStore.operatingPoints?.voltageGraph?.color || '#b18aea',
+                    colorLabel: this.$styleStore.operatingPoints?.voltageGraph?.color,
                     type: 'value',
                     position: 'left',
                     unit: 'V',
@@ -686,7 +686,7 @@ export default {
                 result.push({
                     label: iWf.label,
                     data: { x: iWf.x, y: iWf.y },
-                    colorLabel: this.$styleStore.operatingPoints?.currentGraph?.color || '#4CAF50',
+                    colorLabel: this.$styleStore.operatingPoints?.currentGraph?.color,
                     type: 'value',
                     position: 'right',
                     unit: 'A',

@@ -1,15 +1,21 @@
-<script setup >
-import { toTitleCase, formatUnit, formatPowerDensity, formatAdimensional, formatMagneticFluxDensity, formatMagneticFieldStrength, formatResistivity, formatTemperature, removeTrailingZeroes, deepCopy } from 'WebSharedComponents/assets/js/utils.js'
-import '../../../assets/css/vue-good-table-next.css'
-
+<script setup>
+import { formatPowerDensity, formatMagneticFluxDensity, formatMagneticFieldStrength, formatResistivity, formatTemperature, removeTrailingZeroes } from 'WebSharedComponents/assets/js/utils.js'
+import DataTable from 'datatables.net-vue3'
+import DataTablesCore from 'datatables.net'
 </script>
 
 <script>
+const fmt = (formatter) => (data) => {
+    if (data == null || isNaN(data)) return ''
+    const { label, unit } = formatter(data)
+    return `${removeTrailingZeroes(label, 2)} ${unit}`
+}
 
 export default {
-    emits: [
-        'click',
-    ],
+    emits: ['click'],
+    components: {
+        DataTable,
+    },
     props: {
         dataTestLabel: {
             type: String,
@@ -23,172 +29,72 @@ export default {
         },
         onlyCoresInStock: {
             type: Boolean,
-            defalut: "false"
+            default: false,
         },
     },
     data() {
+        DataTable.use(DataTablesCore)
         const columns = [
-            {
-                label: 'Name',
-                field: 'label',
-                tdClass: 'text-start',
-                tooltip: 'Reference name give to Core',
-            },
-            {
-                label: 'Initial Permeability',
-                field: 'initialPermeability',
-                tdClass: 'text-center',
-                tooltip: 'Initial Permeability of the core material',
-            },
-            {
-                label: 'Remanence',
-                field: 'remanence',
-                tdClass: 'text-center',
-                tooltip: 'Remanence of the core material',
-            },
-            {
-                label: 'Coercive Force',
-                field: 'coerciveForce',
-                tdClass: 'text-center',
-                tooltip: 'Coercive Force of the core material',
-            },
-            {
-                label: 'Saturation',
-                field: 'saturation',
-                tdClass: 'text-center',
-                tooltip: 'Saturation of the core material',
-            },
-            {
-                label: 'Curie Temperature',
-                field: 'curieTemperature',
-                tdClass: 'text-center',
-                tooltip: 'Curie Temperature of the core material',
-            },
-            {
-                label: 'Volumetric Losses',
-                field: 'volumetricLosses',
-                tdClass: 'text-center',
-                tooltip: 'Average Volumetric Losses of the core material',
-            },
-            {
-                label: 'Resistivity',
-                field: 'resistivity',
-                tdClass: 'text-center',
-                tooltip: 'Resistivity of the core material',
-            },
+            { data: 'label', className: 'text-start' },
+            { data: 'initialPermeability', className: 'text-center', render: (d) => d == null || isNaN(d) ? '' : removeTrailingZeroes(d, 0) },
+            { data: 'remanence', className: 'text-center', render: fmt(formatMagneticFluxDensity) },
+            { data: 'coerciveForce', className: 'text-center', render: fmt(formatMagneticFieldStrength) },
+            { data: 'saturation', className: 'text-center', render: fmt(formatMagneticFluxDensity) },
+            { data: 'curieTemperature', className: 'text-center', render: fmt(formatTemperature) },
+            { data: 'volumetricLosses', className: 'text-center', render: fmt(formatPowerDensity) },
+            { data: 'resistivity', className: 'text-center', render: fmt(formatResistivity) },
         ]
-        var currentTableWidth = window.innerWidth;
         return {
             columns,
-            currentTableWidth,
         }
     },
     methods: {
-        scaleColumns() {
-            this.scaledColumns = []
-            var selectedColumns = this.columns 
-
-            selectedColumns.forEach((item, index) => {
-                const newItem =deepCopy(item)
-                if (this.currentTableWidth < 1200) {
-                    var slice = 8
-                    if (this.currentTableWidth < 1100)
-                        slice = 7
-                    if (this.currentTableWidth < 1000)
-                        slice = 6
-                    if (this.currentTableWidth < 900)
-                        slice = 4
-                    if (this.currentTableWidth < 700)
-                        slice = 3
-                    if (this.currentTableWidth < 600)
-                        slice = 2
-                    if (this.currentTableWidth < 500)
-                        slice = 1
-                    newItem.label = newItem.label.split(' ')
-                        .map(item => item.length < slice? item + ' ' : item.slice(0, slice) + '. ')
-                        .join('');
-                }
-                this.scaledColumns.push(newItem)
-            })
+        click(originalIndex) {
+            this.$emit('click', originalIndex)
         },
-        click(dataIndex) {
-            this.$emit('click', dataIndex);
-        }
     },
     computed: {
-        getTableGridSize() {
-            return "col-lg-12"
+        tableData() {
+            return (this.data || []).map((row, i) => ({ ...row, originalIndex: i }))
         },
-        getWarningMessage() {
-            var warningMessage = "";
-            return warningMessage;
-        }
     },
-    created() {
-        this.scaleColumns()
-        this.resizeHandler = () => {
-            if (this.$refs.CoreMaterialCrossReferencerTable.$el != null){
-                this.currentTableWidth = this.$refs.CoreMaterialCrossReferencerTable.$el.clientWidth;
-            }
-            this.scaleColumns();
-        };
-    },
-    mounted() {
-        if (this.$refs.CoreMaterialCrossReferencerTable.$el != null){
-            this.currentTableWidth = this.$refs.CoreMaterialCrossReferencerTable.$el.clientWidth;
-        }
-        this.scaleColumns();
-        window.addEventListener('resize', this.resizeHandler);
-    },
-    beforeUnmount() {
-        window.removeEventListener('resize', this.resizeHandler);
-    }
 }
 </script>
 
 <template>
-    <div :class="getTableGridSize" class="container">
-        <div row>
-            <vue-good-table
-                 ref="CoreMaterialCrossReferencerTable"
-                :columns="scaledColumns"
-                :rows="data"
-                theme="open-magnetics"
-                max-height="35vh"
-                :search-options="{
-                    enabled: false
-                }"
-                >
-                <template #table-row="props">
-                    <span v-if="props.column.field == 'label'">
-                        <button type="button" class="btn btn-outline-primary border-0" @click="click(props.row.originalIndex)" >{{props.formattedRow[props.column.field]}}</button>
-                    </span>
-                    <span v-if="props.column.field == 'initialPermeability'">
-                        {{removeTrailingZeroes(props.formattedRow[props.column.field], 0)}}
-                    </span>
-                    <span v-if="props.column.field == 'volumetricLosses'">
-                        {{`${removeTrailingZeroes(formatPowerDensity(props.formattedRow[props.column.field]).label, 2)} ${formatPowerDensity(props.formattedRow[props.column.field]).unit}`}}
-                    </span>
-                    <span v-if="props.column.field == 'saturation'">
-                        {{`${removeTrailingZeroes(formatMagneticFluxDensity(props.formattedRow[props.column.field]).label, 2)} ${formatMagneticFluxDensity(props.formattedRow[props.column.field]).unit}`}}
-                    </span>
-                    <span v-if="props.column.field == 'curieTemperature'">
-                        {{`${removeTrailingZeroes(formatTemperature(props.formattedRow[props.column.field]).label, 2)} ${formatTemperature(props.formattedRow[props.column.field]).unit}`}}
-                    </span>
-                    <span v-if="props.column.field == 'remanence'">
-                        {{`${removeTrailingZeroes(formatMagneticFluxDensity(props.formattedRow[props.column.field]).label, 2)} ${formatMagneticFluxDensity(props.formattedRow[props.column.field]).unit}`}}
-                    </span>
-                    <span v-if="props.column.field == 'coerciveForce'">
-                        {{`${removeTrailingZeroes(formatMagneticFieldStrength(props.formattedRow[props.column.field]).label, 2)} ${formatMagneticFieldStrength(props.formattedRow[props.column.field]).unit}`}}
-                    </span>
-                    <span v-if="props.column.field == 'resistivity'">
-                        {{`${removeTrailingZeroes(formatResistivity(props.formattedRow[props.column.field]).label, 2)} ${formatResistivity(props.formattedRow[props.column.field]).unit}`}}
-                    </span>
+    <div class="col-lg-12 container">
+        <div class="row">
+            <DataTable
+                ref="CoreMaterialCrossReferencerTable"
+                class="display"
+                :columns="columns"
+                :data="tableData"
+                :options="{ select: false, searching: false, lengthChange: false, info: false, paginate: true, pageLength: 10, scrollY: '35vh', scrollCollapse: true }"
+                width="100%"
+            >
+                <thead>
+                    <tr>
+                        <th title="Reference name given to Core">Name</th>
+                        <th title="Initial Permeability of the core material">Initial Permeability</th>
+                        <th title="Remanence of the core material">Remanence</th>
+                        <th title="Coercive Force of the core material">Coercive Force</th>
+                        <th title="Saturation of the core material">Saturation</th>
+                        <th title="Curie Temperature of the core material">Curie Temperature</th>
+                        <th title="Average Volumetric Losses of the core material">Volumetric Losses</th>
+                        <th title="Resistivity of the core material">Resistivity</th>
+                    </tr>
+                </thead>
+                <template #column-0="props">
+                    <button
+                        type="button"
+                        class="btn btn-outline-primary border-0"
+                        @click="click(props.rowData.originalIndex)"
+                    >{{ props.cellData }}</button>
                 </template>
-            </vue-good-table>
+            </DataTable>
         </div>
-        <div row>
-            <label :data-cy="dataTestLabel + '-ErrorMessage'" class="text-danger m-0" style="font-size: 0.9em"> {{getWarningMessage}}</label>
+        <div class="row">
+            <label :data-cy="dataTestLabel + '-ErrorMessage'" class="text-danger m-0" style="font-size: 0.9em"></label>
         </div>
     </div>
 </template>

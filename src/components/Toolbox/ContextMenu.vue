@@ -246,8 +246,8 @@ export default {
     align-items: center;
     justify-content: space-between;
     padding: 0.6rem 0.9rem;
-    background: rgba(255, 255, 255, 0.04);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(var(--bs-white-rgb), 0.04);
+    border-bottom: 1px solid rgba(var(--bs-white-rgb), 0.08);
     font-weight: 600;
     font-size: 0.9rem;
     color: var(--bs-primary);
@@ -310,8 +310,8 @@ export default {
     box-shadow:
         0 0 0 1px rgb(var(--bs-primary-rgb) / 0.35),
         0 2px 8px rgb(var(--bs-primary-rgb) / 0.4),
-        inset 0 1px 0 rgba(255, 255, 255, 0.3);
-    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.25);
+        inset 0 1px 0 rgba(var(--bs-white-rgb), 0.3);
+    text-shadow: 0 1px 1px rgba(var(--bs-black-rgb), 0.25);
 }
 
 .toolmenu-btn-secondary {
@@ -324,15 +324,15 @@ export default {
     box-shadow:
         0 0 0 1px rgb(var(--bs-success-rgb) / 0.35),
         0 2px 8px rgb(var(--bs-success-rgb) / 0.4),
-        inset 0 1px 0 rgba(255, 255, 255, 0.3);
-    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.25);
+        inset 0 1px 0 rgba(var(--bs-white-rgb), 0.3);
+    text-shadow: 0 1px 1px rgba(var(--bs-black-rgb), 0.25);
 }
 
 .toolmenu-btn-danger {
     background: rgb(var(--bs-danger-rgb) / 0.2);
     border: 1px solid rgb(var(--bs-danger-rgb) / 0.55);
     color: var(--bs-danger);
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+    box-shadow: 0 1px 4px rgba(var(--bs-black-rgb), 0.25);
 }
 
 .toolmenu-btn-danger:hover:not(:disabled) {
@@ -342,29 +342,29 @@ export default {
 }
 
 .toolmenu-btn-outline {
-    background: rgba(255, 255, 255, 0.08);
-    border: 1px solid rgba(255, 255, 255, 0.25);
-    color: rgba(255, 255, 255, 0.9);
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+    background: rgba(var(--bs-white-rgb), 0.08);
+    border: 1px solid rgba(var(--bs-white-rgb), 0.25);
+    color: rgba(var(--bs-white-rgb), 0.9);
+    box-shadow: 0 1px 4px rgba(var(--bs-black-rgb), 0.2);
 }
 
 .toolmenu-btn-outline:hover:not(:disabled) {
-    background: rgba(255, 255, 255, 0.15);
-    border-color: rgba(255, 255, 255, 0.45);
+    background: rgba(var(--bs-white-rgb), 0.15);
+    border-color: rgba(var(--bs-white-rgb), 0.45);
     color: var(--bs-white);
 }
 
 .toolmenu-btn-ghost {
     background: transparent;
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    color: rgba(255, 255, 255, 0.75);
+    border: 1px solid rgba(var(--bs-white-rgb), 0.15);
+    color: rgba(var(--bs-white-rgb), 0.75);
     box-shadow: none;
 }
 
 .toolmenu-btn-ghost:hover:not(:disabled) {
-    background: rgba(255, 255, 255, 0.08);
-    border-color: rgba(255, 255, 255, 0.3);
-    color: rgba(255, 255, 255, 0.95);
+    background: rgba(var(--bs-white-rgb), 0.08);
+    border-color: rgba(var(--bs-white-rgb), 0.3);
+    color: rgba(var(--bs-white-rgb), 0.95);
 }
 </style>
 

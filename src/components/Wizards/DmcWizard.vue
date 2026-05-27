@@ -724,7 +724,7 @@ export default {
   width: 100%;
 }
 .dmc-emi-wrapper {
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: 1px solid rgba(var(--bs-white-rgb), 0.08);
   padding-top: 10px;
 }
 </style>

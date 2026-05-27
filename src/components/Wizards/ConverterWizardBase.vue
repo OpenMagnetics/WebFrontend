@@ -159,7 +159,7 @@ export default {
 
   computed: {
     primaryColor() {
-      return this.$styleStore?.theme?.primary || '#b18aea';
+      return this.$styleStore?.theme?.primary;
     },
     primaryRgb() {
       // Convert hex to rgb for rgba() usage
@@ -404,7 +404,7 @@ export default {
           label: w.label || 'Unknown',
           x: w.x,
           y: w.y,
-          colorLabel: w.color || '#b18aea',
+          colorLabel: w.color,
           type: 'value',
           position: 'left',
           unit: w.unit || 'A',
@@ -456,7 +456,7 @@ export default {
     },
 
     // ===== VISUALIZER HELPERS =====
-    getTimeAxisOptions() { return { label: 'Time', colorLabel: '#d4d4d4', type: 'value', unit: 's' }; },
+    getTimeAxisOptions() { return { label: 'Time', colorLabel: 'var(--bs-light)', type: 'value', unit: 's' }; },
     getWaveformsList(waveforms, opIdx) { return waveforms?.[opIdx]?.waveforms || []; },
 
     getSingleWaveformDataForVisualizer(waveforms, opIdx, wfIdx) {
@@ -470,9 +470,9 @@ export default {
         const r = p95 - p5, m = r * 0.1;
         yData = yData.map(v => Math.max(p5 - m, Math.min(p95 + m, v)));
       }
-      let color = '#ffffff';
-      if (isV) color = this.$styleStore?.operatingPoints?.voltageGraph?.color || '#b18aea';
-      else if (isI) color = this.$styleStore?.operatingPoints?.currentGraph?.color || '#4CAF50';
+      let color = 'var(--bs-white)';
+      if (isV) color = this.$styleStore?.operatingPoints?.voltageGraph?.color;
+      else if (isI) color = this.$styleStore?.operatingPoints?.currentGraph?.color;
       return [{ label: wf.label, data: { x: wf.x, y: yData }, colorLabel: color, type: 'value', position: 'left', unit: wf.unit, numberDecimals: 6 }];
     },
 
@@ -518,11 +518,11 @@ export default {
       const pair = pairs[pairIdx], result = [];
       if (pair.voltage) {
         result.push({ label: pair.voltage.wf.label, data: { x: pair.voltage.wf.x, y: this._clipVoltage(pair.voltage.wf.y) },
-          colorLabel: this.$styleStore?.operatingPoints?.voltageGraph?.color || '#b18aea', type: 'value', position: 'left', unit: 'V', numberDecimals: 6 });
+          colorLabel: this.$styleStore?.operatingPoints?.voltageGraph?.color, type: 'value', position: 'left', unit: 'V', numberDecimals: 6 });
       }
       if (pair.current) {
         result.push({ label: pair.current.wf.label, data: { x: pair.current.wf.x, y: pair.current.wf.y },
-          colorLabel: this.$styleStore?.operatingPoints?.currentGraph?.color || '#4CAF50', type: 'value', position: 'right', unit: 'A', numberDecimals: 6 });
+          colorLabel: this.$styleStore?.operatingPoints?.currentGraph?.color, type: 'value', position: 'right', unit: 'A', numberDecimals: 6 });
       }
       return result;
     },
@@ -1240,8 +1240,8 @@ export default {
   <!-- SPICE Code Modal -->
   <div v-if="showSpiceCodeModal" class="modal fade show" tabindex="-1" style="display: block; z-index: 1055;">
     <div class="modal-dialog modal-lg modal-dialog-centered">
-      <div class="modal-content" :style="{ background: 'rgba(30, 30, 40, 0.95)', border: '1px solid ' + primaryColor }">
-        <div class="modal-header" :style="{ borderBottom: '1px solid rgba(255,255,255,0.1)' }">
+      <div class="modal-content" :style="{ background: 'rgba(var(--bs-dark-rgb), 0.95)', border: '1px solid ' + primaryColor }">
+        <div class="modal-header" :style="{ borderBottom: '1px solid rgba(var(--bs-white-rgb), 0.1)' }">
           <h5 class="modal-title" :style="{ color: primaryColor }">
             <i class="bi bi-file-earmark-code me-2"></i>SPICE Netlist<span v-if="spiceCodeTopology"> - {{ spiceCodeTopology }}</span>
           </h5>
@@ -1257,11 +1257,11 @@ export default {
             >
               <i class="bi bi-copy"></i>
             </button>
-            <pre class="p-3 rounded" :style="{ background: 'rgba(0,0,0,0.5)', color: '#d4d4d4', maxHeight: '60vh', overflow: 'auto', fontSize: '0.75rem', fontFamily: 'monospace', border: '1px solid rgba(255,255,255,0.1)', paddingTop: '40px' }"><code>{{ spiceCode }}</code></pre>
+            <pre class="p-3 rounded" :style="{ background: 'rgba(var(--bs-black-rgb), 0.5)', color: 'var(--bs-light)', maxHeight: '60vh', overflow: 'auto', fontSize: '0.75rem', fontFamily: 'monospace', border: '1px solid rgba(var(--bs-white-rgb), 0.1)', paddingTop: '40px' }"><code>{{ spiceCode }}</code></pre>
           </div>
         </div>
-        <div class="modal-footer" :style="{ borderTop: '1px solid rgba(255,255,255,0.1)' }">
-          <button class="btn btn-sm" @click="copySpiceCodeToClipboard" :style="{ color: 'white', borderColor: 'white', backgroundColor: justCopied ? 'rgba(255,255,255,0.2)' : 'transparent' }">
+        <div class="modal-footer" :style="{ borderTop: '1px solid rgba(var(--bs-white-rgb), 0.1)' }">
+          <button class="btn btn-sm" @click="copySpiceCodeToClipboard" :style="{ color: 'var(--bs-white)', borderColor: 'var(--bs-white)', backgroundColor: justCopied ? 'rgba(var(--bs-white-rgb), 0.2)' : 'transparent' }">
             <i class="bi bi-copy me-1"></i>{{ justCopied ? 'Copied' : 'Copy to Clipboard' }}
           </button>
           <button class="btn btn-primary btn-sm" @click="closeSpiceCodeModal">Close</button>
@@ -1319,13 +1319,13 @@ export default {
 
 .wizard-subtitle {
   font-size: 0.85rem;
-  color: rgba(255, 255, 255, 0.6);
+  color: rgba(var(--bs-white-rgb), 0.6);
   margin: 0;
   font-weight: 400;
 }
 
 /* Card styles - using primary color tones */
-.compact-card { background: rgba(30, 30, 40, 0.6); border: 1px solid rgb(from var(--om-primary) r g b / 0.2); border-radius: 8px; overflow: hidden; }
+.compact-card { background: rgba(var(--bs-dark-rgb), 0.6); border: 1px solid rgb(from var(--om-primary) r g b / 0.2); border-radius: 8px; overflow: hidden; }
 .compact-header { padding: 6px 10px; background: rgb(from var(--om-primary) r g b / 0.1); border-bottom: 1px solid rgb(from var(--om-primary) r g b / 0.15); font-size: 0.8rem; font-weight: 500; color: var(--om-primary); }
 .compact-body { padding: 8px; }
 
@@ -1340,21 +1340,21 @@ export default {
 /* Action Buttons - using primary color tones */
 .action-btns { display: flex; gap: 8px; }
 .action-btn-sm { padding: 6px 14px; border-radius: 6px; font-size: 0.8rem; font-weight: 500; cursor: pointer; border: none; }
-.action-btn-sm.primary { background: linear-gradient(135deg, var(--om-primary) 0%, rgb(from var(--om-primary) r g b / 0.7) 100%); color: white; }
+.action-btn-sm.primary { background: linear-gradient(135deg, var(--om-primary) 0%, rgb(from var(--om-primary) r g b / 0.7) 100%); color: var(--bs-white); }
 .action-btn-sm.secondary { background: rgb(from var(--om-primary) r g b / 0.15); border: 1px solid rgb(from var(--om-primary) r g b / 0.3); color: var(--om-primary); }
 .action-btn-sm:disabled { opacity: 0.4; cursor: not-allowed; }
 
 /* Sim Buttons - using primary color tones */
 .sim-btns { display: flex; gap: 4px; }
-.sim-btn { background: linear-gradient(135deg, var(--om-primary) 0%, rgb(from var(--om-primary) r g b / 0.7) 100%); border: none; border-radius: 4px; padding: 4px 10px; color: white; font-size: 0.7rem; font-weight: 500; cursor: pointer; }
-.sim-btn.analytical { background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%); }
-.sim-btn.spice { background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); }
+.sim-btn { background: linear-gradient(135deg, var(--om-primary) 0%, rgb(from var(--om-primary) r g b / 0.7) 100%); border: none; border-radius: 4px; padding: 4px 10px; color: var(--bs-white); font-size: 0.7rem; font-weight: 500; cursor: pointer; }
+.sim-btn.analytical { background: linear-gradient(135deg, var(--bs-secondary) 0%, var(--bs-gray-700) 100%); }
+.sim-btn.spice { background: linear-gradient(135deg, var(--bs-info) 0%, rgb(from var(--bs-info) r g b / 0.75) 100%); }
 .sim-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
 /* Periods selector - using primary color tones */
 .periods-selector { display: flex; align-items: center; gap: 4px; }
-.periods-label { font-size: 0.75rem; color: #888; }
-.periods-select { background: rgba(30, 30, 40, 0.8); border: 1px solid rgb(from var(--om-primary) r g b / 0.3); border-radius: 4px; padding: 2px 6px; font-size: 0.75rem; color: inherit; }
+.periods-label { font-size: 0.75rem; color: var(--bs-secondary); }
+.periods-select { background: rgba(var(--bs-dark-rgb), 0.8); border: 1px solid rgb(from var(--om-primary) r g b / 0.3); border-radius: 4px; padding: 2px 6px; font-size: 0.75rem; color: inherit; }
 
 /* Design mode radio buttons */
 .design-mode-selector { display: flex; flex-direction: column; gap: 4px; }
@@ -1371,11 +1371,11 @@ export default {
 .waveform-item { margin-bottom: 8px; }
 
 /* Empty state */
-.empty-state-compact { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: rgba(255, 255, 255, 0.3); font-size: 0.9rem; gap: 8px; }
+.empty-state-compact { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: rgba(var(--bs-white-rgb), 0.3); font-size: 0.9rem; gap: 8px; }
 .empty-state-compact i { font-size: 2rem; }
 
 /* Error text */
-.error-text { color: #ff6b6b; font-size: 0.8rem; }
+.error-text { color: var(--bs-danger); font-size: 0.8rem; }
 
 /* Form check */
 .form-check-label.small { font-size: 0.75rem; }

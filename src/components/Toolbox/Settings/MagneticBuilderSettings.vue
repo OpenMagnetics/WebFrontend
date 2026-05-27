@@ -413,7 +413,7 @@ export default {
                                 :labelWidthProportionClass="'col-0'"
                                 :valueWidthProportionClass="'col-12'"
                                 :valueBgColor="'transparent'"
-                                :textColor="'white'"
+                                :textColor="'var(--bs-white)'"
                                 @update="(name, value) => onModelChanged(name, value)"
                             />
                         </div>
@@ -430,7 +430,7 @@ export default {
                                 :labelWidthProportionClass="'col-0'"
                                 :valueWidthProportionClass="'col-12'"
                                 :valueBgColor="'transparent'"
-                                :textColor="'white'"
+                                :textColor="'var(--bs-white)'"
                                 @update="(name, value) => onModelChanged(name, value)"
                             />
                         </div>
@@ -447,7 +447,7 @@ export default {
                                 :labelWidthProportionClass="'col-0'"
                                 :valueWidthProportionClass="'col-12'"
                                 :valueBgColor="'transparent'"
-                                :textColor="'white'"
+                                :textColor="'var(--bs-white)'"
                                 @update="(name, value) => onModelChanged(name, value)"
                             />
                         </div>
@@ -481,7 +481,7 @@ export default {
                                 :labelWidthProportionClass="'col-0'"
                                 :valueWidthProportionClass="'col-12'"
                                 :valueBgColor="'transparent'"
-                                :textColor="modelSettingsStore.coilEnableUserWindingLossesModels ? 'white' : 'gray'"
+                                :textColor="modelSettingsStore.coilEnableUserWindingLossesModels ? 'var(--bs-white)' : 'var(--bs-secondary)'"
                                 :disabled="!modelSettingsStore.coilEnableUserWindingLossesModels"
                                 @update="(name, value) => onModelChanged(name, modelSettingsStore.coilEnableUserWindingLossesModels ? value : modelSettingsStore.windingSkinEffectLossesModel)"
                             />
@@ -499,7 +499,7 @@ export default {
                                 :labelWidthProportionClass="'col-0'"
                                 :valueWidthProportionClass="'col-12'"
                                 :valueBgColor="'transparent'"
-                                :textColor="modelSettingsStore.coilEnableUserWindingLossesModels ? 'white' : 'gray'"
+                                :textColor="modelSettingsStore.coilEnableUserWindingLossesModels ? 'var(--bs-white)' : 'var(--bs-secondary)'"
                                 :disabled="!modelSettingsStore.coilEnableUserWindingLossesModels"
                                 @update="(name, value) => onModelChanged(name, modelSettingsStore.coilEnableUserWindingLossesModels ? value : modelSettingsStore.windingProximityEffectLossesModel)"
                             />
@@ -517,7 +517,7 @@ export default {
                                 :labelWidthProportionClass="'col-0'"
                                 :valueWidthProportionClass="'col-12'"
                                 :valueBgColor="'transparent'"
-                                :textColor="isCoreLossesDisabled ? 'gray' : 'white'"
+                                :textColor="isCoreLossesDisabled ? 'var(--bs-secondary)' : 'var(--bs-white)'"
                                 :disabled="isCoreLossesDisabled"
                                 @update="(name, value) => onModelChanged(name, value)"
                             />
@@ -538,7 +538,7 @@ export default {
                                 :labelWidthProportionClass="'col-0'"
                                 :valueWidthProportionClass="'col-12'"
                                 :valueBgColor="'transparent'"
-                                :textColor="'white'"
+                                :textColor="'var(--bs-white)'"
                                 @update="(name, value) => onModelChanged(name, value)"
                             />
                         </div>
@@ -629,16 +629,16 @@ export default {
 }
 
 .custom-switch:checked {
-    background-color: #0d6efd;
-    border-color: #0d6efd;
+    background-color: var(--bs-primary);
+    border-color: var(--bs-primary);
 }
 
 .custom-switch:focus {
-    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+    box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.25);
 }
 
 .setting-item:hover {
-    background-color: rgba(255, 255, 255, 0.03);
+    background-color: rgba(var(--bs-white-rgb), 0.03);
     margin-left: -0.5rem;
     margin-right: -0.5rem;
     padding-left: 0.5rem;

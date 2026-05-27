@@ -184,9 +184,9 @@ export default {
             });
         },
         createRadarOptions(labels, values) {
-            const primary = (this.theme.primary || '#5a7fff').trim();
-            const success = (this.theme.success || '#00c853').trim();
-            const light = '#e8e8e8';
+            const primary = (this.theme.primary || getComputedStyle(document.documentElement).getPropertyValue('--bs-primary')).trim();
+            const success = (this.theme.success || getComputedStyle(document.documentElement).getPropertyValue('--bs-success')).trim();
+            const light = getComputedStyle(document.documentElement).getPropertyValue('--bs-light').trim();
             return {
                 radar: {
                     indicator: labels.map(label => ({ name: label, max: 1 })),
@@ -204,8 +204,8 @@ export default {
                         show: true,
                         areaStyle: {
                             color: [
-                                'rgba(255, 255, 255, 0.025)',
-                                'rgba(255, 255, 255, 0.05)'
+                                'rgba(var(--bs-white-rgb), 0.025)',
+                                'rgba(var(--bs-white-rgb), 0.05)'
                             ]
                         }
                     },
@@ -236,9 +236,9 @@ export default {
             };
         },
         createBarOptions(labels, values) {
-            const primary = (this.theme.primary || '#5a7fff').trim();
-            const success = (this.theme.success || '#00c853').trim();
-            const light = '#e8e8e8';
+            const primary = (this.theme.primary || getComputedStyle(document.documentElement).getPropertyValue('--bs-primary')).trim();
+            const success = (this.theme.success || getComputedStyle(document.documentElement).getPropertyValue('--bs-success')).trim();
+            const light = getComputedStyle(document.documentElement).getPropertyValue('--bs-light').trim();
             return {
                 grid: {
                     left: '8%',
@@ -435,18 +435,18 @@ export default {
 </template>
 
 <style scoped>
-/* Theme shim: in this app --bs-light is actually dark (#2a2a2a) and --bs-white is #d4d4d4,
+/* Theme shim: in this app --bs-light is actually dark (#2a2a2a) and --bs-white is var(--bs-light),
    so semantic "light text" tokens must be built from literal rgb white. */
 .advise-option {
-    --ao-panel-1: color-mix(in srgb, var(--bs-light) 92%, #ffffff 8%);
+    --ao-panel-1: color-mix(in srgb, var(--bs-light) 92%, var(--bs-white) 8%);
     --ao-panel-2: var(--bs-light);
-    --ao-border: rgba(255, 255, 255, 0.1);
-    --ao-border-strong: rgba(255, 255, 255, 0.2);
-    --ao-text: #f2f2f2;
-    --ao-text-muted: rgba(242, 242, 242, 0.7);
-    --ao-text-dim: rgba(242, 242, 242, 0.5);
+    --ao-border: rgba(var(--bs-white-rgb), 0.1);
+    --ao-border-strong: rgba(var(--bs-white-rgb), 0.2);
+    --ao-text: var(--bs-light);
+    --ao-text-muted: rgba(var(--bs-light-rgb), 0.7);
+    --ao-text-dim: rgba(var(--bs-light-rgb), 0.5);
     --ao-stat-bg: color-mix(in srgb, var(--bs-light) 80%, var(--bs-dark) 20%);
-    --ao-stat-border: rgba(255, 255, 255, 0.08);
+    --ao-stat-border: rgba(var(--bs-white-rgb), 0.08);
 
     display: flex;
     flex-direction: column;
@@ -455,8 +455,8 @@ export default {
     border-left: 3px solid rgba(var(--bs-primary-rgb), 0.8);
     border-radius: 14px;
     box-shadow:
-        0 6px 20px rgba(0, 0, 0, 0.5),
-        inset 0 1px 0 rgba(255, 255, 255, 0.06);
+        0 6px 20px rgba(var(--bs-black-rgb), 0.5),
+        inset 0 1px 0 rgba(var(--bs-white-rgb), 0.06);
     overflow: hidden;
     transition: border-color 0.2s, box-shadow 0.25s, transform 0.1s;
 }
@@ -465,8 +465,8 @@ export default {
     transform: translateY(-1px);
     border-color: var(--ao-border-strong);
     box-shadow:
-        0 8px 24px rgba(0, 0, 0, 0.55),
-        inset 0 1px 0 rgba(255, 255, 255, 0.08);
+        0 8px 24px rgba(var(--bs-black-rgb), 0.55),
+        inset 0 1px 0 rgba(var(--bs-white-rgb), 0.08);
 }
 
 .advise-option-selected {
@@ -476,7 +476,7 @@ export default {
         var(--ao-panel-2) 100%);
     box-shadow:
         0 2px 16px rgba(var(--bs-primary-rgb), 0.35),
-        inset 0 1px 0 rgba(255, 255, 255, 0.08);
+        inset 0 1px 0 rgba(var(--bs-white-rgb), 0.08);
 }
 
 .advise-option-header {
@@ -484,7 +484,7 @@ export default {
     align-items: flex-start;
     justify-content: space-between;
     padding: 0.7rem 0.85rem 0.65rem 0.85rem;
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(var(--bs-white-rgb), 0.05);
     border-bottom: 1px solid var(--ao-border);
     gap: 0.6rem;
 }
@@ -585,8 +585,8 @@ export default {
 }
 
 .advise-stat:hover {
-    background: color-mix(in srgb, var(--ao-stat-bg) 85%, #ffffff 15%);
-    border-color: rgba(255, 255, 255, 0.18);
+    background: color-mix(in srgb, var(--ao-stat-bg) 85%, var(--bs-white) 15%);
+    border-color: rgba(var(--bs-white-rgb), 0.18);
 }
 
 .advise-stat-icon {
@@ -651,7 +651,7 @@ export default {
 .advise-option-footer {
     padding: 0.6rem 0.8rem;
     border-top: 1px solid var(--ao-border);
-    background: rgba(255, 255, 255, 0.03);
+    background: rgba(var(--bs-white-rgb), 0.03);
     margin-top: auto;
 }
 
@@ -686,13 +686,13 @@ export default {
         color-mix(in srgb, var(--bs-primary) 115%, transparent 0%) 0%,
         var(--bs-primary) 55%,
         rgb(var(--bs-primary-rgb) / 0.85) 100%);
-    color: #ffffff;
-    border: 1px solid color-mix(in srgb, var(--bs-primary) 70%, #ffffff 30%);
+    color: var(--bs-white);
+    border: 1px solid color-mix(in srgb, var(--bs-primary) 70%, var(--bs-white) 30%);
     box-shadow:
         0 0 0 1px rgb(var(--bs-primary-rgb) / 0.35),
         0 2px 8px rgb(var(--bs-primary-rgb) / 0.4),
-        inset 0 1px 0 rgba(255, 255, 255, 0.3);
-    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.25);
+        inset 0 1px 0 rgba(var(--bs-white-rgb), 0.3);
+    text-shadow: 0 1px 1px rgba(var(--bs-black-rgb), 0.25);
 }
 
 .advise-btn-success {
@@ -700,25 +700,25 @@ export default {
         color-mix(in srgb, var(--bs-success) 115%, transparent 0%) 0%,
         var(--bs-success) 55%,
         rgb(var(--bs-success-rgb) / 0.85) 100%);
-    color: #ffffff;
-    border: 1px solid color-mix(in srgb, var(--bs-success) 70%, #ffffff 30%);
+    color: var(--bs-white);
+    border: 1px solid color-mix(in srgb, var(--bs-success) 70%, var(--bs-white) 30%);
     box-shadow:
         0 0 0 1px rgb(var(--bs-success-rgb) / 0.35),
         0 2px 8px rgb(var(--bs-success-rgb) / 0.4),
-        inset 0 1px 0 rgba(255, 255, 255, 0.3);
-    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.25);
+        inset 0 1px 0 rgba(var(--bs-white-rgb), 0.3);
+    text-shadow: 0 1px 1px rgba(var(--bs-black-rgb), 0.25);
 }
 
 .advise-btn-outline {
-    background: rgba(255, 255, 255, 0.08);
-    border: 1px solid rgba(255, 255, 255, 0.25);
+    background: rgba(var(--bs-white-rgb), 0.08);
+    border: 1px solid rgba(var(--bs-white-rgb), 0.25);
     color: var(--ao-text);
 }
 
 .advise-btn-outline:hover:not(:disabled) {
-    background: rgba(255, 255, 255, 0.15);
-    border-color: rgba(255, 255, 255, 0.4);
-    color: #ffffff;
+    background: rgba(var(--bs-white-rgb), 0.15);
+    border-color: rgba(var(--bs-white-rgb), 0.4);
+    color: var(--bs-white);
 }
 </style>
 

@@ -87,7 +87,7 @@ export default {
         },
         
         textColor() {
-            return this.$styleStore?.wizard?.inputTextColor?.color || '#ffffff';
+            return this.$styleStore?.wizard?.inputTextColor?.color || 'var(--bs-white)';
         },
     },
     
@@ -97,8 +97,8 @@ export default {
         },
         
         getPairedWaveformDataForVisualizer(waveforms, opIndex, pairIndex) {
-            const voltageColor = this.$styleStore?.operatingPoints?.voltageGraph?.color || '#b18aea';
-            const currentColor = this.$styleStore?.operatingPoints?.currentGraph?.color || '#4CAF50';
+            const voltageColor = this.$styleStore?.operatingPoints?.voltageGraph?.color;
+            const currentColor = this.$styleStore?.operatingPoints?.currentGraph?.color;
             return this._composable.getPairedWaveformDataForVisualizer(
                 waveforms, 
                 opIndex, 
@@ -159,14 +159,14 @@ export default {
         },
         
         getButtonStyle(mode) {
-            const primaryColor = this.$styleStore?.theme?.primary || '#b18aea';
+            const primaryColor = this.$styleStore?.theme?.primary;
             const isActive = this.viewMode === mode;
             
             if (isActive) {
                 return {
                     backgroundColor: primaryColor,
                     borderColor: primaryColor,
-                    color: '#ffffff'
+                    color: 'var(--bs-white)'
                 };
             } else {
                 return {
@@ -219,7 +219,7 @@ export default {
                         :axisLabelFontSize="10"
                         :chartPaddings="{top: 50, left: 45, right: 45, bottom: 25}"
                         :bgColor="bgColor"
-                        :lineColor="$styleStore?.theme?.primary || '#b18aea'"
+                        :lineColor="$styleStore?.theme?.primary"
                         :textColor="textColor"
                         :chartStyle="chartStyle"
                         :toolbox="toolbox"
@@ -264,7 +264,7 @@ export default {
 .view-toggle .btn-outline-primary:hover {
     background-color: var(--om-primary) !important;
     border-color: var(--om-primary) !important;
-    color: #ffffff !important;
+    color: var(--bs-white) !important;
 }
 
 .operating-point-label {
@@ -286,7 +286,7 @@ export default {
 }
 
 .empty-state {
-    color: #888;
+    color: var(--bs-secondary);
 }
 
 .empty-icon {

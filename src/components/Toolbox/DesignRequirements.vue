@@ -565,8 +565,8 @@ export default {
 .dr-container {
     --dr-border: rgba(var(--bs-primary-rgb), 0.15);
     --dr-border-soft: rgba(var(--bs-primary-rgb), 0.12);
-    --dr-text: #f2f2f2;
-    --dr-text-muted: rgba(242, 242, 242, 0.7);
+    --dr-text: var(--bs-light);
+    --dr-text-muted: rgba(var(--bs-light-rgb), 0.7);
 
     padding: 0.5rem 0.75rem;
 }
@@ -590,8 +590,8 @@ export default {
     border: 1px solid var(--dr-border);
     border-radius: 14px;
     box-shadow:
-        0 4px 20px rgba(0, 0, 0, 0.12),
-        inset 0 1px 0 rgba(255, 255, 255, 0.04);
+        0 4px 20px rgba(var(--bs-black-rgb), 0.12),
+        inset 0 1px 0 rgba(var(--bs-white-rgb), 0.04);
     overflow: hidden;
 }
 
@@ -643,7 +643,7 @@ export default {
    "dark holes" between them. */
 .dr-detail-body :deep(> *) {
     border-top: 0 !important;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
+    border-bottom: 1px solid rgba(var(--bs-white-rgb), 0.06) !important;
     padding: 0.55rem 0.85rem !important;
     background: transparent !important;
 }
@@ -653,7 +653,7 @@ export default {
 }
 
 .dr-detail-body :deep(> *:hover) {
-    background: rgba(255, 255, 255, 0.025) !important;
+    background: rgba(var(--bs-white-rgb), 0.025) !important;
 }
 
 /* ============ Requirement list item ============ */
@@ -666,7 +666,7 @@ export default {
     margin: 0;
     background: transparent;
     border: 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    border-bottom: 1px solid rgba(var(--bs-white-rgb), 0.05);
     border-radius: 0;
     transition: background 0.15s;
 }
@@ -676,7 +676,7 @@ export default {
 }
 
 .dr-req-item:hover {
-    background: rgba(255, 255, 255, 0.03);
+    background: rgba(var(--bs-white-rgb), 0.03);
 }
 
 .dr-req-item-active {
@@ -737,20 +737,20 @@ export default {
         color-mix(in srgb, var(--bs-primary) 115%, transparent 0%) 0%,
         var(--bs-primary) 55%,
         rgb(var(--bs-primary-rgb) / 0.85) 100%);
-    color: #ffffff;
-    border: 1px solid color-mix(in srgb, var(--bs-primary) 70%, #ffffff 30%);
+    color: var(--bs-white);
+    border: 1px solid color-mix(in srgb, var(--bs-primary) 70%, var(--bs-white) 30%);
     box-shadow:
         0 0 0 1px rgb(var(--bs-primary-rgb) / 0.3),
         0 2px 6px rgb(var(--bs-primary-rgb) / 0.35),
-        inset 0 1px 0 rgba(255, 255, 255, 0.25);
-    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.25);
+        inset 0 1px 0 rgba(var(--bs-white-rgb), 0.25);
+    text-shadow: 0 1px 1px rgba(var(--bs-black-rgb), 0.25);
 }
 
 .dr-btn-remove {
     background: rgb(var(--bs-danger-rgb) / 0.2);
     border: 1px solid rgb(var(--bs-danger-rgb) / 0.6);
     color: var(--bs-danger);
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+    box-shadow: 0 1px 4px rgba(var(--bs-black-rgb), 0.25);
 }
 
 .dr-btn-remove:hover:not(:disabled) {
@@ -759,8 +759,8 @@ export default {
 }
 
 .dr-btn-required {
-    background: rgba(255, 255, 255, 0.06);
-    border: 1px solid rgba(255, 255, 255, 0.18);
-    color: rgba(255, 255, 255, 0.55);
+    background: rgba(var(--bs-white-rgb), 0.06);
+    border: 1px solid rgba(var(--bs-white-rgb), 0.18);
+    color: rgba(var(--bs-white-rgb), 0.55);
 }
 </style>

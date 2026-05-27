@@ -491,15 +491,15 @@ export default {
     border-left: 3px solid rgba(var(--bs-primary-rgb), 0.7);
     border-radius: 12px;
     overflow: hidden;
-    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 3px 10px rgba(var(--bs-black-rgb), 0.3);
 }
 
 .oph-card-current {
-    border-left-color: rgba(177, 138, 234, 0.7);
+    border-left-color: rgba(var(--bs-info-rgb), 0.7);
 }
 
 .oph-card-voltage {
-    border-left-color: rgba(0, 182, 255, 0.7);
+    border-left-color: rgba(var(--bs-success-rgb), 0.7);
 }
 
 .oph-disabled {
@@ -522,23 +522,23 @@ export default {
 }
 
 .oph-card-current .oph-card-header {
-    color: #b18aea;
-    background: rgba(177, 138, 234, 0.1);
-    border-bottom-color: rgba(177, 138, 234, 0.18);
+    color: var(--bs-info);
+    background: rgba(var(--bs-info-rgb), 0.1);
+    border-bottom-color: rgba(var(--bs-info-rgb), 0.18);
 }
 
 .oph-card-current .oph-card-header i {
-    filter: drop-shadow(0 0 4px rgba(177, 138, 234, 0.5));
+    filter: drop-shadow(0 0 4px rgba(var(--bs-info-rgb), 0.5));
 }
 
 .oph-card-voltage .oph-card-header {
-    color: #00b6ff;
-    background: rgba(0, 182, 255, 0.1);
-    border-bottom-color: rgba(0, 182, 255, 0.18);
+    color: var(--bs-success);
+    background: rgba(var(--bs-success-rgb), 0.1);
+    border-bottom-color: rgba(var(--bs-success-rgb), 0.18);
 }
 
 .oph-card-voltage .oph-card-header i {
-    filter: drop-shadow(0 0 4px rgba(0, 182, 255, 0.5));
+    filter: drop-shadow(0 0 4px rgba(var(--bs-success-rgb), 0.5));
 }
 
 .oph-card-header i {
@@ -607,24 +607,24 @@ button.oph-btn-primary {
     background-image: linear-gradient(135deg,
         rgba(var(--bs-primary-rgb), 1) 0%,
         rgba(var(--bs-primary-rgb), 0.8) 100%) !important;
-    color: #ffffff !important;
+    color: var(--bs-white) !important;
     box-shadow:
         0 0 0 1px rgba(var(--bs-primary-rgb), 0.3),
         0 2px 8px rgba(var(--bs-primary-rgb), 0.4),
-        inset 0 1px 0 rgba(255, 255, 255, 0.25);
-    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.25);
+        inset 0 1px 0 rgba(var(--bs-white-rgb), 0.25);
+    text-shadow: 0 1px 1px rgba(var(--bs-black-rgb), 0.25);
 }
 
 button.oph-btn-outline {
-    background: rgba(255, 255, 255, 0.08) !important;
+    background: rgba(var(--bs-white-rgb), 0.08) !important;
     border: 1px solid rgba(var(--bs-primary-rgb), 0.55) !important;
     color: var(--bs-primary) !important;
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+    box-shadow: 0 1px 4px rgba(var(--bs-black-rgb), 0.25);
 }
 
 button.oph-btn-outline:hover {
     background: rgba(var(--bs-primary-rgb), 0.2) !important;
     border-color: rgba(var(--bs-primary-rgb), 0.85) !important;
-    color: #ffffff !important;
+    color: var(--bs-white) !important;
 }
 </style>

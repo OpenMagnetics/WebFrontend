@@ -93,8 +93,8 @@ import Footer from '../components/Footer.vue'
 .container { max-width: 860px; padding-top: 5rem; padding-bottom: 3rem; }
 h1 { font-weight: 700; margin-bottom: 0.25rem; }
 h2 { color: var(--bs-primary); font-size: 1.1rem; font-weight: 600; margin-top: 2rem; margin-bottom: 0.5rem; letter-spacing: 0.01em; }
-p, li { font-size: 0.92rem; line-height: 1.7; color: rgba(255,255,255,0.82); }
-strong { color: rgba(255,255,255,0.95); }
+p, li { font-size: 0.92rem; line-height: 1.7; color: rgba(var(--bs-white-rgb), 0.82); }
+strong { color: rgba(var(--bs-white-rgb), 0.95); }
 a { color: var(--bs-primary); }
 span > h2 ~ p, span > h2 ~ ul {
     background: linear-gradient(180deg, rgba(var(--bs-primary-rgb),0.04) 0%, rgba(var(--bs-primary-rgb),0.02) 100%), var(--bs-dark);

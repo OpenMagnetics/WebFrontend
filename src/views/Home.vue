@@ -73,10 +73,10 @@ export default {
                             <a href="https://github.com/OpenMagnetics/" target="_blank" rel="noopener noreferrer" class="btn btn-lg text-dark bg-success border-0 shadow">
                                 <i class="bi bi-github me-2"></i>Star on GitHub
                             </a>
-                            <a href="https://discord.gg/PFpMjYNb5c" target="_blank" rel="noopener noreferrer" class="btn btn-lg text-white border-0 shadow" style="background-color: #5865F2;">
+                            <a href="https://discord.gg/PFpMjYNb5c" target="_blank" rel="noopener noreferrer" class="btn btn-lg text-white border-0 shadow brand-discord">
                                 <i class="bi bi-discord me-2"></i>Join Discord
                             </a>
-                            <a href="https://www.linkedin.com/company/openmagnetics" target="_blank" rel="noopener noreferrer" class="btn btn-lg text-white border-0 shadow" style="background-color: #0A66C2;">
+                            <a href="https://www.linkedin.com/company/openmagnetics" target="_blank" rel="noopener noreferrer" class="btn btn-lg text-white border-0 shadow brand-linkedin">
                                 <i class="bi bi-linkedin me-2"></i>Follow on LinkedIn
                             </a>
                         </div>
@@ -96,7 +96,7 @@ export default {
                 <div class="row g-4 mb-5 px-3">
                     <!-- Magnetic Builder - Featured -->
                     <div class="col-lg-8">
-                        <div class="card h-100 bg-gradient border-0 shadow-lg" style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);">
+                        <div class="card h-100 bg-gradient border-0 shadow-lg" style="background: linear-gradient(135deg, var(--bs-dark) 0%, rgba(var(--bs-primary-rgb), 0.15) 100%);">
                             <div class="card-body p-4">
                                 <div class="row h-100">
                                     <div class="col-lg-7">
@@ -338,7 +338,7 @@ export default {
                 <!-- Call to Action -->
                 <div class="row py-5 mb-4">
                     <div class="col-lg-8 offset-lg-2 text-center">
-                        <div class="card bg-gradient border-0 shadow-lg p-5" style="background: linear-gradient(135deg, #1e3a5f 0%, #0d1b2a 100%);">
+                        <div class="card bg-gradient border-0 shadow-lg p-5" style="background: linear-gradient(135deg, rgba(var(--bs-primary-rgb), 0.2) 0%, var(--bs-dark) 100%);">
                             <h2 class="text-white display-6 fw-bold mb-3">Ready to Design?</h2>
                             <p class="text-white fs-5 mb-4">Start building your magnetic component right now. No registration required.</p>
                             <div class="d-flex justify-content-center gap-3 flex-wrap">
@@ -359,6 +359,10 @@ export default {
 </template>
 
 <style scoped>
+    /* Brand colors required by external brand guidelines */
+    .brand-discord { background-color: var(--brand-discord, #5865F2); }
+    .brand-linkedin { background-color: var(--brand-linkedin, #0A66C2); }
+
     .wrap {
       position: relative;
     }
@@ -370,7 +374,7 @@ export default {
       width: 100%;
       height: 100%;
       opacity: 1;
-      background-image: linear-gradient(to bottom, rgba(26, 26, 26, 0.7), rgba(26, 26, 26, 1)),
+      background-image: linear-gradient(to bottom, rgba(var(--bs-dark-rgb), 0.7), rgba(var(--bs-dark-rgb), 1)),
     url('/images/background_home.png');
       background-repeat: no-repeat;
       background-position: 50% 0;
@@ -387,23 +391,23 @@ export default {
 
     .card:hover {
         transform: translateY(-5px);
-        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.45) !important;
+        box-shadow: 0 10px 40px rgba(var(--bs-black-rgb), 0.45) !important;
     }
 
     /* Lifted, primary-accented tool cards — match the rest of the revamped UI
        instead of the flat `bg-dark` (which renders nearly black in this theme). */
     .home-tool-card {
         background: linear-gradient(180deg,
-            color-mix(in srgb, var(--bs-light) 92%, #ffffff 8%) 0%,
+            color-mix(in srgb, var(--bs-light) 92%, var(--bs-white) 8%) 0%,
             var(--bs-light) 100%) !important;
-        border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        border: 1px solid rgba(var(--bs-white-rgb), 0.08) !important;
         border-left: 3px solid rgba(var(--bs-primary-rgb), 0.5) !important;
-        box-shadow: 0 4px 18px rgba(0, 0, 0, 0.4),
-            inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
+        box-shadow: 0 4px 18px rgba(var(--bs-black-rgb), 0.4),
+            inset 0 1px 0 rgba(var(--bs-white-rgb), 0.05) !important;
     }
 
     .home-tool-card:hover {
-        border-color: rgba(255, 255, 255, 0.15) !important;
+        border-color: rgba(var(--bs-white-rgb), 0.15) !important;
         border-left-color: rgba(var(--bs-primary-rgb), 0.85) !important;
     }
 

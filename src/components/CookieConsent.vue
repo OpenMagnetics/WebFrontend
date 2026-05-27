@@ -115,7 +115,7 @@ export default {
     border-left: 3px solid rgba(var(--bs-primary-rgb), 0.75);
     border-radius: 14px;
     box-shadow:
-        0 8px 32px rgba(0, 0, 0, 0.6),
+        0 8px 32px rgba(var(--bs-black-rgb), 0.6),
         inset 0 1px 0 rgba(var(--bs-primary-rgb), 0.08);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
@@ -160,7 +160,7 @@ export default {
 }
 
 .om-consent-subtitle {
-    color: rgba(255, 255, 255, 0.35);
+    color: rgba(var(--bs-white-rgb), 0.35);
     font-size: 0.75rem;
     font-weight: 400;
     font-style: italic;
@@ -168,14 +168,14 @@ export default {
 }
 
 .om-consent-body {
-    color: rgba(255, 255, 255, 0.6);
+    color: rgba(var(--bs-white-rgb), 0.6);
     font-size: 0.78rem;
     margin: 0;
     line-height: 1.55;
 }
 
 .om-consent-body strong {
-    color: rgba(255, 255, 255, 0.85);
+    color: rgba(var(--bs-white-rgb), 0.85);
     font-weight: 600;
 }
 
@@ -213,13 +213,13 @@ export default {
 
 .om-consent-decline {
     background: transparent;
-    color: rgba(255, 255, 255, 0.5);
-    border: 1px solid rgba(255, 255, 255, 0.18);
+    color: rgba(var(--bs-white-rgb), 0.5);
+    border: 1px solid rgba(var(--bs-white-rgb), 0.18);
 }
 .om-consent-decline:hover {
-    color: rgba(255, 255, 255, 0.85);
-    border-color: rgba(255, 255, 255, 0.38);
-    background: rgba(255, 255, 255, 0.05);
+    color: rgba(var(--bs-white-rgb), 0.85);
+    border-color: rgba(var(--bs-white-rgb), 0.38);
+    background: rgba(var(--bs-white-rgb), 0.05);
 }
 
 .om-consent-accept {

@@ -254,8 +254,8 @@ export default {
     border: 1px solid rgba(var(--bs-primary-rgb), 0.15);
     border-radius: 14px;
     box-shadow:
-        0 4px 20px rgba(0, 0, 0, 0.12),
-        inset 0 1px 0 rgba(255, 255, 255, 0.04);
+        0 4px 20px rgba(var(--bs-black-rgb), 0.12),
+        inset 0 1px 0 rgba(var(--bs-white-rgb), 0.04);
     overflow: hidden;
     min-height: 60vh;
 }
@@ -306,7 +306,7 @@ export default {
 }
 
 .op-mode-prompt {
-    color: #f2f2f2;
+    color: var(--bs-light);
     font-size: 0.95rem;
     font-weight: 500;
     text-align: center;
@@ -336,12 +336,12 @@ button.op-mode-btn {
     background-image: linear-gradient(135deg,
         rgba(var(--bs-primary-rgb), 1) 0%,
         rgba(var(--bs-primary-rgb), 0.8) 100%) !important;
-    color: #ffffff !important;
+    color: var(--bs-white) !important;
     box-shadow:
         0 0 0 1px rgba(var(--bs-primary-rgb), 0.3),
         0 3px 10px rgba(var(--bs-primary-rgb), 0.35),
-        inset 0 1px 0 rgba(255, 255, 255, 0.25);
-    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.25);
+        inset 0 1px 0 rgba(var(--bs-white-rgb), 0.25);
+    text-shadow: 0 1px 1px rgba(var(--bs-black-rgb), 0.25);
     transition: filter 0.15s, transform 0.1s, box-shadow 0.2s;
     width: 100%;
     outline: none;
@@ -354,7 +354,7 @@ button.op-mode-btn:hover {
     box-shadow:
         0 0 0 1px rgba(var(--bs-primary-rgb), 0.4),
         0 4px 14px rgba(var(--bs-primary-rgb), 0.45),
-        inset 0 1px 0 rgba(255, 255, 255, 0.3);
+        inset 0 1px 0 rgba(var(--bs-white-rgb), 0.3);
 }
 
 button.op-mode-btn i {

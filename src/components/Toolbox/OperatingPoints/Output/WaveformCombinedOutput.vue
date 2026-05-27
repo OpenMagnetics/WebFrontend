@@ -120,7 +120,7 @@ export default {
     border-left: 3px solid rgba(var(--bs-success-rgb), 0.7);
     border-radius: 12px;
     overflow: hidden;
-    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 3px 10px rgba(var(--bs-black-rgb), 0.3);
     margin: 0.4rem 0 0.25rem 0;
 }
 
@@ -158,7 +158,7 @@ export default {
 }
 
 .wco-body :deep(.col-6:hover) {
-    background: rgba(255, 255, 255, 0.03);
+    background: rgba(var(--bs-white-rgb), 0.03);
 }
 </style>
 

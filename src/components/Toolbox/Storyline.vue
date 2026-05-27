@@ -211,8 +211,8 @@ export default {
     align-items: center;
     justify-content: space-between;
     padding: 0.6rem 0.9rem;
-    background: rgba(255, 255, 255, 0.04);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(var(--bs-white-rgb), 0.04);
+    border-bottom: 1px solid rgba(var(--bs-white-rgb), 0.08);
     font-weight: 600;
     font-size: 0.9rem;
     color: var(--bs-primary);
@@ -260,15 +260,15 @@ export default {
     box-shadow:
         0 0 0 1px rgb(var(--bs-success-rgb) / 0.35),
         0 2px 8px rgb(var(--bs-success-rgb) / 0.4),
-        inset 0 1px 0 rgba(255, 255, 255, 0.3);
-    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.25);
+        inset 0 1px 0 rgba(var(--bs-white-rgb), 0.3);
+    text-shadow: 0 1px 1px rgba(var(--bs-black-rgb), 0.25);
 }
 
 .storyline-continue-btn-outline {
     background: rgb(var(--bs-danger-rgb) / 0.2);
     border: 1px solid rgb(var(--bs-danger-rgb) / 0.55);
     color: var(--bs-danger);
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+    box-shadow: 0 1px 4px rgba(var(--bs-black-rgb), 0.25);
 }
 
 .storyline-continue-btn-outline:hover:not(:disabled) {
@@ -321,33 +321,33 @@ export default {
 }
 
 .storyline-step-completed {
-    background: rgba(255, 255, 255, 0.25);
-    border-color: rgba(255, 255, 255, 0.5);
+    background: rgba(var(--bs-white-rgb), 0.25);
+    border-color: rgba(var(--bs-white-rgb), 0.5);
     color: var(--bs-white);
 }
 
 .storyline-step-completed:hover {
-    background: rgba(255, 255, 255, 0.4);
-    border-color: rgba(255, 255, 255, 0.65);
+    background: rgba(var(--bs-white-rgb), 0.4);
+    border-color: rgba(var(--bs-white-rgb), 0.65);
     color: var(--bs-white);
 }
 
 .storyline-step-upcoming {
-    background: rgba(255, 255, 255, 0.06);
-    border-color: rgba(255, 255, 255, 0.12);
-    color: rgba(255, 255, 255, 0.65);
+    background: rgba(var(--bs-white-rgb), 0.06);
+    border-color: rgba(var(--bs-white-rgb), 0.12);
+    color: rgba(var(--bs-white-rgb), 0.65);
 }
 
 .storyline-step-upcoming:hover {
-    background: rgba(255, 255, 255, 0.12);
-    border-color: rgba(255, 255, 255, 0.25);
+    background: rgba(var(--bs-white-rgb), 0.12);
+    border-color: rgba(var(--bs-white-rgb), 0.25);
     color: var(--bs-white);
 }
 
 .storyline-step-pending {
-    background: rgba(0, 0, 0, 0.4);
-    border-color: rgba(255, 255, 255, 0.06);
-    color: rgba(255, 255, 255, 0.4);
+    background: rgba(var(--bs-black-rgb), 0.4);
+    border-color: rgba(var(--bs-white-rgb), 0.06);
+    color: rgba(var(--bs-white-rgb), 0.4);
     cursor: not-allowed;
 }
 

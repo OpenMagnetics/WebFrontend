@@ -123,9 +123,9 @@ export default {
                     }
                 },
                 tooltip: {
-                    backgroundColor: 'rgba(20, 20, 20, 0.92)',
-                    titleColor: '#f2f2f2',
-                    bodyColor: '#f2f2f2',
+                    backgroundColor: 'rgba(var(--bs-dark-rgb), 0.92)',
+                    titleColor: 'var(--bs-light)',
+                    bodyColor: 'var(--bs-light)',
                     borderColor: 'rgba(var(--bs-primary-rgb), 0.6)',
                     borderWidth: 1,
                     padding: 8,
@@ -181,7 +181,7 @@ export default {
                         padding: 4,
                     },
                     grid: {
-                        color: 'rgba(177, 138, 234, 0.12)',
+                        color: 'rgba(var(--bs-info-rgb), 0.12)',
                         drawBorder: false,
                         lineWidth: 1,
                     },
@@ -202,7 +202,7 @@ export default {
                 },
                 x: {
                     ticks: {
-                        color: 'rgba(242, 242, 242, 0.7)',
+                        color: 'rgba(var(--bs-light-rgb), 0.7)',
                         font: { size: 10, weight: '500' },
                         padding: 4,
                         maxRotation: 0,
@@ -222,12 +222,12 @@ export default {
                         }
                     },
                     grid: {
-                        color: 'rgba(255, 255, 255, 0.05)',
+                        color: 'rgba(var(--bs-white-rgb), 0.05)',
                         drawBorder: false,
                         lineWidth: 1,
                     },
                     border: {
-                        color: 'rgba(255, 255, 255, 0.15)',
+                        color: 'rgba(var(--bs-white-rgb), 0.15)',
                     },
                 }
             },

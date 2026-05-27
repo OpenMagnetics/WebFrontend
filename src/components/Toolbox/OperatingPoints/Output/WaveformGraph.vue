@@ -41,7 +41,7 @@ export default {
                         pointRadius: this.enableDrag ? 2.5 : 0,
                         pointHoverRadius: this.enableDrag ? 4 : 0,
                         pointHitRadius: this.enableDrag ? 6 : 0,
-                        pointHoverBorderColor: '#ffffff',
+                        pointHoverBorderColor: 'var(--bs-white)',
                         pointHoverBorderWidth: 1,
                         pointHoverBackgroundColor: this.$styleStore.operatingPoints.currentGraph.color,
                         borderWidth: this.enableDrag ? 2.25 : 1.85,
@@ -49,7 +49,7 @@ export default {
                         cubicInterpolationMode: this.enableDrag ? 'default' : 'monotone',
                         spanGaps: true,
                         borderColor: this.$styleStore.operatingPoints.currentGraph.color,
-                        backgroundColor: 'rgba(177, 138, 234, 0.12)',
+                        backgroundColor: 'rgba(var(--bs-info-rgb), 0.12)',
                         fill: this.enableDrag ? false : 'origin',
                     },
                     {
@@ -61,14 +61,14 @@ export default {
                         pointRadius: this.enableDrag ? 2.5 : 0,
                         pointHoverRadius: this.enableDrag ? 4 : 0,
                         pointHitRadius: this.enableDrag ? 6 : 0,
-                        pointHoverBorderColor: '#ffffff',
+                        pointHoverBorderColor: 'var(--bs-white)',
                         pointHoverBorderWidth: 1,
                         pointHoverBackgroundColor: this.$styleStore.operatingPoints.voltageGraph.color,
                         borderWidth: this.enableDrag ? 2.25 : 1.85,
                         tension: this.enableDrag ? 0 : 0.05,
                         spanGaps: true,
                         borderColor: this.$styleStore.operatingPoints.voltageGraph.color,
-                        backgroundColor: 'rgba(0, 182, 255, 0.1)',
+                        backgroundColor: 'rgba(var(--bs-success-rgb), 0.1)',
                         fill: this.enableDrag ? false : 'origin',
                     },
                     {
@@ -79,7 +79,7 @@ export default {
                         borderWidth: 1,
                         spanGaps: true,
                         pointRadius: 0,
-                        borderColor: 'rgba(255, 255, 255, 0.18)',
+                        borderColor: 'rgba(var(--bs-white-rgb), 0.18)',
                         backgroundColor: 'transparent',
                     }
                 ]
@@ -188,9 +188,9 @@ export default {
                     }
                 },
                 tooltip: {
-                    backgroundColor: 'rgba(20, 20, 20, 0.92)',
-                    titleColor: '#f2f2f2',
-                    bodyColor: '#f2f2f2',
+                    backgroundColor: 'rgba(var(--bs-dark-rgb), 0.92)',
+                    titleColor: 'var(--bs-light)',
+                    bodyColor: 'var(--bs-light)',
                     borderColor: 'rgba(var(--bs-primary-rgb), 0.6)',
                     borderWidth: 1,
                     padding: 8,
@@ -219,7 +219,7 @@ export default {
                     max: 15,
                     min: -15,
                     grid: {
-                        color: 'rgba(177, 138, 234, 0.12)',
+                        color: 'rgba(var(--bs-info-rgb), 0.12)',
                         drawBorder: false,
                         lineWidth: 1,
                     },
@@ -249,7 +249,7 @@ export default {
                     type: 'linear',
                     ticks: {
                         beginAtZero: true,
-                        color: 'rgba(242, 242, 242, 0.7)',
+                        color: 'rgba(var(--bs-light-rgb), 0.7)',
                         font: { size: 10, weight: '500' },
                         padding: 4,
                         maxRotation: 0,
@@ -261,12 +261,12 @@ export default {
                         }
                     },
                     grid: {
-                        color: 'rgba(255, 255, 255, 0.05)',
+                        color: 'rgba(var(--bs-white-rgb), 0.05)',
                         drawBorder: false,
                         lineWidth: 1,
                     },
                     border: {
-                        color: 'rgba(255, 255, 255, 0.15)',
+                        color: 'rgba(var(--bs-white-rgb), 0.15)',
                     },
                 }
             },

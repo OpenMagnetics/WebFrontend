@@ -267,7 +267,7 @@ export default {
     border-left: 3px solid rgba(var(--bs-primary-rgb), 0.7);
     border-radius: 12px;
     overflow: hidden;
-    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 3px 10px rgba(var(--bs-black-rgb), 0.3);
 }
 
 .opc-card-header {
@@ -352,25 +352,25 @@ button.opc-btn-primary {
     background-image: linear-gradient(135deg,
         rgba(var(--bs-primary-rgb), 1) 0%,
         rgba(var(--bs-primary-rgb), 0.8) 100%) !important;
-    color: #ffffff !important;
+    color: var(--bs-white) !important;
     box-shadow:
         0 0 0 1px rgba(var(--bs-primary-rgb), 0.3),
         0 2px 8px rgba(var(--bs-primary-rgb), 0.4),
-        inset 0 1px 0 rgba(255, 255, 255, 0.25);
-    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.25);
+        inset 0 1px 0 rgba(var(--bs-white-rgb), 0.25);
+    text-shadow: 0 1px 1px rgba(var(--bs-black-rgb), 0.25);
 }
 
 button.opc-btn-outline {
-    background: rgba(255, 255, 255, 0.08) !important;
+    background: rgba(var(--bs-white-rgb), 0.08) !important;
     border: 1px solid rgba(var(--bs-primary-rgb), 0.55) !important;
     color: var(--bs-primary) !important;
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+    box-shadow: 0 1px 4px rgba(var(--bs-black-rgb), 0.25);
 }
 
 button.opc-btn-outline:hover:not(:disabled) {
     background: rgba(var(--bs-primary-rgb), 0.2) !important;
     border-color: rgba(var(--bs-primary-rgb), 0.85) !important;
-    color: #ffffff !important;
+    color: var(--bs-white) !important;
 }
 
 .opc-loading {

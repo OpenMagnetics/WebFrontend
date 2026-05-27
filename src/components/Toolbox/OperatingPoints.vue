@@ -327,6 +327,8 @@ export default {
                             :max="minimumMaximumScalePerParameter['temperature']['max']"
                             :defaultValue="25"
                             v-model="masStore.mas.inputs.operatingPoints[operatingPointIndex].conditions"
+                            :labelWidthProportionClass="'col-sm-12 col-md-5'"
+                            :valueWidthProportionClass="'col-sm-12 col-md-7'"
                             :valueFontSize="$styleStore.operatingPoints.inputFontSize"
                             :labelFontSize="$styleStore.operatingPoints.inputFontSize"
                             :labelBgColor="$styleStore.operatingPoints.operatingPointBgColor"
@@ -478,7 +480,7 @@ export default {
     border-radius: 14px;
     padding: 0.6rem 0.5rem !important;
     margin: 0.15rem 0 0.5rem 0;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    box-shadow: 0 4px 20px rgba(var(--bs-black-rgb), 0.12), inset 0 1px 0 rgba(var(--bs-white-rgb), 0.04);
 }
 
 .op-header {
@@ -550,21 +552,21 @@ export default {
     box-shadow:
         0 0 0 1px rgb(var(--bs-primary-rgb) / 0.35),
         0 2px 8px rgb(var(--bs-primary-rgb) / 0.4),
-        inset 0 1px 0 rgba(255, 255, 255, 0.3);
-    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.25);
+        inset 0 1px 0 rgba(var(--bs-white-rgb), 0.3);
+    text-shadow: 0 1px 1px rgba(var(--bs-black-rgb), 0.25);
 }
 
 .op-btn-outline {
-    background: rgba(255, 255, 255, 0.08);
+    background: rgba(var(--bs-white-rgb), 0.08);
     border: 1px solid rgba(var(--bs-primary-rgb), 0.55);
     color: var(--bs-primary);
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+    box-shadow: 0 1px 4px rgba(var(--bs-black-rgb), 0.25);
 }
 
 .op-btn-outline:hover:not(:disabled) {
     background: rgba(var(--bs-primary-rgb), 0.2);
     border-color: rgba(var(--bs-primary-rgb), 0.85);
-    color: #ffffff;
+    color: var(--bs-white);
     box-shadow: 0 2px 8px rgba(var(--bs-primary-rgb), 0.3);
 }
 
@@ -572,7 +574,7 @@ export default {
     background: rgb(var(--bs-danger-rgb) / 0.2);
     border: 1px solid rgb(var(--bs-danger-rgb) / 0.55);
     color: var(--bs-danger);
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+    box-shadow: 0 1px 4px rgba(var(--bs-black-rgb), 0.25);
 }
 
 .op-btn-danger:hover:not(:disabled) {

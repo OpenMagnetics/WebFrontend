@@ -107,7 +107,7 @@ export default {
                         display: false
                     },
                     grid: {
-                        color: "#636363",
+                        color: "var(--bs-secondary)",
                         display: true
                     },
                     max: 1,

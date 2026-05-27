@@ -223,14 +223,14 @@ export default {
 .circ-title {
     font-size: 18px;
     font-weight: 700;
-    color: #f2f2f2;
+    color: var(--bs-light);
     margin: 0;
     letter-spacing: 0.2px;
 }
 
 .circ-subtitle {
     font-size: 12px;
-    color: rgba(242, 242, 242, 0.55);
+    color: rgba(var(--bs-light-rgb), 0.55);
     margin: 0;
 }
 
@@ -242,7 +242,7 @@ export default {
 }
 
 .circ-section {
-    background: rgba(255, 255, 255, 0.03);
+    background: rgba(var(--bs-white-rgb), 0.03);
     border: 1px solid rgba(var(--bs-primary-rgb), 0.15);
     border-radius: 10px;
     padding: 16px 18px;
@@ -301,13 +301,13 @@ export default {
 .circ-section-title {
     font-size: 14px;
     font-weight: 600;
-    color: #f2f2f2;
+    color: var(--bs-light);
     letter-spacing: 0.1px;
 }
 
 .circ-section-desc {
     font-size: 11px;
-    color: rgba(242, 242, 242, 0.5);
+    color: rgba(var(--bs-light-rgb), 0.5);
     margin-top: 1px;
 }
 
@@ -334,7 +334,7 @@ export default {
     border-radius: 7px;
     border: 1px solid rgba(var(--bs-primary-rgb), 0.3);
     background: rgba(var(--bs-primary-rgb), 0.1);
-    color: rgba(242, 242, 242, 0.85) !important;
+    color: rgba(var(--bs-light-rgb), 0.85) !important;
     cursor: pointer;
     transition: background 0.15s, border-color 0.15s, color 0.15s;
     text-align: center;
@@ -344,7 +344,7 @@ export default {
 .circ-export-btn:hover:not(:disabled) {
     background: rgba(var(--bs-primary-rgb), 0.2);
     border-color: rgba(var(--bs-primary-rgb), 0.55);
-    color: white !important;
+    color: var(--bs-white) !important;
 }
 
 .circ-export-btn:disabled {
@@ -360,6 +360,6 @@ export default {
 
 .circ-export-btn-accent:hover:not(:disabled) {
     background: rgba(var(--bs-primary-rgb), 0.28);
-    color: white !important;
+    color: var(--bs-white) !important;
 }
 </style>

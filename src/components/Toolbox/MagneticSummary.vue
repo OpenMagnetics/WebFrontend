@@ -996,7 +996,7 @@ export default {
     border: 1px solid rgba(var(--bs-primary-rgb), 0.2);
     border-left: 3px solid rgba(var(--bs-primary-rgb), 0.7);
     border-radius: 12px;
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    box-shadow: 0 4px 14px rgba(var(--bs-black-rgb), 0.35), inset 0 1px 0 rgba(var(--bs-white-rgb), 0.05);
 }
 
 .toolbar-left, .toolbar-right {
@@ -1010,10 +1010,10 @@ export default {
     margin: 0 auto;
     padding: 0;
     background: var(--bs-dark);
-    color: #f2f2f2;
+    color: var(--bs-light);
     font-size: 11px;
     line-height: 1.4;
-    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 6px 24px rgba(var(--bs-black-rgb), 0.5);
     border: 1px solid rgba(var(--bs-primary-rgb), 0.18);
     border-radius: 12px;
     overflow: hidden;
@@ -1028,7 +1028,7 @@ export default {
         var(--bs-dark);
     border-bottom: 1px solid rgba(var(--bs-primary-rgb), 0.18);
     border-left: 3px solid rgba(var(--bs-primary-rgb), 0.7);
-    color: #f2f2f2;
+    color: var(--bs-light);
     padding: 18px 24px;
 }
 
@@ -1064,19 +1064,19 @@ export default {
     font-weight: 700;
     margin: 0 0 4px 0;
     letter-spacing: 0.3px;
-    color: #f2f2f2;
+    color: var(--bs-light);
 }
 
 .header-left .part-description {
     font-size: 13px;
     margin: 0 0 2px 0;
-    color: rgba(242, 242, 242, 0.8);
+    color: rgba(var(--bs-light-rgb), 0.8);
 }
 
 .header-left .part-type {
     font-size: 11px;
     margin: 0;
-    color: rgba(242, 242, 242, 0.55);
+    color: rgba(var(--bs-light-rgb), 0.55);
 }
 
 .header-right {
@@ -1092,7 +1092,7 @@ export default {
 
 .header-right .revision {
     font-size: 10px;
-    color: rgba(242, 242, 242, 0.55);
+    color: rgba(var(--bs-light-rgb), 0.55);
     margin-top: 4px;
     text-transform: uppercase;
     letter-spacing: 0.05em;
@@ -1146,7 +1146,7 @@ export default {
 
 .key-param .param-label {
     font-size: 9px;
-    color: rgba(242, 242, 242, 0.65);
+    color: rgba(var(--bs-light-rgb), 0.65);
     text-transform: uppercase;
     letter-spacing: 0.05em;
     font-weight: 600;
@@ -1169,7 +1169,7 @@ export default {
 
 .key-param .param-unit {
     font-size: 11px;
-    color: rgba(242, 242, 242, 0.55);
+    color: rgba(var(--bs-light-rgb), 0.55);
 }
 
 /* Sections */
@@ -1215,8 +1215,8 @@ export default {
 
 /* Visualizer */
 .visualizer-container {
-    background: #1a1a1a;
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: var(--bs-dark);
+    border: 1px solid rgba(var(--bs-white-rgb), 0.08);
     border-radius: 4px;
     min-height: 200px;
     overflow: hidden;
@@ -1254,7 +1254,7 @@ export default {
 .spec-table td,
 .data-table td {
     padding: 5px 10px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    border-bottom: 1px solid rgba(var(--bs-white-rgb), 0.06);
 }
 
 .spec-table tr:last-child td,
@@ -1269,7 +1269,7 @@ export default {
 
 .spec-table .symbol {
     font-style: italic;
-    color: rgba(242, 242, 242, 0.7);
+    color: rgba(var(--bs-light-rgb), 0.7);
 }
 
 .spec-table .typ-value {
@@ -1279,17 +1279,17 @@ export default {
 
 .spec-table .conditions {
     font-size: 9px;
-    color: rgba(242, 242, 242, 0.45);
+    color: rgba(var(--bs-light-rgb), 0.45);
 }
 
 .data-table .param-name {
-    color: rgba(242, 242, 242, 0.65);
+    color: rgba(var(--bs-light-rgb), 0.65);
 }
 
 .data-table .param-val {
     font-weight: 600;
     text-align: right;
-    color: #e6e6e6;
+    color: var(--bs-light);
 }
 
 .data-table .total-row {
@@ -1301,7 +1301,7 @@ export default {
 /* Test conditions */
 .test-conditions {
     font-size: 10px;
-    color: rgba(242, 242, 242, 0.65);
+    color: rgba(var(--bs-light-rgb), 0.65);
     margin-bottom: 8px;
     font-style: italic;
 }
@@ -1342,7 +1342,7 @@ export default {
     width: 22px;
     height: 22px;
     background: var(--bs-primary);
-    color: white;
+    color: var(--bs-white);
     border-radius: 50%;
     font-size: 11px;
     font-weight: 700;
@@ -1366,13 +1366,13 @@ export default {
 
 .step-description {
     font-size: 11px;
-    color: #d4d4d4;
+    color: var(--bs-light);
 }
 
 /* Operating Point Excitation */
 .excitation-card {
     background: rgba(var(--bs-primary-rgb), 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(var(--bs-white-rgb), 0.08);
     border-radius: 6px;
     margin-bottom: 12px;
     overflow: hidden;
@@ -1384,12 +1384,12 @@ export default {
     gap: 12px;
     padding: 8px 12px;
     background: rgba(var(--bs-primary-rgb), 0.15);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    border-bottom: 1px solid rgba(var(--bs-white-rgb), 0.08);
 }
 
 .winding-badge {
     background: var(--bs-primary);
-    color: white;
+    color: var(--bs-white);
     padding: 2px 10px;
     border-radius: 12px;
     font-size: 11px;
@@ -1398,7 +1398,7 @@ export default {
 
 .frequency-badge {
     font-size: 11px;
-    color: rgba(242, 242, 242, 0.65);
+    color: rgba(var(--bs-light-rgb), 0.65);
     font-style: italic;
 }
 
@@ -1410,7 +1410,7 @@ export default {
 
 .signal-block {
     flex: 1;
-    background: rgba(26, 26, 30, 0.5);
+    background: rgba(var(--bs-dark-rgb), 0.5);
     border-radius: 4px;
     overflow: hidden;
 }
@@ -1463,14 +1463,14 @@ export default {
 
 .signal-param .param-label {
     font-size: 9px;
-    color: rgba(242, 242, 242, 0.45);
+    color: rgba(var(--bs-light-rgb), 0.45);
     text-transform: uppercase;
 }
 
 .signal-param .param-value {
     font-size: 11px;
     font-weight: 600;
-    color: #d4d4d4;
+    color: var(--bs-light);
 }
 
 .waveform-preview {
@@ -1480,7 +1480,7 @@ export default {
     background:
         radial-gradient(circle at 50% 50%,
             rgba(var(--bs-primary-rgb), 0.08) 0%,
-            rgba(26, 26, 30, 0.9) 75%);
+            rgba(var(--bs-dark-rgb), 0.9) 75%);
     border-radius: 6px;
     border: 1px solid rgba(var(--bs-primary-rgb), 0.18);
     padding: 2px;
@@ -1494,7 +1494,7 @@ export default {
 }
 
 .waveform-baseline {
-    stroke: rgba(255, 255, 255, 0.15);
+    stroke: rgba(var(--bs-white-rgb), 0.15);
     stroke-width: 1;
     stroke-dasharray: 2 3;
 }
@@ -1519,7 +1519,7 @@ export default {
     border-top: 1px solid rgba(var(--bs-primary-rgb), 0.15);
     background: rgba(var(--bs-primary-rgb), 0.03);
     font-size: 9px;
-    color: rgba(242, 242, 242, 0.55);
+    color: rgba(var(--bs-light-rgb), 0.55);
     letter-spacing: 0.02em;
 }
 
@@ -1543,7 +1543,7 @@ export default {
 
 @media print {
     .datasheet-wrapper {
-        background: white;
+        background: var(--bs-white);
         padding: 0;
     }
 
@@ -1554,7 +1554,7 @@ export default {
     .datasheet-container {
         box-shadow: none;
         max-width: 100%;
-        background: white;
+        background: var(--bs-white);
         color: #212529;
         border: none;
     }
@@ -1565,7 +1565,7 @@ export default {
     
     .key-param .param-label,
     .key-param .param-unit {
-        color: rgba(242, 242, 242, 0.45);
+        color: rgba(var(--bs-light-rgb), 0.45);
     }
     
     .data-table .param-name,
@@ -1638,7 +1638,7 @@ export default {
     }
     
     .signal-block {
-        background: #ffffff;
+        background: var(--bs-white);
     }
     
     .signal-header.voltage-header {
@@ -1830,7 +1830,7 @@ export default {
 .summary-btn-outline {
     background: rgba(var(--bs-light-rgb), 0.08);
     border: 1px solid rgba(var(--bs-light-rgb), 0.22);
-    color: white;
+    color: var(--bs-white);
     box-shadow: 0 1px 4px rgba(var(--bs-dark-rgb), 0.25);
 }
 

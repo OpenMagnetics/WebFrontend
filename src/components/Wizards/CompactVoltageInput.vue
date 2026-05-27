@@ -296,7 +296,7 @@ export default {
     padding: 0 0.2rem;
     font-size: 0.8rem;
     text-align: center;
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(var(--bs-white-rgb), 0.05);
     border: 1px solid rgba(var(--bs-primary-rgb), 0.3);
     border-radius: 4px 0 0 4px;
     border-right: none;
@@ -323,7 +323,7 @@ export default {
     border-radius: 0 4px 4px 0;
     border: 1px solid rgba(var(--bs-primary-rgb), 0.3);
     border-left: none;
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(var(--bs-white-rgb), 0.05);
 }
 
 .cv-remove {

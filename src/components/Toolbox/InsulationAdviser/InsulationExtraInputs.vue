@@ -152,15 +152,15 @@ export default {
 
 .iei-cell {
     min-width: 0;
-    background: rgba(255, 255, 255, 0.025);
-    border: 1px solid rgba(255, 255, 255, 0.06);
+    background: rgba(var(--bs-white-rgb), 0.025);
+    border: 1px solid rgba(var(--bs-white-rgb), 0.06);
     border-radius: 9px;
     padding: 0.5rem 0.65rem 0.55rem 0.65rem;
     transition: background 0.15s, border-color 0.15s;
 }
 
 .iei-cell:hover {
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(var(--bs-white-rgb), 0.05);
     border-color: rgba(var(--bs-primary-rgb), 0.25);
 }
 
@@ -171,7 +171,7 @@ export default {
 
 /* Make the label inside each cell read like an uppercase pill caption */
 .iei-cell :deep(.dim-label) {
-    color: rgba(242, 242, 242, 0.65) !important;
+    color: rgba(var(--bs-light-rgb), 0.65) !important;
     font-size: 0.66rem !important;
     font-weight: 700 !important;
     letter-spacing: 0.05em;

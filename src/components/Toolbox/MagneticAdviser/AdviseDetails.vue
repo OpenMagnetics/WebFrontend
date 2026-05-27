@@ -406,16 +406,16 @@ export default {
 </template>
 
 <style scoped>
-/* Theme shim: --bs-light is #2a2a2a, --bs-white is #d4d4d4; use literal white for text. */
+/* Theme shim: --bs-light is #2a2a2a, --bs-white is var(--bs-light); use literal white for text. */
 .ad-offcanvas {
-    --ad-panel-1: color-mix(in srgb, var(--bs-light) 92%, #ffffff 8%);
+    --ad-panel-1: color-mix(in srgb, var(--bs-light) 92%, var(--bs-white) 8%);
     --ad-panel-2: var(--bs-light);
     --ad-sub-1: color-mix(in srgb, var(--bs-light) 80%, var(--bs-dark) 20%);
     --ad-sub-2: color-mix(in srgb, var(--bs-light) 88%, var(--bs-dark) 12%);
-    --ad-border: rgba(255, 255, 255, 0.1);
-    --ad-border-strong: rgba(255, 255, 255, 0.18);
-    --ad-text: #f2f2f2;
-    --ad-text-muted: rgba(242, 242, 242, 0.72);
+    --ad-border: rgba(var(--bs-white-rgb), 0.1);
+    --ad-border-strong: rgba(var(--bs-white-rgb), 0.18);
+    --ad-text: var(--bs-light);
+    --ad-text-muted: rgba(var(--bs-light-rgb), 0.72);
 
     --bs-offcanvas-width: 68vw !important;
     --bs-offcanvas-height: 80vh !important;
@@ -424,7 +424,7 @@ export default {
     border: none !important;
     background: linear-gradient(180deg, var(--ad-panel-1) 0%, var(--ad-panel-2) 100%) !important;
     color: var(--ad-text) !important;
-    box-shadow: -8px 0 30px rgba(0, 0, 0, 0.6) !important;
+    box-shadow: -8px 0 30px rgba(var(--bs-black-rgb), 0.6) !important;
 }
 
 .ad-root {
@@ -442,7 +442,7 @@ export default {
     gap: 0.8rem;
     padding: 0.55rem 0.85rem;
     border-bottom: 1px solid var(--ad-border);
-    background: rgba(255, 255, 255, 0.04);
+    background: rgba(var(--bs-white-rgb), 0.04);
     flex-shrink: 0;
 }
 
@@ -478,8 +478,8 @@ export default {
     width: 1.6rem;
     height: 1.6rem;
     border-radius: 999px;
-    background: rgba(255, 255, 255, 0.08);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(var(--bs-white-rgb), 0.08);
+    border: 1px solid rgba(var(--bs-white-rgb), 0.2);
     color: var(--ad-text);
     font-size: 0.78rem;
     cursor: pointer;
@@ -489,7 +489,7 @@ export default {
 .ad-close:hover {
     background: rgb(var(--bs-danger-rgb) / 0.3);
     border-color: rgb(var(--bs-danger-rgb) / 0.6);
-    color: #ffffff;
+    color: var(--bs-white);
     transform: rotate(90deg);
 }
 
@@ -507,7 +507,7 @@ export default {
     border-left: 3px solid rgba(var(--bs-primary-rgb), 0.7);
     border-radius: 10px;
     overflow: hidden;
-    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.35);
+    box-shadow: 0 3px 10px rgba(var(--bs-black-rgb), 0.35);
     margin-bottom: 0.5rem;
 }
 
@@ -516,7 +516,7 @@ export default {
     align-items: center;
     gap: 0.45rem;
     padding: 0.4rem 0.7rem;
-    background: rgba(255, 255, 255, 0.04);
+    background: rgba(var(--bs-white-rgb), 0.04);
     border-bottom: 1px solid var(--ad-border);
     color: var(--bs-primary);
     font-weight: 600;
@@ -540,7 +540,7 @@ export default {
 }
 
 .ad-table thead tr {
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(var(--bs-white-rgb), 0.05);
 }
 
 .ad-table thead th {
@@ -557,7 +557,7 @@ export default {
 
 .ad-table tbody td {
     padding: 0.35rem 0.7rem;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    border-bottom: 1px solid rgba(var(--bs-white-rgb), 0.05);
     font-weight: 600;
 }
 
@@ -570,7 +570,7 @@ export default {
 }
 
 .ad-table tbody tr:hover td {
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(var(--bs-white-rgb), 0.05);
 }
 
 .ad-table tbody td:first-child {

@@ -577,6 +577,6 @@ export default {
 }
 
 .card:hover {
-    border-color: #6c757d !important;
+    border-color: var(--bs-secondary) !important;
 }
 </style>

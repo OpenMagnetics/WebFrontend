@@ -292,7 +292,7 @@ export default {
     border-left: 3px solid rgba(var(--bs-primary-rgb), 0.7);
     border-radius: 12px;
     overflow: hidden;
-    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 3px 10px rgba(var(--bs-black-rgb), 0.3);
 }
 
 .ia-card-result {
@@ -391,7 +391,7 @@ export default {
 }
 
 .ia-result-text small {
-    color: rgba(242, 242, 242, 0.7);
+    color: rgba(var(--bs-light-rgb), 0.7);
     font-size: 0.7rem;
     font-weight: 600;
     letter-spacing: 0.04em;
@@ -409,7 +409,7 @@ export default {
 .ia-result-text :deep(.dim-ro-input),
 .ia-result-text :deep(.dim-ro-unit),
 .ia-result-text :deep(.dim-ro-alt-unit) {
-    color: #ffffff !important;
+    color: var(--bs-white) !important;
     background: transparent !important;
 }
 

@@ -374,12 +374,12 @@ export default {
 .slider-primary {
     --slider-connect-bg: var(--bs-primary);
     --slider-handle-bg: var(--bs-primary);
-    --slider-bg: rgba(255, 255, 255, 0.1);
+    --slider-bg: rgba(var(--bs-white-rgb), 0.1);
 }
 
 /* Setting item hover effect */
 .setting-item:hover {
-    background-color: rgba(255, 255, 255, 0.03);
+    background-color: rgba(var(--bs-white-rgb), 0.03);
     margin-left: -1rem;
     margin-right: -1rem;
     padding-left: 1rem;
@@ -388,15 +388,15 @@ export default {
 }
 
 /* ============ Optimization Weights panel ============ */
-/* Theme shim: --bs-light is actually #2a2a2a (dark) and --bs-white is #d4d4d4 in this app,
+/* Theme shim: --bs-light is actually #2a2a2a (dark) and --bs-white is var(--bs-light) in this app,
    so semantic "light text" tokens must be built from literal rgb white. */
 .optim-panel {
-    --op-panel-1: color-mix(in srgb, var(--bs-light) 92%, #ffffff 8%);
+    --op-panel-1: color-mix(in srgb, var(--bs-light) 92%, var(--bs-white) 8%);
     --op-panel-2: var(--bs-light);
-    --op-border: rgba(255, 255, 255, 0.1);
-    --op-border-strong: rgba(255, 255, 255, 0.2);
-    --op-text: #f2f2f2;
-    --op-text-muted: rgba(242, 242, 242, 0.7);
+    --op-border: rgba(var(--bs-white-rgb), 0.1);
+    --op-border-strong: rgba(var(--bs-white-rgb), 0.2);
+    --op-text: var(--bs-light);
+    --op-text-muted: rgba(var(--bs-light-rgb), 0.7);
 
     display: flex;
     flex-direction: column;
@@ -405,8 +405,8 @@ export default {
     border-left: 3px solid rgba(var(--bs-primary-rgb), 0.8);
     border-radius: 14px;
     box-shadow:
-        0 6px 20px rgba(0, 0, 0, 0.5),
-        inset 0 1px 0 rgba(255, 255, 255, 0.06);
+        0 6px 20px rgba(var(--bs-black-rgb), 0.5),
+        inset 0 1px 0 rgba(var(--bs-white-rgb), 0.06);
     overflow: hidden;
 }
 
@@ -415,7 +415,7 @@ export default {
     align-items: center;
     gap: 0.55rem;
     padding: 0.75rem 1rem;
-    background: rgba(255, 255, 255, 0.04);
+    background: rgba(var(--bs-white-rgb), 0.04);
     border-bottom: 1px solid var(--op-border);
     color: var(--bs-primary);
     font-weight: 600;
@@ -483,7 +483,7 @@ export default {
     gap: 0.45rem;
     padding: 0.85rem 0.95rem 0.95rem 0.95rem;
     border-top: 1px solid var(--op-border);
-    background: rgba(255, 255, 255, 0.03);
+    background: rgba(var(--bs-white-rgb), 0.03);
 }
 
 .optim-btn {
@@ -519,13 +519,13 @@ export default {
         color-mix(in srgb, var(--bs-primary) 115%, transparent 0%) 0%,
         var(--bs-primary) 55%,
         rgb(var(--bs-primary-rgb) / 0.85) 100%);
-    color: #ffffff;
-    border: 1px solid color-mix(in srgb, var(--bs-primary) 70%, #ffffff 30%);
+    color: var(--bs-white);
+    border: 1px solid color-mix(in srgb, var(--bs-primary) 70%, var(--bs-white) 30%);
     box-shadow:
         0 0 0 1px rgb(var(--bs-primary-rgb) / 0.35),
         0 2px 8px rgb(var(--bs-primary-rgb) / 0.4),
-        inset 0 1px 0 rgba(255, 255, 255, 0.3);
-    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.25);
+        inset 0 1px 0 rgba(var(--bs-white-rgb), 0.3);
+    text-shadow: 0 1px 1px rgba(var(--bs-black-rgb), 0.25);
 }
 
 .optim-btn-success {
@@ -533,13 +533,13 @@ export default {
         color-mix(in srgb, var(--bs-success) 115%, transparent 0%) 0%,
         var(--bs-success) 55%,
         rgb(var(--bs-success-rgb) / 0.85) 100%);
-    color: #ffffff;
-    border: 1px solid color-mix(in srgb, var(--bs-success) 70%, #ffffff 30%);
+    color: var(--bs-white);
+    border: 1px solid color-mix(in srgb, var(--bs-success) 70%, var(--bs-white) 30%);
     box-shadow:
         0 0 0 1px rgb(var(--bs-success-rgb) / 0.35),
         0 2px 8px rgb(var(--bs-success-rgb) / 0.4),
-        inset 0 1px 0 rgba(255, 255, 255, 0.3);
-    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.25);
+        inset 0 1px 0 rgba(var(--bs-white-rgb), 0.3);
+    text-shadow: 0 1px 1px rgba(var(--bs-black-rgb), 0.25);
 }
 
 .optim-btn-outline-danger {
