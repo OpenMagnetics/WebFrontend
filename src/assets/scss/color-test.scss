@@ -1,0 +1,76 @@
+/*
+ * Color-purity test stylesheet.
+ *
+ * Activated by appending ?colortest=1 to any URL (see main.js).
+ *
+ * Forces every Bootstrap CSS variable to white. Anything that's still
+ * visibly NOT white is reading a hardcoded color from somewhere outside
+ * the --bs-* token system. That's a bug we want to catch.
+ *
+ * Intentional exceptions (these will remain colored even with the test on,
+ * and that is correct):
+ *   - 3D scene materials  (Magnetic3DVisualizer, Core3DVisualizer)
+ *   - CAD line defaults    (mvbRuntime, mvbWorker, Core2DVisualizer fallbacks)
+ *   - @media print pages   (datasheet exports)
+ *   - Brand badges          (Discord/LinkedIn fallbacks)
+ */
+:root {
+    /* Core semantic tokens */
+    --bs-primary:   #ffffff !important;
+    --bs-secondary: #ffffff !important;
+    --bs-success:   #ffffff !important;
+    --bs-info:      #ffffff !important;
+    --bs-warning:   #ffffff !important;
+    --bs-danger:    #ffffff !important;
+    --bs-light:     #ffffff !important;
+    --bs-dark:      #ffffff !important;
+    --bs-white:     #ffffff !important;
+    --bs-black:     #ffffff !important;
+
+    /* RGB triplets used by rgba(var(--bs-*-rgb), α) */
+    --bs-primary-rgb:   255, 255, 255 !important;
+    --bs-secondary-rgb: 255, 255, 255 !important;
+    --bs-success-rgb:   255, 255, 255 !important;
+    --bs-info-rgb:      255, 255, 255 !important;
+    --bs-warning-rgb:   255, 255, 255 !important;
+    --bs-danger-rgb:    255, 255, 255 !important;
+    --bs-light-rgb:     255, 255, 255 !important;
+    --bs-dark-rgb:      255, 255, 255 !important;
+    --bs-white-rgb:     255, 255, 255 !important;
+    --bs-black-rgb:     255, 255, 255 !important;
+    --bs-body-rgb:      255, 255, 255 !important;
+
+    /* Gray scale */
+    --bs-gray-100: #ffffff !important;
+    --bs-gray-200: #ffffff !important;
+    --bs-gray-300: #ffffff !important;
+    --bs-gray-400: #ffffff !important;
+    --bs-gray-500: #ffffff !important;
+    --bs-gray-600: #ffffff !important;
+    --bs-gray-700: #ffffff !important;
+    --bs-gray-800: #ffffff !important;
+    --bs-gray-900: #ffffff !important;
+    --bs-gray:     #ffffff !important;
+    --bs-gray-dark: #ffffff !important;
+
+    /* Body / surface tokens */
+    --bs-body-bg:    #ffffff !important;
+    --bs-body-color: #ffffff !important;
+    --bs-border-color: #ffffff !important;
+    --bs-link-color: #ffffff !important;
+    --bs-link-hover-color: #ffffff !important;
+    --bs-heading-color: #ffffff !important;
+    --bs-emphasis-color: #ffffff !important;
+
+    /* OM-specific custom var */
+    --om-primary: #ffffff !important;
+
+    /* Brand vars (will fall back to hex if not set elsewhere) */
+    --brand-discord:  #ffffff !important;
+    --brand-linkedin: #ffffff !important;
+}
+
+/* Page background so non-white elements really pop against the test */
+body {
+    background: #888888 !important;
+}

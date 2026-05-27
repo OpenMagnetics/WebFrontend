@@ -37,6 +37,10 @@ const axiosInstance = axios.create()
 
 const pinia = createPinia()
 pinia.use(piniaPluginPersistedstate)
+if (new URLSearchParams(window.location.search).get('colortest') === '1') {
+    import('./assets/scss/color-test.scss');
+}
+
 const app = createApp(App);
 app.use(router);
 app.use(pinia)
