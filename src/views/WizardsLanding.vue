@@ -207,20 +207,20 @@ export default {
                 <!-- Header -->
                 <div class="row mb-5">
                     <div class="col-12 text-center">
-                        <h1 class="text-white display-4 fw-bold">Design Wizards</h1>
-                        <p class="text-white fs-5 mt-3">Guided design flows for power converter magnetics</p>
+                        <h1 class="text-white display-4 font-bold">Design Wizards</h1>
+                        <p class="text-white text-xl mt-3">Guided design flows for power converter magnetics</p>
                     </div>
                 </div>
 
                 <!-- Main Wizard Cards -->
                 <div class="row g-4 mb-5">
                     <!-- CMC Wizard -->
-                    <div class="col-lg-4 col-md-6">
+                    <div class="md:col-6 lg:col-4">
                         <div class="card h-100 bg-dark border-secondary">
                             <div class="card-body p-4">
-                                <h4 class="card-title text-white fw-bold mb-2">Common Mode Choke</h4>
+                                <h4 class="card-title text-white font-bold mb-2">Common Mode Choke</h4>
                                 <p class="card-text text-white small mb-3">Design CMCs for EMI filtering with impedance vs frequency targeting.</p>
-                                <button @click="onCMCWizard" class="btn btn-light w-100">
+                                <button @click="onCMCWizard" class="p-button p-button-secondary w-100">
                                     Start Wizard
                                 </button>
                             </div>
@@ -228,12 +228,12 @@ export default {
                     </div>
 
                     <!-- DMC Wizard -->
-                    <div class="col-lg-4 col-md-6">
+                    <div class="md:col-6 lg:col-4">
                         <div class="card h-100 bg-dark border-secondary">
                             <div class="card-body p-4">
-                                <h4 class="card-title text-white fw-bold mb-2">Differential Mode Choke</h4>
+                                <h4 class="card-title text-white font-bold mb-2">Differential Mode Choke</h4>
                                 <p class="card-text text-white small mb-3">Design DMCs for LC filters with attenuation verification via ngspice.</p>
-                                <button @click="onDMCWizard" class="btn btn-light w-100">
+                                <button @click="onDMCWizard" class="p-button p-button-secondary w-100">
                                     Start Wizard
                                 </button>
                             </div>
@@ -241,12 +241,12 @@ export default {
                     </div>
 
                     <!-- Flyback Wizard -->
-                    <div class="col-lg-4 col-md-6">
+                    <div class="md:col-6 lg:col-4">
                         <div class="card h-100 bg-dark border-secondary">
                             <div class="card-body p-4">
-                                <h4 class="card-title text-white fw-bold mb-2">Flyback Converter</h4>
+                                <h4 class="card-title text-white font-bold mb-2">Flyback Converter</h4>
                                 <p class="card-text text-white small mb-3">Design coupled inductors for flyback converters with CCM/DCM/BCM support.</p>
-                                <button @click="onFlybackWizard" class="btn btn-light w-100">
+                                <button @click="onFlybackWizard" class="p-button p-button-secondary w-100">
                                     Start Wizard
                                 </button>
                             </div>
@@ -254,12 +254,12 @@ export default {
                     </div>
 
                     <!-- Buck Converter -->
-                    <div class="col-lg-4 col-md-6">
+                    <div class="md:col-6 lg:col-4">
                         <div class="card h-100 bg-dark border-secondary">
                             <div class="card-body p-4">
-                                <h4 class="card-title text-white fw-bold mb-2">Buck Converter</h4>
+                                <h4 class="card-title text-white font-bold mb-2">Buck Converter</h4>
                                 <p class="card-text text-white small mb-3">Design inductors for step-down DC-DC converters.</p>
-                                <button @click="onBuckWizard" class="btn btn-light w-100">
+                                <button @click="onBuckWizard" class="p-button p-button-secondary w-100">
                                     Start Wizard
                                 </button>
                             </div>
@@ -267,12 +267,12 @@ export default {
                     </div>
 
                     <!-- Boost Converter -->
-                    <div class="col-lg-4 col-md-6">
+                    <div class="md:col-6 lg:col-4">
                         <div class="card h-100 bg-dark border-secondary">
                             <div class="card-body p-4">
-                                <h4 class="card-title text-white fw-bold mb-2">Boost Converter</h4>
+                                <h4 class="card-title text-white font-bold mb-2">Boost Converter</h4>
                                 <p class="card-text text-white small mb-3">Design inductors for step-up DC-DC converters.</p>
-                                <button @click="onBoostWizard" class="btn btn-light w-100">
+                                <button @click="onBoostWizard" class="p-button p-button-secondary w-100">
                                     Start Wizard
                                 </button>
                             </div>
@@ -280,12 +280,12 @@ export default {
                     </div>
 
                     <!-- SEPIC Converter -->
-                    <div class="col-lg-4 col-md-6">
+                    <div class="md:col-6 lg:col-4">
                         <div class="card h-100 bg-dark border-secondary">
                             <div class="card-body p-4">
-                                <h4 class="card-title text-white fw-bold mb-2">SEPIC Converter</h4>
+                                <h4 class="card-title text-white font-bold mb-2">SEPIC Converter</h4>
                                 <p class="card-text text-white small mb-3">Non-inverting buck-boost via coupling capacitor; optional coupled inductor and synchronous rectifier.</p>
-                                <button @click="onSepicWizard" class="btn btn-light w-100" data-cy="Sepic-card">
+                                <button @click="onSepicWizard" class="p-button p-button-secondary w-100" data-cy="Sepic-card">
                                     Start Wizard
                                 </button>
                             </div>
@@ -293,12 +293,12 @@ export default {
                     </div>
 
                     <!-- Push-Pull Converter -->
-                    <div class="col-lg-4 col-md-6">
+                    <div class="md:col-6 lg:col-4">
                         <div class="card h-100 bg-dark border-secondary">
                             <div class="card-body p-4">
-                                <h4 class="card-title text-white fw-bold mb-2">Push-Pull Converter</h4>
+                                <h4 class="card-title text-white font-bold mb-2">Push-Pull Converter</h4>
                                 <p class="card-text text-white small mb-3">Design transformers for push-pull topology with center-tapped primary.</p>
-                                <button @click="onPushPullWizard" class="btn btn-light w-100">
+                                <button @click="onPushPullWizard" class="p-button p-button-secondary w-100">
                                     Start Wizard
                                 </button>
                             </div>
@@ -306,12 +306,12 @@ export default {
                     </div>
 
                     <!-- PFC (Power Factor Correction) -->
-                    <div class="col-lg-4 col-md-6">
+                    <div class="md:col-6 lg:col-4">
                         <div class="card h-100 bg-dark border-secondary">
                             <div class="card-body p-4">
-                                <h4 class="card-title text-white fw-bold mb-2">PFC (Power Factor Correction)</h4>
+                                <h4 class="card-title text-white font-bold mb-2">PFC (Power Factor Correction)</h4>
                                 <p class="card-text text-white small mb-3">Design boost inductors for AC-DC power factor correction stages.</p>
-                                <button @click="onPfcWizard" class="btn btn-light w-100">
+                                <button @click="onPfcWizard" class="p-button p-button-secondary w-100">
                                     Start Wizard
                                 </button>
                             </div>
@@ -319,12 +319,12 @@ export default {
                     </div>
 
                     <!-- Isolated Buck Converter -->
-                    <div class="col-lg-4 col-md-6">
+                    <div class="md:col-6 lg:col-4">
                         <div class="card h-100 bg-dark border-secondary">
                             <div class="card-body p-4">
-                                <h4 class="card-title text-white fw-bold mb-2">Isolated Buck Converter</h4>
+                                <h4 class="card-title text-white font-bold mb-2">Isolated Buck Converter</h4>
                                 <p class="card-text text-white small mb-3">Design transformers for isolated step-down converters.</p>
-                                <button @click="onIsolatedBuckWizard" class="btn btn-light w-100">
+                                <button @click="onIsolatedBuckWizard" class="p-button p-button-secondary w-100">
                                     Start Wizard
                                 </button>
                             </div>
@@ -332,12 +332,12 @@ export default {
                     </div>
 
                     <!-- Single-Switch Forward Converter -->
-                    <div class="col-lg-4 col-md-6">
+                    <div class="md:col-6 lg:col-4">
                         <div class="card h-100 bg-dark border-secondary">
                             <div class="card-body p-4">
-                                <h4 class="card-title text-white fw-bold mb-2">Single-Switch Forward Converter</h4>
+                                <h4 class="card-title text-white font-bold mb-2">Single-Switch Forward Converter</h4>
                                 <p class="card-text text-white small mb-3">Design transformers for single-switch forward converters with reset winding.</p>
-                                <button @click="onSingleSwitchForwardWizard" class="btn btn-light w-100">
+                                <button @click="onSingleSwitchForwardWizard" class="p-button p-button-secondary w-100">
                                     Start Wizard
                                 </button>
                             </div>
@@ -345,12 +345,12 @@ export default {
                     </div>
 
                     <!-- Two-Switch Forward Converter -->
-                    <div class="col-lg-4 col-md-6">
+                    <div class="md:col-6 lg:col-4">
                         <div class="card h-100 bg-dark border-secondary">
                             <div class="card-body p-4">
-                                <h4 class="card-title text-white fw-bold mb-2">Two-Switch Forward Converter</h4>
+                                <h4 class="card-title text-white font-bold mb-2">Two-Switch Forward Converter</h4>
                                 <p class="card-text text-white small mb-3">Design transformers for two-switch forward converters with clamping diodes.</p>
-                                <button @click="onTwoSwitchForwardWizard" class="btn btn-light w-100">
+                                <button @click="onTwoSwitchForwardWizard" class="p-button p-button-secondary w-100">
                                     Start Wizard
                                 </button>
                             </div>
@@ -358,12 +358,12 @@ export default {
                     </div>
 
                     <!-- Active Clamp Forward Converter -->
-                    <div class="col-lg-4 col-md-6">
+                    <div class="md:col-6 lg:col-4">
                         <div class="card h-100 bg-dark border-secondary">
                             <div class="card-body p-4">
-                                <h4 class="card-title text-white fw-bold mb-2">Active Clamp Forward Converter</h4>
+                                <h4 class="card-title text-white font-bold mb-2">Active Clamp Forward Converter</h4>
                                 <p class="card-text text-white small mb-3">Design transformers for active clamp forward converters with ZVS.</p>
-                                <button @click="onActiveClampForwardWizard" class="btn btn-light w-100">
+                                <button @click="onActiveClampForwardWizard" class="p-button p-button-secondary w-100">
                                     Start Wizard
                                 </button>
                             </div>
@@ -371,12 +371,12 @@ export default {
                     </div>
 
                     <!-- Isolated Buck-Boost Converter -->
-                    <div class="col-lg-4 col-md-6">
+                    <div class="md:col-6 lg:col-4">
                         <div class="card h-100 bg-dark border-secondary">
                             <div class="card-body p-4">
-                                <h4 class="card-title text-white fw-bold mb-2">Isolated Buck-Boost Converter</h4>
+                                <h4 class="card-title text-white font-bold mb-2">Isolated Buck-Boost Converter</h4>
                                 <p class="card-text text-white small mb-3">Design transformers for isolated buck-boost converters.</p>
-                                <button @click="onIsolatedBuckBoostWizard" class="btn btn-light w-100">
+                                <button @click="onIsolatedBuckBoostWizard" class="p-button p-button-secondary w-100">
                                     Start Wizard
                                 </button>
                             </div>
@@ -384,12 +384,12 @@ export default {
                     </div>
 
                     <!-- Dual Active Bridge (DAB) -->
-                    <div class="col-lg-4 col-md-6">
+                    <div class="md:col-6 lg:col-4">
                         <div class="card h-100 bg-dark border-secondary">
                             <div class="card-body p-4">
-                                <h4 class="card-title text-white fw-bold mb-2">Dual Active Bridge</h4>
+                                <h4 class="card-title text-white font-bold mb-2">Dual Active Bridge</h4>
                                 <p class="card-text text-white small mb-3">Bidirectional DC-DC converter with SPS/EPS/DPS/TPS modulation.</p>
-                                <button @click="onDabWizard" class="btn btn-light w-100">
+                                <button @click="onDabWizard" class="p-button p-button-secondary w-100">
                                     Start Wizard
                                 </button>
                             </div>
@@ -397,12 +397,12 @@ export default {
                     </div>
 
                     <!-- LLC Resonant Converter -->
-                    <div class="col-lg-4 col-md-6">
+                    <div class="md:col-6 lg:col-4">
                         <div class="card h-100 bg-dark border-secondary">
                             <div class="card-body p-4">
-                                <h4 class="card-title text-white fw-bold mb-2">LLC Resonant Converter</h4>
+                                <h4 class="card-title text-white font-bold mb-2">LLC Resonant Converter</h4>
                                 <p class="card-text text-white small mb-3">Resonant DC-DC converter with variable frequency control.</p>
-                                <button @click="onLlcWizard" class="btn btn-light w-100">
+                                <button @click="onLlcWizard" class="p-button p-button-secondary w-100">
                                     Start Wizard
                                 </button>
                             </div>
@@ -410,12 +410,12 @@ export default {
                     </div>
 
                     <!-- CLLC Bidirectional Resonant Converter -->
-                    <div class="col-lg-4 col-md-6">
+                    <div class="md:col-6 lg:col-4">
                         <div class="card h-100 bg-dark border-secondary">
                             <div class="card-body p-4">
-                                <h4 class="card-title text-white fw-bold mb-2">CLLC Bidirectional Resonant Converter</h4>
+                                <h4 class="card-title text-white font-bold mb-2">CLLC Bidirectional Resonant Converter</h4>
                                 <p class="card-text text-white small mb-3">Bidirectional resonant DC-DC converter with symmetric or asymmetric LC tanks on primary and secondary sides.</p>
-                                <button @click="onCllcWizard" class="btn btn-light w-100" data-cy="Cllc-card">
+                                <button @click="onCllcWizard" class="p-button p-button-secondary w-100" data-cy="Cllc-card">
                                     Start Wizard
                                 </button>
                             </div>
@@ -423,12 +423,12 @@ export default {
                     </div>
 
                     <!-- Phase-Shifted Full Bridge -->
-                    <div class="col-lg-4 col-md-6">
+                    <div class="md:col-6 lg:col-4">
                         <div class="card h-100 bg-dark border-secondary">
                             <div class="card-body p-4">
-                                <h4 class="card-title text-white fw-bold mb-2">Phase-Shifted Full Bridge</h4>
+                                <h4 class="card-title text-white font-bold mb-2">Phase-Shifted Full Bridge</h4>
                                 <p class="card-text text-white small mb-3">ZVS full-bridge converter with phase-shifted PWM.</p>
-                                <button @click="onPsfbWizard" class="btn btn-light w-100">
+                                <button @click="onPsfbWizard" class="p-button p-button-secondary w-100">
                                     Start Wizard
                                 </button>
                             </div>
@@ -436,12 +436,12 @@ export default {
                     </div>
 
                     <!-- Phase-Shifted Half Bridge -->
-                    <div class="col-lg-4 col-md-6">
+                    <div class="md:col-6 lg:col-4">
                         <div class="card h-100 bg-dark border-secondary">
                             <div class="card-body p-4">
-                                <h4 class="card-title text-white fw-bold mb-2">Phase-Shifted Half Bridge</h4>
+                                <h4 class="card-title text-white font-bold mb-2">Phase-Shifted Half Bridge</h4>
                                 <p class="card-text text-white small mb-3">ZVS half-bridge converter with phase-shifted PWM.</p>
-                                <button @click="onPshbWizard" class="btn btn-light w-100">
+                                <button @click="onPshbWizard" class="p-button p-button-secondary w-100">
                                     Start Wizard
                                 </button>
                             </div>
@@ -449,12 +449,12 @@ export default {
                     </div>
 
                     <!-- Asymmetric Half Bridge -->
-                    <div class="col-lg-4 col-md-6">
+                    <div class="md:col-6 lg:col-4">
                         <div class="card h-100 bg-dark border-secondary">
                             <div class="card-body p-4">
-                                <h4 class="card-title text-white fw-bold mb-2">Asymmetric Half Bridge</h4>
+                                <h4 class="card-title text-white font-bold mb-2">Asymmetric Half Bridge</h4>
                                 <p class="card-text text-white small mb-3">Complementary-PWM half-bridge with DC-blocking cap; CT / FB / current-doubler / flyback rectifiers.</p>
-                                <button @click="onAhbWizard" class="btn btn-light w-100">
+                                <button @click="onAhbWizard" class="p-button p-button-secondary w-100">
                                     Start Wizard
                                 </button>
                             </div>
@@ -462,12 +462,12 @@ export default {
                     </div>
 
                     <!-- Cuk Converter -->
-                    <div class="col-lg-4 col-md-6">
+                    <div class="md:col-6 lg:col-4">
                         <div class="card h-100 bg-dark border-secondary">
                             <div class="card-body p-4">
-                                <h4 class="card-title text-white fw-bold mb-2">Cuk Converter</h4>
+                                <h4 class="card-title text-white font-bold mb-2">Cuk Converter</h4>
                                 <p class="card-text text-white small mb-3">Inverting buck-boost via coupling capacitor; continuous input and output currents.</p>
-                                <button @click="onCukWizard" class="btn btn-light w-100" data-cy="Cuk-card">
+                                <button @click="onCukWizard" class="p-button p-button-secondary w-100" data-cy="Cuk-card">
                                     Start Wizard
                                 </button>
                             </div>
@@ -475,12 +475,12 @@ export default {
                     </div>
 
                     <!-- Zeta Converter -->
-                    <div class="col-lg-4 col-md-6">
+                    <div class="md:col-6 lg:col-4">
                         <div class="card h-100 bg-dark border-secondary">
                             <div class="card-body p-4">
-                                <h4 class="card-title text-white fw-bold mb-2">Zeta Converter</h4>
+                                <h4 class="card-title text-white font-bold mb-2">Zeta Converter</h4>
                                 <p class="card-text text-white small mb-3">Non-inverting buck-boost via coupling capacitor with continuous output current.</p>
-                                <button @click="onZetaWizard" class="btn btn-light w-100" data-cy="Zeta-card">
+                                <button @click="onZetaWizard" class="p-button p-button-secondary w-100" data-cy="Zeta-card">
                                     Start Wizard
                                 </button>
                             </div>
@@ -488,12 +488,12 @@ export default {
                     </div>
 
                     <!-- Four-Switch Buck-Boost -->
-                    <div class="col-lg-4 col-md-6">
+                    <div class="md:col-6 lg:col-4">
                         <div class="card h-100 bg-dark border-secondary">
                             <div class="card-body p-4">
-                                <h4 class="card-title text-white fw-bold mb-2">Four-Switch Buck-Boost</h4>
+                                <h4 class="card-title text-white font-bold mb-2">Four-Switch Buck-Boost</h4>
                                 <p class="card-text text-white small mb-3">Non-inverting H-bridge buck-boost; buck, boost, or passthrough mode automatically.</p>
-                                <button @click="onFourSwitchBuckBoostWizard" class="btn btn-light w-100" data-cy="FourSwitchBuckBoost-card">
+                                <button @click="onFourSwitchBuckBoostWizard" class="p-button p-button-secondary w-100" data-cy="FourSwitchBuckBoost-card">
                                     Start Wizard
                                 </button>
                             </div>
@@ -501,12 +501,12 @@ export default {
                     </div>
 
                     <!-- Weinberg Converter -->
-                    <div class="col-lg-4 col-md-6">
+                    <div class="md:col-6 lg:col-4">
                         <div class="card h-100 bg-dark border-secondary">
                             <div class="card-body p-4">
-                                <h4 class="card-title text-white fw-bold mb-2">Weinberg Converter</h4>
+                                <h4 class="card-title text-white font-bold mb-2">Weinberg Converter</h4>
                                 <p class="card-text text-white small mb-3">Isolated push-pull-derived topology with center-tapped secondary and output inductor.</p>
-                                <button @click="onWeinbergWizard" class="btn btn-light w-100" data-cy="Weinberg-card">
+                                <button @click="onWeinbergWizard" class="p-button p-button-secondary w-100" data-cy="Weinberg-card">
                                     Start Wizard
                                 </button>
                             </div>
@@ -514,12 +514,12 @@ export default {
                     </div>
 
                     <!-- CLLLC Resonant Converter -->
-                    <div class="col-lg-4 col-md-6">
+                    <div class="md:col-6 lg:col-4">
                         <div class="card h-100 bg-dark border-secondary">
                             <div class="card-body p-4">
-                                <h4 class="card-title text-white fw-bold mb-2">CLLLC Resonant Converter</h4>
+                                <h4 class="card-title text-white font-bold mb-2">CLLLC Resonant Converter</h4>
                                 <p class="card-text text-white small mb-3">Bidirectional 5-element symmetric resonant DC-DC converter.</p>
-                                <button @click="onClllcWizard" class="btn btn-light w-100" data-cy="Clllc-card">
+                                <button @click="onClllcWizard" class="p-button p-button-secondary w-100" data-cy="Clllc-card">
                                     Start Wizard
                                 </button>
                             </div>
@@ -527,12 +527,12 @@ export default {
                     </div>
 
                     <!-- Series Resonant Converter (SRC) -->
-                    <div class="col-lg-4 col-md-6">
+                    <div class="md:col-6 lg:col-4">
                         <div class="card h-100 bg-dark border-secondary">
                             <div class="card-body p-4">
-                                <h4 class="card-title text-white fw-bold mb-2">Series Resonant Converter (SRC)</h4>
+                                <h4 class="card-title text-white font-bold mb-2">Series Resonant Converter (SRC)</h4>
                                 <p class="card-text text-white small mb-3">Above-resonance LC-tank converter (no parallel Lm). HB or FB bridge; CT / FB / current-doubler rectifiers.</p>
-                                <button @click="onSrcWizard" class="btn btn-light w-100" data-cy="Src-card">
+                                <button @click="onSrcWizard" class="p-button p-button-secondary w-100" data-cy="Src-card">
                                     Start Wizard
                                 </button>
                             </div>
@@ -540,12 +540,12 @@ export default {
                     </div>
 
                     <!-- Vienna Rectifier (3-phase PFC) -->
-                    <div class="col-lg-4 col-md-6">
+                    <div class="md:col-6 lg:col-4">
                         <div class="card h-100 bg-dark border-secondary">
                             <div class="card-body p-4">
-                                <h4 class="card-title text-white fw-bold mb-2">Vienna Rectifier (3-phase PFC)</h4>
+                                <h4 class="card-title text-white font-bold mb-2">Vienna Rectifier (3-phase PFC)</h4>
                                 <p class="card-text text-white small mb-3">Three-phase three-level boost PFC. Per-phase boost inductor design (Phase A shown; B/C identical by symmetry).</p>
-                                <button @click="onViennaWizard" class="btn btn-light w-100" data-cy="Vienna-card">
+                                <button @click="onViennaWizard" class="p-button p-button-secondary w-100" data-cy="Vienna-card">
                                     Start Wizard
                                 </button>
                             </div>
@@ -556,10 +556,10 @@ export default {
 
                 <!-- Alternative Option -->
                 <div class="row py-4 border-top border-secondary">
-                    <div class="col-lg-6">
+                    <div class="lg:col-6">
                         <h4 class="text-white mb-2">Need More Control?</h4>
                         <p class="text-white small mb-3">Use the Magnetic Builder to manually configure every aspect of your design.</p>
-                        <button @click="onMagneticBuilder" class="btn btn-primary">
+                        <button @click="onMagneticBuilder" class="p-button p-button-primary">
                             Open Magnetic Builder
                         </button>
                     </div>

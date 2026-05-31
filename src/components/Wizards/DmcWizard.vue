@@ -130,6 +130,11 @@ export default {
     },
     mounted() {
         this.updateErrorMessage();
+        this.$nextTick(() => {
+            if (this._autoRunDone) return;
+            this._autoRunDone = true;
+            if (!this.errorMessage) this.simulateIdealWaveforms?.();
+        });
     },
     methods: {
 
@@ -352,7 +357,7 @@ export default {
         async getAnalyticalWaveforms() {
             await this.$refs.base.executeWaveformAction(this, 'analytical');
         },
-        async simulateWaveforms() {
+        async simulateIdealWaveforms() {
             await this.$refs.base.executeWaveformAction(this, 'simulation');
         },
         async getSpiceCode() {
@@ -366,7 +371,7 @@ export default {
   <ConverterWizardBase
     ref="base"
     title="DMC Wizard"
-    titleIcon="bi bi-funnel-fill"
+    titleIcon="pi pi-filter"
     subtitle="Differential Mode Choke — EMI Filter"
     :col1Width="3" :col2Width="4" :col3Width="5"
     :showNumberOutputs="false"
@@ -385,7 +390,7 @@ export default {
     @update:numberOfPeriods="numberOfPeriods = $event"
     @update:numberOfSteadyStatePeriods="numberOfSteadyStatePeriods = $event"
     @get-analytical-waveforms="getAnalyticalWaveforms"
-    @get-simulated-waveforms="simulateWaveforms"
+    @get-simulated-waveforms="simulateIdealWaveforms"
     @get-spice-code="getSpiceCode"
     @dismiss-error="errorMessage = ''; waveformError = ''"
   >
@@ -394,7 +399,7 @@ export default {
       <div class="wizard-header">
         <div class="wizard-header-content">
           <div class="wizard-icon-container">
-            <i class="bi bi-funnel-fill wizard-icon"></i>
+            <i class="pi pi-filter wizard-icon"></i>
           </div>
           <div class="wizard-title-section">
             <h4 class="wizard-title" :data-cy="dataTestLabel + '-title'">DMC Wizard</h4>
@@ -426,7 +431,7 @@ export default {
 
     <template #design-or-switch-parameters-title>
       <div class="compact-header">
-        <i class="bi bi-funnel-fill me-1"></i>
+        <i class="pi pi-filter mr-1"></i>
         {{ localData.designLevel === 'I know the design I want' ? 'Design Params' : 'Filter Requirements' }}
       </div>
     </template>
@@ -544,10 +549,10 @@ export default {
             class="dmc-remove-btn"
             :style="{ background: $styleStore.wizard.removeButton['background-color'] }"
             @click="removeAttenuationRow(idx)"
-          ><i class="bi bi-x-lg"></i></button>
+          ><i class="pi pi-times"></i></button>
         </div>
         <button class="dmc-add-btn" :style="$styleStore.wizard.addButton" @click="addAttenuationRow">
-          <i class="bi bi-plus-lg me-1"></i>Add point
+          <i class="pi pi-plus mr-1"></i>Add point
         </button>
       </div>
 
@@ -615,15 +620,15 @@ export default {
     <template #col1-footer>
       <div class="d-flex align-items-center justify-content-between mt-2">
         <span v-if="errorMessage" class="error-text">
-          <i class="bi bi-exclamation-triangle-fill me-1"></i>{{ errorMessage }}
+          <i class="pi pi-exclamation-triangle mr-1"></i>{{ errorMessage }}
         </span>
         <span v-else></span>
         <div class="action-btns">
           <button :disabled="errorMessage != ''" class="action-btn-sm secondary" @click="processAndReview">
-            <i class="bi bi-search me-1"></i>Review Specs
+            <i class="pi pi-search mr-1"></i>Review Specs
           </button>
           <button :disabled="errorMessage != ''" class="action-btn-sm primary" @click="processAndAdvise">
-            <i class="bi bi-magic me-1"></i>Design Magnetic
+            <i class="pi pi-sparkles mr-1"></i>Design Magnetic
           </button>
         </div>
       </div>

@@ -25,11 +25,11 @@ export default {
         },
         valueFontSize: {
             type: [String, Object],
-            default: 'fs-6'
+            default: ''
         },
         labelFontSize: {
             type: [String, Object],
-            default: 'fs-6'
+            default: ''
         },
         labelBgColor: {
             type: [String, Object],
@@ -82,13 +82,13 @@ export default {
 
 <template>
     <div :data-cy="dataTestLabel + '-container'" class="container-flex">
-        <div class="row">
+        <div class="grid">
             <label
                 :style="combinedStyle([labelFontSize, labelBgColor, textColor])"
                 :data-cy="dataTestLabel + '-title'"
                 :for="name + '-text-input'"
                 :class="combinedClass([labelFontSize, labelBgColor, textColor])"
-                class="rounded-2 fs-5 ms-3 col-3"
+                class="rounded-2 ml-3"
             >
                 Reference
             </label>
@@ -103,7 +103,7 @@ export default {
                 :value="localData"
             >
             <label
-                class="text-danger text-center col-12 pt-1"
+                class="text-red-500 text-center col-12 pt-1"
                 style="font-size: 0.9em; white-space: pre-wrap;"
             >
                 {{errorMessages}}

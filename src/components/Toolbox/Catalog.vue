@@ -83,7 +83,7 @@ export default {
 <template>
     <div class="container">
         <div class="row pb-5 my-5 text-start align-items-start text-white">
-            <div class="offset-1 col-10 row">
+            <div class="col-offset-1 col-10 row">
                 <h3>Catalog</h3>
                 <DataTable
                     v-if="!loadingCatalog"
@@ -102,7 +102,7 @@ export default {
                     </thead>
                     <template #column-2="props">
                         <button
-                            class="btn btn-primary"
+                            class="p-button p-button-primary"
                             @click="viewMagnetic(props.rowData)"
                         >View</button>
                     </template>

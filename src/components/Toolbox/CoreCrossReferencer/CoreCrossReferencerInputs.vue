@@ -63,6 +63,7 @@ export default {
             coreMaterialNames,
             coreMaterialManufacturers,
             offcanvasName,
+            operatingPointOffcanvasVisible: false,
         }
     },
     computed: {
@@ -176,6 +177,7 @@ export default {
 
 <template>
     <OperatingPointOffcanvas
+        v-model:visible="operatingPointOffcanvasVisible"
         :name="offcanvasName"
         :dataTestLabel="dataTestLabel + '-Offcanvas'"
     />
@@ -193,8 +195,8 @@ export default {
                 :optionsToDisable="coreShapeFamilies"
                 :options="coreShapeNames"
                 @update="inputsUpdated"
-                :labelWidthProportionClass="'col-sm-12 col-md-5'"
-                :valueWidthProportionClass="'col-sm-12 col-md-7'"
+                :labelWidthProportionClass="'col-12 md:col-5'"
+                :valueWidthProportionClass="'col-12 md:col-7'"
                 :valueFontSize="$styleStore.crossReferencer.inputFontSize"
                 :labelFontSize="$styleStore.crossReferencer.inputTitleFontSize"
                 :labelBgColor="$styleStore.crossReferencer.inputLabelBgColor"
@@ -213,8 +215,8 @@ export default {
                 :optionsToDisable="coreMaterialManufacturers"
                 :options="coreMaterialNames"
                 @update="inputsUpdated"
-                :labelWidthProportionClass="'col-sm-12 col-md-5'"
-                :valueWidthProportionClass="'col-sm-12 col-md-7'"
+                :labelWidthProportionClass="'col-12 md:col-5'"
+                :valueWidthProportionClass="'col-12 md:col-7'"
                 :valueFontSize="$styleStore.crossReferencer.inputFontSize"
                 :labelFontSize="$styleStore.crossReferencer.inputTitleFontSize"
                 :labelBgColor="$styleStore.crossReferencer.inputLabelBgColor"
@@ -235,8 +237,8 @@ export default {
                 :allowNegative="false"
                 :modelValue="crossReferencerStore.coreReferenceInputs.core.functionalDescription"
                 @update="inputsUpdated"
-                :labelWidthProportionClass="'col-sm-12 col-md-5'"
-                :valueWidthProportionClass="'col-sm-12 col-md-7'"
+                :labelWidthProportionClass="'col-12 md:col-5'"
+                :valueWidthProportionClass="'col-12 md:col-7'"
                 :valueFontSize="$styleStore.crossReferencer.inputFontSize"
                 :labelFontSize="$styleStore.crossReferencer.inputTitleFontSize"
                 :labelBgColor="$styleStore.crossReferencer.inputLabelBgColor"
@@ -251,8 +253,8 @@ export default {
                 :core="crossReferencerStore.coreReferenceInputs.core"
                 :scale="1"
                 @update="gappingUpdated"
-                :labelWidthProportionClass="'col-sm-12 col-md-5'"
-                :valueWidthProportionClass="'col-sm-12 col-md-7'"
+                :labelWidthProportionClass="'col-12 md:col-5'"
+                :valueWidthProportionClass="'col-12 md:col-7'"
                 :valueFontSize="$styleStore.crossReferencer.inputFontSize"
                 :labelFontSize="$styleStore.crossReferencer.inputTitleFontSize"
                 :labelBgColor="$styleStore.crossReferencer.inputLabelBgColor"
@@ -272,8 +274,8 @@ export default {
                 :allowNegative="false"
                 :modelValue="crossReferencerStore.coreReferenceInputs"
                 @update="inputsUpdated"
-                :labelWidthProportionClass="'col-sm-12 col-md-5'"
-                :valueWidthProportionClass="'col-sm-12 col-md-7'"
+                :labelWidthProportionClass="'col-12 md:col-5'"
+                :valueWidthProportionClass="'col-12 md:col-7'"
                 :valueFontSize="$styleStore.crossReferencer.inputFontSize"
                 :labelFontSize="$styleStore.crossReferencer.inputTitleFontSize"
                 :labelBgColor="$styleStore.crossReferencer.inputLabelBgColor"
@@ -294,8 +296,8 @@ export default {
                 :allowNegative="true"
                 :modelValue="crossReferencerStore.coreReferenceInputs"
                 @update="inputsUpdated"
-                :labelWidthProportionClass="'col-sm-12 col-md-5'"
-                :valueWidthProportionClass="'col-sm-12 col-md-7'"
+                :labelWidthProportionClass="'col-12 md:col-5'"
+                :valueWidthProportionClass="'col-12 md:col-7'"
                 :valueFontSize="$styleStore.crossReferencer.inputFontSize"
                 :labelFontSize="$styleStore.crossReferencer.inputTitleFontSize"
                 :labelBgColor="$styleStore.crossReferencer.inputLabelBgColor"
@@ -327,8 +329,8 @@ export default {
                 v-model="crossReferencerStore.coreReferenceInputs"
                 :options="coreCrossReferencerPossibleCoreTypes"
                 @update="inputsUpdated"
-                :labelWidthProportionClass="'col-sm-12 col-md-5'"
-                :valueWidthProportionClass="'col-sm-12 col-md-7'"
+                :labelWidthProportionClass="'col-12 md:col-5'"
+                :valueWidthProportionClass="'col-12 md:col-7'"
                 :valueFontSize="$styleStore.crossReferencer.inputFontSize"
                 :labelFontSize="$styleStore.crossReferencer.inputTitleFontSize"
                 :labelBgColor="$styleStore.crossReferencer.inputLabelBgColor"
@@ -348,8 +350,8 @@ export default {
                 :allowNegative="false"
                 :modelValue="crossReferencerStore.coreReferenceInputs"
                 @update="inputsUpdated"
-                :labelWidthProportionClass="'col-sm-12 col-md-5'"
-                :valueWidthProportionClass="'col-sm-12 col-md-7'"
+                :labelWidthProportionClass="'col-12 md:col-5'"
+                :valueWidthProportionClass="'col-12 md:col-7'"
                 :valueFontSize="$styleStore.crossReferencer.inputFontSize"
                 :labelFontSize="$styleStore.crossReferencer.inputTitleFontSize"
                 :labelBgColor="$styleStore.crossReferencer.inputLabelBgColor"
@@ -357,8 +359,8 @@ export default {
                 :textColor="$styleStore.crossReferencer.inputTextColor"
             />
 
-            <button :disabled="disabled" :data-cy="dataTestLabel + '-view-edit-excitation-modal-button'" class="btn btn-primary" data-bs-toggle="offcanvas" :data-bs-target="'#' + offcanvasName" ::aria-controls="offcanvasName + 'OperationPointOffCanvas'">View/Edit excitation</button>
-            <button :disabled="disabled" v-if="!hasError" :data-cy="dataTestLabel + '-calculate'" class="btn btn-success" @click="inputsUpdated">Get Alternative Cores</button>
+            <button :disabled="disabled" :data-cy="dataTestLabel + '-view-edit-excitation-modal-button'" class="p-button p-button-primary" @click="operatingPointOffcanvasVisible = true">View/Edit excitation</button>
+            <button :disabled="disabled" v-if="!hasError" :data-cy="dataTestLabel + '-calculate'" class="p-button p-button-success" @click="inputsUpdated">Get Alternative Cores</button>
 
         </div>
     </div>

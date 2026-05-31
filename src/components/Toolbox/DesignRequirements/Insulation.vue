@@ -41,11 +41,11 @@ export default {
         },
         valueFontSize: {
             type: [String, Object],
-            default: 'fs-6'
+            default: ''
         },
         titleFontSize: {
             type: [String, Object],
-            default: 'fs-6'
+            default: ''
         },
         labelBgColor: {
             type: [String, Object],
@@ -102,14 +102,14 @@ export default {
 <template>
     <div :data-cy="dataTestLabel + '-container'" class="ins-root">
         <div v-if="showTitle" class="ins-title" :data-cy="dataTestLabel + '-title'">
-            <i class="bi bi-shield-shaded"></i>
+            <i class="pi pi-shield"></i>
             <span>Insulation</span>
         </div>
 
         <!-- Section 1: Environment (altitude + main supply voltage) -->
         <div class="ins-section">
             <div class="ins-section-header">
-                <i class="bi bi-sun-fill"></i>
+                <i class="pi pi-sun"></i>
                 <span>Environment</span>
             </div>
             <div class="ins-grid-2">
@@ -162,7 +162,7 @@ export default {
         <!-- Section 2: Classification (CTI / InsulationType / Overvoltage / Pollution) -->
         <div class="ins-section">
             <div class="ins-section-header">
-                <i class="bi bi-list-check"></i>
+                <i class="pi pi-list"></i>
                 <span>Classification</span>
             </div>
             <div class="ins-grid-2">
@@ -248,7 +248,7 @@ export default {
         <!-- Section 3: Standards -->
         <div class="ins-section">
             <div class="ins-section-header">
-                <i class="bi bi-patch-check-fill"></i>
+                <i class="pi pi-verified"></i>
                 <span>Standards</span>
             </div>
             <div class="ins-standards">

@@ -287,9 +287,9 @@ export default {
 </script>
 
 <template>
-    <div class="container text-start pe-0 container-fluid"  style="height: 75vh" :style="$styleStore.catalogAdviser.main">
+    <div class="container text-start pr-0 container-fluid"  style="height: 75vh" :style="$styleStore.catalogAdviser.main">
         <div class="row">
-            <div class="col-2 p-1 pe-0 control" style="height: 75vh">
+            <div class="col-2 p-1 pr-0 control" style="height: 75vh">
                 <div
                     class="h-100 d-flex flex-column p-2"
                     style="overflow-x: hidden; overflow-y: auto;"
@@ -299,7 +299,7 @@ export default {
                     <!-- Advanced weighting collapsible -->
                     <div class="mb-2">
                         <button
-                            class="btn btn-sm w-100 d-flex justify-content-between align-items-center py-1"
+                            class="p-button p-button-sm w-100 d-flex justify-content-between align-items-center py-1"
                             :style="$styleStore.catalogAdviser.generalButton"
                             type="button"
                             @click="showWeights = !showWeights"
@@ -310,7 +310,7 @@ export default {
                         <div v-show="showWeights" class="mt-2">
                             <div class="row ml-1 mx-0 text-start" v-for="(weight, filter) in catalogStore.filters" :key="filter">
                                 <label class="form-label col-12 py-0 my-0 small">{{filter}}</label>
-                                <div class="col-7 pt-2 pe-3">
+                                <div class="col-7 pt-2 pr-3">
                                     <Slider v-model="catalogStore.filters[filter]" :disabled="loading" class="col-12 text-primary slider" :height="10" :min="0" :max="100" :step="10" :color="theme.primary" :tooltips="false" @change="changedSliderValue(filter, $event)"/>
                                 </div>
                                 <input :disabled="loading" :data-cy="dataTestLabel + '-number-input'" type="number" class="m-0 px-0 col-3 text-end" @change="changedInputValue(filter, $event.target.value)" :value="removeTrailingZeroes(catalogStore.filters[filter], 0)" ref="inputRef"/>
@@ -318,7 +318,7 @@ export default {
                             <!-- Search button inside collapsible -->
                             <button
                                 :disabled="loading"
-                                class="btn btn-sm w-100 mt-2"
+                                class="p-button p-button-sm w-100 mt-2"
                                 :style="$styleStore.catalogAdviser.continueButton"
                                 :data-cy="dataTestLabel + '-search-button'"
                                 @click="calculateAdvisedMagnetics"
@@ -332,7 +332,7 @@ export default {
                     <button
                         v-if="showContinueButton"
                         :disabled="loading"
-                        class="btn fs-5 my-2 offset-1 col-10"
+                        class="btn text-xl my-2 col-offset-1 col-10"
                         :style="$styleStore.catalogAdviser.continueButton"
                         @click="continueWithoutSearch"
                     >
@@ -341,7 +341,7 @@ export default {
 
                 </div>
             </div>
-            <div class="col-10 text-start pe-0 container-fluid"  style="height: 75vh">
+            <div class="col-10 text-start pr-0 container-fluid"  style="height: 75vh">
                 <div class="row" v-if="loading" >
                     <img data-cy="magneticAdviser-loading" class="mx-auto d-block col-12" alt="loading" style="width: auto; height: 20%;" :src="$settingsStore.loadingGif">
                 </div>
@@ -350,7 +350,7 @@ export default {
                     <!-- No-results banner -->
                     <div v-if="hasSearched && !loading && catalogStore.advises.length === 0"
                          class="col-12 text-center py-5">
-                        <i class="bi bi-slash-circle fs-1 text-danger"></i>
+                        <i class="pi pi-ban text-5xl text-danger"></i>
                         <p class="mt-3 fw-semibold">No choke available in the catalog for your requirements.</p>
                         <p class="text-muted small">Adjust your requirements or use the custom design path.</p>
                     </div>

@@ -95,7 +95,7 @@ export default {
 
 <template>
     <div class="container">
-        <input data-cy="CoreImport-MAS-file-button" type="file" ref="simbaFileReader" @change="readSimbaFile()" class="btn btn-primary mt-1 rounded-3" hidden />
+        <input data-cy="CoreImport-MAS-file-button" type="file" ref="simbaFileReader" @change="readSimbaFile()" class="p-button p-button-primary mt-1 rounded-3" hidden />
         <button
             :style="$styleStore.magneticBuilder.main"
             :disabled="exported"

@@ -62,6 +62,11 @@ export default {
             masStore,
             historyStore,
             taskQueueStore,
+            coreExporterVisible: false,
+            coilExporterVisible: false,
+            masExporterVisible: false,
+            circuitExporterVisible: false,
+            openDropdown: null,
             exportingMAS,
             exportingAnsys,
             ansysEddyCurrentsIcon,
@@ -263,16 +268,29 @@ export default {
             this.historyStore.blockAdditions();
             setTimeout(() => {this.historyStore.unblockAdditions();}, 2000);
         },
-    }
+        toggleDropdown(key) {
+            this.openDropdown = this.openDropdown === key ? null : key;
+        },
+        closeDropdowns() {
+            this.openDropdown = null;
+        },
+    },
+    mounted() {
+        this._closeDropdownsBound = this.closeDropdowns.bind(this);
+        document.addEventListener('click', this._closeDropdownsBound);
+    },
+    beforeUnmount() {
+        if (this._closeDropdownsBound) document.removeEventListener('click', this._closeDropdownsBound);
+    },
 }
 </script>
 
 <template>
     <div :style="$styleStore.controlPanel.main">
-        <CoreExporter :data-cy="dataTestLabel + '-CoreExporter'"/>
-        <CoilExporter :data-cy="dataTestLabel + '-CoilExporter'" />
-        <MASExporter :data-cy="dataTestLabel + '-MASExporter'" />
-        <CircuitSimulatorsExporter :data-cy="dataTestLabel + '-CircuitSimulatorsExporter'" />
+        <CoreExporter v-model:visible="coreExporterVisible" :data-cy="dataTestLabel + '-CoreExporter'"/>
+        <CoilExporter v-model:visible="coilExporterVisible" :data-cy="dataTestLabel + '-CoilExporter'" />
+        <MASExporter v-model:visible="masExporterVisible" :data-cy="dataTestLabel + '-MASExporter'" />
+        <CircuitSimulatorsExporter v-model:visible="circuitExporterVisible" :data-cy="dataTestLabel + '-CircuitSimulatorsExporter'" />
         <input data-cy="ControlPanel-Simba-file-button" type="file" ref="simbaFileReader" @change="readSimbaFile()" class="d-none" />
 
         <div class="cp-toolbar">
@@ -286,7 +304,7 @@ export default {
                         @click="undo" 
                         title="Undo"
                     >
-                        <i class="bi bi-arrow-counterclockwise"></i>
+                        <i class="pi pi-history"></i>
                     </button>
                     <button 
                         :style="$styleStore.controlPanel.button" 
@@ -295,25 +313,24 @@ export default {
                         @click="redo" 
                         title="Redo"
                     >
-                        <i class="bi bi-arrow-clockwise"></i>
+                        <i class="pi pi-refresh"></i>
                     </button>
                 </div>
 
                 <div class="cp-divider"></div>
 
                 <div v-if="showResetButton" class="cp-group">
-                    <div class="dropdown">
-                        <button 
-                            :style="$styleStore.controlPanel.closeButton" 
-                            class="cp-btn dropdown-toggle" 
-                            data-bs-toggle="dropdown" 
-                            title="Reset"
-                        >
-                            <i class="bi bi-power"></i>
+                    <div class="dropdown" @click.stop>
+                        <button
+                            :style="$styleStore.controlPanel.closeButton"
+                            class="cp-btn dropdown-toggle"
+                            @click="toggleDropdown('reset')"
+                            title="Reset">
+                            <i class="pi pi-power-off"></i>
                         </button>
-                        <ul class="dropdown-menu dropdown-menu-dark">
-                            <li><button class="dropdown-item" @click="reset(false)"><i class="bi bi-circle me-2"></i>Wound</button></li>
-                            <li><button class="dropdown-item" @click="reset(true)"><i class="bi bi-stack me-2"></i>Planar</button></li>
+                        <ul class="dropdown-menu dropdown-menu-dark" :class="{ show: openDropdown === 'reset' }">
+                            <li><button class="dropdown-item" @click="closeDropdowns(); reset(false)"><i class="pi pi-circle mr-2"></i>Wound</button></li>
+                            <li><button class="dropdown-item" @click="closeDropdowns(); reset(true)"><i class="pi pi-database mr-2"></i>Planar</button></li>
                         </ul>
                     </div>
                 </div>
@@ -338,59 +355,56 @@ export default {
 
                     <!-- Ansys Dropdown -->
                     <div v-if="showAnsysButtons" class="cp-group">
-                        <div class="dropdown">
-                            <button 
-                                v-bind="$styleStore.controlPanel.button" 
-                                class="cp-btn cp-btn-ansys dropdown-toggle" 
-                                :disabled="!isHighPerformanceBackendAvailable || exportingAnsys" 
-                                :style="`opacity: ${isHighPerformanceBackendAvailable ? 1 : 0.3}`" 
-                                data-bs-toggle="dropdown" 
-                                title="Ansys"
-                            >
+                        <div class="dropdown" @click.stop>
+                            <button
+                                v-bind="$styleStore.controlPanel.button"
+                                class="cp-btn cp-btn-ansys dropdown-toggle"
+                                :disabled="!isHighPerformanceBackendAvailable || exportingAnsys"
+                                :style="`opacity: ${isHighPerformanceBackendAvailable ? 1 : 0.3}`"
+                                @click="toggleDropdown('ansys')"
+                                title="Ansys">
                                 <img :src='ansysIcon' width="18" height="18" alt="Ansys">
                             </button>
-                            <ul class="dropdown-menu dropdown-menu-dark">
-                                <li><button class="dropdown-item" @click="exportAnsys('EddyCurrent')"><img :src='ansysEddyCurrentsIcon' width="16" height="16" class="me-2">EddyCurrents</button></li>
-                                <li><button class="dropdown-item" @click="exportAnsys('Transient')"><img :src='ansysTransientIcon' width="16" height="16" class="me-2">Transient</button></li>
-                                <li><button class="dropdown-item" @click="exportAnsys('SteadyState')"><img :src='ansysThermalIcon' width="16" height="16" class="me-2">Thermal</button></li>
+                            <ul class="dropdown-menu dropdown-menu-dark" :class="{ show: openDropdown === 'ansys' }">
+                                <li><button class="dropdown-item" @click="closeDropdowns(); exportAnsys('EddyCurrent')"><img :src='ansysEddyCurrentsIcon' width="16" height="16" class="mr-2">EddyCurrents</button></li>
+                                <li><button class="dropdown-item" @click="closeDropdowns(); exportAnsys('Transient')"><img :src='ansysTransientIcon' width="16" height="16" class="mr-2">Transient</button></li>
+                                <li><button class="dropdown-item" @click="closeDropdowns(); exportAnsys('SteadyState')"><img :src='ansysThermalIcon' width="16" height="16" class="mr-2">Thermal</button></li>
                             </ul>
                         </div>
                     </div>
 
                     <!-- SIMBA Dropdown -->
                     <div class="cp-group">
-                        <div class="dropdown">
-                            <button 
-                                :style="$styleStore.controlPanel.button" 
-                                class="cp-btn cp-btn-simba dropdown-toggle" 
-                                :disabled="exportingSimba" 
-                                data-bs-toggle="dropdown" 
-                                title="SIMBA"
-                            >
+                        <div class="dropdown" @click.stop>
+                            <button
+                                :style="$styleStore.controlPanel.button"
+                                class="cp-btn cp-btn-simba dropdown-toggle"
+                                :disabled="exportingSimba"
+                                @click="toggleDropdown('simba')"
+                                title="SIMBA">
                                 <img :src='simbaIcon' width="18" height="18" alt="SIMBA">
                             </button>
-                            <ul class="dropdown-menu dropdown-menu-dark">
-                                <li><button class="dropdown-item" @click="exportSimba(true)"><i class="bi bi-link-45deg me-2"></i>Attach to file</button></li>
-                                <li><button class="dropdown-item" @click="exportSimba(false)"><i class="bi bi-download me-2"></i>Download library</button></li>
+                            <ul class="dropdown-menu dropdown-menu-dark" :class="{ show: openDropdown === 'simba' }">
+                                <li><button class="dropdown-item" @click="closeDropdowns(); exportSimba(true)"><i class="pi pi-link mr-2"></i>Attach to file</button></li>
+                                <li><button class="dropdown-item" @click="closeDropdowns(); exportSimba(false)"><i class="pi pi-download mr-2"></i>Download library</button></li>
                             </ul>
                         </div>
                     </div>
 
                     <!-- LtSpice Dropdown -->
                     <div class="cp-group">
-                        <div class="dropdown">
-                            <button 
-                                :style="$styleStore.controlPanel.button" 
-                                class="cp-btn cp-btn-ltspice dropdown-toggle" 
-                                :disabled="exportingLtspice" 
-                                data-bs-toggle="dropdown" 
-                                title="LtSpice"
-                            >
+                        <div class="dropdown" @click.stop>
+                            <button
+                                :style="$styleStore.controlPanel.button"
+                                class="cp-btn cp-btn-ltspice dropdown-toggle"
+                                :disabled="exportingLtspice"
+                                @click="toggleDropdown('ltspice')"
+                                title="LtSpice">
                                 <img :src='ltspiceIcon' width="18" height="18" alt="LtSpice">
                             </button>
-                            <ul class="dropdown-menu dropdown-menu-dark">
-                                <li><button class="dropdown-item" @click="exportLtspice('subcircuit')"><img :src='ltspiceSubcircuitIcon' width="16" height="16" class="me-2">Subcircuit</button></li>
-                                <li><button class="dropdown-item" @click="exportLtspice('symbol')"><img :src='ltspiceSymbolIcon' width="16" height="16" class="me-2">Symbol</button></li>
+                            <ul class="dropdown-menu dropdown-menu-dark" :class="{ show: openDropdown === 'ltspice' }">
+                                <li><button class="dropdown-item" @click="closeDropdowns(); exportLtspice('subcircuit')"><img :src='ltspiceSubcircuitIcon' width="16" height="16" class="mr-2">Subcircuit</button></li>
+                                <li><button class="dropdown-item" @click="closeDropdowns(); exportLtspice('symbol')"><img :src='ltspiceSymbolIcon' width="16" height="16" class="mr-2">Symbol</button></li>
                             </ul>
                         </div>
                     </div>
@@ -437,21 +451,20 @@ export default {
 
                     <!-- All Exports Dropdown -->
                     <div class="cp-group">
-                        <div class="dropdown">
-                            <button 
-                                :style="$styleStore.controlPanel.activeButton" 
-                                class="cp-btn cp-btn-all dropdown-toggle" 
-                                data-bs-toggle="dropdown" 
-                                title="All Exports"
-                            >
-                                <i class="bi bi-list-ul"></i>
+                        <div class="dropdown" @click.stop>
+                            <button
+                                :style="$styleStore.controlPanel.activeButton"
+                                class="cp-btn cp-btn-all dropdown-toggle"
+                                @click="toggleDropdown('allExports')"
+                                title="All Exports">
+                                <i class="pi pi-list"></i>
                             </button>
-                            <ul class="dropdown-menu dropdown-menu-dark">
-                                <li><button :style="$styleStore.magneticBuilder.exportButton" :data-cy="'MAS-exports-modal-button'" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#MASExporterModal"><i class="bi bi-file-earmark-code me-2"></i>MAS Exports</button></li>
-                                <li><button :style="$styleStore.magneticBuilder.exportButton" :data-cy="'Core-exports-modal-button'" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#CoreExporterModal"><i class="bi bi-box-fill me-2"></i>Core Exports</button></li>
-                                <li><button :style="$styleStore.magneticBuilder.exportButton" :data-cy="'Coil-exports-modal-button'" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#CoilExporterModal"><i class="bi bi-link-45deg me-2"></i>Coil Exports</button></li>
+                            <ul class="dropdown-menu dropdown-menu-dark" :class="{ show: openDropdown === 'allExports' }">
+                                <li><button :style="$styleStore.magneticBuilder.exportButton" :data-cy="'MAS-exports-modal-button'" class="dropdown-item" @click="closeDropdowns(); masExporterVisible = true"><i class="pi pi-file-code mr-2"></i>MAS Exports</button></li>
+                                <li><button :style="$styleStore.magneticBuilder.exportButton" :data-cy="'Core-exports-modal-button'" class="dropdown-item" @click="closeDropdowns(); coreExporterVisible = true"><i class="pi pi-box mr-2"></i>Core Exports</button></li>
+                                <li><button :style="$styleStore.magneticBuilder.exportButton" :data-cy="'Coil-exports-modal-button'" class="dropdown-item" @click="closeDropdowns(); coilExporterVisible = true"><i class="pi pi-link mr-2"></i>Coil Exports</button></li>
                                 <li><hr class="dropdown-divider"></li>
-                                <li><button :style="$styleStore.magneticBuilder.exportButton" :data-cy="'Circuit-Simulators-exports-modal-button'" class="dropdown-item btn btn-danger" data-bs-toggle="modal" data-bs-target="#CircuitSimulatorsExporterModal"><i class="bi bi-soundwave me-2"></i>Circuit Simulators</button></li>
+                                <li><button :style="$styleStore.magneticBuilder.exportButton" :data-cy="'Circuit-Simulators-exports-modal-button'" class="dropdown-item p-button p-button-danger" @click="closeDropdowns(); circuitExporterVisible = true"><i class="pi pi-volume-up mr-2"></i>Circuit Simulators</button></li>
                             </ul>
                         </div>
                     </div>
@@ -460,7 +473,7 @@ export default {
                 <!-- Incomplete State -->
                 <template v-else-if="showExportButtons">
                     <div class="cp-group">
-                        <span :style="$styleStore.controlPanel.setting" class="cp-incomplete"><i class="bi bi-info-circle-fill me-1"></i>Complete design to enable exports</span>
+                        <span :style="$styleStore.controlPanel.setting" class="cp-incomplete"><i class="pi pi-info-circle mr-1"></i>Complete design to enable exports</span>
                     </div>
                 </template>
             </div>

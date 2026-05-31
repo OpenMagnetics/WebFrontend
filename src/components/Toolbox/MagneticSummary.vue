@@ -30,6 +30,10 @@ export default {
             includeFringing: true,
             PLOT_MODES,
             processedMas: null,
+            coreExporterVisible: false,
+            coilExporterVisible: false,
+            masExporterVisible: false,
+            circuitExporterVisible: false,
         }
     },
     computed: {
@@ -630,30 +634,30 @@ export default {
 <template>
     <div class="datasheet-wrapper">
         <!-- Exporters -->
-        <CoreExporter :data-cy="dataTestLabel + '-CoreExporter'"/>
-        <CoilExporter :data-cy="dataTestLabel + '-CoilExporter'" />
-        <MASExporter :data-cy="dataTestLabel + '-MASExporter'" />
-        <CircuitSimulatorsExporter :data-cy="dataTestLabel + '-CircuitSimulatorsExporter'" />
-        
+        <CoreExporter v-model:visible="coreExporterVisible" :data-cy="dataTestLabel + '-CoreExporter'"/>
+        <CoilExporter v-model:visible="coilExporterVisible" :data-cy="dataTestLabel + '-CoilExporter'" />
+        <MASExporter v-model:visible="masExporterVisible" :data-cy="dataTestLabel + '-MASExporter'" />
+        <CircuitSimulatorsExporter v-model:visible="circuitExporterVisible" :data-cy="dataTestLabel + '-CircuitSimulatorsExporter'" />
+
         <!-- Toolbar (hidden when printing) -->
         <div class="datasheet-toolbar d-print-none">
             <div class="toolbar-left">
-                <button :data-cy="dataTestLabel + '-download-MAS-File-button'" class="summary-btn summary-btn-primary me-2" data-bs-toggle="modal" data-bs-target="#MASExporterModal">
-                    <i class="bi bi-file-earmark-arrow-up me-1"></i> MAS
+                <button :data-cy="dataTestLabel + '-download-MAS-File-button'" class="summary-btn summary-btn-primary mr-2" @click="masExporterVisible = true">
+                    <i class="pi pi-file-export mr-1"></i> MAS
                 </button>
-                <button class="summary-btn summary-btn-primary me-2" data-bs-toggle="modal" data-bs-target="#CoreExporterModal">
-                    <i class="bi bi-box-fill me-1"></i> Core
+                <button class="summary-btn summary-btn-primary mr-2" @click="coreExporterVisible = true">
+                    <i class="pi pi-box mr-1"></i> Core
                 </button>
-                <button class="summary-btn summary-btn-primary me-2" data-bs-toggle="modal" data-bs-target="#CoilExporterModal">
-                    <i class="bi bi-link-45deg me-1"></i> Coil
+                <button class="summary-btn summary-btn-primary mr-2" @click="coilExporterVisible = true">
+                    <i class="pi pi-link mr-1"></i> Coil
                 </button>
-                <button class="summary-btn summary-btn-danger" data-bs-toggle="modal" data-bs-target="#CircuitSimulatorsExporterModal">
-                    <i class="bi bi-cpu-fill me-1"></i> Circuit Sim
+                <button class="summary-btn summary-btn-danger" @click="circuitExporterVisible = true">
+                    <i class="pi pi-microchip mr-1"></i> Circuit Sim
                 </button>
             </div>
             <div class="toolbar-right">
                 <button :data-cy="dataTestLabel + '-download-PDF-File-button'" class="summary-btn summary-btn-outline" @click="printDatasheet">
-                    <i class="bi bi-printer-fill me-1"></i> Print / Save PDF
+                    <i class="pi pi-print mr-1"></i> Print / Save PDF
                 </button>
             </div>
         </div>
@@ -665,7 +669,7 @@ export default {
                 <div class="header-content">
                     <div class="header-left">
                         <div class="header-badge">
-                            <i class="bi bi-cpu-fill"></i>
+                            <i class="pi pi-microchip"></i>
                             <span>Datasheet</span>
                         </div>
                         <h1 class="part-number">{{ partNumber }}</h1>
@@ -695,7 +699,7 @@ export default {
 
             <!-- Visualizer Section -->
             <div class="section">
-                <h3 class="section-title"><i class="bi bi-box-fill"></i>Component Visualization</h3>
+                <h3 class="section-title"><i class="pi pi-box"></i>Component Visualization</h3>
                 <div class="visualizer-container">
                     <Magnetic2DVisualizer
                         :modelValue="mas"
@@ -710,7 +714,7 @@ export default {
 
             <!-- Electrical Specifications -->
             <div class="section">
-                <h3 class="section-title"><i class="bi bi-lightning-fill"></i>Electrical Specifications</h3>
+                <h3 class="section-title"><i class="pi pi-bolt"></i>Electrical Specifications</h3>
                 <table class="spec-table">
                     <thead>
                         <tr>
@@ -735,7 +739,7 @@ export default {
 
             <!-- Operating Point Details -->
             <div class="section" v-if="operatingPointData">
-                <h3 class="section-title"><i class="bi bi-soundwave"></i>Operating Point Excitation</h3>
+                <h3 class="section-title"><i class="pi pi-volume-up"></i>Operating Point Excitation</h3>
                 <p class="test-conditions">
                     <template v-if="operatingPointData.conditions.ambientTemperature">
                         T<sub>amb</sub> = {{ operatingPointData.conditions.ambientTemperature }}°C
@@ -758,7 +762,7 @@ export default {
                         <!-- Voltage -->
                         <div class="signal-block" v-if="ex.voltage">
                             <div class="signal-header voltage-header">
-                                <i class="bi bi-lightning-fill"></i> Voltage
+                                <i class="pi pi-bolt"></i> Voltage
                                 <span class="waveform-label">{{ ex.voltage.label }}</span>
                             </div>
                             <div class="signal-details">
@@ -797,7 +801,7 @@ export default {
                         <!-- Current -->
                         <div class="signal-block" v-if="ex.current">
                             <div class="signal-header current-header">
-                                <i class="bi bi-soundwave"></i> Current
+                                <i class="pi pi-volume-up"></i> Current
                                 <span class="waveform-label">{{ ex.current.label }}</span>
                             </div>
                             <div class="signal-details">
@@ -840,7 +844,7 @@ export default {
             <div class="two-column-section">
                 <div class="column">
                     <div class="section">
-                        <h3 class="section-title"><i class="bi bi-box-fill"></i>Core Data</h3>
+                        <h3 class="section-title"><i class="pi pi-box"></i>Core Data</h3>
                         <table class="data-table">
                             <tbody>
                                 <tr v-for="(item, index) in coreData" :key="item.parameter" :class="{ 'alt-row': index % 2 === 1 }">
@@ -853,7 +857,7 @@ export default {
                     
                     <!-- Gapping Table -->
                     <div class="section" v-if="gappingData.length > 0">
-                        <h3 class="section-title"><i class="bi bi-rulers"></i>Core Gapping</h3>
+                        <h3 class="section-title"><i class="pi pi-arrows-h"></i>Core Gapping</h3>
                         <table class="spec-table compact">
                             <thead>
                                 <tr>
@@ -874,7 +878,7 @@ export default {
                     
                     <!-- Material Data -->
                     <div class="section" v-if="materialData.length > 0">
-                        <h3 class="section-title"><i class="bi bi-beaker"></i>Material Properties</h3>
+                        <h3 class="section-title"><i class="pi pi-bolt"></i>Material Properties</h3>
                         <table class="data-table">
                             <tbody>
                                 <tr v-for="(item, index) in materialData" :key="item.parameter" :class="{ 'alt-row': index % 2 === 1 }">
@@ -887,7 +891,7 @@ export default {
                 </div>
                 <div class="column">
                     <div class="section">
-                        <h3 class="section-title"><i class="bi bi-stack"></i>Winding Configuration</h3>
+                        <h3 class="section-title"><i class="pi pi-database"></i>Winding Configuration</h3>
                         <table class="spec-table">
                             <thead>
                                 <tr>
@@ -910,7 +914,7 @@ export default {
                     
                     <!-- Performance Analysis -->
                     <div class="section">
-                        <h3 class="section-title"><i class="bi bi-speedometer2"></i>Performance Analysis</h3>
+                        <h3 class="section-title"><i class="pi pi-gauge"></i>Performance Analysis</h3>
                         <p class="test-conditions">
                             Test Conditions: f = {{ operatingFrequency }}, T<sub>amb</sub> = {{ ambientTemperature }}
                         </p>
@@ -927,7 +931,7 @@ export default {
                     
                     <!-- Winding Performance -->
                     <div class="section" v-if="windingPerformance.length > 0">
-                        <h3 class="section-title"><i class="bi bi-graph-up-arrow"></i>Winding Performance</h3>
+                        <h3 class="section-title"><i class="pi pi-chart-line"></i>Winding Performance</h3>
                         <table class="spec-table compact">
                             <thead>
                                 <tr>
@@ -952,7 +956,7 @@ export default {
 
             <!-- Winding Construction Steps -->
             <div class="section" v-if="isWoundMagnetic && windingConstructionSteps.length > 0">
-                <h3 class="section-title"><i class="bi bi-list-check"></i>Winding Construction Steps</h3>
+                <h3 class="section-title"><i class="pi pi-list"></i>Winding Construction Steps</h3>
                 <div class="construction-steps">
                     <div v-for="step in windingConstructionSteps" :key="step.step" 
                          class="construction-step" 
@@ -967,7 +971,7 @@ export default {
             </div>
 
             <div class="document-footer">
-                <i class="bi bi-info-circle-fill"></i>
+                <i class="pi pi-info-circle"></i>
                 <span>Auto-generated from design specs and simulation. Verify before production use.</span>
                 <span class="footer-brand">OpenMagnetics</span>
             </div>
@@ -1010,7 +1014,7 @@ export default {
     margin: 0 auto;
     padding: 0;
     background: var(--bs-dark);
-    color: var(--bs-light);
+    color: var(--bs-white);
     font-size: 11px;
     line-height: 1.4;
     box-shadow: 0 6px 24px rgba(var(--bs-black-rgb), 0.5);
@@ -1028,7 +1032,7 @@ export default {
         var(--bs-dark);
     border-bottom: 1px solid rgba(var(--bs-primary-rgb), 0.18);
     border-left: 3px solid rgba(var(--bs-primary-rgb), 0.7);
-    color: var(--bs-light);
+    color: var(--bs-white);
     padding: 18px 24px;
 }
 
@@ -1064,19 +1068,19 @@ export default {
     font-weight: 700;
     margin: 0 0 4px 0;
     letter-spacing: 0.3px;
-    color: var(--bs-light);
+    color: var(--bs-white);
 }
 
 .header-left .part-description {
     font-size: 13px;
     margin: 0 0 2px 0;
-    color: rgba(var(--bs-light-rgb), 0.8);
+    color: rgba(var(--bs-white-rgb), 0.8);
 }
 
 .header-left .part-type {
     font-size: 11px;
     margin: 0;
-    color: rgba(var(--bs-light-rgb), 0.55);
+    color: rgba(var(--bs-white-rgb), 0.55);
 }
 
 .header-right {
@@ -1092,7 +1096,7 @@ export default {
 
 .header-right .revision {
     font-size: 10px;
-    color: rgba(var(--bs-light-rgb), 0.55);
+    color: rgba(var(--bs-white-rgb), 0.55);
     margin-top: 4px;
     text-transform: uppercase;
     letter-spacing: 0.05em;
@@ -1146,7 +1150,7 @@ export default {
 
 .key-param .param-label {
     font-size: 9px;
-    color: rgba(var(--bs-light-rgb), 0.65);
+    color: rgba(var(--bs-white-rgb), 0.65);
     text-transform: uppercase;
     letter-spacing: 0.05em;
     font-weight: 600;
@@ -1169,7 +1173,7 @@ export default {
 
 .key-param .param-unit {
     font-size: 11px;
-    color: rgba(var(--bs-light-rgb), 0.55);
+    color: rgba(var(--bs-white-rgb), 0.55);
 }
 
 /* Sections */
@@ -1269,7 +1273,7 @@ export default {
 
 .spec-table .symbol {
     font-style: italic;
-    color: rgba(var(--bs-light-rgb), 0.7);
+    color: rgba(var(--bs-white-rgb), 0.7);
 }
 
 .spec-table .typ-value {
@@ -1279,17 +1283,17 @@ export default {
 
 .spec-table .conditions {
     font-size: 9px;
-    color: rgba(var(--bs-light-rgb), 0.45);
+    color: rgba(var(--bs-white-rgb), 0.45);
 }
 
 .data-table .param-name {
-    color: rgba(var(--bs-light-rgb), 0.65);
+    color: rgba(var(--bs-white-rgb), 0.65);
 }
 
 .data-table .param-val {
     font-weight: 600;
     text-align: right;
-    color: var(--bs-light);
+    color: var(--bs-white);
 }
 
 .data-table .total-row {
@@ -1301,7 +1305,7 @@ export default {
 /* Test conditions */
 .test-conditions {
     font-size: 10px;
-    color: rgba(var(--bs-light-rgb), 0.65);
+    color: rgba(var(--bs-white-rgb), 0.65);
     margin-bottom: 8px;
     font-style: italic;
 }
@@ -1366,7 +1370,7 @@ export default {
 
 .step-description {
     font-size: 11px;
-    color: var(--bs-light);
+    color: var(--bs-white);
 }
 
 /* Operating Point Excitation */
@@ -1398,7 +1402,7 @@ export default {
 
 .frequency-badge {
     font-size: 11px;
-    color: rgba(var(--bs-light-rgb), 0.65);
+    color: rgba(var(--bs-white-rgb), 0.65);
     font-style: italic;
 }
 
@@ -1463,14 +1467,14 @@ export default {
 
 .signal-param .param-label {
     font-size: 9px;
-    color: rgba(var(--bs-light-rgb), 0.45);
+    color: rgba(var(--bs-white-rgb), 0.45);
     text-transform: uppercase;
 }
 
 .signal-param .param-value {
     font-size: 11px;
     font-weight: 600;
-    color: var(--bs-light);
+    color: var(--bs-white);
 }
 
 .waveform-preview {
@@ -1519,7 +1523,7 @@ export default {
     border-top: 1px solid rgba(var(--bs-primary-rgb), 0.15);
     background: rgba(var(--bs-primary-rgb), 0.03);
     font-size: 9px;
-    color: rgba(var(--bs-light-rgb), 0.55);
+    color: rgba(var(--bs-white-rgb), 0.55);
     letter-spacing: 0.02em;
 }
 
@@ -1565,7 +1569,7 @@ export default {
     
     .key-param .param-label,
     .key-param .param-unit {
-        color: rgba(var(--bs-light-rgb), 0.45);
+        color: rgba(var(--bs-white-rgb), 0.45);
     }
     
     .data-table .param-name,
@@ -1797,7 +1801,7 @@ export default {
     box-shadow:
         0 0 0 1px rgb(var(--bs-primary-rgb) / 0.35),
         0 2px 8px rgb(var(--bs-primary-rgb) / 0.4),
-        inset 0 1px 0 rgba(var(--bs-light-rgb), 0.3);
+        inset 0 1px 0 rgba(var(--bs-white-rgb), 0.3);
     text-shadow: 0 1px 1px rgba(var(--bs-dark-rgb), 0.25);
 }
 
@@ -1811,7 +1815,7 @@ export default {
     box-shadow:
         0 0 0 1px rgb(var(--bs-success-rgb) / 0.35),
         0 2px 8px rgb(var(--bs-success-rgb) / 0.4),
-        inset 0 1px 0 rgba(var(--bs-light-rgb), 0.3);
+        inset 0 1px 0 rgba(var(--bs-white-rgb), 0.3);
     text-shadow: 0 1px 1px rgba(var(--bs-dark-rgb), 0.25);
 }
 
@@ -1828,15 +1832,15 @@ export default {
 }
 
 .summary-btn-outline {
-    background: rgba(var(--bs-light-rgb), 0.08);
-    border: 1px solid rgba(var(--bs-light-rgb), 0.22);
+    background: rgba(var(--bs-white-rgb), 0.08);
+    border: 1px solid rgba(var(--bs-white-rgb), 0.22);
     color: var(--bs-white);
     box-shadow: 0 1px 4px rgba(var(--bs-dark-rgb), 0.25);
 }
 
 .summary-btn-outline:hover:not(:disabled) {
-    background: rgba(var(--bs-light-rgb), 0.14);
-    border-color: rgba(var(--bs-light-rgb), 0.35);
+    background: rgba(var(--bs-white-rgb), 0.14);
+    border-color: rgba(var(--bs-white-rgb), 0.35);
     color: var(--bs-white);
 }
 </style>

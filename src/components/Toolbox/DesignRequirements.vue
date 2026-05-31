@@ -217,7 +217,7 @@ export default {
             <!-- Left: Requirements list panel -->
             <div class="dr-list-panel">
                 <div class="dr-panel-header">
-                    <i class="bi bi-clipboard-check"></i>
+                    <i class="pi pi-check-square"></i>
                     <span>Requirements</span>
                 </div>
                 <div class="dr-list-body">
@@ -236,7 +236,7 @@ export default {
                             v-if="!compulsoryRequirements[$stateStore.getCurrentApplication()].includes(requirementName)"
                             :class="masStore.mas.inputs.designRequirements[requirementName]==null ? 'dr-btn dr-btn-add' : 'dr-btn dr-btn-remove'"
                             @click="requirementButtonClicked(requirementName)">
-                            <i :class="masStore.mas.inputs.designRequirements[requirementName]==null ? 'bi bi-plus-lg' : 'bi bi-x-lg'"></i>
+                            <i :class="masStore.mas.inputs.designRequirements[requirementName]==null ? 'pi pi-plus' : 'pi pi-times'"></i>
                             <span>{{ masStore.mas.inputs.designRequirements[requirementName]==null ? 'Add' : 'Remove' }}</span>
                         </button>
                         <button
@@ -244,7 +244,7 @@ export default {
                             v-if="compulsoryRequirements[$stateStore.getCurrentApplication()].includes(requirementName)"
                             class="dr-btn dr-btn-required"
                             disabled>
-                            <i class="bi bi-lock-fill"></i>
+                            <i class="pi pi-lock"></i>
                             <span>{{ (requirementName == 'turnsRatios' && masStore.mas.inputs.designRequirements.turnsRatios.length == 0) ? 'Not Req.' : 'Required' }}</span>
                         </button>
                     </div>
@@ -254,11 +254,11 @@ export default {
             <!-- Right: Configuration panel -->
             <div class="dr-detail-panel">
                 <div class="dr-panel-header">
-                    <i class="bi bi-sliders"></i>
+                    <i class="pi pi-sliders-h"></i>
                     <span>Configuration</span>
                 </div>
                 <div class="dr-detail-body">
-<!--                 <Name class="border-bottom border-top py-2" 
+<!--                 <Name class="border-top-1 border-bottom-1 border-solid border-300 py-2" 
                     :style = "$styleStore.designRequirements.inputBorderColor"
                     :name="'name'"
                     :dataTestLabel="dataTestLabel + '-Name'"
@@ -272,15 +272,15 @@ export default {
                     @hasError="hasError"
                 /> -->
 
-                <ElementFromList class="border-bottom border-top py-2 ps-4"
+                <ElementFromList class="border-top-1 border-bottom-1 border-solid border-300 py-2 pl-4"
                     :style = "$styleStore.designRequirements.inputBorderColor"
                     :name="'numberWindings'"
                     :dataTestLabel="dataTestLabel + '-NumberWindings'"
                     :options="getNumberPossibleWindings"
-                    :titleSameRow="true"
+                    :titleSameRow="false"
                     :justifyContent="true"
-                    :labelWidthProportionClass="'col-sm-12 col-md-7'"
-                    :selectStyleClass="'col-sm-12 col-md-5'"
+                    :labelWidthProportionClass="'col-12 md:col-7'"
+                    :selectStyleClass="'col-12 md:col-5'"
                     :valueFontSize="$styleStore.designRequirements.inputFontSize"
                     :labelFontSize="$styleStore.designRequirements.inputTitleFontSize"
                     :labelBgColor="$styleStore.designRequirements.inputLabelBgColor"
@@ -290,7 +290,7 @@ export default {
                     @update="updatedNumberElements"
                 />
 
-                <DimensionWithTolerance class="border-bottom py-2 ps-2"
+                <DimensionWithTolerance class="border-bottom-1 border-solid border-300 py-2 pl-2"
                     :style = "$styleStore.designRequirements.inputBorderColor"
                     v-if="masStore.mas.inputs.designRequirements.magnetizingInductance != null"
                     :name="'magnetizingInductance'"
@@ -301,7 +301,7 @@ export default {
                     :min="minimumMaximumScalePerParameter['inductance']['min']"
                     :max="minimumMaximumScalePerParameter['inductance']['max']"
                     v-model="masStore.mas.inputs.designRequirements.magnetizingInductance"
-                    :unitExtraStyleClass="'py-1 ps-1 mt-1'"
+                    
                     :addButtonStyle="$styleStore.designRequirements.requirementButton"
                     :valueFontSize="$styleStore.designRequirements.inputFontSize"
                     :titleFontSize="$styleStore.designRequirements.inputTitleFontSize"
@@ -311,7 +311,7 @@ export default {
                     @hasError="hasError"
                 />
 
-                <Impedances class="border-bottom py-2 px-0"
+                <Impedances class="border-bottom-1 border-solid border-300 py-2"
                     :style = "$styleStore.designRequirements.inputBorderColor"
                     v-if="masStore.mas.inputs.designRequirements.minimumImpedance != null"
                     :dataTestLabel="dataTestLabel + '-MinimumImpedance'"
@@ -322,10 +322,10 @@ export default {
                     :labelBgColor="$styleStore.designRequirements.inputLabelBgColor"
                     :valueBgColor="$styleStore.designRequirements.inputValueBgColor"
                     :textColor="$styleStore.designRequirements.inputTextColor"
-                    :unitExtraStyleClass="'py-1 ps-1'"
+                    
                 />
 
-                <ArrayDimensionWithTolerance class="border-bottom py-2"
+                <ArrayDimensionWithTolerance class="border-bottom-1 border-solid border-300 py-2"
                     :style = "$styleStore.designRequirements.inputBorderColor"
                     v-if="!masStore.hasMirroredWindings && masStore.mas.inputs.designRequirements.turnsRatios != null && masStore.mas.inputs.designRequirements.turnsRatios.length > 0"
                     :name="'turnsRatios'"
@@ -342,12 +342,12 @@ export default {
                     :textColor="$styleStore.designRequirements.inputTextColor"
                     @hasError="hasError"
                 />
-                <ElementFromListRadio class="border-bottom py-2 ps-4"
+                <ElementFromListRadio class="border-bottom-1 border-solid border-300 py-2 pl-4"
                     v-if="!masStore.hasMirroredWindings && masStore.mas.inputs.designRequirements.wiringTechnology != null"
                     :name="'wiringTechnology'"
                     :dataTestLabel="dataTestLabel + '-WiringTechnology'"
                     :options="wiringTechnologyOptions"
-                    :titleSameRow="true"
+                    :titleSameRow="false"
                     v-model="masStore.mas.inputs.designRequirements"
                     :labelWidthProportionClass="'col-5'"
                     :valueWidthProportionClass="'col-3'"
@@ -359,7 +359,7 @@ export default {
                     @update="updatedWiringTechnologies"
                 />
 
-                <Insulation class="border-bottom py-2"
+                <Insulation class="border-bottom-1 border-solid border-300 py-2"
                     :style = "$styleStore.designRequirements.inputBorderColor"
                     v-if="masStore.mas.inputs.designRequirements.insulation != null"
                     :dataTestLabel="dataTestLabel + '-Insulation'"
@@ -373,7 +373,7 @@ export default {
                     :textColor="$styleStore.designRequirements.inputTextColor"
                 />
 
-                <ArrayDimensionWithTolerance class="border-bottom py-2"
+                <ArrayDimensionWithTolerance class="border-bottom-1 border-solid border-300 py-2"
                     :style = "$styleStore.designRequirements.inputBorderColor"
                     v-if="masStore.mas.inputs.designRequirements.leakageInductance != null"
                     :name="'leakageInductance'"
@@ -394,7 +394,7 @@ export default {
                     @hasError="hasError"
                 />
 
-                <ArrayDimensionWithTolerance class="border-bottom py-2"
+                <ArrayDimensionWithTolerance class="border-bottom-1 border-solid border-300 py-2"
                     :style = "$styleStore.designRequirements.inputBorderColor"
                     v-if="masStore.mas.inputs.designRequirements.strayCapacitance != null"
                     :name="'strayCapacitance'"
@@ -415,7 +415,7 @@ export default {
                     @hasError="hasError"
                 />
 
-                <DimensionWithTolerance class="border-bottom py-2 ps-3"
+                <DimensionWithTolerance class="border-bottom-1 border-solid border-300 py-2 pl-3"
                     :style = "$styleStore.designRequirements.inputBorderColor"
                     v-if="masStore.mas.inputs.designRequirements.operatingTemperature != null"
                     :name="'operatingTemperature'"
@@ -435,7 +435,7 @@ export default {
                     @hasError="hasError"
                 />
               
-                <Dimension class="border-bottom py-2 ps-4"
+                <Dimension class="border-bottom-1 border-solid border-300 py-2 pl-4"
                     :style = "$styleStore.designRequirements.inputBorderColor"
                     v-if="masStore.mas.inputs.designRequirements.maximumWeight != null"
                     :name="'maximumWeight'"
@@ -445,8 +445,8 @@ export default {
                     :max="minimumMaximumScalePerParameter['weight']['max']"
                     :defaultValue="300"
                     :justifyContent="true"
-                    :labelWidthProportionClass="'col-sm-12 col-md-7'"
-                    :valueWidthProportionClass="'col-sm-12 col-md-5'"
+                    :labelWidthProportionClass="'col-12 md:col-7'"
+                    :valueWidthProportionClass="'col-12 md:col-5'"
                     v-model="masStore.mas.inputs.designRequirements"
                     :valueFontSize="$styleStore.designRequirements.inputFontSize"
                     :labelFontSize="$styleStore.designRequirements.inputTitleFontSize"
@@ -455,7 +455,7 @@ export default {
                     :textColor="$styleStore.designRequirements.inputTextColor"
                 />
 
-                <MaximumDimensions class="border-bottom py-2 ps-4"
+                <MaximumDimensions class="border-bottom-1 border-solid border-300 py-2 pl-4"
                     :style = "$styleStore.designRequirements.inputBorderColor"
                     v-if="masStore.mas.inputs.designRequirements.maximumDimensions != null"
                     unit="m"
@@ -472,7 +472,7 @@ export default {
                     :textColor="$styleStore.designRequirements.inputTextColor"
                 />
 
-                <ArrayElementFromList class="border-bottom py-2 ps-0"
+                <ArrayElementFromList class="border-bottom-1 border-solid border-300 py-2 pl-0"
                     :style = "$styleStore.designRequirements.inputBorderColor"
                     v-if="masStore.mas.inputs.designRequirements.terminalType != null"
                     :name="'terminalType'"
@@ -480,10 +480,10 @@ export default {
                     :defaultValue="new Array(Object.keys(ConnectionType).length).fill(ConnectionType.FlyingLead)"
                     :options="Object.values(ConnectionType)"
                     :optionLabels="connectionTypeLabels"
-                    :titleSameRow="true"
+                    :titleSameRow="false"
                     :justifyContent="false"
-                    :labelWidthProportionClass="'col-sm-12 col-md-3'"
-                    :selectStyleClass="'col-sm-12 col-md-4'"
+                    :labelWidthProportionClass="'col-12 md:col-3'"
+                    :selectStyleClass="'col-12 md:col-4'"
                     :fixedNumberElements="masStore.mas.inputs.designRequirements.turnsRatios.length + 1"
                     v-model="masStore.mas.inputs.designRequirements"
                     :valueFontSize="$styleStore.designRequirements.inputFontSize"
@@ -493,7 +493,7 @@ export default {
                     :textColor="$styleStore.designRequirements.inputTextColor"
                 />
 
-                <ArrayElementFromList class="border-bottom py-2"
+                <ArrayElementFromList class="border-bottom-1 border-solid border-300 py-2"
                     :style = "$styleStore.designRequirements.inputBorderColor"
                     v-if="masStore.mas.inputs.designRequirements.isolationSides != null"
                     :name="'isolationSides'"
@@ -501,10 +501,10 @@ export default {
                     :defaultValue="Object.keys(IsolationSideOrdered)"
                     :options="IsolationSideOrdered"
                     :optionLabels="isolationSideLabels"
-                    :titleSameRow="true"
+                    :titleSameRow="false"
                     :justifyContent="false"
-                    :labelWidthProportionClass="'col-sm-12 col-md-3'"
-                    :selectStyleClass="'col-sm-12 col-md-4'"
+                    :labelWidthProportionClass="'col-12 md:col-3'"
+                    :selectStyleClass="'col-12 md:col-4'"
                     :fixedNumberElements="masStore.mas.inputs.designRequirements.turnsRatios.length + 1"
                     v-model="masStore.mas.inputs.designRequirements"
                     :valueFontSize="$styleStore.designRequirements.inputFontSize"
@@ -515,17 +515,17 @@ export default {
                     @update="updatedIsolationSides"
                 />
 
-                <ElementFromList class="border-bottom py-2 ps-4"
+                <ElementFromList class="border-bottom-1 border-solid border-300 py-2 pl-4"
                     :style = "$styleStore.designRequirements.inputBorderColor"
                     v-if="masStore.mas.inputs.designRequirements.topology != null"
                     :name="'topology'"
                     :dataTestLabel="dataTestLabel + '-Topology'"
                     :options="Object.values(Topologies)"
                     :optionLabels="topologyLabels"
-                    :titleSameRow="true"
+                    :titleSameRow="false"
                     :justifyContent="true"
-                    :labelWidthProportionClass="'col-sm-12 col-md-7'"
-                    :selectStyleClass="'col-sm-12 col-md-5'"
+                    :labelWidthProportionClass="'col-12 md:col-7'"
+                    :selectStyleClass="'col-12 md:col-5'"
                     v-model="masStore.mas.inputs.designRequirements"
                     :valueFontSize="$styleStore.designRequirements.inputFontSize"
                     :labelFontSize="$styleStore.designRequirements.inputTitleFontSize"
@@ -534,17 +534,17 @@ export default {
                     :textColor="$styleStore.designRequirements.inputTextColor"
                 />
 
-                <ElementFromList class="border-bottom py-2 ps-4"
+                <ElementFromList class="border-bottom-1 border-solid border-300 py-2 pl-4"
                     :style = "$styleStore.designRequirements.inputBorderColor"
                     :name="'market'"
                     v-if="masStore.mas.inputs.designRequirements.market != null"
                     :dataTestLabel="dataTestLabel + '-Market'"
                     :options="Object.values(Market)"
                     :optionLabels="marketLabels"
-                    :titleSameRow="true"
+                    :titleSameRow="false"
                     :justifyContent="true"
-                    :labelWidthProportionClass="'col-sm-12 col-md-7'"
-                    :selectStyleClass="'col-sm-12 col-md-5'"
+                    :labelWidthProportionClass="'col-12 md:col-7'"
+                    :selectStyleClass="'col-12 md:col-5'"
                     v-model="masStore.mas.inputs.designRequirements"
                     :valueFontSize="$styleStore.designRequirements.inputFontSize"
                     :labelFontSize="$styleStore.designRequirements.inputTitleFontSize"
@@ -565,8 +565,8 @@ export default {
 .dr-container {
     --dr-border: rgba(var(--bs-primary-rgb), 0.15);
     --dr-border-soft: rgba(var(--bs-primary-rgb), 0.12);
-    --dr-text: var(--bs-light);
-    --dr-text-muted: rgba(var(--bs-light-rgb), 0.7);
+    --dr-text: var(--bs-white);
+    --dr-text-muted: rgba(var(--bs-white-rgb), 0.7);
 
     padding: 0.5rem 0.75rem;
 }
@@ -575,6 +575,23 @@ export default {
     display: flex;
     gap: 0.75rem;
     align-items: flex-start;
+}
+
+/* Mobile: stack the Requirements list and the Configuration detail
+ * panels vertically instead of side-by-side. */
+@media (max-width: 768px) {
+    .dr-layout {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .dr-list-panel {
+        width: 100% !important;
+        max-height: none !important;
+    }
+    .dr-detail-panel {
+        width: 100%;
+        max-height: none !important;
+    }
 }
 
 /* ============ Shared panel ============ */
@@ -638,11 +655,10 @@ export default {
     flex: 1;
 }
 
-/* Neutralise Bootstrap border-top/border-bottom on the form rows and
-   draw a single clean divider between sections instead, so there are no
-   "dark holes" between them. */
+/* Neutralise borders on the form rows and draw a single clean divider
+   between sections instead, so there are no "dark holes" between them. */
 .dr-detail-body :deep(> *) {
-    border-top: 0 !important;
+    border: 0 !important;
     border-bottom: 1px solid rgba(var(--bs-white-rgb), 0.06) !important;
     padding: 0.55rem 0.85rem !important;
     background: transparent !important;
@@ -654,6 +670,57 @@ export default {
 
 .dr-detail-body :deep(> *:hover) {
     background: rgba(var(--bs-white-rgb), 0.025) !important;
+}
+
+/* Stack the title row above the input row only for TOP-LEVEL
+   requirement components (direct children of .dr-detail-body). Nested
+   Dimension instances (e.g. Frequency / Impedance inside Impedances)
+   keep the default same-row label-then-value layout. */
+.dr-detail-body > .efl-container :deep(.efl-row),
+.dr-detail-body > .dim-container :deep(.dim-row),
+.dr-detail-body > .efr-container :deep(.efr-row),
+.dr-detail-body > .efr-container :deep(.efr-options-row-inline) {
+    flex-direction: column !important;
+    align-items: stretch !important;
+}
+/* Top-level requirement labels (Number Windings, Magnetizing Inductance,
+   Wiring Technology, etc.) need full width to live on their own row
+   above the input. The bold-teal styling itself comes from custom.scss. */
+.dr-detail-body > .efl-container > .efl-row > .efl-label,
+.dr-detail-body > .dim-container > .dim-row > .dim-label,
+.dr-detail-body > .efr-container > .efr-row > .efr-label,
+.dr-detail-body > .dwt-container > .dwt-title-row > .dwt-title {
+    text-align: left !important;
+    width: 100% !important;
+    margin-bottom: 0.35rem !important;
+}
+
+/* Stop the unit Select from stretching when its parent row isn't a
+   `justify-content: space-between` flex. */
+.dr-detail-body :deep(.efl-row .efl-select[class*="md:col-"]) {
+    flex: 0 0 auto !important;
+}
+
+/* ArrayDimensionWithTolerance per-winding rows (Leakage Inductance,
+   Stray Capacitance, Turns Ratios): the winding name (Secondary,
+   Tertiary, ...) sits on the LEFT and the tolerance InputGroup on the
+   RIGHT — same row. */
+.dr-detail-body :deep(.dwt-container.array-dwt-row) {
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 0.75rem !important;
+    padding-left: 1.5rem !important;   /* small indent under the section title */
+    padding-right: 0 !important;
+    margin: 0 !important;
+}
+.dr-detail-body :deep(.dwt-container.array-dwt-row > .dwt-title-row) {
+    flex: 0 0 auto !important;
+    width: auto !important;
+    min-width: 5rem;
+}
+.dr-detail-body :deep(.dwt-container.array-dwt-row > .dwt-fields-row) {
+    flex: 1 1 auto !important;
+    min-width: 0;
 }
 
 /* ============ Requirement list item ============ */

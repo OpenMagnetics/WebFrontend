@@ -3,10 +3,13 @@ import { useTaskQueueStore } from '../../../stores/taskQueue'
 import { useStyleStore } from '../../../stores/style'
 import { toTitleCase, removeTrailingZeroes, formatInductance, formatPower, formatTemperature, formatResistance } from 'WebSharedComponents/assets/js/utils.js'
 import Magnetic2DVisualizer from 'WebSharedComponents/Common/Magnetic2DVisualizer.vue'
+import Drawer from 'primevue/drawer'
 </script>
 
 <script>
 export default {
+    components: { Drawer },
+    emits: ['update:visible'],
     props: {
         modelValue: {
             type: Object,
@@ -16,6 +19,7 @@ export default {
             type: String,
             default: '',
         },
+        visible: { type: Boolean, default: false },
     },
     data() {
         return {
@@ -230,8 +234,8 @@ export default {
         },
     },
     computed: {
-        offcanvasPosition() {
-            return window.innerWidth < 600 ? 'offcanvas-bottom' : 'offcanvas-end';
+        drawerPosition() {
+            return window.innerWidth < 600 ? 'bottom' : 'right';
         }
     },
     mounted() {
@@ -242,13 +246,14 @@ export default {
 </script>
 
 <template>
-    <div
-        :class="offcanvasPosition"
-        class="offcanvas offcanvas-size-xl ad-offcanvas"
-        tabindex="-1"
-        id="CoreAdviserDetailOffCanvas"
-        aria-labelledby="CoreAdviserDetailOffCanvasLabel"
-    >
+    <Drawer
+        :visible="visible"
+        @update:visible="(v) => $emit('update:visible', v)"
+        :position="drawerPosition"
+        :modal="true"
+        :showCloseIcon="false"
+        :pt="{ root: { class: 'ad-offcanvas' } }"
+        :style="{ width: drawerPosition === 'bottom' ? '100vw' : '68vw', height: drawerPosition === 'bottom' ? '80vh' : '100%' }">
         <div v-if="modelValue.magnetic.manufacturerInfo" class="ad-root">
             <!-- Top header -->
             <div class="ad-topbar">
@@ -260,21 +265,21 @@ export default {
                     data-cy="CoreAdviseDetail-corner-close-modal-button"
                     type="button"
                     class="ad-close"
-                    data-bs-dismiss="offcanvas"
+                    @click="$emit('update:visible', false)"
                     aria-label="Close"
                 >
-                    <i class="bi bi-x-lg"></i>
+                    <i class="pi pi-times"></i>
                 </button>
             </div>
 
             <div class="ad-body">
                 <div class="row g-3">
                     <!-- Data Tables Section -->
-                    <div class="col-12 col-lg-7 ad-tables">
+                    <div class="col-12 lg:col-7 ad-tables">
                         <!-- Number of Turns Table -->
                         <div class="ad-card">
                             <div class="ad-card-header">
-                                <i class="bi bi-arrow-repeat fa-spin"></i>
+                                <i class="pi pi-refresh"></i>
                                 <span>Windings</span>
                             </div>
                             <table class="ad-table">
@@ -300,14 +305,14 @@ export default {
                         <!-- Operating Points -->
                         <div v-for="(op, opIdx) in modelValue.outputs" :key="'output-' + opIdx" class="ad-op">
                             <div class="ad-op-title">
-                                <i class="bi bi-bullseye"></i>
+                                <i class="pi pi-bullseye"></i>
                                 <span>{{ modelValue.inputs.operatingPoints[opIdx].name }}</span>
                             </div>
 
                             <!-- Core Data -->
                             <div class="ad-card">
                                 <div class="ad-card-header">
-                                    <i class="bi bi-box-fill"></i>
+                                    <i class="pi pi-box"></i>
                                     <span>Core</span>
                                 </div>
                                 <table class="ad-table ad-table-kv">
@@ -331,7 +336,7 @@ export default {
                             <!-- Coil Data -->
                             <div class="ad-card">
                                 <div class="ad-card-header">
-                                    <i class="bi bi-soundwave"></i>
+                                    <i class="pi pi-volume-up"></i>
                                     <span>Coil</span>
                                 </div>
                                 <table class="ad-table">
@@ -357,7 +362,7 @@ export default {
                             <!-- Winding Losses Breakdown -->
                             <div class="ad-card">
                                 <div class="ad-card-header">
-                                    <i class="bi bi-lightning-fill"></i>
+                                    <i class="pi pi-bolt"></i>
                                     <span>Winding Losses Breakdown</span>
                                 </div>
                                 <table class="ad-table">
@@ -383,10 +388,10 @@ export default {
                     </div>
 
                     <!-- Visualizer Section -->
-                    <div class="col-12 col-lg-5 ad-viz-col">
+                    <div class="col-12 lg:col-5 ad-viz-col">
                         <div class="ad-card ad-viz-card">
                             <div class="ad-card-header">
-                                <i class="bi bi-eye-fill"></i>
+                                <i class="pi pi-eye"></i>
                                 <span>Core &amp; Coil</span>
                             </div>
                             <div class="ad-viz-body">
@@ -402,7 +407,7 @@ export default {
                 </div>
             </div>
         </div>
-    </div>
+    </Drawer>
 </template>
 
 <style scoped>
@@ -414,8 +419,8 @@ export default {
     --ad-sub-2: color-mix(in srgb, var(--bs-light) 88%, var(--bs-dark) 12%);
     --ad-border: rgba(var(--bs-white-rgb), 0.1);
     --ad-border-strong: rgba(var(--bs-white-rgb), 0.18);
-    --ad-text: var(--bs-light);
-    --ad-text-muted: rgba(var(--bs-light-rgb), 0.72);
+    --ad-text: var(--bs-white);
+    --ad-text-muted: rgba(var(--bs-white-rgb), 0.72);
 
     --bs-offcanvas-width: 68vw !important;
     --bs-offcanvas-height: 80vh !important;

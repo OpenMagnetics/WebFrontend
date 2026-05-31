@@ -12,12 +12,12 @@ export default {
 <template>
     <div class="container">
         <div class="row">
-            <div class="offset-1 col-lg-10 text-center">
+            <div class="col-offset-1 lg:col-10 text-center">
                 <h2 class="text-white my-5">We are working on the Wire Adviser</h2>
-                <i class="bi bi-person-workspace fa-9x bd-placeholder-img rounded-circle text-primary" width="140" height="140" xmlns="http://www.w3.org/2000/svg" role="img" focusable="false"></i>
+                <i class="pi pi-user-workspace fa-9x bd-placeholder-img rounded-circle text-primary" width="140" height="140" xmlns="http://www.w3.org/2000/svg" role="img" focusable="false"></i>
                 <h2 class="text-white my-5">Coming soon</h2>
-                <i class="bi bi-lightning-fill fa-9x bd-placeholder-img rounded-circle text-primary" width="300" height="300" xmlns="http://www.w3.org/2000/svg" role="img" focusable="false"></i>
-                <i class="bi bi-magnet-fill fa-9x bd-placeholder-img rounded-circle text-primary" width="300" height="300" xmlns="http://www.w3.org/2000/svg" role="img" focusable="false"></i>
+                <i class="pi pi-bolt fa-9x bd-placeholder-img rounded-circle text-primary" width="300" height="300" xmlns="http://www.w3.org/2000/svg" role="img" focusable="false"></i>
+                <i class="pi pi-cog fa-9x bd-placeholder-img rounded-circle text-primary" width="300" height="300" xmlns="http://www.w3.org/2000/svg" role="img" focusable="false"></i>
             </div>
         </div>
     </div>

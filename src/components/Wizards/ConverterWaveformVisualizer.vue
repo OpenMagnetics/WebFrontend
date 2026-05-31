@@ -191,14 +191,14 @@ export default {
                     @click="setViewMode('magnetic')"
                     :style="getButtonStyle('magnetic')"
                 >
-                    <i class="bi bi-magnet-fill me-1"></i>Magnetic
+                    <i class="pi pi-cog mr-1"></i>Magnetic
                 </button>
                 <button 
                     :class="['btn', viewMode === 'converter' ? 'btn-primary' : 'btn-outline-primary']"
                     @click="setViewMode('converter')"
                     :style="getButtonStyle('converter')"
                 >
-                    <i class="bi bi-cpu-fill me-1"></i>Converter
+                    <i class="pi pi-microchip mr-1"></i>Converter
                 </button>
             </div>
         </div>
@@ -239,7 +239,7 @@ export default {
         
         <!-- Empty State -->
         <div v-else class="empty-state text-center py-4">
-            <i class="bi bi-soundwave empty-icon mb-2"></i>
+            <i class="pi pi-volume-up empty-icon mb-2"></i>
             <p class="empty-text mb-0">
                 Click <strong>Analytical</strong> or <strong>Simulated</strong> to generate waveforms
             </p>

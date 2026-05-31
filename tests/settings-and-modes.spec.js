@@ -86,7 +86,7 @@ async function openSettingsModal(page) {
   await expect(btn, 'settings-modal-button must be visible on builder step').toBeVisible({ timeout: 5000 });
   await btn.click();
   await pause(page, 600, 'mechanical: settle');
-  const modal = page.locator('.modal.show[id$="SettingsModal"]').first();
+  const modal = page.locator('.p-dialog[data-cy$="SettingsModal"]').first();
   await expect(modal, 'SettingsModal must open after clicking the button').toBeVisible({ timeout: 3000 });
 }
 
@@ -122,7 +122,7 @@ test.describe('Settings modal — open/close', () => {
     await openSettingsModal(page);
     await page.keyboard.press('Escape');
     await pause(page, 500, 'mechanical: settle');
-    const modal = page.locator('.modal.show[id$="SettingsModal"]').first();
+    const modal = page.locator('.p-dialog[data-cy$="SettingsModal"]').first();
     await expect(modal).toBeHidden();
   });
 });
@@ -177,7 +177,7 @@ test.describe('Settings modal — toggles & controls', () => {
   test('ST-9: modal contains at least one select element (core losses model or similar)', async ({ page }) => {
     await goToBuilder(page);
     await openSettingsModal(page);
-    const selects = page.locator('.modal.show[id$="SettingsModal"] select');
+    const selects = page.locator('.p-dialog[data-cy$="SettingsModal"]').locator('select, .p-select');
     expect(await selects.count()).toBeGreaterThan(0);
   });
 });

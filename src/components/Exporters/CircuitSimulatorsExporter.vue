@@ -1,5 +1,6 @@
 <script setup>
 import { useMasStore } from '../../stores/mas'
+import Dialog from 'primevue/dialog'
 import SimbaExporter from './SimbaExporter.vue'
 import LtSpiceExporter from './LtSpiceExporter.vue'
 import NgSpiceExporter from './NgSpiceExporter.vue'
@@ -9,11 +10,11 @@ import PlecsExporter from './PlecsExporter.vue'
 
 <script>
 export default {
+    components: { Dialog },
+    emits: ['update:visible'],
     props: {
-        dataTestLabel: {
-            type: String,
-            default: '',
-        },
+        dataTestLabel: { type: String, default: '' },
+        visible: { type: Boolean, default: false },
     },
     data() {
         const masStore = useMasStore();
@@ -25,24 +26,28 @@ export default {
             title,
             plecsIcon: `${import.meta.env.BASE_URL}images/PLECS_icon.png`,
         }
-    }
+    },
 }
 </script>
 
 <template>
-    <div class="modal fade" :id="modalName" tabindex="-1" :aria-labelledby="modalName + 'Label'" aria-hidden="true">
-        <div class="modal-dialog modal-lg modal-dialog-scrollable modal-class">
-            <div class="modal-content circ-modal" :style="$styleStore.magneticBuilder.exporter">
-                <div class="circ-header">
-                    <div class="circ-header-inner">
-                        <div class="circ-header-badge">
-                            <i class="bi bi-cpu-fill"></i> Exporters
-                        </div>
-                        <h5 class="circ-title" :id="modalName + 'Label'">{{ title }}</h5>
-                        <p class="circ-subtitle">Download your magnetic model for use in circuit simulators</p>
-                    </div>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" :aria-label="modalName + 'Close'"></button>
+    <Dialog
+        :visible="visible"
+        @update:visible="(v) => $emit('update:visible', v)"
+        :modal="true"
+        :draggable="false"
+        :data-cy="modalName"
+        :style="{ width: 'min(90vw, 920px)' }"
+        :pt="{ root: { class: 'circ-modal' } }">
+        <template #header>
+            <div class="circ-header-inner">
+                <div class="circ-header-badge">
+                    <i class="pi pi-microchip"></i> Exporters
                 </div>
+                <h5 class="circ-title" :id="modalName + 'Label'">{{ title }}</h5>
+                <p class="circ-subtitle">Download your magnetic model for use in circuit simulators</p>
+            </div>
+        </template>
 
                 <div
                     v-if="$stateStore.currentOperatingPoint < masStore.mas.inputs.operatingPoints.length"
@@ -52,7 +57,7 @@ export default {
                     <div class="circ-section">
                         <div class="circ-section-header">
                             <div class="circ-section-icon simba-icon">
-                                <i class="bi bi-diagram-3-fill"></i>
+                                <i class="pi pi-sitemap"></i>
                             </div>
                             <div>
                                 <div class="circ-section-title">SIMBA</div>
@@ -81,7 +86,7 @@ export default {
                     <div class="circ-section">
                         <div class="circ-section-header">
                             <div class="circ-section-icon ltspice-icon">
-                                <i class="bi bi-lightning-charge-fill"></i>
+                                <i class="pi pi-bolt-charge-fill"></i>
                             </div>
                             <div>
                                 <div class="circ-section-title">LTspice</div>
@@ -110,7 +115,7 @@ export default {
                     <div class="circ-section">
                         <div class="circ-section-header">
                             <div class="circ-section-icon ngspice-icon">
-                                <i class="bi bi-terminal-fill"></i>
+                                <i class="pi pi-server"></i>
                             </div>
                             <div>
                                 <div class="circ-section-title">NgSpice</div>
@@ -131,7 +136,7 @@ export default {
                     <div class="circ-section">
                         <div class="circ-section-header">
                             <div class="circ-section-icon nl5-icon">
-                                <i class="bi bi-activity"></i>
+                                <i class="pi pi-chart-line"></i>
                             </div>
                             <div>
                                 <div class="circ-section-title">NL5</div>
@@ -169,9 +174,7 @@ export default {
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
-    </div>
+    </Dialog>
 </template>
 
 <style scoped>
@@ -223,14 +226,14 @@ export default {
 .circ-title {
     font-size: 18px;
     font-weight: 700;
-    color: var(--bs-light);
+    color: var(--bs-white);
     margin: 0;
     letter-spacing: 0.2px;
 }
 
 .circ-subtitle {
     font-size: 12px;
-    color: rgba(var(--bs-light-rgb), 0.55);
+    color: rgba(var(--bs-white-rgb), 0.55);
     margin: 0;
 }
 
@@ -301,13 +304,13 @@ export default {
 .circ-section-title {
     font-size: 14px;
     font-weight: 600;
-    color: var(--bs-light);
+    color: var(--bs-white);
     letter-spacing: 0.1px;
 }
 
 .circ-section-desc {
     font-size: 11px;
-    color: rgba(var(--bs-light-rgb), 0.5);
+    color: rgba(var(--bs-white-rgb), 0.5);
     margin-top: 1px;
 }
 
@@ -334,7 +337,7 @@ export default {
     border-radius: 7px;
     border: 1px solid rgba(var(--bs-primary-rgb), 0.3);
     background: rgba(var(--bs-primary-rgb), 0.1);
-    color: rgba(var(--bs-light-rgb), 0.85) !important;
+    color: rgba(var(--bs-white-rgb), 0.85) !important;
     cursor: pointer;
     transition: background 0.15s, border-color 0.15s, color 0.15s;
     text-align: center;

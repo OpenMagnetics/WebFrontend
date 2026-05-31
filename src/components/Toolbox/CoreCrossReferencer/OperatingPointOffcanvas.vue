@@ -2,11 +2,14 @@
 import { useMasStore } from '../../../stores/mas'
 import { useTaskQueueStore } from '../../../stores/taskQueue'
 import OperatingPoint from '../OperatingPoints/OperatingPoint.vue'
+import Drawer from 'primevue/drawer'
 
 </script>
 <script>
 
 export default {
+    components: { Drawer },
+    emits: ['canContinue', 'update:visible'],
     props: {
         name: {
             type: String,
@@ -16,6 +19,7 @@ export default {
             type: String,
             default: '',
         },
+        visible: { type: Boolean, default: false },
     },
     data() {
         const masStore = useMasStore();
@@ -110,18 +114,16 @@ export default {
 
 
 <template>
-    <div class="offcanvas offcanvas-size-lg offcanvas-start bg-dark" tabindex="-1" :id="name" :aria-labelledby="name + 'OperatingPointOffCanvasLabel'">
-        <div class="offcanvas-header">
-            <h5 class="offcanvas-title text-white fs-3" :id="name + 'OperatingPointOffCanvasLabel'">Edit Operation Point</h5>
-            <button :data-cy="dataTestLabel + '-SimulationOperationPointTool-corner-close-button'" type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="OperatingPointOffCanvasClose"></button>
+    <Drawer
+        :visible="visible"
+        @update:visible="(v) => $emit('update:visible', v)"
+        position="left"
+        :modal="true"
+        :style="{ width: '65vw', background: 'var(--bs-dark)' }"
+        :header="'Edit Operation Point'">
+        <div class="container mx-auto text-white">
+            <OperatingPoint @updatedWaveform="updatedWaveform" />
         </div>
-        <div class="offcanvas-body">
-            <div class="container mx-auto text-white">
-                <OperatingPoint 
-                    @updatedWaveform="updatedWaveform"
-                />
-            </div>
-        </div>
-    </div>
+    </Drawer>
 
 </template>

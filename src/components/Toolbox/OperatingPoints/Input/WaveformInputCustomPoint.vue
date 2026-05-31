@@ -131,7 +131,7 @@ export default {
                 :style="combinedStyle([$styleStore.operatingPoints.inputLabelBgColor, $styleStore.operatingPoints.inputTextColor, $styleStore.operatingPoints.inputTitleFontSize])"
 
                 :class="combinedClass([$styleStore.operatingPoints.inputLabelBgColor, $styleStore.operatingPoints.inputTextColor, $styleStore.operatingPoints.inputTitleFontSize])"
-                class="col-md-1 col-2 m-0 p-0 ps-2 pt-1"
+                class="md:col-1 col-2 m-0 p-0 pl-2 pt-1"
             >
                 {{'x: '}}
             </label>
@@ -143,12 +143,12 @@ export default {
                 v-model="localData.time.scaledValue"
                 @change="onTimeChange"
                 :class="combinedClass([$styleStore.operatingPoints.inputValueBgColor, $styleStore.operatingPoints.inputTextColor, $styleStore.operatingPoints.inputFontSize])"
-                class="rounded-2 col-md-3 col-6  p-0 ps-1 my-1"
+                class="rounded-2 md:col-3 col-6  p-0 pl-1 my-1"
             />
             <input
                 :style="combinedStyle([$styleStore.operatingPoints.inputLabelBgColor, $styleStore.operatingPoints.inputTextColor, $styleStore.operatingPoints.inputFontSize])"
                 :class="combinedClass([$styleStore.operatingPoints.inputLabelBgColor, $styleStore.operatingPoints.inputTextColor, $styleStore.operatingPoints.inputFontSize])"
-                class="border-0 col-md-1 col-2  m-0 p-0 ps-1  pt-1"
+                class="border-0 md:col-1 col-2  m-0 p-0 pl-1  pt-1"
                 style="width: 30px;"
                 :value="getExponentLabel"
                 disabled/>
@@ -156,7 +156,7 @@ export default {
                 :style="combinedStyle([$styleStore.operatingPoints.inputLabelBgColor, $styleStore.operatingPoints.inputTextColor, $styleStore.operatingPoints.inputTitleFontSize])"
 
                 :class="combinedClass([$styleStore.operatingPoints.inputLabelBgColor, $styleStore.operatingPoints.inputTextColor, $styleStore.operatingPoints.inputTitleFontSize])"
-                class="col-md-1 col-2  m-0 p-0  pt-1"
+                class="md:col-1 col-2  m-0 p-0  pt-1"
                 style="width: 10px;"
             >
                 {{'s'}}
@@ -166,7 +166,7 @@ export default {
                 :style="combinedStyle([$styleStore.operatingPoints.inputLabelBgColor, $styleStore.operatingPoints.inputTextColor, $styleStore.operatingPoints.inputTitleFontSize])"
 
                 :class="combinedClass([$styleStore.operatingPoints.inputLabelBgColor, $styleStore.operatingPoints.inputTextColor, $styleStore.operatingPoints.inputTitleFontSize])"
-                class="col-md-1 col-2 p-0 ps-2 pt-1"
+                class="md:col-1 col-2 p-0 pl-2 pt-1"
             >
                 {{'y: '}}
             </label>
@@ -177,43 +177,43 @@ export default {
                 v-model=" localData.data.value"
                 @change="onValueChange"
                 :class="combinedClass([$styleStore.operatingPoints.inputValueBgColor, $styleStore.operatingPoints.inputTextColor, $styleStore.operatingPoints.inputFontSize])"
-                class=" rounded-2 col-md-3 col-6 p-0 ps-1  my-1"
+                class=" rounded-2 md:col-3 col-6 p-0 pl-1  my-1"
             />
             <label
                 :style="combinedStyle([$styleStore.operatingPoints.inputLabelBgColor, $styleStore.operatingPoints.inputTextColor, $styleStore.operatingPoints.inputTitleFontSize])"
 
                 :class="combinedClass([$styleStore.operatingPoints.inputLabelBgColor, $styleStore.operatingPoints.inputTextColor, $styleStore.operatingPoints.inputTitleFontSize])"
-                class="col-md-1 col-2  p-0 ps-1 pt-1" 
+                class="md:col-1 col-2  p-0 pl-1 pt-1" 
                 style="width: 10px;"
             >
                 {{signalDescriptor == "current"? 'A' : 'V'}}
             </label>
-            <div class="col-md-2 col-12 p-0 m-0 ps-2 container-flex" style="height: 40px;">
+            <div class="col-12 md:col-2 p-0 m-0 pl-2 container-flex" style="height: 40px;">
                 <div class="row m-0 p-0  pt-2" style="height: 40px;">
                     <button
                         v-if="name != (modelValue.data.length - 1)"
                         :data-cy="dataTestLabel + '-add-point-below-button'"
                         type="button"
-                        class="btn btn-default btn-circle fa-1x bg-dark mb-1 me-2 me-md-1 col-6"
+                        class="wicp-circle-btn col-6"
                         @click="onAddPointBelow"
                     >
                         <i
                             :style="combinedStyle([$styleStore.operatingPoints.addElementButtonColor])"
                             :class="combinedClass([$styleStore.operatingPoints.addElementButtonColor])"
-                            class="bi bi-plus-circle-fill"
+                            class="pi pi-plus-circle-fill"
                         > </i>
                     </button>
                     <button
                         v-if="name != 0 && name != (modelValue.data.length - 1)"
                         :data-cy="dataTestLabel + '-remove-point-button'"
                         type="button"
-                        class="btn btn-default fa-1x btn-circle bg-dark mb-1 ms-2 ms-md-0 col-6"
+                        class="wicp-circle-btn col-6"
                         @click="onRemovePoint"
                     >
                         <i
                             :style="combinedStyle([$styleStore.operatingPoints.removeElementButtonColor])"
                             :class="combinedClass([$styleStore.operatingPoints.removeElementButtonColor])"
-                            class="bi bi-dash-circle-fill"
+                            class="pi pi-minus-circle"
                         ></i>
                     </button>
                 </div>

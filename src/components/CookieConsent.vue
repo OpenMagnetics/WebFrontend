@@ -67,7 +67,7 @@ export default {
             <div class="om-consent-inner">
 
                 <div class="om-consent-icon-wrap">
-                    <i class="bi bi-cookie"></i>
+                    <i class="pi pi-cookie"></i>
                 </div>
 
                 <div class="om-consent-text">
@@ -86,10 +86,10 @@ export default {
 
                 <div class="om-consent-actions">
                     <button class="om-consent-btn om-consent-decline" @click="decline">
-                        <i class="bi bi-shield-shaded me-1"></i>Essential only
+                        <i class="pi pi-shield mr-1"></i>Essential only
                     </button>
                     <button class="om-consent-btn om-consent-accept" @click="accept">
-                        Accept &amp; close the loop <i class="bi bi-lightning-fill ms-1"></i>
+                        Accept &amp; close the loop <i class="pi pi-bolt ml-1"></i>
                     </button>
                 </div>
 

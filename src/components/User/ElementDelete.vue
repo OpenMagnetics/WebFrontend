@@ -1,10 +1,14 @@
+<script setup>
+import Dialog from 'primevue/dialog'
+</script>
 <script>
 export default {
-    emits: ["delete_operation_point"],
+    components: { Dialog },
+    emits: ["delete_operation_point", "update:visible"],
+    props: { visible: { type: Boolean, default: false } },
     data() {
-        var requestingDelete = false
         return {
-            requestingDelete
+            requestingDelete: false,
         }
     },
     methods: {
@@ -25,29 +29,23 @@ export default {
                         console.error(error.data)
                     });
                 }
-            // TODO add rest of cases 
+            this.$emit('update:visible', false)
         },
     },
-
 }
-
 </script>
 
 
 <template>
-    <div class="modal fade" id="deleteElementModal" tabindex="-1" aria-labelledby="deleteElementModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content bg-dark text-white">
-                <div class="modal-header">
-                    <p class="modal-title fs-5" id="deleteElementModalLabel">Deleting <slot name="elementType"></slot>: <br/> <slot name="elementName"></slot> </p>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="deleteElementModalClose"></button>
-                </div>
-                <div class="modal-body row mt-2">
-                    <p class="modal-title fs-5 text-center col-12" >Are you sure? All data will be lost</p>
-                    <button class="btn text-dark bg-danger mt-4 offset-1 col-5" data-bs-dismiss="modal" @click="onDeleteElement">Yes, delete it</button>
-                    <button class="btn btn-primary mx-auto d-block mt-4 offset-1 col-5" data-bs-dismiss="modal" >No, take my back</button>
-                </div>
-            </div>
+    <Dialog :visible="visible"
+        @update:visible="(v) => $emit('update:visible', v)" :modal="true" :draggable="false">
+        <template #header>
+            <p class="modal-title text-xl">Deleting <slot name="elementType"></slot>: <br/> <slot name="elementName"></slot> </p>
+        </template>
+        <div class="row mt-2">
+            <p class="modal-title text-xl text-center col-12">Are you sure? All data will be lost</p>
+            <button class="btn text-dark bg-danger mt-4 col-offset-1 col-5" @click="onDeleteElement">Yes, delete it</button>
+            <button class="p-button p-button-primary mx-auto d-block mt-4 col-offset-1 col-5" @click="$emit('update:visible', false)">No, take my back</button>
         </div>
-    </div>
+    </Dialog>
 </template>

@@ -128,16 +128,16 @@ export default {
 <template>
     <div class="opc-container">
         <div class="row g-2 m-0">
-            <div class="col-lg-5 col-md-12 opc-col">
+            <div class="col-12 lg:col-5 opc-col">
 
                 <div class="opc-title" :data-cy="dataTestLabel + '-current-title'">
-                    <i class="bi bi-file-earmark-arrow-down"></i>
+                    <i class="pi pi-file-import"></i>
                     <span>{{masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].name + ' — ' + masStore.mas.magnetic.coil.functionalDescription[currentWindingIndex].name}}</span>
                 </div>
 
                 <div class="opc-card">
                     <div class="opc-card-header">
-                        <i class="bi bi-layout-three-columns"></i>
+                        <i class="pi pi-table"></i>
                         <span>Imported file columns</span>
                     </div>
                     <div class="opc-card-body">
@@ -154,11 +154,11 @@ export default {
                 </div>
 
                 <div v-if='loadedFile=="" && !$stateStore.operatingPointsCircuitSimulator.confirmedColumns[currentOperatingPointIndex][currentWindingIndex]' class="opc-error">
-                    <i class="bi bi-exclamation-triangle-fill"></i>
+                    <i class="pi pi-exclamation-triangle"></i>
                     <span>Please reload file</span>
                 </div>
                 <div v-if='errorMessages != ""' class="opc-error">
-                    <i class="bi bi-x-circle-fill"></i>
+                    <i class="pi pi-times-circle-fill"></i>
                     <span>{{errorMessages}}</span>
                 </div>
 
@@ -171,7 +171,7 @@ export default {
                     >
                         <img v-if="loading" alt="loading" class="opc-loading" :src="$settingsStore.loadingGif">
                         <template v-else>
-                            <i class="bi bi-check-lg"></i>
+                            <i class="pi pi-check"></i>
                             <span>{{$stateStore.operatingPointsCircuitSimulator.confirmedColumns[currentOperatingPointIndex][currentWindingIndex]? 'Update columns' : 'Confirm columns'}}</span>
                         </template>
                     </button>
@@ -180,12 +180,12 @@ export default {
                         class="opc-btn opc-btn-outline"
                         @click="clearMode"
                     >
-                        <i class="bi bi-arrow-left"></i>
+                        <i class="pi pi-arrow-left"></i>
                         <span>Go back to selecting mode</span>
                     </button>
                 </div>
             </div>
-            <div v-if="$stateStore.operatingPointsCircuitSimulator.confirmedColumns[currentOperatingPointIndex][currentWindingIndex]" class="col-lg-7 col-md-12 row m-0 p-0" style="max-width: 800px;">
+            <div v-if="$stateStore.operatingPointsCircuitSimulator.confirmedColumns[currentOperatingPointIndex][currentWindingIndex]" class="col-12 lg:col-7 row m-0 p-0" style="max-width: 800px;">
                 <div>
                     <WaveformGraph class=" col-12 py-2"
                         :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex]"
@@ -197,25 +197,25 @@ export default {
                         :dataTestLabel="dataTestLabel + '-WaveformFourier'"
                     />
 
-                    <WaveformSimpleOutput class="col-lg-12 col-md-12 m-0 px-2"
+                    <WaveformSimpleOutput class="col-12 lg:col-12 m-0 px-2"
                         v-if="!$settingsStore.operatingPointSettings.advancedMode"
                         :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex]"
                         :dataTestLabel="dataTestLabel + '-WaveformOutput-current'"
                     />
 
                     <div v-if="$settingsStore.operatingPointSettings.advancedMode" class="row m-0 p-0">
-                        <WaveformOutput class="col-lg-6 col-md-6 col-12 m-0 px-2"
+                        <WaveformOutput class="col-12 md:col-6 lg:col-6 m-0 px-2"
                             :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex]"
                             :dataTestLabel="dataTestLabel + '-WaveformOutput-current'"
                             :signalDescriptor="'current'"
                         />
-                        <WaveformOutput class="col-lg-6 col-md-6 col-12 m-0 px-2"
+                        <WaveformOutput class="col-12 md:col-6 lg:col-6 m-0 px-2"
                             :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex]"
                             :dataTestLabel="dataTestLabel + '-WaveformOutput-voltage'"
                             :signalDescriptor="'voltage'"
                         />
                     </div>
-                    <WaveformCombinedOutput class="col-12 m-0 px-2 border-top"
+                    <WaveformCombinedOutput class="col-12 m-0 px-2"
                         v-if="$settingsStore.operatingPointSettings.advancedMode"
                         :dataTestLabel="dataTestLabel + '-WaveformCombinedOutput'"
                         :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex]"

@@ -52,6 +52,7 @@ export default {
             taskQueueStore,
             loading,
             currentAdviseToShow: 0,
+            adviseDetailsVisible: false,
         }
     },
     computed: {
@@ -219,28 +220,28 @@ export default {
 </script>
 
 <template>
-    <AdviseDetails :modelValue="masStore.mas"/>
+    <AdviseDetails v-model:visible="adviseDetailsVisible" :modelValue="masStore.mas"/>
     <div class="container" >
         <div class="row">
-            <div class="col-sm-12 col-md-2 text-start border border-primary m-0 px-2 py-1 ">
+            <div class="col-12 md:col-2 text-start border border-primary m-0 px-2 py-1 ">
                 <div class="row" v-for="(value, key) in $settingsStore.coreAdviserSettings.weights" :key="key">
                     <label class="form-label col-12 py-0 my-0">{{titledFilters[key]}}</label>
-                    <div class=" col-7 me-2 pt-2">
+                    <div class=" col-7 mr-2 pt-2">
                         <Slider v-model="$settingsStore.coreAdviserSettings.weights[key]" :disabled="loading" class="col-12 text-primary slider" :height="10" :min="10" :max="80" :step="10"  id="core-adviser-weight-area-product" :tooltips="false" @change="changedSliderValue(key, $event)"/>
                     </div>
 
                 <input :disabled="loading" :data-cy="dataTestLabel + '-number-input'" type="number" class="m-0 mb-2 px-0 col-3 bg-light text-white" :min="10" :step="10" @change="changedInputValue(key, $event.target.value)" :value="removeTrailingZeroes($settingsStore.coreAdviserSettings.weights[key])" ref="inputRef">
 
                 </div>
-                <button :disabled="loading" :data-cy="dataTestLabel + '-calculate-mas-advises-button'" class="btn btn-success mx-auto d-block mt-4" @click="calculateAdvises" >Get advised cores!</button>
+                <button :disabled="loading" :data-cy="dataTestLabel + '-calculate-mas-advises-button'" class="p-button p-button-success mx-auto d-block mt-4" @click="calculateAdvises" >Get advised cores!</button>
             </div>
-            <div class="col-sm-12 col-md-10 text-start pe-0 container-fluid"  style="height: 70vh">
+            <div class="col-12 md:col-10 text-start pr-0 container-fluid"  style="height: 70vh">
                 <div class="row" v-if="loading" >
                     <img data-cy="CoreAdviser-loading" class="mx-auto d-block col-12" alt="loading" style="width: 50%; height: auto;" :src="loadingGif">
 
                 </div>
                 <div class="row advises" v-else>
-                    <div class="col-md-4 col-sm-12 m-0 p-0 mt-1" v-for="(advise, adviseIndex) in adviseCacheStore.currentCoreAdvises" :key="adviseIndex">
+                    <div class="md:col-4 sm:col-12 m-0 p-0 mt-1" v-for="(advise, adviseIndex) in adviseCacheStore.currentCoreAdvises" :key="adviseIndex">
                         <Advise
                             v-if="(Object.values(titledFilters).length > 0) && (currentAdviseToShow >= adviseIndex)"
                             :adviseIndex="adviseIndex"
@@ -249,6 +250,7 @@ export default {
                             :selected="$userStore.coreAdviserSelectedAdvise == adviseIndex"
                             graphType="bar"
                             @selectedMas="selectedMas(adviseIndex)"
+                            @openDetails="adviseDetailsVisible = true"
                             @adviseReady="adviseReady(adviseIndex)"
                         />
                     </div>

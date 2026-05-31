@@ -1,7 +1,10 @@
 <script setup>
 import { toTitleCase, getMultiplier, combinedStyle, combinedClass } from 'WebSharedComponents/assets/js/utils.js'
 import DimensionUnit from 'WebSharedComponents/DataInput/DimensionUnit.vue'
-
+import InputNumber from 'primevue/inputnumber'
+import InputGroup from 'primevue/inputgroup'
+import InputGroupAddon from 'primevue/inputgroupaddon'
+import Button from 'primevue/button'
 </script>
 
 <script>
@@ -40,11 +43,11 @@ export default {
         },
         valueFontSize: {
             type: [String, Object],
-            default: 'fs-6'
+            default: ''
         },
         titleFontSize: {
             type: [String, Object],
-            default: 'fs-6'
+            default: ''
         },
         addButtonStyle: {
             type: Object,
@@ -68,7 +71,7 @@ export default {
         },
         errorTextColor: {
             type: [String, Object],
-            default: "text-danger",
+            default: "text-red-500",
         },
         unitExtraStyleClass:{
             type: String,
@@ -163,8 +166,8 @@ export default {
 </script>
 
 <template>
-    <div :data-cy="dataTestLabel + '-container'" class="container-flex p-0 m-0 text-left">
-        <div class="m-0 p-0 mb-1">
+    <div :data-cy="dataTestLabel + '-container'" class="container-flex text-left">
+        <div class="mb-1">
             <label
                 :style="combinedStyle([titleFontSize, labelBgColor, textColor])"
                 :data-cy="dataTestLabel + '-title'"
@@ -173,54 +176,56 @@ export default {
                 {{replaceTitle == null? 'Maximum Dimensions' : replaceTitle}}
             </label>
         </div>
-        <div class="row align-items-center justify-content-between m-0">
+        <div class="md-fields-row">
             <template v-for="field in ['width', 'height', 'depth']" :key="field">
-                <div v-if="localData[field].scaledValue != null" class="col-md-3 col-12 grid m-0 px-0 align-items-center">
-                    <button
-                        :style="combinedStyle([valueFontSize, labelBgColor, textColor])"
-                        :data-cy="dataTestLabel + '-' + field + '-remove-button'"
-                        :class="combinedClass([valueFontSize, labelBgColor, textColor])"
-                        class="md-remove-button m-0 px-0 col-4 col-form-label text-center btn"
-                        @click="removeField(field)"
-                        style="max-height: 2.3em;">
-                            <span class="normal-text">{{ field.charAt(0).toUpperCase() + field.slice(1) }}</span> <i class="bi bi-x-lg icon"></i>
-                    </button>
-                    <input
-                        :style="combinedStyle([disabled? labelBgColor : valueBgColor, localData[field].scaledValue <= 0 ? errorTextColor : textColor, valueFontSize])"
-                        :data-cy="dataTestLabel + '-' + field + '-number-input'"
-                        type="number"
-                        class="m-0 px-0 col-4 text-right"
-                        :class="combinedClass([disabled? labelBgColor : valueBgColor, localData[field].scaledValue <= 0 ? errorTextColor : textColor, valueFontSize, disabled? 'border-0' : ''])"
-                        :value="localData[field].scaledValue"
-                        @change="changeScaledValue($event.target.value, field)"
-                    />
-                    <DimensionUnit
-                        :data-cy="dataTestLabel + '-' + field + '-DimensionUnit-input'"
-                        :min="min"
-                        :max="max"
-                        v-if="unit != null"
-                        :unit="unit"
-                        v-model="localData[field].multiplier"
-                        :extraStyleClass="unitExtraStyleClass"
-                        :valueBgColor="valueBgColor"
-                        :valueFontSize="valueFontSize"
-                        :textColor="textColor"
-                        class="m-0 col-4 pl-1"
-                        @update:modelValue="changeMultiplier(field)"
-                    />
-                </div>
-                <div v-else class="col-md-3 col-12 grid m-0">
-                    <button
+                <div class="md-field">
+                    <InputGroup v-if="localData[field].scaledValue != null" class="md-group">
+                        <InputGroupAddon
+                            :data-cy="dataTestLabel + '-' + field + '-remove-button'"
+                            class="md-remove-addon"
+                            @click="removeField(field)">
+                            <span class="md-remove-label">{{ field.charAt(0).toUpperCase() + field.slice(1) }}</span>
+                            <i class="pi pi-times md-remove-icon"></i>
+                        </InputGroupAddon>
+                        <InputNumber
+                            :data-cy="dataTestLabel + '-' + field + '-number-input'"
+                            class="md-input"
+                            :model-value="localData[field].scaledValue"
+                            @update:model-value="changeScaledValue($event, field)"
+                            :max-fraction-digits="6"
+                            :allow-empty="false"
+                            :disabled="disabled"
+                        />
+                        <InputGroupAddon v-if="unit != null" class="md-unit-addon">
+                            <DimensionUnit
+                                :data-cy="dataTestLabel + '-' + field + '-DimensionUnit-input'"
+                                :min="min"
+                                :max="max"
+                                :unit="unit"
+                                v-model="localData[field].multiplier"
+                                :extraStyleClass="unitExtraStyleClass"
+                                :valueBgColor="valueBgColor"
+                                :valueFontSize="valueFontSize"
+                                :textColor="textColor"
+                                class="md-unit"
+                                @update:modelValue="changeMultiplier(field)"
+                            />
+                        </InputGroupAddon>
+                    </InputGroup>
+                    <Button
+                        v-else
                         :data-cy="dataTestLabel + '-' + field + '-add-button'"
                         class="md-add-btn"
+                        severity="secondary"
+                        outlined
                         @click="add(field)">
-                        <i class="bi bi-plus-lg"></i>
+                        <i class="pi pi-plus"></i>
                         <span>Add {{ field.charAt(0).toUpperCase() + field.slice(1) }}</span>
-                    </button>
+                    </Button>
                 </div>
             </template>
         </div>
-        <div class="row m-0">
+        <div class="grid m-0">
             <label class="md-error text-center col-12 pt-1" style="font-size: 0.9em; white-space: pre-wrap;">{{errorMessages}}</label>
         </div>
     </div>
@@ -232,57 +237,91 @@ export default {
     letter-spacing: 0.01em;
     background: transparent !important;
 }
-
 .md-error {
     color: var(--p-red-400);
     font-size: 0.78rem !important;
 }
-
-.md-remove-button {
-    display: inline-flex !important;
-    align-items: center;
-    justify-content: center;
-    border: 1px solid rgba(var(--bs-primary-rgb), 0.45) !important;
-    border-right: none !important;
-    border-radius: 999px 0 0 999px !important;
-    background: rgba(var(--bs-primary-rgb), 0.12) !important;
-    color: var(--bs-primary) !important;
-    font-weight: 600;
-    letter-spacing: 0.01em;
-    padding: 0 0.55rem !important;
-    height: 1.75rem !important;
-    line-height: 1.25rem;
-    transition: background 0.15s, border-color 0.15s, color 0.15s;
-}
-
-.md-remove-button .icon {
-    margin-left: 0.25rem;
-    font-size: 0.7rem;
-}
-
-.md-add-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.35rem;
+.md-fields-row {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 0.5rem;
     width: 100%;
-    border: 1px dashed rgba(var(--bs-primary-rgb), 0.4);
-    background: rgba(var(--bs-primary-rgb), 0.08);
-    color: var(--bs-primary);
-    border-radius: 999px;
-    padding: 0.25rem 0.75rem;
-    font-weight: 600;
-    font-size: 0.85rem;
+}
+.md-field {
+    flex: 1 1 0;
+    min-width: 0;
+}
+.md-group {
+    width: 100%;
+    height: 2.25rem;
+    align-items: stretch;
+}
+.md-group :deep(.p-inputgroupaddon) {
+    height: 2.25rem;
+    line-height: 1.25rem;
+}
+.md-group :deep(.p-inputnumber) {
+    height: 2.25rem;
+}
+.md-remove-addon {
     cursor: pointer;
-    transition: background 0.15s, border-color 0.15s;
+    user-select: none;
+    transition: background 0.15s, color 0.15s;
+    padding: 0 0.5rem !important;
+    min-width: auto;
+    gap: 0.25rem;
+    display: flex !important;
+    align-items: center !important;
+    height: 2.25rem;
 }
-
-.md-add-btn:hover {
-    background: rgba(var(--bs-primary-rgb), 0.18);
+.md-remove-addon:hover {
+    background: rgba(var(--bs-danger-rgb), 0.15) !important;
+    color: var(--bs-danger);
 }
-
-.md-add-btn i {
-    font-size: 0.7rem;
+.md-remove-label {
+    font-size: 0.75rem;
+}
+.md-remove-icon {
+    font-size: 0.65rem;
+    color: var(--bs-danger);
+}
+.md-input {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    align-items: stretch;
+}
+.md-input :deep(.p-inputnumber-input) {
+    text-align: end;
+    height: 2.25rem;
+    padding: 0.25rem 1.75rem 0.25rem 0.5rem;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    width: 100%;
+    border-radius: 0;
+}
+.md-input :deep(.p-inputnumber-button) {
+    height: 1.125rem;
+    width: 1.25rem;
+    padding: 0;
+    font-size: 0.5rem;
+    border-radius: 0;
+}
+.md-unit-addon {
+    padding: 0 !important;
+    border-left: 0 !important;
+    display: flex !important;
+    align-items: stretch !important;
+    height: 2.25rem !important;
+}
+.md-unit {
+    flex: 1 1 auto;
+    width: 100%;
+    height: 100%;
+}
+.md-add-btn {
+    width: 100%;
+    font-size: 0.75rem;
 }
 </style>
 

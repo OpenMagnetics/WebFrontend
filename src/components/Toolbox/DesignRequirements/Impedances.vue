@@ -23,19 +23,19 @@ export default {
         },
         valueFontSize: {
             type: [String, Object],
-            default: 'fs-6'
+            default: ''
         },
         titleFontSize: {
             type: [String, Object],
-            default: 'fs-6'
+            default: ''
         },
         labelWidthProportionClass:{
             type: String,
-            default: 'col-xs-12 col-md-7'
+            default: 'col-12 md:col-7'
         },
         valueWidthProportionClass:{
             type: String,
-            default: 'col-xs-8 col-md-5'
+            default: 'col-8 md:col-5'
         },
         labelBgColor: {
             type: [String, Object],
@@ -59,7 +59,7 @@ export default {
         },
         removeElementButtonColor: {
             type: [String, Object],
-            default: "text-danger",
+            default: "text-red-500",
         },
     },
     data() {
@@ -107,7 +107,7 @@ export default {
 
 <template>
     <div :data-cy="dataTestLabel + '-container'" class="container-flex">
-        <div class="row m-0">
+        <div class="grid m-0">
             <label
                 :style="combinedStyle([titleFontSize, labelBgColor, textColor])"
                 v-if="showTitle"
@@ -118,10 +118,10 @@ export default {
                 Minimum Impedance
             </label>
         </div>
-        <div class="row ms-2" v-for="(row, index) in masStore.mas.inputs.designRequirements.minimumImpedance" :key="index">
+        <div class="grid ml-2" v-for="(row, index) in masStore.mas.inputs.designRequirements.minimumImpedance" :key="index">
             <PairOfDimensions
                 class="py-2 col-10"
-                :class="index==0? '' : 'border-bottom' "
+                :class="index==0? '' : 'border-bottom-1 border-solid border-300' "
                 :style="$styleStore.designRequirements.inputBorderColor"
                 :names="['frequency', 'impedance']"
                 :units="['Hz', 'Ω']"
@@ -139,29 +139,29 @@ export default {
                 :unitExtraStyleClass='unitExtraStyleClass'
                 @update="dimensionUpdated($event, index)"
             />
-            <div class="col-2 row">
+            <div class="col-2 grid">
                 <button
                     :data-cy="dataTestLabel + '-add-point-below-button'"
                     type="button"
-                    class="btn btn-circle h-100 w-50 col-6"
+                    class="impedance-icon-btn col-6"
                     @click="onAddPointBelow(index)"
                     >
                     <i
                         :style="combinedStyle([addElementButtonColor])"
                         :class="combinedClass([addElementButtonColor])"
-                        class="bi bi-plus-circle fs-5"
+                        class="pi pi-plus-circle text-xl"
                     />
                 </button>
                 <button
                     :data-cy="dataTestLabel + '-remove-point-button'"
                     v-if="masStore.mas.inputs.designRequirements.minimumImpedance.length > 1"
                     type="button"
-                    class="btn h-100 w-50 btn-circle col-6"
+                    class="impedance-icon-btn col-6"
                     @click="onRemovePoint(index)">
                     <i
                         :style="combinedStyle([removeElementButtonColor])"
                         :class="combinedClass([removeElementButtonColor])"
-                        class="bi bi-dash-circle fs-5"
+                        class="pi pi-minus-circle text-xl"
                     />
                 </button>
                 <div v-else class="col-6"/>
@@ -170,4 +170,17 @@ export default {
     </div>
 </template>
 
+<style scoped>
+.impedance-icon-btn {
+    background: transparent;
+    border: 0;
+    height: 100%;
+    width: 50%;
+    padding: 0;
+    cursor: pointer;
+}
+.impedance-icon-btn:hover {
+    filter: brightness(1.2);
+}
+</style>
 

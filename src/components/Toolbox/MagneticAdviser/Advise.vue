@@ -331,9 +331,9 @@ export default {
             <div class="advise-option-titles">
                 <span class="advise-option-title" :title="displayMagneticName">{{ displayMagneticName }}</span>
                 <span class="advise-option-subtitle" :title="coreShapeName + ' · ' + coreMaterialName">
-                    <i class="bi bi-box-fill me-1"></i>{{ coreShapeName }}
+                    <i class="pi pi-box mr-1"></i>{{ coreShapeName }}
                     <span class="advise-option-subtitle-sep">·</span>
-                    <i class="bi bi-stars me-1"></i>{{ coreMaterialName }}
+                    <i class="pi pi-stars mr-1"></i>{{ coreMaterialName }}
                 </span>
             </div>
             <div class="advise-option-score-wrapper">
@@ -348,45 +348,45 @@ export default {
         <div class="advise-option-body">
             <div class="row g-2">
                 <!-- Stats column -->
-                <div class="col-12 col-lg-6">
+                <div class="col-12 lg:col-6">
                     <div class="advise-stat-grid">
                         <div class="advise-stat">
-                            <i class="bi bi-lightning-fill advise-stat-icon advise-stat-icon-warning"></i>
+                            <i class="pi pi-bolt advise-stat-icon advise-stat-icon-warning"></i>
                             <div class="advise-stat-content">
                                 <small class="advise-stat-label">Losses</small>
                                 <span class="advise-stat-value">{{ formattedLosses || '—' }}</span>
                             </div>
                         </div>
                         <div class="advise-stat">
-                            <i class="bi bi-box advise-stat-icon advise-stat-icon-info"></i>
+                            <i class="pi pi-box advise-stat-icon advise-stat-icon-info"></i>
                             <div class="advise-stat-content">
                                 <small class="advise-stat-label">Power Density</small>
                                 <span class="advise-stat-value">{{ formattedPowerDensity || '—' }}</span>
                             </div>
                         </div>
                         <div v-if="formattedMagnetizingInductance" class="advise-stat">
-                            <i class="bi bi-soundwave advise-stat-icon advise-stat-icon-primary"></i>
+                            <i class="pi pi-volume-up advise-stat-icon advise-stat-icon-primary"></i>
                             <div class="advise-stat-content">
                                 <small class="advise-stat-label">Magnetizing Ind.</small>
                                 <span class="advise-stat-value">{{ formattedMagnetizingInductance }}</span>
                             </div>
                         </div>
                         <div v-if="formattedCoreTemperature" class="advise-stat">
-                            <i class="bi bi-thermometer-half advise-stat-icon advise-stat-icon-danger"></i>
+                            <i class="pi pi-sun advise-stat-icon advise-stat-icon-danger"></i>
                             <div class="advise-stat-content">
                                 <small class="advise-stat-label">Core Temp.</small>
                                 <span class="advise-stat-value">{{ formattedCoreTemperature }}</span>
                             </div>
                         </div>
                         <div v-if="totalTurns > 0" class="advise-stat">
-                            <i class="bi bi-arrow-repeat fa-spin advise-stat-icon advise-stat-icon-success"></i>
+                            <i class="pi pi-refresh advise-stat-icon advise-stat-icon-success"></i>
                             <div class="advise-stat-content">
                                 <small class="advise-stat-label">Turns · Windings</small>
                                 <span class="advise-stat-value">{{ totalTurns }} · {{ numberOfWindings }}</span>
                             </div>
                         </div>
                         <div v-if="formattedDimensions" class="advise-stat">
-                            <i class="bi bi-rulers advise-stat-icon advise-stat-icon-secondary"></i>
+                            <i class="pi pi-arrows-h advise-stat-icon advise-stat-icon-secondary"></i>
                             <div class="advise-stat-content">
                                 <small class="advise-stat-label">Dimensions</small>
                                 <span class="advise-stat-value">{{ formattedDimensions }}</span>
@@ -396,7 +396,7 @@ export default {
                 </div>
 
                 <!-- Chart -->
-                <div class="col-12 col-lg-6">
+                <div class="col-12 lg:col-6">
                     <div class="advise-chart-wrapper">
                         <v-chart
                             v-if="chartOptions"
@@ -417,7 +417,7 @@ export default {
                     class="advise-btn advise-btn-outline flex-fill"
                     @click="$emit('showDetails')"
                 >
-                    <i class="bi bi-search"></i>
+                    <i class="pi pi-search"></i>
                     <span>Details</span>
                 </button>
                 <button
@@ -426,7 +426,7 @@ export default {
                     :class="selected ? 'advise-btn-success' : 'advise-btn-primary'"
                     @click="$emit('selectedMas')"
                 >
-                    <i :class="selected ? 'bi bi-check-circle-fill' : 'bi bi-circle'"></i>
+                    <i :class="selected ? 'pi pi-check-circle' : 'pi pi-circle'"></i>
                     <span>{{ selected ? 'Selected' : 'Select' }}</span>
                 </button>
             </div>
@@ -442,9 +442,9 @@ export default {
     --ao-panel-2: var(--bs-light);
     --ao-border: rgba(var(--bs-white-rgb), 0.1);
     --ao-border-strong: rgba(var(--bs-white-rgb), 0.2);
-    --ao-text: var(--bs-light);
-    --ao-text-muted: rgba(var(--bs-light-rgb), 0.7);
-    --ao-text-dim: rgba(var(--bs-light-rgb), 0.5);
+    --ao-text: var(--bs-white);
+    --ao-text-muted: rgba(var(--bs-white-rgb), 0.7);
+    --ao-text-dim: rgba(var(--bs-white-rgb), 0.5);
     --ao-stat-bg: color-mix(in srgb, var(--bs-light) 80%, var(--bs-dark) 20%);
     --ao-stat-border: rgba(var(--bs-white-rgb), 0.08);
 

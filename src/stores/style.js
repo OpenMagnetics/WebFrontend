@@ -202,25 +202,28 @@ export const useStyleStore = defineStore("style", () => {
             commonParameterBgColor:{
                 "background-color": "transparent",
             },
+            // Unified palette so EVERYTHING tied to a current uses the same
+            // colour and likewise for voltage (chart line, legend, card header,
+            // induce button). Current = warning (amber), Voltage = primary (teal).
             currentGraph:{
-                "background-color": theme["info"],
-                "color": theme["info"],
+                "background-color": theme["warning"],
+                "color": theme["warning"],
             },
             voltageGraph:{
-                "background-color": theme["success"],
-                "color": theme["success"],
-            },
-            currentTextColor:{
+                "background-color": theme["info"],
                 "color": theme["info"],
             },
+            currentTextColor:{
+                "color": theme["warning"],
+            },
             voltageTextColor:{
-                "color": theme["success"],
+                "color": theme["info"],
             },
             currentBgColor:{
-                "background-color": theme["info"],
+                "background-color": theme["warning"],
             },
             voltageBgColor:{
-                "background-color": theme["success"],
+                "background-color": theme["info"],
             },
             graphBgColor:{
                 "background-color": theme["light"],
@@ -368,12 +371,10 @@ export const useStyleStore = defineStore("style", () => {
 
 
             inputFontSize: {
-                // "font-size": '2rem',
-                "font-size": '1rem',
+                "font-size": '1.15rem',
             },
             inputTitleFontSize: {
-                // "font-size": '2.5rem',
-                "font-size": '1.25rem',
+                "font-size": '1.4rem',
             },
             inputLabelBgColor:{
                 "background-color": theme["dark"] + ' !important',

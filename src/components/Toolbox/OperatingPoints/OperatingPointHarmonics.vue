@@ -320,16 +320,16 @@ export default {
 <template>
     <div class="oph-container">
         <div class="row g-2 m-0">
-            <div class="col-lg-5 col-md-12 oph-col">
+            <div class="col-12 lg:col-5 oph-col">
 
                 <div class="oph-title" :data-cy="dataTestLabel + '-current-title'">
-                    <i class="bi bi-bullseye"></i>
+                    <i class="pi pi-bullseye"></i>
                     <span>{{masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].name + ' — ' + masStore.mas.magnetic.coil.functionalDescription[currentWindingIndex].name}}</span>
                 </div>
 
                 <div class="oph-card oph-card-current">
                     <div class="oph-card-header">
-                        <i class="bi bi-soundwave"></i>
+                        <i class="pi pi-volume-up"></i>
                         <span>Current harmonics</span>
                     </div>
                     <div class="oph-card-body">
@@ -351,7 +351,7 @@ export default {
                             />
                         </div>
                         <div v-if='errorMessages.current != ""' class="oph-error">
-                            <i class="bi bi-exclamation-triangle-fill"></i>
+                            <i class="pi pi-exclamation-triangle"></i>
                             <span>{{errorMessages.current}}</span>
                         </div>
                     </div>
@@ -359,7 +359,7 @@ export default {
 
                 <div class="oph-card oph-card-voltage" :class="{ 'oph-disabled': isInductor }">
                     <div class="oph-card-header">
-                        <i class="bi bi-lightning-fill"></i>
+                        <i class="pi pi-bolt"></i>
                         <span>Voltage harmonics</span>
                     </div>
                     <div class="oph-card-body">
@@ -382,7 +382,7 @@ export default {
                             />
                         </div>
                         <div v-if='errorMessages.voltage != ""' class="oph-error">
-                            <i class="bi bi-exclamation-triangle-fill"></i>
+                            <i class="pi pi-exclamation-triangle"></i>
                             <span>{{errorMessages.voltage}}</span>
                         </div>
                     </div>
@@ -393,19 +393,19 @@ export default {
                         :data-cy="dataTestLabel + '-import-button'"
                         class="oph-btn oph-btn-outline"
                         @click="$emit('clearMode')">
-                        <i class="bi bi-arrow-left"></i>
+                        <i class="pi pi-arrow-left"></i>
                         <span>Go back to selecting mode</span>
                     </button>
                     <button
                         :data-cy="dataTestLabel + '-switch-to-manual-button'"
                         class="oph-btn oph-btn-primary"
                         @click="$emit('switchToManual')">
-                        <i class="bi bi-soundwave"></i>
+                        <i class="pi pi-volume-up"></i>
                         <span>Switch to Waveform view</span>
                     </button>
                 </div>
             </div>
-            <div v-if="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex] != null && (masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex].current.waveform != null || masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex].voltage.waveform != null)" class="col-lg-7 col-md-12 row m-0 p-0 align-items-start" style="max-width: 800px;">
+            <div v-if="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex] != null && (masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex].current.waveform != null || masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex].voltage.waveform != null)" class="col-12 lg:col-7 row m-0 p-0 align-items-start" style="max-width: 800px;">
                 <div>
                     <WaveformGraph class=" col-12 py-2"
                         :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex]"
@@ -421,25 +421,25 @@ export default {
                         :maxHarmonicsToPlot="30"
                     />
 
-                    <WaveformSimpleOutput class="col-lg-12 col-md-12 m-0 px-2"
+                    <WaveformSimpleOutput class="col-12 lg:col-12 m-0 px-2"
                         v-if="!$settingsStore.operatingPointSettings.advancedMode"
                         :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex]"
                         :dataTestLabel="dataTestLabel + '-WaveformOutput-current'"
                     />
 
                     <div v-if="$settingsStore.operatingPointSettings.advancedMode" class="row m-0 p-0">
-                        <WaveformOutput class="col-lg-6 col-md-6 col-12 m-0 px-2"
+                        <WaveformOutput class="col-12 md:col-6 lg:col-6 m-0 px-2"
                             :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex]"
                             :dataTestLabel="dataTestLabel + '-WaveformOutput-current'"
                             :signalDescriptor="'current'"
                         />
-                        <WaveformOutput class="col-lg-6 col-md-6 col-12 m-0 px-2"
+                        <WaveformOutput class="col-12 md:col-6 lg:col-6 m-0 px-2"
                             :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex]"
                             :dataTestLabel="dataTestLabel + '-WaveformOutput-voltage'"
                             :signalDescriptor="'voltage'"
                         />
                     </div>
-                    <WaveformCombinedOutput class="col-12 m-0 px-2 border-top"
+                    <WaveformCombinedOutput class="col-12 m-0 px-2"
                         v-if="$settingsStore.operatingPointSettings.advancedMode"
                         :dataTestLabel="dataTestLabel + '-WaveformCombinedOutput'"
                         :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex]"

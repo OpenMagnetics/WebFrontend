@@ -24,27 +24,13 @@ export default {
         return {
             catalogStore,
             masStore,
+            settingsVisible: false,
         }
-    },
-    computed: {
-        modalTarget() {
-            if ((this.$stateStore.getCurrentToolState().subsection == 'magneticAdviser' || this.$stateStore.getCurrentToolState().subsection == 'magneticCoreAdviser')) {
-                return '#AdviserSettingsModal'
-            }
-            else if (this.$stateStore.getCurrentToolState().subsection == 'magneticBuilder') {
-                return '#MagneticBuilderSettingsModal'
-            }
-            else if (this.$stateStore.selectedWorkflow == 'catalog') {
-                return '#CatalogAdviserSettingsModal'
-            }
-            else if (this.$stateStore.getCurrentToolState().subsection == 'operatingPoints') {
-                return '#OperatingPointSettingsModal'
-            }
-        },
     },
     watch: {
     },
     methods: {
+        openSettings() { this.settingsVisible = true },
         onAdviserSettingsUpdated() {
         },
         async onCatalogSettingsUpdated() {
@@ -83,7 +69,7 @@ export default {
     >
         <div class="toolmenu-header">
             <div class="toolmenu-header-left">
-                <i class="bi bi-briefcase-fill"></i>
+                <i class="pi pi-briefcase"></i>
                 <span>Tool menu</span>
             </div>
         </div>
@@ -91,22 +77,26 @@ export default {
         <div class="toolmenu-body">
             <MagneticBuilderSettings
                 v-if="$stateStore.getCurrentToolState().subsection == 'magneticBuilder'"
+                v-model:visible="settingsVisible"
                 :dataTestLabel="dataTestLabel"
                 :modalName="'MagneticBuilderSettingsModal'"
                 @onSettingsUpdated="onMagneticBuilderSettingsUpdated"
             />
             <AdviserSettings
                 v-if="($stateStore.getCurrentToolState().subsection == 'magneticAdviser' || $stateStore.getCurrentToolState().subsection == 'magneticCoreAdviser')"
+                v-model:visible="settingsVisible"
                 :modalName="'AdviserSettingsModal'"
                 @onSettingsUpdated="onAdviserSettingsUpdated"
             />
             <CatalogSettings
                 v-if="$stateStore.selectedWorkflow == 'catalog'"
+                v-model:visible="settingsVisible"
                 :modalName="'CatalogAdviserSettingsModal'"
                 @onSettingsUpdated="onCatalogSettingsUpdated"
             />
             <OperatingPointSettings
                 v-if="$stateStore.getCurrentToolState().subsection == 'operatingPoints'"
+                v-model:visible="settingsVisible"
                 :modalName="'OperatingPointSettingsModal'"
                 @onSettingsUpdated="onOperatingPointSettingsUpdated"
             />
@@ -116,10 +106,9 @@ export default {
                     v-if="($stateStore.getCurrentToolState().subsection == 'magneticAdviser' || $stateStore.getCurrentToolState().subsection == 'magneticCoreAdviser') || $stateStore.selectedWorkflow == 'catalog' || $stateStore.getCurrentToolState().subsection == 'operatingPoints' || $stateStore.getCurrentToolState().subsection == 'magneticBuilder'"
                     :data-cy="dataTestLabel + 'settings-modal-button'"
                     class="toolmenu-btn toolmenu-btn-ghost"
-                    data-bs-toggle="modal"
-                    :data-bs-target="modalTarget"
+                    @click="openSettings"
                 >
-                    <i class="bi bi-gear-fill"></i>
+                    <i class="pi pi-cog"></i>
                     <span>Settings</span>
                 </button>
                 <button
@@ -128,7 +117,7 @@ export default {
                     class="toolmenu-btn toolmenu-btn-outline"
                     @click="$stateStore.redraw()"
                 >
-                    <i class="bi bi-pencil-square"></i>
+                    <i class="pi pi-pencil"></i>
                     <span>Redraw</span>
                 </button>
                 <button
@@ -137,7 +126,7 @@ export default {
                     class="toolmenu-btn toolmenu-btn-outline"
                     @click="$stateStore.resimulate()"
                 >
-                    <i class="bi bi-arrow-clockwise"></i>
+                    <i class="pi pi-refresh"></i>
                     <span>Resimulate</span>
                 </button>
                 <button
@@ -146,7 +135,7 @@ export default {
                     class="toolmenu-btn toolmenu-btn-primary"
                     @click="$emit('editMagnetic')"
                 >
-                    <i class="bi bi-pencil-square"></i>
+                    <i class="pi pi-pencil"></i>
                     <span>Edit</span>
                 </button>
                 <button
@@ -155,7 +144,7 @@ export default {
                     class="toolmenu-btn toolmenu-btn-primary"
                     @click="$emit('viewMagnetic')"
                 >
-                    <i class="bi bi-check-lg"></i>
+                    <i class="pi pi-check"></i>
                     <span>Confirm</span>
                 </button>
                 <button
@@ -164,7 +153,7 @@ export default {
                     class="toolmenu-btn toolmenu-btn-primary"
                     @click="catalogStore.orderSample(masStore.mas)"
                 >
-                    <i class="bi bi-cart"></i>
+                    <i class="pi pi-shopping-cart"></i>
                     <span>Order a sample</span>
                 </button>
                 <button
@@ -173,7 +162,7 @@ export default {
                     class="toolmenu-btn toolmenu-btn-secondary"
                     @click="$emit('toolSelected', 'magneticAdviser')"
                 >
-                    <i class="bi bi-magic"></i>
+                    <i class="pi pi-sparkles"></i>
                     <span>Magnetic Adviser</span>
                 </button>
                 <button
@@ -205,7 +194,7 @@ export default {
                     class="toolmenu-btn toolmenu-btn-primary"
                     @click="coreAdvancedModeConfirmChanges"
                 >
-                    <i class="bi bi-check-lg"></i>
+                    <i class="pi pi-check"></i>
                     <span>Apply changes</span>
                 </button>
                 <button
@@ -213,7 +202,7 @@ export default {
                     class="toolmenu-btn toolmenu-btn-danger"
                     @click="coreAdvancedModeCancelChanges"
                 >
-                    <i class="bi bi-x-lg"></i>
+                    <i class="pi pi-times"></i>
                     <span>Cancel</span>
                 </button>
                 <button
@@ -221,7 +210,7 @@ export default {
                     class="toolmenu-btn toolmenu-btn-danger"
                     @click="coilAdvancedModeClose"
                 >
-                    <i class="bi bi-x-lg"></i>
+                    <i class="pi pi-times"></i>
                     <span>Close</span>
                 </button>
             </div>
@@ -232,12 +221,12 @@ export default {
 <style scoped>
 .toolmenu-panel {
     background: rgba(var(--bs-dark-rgb), 0.55);
-    border: 1px solid rgba(var(--bs-light-rgb), 0.08);
+    border: 1px solid rgba(var(--bs-white-rgb), 0.08);
     border-top: 3px solid rgba(var(--bs-primary-rgb), 0.8);
     border-radius: 14px;
     padding: 0;
     margin: 0.15rem 0 0.5rem 0;
-    box-shadow: 0 6px 24px rgba(var(--bs-dark-rgb), 0.45), inset 0 1px 0 rgba(var(--bs-light-rgb), 0.04);
+    box-shadow: 0 6px 24px rgba(var(--bs-dark-rgb), 0.45), inset 0 1px 0 rgba(var(--bs-white-rgb), 0.04);
     overflow: hidden;
 }
 

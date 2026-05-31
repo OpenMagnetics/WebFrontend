@@ -54,10 +54,10 @@ export default {
         },
         getLevelIcon(level) {
             switch (level) {
-                case 'error': return 'bi bi-x-circle-fill';
-                case 'warn': return 'bi bi-exclamation-triangle-fill';
-                case 'log': return 'bi bi-info-circle-fill';
-                default: return 'bi bi-circle-fill';
+                case 'error': return 'pi pi-times-circle';
+                case 'warn': return 'pi pi-exclamation-triangle';
+                case 'log': return 'pi pi-info-circle';
+                default: return 'pi pi-circle-fill';
             }
         },
         getLevelClass(level) {
@@ -92,22 +92,22 @@ export default {
     <div v-if="isEnabled && consoleStore.isVisible" class="console-panel">
         <div class="console-header">
             <div class="console-title">
-                <i class="bi bi-terminal-fill me-2"></i>
+                <i class="pi pi-server mr-2"></i>
                 Console
                 <span class="console-badge" :class="{ 'text-danger': consoleStore.errorCount > 0 }">
                     {{ consoleStore.logCount }} logs
-                    <span v-if="consoleStore.errorCount > 0" class="ms-1">({{ consoleStore.errorCount }} errors)</span>
+                    <span v-if="consoleStore.errorCount > 0" class="ml-1">({{ consoleStore.errorCount }} errors)</span>
                 </span>
             </div>
             <div class="console-controls">
                 <button class="console-btn" @click="consoleStore.clearLogs()" title="Clear">
-                    <i class="bi bi-trash"></i>
+                    <i class="pi pi-trash"></i>
                 </button>
                 <button class="console-btn" @click="copyToClipboard()" title="Copy all">
-                    <i class="bi bi-clipboard"></i>
+                    <i class="pi pi-clipboard"></i>
                 </button>
                 <button class="console-btn" @click="consoleStore.toggleVisibility()" title="Close">
-                    <i class="bi bi-x-lg"></i>
+                    <i class="pi pi-times"></i>
                 </button>
             </div>
         </div>
@@ -168,7 +168,7 @@ export default {
         @click="consoleStore.toggleVisibility()"
         :class="{ 'has-errors': consoleStore.errorCount > 0 }"
     >
-        <i class="bi bi-terminal"></i>
+        <i class="pi pi-server"></i>
         <span v-if="consoleStore.errorCount > 0" class="console-error-badge">
             {{ consoleStore.errorCount }}
         </span>

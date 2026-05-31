@@ -166,16 +166,16 @@ export default {
 <template>
     <div class="opm-container">
         <div class="row g-2 m-0">
-            <div v-if="masStore.mas.inputs.operatingPoints.length > currentOperatingPointIndex" class="col-lg-5 col-md-12 opm-col">
+            <div v-if="masStore.mas.inputs.operatingPoints.length > currentOperatingPointIndex" class="col-12 lg:col-5 opm-col">
 
                 <div class="opm-title" data-cy="dataTestLabel + '-current-title'">
-                    <i class="bi bi-bullseye"></i>
+                    <i class="pi pi-bullseye"></i>
                     <span>{{masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].name + ' — ' + masStore.mas.magnetic.coil.functionalDescription[currentWindingIndex].name}}</span>
                 </div>
 
                 <div class="opm-card">
                     <div class="opm-card-header">
-                        <i class="bi bi-sliders"></i>
+                        <i class="pi pi-sliders-h"></i>
                         <span>Common parameters</span>
                     </div>
                     <div class="opm-card-body">
@@ -191,7 +191,7 @@ export default {
 
                 <div class="opm-card opm-card-current">
                     <div class="opm-card-header">
-                        <i class="bi bi-soundwave"></i>
+                        <i class="pi pi-volume-up"></i>
                         <span>Current waveform</span>
                     </div>
                     <div class="opm-card-body">
@@ -222,7 +222,7 @@ export default {
 
                 <div class="opm-card opm-card-voltage" :class="{ 'opm-disabled': isInductor }">
                     <div class="opm-card-header">
-                        <i class="bi bi-lightning-fill"></i>
+                        <i class="pi pi-bolt"></i>
                         <span>Voltage waveform</span>
                     </div>
                     <div class="opm-card-body">
@@ -259,7 +259,7 @@ export default {
                         class="opm-btn opm-btn-outline"
                         @click="clearMode"
                     >
-                        <i class="bi bi-arrow-left"></i>
+                        <i class="pi pi-arrow-left"></i>
                         <span>Go back to selecting mode</span>
                     </button>
                     <button
@@ -267,12 +267,12 @@ export default {
                         class="opm-btn opm-btn-primary"
                         @click="$emit('switchToHarmonics')"
                     >
-                        <i class="bi bi-graph-up-arrow"></i>
+                        <i class="pi pi-chart-line"></i>
                         <span>Switch to Harmonics view</span>
                     </button>
                 </div>
             </div>
-            <div class="col-lg-7 col-md-12 row m-0 p-0" style="max-width: 800px;">
+            <div class="col-12 lg:col-7 row m-0 p-0" style="max-width: 800px;">
                 <div>
                     <WaveformGraph class=" col-12 py-2"
                         :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex]"
@@ -284,18 +284,18 @@ export default {
                         :dataTestLabel="dataTestLabel + '-WaveformFourier'"
                     />
 
-                    <WaveformSimpleOutput class="col-lg-12 col-md-12 m-0 px-2"
+                    <WaveformSimpleOutput class="col-12 lg:col-12 m-0 px-2"
                         v-if="!$settingsStore.operatingPointSettings.advancedMode"
                         :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex]"
                         :dataTestLabel="dataTestLabel + '-WaveformOutput-current'"
                     />
                     <div v-if="$settingsStore.operatingPointSettings.advancedMode" class="row m-0 p-0">
-                        <WaveformOutput class="col-lg-6 col-md-6 col-12 m-0 px-2"
+                        <WaveformOutput class="col-12 md:col-6 lg:col-6 m-0 px-2"
                             :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex]"
                             :dataTestLabel="dataTestLabel + '-WaveformOutput-current'"
                             :signalDescriptor="'current'"
                         />
-                        <WaveformOutput class="col-lg-6 col-md-6 col-12 m-0 px-2"
+                        <WaveformOutput class="col-12 md:col-6 lg:col-6 m-0 px-2"
                             :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex]"
                             :dataTestLabel="dataTestLabel + '-WaveformOutput-voltage'"
                             :signalDescriptor="'voltage'"
@@ -304,11 +304,11 @@ export default {
                     <WaveformCombinedOutput
                         v-if="$settingsStore.operatingPointSettings.advancedMode"
                         :style="$styleStore.operatingPoints.main"
-                        class="col-12 m-0 px-2 border-top"
+                        class="col-12 m-0 px-2"
                         :dataTestLabel="dataTestLabel + '-WaveformCombinedOutput'"
                         :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex]"
                     />
-                    <!-- <button :data-cy="dataTestLabel + '-reset-button'" class="btn btn-danger fs-6 offset-md-10 col-sm-12 col-md-2  mt-2 p-0" style="max-height: 2em" @click="resetCurrentExcitation"> Reset Point -->
+                    <!-- <button :data-cy="dataTestLabel + '-reset-button'" class="p-button p-button-danger text-base md:col-offset-10 col-12 md:col-2  mt-2 p-0" style="max-height: 2em" @click="resetCurrentExcitation"> Reset Point -->
                     <!-- </button> -->
                 </div>
             </div>
@@ -362,12 +362,16 @@ export default {
     box-shadow: 0 3px 10px rgba(var(--bs-black-rgb), 0.3);
 }
 
+/* Match the colors used in the waveform chart (Current = warning amber,
+ * Voltage = info purple) so the cards visually anchor to the same legend.
+ * Common Parameters keeps the default primary teal so all three families
+ * are visually distinct. */
 .opm-card-current {
-    border-left-color: rgba(var(--bs-info-rgb), 0.7);
+    border-left-color: rgba(var(--bs-warning-rgb), 0.7);
 }
 
 .opm-card-voltage {
-    border-left-color: rgba(var(--bs-success-rgb), 0.7);
+    border-left-color: rgba(var(--bs-info-rgb), 0.7);
 }
 
 .opm-disabled {
@@ -390,23 +394,23 @@ export default {
 }
 
 .opm-card-current .opm-card-header {
+    color: var(--bs-warning);
+    background: rgba(var(--bs-warning-rgb), 0.1);
+    border-bottom-color: rgba(var(--bs-warning-rgb), 0.18);
+}
+
+.opm-card-current .opm-card-header i {
+    filter: drop-shadow(0 0 4px rgba(var(--bs-warning-rgb), 0.5));
+}
+
+.opm-card-voltage .opm-card-header {
     color: var(--bs-info);
     background: rgba(var(--bs-info-rgb), 0.1);
     border-bottom-color: rgba(var(--bs-info-rgb), 0.18);
 }
 
-.opm-card-current .opm-card-header i {
-    filter: drop-shadow(0 0 4px rgba(var(--bs-info-rgb), 0.5));
-}
-
-.opm-card-voltage .opm-card-header {
-    color: var(--bs-success);
-    background: rgba(var(--bs-success-rgb), 0.1);
-    border-bottom-color: rgba(var(--bs-success-rgb), 0.18);
-}
-
 .opm-card-voltage .opm-card-header i {
-    filter: drop-shadow(0 0 4px rgba(var(--bs-success-rgb), 0.5));
+    filter: drop-shadow(0 0 4px rgba(var(--bs-info-rgb), 0.5));
 }
 
 .opm-card-header i {

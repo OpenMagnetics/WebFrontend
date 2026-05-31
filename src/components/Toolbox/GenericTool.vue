@@ -183,7 +183,7 @@ export default {
         class="container mx-auto"
     >
         <div class="row">
-            <div v-if="showStoryline" class=" text-center col-xs-12 col-sm-12 col-md-1 bg-transparent m-0 p-0" style="height: fit-content">
+            <div v-if="showStoryline" class=" text-center col-12 col-12 md:col-1 bg-transparent m-0 p-0" style="height: fit-content">
                 <Storyline
                     :selectedTool="$stateStore.getCurrentToolState().subsection"
                     :storyline="currentStoryline"
@@ -198,7 +198,7 @@ export default {
                     @toolSelected="toolSelected"
                 />
             </div>
-            <div class="text-center col-xs-12 col-sm-12 col-md-11 bg-transparent px container" >
+            <div class="text-center col-12 col-12 md:col-11 bg-transparent px container" >
                 <div 
                     v-if="showControlPanelAndTitle"
                     class="mb-2 row px-3" >
@@ -222,17 +222,17 @@ export default {
                         :textColor="$styleStore.magneticBuilder.inputTextColor"
                         @update="operatingPointUpdated"
                     />
-                    <div v-else data-cy="magnetic-synthesis-previous-tool-button-placeholder" class=" col-sm-12 col-md-2 mt-1"></div>
+                    <div v-else data-cy="magnetic-synthesis-previous-tool-button-placeholder" class=" col-12 md:col-2 mt-1"></div>
                     <h2 
                         :style="$styleStore.magneticBuilder.main"
-                        v-if="showTitle" data-cy="magnetic-synthesis-title-text" :class="showControlPanel? 'col-sm-12 col-md-4 col-lg-4' : 'col-sm-12 col-md-9'" class="" >
+                        v-if="showTitle" data-cy="magnetic-synthesis-title-text" :class="showControlPanel? 'col-12 md:col-4 lg:col-4' : 'col-12 md:col-9'" class="" >
                         {{toTitleCase($stateStore.getCurrentToolState().subsection)}}
                     </h2>
 
                     <div
                         v-if="showControlPanel"
                         data-cy="magnetic-synthesis-title-control-panel"
-                        :class="(showTitle || showReference)? 'col-sm-12 col-md-6 col-lg-6 col-xl-6' : 'col-sm-12 col-md-9'"
+                        :class="(showTitle || showReference)? 'col-12 md:col-6 lg:col-6 xl:col-6' : 'col-12 md:col-9'"
                     >
                         <ControlPanel
                             :showExportButtons="$stateStore.getCurrentToolState().subsection == 'magneticBuilder' || 

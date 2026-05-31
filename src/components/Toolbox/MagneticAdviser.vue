@@ -3,7 +3,6 @@ import { useMasStore } from '../../stores/mas'
 import { useAdviseCacheStore } from '../../stores/adviseCache'
 import { useTaskQueueStore } from '../../stores/taskQueue'
 import { nextTick } from 'vue'
-import { Offcanvas } from 'bootstrap'
 import Slider from '@vueform/slider'
 import { removeTrailingZeroes, toTitleCase, deepCopy } from 'WebSharedComponents/assets/js/utils.js'
 import { magneticAdviserWeights } from 'WebSharedComponents/assets/js/defaults.js'
@@ -61,6 +60,7 @@ export default {
             dataUptoDate,
             currentAdviseToShow: 0,
             detailMas: null,
+            adviseDetailsVisible: false,
         }
     },
     computed: {
@@ -179,13 +179,7 @@ export default {
         },
         showDetails(index) {
             this.detailMas = deepCopy(this.adviseCacheStore.currentMasAdvises[index].mas);
-            nextTick(() => {
-                const offcanvasEl = document.getElementById('CoreAdviserDetailOffCanvas');
-                if (offcanvasEl) {
-                    const offcanvas = Offcanvas.getOrCreateInstance(offcanvasEl);
-                    offcanvas.show();
-                }
-            });
+            this.adviseDetailsVisible = true;
         },
         adviseReady(index) {
             if (this.currentAdviseToShow < this.adviseCacheStore.currentMasAdvises.length - 1) {
@@ -238,14 +232,14 @@ export default {
 </script>
 
 <template>
-    <AdviseDetails v-if="detailMas" :modelValue="detailMas"/>
+    <AdviseDetails v-if="detailMas" v-model:visible="adviseDetailsVisible" :modelValue="detailMas"/>
     <div class="container-fluid py-3">
         <div class="row g-3">
             <!-- Sidebar Panel -->
-            <aside class="col-12 col-lg-3">
+            <aside class="col-12 lg:col-3">
                 <div class="optim-panel h-100">
                     <div class="optim-header">
-                        <i class="bi bi-sliders"></i>
+                        <i class="pi pi-sliders-h"></i>
                         <span>Optimization Weights</span>
                     </div>
                     <div class="optim-body">
@@ -297,7 +291,7 @@ export default {
                             class="optim-btn optim-btn-primary"
                             @click="calculateAdvises"
                         >
-                            <i class="bi bi-rocket-takeoff-fill"></i>
+                            <i class="pi pi-send"></i>
                             <span>Get Advised Magnetics</span>
                         </button>
                         <button
@@ -306,7 +300,7 @@ export default {
                             class="optim-btn optim-btn-success"
                             @click="loadAndGoToBuilder"
                         >
-                            <i class="bi bi-check-lg"></i>
+                            <i class="pi pi-check"></i>
                             <span>Load Selected</span>
                         </button>
                         <button
@@ -315,7 +309,7 @@ export default {
                             class="optim-btn optim-btn-outline-danger"
                             @click="goBackToBuilder"
                         >
-                            <i class="bi bi-arrow-left"></i>
+                            <i class="pi pi-arrow-left"></i>
                             <span>Go Back</span>
                         </button>
                     </div>
@@ -323,7 +317,7 @@ export default {
             </aside>
 
             <!-- Main Content Area -->
-            <main class="col-12 col-lg-9">
+            <main class="col-12 lg:col-9">
                 <!-- Loading State -->
                 <div v-if="loading" data-cy="magneticAdviser-loading" class="d-flex flex-column align-items-center justify-content-center" style="min-height: 400px;">
                     <img :src="loadingGif" alt="Calculating..." class="rounded mb-3" style="width: 200px;" />
@@ -337,7 +331,7 @@ export default {
                             v-for="(advise, adviseIndex) in adviseCacheStore.currentMasAdvises" 
                             v-if="adviseCacheStore.currentMasAdvises != null"
                             :key="adviseIndex"
-                            class="col-12 col-md-6 col-xl-4"
+                            class="col-12 md:col-6 xl:col-4"
                             :class="{ 'opacity-25': !dataUptoDate }"
                         >
                             <Advise
@@ -395,8 +389,8 @@ export default {
     --op-panel-2: var(--bs-light);
     --op-border: rgba(var(--bs-white-rgb), 0.1);
     --op-border-strong: rgba(var(--bs-white-rgb), 0.2);
-    --op-text: var(--bs-light);
-    --op-text-muted: rgba(var(--bs-light-rgb), 0.7);
+    --op-text: var(--bs-white);
+    --op-text-muted: rgba(var(--bs-white-rgb), 0.7);
 
     display: flex;
     flex-direction: column;

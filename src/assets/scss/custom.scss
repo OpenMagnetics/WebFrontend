@@ -40,5 +40,134 @@ $grid-breakpoints: (
   --om-border-color: #{$border-color};
 }
 
-@import "bootstrap/scss/bootstrap";
+// Self-contained Bootstrap-equivalent CSS (--bs-* tokens + the small surface
+// of legacy classes still referenced in templates). Wrap in a `bootstrap`
+// CSS layer so unlayered PrimeFlex wins the cascade for col-N / d-flex / etc.
+@layer bootstrap {
+    @import "./bootstrap-shim.scss";
+}
+
+// PrimeFlex (unlayered → wins over layered shim rules with equal specificity)
+@import "primeflex/primeflex.css";
+
+// Kill PrimeVue's overlay enter/leave animation (default 0.3s).
+// The lag between clicking a Select option and the panel closing
+// felt sluggish. 0ms = instant snap.
+.p-select-overlay,
+.p-popover,
+.p-overlaypanel,
+.p-datepicker,
+.p-tieredmenu,
+.p-select-overlay *,
+.p-popover * {
+    animation-duration: 0ms !important;
+    transition-duration: 0ms !important;
+}
+
+// Disable PrimeVue's ripple effect which adds a visible click-feedback
+// pulse on Select options before the panel closes.
+.p-ink,
+.p-ripple > .p-ink {
+    display: none !important;
+}
+
+// PrimeVue's <ul class="p-select-list"> inherits the browser's default
+// list left-padding (~40px), making options look heavily indented. Reset
+// the indentation here since PrimeVue's CSS layer is below ours.
+.p-select-list,
+.p-listbox-list,
+.p-tieredmenu-root-list,
+.p-tieredmenu-submenu,
+.p-menubar-root-list,
+.p-menubar-submenu {
+    padding-left: 0 !important;
+    margin: 0;
+    list-style: none;
+}
+.p-select-overlay .p-select-list {
+    padding: 0.25rem !important;
+}
+
+// Inside a DimensionWithTolerance / MaximumDimensions InputGroup, the
+// unit-select addon already provides a visible border via the
+// InputGroupAddon — drop the inner Select's own border so we don't
+// render a box-inside-a-box.
+.p-inputgroup .dwt-unit-addon .p-select,
+.p-inputgroup .md-unit-addon .p-select {
+    border: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+}
+
+// Top-level requirement titles in the DesignRequirements detail panel.
+// These match the names shown in the requirement list (Number Windings,
+// Magnetizing Inductance, Wiring Technology, etc.). Styled the same as
+// Insulation.vue's .ins-title (primary-teal, 16px bold, left-aligned).
+// Depth-restricted to the FIRST level inside each requirement component
+// so nested labels (Frequency, Impedance, Primary, Secondary, Min/Nom/Max)
+// keep their normal subtitle style.
+/* Each requirement component's root IS the direct child of
+   .dr-detail-body (class merged via Vue's class binding). So the
+   selector goes one fewer level than expected. */
+.dr-detail-body > .efl-container > .efl-row > .efl-label,
+.dr-detail-body > .dim-container > .dim-row > .dim-label,
+.dr-detail-body > .efr-container > .efr-row > .efr-label,
+.dr-detail-body > .dwt-container > .dwt-title-row > .dwt-title,
+.dr-detail-body > .container-flex > .grid > .rounded-2,
+.dr-detail-body > .container-flex > .mb-1 > .md-rounded,
+.dr-detail-body > .container-flex > .md-rounded,
+.dr-detail-body > .ins-root > .ins-title {
+    /* Uniform title style — Insulation's .ins-title is the reference
+       (primary-teal, 16px / 700 weight, left-aligned, snug padding). */
+    font-size: 1rem !important;
+    font-weight: 700 !important;
+    color: var(--bs-primary) !important;
+    letter-spacing: 0.01em !important;
+    padding: 0.15rem 0 0.4rem 0 !important;
+    margin: 0 !important;
+    text-align: left !important;
+}
+
+/* Uniform left padding on every requirement row so all titles align to
+   the exact same x-coordinate, regardless of which inner classes
+   (pl-0/pl-2/pl-3/pl-4, ml-3, fs-5, etc.) DR.vue's `class=` props add. */
+.dr-detail-body > * {
+    padding-left: 0.85rem !important;
+}
+
+/* Inside-the-row containers must NOT add extra left padding on top of
+   the row's 0.85rem — clear them so the title sits flush. */
+.dr-detail-body > * > .container-flex,
+.dr-detail-body > * > .efl-container,
+.dr-detail-body > * > .dim-container,
+.dr-detail-body > * > .efr-container,
+.dr-detail-body > * > .dwt-container,
+.dr-detail-body > * > .ins-root,
+.dr-detail-body > * > .grid,
+.dr-detail-body > * > .container-flex > .grid {
+    padding-left: 0 !important;
+    margin-left: 0 !important;
+}
+
+/* Indent the CONTENT row of every requirement under its title — same
+   visual rhythm as the per-winding rows in ArrayDimensionWithTolerance.
+   The title row stays flush left; only the inputs are indented. */
+$dr-content-indent: 1.5rem;
+
+/* ElementFromList: title is .efl-row[1], content (select) is .efl-row[2]. */
+.dr-detail-body > .efl-container > .efl-row + .efl-row,
+/* Dimension: title is .dim-label (first child of .dim-row), value is .dim-value-row. */
+.dr-detail-body > .dim-container > .dim-row > .dim-value-row,
+/* DimensionWithTolerance: title is .dwt-title-row, fields are .dwt-fields-row. */
+.dr-detail-body > .dwt-container > .dwt-fields-row,
+/* ElementFromListRadio: title is .efr-row[1], radios are .efr-options-row. */
+.dr-detail-body > .efr-container > .efr-options-row,
+/* Composite component bodies (Impedances, Array*, MaximumDimensions).
+   Their first .grid carries the title; the SECOND .grid (or any
+   subsequent rows) hold the inputs. Indent the latter via :nth-of-type. */
+.dr-detail-body > .container-flex > .grid:nth-of-type(n+2),
+.dr-detail-body > .container-flex > .md-fields-row {
+    padding-left: $dr-content-indent !important;
+}
 

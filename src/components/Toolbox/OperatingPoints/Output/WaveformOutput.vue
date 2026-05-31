@@ -115,11 +115,11 @@ export default {
 <template>
     <div class="wo-card" :class="signalDescriptor === 'current' ? 'wo-card-current' : 'wo-card-voltage'">
         <div class="wo-header">
-            <i :class="signalDescriptor === 'current' ? 'bi bi-soundwave' : 'bi bi-lightning-fill'"></i>
+            <i :class="signalDescriptor === 'current' ? 'pi pi-volume-up' : 'pi pi-bolt'"></i>
             <span>Outputs · {{ signalDescriptor === 'current' ? 'Current' : 'Voltage' }}</span>
         </div>
         <div v-if="!isDataReady" class="wo-loading">
-            <i class="bi bi-arrow-repeat fa-spin fa-spin"></i>
+            <i class="pi pi-refresh fa-spin fa-spin"></i>
             <span>Calculating…</span>
         </div>
         <div v-else class="wo-body">
@@ -254,11 +254,11 @@ export default {
 }
 
 .wo-card-current {
-    border-left-color: rgba(var(--bs-info-rgb), 0.7);
+    border-left-color: rgba(var(--bs-warning-rgb), 0.7);
 }
 
 .wo-card-voltage {
-    border-left-color: rgba(var(--bs-success-rgb), 0.7);
+    border-left-color: rgba(var(--bs-info-rgb), 0.7);
 }
 
 .wo-header {
@@ -276,23 +276,23 @@ export default {
 }
 
 .wo-card-current .wo-header {
+    color: var(--bs-warning);
+    background: rgba(var(--bs-warning-rgb), 0.1);
+    border-bottom-color: rgba(var(--bs-warning-rgb), 0.18);
+}
+
+.wo-card-current .wo-header i {
+    filter: drop-shadow(0 0 4px rgba(var(--bs-warning-rgb), 0.5));
+}
+
+.wo-card-voltage .wo-header {
     color: var(--bs-info);
     background: rgba(var(--bs-info-rgb), 0.1);
     border-bottom-color: rgba(var(--bs-info-rgb), 0.18);
 }
 
-.wo-card-current .wo-header i {
-    filter: drop-shadow(0 0 4px rgba(var(--bs-info-rgb), 0.5));
-}
-
-.wo-card-voltage .wo-header {
-    color: var(--bs-success);
-    background: rgba(var(--bs-success-rgb), 0.1);
-    border-bottom-color: rgba(var(--bs-success-rgb), 0.18);
-}
-
 .wo-card-voltage .wo-header i {
-    filter: drop-shadow(0 0 4px rgba(var(--bs-success-rgb), 0.5));
+    filter: drop-shadow(0 0 4px rgba(var(--bs-info-rgb), 0.5));
 }
 
 .wo-header i {
@@ -326,7 +326,7 @@ export default {
     justify-content: center;
     gap: 0.5rem;
     padding: 1.2rem;
-    color: rgba(var(--bs-light-rgb), 0.6);
+    color: rgba(var(--bs-white-rgb), 0.6);
     font-size: 0.85rem;
 }
 

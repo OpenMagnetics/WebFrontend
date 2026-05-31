@@ -141,7 +141,7 @@ export default {
                 @update="inputsUpdated"
             />
 
-            <button :disabled="disabled" v-if="!hasError" :data-cy="dataTestLabel + '-calculate'" class="btn btn-success" @click="inputsUpdated">Get Alternative Cores</button>
+            <button :disabled="disabled" v-if="!hasError" :data-cy="dataTestLabel + '-calculate'" class="p-button p-button-success" @click="inputsUpdated">Get Alternative Cores</button>
 
         </div>
     </div>

@@ -25,11 +25,11 @@ export default {
         },
         labelWidthProportionClass: {
             type: String,
-            default: 'col-xs-12 col-md-9'
+            default: 'col-12 md:col-9'
         },
         valueWidthProportionClass: {
             type: String,
-            default: 'col-xs-12 col-md-3'
+            default: 'col-12 md:col-3'
         },
         /**
          * Catalog-input mode. When true, "Review Specs" is hidden and the
@@ -169,22 +169,22 @@ export default {
             handler() {
                 clearTimeout(this._analyticalDebounceTimer);
                 this._analyticalDebounceTimer = setTimeout(() => {
-                    this.runAnalyticalWaveforms();
+                    this.runAutoWaveforms();
                 }, 800);
             }
         },
     },
     mounted() {
         this._analyticalDebounceTimer = null;
-        this.runAnalyticalWaveforms();
+        this.runAutoWaveforms();
     },
     methods: {
 
         // Shared by mounted() (immediate) and the localData watcher (debounced).
-        runAnalyticalWaveforms() {
+        runAutoWaveforms() {
             this.updateErrorMessage();
             if (!this.errorMessage) {
-                this.getAnalyticalWaveforms();
+                this.simulateIdealWaveforms();
             }
         },
 
@@ -337,7 +337,7 @@ export default {
         async getAnalyticalWaveforms() {
             await this.$refs.base.executeWaveformAction(this, 'analytical');
         },
-        async simulateWaveforms() {
+        async simulateIdealWaveforms() {
             await this.$refs.base.executeWaveformAction(this, 'simulation');
         },
         async getSpiceCode() {
@@ -386,7 +386,7 @@ export default {
   <ConverterWizardBase
     ref="base"
     title="CMC Wizard"
-    titleIcon="bi bi-shield-shaded"
+    titleIcon="pi pi-shield"
     subtitle="Common Mode Choke — EMI Filter"
     :col1Width="3" :col2Width="4" :col3Width="5"
     :showNumberOutputs="false"
@@ -407,7 +407,7 @@ export default {
     @update:numberOfPeriods="numberOfPeriods = $event"
     @update:numberOfSteadyStatePeriods="numberOfSteadyStatePeriods = $event"
     @get-analytical-waveforms="getAnalyticalWaveforms"
-    @get-simulated-waveforms="simulateWaveforms"
+    @get-simulated-waveforms="simulateIdealWaveforms"
     @get-spice-code="getSpiceCode"
     @dismiss-error="errorMessage = ''; waveformError = ''"
    >
@@ -435,7 +435,7 @@ export default {
     <!-- ══════════════════════════════════════════════════════════ -->
     <template #design-or-switch-parameters-title>
       <div class="compact-header">
-        <i class="bi bi-shield-shaded me-1"></i>
+        <i class="pi pi-shield mr-1"></i>
         {{ localData.designLevel == 'I know the design I want' ? 'Design Params' : 'Impedance Requirements' }}
       </div>
     </template>
@@ -554,10 +554,10 @@ export default {
               class="cmc-remove-btn"
               :style="{ background: $styleStore.wizard.removeButton['background-color'] }"
               @click="removeImpedanceRow(idx)"
-            ><i class="bi bi-x-lg"></i></button>
+            ><i class="pi pi-times"></i></button>
           </div>
           <button class="cmc-add-btn" :style="$styleStore.wizard.addButton" @click="addImpedanceRow">
-            <i class="bi bi-plus-lg me-1"></i>Add point
+            <i class="pi pi-plus mr-1"></i>Add point
           </button>
         </template>
 
@@ -597,10 +597,10 @@ export default {
               class="cmc-remove-btn"
               :style="{ background: $styleStore.wizard.removeButton['background-color'] }"
               @click="removeInsertionLossRow(idx)"
-            ><i class="bi bi-x-lg"></i></button>
+            ><i class="pi pi-times"></i></button>
           </div>
           <button class="cmc-add-btn" :style="$styleStore.wizard.addButton" @click="addInsertionLossRow">
-            <i class="bi bi-plus-lg me-1"></i>Add point
+            <i class="pi pi-plus mr-1"></i>Add point
           </button>
         </template>
 
@@ -718,7 +718,7 @@ export default {
     <template #col1-footer>
       <div class="d-flex align-items-center justify-content-between mt-2">
         <span v-if="errorMessage" class="error-text">
-          <i class="bi bi-exclamation-triangle-fill me-1"></i>{{ errorMessage }}
+          <i class="pi pi-exclamation-triangle mr-1"></i>{{ errorMessage }}
         </span>
         <span v-else></span>
         <div class="action-btns">
@@ -728,10 +728,10 @@ export default {
             class="action-btn-sm secondary"
             @click="processAndReview"
           >
-            <i class="bi bi-search me-1"></i>Review Specs
+            <i class="pi pi-search mr-1"></i>Review Specs
           </button>
           <button :disabled="errorMessage != ''" class="action-btn-sm primary" @click="processAndAdvise">
-            <i class="bi bi-magic me-1"></i>{{ catalogMode ? 'Find Magnetic' : 'Design Magnetic' }}
+            <i class="pi pi-sparkles mr-1"></i>{{ catalogMode ? 'Find Magnetic' : 'Design Magnetic' }}
           </button>
         </div>
       </div>

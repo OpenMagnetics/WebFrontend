@@ -113,16 +113,16 @@ export default {
 <template>
     <div class="ia-container">
         <div class="ia-title">
-            <i class="bi bi-shield-shaded"></i>
+            <i class="pi pi-shield"></i>
             <span>Insulation Coordinator</span>
         </div>
 
         <div class="row g-3 m-0">
             <!-- Inputs panel -->
-            <div class="col-12 col-lg-7 ia-col">
+            <div class="col-12 lg:col-7 ia-col">
                 <div class="ia-card">
                     <div class="ia-card-header">
-                        <i class="bi bi-lightning-fill"></i>
+                        <i class="pi pi-bolt"></i>
                         <span>Operating point</span>
                     </div>
                     <div class="ia-card-body">
@@ -156,15 +156,15 @@ export default {
             </div>
 
             <!-- Result panel -->
-            <div class="col-12 col-lg-5 ia-col">
+            <div class="col-12 lg:col-5 ia-col">
                 <div class="ia-card ia-card-result">
                     <div class="ia-card-header ia-card-header-result">
-                        <i class="bi bi-shield-shaded"></i>
+                        <i class="bi bi-shield-check"></i>
                         <span>Coordination result</span>
                     </div>
                     <div class="ia-result-body">
                         <div class="ia-result-row">
-                            <div class="ia-result-icon"><i class="bi bi-arrow-left-right"></i></div>
+                            <div class="ia-result-icon"><i class="bi bi-arrows"></i></div>
                             <div class="ia-result-text">
                                 <small>Clearance</small>
                                 <DimensionReadOnly
@@ -174,7 +174,7 @@ export default {
                                     :value="insulation.clearance"
                                     :disableShortenLabels="true"
                                     :replaceTitle="' '"
-                                    :valueFontSize="'fs-5'"
+                                    :valueFontSize="'text-4xl'"
                                     :labelWidthProportionClass="'col-1'"
                                     :valueWidthProportionClass="'col-11'"
                                     :labelBgColor="'bg-transparent'"
@@ -184,7 +184,7 @@ export default {
                             </div>
                         </div>
                         <div class="ia-result-row">
-                            <div class="ia-result-icon"><i class="bi bi-signpost-2-fill"></i></div>
+                            <div class="ia-result-icon"><i class="bi bi-signpost-split-fill"></i></div>
                             <div class="ia-result-text">
                                 <small>Creepage distance</small>
                                 <DimensionReadOnly
@@ -194,7 +194,7 @@ export default {
                                     :value="insulation.creepageDistance"
                                     :disableShortenLabels="true"
                                     :replaceTitle="' '"
-                                    :valueFontSize="'fs-5'"
+                                    :valueFontSize="'text-4xl'"
                                     :labelWidthProportionClass="'col-1'"
                                     :valueWidthProportionClass="'col-11'"
                                     :labelBgColor="'bg-transparent'"
@@ -214,7 +214,7 @@ export default {
                                     :value="insulation.withstandVoltage"
                                     :disableShortenLabels="true"
                                     :replaceTitle="' '"
-                                    :valueFontSize="'fs-5'"
+                                    :valueFontSize="'text-4xl'"
                                     :labelWidthProportionClass="'col-1'"
                                     :valueWidthProportionClass="'col-11'"
                                     :labelBgColor="'bg-transparent'"
@@ -224,7 +224,7 @@ export default {
                             </div>
                         </div>
                         <div class="ia-result-row">
-                            <div class="ia-result-icon"><i class="bi bi-stack"></i></div>
+                            <div class="ia-result-icon"><i class="bi bi-layers-fill"></i></div>
                             <div class="ia-result-text">
                                 <small>Distance through insulation</small>
                                 <DimensionReadOnly
@@ -234,7 +234,7 @@ export default {
                                     :value="insulation.distanceThroughInsulation"
                                     :disableShortenLabels="true"
                                     :replaceTitle="' '"
-                                    :valueFontSize="'fs-5'"
+                                    :valueFontSize="'text-4xl'"
                                     :labelWidthProportionClass="'col-1'"
                                     :valueWidthProportionClass="'col-11'"
                                     :labelBgColor="'bg-transparent'"
@@ -244,7 +244,7 @@ export default {
                             </div>
                         </div>
                         <div v-if="insulation.errorMessage" class="ia-result-error">
-                            <i class="bi bi-exclamation-triangle-fill"></i>
+                            <i class="pi pi-exclamation-triangle"></i>
                             <span :data-cy="dataTestLabel + '-ErrorMessage'">{{ insulation.errorMessage }}</span>
                         </div>
                     </div>
@@ -330,9 +330,12 @@ export default {
     background: rgba(var(--bs-success-rgb), 0.1);
     border-bottom-color: rgba(var(--bs-success-rgb), 0.18);
     color: var(--bs-success);
+    font-size: 1.2rem;
+    padding: 0.5rem 0.9rem;
 }
 
 .ia-card-header-result i {
+    font-size: 1.2rem;
     filter: drop-shadow(0 0 4px rgba(var(--bs-success-rgb), 0.5));
 }
 
@@ -356,8 +359,8 @@ export default {
 .ia-result-row {
     display: flex;
     align-items: center;
-    gap: 0.7rem;
-    padding: 0.55rem 0.75rem;
+    gap: 0.5rem;
+    padding: 0.45rem 0.65rem;
     background: rgba(var(--bs-success-rgb), 0.08);
     border: 1px solid rgba(var(--bs-success-rgb), 0.18);
     border-radius: 10px;
@@ -370,8 +373,8 @@ export default {
 }
 
 .ia-result-icon {
-    width: 1.8rem;
-    height: 1.8rem;
+    width: 2rem;
+    height: 2rem;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -379,38 +382,55 @@ export default {
     border: 1px solid rgba(var(--bs-success-rgb), 0.4);
     border-radius: 999px;
     color: var(--bs-success);
-    font-size: 0.85rem;
+    font-size: 1.2rem;
     flex-shrink: 0;
 }
 
+/* Single-row layout: label on the left, value/unit on the right. */
 .ia-result-text {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
     flex: 1;
     min-width: 0;
 }
 
 .ia-result-text small {
-    color: rgba(var(--bs-light-rgb), 0.7);
-    font-size: 0.7rem;
+    color: rgba(var(--bs-white-rgb), 0.85);
+    font-size: 1.2rem;
     font-weight: 600;
-    letter-spacing: 0.04em;
+    letter-spacing: 0.02em;
     text-transform: uppercase;
-    line-height: 1.1;
-    margin-bottom: 0.1rem;
+    line-height: 1.15;
+    margin: 0;
+    flex: 1 1 auto;
+    min-width: 0;
+    white-space: nowrap;
 }
 
 .ia-result-text :deep(.row) {
-    margin-left: 0 !important;
-    margin-right: 0 !important;
+    margin: 0 !important;
+    flex: 0 0 auto;
+    width: auto !important;
 }
 
-/* Force the numeric value and unit shown by DimensionReadOnly to white. */
+/* Numeric value + unit shown by DimensionReadOnly: 1.2rem to match the
+ * rest of the Coordination Result box. PrimeVue's <Select> renders the
+ * actual unit text inside an inner `.p-select-label`, which Aura sets to
+ * 14px — force inheritance so "mm" / "V" / "µm" track the wrapper. */
 .ia-result-text :deep(.dim-ro-input),
+.ia-result-text :deep(.dim-ro-value),
 .ia-result-text :deep(.dim-ro-unit),
-.ia-result-text :deep(.dim-ro-alt-unit) {
+.ia-result-text :deep(.dim-ro-alt-unit),
+.ia-result-text :deep(.dim-ro-unit .p-select-label),
+.ia-result-text :deep(.dim-ro-alt-unit .p-select-label) {
     color: var(--bs-white) !important;
     background: transparent !important;
+    font-size: 1.2rem !important;
+    line-height: 1.15 !important;
+    font-weight: 600;
 }
 
 .ia-result-error {

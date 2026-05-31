@@ -22,11 +22,11 @@ export default {
         },
         valueFontSize: {
             type: [String, Object],
-            default: 'fs-6'
+            default: ''
         },
         titleFontSize: {
             type: [String, Object],
-            default: 'fs-6'
+            default: ''
         },
         labelBgColor: {
             type: [String, Object],
@@ -157,6 +157,22 @@ export default {
     border-radius: 9px;
     padding: 0.5rem 0.65rem 0.55rem 0.65rem;
     transition: background 0.15s, border-color 0.15s;
+    overflow: hidden;
+}
+.iei-cell :deep(.p-inputgroup),
+.iei-cell :deep(.dwt-group) {
+    width: 100%;
+}
+.iei-cell :deep(.p-inputnumber),
+.iei-cell :deep(.p-inputnumber > input) {
+    min-width: 0;
+    flex: 1 1 auto;
+    width: 100%;
+}
+.iei-cell :deep(.p-select) {
+    flex: 0 0 auto;
+    min-width: 0;
+    max-width: 4.5rem;
 }
 
 .iei-cell:hover {
@@ -171,7 +187,7 @@ export default {
 
 /* Make the label inside each cell read like an uppercase pill caption */
 .iei-cell :deep(.dim-label) {
-    color: rgba(var(--bs-light-rgb), 0.65) !important;
+    color: rgba(var(--bs-white-rgb), 0.65) !important;
     font-size: 0.66rem !important;
     font-weight: 700 !important;
     letter-spacing: 0.05em;

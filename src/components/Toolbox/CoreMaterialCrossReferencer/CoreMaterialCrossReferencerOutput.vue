@@ -111,50 +111,50 @@ export default {
 <template>
     <div class="container">
         <div class="row">
-            <h3 class="col-12 p-0 m-0 ps-3">{{coreMaterial.manufacturerInfo.reference}}</h3>
+            <h3 class="col-12 p-0 m-0 pl-3">{{coreMaterial.manufacturerInfo.reference}}</h3>
         </div>
         <div class="row">
-            <div v-if="coreMaterial.manufacturerInfo != null" class="col-sm-12 col-md-12 text-start pe-0 row">
+            <div v-if="coreMaterial.manufacturerInfo != null" class="col-12 md:col-12 text-start pr-0 row">
                 <div class="col-12 mt-2">
                     <div class="row">
-                        <div class="col-12 fs-5 p-0 m-0 my-1 text-center">Product data</div>
-                        <div v-if="'coreMaterialManufacturerNameTable' in localTexts" class="col-6 p-0 m-0 border ps-2">{{localTexts.coreMaterialManufacturerNameTable.text}}</div>
-                        <div v-if="'coreMaterialManufacturerNameTable' in localTexts" class="col-6 p-0 m-0 border text-end pe-1">{{localTexts.coreMaterialManufacturerNameTable.value}}</div>
-                        <div v-if="'coreMaterialManufacturerReferenceTable' in localTexts" class="col-6 p-0 m-0 border ps-2">{{localTexts.coreMaterialManufacturerReferenceTable.text}}</div>
-                        <div v-if="'coreMaterialManufacturerReferenceTable' in localTexts" class="col-6 p-0 m-0 border text-end pe-1">{{localTexts.coreMaterialManufacturerReferenceTable.value}}</div>
-                        <div v-if="'coreMaterialManufacturerDatasheetTable' in localTexts" class="col-6 p-0 m-0 border ps-2">{{localTexts.coreMaterialManufacturerDatasheetTable.text}}</div>
-                        <a :href="localTexts.coreMaterialManufacturerDatasheetTable.value" target="_blank" rel="noopener noreferrer" v-if="'coreMaterialManufacturerDatasheetTable' in localTexts" class="col-6 p-0 m-0 border text-end pe-1">Link</a>
-                        <div class="col-12 fs-5 p-0 m-0 my-1 text-center">Material Parameters</div>
-                        <div class="col-6 p-0 m-0 border text-center ps-2"></div>
+                        <div class="col-12 text-xl p-0 m-0 my-1 text-center">Product data</div>
+                        <div v-if="'coreMaterialManufacturerNameTable' in localTexts" class="col-6 p-0 m-0 border pl-2">{{localTexts.coreMaterialManufacturerNameTable.text}}</div>
+                        <div v-if="'coreMaterialManufacturerNameTable' in localTexts" class="col-6 p-0 m-0 border text-end pr-1">{{localTexts.coreMaterialManufacturerNameTable.value}}</div>
+                        <div v-if="'coreMaterialManufacturerReferenceTable' in localTexts" class="col-6 p-0 m-0 border pl-2">{{localTexts.coreMaterialManufacturerReferenceTable.text}}</div>
+                        <div v-if="'coreMaterialManufacturerReferenceTable' in localTexts" class="col-6 p-0 m-0 border text-end pr-1">{{localTexts.coreMaterialManufacturerReferenceTable.value}}</div>
+                        <div v-if="'coreMaterialManufacturerDatasheetTable' in localTexts" class="col-6 p-0 m-0 border pl-2">{{localTexts.coreMaterialManufacturerDatasheetTable.text}}</div>
+                        <a :href="localTexts.coreMaterialManufacturerDatasheetTable.value" target="_blank" rel="noopener noreferrer" v-if="'coreMaterialManufacturerDatasheetTable' in localTexts" class="col-6 p-0 m-0 border text-end pr-1">Link</a>
+                        <div class="col-12 text-xl p-0 m-0 my-1 text-center">Material Parameters</div>
+                        <div class="col-6 p-0 m-0 border text-center pl-2"></div>
                         <div :class="getTempDependentGridWidth" class="p-0 m-0 border text-center">25°C</div>
                         <div :class="getTempDependentGridWidth" v-if="temperature != 25 && temperature != 100" class="p-0 m-0 border text-center">{{temperature + '°C'}}</div>
                         <div :class="getTempDependentGridWidth" class="p-0 m-0 border text-center">100°C</div>
-                        <div v-if="'coreMaterialPermeanceTable' in localTexts" class="col-6 p-0 m-0 border ps-2">{{localTexts.coreMaterialPermeanceTable.text}}</div>
-                        <div v-if="'coreMaterialPermeanceTable' in localTexts" :class="getTempDependentGridWidth" class="p-0 m-0 border text-end pe-1">{{localTexts.coreMaterialPermeanceTable.value["25"]}}</div>
-                        <div v-if="'coreMaterialPermeanceTable' in localTexts && temperature != 25 && temperature != 100" :class="getTempDependentGridWidth" class="p-0 m-0 border text-end pe-1">{{localTexts.coreMaterialPermeanceTable.value[temperature]}}</div>
-                        <div v-if="'coreMaterialPermeanceTable' in localTexts" :class="getTempDependentGridWidth" class="p-0 m-0 border text-end pe-1">{{localTexts.coreMaterialPermeanceTable.value["100"]}}</div>
-                        <div v-if="'coreMaterialInitialPermeabilityTable' in localTexts" class="col-6 p-0 m-0 border ps-2">{{localTexts.coreMaterialInitialPermeabilityTable.text}}</div>
-                        <div v-if="'coreMaterialInitialPermeabilityTable' in localTexts" :class="getTempDependentGridWidth" class="p-0 m-0 border text-end pe-1">{{localTexts.coreMaterialInitialPermeabilityTable.value["25"]}}</div>
-                        <div v-if="'coreMaterialInitialPermeabilityTable' in localTexts && temperature != 25 && temperature != 100" :class="getTempDependentGridWidth" class="p-0 m-0 border text-end pe-1">{{localTexts.coreMaterialInitialPermeabilityTable.value[temperature]}}</div>
-                        <div v-if="'coreMaterialInitialPermeabilityTable' in localTexts" :class="getTempDependentGridWidth" class="p-0 m-0 border text-end pe-1">{{localTexts.coreMaterialInitialPermeabilityTable.value["100"]}}</div>
-                        <div v-if="'coreMaterialResistivityTable' in localTexts" class="col-6 p-0 m-0 border ps-2">{{localTexts.coreMaterialResistivityTable.text}}</div>
-                        <div v-if="'coreMaterialResistivityTable' in localTexts" :class="getTempDependentGridWidth" class="p-0 m-0 border text-end pe-1">{{localTexts.coreMaterialResistivityTable.value["25"]}}</div>
-                        <div v-if="'coreMaterialResistivityTable' in localTexts && temperature != 25 && temperature != 100" :class="getTempDependentGridWidth" class="p-0 m-0 border text-end pe-1">{{localTexts.coreMaterialResistivityTable.value[temperature]}}</div>
-                        <div v-if="'coreMaterialResistivityTable' in localTexts" :class="getTempDependentGridWidth" class="p-0 m-0 border text-end pe-1">{{localTexts.coreMaterialResistivityTable.value["100"]}}</div>
-                        <div v-if="'coreMaterialRemanenceTable' in localTexts" class="col-6 p-0 m-0 border ps-2">{{localTexts.coreMaterialRemanenceTable.text}}</div>
-                        <div v-if="'coreMaterialRemanenceTable' in localTexts" :class="getTempDependentGridWidth" class="p-0 m-0 border text-end pe-1">{{localTexts.coreMaterialRemanenceTable.value["25"]}}</div>
-                        <div v-if="'coreMaterialRemanenceTable' in localTexts && temperature != 25 && temperature != 100" :class="getTempDependentGridWidth" class="p-0 m-0 border text-end pe-1">{{localTexts.coreMaterialRemanenceTable.value[temperature]}}</div>
-                        <div v-if="'coreMaterialRemanenceTable' in localTexts" :class="getTempDependentGridWidth" class="p-0 m-0 border text-end pe-1">{{localTexts.coreMaterialRemanenceTable.value["100"]}}</div>
-                        <div v-if="'coreMaterialCoerciveForceTable' in localTexts" class="col-6 p-0 m-0 border ps-2">{{localTexts.coreMaterialCoerciveForceTable.text}}</div>
-                        <div v-if="'coreMaterialCoerciveForceTable' in localTexts" :class="getTempDependentGridWidth" class="p-0 m-0 border text-end pe-1">{{localTexts.coreMaterialCoerciveForceTable.value["25"]}}</div>
-                        <div v-if="'coreMaterialCoerciveForceTable' in localTexts && temperature != 25 && temperature != 100" :class="getTempDependentGridWidth" class="p-0 m-0 border text-end pe-1">{{localTexts.coreMaterialCoerciveForceTable.value[temperature]}}</div>
-                        <div v-if="'coreMaterialCoerciveForceTable' in localTexts" :class="getTempDependentGridWidth" class="p-0 m-0 border text-end pe-1">{{localTexts.coreMaterialCoerciveForceTable.value["100"]}}</div>
-                        <div v-if="'magneticFluxDensitySaturationTable' in localTexts" class="col-6 p-0 m-0 border ps-2">{{localTexts.magneticFluxDensitySaturationTable.text}}</div>
-                        <div v-if="'magneticFluxDensitySaturationTable' in localTexts" :class="getTempDependentGridWidth" class="p-0 m-0 border text-end pe-1">{{localTexts.magneticFluxDensitySaturationTable.value["25"]}}</div>
-                        <div v-if="'magneticFluxDensitySaturationTable' in localTexts && temperature != 25 && temperature != 100" :class="getTempDependentGridWidth" class="p-0 m-0 border text-end pe-1">{{localTexts.magneticFluxDensitySaturationTable.value[temperature]}}</div>
-                        <div v-if="'magneticFluxDensitySaturationTable' in localTexts" :class="getTempDependentGridWidth" class="p-0 m-0 border text-end pe-1">{{localTexts.magneticFluxDensitySaturationTable.value["100"]}}</div>
-                        <div v-if="'coreMaterialCurieTemperatureTable' in localTexts" class="col-6 p-0 m-0 border ps-2">{{localTexts.coreMaterialCurieTemperatureTable.text}}</div>
-                        <div v-if="'coreMaterialCurieTemperatureTable' in localTexts" class="col-6 p-0 m-0 border text-end pe-1">{{localTexts.coreMaterialCurieTemperatureTable.value}}</div>
+                        <div v-if="'coreMaterialPermeanceTable' in localTexts" class="col-6 p-0 m-0 border pl-2">{{localTexts.coreMaterialPermeanceTable.text}}</div>
+                        <div v-if="'coreMaterialPermeanceTable' in localTexts" :class="getTempDependentGridWidth" class="p-0 m-0 border text-end pr-1">{{localTexts.coreMaterialPermeanceTable.value["25"]}}</div>
+                        <div v-if="'coreMaterialPermeanceTable' in localTexts && temperature != 25 && temperature != 100" :class="getTempDependentGridWidth" class="p-0 m-0 border text-end pr-1">{{localTexts.coreMaterialPermeanceTable.value[temperature]}}</div>
+                        <div v-if="'coreMaterialPermeanceTable' in localTexts" :class="getTempDependentGridWidth" class="p-0 m-0 border text-end pr-1">{{localTexts.coreMaterialPermeanceTable.value["100"]}}</div>
+                        <div v-if="'coreMaterialInitialPermeabilityTable' in localTexts" class="col-6 p-0 m-0 border pl-2">{{localTexts.coreMaterialInitialPermeabilityTable.text}}</div>
+                        <div v-if="'coreMaterialInitialPermeabilityTable' in localTexts" :class="getTempDependentGridWidth" class="p-0 m-0 border text-end pr-1">{{localTexts.coreMaterialInitialPermeabilityTable.value["25"]}}</div>
+                        <div v-if="'coreMaterialInitialPermeabilityTable' in localTexts && temperature != 25 && temperature != 100" :class="getTempDependentGridWidth" class="p-0 m-0 border text-end pr-1">{{localTexts.coreMaterialInitialPermeabilityTable.value[temperature]}}</div>
+                        <div v-if="'coreMaterialInitialPermeabilityTable' in localTexts" :class="getTempDependentGridWidth" class="p-0 m-0 border text-end pr-1">{{localTexts.coreMaterialInitialPermeabilityTable.value["100"]}}</div>
+                        <div v-if="'coreMaterialResistivityTable' in localTexts" class="col-6 p-0 m-0 border pl-2">{{localTexts.coreMaterialResistivityTable.text}}</div>
+                        <div v-if="'coreMaterialResistivityTable' in localTexts" :class="getTempDependentGridWidth" class="p-0 m-0 border text-end pr-1">{{localTexts.coreMaterialResistivityTable.value["25"]}}</div>
+                        <div v-if="'coreMaterialResistivityTable' in localTexts && temperature != 25 && temperature != 100" :class="getTempDependentGridWidth" class="p-0 m-0 border text-end pr-1">{{localTexts.coreMaterialResistivityTable.value[temperature]}}</div>
+                        <div v-if="'coreMaterialResistivityTable' in localTexts" :class="getTempDependentGridWidth" class="p-0 m-0 border text-end pr-1">{{localTexts.coreMaterialResistivityTable.value["100"]}}</div>
+                        <div v-if="'coreMaterialRemanenceTable' in localTexts" class="col-6 p-0 m-0 border pl-2">{{localTexts.coreMaterialRemanenceTable.text}}</div>
+                        <div v-if="'coreMaterialRemanenceTable' in localTexts" :class="getTempDependentGridWidth" class="p-0 m-0 border text-end pr-1">{{localTexts.coreMaterialRemanenceTable.value["25"]}}</div>
+                        <div v-if="'coreMaterialRemanenceTable' in localTexts && temperature != 25 && temperature != 100" :class="getTempDependentGridWidth" class="p-0 m-0 border text-end pr-1">{{localTexts.coreMaterialRemanenceTable.value[temperature]}}</div>
+                        <div v-if="'coreMaterialRemanenceTable' in localTexts" :class="getTempDependentGridWidth" class="p-0 m-0 border text-end pr-1">{{localTexts.coreMaterialRemanenceTable.value["100"]}}</div>
+                        <div v-if="'coreMaterialCoerciveForceTable' in localTexts" class="col-6 p-0 m-0 border pl-2">{{localTexts.coreMaterialCoerciveForceTable.text}}</div>
+                        <div v-if="'coreMaterialCoerciveForceTable' in localTexts" :class="getTempDependentGridWidth" class="p-0 m-0 border text-end pr-1">{{localTexts.coreMaterialCoerciveForceTable.value["25"]}}</div>
+                        <div v-if="'coreMaterialCoerciveForceTable' in localTexts && temperature != 25 && temperature != 100" :class="getTempDependentGridWidth" class="p-0 m-0 border text-end pr-1">{{localTexts.coreMaterialCoerciveForceTable.value[temperature]}}</div>
+                        <div v-if="'coreMaterialCoerciveForceTable' in localTexts" :class="getTempDependentGridWidth" class="p-0 m-0 border text-end pr-1">{{localTexts.coreMaterialCoerciveForceTable.value["100"]}}</div>
+                        <div v-if="'magneticFluxDensitySaturationTable' in localTexts" class="col-6 p-0 m-0 border pl-2">{{localTexts.magneticFluxDensitySaturationTable.text}}</div>
+                        <div v-if="'magneticFluxDensitySaturationTable' in localTexts" :class="getTempDependentGridWidth" class="p-0 m-0 border text-end pr-1">{{localTexts.magneticFluxDensitySaturationTable.value["25"]}}</div>
+                        <div v-if="'magneticFluxDensitySaturationTable' in localTexts && temperature != 25 && temperature != 100" :class="getTempDependentGridWidth" class="p-0 m-0 border text-end pr-1">{{localTexts.magneticFluxDensitySaturationTable.value[temperature]}}</div>
+                        <div v-if="'magneticFluxDensitySaturationTable' in localTexts" :class="getTempDependentGridWidth" class="p-0 m-0 border text-end pr-1">{{localTexts.magneticFluxDensitySaturationTable.value["100"]}}</div>
+                        <div v-if="'coreMaterialCurieTemperatureTable' in localTexts" class="col-6 p-0 m-0 border pl-2">{{localTexts.coreMaterialCurieTemperatureTable.text}}</div>
+                        <div v-if="'coreMaterialCurieTemperatureTable' in localTexts" class="col-6 p-0 m-0 border text-end pr-1">{{localTexts.coreMaterialCurieTemperatureTable.value}}</div>
                     </div>
                 </div>
             </div>

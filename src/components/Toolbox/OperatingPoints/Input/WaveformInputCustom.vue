@@ -71,10 +71,10 @@ export default {
 </script>
 
 <template>
-    <div class="container-flex text-white mt-2 mb-3 pb-3 border-bottom">
-        <!-- <label class="fs-4 row" :class="titleColor(signalDescriptor)">Waveform for {{signalDescriptor}}</label> -->
+    <div class="container-flex text-white mt-2 mb-3 pb-3">
+        <!-- <label class="text-2xl row" :class="titleColor(signalDescriptor)">Waveform for {{signalDescriptor}}</label> -->
         <div></div>
-        <ElementFromList class="border-bottom pb-2 mb-1"
+        <ElementFromList class="pb-2 mb-1"
             v-if="modelValue[signalDescriptor] != null"
             :name="'label'"
             :dataTestLabel="dataTestLabel + '-Label'"
@@ -106,22 +106,24 @@ export default {
             </template>
             <button
                 v-if="Object.keys(modelValue[signalDescriptor].waveform.data).length > 3"
-                class="btn btn-outline-secondary col-12 mt-1 py-0"
+                class="wic-add-btn col-12 mt-1 py-0"
                 style="font-size: 0.75em;"
                 @click="showAllPoints = !showAllPoints">
-                <i :class="showAllPoints ? 'bi bi-chevron-up' : 'bi bi-chevron-down'"></i>
+                <i :class="showAllPoints ? 'pi pi-chevron-up' : 'pi pi-chevron-down'"></i>
                 {{ showAllPoints ? 'Show less' : `Show ${Object.keys(modelValue[signalDescriptor].waveform.data).length - 3} more points` }}
             </button>
         </div>
         <button
             v-if="induceableSignal"
-            :style="combinedStyle([$styleStore.operatingPoints.inputFontSize, signalDescriptor == 'current'? $styleStore.operatingPoints.currentBgColor : signalDescriptor == 'voltage'? $styleStore.operatingPoints.voltageBgColor : $styleStore.operatingPoints.commonParameterBgColor])"
-            class="btn offset-2 col-8 mt-2 p-0"
-            @click="$emit('induce')"
-            style="max-height: 1.7em">
+            :style="[
+                combinedStyle([$styleStore.operatingPoints.inputFontSize, signalDescriptor == 'current'? $styleStore.operatingPoints.currentBgColor : signalDescriptor == 'voltage'? $styleStore.operatingPoints.voltageBgColor : $styleStore.operatingPoints.commonParameterBgColor]),
+                { color: signalDescriptor == 'current' ? 'var(--bs-dark)' : 'var(--bs-white)', fontWeight: 600, maxHeight: '1.7em' }
+            ]"
+            class="wic-induce-btn col-offset-2 col-8 mt-2"
+            @click="$emit('induce')">
             {{'Induce from ' + (signalDescriptor == 'current'? 'voltage' : 'current')}}
-            <i class="bi bi-lightning-fill"></i>
-            <i class="bi bi-magnet-fill"></i>
+            <i class="pi pi-bolt"></i>
+            <i class="pi pi-cog"></i>
         </button>
     </div>
 </template>

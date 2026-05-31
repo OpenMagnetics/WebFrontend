@@ -161,7 +161,7 @@ export default {
 <template>
     <div class="op-detail-panel">
         <div class="op-detail-header">
-            <i class="bi bi-soundwave"></i>
+            <i class="pi pi-volume-up"></i>
             <span>Operating Point</span>
         </div>
         <div class="op-detail-body">
@@ -213,7 +213,7 @@ export default {
                         @click="onCircuitSimulatorTypeSelected"
                         class="op-mode-btn"
                     >
-                        <i class="bi bi-file-earmark-arrow-down"></i>
+                        <i class="pi pi-file-import"></i>
                         <span>Circuit simulator export file or CSV</span>
                     </button>
                     <button
@@ -223,7 +223,7 @@ export default {
                         @click="onManualTypeSelected"
                         class="op-mode-btn"
                     >
-                        <i class="bi bi-pencil-square"></i>
+                        <i class="pi pi-pencil"></i>
                         <span>I will define it manually</span>
                     </button>
                     <button
@@ -233,7 +233,7 @@ export default {
                         @click="onHarmoncsTypeSelected"
                         class="op-mode-btn"
                     >
-                        <i class="bi bi-graph-up-arrow"></i>
+                        <i class="pi pi-chart-line"></i>
                         <span>I want to introduce a list of harmonics</span>
                     </button>
                 </div>
@@ -306,7 +306,7 @@ export default {
 }
 
 .op-mode-prompt {
-    color: var(--bs-light);
+    color: var(--bs-white);
     font-size: 0.95rem;
     font-weight: 500;
     text-align: center;

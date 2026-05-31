@@ -121,7 +121,7 @@ export default {
             var children = [index]
 
             if (this.storyline[index].nextTool != null) {
-                btn_class += "col-9 col-sm-9 col-md-12"
+                btn_class += "col-9 col-9 md:col-12"
             }
             else {
                 btn_class += "col-12"
@@ -149,7 +149,7 @@ export default {
     <div class="storyline-panel">
         <div class="storyline-header">
             <div class="storyline-header-left">
-                <i class="bi bi-signpost"></i>
+                <i class="pi pi-directions"></i>
                 <span>Steps</span>
             </div>
         </div>
@@ -197,12 +197,12 @@ export default {
 <style scoped>
 .storyline-panel {
     background: rgba(var(--bs-dark-rgb), 0.55);
-    border: 1px solid rgba(var(--bs-light-rgb), 0.08);
+    border: 1px solid rgba(var(--bs-white-rgb), 0.08);
     border-left: 3px solid rgba(var(--bs-primary-rgb), 0.8);
     border-radius: 14px;
     padding: 0;
     margin: 0.15rem 0 0.5rem 0;
-    box-shadow: 0 6px 24px rgba(var(--bs-dark-rgb), 0.45), inset 0 1px 0 rgba(var(--bs-light-rgb), 0.04);
+    box-shadow: 0 6px 24px rgba(var(--bs-dark-rgb), 0.45), inset 0 1px 0 rgba(var(--bs-white-rgb), 0.04);
     overflow: hidden;
 }
 

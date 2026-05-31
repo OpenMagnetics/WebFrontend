@@ -111,7 +111,7 @@ export default {
         </div>
         <div class="row">
 
-            <Dimension class="border-bottom border-1 py-2 col-12"
+            <Dimension class="py-2 col-12"
                 :name="'frequency'"
                 :unit="'Hz'"
                 :dataTestLabel="dataTestLabel + '-Frequency'"
@@ -121,8 +121,8 @@ export default {
                 :forceUpdate="forceUpdateFrequency"
                 v-model="localData"
                 @update="frequencyChanged"
-                :labelWidthProportionClass="'col-sm-12 col-md-7'"
-                :valueWidthProportionClass="'col-sm-12 col-md-5'"
+                :labelWidthProportionClass="'col-12 md:col-7'"
+                :valueWidthProportionClass="'col-12 md:col-5'"
                 :valueFontSize="$styleStore.operatingPoints.inputFontSize"
                 :labelFontSize="$styleStore.operatingPoints.inputTitleFontSize"
                 :labelBgColor="$styleStore.operatingPoints.inputLabelBgColor"
@@ -143,8 +143,8 @@ export default {
                 :forceUpdate="forceUpdateDutyCycle"
                 v-model="localData"
                 @update="dutyCycleChanged"
-                :labelWidthProportionClass="'col-sm-12 col-md-7'"
-                :valueWidthProportionClass="'col-sm-12 col-md-5'"
+                :labelWidthProportionClass="'col-12 md:col-7'"
+                :valueWidthProportionClass="'col-12 md:col-5'"
                 :valueFontSize="$styleStore.operatingPoints.inputFontSize"
                 :labelFontSize="$styleStore.operatingPoints.inputTitleFontSize"
                 :labelBgColor="$styleStore.operatingPoints.inputLabelBgColor"

@@ -228,24 +228,24 @@ export default {
 <template>
     <div class="container">
         <div class="row">
-            <h1 class="col-lg-12 text-center text-white">
+            <h1 class="lg:col-12 text-center text-white">
                 Fair-Rite Core Material Cross Referencer
             </h1>
         </div>
-        <h6 class="col-lg-12 text-center text-white">Powered by OpenMagnetics</h6>
+        <h6 class="lg:col-12 text-center text-white">Powered by OpenMagnetics</h6>
         <div class="row">
-            <div class="col-lg-3 text-center text-white bg-dark m-0 p-0">
-                <label class="rounded-2 fs-5 col-12 mb-1 text-success"> 1<sup>st</sup> Step: What is your Current Core Material?</label>
+            <div class="lg:col-3 text-center text-white bg-dark m-0 p-0">
+                <label class="rounded-2 text-xl col-12 mb-1 text-success"> 1<sup>st</sup> Step: What is your Current Core Material?</label>
             </div>
-            <div class="col-lg-6 text-center text-white m-0 p-0">
-                <label class="rounded-2 fs-5 col-12 mb-1 text-success"> 2<sup>nd</sup> Step: Select an Alternative</label>
+            <div class="lg:col-6 text-center text-white m-0 p-0">
+                <label class="rounded-2 text-xl col-12 mb-1 text-success"> 2<sup>nd</sup> Step: Select an Alternative</label>
             </div>
-            <div class="col-lg-3 text-center text-white m-0 p-0">
-                <label class="rounded-2 fs-5 col-12 mb-1 text-success"> 3<sup>rd</sup> Step: Analyze your Alternative</label>
+            <div class="lg:col-3 text-center text-white m-0 p-0">
+                <label class="rounded-2 text-xl col-12 mb-1 text-success"> 3<sup>rd</sup> Step: Analyze your Alternative</label>
             </div>
         </div>
         <div class="row">
-            <div class="col-lg-3 text-center text-white bg-dark p-3">
+            <div class="lg:col-3 text-center text-white bg-dark p-3">
                 <CoreMaterialCrossReferencerInputs 
                 @inputsUpdated="inputsUpdated"
                 :hasError="hasError"
@@ -254,17 +254,17 @@ export default {
                 <label :data-cy="dataTestLabel + '-ErrorMessage'" class="text-danger m-0" style="font-size: 0.9em"> {{errorMessage}}</label>
                 <div class="container">
                     <div class="row">
-                        <button :disabled="loading" :data-cy="dataTestLabel + '-changeTool'" @click="onCoreCrossReferencer" class="btn btn-secondary mb-2">I want to cross-reference the full core instead</button>
+                        <button :disabled="loading" :data-cy="dataTestLabel + '-changeTool'" @click="onCoreCrossReferencer" class="p-button p-button-secondary mb-2">I want to cross-reference the full core instead</button>
                     </div>
                 </div>
                 <div class="container">
                     <div class="row">
-                        <button :disabled="loading" :data-cy="dataTestLabel + '-changeTool'" @click="onCoreShapeCrossReferencer" class="btn btn-secondary">I want to cross-reference just the shape instead, keeping the material constant</button>
+                        <button :disabled="loading" :data-cy="dataTestLabel + '-changeTool'" @click="onCoreShapeCrossReferencer" class="p-button p-button-secondary">I want to cross-reference just the shape instead, keeping the material constant</button>
                     </div>
                 </div>
 
             </div>
-            <div class="col-lg-6 text-center text-white">
+            <div class="lg:col-6 text-center text-white">
                 <div class="row" v-if="hideOutputs" >
                     <img data-cy="CoreAdviser-loading" class="mx-auto d-block col-12" alt="loading" style="width: 50%; height: auto;" :src="loadingGif">
                 </div>
@@ -315,7 +315,7 @@ export default {
 
                 </div>
             </div>
-            <div v-if="!hideOutputs" class="col-lg-3 text-center text-white" style="height: 45vh">
+            <div v-if="!hideOutputs" class="lg:col-3 text-center text-white" style="height: 45vh">
                 <CoreMaterialCrossReferencerOutput
                     v-if="crossReferencerStore.selectedCoreMaterialIndex != -1"
                     :dataTestLabel="`${dataTestLabel}-CoreMaterialCrossReferencerFinalizer`"
@@ -327,7 +327,7 @@ export default {
                     Select a core material to view details, either by clicking on the graph point or in the name in the table
                 </h2>
             </div>
-            <div v-else class="col-lg-3">
+            <div v-else class="lg:col-3">
                 <img data-cy="CoreAdviser-loading" class="mx-auto d-block col-12" alt="loading" style="width: 50%; height: auto;" :src="loadingGif">
             </div>
         </div>

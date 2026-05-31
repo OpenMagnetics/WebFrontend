@@ -67,7 +67,7 @@ export default {
 </script>
 
 <template>
-    <div class="col-lg-12 container">
+    <div class="lg:col-12 container">
         <div class="row">
             <DataTable
                 ref="CoreCrossReferencerTable"
@@ -91,7 +91,7 @@ export default {
                 <template #column-0="props">
                     <button
                         type="button"
-                        class="btn btn-outline-primary border-0"
+                        class="p-button p-button-outlined p-button-primary border-0"
                         @click="click(props.rowData.originalIndex)"
                     >{{ props.cellData }}</button>
                 </template>

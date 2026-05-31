@@ -97,30 +97,30 @@ export default {
                 :valueBgColor="$styleStore.operatingPoints.inputValueBgColor"
                 :textColor="$styleStore.operatingPoints.inputTextColor"
             />
-            <div class="col-md-2 col-12 p-0 m-0 ps-2 harmonic-btn-group">
+            <div class="col-12 md:col-2 p-0 m-0 pl-2 harmonic-btn-group">
                 <button
                     :data-cy="dataTestLabel + '-add-point-below-button'"
                     type="button"
-                    class="btn btn-default btn-circle"
+                    class="wih-circle-btn"
                     @click="$emit('onAddPointBelow')"
                 >
                     <i
                         :style="combinedStyle([$styleStore.operatingPoints.addElementButtonColor])"
                         :class="combinedClass([$styleStore.operatingPoints.addElementButtonColor])"
-                        class="bi bi-plus-circle-fill text-secondary"
+                        class="pi pi-plus-circle-fill text-secondary"
                     ></i>
                 </button>
                 <button
                     :data-cy="dataTestLabel + '-remove-point-button'"
                     v-if="!block"
                     type="button"
-                    class="btn btn-default btn-circle"
+                    class="wih-circle-btn"
                     @click="$emit('onRemovePoint')"
                 >
                     <i
                         :style="combinedStyle([$styleStore.operatingPoints.addElementButtonColor])"
                         :class="combinedClass([$styleStore.operatingPoints.addElementButtonColor])"
-                        class="bi bi-dash-circle-fill text-danger"
+                        class="pi pi-minus-circle text-danger"
                     ></i>
                 </button>
             </div>
@@ -142,7 +142,7 @@ export default {
     flex-shrink: 0;
 }
 
-.harmonic-btn-group .btn {
+.harmonic-btn-group .wih-circle-btn {
     padding: 0;
     line-height: 1;
     flex-shrink: 0;

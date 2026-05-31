@@ -90,7 +90,7 @@ export default {
         </div>
         <div class="row">
 
-            <ElementFromList class="border-bottom border-1 pb-2 mb-1 col-12"
+            <ElementFromList class="pb-2 mb-1 col-12"
                 :name="'label'"
                 :dataTestLabel="dataTestLabel + '-Label'"
                 :options="Object.values(WaveformLabel)"
@@ -99,8 +99,8 @@ export default {
                 :replaceTitle="'Waveform'"
                 v-model="modelValue[signalDescriptor].processed"
                 @update="labelChanged"
-                :labelWidthProportionClass="'col-sm-12 col-md-7'"
-                :valueWidthProportionClass="'col-sm-12 col-md-5'"
+                :labelWidthProportionClass="'col-12 md:col-7'"
+                :valueWidthProportionClass="'col-12 md:col-5'"
                 :valueFontSize="$styleStore.operatingPoints.inputFontSize"
                 :labelFontSize="$styleStore.operatingPoints.inputTitleFontSize"
                 :labelBgColor="$styleStore.operatingPoints.inputLabelBgColor"
@@ -108,7 +108,7 @@ export default {
                 :textColor="$styleStore.operatingPoints.inputTextColor"
             />
 
-            <Dimension class="border-bottom border-1 col-12"
+            <Dimension class="col-12"
                 :name="'peakToPeak'"
                 :unit="signalDescriptor == 'current'? 'A' : 'V'"
                 :unitMin="0.001"
@@ -120,8 +120,8 @@ export default {
                 :forceUpdate="forceUpdate"
                 v-model="modelValue[signalDescriptor].processed"
                 @update="peakToPeakChanged"
-                :labelWidthProportionClass="'col-sm-12 col-md-7'"
-                :valueWidthProportionClass="'col-sm-12 col-md-5'"
+                :labelWidthProportionClass="'col-12 md:col-7'"
+                :valueWidthProportionClass="'col-12 md:col-5'"
                 :valueFontSize="$styleStore.operatingPoints.inputFontSize"
                 :labelFontSize="$styleStore.operatingPoints.inputTitleFontSize"
                 :labelBgColor="$styleStore.operatingPoints.inputLabelBgColor"
@@ -129,7 +129,7 @@ export default {
                 :textColor="$styleStore.operatingPoints.inputTextColor"
             />
 
-            <Dimension class="border-bottom border-1 col-12"
+            <Dimension class="col-12"
                 v-if="!disableOffset"
                 :name="'offset'"
                 :unit="signalDescriptor == 'current'? 'A' : 'V'"
@@ -144,8 +144,8 @@ export default {
                 :forceUpdate="forceUpdate"
                 v-model="modelValue[signalDescriptor].processed"
                 @update="offsetChanged"
-                :labelWidthProportionClass="'col-sm-12 col-md-7'"
-                :valueWidthProportionClass="'col-sm-12 col-md-5'"
+                :labelWidthProportionClass="'col-12 md:col-7'"
+                :valueWidthProportionClass="'col-12 md:col-5'"
                 :valueFontSize="$styleStore.operatingPoints.inputFontSize"
                 :labelFontSize="$styleStore.operatingPoints.inputTitleFontSize"
                 :labelBgColor="$styleStore.operatingPoints.inputLabelBgColor"
@@ -153,16 +153,18 @@ export default {
                 :textColor="$styleStore.operatingPoints.inputTextColor"
             />
             <button
-                :style="combinedStyle([$styleStore.operatingPoints.inputTitleFontSize, signalDescriptor == 'current'? $styleStore.operatingPoints.currentBgColor : signalDescriptor == 'voltage'? $styleStore.operatingPoints.voltageBgColor : $styleStore.operatingPoints.commonParameterBgColor])"
+                :style="[
+                    combinedStyle([$styleStore.operatingPoints.inputTitleFontSize, signalDescriptor == 'current'? $styleStore.operatingPoints.currentBgColor : signalDescriptor == 'voltage'? $styleStore.operatingPoints.voltageBgColor : $styleStore.operatingPoints.commonParameterBgColor]),
+                    { color: signalDescriptor == 'current' ? 'var(--bs-dark)' : 'var(--bs-white)', fontWeight: 600, maxHeight: '1.7em' }
+                ]"
                 v-if="induceableSignal"
                 :data-cy="`${dataTestLabel}-induce-button`"
-                class="btn offset-1 col-10 mt-2 p-0"
+                class="btn col-offset-1 col-10 mt-2 p-0"
                 @click="$emit('induce')"
-                style="max-height: 1.7em"
             >
                 {{'Induce from ' + (signalDescriptor == 'current'? 'voltage' : 'current')}}
-                <i class="bi bi-lightning-fill"></i>
-                <i class="bi bi-magnet-fill"></i>
+                <i class="pi pi-bolt"></i>
+                <i class="pi pi-cog"></i>
             </button>
 
         </div>

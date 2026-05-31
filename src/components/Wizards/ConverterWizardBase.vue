@@ -28,7 +28,7 @@ export default {
     },
     titleIcon: {
       type: String,
-      default: 'bi bi-lightning-fill'
+      default: 'pi pi-bolt'
     },
     /** Optional subtitle/description for the wizard */
     subtitle: {
@@ -1063,7 +1063,7 @@ export default {
 
     <!-- Top-level Error Message (dismissible) -->
     <div v-if="errorMessage" class="alert alert-danger alert-dismissible fade show py-2 mt-3" role="alert" style="font-size: 0.85rem;">
-      <i class="bi bi-exclamation-circle-fill me-2"></i>{{ errorMessage }}
+      <i class="pi pi-exclamation-circle mr-2"></i>{{ errorMessage }}
       <button type="button" class="btn-close btn-close-sm" @click="onDismissError"></button>
     </div>
 
@@ -1075,8 +1075,8 @@ export default {
           <!-- Design Mode (only rendered if the wizard supplies the slot;
                AHB and PSHB intentionally omit it — see WIZARDS_GUIDE §3.5) -->
           <div v-if="$slots['design-mode']" class="compact-card">
-            <div class="compact-header"><i class="bi bi-sliders me-1"></i>Design Mode</div>
-            <div class="compact-body ps-4">
+            <div class="compact-header"><i class="pi pi-sliders-h mr-1"></i>Design Mode</div>
+            <div class="compact-body pl-4">
               <slot name="design-mode">
               </slot>
             </div>
@@ -1086,7 +1086,7 @@ export default {
           <div v-if="$slots['design-or-switch-parameters']" class="compact-card">
             <slot name="design-or-switch-parameters-title">
             </slot>
-            <div class="compact-body ps-4 pe-3">
+            <div class="compact-body pl-4 pr-3">
               <slot name="design-or-switch-parameters">
               </slot>
             </div>
@@ -1094,8 +1094,8 @@ export default {
 
           <!-- Conditions -->
           <div v-if="$slots.conditions" class="compact-card">
-            <div class="compact-header"><i class="bi bi-speedometer2 me-1"></i>Conditions</div>
-            <div class="compact-body ps-4">
+            <div class="compact-header"><i class="pi pi-gauge mr-1"></i>Conditions</div>
+            <div class="compact-body pl-4">
               <slot name="conditions">
               </slot>
           </div>
@@ -1113,7 +1113,7 @@ export default {
 
           <!-- Input Voltage -->
           <div v-if="showInputVoltage" class="compact-card">
-            <div class="compact-header"><i class="bi bi-plug-fill me-1"></i>Input Voltage</div>
+            <div class="compact-header"><i class="pi pi-bolt mr-1"></i>Input Voltage</div>
             <div class="compact-body">
               <slot name="input-voltage">
               </slot>
@@ -1122,8 +1122,8 @@ export default {
 
           <!-- Outputs -->
           <div v-if="$slots.outputs" class="compact-card">
-            <div class="compact-header"><i class="bi bi-box-arrow-right me-1"></i>Outputs</div>
-            <div class="compact-body ps-4 pe-3">
+            <div class="compact-header"><i class="pi pi-box-arrow-right mr-1"></i>Outputs</div>
+            <div class="compact-body pl-4 pr-3">
               <slot name="outputs">
               </slot>
             </div>
@@ -1131,8 +1131,8 @@ export default {
 
           <!-- Diagnostics (optional): topology-specific read-only diagnostic rows. -->
           <div v-if="$slots.diagnostics" class="compact-card">
-            <div class="compact-header"><i class="bi bi-graph-up-arrow me-1"></i>Diagnostics</div>
-            <div class="compact-body ps-4 pe-3">
+            <div class="compact-header"><i class="pi pi-chart-line mr-1"></i>Diagnostics</div>
+            <div class="compact-body pl-4 pr-3">
               <slot name="diagnostics"></slot>
             </div>
           </div>
@@ -1147,7 +1147,7 @@ export default {
           <!-- Waveforms Card -->
           <div class="compact-card simulation-card" :class="'h-100'">
             <div class="compact-header d-flex justify-content-between align-items-center">
-              <span><i class="bi bi-soundwave me-1"></i>Waveforms</span>
+              <span><i class="pi pi-volume-up mr-1"></i>Waveforms</span>
               <div class="d-flex align-items-center gap-2">
                 <!-- Periods Selector -->
                 <div v-if="showPeriodsSelector" class="periods-selector">
@@ -1183,9 +1183,9 @@ export default {
                       title="Get analytical waveforms"
                     >
                       <span v-if="simulatingWaveforms && waveformSource === 'analytical'">
-                        <i class="bi bi-arrow-repeat fa-spin fa-spin"></i>
+                        <i class="pi pi-refresh fa-spin fa-spin"></i>
                       </span>
-                      <span v-else><i class="bi bi-calculator"></i> Analytical</span>
+                      <span v-else><i class="pi pi-calculator"></i> Analytical</span>
                     </button>
                     <button
                       class="sim-btn simulated"
@@ -1194,9 +1194,9 @@ export default {
                       title="Simulate ideal waveforms"
                     >
                       <span v-if="simulatingWaveforms && waveformSource === 'simulation'">
-                        <i class="bi bi-arrow-repeat fa-spin fa-spin"></i>
+                        <i class="pi pi-refresh fa-spin fa-spin"></i>
                       </span>
-                      <span v-else><i class="bi bi-play-fill"></i> Simulated</span>
+                      <span v-else><i class="pi pi-play"></i> Simulated</span>
                     </button>
                     <button
                       v-if="showSpiceCodeButton"
@@ -1206,9 +1206,9 @@ export default {
                       title="Get SPICE netlist for external simulation"
                     >
                       <span v-if="spiceCodeLoading">
-                        <i class="bi bi-arrow-repeat fa-spin fa-spin"></i>
+                        <i class="pi pi-refresh fa-spin fa-spin"></i>
                       </span>
-                      <span v-else><i class="bi bi-file-earmark-code"></i> SPICE</span>
+                      <span v-else><i class="pi pi-file-code"></i> SPICE</span>
                     </button>
                   </slot>
                 </div>
@@ -1216,7 +1216,7 @@ export default {
             </div>
             <div class="compact-body simulation-body">
               <div v-if="waveformError" class="error-text mb-2">
-                <i class="bi bi-exclamation-circle-fill me-1"></i>{{ waveformError }}
+                <i class="pi pi-exclamation-circle mr-1"></i>{{ waveformError }}
               </div>
               <slot name="waveforms">
                 <ConverterWaveformVisualizer
@@ -1243,28 +1243,28 @@ export default {
       <div class="modal-content" :style="{ background: 'rgba(var(--bs-dark-rgb), 0.95)', border: '1px solid ' + primaryColor }">
         <div class="modal-header" :style="{ borderBottom: '1px solid rgba(var(--bs-white-rgb), 0.1)' }">
           <h5 class="modal-title" :style="{ color: primaryColor }">
-            <i class="bi bi-file-earmark-code me-2"></i>SPICE Netlist<span v-if="spiceCodeTopology"> - {{ spiceCodeTopology }}</span>
+            <i class="pi pi-file-code mr-2"></i>SPICE Netlist<span v-if="spiceCodeTopology"> - {{ spiceCodeTopology }}</span>
           </h5>
           <button type="button" class="btn-close btn-close-white" @click="closeSpiceCodeModal"></button>
         </div>
         <div class="modal-body">
           <div style="position: relative;">
             <button 
-              class="btn btn-sm btn-outline-light position-absolute" 
+              class="p-button p-button-sm btn-outline-light position-absolute" 
               style="top: 8px; left: 8px; z-index: 10; padding: 4px 8px; font-size: 0.75rem;"
               @click="copySpiceCodeToClipboard"
               title="Copy to clipboard"
             >
-              <i class="bi bi-copy"></i>
+              <i class="pi pi-copy"></i>
             </button>
             <pre class="p-3 rounded" :style="{ background: 'rgba(var(--bs-black-rgb), 0.5)', color: 'var(--bs-light)', maxHeight: '60vh', overflow: 'auto', fontSize: '0.75rem', fontFamily: 'monospace', border: '1px solid rgba(var(--bs-white-rgb), 0.1)', paddingTop: '40px' }"><code>{{ spiceCode }}</code></pre>
           </div>
         </div>
         <div class="modal-footer" :style="{ borderTop: '1px solid rgba(var(--bs-white-rgb), 0.1)' }">
-          <button class="btn btn-sm" @click="copySpiceCodeToClipboard" :style="{ color: 'var(--bs-white)', borderColor: 'var(--bs-white)', backgroundColor: justCopied ? 'rgba(var(--bs-white-rgb), 0.2)' : 'transparent' }">
-            <i class="bi bi-copy me-1"></i>{{ justCopied ? 'Copied' : 'Copy to Clipboard' }}
+          <button class="p-button p-button-sm" @click="copySpiceCodeToClipboard" :style="{ color: 'var(--bs-white)', borderColor: 'var(--bs-white)', backgroundColor: justCopied ? 'rgba(var(--bs-white-rgb), 0.2)' : 'transparent' }">
+            <i class="pi pi-copy mr-1"></i>{{ justCopied ? 'Copied' : 'Copy to Clipboard' }}
           </button>
-          <button class="btn btn-primary btn-sm" @click="closeSpiceCodeModal">Close</button>
+          <button class="p-button p-button-primary btn-sm" @click="closeSpiceCodeModal">Close</button>
         </div>
       </div>
     </div>

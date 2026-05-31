@@ -1,5 +1,5 @@
-<script setup >
-import { Modal } from "bootstrap";
+<script setup>
+import Dialog from 'primevue/dialog'
 import { useMagneticBuilderSettingsStore } from '/MagneticBuilder/src/stores/magneticBuilderSettings'
 import { useModelSettingsStore } from '/MagneticBuilder/src/stores/modelSettings'
 import { useMasStore } from '/src/stores/mas'
@@ -9,7 +9,8 @@ import ElementFromList from 'WebSharedComponents/DataInput/ElementFromList.vue'
 <script>
 
 export default {
-    emits: ["onSettingsUpdated"],
+    components: { Dialog },
+    emits: ["onSettingsUpdated", "update:visible"],
     props: {
         dataTestLabel: {
             type: String,
@@ -27,6 +28,7 @@ export default {
             type: String,
             default: 'col-5'
         },
+        visible: { type: Boolean, default: false },
     },
     data() {
         const magneticBuilderSettingsStore = useMagneticBuilderSettingsStore();
@@ -83,7 +85,7 @@ export default {
             this.settingsChanged = true;
         },
         onSettingsUpdated(event) {
-            this.$refs.closeSettingsModalRef.click();
+            this.$emit('update:visible', false);
             this.$emit('onSettingsUpdated');
         },
         onModelChanged(modelType, value) {
@@ -168,20 +170,24 @@ export default {
 
 
 <template>
-    <div class="modal fade" :id="modalName" tabindex="-1" aria-labelledby="settingsModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-md modal-dialog-centered settings">
-            <div class="modal-content border-0 shadow-lg settings-modal-bg">
-                <div class="modal-header border-bottom border-secondary px-4 py-3">
-                    <div class="d-flex align-items-center">
-                        <i class="bi bi-gear-fill text-primary me-2 fs-5"></i>
-                        <h5 data-cy="settingsModal-notification-text" class="modal-title text-white mb-0" id="settingsModalLabel">Settings</h5>
-                    </div>
-                    <button ref="closeSettingsModalRef" type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="settingsModalClose"></button>
-                </div>
-                <div class="modal-body px-4 py-3">
+    <Dialog
+        :visible="visible"
+        @update:visible="(v) => $emit('update:visible', v)"
+        :modal="true"
+        :draggable="false"
+        :data-cy="modalName"
+        :style="{ width: 'min(90vw, 720px)' }"
+        :pt="{ root: { class: 'settings' } }">
+        <template #header>
+            <div class="d-flex align-items-center">
+                <i class="pi pi-cog text-primary mr-2 text-xl"></i>
+                <h5 data-cy="settingsModal-notification-text" class="modal-title text-white mb-0">Settings</h5>
+            </div>
+        </template>
+        <div class="modal-body px-4 py-3">
                     <!-- Core Selection Section -->
                     <div class="mb-3">
-                        <h6 class="text-secondary text-uppercase small fw-bold mb-3">Core Selection</h6>
+                        <h6 class="text-secondary text-uppercase small font-bold mb-3">Core Selection</h6>
                         
                         <div class="setting-item d-flex justify-content-between align-items-center py-2 border-bottom border-secondary">
                             <div>
@@ -247,7 +253,7 @@ export default {
 
                     <!-- Core Adviser Section -->
                     <div class="mb-3">
-                        <h6 class="text-secondary text-uppercase small fw-bold mb-3">Core Adviser</h6>
+                        <h6 class="text-secondary text-uppercase small font-bold mb-3">Core Adviser</h6>
 
                         <div class="setting-item d-flex justify-content-between align-items-center py-2" :class="localData.enableTemperatureFilter ? 'border-bottom border-secondary' : ''">
                             <div>
@@ -281,7 +287,7 @@ export default {
 
                     <!-- Display Section -->
                     <div class="mb-3">
-                        <h6 class="text-secondary text-uppercase small fw-bold mb-3">Display</h6>
+                        <h6 class="text-secondary text-uppercase small font-bold mb-3">Display</h6>
                         
                         <div class="setting-item d-flex justify-content-between align-items-center py-2 border-bottom border-secondary">
                             <div>
@@ -363,7 +369,7 @@ export default {
 
                     <!-- Simulation Section -->
                     <div class="mb-2">
-                        <h6 class="text-secondary text-uppercase small fw-bold mb-3">Simulation</h6>
+                        <h6 class="text-secondary text-uppercase small font-bold mb-3">Simulation</h6>
                         
                         <div class="setting-item d-flex justify-content-between align-items-center py-2 border-bottom border-secondary">
                             <div>
@@ -399,7 +405,7 @@ export default {
 
                     <!-- Simulation Models Section -->
                     <div class="mb-2" v-if="modelSettingsStore.isInitialized">
-                        <h6 class="text-secondary text-uppercase small fw-bold mb-3">Simulation Models</h6>
+                        <h6 class="text-secondary text-uppercase small font-bold mb-3">Simulation Models</h6>
                         
                         <!-- Magnetic Field Strength Model -->
                         <div class="setting-item py-2 border-bottom border-secondary">
@@ -548,7 +554,7 @@ export default {
                             <label class="text-white mb-1 d-block small">Field Plot Resolution</label>
                             <div class="d-flex justify-content-between align-items-center mb-1">
                                 <small class="text-muted">Horizontal (X)</small>
-                                <span class="text-primary fw-bold small">{{ modelSettingsStore.painterNumberPointsX }}</span>
+                                <span class="text-primary font-bold small">{{ modelSettingsStore.painterNumberPointsX }}</span>
                             </div>
                             <input
                                 type="range"
@@ -560,7 +566,7 @@ export default {
                             >
                             <div class="d-flex justify-content-between align-items-center mb-1">
                                 <small class="text-muted">Vertical (Y)</small>
-                                <span class="text-primary fw-bold small">{{ modelSettingsStore.painterNumberPointsY }}</span>
+                                <span class="text-primary font-bold small">{{ modelSettingsStore.painterNumberPointsY }}</span>
                             </div>
                             <input
                                 type="range"
@@ -576,7 +582,7 @@ export default {
 
                     <!-- Developer Section -->
                     <div class="mb-2">
-                        <h6 class="text-secondary text-uppercase small fw-bold mb-3">Developer</h6>
+                        <h6 class="text-secondary text-uppercase small font-bold mb-3">Developer</h6>
 
                         <div class="setting-item d-flex justify-content-between align-items-center py-2">
                             <div>
@@ -595,26 +601,23 @@ export default {
                         </div>
                     </div>
                 </div>
-                <div class="modal-footer border-top border-secondary px-4 py-3">
-                    <button
-                        data-cy="Settings-Modal-reset-defaults-button"
-                        class="btn btn-outline-secondary px-4 me-2"
-                        @click="resetToDefaults"
-                    >
-                        Reset to Defaults
-                    </button>
-                    <button
-                        data-cy="Settings-Modal-update-settings-button"
-                        class="btn btn-primary px-4"
-                        data-bs-dismiss="modal"
-                        @click="onSettingsUpdated"
-                    >
-                        Done
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
+        <template #footer>
+            <button
+                data-cy="Settings-Modal-reset-defaults-button"
+                class="p-button p-button-outlined p-button-secondary px-4 mr-2"
+                @click="resetToDefaults"
+            >
+                Reset to Defaults
+            </button>
+            <button
+                data-cy="Settings-Modal-update-settings-button"
+                class="p-button p-button-primary px-4"
+                @click="onSettingsUpdated"
+            >
+                Done
+            </button>
+        </template>
+    </Dialog>
 </template>
 
 <style scoped>

@@ -26,5 +26,5 @@ $grid-breakpoints: (
 );
 
 
-@import "bootstrap/scss/bootstrap";
+@import "./bootstrap-shim.scss";
 

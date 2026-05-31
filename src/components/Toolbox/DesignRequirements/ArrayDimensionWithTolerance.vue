@@ -59,11 +59,11 @@ export default {
         },
         valueFontSize: {
             type: [String, Object],
-            default: 'fs-6'
+            default: ''
         },
         titleFontSize: {
             type: [String, Object],
-            default: 'fs-6'
+            default: ''
         },
         removeButtonBgColor: {
             type: String,
@@ -149,18 +149,18 @@ export default {
 
 
 <template>
-    <div class="container-flex border-bottom">
-        <div class="row">
+    <div class="container-flex border-bottom-1 border-solid border-300">
+        <div class="grid">
             <label
                 :style="combinedStyle([titleFontSize, labelBgColor, textColor])"
                 :data-cy="dataTestLabel + '-title'"
-                class="rounded-2 ms-3"
-                :class="combinedClass([maximumNumberElements != null? 'col-sm-6 col-md-3' : 'col-12', titleFontSize, labelBgColor, textColor])"
+                class="rounded-2 ml-3"
+                :class="combinedClass([maximumNumberElements != null? 'col-6 md:col-3' : 'col-12', titleFontSize, labelBgColor, textColor])"
             >
                 {{toTitleCase(name)}}
             </label>
         </div>
-        <div :data-cy="dataTestLabel + '-' + requirementIndex + '-container'" class="row" v-for="(requirement, requirementIndex) in masStore.mas.inputs.designRequirements[name]" :key="requirementIndex">
+        <div :data-cy="dataTestLabel + '-' + requirementIndex + '-container'" class="grid" v-for="(requirement, requirementIndex) in masStore.mas.inputs.designRequirements[name]" :key="requirementIndex">
             <DimensionWithTolerance
                 :dataTestLabel="dataTestLabel + '-' + requirementIndex" 
                 :allowNegative="allowNegative"
@@ -183,11 +183,11 @@ export default {
                 :valueBgColor="valueBgColor"
                 :textColor="textColor"
                 :unitExtraStyleClass="unitExtraStyleClass"
-                class="offset-1 col-11 ps-5"
+                class="col-12 array-dwt-row"
             />            
         </div>
-        <div class="row">
-            <label class="text-danger text-center col-12 pt-1" style="font-size: 0.9em; white-space: pre-wrap;">{{errorMessages}}</label>
+        <div class="grid">
+            <label class="text-red-500 text-center col-12 pt-1" style="font-size: 0.9em; white-space: pre-wrap;">{{errorMessages}}</label>
         </div>
     </div>
 </template>

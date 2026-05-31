@@ -1,0 +1,659 @@
+/* ============================================================================
+ * Bootstrap-shim
+ * Standalone replacement for the Bootstrap 5 CSS classes still used in templates
+ * across WebFrontend / MagneticBuilder. Bootstrap (the npm package + JS) was
+ * removed; this file provides the minimum CSS surface those templates depend on
+ * (--bs-* tokens, btn, form-*, navbar, dropdown, modal/offcanvas body styles,
+ * bg-*, text-*, border-*, alert, spinner, container).
+ * Layout utilities (col-N, row/grid, d-flex, m-/p-/mx-/my-, justify-content,
+ * align-items, flex, text-start/end/center, w-/h-) come from PrimeFlex.
+ * ========================================================================== */
+
+:root {
+    --bs-primary:      #539796;
+    --bs-secondary:    #005f48;
+    --bs-info:         #b18aea;
+    --bs-success:      #00b6ff;
+    --bs-warning:      #ffb94e;
+    --bs-danger:       #ff8800;
+    --bs-dark:         #1a1a1a;
+    --bs-light:        #2a2a2a;
+    --bs-white:        #d4d4d4;
+    --bs-black:        #000;
+    --bs-gray-100:     #f8f9fa;
+    --bs-gray-200:     #e9ecef;
+    --bs-gray-300:     #dee2e6;
+    --bs-gray-400:     #ced4da;
+    --bs-gray-500:     #adb5bd;
+    --bs-gray-600:     #6c757d;
+    --bs-gray-700:     #495057;
+    --bs-gray-800:     #343a40;
+    --bs-gray-900:     #212529;
+
+    --bs-primary-rgb:   83, 151, 150;
+    --bs-secondary-rgb: 0, 95, 72;
+    --bs-info-rgb:      177, 138, 234;
+    --bs-success-rgb:   0, 182, 255;
+    --bs-warning-rgb:   255, 185, 78;
+    --bs-danger-rgb:    255, 136, 0;
+    --bs-dark-rgb:      26, 26, 26;
+    --bs-light-rgb:     42, 42, 42;
+    --bs-white-rgb:     212, 212, 212;
+    --bs-black-rgb:     0, 0, 0;
+
+    --bs-border-radius: 0.375rem;
+    --bs-border-radius-sm: 0.25rem;
+    --bs-border-radius-lg: 0.5rem;
+
+    --bs-body-font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans", "Liberation Sans", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+    --bs-body-font-size: 1rem;
+    --bs-body-font-weight: 400;
+    --bs-body-line-height: 1.5;
+    --bs-body-color: var(--bs-white);
+    --bs-body-bg: var(--bs-dark);
+}
+
+html, body {
+    font-family: var(--bs-body-font-family);
+    font-size: var(--bs-body-font-size);
+    font-weight: var(--bs-body-font-weight);
+    line-height: var(--bs-body-line-height);
+    color: var(--bs-body-color);
+}
+
+/* Bootstrap default heading sizes (h1 2.5rem .. h6 1rem) */
+h1, .h1 { font-size: 2.5rem;  font-weight: 500; line-height: 1.2; margin: 0 0 0.5rem; }
+h2, .h2 { font-size: 2rem;    font-weight: 500; line-height: 1.2; margin: 0 0 0.5rem; }
+h3, .h3 { font-size: 1.75rem; font-weight: 500; line-height: 1.2; margin: 0 0 0.5rem; }
+h4, .h4 { font-size: 1.5rem;  font-weight: 500; line-height: 1.2; margin: 0 0 0.5rem; }
+h5, .h5 { font-size: 1.25rem; font-weight: 500; line-height: 1.2; margin: 0 0 0.5rem; }
+h6, .h6 { font-size: 1rem;    font-weight: 500; line-height: 1.2; margin: 0 0 0.5rem; }
+@media (max-width: 1199.98px) {
+    h1, .h1 { font-size: calc(1.375rem + 1.5vw); }
+    h2, .h2 { font-size: calc(1.325rem + 0.9vw); }
+    h3, .h3 { font-size: calc(1.3rem + 0.6vw); }
+}
+p { margin: 0 0 1rem; }
+
+/* Bootstrap typography utilities */
+small, .small { font-size: 0.875em; }
+.lead          { font-size: 1.25rem; font-weight: 300; }
+button, input, select, textarea, optgroup, .btn, .form-control, a.p-button, button.p-button {
+    font-family: inherit;
+    font-size: inherit;
+    line-height: inherit;
+    margin: 0;
+}
+
+/* ========== Backgrounds ========== */
+.bg-primary    { background-color: var(--bs-primary)   !important; }
+.bg-secondary  { background-color: var(--bs-secondary) !important; }
+.bg-info       { background-color: var(--bs-info)      !important; }
+.bg-success    { background-color: var(--bs-success)   !important; }
+.bg-warning    { background-color: var(--bs-warning)   !important; }
+.bg-danger     { background-color: var(--bs-danger)    !important; }
+.bg-dark       { background-color: var(--bs-dark)      !important; }
+.bg-light      { background-color: var(--bs-light)     !important; }
+.bg-transparent{ background-color: transparent         !important; }
+.bg-gradient   { background-image: linear-gradient(180deg, rgba(255,255,255,0.15), rgba(255,255,255,0)) !important; }
+
+/* ========== Text colors ========== */
+.text-primary   { color: var(--bs-primary)   !important; }
+.text-secondary { color: var(--bs-secondary) !important; }
+.text-info      { color: var(--bs-info)      !important; }
+.text-success   { color: var(--bs-success)   !important; }
+.text-warning   { color: var(--bs-warning)   !important; }
+.text-danger    { color: var(--bs-danger)    !important; }
+.text-dark      { color: var(--bs-dark)      !important; }
+.text-light     { color: var(--bs-light)     !important; }
+.text-white     { color: var(--bs-white)     !important; }
+.text-white-50  { color: rgba(var(--bs-white-rgb), 0.5) !important; }
+.text-muted     { color: rgba(var(--bs-white-rgb), 0.6) !important; }
+.text-link      { color: var(--bs-primary)   !important; text-decoration: underline; }
+
+/* ========== Borders ========== */
+.border          { border: 1px solid rgba(var(--bs-white-rgb), 0.15) !important; }
+.border-0        { border: 0 !important; }
+.border-top      { border-top: 1px solid rgba(var(--bs-white-rgb), 0.15) !important; }
+.border-bottom   { border-bottom: 1px solid rgba(var(--bs-white-rgb), 0.15) !important; }
+.border-start    { border-left: 1px solid rgba(var(--bs-white-rgb), 0.15) !important; }
+.border-end      { border-right: 1px solid rgba(var(--bs-white-rgb), 0.15) !important; }
+.border-primary  { border-color: var(--bs-primary)   !important; }
+.border-secondary{ border-color: var(--bs-secondary) !important; }
+.border-info     { border-color: var(--bs-info)      !important; }
+.border-success  { border-color: var(--bs-success)   !important; }
+.border-warning  { border-color: var(--bs-warning)   !important; }
+.border-danger   { border-color: var(--bs-danger)    !important; }
+.border-dark     { border-color: var(--bs-dark)      !important; }
+.border-light    { border-color: var(--bs-light)     !important; }
+.rounded         { border-radius: var(--bs-border-radius) !important; }
+.rounded-circle  { border-radius: 50% !important; }
+.shadow          { box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.15) !important; }
+.shadow-lg       { box-shadow: 0 1rem 3rem rgba(0,0,0,0.175) !important; }
+
+/* ========== Buttons ========== */
+.btn {
+    display: inline-block;
+    padding: 0.375rem 0.75rem;
+    font-size: 1rem;
+    line-height: 1.5;
+    border-radius: var(--bs-border-radius);
+    border: 1px solid transparent;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+    text-decoration: none;
+    transition: color 0.15s, background-color 0.15s, border-color 0.15s, box-shadow 0.15s;
+}
+.btn:disabled, .btn.disabled { opacity: 0.65; pointer-events: none; }
+.btn-primary   { color: var(--bs-white); background-color: var(--bs-primary);   border-color: var(--bs-primary); }
+.btn-secondary { color: var(--bs-white); background-color: var(--bs-secondary); border-color: var(--bs-secondary); }
+.btn-success   { color: var(--bs-white); background-color: var(--bs-success);   border-color: var(--bs-success); }
+.btn-info      { color: var(--bs-white); background-color: var(--bs-info);      border-color: var(--bs-info); }
+.btn-warning   { color: var(--bs-dark);  background-color: var(--bs-warning);   border-color: var(--bs-warning); }
+.btn-danger    { color: var(--bs-white); background-color: var(--bs-danger);    border-color: var(--bs-danger); }
+.btn-dark      { color: var(--bs-white); background-color: var(--bs-dark);      border-color: var(--bs-dark); }
+.btn-light     { color: var(--bs-dark);  background-color: var(--bs-light);     border-color: var(--bs-light); }
+.btn-outline-primary { color: var(--bs-primary); border-color: var(--bs-primary); }
+.btn-outline-primary:hover { background-color: var(--bs-primary); color: var(--bs-white); }
+.btn-outline-light { color: var(--bs-white); border-color: rgba(var(--bs-white-rgb), 0.4); }
+.btn-outline-light:hover { background-color: rgba(var(--bs-white-rgb), 0.1); }
+.btn-outline-danger { color: var(--bs-danger); border-color: var(--bs-danger); }
+.btn-outline-danger:hover { background-color: var(--bs-danger); color: var(--bs-white); }
+.btn-sm  { padding: 0.25rem 0.5rem; font-size: 0.875rem; border-radius: var(--bs-border-radius-sm); }
+.btn-lg  { padding: 0.5rem 1rem;    font-size: 1.25rem;  border-radius: var(--bs-border-radius-lg); }
+.btn-group { display: inline-flex; }
+.btn-group > .btn { border-radius: 0; }
+.btn-group > .btn:first-child { border-top-left-radius: var(--bs-border-radius); border-bottom-left-radius: var(--bs-border-radius); }
+.btn-group > .btn:last-child { border-top-right-radius: var(--bs-border-radius); border-bottom-right-radius: var(--bs-border-radius); }
+.btn-close {
+    box-sizing: content-box; width: 1em; height: 1em; padding: 0.25em; color: #000;
+    background: transparent url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23000'%3E%3Cpath d='M.293.293a1 1 0 011.414 0L8 6.586 14.293.293a1 1 0 111.414 1.414L9.414 8l6.293 6.293a1 1 0 01-1.414 1.414L8 9.414l-6.293 6.293a1 1 0 01-1.414-1.414L6.586 8 .293 1.707a1 1 0 010-1.414z'/%3E%3C/svg%3E") center/1em auto no-repeat;
+    border: 0; border-radius: var(--bs-border-radius); opacity: 0.5; cursor: pointer;
+}
+.btn-close:hover { opacity: 0.75; }
+.btn-close-white { filter: invert(1) grayscale(100%) brightness(200%); }
+
+/* PrimeVue button-class fallback for plain <a>/<button class="p-button">
+ * (PrimeVue's Aura theme only styles actual <Button> components; bare
+ * elements with the .p-button class on them were rendered as Bootstrap
+ * buttons under the old setup. Mirror that here.)
+ */
+a.p-button, button.p-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem 1rem;
+    font-size: 1rem;
+    line-height: 1.25;
+    border-radius: var(--bs-border-radius);
+    border: 1px solid transparent;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background-color 0.15s, border-color 0.15s, color 0.15s, box-shadow 0.15s;
+}
+a.p-button-lg, button.p-button-lg { padding: 0.5rem 1rem; font-size: 1.25rem; }
+a.p-button-sm, button.p-button-sm { padding: 0.3rem 0.7rem; font-size: 0.875rem; }
+a.p-button-primary, button.p-button-primary { background: var(--bs-primary); color: var(--bs-white); border-color: var(--bs-primary); }
+a.p-button-secondary, button.p-button-secondary { background: var(--bs-secondary); color: var(--bs-white); border-color: var(--bs-secondary); }
+a.p-button-success, button.p-button-success { background: var(--bs-success); color: var(--bs-white); border-color: var(--bs-success); }
+a.p-button-info, button.p-button-info { background: var(--bs-info); color: var(--bs-white); border-color: var(--bs-info); }
+a.p-button-warning, button.p-button-warning { background: var(--bs-warning); color: var(--bs-dark); border-color: var(--bs-warning); }
+a.p-button-danger, button.p-button-danger { background: var(--bs-danger); color: var(--bs-white); border-color: var(--bs-danger); }
+a.p-button-outlined, button.p-button-outlined { background: transparent; }
+a.p-button-outlined.p-button-primary, button.p-button-outlined.p-button-primary { color: var(--bs-primary); }
+a.p-button-outlined.p-button-secondary, button.p-button-outlined.p-button-secondary { color: var(--bs-secondary); }
+a.p-button:hover, button.p-button:hover { filter: brightness(1.1); }
+a.p-button:disabled, button.p-button:disabled, a.p-button.disabled, button.p-button.disabled { opacity: 0.6; cursor: not-allowed; pointer-events: none; }
+
+/* ========== Form controls ========== */
+.form-control {
+    display: block; width: 100%; padding: 0.375rem 0.75rem;
+    font-size: 1rem; line-height: 1.5;
+    color: var(--bs-white);
+    background-color: rgba(var(--bs-white-rgb), 0.05);
+    border: 1px solid rgba(var(--bs-white-rgb), 0.2);
+    border-radius: var(--bs-border-radius);
+    transition: border-color 0.15s, box-shadow 0.15s;
+}
+.form-control:focus {
+    border-color: var(--bs-primary);
+    outline: 0;
+    box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.25);
+}
+.form-control-sm { padding: 0.25rem 0.5rem; font-size: 0.875rem; }
+.form-label { margin-bottom: 0.5rem; }
+.form-check {
+    display: block; min-height: 1.5rem; padding-left: 1.5em; margin-bottom: 0.125rem;
+}
+.form-check-input {
+    width: 1em; height: 1em; margin-top: 0.25em; margin-left: -1.5em;
+    background-color: rgba(var(--bs-white-rgb), 0.1);
+    border: 1px solid rgba(var(--bs-white-rgb), 0.25);
+    appearance: none; -webkit-appearance: none; cursor: pointer;
+    vertical-align: top; print-color-adjust: exact;
+}
+.form-check-input[type="checkbox"] { border-radius: 0.25em; }
+.form-check-input[type="radio"]    { border-radius: 50%; }
+.form-check-input:checked {
+    background-color: var(--bs-primary); border-color: var(--bs-primary);
+    background-repeat: no-repeat; background-position: center;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath fill='none' stroke='%23fff' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='M6 10l3 3l6-6'/%3E%3C/svg%3E");
+}
+.form-check-input:focus {
+    border-color: var(--bs-primary);
+    box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.25);
+}
+.form-check-label { cursor: pointer; }
+.form-switch { padding-left: 2.5em; }
+.form-switch .form-check-input {
+    width: 2em; margin-left: -2.5em;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3E%3Ccircle r='3' fill='rgba%28255%2C255%2C255%2C0.4%29'/%3E%3C/svg%3E");
+    background-position: left center;
+    background-repeat: no-repeat;
+    border-radius: 2em;
+    transition: background-position 0.15s;
+}
+.form-switch .form-check-input:checked {
+    background-position: right center;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3E%3Ccircle r='3' fill='%23fff'/%3E%3C/svg%3E");
+}
+.form-range {
+    width: 100%; height: 1.5rem; padding: 0; background-color: transparent;
+    -webkit-appearance: none; appearance: none;
+}
+.form-range::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none; width: 1rem; height: 1rem;
+    background: var(--bs-primary); border-radius: 50%; cursor: pointer;
+}
+.form-range::-moz-range-thumb {
+    width: 1rem; height: 1rem; background: var(--bs-primary);
+    border-radius: 50%; border: 0; cursor: pointer;
+}
+.form-range::-webkit-slider-runnable-track {
+    width: 100%; height: 0.5rem; background: rgba(var(--bs-white-rgb), 0.2); border-radius: 1rem;
+}
+.form-range::-moz-range-track {
+    width: 100%; height: 0.5rem; background: rgba(var(--bs-white-rgb), 0.2); border-radius: 1rem;
+}
+
+.input-group {
+    position: relative; display: flex; flex-wrap: wrap; align-items: stretch; width: 100%;
+}
+.input-group > * { flex: 1 1 auto; width: 1%; min-width: 0; }
+
+/* ========== Navbar ========== */
+.navbar {
+    position: relative;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.5rem 1rem;
+}
+.navbar > .container, .navbar > .container-fluid {
+    display: flex; flex-wrap: inherit; align-items: center; justify-content: space-between;
+}
+.navbar-brand { padding: 0.3125rem 0; margin-right: 1rem; font-size: 1.25rem; text-decoration: none; }
+.navbar-nav   { display: flex; flex-direction: column; padding-left: 0; margin: 0; list-style: none; }
+.nav-item     { display: block; }
+.nav-link     {
+    display: block; padding: 0.5rem 1rem;
+    color: rgba(var(--bs-white-rgb), 0.55);
+    text-decoration: none;
+    background: none; border: 0;
+}
+.nav-link:hover { color: rgba(var(--bs-white-rgb), 0.75); }
+.navbar-toggler {
+    padding: 0.25rem 0.75rem; font-size: 1.25rem; line-height: 1;
+    background-color: transparent;
+    border: 1px solid rgba(var(--bs-white-rgb), 0.1); border-radius: var(--bs-border-radius);
+    cursor: pointer;
+}
+.navbar-toggler-icon {
+    display: inline-block; width: 1.5em; height: 1.5em; vertical-align: middle;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3E%3Cpath stroke='rgba%28212%2C212%2C212%2C0.55%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: center; background-size: 100%;
+}
+.collapse { display: none; }
+.collapse.show, .collapse.in { display: block; }
+.navbar-collapse {
+    flex-basis: 100%; flex-grow: 1; align-items: center;
+}
+.navbar-expand-lg, .navbar-expand-xl { flex-wrap: nowrap; justify-content: flex-start; }
+@media (min-width: 1075px) {
+    .navbar-expand-lg { flex-wrap: nowrap; justify-content: flex-start; }
+    .navbar-expand-lg .navbar-nav { flex-direction: row; }
+    .navbar-expand-lg .navbar-nav .nav-link { padding-right: 0.5rem; padding-left: 0.5rem; }
+    .navbar-expand-lg .navbar-toggler { display: none; }
+    .navbar-expand-lg .navbar-collapse { display: flex !important; flex-basis: auto; }
+    .navbar-expand-lg .collapse:not(.show) { display: flex !important; }
+}
+@media (min-width: 1200px) {
+    .navbar-expand-xl { flex-wrap: nowrap; justify-content: flex-start; }
+    .navbar-expand-xl .navbar-nav { flex-direction: row; }
+    .navbar-expand-xl .navbar-nav .nav-link { padding-right: 0.5rem; padding-left: 0.5rem; }
+    .navbar-expand-xl .navbar-toggler { display: none; }
+    .navbar-expand-xl .navbar-collapse { display: flex !important; flex-basis: auto; }
+    .navbar-expand-xl .collapse:not(.show) { display: flex !important; }
+}
+
+/* ========== Dropdowns ========== */
+.dropdown { position: relative; }
+.dropdown-toggle::after {
+    display: inline-block; margin-left: 0.255em; vertical-align: 0.255em;
+    content: ""; border-top: 0.3em solid; border-right: 0.3em solid transparent;
+    border-bottom: 0; border-left: 0.3em solid transparent;
+}
+.dropdown-menu {
+    position: absolute; top: 100%; left: 0; z-index: 1000;
+    display: none; min-width: 10rem; padding: 0.5rem 0; margin: 0.125rem 0 0;
+    font-size: 1rem; color: var(--bs-white); text-align: left;
+    list-style: none; background-color: var(--bs-dark);
+    border: 1px solid rgba(var(--bs-white-rgb), 0.15);
+    border-radius: var(--bs-border-radius);
+    box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.25);
+}
+.dropdown-menu.show { display: block; }
+.dropdown-menu-dark { color: var(--bs-white); background-color: var(--bs-dark); }
+.dropdown-item {
+    display: block; width: 100%; padding: 0.25rem 1rem;
+    clear: both; font-weight: 400; color: rgba(var(--bs-white-rgb), 0.85);
+    text-align: inherit; text-decoration: none; white-space: nowrap;
+    background-color: transparent; border: 0; cursor: pointer;
+}
+.dropdown-item:hover, .dropdown-item:focus {
+    color: var(--bs-white); background-color: rgba(var(--bs-white-rgb), 0.075);
+}
+.dropdown-divider {
+    height: 0; margin: 0.5rem 0; overflow: hidden;
+    border-top: 1px solid rgba(var(--bs-white-rgb), 0.15);
+}
+.dropdown-submenu { position: relative; }
+
+/* ========== Modal / Offcanvas body text styles (still used inside Dialog/Drawer) ========== */
+.modal-title    { margin: 0; line-height: 1.5; font-size: 1.25rem; }
+.modal-body     { position: relative; flex: 1 1 auto; padding: 1rem; }
+.modal-footer   { display: flex; flex-shrink: 0; flex-wrap: wrap; align-items: center; justify-content: flex-end; padding: 0.75rem; }
+.modal-header   { display: flex; align-items: center; justify-content: space-between; padding: 1rem; }
+.modal-content  { position: relative; display: flex; flex-direction: column; }
+.offcanvas-body { flex-grow: 1; padding: 1rem; overflow-y: auto; }
+
+/* ========== Alerts ========== */
+.alert {
+    position: relative; padding: 0.75rem 1.25rem; margin-bottom: 1rem;
+    border: 1px solid transparent; border-radius: var(--bs-border-radius);
+}
+.alert-dark   { color: var(--bs-white); background-color: var(--bs-dark);   border-color: rgba(var(--bs-white-rgb), 0.15); }
+.alert-danger { color: var(--bs-white); background-color: rgba(var(--bs-danger-rgb), 0.25); border-color: var(--bs-danger); }
+.alert-dismissible .btn-close { position: absolute; top: 0; right: 0; z-index: 2; padding: 1rem; }
+
+/* ========== Spinners ========== */
+.spinner-border {
+    display: inline-block; width: 2rem; height: 2rem; vertical-align: -0.125em;
+    border: 0.25em solid currentColor; border-right-color: transparent;
+    border-radius: 50%; animation: bs-spin 0.75s linear infinite;
+}
+.spinner-border-sm { width: 1rem; height: 1rem; border-width: 0.2em; }
+@keyframes bs-spin { to { transform: rotate(360deg); } }
+.fa-spin { animation: bs-spin 1s linear infinite; }
+
+/* PrimeIcons inherit their parent font-size (Aura's default of 1rem made
+ * icons stuck small even inside .display-6 / .text-3xl headings). */
+:root { --p-icon-size: 1em; }
+h1 .pi, h2 .pi, h3 .pi, h4 .pi, h5 .pi, h6 .pi,
+.display-1 .pi, .display-2 .pi, .display-3 .pi,
+.display-4 .pi, .display-5 .pi, .display-6 .pi,
+.text-xl .pi, .text-2xl .pi, .text-3xl .pi, .text-4xl .pi, .text-5xl .pi {
+    font-size: 1em;
+}
+
+/* ========== Grid ========== */
+.row {
+    display: flex;
+    flex-wrap: wrap;
+    margin-right: -0.75rem;
+    margin-left: -0.75rem;
+}
+.row > * {
+    box-sizing: border-box;
+    flex-shrink: 0;
+    width: 100%;
+    max-width: 100%;
+    padding-right: calc(var(--bs-gutter-x, 0.75rem) * 0.5);
+    padding-left: calc(var(--bs-gutter-x, 0.75rem) * 0.5);
+    margin-top: var(--bs-gutter-y, 0);
+}
+
+/* ========== Display headings ========== */
+.display-1 { font-size: 5rem;    font-weight: 300; line-height: 1.2; }
+.display-2 { font-size: 4.5rem;  font-weight: 300; line-height: 1.2; }
+.display-3 { font-size: 4rem;    font-weight: 300; line-height: 1.2; }
+.display-4 { font-size: 3.5rem;  font-weight: 300; line-height: 1.2; }
+.display-5 { font-size: 3rem;    font-weight: 300; line-height: 1.2; }
+.display-6 { font-size: 2.5rem;  font-weight: 300; line-height: 1.2; }
+@media (max-width: 1199.98px) {
+    .display-1 { font-size: calc(1.625rem + 4.5vw); }
+    .display-2 { font-size: calc(1.575rem + 3.9vw); }
+    .display-3 { font-size: calc(1.525rem + 3.3vw); }
+    .display-4 { font-size: calc(1.475rem + 2.7vw); }
+    .display-5 { font-size: calc(1.425rem + 2.1vw); }
+    .display-6 { font-size: calc(1.375rem + 1.5vw); }
+}
+
+/* ========== Sizing & rounded ========== */
+.min-vh-100  { min-height: 100vh !important; }
+.min-vh-50   { min-height: 50vh  !important; }
+.vh-100      { height: 100vh !important; }
+.vw-100      { width: 100vw !important; }
+.rounded-0   { border-radius: 0 !important; }
+.rounded-1   { border-radius: 0.25rem !important; }
+.rounded-2   { border-radius: 0.375rem !important; }
+.rounded-3   { border-radius: 0.5rem !important; }
+.rounded-4   { border-radius: 0.75rem !important; }
+.rounded-5   { border-radius: 1rem !important; }
+.rounded-pill{ border-radius: 50rem !important; }
+
+/* ========== Containers ========== */
+.container, .container-fluid {
+    width: 100%; padding-right: 0.75rem; padding-left: 0.75rem;
+    margin-right: auto; margin-left: auto;
+}
+@media (min-width: 576px)  { .container { max-width: 540px; } }
+@media (min-width: 768px)  { .container { max-width: 720px; } }
+@media (min-width: 1075px) { .container { max-width: 960px; } }
+@media (min-width: 1200px) { .container { max-width: 1140px; } }
+@media (min-width: 1400px) { .container { max-width: 1320px; } }
+
+/* ========== Misc utilities not in PrimeFlex ========== */
+.visually-hidden {
+    position: absolute !important; width: 1px; height: 1px; padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+}
+.d-print-none { @media print { display: none !important; } }
+
+/* HTML `hidden` attribute must win over our .btn/.form-control display
+ * rules so e.g. <input type="file" hidden class="btn"> stays out of layout. */
+[hidden] { display: none !important; }
+
+/* Bootstrap-style card layout shell.
+ * PrimeVue Aura applies `padding: 1.5em 0.5em 0.5em` to `.card`, which
+ * collides with templates that use `<div class="card">` as a Bootstrap
+ * container (those put their padding on `.card-body`). Neutralize the
+ * Aura rule for non-PrimeVue cards so `pt-2` etc on `.card-body` actually
+ * controls the top spacing.
+ */
+.card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    word-wrap: break-word;
+    padding: 0;
+    background-clip: border-box;
+}
+.card-body {
+    flex: 1 1 auto;
+    padding: 1rem;
+}
+.card-header {
+    padding: 0.5rem 1rem;
+    margin-bottom: 0;
+    border-bottom: 1px solid rgba(var(--bs-white-rgb), 0.1);
+}
+.card-title { margin-bottom: 0.5rem; }
+.card-text:last-child { margin-bottom: 0; }
+.badge {
+    display: inline-block;
+    padding: 0.35em 0.65em;
+    font-size: 0.75em;
+    font-weight: 700;
+    line-height: 1;
+    color: #fff;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: baseline;
+    border-radius: var(--bs-border-radius);
+}
+
+/* Bootstrap display utilities (PrimeFlex uses `.flex`/`.block` not `.d-*`). */
+.d-none         { display: none !important; }
+.d-inline       { display: inline !important; }
+.d-inline-block { display: inline-block !important; }
+.d-block        { display: block !important; }
+.d-flex         { display: flex !important; }
+.d-inline-flex  { display: inline-flex !important; }
+.d-grid         { display: grid !important; }
+.d-table        { display: table !important; }
+.d-table-row    { display: table-row !important; }
+.d-table-cell   { display: table-cell !important; }
+
+@media (min-width: 576px) {
+    .d-sm-none { display: none !important; }
+    .d-sm-block { display: block !important; }
+    .d-sm-flex { display: flex !important; }
+    .d-sm-inline { display: inline !important; }
+    .d-sm-inline-block { display: inline-block !important; }
+}
+@media (min-width: 768px) {
+    .d-md-none { display: none !important; }
+    .d-md-block { display: block !important; }
+    .d-md-flex { display: flex !important; }
+    .d-md-inline { display: inline !important; }
+    .d-md-inline-block { display: inline-block !important; }
+}
+@media (min-width: 1075px) {
+    .d-lg-none { display: none !important; }
+    .d-lg-block { display: block !important; }
+    .d-lg-flex { display: flex !important; }
+    .d-lg-inline { display: inline !important; }
+    .d-lg-inline-block { display: inline-block !important; }
+}
+@media (min-width: 1200px) {
+    .d-xl-none { display: none !important; }
+    .d-xl-block { display: block !important; }
+    .d-xl-flex { display: flex !important; }
+    .d-xl-inline { display: inline !important; }
+    .d-xl-inline-block { display: inline-block !important; }
+}
+.fw-semibold  { font-weight: 600 !important; }
+.fw-bold      { font-weight: 700 !important; }
+.opacity-25   { opacity: 0.25 !important; }
+.opacity-50   { opacity: 0.5 !important; }
+.opacity-75   { opacity: 0.75 !important; }
+.h-100        { height: 100% !important; }
+.w-100        { width: 100% !important; }
+.mx-auto      { margin-left: auto !important; margin-right: auto !important; }
+.ms-auto      { margin-left: auto !important; }
+.me-auto      { margin-right: auto !important; }
+.mt-auto      { margin-top: auto !important; }
+
+/* me-N / ms-N (Bootstrap RTL-aware spacing in LTR contexts = right/left). */
+.me-0 { margin-right: 0     !important; }
+.me-1 { margin-right: 0.25rem !important; }
+.me-2 { margin-right: 0.5rem  !important; }
+.me-3 { margin-right: 1rem    !important; }
+.me-4 { margin-right: 1.5rem  !important; }
+.me-5 { margin-right: 3rem    !important; }
+.ms-0 { margin-left: 0     !important; }
+.ms-1 { margin-left: 0.25rem !important; }
+.ms-2 { margin-left: 0.5rem  !important; }
+.ms-3 { margin-left: 1rem    !important; }
+.ms-4 { margin-left: 1.5rem  !important; }
+.ms-5 { margin-left: 3rem    !important; }
+.pe-0 { padding-right: 0     !important; }
+.pe-1 { padding-right: 0.25rem !important; }
+.pe-2 { padding-right: 0.5rem  !important; }
+.pe-3 { padding-right: 1rem    !important; }
+.pe-4 { padding-right: 1.5rem  !important; }
+.pe-5 { padding-right: 3rem    !important; }
+.ps-0 { padding-left: 0     !important; }
+.ps-1 { padding-left: 0.25rem !important; }
+.ps-2 { padding-left: 0.5rem  !important; }
+.ps-3 { padding-left: 1rem    !important; }
+.ps-4 { padding-left: 1.5rem  !important; }
+.ps-5 { padding-left: 3rem    !important; }
+
+/* ========== Grid columns (Bootstrap col-N + col-{breakpoint}-N) ==========
+ * Required by wizards (ConverterWizardBase uses col-xl-3/4/5) and many other
+ * legacy templates. Without these, every `.col-xl-3` collapses to 100%
+ * width via the `.row > *` rule above. */
+@mixin _bs-col-width($n) {
+    flex: 0 0 auto;
+    width: percentage($n / 12);
+    max-width: percentage($n / 12);
+}
+.col-auto { flex: 0 0 auto; width: auto; max-width: 100%; }
+@for $i from 1 through 12 {
+    .col-#{$i} { @include _bs-col-width($i); }
+}
+@media (min-width: 576px) {
+    .col-sm-auto { flex: 0 0 auto; width: auto; max-width: 100%; }
+    @for $i from 1 through 12 { .col-sm-#{$i} { @include _bs-col-width($i); } }
+}
+@media (min-width: 768px) {
+    .col-md-auto { flex: 0 0 auto; width: auto; max-width: 100%; }
+    @for $i from 1 through 12 { .col-md-#{$i} { @include _bs-col-width($i); } }
+}
+@media (min-width: 1075px) {
+    .col-lg-auto { flex: 0 0 auto; width: auto; max-width: 100%; }
+    @for $i from 1 through 12 { .col-lg-#{$i} { @include _bs-col-width($i); } }
+}
+@media (min-width: 1200px) {
+    .col-xl-auto { flex: 0 0 auto; width: auto; max-width: 100%; }
+    @for $i from 1 through 12 { .col-xl-#{$i} { @include _bs-col-width($i); } }
+}
+@media (min-width: 1400px) {
+    .col-xxl-auto { flex: 0 0 auto; width: auto; max-width: 100%; }
+    @for $i from 1 through 12 { .col-xxl-#{$i} { @include _bs-col-width($i); } }
+}
+
+/* col-offset-N is a project-specific addition (not standard Bootstrap). */
+.col-offset-0  { margin-left: 0%; }
+.col-offset-1  { margin-left: 8.333333%; }
+.col-offset-2  { margin-left: 16.666667%; }
+.col-offset-3  { margin-left: 25%; }
+.col-offset-4  { margin-left: 33.333333%; }
+.col-offset-5  { margin-left: 41.666667%; }
+.col-offset-6  { margin-left: 50%; }
+.col-offset-7  { margin-left: 58.333333%; }
+.col-offset-8  { margin-left: 66.666667%; }
+.col-offset-9  { margin-left: 75%; }
+.col-offset-10 { margin-left: 83.333333%; }
+.col-offset-11 { margin-left: 91.666667%; }
+
+/* g-N gutter — Bootstrap's row/col gutter; uses CSS vars consumed by .row > * padding above. */
+.row.g-0 { --bs-gutter-x: 0;       --bs-gutter-y: 0; }
+.row.g-1 { --bs-gutter-x: 0.25rem; --bs-gutter-y: 0.25rem; }
+.row.g-2 { --bs-gutter-x: 0.5rem;  --bs-gutter-y: 0.5rem; }
+.row.g-3 { --bs-gutter-x: 1rem;    --bs-gutter-y: 1rem; }
+.row.g-4 { --bs-gutter-x: 1.5rem;  --bs-gutter-y: 1.5rem; }
+.row.g-5 { --bs-gutter-x: 3rem;    --bs-gutter-y: 3rem; }
+.row.gx-0 { --bs-gutter-x: 0; }
+.row.gx-2 { --bs-gutter-x: 0.5rem; }
+.row.gx-3 { --bs-gutter-x: 1rem; }
+.row.gx-4 { --bs-gutter-x: 1.5rem; }
+.row.gy-0 { --bs-gutter-y: 0; }
+.row.gy-2 { --bs-gutter-y: 0.5rem; }
+.row.gy-3 { --bs-gutter-y: 1rem; }
+.row.gy-4 { --bs-gutter-y: 1.5rem; }

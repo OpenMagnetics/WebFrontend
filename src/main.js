@@ -1,12 +1,10 @@
 import { createApp } from 'vue'
 import App from './App.vue'
-import { Tooltip } from 'bootstrap';
-import 'bootstrap';
 import router from "./router";
 import { createPinia } from 'pinia'
 import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
 import VueCookies from 'vue3-cookies'
-import tooltip from "/WebSharedComponents/Common/TooltipDirective.vue";
+import PrimeVueTooltip from 'primevue/tooltip'
 import axios from "axios";
 import { useUserStore } from '/src/stores/user'
 import { useSettingsStore } from '/src/stores/settings'
@@ -20,14 +18,63 @@ import VueLatex from 'vatex'
 import { checkAndClearOutdatedStores, getVersionedWasmUrl } from '/src/stores/storeVersioning'
 import { useConsoleStore } from '/src/stores/console'
 
-// Monkey-patch Bootstrap Tooltip to fix _activeTrigger null errors
-const originalIsWithActiveTrigger = Tooltip.prototype._isWithActiveTrigger;
-Tooltip.prototype._isWithActiveTrigger = function() {
-    if (!this._activeTrigger || typeof this._activeTrigger !== 'object') {
-        this._activeTrigger = {};
-    }
-    return originalIsWithActiveTrigger.call(this);
-};
+// PrimeVue: Aura dark preset, tinted with the OM teal as primary
+import PrimeVue from 'primevue/config'
+import Aura from '@primeuix/themes/aura'
+import { definePreset } from '@primeuix/themes'
+import 'primeicons/primeicons.css'
+import 'bootstrap-icons/font/bootstrap-icons.css'
+// primeflex.css is imported from src/assets/scss/custom.scss after the
+// bootstrap-shim so PrimeFlex's grid utilities win the cascade for col-N.
+
+const OmAura = definePreset(Aura, {
+    semantic: {
+        primary: {
+            50:  '#eaf3f3',
+            100: '#cae0e0',
+            200: '#9ec4c3',
+            300: '#75a8a7',
+            400: '#5d9e9c',
+            500: '#539796',
+            600: '#4b8887',
+            700: '#3f7372',
+            800: '#335e5d',
+            900: '#274948',
+            950: '#192f2e',
+        },
+        colorScheme: {
+            dark: {
+                surface: {
+                    0:   '#ffffff',
+                    50:  '#f5f5f5',
+                    100: '#e4e4e4',
+                    200: '#d4d4d4',
+                    300: '#b8b8b8',
+                    400: '#8a8a8a',
+                    500: '#5e5e5e',
+                    600: '#3a3a3a',
+                    700: '#2a2a2a',
+                    800: '#1f1f1f',
+                    900: '#1a1a1a',
+                    950: '#101010',
+                },
+                formField: {
+                    // Lighter dark for input backgrounds so they read against the
+                    // panel surfaces; matches OM theme.light (#2a2a2a).
+                    background: '#2a2a2a',
+                    disabledBackground: '#1f1f1f',
+                    filledBackground: '#2a2a2a',
+                    filledFocusBackground: '#2a2a2a',
+                    borderColor: '#3a3a3a',
+                    hoverBorderColor: '{primary.600}',
+                    focusBorderColor: '{primary.500}',
+                    color: '#d4d4d4',
+                    placeholderColor: '#8a8a8a',
+                },
+            },
+        },
+    },
+})
 
 // Check and clear outdated stores BEFORE Pinia is initialized
 // This ensures old store data with incompatible field names is cleared
@@ -75,9 +122,20 @@ const app = createApp(App);
 app.use(router);
 app.use(pinia)
 app.use(VueCookies, { expires: '7d'})
-app.directive("tooltip", tooltip);
+app.directive('tooltip', PrimeVueTooltip);
 app.use(VueWindowSizePlugin);
 app.use(VueLatex);
+app.use(PrimeVue, {
+    theme: {
+        preset: OmAura,
+        options: {
+            darkModeSelector: '.om-dark',
+            cssLayer: { name: 'primevue', order: 'app, primevue' },
+        },
+    },
+});
+// App is always dark-themed
+document.documentElement.classList.add('om-dark');
 app.config.globalProperties.$axios = axiosInstance
 app.config.globalProperties.$userStore = useUserStore()
 app.config.globalProperties.$settingsStore = useSettingsStore()

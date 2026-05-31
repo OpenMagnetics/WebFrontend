@@ -181,7 +181,7 @@ export default {
                         padding: 4,
                     },
                     grid: {
-                        color: 'rgba(var(--bs-info-rgb), 0.12)',
+                        color: 'rgba(255, 185, 78, 0.18)',
                         drawBorder: false,
                         lineWidth: 1,
                     },
@@ -202,7 +202,7 @@ export default {
                 },
                 x: {
                     ticks: {
-                        color: 'rgba(var(--bs-light-rgb), 0.7)',
+                        color: 'rgba(212, 212, 212, 0.9)',
                         font: { size: 10, weight: '500' },
                         padding: 4,
                         maxRotation: 0,
@@ -222,12 +222,12 @@ export default {
                         }
                     },
                     grid: {
-                        color: 'rgba(var(--bs-white-rgb), 0.05)',
+                        color: 'rgba(212, 212, 212, 0.08)',
                         drawBorder: false,
                         lineWidth: 1,
                     },
                     border: {
-                        color: 'rgba(var(--bs-white-rgb), 0.15)',
+                        color: 'rgba(212, 212, 212, 0.25)',
                     },
                 }
             },
@@ -439,7 +439,7 @@ export default {
         <div v-if="hiddenHarmonicsCount > 0"
              class="wf-hint"
              v-tooltip="`${hiddenHarmonicsCount} more harmonic${hiddenHarmonicsCount === 1 ? '' : 's'} above threshold not shown — raise the &quot;Max harmonics to plot&quot; limit in Operating point settings`">
-            <i class="bi bi-info-circle-fill"></i>
+            <i class="pi pi-info-circle"></i>
             <span>+{{ hiddenHarmonicsCount }}</span>
         </div>
     </div>

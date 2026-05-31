@@ -8,7 +8,7 @@ import { useTaskQueueStore } from '../../../stores/taskQueue'
 var options = {};
 var chart = null;
 export default {
-    emits: ["adviseReady"],
+    emits: ["adviseReady", "selectedMas", "openDetails"],
     props: {
         adviseIndex: {
             type: Number,
@@ -231,9 +231,7 @@ export default {
                         <button
                             :data-cy="dataTestLabel + '-advise-' + adviseIndex + '-details-button'"
                             class="advise-btn advise-btn-outline w-100"
-                            data-bs-toggle="offcanvas"
-                            data-bs-target="#CoreAdviserDetailOffCanvas"
-                            @click="$emit('selectedMas')"
+                            @click="$emit('selectedMas'); $emit('openDetails')"
                         >
                             Details
                         </button>
@@ -261,12 +259,12 @@ export default {
     background: linear-gradient(180deg,
         rgba(var(--bs-dark-rgb), 0.75) 0%,
         rgba(var(--bs-dark-rgb), 0.55) 100%);
-    border: 1px solid rgba(var(--bs-light-rgb), 0.08);
+    border: 1px solid rgba(var(--bs-white-rgb), 0.08);
     border-left: 3px solid rgba(var(--bs-primary-rgb), 0.8);
     border-radius: 14px;
     box-shadow:
         0 6px 24px rgba(var(--bs-dark-rgb), 0.45),
-        inset 0 1px 0 rgba(var(--bs-light-rgb), 0.04);
+        inset 0 1px 0 rgba(var(--bs-white-rgb), 0.04);
     overflow: hidden;
     transition: all 0.25s ease;
 }
@@ -278,7 +276,7 @@ export default {
         rgba(var(--bs-dark-rgb), 0.55) 100%);
     box-shadow:
         0 2px 12px rgba(var(--bs-primary-rgb), 0.2),
-        inset 0 1px 0 rgba(var(--bs-light-rgb), 0.05);
+        inset 0 1px 0 rgba(var(--bs-white-rgb), 0.05);
 }
 
 .advise-option-header {
@@ -286,8 +284,8 @@ export default {
     align-items: center;
     justify-content: space-between;
     padding: 0.6rem 0.9rem;
-    background: rgba(var(--bs-light-rgb), 0.04);
-    border-bottom: 1px solid rgba(var(--bs-light-rgb), 0.08);
+    background: rgba(var(--bs-white-rgb), 0.04);
+    border-bottom: 1px solid rgba(var(--bs-white-rgb), 0.08);
     color: var(--bs-primary);
     font-weight: 600;
 }
@@ -316,7 +314,7 @@ export default {
 }
 
 .advise-option-metrics {
-    color: rgba(var(--bs-light-rgb), 0.85);
+    color: rgba(var(--bs-white-rgb), 0.85);
     font-size: 0.82rem;
 }
 
@@ -351,7 +349,7 @@ export default {
     box-shadow:
         0 0 0 1px rgb(var(--bs-primary-rgb) / 0.35),
         0 2px 8px rgb(var(--bs-primary-rgb) / 0.4),
-        inset 0 1px 0 rgba(var(--bs-light-rgb), 0.3);
+        inset 0 1px 0 rgba(var(--bs-white-rgb), 0.3);
     text-shadow: 0 1px 1px rgba(var(--bs-dark-rgb), 0.25);
 }
 
@@ -365,19 +363,19 @@ export default {
     box-shadow:
         0 0 0 1px rgb(var(--bs-success-rgb) / 0.35),
         0 2px 8px rgb(var(--bs-success-rgb) / 0.4),
-        inset 0 1px 0 rgba(var(--bs-light-rgb), 0.3);
+        inset 0 1px 0 rgba(var(--bs-white-rgb), 0.3);
     text-shadow: 0 1px 1px rgba(var(--bs-dark-rgb), 0.25);
 }
 
 .advise-btn-outline {
-    background: rgba(var(--bs-light-rgb), 0.08);
-    border: 1px solid rgba(var(--bs-light-rgb), 0.22);
-    color: var(--bs-light);
+    background: rgba(var(--bs-white-rgb), 0.08);
+    border: 1px solid rgba(var(--bs-white-rgb), 0.22);
+    color: var(--bs-white);
 }
 
 .advise-btn-outline:hover:not(:disabled) {
-    background: rgba(var(--bs-light-rgb), 0.14);
-    border-color: rgba(var(--bs-light-rgb), 0.35);
+    background: rgba(var(--bs-white-rgb), 0.14);
+    border-color: rgba(var(--bs-white-rgb), 0.35);
     color: var(--bs-white);
 }
 </style>

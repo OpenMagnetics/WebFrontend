@@ -219,7 +219,7 @@ export default {
                     max: 15,
                     min: -15,
                     grid: {
-                        color: 'rgba(var(--bs-info-rgb), 0.12)',
+                        color: 'rgba(255, 185, 78, 0.18)',
                         drawBorder: false,
                         lineWidth: 1,
                     },
@@ -249,7 +249,7 @@ export default {
                     type: 'linear',
                     ticks: {
                         beginAtZero: true,
-                        color: 'rgba(var(--bs-light-rgb), 0.7)',
+                        color: 'rgba(212, 212, 212, 0.9)',
                         font: { size: 10, weight: '500' },
                         padding: 4,
                         maxRotation: 0,
@@ -261,12 +261,12 @@ export default {
                         }
                     },
                     grid: {
-                        color: 'rgba(var(--bs-white-rgb), 0.05)',
+                        color: 'rgba(212, 212, 212, 0.08)',
                         drawBorder: false,
                         lineWidth: 1,
                     },
                     border: {
-                        color: 'rgba(var(--bs-white-rgb), 0.15)',
+                        color: 'rgba(212, 212, 212, 0.25)',
                     },
                 }
             },

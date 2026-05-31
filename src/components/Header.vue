@@ -26,6 +26,7 @@ export default {
         const historyStore = useHistoryStore();
         const taskQueueStore = useTaskQueueStore();
         const loading = false;
+        const bugReporterVisible = false;
         // Grouped wizard menu — keeps the header dropdown compact by hiding
         // each topology family behind a fly-out submenu. Keys (cy, store,
         // hoverKey, icon, label) match the prior flat menu 1:1 so existing
@@ -102,12 +103,17 @@ export default {
             loggedIn: false,
             username: null,
             loading,
+            bugReporterVisible,
             hoveredWizard: null,
             openWizardGroup: null,
             wizardGroups,
+            navCollapseOpen: false,
+            openDropdown: null,
         }
     },
     methods: {
+        toggleDropdown(key) { this.openDropdown = this.openDropdown === key ? null : key; },
+        closeDropdowns() { this.openDropdown = null; this.navCollapseOpen = false; },
         onShowModal() {
             this.showModal = true
         },
@@ -311,6 +317,12 @@ export default {
             transparent: style.getPropertyValue('--bs-transparent'),
         };
         this.$styleStore.setTheme(theme);
+
+        this._closeDropdownsBound = this.closeDropdowns.bind(this);
+        document.addEventListener('click', this._closeDropdownsBound);
+    },
+    beforeUnmount() {
+        if (this._closeDropdownsBound) document.removeEventListener('click', this._closeDropdownsBound);
     }
 }
 </script>
@@ -324,11 +336,11 @@ export default {
                 class="btn m-0 p-0"
                 @click="onHome"
             >
-                <img src="/images/newLogo.png" width="60" height="40" href="/" class="d-inline-block align-top me-3" alt="OpenMagnetics Logo">
+                <img src="/images/newLogo.png" class="om-logo d-inline-block align-top me-2" alt="OpenMagnetics Logo">
             </button>
             <button
                 data-cy="Header-brand-home-link"
-                class="navbar-brand btn m-0 p-0 pe-2"
+                class="navbar-brand btn m-0 p-0 pr-2"
                 @click="onHome"
             >
                 {{'OpenMagnetics'}}
@@ -337,20 +349,19 @@ export default {
                 class="navbar-toggler om-toggler"
                 ref="headerToggler"
                 type="button"
-                data-bs-toggle="collapse"
-                data-bs-target="#navbarNavDropdown"
+                @click="navCollapseOpen = !navCollapseOpen"
                 aria-controls="navbarNavDropdown"
-                aria-expanded="false"
+                :aria-expanded="navCollapseOpen ? 'true' : 'false'"
                 aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
             </button>
-            <div class="collapse navbar-collapse" id="navbarNavDropdown">
+            <div class="collapse navbar-collapse" :class="{ show: navCollapseOpen }" id="navbarNavDropdown">
                 <ul class="navbar-nav text-center">
                     <li class="nav-item" >
                         <a
                             data-cy="Header-alfs-musings-link"
                             :class="headerTogglerIsVisible? '' : 'mx-1'"
-                            class="nav-link om-nav-link me-3 text-center"
+                            class="nav-link om-nav-link mr-3 text-center"
                             href="https://www.linkedin.com/newsletters/7026708624966135808/"
                             target="_blank"
                             rel="noopener noreferrer"
@@ -362,48 +373,48 @@ export default {
                         <button
                             data-cy="Header-new-magnetic-link"
                             :class="headerTogglerIsVisible? 'w-100' : 'mx-1' "
-                            class="btn btn-block nav-link om-nav-btn border rounded px-2"
+                            class="nav-link w-100 om-nav-btn border rounded px-2"
                             @click="onNewPowerMagneticDesign"
                         >
-                            <i class="me-2 bi bi-briefcase-fill"></i>{{'New Magnetic'}}
+                            <i class="mr-2 pi pi-briefcase"></i>{{'New Magnetic'}}
                         </button>
                     </li>
-                    <li class="nav-item dropdown">
+                    <li class="nav-item dropdown" @click.stop>
                         <a
                             :class="headerTogglerIsVisible? '' : 'mx-1'"
                             class="nav-link dropdown-toggle om-nav-btn border rounded"
                             href="#"
                             role="button"
-                            data-bs-toggle="dropdown"
-                            aria-expanded="false"
+                            @click.prevent="toggleDropdown('tools')"
+                            :aria-expanded="openDropdown === 'tools' ? 'true' : 'false'"
                         >
-                            <i class="me-2 bi bi-briefcase-fill"></i>{{'Tools'}}
+                            <i class="mr-2 pi pi-briefcase"></i>{{'Tools'}}
                         </a>
-                      <ul class="dropdown-menu px-1">
+                      <ul class="dropdown-menu px-1" :class="{ show: openDropdown === 'tools' }">
                         <li>
                             <button
                                 data-cy="Header-insulation-coordinator-link"
                                 :class="headerTogglerIsVisible? 'w-100' : 'mx-1' "
-                                class="dropdown-item btn btn-block nav-link px-2"
+                                class="dropdown-item nav-link w-100 px-2"
                                 @click="onInsulationCoordinator"
                             >
-                                <i class="me-2 bi bi-lightning-charge-fill"></i>{{'Insulation Coordinator'}}
+                                <i class="mr-2 pi pi-bolt-charge-fill"></i>{{'Insulation Coordinator'}}
                             </button>
                         </li>
                       </ul>
                     </li>
-                    <li class="nav-item dropdown">
+                    <li class="nav-item dropdown" @click.stop>
                         <a
                             :class="headerTogglerIsVisible? '' : 'mx-1'"
                             class="nav-link dropdown-toggle om-wizard-btn border rounded"
                             href="#"
                             role="button"
-                            data-bs-toggle="dropdown"
-                            aria-expanded="false"
+                            @click.prevent="toggleDropdown('wizards')"
+                            :aria-expanded="openDropdown === 'wizards' ? 'true' : 'false'"
                         >
-                            <i class="me-2 bi bi-magic"></i>{{'Wizards'}}
+                            <i class="mr-2 pi pi-sparkles"></i>{{'Wizards'}}
                         </a>
-                      <ul class="dropdown-menu px-3">
+                      <ul class="dropdown-menu px-3" :class="{ show: openDropdown === 'wizards' }">
                         <li
                             v-for="group in wizardGroups"
                             :key="group.label"
@@ -412,12 +423,12 @@ export default {
                             <button
                                 :data-cy="'WizardGroup-' + group.label.replace(/[^A-Za-z0-9]/g, '') + '-toggle'"
                                 :class="headerTogglerIsVisible? 'w-100' : 'mx-0' "
-                                class="dropdown-item dropdown-submenu-toggle btn btn-block nav-link px-2"
+                                class="dropdown-item dropdown-submenu-toggle nav-link w-100 px-2"
                                 type="button"
                                 @click.stop="toggleWizardGroup(group.label)"
                             >
-                                <span><i class="me-2 bi" :class="group.icon"></i>{{ group.label }}</span>
-                                <i class="bi bi-chevron-right submenu-caret ms-2"></i>
+                                <span><i class="mr-2 bi" :class="group.icon"></i>{{ group.label }}</span>
+                                <i class="pi pi-chevron-right submenu-caret ml-2"></i>
                             </button>
                             <ul
                                 class="dropdown-menu submenu-panel px-3"
@@ -427,12 +438,12 @@ export default {
                                     <button
                                         :data-cy="item.cy"
                                         :class="headerTogglerIsVisible? 'w-100' : 'mx-0' "
-                                        class="dropdown-item btn btn-block nav-link px-2"
+                                        class="dropdown-item nav-link w-100 px-2"
                                         @click="onWizards($stateStore.Wizards[item.store])"
                                         @mouseenter="hoveredWizard = item.hoverKey"
                                         @mouseleave="hoveredWizard = null"
                                     >
-                                        <i class="me-2 bi" :class="item.icon"></i>{{ item.label }}
+                                        <i class="mr-2 bi" :class="item.icon"></i>{{ item.label }}
                                     </button>
                                 </li>
                             </ul>
@@ -444,10 +455,10 @@ export default {
                             <button
                                 data-cy="Header-donate-link"
                                 :class="headerTogglerIsVisible? 'w-100' : 'mx-1' "
-                                class="btn btn-block nav-link px-2 om-continue-btn"
+                                class="nav-link w-100 px-2 om-continue-btn"
                                 @click="continueMagneticToolDesign"
                             >
-                                <i class="me-2 bi bi-box-seam"></i>{{'Continue design'}}
+                                <i class="mr-2 pi pi-box-seam"></i>{{'Continue design'}}
                             </button>
                         </span>
                     </li>
@@ -456,10 +467,10 @@ export default {
                             <input data-cy="Header-Load-MAS-file-button" type="file" ref="masFileReader" @change="readMASFile()" class="btn mt-1 rounded-3" hidden />
                             <button
                                 :class="headerTogglerIsVisible? 'w-100' : 'mx-1' "
-                                class="btn btn-block nav-link px-2 om-load-btn"
+                                class="nav-link w-100 px-2 om-load-btn"
                                 @click="load"
                             >
-                                <i class="me-1 bi bi-upload"></i>{{'Load MAS'}}
+                                <i class="mr-1 pi pi-upload"></i>{{'Load MAS'}}
                             </button>
                         </span>
                     </li>
@@ -474,7 +485,7 @@ export default {
                                 rel="noopener noreferrer"
                                 class="btn nav-link om-donate-btn"
                             >
-                                {{'Donate '}}<i class="bi bi-piggy-bank-fill"></i>
+                                {{'Donate '}}<i class="pi pi-dollar"></i>
                             </a>
                         </span>
                     </li>
@@ -484,10 +495,9 @@ export default {
                                 data-cy="Header-report-bug-modal-button"
                                 :class="headerTogglerIsVisible? 'w-100' : 'mx-1' "
                                 class="btn nav-link om-bug-btn text-center"
-                                data-bs-toggle="modal"
-                                data-bs-target="#reportBugModal"
+                                @click="bugReporterVisible = true"
                             >
-                                {{headerTogglerIsVisible? 'Report a bug' : 'Bug?'}} <i class="bi bi-bug-fill"></i>
+                                {{headerTogglerIsVisible? 'Report a bug' : 'Bug?'}} <i class="pi pi-server"></i>
                             </button>
                         </span>
                     </li>
@@ -501,7 +511,7 @@ export default {
                                 target="_blank"
                                 rel="noopener noreferrer"
                             >
-                                {{headerTogglerIsVisible? 'GitHub ' : ''}}<i class="bi bi-github"></i>
+                                {{headerTogglerIsVisible? 'GitHub ' : ''}}<i class="pi pi-github"></i>
                             </a>
                         </span>
                     </li>
@@ -512,7 +522,7 @@ export default {
     </nav>
 
     <!-- Modal -->
-    <BugReporterModal/>
+    <BugReporterModal v-model:visible="bugReporterVisible"/>
     <DeadManSwitch/>
 </template>
 
@@ -530,23 +540,79 @@ export default {
     .om-header {
         min-width: 100%;
         position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
         z-index: 999;
-        background: linear-gradient(180deg,
-            rgba(var(--bs-dark-rgb), 0.92) 0%,
-            rgba(var(--bs-dark-rgb), 0.82) 100%) !important;
-        backdrop-filter: blur(6px);
-        -webkit-backdrop-filter: blur(6px);
-        border-bottom: 1px solid rgba(var(--bs-primary-rgb), 0.35);
-        box-shadow: 0 4px 18px rgba(var(--bs-black-rgb), 0.45);
+        padding: 0.2rem 1rem;
+        background:
+            linear-gradient(180deg,
+                rgba(var(--bs-dark-rgb), 0.94) 0%,
+                rgba(var(--bs-dark-rgb), 0.86) 100%),
+            radial-gradient(circle at 0% 0%,
+                rgba(var(--bs-primary-rgb), 0.12) 0%,
+                transparent 50%) !important;
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border-bottom: 1px solid rgba(var(--bs-primary-rgb), 0.25);
+        box-shadow:
+            0 4px 24px rgba(var(--bs-black-rgb), 0.5),
+            0 0 0 1px rgba(var(--bs-white-rgb), 0.02) inset;
     }
 
-    /* Brand text — gradient teal */
+    /* Subtle engineering grid behind the header */
+    .om-header::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background-image:
+            linear-gradient(to right, rgba(var(--bs-primary-rgb), 0.06) 1px, transparent 1px),
+            linear-gradient(to bottom, rgba(var(--bs-primary-rgb), 0.06) 1px, transparent 1px);
+        background-size: 24px 24px;
+        opacity: 0.5;
+        pointer-events: none;
+    }
+    .om-header > * { position: relative; z-index: 1; }
+
+    /* Logo — preserve aspect ratio, sized to keep header at beta's ~59px
+     * height; no drop-shadow so it blends into the header background. */
+    .om-logo {
+        width: auto;
+        height: 44px;
+        object-fit: contain;
+        mix-blend-mode: lighten;
+    }
+
+    /* Breathing room between header nav items at desktop. */
+    @media (min-width: 1200px) {
+        .om-header .navbar-nav > .nav-item + .nav-item {
+            margin-left: 0.75rem;
+        }
+        .om-header .navbar-nav.ms-auto > .nav-item + .nav-item {
+            margin-left: 0.5rem;
+        }
+    }
+    .om-header .navbar-nav .nav-item .nav-link,
+    .om-header .navbar-nav .nav-item .om-nav-btn,
+    .om-header .navbar-nav .nav-item .om-wizard-btn,
+    .om-header .navbar-nav .nav-item .om-continue-btn,
+    .om-header .navbar-nav .nav-item .om-load-btn {
+        padding-left: 0.85rem;
+        padding-right: 0.85rem;
+        font-size: 1.05rem;
+    }
+    .om-header .navbar-brand { font-size: 1.25rem !important; }
+
+    /* Brand text — gradient teal, modern tracking */
     .om-header .navbar-brand {
         font-weight: 700;
-        letter-spacing: 0.02em;
+        font-size: 1.15rem;
+        letter-spacing: 0.04em;
+        line-height: 1.1;
+        padding: 0.25rem 0.5rem 0.25rem 0;
         background: linear-gradient(135deg,
             var(--bs-primary) 0%,
-            color-mix(in srgb, var(--bs-primary) 70%, var(--bs-white) 30%) 100%);
+            color-mix(in srgb, var(--bs-primary) 65%, var(--bs-white) 35%) 100%);
         -webkit-background-clip: text;
         background-clip: text;
         color: transparent !important;

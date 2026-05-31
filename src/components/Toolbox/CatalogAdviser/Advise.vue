@@ -170,7 +170,7 @@ export default {
                     :style="$styleStore.catalogAdviser.editButton"
                     v-if="allowEdit || scoring < 0"
                     :data-cy="dataTestLabel + '-advise-' + adviseIndex + '-edit-button'"
-                    class="advise-btn advise-btn-outline offset-1 col-3"
+                    class="advise-btn advise-btn-outline col-offset-1 col-3"
                     @click="$emit('editMagnetic')"
                 >
                     {{'Edit'}}
@@ -179,7 +179,7 @@ export default {
                     v-if="allowOrder"
                     :style="$styleStore.catalogAdviser.orderButton"
                     :data-cy="dataTestLabel + '-advise-' + adviseIndex + '-order-button'"
-                    class="advise-btn advise-btn-success offset-1 col-4"
+                    class="advise-btn advise-btn-success col-offset-1 col-4"
                     @click="$emit('orderSample')"
                 >
                     {{'Order a sample'}}
@@ -196,12 +196,12 @@ export default {
     background: linear-gradient(180deg,
         rgba(var(--bs-dark-rgb), 0.75) 0%,
         rgba(var(--bs-dark-rgb), 0.55) 100%);
-    border: 1px solid rgba(var(--bs-light-rgb), 0.08);
+    border: 1px solid rgba(var(--bs-white-rgb), 0.08);
     border-left: 3px solid rgba(var(--bs-primary-rgb), 0.8);
     border-radius: 14px;
     box-shadow:
         0 6px 24px rgba(var(--bs-dark-rgb), 0.45),
-        inset 0 1px 0 rgba(var(--bs-light-rgb), 0.04);
+        inset 0 1px 0 rgba(var(--bs-white-rgb), 0.04);
     overflow: hidden;
 }
 
@@ -210,8 +210,8 @@ export default {
     align-items: center;
     justify-content: space-between;
     padding: 0.6rem 0.9rem;
-    background: rgba(var(--bs-light-rgb), 0.04);
-    border-bottom: 1px solid rgba(var(--bs-light-rgb), 0.08);
+    background: rgba(var(--bs-white-rgb), 0.04);
+    border-bottom: 1px solid rgba(var(--bs-white-rgb), 0.08);
     color: var(--bs-primary);
     font-weight: 600;
 }
@@ -241,7 +241,7 @@ export default {
 }
 
 .advise-option-metrics {
-    color: rgba(var(--bs-light-rgb), 0.85);
+    color: rgba(var(--bs-white-rgb), 0.85);
     font-size: 0.85rem;
 }
 
@@ -276,7 +276,7 @@ export default {
     box-shadow:
         0 0 0 1px rgb(var(--bs-primary-rgb) / 0.35),
         0 2px 8px rgb(var(--bs-primary-rgb) / 0.4),
-        inset 0 1px 0 rgba(var(--bs-light-rgb), 0.3);
+        inset 0 1px 0 rgba(var(--bs-white-rgb), 0.3);
     text-shadow: 0 1px 1px rgba(var(--bs-dark-rgb), 0.25);
 }
 
@@ -290,19 +290,19 @@ export default {
     box-shadow:
         0 0 0 1px rgb(var(--bs-success-rgb) / 0.35),
         0 2px 8px rgb(var(--bs-success-rgb) / 0.4),
-        inset 0 1px 0 rgba(var(--bs-light-rgb), 0.3);
+        inset 0 1px 0 rgba(var(--bs-white-rgb), 0.3);
     text-shadow: 0 1px 1px rgba(var(--bs-dark-rgb), 0.25);
 }
 
 .advise-btn-outline {
-    background: rgba(var(--bs-light-rgb), 0.08);
-    border: 1px solid rgba(var(--bs-light-rgb), 0.22);
-    color: var(--bs-light);
+    background: rgba(var(--bs-white-rgb), 0.08);
+    border: 1px solid rgba(var(--bs-white-rgb), 0.22);
+    color: var(--bs-white);
 }
 
 .advise-btn-outline:hover:not(:disabled) {
-    background: rgba(var(--bs-light-rgb), 0.14);
-    border-color: rgba(var(--bs-light-rgb), 0.35);
+    background: rgba(var(--bs-white-rgb), 0.14);
+    border-color: rgba(var(--bs-white-rgb), 0.35);
     color: var(--bs-white);
 }
 </style>

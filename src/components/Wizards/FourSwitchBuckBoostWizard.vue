@@ -63,7 +63,7 @@ export default {
             if (this._autoRunDone) return;
             this._autoRunDone = true;
             try { this.updateErrorMessage?.(); } catch (e) { return; }
-            if (!this.errorMessage) this.getAnalyticalWaveforms?.();
+            if (!this.errorMessage) this.simulateIdealWaveforms?.();
         });
     },
     methods: {
@@ -159,7 +159,7 @@ export default {
   <ConverterWizardBase
     ref="base"
     title="Four-Switch Buck-Boost Wizard"
-    titleIcon="bi bi-arrow-down-up"
+    titleIcon="pi pi-arrows-v"
     subtitle="Non-Inverting H-Bridge Buck-Boost"
     :col1Width="3" :col2Width="4" :col3Width="5"
     :magneticWaveforms="magneticWaveforms"
@@ -197,7 +197,7 @@ export default {
     </template>
 
     <template #design-or-switch-parameters-title>
-      <div class="compact-header"><i class="bi bi-gear-wide-connected me-1"></i>{{ localData.designLevel == 'I know the design I want' ? 'Design Params' : 'Current Requirement' }}</div>
+      <div class="compact-header"><i class="pi pi-cog-wide-connected mr-1"></i>{{ localData.designLevel == 'I know the design I want' ? 'Design Params' : 'Current Requirement' }}</div>
     </template>
 
     <template #design-or-switch-parameters>
@@ -298,11 +298,11 @@ export default {
 
     <template #col1-footer>
       <div class="d-flex align-items-center justify-content-between mt-2">
-        <span v-if="errorMessage" class="error-text"><i class="bi bi-exclamation-triangle-fill me-1"></i>{{ errorMessage }}</span>
+        <span v-if="errorMessage" class="error-text"><i class="pi pi-exclamation-triangle mr-1"></i>{{ errorMessage }}</span>
         <span v-else></span>
         <div class="action-btns">
-          <button :disabled="errorMessage != ''" class="action-btn-sm secondary" @click="processAndReview"><i class="bi bi-search me-1"></i>Review Specs</button>
-          <button :disabled="errorMessage != ''" class="action-btn-sm primary" @click="processAndAdvise"><i class="bi bi-magic me-1"></i>Design Magnetic</button>
+          <button :disabled="errorMessage != ''" class="action-btn-sm secondary" @click="processAndReview"><i class="pi pi-search mr-1"></i>Review Specs</button>
+          <button :disabled="errorMessage != ''" class="action-btn-sm primary" @click="processAndAdvise"><i class="pi pi-sparkles mr-1"></i>Design Magnetic</button>
         </div>
       </div>
     </template>
