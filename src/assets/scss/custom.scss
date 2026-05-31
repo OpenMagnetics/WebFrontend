@@ -40,11 +40,11 @@ $grid-breakpoints: (
   --om-border-color: #{$border-color};
 }
 
-// Self-contained Bootstrap-equivalent CSS (--bs-* tokens + the small surface
-// of legacy classes still referenced in templates). Wrap in a `bootstrap`
-// CSS layer so unlayered PrimeFlex wins the cascade for col-N / d-flex / etc.
-@layer bootstrap {
-    @import "./bootstrap-shim.scss";
+// Project design-system base (--p-* tokens + small class-name surface still
+// referenced from templates). Wrapped in a CSS layer so unlayered PrimeFlex
+// wins the cascade for col-N / d-flex / etc.
+@layer theme-base {
+    @import "./theme-base.scss";
 }
 
 // PrimeFlex (unlayered → wins over layered shim rules with equal specificity)
@@ -122,7 +122,7 @@ $grid-breakpoints: (
        (primary-teal, 16px / 700 weight, left-aligned, snug padding). */
     font-size: 1rem !important;
     font-weight: 700 !important;
-    color: var(--bs-primary) !important;
+    color: var(--p-primary) !important;
     letter-spacing: 0.01em !important;
     padding: 0.15rem 0 0.4rem 0 !important;
     margin: 0 !important;

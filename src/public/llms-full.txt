@@ -824,7 +824,7 @@ All values use SI base units:
 - **Frontend:** Vue 3 + Vite
 - **Simulation:** MKF compiled to WebAssembly
 - **State Management:** Pinia
-- **UI Framework:** Bootstrap 5
+- **UI Framework:** PrimeVue 4 (Aura) + PrimeFlex
 - **Charts:** Chart.js
 
 All computation runs client-side in the browser. No data is sent to servers.

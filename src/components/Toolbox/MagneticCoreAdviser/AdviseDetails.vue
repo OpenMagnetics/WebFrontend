@@ -47,12 +47,12 @@ export default {
         @update:visible="(v) => $emit('update:visible', v)"
         position="right"
         :modal="true"
-        :style="{ width: '65vw', background: 'var(--bs-light)' }">
+        :style="{ width: '65vw', background: 'var(--p-light)' }">
         <div v-if="modelValue.magnetic.manufacturerInfo != null" class="row mx-1">
             <h3 class="col-12 p-0 m-0">{{modelValue.magnetic.manufacturerInfo.reference}}</h3>
-            <div class="col-12 text-xl p-0 m-0 mt-2 text-start">{{localTexts.coreDescription}}</div>
-            <div class="col-12 text-xl p-0 m-0 mt-2 text-start">{{localTexts.coreMaterial}}</div>
-            <div class="col-12 text-xl p-0 m-0 mt-2 text-start">{{localTexts.numberTurns}}</div>
+            <div class="col-12 text-xl p-0 m-0 mt-2 text-left">{{localTexts.coreDescription}}</div>
+            <div class="col-12 text-xl p-0 m-0 mt-2 text-left">{{localTexts.coreMaterial}}</div>
+            <div class="col-12 text-xl p-0 m-0 mt-2 text-left">{{localTexts.numberTurns}}</div>
             <div class="row mt-4 mb-2" v-for="(operationPoint, operationPointIndex) in modelValue.inputs.operatingPoints" :key="operationPointIndex">
                 <div class="col-12 text-xl p-0 m-0 my-1">{{operationPoint.name}}</div>
                 <div v-if="'magnetizingInductanceTable' in localTexts" class="col-6 p-0 m-0 border">{{localTexts.magnetizingInductanceTable[operationPointIndex].text}}</div>

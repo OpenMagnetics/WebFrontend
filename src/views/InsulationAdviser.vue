@@ -67,7 +67,7 @@ export default {
       width: 100%;
       height: 100%;
       opacity: 1;
-      background-image: linear-gradient(to bottom, rgba(var(--bs-dark-rgb), 0.9), rgba(var(--bs-dark-rgb), 1)), url('/images/background_insulation.jpg');
+      background-image: linear-gradient(to bottom, rgba(var(--p-dark-rgb), 0.9), rgba(var(--p-dark-rgb), 1)), url('/images/background_insulation.jpg');
       background-repeat: no-repeat;
       background-position: 50% 0;
       background-size: cover;

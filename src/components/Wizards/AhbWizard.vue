@@ -315,7 +315,7 @@ export default {
           <tr><td>Q2 Peak Vds (V)</td><td v-for="(op, i) in ahbDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px' }">{{ Number(op.switchPeakVoltageQ2).toFixed(2) }}</td></tr>
           <tr><td>Q1 RMS I (A)</td><td v-for="(op, i) in ahbDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px' }">{{ Number(op.switchRmsCurrentQ1).toFixed(3) }}</td></tr>
           <tr><td>Q2 RMS I (A)</td><td v-for="(op, i) in ahbDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px' }">{{ Number(op.switchRmsCurrentQ2).toFixed(3) }}</td></tr>
-          <tr><td>ZVS margin</td><td v-for="(op, i) in ahbDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px', color: op.zvsMargin <= 0 ? 'var(--bs-warning)' : 'inherit' }">{{ Number(op.zvsMargin).toFixed(3) }}</td></tr>
+          <tr><td>ZVS margin</td><td v-for="(op, i) in ahbDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px', color: op.zvsMargin <= 0 ? 'var(--p-warning)' : 'inherit' }">{{ Number(op.zvsMargin).toFixed(3) }}</td></tr>
           <tr><td>Cb V (V)</td><td v-for="(op, i) in ahbDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px' }">{{ Number(op.dcBlockingCapVoltage).toFixed(2) }}</td></tr>
           <tr><td>Cb ripple (V)</td><td v-for="(op, i) in ahbDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px' }">{{ Number(op.dcBlockingCapRipple).toFixed(3) }}</td></tr>
           <tr><td>V_pri+ (V)</td><td v-for="(op, i) in ahbDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px' }">{{ Number(op.primaryPeakVoltagePositive).toFixed(2) }}</td></tr>

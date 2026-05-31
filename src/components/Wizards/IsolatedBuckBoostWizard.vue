@@ -468,7 +468,7 @@ export default {
                 yData = yData.map(v => Math.max(clipMin, Math.min(clipMax, v)));
             }
             
-            let waveformColor = 'var(--bs-white)';
+            let waveformColor = 'var(--p-white)';
             if (isVoltageWaveform) {
                 waveformColor = this.$styleStore.operatingPoints?.voltageGraph?.color;
             } else if (isCurrentWaveform) {
@@ -491,7 +491,7 @@ export default {
         getTimeAxisOptions() {
             return {
                 label: 'Time',
-                colorLabel: 'var(--bs-light)',
+                colorLabel: 'var(--p-light)',
                 type: 'value',
                 unit: 's',
             };
@@ -645,7 +645,7 @@ export default {
                     result.push({
                         label: wf.label,
                         data: { x: wf.x, y: yData },
-                        colorLabel: getComputedStyle(document.documentElement).getPropertyValue('--bs-warning').trim() ,
+                        colorLabel: getComputedStyle(document.documentElement).getPropertyValue('--p-warning').trim() ,
                         type: 'value',
                         position: 'right',
                         unit: 'V',

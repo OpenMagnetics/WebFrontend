@@ -152,8 +152,8 @@ export default {
 
 .iei-cell {
     min-width: 0;
-    background: rgba(var(--bs-white-rgb), 0.025);
-    border: 1px solid rgba(var(--bs-white-rgb), 0.06);
+    background: rgba(var(--p-white-rgb), 0.025);
+    border: 1px solid rgba(var(--p-white-rgb), 0.06);
     border-radius: 9px;
     padding: 0.5rem 0.65rem 0.55rem 0.65rem;
     transition: background 0.15s, border-color 0.15s;
@@ -176,8 +176,8 @@ export default {
 }
 
 .iei-cell:hover {
-    background: rgba(var(--bs-white-rgb), 0.05);
-    border-color: rgba(var(--bs-primary-rgb), 0.25);
+    background: rgba(var(--p-white-rgb), 0.05);
+    border-color: rgba(var(--p-primary-rgb), 0.25);
 }
 
 .iei-cell :deep(.row) {
@@ -187,7 +187,7 @@ export default {
 
 /* Make the label inside each cell read like an uppercase pill caption */
 .iei-cell :deep(.dim-label) {
-    color: rgba(var(--bs-white-rgb), 0.65) !important;
+    color: rgba(var(--p-white-rgb), 0.65) !important;
     font-size: 0.66rem !important;
     font-weight: 700 !important;
     letter-spacing: 0.05em;

@@ -521,7 +521,7 @@ export default {
     border-radius: 6px;
     cursor: pointer;
     transition: all 0.15s ease;
-    background-color: rgba(var(--bs-white-rgb), 0.1);
+    background-color: rgba(var(--p-white-rgb), 0.1);
     color: inherit;
 }
 
@@ -542,7 +542,7 @@ export default {
 .cp-divider {
     width: 1px;
     height: 24px;
-    background: rgba(var(--bs-white-rgb), 0.15);
+    background: rgba(var(--p-white-rgb), 0.15);
     margin: 0 4px;
 }
 
@@ -555,7 +555,7 @@ export default {
 .cp-spinner {
     width: 14px;
     height: 14px;
-    border: 2px solid rgba(var(--bs-white-rgb), 0.3);
+    border: 2px solid rgba(var(--p-white-rgb), 0.3);
     border-top-color: currentColor;
     border-radius: 50%;
     animation: cp-spin 0.8s linear infinite;

@@ -448,8 +448,8 @@ export default {
         <tbody>
           <tr><td>Mode fwd</td><td v-for="(op, i) in clllcDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px' }">{{ op.modeForward }}</td></tr>
           <tr><td>Mode rev</td><td v-for="(op, i) in clllcDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px' }">{{ op.modeReverse }}</td></tr>
-          <tr><td>ZVS pri lag</td><td v-for="(op, i) in clllcDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px', color: op.zvsMarginPrimaryLagging <= 0 ? 'var(--bs-warning)' : 'inherit' }">{{ Number(op.zvsMarginPrimaryLagging).toFixed(3) }}</td></tr>
-          <tr><td>ZVS sec lag</td><td v-for="(op, i) in clllcDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px', color: op.zvsMarginSecondaryLagging <= 0 ? 'var(--bs-warning)' : 'inherit' }">{{ Number(op.zvsMarginSecondaryLagging).toFixed(3) }}</td></tr>
+          <tr><td>ZVS pri lag</td><td v-for="(op, i) in clllcDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px', color: op.zvsMarginPrimaryLagging <= 0 ? 'var(--p-warning)' : 'inherit' }">{{ Number(op.zvsMarginPrimaryLagging).toFixed(3) }}</td></tr>
+          <tr><td>ZVS sec lag</td><td v-for="(op, i) in clllcDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px', color: op.zvsMarginSecondaryLagging <= 0 ? 'var(--p-warning)' : 'inherit' }">{{ Number(op.zvsMarginSecondaryLagging).toFixed(3) }}</td></tr>
           <tr><td>ZVS load thr pri (A)</td><td v-for="(op, i) in clllcDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px' }">{{ Number(op.zvsLoadThresholdPrimary).toFixed(3) }}</td></tr>
           <tr><td>ZVS load thr sec (A)</td><td v-for="(op, i) in clllcDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px' }">{{ Number(op.zvsLoadThresholdSecondary).toFixed(3) }}</td></tr>
           <tr><td>Res. Trans. (s)</td><td v-for="(op, i) in clllcDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px' }">{{ Number(op.resonantTransitionTime).toExponential(2) }}</td></tr>
@@ -461,7 +461,7 @@ export default {
           <tr><td>V_Cr1 peak (V)</td><td v-for="(op, i) in clllcDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px' }">{{ Number(op.cr1PeakVoltage).toFixed(2) }}</td></tr>
           <tr><td>V_Cr2 peak (V)</td><td v-for="(op, i) in clllcDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px' }">{{ Number(op.cr2PeakVoltage).toFixed(2) }}</td></tr>
           <tr><td>Sharing ratio</td><td v-for="(op, i) in clllcDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px' }">{{ Number(op.currentSharingRatio).toFixed(3) }}</td></tr>
-          <tr><td>Residual</td><td v-for="(op, i) in clllcDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px', color: op.steadyStateResidual > 1e-4 ? 'var(--bs-warning)' : 'inherit' }">{{ Number(op.steadyStateResidual).toExponential(2) }}</td></tr>
+          <tr><td>Residual</td><td v-for="(op, i) in clllcDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px', color: op.steadyStateResidual > 1e-4 ? 'var(--p-warning)' : 'inherit' }">{{ Number(op.steadyStateResidual).toExponential(2) }}</td></tr>
         </tbody>
       </table>
       <template v-else>

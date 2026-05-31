@@ -182,8 +182,8 @@ export default {
     left: 0;
     right: 0;
     height: 300px;
-    background: rgba(var(--bs-dark-rgb), 0.97);
-    border-top: 2px solid var(--bs-primary);
+    background: rgba(var(--p-dark-rgb), 0.97);
+    border-top: 2px solid var(--p-primary);
     z-index: 9999;
     display: flex;
     flex-direction: column;
@@ -196,15 +196,15 @@ export default {
     justify-content: space-between;
     align-items: center;
     padding: 0.5rem 1rem;
-    background: rgba(var(--bs-black-rgb), 0.3);
-    border-bottom: 1px solid rgba(var(--bs-white-rgb), 0.1);
+    background: rgba(var(--p-black-rgb), 0.3);
+    border-bottom: 1px solid rgba(var(--p-white-rgb), 0.1);
 }
 
 .console-title {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    color: var(--bs-primary);
+    color: var(--p-primary);
     font-weight: 600;
 }
 
@@ -221,8 +221,8 @@ export default {
 
 .console-btn {
     background: transparent;
-    border: 1px solid rgba(var(--bs-white-rgb), 0.2);
-    color: var(--bs-white);
+    border: 1px solid rgba(var(--p-white-rgb), 0.2);
+    color: var(--p-white);
     padding: 0.25rem 0.5rem;
     border-radius: 4px;
     cursor: pointer;
@@ -231,51 +231,51 @@ export default {
 }
 
 .console-btn:hover {
-    background: rgba(var(--bs-white-rgb), 0.1);
-    border-color: var(--bs-primary);
+    background: rgba(var(--p-white-rgb), 0.1);
+    border-color: var(--p-primary);
 }
 
 .console-toolbar {
     display: flex;
     gap: 0.5rem;
     padding: 0.5rem 1rem;
-    background: rgba(var(--bs-black-rgb), 0.2);
-    border-bottom: 1px solid rgba(var(--bs-white-rgb), 0.1);
+    background: rgba(var(--p-black-rgb), 0.2);
+    border-bottom: 1px solid rgba(var(--p-white-rgb), 0.1);
     align-items: center;
 }
 
 .console-search {
     flex: 1;
-    background: rgba(var(--bs-white-rgb), 0.05);
-    border: 1px solid rgba(var(--bs-white-rgb), 0.2);
-    color: var(--bs-white);
+    background: rgba(var(--p-white-rgb), 0.05);
+    border: 1px solid rgba(var(--p-white-rgb), 0.2);
+    color: var(--p-white);
     padding: 0.25rem 0.5rem;
     border-radius: 4px;
     font-size: 0.8rem;
 }
 
 .console-search::placeholder {
-    color: rgba(var(--bs-white-rgb), 0.4);
+    color: rgba(var(--p-white-rgb), 0.4);
 }
 
 .console-filter {
-    background: rgba(var(--bs-white-rgb), 0.05);
-    border: 1px solid rgba(var(--bs-white-rgb), 0.2);
-    color: var(--bs-white);
+    background: rgba(var(--p-white-rgb), 0.05);
+    border: 1px solid rgba(var(--p-white-rgb), 0.2);
+    color: var(--p-white);
     padding: 0.25rem 0.5rem;
     border-radius: 4px;
     font-size: 0.8rem;
 }
 
 .console-filter option {
-    background: var(--bs-dark);
+    background: var(--p-dark);
 }
 
 .console-autoscroll {
     display: flex;
     align-items: center;
     gap: 0.25rem;
-    color: rgba(var(--bs-white-rgb), 0.7);
+    color: rgba(var(--p-white-rgb), 0.7);
     font-size: 0.8rem;
     cursor: pointer;
 }
@@ -288,7 +288,7 @@ export default {
 
 .console-empty {
     text-align: center;
-    color: rgba(var(--bs-white-rgb), 0.4);
+    color: rgba(var(--p-white-rgb), 0.4);
     padding: 2rem;
 }
 
@@ -302,19 +302,19 @@ export default {
 }
 
 .console-log:hover {
-    background: rgba(var(--bs-white-rgb), 0.05);
+    background: rgba(var(--p-white-rgb), 0.05);
 }
 
 .log-error {
-    background: rgba(var(--bs-danger-rgb), 0.1);
+    background: rgba(var(--p-danger-rgb), 0.1);
 }
 
 .log-warn {
-    background: rgba(var(--bs-warning-rgb), 0.1);
+    background: rgba(var(--p-warning-rgb), 0.1);
 }
 
 .console-timestamp {
-    color: rgba(var(--bs-white-rgb), 0.4);
+    color: rgba(var(--p-white-rgb), 0.4);
     font-size: 0.75rem;
     white-space: nowrap;
     min-width: 85px;
@@ -329,7 +329,7 @@ export default {
     font-size: 0.65rem;
     padding: 0.1rem 0.3rem;
     border-radius: 3px;
-    color: var(--bs-white);
+    color: var(--p-white);
     white-space: nowrap;
     text-transform: uppercase;
     font-weight: 600;
@@ -339,7 +339,7 @@ export default {
 
 .console-message {
     margin: 0;
-    color: rgba(var(--bs-white-rgb), 0.9);
+    color: rgba(var(--p-white-rgb), 0.9);
     white-space: pre-wrap;
     word-break: break-word;
     flex: 1;
@@ -354,16 +354,16 @@ export default {
     width: 48px;
     height: 48px;
     border-radius: 50%;
-    background: var(--bs-primary);
+    background: var(--p-primary);
     border: none;
-    color: var(--bs-white);
+    color: var(--p-white);
     font-size: 1.2rem;
     cursor: pointer;
     z-index: 9998;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 2px 10px rgba(var(--bs-black-rgb), 0.3);
+    box-shadow: 0 2px 10px rgba(var(--p-black-rgb), 0.3);
     transition: all 0.2s;
 }
 
@@ -379,8 +379,8 @@ export default {
     position: absolute;
     top: -5px;
     right: -5px;
-    background: var(--bs-danger);
-    color: var(--bs-white);
+    background: var(--p-danger);
+    color: var(--p-white);
     font-size: 0.7rem;
     width: 20px;
     height: 20px;
@@ -392,8 +392,8 @@ export default {
 }
 
 @keyframes pulse {
-    0%, 100% { box-shadow: 0 0 0 0 rgba(var(--bs-danger-rgb), 0.4); }
-    50% { box-shadow: 0 0 0 10px rgba(var(--bs-danger-rgb), 0); }
+    0%, 100% { box-shadow: 0 0 0 0 rgba(var(--p-danger-rgb), 0.4); }
+    50% { box-shadow: 0 0 0 10px rgba(var(--p-danger-rgb), 0); }
 }
 
 /* Scrollbar styling */
@@ -402,15 +402,15 @@ export default {
 }
 
 .console-body::-webkit-scrollbar-track {
-    background: rgba(var(--bs-black-rgb), 0.2);
+    background: rgba(var(--p-black-rgb), 0.2);
 }
 
 .console-body::-webkit-scrollbar-thumb {
-    background: rgba(var(--bs-white-rgb), 0.2);
+    background: rgba(var(--p-white-rgb), 0.2);
     border-radius: 4px;
 }
 
 .console-body::-webkit-scrollbar-thumb:hover {
-    background: rgba(var(--bs-white-rgb), 0.3);
+    background: rgba(var(--p-white-rgb), 0.3);
 }
 </style>

@@ -305,16 +305,16 @@ export default {
 
         const style = getComputedStyle(document.body);
         const theme = {
-            primary: style.getPropertyValue('--bs-primary'),
-            secondary: style.getPropertyValue('--bs-secondary'),
-            success: style.getPropertyValue('--bs-success'),
-            info: style.getPropertyValue('--bs-info'),
-            warning: style.getPropertyValue('--bs-warning'),
-            danger: style.getPropertyValue('--bs-danger'),
-            light: style.getPropertyValue('--bs-light'),
-            dark: style.getPropertyValue('--bs-dark'),
-            white: style.getPropertyValue('--bs-white'),
-            transparent: style.getPropertyValue('--bs-transparent'),
+            primary: style.getPropertyValue('--p-primary'),
+            secondary: style.getPropertyValue('--p-secondary'),
+            success: style.getPropertyValue('--p-success'),
+            info: style.getPropertyValue('--p-info'),
+            warning: style.getPropertyValue('--p-warning'),
+            danger: style.getPropertyValue('--p-danger'),
+            light: style.getPropertyValue('--p-light'),
+            dark: style.getPropertyValue('--p-dark'),
+            white: style.getPropertyValue('--p-white'),
+            transparent: style.getPropertyValue('--p-transparent'),
         };
         this.$styleStore.setTheme(theme);
 
@@ -547,17 +547,17 @@ export default {
         padding: 0.2rem 1rem;
         background:
             linear-gradient(180deg,
-                rgba(var(--bs-dark-rgb), 0.94) 0%,
-                rgba(var(--bs-dark-rgb), 0.86) 100%),
+                rgba(var(--p-dark-rgb), 0.94) 0%,
+                rgba(var(--p-dark-rgb), 0.86) 100%),
             radial-gradient(circle at 0% 0%,
-                rgba(var(--bs-primary-rgb), 0.12) 0%,
+                rgba(var(--p-primary-rgb), 0.12) 0%,
                 transparent 50%) !important;
         backdrop-filter: blur(10px);
         -webkit-backdrop-filter: blur(10px);
-        border-bottom: 1px solid rgba(var(--bs-primary-rgb), 0.25);
+        border-bottom: 1px solid rgba(var(--p-primary-rgb), 0.25);
         box-shadow:
-            0 4px 24px rgba(var(--bs-black-rgb), 0.5),
-            0 0 0 1px rgba(var(--bs-white-rgb), 0.02) inset;
+            0 4px 24px rgba(var(--p-black-rgb), 0.5),
+            0 0 0 1px rgba(var(--p-white-rgb), 0.02) inset;
     }
 
     /* Subtle engineering grid behind the header */
@@ -566,8 +566,8 @@ export default {
         position: absolute;
         inset: 0;
         background-image:
-            linear-gradient(to right, rgba(var(--bs-primary-rgb), 0.06) 1px, transparent 1px),
-            linear-gradient(to bottom, rgba(var(--bs-primary-rgb), 0.06) 1px, transparent 1px);
+            linear-gradient(to right, rgba(var(--p-primary-rgb), 0.06) 1px, transparent 1px),
+            linear-gradient(to bottom, rgba(var(--p-primary-rgb), 0.06) 1px, transparent 1px);
         background-size: 24px 24px;
         opacity: 0.5;
         pointer-events: none;
@@ -611,18 +611,18 @@ export default {
         line-height: 1.1;
         padding: 0.25rem 0.5rem 0.25rem 0;
         background: linear-gradient(135deg,
-            var(--bs-primary) 0%,
-            color-mix(in srgb, var(--bs-primary) 65%, var(--bs-white) 35%) 100%);
+            var(--p-primary) 0%,
+            color-mix(in srgb, var(--p-primary) 65%, var(--p-white) 35%) 100%);
         -webkit-background-clip: text;
         background-clip: text;
         color: transparent !important;
-        text-shadow: 0 1px 6px rgba(var(--bs-primary-rgb), 0.25);
+        text-shadow: 0 1px 6px rgba(var(--p-primary-rgb), 0.25);
     }
 
     /* Mobile toggler */
     .om-toggler {
-        color: var(--bs-primary) !important;
-        border: 1px solid rgba(var(--bs-primary-rgb), 0.5) !important;
+        color: var(--p-primary) !important;
+        border: 1px solid rgba(var(--p-primary-rgb), 0.5) !important;
         border-radius: 8px !important;
         padding: 0.35rem 0.5rem !important;
         filter: invert(55%) sepia(50%) saturate(400%) hue-rotate(130deg);
@@ -632,12 +632,12 @@ export default {
        Nav link (text-only, no border) — Alf's Musings style
        ============================================================ */
     .om-nav-link {
-        color: rgba(var(--bs-primary-rgb), 0.8) !important;
+        color: rgba(var(--p-primary-rgb), 0.8) !important;
         transition: color 0.15s !important;
         font-weight: 500;
     }
     .om-nav-link:hover {
-        color: var(--bs-primary) !important;
+        color: var(--p-primary) !important;
         text-decoration: none;
     }
 
@@ -645,20 +645,20 @@ export default {
        Standard nav button — teal ghost
        ============================================================ */
     .om-nav-btn {
-        color: var(--bs-primary) !important;
+        color: var(--p-primary) !important;
         background: transparent !important;
-        border: 1px solid rgba(var(--bs-primary-rgb), 0.35) !important;
+        border: 1px solid rgba(var(--p-primary-rgb), 0.35) !important;
         border-radius: 10px !important;
         font-weight: 500;
         transition: background 0.15s, border-color 0.15s, transform 0.1s, box-shadow 0.15s !important;
     }
     .om-nav-btn:hover,
     .om-nav-btn:focus {
-        background: rgba(var(--bs-primary-rgb), 0.1) !important;
-        border-color: rgba(var(--bs-primary-rgb), 0.6) !important;
+        background: rgba(var(--p-primary-rgb), 0.1) !important;
+        border-color: rgba(var(--p-primary-rgb), 0.6) !important;
         transform: translateY(-1px);
-        box-shadow: 0 2px 10px rgba(var(--bs-primary-rgb), 0.18) !important;
-        color: var(--bs-primary) !important;
+        box-shadow: 0 2px 10px rgba(var(--p-primary-rgb), 0.18) !important;
+        color: var(--p-primary) !important;
         filter: none !important;
     }
 
@@ -666,20 +666,20 @@ export default {
        Wizards nav button — teal filled accent
        ============================================================ */
     .om-wizard-btn {
-        color: var(--bs-dark) !important;
-        background: rgba(var(--bs-primary-rgb), 0.85) !important;
-        border: 1px solid rgba(var(--bs-primary-rgb), 0.6) !important;
+        color: var(--p-dark) !important;
+        background: rgba(var(--p-primary-rgb), 0.85) !important;
+        border: 1px solid rgba(var(--p-primary-rgb), 0.6) !important;
         border-radius: 10px !important;
         font-weight: 600;
         transition: background 0.15s, border-color 0.15s, transform 0.1s, box-shadow 0.15s !important;
     }
     .om-wizard-btn:hover,
     .om-wizard-btn:focus {
-        background: var(--bs-primary) !important;
-        border-color: var(--bs-primary) !important;
+        background: var(--p-primary) !important;
+        border-color: var(--p-primary) !important;
         transform: translateY(-1px);
-        box-shadow: 0 3px 14px rgba(var(--bs-primary-rgb), 0.35) !important;
-        color: var(--bs-dark) !important;
+        box-shadow: 0 3px 14px rgba(var(--p-primary-rgb), 0.35) !important;
+        color: var(--p-dark) !important;
         filter: none !important;
     }
 
@@ -687,18 +687,18 @@ export default {
        Continue design button — subtle primary ghost
        ============================================================ */
     .om-continue-btn {
-        color: var(--bs-primary) !important;
-        background: rgba(var(--bs-primary-rgb), 0.08) !important;
-        border: 1px solid rgba(var(--bs-primary-rgb), 0.4) !important;
+        color: var(--p-primary) !important;
+        background: rgba(var(--p-primary-rgb), 0.08) !important;
+        border: 1px solid rgba(var(--p-primary-rgb), 0.4) !important;
         border-radius: 10px !important;
         font-weight: 500;
         transition: background 0.15s, border-color 0.15s, transform 0.1s, box-shadow 0.15s !important;
     }
     .om-continue-btn:hover {
-        background: rgba(var(--bs-primary-rgb), 0.18) !important;
-        border-color: rgba(var(--bs-primary-rgb), 0.65) !important;
+        background: rgba(var(--p-primary-rgb), 0.18) !important;
+        border-color: rgba(var(--p-primary-rgb), 0.65) !important;
         transform: translateY(-1px);
-        box-shadow: 0 2px 10px rgba(var(--bs-primary-rgb), 0.2) !important;
+        box-shadow: 0 2px 10px rgba(var(--p-primary-rgb), 0.2) !important;
         filter: none !important;
     }
 
@@ -706,9 +706,9 @@ export default {
        Load MAS button — filled primary
        ============================================================ */
     .om-load-btn {
-        color: var(--bs-dark) !important;
-        background: var(--bs-primary) !important;
-        border: 1px solid var(--bs-primary) !important;
+        color: var(--p-dark) !important;
+        background: var(--p-primary) !important;
+        border: 1px solid var(--p-primary) !important;
         border-radius: 10px !important;
         font-weight: 600;
         transition: filter 0.15s, transform 0.1s, box-shadow 0.15s !important;
@@ -716,55 +716,55 @@ export default {
     .om-load-btn:hover {
         filter: brightness(1.12);
         transform: translateY(-1px);
-        box-shadow: 0 3px 14px rgba(var(--bs-primary-rgb), 0.35) !important;
+        box-shadow: 0 3px 14px rgba(var(--p-primary-rgb), 0.35) !important;
     }
 
     /* ============================================================
        Right-side utility buttons
        ============================================================ */
     .om-donate-btn {
-        color: var(--bs-info) !important;
-        background: rgba(var(--bs-info-rgb), 0.12) !important;
-        border: 1px solid rgba(var(--bs-info-rgb), 0.4) !important;
+        color: var(--p-info) !important;
+        background: rgba(var(--p-info-rgb), 0.12) !important;
+        border: 1px solid rgba(var(--p-info-rgb), 0.4) !important;
         border-radius: 10px !important;
         font-weight: 600;
         transition: background 0.15s, border-color 0.15s, transform 0.1s, box-shadow 0.15s !important;
     }
     .om-donate-btn:hover {
-        background: rgba(var(--bs-info-rgb), 0.22) !important;
-        border-color: rgba(var(--bs-info-rgb), 0.65) !important;
+        background: rgba(var(--p-info-rgb), 0.22) !important;
+        border-color: rgba(var(--p-info-rgb), 0.65) !important;
         transform: translateY(-1px);
-        box-shadow: 0 2px 10px rgba(var(--bs-info-rgb), 0.22) !important;
+        box-shadow: 0 2px 10px rgba(var(--p-info-rgb), 0.22) !important;
         filter: none !important;
     }
 
     .om-bug-btn {
-        color: var(--bs-danger) !important;
-        background: rgba(var(--bs-danger-rgb), 0.08) !important;
-        border: 1px solid rgba(var(--bs-danger-rgb), 0.35) !important;
+        color: var(--p-danger) !important;
+        background: rgba(var(--p-danger-rgb), 0.08) !important;
+        border: 1px solid rgba(var(--p-danger-rgb), 0.35) !important;
         border-radius: 10px !important;
         transition: background 0.15s, border-color 0.15s, transform 0.1s, box-shadow 0.15s !important;
     }
     .om-bug-btn:hover {
-        background: rgba(var(--bs-danger-rgb), 0.18) !important;
-        border-color: rgba(var(--bs-danger-rgb), 0.6) !important;
+        background: rgba(var(--p-danger-rgb), 0.18) !important;
+        border-color: rgba(var(--p-danger-rgb), 0.6) !important;
         transform: translateY(-1px);
-        box-shadow: 0 2px 10px rgba(var(--bs-danger-rgb), 0.2) !important;
+        box-shadow: 0 2px 10px rgba(var(--p-danger-rgb), 0.2) !important;
         filter: none !important;
     }
 
     .om-github-btn {
-        color: var(--bs-success) !important;
-        background: rgba(var(--bs-success-rgb), 0.08) !important;
-        border: 1px solid rgba(var(--bs-success-rgb), 0.35) !important;
+        color: var(--p-success) !important;
+        background: rgba(var(--p-success-rgb), 0.08) !important;
+        border: 1px solid rgba(var(--p-success-rgb), 0.35) !important;
         border-radius: 10px !important;
         transition: background 0.15s, border-color 0.15s, transform 0.1s, box-shadow 0.15s !important;
     }
     .om-github-btn:hover {
-        background: rgba(var(--bs-success-rgb), 0.18) !important;
-        border-color: rgba(var(--bs-success-rgb), 0.6) !important;
+        background: rgba(var(--p-success-rgb), 0.18) !important;
+        border-color: rgba(var(--p-success-rgb), 0.6) !important;
         transform: translateY(-1px);
-        box-shadow: 0 2px 10px rgba(var(--bs-success-rgb), 0.2) !important;
+        box-shadow: 0 2px 10px rgba(var(--p-success-rgb), 0.2) !important;
         filter: none !important;
     }
 
@@ -773,18 +773,18 @@ export default {
        ============================================================ */
     .om-header .dropdown-menu {
         background: linear-gradient(180deg,
-            rgba(var(--bs-dark-rgb), 0.96) 0%,
-            rgba(var(--bs-dark-rgb), 0.88) 100%) !important;
-        border: 1px solid rgba(var(--bs-primary-rgb), 0.3) !important;
+            rgba(var(--p-dark-rgb), 0.96) 0%,
+            rgba(var(--p-dark-rgb), 0.88) 100%) !important;
+        border: 1px solid rgba(var(--p-primary-rgb), 0.3) !important;
         border-radius: 12px !important;
-        box-shadow: 0 8px 28px rgba(var(--bs-dark-rgb), 0.55) !important;
+        box-shadow: 0 8px 28px rgba(var(--p-dark-rgb), 0.55) !important;
         padding: 0.4rem !important;
     }
 
     .om-header .dropdown-menu .dropdown-item,
     .om-header .dropdown-menu .dropdown-item.btn,
     .om-header .dropdown-menu .dropdown-item.nav-link {
-        color: var(--bs-primary) !important;
+        color: var(--p-primary) !important;
         background: transparent !important;
         border: 0 !important;
         border-radius: 8px !important;
@@ -795,21 +795,21 @@ export default {
     .om-header .dropdown-menu .dropdown-item:hover,
     .om-header .dropdown-menu .dropdown-item.btn:hover,
     .om-header .dropdown-menu .dropdown-item.nav-link:hover {
-        background: rgba(var(--bs-primary-rgb), 0.1) !important;
-        color: var(--bs-primary) !important;
+        background: rgba(var(--p-primary-rgb), 0.1) !important;
+        color: var(--p-primary) !important;
     }
 
     .om-header .dropdown-menu .dropdown-item:disabled,
     .om-header .dropdown-menu .dropdown-item.btn:disabled {
-        color: rgba(var(--bs-primary-rgb), 0.35) !important;
+        color: rgba(var(--p-primary-rgb), 0.35) !important;
         cursor: not-allowed;
     }
 
-    /* Override Bootstrap dropdown CSS variables */
+    /* Override dropdown CSS variables */
     .om-header .dropdown-menu {
-        --bs-dropdown-link-color: var(--bs-primary) !important;
-        --bs-dropdown-link-hover-color: var(--bs-primary) !important;
-        --bs-dropdown-link-hover-bg: rgba(var(--bs-primary-rgb), 0.1) !important;
+        --p-dropdown-link-color: var(--p-primary) !important;
+        --p-dropdown-link-hover-color: var(--p-primary) !important;
+        --p-dropdown-link-hover-bg: rgba(var(--p-primary-rgb), 0.1) !important;
     }
 
     /* ============================================================
@@ -875,44 +875,44 @@ export default {
     }
 
     body {
-        background-color: var(--bs-dark) !important;
+        background-color: var(--p-dark) !important;
     }
     .border-dark {
-        border-color: var(--bs-dark) !important;
+        border-color: var(--p-dark) !important;
     }
     .input-group-text{
-        background-color: var(--bs-light) !important;
-        color: var(--bs-white) !important;
-        border-color: var(--bs-dark) !important;
+        background-color: var(--p-light) !important;
+        color: var(--p-white) !important;
+        border-color: var(--p-dark) !important;
     }
     .custom-select,
     .form-control {
-        background-color: var(--bs-dark) !important;
-        color: var(--bs-white) !important;
-        border-color: var(--bs-dark) !important;
+        background-color: var(--p-dark) !important;
+        color: var(--p-white) !important;
+        border-color: var(--p-dark) !important;
     }
     .jumbotron{
         border-radius: 1em;
-        box-shadow: 0 5px 10px rgba(var(--bs-black-rgb), .2);
+        box-shadow: 0 5px 10px rgba(var(--p-black-rgb), .2);
     }
     .card{
         padding: 1.5em .5em .5em;
-        background-color: var(--bs-light);
+        background-color: var(--p-light);
         border-radius: 1em;
         text-align: center;
-        box-shadow: 0 5px 10px rgba(var(--bs-black-rgb), .2);
+        box-shadow: 0 5px 10px rgba(var(--p-black-rgb), .2);
     }
     .form-control:disabled {
-        background-color: var(--bs-dark) !important;
-        color: var(--bs-white) !important;
-        border-color: var(--bs-dark) !important;
+        background-color: var(--p-dark) !important;
+        color: var(--p-white) !important;
+        border-color: var(--p-dark) !important;
     }
     .form-control:-webkit-autofill,
     .form-control:-webkit-autofill:focus,
     .form-control:-webkit-autofill{
-        -webkit-text-fill-color: var(--bs-white) !important;
+        -webkit-text-fill-color: var(--p-white) !important;
         background-color: transparent !important;
-        -webkit-box-shadow: 0 0 0 50px var(--bs-dark) inset;
+        -webkit-box-shadow: 0 0 0 50px var(--p-dark) inset;
     }
 
     .container {
@@ -924,11 +924,11 @@ export default {
       margin-top: 60px;
     }
     ::-webkit-scrollbar { height: 3px;}
-    ::-webkit-scrollbar-button {  background-color: var(--bs-light); }
-    ::-webkit-scrollbar-track {  background-color: var(--bs-light);}
-    ::-webkit-scrollbar-track-piece { background-color: var(--bs-dark);}
-    ::-webkit-scrollbar-thumb {  background-color: var(--bs-light); border-radius: 3px;}
-    ::-webkit-scrollbar-corner { background-color: var(--bs-light);}
+    ::-webkit-scrollbar-button {  background-color: var(--p-light); }
+    ::-webkit-scrollbar-track {  background-color: var(--p-light);}
+    ::-webkit-scrollbar-track-piece { background-color: var(--p-dark);}
+    ::-webkit-scrollbar-thumb {  background-color: var(--p-light); border-radius: 3px;}
+    ::-webkit-scrollbar-corner { background-color: var(--p-light);}
 
     .small-text {
        font-size: calc(1rem + 0.1vw);
@@ -941,7 +941,7 @@ export default {
     }
 
     .accordion-button:focus {
-        border-color: var(--bs-primary) !important;
+        border-color: var(--p-primary) !important;
         outline: 0  !important;
         box-shadow: none  !important;
     }

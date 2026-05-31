@@ -134,16 +134,16 @@ export default {
 }
 
 .custom-switch:checked {
-    background-color: var(--bs-primary);
-    border-color: var(--bs-primary);
+    background-color: var(--p-primary);
+    border-color: var(--p-primary);
 }
 
 .custom-switch:focus {
-    box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.25);
+    box-shadow: 0 0 0 0.25rem rgba(var(--p-primary-rgb), 0.25);
 }
 
 .setting-item:hover {
-    background-color: rgba(var(--bs-white-rgb), 0.03);
+    background-color: rgba(var(--p-white-rgb), 0.03);
     margin-left: -0.5rem;
     margin-right: -0.5rem;
     padding-left: 0.5rem;

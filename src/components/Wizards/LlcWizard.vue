@@ -423,7 +423,7 @@ export default {
         </thead>
         <tbody>
           <tr><td>Mode</td><td v-for="(op, i) in llcDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px' }">{{ llcModeLabel(op.lastMode) }}</td></tr>
-          <tr><td>Residual</td><td v-for="(op, i) in llcDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px', color: op.steadyStateResidual > 1e-4 ? 'var(--bs-warning)' : 'inherit' }">{{ Number(op.steadyStateResidual).toExponential(2) }}</td></tr>
+          <tr><td>Residual</td><td v-for="(op, i) in llcDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px', color: op.steadyStateResidual > 1e-4 ? 'var(--p-warning)' : 'inherit' }">{{ Number(op.steadyStateResidual).toExponential(2) }}</td></tr>
           <tr><td>ZVS margin (A)</td><td v-for="(op, i) in llcDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px' }">{{ Number(op.zvsMarginLagging).toFixed(3) }}</td></tr>
           <tr><td>I_pri peak (A)</td><td v-for="(op, i) in llcDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px' }">{{ Number(op.primaryPeakCurrent).toFixed(3) }}</td></tr>
         </tbody>

@@ -419,7 +419,7 @@ export default {
                                 :labelWidthProportionClass="'col-0'"
                                 :valueWidthProportionClass="'col-12'"
                                 :valueBgColor="'transparent'"
-                                :textColor="'var(--bs-white)'"
+                                :textColor="'var(--p-white)'"
                                 @update="(name, value) => onModelChanged(name, value)"
                             />
                         </div>
@@ -436,7 +436,7 @@ export default {
                                 :labelWidthProportionClass="'col-0'"
                                 :valueWidthProportionClass="'col-12'"
                                 :valueBgColor="'transparent'"
-                                :textColor="'var(--bs-white)'"
+                                :textColor="'var(--p-white)'"
                                 @update="(name, value) => onModelChanged(name, value)"
                             />
                         </div>
@@ -453,7 +453,7 @@ export default {
                                 :labelWidthProportionClass="'col-0'"
                                 :valueWidthProportionClass="'col-12'"
                                 :valueBgColor="'transparent'"
-                                :textColor="'var(--bs-white)'"
+                                :textColor="'var(--p-white)'"
                                 @update="(name, value) => onModelChanged(name, value)"
                             />
                         </div>
@@ -462,7 +462,7 @@ export default {
                         <div class="setting-item d-flex justify-content-between align-items-center py-2 border-bottom border-secondary">
                             <div>
                                 <span class="text-white">Manual wire losses models</span>
-                                <small class="text-muted d-block">Override automatic model selection</small>
+                                <small class="text-color-secondary d-block">Override automatic model selection</small>
                             </div>
                             <div class="form-check form-switch">
                                 <input 
@@ -487,7 +487,7 @@ export default {
                                 :labelWidthProportionClass="'col-0'"
                                 :valueWidthProportionClass="'col-12'"
                                 :valueBgColor="'transparent'"
-                                :textColor="modelSettingsStore.coilEnableUserWindingLossesModels ? 'var(--bs-white)' : 'var(--bs-secondary)'"
+                                :textColor="modelSettingsStore.coilEnableUserWindingLossesModels ? 'var(--p-white)' : 'var(--p-secondary)'"
                                 :disabled="!modelSettingsStore.coilEnableUserWindingLossesModels"
                                 @update="(name, value) => onModelChanged(name, modelSettingsStore.coilEnableUserWindingLossesModels ? value : modelSettingsStore.windingSkinEffectLossesModel)"
                             />
@@ -505,7 +505,7 @@ export default {
                                 :labelWidthProportionClass="'col-0'"
                                 :valueWidthProportionClass="'col-12'"
                                 :valueBgColor="'transparent'"
-                                :textColor="modelSettingsStore.coilEnableUserWindingLossesModels ? 'var(--bs-white)' : 'var(--bs-secondary)'"
+                                :textColor="modelSettingsStore.coilEnableUserWindingLossesModels ? 'var(--p-white)' : 'var(--p-secondary)'"
                                 :disabled="!modelSettingsStore.coilEnableUserWindingLossesModels"
                                 @update="(name, value) => onModelChanged(name, modelSettingsStore.coilEnableUserWindingLossesModels ? value : modelSettingsStore.windingProximityEffectLossesModel)"
                             />
@@ -523,11 +523,11 @@ export default {
                                 :labelWidthProportionClass="'col-0'"
                                 :valueWidthProportionClass="'col-12'"
                                 :valueBgColor="'transparent'"
-                                :textColor="isCoreLossesDisabled ? 'var(--bs-secondary)' : 'var(--bs-white)'"
+                                :textColor="isCoreLossesDisabled ? 'var(--p-secondary)' : 'var(--p-white)'"
                                 :disabled="isCoreLossesDisabled"
                                 @update="(name, value) => onModelChanged(name, value)"
                             />
-                            <small class="text-muted" v-if="modelSettingsStore.availableCoreLossesMethodsError">
+                            <small class="text-color-secondary" v-if="modelSettingsStore.availableCoreLossesMethodsError">
                                 {{ modelSettingsStore.availableCoreLossesMethodsError }}
                             </small>
                         </div>
@@ -544,7 +544,7 @@ export default {
                                 :labelWidthProportionClass="'col-0'"
                                 :valueWidthProportionClass="'col-12'"
                                 :valueBgColor="'transparent'"
-                                :textColor="'var(--bs-white)'"
+                                :textColor="'var(--p-white)'"
                                 @update="(name, value) => onModelChanged(name, value)"
                             />
                         </div>
@@ -553,7 +553,7 @@ export default {
                         <div class="setting-item py-2">
                             <label class="text-white mb-1 d-block small">Field Plot Resolution</label>
                             <div class="d-flex justify-content-between align-items-center mb-1">
-                                <small class="text-muted">Horizontal (X)</small>
+                                <small class="text-color-secondary">Horizontal (X)</small>
                                 <span class="text-primary font-bold small">{{ modelSettingsStore.painterNumberPointsX }}</span>
                             </div>
                             <input
@@ -565,7 +565,7 @@ export default {
                                 v-model.number="modelSettingsStore.painterNumberPointsX"
                             >
                             <div class="d-flex justify-content-between align-items-center mb-1">
-                                <small class="text-muted">Vertical (Y)</small>
+                                <small class="text-color-secondary">Vertical (Y)</small>
                                 <span class="text-primary font-bold small">{{ modelSettingsStore.painterNumberPointsY }}</span>
                             </div>
                             <input
@@ -632,16 +632,16 @@ export default {
 }
 
 .custom-switch:checked {
-    background-color: var(--bs-primary);
-    border-color: var(--bs-primary);
+    background-color: var(--p-primary);
+    border-color: var(--p-primary);
 }
 
 .custom-switch:focus {
-    box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.25);
+    box-shadow: 0 0 0 0.25rem rgba(var(--p-primary-rgb), 0.25);
 }
 
 .setting-item:hover {
-    background-color: rgba(var(--bs-white-rgb), 0.03);
+    background-color: rgba(var(--p-white-rgb), 0.03);
     margin-left: -0.5rem;
     margin-right: -0.5rem;
     padding-left: 0.5rem;
@@ -650,6 +650,6 @@ export default {
 }
 
 .settings-modal-bg {
-    background: var(--bs-dark);
+    background: var(--p-dark);
 }
 </style>

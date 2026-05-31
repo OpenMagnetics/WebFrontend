@@ -185,7 +185,7 @@ export default {
     <div class="container">
         <div class="row">
             <ElementFromList
-                class="col-12 my-2 text-start"
+                class="col-12 my-2 text-left"
                 :dataTestLabel="dataTestLabel + '-ShapeNames'"
                 :name="'shape'"
                 :titleSameRow="true"
@@ -205,7 +205,7 @@ export default {
             />
 
             <ElementFromList
-                class="col-12 my-2 text-start"
+                class="col-12 my-2 text-left"
                 :dataTestLabel="dataTestLabel + '-MaterialNames'"
                 :name="'material'"
                 :titleSameRow="true"
@@ -224,7 +224,7 @@ export default {
                 :textColor="$styleStore.crossReferencer.inputTextColor"
             />
 
-            <Dimension class="col-12 my-2 text-start"
+            <Dimension class="col-12 my-2 text-left"
                 v-if="isStackable"
                 :name="'numberStacks'"
                 :replaceTitle="'Number of Stacks'"
@@ -246,7 +246,7 @@ export default {
                 :textColor="$styleStore.crossReferencer.inputTextColor"
             />
 
-            <CoreGappingSelector class="col-12 my-2 text-start"
+            <CoreGappingSelector class="col-12 my-2 text-left"
                 :title="'Gap Info: '"
                 :dataTestLabel="dataTestLabel + '-Gap'"
                 :disabled="disabled"
@@ -262,7 +262,7 @@ export default {
                 :textColor="$styleStore.crossReferencer.inputTextColor"
             />
 
-            <Dimension class="col-12 my-2 text-start"
+            <Dimension class="col-12 my-2 text-left"
                 :name="'numberTurns'"
                 :replaceTitle="'Number of Turns'"
                 :unit="null"
@@ -283,7 +283,7 @@ export default {
                 :textColor="$styleStore.crossReferencer.inputTextColor"
             />
 
-            <Dimension class="col-12 my-2 text-start"
+            <Dimension class="col-12 my-2 text-left"
                 :name="'temperature'"
                 :replaceTitle="'Temperature'"
                 :unit="'°C'"
@@ -321,7 +321,7 @@ export default {
             />
 
             <SeveralElementsFromList
-                class="col-12 my-2 text-start"
+                class="col-12 my-2 text-left"
                 :classInput="'col-12'"
                 :name="'enabledCoreTypes'"
                 :disabled="disabled"
@@ -338,7 +338,7 @@ export default {
                 :textColor="$styleStore.crossReferencer.inputTextColor"
             />
 
-            <Dimension class="col-12 my-2 text-start"
+            <Dimension class="col-12 my-2 text-left"
                 :name="'numberMaximumResults'"
                 :replaceTitle="'Number of Maximum Results'"
                 :unit="null"
@@ -369,31 +369,31 @@ export default {
 
 <style>
     .offcanvas-size-xxl {
-        --bs-offcanvas-width: 65vw !important;
+        --p-offcanvas-width: 65vw !important;
     }
     .offcanvas-size-xl {
-        --bs-offcanvas-width: 65vw !important;
-        --bs-offcanvas-height: 60vh !important;
+        --p-offcanvas-width: 65vw !important;
+        --p-offcanvas-height: 60vh !important;
     }
     .offcanvas-size-lg {
-        --bs-offcanvas-width: 65vw !important;
-        --bs-offcanvas-height: 60vh !important;
+        --p-offcanvas-width: 65vw !important;
+        --p-offcanvas-height: 60vh !important;
     }
     .offcanvas-size-md { /* add Responsivenes to default offcanvas */
-        --bs-offcanvas-width: 65vw !important;
-        --bs-offcanvas-height: 60vh !important;
+        --p-offcanvas-width: 65vw !important;
+        --p-offcanvas-height: 60vh !important;
     }
     .offcanvas-size-sm {
-        --bs-offcanvas-width: 65vw !important;
-        --bs-offcanvas-height: 60vh !important;
+        --p-offcanvas-width: 65vw !important;
+        --p-offcanvas-height: 60vh !important;
     }
     .offcanvas-size-xs {
-        --bs-offcanvas-width: 65vw !important;
-        --bs-offcanvas-height: 60vh !important;
+        --p-offcanvas-width: 65vw !important;
+        --p-offcanvas-height: 60vh !important;
     }
     .offcanvas-size-xxs {
-        --bs-offcanvas-width: 65vw !important;
-        --bs-offcanvas-height: 60vh !important;
+        --p-offcanvas-width: 65vw !important;
+        --p-offcanvas-height: 60vh !important;
     }
 
 
@@ -417,44 +417,44 @@ export default {
     }
 
     body {
-        background-color: var(--bs-dark) !important;
+        background-color: var(--p-dark) !important;
     }
     .border-dark {
-        border-color: var(--bs-dark) !important;
+        border-color: var(--p-dark) !important;
     }
     .input-group-text{
-        background-color: var(--bs-light) !important;
-        color: var(--bs-white) !important;
-        border-color: var(--bs-dark) !important;
+        background-color: var(--p-light) !important;
+        color: var(--p-white) !important;
+        border-color: var(--p-dark) !important;
     }
     .custom-select,
     .form-control {
-        background-color: var(--bs-dark) !important;
-        color: var(--bs-white) !important;
-        border-color: var(--bs-dark) !important;
+        background-color: var(--p-dark) !important;
+        color: var(--p-white) !important;
+        border-color: var(--p-dark) !important;
     }
     .jumbotron{
         border-radius: 1em;
-        box-shadow: 0 5px 10px rgba(var(--bs-black-rgb), .2);
+        box-shadow: 0 5px 10px rgba(var(--p-black-rgb), .2);
     }
     .card{
         padding: 1.5em .5em .5em;
-        background-color: var(--bs-light);
+        background-color: var(--p-light);
         border-radius: 1em;
         text-align: center;
-        box-shadow: 0 5px 10px rgba(var(--bs-black-rgb), .2);
+        box-shadow: 0 5px 10px rgba(var(--p-black-rgb), .2);
     }
     .form-control:disabled {
-        background-color: var(--bs-dark) !important;
-        color: var(--bs-white) !important;
-        border-color: var(--bs-dark) !important;
+        background-color: var(--p-dark) !important;
+        color: var(--p-white) !important;
+        border-color: var(--p-dark) !important;
     }
     .form-control:-webkit-autofill,
     .form-control:-webkit-autofill:focus,
     .form-control:-webkit-autofill{
-        -webkit-text-fill-color: var(--bs-white) !important;
+        -webkit-text-fill-color: var(--p-white) !important;
         background-color: transparent !important;
-        -webkit-box-shadow: 0 0 0 50px var(--bs-dark) inset;
+        -webkit-box-shadow: 0 0 0 50px var(--p-dark) inset;
     }
 
     .container {
@@ -466,11 +466,11 @@ export default {
       margin-top: 60px;
     }
     ::-webkit-scrollbar { height: 3px;}
-    ::-webkit-scrollbar-button {  background-color: var(--bs-light); }
-    ::-webkit-scrollbar-track {  background-color: var(--bs-light);}
-    ::-webkit-scrollbar-track-piece { background-color: var(--bs-dark);}
-    ::-webkit-scrollbar-thumb {  background-color: var(--bs-light); border-radius: 3px;}
-    ::-webkit-scrollbar-corner { background-color: var(--bs-light);}
+    ::-webkit-scrollbar-button {  background-color: var(--p-light); }
+    ::-webkit-scrollbar-track {  background-color: var(--p-light);}
+    ::-webkit-scrollbar-track-piece { background-color: var(--p-dark);}
+    ::-webkit-scrollbar-thumb {  background-color: var(--p-light); border-radius: 3px;}
+    ::-webkit-scrollbar-corner { background-color: var(--p-light);}
 
     .small-text {
        font-size: calc(1rem + 0.1vw);
@@ -483,7 +483,7 @@ export default {
     }
 
     .accordion-button:focus {
-        border-color: var(--bs-primary) !important;
+        border-color: var(--p-primary) !important;
         outline: 0  !important;
         box-shadow: none  !important;
     }

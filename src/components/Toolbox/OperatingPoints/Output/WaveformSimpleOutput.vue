@@ -240,14 +240,14 @@ export default {
 .wso-card {
     background:
         linear-gradient(180deg,
-            rgba(var(--bs-primary-rgb), 0.06) 0%,
-            rgba(var(--bs-primary-rgb), 0.02) 100%),
-        var(--bs-dark);
-    border: 1px solid rgba(var(--bs-primary-rgb), 0.18);
-    border-left: 3px solid rgba(var(--bs-primary-rgb), 0.7);
+            rgba(var(--p-primary-rgb), 0.06) 0%,
+            rgba(var(--p-primary-rgb), 0.02) 100%),
+        var(--p-dark);
+    border: 1px solid rgba(var(--p-primary-rgb), 0.18);
+    border-left: 3px solid rgba(var(--p-primary-rgb), 0.7);
     border-radius: 12px;
     overflow: hidden;
-    box-shadow: 0 3px 10px rgba(var(--bs-black-rgb), 0.3);
+    box-shadow: 0 3px 10px rgba(var(--p-black-rgb), 0.3);
     margin: 0.4rem 0;
 }
 
@@ -256,9 +256,9 @@ export default {
     align-items: center;
     gap: 0.4rem;
     padding: 0.4rem 0.7rem;
-    background: rgba(var(--bs-primary-rgb), 0.1);
-    border-bottom: 1px solid rgba(var(--bs-primary-rgb), 0.18);
-    color: var(--bs-primary);
+    background: rgba(var(--p-primary-rgb), 0.1);
+    border-bottom: 1px solid rgba(var(--p-primary-rgb), 0.18);
+    color: var(--p-primary);
     font-weight: 600;
     font-size: 0.72rem;
     letter-spacing: 0.05em;
@@ -267,7 +267,7 @@ export default {
 
 .wso-header i {
     font-size: 0.85rem;
-    filter: drop-shadow(0 0 4px rgba(var(--bs-primary-rgb), 0.5));
+    filter: drop-shadow(0 0 4px rgba(var(--p-primary-rgb), 0.5));
 }
 
 .wso-body {
@@ -284,11 +284,11 @@ export default {
 }
 
 .wso-body :deep(> * + *) {
-    border-top: 1px solid rgba(var(--bs-white-rgb), 0.04);
+    border-top: 1px solid rgba(var(--p-white-rgb), 0.04);
 }
 
 .wso-body :deep(> *:hover) {
-    background: rgba(var(--bs-white-rgb), 0.04);
+    background: rgba(var(--p-white-rgb), 0.04);
 }
 </style>
 

@@ -22,7 +22,7 @@ export default {
                     </div>
             <div class="container">
                 <div class="row">
-                    <div class="my-2 p-2 text-start col-12 rounded-4 row">
+                    <div class="my-2 p-2 text-left col-12 rounded-4 row">
                         <h5
                             :style="$styleStore.toolSelector.explanation"
                             :data-cy="dataTestLabel + '-magnetic-magneticBuilder-explanation'"
@@ -39,7 +39,7 @@ export default {
                             {{'I want build my own magnetic'}} <i class="pi pi-send"></i>
                         </button>
                     </div>
-                    <div class="my-2 p-2 text-start col-12 rounded-4 row">
+                    <div class="my-2 p-2 text-left col-12 rounded-4 row">
                         <h5
                             :style="$styleStore.toolSelector.explanation"
                             :data-cy="dataTestLabel + '-magnetic-specifications-explanation'"
@@ -56,7 +56,7 @@ export default {
                             {{'I want to download a report'}}
                         </button>
                     </div>
-                    <div class="my-2 p-2 text-start col-12 rounded-4 row">
+                    <div class="my-2 p-2 text-left col-12 rounded-4 row">
                         <h5
                             :style="$styleStore.toolSelector.explanation"
                             :data-cy="dataTestLabel + '-magnetic-MagneticAdviser-explanation'"
@@ -73,7 +73,7 @@ export default {
                             {{'Recommend me some COTS cores'}}
                         </button>
                     </div>
-                    <div class="my-2 p-2 text-start col-12 rounded-4 row">
+                    <div class="my-2 p-2 text-left col-12 rounded-4 row">
                         <h5
                             :style="$styleStore.toolSelector.explanation"
                             :data-cy="dataTestLabel + '-magnetic-specifications-explanation'"

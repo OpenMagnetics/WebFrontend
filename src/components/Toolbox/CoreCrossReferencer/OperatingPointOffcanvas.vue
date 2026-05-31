@@ -119,7 +119,7 @@ export default {
         @update:visible="(v) => $emit('update:visible', v)"
         position="left"
         :modal="true"
-        :style="{ width: '65vw', background: 'var(--bs-dark)' }"
+        :style="{ width: '65vw', background: 'var(--p-dark)' }"
         :header="'Edit Operation Point'">
         <div class="container mx-auto text-white">
             <OperatingPoint @updatedWaveform="updatedWaveform" />

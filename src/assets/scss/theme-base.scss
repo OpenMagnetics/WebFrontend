@@ -1,67 +1,67 @@
 /* ============================================================================
- * Bootstrap-shim
- * Standalone replacement for the Bootstrap 5 CSS classes still used in templates
- * across WebFrontend / MagneticBuilder. Bootstrap (the npm package + JS) was
- * removed; this file provides the minimum CSS surface those templates depend on
- * (--bs-* tokens, btn, form-*, navbar, dropdown, modal/offcanvas body styles,
- * bg-*, text-*, border-*, alert, spinner, container).
- * Layout utilities (col-N, row/grid, d-flex, m-/p-/mx-/my-, justify-content,
- * align-items, flex, text-start/end/center, w-/h-) come from PrimeFlex.
+ * theme-base.scss
+ * Project design-system base layer. Defines the --p-* token palette used by
+ * every component (color, typography, radius, body chrome) plus the small
+ * surface of class-name utilities still referenced from Vue templates (.btn,
+ * .form-*, .navbar, .dropdown, .modal, .offcanvas, .bg-*, .text-*, .border-*,
+ * .alert, .spinner, .container). Layout utilities (col-N, row/grid, d-flex,
+ * m-/p-/mx-/my-, justify-content, align-items, flex, text-left/end/center,
+ * w-/h-) come from PrimeFlex.
  * ========================================================================== */
 
 :root {
-    --bs-primary:      #539796;
-    --bs-secondary:    #005f48;
-    --bs-info:         #b18aea;
-    --bs-success:      #00b6ff;
-    --bs-warning:      #ffb94e;
-    --bs-danger:       #ff8800;
-    --bs-dark:         #1a1a1a;
-    --bs-light:        #2a2a2a;
-    --bs-white:        #d4d4d4;
-    --bs-black:        #000;
-    --bs-gray-100:     #f8f9fa;
-    --bs-gray-200:     #e9ecef;
-    --bs-gray-300:     #dee2e6;
-    --bs-gray-400:     #ced4da;
-    --bs-gray-500:     #adb5bd;
-    --bs-gray-600:     #6c757d;
-    --bs-gray-700:     #495057;
-    --bs-gray-800:     #343a40;
-    --bs-gray-900:     #212529;
+    --p-primary:      #539796;
+    --p-secondary:    #005f48;
+    --p-info:         #b18aea;
+    --p-success:      #00b6ff;
+    --p-warning:      #ffb94e;
+    --p-danger:       #ff8800;
+    --p-dark:         #1a1a1a;
+    --p-light:        #2a2a2a;
+    --p-white:        #d4d4d4;
+    --p-black:        #000;
+    --p-gray-100:     #f8f9fa;
+    --p-gray-200:     #e9ecef;
+    --p-gray-300:     #dee2e6;
+    --p-gray-400:     #ced4da;
+    --p-gray-500:     #adb5bd;
+    --p-gray-600:     #6c757d;
+    --p-gray-700:     #495057;
+    --p-gray-800:     #343a40;
+    --p-gray-900:     #212529;
 
-    --bs-primary-rgb:   83, 151, 150;
-    --bs-secondary-rgb: 0, 95, 72;
-    --bs-info-rgb:      177, 138, 234;
-    --bs-success-rgb:   0, 182, 255;
-    --bs-warning-rgb:   255, 185, 78;
-    --bs-danger-rgb:    255, 136, 0;
-    --bs-dark-rgb:      26, 26, 26;
-    --bs-light-rgb:     42, 42, 42;
-    --bs-white-rgb:     212, 212, 212;
-    --bs-black-rgb:     0, 0, 0;
+    --p-primary-rgb:   83, 151, 150;
+    --p-secondary-rgb: 0, 95, 72;
+    --p-info-rgb:      177, 138, 234;
+    --p-success-rgb:   0, 182, 255;
+    --p-warning-rgb:   255, 185, 78;
+    --p-danger-rgb:    255, 136, 0;
+    --p-dark-rgb:      26, 26, 26;
+    --p-light-rgb:     42, 42, 42;
+    --p-white-rgb:     212, 212, 212;
+    --p-black-rgb:     0, 0, 0;
 
-    --bs-border-radius: 0.375rem;
-    --bs-border-radius-sm: 0.25rem;
-    --bs-border-radius-lg: 0.5rem;
+    --p-border-radius: 0.375rem;
+    --p-border-radius-sm: 0.25rem;
+    --p-border-radius-lg: 0.5rem;
 
-    --bs-body-font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans", "Liberation Sans", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
-    --bs-body-font-size: 1rem;
-    --bs-body-font-weight: 400;
-    --bs-body-line-height: 1.5;
-    --bs-body-color: var(--bs-white);
-    --bs-body-bg: var(--bs-dark);
+    --p-body-font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans", "Liberation Sans", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+    --p-body-font-size: 1rem;
+    --p-body-font-weight: 400;
+    --p-body-line-height: 1.5;
+    --p-body-color: var(--p-white);
+    --p-body-bg: var(--p-dark);
 }
 
 html, body {
-    font-family: var(--bs-body-font-family);
-    font-size: var(--bs-body-font-size);
-    font-weight: var(--bs-body-font-weight);
-    line-height: var(--bs-body-line-height);
-    color: var(--bs-body-color);
+    font-family: var(--p-body-font-family);
+    font-size: var(--p-body-font-size);
+    font-weight: var(--p-body-font-weight);
+    line-height: var(--p-body-line-height);
+    color: var(--p-body-color);
 }
 
-/* Bootstrap default heading sizes (h1 2.5rem .. h6 1rem) */
+/* Default heading sizes (h1 2.5rem .. h6 1rem) */
 h1, .h1 { font-size: 2.5rem;  font-weight: 500; line-height: 1.2; margin: 0 0 0.5rem; }
 h2, .h2 { font-size: 2rem;    font-weight: 500; line-height: 1.2; margin: 0 0 0.5rem; }
 h3, .h3 { font-size: 1.75rem; font-weight: 500; line-height: 1.2; margin: 0 0 0.5rem; }
@@ -75,7 +75,7 @@ h6, .h6 { font-size: 1rem;    font-weight: 500; line-height: 1.2; margin: 0 0 0.
 }
 p { margin: 0 0 1rem; }
 
-/* Bootstrap typography utilities */
+/* Typography utilities */
 small, .small { font-size: 0.875em; }
 .lead          { font-size: 1.25rem; font-weight: 300; }
 button, input, select, textarea, optgroup, .btn, .form-control, a.p-button, button.p-button {
@@ -86,47 +86,47 @@ button, input, select, textarea, optgroup, .btn, .form-control, a.p-button, butt
 }
 
 /* ========== Backgrounds ========== */
-.bg-primary    { background-color: var(--bs-primary)   !important; }
-.bg-secondary  { background-color: var(--bs-secondary) !important; }
-.bg-info       { background-color: var(--bs-info)      !important; }
-.bg-success    { background-color: var(--bs-success)   !important; }
-.bg-warning    { background-color: var(--bs-warning)   !important; }
-.bg-danger     { background-color: var(--bs-danger)    !important; }
-.bg-dark       { background-color: var(--bs-dark)      !important; }
-.bg-light      { background-color: var(--bs-light)     !important; }
+.bg-primary    { background-color: var(--p-primary)   !important; }
+.bg-secondary  { background-color: var(--p-secondary) !important; }
+.bg-info       { background-color: var(--p-info)      !important; }
+.bg-success    { background-color: var(--p-success)   !important; }
+.bg-warning    { background-color: var(--p-warning)   !important; }
+.bg-danger     { background-color: var(--p-danger)    !important; }
+.bg-dark       { background-color: var(--p-dark)      !important; }
+.bg-light      { background-color: var(--p-light)     !important; }
 .bg-transparent{ background-color: transparent         !important; }
 .bg-gradient   { background-image: linear-gradient(180deg, rgba(255,255,255,0.15), rgba(255,255,255,0)) !important; }
 
 /* ========== Text colors ========== */
-.text-primary   { color: var(--bs-primary)   !important; }
-.text-secondary { color: var(--bs-secondary) !important; }
-.text-info      { color: var(--bs-info)      !important; }
-.text-success   { color: var(--bs-success)   !important; }
-.text-warning   { color: var(--bs-warning)   !important; }
-.text-danger    { color: var(--bs-danger)    !important; }
-.text-dark      { color: var(--bs-dark)      !important; }
-.text-light     { color: var(--bs-light)     !important; }
-.text-white     { color: var(--bs-white)     !important; }
-.text-white-50  { color: rgba(var(--bs-white-rgb), 0.5) !important; }
-.text-muted     { color: rgba(var(--bs-white-rgb), 0.6) !important; }
-.text-link      { color: var(--bs-primary)   !important; text-decoration: underline; }
+.text-primary   { color: var(--p-primary)   !important; }
+.text-secondary { color: var(--p-secondary) !important; }
+.text-info      { color: var(--p-info)      !important; }
+.text-success   { color: var(--p-success)   !important; }
+.text-warning   { color: var(--p-warning)   !important; }
+.text-danger    { color: var(--p-danger)    !important; }
+.text-dark      { color: var(--p-dark)      !important; }
+.text-light     { color: var(--p-light)     !important; }
+.text-white     { color: var(--p-white)     !important; }
+.text-white-50  { color: rgba(var(--p-white-rgb), 0.5) !important; }
+.text-color-secondary     { color: rgba(var(--p-white-rgb), 0.6) !important; }
+.text-link      { color: var(--p-primary)   !important; text-decoration: underline; }
 
 /* ========== Borders ========== */
-.border          { border: 1px solid rgba(var(--bs-white-rgb), 0.15) !important; }
+.border          { border: 1px solid rgba(var(--p-white-rgb), 0.15) !important; }
 .border-0        { border: 0 !important; }
-.border-top      { border-top: 1px solid rgba(var(--bs-white-rgb), 0.15) !important; }
-.border-bottom   { border-bottom: 1px solid rgba(var(--bs-white-rgb), 0.15) !important; }
-.border-start    { border-left: 1px solid rgba(var(--bs-white-rgb), 0.15) !important; }
-.border-end      { border-right: 1px solid rgba(var(--bs-white-rgb), 0.15) !important; }
-.border-primary  { border-color: var(--bs-primary)   !important; }
-.border-secondary{ border-color: var(--bs-secondary) !important; }
-.border-info     { border-color: var(--bs-info)      !important; }
-.border-success  { border-color: var(--bs-success)   !important; }
-.border-warning  { border-color: var(--bs-warning)   !important; }
-.border-danger   { border-color: var(--bs-danger)    !important; }
-.border-dark     { border-color: var(--bs-dark)      !important; }
-.border-light    { border-color: var(--bs-light)     !important; }
-.rounded         { border-radius: var(--bs-border-radius) !important; }
+.border-top      { border-top: 1px solid rgba(var(--p-white-rgb), 0.15) !important; }
+.border-bottom   { border-bottom: 1px solid rgba(var(--p-white-rgb), 0.15) !important; }
+.border-start    { border-left: 1px solid rgba(var(--p-white-rgb), 0.15) !important; }
+.border-end      { border-right: 1px solid rgba(var(--p-white-rgb), 0.15) !important; }
+.border-primary  { border-color: var(--p-primary)   !important; }
+.border-secondary{ border-color: var(--p-secondary) !important; }
+.border-info     { border-color: var(--p-info)      !important; }
+.border-success  { border-color: var(--p-success)   !important; }
+.border-warning  { border-color: var(--p-warning)   !important; }
+.border-danger   { border-color: var(--p-danger)    !important; }
+.border-dark     { border-color: var(--p-dark)      !important; }
+.border-light    { border-color: var(--p-light)     !important; }
+.rounded         { border-radius: var(--p-border-radius) !important; }
 .rounded-circle  { border-radius: 50% !important; }
 .shadow          { box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.15) !important; }
 .shadow-lg       { box-shadow: 0 1rem 3rem rgba(0,0,0,0.175) !important; }
@@ -137,7 +137,7 @@ button, input, select, textarea, optgroup, .btn, .form-control, a.p-button, butt
     padding: 0.375rem 0.75rem;
     font-size: 1rem;
     line-height: 1.5;
-    border-radius: var(--bs-border-radius);
+    border-radius: var(--p-border-radius);
     border: 1px solid transparent;
     background: transparent;
     color: inherit;
@@ -146,37 +146,37 @@ button, input, select, textarea, optgroup, .btn, .form-control, a.p-button, butt
     transition: color 0.15s, background-color 0.15s, border-color 0.15s, box-shadow 0.15s;
 }
 .btn:disabled, .btn.disabled { opacity: 0.65; pointer-events: none; }
-.btn-primary   { color: var(--bs-white); background-color: var(--bs-primary);   border-color: var(--bs-primary); }
-.btn-secondary { color: var(--bs-white); background-color: var(--bs-secondary); border-color: var(--bs-secondary); }
-.btn-success   { color: var(--bs-white); background-color: var(--bs-success);   border-color: var(--bs-success); }
-.btn-info      { color: var(--bs-white); background-color: var(--bs-info);      border-color: var(--bs-info); }
-.btn-warning   { color: var(--bs-dark);  background-color: var(--bs-warning);   border-color: var(--bs-warning); }
-.btn-danger    { color: var(--bs-white); background-color: var(--bs-danger);    border-color: var(--bs-danger); }
-.btn-dark      { color: var(--bs-white); background-color: var(--bs-dark);      border-color: var(--bs-dark); }
-.btn-light     { color: var(--bs-dark);  background-color: var(--bs-light);     border-color: var(--bs-light); }
-.btn-outline-primary { color: var(--bs-primary); border-color: var(--bs-primary); }
-.btn-outline-primary:hover { background-color: var(--bs-primary); color: var(--bs-white); }
-.btn-outline-light { color: var(--bs-white); border-color: rgba(var(--bs-white-rgb), 0.4); }
-.btn-outline-light:hover { background-color: rgba(var(--bs-white-rgb), 0.1); }
-.btn-outline-danger { color: var(--bs-danger); border-color: var(--bs-danger); }
-.btn-outline-danger:hover { background-color: var(--bs-danger); color: var(--bs-white); }
-.btn-sm  { padding: 0.25rem 0.5rem; font-size: 0.875rem; border-radius: var(--bs-border-radius-sm); }
-.btn-lg  { padding: 0.5rem 1rem;    font-size: 1.25rem;  border-radius: var(--bs-border-radius-lg); }
+.btn-primary   { color: var(--p-white); background-color: var(--p-primary);   border-color: var(--p-primary); }
+.btn-secondary { color: var(--p-white); background-color: var(--p-secondary); border-color: var(--p-secondary); }
+.btn-success   { color: var(--p-white); background-color: var(--p-success);   border-color: var(--p-success); }
+.btn-info      { color: var(--p-white); background-color: var(--p-info);      border-color: var(--p-info); }
+.btn-warning   { color: var(--p-dark);  background-color: var(--p-warning);   border-color: var(--p-warning); }
+.btn-danger    { color: var(--p-white); background-color: var(--p-danger);    border-color: var(--p-danger); }
+.btn-dark      { color: var(--p-white); background-color: var(--p-dark);      border-color: var(--p-dark); }
+.btn-light     { color: var(--p-dark);  background-color: var(--p-light);     border-color: var(--p-light); }
+.btn-outline-primary { color: var(--p-primary); border-color: var(--p-primary); }
+.btn-outline-primary:hover { background-color: var(--p-primary); color: var(--p-white); }
+.btn-outline-light { color: var(--p-white); border-color: rgba(var(--p-white-rgb), 0.4); }
+.btn-outline-light:hover { background-color: rgba(var(--p-white-rgb), 0.1); }
+.btn-outline-danger { color: var(--p-danger); border-color: var(--p-danger); }
+.btn-outline-danger:hover { background-color: var(--p-danger); color: var(--p-white); }
+.btn-sm  { padding: 0.25rem 0.5rem; font-size: 0.875rem; border-radius: var(--p-border-radius-sm); }
+.btn-lg  { padding: 0.5rem 1rem;    font-size: 1.25rem;  border-radius: var(--p-border-radius-lg); }
 .btn-group { display: inline-flex; }
 .btn-group > .btn { border-radius: 0; }
-.btn-group > .btn:first-child { border-top-left-radius: var(--bs-border-radius); border-bottom-left-radius: var(--bs-border-radius); }
-.btn-group > .btn:last-child { border-top-right-radius: var(--bs-border-radius); border-bottom-right-radius: var(--bs-border-radius); }
+.btn-group > .btn:first-child { border-top-left-radius: var(--p-border-radius); border-bottom-left-radius: var(--p-border-radius); }
+.btn-group > .btn:last-child { border-top-right-radius: var(--p-border-radius); border-bottom-right-radius: var(--p-border-radius); }
 .btn-close {
     box-sizing: content-box; width: 1em; height: 1em; padding: 0.25em; color: #000;
     background: transparent url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23000'%3E%3Cpath d='M.293.293a1 1 0 011.414 0L8 6.586 14.293.293a1 1 0 111.414 1.414L9.414 8l6.293 6.293a1 1 0 01-1.414 1.414L8 9.414l-6.293 6.293a1 1 0 01-1.414-1.414L6.586 8 .293 1.707a1 1 0 010-1.414z'/%3E%3C/svg%3E") center/1em auto no-repeat;
-    border: 0; border-radius: var(--bs-border-radius); opacity: 0.5; cursor: pointer;
+    border: 0; border-radius: var(--p-border-radius); opacity: 0.5; cursor: pointer;
 }
 .btn-close:hover { opacity: 0.75; }
 .btn-close-white { filter: invert(1) grayscale(100%) brightness(200%); }
 
 /* PrimeVue button-class fallback for plain <a>/<button class="p-button">
  * (PrimeVue's Aura theme only styles actual <Button> components; bare
- * elements with the .p-button class on them were rendered as Bootstrap
+ * elements with the .p-button class on them were rendered as
  * buttons under the old setup. Mirror that here.)
  */
 a.p-button, button.p-button {
@@ -186,7 +186,7 @@ a.p-button, button.p-button {
     padding: 0.5rem 1rem;
     font-size: 1rem;
     line-height: 1.25;
-    border-radius: var(--bs-border-radius);
+    border-radius: var(--p-border-radius);
     border: 1px solid transparent;
     text-decoration: none;
     cursor: pointer;
@@ -194,15 +194,15 @@ a.p-button, button.p-button {
 }
 a.p-button-lg, button.p-button-lg { padding: 0.5rem 1rem; font-size: 1.25rem; }
 a.p-button-sm, button.p-button-sm { padding: 0.3rem 0.7rem; font-size: 0.875rem; }
-a.p-button-primary, button.p-button-primary { background: var(--bs-primary); color: var(--bs-white); border-color: var(--bs-primary); }
-a.p-button-secondary, button.p-button-secondary { background: var(--bs-secondary); color: var(--bs-white); border-color: var(--bs-secondary); }
-a.p-button-success, button.p-button-success { background: var(--bs-success); color: var(--bs-white); border-color: var(--bs-success); }
-a.p-button-info, button.p-button-info { background: var(--bs-info); color: var(--bs-white); border-color: var(--bs-info); }
-a.p-button-warning, button.p-button-warning { background: var(--bs-warning); color: var(--bs-dark); border-color: var(--bs-warning); }
-a.p-button-danger, button.p-button-danger { background: var(--bs-danger); color: var(--bs-white); border-color: var(--bs-danger); }
+a.p-button-primary, button.p-button-primary { background: var(--p-primary); color: var(--p-white); border-color: var(--p-primary); }
+a.p-button-secondary, button.p-button-secondary { background: var(--p-secondary); color: var(--p-white); border-color: var(--p-secondary); }
+a.p-button-success, button.p-button-success { background: var(--p-success); color: var(--p-white); border-color: var(--p-success); }
+a.p-button-info, button.p-button-info { background: var(--p-info); color: var(--p-white); border-color: var(--p-info); }
+a.p-button-warning, button.p-button-warning { background: var(--p-warning); color: var(--p-dark); border-color: var(--p-warning); }
+a.p-button-danger, button.p-button-danger { background: var(--p-danger); color: var(--p-white); border-color: var(--p-danger); }
 a.p-button-outlined, button.p-button-outlined { background: transparent; }
-a.p-button-outlined.p-button-primary, button.p-button-outlined.p-button-primary { color: var(--bs-primary); }
-a.p-button-outlined.p-button-secondary, button.p-button-outlined.p-button-secondary { color: var(--bs-secondary); }
+a.p-button-outlined.p-button-primary, button.p-button-outlined.p-button-primary { color: var(--p-primary); }
+a.p-button-outlined.p-button-secondary, button.p-button-outlined.p-button-secondary { color: var(--p-secondary); }
 a.p-button:hover, button.p-button:hover { filter: brightness(1.1); }
 a.p-button:disabled, button.p-button:disabled, a.p-button.disabled, button.p-button.disabled { opacity: 0.6; cursor: not-allowed; pointer-events: none; }
 
@@ -210,16 +210,16 @@ a.p-button:disabled, button.p-button:disabled, a.p-button.disabled, button.p-but
 .form-control {
     display: block; width: 100%; padding: 0.375rem 0.75rem;
     font-size: 1rem; line-height: 1.5;
-    color: var(--bs-white);
-    background-color: rgba(var(--bs-white-rgb), 0.05);
-    border: 1px solid rgba(var(--bs-white-rgb), 0.2);
-    border-radius: var(--bs-border-radius);
+    color: var(--p-white);
+    background-color: rgba(var(--p-white-rgb), 0.05);
+    border: 1px solid rgba(var(--p-white-rgb), 0.2);
+    border-radius: var(--p-border-radius);
     transition: border-color 0.15s, box-shadow 0.15s;
 }
 .form-control:focus {
-    border-color: var(--bs-primary);
+    border-color: var(--p-primary);
     outline: 0;
-    box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.25);
+    box-shadow: 0 0 0 0.25rem rgba(var(--p-primary-rgb), 0.25);
 }
 .form-control-sm { padding: 0.25rem 0.5rem; font-size: 0.875rem; }
 .form-label { margin-bottom: 0.5rem; }
@@ -228,21 +228,21 @@ a.p-button:disabled, button.p-button:disabled, a.p-button.disabled, button.p-but
 }
 .form-check-input {
     width: 1em; height: 1em; margin-top: 0.25em; margin-left: -1.5em;
-    background-color: rgba(var(--bs-white-rgb), 0.1);
-    border: 1px solid rgba(var(--bs-white-rgb), 0.25);
+    background-color: rgba(var(--p-white-rgb), 0.1);
+    border: 1px solid rgba(var(--p-white-rgb), 0.25);
     appearance: none; -webkit-appearance: none; cursor: pointer;
     vertical-align: top; print-color-adjust: exact;
 }
 .form-check-input[type="checkbox"] { border-radius: 0.25em; }
 .form-check-input[type="radio"]    { border-radius: 50%; }
 .form-check-input:checked {
-    background-color: var(--bs-primary); border-color: var(--bs-primary);
+    background-color: var(--p-primary); border-color: var(--p-primary);
     background-repeat: no-repeat; background-position: center;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath fill='none' stroke='%23fff' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='M6 10l3 3l6-6'/%3E%3C/svg%3E");
 }
 .form-check-input:focus {
-    border-color: var(--bs-primary);
-    box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.25);
+    border-color: var(--p-primary);
+    box-shadow: 0 0 0 0.25rem rgba(var(--p-primary-rgb), 0.25);
 }
 .form-check-label { cursor: pointer; }
 .form-switch { padding-left: 2.5em; }
@@ -264,17 +264,17 @@ a.p-button:disabled, button.p-button:disabled, a.p-button.disabled, button.p-but
 }
 .form-range::-webkit-slider-thumb {
     -webkit-appearance: none; appearance: none; width: 1rem; height: 1rem;
-    background: var(--bs-primary); border-radius: 50%; cursor: pointer;
+    background: var(--p-primary); border-radius: 50%; cursor: pointer;
 }
 .form-range::-moz-range-thumb {
-    width: 1rem; height: 1rem; background: var(--bs-primary);
+    width: 1rem; height: 1rem; background: var(--p-primary);
     border-radius: 50%; border: 0; cursor: pointer;
 }
 .form-range::-webkit-slider-runnable-track {
-    width: 100%; height: 0.5rem; background: rgba(var(--bs-white-rgb), 0.2); border-radius: 1rem;
+    width: 100%; height: 0.5rem; background: rgba(var(--p-white-rgb), 0.2); border-radius: 1rem;
 }
 .form-range::-moz-range-track {
-    width: 100%; height: 0.5rem; background: rgba(var(--bs-white-rgb), 0.2); border-radius: 1rem;
+    width: 100%; height: 0.5rem; background: rgba(var(--p-white-rgb), 0.2); border-radius: 1rem;
 }
 
 .input-group {
@@ -299,15 +299,15 @@ a.p-button:disabled, button.p-button:disabled, a.p-button.disabled, button.p-but
 .nav-item     { display: block; }
 .nav-link     {
     display: block; padding: 0.5rem 1rem;
-    color: rgba(var(--bs-white-rgb), 0.55);
+    color: rgba(var(--p-white-rgb), 0.55);
     text-decoration: none;
     background: none; border: 0;
 }
-.nav-link:hover { color: rgba(var(--bs-white-rgb), 0.75); }
+.nav-link:hover { color: rgba(var(--p-white-rgb), 0.75); }
 .navbar-toggler {
     padding: 0.25rem 0.75rem; font-size: 1.25rem; line-height: 1;
     background-color: transparent;
-    border: 1px solid rgba(var(--bs-white-rgb), 0.1); border-radius: var(--bs-border-radius);
+    border: 1px solid rgba(var(--p-white-rgb), 0.1); border-radius: var(--p-border-radius);
     cursor: pointer;
 }
 .navbar-toggler-icon {
@@ -348,26 +348,26 @@ a.p-button:disabled, button.p-button:disabled, a.p-button.disabled, button.p-but
 .dropdown-menu {
     position: absolute; top: 100%; left: 0; z-index: 1000;
     display: none; min-width: 10rem; padding: 0.5rem 0; margin: 0.125rem 0 0;
-    font-size: 1rem; color: var(--bs-white); text-align: left;
-    list-style: none; background-color: var(--bs-dark);
-    border: 1px solid rgba(var(--bs-white-rgb), 0.15);
-    border-radius: var(--bs-border-radius);
+    font-size: 1rem; color: var(--p-white); text-align: left;
+    list-style: none; background-color: var(--p-dark);
+    border: 1px solid rgba(var(--p-white-rgb), 0.15);
+    border-radius: var(--p-border-radius);
     box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.25);
 }
 .dropdown-menu.show { display: block; }
-.dropdown-menu-dark { color: var(--bs-white); background-color: var(--bs-dark); }
+.dropdown-menu-dark { color: var(--p-white); background-color: var(--p-dark); }
 .dropdown-item {
     display: block; width: 100%; padding: 0.25rem 1rem;
-    clear: both; font-weight: 400; color: rgba(var(--bs-white-rgb), 0.85);
+    clear: both; font-weight: 400; color: rgba(var(--p-white-rgb), 0.85);
     text-align: inherit; text-decoration: none; white-space: nowrap;
     background-color: transparent; border: 0; cursor: pointer;
 }
 .dropdown-item:hover, .dropdown-item:focus {
-    color: var(--bs-white); background-color: rgba(var(--bs-white-rgb), 0.075);
+    color: var(--p-white); background-color: rgba(var(--p-white-rgb), 0.075);
 }
 .dropdown-divider {
     height: 0; margin: 0.5rem 0; overflow: hidden;
-    border-top: 1px solid rgba(var(--bs-white-rgb), 0.15);
+    border-top: 1px solid rgba(var(--p-white-rgb), 0.15);
 }
 .dropdown-submenu { position: relative; }
 
@@ -382,21 +382,21 @@ a.p-button:disabled, button.p-button:disabled, a.p-button.disabled, button.p-but
 /* ========== Alerts ========== */
 .alert {
     position: relative; padding: 0.75rem 1.25rem; margin-bottom: 1rem;
-    border: 1px solid transparent; border-radius: var(--bs-border-radius);
+    border: 1px solid transparent; border-radius: var(--p-border-radius);
 }
-.alert-dark   { color: var(--bs-white); background-color: var(--bs-dark);   border-color: rgba(var(--bs-white-rgb), 0.15); }
-.alert-danger { color: var(--bs-white); background-color: rgba(var(--bs-danger-rgb), 0.25); border-color: var(--bs-danger); }
+.alert-dark   { color: var(--p-white); background-color: var(--p-dark);   border-color: rgba(var(--p-white-rgb), 0.15); }
+.alert-danger { color: var(--p-white); background-color: rgba(var(--p-danger-rgb), 0.25); border-color: var(--p-danger); }
 .alert-dismissible .btn-close { position: absolute; top: 0; right: 0; z-index: 2; padding: 1rem; }
 
 /* ========== Spinners ========== */
 .spinner-border {
     display: inline-block; width: 2rem; height: 2rem; vertical-align: -0.125em;
     border: 0.25em solid currentColor; border-right-color: transparent;
-    border-radius: 50%; animation: bs-spin 0.75s linear infinite;
+    border-radius: 50%; animation: p-spin 0.75s linear infinite;
 }
 .spinner-border-sm { width: 1rem; height: 1rem; border-width: 0.2em; }
-@keyframes bs-spin { to { transform: rotate(360deg); } }
-.fa-spin { animation: bs-spin 1s linear infinite; }
+@keyframes p-spin { to { transform: rotate(360deg); } }
+.fa-spin { animation: p-spin 1s linear infinite; }
 
 /* PrimeIcons inherit their parent font-size (Aura's default of 1rem made
  * icons stuck small even inside .display-6 / .text-3xl headings). */
@@ -420,9 +420,9 @@ h1 .pi, h2 .pi, h3 .pi, h4 .pi, h5 .pi, h6 .pi,
     flex-shrink: 0;
     width: 100%;
     max-width: 100%;
-    padding-right: calc(var(--bs-gutter-x, 0.75rem) * 0.5);
-    padding-left: calc(var(--bs-gutter-x, 0.75rem) * 0.5);
-    margin-top: var(--bs-gutter-y, 0);
+    padding-right: calc(var(--p-gutter-x, 0.75rem) * 0.5);
+    padding-left: calc(var(--p-gutter-x, 0.75rem) * 0.5);
+    margin-top: var(--p-gutter-y, 0);
 }
 
 /* ========== Display headings ========== */
@@ -476,9 +476,9 @@ h1 .pi, h2 .pi, h3 .pi, h4 .pi, h5 .pi, h6 .pi,
  * rules so e.g. <input type="file" hidden class="btn"> stays out of layout. */
 [hidden] { display: none !important; }
 
-/* Bootstrap-style card layout shell.
+/* Card layout shell.
  * PrimeVue Aura applies `padding: 1.5em 0.5em 0.5em` to `.card`, which
- * collides with templates that use `<div class="card">` as a Bootstrap
+ * collides with templates that use `<div class="card">` as a
  * container (those put their padding on `.card-body`). Neutralize the
  * Aura rule for non-PrimeVue cards so `pt-2` etc on `.card-body` actually
  * controls the top spacing.
@@ -499,7 +499,7 @@ h1 .pi, h2 .pi, h3 .pi, h4 .pi, h5 .pi, h6 .pi,
 .card-header {
     padding: 0.5rem 1rem;
     margin-bottom: 0;
-    border-bottom: 1px solid rgba(var(--bs-white-rgb), 0.1);
+    border-bottom: 1px solid rgba(var(--p-white-rgb), 0.1);
 }
 .card-title { margin-bottom: 0.5rem; }
 .card-text:last-child { margin-bottom: 0; }
@@ -513,10 +513,10 @@ h1 .pi, h2 .pi, h3 .pi, h4 .pi, h5 .pi, h6 .pi,
     text-align: center;
     white-space: nowrap;
     vertical-align: baseline;
-    border-radius: var(--bs-border-radius);
+    border-radius: var(--p-border-radius);
 }
 
-/* Bootstrap display utilities (PrimeFlex uses `.flex`/`.block` not `.d-*`). */
+/* Display utilities (PrimeFlex uses `.flex`/`.block` not `.d-*`). */
 .d-none         { display: none !important; }
 .d-inline       { display: inline !important; }
 .d-inline-block { display: inline-block !important; }
@@ -568,7 +568,7 @@ h1 .pi, h2 .pi, h3 .pi, h4 .pi, h5 .pi, h6 .pi,
 .me-auto      { margin-right: auto !important; }
 .mt-auto      { margin-top: auto !important; }
 
-/* me-N / ms-N (Bootstrap RTL-aware spacing in LTR contexts = right/left). */
+/* me-N / ms-N (RTL-aware spacing in LTR contexts = right/left). */
 .me-0 { margin-right: 0     !important; }
 .me-1 { margin-right: 0.25rem !important; }
 .me-2 { margin-right: 0.5rem  !important; }
@@ -594,7 +594,7 @@ h1 .pi, h2 .pi, h3 .pi, h4 .pi, h5 .pi, h6 .pi,
 .ps-4 { padding-left: 1.5rem  !important; }
 .ps-5 { padding-left: 3rem    !important; }
 
-/* ========== Grid columns (Bootstrap col-N + col-{breakpoint}-N) ==========
+/* ========== Grid columns (col-N + col-{breakpoint}-N) ==========
  * Required by wizards (ConverterWizardBase uses col-xl-3/4/5) and many other
  * legacy templates. Without these, every `.col-xl-3` collapses to 100%
  * width via the `.row > *` rule above. */
@@ -628,7 +628,7 @@ h1 .pi, h2 .pi, h3 .pi, h4 .pi, h5 .pi, h6 .pi,
     @for $i from 1 through 12 { .col-xxl-#{$i} { @include _bs-col-width($i); } }
 }
 
-/* col-offset-N is a project-specific addition (not standard Bootstrap). */
+/* col-offset-N is a project-specific addition. */
 .col-offset-0  { margin-left: 0%; }
 .col-offset-1  { margin-left: 8.333333%; }
 .col-offset-2  { margin-left: 16.666667%; }
@@ -642,18 +642,18 @@ h1 .pi, h2 .pi, h3 .pi, h4 .pi, h5 .pi, h6 .pi,
 .col-offset-10 { margin-left: 83.333333%; }
 .col-offset-11 { margin-left: 91.666667%; }
 
-/* g-N gutter — Bootstrap's row/col gutter; uses CSS vars consumed by .row > * padding above. */
-.row.g-0 { --bs-gutter-x: 0;       --bs-gutter-y: 0; }
-.row.g-1 { --bs-gutter-x: 0.25rem; --bs-gutter-y: 0.25rem; }
-.row.g-2 { --bs-gutter-x: 0.5rem;  --bs-gutter-y: 0.5rem; }
-.row.g-3 { --bs-gutter-x: 1rem;    --bs-gutter-y: 1rem; }
-.row.g-4 { --bs-gutter-x: 1.5rem;  --bs-gutter-y: 1.5rem; }
-.row.g-5 { --bs-gutter-x: 3rem;    --bs-gutter-y: 3rem; }
-.row.gx-0 { --bs-gutter-x: 0; }
-.row.gx-2 { --bs-gutter-x: 0.5rem; }
-.row.gx-3 { --bs-gutter-x: 1rem; }
-.row.gx-4 { --bs-gutter-x: 1.5rem; }
-.row.gy-0 { --bs-gutter-y: 0; }
-.row.gy-2 { --bs-gutter-y: 0.5rem; }
-.row.gy-3 { --bs-gutter-y: 1rem; }
-.row.gy-4 { --bs-gutter-y: 1.5rem; }
+/* g-N gutter — row/col gutter; uses CSS vars consumed by .row > * padding above. */
+.row.g-0 { --p-gutter-x: 0;       --p-gutter-y: 0; }
+.row.g-1 { --p-gutter-x: 0.25rem; --p-gutter-y: 0.25rem; }
+.row.g-2 { --p-gutter-x: 0.5rem;  --p-gutter-y: 0.5rem; }
+.row.g-3 { --p-gutter-x: 1rem;    --p-gutter-y: 1rem; }
+.row.g-4 { --p-gutter-x: 1.5rem;  --p-gutter-y: 1.5rem; }
+.row.g-5 { --p-gutter-x: 3rem;    --p-gutter-y: 3rem; }
+.row.gx-0 { --p-gutter-x: 0; }
+.row.gx-2 { --p-gutter-x: 0.5rem; }
+.row.gx-3 { --p-gutter-x: 1rem; }
+.row.gx-4 { --p-gutter-x: 1.5rem; }
+.row.gy-0 { --p-gutter-y: 0; }
+.row.gy-2 { --p-gutter-y: 0.5rem; }
+.row.gy-3 { --p-gutter-y: 1rem; }
+.row.gy-4 { --p-gutter-y: 1.5rem; }

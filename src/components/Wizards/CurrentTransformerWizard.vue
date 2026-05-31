@@ -220,7 +220,7 @@ export default {
     </template>
 
     <template #outputs>
-      <div class="text-muted small p-2">
+      <div class="text-color-secondary small p-2">
         Secondary peak = I_pk / N = {{ (localData.maximumPrimaryCurrentPeak * localData.turnsRatio).toFixed(3) }} A<br>
         Burden voltage ≈ {{ (localData.maximumPrimaryCurrentPeak * localData.turnsRatio * localData.burdenResistor).toFixed(2) }} V
       </div>

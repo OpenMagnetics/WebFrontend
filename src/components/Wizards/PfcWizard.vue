@@ -379,7 +379,7 @@ export default {
         :textColor="$styleStore.wizard.inputTextColor"
         @update="updateErrorMessage"
       />
-      <ElementFromList
+      <ElementFromList class="mt-2"
         :name="'topologyVariant'" :tooltip="tooltipsConverterWizards['topologyVariant']" :replaceTitle="'Topology'"
         :options="variantOptions" :optionLabels="dropdownLabelsConverterWizards.pfcVariant" :titleSameRow="true"
         :dataTestLabel="dataTestLabel + '-TopologyVariant'"
@@ -404,7 +404,7 @@ export default {
         @update="updateErrorMessage"
       />
       <div v-if="isTotemPole" class="mt-1 px-1" :data-cy="dataTestLabel + '-TotemPoleHint'">
-        <small class="text-muted"><i class="pi pi-info-circle mr-1"></i>Totem-pole CCM uses wide-bandgap (GaN/SiC) switches.</small>
+        <small class="text-color-secondary"><i class="pi pi-info-circle mr-1"></i>Totem-pole CCM uses wide-bandgap (GaN/SiC) switches.</small>
       </div>
     </template>
 
@@ -427,7 +427,7 @@ export default {
           @update="updateErrorMessage"
         />
         <div v-if="detectedMode" class="mt-2 p-2 rounded" :class="$styleStore.wizard.inputValueBgColor">
-          <small class="text-muted">Detected Mode:</small><br>
+          <small class="text-color-secondary">Detected Mode:</small><br>
           <strong :style="{ color: $styleStore.wizard.inputTextColor }">{{ detectedMode }}</strong>
         </div>
       </div>

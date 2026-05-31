@@ -5,8 +5,8 @@
     --v-tooltip-left-offset: 0px;
     --v-tooltip-top-offset: 0px;
     --v-tooltip-width: max-content;
-    --v-tooltip-background-color: var(--bs-info);
-    --v-tooltip-color: var(--bs-dark);
+    --v-tooltip-background-color: var(--p-info);
+    --v-tooltip-color: var(--p-dark);
     --v-tooltip-border-radius: 0.4rem;
     --v-tooltip-padding: 0.6em;
     --v-tooltip-font-size: 0.9rem;

@@ -172,7 +172,7 @@ export default {
                 <div class="row g-4 mb-5 px-3">
                     <!-- Magnetic Builder - Featured -->
                     <div class="lg:col-8">
-                        <div class="card h-100 bg-gradient border-0 shadow-lg" style="background: linear-gradient(135deg, var(--bs-dark) 0%, rgba(var(--bs-primary-rgb), 0.15) 100%);">
+                        <div class="card h-100 bg-gradient border-0 shadow-lg" style="background: linear-gradient(135deg, var(--p-dark) 0%, rgba(var(--p-primary-rgb), 0.15) 100%);">
                             <div class="card-body pt-2 px-4 pb-4">
                                 <div class="row h-100">
                                     <div class="lg:col-7">
@@ -329,7 +329,7 @@ export default {
                 <!-- ============================================================
                      Browse by Topology — direct entry to each converter wizard.
                      Cards are grouped into power-electronics families for
-                     visual scanning. Icons use Bootstrap-Icons so they match
+                     visual scanning. Icons use bootstrap-icons font so they match
                      the rest of the brand iconography on the home page.
                      ============================================================ -->
                 <div id="home-topologies" class="row mt-5 mb-3">
@@ -345,7 +345,7 @@ export default {
                     <div class="col-12">
                         <h3 class="text-white font-bold mb-3">
                             <i :class="['bi', group.icon, group.iconColor, 'me-2']"></i>{{ group.title }}
-                            <span class="text-muted text-base ms-2 fw-normal">{{ group.subtitle }}</span>
+                            <span class="text-color-secondary text-base ms-2 fw-normal">{{ group.subtitle }}</span>
                         </h3>
                     </div>
                     <div
@@ -356,7 +356,7 @@ export default {
                         <button
                             @click="onTopologyClick(topo.wizard)"
                             :data-cy="'Home-topology-' + topo.wizard + '-card'"
-                            class="topology-card h-100 w-100 text-start"
+                            class="topology-card h-100 w-100 text-left"
                             type="button"
                         >
                             <div class="topology-card-head">
@@ -459,7 +459,7 @@ export default {
                 <!-- Call to Action -->
                 <div class="row py-5 mb-4">
                     <div class="lg:col-8 lg:col-offset-2 text-center">
-                        <div class="card bg-gradient border-0 shadow-lg p-5" style="background: linear-gradient(135deg, rgba(var(--bs-primary-rgb), 0.2) 0%, var(--bs-dark) 100%);">
+                        <div class="card bg-gradient border-0 shadow-lg p-5" style="background: linear-gradient(135deg, rgba(var(--p-primary-rgb), 0.2) 0%, var(--p-dark) 100%);">
                             <h2 class="text-white display-6 font-bold mb-3">Ready to Design?</h2>
                             <p class="text-white text-xl mb-4">Start building your magnetic component right now. No registration required.</p>
                             <div class="d-flex justify-content-center gap-3 flex-wrap">
@@ -495,7 +495,7 @@ export default {
       width: 100%;
       height: 100%;
       opacity: 1;
-      background-image: linear-gradient(to bottom, rgba(var(--bs-dark-rgb), 0.7), rgba(var(--bs-dark-rgb), 1)),
+      background-image: linear-gradient(to bottom, rgba(var(--p-dark-rgb), 0.7), rgba(var(--p-dark-rgb), 1)),
     url('/images/background_home.png');
       background-repeat: no-repeat;
       background-position: 50% 0;
@@ -512,24 +512,24 @@ export default {
 
     .card:hover {
         transform: translateY(-5px);
-        box-shadow: 0 10px 40px rgba(var(--bs-black-rgb), 0.45) !important;
+        box-shadow: 0 10px 40px rgba(var(--p-black-rgb), 0.45) !important;
     }
 
     /* Lifted, primary-accented tool cards — match the rest of the revamped UI
        instead of the flat `bg-dark` (which renders nearly black in this theme). */
     .home-tool-card {
         background: linear-gradient(180deg,
-            color-mix(in srgb, var(--bs-light) 92%, var(--bs-white) 8%) 0%,
-            var(--bs-light) 100%) !important;
-        border: 1px solid rgba(var(--bs-white-rgb), 0.08) !important;
-        border-left: 3px solid rgba(var(--bs-primary-rgb), 0.5) !important;
-        box-shadow: 0 4px 18px rgba(var(--bs-black-rgb), 0.4),
-            inset 0 1px 0 rgba(var(--bs-white-rgb), 0.05) !important;
+            color-mix(in srgb, var(--p-light) 92%, var(--p-white) 8%) 0%,
+            var(--p-light) 100%) !important;
+        border: 1px solid rgba(var(--p-white-rgb), 0.08) !important;
+        border-left: 3px solid rgba(var(--p-primary-rgb), 0.5) !important;
+        box-shadow: 0 4px 18px rgba(var(--p-black-rgb), 0.4),
+            inset 0 1px 0 rgba(var(--p-white-rgb), 0.05) !important;
     }
 
     .home-tool-card:hover {
-        border-color: rgba(var(--bs-white-rgb), 0.15) !important;
-        border-left-color: rgba(var(--bs-primary-rgb), 0.85) !important;
+        border-color: rgba(var(--p-white-rgb), 0.15) !important;
+        border-left-color: rgba(var(--p-primary-rgb), 0.85) !important;
     }
 
     .btn {
@@ -551,16 +551,16 @@ export default {
         gap: 0.55rem;
         padding: 1rem 1.1rem 0.95rem;
         background: linear-gradient(160deg,
-            color-mix(in srgb, var(--bs-light) 90%, var(--bs-white) 10%) 0%,
-            var(--bs-light) 60%,
-            color-mix(in srgb, var(--bs-light) 95%, var(--bs-dark) 5%) 100%);
-        border: 1px solid rgba(var(--bs-white-rgb), 0.08);
-        border-left: 3px solid rgba(var(--bs-primary-rgb), 0.6);
+            color-mix(in srgb, var(--p-light) 90%, var(--p-white) 10%) 0%,
+            var(--p-light) 60%,
+            color-mix(in srgb, var(--p-light) 95%, var(--p-dark) 5%) 100%);
+        border: 1px solid rgba(var(--p-white-rgb), 0.08);
+        border-left: 3px solid rgba(var(--p-primary-rgb), 0.6);
         border-radius: 12px;
         box-shadow:
-            0 4px 14px rgba(var(--bs-black-rgb), 0.35),
-            inset 0 1px 0 rgba(var(--bs-white-rgb), 0.05);
-        color: var(--bs-white);
+            0 4px 14px rgba(var(--p-black-rgb), 0.35),
+            inset 0 1px 0 rgba(var(--p-white-rgb), 0.05);
+        color: var(--p-white);
         cursor: pointer;
         transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
         overflow: hidden;
@@ -572,8 +572,8 @@ export default {
         position: absolute;
         inset: 0;
         background-image:
-            linear-gradient(to right, rgba(var(--bs-primary-rgb), 0.05) 1px, transparent 1px),
-            linear-gradient(to bottom, rgba(var(--bs-primary-rgb), 0.05) 1px, transparent 1px);
+            linear-gradient(to right, rgba(var(--p-primary-rgb), 0.05) 1px, transparent 1px),
+            linear-gradient(to bottom, rgba(var(--p-primary-rgb), 0.05) 1px, transparent 1px);
         background-size: 18px 18px;
         opacity: 0.4;
         pointer-events: none;
@@ -584,12 +584,12 @@ export default {
 
     .topology-card:hover {
         transform: translateY(-3px);
-        border-color: rgba(var(--bs-primary-rgb), 0.4);
-        border-left-color: rgba(var(--bs-primary-rgb), 1);
+        border-color: rgba(var(--p-primary-rgb), 0.4);
+        border-left-color: rgba(var(--p-primary-rgb), 1);
         box-shadow:
-            0 12px 32px rgba(var(--bs-black-rgb), 0.55),
-            0 0 0 1px rgba(var(--bs-primary-rgb), 0.25),
-            inset 0 1px 0 rgba(var(--bs-white-rgb), 0.08);
+            0 12px 32px rgba(var(--p-black-rgb), 0.55),
+            0 0 0 1px rgba(var(--p-primary-rgb), 0.25),
+            inset 0 1px 0 rgba(var(--p-white-rgb), 0.08);
     }
 
     .topology-card-head {
@@ -600,7 +600,7 @@ export default {
 
     .topology-card-head .bi {
         font-size: 1.4rem;
-        filter: drop-shadow(0 0 6px rgba(var(--bs-primary-rgb), 0.35));
+        filter: drop-shadow(0 0 6px rgba(var(--p-primary-rgb), 0.35));
     }
 
     .topology-card-title {
@@ -614,15 +614,15 @@ export default {
         margin: 0;
         font-size: 0.85rem;
         line-height: 1.4;
-        color: rgba(var(--bs-white-rgb), 0.7);
+        color: rgba(var(--p-white-rgb), 0.7);
         flex: 1 1 auto;
     }
 
     .topology-card-cta {
         font-size: 0.8rem;
         font-weight: 600;
-        color: rgba(var(--bs-primary-rgb), 1);
-        color: var(--bs-primary);
+        color: rgba(var(--p-primary-rgb), 1);
+        color: var(--p-primary);
         text-transform: uppercase;
         letter-spacing: 0.06em;
         opacity: 0.85;
@@ -642,20 +642,20 @@ export default {
     /* Group header above topology rows */
     #home-topologies + .row h3,
     .row > .col-12 > h3 {
-        border-bottom: 1px solid rgba(var(--bs-primary-rgb), 0.15);
+        border-bottom: 1px solid rgba(var(--p-primary-rgb), 0.15);
         padding-bottom: 0.5rem;
     }
 
     .om-home-btn {
-        color: var(--bs-dark) !important;
-        background: var(--bs-primary) !important;
-        border: 1px solid var(--bs-primary) !important;
+        color: var(--p-dark) !important;
+        background: var(--p-primary) !important;
+        border: 1px solid var(--p-primary) !important;
         font-weight: 600;
         transition: filter 0.15s, transform 0.15s, box-shadow 0.15s !important;
     }
     .om-home-btn:hover {
         filter: brightness(1.1);
         transform: translateY(-2px) scale(1.01) !important;
-        box-shadow: 0 4px 16px rgba(var(--bs-primary-rgb), 0.4) !important;
+        box-shadow: 0 4px 16px rgba(var(--p-primary-rgb), 0.4) !important;
     }
 </style>

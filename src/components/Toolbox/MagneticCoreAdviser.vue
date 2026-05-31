@@ -13,15 +13,15 @@ import AdviseDetails from './MagneticCoreAdviser/AdviseDetails.vue'
 
 const style = getComputedStyle(document.body);
 const theme = {
-  primary: style.getPropertyValue('--bs-primary'),
-  secondary: style.getPropertyValue('--bs-secondary'),
-  success: style.getPropertyValue('--bs-success'),
-  info: style.getPropertyValue('--bs-info'),
-  warning: style.getPropertyValue('--bs-warning'),
-  danger: style.getPropertyValue('--bs-danger'),
-  light: style.getPropertyValue('--bs-light'),
-  dark: style.getPropertyValue('--bs-dark'),
-  white: style.getPropertyValue('--bs-white'),
+  primary: style.getPropertyValue('--p-primary'),
+  secondary: style.getPropertyValue('--p-secondary'),
+  success: style.getPropertyValue('--p-success'),
+  info: style.getPropertyValue('--p-info'),
+  warning: style.getPropertyValue('--p-warning'),
+  danger: style.getPropertyValue('--p-danger'),
+  light: style.getPropertyValue('--p-light'),
+  dark: style.getPropertyValue('--p-dark'),
+  white: style.getPropertyValue('--p-white'),
 };
 
 export default {
@@ -223,7 +223,7 @@ export default {
     <AdviseDetails v-model:visible="adviseDetailsVisible" :modelValue="masStore.mas"/>
     <div class="container" >
         <div class="row">
-            <div class="col-12 md:col-2 text-start border border-primary m-0 px-2 py-1 ">
+            <div class="col-12 md:col-2 text-left border border-primary m-0 px-2 py-1 ">
                 <div class="row" v-for="(value, key) in $settingsStore.coreAdviserSettings.weights" :key="key">
                     <label class="form-label col-12 py-0 my-0">{{titledFilters[key]}}</label>
                     <div class=" col-7 mr-2 pt-2">
@@ -235,7 +235,7 @@ export default {
                 </div>
                 <button :disabled="loading" :data-cy="dataTestLabel + '-calculate-mas-advises-button'" class="p-button p-button-success mx-auto d-block mt-4" @click="calculateAdvises" >Get advised cores!</button>
             </div>
-            <div class="col-12 md:col-10 text-start pr-0 container-fluid"  style="height: 70vh">
+            <div class="col-12 md:col-10 text-left pr-0 container-fluid"  style="height: 70vh">
                 <div class="row" v-if="loading" >
                     <img data-cy="CoreAdviser-loading" class="mx-auto d-block col-12" alt="loading" style="width: 50%; height: auto;" :src="loadingGif">
 
@@ -275,8 +275,8 @@ export default {
     overflow-y: auto; 
 }
 .slider {
-  --slider-connect-bg: var(--bs-primary);
-  --slider-handle-bg: var(--bs-primary);
+  --slider-connect-bg: var(--p-primary);
+  --slider-handle-bg: var(--p-primary);
 }
 
 </style>

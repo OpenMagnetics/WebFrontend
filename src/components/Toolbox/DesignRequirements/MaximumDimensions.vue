@@ -275,15 +275,15 @@ export default {
     height: 2.25rem;
 }
 .md-remove-addon:hover {
-    background: rgba(var(--bs-danger-rgb), 0.15) !important;
-    color: var(--bs-danger);
+    background: rgba(var(--p-danger-rgb), 0.15) !important;
+    color: var(--p-danger);
 }
 .md-remove-label {
     font-size: 0.75rem;
 }
 .md-remove-icon {
     font-size: 0.65rem;
-    color: var(--bs-danger);
+    color: var(--p-danger);
 }
 .md-input {
     flex: 1 1 auto;

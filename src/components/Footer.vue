@@ -47,10 +47,10 @@ export default {
     min-width: 100%;
     height: 46px;
     background: linear-gradient(180deg,
-        rgba(var(--bs-dark-rgb), 0.82) 0%,
-        rgba(var(--bs-dark-rgb), 0.95) 100%);
-    border-top: 1px solid rgba(var(--bs-primary-rgb), 0.25);
-    box-shadow: 0 -3px 12px rgba(var(--bs-black-rgb), 0.3);
+        rgba(var(--p-dark-rgb), 0.82) 0%,
+        rgba(var(--p-dark-rgb), 0.95) 100%);
+    border-top: 1px solid rgba(var(--p-primary-rgb), 0.25);
+    box-shadow: 0 -3px 12px rgba(var(--p-black-rgb), 0.3);
     backdrop-filter: blur(6px);
     -webkit-backdrop-filter: blur(6px);
 }
@@ -74,20 +74,20 @@ export default {
 .om-footer-name {
     font-size: 0.78rem;
     font-weight: 700;
-    background: linear-gradient(135deg, var(--bs-primary) 0%, color-mix(in srgb, var(--bs-primary) 70%, white 30%) 100%);
+    background: linear-gradient(135deg, var(--p-primary) 0%, color-mix(in srgb, var(--p-primary) 70%, white 30%) 100%);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
 }
 
 .om-footer-sep {
-    color: rgba(var(--bs-white-rgb), 0.2);
+    color: rgba(var(--p-white-rgb), 0.2);
     font-size: 0.75rem;
 }
 
 .om-footer-copy {
     font-size: 0.72rem;
-    color: rgba(var(--bs-white-rgb), 0.28);
+    color: rgba(var(--p-white-rgb), 0.28);
 }
 
 .om-footer-links {
@@ -99,7 +99,7 @@ export default {
 
 .om-footer-link {
     font-size: 0.74rem;
-    color: rgba(var(--bs-white-rgb), 0.4);
+    color: rgba(var(--p-white-rgb), 0.4);
     text-decoration: none;
     padding: 0.2rem 0.55rem;
     border-radius: 5px;
@@ -107,16 +107,16 @@ export default {
     white-space: nowrap;
 }
 .om-footer-link:hover {
-    color: var(--bs-primary);
-    background: rgba(var(--bs-primary-rgb), 0.07);
+    color: var(--p-primary);
+    background: rgba(var(--p-primary-rgb), 0.07);
     text-decoration: none;
 }
 
 .om-footer-prefs-btn {
     font-size: 0.74rem;
-    color: rgba(var(--bs-white-rgb), 0.35);
+    color: rgba(var(--p-white-rgb), 0.35);
     background: transparent;
-    border: 1px solid rgba(var(--bs-primary-rgb), 0.2);
+    border: 1px solid rgba(var(--p-primary-rgb), 0.2);
     border-radius: 5px;
     padding: 0.2rem 0.55rem;
     cursor: pointer;
@@ -124,8 +124,8 @@ export default {
     white-space: nowrap;
 }
 .om-footer-prefs-btn:hover {
-    color: var(--bs-primary);
-    border-color: rgba(var(--bs-primary-rgb), 0.5);
-    background: rgba(var(--bs-primary-rgb), 0.07);
+    color: var(--p-primary);
+    border-color: rgba(var(--p-primary-rgb), 0.5);
+    background: rgba(var(--p-primary-rgb), 0.07);
 }
 </style>

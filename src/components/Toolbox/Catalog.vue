@@ -82,7 +82,7 @@ export default {
 
 <template>
     <div class="container">
-        <div class="row pb-5 my-5 text-start align-items-start text-white">
+        <div class="row pb-5 my-5 text-left align-items-start text-white">
             <div class="col-offset-1 col-10 row">
                 <h3>Catalog</h3>
                 <DataTable
@@ -114,8 +114,8 @@ export default {
 <style type="text/css">
     
 .dt-input {
-   background-color: var(--bs-light);
-   color: var(--bs-white);
+   background-color: var(--p-light);
+   color: var(--p-white);
    padding: 5px;
    margin: 10px;
 }

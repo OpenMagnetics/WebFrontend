@@ -395,8 +395,8 @@ export default {
           <tr><td>Modulation</td><td v-for="(op, i) in dabDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px' }">{{ dabModLabel(op.modulationType) }}</td></tr>
           <tr><td>D3 (°)</td><td v-for="(op, i) in dabDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px' }">{{ Number(op.computedD3Deg).toFixed(1) }}</td></tr>
           <tr><td>d = N·V₂/V₁</td><td v-for="(op, i) in dabDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px' }">{{ Number(op.voltageConversionRatio).toFixed(3) }}</td></tr>
-          <tr><td>ZVS primary (°)</td><td v-for="(op, i) in dabDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px', color: op.zvsMarginPrimaryDeg <= 0 ? 'var(--bs-warning)' : 'inherit' }">{{ Number(op.zvsMarginPrimaryDeg).toFixed(1) }}</td></tr>
-          <tr><td>ZVS secondary (°)</td><td v-for="(op, i) in dabDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px', color: op.zvsMarginSecondaryDeg <= 0 ? 'var(--bs-warning)' : 'inherit' }">{{ Number(op.zvsMarginSecondaryDeg).toFixed(1) }}</td></tr>
+          <tr><td>ZVS primary (°)</td><td v-for="(op, i) in dabDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px', color: op.zvsMarginPrimaryDeg <= 0 ? 'var(--p-warning)' : 'inherit' }">{{ Number(op.zvsMarginPrimaryDeg).toFixed(1) }}</td></tr>
+          <tr><td>ZVS secondary (°)</td><td v-for="(op, i) in dabDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px', color: op.zvsMarginSecondaryDeg <= 0 ? 'var(--p-warning)' : 'inherit' }">{{ Number(op.zvsMarginSecondaryDeg).toFixed(1) }}</td></tr>
         </tbody>
       </table>
       <template v-else>

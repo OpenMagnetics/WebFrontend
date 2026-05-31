@@ -305,7 +305,7 @@ export default {
 }
 
 .is-section-title {
-    color: var(--bs-primary);
+    color: var(--p-primary);
     font-weight: 700;
     font-size: 1rem;
     letter-spacing: 0.01em;
@@ -314,9 +314,9 @@ export default {
 
 .is-subsection {
     background: linear-gradient(180deg,
-        rgba(var(--bs-primary-rgb), 0.05) 0%,
-        rgba(var(--bs-primary-rgb), 0.015) 100%);
-    border: 1px solid rgba(var(--bs-primary-rgb), 0.15);
+        rgba(var(--p-primary-rgb), 0.05) 0%,
+        rgba(var(--p-primary-rgb), 0.015) 100%);
+    border: 1px solid rgba(var(--p-primary-rgb), 0.15);
     border-radius: 10px;
     overflow: hidden;
 }
@@ -326,9 +326,9 @@ export default {
     align-items: center;
     gap: 0.4rem;
     padding: 0.35rem 0.7rem;
-    background: rgba(var(--bs-primary-rgb), 0.08);
-    border-bottom: 1px solid rgba(var(--bs-primary-rgb), 0.12);
-    color: var(--bs-primary);
+    background: rgba(var(--p-primary-rgb), 0.08);
+    border-bottom: 1px solid rgba(var(--p-primary-rgb), 0.12);
+    color: var(--p-primary);
     font-weight: 600;
     font-size: 0.7rem;
     letter-spacing: 0.05em;
@@ -337,7 +337,7 @@ export default {
 
 .is-subsection-header i {
     font-size: 0.78rem;
-    filter: drop-shadow(0 0 3px rgba(var(--bs-primary-rgb), 0.45));
+    filter: drop-shadow(0 0 3px rgba(var(--p-primary-rgb), 0.45));
 }
 
 .is-grid {
@@ -363,8 +363,8 @@ export default {
 
 .is-cell {
     min-width: 0;
-    background: rgba(var(--bs-white-rgb), 0.025);
-    border: 1px solid rgba(var(--bs-white-rgb), 0.06);
+    background: rgba(var(--p-white-rgb), 0.025);
+    border: 1px solid rgba(var(--p-white-rgb), 0.06);
     border-radius: 9px;
     padding: 0.45rem 0.6rem 0.55rem 0.6rem;
     transition: background 0.15s, border-color 0.15s;
@@ -398,8 +398,8 @@ export default {
 }
 
 .is-cell:hover {
-    background: rgba(var(--bs-white-rgb), 0.05);
-    border-color: rgba(var(--bs-primary-rgb), 0.25);
+    background: rgba(var(--p-white-rgb), 0.05);
+    border-color: rgba(var(--p-primary-rgb), 0.25);
 }
 
 .is-cell :deep(.row),
@@ -420,7 +420,7 @@ export default {
 .is-cell :deep(.dim-label),
 .is-cell :deep(.efl-label),
 .is-cell :deep(label) {
-    color: rgba(var(--bs-white-rgb), 0.65) !important;
+    color: rgba(var(--p-white-rgb), 0.65) !important;
     font-size: 0.66rem !important;
     font-weight: 700 !important;
     letter-spacing: 0.05em;
@@ -441,7 +441,7 @@ export default {
 
 /* Wiring Technology radio: keep its own labels readable, not uppercased */
 .is-cell :deep(.form-check-label) {
-    color: rgba(var(--bs-white-rgb), 0.85) !important;
+    color: rgba(var(--p-white-rgb), 0.85) !important;
     font-size: 0.78rem !important;
     font-weight: 500 !important;
     letter-spacing: 0;

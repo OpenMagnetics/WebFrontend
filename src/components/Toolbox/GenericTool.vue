@@ -205,7 +205,7 @@ export default {
 
                     <ElementFromList
                         v-if="operatingPointNames.length > 1 && ($stateStore.getCurrentToolState().subsection == 'magneticBuilder' || $stateStore.getCurrentToolState().subsection == 'magneticViewer') "
-                        class="col-2 mb-1 text-start"
+                        class="col-2 mb-1 text-left"
                         :dataTestLabel="dataTestLabel + '-OperatingPointSelector'"
                         :name="'operatingPoint'"
                         :replaceTitle="''"

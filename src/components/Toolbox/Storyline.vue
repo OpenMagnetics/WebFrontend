@@ -196,13 +196,13 @@ export default {
 
 <style scoped>
 .storyline-panel {
-    background: rgba(var(--bs-dark-rgb), 0.55);
-    border: 1px solid rgba(var(--bs-white-rgb), 0.08);
-    border-left: 3px solid rgba(var(--bs-primary-rgb), 0.8);
+    background: rgba(var(--p-dark-rgb), 0.55);
+    border: 1px solid rgba(var(--p-white-rgb), 0.08);
+    border-left: 3px solid rgba(var(--p-primary-rgb), 0.8);
     border-radius: 14px;
     padding: 0;
     margin: 0.15rem 0 0.5rem 0;
-    box-shadow: 0 6px 24px rgba(var(--bs-dark-rgb), 0.45), inset 0 1px 0 rgba(var(--bs-white-rgb), 0.04);
+    box-shadow: 0 6px 24px rgba(var(--p-dark-rgb), 0.45), inset 0 1px 0 rgba(var(--p-white-rgb), 0.04);
     overflow: hidden;
 }
 
@@ -211,11 +211,11 @@ export default {
     align-items: center;
     justify-content: space-between;
     padding: 0.6rem 0.9rem;
-    background: rgba(var(--bs-white-rgb), 0.04);
-    border-bottom: 1px solid rgba(var(--bs-white-rgb), 0.08);
+    background: rgba(var(--p-white-rgb), 0.04);
+    border-bottom: 1px solid rgba(var(--p-white-rgb), 0.08);
     font-weight: 600;
     font-size: 0.9rem;
-    color: var(--bs-primary);
+    color: var(--p-primary);
     letter-spacing: 0.02em;
 }
 
@@ -227,7 +227,7 @@ export default {
 
 .storyline-header-left i {
     font-size: 0.95rem;
-    filter: drop-shadow(0 0 4px rgba(var(--bs-primary-rgb), 0.45));
+    filter: drop-shadow(0 0 4px rgba(var(--p-primary-rgb), 0.45));
 }
 
 .storyline-continue-btn {
@@ -252,29 +252,29 @@ export default {
 
 .storyline-continue-btn-primary {
     background: linear-gradient(135deg,
-        color-mix(in srgb, var(--bs-success) 115%, transparent 0%) 0%,
-        var(--bs-success) 55%,
-        rgb(var(--bs-success-rgb) / 0.85) 100%);
-    color: var(--bs-white);
-    border: 1px solid color-mix(in srgb, var(--bs-success) 70%, var(--bs-white) 30%);
+        color-mix(in srgb, var(--p-success) 115%, transparent 0%) 0%,
+        var(--p-success) 55%,
+        rgb(var(--p-success-rgb) / 0.85) 100%);
+    color: var(--p-white);
+    border: 1px solid color-mix(in srgb, var(--p-success) 70%, var(--p-white) 30%);
     box-shadow:
-        0 0 0 1px rgb(var(--bs-success-rgb) / 0.35),
-        0 2px 8px rgb(var(--bs-success-rgb) / 0.4),
-        inset 0 1px 0 rgba(var(--bs-white-rgb), 0.3);
-    text-shadow: 0 1px 1px rgba(var(--bs-black-rgb), 0.25);
+        0 0 0 1px rgb(var(--p-success-rgb) / 0.35),
+        0 2px 8px rgb(var(--p-success-rgb) / 0.4),
+        inset 0 1px 0 rgba(var(--p-white-rgb), 0.3);
+    text-shadow: 0 1px 1px rgba(var(--p-black-rgb), 0.25);
 }
 
 .storyline-continue-btn-outline {
-    background: rgb(var(--bs-danger-rgb) / 0.2);
-    border: 1px solid rgb(var(--bs-danger-rgb) / 0.55);
-    color: var(--bs-danger);
-    box-shadow: 0 1px 4px rgba(var(--bs-black-rgb), 0.25);
+    background: rgb(var(--p-danger-rgb) / 0.2);
+    border: 1px solid rgb(var(--p-danger-rgb) / 0.55);
+    color: var(--p-danger);
+    box-shadow: 0 1px 4px rgba(var(--p-black-rgb), 0.25);
 }
 
 .storyline-continue-btn-outline:hover:not(:disabled) {
-    background: rgb(var(--bs-danger-rgb) / 0.3);
-    border-color: rgb(var(--bs-danger-rgb) / 0.75);
-    box-shadow: 0 2px 6px rgb(var(--bs-danger-rgb) / 0.25);
+    background: rgb(var(--p-danger-rgb) / 0.3);
+    border-color: rgb(var(--p-danger-rgb) / 0.75);
+    box-shadow: 0 2px 6px rgb(var(--p-danger-rgb) / 0.25);
 }
 
 .storyline-body {
@@ -314,40 +314,40 @@ export default {
 }
 
 .storyline-step-active {
-    background: linear-gradient(135deg, rgba(var(--bs-primary-rgb), 0.9) 0%, rgba(var(--bs-primary-rgb), 0.7) 100%);
-    color: var(--bs-white);
-    border-color: rgba(var(--bs-primary-rgb), 0.6);
-    box-shadow: 0 2px 8px rgba(var(--bs-primary-rgb), 0.35);
+    background: linear-gradient(135deg, rgba(var(--p-primary-rgb), 0.9) 0%, rgba(var(--p-primary-rgb), 0.7) 100%);
+    color: var(--p-white);
+    border-color: rgba(var(--p-primary-rgb), 0.6);
+    box-shadow: 0 2px 8px rgba(var(--p-primary-rgb), 0.35);
 }
 
 .storyline-step-completed {
-    background: rgba(var(--bs-white-rgb), 0.25);
-    border-color: rgba(var(--bs-white-rgb), 0.5);
-    color: var(--bs-white);
+    background: rgba(var(--p-white-rgb), 0.25);
+    border-color: rgba(var(--p-white-rgb), 0.5);
+    color: var(--p-white);
 }
 
 .storyline-step-completed:hover {
-    background: rgba(var(--bs-white-rgb), 0.4);
-    border-color: rgba(var(--bs-white-rgb), 0.65);
-    color: var(--bs-white);
+    background: rgba(var(--p-white-rgb), 0.4);
+    border-color: rgba(var(--p-white-rgb), 0.65);
+    color: var(--p-white);
 }
 
 .storyline-step-upcoming {
-    background: rgba(var(--bs-white-rgb), 0.06);
-    border-color: rgba(var(--bs-white-rgb), 0.12);
-    color: rgba(var(--bs-white-rgb), 0.65);
+    background: rgba(var(--p-white-rgb), 0.06);
+    border-color: rgba(var(--p-white-rgb), 0.12);
+    color: rgba(var(--p-white-rgb), 0.65);
 }
 
 .storyline-step-upcoming:hover {
-    background: rgba(var(--bs-white-rgb), 0.12);
-    border-color: rgba(var(--bs-white-rgb), 0.25);
-    color: var(--bs-white);
+    background: rgba(var(--p-white-rgb), 0.12);
+    border-color: rgba(var(--p-white-rgb), 0.25);
+    color: var(--p-white);
 }
 
 .storyline-step-pending {
-    background: rgba(var(--bs-black-rgb), 0.4);
-    border-color: rgba(var(--bs-white-rgb), 0.06);
-    color: rgba(var(--bs-white-rgb), 0.4);
+    background: rgba(var(--p-black-rgb), 0.4);
+    border-color: rgba(var(--p-white-rgb), 0.06);
+    color: rgba(var(--p-white-rgb), 0.4);
     cursor: not-allowed;
 }
 
@@ -355,7 +355,7 @@ export default {
     display: flex;
     align-items: center;
     justify-content: center;
-    color: rgba(var(--bs-primary-rgb), 0.55);
+    color: rgba(var(--p-primary-rgb), 0.55);
     font-size: 0.7rem;
 }
 

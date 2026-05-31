@@ -248,14 +248,14 @@ export default {
     flex-direction: column;
     background:
         linear-gradient(145deg,
-            rgba(var(--bs-primary-rgb), 0.06) 0%,
-            rgba(var(--bs-primary-rgb), 0.02) 100%),
-        var(--bs-dark);
-    border: 1px solid rgba(var(--bs-primary-rgb), 0.15);
+            rgba(var(--p-primary-rgb), 0.06) 0%,
+            rgba(var(--p-primary-rgb), 0.02) 100%),
+        var(--p-dark);
+    border: 1px solid rgba(var(--p-primary-rgb), 0.15);
     border-radius: 14px;
     box-shadow:
-        0 4px 20px rgba(var(--bs-black-rgb), 0.12),
-        inset 0 1px 0 rgba(var(--bs-white-rgb), 0.04);
+        0 4px 20px rgba(var(--p-black-rgb), 0.12),
+        inset 0 1px 0 rgba(var(--p-white-rgb), 0.04);
     overflow: hidden;
     min-height: 60vh;
 }
@@ -265,9 +265,9 @@ export default {
     align-items: center;
     gap: 0.5rem;
     padding: 0.6rem 0.9rem;
-    background: rgba(var(--bs-primary-rgb), 0.1);
-    border-bottom: 1px solid rgba(var(--bs-primary-rgb), 0.12);
-    color: var(--bs-primary);
+    background: rgba(var(--p-primary-rgb), 0.1);
+    border-bottom: 1px solid rgba(var(--p-primary-rgb), 0.12);
+    color: var(--p-primary);
     font-weight: 600;
     font-size: 0.95rem;
     letter-spacing: 0.02em;
@@ -276,7 +276,7 @@ export default {
 
 .op-detail-header i {
     font-size: 1rem;
-    filter: drop-shadow(0 0 4px rgba(var(--bs-primary-rgb), 0.45));
+    filter: drop-shadow(0 0 4px rgba(var(--p-primary-rgb), 0.45));
 }
 
 .op-detail-body {
@@ -297,7 +297,7 @@ export default {
 }
 
 .op-mode-title {
-    color: var(--bs-primary);
+    color: var(--p-primary);
     font-size: 1.35rem;
     font-weight: 700;
     letter-spacing: 0.01em;
@@ -306,7 +306,7 @@ export default {
 }
 
 .op-mode-prompt {
-    color: var(--bs-white);
+    color: var(--p-white);
     font-size: 0.95rem;
     font-weight: 500;
     text-align: center;
@@ -331,17 +331,17 @@ button.op-mode-btn {
     font-weight: 600;
     letter-spacing: 0.01em;
     cursor: pointer;
-    border: 1px solid rgba(var(--bs-primary-rgb), 0.5) !important;
-    background-color: var(--bs-primary) !important;
+    border: 1px solid rgba(var(--p-primary-rgb), 0.5) !important;
+    background-color: var(--p-primary) !important;
     background-image: linear-gradient(135deg,
-        rgba(var(--bs-primary-rgb), 1) 0%,
-        rgba(var(--bs-primary-rgb), 0.8) 100%) !important;
-    color: var(--bs-white) !important;
+        rgba(var(--p-primary-rgb), 1) 0%,
+        rgba(var(--p-primary-rgb), 0.8) 100%) !important;
+    color: var(--p-white) !important;
     box-shadow:
-        0 0 0 1px rgba(var(--bs-primary-rgb), 0.3),
-        0 3px 10px rgba(var(--bs-primary-rgb), 0.35),
-        inset 0 1px 0 rgba(var(--bs-white-rgb), 0.25);
-    text-shadow: 0 1px 1px rgba(var(--bs-black-rgb), 0.25);
+        0 0 0 1px rgba(var(--p-primary-rgb), 0.3),
+        0 3px 10px rgba(var(--p-primary-rgb), 0.35),
+        inset 0 1px 0 rgba(var(--p-white-rgb), 0.25);
+    text-shadow: 0 1px 1px rgba(var(--p-black-rgb), 0.25);
     transition: filter 0.15s, transform 0.1s, box-shadow 0.2s;
     width: 100%;
     outline: none;
@@ -352,9 +352,9 @@ button.op-mode-btn:hover {
     filter: brightness(1.15);
     transform: translateY(-1px);
     box-shadow:
-        0 0 0 1px rgba(var(--bs-primary-rgb), 0.4),
-        0 4px 14px rgba(var(--bs-primary-rgb), 0.45),
-        inset 0 1px 0 rgba(var(--bs-white-rgb), 0.3);
+        0 0 0 1px rgba(var(--p-primary-rgb), 0.4),
+        0 4px 14px rgba(var(--p-primary-rgb), 0.45),
+        inset 0 1px 0 rgba(var(--p-white-rgb), 0.3);
 }
 
 button.op-mode-btn i {

@@ -25,7 +25,7 @@ import { definePreset } from '@primeuix/themes'
 import 'primeicons/primeicons.css'
 import 'bootstrap-icons/font/bootstrap-icons.css'
 // primeflex.css is imported from src/assets/scss/custom.scss after the
-// bootstrap-shim so PrimeFlex's grid utilities win the cascade for col-N.
+// theme-base so PrimeFlex's grid utilities win the cascade for col-N.
 
 const OmAura = definePreset(Aura, {
     semantic: {

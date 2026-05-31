@@ -41,7 +41,7 @@ export default {
                         pointRadius: this.enableDrag ? 2.5 : 0,
                         pointHoverRadius: this.enableDrag ? 4 : 0,
                         pointHitRadius: this.enableDrag ? 6 : 0,
-                        pointHoverBorderColor: 'var(--bs-white)',
+                        pointHoverBorderColor: 'var(--p-white)',
                         pointHoverBorderWidth: 1,
                         pointHoverBackgroundColor: this.$styleStore.operatingPoints.currentGraph.color,
                         borderWidth: this.enableDrag ? 2.25 : 1.85,
@@ -49,7 +49,7 @@ export default {
                         cubicInterpolationMode: this.enableDrag ? 'default' : 'monotone',
                         spanGaps: true,
                         borderColor: this.$styleStore.operatingPoints.currentGraph.color,
-                        backgroundColor: 'rgba(var(--bs-info-rgb), 0.12)',
+                        backgroundColor: 'rgba(var(--p-info-rgb), 0.12)',
                         fill: this.enableDrag ? false : 'origin',
                     },
                     {
@@ -61,14 +61,14 @@ export default {
                         pointRadius: this.enableDrag ? 2.5 : 0,
                         pointHoverRadius: this.enableDrag ? 4 : 0,
                         pointHitRadius: this.enableDrag ? 6 : 0,
-                        pointHoverBorderColor: 'var(--bs-white)',
+                        pointHoverBorderColor: 'var(--p-white)',
                         pointHoverBorderWidth: 1,
                         pointHoverBackgroundColor: this.$styleStore.operatingPoints.voltageGraph.color,
                         borderWidth: this.enableDrag ? 2.25 : 1.85,
                         tension: this.enableDrag ? 0 : 0.05,
                         spanGaps: true,
                         borderColor: this.$styleStore.operatingPoints.voltageGraph.color,
-                        backgroundColor: 'rgba(var(--bs-success-rgb), 0.1)',
+                        backgroundColor: 'rgba(var(--p-success-rgb), 0.1)',
                         fill: this.enableDrag ? false : 'origin',
                     },
                     {
@@ -79,7 +79,7 @@ export default {
                         borderWidth: 1,
                         spanGaps: true,
                         pointRadius: 0,
-                        borderColor: 'rgba(var(--bs-white-rgb), 0.18)',
+                        borderColor: 'rgba(var(--p-white-rgb), 0.18)',
                         backgroundColor: 'transparent',
                     }
                 ]
@@ -188,10 +188,10 @@ export default {
                     }
                 },
                 tooltip: {
-                    backgroundColor: 'rgba(var(--bs-dark-rgb), 0.92)',
-                    titleColor: 'var(--bs-light)',
-                    bodyColor: 'var(--bs-light)',
-                    borderColor: 'rgba(var(--bs-primary-rgb), 0.6)',
+                    backgroundColor: 'rgba(var(--p-dark-rgb), 0.92)',
+                    titleColor: 'var(--p-light)',
+                    bodyColor: 'var(--p-light)',
+                    borderColor: 'rgba(var(--p-primary-rgb), 0.6)',
                     borderWidth: 1,
                     padding: 8,
                     cornerRadius: 6,

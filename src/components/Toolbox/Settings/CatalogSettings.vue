@@ -49,19 +49,19 @@ export default {
         :data-cy="modalName">
         <div class="catalog-settings-body">
             <div class="catalog-settings-row" :style="$styleStore.contextMenu.setting">
-                <h5 class="text-end" :class="labelWidthProportionClass">Show advanced outputs</h5>
+                <h5 class="text-right" :class="labelWidthProportionClass">Show advanced outputs</h5>
                 <div :class="valueWidthProportionClass" class="catalog-settings-range">
-                    <label v-tooltip="'Choose between basic or advanced output'" class="text-base pl-3 pr-3 text-end col-4">No</label>
+                    <label v-tooltip="'Choose between basic or advanced output'" class="text-base pl-3 pr-3 text-right col-4">No</label>
                     <input :data-cy="'Settings-Modal-bar-spider-button'" v-model="localData.advancedMode" @change="onSettingChanged($event, 'advancedMode')" type="range" class="catalog-settings-slider col-1" min="0" max="1" step="1">
-                    <label v-tooltip="'Choose between basic or advanced output'" class="text-base pl-3 col-6 text-start">Yes</label>
+                    <label v-tooltip="'Choose between basic or advanced output'" class="text-base pl-3 col-6 text-left">Yes</label>
                 </div>
             </div>
             <div class="catalog-settings-row" :style="$styleStore.contextMenu.setting">
-                <h5 class="text-end" :class="labelWidthProportionClass">Use all parts when editing</h5>
+                <h5 class="text-right" :class="labelWidthProportionClass">Use all parts when editing</h5>
                 <div :class="valueWidthProportionClass" class="catalog-settings-range">
-                    <label v-tooltip="'Use the full catalog when editing'" class="text-base pl-3 pr-3 text-end col-4">No</label>
+                    <label v-tooltip="'Use the full catalog when editing'" class="text-base pl-3 pr-3 text-right col-4">No</label>
                     <input :data-cy="'Settings-Modal-bar-spider-button'" v-model="localData.useAllParts" @change="onSettingChanged($event, 'useAllParts')" type="range" class="catalog-settings-slider col-1" min="0" max="1" step="1">
-                    <label v-tooltip="'Use the full catalog when editing'" class="text-base pl-3 col-6 text-start">Yes</label>
+                    <label v-tooltip="'Use the full catalog when editing'" class="text-base pl-3 col-6 text-left">Yes</label>
                 </div>
             </div>
             <div class="catalog-settings-actions">

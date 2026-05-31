@@ -35,7 +35,7 @@ export default {
     data() {
         DataTable.use(DataTablesCore)
         const columns = [
-            { data: 'label', className: 'text-start' },
+            { data: 'label', className: 'text-left' },
             { data: 'coreLosses', className: 'text-center', render: fmt(formatPower) },
             { data: 'envelopingVolume', className: 'text-center', render: fmt(formatVolume) },
             { data: 'permeance', className: 'text-center', render: fmt(formatPermeance) },

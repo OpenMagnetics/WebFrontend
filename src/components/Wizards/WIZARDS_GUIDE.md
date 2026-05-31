@@ -435,7 +435,7 @@ labels must not regress.
 
 Every editable form field in a wizard MUST have a tooltip explaining what
 the user is supposed to type. The mechanism is the project-wide
-`v-tooltip` directive (Bootstrap-backed; already globally registered) plus
+`v-tooltip` directive (PrimeVue-backed; already globally registered) plus
 a centralised dictionary in `WebSharedComponents/assets/js/texts.js`.
 
 **Step 1 — the dictionary.** Tooltips live in `tooltipsConverterWizards`
@@ -504,7 +504,7 @@ existing `:name="'<name>'"` on every input:
 
 **Verification:** open the wizard in the browser, hover any label;
 within ~300 ms a tooltip with the dictionary text must appear. The
-DOM marker is `.tooltip.bs-tooltip-auto.fade.show` (Bootstrap-backed).
+DOM marker is `.p-tooltip` (PrimeVue-backed).
 A label that produces no tooltip on hover means either the dictionary
 key is missing or the `:tooltip` binding was forgotten on that input.
 

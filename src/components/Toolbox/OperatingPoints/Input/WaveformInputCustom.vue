@@ -117,7 +117,7 @@ export default {
             v-if="induceableSignal"
             :style="[
                 combinedStyle([$styleStore.operatingPoints.inputFontSize, signalDescriptor == 'current'? $styleStore.operatingPoints.currentBgColor : signalDescriptor == 'voltage'? $styleStore.operatingPoints.voltageBgColor : $styleStore.operatingPoints.commonParameterBgColor]),
-                { color: signalDescriptor == 'current' ? 'var(--bs-dark)' : 'var(--bs-white)', fontWeight: 600, maxHeight: '1.7em' }
+                { color: signalDescriptor == 'current' ? 'var(--p-dark)' : 'var(--p-white)', fontWeight: 600, maxHeight: '1.7em' }
             ]"
             class="wic-induce-btn col-offset-2 col-8 mt-2"
             @click="$emit('induce')">

@@ -95,7 +95,7 @@ input {
 }
 
 input:focus {
-    border-color: var(--bs-primary);
+    border-color: var(--p-primary);
 }
 
 .help-message {
@@ -107,28 +107,28 @@ input:focus {
 }
 
 .TextInput.has-error input {
-    background-color: var(--bs-danger);
-    color: var(--bs-danger);
+    background-color: var(--p-danger);
+    color: var(--p-danger);
 }
 
 .TextInput.has-error input:focus {
-    border-color: var(--bs-danger);
+    border-color: var(--p-danger);
 }
 
 .TextInput.has-error .help-message {
-    color: var(--bs-danger);
+    color: var(--p-danger);
 }
 
 .TextInput.success input {
-    background-color: var(--bs-success);
-    color: var(--bs-success);
+    background-color: var(--p-success);
+    color: var(--p-success);
 }
 
 .TextInput.success input:focus {
-    border-color: var(--bs-success);
+    border-color: var(--p-success);
 }
 
 .TextInput.success .help-message {
-    color: var(--bs-success);
+    color: var(--p-success);
 }
 </style>

@@ -87,9 +87,9 @@ export default {
             if (!this.spectrum) return [];
             const emi = this.$styleStore?.emiSpectrum || {};
             const cs = getComputedStyle(document.documentElement);
-            const sourceColor   = emi.sourceLineColor   || cs.getPropertyValue('--bs-danger').trim();
-            const filteredColor = emi.filteredLineColor || cs.getPropertyValue('--bs-primary').trim();
-            const limitColor    = emi.limitLineColor    || cs.getPropertyValue('--bs-warning').trim();
+            const sourceColor   = emi.sourceLineColor   || cs.getPropertyValue('--p-danger').trim();
+            const filteredColor = emi.filteredLineColor || cs.getPropertyValue('--p-primary').trim();
+            const limitColor    = emi.limitLineColor    || cs.getPropertyValue('--p-warning').trim();
             const f = this.spectrum.frequencies;
 
             const cmLabel = `After CMC (L=${(this.inductance * 1e3).toFixed(2)} mH)`;
@@ -121,7 +121,7 @@ export default {
         xAxis() {
             return {
                 label: 'Frequency',
-                colorLabel: 'var(--bs-light)',
+                colorLabel: 'var(--p-light)',
                 type: 'log',
                 unit: 'Hz',
                 min: EMI_F_MIN_HZ,
@@ -137,7 +137,7 @@ export default {
             return `Fails ${this.regulatoryStandard} by ${(-m).toFixed(1)} dB in worst band`;
         },
         verdictColor() {
-            return this.spectrum?.passing ? 'var(--bs-success)' : 'var(--bs-danger)';
+            return this.spectrum?.passing ? 'var(--p-success)' : 'var(--p-danger)';
         },
         cutoffText() {
             if (this.mode === 'dm') {
@@ -162,7 +162,7 @@ export default {
             return `Ideal trapezoid source at ${this.localSwitchingFreqKHz} kHz, rise ${tR} ns, coupled through ${this.parasiticCap_pF} pF. CMC attenuation modelled as |1 + jωL / (Z_LISN/2)|; self-resonance and ESR not included. For final verification use a certified EMI lab sweep.`;
         },
         textColor() {
-            return this.$styleStore?.emiSpectrum?.textColor || 'var(--bs-white)';
+            return this.$styleStore?.emiSpectrum?.textColor || 'var(--p-white)';
         },
         bgColor() {
             return this.$styleStore?.emiSpectrum?.bgColor || 'transparent';
@@ -170,11 +170,11 @@ export default {
         cssVars() {
             const emi = this.$styleStore?.emiSpectrum || {};
             return {
-                '--emi-text-color':         emi.textColor         || 'var(--bs-white)',
-                '--emi-title-color':        emi.titleColor        || 'var(--bs-white)',
-                '--emi-input-border-color': emi.inputBorderColor  || 'var(--bs-secondary)',
-                '--emi-cutoff-color':       emi.cutoffTextColor   || 'var(--bs-light)',
-                '--emi-note-color':         emi.noteTextColor     || 'var(--bs-secondary)',
+                '--emi-text-color':         emi.textColor         || 'var(--p-white)',
+                '--emi-title-color':        emi.titleColor        || 'var(--p-white)',
+                '--emi-input-border-color': emi.inputBorderColor  || 'var(--p-secondary)',
+                '--emi-cutoff-color':       emi.cutoffTextColor   || 'var(--p-light)',
+                '--emi-note-color':         emi.noteTextColor     || 'var(--p-secondary)',
             };
         },
     },

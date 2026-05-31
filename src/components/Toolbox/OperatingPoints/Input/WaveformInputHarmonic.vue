@@ -51,7 +51,7 @@ export default {
 <template>
     <div class="container">
         <div class="row">
-            <Dimension class="col-6 mb-1 text-start"
+            <Dimension class="col-6 mb-1 text-left"
                 :name="String(index)"
                 :unit="'Hz'"
                 :replaceTitle="title"
@@ -74,7 +74,7 @@ export default {
                 :textColor="$styleStore.operatingPoints.inputTextColor"
             />
 
-            <Dimension class="col-4 mb-1 text-start"
+            <Dimension class="col-4 mb-1 text-left"
                 :name="String(index)"
                 :unit="unit"
                 :replaceTitle="''"

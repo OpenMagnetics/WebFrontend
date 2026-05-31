@@ -68,15 +68,15 @@ export default {
         :style="{ width: 'min(90vw, 720px)' }">
         <div class="container">
             <div class="row" :style="$styleStore.contextMenu.setting">
-                <h5 class="col-offset-0 text-end" :class="labelWidthProportionClass">Show advanced outputs</h5>
+                <h5 class="col-offset-0 text-right" :class="labelWidthProportionClass">Show advanced outputs</h5>
                 <div :class="valueWidthProportionClass">
-                    <label v-tooltip="'Choose between basic or advanced output'" class="text-base p-0 pl-3 pr-3 text-end col-4 ">No</label>
+                    <label v-tooltip="'Choose between basic or advanced output'" class="text-base p-0 pl-3 pr-3 text-right col-4 ">No</label>
                     <input :data-cy="'Settings-Modal-bar-spider-button'" v-model="localData.operatingPointAdvancedMode"  @change="onSettingChanged($event, 'advancedMode')" type="range" class="form-range col-1 pt-2" min="0" max="1" step="1" style="width: 30px">
-                    <label v-tooltip="'Choose between basic or advanced output'" class="text-base p-0 pl-3 col-6 text-start">Yes</label>
+                    <label v-tooltip="'Choose between basic or advanced output'" class="text-base p-0 pl-3 col-6 text-left">Yes</label>
                 </div>
             </div>
             <div class="row mt-3" :style="$styleStore.contextMenu.setting">
-                <h5 class="col-offset-0 text-end" :class="labelWidthProportionClass">Max harmonics to plot</h5>
+                <h5 class="col-offset-0 text-right" :class="labelWidthProportionClass">Max harmonics to plot</h5>
                 <div :class="valueWidthProportionClass">
                     <input
                         v-tooltip="'Maximum number of harmonics shown in the Fourier spectrum'"

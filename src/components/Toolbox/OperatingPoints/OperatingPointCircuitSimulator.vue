@@ -246,7 +246,7 @@ export default {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    color: var(--bs-primary);
+    color: var(--p-primary);
     font-size: 1.05rem;
     font-weight: 700;
     letter-spacing: 0.01em;
@@ -254,20 +254,20 @@ export default {
 }
 
 .opc-title i {
-    filter: drop-shadow(0 0 4px rgba(var(--bs-primary-rgb), 0.5));
+    filter: drop-shadow(0 0 4px rgba(var(--p-primary-rgb), 0.5));
 }
 
 .opc-card {
     background:
         linear-gradient(180deg,
-            rgba(var(--bs-primary-rgb), 0.06) 0%,
-            rgba(var(--bs-primary-rgb), 0.02) 100%),
-        var(--bs-dark);
-    border: 1px solid rgba(var(--bs-primary-rgb), 0.18);
-    border-left: 3px solid rgba(var(--bs-primary-rgb), 0.7);
+            rgba(var(--p-primary-rgb), 0.06) 0%,
+            rgba(var(--p-primary-rgb), 0.02) 100%),
+        var(--p-dark);
+    border: 1px solid rgba(var(--p-primary-rgb), 0.18);
+    border-left: 3px solid rgba(var(--p-primary-rgb), 0.7);
     border-radius: 12px;
     overflow: hidden;
-    box-shadow: 0 3px 10px rgba(var(--bs-black-rgb), 0.3);
+    box-shadow: 0 3px 10px rgba(var(--p-black-rgb), 0.3);
 }
 
 .opc-card-header {
@@ -275,9 +275,9 @@ export default {
     align-items: center;
     gap: 0.45rem;
     padding: 0.5rem 0.75rem;
-    background: rgba(var(--bs-primary-rgb), 0.08);
-    border-bottom: 1px solid rgba(var(--bs-primary-rgb), 0.12);
-    color: var(--bs-primary);
+    background: rgba(var(--p-primary-rgb), 0.08);
+    border-bottom: 1px solid rgba(var(--p-primary-rgb), 0.12);
+    color: var(--p-primary);
     font-weight: 600;
     font-size: 0.78rem;
     letter-spacing: 0.04em;
@@ -286,7 +286,7 @@ export default {
 
 .opc-card-header i {
     font-size: 0.85rem;
-    filter: drop-shadow(0 0 4px rgba(var(--bs-primary-rgb), 0.5));
+    filter: drop-shadow(0 0 4px rgba(var(--p-primary-rgb), 0.5));
 }
 
 .opc-card-body {
@@ -303,10 +303,10 @@ export default {
     align-items: center;
     gap: 0.45rem;
     padding: 0.5rem 0.75rem;
-    background: rgb(var(--bs-danger-rgb) / 0.12);
-    border: 1px solid rgb(var(--bs-danger-rgb) / 0.4);
+    background: rgb(var(--p-danger-rgb) / 0.12);
+    border: 1px solid rgb(var(--p-danger-rgb) / 0.4);
     border-radius: 10px;
-    color: var(--bs-danger);
+    color: var(--p-danger);
     font-size: 0.8rem;
     line-height: 1.3;
     white-space: pre-wrap;
@@ -347,30 +347,30 @@ button.opc-btn:disabled {
 }
 
 button.opc-btn-primary {
-    border: 1px solid rgba(var(--bs-primary-rgb), 0.85) !important;
-    background-color: var(--bs-primary) !important;
+    border: 1px solid rgba(var(--p-primary-rgb), 0.85) !important;
+    background-color: var(--p-primary) !important;
     background-image: linear-gradient(135deg,
-        rgba(var(--bs-primary-rgb), 1) 0%,
-        rgba(var(--bs-primary-rgb), 0.8) 100%) !important;
-    color: var(--bs-white) !important;
+        rgba(var(--p-primary-rgb), 1) 0%,
+        rgba(var(--p-primary-rgb), 0.8) 100%) !important;
+    color: var(--p-white) !important;
     box-shadow:
-        0 0 0 1px rgba(var(--bs-primary-rgb), 0.3),
-        0 2px 8px rgba(var(--bs-primary-rgb), 0.4),
-        inset 0 1px 0 rgba(var(--bs-white-rgb), 0.25);
-    text-shadow: 0 1px 1px rgba(var(--bs-black-rgb), 0.25);
+        0 0 0 1px rgba(var(--p-primary-rgb), 0.3),
+        0 2px 8px rgba(var(--p-primary-rgb), 0.4),
+        inset 0 1px 0 rgba(var(--p-white-rgb), 0.25);
+    text-shadow: 0 1px 1px rgba(var(--p-black-rgb), 0.25);
 }
 
 button.opc-btn-outline {
-    background: rgba(var(--bs-white-rgb), 0.08) !important;
-    border: 1px solid rgba(var(--bs-primary-rgb), 0.55) !important;
-    color: var(--bs-primary) !important;
-    box-shadow: 0 1px 4px rgba(var(--bs-black-rgb), 0.25);
+    background: rgba(var(--p-white-rgb), 0.08) !important;
+    border: 1px solid rgba(var(--p-primary-rgb), 0.55) !important;
+    color: var(--p-primary) !important;
+    box-shadow: 0 1px 4px rgba(var(--p-black-rgb), 0.25);
 }
 
 button.opc-btn-outline:hover:not(:disabled) {
-    background: rgba(var(--bs-primary-rgb), 0.2) !important;
-    border-color: rgba(var(--bs-primary-rgb), 0.85) !important;
-    color: var(--bs-white) !important;
+    background: rgba(var(--p-primary-rgb), 0.2) !important;
+    border-color: rgba(var(--p-primary-rgb), 0.85) !important;
+    color: var(--p-white) !important;
 }
 
 .opc-loading {

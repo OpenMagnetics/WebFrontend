@@ -123,10 +123,10 @@ export default {
                     }
                 },
                 tooltip: {
-                    backgroundColor: 'rgba(var(--bs-dark-rgb), 0.92)',
-                    titleColor: 'var(--bs-light)',
-                    bodyColor: 'var(--bs-light)',
-                    borderColor: 'rgba(var(--bs-primary-rgb), 0.6)',
+                    backgroundColor: 'rgba(var(--p-dark-rgb), 0.92)',
+                    titleColor: 'var(--p-light)',
+                    bodyColor: 'var(--p-light)',
+                    borderColor: 'rgba(var(--p-primary-rgb), 0.6)',
                     borderWidth: 1,
                     padding: 8,
                     cornerRadius: 6,
@@ -463,10 +463,10 @@ export default {
     font-size: 0.68rem;
     font-weight: 600;
     line-height: 1;
-    color: var(--bs-primary);
+    color: var(--p-primary);
     padding: 0.18rem 0.5rem;
-    background: rgba(var(--bs-primary-rgb), 0.18);
-    border: 1px solid rgba(var(--bs-primary-rgb), 0.45);
+    background: rgba(var(--p-primary-rgb), 0.18);
+    border: 1px solid rgba(var(--p-primary-rgb), 0.45);
     border-radius: 999px;
     backdrop-filter: blur(4px);
     -webkit-backdrop-filter: blur(4px);

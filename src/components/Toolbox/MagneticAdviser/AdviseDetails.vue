@@ -411,25 +411,25 @@ export default {
 </template>
 
 <style scoped>
-/* Theme shim: --bs-light is #2a2a2a, --bs-white is var(--bs-light); use literal white for text. */
+/* Theme shim: --p-light is #2a2a2a, --p-white is var(--p-light); use literal white for text. */
 .ad-offcanvas {
-    --ad-panel-1: color-mix(in srgb, var(--bs-light) 92%, var(--bs-white) 8%);
-    --ad-panel-2: var(--bs-light);
-    --ad-sub-1: color-mix(in srgb, var(--bs-light) 80%, var(--bs-dark) 20%);
-    --ad-sub-2: color-mix(in srgb, var(--bs-light) 88%, var(--bs-dark) 12%);
-    --ad-border: rgba(var(--bs-white-rgb), 0.1);
-    --ad-border-strong: rgba(var(--bs-white-rgb), 0.18);
-    --ad-text: var(--bs-white);
-    --ad-text-muted: rgba(var(--bs-white-rgb), 0.72);
+    --ad-panel-1: color-mix(in srgb, var(--p-light) 92%, var(--p-white) 8%);
+    --ad-panel-2: var(--p-light);
+    --ad-sub-1: color-mix(in srgb, var(--p-light) 80%, var(--p-dark) 20%);
+    --ad-sub-2: color-mix(in srgb, var(--p-light) 88%, var(--p-dark) 12%);
+    --ad-border: rgba(var(--p-white-rgb), 0.1);
+    --ad-border-strong: rgba(var(--p-white-rgb), 0.18);
+    --ad-text: var(--p-white);
+    --ad-text-color-secondary: rgba(var(--p-white-rgb), 0.72);
 
-    --bs-offcanvas-width: 68vw !important;
-    --bs-offcanvas-height: 80vh !important;
-    --bs-offcanvas-bg: transparent !important;
-    --bs-offcanvas-color: var(--ad-text) !important;
+    --p-offcanvas-width: 68vw !important;
+    --p-offcanvas-height: 80vh !important;
+    --p-offcanvas-bg: transparent !important;
+    --p-offcanvas-color: var(--ad-text) !important;
     border: none !important;
     background: linear-gradient(180deg, var(--ad-panel-1) 0%, var(--ad-panel-2) 100%) !important;
     color: var(--ad-text) !important;
-    box-shadow: -8px 0 30px rgba(var(--bs-black-rgb), 0.6) !important;
+    box-shadow: -8px 0 30px rgba(var(--p-black-rgb), 0.6) !important;
 }
 
 .ad-root {
@@ -447,7 +447,7 @@ export default {
     gap: 0.8rem;
     padding: 0.55rem 0.85rem;
     border-bottom: 1px solid var(--ad-border);
-    background: rgba(var(--bs-white-rgb), 0.04);
+    background: rgba(var(--p-white-rgb), 0.04);
     flex-shrink: 0;
 }
 
@@ -468,7 +468,7 @@ export default {
 }
 
 .ad-subtitle {
-    color: var(--ad-text-muted);
+    color: var(--ad-text-color-secondary);
     font-size: 0.85rem;
     font-weight: 500;
     margin-top: 0.15rem;
@@ -483,8 +483,8 @@ export default {
     width: 1.6rem;
     height: 1.6rem;
     border-radius: 999px;
-    background: rgba(var(--bs-white-rgb), 0.08);
-    border: 1px solid rgba(var(--bs-white-rgb), 0.2);
+    background: rgba(var(--p-white-rgb), 0.08);
+    border: 1px solid rgba(var(--p-white-rgb), 0.2);
     color: var(--ad-text);
     font-size: 0.78rem;
     cursor: pointer;
@@ -492,9 +492,9 @@ export default {
 }
 
 .ad-close:hover {
-    background: rgb(var(--bs-danger-rgb) / 0.3);
-    border-color: rgb(var(--bs-danger-rgb) / 0.6);
-    color: var(--bs-white);
+    background: rgb(var(--p-danger-rgb) / 0.3);
+    border-color: rgb(var(--p-danger-rgb) / 0.6);
+    color: var(--p-white);
     transform: rotate(90deg);
 }
 
@@ -509,10 +509,10 @@ export default {
 .ad-card {
     background: linear-gradient(180deg, var(--ad-sub-1) 0%, var(--ad-sub-2) 100%);
     border: 1px solid var(--ad-border);
-    border-left: 3px solid rgba(var(--bs-primary-rgb), 0.7);
+    border-left: 3px solid rgba(var(--p-primary-rgb), 0.7);
     border-radius: 10px;
     overflow: hidden;
-    box-shadow: 0 3px 10px rgba(var(--bs-black-rgb), 0.35);
+    box-shadow: 0 3px 10px rgba(var(--p-black-rgb), 0.35);
     margin-bottom: 0.5rem;
 }
 
@@ -521,9 +521,9 @@ export default {
     align-items: center;
     gap: 0.45rem;
     padding: 0.4rem 0.7rem;
-    background: rgba(var(--bs-white-rgb), 0.04);
+    background: rgba(var(--p-white-rgb), 0.04);
     border-bottom: 1px solid var(--ad-border);
-    color: var(--bs-primary);
+    color: var(--p-primary);
     font-weight: 600;
     font-size: 0.85rem;
     letter-spacing: 0.03em;
@@ -532,7 +532,7 @@ export default {
 
 .ad-card-header i {
     font-size: 0.9rem;
-    filter: drop-shadow(0 0 4px rgba(var(--bs-primary-rgb), 0.5));
+    filter: drop-shadow(0 0 4px rgba(var(--p-primary-rgb), 0.5));
 }
 
 /* ============ Tables ============ */
@@ -545,7 +545,7 @@ export default {
 }
 
 .ad-table thead tr {
-    background: rgba(var(--bs-white-rgb), 0.05);
+    background: rgba(var(--p-white-rgb), 0.05);
 }
 
 .ad-table thead th {
@@ -555,14 +555,14 @@ export default {
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.04em;
-    color: var(--ad-text-muted);
+    color: var(--ad-text-color-secondary);
     border-bottom: 1px solid var(--ad-border);
     white-space: nowrap;
 }
 
 .ad-table tbody td {
     padding: 0.35rem 0.7rem;
-    border-bottom: 1px solid rgba(var(--bs-white-rgb), 0.05);
+    border-bottom: 1px solid rgba(var(--p-white-rgb), 0.05);
     font-weight: 600;
 }
 
@@ -571,15 +571,15 @@ export default {
 }
 
 .ad-table tbody tr:nth-child(even) td {
-    background: rgba(var(--bs-primary-rgb), 0.08);
+    background: rgba(var(--p-primary-rgb), 0.08);
 }
 
 .ad-table tbody tr:hover td {
-    background: rgba(var(--bs-white-rgb), 0.05);
+    background: rgba(var(--p-white-rgb), 0.05);
 }
 
 .ad-table tbody td:first-child {
-    color: var(--ad-text-muted);
+    color: var(--ad-text-color-secondary);
     font-weight: 500;
 }
 
@@ -612,9 +612,9 @@ export default {
 }
 
 .ad-op-title i {
-    color: var(--bs-primary);
+    color: var(--p-primary);
     font-size: 0.9rem;
-    filter: drop-shadow(0 0 4px rgba(var(--bs-primary-rgb), 0.5));
+    filter: drop-shadow(0 0 4px rgba(var(--p-primary-rgb), 0.5));
 }
 
 /* ============ Visualizer ============ */

@@ -35,7 +35,7 @@ export default {
     data() {
         DataTable.use(DataTablesCore)
         const columns = [
-            { data: 'label', className: 'text-start' },
+            { data: 'label', className: 'text-left' },
             { data: 'initialPermeability', className: 'text-center', render: (d) => d == null || isNaN(d) ? '' : removeTrailingZeroes(d, 0) },
             { data: 'remanence', className: 'text-center', render: fmt(formatMagneticFluxDensity) },
             { data: 'coerciveForce', className: 'text-center', render: fmt(formatMagneticFieldStrength) },

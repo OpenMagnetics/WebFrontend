@@ -223,7 +223,7 @@ export function useConverterWaveforms() {
     function getTimeAxisOptions() {
         return {
             label: 'Time',
-            colorLabel: getComputedStyle(document.documentElement).getPropertyValue('--bs-light').trim(),
+            colorLabel: getComputedStyle(document.documentElement).getPropertyValue('--p-light').trim(),
             type: 'value',
             unit: 's'
         };
@@ -295,8 +295,8 @@ export function useConverterWaveforms() {
         const cs = getComputedStyle(document.documentElement);
         const {
             clipVoltage = true,
-            voltageColor = cs.getPropertyValue('--bs-info').trim(),
-            currentColor = cs.getPropertyValue('--bs-success').trim(),
+            voltageColor = cs.getPropertyValue('--p-info').trim(),
+            currentColor = cs.getPropertyValue('--p-success').trim(),
         } = options;
         
         // Add voltage data (left Y-axis)

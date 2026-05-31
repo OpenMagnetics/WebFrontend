@@ -295,7 +295,7 @@ export default {
 <template>
     <div class="op-container">
         <div class="row op-row">
-            <div class="col-12 md:col-2 text-start m-0 px-1 op-panel">
+            <div class="col-12 md:col-2 text-left m-0 px-1 op-panel">
                 <div class="op-header">
                     <i class="pi pi-list-check"></i>
                     <span>Operating points</span>
@@ -431,7 +431,7 @@ export default {
                 </div>
 
             </div>
-            <div v-if="masStore.mas.inputs.operatingPoints.length > 0" class="col-12 md:col-10 text-start pr-0 ">
+            <div v-if="masStore.mas.inputs.operatingPoints.length > 0" class="col-12 md:col-10 text-left pr-0 ">
                 <div v-if="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding.length > 0" class="container mx-auto">
                     <div class="row">
                         <OperatingPoint 
@@ -469,21 +469,21 @@ export default {
 .op-container > .op-row {
     margin-left: 0 !important;
     margin-right: 0 !important;
-    --bs-gutter-x: 0.5rem;
+    --p-gutter-x: 0.5rem;
     gap: 0.5rem 0;
 }
 
 .op-panel {
     background:
         linear-gradient(145deg,
-            rgba(var(--bs-primary-rgb), 0.06) 0%,
-            rgba(var(--bs-primary-rgb), 0.02) 100%),
-        var(--bs-dark);
-    border: 1px solid rgba(var(--bs-primary-rgb), 0.15);
+            rgba(var(--p-primary-rgb), 0.06) 0%,
+            rgba(var(--p-primary-rgb), 0.02) 100%),
+        var(--p-dark);
+    border: 1px solid rgba(var(--p-primary-rgb), 0.15);
     border-radius: 14px;
     padding: 0.6rem 0.5rem !important;
     margin: 0.15rem 0 0.5rem 0;
-    box-shadow: 0 4px 20px rgba(var(--bs-black-rgb), 0.12), inset 0 1px 0 rgba(var(--bs-white-rgb), 0.04);
+    box-shadow: 0 4px 20px rgba(var(--p-black-rgb), 0.12), inset 0 1px 0 rgba(var(--p-white-rgb), 0.04);
 }
 
 .op-header {
@@ -492,21 +492,21 @@ export default {
     gap: 0.5rem;
     padding: 0.5rem 0.6rem;
     margin: -0.6rem -0.5rem 0.4rem -0.5rem;
-    background: rgba(var(--bs-primary-rgb), 0.1);
-    border-bottom: 1px solid rgba(var(--bs-primary-rgb), 0.12);
+    background: rgba(var(--p-primary-rgb), 0.1);
+    border-bottom: 1px solid rgba(var(--p-primary-rgb), 0.12);
     font-weight: 600;
     font-size: 0.9rem;
-    color: var(--bs-primary);
+    color: var(--p-primary);
     letter-spacing: 0.02em;
 }
 
 .op-header i {
-    filter: drop-shadow(0 0 4px rgba(var(--bs-primary-rgb), 0.45));
+    filter: drop-shadow(0 0 4px rgba(var(--p-primary-rgb), 0.45));
 }
 
 .op-card {
-    background: rgba(var(--bs-white-rgb), 0.04);
-    border: 1px solid rgba(var(--bs-white-rgb), 0.1);
+    background: rgba(var(--p-white-rgb), 0.04);
+    border: 1px solid rgba(var(--p-white-rgb), 0.1);
     border-radius: 12px;
     padding: 0.55rem 0.5rem;
     margin: 0.35rem 0;
@@ -516,9 +516,9 @@ export default {
 
 .op-card.op-card-active {
     opacity: 1;
-    border-color: rgba(var(--bs-primary-rgb), 0.55);
-    background: rgba(var(--bs-primary-rgb), 0.08);
-    box-shadow: 0 2px 12px rgba(var(--bs-primary-rgb), 0.2);
+    border-color: rgba(var(--p-primary-rgb), 0.55);
+    background: rgba(var(--p-primary-rgb), 0.08);
+    box-shadow: 0 2px 12px rgba(var(--p-primary-rgb), 0.2);
 }
 
 .op-btn {
@@ -547,42 +547,42 @@ export default {
 
 .op-btn-primary {
     background: linear-gradient(135deg,
-        color-mix(in srgb, var(--bs-primary) 115%, transparent 0%) 0%,
-        var(--bs-primary) 55%,
-        rgb(var(--bs-primary-rgb) / 0.85) 100%);
-    color: var(--bs-white);
-    border: 1px solid color-mix(in srgb, var(--bs-primary) 70%, var(--bs-white) 30%);
+        color-mix(in srgb, var(--p-primary) 115%, transparent 0%) 0%,
+        var(--p-primary) 55%,
+        rgb(var(--p-primary-rgb) / 0.85) 100%);
+    color: var(--p-white);
+    border: 1px solid color-mix(in srgb, var(--p-primary) 70%, var(--p-white) 30%);
     box-shadow:
-        0 0 0 1px rgb(var(--bs-primary-rgb) / 0.35),
-        0 2px 8px rgb(var(--bs-primary-rgb) / 0.4),
-        inset 0 1px 0 rgba(var(--bs-white-rgb), 0.3);
-    text-shadow: 0 1px 1px rgba(var(--bs-black-rgb), 0.25);
+        0 0 0 1px rgb(var(--p-primary-rgb) / 0.35),
+        0 2px 8px rgb(var(--p-primary-rgb) / 0.4),
+        inset 0 1px 0 rgba(var(--p-white-rgb), 0.3);
+    text-shadow: 0 1px 1px rgba(var(--p-black-rgb), 0.25);
 }
 
 .op-btn-outline {
-    background: rgba(var(--bs-white-rgb), 0.08);
-    border: 1px solid rgba(var(--bs-primary-rgb), 0.55);
-    color: var(--bs-primary);
-    box-shadow: 0 1px 4px rgba(var(--bs-black-rgb), 0.25);
+    background: rgba(var(--p-white-rgb), 0.08);
+    border: 1px solid rgba(var(--p-primary-rgb), 0.55);
+    color: var(--p-primary);
+    box-shadow: 0 1px 4px rgba(var(--p-black-rgb), 0.25);
 }
 
 .op-btn-outline:hover:not(:disabled) {
-    background: rgba(var(--bs-primary-rgb), 0.2);
-    border-color: rgba(var(--bs-primary-rgb), 0.85);
-    color: var(--bs-white);
-    box-shadow: 0 2px 8px rgba(var(--bs-primary-rgb), 0.3);
+    background: rgba(var(--p-primary-rgb), 0.2);
+    border-color: rgba(var(--p-primary-rgb), 0.85);
+    color: var(--p-white);
+    box-shadow: 0 2px 8px rgba(var(--p-primary-rgb), 0.3);
 }
 
 .op-btn-danger {
-    background: rgb(var(--bs-danger-rgb) / 0.2);
-    border: 1px solid rgb(var(--bs-danger-rgb) / 0.55);
-    color: var(--bs-danger);
-    box-shadow: 0 1px 4px rgba(var(--bs-black-rgb), 0.25);
+    background: rgb(var(--p-danger-rgb) / 0.2);
+    border: 1px solid rgb(var(--p-danger-rgb) / 0.55);
+    color: var(--p-danger);
+    box-shadow: 0 1px 4px rgba(var(--p-black-rgb), 0.25);
 }
 
 .op-btn-danger:hover:not(:disabled) {
-    background: rgb(var(--bs-danger-rgb) / 0.3);
-    border-color: rgb(var(--bs-danger-rgb) / 0.75);
+    background: rgb(var(--p-danger-rgb) / 0.3);
+    border-color: rgb(var(--p-danger-rgb) / 0.75);
 }
 
 /* Winding row: name input + reflect button + select button on one line.
@@ -616,7 +616,7 @@ export default {
 .op-winding-btn:focus,
 .op-winding-btn:focus-visible {
     border: 0;
-    outline: 2px solid rgba(var(--bs-primary-rgb), 0.4);
+    outline: 2px solid rgba(var(--p-primary-rgb), 0.4);
     outline-offset: 1px;
 }
 .op-winding-btn:hover:not(:disabled) {

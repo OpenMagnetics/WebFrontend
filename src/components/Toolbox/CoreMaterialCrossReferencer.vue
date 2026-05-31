@@ -284,7 +284,7 @@ export default {
                      />
 
                     <ElementFromList
-                        class="col-6 my-3 text-start"
+                        class="col-6 my-3 text-left"
                         :dataTestLabel="dataTestLabel + '-XLabelSelector'"
                         :name="'xLabel'"
                         :titleSameRow="true"
@@ -295,7 +295,7 @@ export default {
                     />
 
                     <ElementFromList
-                        class="col-6 my-3 text-start"
+                        class="col-6 my-3 text-left"
                         :dataTestLabel="dataTestLabel + '-YLabelSelector'"
                         :name="'yLabel'"
                         :titleSameRow="true"

@@ -264,7 +264,7 @@ export default {
     display: flex;
     align-items: center;
     gap: 0.55rem;
-    color: var(--bs-primary);
+    color: var(--p-primary);
     font-size: 1.1rem;
     font-weight: 700;
     letter-spacing: 0.01em;
@@ -272,7 +272,7 @@ export default {
 }
 
 .ia-title i {
-    filter: drop-shadow(0 0 4px rgba(var(--bs-primary-rgb), 0.5));
+    filter: drop-shadow(0 0 4px rgba(var(--p-primary-rgb), 0.5));
 }
 
 .ia-col {
@@ -285,24 +285,24 @@ export default {
 .ia-card {
     background:
         linear-gradient(180deg,
-            rgba(var(--bs-primary-rgb), 0.06) 0%,
-            rgba(var(--bs-primary-rgb), 0.02) 100%),
-        var(--bs-dark);
-    border: 1px solid rgba(var(--bs-primary-rgb), 0.18);
-    border-left: 3px solid rgba(var(--bs-primary-rgb), 0.7);
+            rgba(var(--p-primary-rgb), 0.06) 0%,
+            rgba(var(--p-primary-rgb), 0.02) 100%),
+        var(--p-dark);
+    border: 1px solid rgba(var(--p-primary-rgb), 0.18);
+    border-left: 3px solid rgba(var(--p-primary-rgb), 0.7);
     border-radius: 12px;
     overflow: hidden;
-    box-shadow: 0 3px 10px rgba(var(--bs-black-rgb), 0.3);
+    box-shadow: 0 3px 10px rgba(var(--p-black-rgb), 0.3);
 }
 
 .ia-card-result {
-    border-left-color: rgba(var(--bs-success-rgb), 0.75);
+    border-left-color: rgba(var(--p-success-rgb), 0.75);
     background:
         linear-gradient(180deg,
-            rgba(var(--bs-success-rgb), 0.05) 0%,
-            rgba(var(--bs-success-rgb), 0.015) 100%),
-        var(--bs-dark);
-    border-color: rgba(var(--bs-success-rgb), 0.2);
+            rgba(var(--p-success-rgb), 0.05) 0%,
+            rgba(var(--p-success-rgb), 0.015) 100%),
+        var(--p-dark);
+    border-color: rgba(var(--p-success-rgb), 0.2);
     position: sticky;
     top: 0.5rem;
 }
@@ -312,9 +312,9 @@ export default {
     align-items: center;
     gap: 0.45rem;
     padding: 0.5rem 0.75rem;
-    background: rgba(var(--bs-primary-rgb), 0.08);
-    border-bottom: 1px solid rgba(var(--bs-primary-rgb), 0.12);
-    color: var(--bs-primary);
+    background: rgba(var(--p-primary-rgb), 0.08);
+    border-bottom: 1px solid rgba(var(--p-primary-rgb), 0.12);
+    color: var(--p-primary);
     font-weight: 600;
     font-size: 0.78rem;
     letter-spacing: 0.04em;
@@ -323,20 +323,20 @@ export default {
 
 .ia-card-header i {
     font-size: 0.85rem;
-    filter: drop-shadow(0 0 4px rgba(var(--bs-primary-rgb), 0.5));
+    filter: drop-shadow(0 0 4px rgba(var(--p-primary-rgb), 0.5));
 }
 
 .ia-card-header-result {
-    background: rgba(var(--bs-success-rgb), 0.1);
-    border-bottom-color: rgba(var(--bs-success-rgb), 0.18);
-    color: var(--bs-success);
+    background: rgba(var(--p-success-rgb), 0.1);
+    border-bottom-color: rgba(var(--p-success-rgb), 0.18);
+    color: var(--p-success);
     font-size: 1.2rem;
     padding: 0.5rem 0.9rem;
 }
 
 .ia-card-header-result i {
     font-size: 1.2rem;
-    filter: drop-shadow(0 0 4px rgba(var(--bs-success-rgb), 0.5));
+    filter: drop-shadow(0 0 4px rgba(var(--p-success-rgb), 0.5));
 }
 
 .ia-card-body {
@@ -361,15 +361,15 @@ export default {
     align-items: center;
     gap: 0.5rem;
     padding: 0.45rem 0.65rem;
-    background: rgba(var(--bs-success-rgb), 0.08);
-    border: 1px solid rgba(var(--bs-success-rgb), 0.18);
+    background: rgba(var(--p-success-rgb), 0.08);
+    border: 1px solid rgba(var(--p-success-rgb), 0.18);
     border-radius: 10px;
     transition: background 0.15s, border-color 0.15s;
 }
 
 .ia-result-row:hover {
-    background: rgba(var(--bs-success-rgb), 0.12);
-    border-color: rgba(var(--bs-success-rgb), 0.3);
+    background: rgba(var(--p-success-rgb), 0.12);
+    border-color: rgba(var(--p-success-rgb), 0.3);
 }
 
 .ia-result-icon {
@@ -378,10 +378,10 @@ export default {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    background: rgba(var(--bs-success-rgb), 0.18);
-    border: 1px solid rgba(var(--bs-success-rgb), 0.4);
+    background: rgba(var(--p-success-rgb), 0.18);
+    border: 1px solid rgba(var(--p-success-rgb), 0.4);
     border-radius: 999px;
-    color: var(--bs-success);
+    color: var(--p-success);
     font-size: 1.2rem;
     flex-shrink: 0;
 }
@@ -398,7 +398,7 @@ export default {
 }
 
 .ia-result-text small {
-    color: rgba(var(--bs-white-rgb), 0.85);
+    color: rgba(var(--p-white-rgb), 0.85);
     font-size: 1.2rem;
     font-weight: 600;
     letter-spacing: 0.02em;
@@ -426,7 +426,7 @@ export default {
 .ia-result-text :deep(.dim-ro-alt-unit),
 .ia-result-text :deep(.dim-ro-unit .p-select-label),
 .ia-result-text :deep(.dim-ro-alt-unit .p-select-label) {
-    color: var(--bs-white) !important;
+    color: var(--p-white) !important;
     background: transparent !important;
     font-size: 1.2rem !important;
     line-height: 1.15 !important;
@@ -439,10 +439,10 @@ export default {
     gap: 0.5rem;
     margin-top: 0.5rem;
     padding: 0.55rem 0.75rem;
-    background: rgb(var(--bs-danger-rgb) / 0.12);
-    border: 1px solid rgb(var(--bs-danger-rgb) / 0.4);
+    background: rgb(var(--p-danger-rgb) / 0.12);
+    border: 1px solid rgb(var(--p-danger-rgb) / 0.4);
     border-radius: 10px;
-    color: var(--bs-danger);
+    color: var(--p-danger);
     font-size: 0.85rem;
     line-height: 1.3;
 }

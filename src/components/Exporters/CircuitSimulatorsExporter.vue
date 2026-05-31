@@ -183,7 +183,7 @@ export default {
 }
 
 .circ-modal {
-    border: 1px solid rgba(var(--bs-primary-rgb), 0.25);
+    border: 1px solid rgba(var(--p-primary-rgb), 0.25);
     border-radius: 12px;
     overflow: hidden;
 }
@@ -193,11 +193,11 @@ export default {
     align-items: flex-start;
     justify-content: space-between;
     padding: 20px 24px 16px;
-    border-bottom: 1px solid rgba(var(--bs-primary-rgb), 0.18);
+    border-bottom: 1px solid rgba(var(--p-primary-rgb), 0.18);
     background: linear-gradient(180deg,
-        rgba(var(--bs-primary-rgb), 0.08) 0%,
-        rgba(var(--bs-primary-rgb), 0.02) 100%);
-    border-left: 3px solid rgba(var(--bs-primary-rgb), 0.7);
+        rgba(var(--p-primary-rgb), 0.08) 0%,
+        rgba(var(--p-primary-rgb), 0.02) 100%);
+    border-left: 3px solid rgba(var(--p-primary-rgb), 0.7);
 }
 
 .circ-header-inner {
@@ -211,10 +211,10 @@ export default {
     align-items: center;
     gap: 0.4rem;
     padding: 0.2rem 0.55rem;
-    background: rgba(var(--bs-primary-rgb), 0.12);
-    border: 1px solid rgba(var(--bs-primary-rgb), 0.3);
+    background: rgba(var(--p-primary-rgb), 0.12);
+    border: 1px solid rgba(var(--p-primary-rgb), 0.3);
     border-radius: 999px;
-    color: var(--bs-primary);
+    color: var(--p-primary);
     font-size: 10px;
     font-weight: 600;
     letter-spacing: 0.06em;
@@ -226,14 +226,14 @@ export default {
 .circ-title {
     font-size: 18px;
     font-weight: 700;
-    color: var(--bs-white);
+    color: var(--p-white);
     margin: 0;
     letter-spacing: 0.2px;
 }
 
 .circ-subtitle {
     font-size: 12px;
-    color: rgba(var(--bs-white-rgb), 0.55);
+    color: rgba(var(--p-white-rgb), 0.55);
     margin: 0;
 }
 
@@ -245,8 +245,8 @@ export default {
 }
 
 .circ-section {
-    background: rgba(var(--bs-white-rgb), 0.03);
-    border: 1px solid rgba(var(--bs-primary-rgb), 0.15);
+    background: rgba(var(--p-white-rgb), 0.03);
+    border: 1px solid rgba(var(--p-primary-rgb), 0.15);
     border-radius: 10px;
     padding: 16px 18px;
     display: flex;
@@ -272,45 +272,45 @@ export default {
 }
 
 .simba-icon {
-    background: rgba(var(--bs-primary-rgb), 0.15);
-    color: var(--bs-primary);
-    border: 1px solid rgba(var(--bs-primary-rgb), 0.3);
+    background: rgba(var(--p-primary-rgb), 0.15);
+    color: var(--p-primary);
+    border: 1px solid rgba(var(--p-primary-rgb), 0.3);
 }
 
 .ltspice-icon {
-    background: rgba(var(--bs-warning-rgb), 0.12);
-    color: rgb(var(--bs-warning-rgb));
-    border: 1px solid rgba(var(--bs-warning-rgb), 0.25);
+    background: rgba(var(--p-warning-rgb), 0.12);
+    color: rgb(var(--p-warning-rgb));
+    border: 1px solid rgba(var(--p-warning-rgb), 0.25);
 }
 
 .ngspice-icon {
-    background: rgba(var(--bs-success-rgb), 0.12);
-    color: rgb(var(--bs-success-rgb));
-    border: 1px solid rgba(var(--bs-success-rgb), 0.25);
+    background: rgba(var(--p-success-rgb), 0.12);
+    color: rgb(var(--p-success-rgb));
+    border: 1px solid rgba(var(--p-success-rgb), 0.25);
 }
 
 .nl5-icon {
-    background: rgba(var(--bs-info-rgb), 0.12);
-    color: rgb(var(--bs-info-rgb));
-    border: 1px solid rgba(var(--bs-info-rgb), 0.25);
+    background: rgba(var(--p-info-rgb), 0.12);
+    color: rgb(var(--p-info-rgb));
+    border: 1px solid rgba(var(--p-info-rgb), 0.25);
 }
 
 .plecs-icon {
-    background: rgba(var(--bs-danger-rgb), 0.12);
-    color: rgb(var(--bs-danger-rgb));
-    border: 1px solid rgba(var(--bs-danger-rgb), 0.25);
+    background: rgba(var(--p-danger-rgb), 0.12);
+    color: rgb(var(--p-danger-rgb));
+    border: 1px solid rgba(var(--p-danger-rgb), 0.25);
 }
 
 .circ-section-title {
     font-size: 14px;
     font-weight: 600;
-    color: var(--bs-white);
+    color: var(--p-white);
     letter-spacing: 0.1px;
 }
 
 .circ-section-desc {
     font-size: 11px;
-    color: rgba(var(--bs-white-rgb), 0.5);
+    color: rgba(var(--p-white-rgb), 0.5);
     margin-top: 1px;
 }
 
@@ -335,9 +335,9 @@ export default {
     font-size: 12px;
     font-weight: 500;
     border-radius: 7px;
-    border: 1px solid rgba(var(--bs-primary-rgb), 0.3);
-    background: rgba(var(--bs-primary-rgb), 0.1);
-    color: rgba(var(--bs-white-rgb), 0.85) !important;
+    border: 1px solid rgba(var(--p-primary-rgb), 0.3);
+    background: rgba(var(--p-primary-rgb), 0.1);
+    color: rgba(var(--p-white-rgb), 0.85) !important;
     cursor: pointer;
     transition: background 0.15s, border-color 0.15s, color 0.15s;
     text-align: center;
@@ -345,9 +345,9 @@ export default {
 }
 
 .circ-export-btn:hover:not(:disabled) {
-    background: rgba(var(--bs-primary-rgb), 0.2);
-    border-color: rgba(var(--bs-primary-rgb), 0.55);
-    color: var(--bs-white) !important;
+    background: rgba(var(--p-primary-rgb), 0.2);
+    border-color: rgba(var(--p-primary-rgb), 0.55);
+    color: var(--p-white) !important;
 }
 
 .circ-export-btn:disabled {
@@ -356,13 +356,13 @@ export default {
 }
 
 .circ-export-btn-accent {
-    background: rgba(var(--bs-primary-rgb), 0.18);
-    border-color: rgba(var(--bs-primary-rgb), 0.45);
-    color: var(--bs-primary) !important;
+    background: rgba(var(--p-primary-rgb), 0.18);
+    border-color: rgba(var(--p-primary-rgb), 0.45);
+    color: var(--p-primary) !important;
 }
 
 .circ-export-btn-accent:hover:not(:disabled) {
-    background: rgba(var(--bs-primary-rgb), 0.28);
-    color: var(--bs-white) !important;
+    background: rgba(var(--p-primary-rgb), 0.28);
+    color: var(--p-white) !important;
 }
 </style>

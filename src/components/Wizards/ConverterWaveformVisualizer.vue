@@ -87,7 +87,7 @@ export default {
         },
         
         textColor() {
-            return this.$styleStore?.wizard?.inputTextColor?.color || 'var(--bs-white)';
+            return this.$styleStore?.wizard?.inputTextColor?.color || 'var(--p-white)';
         },
     },
     
@@ -166,7 +166,7 @@ export default {
                 return {
                     backgroundColor: primaryColor,
                     borderColor: primaryColor,
-                    color: 'var(--bs-white)'
+                    color: 'var(--p-white)'
                 };
             } else {
                 return {
@@ -264,7 +264,7 @@ export default {
 .view-toggle .btn-outline-primary:hover {
     background-color: var(--om-primary) !important;
     border-color: var(--om-primary) !important;
-    color: var(--bs-white) !important;
+    color: var(--p-white) !important;
 }
 
 .operating-point-label {
@@ -286,7 +286,7 @@ export default {
 }
 
 .empty-state {
-    color: var(--bs-secondary);
+    color: var(--p-secondary);
 }
 
 .empty-icon {

@@ -113,14 +113,14 @@ export default {
 .wco-card {
     background:
         linear-gradient(180deg,
-            rgba(var(--bs-success-rgb), 0.06) 0%,
-            rgba(var(--bs-success-rgb), 0.02) 100%),
-        var(--bs-dark);
-    border: 1px solid rgba(var(--bs-success-rgb), 0.18);
-    border-left: 3px solid rgba(var(--bs-success-rgb), 0.7);
+            rgba(var(--p-success-rgb), 0.06) 0%,
+            rgba(var(--p-success-rgb), 0.02) 100%),
+        var(--p-dark);
+    border: 1px solid rgba(var(--p-success-rgb), 0.18);
+    border-left: 3px solid rgba(var(--p-success-rgb), 0.7);
     border-radius: 12px;
     overflow: hidden;
-    box-shadow: 0 3px 10px rgba(var(--bs-black-rgb), 0.3);
+    box-shadow: 0 3px 10px rgba(var(--p-black-rgb), 0.3);
     margin: 0.4rem 0 0.25rem 0;
 }
 
@@ -129,9 +129,9 @@ export default {
     align-items: center;
     gap: 0.4rem;
     padding: 0.4rem 0.7rem;
-    background: rgba(var(--bs-success-rgb), 0.1);
-    border-bottom: 1px solid rgba(var(--bs-success-rgb), 0.18);
-    color: var(--bs-success);
+    background: rgba(var(--p-success-rgb), 0.1);
+    border-bottom: 1px solid rgba(var(--p-success-rgb), 0.18);
+    color: var(--p-success);
     font-weight: 600;
     font-size: 0.72rem;
     letter-spacing: 0.05em;
@@ -140,7 +140,7 @@ export default {
 
 .wco-header i {
     font-size: 0.85rem;
-    filter: drop-shadow(0 0 4px rgba(var(--bs-success-rgb), 0.5));
+    filter: drop-shadow(0 0 4px rgba(var(--p-success-rgb), 0.5));
 }
 
 .wco-body {
@@ -158,7 +158,7 @@ export default {
 }
 
 .wco-body :deep(.col-6:hover) {
-    background: rgba(var(--bs-white-rgb), 0.03);
+    background: rgba(var(--p-white-rgb), 0.03);
 }
 </style>
 

@@ -397,9 +397,9 @@ export default {
         </thead>
         <tbody>
           <tr><td>Mode</td><td v-for="(op, i) in cllcDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px' }">{{ cllcModeLabel(op.lastMode) }}</td></tr>
-          <tr><td>Residual</td><td v-for="(op, i) in cllcDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px', color: op.steadyStateResidual > 1e-4 ? 'var(--bs-warning)' : 'inherit' }">{{ Number(op.steadyStateResidual).toExponential(2) }}</td></tr>
-          <tr><td>ZVS Pri (A)</td><td v-for="(op, i) in cllcDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px', color: op.zvsMarginPrimary <= 0 ? 'var(--bs-warning)' : 'inherit' }">{{ Number(op.zvsMarginPrimary).toFixed(3) }}</td></tr>
-          <tr><td>ZVS Sec (A)</td><td v-for="(op, i) in cllcDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px', color: op.zvsMarginSecondary <= 0 ? 'var(--bs-warning)' : 'inherit' }">{{ Number(op.zvsMarginSecondary).toFixed(3) }}</td></tr>
+          <tr><td>Residual</td><td v-for="(op, i) in cllcDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px', color: op.steadyStateResidual > 1e-4 ? 'var(--p-warning)' : 'inherit' }">{{ Number(op.steadyStateResidual).toExponential(2) }}</td></tr>
+          <tr><td>ZVS Pri (A)</td><td v-for="(op, i) in cllcDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px', color: op.zvsMarginPrimary <= 0 ? 'var(--p-warning)' : 'inherit' }">{{ Number(op.zvsMarginPrimary).toFixed(3) }}</td></tr>
+          <tr><td>ZVS Sec (A)</td><td v-for="(op, i) in cllcDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px', color: op.zvsMarginSecondary <= 0 ? 'var(--p-warning)' : 'inherit' }">{{ Number(op.zvsMarginSecondary).toFixed(3) }}</td></tr>
           <tr><td>Res. Trans. (s)</td><td v-for="(op, i) in cllcDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px' }">{{ Number(op.resonantTransitionTime).toExponential(2) }}</td></tr>
           <tr><td>I_pri peak (A)</td><td v-for="(op, i) in cllcDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px' }">{{ Number(op.primaryPeakCurrent).toFixed(3) }}</td></tr>
           <tr><td>Vcr peak (V)</td><td v-for="(op, i) in cllcDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px' }">{{ Number(op.resonantCapPeakVoltage).toFixed(2) }}</td></tr>

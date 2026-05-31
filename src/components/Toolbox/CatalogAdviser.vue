@@ -11,15 +11,15 @@ import { useCatalogStore } from '../../stores/catalog'
 
 const style = getComputedStyle(document.body);
 const theme = {
-  primary: style.getPropertyValue('--bs-primary'),
-  secondary: style.getPropertyValue('--bs-secondary'),
-  success: style.getPropertyValue('--bs-success'),
-  info: style.getPropertyValue('--bs-info'),
-  warning: style.getPropertyValue('--bs-warning'),
-  danger: style.getPropertyValue('--bs-danger'),
-  light: style.getPropertyValue('--bs-light'),
-  dark: style.getPropertyValue('--bs-dark'),
-  white: style.getPropertyValue('--bs-white'),
+  primary: style.getPropertyValue('--p-primary'),
+  secondary: style.getPropertyValue('--p-secondary'),
+  success: style.getPropertyValue('--p-success'),
+  info: style.getPropertyValue('--p-info'),
+  warning: style.getPropertyValue('--p-warning'),
+  danger: style.getPropertyValue('--p-danger'),
+  light: style.getPropertyValue('--p-light'),
+  dark: style.getPropertyValue('--p-dark'),
+  white: style.getPropertyValue('--p-white'),
 };
 
 export default {
@@ -287,7 +287,7 @@ export default {
 </script>
 
 <template>
-    <div class="container text-start pr-0 container-fluid"  style="height: 75vh" :style="$styleStore.catalogAdviser.main">
+    <div class="container text-left pr-0 container-fluid"  style="height: 75vh" :style="$styleStore.catalogAdviser.main">
         <div class="row">
             <div class="col-2 p-1 pr-0 control" style="height: 75vh">
                 <div
@@ -308,12 +308,12 @@ export default {
                             <span>{{ showWeights ? '▲' : '▼' }}</span>
                         </button>
                         <div v-show="showWeights" class="mt-2">
-                            <div class="row ml-1 mx-0 text-start" v-for="(weight, filter) in catalogStore.filters" :key="filter">
+                            <div class="row ml-1 mx-0 text-left" v-for="(weight, filter) in catalogStore.filters" :key="filter">
                                 <label class="form-label col-12 py-0 my-0 small">{{filter}}</label>
                                 <div class="col-7 pt-2 pr-3">
                                     <Slider v-model="catalogStore.filters[filter]" :disabled="loading" class="col-12 text-primary slider" :height="10" :min="0" :max="100" :step="10" :color="theme.primary" :tooltips="false" @change="changedSliderValue(filter, $event)"/>
                                 </div>
-                                <input :disabled="loading" :data-cy="dataTestLabel + '-number-input'" type="number" class="m-0 px-0 col-3 text-end" @change="changedInputValue(filter, $event.target.value)" :value="removeTrailingZeroes(catalogStore.filters[filter], 0)" ref="inputRef"/>
+                                <input :disabled="loading" :data-cy="dataTestLabel + '-number-input'" type="number" class="m-0 px-0 col-3 text-right" @change="changedInputValue(filter, $event.target.value)" :value="removeTrailingZeroes(catalogStore.filters[filter], 0)" ref="inputRef"/>
                             </div>
                             <!-- Search button inside collapsible -->
                             <button
@@ -341,18 +341,18 @@ export default {
 
                 </div>
             </div>
-            <div class="col-10 text-start pr-0 container-fluid"  style="height: 75vh">
+            <div class="col-10 text-left pr-0 container-fluid"  style="height: 75vh">
                 <div class="row" v-if="loading" >
                     <img data-cy="magneticAdviser-loading" class="mx-auto d-block col-12" alt="loading" style="width: auto; height: 20%;" :src="$settingsStore.loadingGif">
                 </div>
-                <p v-if="resultsMessage && !loading" class="px-2 pt-2 mb-1 small text-muted">{{ resultsMessage }}</p>
+                <p v-if="resultsMessage && !loading" class="px-2 pt-2 mb-1 small text-color-secondary">{{ resultsMessage }}</p>
                 <div class="col-12 row advises">
                     <!-- No-results banner -->
                     <div v-if="hasSearched && !loading && catalogStore.advises.length === 0"
                          class="col-12 text-center py-5">
                         <i class="pi pi-ban text-5xl text-danger"></i>
                         <p class="mt-3 fw-semibold">No choke available in the catalog for your requirements.</p>
-                        <p class="text-muted small">Adjust your requirements or use the custom design path.</p>
+                        <p class="text-color-secondary small">Adjust your requirements or use the custom design path.</p>
                     </div>
                     <template v-for="(advise, adviseIndex) in catalogStore.advises" :key="adviseIndex">
                         <div class="col-4 m-0 p-0 mt-1" v-if="advise.scoring != null">
@@ -390,8 +390,8 @@ export default {
 }
 
 .slider {
-  --slider-connect-bg: var(--bs-primary);
-  --slider-handle-bg: var(--bs-primary);
+  --slider-connect-bg: var(--p-primary);
+  --slider-handle-bg: var(--p-primary);
 }
 
 </style>

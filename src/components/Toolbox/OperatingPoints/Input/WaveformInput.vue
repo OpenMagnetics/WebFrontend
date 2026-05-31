@@ -155,7 +155,7 @@ export default {
             <button
                 :style="[
                     combinedStyle([$styleStore.operatingPoints.inputTitleFontSize, signalDescriptor == 'current'? $styleStore.operatingPoints.currentBgColor : signalDescriptor == 'voltage'? $styleStore.operatingPoints.voltageBgColor : $styleStore.operatingPoints.commonParameterBgColor]),
-                    { color: signalDescriptor == 'current' ? 'var(--bs-dark)' : 'var(--bs-white)', fontWeight: 600, maxHeight: '1.7em' }
+                    { color: signalDescriptor == 'current' ? 'var(--p-dark)' : 'var(--p-white)', fontWeight: 600, maxHeight: '1.7em' }
                 ]"
                 v-if="induceableSignal"
                 :data-cy="`${dataTestLabel}-induce-button`"
