@@ -78,4 +78,5 @@ Thumbs.db
 *_debug.*
 *_test*.json
 *.xfmr.json
-.claude/settings.json
+.claude/
+CLAUDE.md
