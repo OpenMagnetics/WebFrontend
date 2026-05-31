@@ -37,6 +37,10 @@ export default {
         const taskQueueStore = useTaskQueueStore();
         const designLevelOptions = ['Help me with the design', 'I know the design I want'];
         const modeOptions = ['continuousConductionMode', 'criticalConductionMode', 'discontinuousConductionMode'];
+        // Supported PFC power-stage variants (buck/buckBoost throw in MKF; Vienna
+        // has its own wizard, so they are intentionally not offered here).
+        const variantOptions = ['boost', 'bridgeless', 'semiBridgeless', 'interleavedBoost', 'totemPole', 'sepic', 'cuk'];
+        const phaseOptions = [2, 3];
         const errorMessage = "";
         const localData = deepCopy(defaultPfcWizardInputs);
         return {
@@ -45,6 +49,8 @@ export default {
             taskQueueStore,
             designLevelOptions,
             modeOptions,
+            variantOptions,
+            phaseOptions,
             dropdownLabelsConverterWizards,
             localData,
             errorMessage,
@@ -68,6 +74,17 @@ export default {
     computed: {
         isCcmMode() {
             return this.localData.mode === 'continuousConductionMode';
+        },
+        isInterleaved() {
+            return this.localData.topologyVariant === 'interleavedBoost';
+        },
+        isTotemPole() {
+            return this.localData.topologyVariant === 'totemPole';
+        },
+        // SEPIC / Ćuk are buck-boost class: the output may sit below the line
+        // peak, so the "Vout > Vpk" boost constraint does not apply to them.
+        isBuckBoostClass() {
+            return this.localData.topologyVariant === 'sepic' || this.localData.topologyVariant === 'cuk';
         }
     },
     watch: {
@@ -97,8 +114,26 @@ export default {
         if (this.localData.designLevel === 'I know the design I want' && this.localData.inductance > 0) {
             this.detectActualMode();
         }
+        this.$nextTick(() => {
+            if (this._autoRunDone) return;
+            this._autoRunDone = true;
+            try { this.updateErrorMessage?.(); } catch (e) { return; }
+            if (!this.errorMessage) this.simulateIdealWaveforms?.();
+        });
     },
     methods: {
+
+    // Topology-variant params shared by every MKF call. The MAS schema parses
+    // these directly (PowerFactorCorrection(json)), so no extra backend wiring
+    // is needed. numberOfPhases only matters for interleavedBoost;
+    // wideBandgapSwitch only for totemPole CCM — both are harmless otherwise.
+    variantParams() {
+      return {
+        topologyVariant: this.localData.topologyVariant,
+        numberOfPhases: Number(this.localData.numberOfPhases) || 2,
+        wideBandgapSwitch: this.localData.wideBandgapSwitch !== false,
+      };
+    },
 
     // ===== WIZARD CONTRACT =====
     buildParams(mode) {
@@ -108,6 +143,7 @@ export default {
         lineFrequency: this.localData.lineFrequency, currentRippleRatio: this.localData.currentRippleRatio,
         efficiency: this.localData.efficiency, mode: this.localData.mode,
         diodeVoltageDrop: this.localData.diodeVoltageDrop, ambientTemperature: this.localData.ambientTemperature,
+        ...this.variantParams(),
       };
       if (this.localData.designLevel == 'I know the design I want') aux.inductance = this.localData.inductance;
       if (mode === 'spice') {
@@ -165,12 +201,16 @@ export default {
                 return;
             }
 
-            // Check that output voltage > peak input voltage
-            const vinMax = this.localData.inputVoltage.maximum || this.localData.inputVoltage.nominal;
-            const vinPeakMax = vinMax * Math.sqrt(2);
-            if (this.localData.outputVoltage <= vinPeakMax) {
-                this.errorMessage = `Output voltage (${this.localData.outputVoltage}V) must be greater than peak input (${vinPeakMax.toFixed(1)}V)`;
-                return;
+            // Boost-family PFC can only step up, so Vout must exceed the peak
+            // input. SEPIC / Ćuk are buck-boost class and may regulate a bus
+            // below the line peak, so this constraint does not apply to them.
+            if (!this.isBuckBoostClass) {
+                const vinMax = this.localData.inputVoltage.maximum || this.localData.inputVoltage.nominal;
+                const vinPeakMax = vinMax * Math.sqrt(2);
+                if (this.localData.outputVoltage <= vinPeakMax) {
+                    this.errorMessage = `Output voltage (${this.localData.outputVoltage}V) must be greater than peak input (${vinPeakMax.toFixed(1)}V)`;
+                    return;
+                }
             }
         },
 
@@ -184,14 +224,11 @@ export default {
                 const Module = await waitForMkf();
                 await Module.ready;
 
-                const params = {
-                    inputVoltage: this.localData.inputVoltage,
-                    outputVoltage: this.localData.outputVoltage,
-                    outputPower: this.localData.outputPower,
-                    switchingFrequency: this.localData.switchingFrequency,
-                    efficiency: this.localData.efficiency,
-                    diodeVoltageDrop: this.localData.diodeVoltageDrop
-                };
+                // Reuse buildParams() — the single param source — so the variant
+                // fields can never drift from the analytical/simulation/spice
+                // paths. determine_pfc_mode takes inductance as an explicit arg
+                // and ignores the (harmless) extra keys.
+                const params = this.buildParams('analytical');
 
                 const result = JSON.parse(await Module.determine_pfc_mode(JSON.stringify(params), this.localData.inductance));
 
@@ -207,7 +244,7 @@ export default {
       await this.$refs.base.executeWaveformAction(this, 'analytical');
     },
         
-        async getSimulatedWaveforms() {
+        async simulateIdealWaveforms() {
       await this.$refs.base.executeWaveformAction(this, 'simulation');
     },
     async getSpiceCode() {
@@ -250,76 +287,25 @@ export default {
         
         async process() {
             this.updateErrorMessage();
-            if (this.errorMessage) return;
-            
+            if (this.errorMessage) return null;
+
             this.masStore.resetMas("power");
             this.$stateStore.closeCoilAdvancedInfo();
-            
+
+            // Delegate to the shared base contract, exactly like every other
+            // converter wizard (SepicWizard, BuckBoostWizard, …). The base reads
+            // the single source of truth — buildParams() — for the analytical
+            // fallback and the stored simulatedOperatingPoints for the common
+            // path, so topologyVariant flows through one place only.
             try {
-                // Check if we have stored operating points with waveforms (from Analytical or Simulated)
-                const hasStoredData = this.simulatedOperatingPoints && this.simulatedOperatingPoints.length > 0;
-                
-                let masInputs;
-                
-                if (hasStoredData) {
-                    // Use stored data - extract single period from waveforms
-                    const freq = this.getDefaultFrequency();
-                    const ops = this.$refs.base.extractSinglePeriodFromOperatingPoints(this.simulatedOperatingPoints, freq);
-                    
-                    // Calculate harmonics and processed data if missing
-                    const opsWithHarmonics = await this.$refs.base.processSimulatedOperatingPoints(ops, this.taskQueueStore);
-                    
-                    // Get designRequirements from stored data or compute basic ones
-                    const dr = this.designRequirements || {
-                        topology: Topologies.PowerFactorCorrection,
-                        magnetizingInductance: this.simulatedInductance ? { nominal: this.simulatedInductance } : null
-                    };
-                    
-                    // Setup masStore
-                    await this.$refs.base.setupMasStore({
-                        designRequirements: dr,
-                        operatingPoints: opsWithHarmonics,
-                        topology: this.getTopology(),
-                        isolationSides: this.getIsolationSides(),
-                        insulationType: this.getInsulationType(),
-                        wizardInstance: this
-                    });
-                    
-                    this.errorMessage = "";
-                    return this.masStore.mas.inputs;
-                } else {
-                    // Fallback: run analytical calculation via MKF
-                    const Module = await waitForMkf();
-                    await Module.ready;
-                    
-                    const aux = {
-                        inputVoltage: this.localData.inputVoltage,
-                        outputVoltage: this.localData.outputVoltage,
-                        outputPower: this.localData.outputPower,
-                        switchingFrequency: this.localData.switchingFrequency,
-                        lineFrequency: this.localData.lineFrequency,
-                        currentRippleRatio: this.localData.currentRippleRatio,
-                        efficiency: this.localData.efficiency,
-                        mode: this.localData.mode,
-                        diodeVoltageDrop: this.localData.diodeVoltageDrop,
-                        ambientTemperature: this.localData.ambientTemperature
-                    };
-                    
-                    if (this.localData.designLevel == 'I know the design I want') {
-                        aux['inductance'] = this.localData.inductance;
-                    }
-                    
-                    const result = JSON.parse(await Module.calculate_pfc_inputs(JSON.stringify(aux)));
-                    
-                    if (result.error) {
-                        this.errorMessage = result.error;
-                        return null;
-                    }
-                    
-                    this.masStore.mas.inputs = result.masInputs;
-                    this.errorMessage = "";
-                    return result.masInputs;
+                const result = await this.$refs.base.processWizardData(this, this.taskQueueStore);
+                if (!result.success) {
+                    this.errorMessage = result.error;
+                    return null;
                 }
+                this.designRequirements = result.designRequirements;
+                this.errorMessage = "";
+                return this.masStore.mas.inputs;
             } catch (error) {
                 console.error('Error processing design:', error);
                 this.errorMessage = error.message || String(error);
@@ -377,7 +363,7 @@ export default {
     @update:numberOfPeriods="numberOfPeriods = $event"
     @update:numberOfSteadyStatePeriods="numberOfSteadyStatePeriods = $event"
     @get-analytical-waveforms="getAnalyticalWaveforms"
-    @get-simulated-waveforms="getSimulatedWaveforms"
+    @get-simulated-waveforms="simulateIdealWaveforms"
     @get-spice-code="getSpiceCode"
     @dismiss-error="errorMessage = ''; waveformError = ''"
   >
@@ -393,6 +379,33 @@ export default {
         :textColor="$styleStore.wizard.inputTextColor"
         @update="updateErrorMessage"
       />
+      <ElementFromList
+        :name="'topologyVariant'" :tooltip="tooltipsConverterWizards['topologyVariant']" :replaceTitle="'Topology'"
+        :options="variantOptions" :optionLabels="dropdownLabelsConverterWizards.pfcVariant" :titleSameRow="true"
+        :dataTestLabel="dataTestLabel + '-TopologyVariant'"
+        v-model="localData"
+        :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'"
+        :valueFontSize="$styleStore.wizard.inputFontSize"
+        :labelFontSize="$styleStore.wizard.inputLabelFontSize"
+        :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor"
+        :textColor="$styleStore.wizard.inputTextColor"
+        @update="updateErrorMessage"
+      />
+      <ElementFromList v-if="isInterleaved"
+        :name="'numberOfPhases'" :tooltip="tooltipsConverterWizards['numberOfPhases']" :replaceTitle="'Phases'"
+        :options="phaseOptions" :titleSameRow="true"
+        :dataTestLabel="dataTestLabel + '-NumberOfPhases'"
+        v-model="localData"
+        :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'"
+        :valueFontSize="$styleStore.wizard.inputFontSize"
+        :labelFontSize="$styleStore.wizard.inputLabelFontSize"
+        :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor"
+        :textColor="$styleStore.wizard.inputTextColor"
+        @update="updateErrorMessage"
+      />
+      <div v-if="isTotemPole" class="mt-1 px-1" :data-cy="dataTestLabel + '-TotemPoleHint'">
+        <small class="text-muted"><i class="pi pi-info-circle mr-1"></i>Totem-pole CCM uses wide-bandgap (GaN/SiC) switches.</small>
+      </div>
     </template>
 
     <template #design-or-switch-parameters-title>
