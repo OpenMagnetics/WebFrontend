@@ -598,34 +598,34 @@ h1 .pi, h2 .pi, h3 .pi, h4 .pi, h5 .pi, h6 .pi,
  * Required by wizards (ConverterWizardBase uses col-xl-3/4/5) and many other
  * legacy templates. Without these, every `.col-xl-3` collapses to 100%
  * width via the `.row > *` rule above. */
-@mixin _bs-col-width($n) {
+@mixin _col-width($n) {
     flex: 0 0 auto;
-    width: percentage($n / 12);
-    max-width: percentage($n / 12);
+    width: calc(#{$n} / 12 * 100%);
+    max-width: calc(#{$n} / 12 * 100%);
 }
 .col-auto { flex: 0 0 auto; width: auto; max-width: 100%; }
 @for $i from 1 through 12 {
-    .col-#{$i} { @include _bs-col-width($i); }
+    .col-#{$i} { @include _col-width($i); }
 }
 @media (min-width: 576px) {
     .col-sm-auto { flex: 0 0 auto; width: auto; max-width: 100%; }
-    @for $i from 1 through 12 { .col-sm-#{$i} { @include _bs-col-width($i); } }
+    @for $i from 1 through 12 { .col-sm-#{$i} { @include _col-width($i); } }
 }
 @media (min-width: 768px) {
     .col-md-auto { flex: 0 0 auto; width: auto; max-width: 100%; }
-    @for $i from 1 through 12 { .col-md-#{$i} { @include _bs-col-width($i); } }
+    @for $i from 1 through 12 { .col-md-#{$i} { @include _col-width($i); } }
 }
 @media (min-width: 1075px) {
     .col-lg-auto { flex: 0 0 auto; width: auto; max-width: 100%; }
-    @for $i from 1 through 12 { .col-lg-#{$i} { @include _bs-col-width($i); } }
+    @for $i from 1 through 12 { .col-lg-#{$i} { @include _col-width($i); } }
 }
 @media (min-width: 1200px) {
     .col-xl-auto { flex: 0 0 auto; width: auto; max-width: 100%; }
-    @for $i from 1 through 12 { .col-xl-#{$i} { @include _bs-col-width($i); } }
+    @for $i from 1 through 12 { .col-xl-#{$i} { @include _col-width($i); } }
 }
 @media (min-width: 1400px) {
     .col-xxl-auto { flex: 0 0 auto; width: auto; max-width: 100%; }
-    @for $i from 1 through 12 { .col-xxl-#{$i} { @include _bs-col-width($i); } }
+    @for $i from 1 through 12 { .col-xxl-#{$i} { @include _col-width($i); } }
 }
 
 /* col-offset-N is a project-specific addition. */
