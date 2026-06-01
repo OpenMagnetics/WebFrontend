@@ -87,6 +87,11 @@ export default defineConfig({
         }),
     ],
     resolve: {
+        // Force a single instance of these shared deps so MagneticBuilder's
+        // node_modules don't ship a second copy. Two copies = two module-level
+        // singletons (Pinia activePinia, PrimeVue config) = production-only
+        // "Cannot read properties of undefined" errors.
+        dedupe: ['vue', 'pinia', 'primevue', '@primeuix/themes', 'vue-router'],
         alias: [
             {
                 find: '@',
