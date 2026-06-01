@@ -376,6 +376,12 @@ export const useStyleStore = defineStore("style", () => {
             inputTitleFontSize: {
                 "font-size": '1.4rem',
             },
+            infoValueFontSize: {
+                "font-size": '0.95rem',
+            },
+            infoLabelFontSize: {
+                "font-size": '1rem',
+            },
             inputLabelBgColor:{
                 "background-color": theme["dark"] + ' !important',
                 "background-image": "none !important",
