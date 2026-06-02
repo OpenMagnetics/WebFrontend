@@ -351,7 +351,13 @@ router.beforeEach((to, from, next) => {
                     console.warn("Model settings initialized");
 
                     // Ensure minimum loader display time before navigating
-                    const newPath = app.config.globalProperties.$userStore.loadingPath;
+                    // Fall back to home when loadingPath is null — happens when
+                    // the user pastes /engine_loader directly and there's no
+                    // prior destination to return to. Without this, router.push(null)
+                    // throws TypeError ("Cannot read properties of null reading
+                    // 'path'") and the loader is stuck forever.
+                    const newPath = app.config.globalProperties.$userStore.loadingPath
+                        || `${import.meta.env.BASE_URL}`;
                     app.config.globalProperties.$userStore.loadingPath = null;
                     const elapsedTime = Date.now() - loaderStartTime;
                     const remainingTime = Math.max(0, minimumLoaderTime - elapsedTime);
