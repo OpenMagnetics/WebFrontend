@@ -371,10 +371,10 @@ export const useStyleStore = defineStore("style", () => {
 
 
             inputFontSize: {
-                "font-size": '1.15rem',
+                "font-size": '1rem',
             },
             inputTitleFontSize: {
-                "font-size": '1.4rem',
+                "font-size": '1.15rem',
             },
             infoValueFontSize: {
                 "font-size": '0.95rem',
