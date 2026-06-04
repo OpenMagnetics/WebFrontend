@@ -15,7 +15,8 @@
 
 import { test, expect } from './_coverage.js';
 import { isBenign, pause } from './utils.js';
-import { ss, goToBuilderStep, adviseCoreAndWait, adviseWireAndWait } from './utils/builder-helpers.js';
+import { ss, goToBuilderStep, adviseCoreAndWait, adviseWireAndWait,
+         selectOptions, selectValue, pickOption, pickFirstOption, numberInput } from './utils/builder-helpers.js';
 
 // =====================================================================
 // GROUP A – Navigation to builder step
@@ -113,14 +114,10 @@ test.describe('MB – Group B – Core Advise', () => {
     await adviseCoreAndWait(page);
     await ss(page, 'B3-core-advised');
 
-    const mfgSel = page.locator('[data-cy$="-MaterialManufacturers-select"]').first();
-    await expect(mfgSel).toBeVisible();
-    const mfg = await mfgSel.inputValue();
+    const mfg = await selectValue(page, '-MaterialManufacturers');
     expect(mfg.length, 'manufacturer select must have a non-empty value after advise').toBeGreaterThan(0);
 
-    const matSel = page.locator('[data-cy$="-MaterialNames-select"]').first();
-    await expect(matSel).toBeVisible();
-    const mat = await matSel.inputValue();
+    const mat = await selectValue(page, '-MaterialNames');
     expect(mat.length, 'material name select must have a non-empty value after advise').toBeGreaterThan(0);
 
     expect(errors).toEqual([]);
@@ -131,12 +128,11 @@ test.describe('MB – Group B – Core Advise', () => {
     // ElementFromListRadio for the design-level — not .design-mode-label.
     await goToBuilderStep(page, {
       setupFn: async (p) => {
+        // PrimeVue RadioButton: a real click drives its v-model; setting
+        // .checked + a native change event does not.
         const iKnow = p.locator('[data-cy="BuckWizard-DesignLevel-I know the design I want-radio-input"]');
-        await expect(iKnow).toBeAttached();
-        await iKnow.evaluate(el => {
-          el.checked = true;
-          el.dispatchEvent(new Event('change', { bubbles: true }));
-        });
+        await expect(iKnow).toBeVisible();
+        await iKnow.click();
         await pause(p, 400, 'mechanical: settle');
         await expect(p.locator('[data-cy="BuckWizard-Inductance-number-input"]')).toBeVisible();
       },
@@ -145,9 +141,7 @@ test.describe('MB – Group B – Core Advise', () => {
     await adviseCoreAndWait(page);
     await ss(page, 'B4-core-advised-iknow');
 
-    const mfgSel = page.locator('[data-cy$="-MaterialManufacturers-select"]').first();
-    await expect(mfgSel).toBeVisible();
-    expect((await mfgSel.inputValue()).length).toBeGreaterThan(0);
+    expect((await selectValue(page, '-MaterialManufacturers')).length).toBeGreaterThan(0);
   });
 });
 
@@ -161,8 +155,7 @@ test.describe('MB – Group C – Core Manual Shape', () => {
     await goToBuilderStep(page);
     const shapeSel = page.locator('[data-cy$="-AdvancedCoreInfo-ShapeFamilies-container"]').first();
     await expect(shapeSel).toBeVisible();
-    const selectsCount = await shapeSel.locator('select').count();
-    expect(selectsCount, 'AdvancedCoreInfo must contain at least one select').toBeGreaterThan(0);
+    await expect(shapeSel.locator('.p-select').first(), 'shape-family PrimeVue select must be present').toBeVisible();
     await ss(page, 'C1-core-shape-selector');
   });
 
@@ -170,13 +163,11 @@ test.describe('MB – Group C – Core Manual Shape', () => {
     await goToBuilderStep(page);
     const coreInfoEl = page.locator('[data-cy$="-AdvancedCoreInfo-ShapeFamilies-container"]').first();
     await expect(coreInfoEl).toBeVisible();
-    const firstSelect = coreInfoEl.locator('select').first();
-    await expect(firstSelect).toBeVisible();
-    const opts = await firstSelect.evaluate(el => Array.from(el.options).map(o => o.value).filter(v => v));
+    const opts = await selectOptions(page, '-AdvancedCoreInfo-ShapeFamilies');
     expect(opts.length, 'shape-family select must have at least one option').toBeGreaterThan(0);
-    await firstSelect.selectOption(opts[0]);
+    const picked = await pickFirstOption(page, '-AdvancedCoreInfo-ShapeFamilies');
     await pause(page, 600, 'mechanical: settle');
-    expect(await firstSelect.inputValue()).toBe(opts[0]);
+    expect(await selectValue(page, '-AdvancedCoreInfo-ShapeFamilies')).toBe(picked);
     await ss(page, 'C2-shape-family-selected');
   });
 
@@ -185,16 +176,14 @@ test.describe('MB – Group C – Core Manual Shape', () => {
     await adviseCoreAndWait(page);
     const coreInfoEl = page.locator('[data-cy$="-AdvancedCoreInfo-ShapeFamilies-container"]').first();
     await expect(coreInfoEl).toBeVisible();
-    const selectsCount = await coreInfoEl.locator('select').count();
+    const selectsCount = await coreInfoEl.locator('.p-select').count();
     expect(selectsCount).toBeGreaterThan(0);
     await ss(page, 'C3-shape-after-advise');
   });
 
   test('MB-C4 – Shape family select exposes multiple options', async ({ page }) => {
     await goToBuilderStep(page);
-    const firstSel = page.locator('[data-cy$="-AdvancedCoreInfo-ShapeFamilies-container"]').first().locator('select').first();
-    await expect(firstSel).toBeVisible();
-    const opts = await firstSel.evaluate(el => Array.from(el.options).map(o => o.value).filter(v => v));
+    const opts = await selectOptions(page, '-AdvancedCoreInfo-ShapeFamilies');
     expect(opts.length, 'shape-family select must offer at least 2 options').toBeGreaterThan(1);
     await ss(page, 'C4-shape-families');
   });
@@ -217,16 +206,12 @@ test.describe('MB – Group D – Core Material', () => {
     await goToBuilderStep(page);
     await adviseCoreAndWait(page);
 
-    const mfgSel = page.locator('[data-cy$="-MaterialManufacturers-select"]').first();
-    await expect(mfgSel).toBeVisible();
-    const mfgOpts = await mfgSel.evaluate(el => Array.from(el.options).map(o => o.value).filter(v => v));
+    const mfgOpts = await selectOptions(page, '-MaterialManufacturers');
     expect(mfgOpts.length).toBeGreaterThan(0);
-    await mfgSel.selectOption(mfgOpts[0]);
+    await pickFirstOption(page, '-MaterialManufacturers');
     await pause(page, 800, 'mechanical: settle');
 
-    const matSel = page.locator('[data-cy$="-MaterialNames-select"]').first();
-    await expect(matSel).toBeVisible();
-    const matOpts = await matSel.evaluate(el => Array.from(el.options).map(o => o.value).filter(v => v));
+    const matOpts = await selectOptions(page, '-MaterialNames');
     expect(matOpts.length, 'Material Names must have options for the chosen manufacturer').toBeGreaterThan(0);
     await ss(page, 'D2-material-names-visible');
   });
@@ -235,17 +220,15 @@ test.describe('MB – Group D – Core Material', () => {
     await goToBuilderStep(page);
     await adviseCoreAndWait(page);
 
-    const matSel = page.locator('[data-cy$="-MaterialNames-select"]').first();
-    await expect(matSel).toBeVisible();
-    const opts = await matSel.evaluate(el => Array.from(el.options).map(o => o.value).filter(v => v));
+    const opts = await selectOptions(page, '-MaterialNames');
     expect(opts.length).toBeGreaterThan(1);
 
-    const initialVal = await matSel.inputValue();
+    const initialVal = await selectValue(page, '-MaterialNames');
     const nextOpt = opts.find(o => o !== initialVal);
     expect(nextOpt, 'a different material option must exist').toBeTruthy();
-    await matSel.selectOption(nextOpt);
+    await pickOption(page, '-MaterialNames', nextOpt);
     await pause(page, 800, 'mechanical: settle');
-    expect(await matSel.inputValue()).toBe(nextOpt);
+    expect(await selectValue(page, '-MaterialNames')).toBe(nextOpt);
     await ss(page, 'D3-material-changed');
   });
 });
@@ -272,7 +255,7 @@ test.describe('MB – Group E – Core Gapping', () => {
 
     const gapEl = page.locator('[data-cy$="-Gap-container"]').first();
     await expect(gapEl).toBeVisible();
-    const gapInput = gapEl.locator('input[type="number"]').first();
+    const gapInput = numberInput(gapEl);
     await expect(gapInput).toBeVisible();
     await gapInput.click({ clickCount: 3 });
     await gapInput.fill('0.001');

@@ -10,7 +10,8 @@
 
 import { test, expect } from './_coverage.js';
 import { isBenign, pause } from './utils.js';
-import { ss, goToBuilderStep, adviseCoreAndWait, adviseWireAndWait, selectOptions, pickFirstOption } from './utils/builder-helpers.js';
+import { ss, goToBuilderStep, adviseCoreAndWait, adviseWireAndWait,
+         selectOptions, selectValue, pickOption, pickFirstOption } from './utils/builder-helpers.js';
 
 // =====================================================================
 // GROUP H – Wire Advise buttons
@@ -54,9 +55,7 @@ test.describe('MB – Group H – Wire Advise', () => {
     await adviseWireAndWait(page);
     await ss(page, 'H3-wire-advised');
 
-    const wireTypeSel = page.locator('[data-cy$="-WireType-select"]').first();
-    await expect(wireTypeSel).toBeVisible();
-    const wireType = await wireTypeSel.inputValue();
+    const wireType = await selectValue(page, '-WireType');
     expect(wireType.length, 'wire type select must have a non-empty value after advise').toBeGreaterThan(0);
     expect(errors).toEqual([]);
   });
@@ -71,11 +70,10 @@ test.describe('MB – Group I – Round Wire', () => {
   test('MB-I1 – Wire Type selector visible and offers "Round"', async ({ page }) => {
     await goToBuilderStep(page);
     await adviseCoreAndWait(page);
-    const wireTypeSel = page.locator('[data-cy$="-WireType-select"]').first();
-    await expect(wireTypeSel).toBeVisible();
-    const opts = await wireTypeSel.evaluate(el => Array.from(el.options).map(o => o.value).filter(v => v));
-    // ElementFromList renders option *values* from the options map. wireTypes
-    // is `{ round: 'Round', litz: 'Litz', ... }`, so values are title-cased.
+    await expect(page.locator('[data-cy$="-WireType-select"]').first()).toBeVisible();
+    // PrimeVue Select option labels come from the options map values:
+    // wireTypes is `{ round: 'Round', litz: 'Litz', ... }`.
+    const opts = await selectOptions(page, '-WireType');
     expect(opts).toContain('Round');
     await ss(page, 'I1-wire-type-selector');
   });
@@ -84,9 +82,7 @@ test.describe('MB – Group I – Round Wire', () => {
     await goToBuilderStep(page);
     await adviseCoreAndWait(page);
 
-    const wireTypeSel = page.locator('[data-cy$="-WireType-select"]').first();
-    await expect(wireTypeSel).toBeVisible();
-    await wireTypeSel.selectOption('Round');
+    await pickOption(page, '-WireType', 'Round');
     await pause(page, 600, 'mechanical: settle');
 
     await expect(page.locator('[data-cy$="-WireStandard-container"]').first()).toBeVisible();
@@ -99,9 +95,7 @@ test.describe('MB – Group I – Round Wire', () => {
     await goToBuilderStep(page);
     await adviseCoreAndWait(page);
 
-    const wireTypeSel = page.locator('[data-cy$="-WireType-select"]').first();
-    await expect(wireTypeSel).toBeVisible();
-    await wireTypeSel.selectOption('Round');
+    await pickOption(page, '-WireType', 'Round');
     await pause(page, 500, 'mechanical: settle');
 
     const opts = await selectOptions(page, '-WireStandard');
@@ -113,20 +107,17 @@ test.describe('MB – Group I – Round Wire', () => {
     await goToBuilderStep(page);
     await adviseCoreAndWait(page);
 
-    const wireTypeSel = page.locator('[data-cy$="-WireType-select"]').first();
-    await expect(wireTypeSel).toBeVisible();
-    await wireTypeSel.selectOption('Round');
+    await pickOption(page, '-WireType', 'Round');
     await pause(page, 500, 'mechanical: settle');
     await pickFirstOption(page, '-WireStandard');
 
     const diamOpts = await selectOptions(page, '-WireConductingDiameter');
     expect(diamOpts.length, 'diameter select must have options after a standard is chosen').toBeGreaterThan(0);
 
-    const diamSel = page.locator('[data-cy$="-WireConductingDiameter-select"]').first();
     const pick = diamOpts[Math.floor(diamOpts.length / 2)];
-    await diamSel.selectOption(pick);
+    await pickOption(page, '-WireConductingDiameter', pick);
     await pause(page, 400, 'mechanical: settle');
-    expect(await diamSel.inputValue()).toBe(pick);
+    expect(await selectValue(page, '-WireConductingDiameter')).toBe(pick);
     await ss(page, 'I4-wire-diameter');
   });
 
@@ -134,9 +125,7 @@ test.describe('MB – Group I – Round Wire', () => {
     await goToBuilderStep(page);
     await adviseCoreAndWait(page);
 
-    const wireTypeSel = page.locator('[data-cy$="-WireType-select"]').first();
-    await expect(wireTypeSel).toBeVisible();
-    await wireTypeSel.selectOption('Round');
+    await pickOption(page, '-WireType', 'Round');
     await pause(page, 500, 'mechanical: settle');
 
     const opts = await selectOptions(page, '-WireCoating');
@@ -155,11 +144,10 @@ test.describe('MB – Group J – Litz Wire', () => {
     await goToBuilderStep(page);
     await adviseCoreAndWait(page);
 
-    const wireTypeSel = page.locator('[data-cy$="-WireType-select"]').first();
-    await expect(wireTypeSel).toBeVisible();
-    const opts = await wireTypeSel.evaluate(el => Array.from(el.options).map(o => o.value).filter(v => v));
+    await expect(page.locator('[data-cy$="-WireType-select"]').first()).toBeVisible();
+    const opts = await selectOptions(page, '-WireType');
     expect(opts, `Litz wire type must be offered by the advised core; got: ${opts.join(', ')}`).toContain('Litz');
-    await wireTypeSel.selectOption('Litz');
+    await pickOption(page, '-WireType', 'Litz');
     await pause(page, 600, 'mechanical: settle');
 
     await expect(page.locator('[data-cy$="-StrandConductingDiameter-container"]').first()).toBeVisible();
@@ -171,16 +159,15 @@ test.describe('MB – Group J – Litz Wire', () => {
     await goToBuilderStep(page);
     await adviseCoreAndWait(page);
 
-    const wireTypeSel = page.locator('[data-cy$="-WireType-select"]').first();
-    await expect(wireTypeSel).toBeVisible();
-    const opts = await wireTypeSel.evaluate(el => Array.from(el.options).map(o => o.value).filter(v => v));
+    await expect(page.locator('[data-cy$="-WireType-select"]').first()).toBeVisible();
+    const opts = await selectOptions(page, '-WireType');
     expect(opts, `Litz wire type must be offered (options: ${opts.join(', ')})`).toContain('Litz');
-    await wireTypeSel.selectOption('Litz');
+    await pickOption(page, '-WireType', 'Litz');
     await pause(page, 600, 'mechanical: settle');
 
     const strandCountEl = page.locator('[data-cy$="-NumberConductors-container"]').first();
     await expect(strandCountEl).toBeVisible();
-    const input = strandCountEl.locator('input[type="number"]').first();
+    const input = strandCountEl.locator('input').first();
     await expect(input).toBeVisible();
     await input.click({ clickCount: 3 });
     await input.fill('100');
@@ -198,11 +185,10 @@ test.describe('MB – Group K – Rectangular/Foil Wire', () => {
   test.describe.configure({ timeout: 120000 });
 
   async function selectIfOffered(page, value) {
-    const wireTypeSel = page.locator('[data-cy$="-WireType-select"]').first();
-    await expect(wireTypeSel).toBeVisible();
-    const opts = await wireTypeSel.evaluate(el => Array.from(el.options).map(o => o.value).filter(v => v));
+    await expect(page.locator('[data-cy$="-WireType-select"]').first()).toBeVisible();
+    const opts = await selectOptions(page, '-WireType');
     expect(opts, `"${value}" wire type must be offered (options: ${opts.join(', ')})`).toContain(value);
-    await wireTypeSel.selectOption(value);
+    await pickOption(page, '-WireType', value);
     await pause(page, 600, 'mechanical: settle');
   }
 
@@ -226,7 +212,7 @@ test.describe('MB – Group K – Rectangular/Foil Wire', () => {
     for (const suffix of ['-WireConductingHeight-container', '-WireConductingWidth-container']) {
       const el = page.locator(`[data-cy$="${suffix}"]`).first();
       await expect(el).toBeVisible();
-      const input = el.locator('input[type="number"]').first();
+      const input = el.locator('input').first();
       await expect(input).toBeVisible();
       await input.click({ clickCount: 3 });
       await input.fill('2');
@@ -258,7 +244,7 @@ test.describe('MB – Group L – Turns and Parallels', () => {
     await adviseCoreAndWait(page);
     const turnsEl = page.locator('[data-cy$="-NumberTurns-container"]').first();
     await expect(turnsEl).toBeVisible();
-    const inputCount = await turnsEl.locator('input[type="number"]').count();
+    const inputCount = await turnsEl.locator('input').count();
     expect(inputCount, 'NumberTurns must contain at least one number input').toBeGreaterThanOrEqual(1);
     await ss(page, 'L1-turns-parallels');
   });
@@ -270,7 +256,7 @@ test.describe('MB – Group L – Turns and Parallels', () => {
 
     const turnsEl = page.locator('[data-cy$="-NumberTurns-container"]').first();
     await expect(turnsEl).toBeVisible();
-    const inputs = turnsEl.locator('input[type="number"]');
+    const inputs = turnsEl.locator('input');
     await expect(inputs.first()).toBeVisible();
     await inputs.first().click({ clickCount: 3 });
     await inputs.first().fill('10');
@@ -287,7 +273,7 @@ test.describe('MB – Group L – Turns and Parallels', () => {
 
     const parEl = page.locator('[data-cy$="-NumberParallels-container"]').first();
     await expect(parEl, 'NumberParallels container must be visible after wire advise').toBeVisible();
-    const input = parEl.locator('input[type="number"]').first();
+    const input = parEl.locator('input').first();
     await expect(input).toBeVisible();
     await input.click({ clickCount: 3 });
     await input.fill('2');

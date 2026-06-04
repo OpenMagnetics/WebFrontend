@@ -10,7 +10,8 @@
 
 import { test, expect } from './_coverage.js';
 import { openWizard, pause } from './utils.js';
-import { ss, FLYBACK_CY, goToBuilderStep, goToBuilderWithCoil, adviseCoreAndWait, adviseAllWiresAndWait } from './utils/builder-helpers.js';
+import { ss, FLYBACK_CY, goToBuilderStep, goToBuilderWithCoil, adviseCoreAndWait, adviseAllWiresAndWait,
+         selectOptions } from './utils/builder-helpers.js';
 
 // =====================================================================
 // GROUP M – Coil Alignment
@@ -46,9 +47,8 @@ test.describe('MB – Group M – Coil Alignment', () => {
     await alignBtn.click();
     await pause(page, 500, 'mechanical: settle');
 
-    const firstSel = page.locator('[data-cy$="-sectionsOrientation-select"]').first();
-    await expect(firstSel).toBeVisible();
-    const opts = await firstSel.evaluate(el => Array.from(el.options).map(o => o.value).filter(v => v));
+    await expect(page.locator('[data-cy$="-sectionsOrientation-select"]').first()).toBeVisible();
+    const opts = await selectOptions(page, '-sectionsOrientation');
     expect(opts.length, 'sectionsOrientation must expose at least one option').toBeGreaterThan(0);
     await ss(page, 'M3-alignment-selectors');
   });
@@ -88,7 +88,8 @@ test.describe('MB – Group N – Coil Insulation', () => {
     await insulBtn.click();
     await pause(page, 500, 'mechanical: settle');
 
-    const firstInput = page.locator('[data-cy$="-InterlayerThickness-number-input"]').first();
+    // data-cy is on the PrimeVue InputNumber wrapper span; fill the inner <input>.
+    const firstInput = page.locator('[data-cy$="-InterlayerThickness-number-input"]').first().locator('input').first();
     await expect(firstInput).toBeVisible();
     await firstInput.click({ clickCount: 3 });
     await firstInput.fill('2');
@@ -115,7 +116,7 @@ test.describe('MB – Group O – Coil Interleaving & Bobbin', () => {
     await goToBuilderWithCoil(page);
     const bobbinEl = page.locator('[data-cy$="-BobbinWallThickness-container"]').first();
     await expect(bobbinEl).toBeVisible();
-    const input = bobbinEl.locator('input[type="number"]').first();
+    const input = bobbinEl.locator('input').first();
     await expect(input).toBeVisible();
     await input.click({ clickCount: 3 });
     await input.fill('1');

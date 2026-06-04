@@ -132,22 +132,68 @@ export async function goToBuilderWithCoil(page) {
 }
 
 /**
- * Return the visible option values of an ElementFromList select identified by
- * data-cy suffix (without the trailing `-select` — that's appended here).
+ * PrimeVue Select helpers.
+ *
+ * ElementFromList renders a PrimeVue <Select> — a `combobox` div, NOT a native
+ * <select>. So `locator('select')`, `.options`, `selectOption()` and
+ * `.inputValue()` do not apply. Instead:
+ *   - the trigger is `[data-cy$="<label>-select"]` (class `.p-select`)
+ *   - the displayed value is `.p-select-label`
+ *   - options live in a teleported `.p-select-overlay` as role="option"
+ *     (aria-label === the visible text)
  */
-export async function selectOptions(page, dataCySuffix) {
+
+/** Open the PrimeVue select for the given data-cy suffix; return its overlay. */
+async function openPrimeSelect(page, dataCySuffix) {
   const sel = page.locator(`[data-cy$="${dataCySuffix}-select"]`).first();
-  await expect(sel, `select with suffix "${dataCySuffix}-select" must be visible`).toBeVisible();
-  return sel.evaluate(el => Array.from(el.options).map(o => o.value).filter(v => v));
+  await expect(sel, `select "${dataCySuffix}-select" must be visible`).toBeVisible();
+  await sel.click();
+  const overlay = page.locator('.p-select-overlay').last();
+  await expect(overlay, `overlay for "${dataCySuffix}" must open`).toBeVisible();
+  return overlay;
 }
 
-/** Pick the first option from a select identified by data-cy suffix. */
-export async function pickFirstOption(page, dataCySuffix) {
+/** Visible option labels of a PrimeVue select (overlay is closed afterwards). */
+export async function selectOptions(page, dataCySuffix) {
+  const overlay = await openPrimeSelect(page, dataCySuffix);
+  const labels = (await overlay.getByRole('option').allInnerTexts()).map(s => s.trim()).filter(Boolean);
+  await page.keyboard.press('Escape');
+  await expect(overlay).toBeHidden();
+  return labels;
+}
+
+/** Currently displayed value (label) of a PrimeVue select. */
+export async function selectValue(page, dataCySuffix) {
   const sel = page.locator(`[data-cy$="${dataCySuffix}-select"]`).first();
-  await expect(sel, `select with suffix "${dataCySuffix}-select" must be visible`).toBeVisible();
-  const opts = await sel.evaluate(el => Array.from(el.options).map(o => o.value).filter(v => v));
-  expect(opts.length, `select "${dataCySuffix}-select" must have at least one option`).toBeGreaterThan(0);
-  await sel.selectOption(opts[0]);
-  await pause(page, 400, 'Vue reactivity after selectOption');
-  return opts[0];
+  await expect(sel, `select "${dataCySuffix}-select" must be visible`).toBeVisible();
+  return (await sel.locator('.p-select-label').first().innerText()).trim();
+}
+
+/** Pick an option by its exact visible label. */
+export async function pickOption(page, dataCySuffix, label) {
+  const overlay = await openPrimeSelect(page, dataCySuffix);
+  await overlay.getByRole('option', { name: label, exact: true }).first().click();
+  await expect(overlay).toBeHidden();
+  await pause(page, 400, 'Vue reactivity after option pick');
+}
+
+/** Pick the first option of a PrimeVue select; returns its label. */
+export async function pickFirstOption(page, dataCySuffix) {
+  const overlay = await openPrimeSelect(page, dataCySuffix);
+  const first = overlay.getByRole('option').first();
+  const label = (await first.innerText()).trim();
+  expect(label.length, `select "${dataCySuffix}" must have at least one option`).toBeGreaterThan(0);
+  await first.click();
+  await expect(overlay).toBeHidden();
+  await pause(page, 400, 'Vue reactivity after option pick');
+  return label;
+}
+
+/**
+ * The editable <input> of a PrimeVue InputNumber inside `container` (a Locator).
+ * PrimeVue InputNumber renders a plain <input> (NOT type="number"), so
+ * `input[type="number"]` matches nothing.
+ */
+export function numberInput(container) {
+  return container.locator('input').first();
 }
