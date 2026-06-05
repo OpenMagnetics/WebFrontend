@@ -128,3 +128,41 @@ export default {
     </div>
 </template>
 
+<style scoped>
+/* The induce button's background colour comes from the inline :style
+   (current = orange, voltage = purple); here we just give it proper button
+   chrome — rounded, padded, no default grey border/box. */
+.wic-induce-btn {
+    border: none;
+    border-radius: 8px;
+    padding: 0.3rem 0.75rem;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    box-shadow: 0 2px 6px rgba(var(--p-black-rgb), 0.25);
+    transition: filter 0.15s, transform 0.1s;
+}
+.wic-induce-btn:hover {
+    filter: brightness(1.08);
+    transform: translateY(-1px);
+}
+
+/* "Show N more points" toggle: a subtle outline button instead of the
+   unstyled grey bar. */
+.wic-add-btn {
+    background: rgba(var(--p-white-rgb), 0.06);
+    border: 1px solid rgba(var(--p-white-rgb), 0.15);
+    color: rgba(var(--p-white-rgb), 0.85);
+    border-radius: 8px;
+    padding: 0.25rem 0.5rem;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+}
+.wic-add-btn:hover {
+    background: rgba(var(--p-white-rgb), 0.12);
+    border-color: rgba(var(--p-white-rgb), 0.3);
+}
+</style>
+

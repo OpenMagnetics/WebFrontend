@@ -227,15 +227,28 @@ export default {
 
 
 <style type="text/css">
-    
-.btn-circle {
-    width: 1.2vw;
-    height: 1.2vw;
-    padding: 0px 0px;
-    border-radius: 12.5px;
-    text-align: center;
-    font-size: 1.2vw;
-    line-height: 0
+
+/* Add/remove-point icon buttons: just the coloured icon, no default button
+   chrome (the grey box/border was the unstyled <button> fallback). */
+.wicp-circle-btn {
+    background: transparent;
+    border: none;
+    padding: 0;
+    margin: 0;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+}
+
+.wicp-circle-btn:hover {
+    filter: brightness(1.2);
+    transform: scale(1.1);
+}
+
+.wicp-circle-btn i {
+    font-size: 1.25rem;
 }
 
 </style>
