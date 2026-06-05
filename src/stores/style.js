@@ -236,7 +236,9 @@ export const useStyleStore = defineStore("style", () => {
             },
             inputTitleFontSize: {
                 // "font-size": '2.5rem',
-                "font-size": '1.25rem',
+                // Match the Magnetic Builder label size so operating-point
+                // inputs (frequency, duty cycle, waveform fields) look identical.
+                "font-size": '1.15rem',
             },
             inputLabelBgColor:{
                 // Transparent so labels inherit the parent panel background.

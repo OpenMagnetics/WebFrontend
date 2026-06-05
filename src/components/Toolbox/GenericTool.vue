@@ -183,7 +183,7 @@ export default {
         class="container mx-auto"
     >
         <div class="row">
-            <div v-if="showStoryline" class=" text-center col-12 col-12 md:col-1 bg-transparent m-0 p-0" style="height: fit-content">
+            <div v-if="showStoryline" class=" text-center col-12 col-12 md:col-2 bg-transparent m-0 p-0" style="height: fit-content">
                 <Storyline
                     :selectedTool="$stateStore.getCurrentToolState().subsection"
                     :storyline="currentStoryline"
@@ -198,7 +198,7 @@ export default {
                     @toolSelected="toolSelected"
                 />
             </div>
-            <div class="text-center col-12 col-12 md:col-11 bg-transparent px container" >
+            <div class="text-center col-12 col-12 md:col-10 bg-transparent px container" >
                 <div 
                     v-if="showControlPanelAndTitle"
                     class="mb-2 row px-3" >
