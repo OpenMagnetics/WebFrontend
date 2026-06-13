@@ -419,6 +419,25 @@ export default {
             
             return steps;
         },
+        windingTerminations() {
+            const windings = this.mas?.magnetic?.coil?.functionalDescription || [];
+            // One step per connection, grouped by winding (in functionalDescription
+            // order): names the winding, terminal type and pin, e.g. "Primary to Pin 3".
+            const result = [];
+            windings.forEach((winding, index) => {
+                const name = toTitleCase(winding.name?.toLowerCase() || `Winding ${index + 1}`);
+                (winding?.connections || []).forEach((c) => {
+                    const type = c.type || 'Pin';
+                    const pin = (c.pinName != null && c.pinName !== '') ? c.pinName : '?';
+                    result.push({
+                        step: result.length + 1,
+                        description: `${name} to ${type} ${pin}`,
+                        icon: 'fa-plug'
+                    });
+                });
+            });
+            return result;
+        },
         performanceData() {
             const data = [];
             const outputs = this.mas?.outputs?.[0];
@@ -960,6 +979,21 @@ export default {
                 </div>
             </div>
 
+            <!-- Winding Termination -->
+            <div class="section" v-if="isWoundMagnetic && windingTerminations.length > 0">
+                <h3 class="section-title"><i class="fa-solid fa-plug"></i>Winding Termination</h3>
+                <div class="construction-steps">
+                    <div v-for="step in windingTerminations" :key="step.step"
+                         class="construction-step step-connection">
+                        <div class="step-number">{{ step.step }}</div>
+                        <div class="step-icon">
+                            <i :class="'fa-solid ' + step.icon"></i>
+                        </div>
+                        <div class="step-description">{{ step.description }}</div>
+                    </div>
+                </div>
+            </div>
+
             <div class="document-footer">
                 <i class="fa-solid fa-circle-info"></i>
                 <span>Auto-generated from design specs and simulation. Verify before production use.</span>
@@ -1327,6 +1361,11 @@ export default {
 .construction-step.step-winding {
     background: rgba(var(--bs-primary-rgb), 0.1);
     border-left-color: var(--bs-primary);
+}
+
+.construction-step.step-connection {
+    background: rgba(var(--bs-success-rgb), 0.1);
+    border-left-color: rgb(var(--bs-success-rgb));
 }
 
 .step-number {
