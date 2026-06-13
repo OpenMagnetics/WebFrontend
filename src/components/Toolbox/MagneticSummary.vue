@@ -426,6 +426,34 @@ export default {
             
             return steps;
         },
+        windingTerminations() {
+            const windings = this.mas?.magnetic?.coil?.functionalDescription || [];
+            // One step per connection, grouped by winding (in functionalDescription
+            // order): "Start of"/"End of" <winding> to <type> <pin>, e.g. "Start of Primary to Pin 3".
+            const result = [];
+            windings.forEach((winding, index) => {
+                const name = toTitleCase(winding.name?.toLowerCase() || `Winding ${index + 1}`);
+                const connections = winding?.connections || [];
+                connections.forEach((c, ci) => {
+                    const type = c.type || 'Pin';
+                    const pin = (c.pinName != null && c.pinName !== '') ? c.pinName : '?';
+                    // Connections are ordered start-then-finish: the first is the
+                    // winding's start lead, the last is its end lead.
+                    let prefix = '';
+                    if (ci === 0) {
+                        prefix = 'Start of ';
+                    } else if (ci === connections.length - 1) {
+                        prefix = 'End of ';
+                    }
+                    result.push({
+                        step: result.length + 1,
+                        description: `${prefix}${name} to ${type} ${pin}`,
+                        icon: 'bi-plug-fill'
+                    });
+                });
+            });
+            return result;
+        },
         performanceData() {
             const data = [];
             const outputs = this.mas?.outputs?.[0];
@@ -970,6 +998,21 @@ export default {
                 </div>
             </div>
 
+            <!-- Winding Termination -->
+            <div class="section" v-if="isWoundMagnetic && windingTerminations.length > 0">
+                <h3 class="section-title"><i class="pi pi-link"></i>Winding Termination</h3>
+                <div class="construction-steps">
+                    <div v-for="step in windingTerminations" :key="step.step"
+                         class="construction-step step-connection">
+                        <div class="step-number">{{ step.step }}</div>
+                        <div class="step-icon">
+                            <i :class="'bi ' + step.icon"></i>
+                        </div>
+                        <div class="step-description">{{ step.description }}</div>
+                    </div>
+                </div>
+            </div>
+
             <div class="document-footer">
                 <i class="pi pi-info-circle"></i>
                 <span>Auto-generated from design specs and simulation. Verify before production use.</span>
@@ -1337,6 +1380,11 @@ export default {
 .construction-step.step-winding {
     background: rgba(var(--p-primary-rgb), 0.1);
     border-left-color: var(--p-primary);
+}
+
+.construction-step.step-connection {
+    background: rgba(var(--p-success-rgb), 0.1);
+    border-left-color: rgb(var(--p-success-rgb));
 }
 
 .step-number {
