@@ -12,7 +12,7 @@
 // Format: 'YYYY-MM-DD'
 // When you make breaking changes to store fields, update this date to today's date.
 // All stores saved before this date will be automatically cleared.
-export const STORE_VERSION_DATE = '2026-04-21-fix-shape-null';
+export const STORE_VERSION_DATE = '2026-06-12-remove-user-account';
 
 // Key used in localStorage to track when stores were last saved
 const STORE_VERSION_KEY = 'openMagnetics_storeVersionDate';
@@ -76,12 +76,10 @@ export function checkAndClearOutdatedStores() {
         return true;
     }
     
-    // Compare dates
-    const storedDate = new Date(storedVersionDate);
-    const requiredDate = new Date(STORE_VERSION_DATE);
-    
-    if (storedDate < requiredDate) {
-        console.log(`[StoreVersioning] Stored version (${storedVersionDate}) is older than required (${STORE_VERSION_DATE})`);
+    // Version strings may carry a descriptive suffix (e.g. '2026-06-12-remove-user-account'),
+    // which Date() cannot parse, so compare for strict mismatch instead of date ordering.
+    if (storedVersionDate !== STORE_VERSION_DATE) {
+        console.log(`[StoreVersioning] Stored version (${storedVersionDate}) does not match required (${STORE_VERSION_DATE})`);
         clearAllPersistentStores();
         updateStoredVersionDate();
         return true;

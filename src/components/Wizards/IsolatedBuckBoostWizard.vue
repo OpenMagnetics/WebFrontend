@@ -26,7 +26,7 @@ export default {
         },
         dataTestLabel: {
             type: String,
-            default: 'CmcWizard',
+            default: 'IsolatedBuckBoostWizard',
         },
         labelWidthProportionClass:{
             type: String,

@@ -54,6 +54,7 @@ export default {
         return {
             theme,
             localTexts,
+            errorMessage: null,
             masExported: false,
             STPExported: false,
             OBJExported: false,
@@ -158,8 +159,10 @@ export default {
                 mas.magnetic.core.temp["100"].magneticFluxDensitySaturation = temperatureDependantData100["magneticFluxDensitySaturation"];
                 mas.magnetic.core.temp["100"].reluctance = temperatureDependantData100["reluctance"];
                 mas.magnetic.core.temp["100"].resistivity = temperatureDependantData100["resistivity"];
+                this.errorMessage = null;
                 this.localTexts = processCoreTexts(mas);
-            }).catch(error => { 
+            }).catch(error => {
+                this.errorMessage = `Error reading material data: ${error.message ?? error}`;
                 console.error("Error reading material data")
                 console.error(error)
             });
@@ -176,6 +179,9 @@ export default {
     <div class="container">
         <div class="row">
             <h3 class="col-12 p-0 m-0 pl-3">{{mas.magnetic.manufacturerInfo.reference}}</h3>
+        </div>
+        <div class="row" v-if="errorMessage != null">
+            <p class="col-12 p-0 m-0 pl-3 text-danger" data-cy="CoreCrossReferencerOutput-error-text">{{errorMessage}}</p>
         </div>
         <div class="row" style="height: 30vh">
             <Core3DVisualizer 

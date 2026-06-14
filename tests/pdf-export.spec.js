@@ -20,7 +20,7 @@ import fs from 'node:fs';
 import { test, expect } from './_coverage.js';
 import { BASE_URL, screenshot, pause } from './utils.js';
 
-const MAS_FIXTURE = '/home/alf/OpenMagnetics/WebFrontend/04_forward_xfmr_e3216_n87.json';
+const MAS_FIXTURE = new URL('./fixtures/04_forward_xfmr_e3216_n87.json', import.meta.url).pathname;
 const PDF_BTN = '[data-cy$="-download-PDF-File-button"]';
 
 const ss = (page, name) => screenshot(page, 'pdf-export', name);

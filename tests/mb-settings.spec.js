@@ -27,7 +27,7 @@ test.describe('MB – Group R – Settings Modal', () => {
 
   test('MB-R1 – Settings button opens modal', async ({ page }) => {
     await openSettings(page);
-    const modal = page.locator('#MagneticBuilderSettingsModal, .modal.show').first();
+    const modal = page.locator('[data-cy="MagneticBuilderSettingsModal"], .p-dialog').first();
     await expect(modal).toBeVisible();
     await ss(page, 'R1-settings-modal');
   });

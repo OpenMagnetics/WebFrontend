@@ -26,7 +26,7 @@ export default {
         },
         dataTestLabel: {
             type: String,
-            default: 'CmcWizard',
+            default: 'ForwardWizard',
         },
         labelWidthProportionClass:{
             type: String,

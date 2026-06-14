@@ -185,6 +185,10 @@ export const useTaskQueueStore = defineStore('taskQueue', {
             await mkf.ready;
 
             const result = await mkf.get_settings();
+            if (typeof result === 'string' && result.startsWith('Exception')) {
+                setTimeout(() => { this.settingsGotten(false, result); }, this.task_standard_response_delay);
+                throw new Error(result);
+            }
             const settings = JSON.parse(result);
             setTimeout(() => { this.settingsGotten(true, settings); }, this.task_standard_response_delay);
             return settings;
@@ -454,6 +458,10 @@ export const useTaskQueueStore = defineStore('taskQueue', {
             await mkf.ready;
 
             const result = await mkf.create_waveform(JSON.stringify(processed), frequency);
+            if (typeof result === 'string' && result.startsWith('Exception')) {
+                setTimeout(() => { this.waveformCreated(false, result); }, this.task_standard_response_delay);
+                throw new Error(result);
+            }
             const waveform = JSON.parse(result);
             setTimeout(() => { this.waveformCreated(true, waveform); }, this.task_standard_response_delay);
             return waveform;
@@ -467,6 +475,10 @@ export const useTaskQueueStore = defineStore('taskQueue', {
             await mkf.ready;
 
             const result = await mkf.scale_waveform_time_to_frequency(JSON.stringify(waveform), frequency);
+            if (typeof result === 'string' && result.startsWith('Exception')) {
+                setTimeout(() => { this.waveformScaled(false, result); }, this.task_standard_response_delay);
+                throw new Error(result);
+            }
             const scaledWaveform = JSON.parse(result);
             setTimeout(() => { this.waveformScaled(true, scaledWaveform); }, this.task_standard_response_delay);
             return scaledWaveform;
@@ -480,6 +492,10 @@ export const useTaskQueueStore = defineStore('taskQueue', {
             await mkf.ready;
 
             const result = await mkf.scale_excitation_time_to_frequency(JSON.stringify(excitation), frequency);
+            if (typeof result === 'string' && result.startsWith('Exception')) {
+                setTimeout(() => { this.excitationScaled(false, result); }, this.task_standard_response_delay);
+                throw new Error(result);
+            }
             const scaledExcitation = JSON.parse(result);
             setTimeout(() => { this.excitationScaled(true, scaledExcitation); }, this.task_standard_response_delay);
             return scaledExcitation;
@@ -544,19 +560,13 @@ export const useTaskQueueStore = defineStore('taskQueue', {
             const mkf = await waitForMkf();
             await mkf.ready;
 
-            try {
-                const result = await mkf.calculate_rms_power(JSON.stringify(excitation));
-                if (typeof result === 'string' && result.startsWith("Exception")) {
-                    setTimeout(() => { this.rmsPowerCalculated(false, result); }, this.task_standard_response_delay);
-                    return null;
-                }
-                setTimeout(() => { this.rmsPowerCalculated(true, result); }, this.task_standard_response_delay);
-                return result;
-            } catch (error) {
-                // Silently fail - waveform data may be incomplete during editing
-                setTimeout(() => { this.rmsPowerCalculated(false, error.message); }, this.task_standard_response_delay);
-                return null;
+            const result = await mkf.calculate_rms_power(JSON.stringify(excitation));
+            if (typeof result === 'string' && result.startsWith("Exception")) {
+                setTimeout(() => { this.rmsPowerCalculated(false, result); }, this.task_standard_response_delay);
+                throw new Error(result);
             }
+            setTimeout(() => { this.rmsPowerCalculated(true, result); }, this.task_standard_response_delay);
+            return result;
         },
 
         instantaneousPowerCalculated(success = true, dataOrMessage = '') {
@@ -585,19 +595,13 @@ export const useTaskQueueStore = defineStore('taskQueue', {
             const mkf = await waitForMkf();
             await mkf.ready;
 
-            try {
-                const result = await mkf.calculate_instantaneous_power(JSON.stringify(excitation));
-                if (typeof result === 'string' && result.startsWith("Exception")) {
-                    setTimeout(() => { this.instantaneousPowerCalculated(false, result); }, this.task_standard_response_delay);
-                    return null;
-                }
-                setTimeout(() => { this.instantaneousPowerCalculated(true, result); }, this.task_standard_response_delay);
-                return result;
-            } catch (error) {
-                // Silently fail - waveform data may be incomplete during editing
-                setTimeout(() => { this.instantaneousPowerCalculated(false, error.message); }, this.task_standard_response_delay);
-                return null;
+            const result = await mkf.calculate_instantaneous_power(JSON.stringify(excitation));
+            if (typeof result === 'string' && result.startsWith("Exception")) {
+                setTimeout(() => { this.instantaneousPowerCalculated(false, result); }, this.task_standard_response_delay);
+                throw new Error(result);
             }
+            setTimeout(() => { this.instantaneousPowerCalculated(true, result); }, this.task_standard_response_delay);
+            return result;
         },
 
         // ==========================================
@@ -625,6 +629,10 @@ export const useTaskQueueStore = defineStore('taskQueue', {
 
             masSentry('getMaximumDimensions', 'Magnetic', magnetic);
             const result = await mkf.get_maximum_dimensions(JSON.stringify(magnetic));
+            if (typeof result === 'string' && result.startsWith('Exception')) {
+                setTimeout(() => { this.maximumDimensionsGotten(false, result); }, this.task_standard_response_delay);
+                throw new Error(result);
+            }
             // In worker mode the proxy already converts Embind vectors to plain arrays,
             // so `result` is a JS array (or an Embind vector with .get/.size in main mode).
             // Only JSON.parse if the worker returned a JSON string (legacy main-thread path).
@@ -655,6 +663,10 @@ export const useTaskQueueStore = defineStore('taskQueue', {
             await mkf.ready;
 
             const result = await mkf.calculate_reflected_primary(JSON.stringify(excitation), turnRatio);
+            if (typeof result === 'string' && result.startsWith('Exception')) {
+                setTimeout(() => { this.reflectedPrimaryCalculated(false, result); }, this.task_standard_response_delay);
+                throw new Error(result);
+            }
             const reflected = JSON.parse(result);
             setTimeout(() => { this.reflectedPrimaryCalculated(true, reflected); }, this.task_standard_response_delay);
             return reflected;
@@ -668,6 +680,10 @@ export const useTaskQueueStore = defineStore('taskQueue', {
             await mkf.ready;
 
             const result = await mkf.calculate_reflected_secondary(JSON.stringify(excitation), turnRatio);
+            if (typeof result === 'string' && result.startsWith('Exception')) {
+                setTimeout(() => { this.reflectedSecondaryCalculated(false, result); }, this.task_standard_response_delay);
+                throw new Error(result);
+            }
             const reflected = JSON.parse(result);
             setTimeout(() => { this.reflectedSecondaryCalculated(true, reflected); }, this.task_standard_response_delay);
             return reflected;
@@ -771,6 +787,10 @@ export const useTaskQueueStore = defineStore('taskQueue', {
 
             masSentry('calculateLeakageInductance', 'Magnetic', magnetic);
             const result = await mkf.calculate_leakage_inductance(JSON.stringify(magnetic), frequency, operatingPointIndex);
+            if (typeof result === 'string' && result.startsWith('Exception')) {
+                setTimeout(() => { this.leakageInductanceCalculated(false, result); }, this.task_standard_response_delay);
+                throw new Error(result);
+            }
             const leakage = JSON.parse(result);
             setTimeout(() => { this.leakageInductanceCalculated(true, leakage); }, this.task_standard_response_delay);
             return leakage;
@@ -837,6 +857,10 @@ export const useTaskQueueStore = defineStore('taskQueue', {
                 setTimeout(() => { this.operatingPointExtracted(false, reason); }, this.task_standard_response_delay);
                 throw new Error(reason || 'Could not extract operating point from the uploaded file.');
             }
+            if (typeof result === 'string' && result.startsWith('Exception')) {
+                setTimeout(() => { this.operatingPointExtracted(false, result); }, this.task_standard_response_delay);
+                throw new Error(result);
+            }
             const operatingPoint = JSON.parse(result);
             setTimeout(() => { this.operatingPointExtracted(true, operatingPoint); }, this.task_standard_response_delay);
             return operatingPoint;
@@ -854,6 +878,10 @@ export const useTaskQueueStore = defineStore('taskQueue', {
                 const reason = result.slice('ERROR:'.length).trim();
                 setTimeout(() => { this.mapColumnNamesExtracted(false, reason); }, this.task_standard_response_delay);
                 throw new Error(reason || 'Could not auto-detect columns in the uploaded file.');
+            }
+            if (typeof result === 'string' && result.startsWith('Exception')) {
+                setTimeout(() => { this.mapColumnNamesExtracted(false, result); }, this.task_standard_response_delay);
+                throw new Error(result);
             }
             const mapColumnNames = JSON.parse(result);
             setTimeout(() => { this.mapColumnNamesExtracted(true, mapColumnNames); }, this.task_standard_response_delay);
@@ -874,6 +902,10 @@ export const useTaskQueueStore = defineStore('taskQueue', {
                 throw new Error(reason || 'Could not read columns from the uploaded file.');
             }
             // Result is a JSON string, parse it to get the array
+            if (typeof result === 'string' && result.startsWith('Exception')) {
+                setTimeout(() => { this.columnNamesExtracted(false, result); }, this.task_standard_response_delay);
+                throw new Error(result);
+            }
             const columnNames = JSON.parse(result);
             setTimeout(() => { this.columnNamesExtracted(true, columnNames); }, this.task_standard_response_delay);
             return columnNames;
@@ -907,6 +939,10 @@ export const useTaskQueueStore = defineStore('taskQueue', {
             await mkf.ready;
 
             const result = await mkf.calculate_advanced_buck_inputs(JSON.stringify(params));
+            if (typeof result === 'string' && result.startsWith('Exception')) {
+                setTimeout(() => { this.advancedBuckInputsCalculated(false, result); }, this.task_standard_response_delay);
+                throw new Error(result);
+            }
             const inputs = JSON.parse(result);
             setTimeout(() => { this.advancedBuckInputsCalculated(true, inputs); }, this.task_standard_response_delay);
             return inputs;
@@ -936,6 +972,10 @@ export const useTaskQueueStore = defineStore('taskQueue', {
             await mkf.ready;
 
             const result = await mkf.calculate_advanced_boost_inputs(JSON.stringify(params));
+            if (typeof result === 'string' && result.startsWith('Exception')) {
+                setTimeout(() => { this.advancedBoostInputsCalculated(false, result); }, this.task_standard_response_delay);
+                throw new Error(result);
+            }
             const inputs = JSON.parse(result);
             setTimeout(() => { this.advancedBoostInputsCalculated(true, inputs); }, this.task_standard_response_delay);
             return inputs;
@@ -1377,6 +1417,10 @@ export const useTaskQueueStore = defineStore('taskQueue', {
             await mkf.ready;
 
             const result = await mkf.calculate_isolated_buck_inputs(JSON.stringify(params));
+            if (typeof result === 'string' && result.startsWith('Exception')) {
+                setTimeout(() => { this.isolatedBuckInputsCalculated(false, result); }, this.task_standard_response_delay);
+                throw new Error(result);
+            }
             const inputs = JSON.parse(result);
             setTimeout(() => { this.isolatedBuckInputsCalculated(true, inputs); }, this.task_standard_response_delay);
             return inputs;
@@ -1390,6 +1434,10 @@ export const useTaskQueueStore = defineStore('taskQueue', {
             await mkf.ready;
 
             const result = await mkf.calculate_advanced_isolated_buck_inputs(JSON.stringify(params));
+            if (typeof result === 'string' && result.startsWith('Exception')) {
+                setTimeout(() => { this.advancedIsolatedBuckInputsCalculated(false, result); }, this.task_standard_response_delay);
+                throw new Error(result);
+            }
             const inputs = JSON.parse(result);
             setTimeout(() => { this.advancedIsolatedBuckInputsCalculated(true, inputs); }, this.task_standard_response_delay);
             return inputs;
@@ -1403,6 +1451,10 @@ export const useTaskQueueStore = defineStore('taskQueue', {
             await mkf.ready;
 
             const result = await mkf.calculate_isolated_buck_boost_inputs(JSON.stringify(params));
+            if (typeof result === 'string' && result.startsWith('Exception')) {
+                setTimeout(() => { this.isolatedBuckBoostInputsCalculated(false, result); }, this.task_standard_response_delay);
+                throw new Error(result);
+            }
             const inputs = JSON.parse(result);
             setTimeout(() => { this.isolatedBuckBoostInputsCalculated(true, inputs); }, this.task_standard_response_delay);
             return inputs;
@@ -1416,6 +1468,10 @@ export const useTaskQueueStore = defineStore('taskQueue', {
             await mkf.ready;
 
             const result = await mkf.calculate_advanced_isolated_buck_boost_inputs(JSON.stringify(params));
+            if (typeof result === 'string' && result.startsWith('Exception')) {
+                setTimeout(() => { this.advancedIsolatedBuckBoostInputsCalculated(false, result); }, this.task_standard_response_delay);
+                throw new Error(result);
+            }
             const inputs = JSON.parse(result);
             setTimeout(() => { this.advancedIsolatedBuckBoostInputsCalculated(true, inputs); }, this.task_standard_response_delay);
             return inputs;
@@ -1433,6 +1489,10 @@ export const useTaskQueueStore = defineStore('taskQueue', {
             await mkf.ready;
 
             const result = await mkf.calculate_flyback_inputs(JSON.stringify(params));
+            if (typeof result === 'string' && result.startsWith('Exception')) {
+                setTimeout(() => { this.flybackInputsCalculated(false, result); }, this.task_standard_response_delay);
+                throw new Error(result);
+            }
             const inputs = JSON.parse(result);
             setTimeout(() => { this.flybackInputsCalculated(true, inputs); }, this.task_standard_response_delay);
             return inputs;
@@ -1446,6 +1506,10 @@ export const useTaskQueueStore = defineStore('taskQueue', {
             await mkf.ready;
 
             const result = await mkf.calculate_advanced_flyback_inputs(JSON.stringify(params));
+            if (typeof result === 'string' && result.startsWith('Exception')) {
+                setTimeout(() => { this.advancedFlybackInputsCalculated(false, result); }, this.task_standard_response_delay);
+                throw new Error(result);
+            }
             const inputs = JSON.parse(result);
             setTimeout(() => { this.advancedFlybackInputsCalculated(true, inputs); }, this.task_standard_response_delay);
             return inputs;
@@ -1567,6 +1631,10 @@ export const useTaskQueueStore = defineStore('taskQueue', {
             await mkf.ready;
 
             const result = await mkf.calculate_single_switch_forward_inputs(JSON.stringify(params));
+            if (typeof result === 'string' && result.startsWith('Exception')) {
+                setTimeout(() => { this.singleSwitchForwardInputsCalculated(false, result); }, this.task_standard_response_delay);
+                throw new Error(result);
+            }
             const inputs = JSON.parse(result);
             setTimeout(() => { this.singleSwitchForwardInputsCalculated(true, inputs); }, this.task_standard_response_delay);
             return inputs;
@@ -1580,6 +1648,9 @@ export const useTaskQueueStore = defineStore('taskQueue', {
             await mkf.ready;
 
             const result = await mkf.calculate_advanced_single_switch_forward_inputs(JSON.stringify(params));
+            if (typeof result === 'string' && result.startsWith('Exception')) {
+                throw new Error(result);
+            }
             const inputs = JSON.parse(result);
             
             // Check for error response
@@ -1599,6 +1670,10 @@ export const useTaskQueueStore = defineStore('taskQueue', {
             await mkf.ready;
 
             const result = await mkf.calculate_two_switch_forward_inputs(JSON.stringify(params));
+            if (typeof result === 'string' && result.startsWith('Exception')) {
+                setTimeout(() => { this.twoSwitchForwardInputsCalculated(false, result); }, this.task_standard_response_delay);
+                throw new Error(result);
+            }
             const inputs = JSON.parse(result);
             setTimeout(() => { this.twoSwitchForwardInputsCalculated(true, inputs); }, this.task_standard_response_delay);
             return inputs;
@@ -1612,6 +1687,9 @@ export const useTaskQueueStore = defineStore('taskQueue', {
             await mkf.ready;
 
             const result = await mkf.calculate_advanced_two_switch_forward_inputs(JSON.stringify(params));
+            if (typeof result === 'string' && result.startsWith('Exception')) {
+                throw new Error(result);
+            }
             const inputs = JSON.parse(result);
             
             // Check for error response
@@ -1631,6 +1709,10 @@ export const useTaskQueueStore = defineStore('taskQueue', {
             await mkf.ready;
 
             const result = await mkf.calculate_active_clamp_forward_inputs(JSON.stringify(params));
+            if (typeof result === 'string' && result.startsWith('Exception')) {
+                setTimeout(() => { this.activeClampForwardInputsCalculated(false, result); }, this.task_standard_response_delay);
+                throw new Error(result);
+            }
             const inputs = JSON.parse(result);
             setTimeout(() => { this.activeClampForwardInputsCalculated(true, inputs); }, this.task_standard_response_delay);
             return inputs;
@@ -1644,6 +1726,9 @@ export const useTaskQueueStore = defineStore('taskQueue', {
             await mkf.ready;
 
             const result = await mkf.calculate_advanced_active_clamp_forward_inputs(JSON.stringify(params));
+            if (typeof result === 'string' && result.startsWith('Exception')) {
+                throw new Error(result);
+            }
             const inputs = JSON.parse(result);
             
             // Check for error response
@@ -1667,6 +1752,10 @@ export const useTaskQueueStore = defineStore('taskQueue', {
             await mkf.ready;
 
             const result = await mkf.calculate_push_pull_inputs(JSON.stringify(params));
+            if (typeof result === 'string' && result.startsWith('Exception')) {
+                setTimeout(() => { this.pushPullInputsCalculated(false, result); }, this.task_standard_response_delay);
+                throw new Error(result);
+            }
             const inputs = JSON.parse(result);
             setTimeout(() => { this.pushPullInputsCalculated(true, inputs); }, this.task_standard_response_delay);
             return inputs;
@@ -1680,6 +1769,10 @@ export const useTaskQueueStore = defineStore('taskQueue', {
             await mkf.ready;
 
             const result = await mkf.calculate_advanced_push_pull_inputs(JSON.stringify(params));
+            if (typeof result === 'string' && result.startsWith('Exception')) {
+                setTimeout(() => { this.advancedPushPullInputsCalculated(false, result); }, this.task_standard_response_delay);
+                throw new Error(result);
+            }
             const inputs = JSON.parse(result);
             setTimeout(() => { this.advancedPushPullInputsCalculated(true, inputs); }, this.task_standard_response_delay);
             return inputs;

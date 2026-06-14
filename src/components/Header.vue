@@ -18,8 +18,6 @@ export default {
     emits: ["toolSelected"],
     components: {
         BugReporterModal: defineAsyncComponent(() => import('/src/components/User/BugReporter.vue') ),
-        DeadManSwitch: defineAsyncComponent(() => import('/src/components/User/DeadManSwitch.vue') ),
-        // NotificationsModal: defineAsyncComponent(() => import('/src/components/NotificationsModal.vue') ),
     },
     data() {
         const masStore = useMasStore();
@@ -99,9 +97,6 @@ export default {
             masStore,
             historyStore,
             taskQueueStore,
-            showModal: false,
-            loggedIn: false,
-            username: null,
             loading,
             bugReporterVisible,
             hoveredWizard: null,
@@ -114,9 +109,6 @@ export default {
     methods: {
         toggleDropdown(key) { this.openDropdown = this.openDropdown === key ? null : key; },
         closeDropdowns() { this.openDropdown = null; this.navCollapseOpen = false; },
-        onShowModal() {
-            this.showModal = true
-        },
         async onNewPowerMagneticDesign() {
             this.$stateStore.resetMagneticTool();
             this.$stateStore.selectWorkflow("design");
@@ -294,11 +286,6 @@ export default {
         },
     },
     computed: {
-    },
-    created() {
-        if (this.$userStore.isLoggedIn.value && this.$cookies.get('username') == null) {
-            this.$userStore.reset();
-        }
     },
     mounted() {
         this.$settingsStore.loadingGif = "/images/loading.gif";
@@ -523,7 +510,6 @@ export default {
 
     <!-- Modal -->
     <BugReporterModal v-model:visible="bugReporterVisible"/>
-    <DeadManSwitch/>
 </template>
 
 <style>

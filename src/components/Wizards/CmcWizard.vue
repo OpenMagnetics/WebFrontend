@@ -178,6 +178,9 @@ export default {
         this._analyticalDebounceTimer = null;
         this.runAutoWaveforms();
     },
+    beforeUnmount() {
+        clearTimeout(this._analyticalDebounceTimer);
+    },
     methods: {
 
         // Shared by mounted() (immediate) and the localData watcher (debounced).

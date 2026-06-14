@@ -130,17 +130,15 @@ export default {
             return `${w}×${d}×${h} mm`;
         },
         formattedEfficiency() {
-            try {
-                const losses = (this.masData.outputs[0].coreLosses?.coreLosses || 0)
-                             + (this.masData.outputs[0].windingLosses?.windingLosses || 0);
-                const out = this.masData.outputs[0];
-                const powerIn = out?.powerIn ?? out?.inputPower ?? null;
-                if (powerIn != null && powerIn > 0) {
-                    const eff = (1 - losses / powerIn) * 100;
-                    return `${removeTrailingZeroes(eff, 2)}%`;
-                }
-            } catch (e) {}
-            return null;
+            const out = this.masData?.outputs?.[0];
+            const coreLosses = out?.coreLosses?.coreLosses;
+            const windingLosses = out?.windingLosses?.windingLosses;
+            const powerIn = out?.powerIn ?? out?.inputPower ?? null;
+            if (coreLosses == null || windingLosses == null || powerIn == null || powerIn <= 0) {
+                return null;
+            }
+            const eff = (1 - (coreLosses + windingLosses) / powerIn) * 100;
+            return `${removeTrailingZeroes(eff, 2)}%`;
         },
     },
     mounted() {
@@ -298,6 +296,9 @@ export default {
             try {
                 // hardcoded operation point
                 const rmsPower = await this.taskQueueStore.calculateRmsPower(this.masData.inputs.operatingPoints[0].excitationsPerWinding[0]);
+                if (rmsPower == null) {
+                    throw new Error('RMS power could not be calculated: excitation waveform data is missing');
+                }
                 const volume = this.masData.magnetic.core.processedDescription.width *
                                this.masData.magnetic.core.processedDescription.depth * 
                                this.masData.magnetic.core.processedDescription.height;

@@ -26,7 +26,7 @@ export default {
         },
         dataTestLabel: {
             type: String,
-            default: 'BuckWizard',
+            default: 'BuckBoostWizard',
         },
         labelWidthProportionClass:{
             type: String,

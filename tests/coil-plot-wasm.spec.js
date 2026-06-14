@@ -85,7 +85,7 @@ async function openCoilModal(page) {
   await expect(btn).toBeVisible({ timeout: 5000 });
   await btn.click();
   await pause(page, 700, 'mechanical: settle');
-  await expect(page.locator('.modal.show').first()).toBeVisible({ timeout: 3000 });
+  await expect(page.locator('.p-dialog').first()).toBeVisible({ timeout: 3000 });
 }
 
 /**
@@ -126,7 +126,7 @@ test.describe('Coil 2D plot — WASM path', () => {
     await setupCompleteMagnetic(page);
     await openCoilModal(page);
 
-    const btn = page.locator('.modal.show button').filter({ hasText: /^Download Winding 2D Section$/ }).first();
+    const btn = page.locator('.p-dialog button').filter({ hasText: /^Download Winding 2D Section$/ }).first();
     await expect(btn).toBeVisible({ timeout: 5000 });
 
     const dl = await captureDownloadAndPlotCalls(page, btn, 15000);
@@ -143,7 +143,7 @@ test.describe('Coil 2D plot — WASM path', () => {
     await setupCompleteMagnetic(page);
     await openCoilModal(page);
 
-    const btn = page.locator('.modal.show button').filter({ hasText: /^Download Winding 2D Section with H field$/ }).first();
+    const btn = page.locator('.p-dialog button').filter({ hasText: /^Download Winding 2D Section with H field$/ }).first();
     await expect(btn).toBeVisible({ timeout: 5000 });
 
     const dl = await captureDownloadAndPlotCalls(page, btn, 20000);
@@ -160,7 +160,7 @@ test.describe('Coil 2D plot — WASM path', () => {
     await setupCompleteMagnetic(page);
     await openCoilModal(page);
 
-    const btn = page.locator('.modal.show button')
+    const btn = page.locator('.p-dialog button')
       .filter({ hasText: /Download Winding 2D Section with H field but no fringing/ })
       .first();
     await expect(btn).toBeVisible({ timeout: 5000 });

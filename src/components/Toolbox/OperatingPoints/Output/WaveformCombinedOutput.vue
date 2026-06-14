@@ -61,7 +61,7 @@ export default {
                 this.localData.instantaneousPower = await this.taskQueueStore.calculateInstantaneousPower(excitation);
                 this.localData.rmsPower = await this.taskQueueStore.calculateRmsPower(excitation);
             } catch (error) {
-                // Silently fail - waveform data may be incomplete during editing
+                console.error('Power calculation failed:', error);
                 this.localData.instantaneousPower = null;
                 this.localData.rmsPower = null;
             }

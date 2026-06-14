@@ -7,7 +7,7 @@
 
 import { test, expect } from './_coverage.js';
 import { isBenign, openWizard, pause } from './utils.js';
-import { ss, FLYBACK_CY, PP_CY, goToBuilderStep, adviseCoreAndWait, adviseWireAndWait, adviseAllWiresAndWait, selectOptions, pickFirstOption } from './utils/builder-helpers.js';
+import { ss, FLYBACK_CY, PP_CY, goToBuilderStep, adviseCoreAndWait, adviseWireAndWait, adviseAllWiresAndWait, selectOptions, pickFirstOption, pickOption, numberInput } from './utils/builder-helpers.js';
 
 // =====================================================================
 // GROUP U – End-to-end complete build
@@ -63,19 +63,18 @@ test.describe('MB – Group U – End-to-end complete build', () => {
 
     const wireTypeSel = page.locator('[data-cy$="-WireType-select"]').first();
     await expect(wireTypeSel).toBeVisible();
-    await wireTypeSel.selectOption('Round');
+    await pickOption(page, '-WireType', 'Round');
     await pause(page, 500, 'mechanical: settle');
 
     await pickFirstOption(page, '-WireStandard');
     const diamOpts = await selectOptions(page, '-WireConductingDiameter');
     expect(diamOpts.length).toBeGreaterThan(0);
-    const diamSel = page.locator('[data-cy$="-WireConductingDiameter-select"]').first();
-    await diamSel.selectOption(diamOpts[Math.min(1, diamOpts.length - 1)]);
+    await pickOption(page, '-WireConductingDiameter', diamOpts[Math.min(1, diamOpts.length - 1)]);
     await pause(page, 400, 'mechanical: settle');
 
     const turnsEl = page.locator('[data-cy$="-NumberTurns-container"]').first();
     await expect(turnsEl).toBeVisible();
-    const firstInput = turnsEl.locator('input[type="number"]').first();
+    const firstInput = numberInput(turnsEl);
     await firstInput.click({ clickCount: 3 });
     await firstInput.fill('20');
     await firstInput.press('Tab');

@@ -327,10 +327,9 @@ export default {
                 <!-- Results Grid -->
                 <div v-else class="row g-3" style="max-height: calc(100vh - 220px); overflow-y: auto;">
                     <TransitionGroup name="card-fade">
-                        <div 
-                            v-for="(advise, adviseIndex) in adviseCacheStore.currentMasAdvises" 
-                            v-if="adviseCacheStore.currentMasAdvises != null"
-                            :key="adviseIndex"
+                        <div
+                            v-for="(advise, adviseIndex) in adviseCacheStore.currentMasAdvises"
+                            :key="advise.mas.magnetic.manufacturerInfo.reference + '-' + adviseIndex"
                             class="col-12 md:col-6 xl:col-4"
                             :class="{ 'opacity-25': !dataUptoDate }"
                         >

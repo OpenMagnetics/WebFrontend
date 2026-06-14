@@ -45,15 +45,17 @@ const common = {
 
 /**
  * Project layout (Phase 9):
+ *   smoke           fast per-wizard smoke battery (@smoke in tests/wizards) — target <60s
  *   site            cheap layout / smoke / home / settings — small, parallel-safe
  *   wizards-light   non-WASM wizard tests (analytical only, no Adviser nav)
  *   scenarios       end-to-end via tests/scenarios + tests/wizards battery template
  *   heavy           long WASM runs (DAB high-power, CMC sweeps, batteries that hit Core Adviser)
  *
  * Selection via Playwright's tag grep:
- *   site            grepInvert: @scenario|@heavy
- *   wizards-light   grep: @smoke (and grepInvert @scenario|@heavy)
- *   scenarios       grep: @scenario, grepInvert: @heavy
+ *   smoke           grep: @smoke (tests/wizards only)
+ *   site            no tag filter (home/settings/ui-regressions specs)
+ *   wizards-light   grepInvert: @scenario|@heavy (non-scenario, non-wizard dirs)
+ *   scenarios       grepInvert: @heavy
  *   heavy           grep: @heavy
  *
  * Per-project worker counts target a 16-core dev machine; CI overrides via

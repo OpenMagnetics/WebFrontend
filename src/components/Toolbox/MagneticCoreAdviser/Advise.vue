@@ -181,6 +181,9 @@ export default {
             try {
                 // hardcoded operation point
                 const rmsPower = await this.taskQueueStore.calculateRmsPower(this.masData.inputs.operatingPoints[0].excitationsPerWinding[0]);
+                if (rmsPower == null) {
+                    throw new Error('RMS power could not be calculated: excitation waveform data is missing');
+                }
                 const volume = this.masData.magnetic.core.processedDescription.width *
                                this.masData.magnetic.core.processedDescription.depth * 
                                this.masData.magnetic.core.processedDescription.height;

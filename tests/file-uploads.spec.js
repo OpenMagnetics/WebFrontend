@@ -19,9 +19,7 @@ import path from 'node:path';
 import { test, expect } from './_coverage.js';
 import { BASE_URL, screenshot, pause } from './utils.js';
 
-const MAS_FIXTURE = path.resolve(
-  '/home/alf/OpenMagnetics/WebFrontend/04_forward_xfmr_e3216_n87.json',
-);
+const MAS_FIXTURE = new URL('./fixtures/04_forward_xfmr_e3216_n87.json', import.meta.url).pathname;
 const CSV_FIXTURE = path.resolve(
   '/home/alf/OpenMagnetics/WebFrontend/.playwright-mcp/plecs_test.csv',
 );

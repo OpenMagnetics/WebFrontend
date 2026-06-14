@@ -87,9 +87,12 @@ export default {
         this.$nextTick(() => {
             if (this._autoRunDone) return;
             this._autoRunDone = true;
-            try { this.updateErrorMessage?.(); } catch (e) { return; }
-            if (!this.errorMessage) this.simulateIdealWaveforms?.();
+            this.updateErrorMessage();
+            if (!this.errorMessage) this.simulateIdealWaveforms();
         });
+    },
+    beforeUnmount() {
+        clearTimeout(this._analyticalDebounceTimer);
     },
     methods: {
         buildParams(mode) {

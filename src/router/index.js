@@ -106,6 +106,13 @@ const routes = [
         name: 'CoreShapeCrossReferencer',
         component: () => import('../views/CrossReferencers/CrossReferencer.vue')
     },
+    {
+        // Catch-all: unknown paths render a blank page otherwise (vue-router
+        // mounts nothing without a matching route). Send the user home.
+        path: '/:pathMatch(.*)*',
+        name: 'NotFound',
+        redirect: '/',
+    },
 
 ]
 const router = createRouter({

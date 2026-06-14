@@ -20,9 +20,13 @@ async function primeSharedPage(sharedPage) {
   const url = sharedPage.url();
   if (url === 'about:blank' || !url.includes(BASE_URL.replace(/^https?:\/\//, ''))) {
     await sharedPage.goto(`${BASE_URL}/magnetic_tool`, { waitUntil: 'domcontentloaded' });
+    // Wait for the actual destination, not merely "not engine_loader": the
+    // guard redirects to /engine_loader asynchronously, so a negative check
+    // can pass before the redirect even happens and the test then observes
+    // the loader URL.
     await sharedPage.waitForFunction(
-      () => !window.location.pathname.includes('engine_loader'),
-      { timeout: 45000 },
+      () => window.location.pathname.includes('magnetic_tool'),
+      { timeout: 90000 },
     );
     await pause(sharedPage, 800, 'mechanical: settle');
   }

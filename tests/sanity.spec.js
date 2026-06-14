@@ -19,8 +19,10 @@ async function openDabWizard(page) {
     if (dabLink) { dabLink.click(); return true; }
     return false;
   });
-  await tryWaitForURL(page, '**/wizards', 15000);
-  await tryWaitForSelector(page,'.sim-btn.analytical', { timeout: 15000 });
+  // Cold contexts route through /engine_loader (WASM init takes 30-90s);
+  // match openWizard's 120s budget instead of soft-timing-out at 15s.
+  await tryWaitForURL(page, '**/wizards', 120000);
+  await tryWaitForSelector(page,'.sim-btn.analytical', { timeout: 30000 });
   await pause(page, 300, 'mechanical: settle');
 }
 

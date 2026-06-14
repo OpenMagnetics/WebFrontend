@@ -113,7 +113,7 @@ test.describe('Wizards — disabled entries present but disabled', () => {
       // Check disabled state (either attribute or class)
       const el0 = el.first();
       const disabled = await softAttr(el0, 'disabled');
-      const cls = await el0.getAttribute('class').catch(() => '');
+      const cls = await softAttr(el0, 'class');
       const isDisabled = disabled !== null || /disabled/i.test(cls || '');
       expect(isDisabled).toBe(true);
     });

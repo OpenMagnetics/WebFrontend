@@ -241,8 +241,14 @@ router.beforeEach((to, from, next) => {
             setTimeout(() => {router.push(from.path);}, 500);
         }
     }
+    // On the fully-initialized worker proxy, `$mkf._loading` resolves to a
+    // generated async method (truthy), so the `!$mkf._loading` branch above
+    // never fires once loading is done. This branch is what actually bounces
+    // the engine_loader "trampoline" used by Header.onWizards & co. (push
+    // /engine_loader while already on the target route to force a remount).
+    // Do not remove it as dead code — without it the app parks on
+    // /engine_loader forever when switching wizards.
     else if (app.config.globalProperties.$userStore.loadingPath !=null && app.config.globalProperties.$mkf != null && to.name == "EngineLoader") {
-        const newPath = app.config.globalProperties.$userStore.loadingPath;
         app.config.globalProperties.$userStore.loadingPath = null;
         setTimeout(() => {router.push(from.path);}, 500);
     }
@@ -361,14 +367,27 @@ router.beforeEach((to, from, next) => {
                     app.config.globalProperties.$userStore.loadingPath = null;
                     const elapsedTime = Date.now() - loaderStartTime;
                     const remainingTime = Math.max(0, minimumLoaderTime - elapsedTime);
-                    setTimeout(() => {
-                        // Only redirect to the original destination if the user hasn't
-                        // navigated away from the engine_loader in the meantime (e.g. by
-                        // clicking the home logo while WASM was still loading).
+                    // Only redirect to the original destination if the user hasn't
+                    // navigated away from the engine_loader in the meantime (e.g. by
+                    // clicking the home logo while WASM was still loading).
+                    //
+                    // The check must RETRY, not run once: when the WASM was already
+                    // preloaded, this code finishes before the router has resolved
+                    // the (lazy-loaded) /engine_loader navigation itself, so
+                    // currentRoute is still the previous route at the first check.
+                    // A one-shot check loses that race and parks the app on
+                    // /engine_loader forever.
+                    const redirectDeadline = Date.now() + 10000;
+                    const redirectWhenOnLoader = () => {
                         if (router.currentRoute.value.name === 'EngineLoader') {
                             router.push(newPath);
                         }
-                    }, remainingTime)
+                        else if (Date.now() < redirectDeadline) {
+                            setTimeout(redirectWhenOnLoader, 100);
+                        }
+                        // else: the user really navigated somewhere else — leave them be.
+                    };
+                    setTimeout(redirectWhenOnLoader, remainingTime)
                 } catch (error) {
                     console.error("Error initializing MKF:", error);
                 }

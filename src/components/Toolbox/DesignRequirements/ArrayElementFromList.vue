@@ -156,6 +156,7 @@ export default {
                 :titleSameRow="true"
                 :justifyContent="justifyContent"
                 v-for="requirementIndex in masStore.mas.inputs.designRequirements[name].length"
+                :key="requirementIndex"
                 :defaultValue="defaultValue[requirementIndex - 1]"
                 class="py-2 col-12"
                 :name="requirementIndex - 1"

@@ -77,7 +77,7 @@ async function openModal(page, triggerCy) {
   await expect(btn, `modal trigger ${triggerCy} must be visible`).toBeVisible({ timeout: 10000 });
   await btn.click();
   await pause(page, 500, 'mechanical: settle');
-  const modal = page.locator('.modal.show').first();
+  const modal = page.locator('.p-dialog').first();
   await expect(modal, `modal must open after clicking ${triggerCy}`).toBeVisible({ timeout: 5000 });
 }
 
@@ -114,7 +114,7 @@ test.describe('Exporters — MAS', () => {
   test('EX-MAS1: modal opens and shows at least one download button', async ({ page }) => {
     await setupCompleteMagnetic(page);
     await openModal(page, 'MAS-exports-modal-button');
-    const dl = page.locator('.modal.show [data-cy$="-download-button"]').first();
+    const dl = page.locator('.p-dialog [data-cy$="-download-button"]').first();
     await expect(dl).toBeVisible({ timeout: 5000 });
     await ss(page, 'MAS1-modal-open');
   });
@@ -122,7 +122,7 @@ test.describe('Exporters — MAS', () => {
   test('EX-MAS2: download-button triggers a .json download', async ({ page }) => {
     await setupCompleteMagnetic(page);
     await openModal(page, 'MAS-exports-modal-button');
-    const dl = page.locator('.modal.show [data-cy$="-download-button"]').first();
+    const dl = page.locator('.p-dialog [data-cy$="-download-button"]').first();
     const download = await expectDownload(page, dl, 15000);
     expect(download.suggestedFilename()).toMatch(/\.json$/i);
     await ss(page, 'MAS2-downloaded');
@@ -137,7 +137,7 @@ test.describe('Exporters — Core (STP/STL)', () => {
   test('EX-CORE1: modal opens and shows download buttons', async ({ page }) => {
     await setupCompleteMagnetic(page);
     await openModal(page, 'Core-exports-modal-button');
-    const dlButtons = page.locator('.modal.show [data-cy$="-download-button"]');
+    const dlButtons = page.locator('.p-dialog [data-cy$="-download-button"]');
     const count = await dlButtons.count();
     expect(count).toBeGreaterThan(0);
     await ss(page, 'CORE1-modal-open');
@@ -147,7 +147,7 @@ test.describe('Exporters — Core (STP/STL)', () => {
     await setupCompleteMagnetic(page);
     await openModal(page, 'Core-exports-modal-button');
 
-    const dl = page.locator('.modal.show [data-cy$="-download-button"]').first();
+    const dl = page.locator('.p-dialog [data-cy$="-download-button"]').first();
     const download = await expectDownload(page, dl, 30000);
     expect(download.suggestedFilename()).toMatch(/\.(stp|stl)$/i);
     await ss(page, 'CORE2-downloaded');
@@ -162,7 +162,7 @@ test.describe('Exporters — Coil', () => {
   test('EX-COIL1: modal opens with three SVG export buttons', async ({ page }) => {
     await setupCompleteMagnetic(page);
     await openModal(page, 'Coil-exports-modal-button');
-    const dlButtons = page.locator('.modal.show [data-cy$="-download-button"]');
+    const dlButtons = page.locator('.p-dialog [data-cy$="-download-button"]');
     const count = await dlButtons.count();
     expect(count).toBeGreaterThanOrEqual(1);
     await ss(page, 'COIL1-modal-open');
@@ -172,7 +172,7 @@ test.describe('Exporters — Coil', () => {
     await setupCompleteMagnetic(page);
     await openModal(page, 'Coil-exports-modal-button');
 
-    const dl = page.locator('.modal.show [data-cy$="-download-button"]').first();
+    const dl = page.locator('.p-dialog [data-cy$="-download-button"]').first();
     const download = await expectDownload(page, dl, 30000);
     expect(download.suggestedFilename()).toMatch(/\.svg$/i);
     await ss(page, 'COIL2-downloaded');
@@ -187,7 +187,7 @@ test.describe('Exporters — Circuit Simulators', () => {
   test('EX-CSIM1: modal opens and lists all simulator names', async ({ page }) => {
     await setupCompleteMagnetic(page);
     await openModal(page, 'Circuit-Simulators-exports-modal-button');
-    const text = await page.locator('.modal.show').first().textContent();
+    const text = await page.locator('.p-dialog').first().textContent();
     expect(/simba/i.test(text)).toBe(true);
     expect(/ltspice/i.test(text)).toBe(true);
     expect(/ngspice/i.test(text)).toBe(true);
@@ -197,7 +197,7 @@ test.describe('Exporters — Circuit Simulators', () => {
   test('EX-CSIM2: at least 4 download buttons present (SIMBA ×2 + LtSpice ×2 + NgSpice)', async ({ page }) => {
     await setupCompleteMagnetic(page);
     await openModal(page, 'Circuit-Simulators-exports-modal-button');
-    const dlButtons = page.locator('.modal.show [data-cy$="-download-button"]');
+    const dlButtons = page.locator('.p-dialog [data-cy$="-download-button"]');
     const count = await dlButtons.count();
     expect(count).toBeGreaterThanOrEqual(4);
   });
@@ -207,7 +207,7 @@ test.describe('Exporters — Circuit Simulators', () => {
     await openModal(page, 'Circuit-Simulators-exports-modal-button');
 
     // Pick a download button whose container text mentions LtSpice
-    const candidates = await page.locator('.modal.show [data-cy$="-download-button"]').all();
+    const candidates = await page.locator('.p-dialog [data-cy$="-download-button"]').all();
     let ltBtn = null;
     for (const btn of candidates) {
       const parent = btn.locator('xpath=ancestor-or-self::*[position()<=4]').first();

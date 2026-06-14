@@ -97,10 +97,11 @@ new entry on its next run; no edits needed there.
 
 ## Projects
 
-`playwright.config.js` defines four projects with tag-based selection:
+`playwright.config.js` defines five projects with tag-based selection:
 
 | project       | matches                                          | parallel target |
 |---------------|--------------------------------------------------|-----------------|
+| smoke         | `tests/wizards/**` tagged `@smoke` (fast battery, <60s) | high      |
 | site          | home, settings, ui-regressions, new-wizards-smoke | high            |
 | wizards-light | per-topology battery files (non-WASM tests only)  | high            |
 | scenarios     | `tests/scenarios/**`, `tests/wizards/**` minus @heavy | medium      |

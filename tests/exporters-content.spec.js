@@ -90,7 +90,7 @@ async function openModal(page, triggerCy) {
   await expect(btn).toBeVisible({ timeout: 5000 });
   await btn.click();
   await pause(page, 700, 'mechanical: settle');
-  await expect(page.locator('.modal.show').first()).toBeVisible({ timeout: 3000 });
+  await expect(page.locator('.p-dialog').first()).toBeVisible({ timeout: 3000 });
 }
 
 async function downloadToString(page, clickable, timeoutMs = 20000) {
@@ -113,7 +113,7 @@ test.describe('Exporter content — MAS JSON', () => {
     await setupCompleteMagnetic(page);
     await openModal(page, 'MAS-exports-modal-button');
 
-    const btn = page.locator('.modal.show [data-cy$="-download-button"]').first();
+    const btn = page.locator('.p-dialog [data-cy$="-download-button"]').first();
     const dl = await downloadToString(page, btn, 10000);
 
     expect(dl.filename).toMatch(/\.json$/i);
@@ -131,9 +131,9 @@ test.describe('Exporter content — LTspice', () => {
   async function findLtSpiceButton(page) {
     // LtSpiceExporter button label: "Download magnetic subcircuit for LtSpice"
     // (or "symbol for LtSpice"). Prefer subcircuit over symbol.
-    const subcircuit = page.locator('.modal.show button').filter({ hasText: /LtSpice/i }).filter({ hasText: /subcircuit/i });
+    const subcircuit = page.locator('.p-dialog button').filter({ hasText: /LtSpice/i }).filter({ hasText: /subcircuit/i });
     if (await subcircuit.count() > 0) return subcircuit.first();
-    const any = page.locator('.modal.show button').filter({ hasText: /LtSpice/i });
+    const any = page.locator('.p-dialog button').filter({ hasText: /LtSpice/i });
     return (await any.count() > 0) ? any.first() : null;
   }
 
@@ -164,7 +164,7 @@ test.describe('Exporter content — NgSpice', () => {
   test.describe.configure({ timeout: 120000 });
 
   async function findNgSpiceButton(page) {
-    const ng = page.locator('.modal.show button').filter({ hasText: /NgSpice/i });
+    const ng = page.locator('.p-dialog button').filter({ hasText: /NgSpice/i });
     return (await ng.count() > 0) ? ng.first() : null;
   }
 
@@ -189,9 +189,9 @@ test.describe('Exporter content — SIMBA', () => {
 
   async function findSimbaButton(page) {
     // Prefer the standalone (not "attach") SIMBA button.
-    const standalone = page.locator('.modal.show button').filter({ hasText: /SIMBA/i }).filter({ hasNotText: /attach/i });
+    const standalone = page.locator('.p-dialog button').filter({ hasText: /SIMBA/i }).filter({ hasNotText: /attach/i });
     if (await standalone.count() > 0) return standalone.first();
-    const any = page.locator('.modal.show button').filter({ hasText: /SIMBA/i });
+    const any = page.locator('.p-dialog button').filter({ hasText: /SIMBA/i });
     return (await any.count() > 0) ? any.first() : null;
   }
 

@@ -37,7 +37,9 @@ test('duty cycle 94.37% does not round after changing current', async ({ page })
     await manualBtn.click();
     await pause(page, 800, 'mechanical: settle');
 
-    const dutyCycleInput = page.locator('[data-cy$="-DutyCycle-number-input"]').first();
+    // PrimeVue InputNumber: data-cy sits on the wrapper span; the editable
+    // element is the inner <input>.
+    const dutyCycleInput = page.locator('[data-cy$="-DutyCycle-number-input"] input').first();
     await dutyCycleInput.waitFor({ timeout: 8000 });
 
     await dutyCycleInput.click({ clickCount: 3 });
@@ -45,7 +47,7 @@ test('duty cycle 94.37% does not round after changing current', async ({ page })
     await dutyCycleInput.press('Tab');
     await pause(page, 300, 'mechanical: settle');
 
-    const peakToPeakInput = page.locator('[data-cy$="-current-peakToPeak-number-input"]').first();
+    const peakToPeakInput = page.locator('[data-cy$="-current-peakToPeak-number-input"] input').first();
     const peakVisible = await softVisible(peakToPeakInput, 2000);
 
     if (peakVisible) {
@@ -53,7 +55,7 @@ test('duty cycle 94.37% does not round after changing current', async ({ page })
         await peakToPeakInput.fill('2');
         await peakToPeakInput.press('Tab');
     } else {
-        const currentInputs = page.locator('[data-cy*="-current-"] [data-cy$="-number-input"]');
+        const currentInputs = page.locator('[data-cy*="-current-"] [data-cy$="-number-input"] input');
         const count = await currentInputs.count();
         if (count > 0) {
             const input = currentInputs.first();

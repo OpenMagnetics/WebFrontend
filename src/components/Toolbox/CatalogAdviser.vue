@@ -183,15 +183,11 @@ export default {
         // inputs and filterFlow is sufficient — Pinia keeps property order
         // stable across reads, and `maximum_number_results` is hardcoded to 9.
         buildAdvisesKey() {
-            try {
-                return JSON.stringify({
-                    inputs: this.masStore.mas.inputs,
-                    filterFlow: this.buildFilterFlow(),
-                    max: 9,
-                });
-            } catch {
-                return "";
-            }
+            return JSON.stringify({
+                inputs: this.masStore.mas.inputs,
+                filterFlow: this.buildFilterFlow(),
+                max: 9,
+            });
         },
         calculateAdvisedMagnetics() {
             this.catalogStore.advises = [];

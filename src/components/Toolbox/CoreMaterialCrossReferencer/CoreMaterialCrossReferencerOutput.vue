@@ -41,6 +41,7 @@ export default {
         const localTexts = {};
         return {
             localTexts,
+            errorMessage: null,
         }
     },
     computed: {
@@ -94,8 +95,10 @@ export default {
                 coreMaterial.temp[this.temperature].remanence = temperatureDependantDataRef["remanence"];
                 coreMaterial.temp[this.temperature].coerciveForce = temperatureDependantDataRef["coerciveForce"];
 
+                this.errorMessage = null;
                 this.localTexts = processCoreMaterialTexts(coreMaterial);
-            }).catch(error => { 
+            }).catch(error => {
+                this.errorMessage = `Error reading material data: ${error.message ?? error}`;
                 console.error("Error reading material data")
                 console.error(error)
             });
@@ -112,6 +115,9 @@ export default {
     <div class="container">
         <div class="row">
             <h3 class="col-12 p-0 m-0 pl-3">{{coreMaterial.manufacturerInfo.reference}}</h3>
+        </div>
+        <div class="row" v-if="errorMessage != null">
+            <p class="col-12 p-0 m-0 pl-3 text-danger" data-cy="CoreMaterialCrossReferencerOutput-error-text">{{errorMessage}}</p>
         </div>
         <div class="row">
             <div v-if="coreMaterial.manufacturerInfo != null" class="col-12 md:col-12 text-left pr-0 row">
