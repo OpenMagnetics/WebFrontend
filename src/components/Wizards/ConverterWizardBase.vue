@@ -609,9 +609,9 @@ export default {
                   exc[sig].processed = { ...pr, label: "custom" };
                 }
               } catch (e) {
-                console.error(`Error ${sig}:`, e);
-                exc[sig].harmonics = { amplitudes: [0], frequencies: [freq] };
-                exc[sig].processed = { label: "custom", dutyCycle: 0.5, peakToPeak: 0, offset: 0, rms: 0 };
+                // No fallback: fabricating zero harmonics here masked a real
+                // engine bug (excitations arriving with frequency 0) for months.
+                throw new Error(`processSimulatedOperatingPoints: ${sig} harmonics/processed calculation failed (frequency=${freq}): ${e.message}`);
               }
             }
           }
@@ -621,7 +621,19 @@ export default {
     },
 
     // ===== NAVIGATION =====
+    trackWizardEvent(action, ms) {
+      try {
+        const url = import.meta.env.VITE_API_ENDPOINT + '/wizard_telemetry';
+        this.$axios.post(url, {
+          wizard_type: this.title,
+          trigger_action: action,
+          mas_data: ms.mas,
+        }).catch(() => {});
+      } catch (_) {}
+    },
+
     async navigateToReview(ss, ms, appType) {
+      this.trackWizardEvent('review_specs', ms);
       ss.resetMagneticTool(); ss.designLoaded();
       ss.closeCoilAdvancedInfo();  // Ensure coil advanced info is disabled
       ss.selectApplication(ss.SupportedApplications[appType]);
@@ -639,6 +651,7 @@ export default {
     },
 
     async navigateToAdvise(ss, ms, appType) {
+      this.trackWizardEvent('design_magnetic', ms);
       ss.resetMagneticTool(); ss.designLoaded();
       ss.closeCoilAdvancedInfo();  // Ensure coil advanced info is disabled
       ss.selectApplication(ss.SupportedApplications[appType]);
