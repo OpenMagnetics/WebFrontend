@@ -7,8 +7,10 @@ import VueCookies from 'vue3-cookies'
 import PrimeVueTooltip from 'primevue/tooltip'
 import axios from "axios";
 import { useUserStore } from '/src/stores/user'
+import { useMasStore } from '/src/stores/mas'
 import { useSettingsStore } from '/src/stores/settings'
 import { useStateStore } from '/src/stores/state'
+import { initTelemetry } from 'WebSharedComponents/assets/js/telemetry.js'
 import { useStyleStore } from '/src/stores/style'
 import { useFairRiteStyleStore } from '/src/stores/fairRiteStyle'
 import { useModelSettingsStore } from '/MagneticBuilder/src/stores/modelSettings'
@@ -140,6 +142,21 @@ app.config.globalProperties.$axios = axiosInstance
 app.config.globalProperties.$userStore = useUserStore()
 app.config.globalProperties.$settingsStore = useSettingsStore()
 app.config.globalProperties.$stateStore = useStateStore()
+
+// Tab-scoped telemetry session ID (resets on tab close; not tied to user identity)
+const _sid = sessionStorage.getItem('om_telemetry_sid') || crypto.randomUUID()
+sessionStorage.setItem('om_telemetry_sid', _sid)
+app.config.globalProperties.$telemetrySid = _sid
+// Design telemetry: one shared module fed the current MAS so every export and
+// design-completion captures the design. masProvider reads the live mas store.
+const _masStore = useMasStore()
+initTelemetry({
+    axios: axiosInstance,
+    sessionId: _sid,
+    environment: import.meta.env.VITE_ENV || 'production',
+    appVersion: import.meta.env.VITE_APP_VERSION || null,
+    masProvider: () => (_masStore && _masStore.mas) || null,
+})
 
 export const globals = app.config.globalProperties
 

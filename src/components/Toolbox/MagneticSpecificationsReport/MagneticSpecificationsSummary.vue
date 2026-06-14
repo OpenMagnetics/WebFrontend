@@ -1,6 +1,7 @@
 <script setup>
 import { useMasStore } from '../../../stores/mas'
 import { formatUnit, removeTrailingZeroes, deepCopy, downloadBase64asPDF, download } from 'WebSharedComponents/assets/js/utils.js'
+import { recordDesign } from 'WebSharedComponents/assets/js/telemetry.js'
 
 </script>
 
@@ -42,6 +43,9 @@ export default {
     },
     mounted () {
         this.computeTexts();
+        // Reaching the specifications report = a finished design (captures the
+        // requirements + operating points the user entered, screenshot-safe).
+        recordDesign({ event_type: 'design_report', source: 'spec_report', mas: this.masStore.mas });
     },
     methods: {
         getTitleColor(text) {

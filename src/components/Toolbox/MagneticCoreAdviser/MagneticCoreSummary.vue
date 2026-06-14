@@ -2,6 +2,7 @@
 import { useMasStore } from '../../../stores/mas'
 import { useTaskQueueStore } from '../../../stores/taskQueue'
 import { toTitleCase, removeTrailingZeroes, processCoreTexts, deepCopy, downloadBase64asPDF, clean, download } from 'WebSharedComponents/assets/js/utils.js'
+import { recordDesign } from 'WebSharedComponents/assets/js/telemetry.js'
 
 </script>
 
@@ -44,6 +45,8 @@ export default {
     },
     mounted () {
         this.computeTexts();
+        // Reaching the core-adviser report = a finished design (screenshot-safe).
+        recordDesign({ event_type: 'design_report', source: 'core_adviser', mas: this.masStore.mas });
     },
     methods: {
         exportMAS() {

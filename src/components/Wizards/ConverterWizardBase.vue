@@ -1,5 +1,6 @@
 <script>
 import ConverterWaveformVisualizer from './ConverterWaveformVisualizer.vue'
+import { recordDesign } from 'WebSharedComponents/assets/js/telemetry.js'
 /**
  * ConverterWizardBase - Base layout + common logic for all converter wizards.
  * Child wizards access common methods via this.$refs.base.methodName().
@@ -622,14 +623,11 @@ export default {
 
     // ===== NAVIGATION =====
     trackWizardEvent(action, ms) {
-      try {
-        const url = import.meta.env.VITE_API_ENDPOINT + '/wizard_telemetry';
-        this.$axios.post(url, {
-          wizard_type: this.title,
-          trigger_action: action,
-          mas_data: ms.mas,
-        }).catch(() => {});
-      } catch (_) {}
+      recordDesign({
+        event_type: action === 'design_magnetic' ? 'wizard_submit' : 'wizard_review',
+        source: 'wizard/' + this.title,
+        mas: ms.mas,
+      });
     },
 
     async navigateToReview(ss, ms, appType) {

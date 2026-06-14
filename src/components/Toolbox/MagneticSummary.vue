@@ -8,6 +8,7 @@ import CoreExporter from '../Exporters/CoreExporter.vue'
 import CoilExporter from '../Exporters/CoilExporter.vue'
 import MASExporter from '../Exporters/MASExporter.vue'
 import CircuitSimulatorsExporter from '../Exporters/CircuitSimulatorsExporter.vue'
+import { recordDesign } from 'WebSharedComponents/assets/js/telemetry.js'
 </script>
 
 <script>
@@ -571,6 +572,9 @@ export default {
     },
     mounted() {
         this.computeTexts();
+        // Reaching the magnetic-adviser report = a finished design (screenshot-safe,
+        // counted even if the user never downloads anything).
+        recordDesign({ event_type: 'design_report', source: 'adviser', mas: this.mas });
     },
     methods: {
         plotModeChange(newMode) {
