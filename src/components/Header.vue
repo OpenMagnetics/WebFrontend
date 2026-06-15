@@ -636,6 +636,9 @@ export default {
         border: 1px solid rgba(var(--p-primary-rgb), 0.35) !important;
         border-radius: 10px !important;
         font-weight: 500;
+        /* New Magnetic is a <button> (others are <a>); buttons default to the
+         * arrow cursor, so force the pointer to match the link items. */
+        cursor: pointer;
         transition: background 0.15s, border-color 0.15s, transform 0.1s, box-shadow 0.15s !important;
     }
     .om-nav-btn:hover,
