@@ -54,6 +54,12 @@
 }
 
 html, body {
+    /* Reset the UA default body margin (8px). Without this, the full-height
+     * `.min-vh-100` page column (100vh) plus the 8px top+bottom body margin
+     * exceeds the viewport by 16px, producing a persistent vertical scrollbar
+     * even when the content fits. */
+    margin: 0;
+    padding: 0;
     font-family: var(--p-body-font-family);
     font-size: var(--p-body-font-size);
     font-weight: var(--p-body-font-weight);
