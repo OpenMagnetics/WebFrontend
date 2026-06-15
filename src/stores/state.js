@@ -231,12 +231,12 @@ export const useStateStore = defineStore("state", () => {
         xAxisMode: 'log',
         yAxisMode: 'log',
         minimumFrequency: 1e3,
-        maximumFrequency: 4e6,
+        maximumFrequency: 1e8,
         minimumTemperature: -40,
         maximumTemperature: 150,
         minimumDcBias: 0,
         maximumDcBias: 25,
-        numberPoints: 25,
+        numberPoints: 100,
     });
 
     const magneticBuilder = ref({
@@ -359,7 +359,7 @@ export const useStateStore = defineStore("state", () => {
             xAxisMode: 'log',
             yAxisMode: 'log',
             minimumFrequency: 1e3,
-            maximumFrequency: 4e6,
+            maximumFrequency: 1e8,
             minimumTemperature: -40,
             maximumTemperature: 150,
             minimumDcBias: 0,
