@@ -33,11 +33,12 @@ test.describe('3D visualizer timing', () => {
       // drawTurns now accepts a full Magnetic JSON (uses bobbin context for
       // toroidal turns). Signature:
       //   drawTurns(json, mode, plane, offset, format, scale,
-      //             polygonSegments, symmetry, side)
+      //             polygonSegments, symmetry, side, paintCoating)
+      // paintCoating=true → OUTER (insulation) diameter (frontend default).
       const turnsKey = mag.coil.turns_description ? 'turns_description' : 'turnsDescription';
 
       const t0 = performance.now();
-      const full = mvbpp.drawTurns(JSON.stringify(mag), '3D', 'XY', 0.0, 'stl', 1.0, 16, 'none', '');
+      const full = mvbpp.drawTurns(JSON.stringify(mag), '3D', 'XY', 0.0, 'stl', 1.0, 16, 'none', '', true);
       const elapsed = performance.now() - t0;
 
       // Geometry check: build a 2-turn slice and a 1-turn slice. Each turn in
@@ -46,12 +47,12 @@ test.describe('3D visualizer timing', () => {
       const clone2 = JSON.parse(JSON.stringify(mag));
       clone2.coil[turnsKey] = clone2.coil[turnsKey].slice(0, 2);
       const twoTurns = mvbpp.drawTurns(JSON.stringify(clone2),
-                                        '3D', 'XY', 0.0, 'stl', 1.0, 16, 'none', '');
+                                        '3D', 'XY', 0.0, 'stl', 1.0, 16, 'none', '', true);
 
       const clone1 = JSON.parse(JSON.stringify(mag));
       clone1.coil[turnsKey] = clone1.coil[turnsKey].slice(0, 1);
       const oneTurn  = mvbpp.drawTurns(JSON.stringify(clone1),
-                                        '3D', 'XY', 0.0, 'stl', 1.0, 16, 'none', '');
+                                        '3D', 'XY', 0.0, 'stl', 1.0, 16, 'none', '', true);
 
       // STL binary: 80-byte header + 4-byte triangle count + 50 bytes/triangle
       const triCount = (n) => n ? (n.length - 84) / 50 : 0;
