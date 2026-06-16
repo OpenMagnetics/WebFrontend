@@ -432,7 +432,7 @@ export default {
 
             </div>
             <div v-if="masStore.mas.inputs.operatingPoints.length > 0" class="col-12 md:col-10 text-left pr-0 ">
-                <div v-if="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding.length > 0" class="container mx-auto">
+                <div v-if="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding.length > 0" class="container mx-auto op-detail-container">
                     <div class="row">
                         <OperatingPoint 
                             :currentOperatingPointIndex="currentOperatingPointIndex"
@@ -458,10 +458,20 @@ export default {
  * Points panel lines up with where the Requirements box used to start
  * (and doesn't slide under the Storyline / Steps box on the left). */
 .op-container {
-    padding: 0.5rem 0.75rem;
+    /* Top padding pushes the "Operating points" / "Operating Point" cards down so
+       their top edge lines up with the Steps card in the left sidebar (which has a
+       constant 8px top spacer). The Steps card itself is not moved. */
+    padding: 10.4px 0.75rem 0 0.75rem;
     max-width: 100%;
     width: 100%;
     overflow-x: hidden;
+}
+
+/* The detail column nests an extra container/row that pushes the
+   "Operating Point" panel ~8px below the list panel — pull it up so both OP
+   cards share the same top edge. */
+.op-detail-container {
+    margin-top: -0.5rem;
 }
 
 /* Neutralize the negative margins my .row shim applies, otherwise the panel

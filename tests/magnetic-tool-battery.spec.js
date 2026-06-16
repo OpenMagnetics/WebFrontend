@@ -110,11 +110,13 @@ test.describe('Group A — Layout & Navigation', () => {
     }
   });
 
-  test('A3: title text element visible', async ({ page }) => {
+  test('A3: title bar removed (no per-tool title text)', async ({ page }) => {
     await openFresh(page);
+    // The top title bar was removed; the control panel now lives in the left
+    // tool menu. The per-tool <h2> title must no longer be rendered.
     await expect(
       page.locator('[data-cy="magnetic-synthesis-title-text"]')
-    ).toBeVisible({ timeout: 10000 });
+    ).toHaveCount(0);
   });
 
   test('A4: control panel area visible at Design Requirements step', async ({ page }) => {

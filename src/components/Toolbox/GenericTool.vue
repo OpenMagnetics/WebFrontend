@@ -1,7 +1,6 @@
 <script setup>
 import Storyline from './Storyline.vue'
 import ContextMenu from './ContextMenu.vue'
-import { toTitleCase } from 'WebSharedComponents/assets/js/utils.js'
 
 import ElementFromList from 'WebSharedComponents/DataInput/ElementFromList.vue'
 import DesignRequirements from './DesignRequirements.vue'
@@ -167,6 +166,12 @@ export default {
             }
 
             return true;
+        },
+        showOperatingPointSelector() {
+            return this.showControlPanelAndTitle
+                && this.operatingPointNames.length > 1
+                && (this.$stateStore.getCurrentToolState().subsection == 'magneticBuilder'
+                    || this.$stateStore.getCurrentToolState().subsection == 'magneticViewer');
         }
     },
     mounted() {
@@ -184,6 +189,11 @@ export default {
     >
         <div class="row">
             <div v-if="showStoryline" class=" text-center col-12 col-12 md:col-1 bg-transparent m-0 p-0" style="height: fit-content">
+                <!-- Constant top spacer so the Steps card sits at the same vertical
+                     position across every tool (matching the builder column padding),
+                     instead of jumping up in Design Requirements / Operating Points /
+                     Summary. -->
+                <div class="sidebar-top-spacer"></div>
                 <Storyline
                     :selectedTool="$stateStore.getCurrentToolState().subsection"
                     :storyline="currentStoryline"
@@ -197,15 +207,13 @@ export default {
                     @viewMagnetic="$emit('viewMagnetic')"
                     @toolSelected="toolSelected"
                 />
-            </div>
-            <div class="text-center col-12 col-12 md:col-11 bg-transparent px container" >
-                <div 
-                    v-if="showControlPanelAndTitle"
-                    class="mb-2 row px-3" >
-
+                <div v-if="showOperatingPointSelector" class="sidebar-op-selector">
+                    <div class="sidebar-op-selector-header">
+                        <i class="pi pi-bullseye"></i>
+                        <span>Operating point</span>
+                    </div>
                     <ElementFromList
-                        v-if="operatingPointNames.length > 1 && ($stateStore.getCurrentToolState().subsection == 'magneticBuilder' || $stateStore.getCurrentToolState().subsection == 'magneticViewer') "
-                        class="col-2 mb-1 text-left"
+                        class="text-left"
                         :dataTestLabel="dataTestLabel + '-OperatingPointSelector'"
                         :name="'operatingPoint'"
                         :replaceTitle="''"
@@ -222,32 +230,26 @@ export default {
                         :textColor="$styleStore.magneticBuilder.inputTextColor"
                         @update="operatingPointUpdated"
                     />
-                    <div v-else data-cy="magnetic-synthesis-previous-tool-button-placeholder" class=" col-12 md:col-2 mt-1"></div>
-                    <h2 
-                        :style="$styleStore.magneticBuilder.main"
-                        v-if="showTitle" data-cy="magnetic-synthesis-title-text" :class="showControlPanel? 'col-12 md:col-4 lg:col-4' : 'col-12 md:col-9'" class="" >
-                        {{toTitleCase($stateStore.getCurrentToolState().subsection)}}
-                    </h2>
-
-                    <div
-                        v-if="showControlPanel"
-                        data-cy="magnetic-synthesis-title-control-panel"
-                        :class="(showTitle || showReference)? 'col-12 md:col-6 lg:col-6 xl:col-6' : 'col-12 md:col-9'"
-                    >
-                        <ControlPanel
-                            :showExportButtons="$stateStore.getCurrentToolState().subsection == 'magneticBuilder' || 
-                                                $stateStore.getCurrentToolState().subsection == 'magneticViewer'"
-                            :showResetButton="$stateStore.getCurrentToolState().subsection == 'magneticBuilder'"
-                            :showAnsysButtons="showAnsysButtons"
-                            @toolSelected="toolSelected"
-                        />
-                    </div>
                 </div>
                 <div
-                    v-else
-                    class="mb-2 row px-3" >
+                    v-if="showControlPanel && showControlPanelAndTitle"
+                    data-cy="magnetic-synthesis-title-control-panel"
+                    class="sidebar-control-panel"
+                >
+                    <div class="scp-header">
+                        <i class="pi pi-sliders-h"></i>
+                        <span>Actions</span>
+                    </div>
+                    <ControlPanel
+                        :showExportButtons="$stateStore.getCurrentToolState().subsection == 'magneticBuilder' ||
+                                            $stateStore.getCurrentToolState().subsection == 'magneticViewer'"
+                        :showResetButton="$stateStore.getCurrentToolState().subsection == 'magneticBuilder'"
+                        :showAnsysButtons="showAnsysButtons"
+                        @toolSelected="toolSelected"
+                    />
                 </div>
-
+            </div>
+            <div class="text-center col-12 col-12 md:col-11 bg-transparent px container pt-0" >
                 <div class="row">
                     <ToolSelector
                         v-if="$stateStore.getCurrentToolState().subsection == 'toolSelector'"
@@ -332,5 +334,122 @@ export default {
 
 
 <style lang="css">
+
+/* Keeps the Steps card at a constant top position across all tools. */
+.sidebar-top-spacer {
+    height: 8px;
+}
+
+/* Operating-point selector relocated into the left sidebar (between the Tool
+   menu and Actions), styled as a card matching the other sidebar panels. */
+.sidebar-op-selector {
+    background: rgba(var(--p-dark-rgb), 0.55);
+    border: 1px solid rgba(var(--p-white-rgb), 0.08);
+    border-top: 3px solid rgba(var(--p-primary-rgb), 0.8);
+    border-radius: 14px;
+    margin: 0.15rem 0 0.5rem 0;
+    padding: 0 0.5rem 0.5rem 0.5rem;
+    overflow: hidden;
+    box-shadow: 0 6px 24px rgba(var(--p-dark-rgb), 0.45), inset 0 1px 0 rgba(var(--p-white-rgb), 0.04);
+}
+
+.sidebar-op-selector .sidebar-op-selector-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0 -0.5rem 0.5rem -0.5rem;
+    padding: 0.6rem 0.9rem;
+    background: rgba(var(--p-white-rgb), 0.04);
+    border-bottom: 1px solid rgba(var(--p-white-rgb), 0.08);
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--p-primary);
+    letter-spacing: 0.02em;
+}
+
+.sidebar-op-selector .sidebar-op-selector-header i {
+    font-size: 0.95rem;
+    filter: drop-shadow(0 0 4px rgba(var(--p-primary-rgb), 0.45));
+}
+
+/* Control panel relocated into the narrow left sidebar (below the tool menu).
+   Styled as a card matching .toolmenu-panel, with the buttons laid out in a
+   tidy centered grid so the export toolbar never overflows the column. */
+.sidebar-control-panel {
+    background: rgba(var(--p-dark-rgb), 0.55);
+    border: 1px solid rgba(var(--p-white-rgb), 0.08);
+    border-top: 3px solid rgba(var(--p-primary-rgb), 0.8);
+    border-radius: 14px;
+    margin: 0.15rem 0 0.5rem 0;
+    overflow: hidden;
+    box-shadow: 0 6px 24px rgba(var(--p-dark-rgb), 0.45), inset 0 1px 0 rgba(var(--p-white-rgb), 0.04);
+}
+
+.sidebar-control-panel .scp-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 0.9rem;
+    background: rgba(var(--p-white-rgb), 0.04);
+    border-bottom: 1px solid rgba(var(--p-white-rgb), 0.08);
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--p-primary);
+    letter-spacing: 0.02em;
+}
+
+.sidebar-control-panel .scp-header i {
+    font-size: 0.95rem;
+    filter: drop-shadow(0 0 4px rgba(var(--p-primary-rgb), 0.45));
+}
+
+/* Reset the shared cp-toolbar so its two halves flow into one wrapping grid. */
+.sidebar-control-panel .cp-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+    gap: 10px;
+    padding: 0.6rem 0.35rem;
+    border-radius: 0;
+}
+
+.sidebar-control-panel .cp-left,
+.sidebar-control-panel .cp-right {
+    display: flex;
+    flex-flow: row wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    width: 100%;
+}
+
+/* Let every button flow individually into the grid instead of being boxed
+   inside its (sometimes 2-button) group. */
+.sidebar-control-panel .cp-group {
+    display: contents;
+}
+
+.sidebar-control-panel .cp-btn {
+    width: 40px;
+    height: 40px;
+}
+
+.sidebar-control-panel .cp-btn img,
+.sidebar-control-panel .cp-btn .pi {
+    width: 22px;
+    height: 22px;
+    font-size: 1.1rem;
+}
+
+.sidebar-control-panel .cp-divider {
+    width: 100%;
+    height: 1px;
+    margin: 2px 0;
+}
+
+.sidebar-control-panel .cp-incomplete {
+    text-align: center;
+    width: 100%;
+}
 
 </style>

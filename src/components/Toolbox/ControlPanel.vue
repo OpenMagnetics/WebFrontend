@@ -334,6 +334,26 @@ export default {
                         </ul>
                     </div>
                 </div>
+
+                <!-- All Exports Dropdown (kept next to Reset) -->
+                <div v-if="showExportButtons && isMagneticComplete" class="cp-group">
+                    <div class="dropdown" @click.stop>
+                        <button
+                            :style="$styleStore.controlPanel.activeButton"
+                            class="cp-btn cp-btn-all dropdown-toggle"
+                            @click="toggleDropdown('allExports')"
+                            title="All Exports">
+                            <i class="pi pi-list"></i>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-dark" :class="{ show: openDropdown === 'allExports' }">
+                            <li><button :style="$styleStore.magneticBuilder.exportButton" :data-cy="'MAS-exports-modal-button'" class="dropdown-item" @click="closeDropdowns(); masExporterVisible = true"><i class="pi pi-file-code mr-2"></i>MAS Exports</button></li>
+                            <li><button :style="$styleStore.magneticBuilder.exportButton" :data-cy="'Core-exports-modal-button'" class="dropdown-item" @click="closeDropdowns(); coreExporterVisible = true"><i class="pi pi-box mr-2"></i>Core Exports</button></li>
+                            <li><button :style="$styleStore.magneticBuilder.exportButton" :data-cy="'Coil-exports-modal-button'" class="dropdown-item" @click="closeDropdowns(); coilExporterVisible = true"><i class="pi pi-link mr-2"></i>Coil Exports</button></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><button :style="$styleStore.magneticBuilder.exportButton" :data-cy="'Circuit-Simulators-exports-modal-button'" class="dropdown-item p-button p-button-danger" @click="closeDropdowns(); circuitExporterVisible = true"><i class="pi pi-volume-up mr-2"></i>Circuit Simulators</button></li>
+                        </ul>
+                    </div>
+                </div>
             </div>
 
             <!-- Right side: Export Buttons -->
@@ -449,25 +469,6 @@ export default {
                         </button>
                     </div>
 
-                    <!-- All Exports Dropdown -->
-                    <div class="cp-group">
-                        <div class="dropdown" @click.stop>
-                            <button
-                                :style="$styleStore.controlPanel.activeButton"
-                                class="cp-btn cp-btn-all dropdown-toggle"
-                                @click="toggleDropdown('allExports')"
-                                title="All Exports">
-                                <i class="pi pi-list"></i>
-                            </button>
-                            <ul class="dropdown-menu dropdown-menu-dark" :class="{ show: openDropdown === 'allExports' }">
-                                <li><button :style="$styleStore.magneticBuilder.exportButton" :data-cy="'MAS-exports-modal-button'" class="dropdown-item" @click="closeDropdowns(); masExporterVisible = true"><i class="pi pi-file-code mr-2"></i>MAS Exports</button></li>
-                                <li><button :style="$styleStore.magneticBuilder.exportButton" :data-cy="'Core-exports-modal-button'" class="dropdown-item" @click="closeDropdowns(); coreExporterVisible = true"><i class="pi pi-box mr-2"></i>Core Exports</button></li>
-                                <li><button :style="$styleStore.magneticBuilder.exportButton" :data-cy="'Coil-exports-modal-button'" class="dropdown-item" @click="closeDropdowns(); coilExporterVisible = true"><i class="pi pi-link mr-2"></i>Coil Exports</button></li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li><button :style="$styleStore.magneticBuilder.exportButton" :data-cy="'Circuit-Simulators-exports-modal-button'" class="dropdown-item p-button p-button-danger" @click="closeDropdowns(); circuitExporterVisible = true"><i class="pi pi-volume-up mr-2"></i>Circuit Simulators</button></li>
-                            </ul>
-                        </div>
-                    </div>
                 </template>
 
                 <!-- Incomplete State -->
