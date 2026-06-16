@@ -23,6 +23,19 @@ function loadHotjar() {
     })(window,document,'https://static.hotjar.com/c/hotjar-','.js?sv=');
 }
 
+// Self-hosted Umami (product analytics) served same-origin under /stats.
+// Lights up window.umami.track(), which telemetry.js already calls for every
+// design_report / design_export / builder_snapshot. data-domains restricts
+// recording to production so dev/beta never pollute the data.
+function loadUmami() {
+    const s = document.createElement('script');
+    s.defer = true;
+    s.src = '/stats/script.js';
+    s.setAttribute('data-website-id', 'd27f555e-a992-49a4-a104-b2ff8f26c16f');
+    s.setAttribute('data-domains', 'openmagnetics.com');
+    document.head.appendChild(s);
+}
+
 export default {
     data() {
         return { showBanner: false };
@@ -56,6 +69,7 @@ export default {
             if (window.location.hostname === 'localhost') return;
             loadGTM();
             loadHotjar();
+            loadUmami();
         },
     },
 };
