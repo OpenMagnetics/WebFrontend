@@ -837,10 +837,10 @@ export default {
     .om-header .submenu-panel.submenu-open {
         display: block;
     }
-    /* Open top-level wizard/tool dropdown on hover — no click required */
-    .om-header .nav-item.dropdown:hover > .dropdown-menu {
-        display: block;
-    }
+    /* Top-level wizard/tool dropdowns are click-driven (normal dropdown):
+       click the toggle to latch open, click an item or outside to close.
+       (No hover-to-open — that opened the menu without latching, so it
+       vanished the instant the cursor left the button.) */
     /* Mobile / collapsed-navbar: fall back to inline expansion (no flyout) */
     @media (max-width: 991.98px) {
         .om-header .submenu-panel {

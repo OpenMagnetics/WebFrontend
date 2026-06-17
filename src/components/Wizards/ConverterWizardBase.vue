@@ -1390,6 +1390,10 @@ export default {
 
 /* Form check */
 .form-check-label.small { font-size: 0.75rem; }
+/* Breathing room between the checkbox and its label, across all wizards.
+   Scoped to .wizard-container so it doesn't affect checkboxes elsewhere
+   (this style block is global). Wizard checkboxes are slotted inside it. */
+.wizard-container .form-check-label { padding-left: 0.4rem; }
 
 /* Responsive */
 @media (max-width: 1199px) {
