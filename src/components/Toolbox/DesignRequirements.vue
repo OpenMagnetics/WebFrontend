@@ -116,7 +116,7 @@ export default {
                 newElementsCoil.push(this.masStore.mas.magnetic.coil.functionalDescription[i]);
             }
             else {
-                newElementsCoil.push({'name': toTitleCase(isolationSideOrdered[i])});
+                newElementsCoil.push({'name': 'Winding ' + (i + 1)});
             }
         }
     },
@@ -168,7 +168,7 @@ export default {
                         newElementsCoil.push(this.masStore.mas.magnetic.coil.functionalDescription[i]);
                     }
                     else {
-                        newElementsCoil.push({'name': toTitleCase(isolationSideOrdered[i])});
+                        newElementsCoil.push({'name': 'Winding ' + (i + 1)});
                     }
                 }
                 for (var operationPointIndex = 0; operationPointIndex < this.masStore.mas.inputs.operatingPoints.length; operationPointIndex++) {
