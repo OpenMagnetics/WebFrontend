@@ -76,7 +76,9 @@ export default {
         },
     },
     mounted() {
-        if (this.masStore.mas.inputs.operatingPoints[0].excitationsPerWinding.length > 0) {
+        // Cross-referencer pages may have no operating point selected yet, so
+        // operatingPoints / operatingPoints[0] can be absent — guard before access.
+        if (this.masStore.mas.inputs.operatingPoints?.[0]?.excitationsPerWinding?.length > 0) {
             if (this.masStore.mas.inputs.operatingPoints[0].excitationsPerWinding[0].current.processed == null || Object.keys(this.masStore.mas.inputs.operatingPoints[0].excitationsPerWinding[0].current.processed).length === 0){
                 this.masStore.mas.inputs.operatingPoints[0].excitationsPerWinding[0].current.processed = deepCopy(defaultOperatingPointExcitation.current.processed)
             }

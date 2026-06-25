@@ -1,1 +1,3417 @@
-{"coil":{"bobbin":{"processedDescription":{"columnDepth":0.00675,"columnShape":"rectangular","columnThickness":0,"columnWidth":0.008174999999999998,"coordinates":[0,0,0],"wallThickness":0,"windingWindows":[{"angle":360,"area":0.0023157386307957424,"coordinates":[0.02715,0,0],"radialHeight":0.02715,"sectionsOrientation":"contiguous","shape":"round"}]}},"functionalDescription":[{"isolationSide":"primary","name":"Line","numberParallels":1,"numberTurns":38,"wire":{"coating":{"breakdownVoltage":9000,"material":"ETFE","numberLayers":3,"temperatureRating":155,"thicknessLayers":5.08e-05,"type":"insulated"},"conductingArea":{"nominal":1.4708308485576694e-06},"manufacturerInfo":{"name":"Rubadue"},"name":"Litz TXXL180/38TXXX-2(MWXX)","numberConductors":180,"outerDiameter":{"nominal":0.0021996399999999997},"standard":"NEMA MW 1000 C","strand":{"coating":{"breakdownVoltage":500,"grade":1,"type":"enamelled"},"conductingDiameter":{"maximum":0.000104,"minimum":9.900000000000001e-05,"nominal":0.000102},"manufacturerInfo":{"name":"Elektrisola"},"material":"copper","name":"Round 38.0 - Single Build","numberConductors":1,"outerDiameter":{"maximum":0.000118999999999,"minimum":0.000107,"nominal":0.00011300000000000001},"standard":"NEMA MW 1000 C","standardName":"38 AWG","type":"round"},"type":"litz"}},{"isolationSide":"secondary","name":"Neutral","numberParallels":1,"numberTurns":38,"wire":{"coating":{"breakdownVoltage":9000,"material":"ETFE","numberLayers":3,"temperatureRating":155,"thicknessLayers":5.08e-05,"type":"insulated"},"conductingArea":{"nominal":1.4708308485576694e-06},"manufacturerInfo":{"name":"Rubadue"},"name":"Litz TXXL180/38TXXX-2(MWXX)","numberConductors":180,"outerDiameter":{"nominal":0.0021996399999999997},"standard":"NEMA MW 1000 C","strand":{"coating":{"breakdownVoltage":500,"grade":1,"type":"enamelled"},"conductingDiameter":{"maximum":0.000104,"minimum":9.900000000000001e-05,"nominal":0.000102},"manufacturerInfo":{"name":"Elektrisola"},"material":"copper","name":"Round 38.0 - Single Build","numberConductors":1,"outerDiameter":{"maximum":0.000118999999999,"minimum":0.000107,"nominal":0.00011300000000000001},"standard":"NEMA MW 1000 C","standardName":"38 AWG","type":"round"},"type":"litz"}}],"groupsDescription":[{"coordinateSystem":"polar","coordinates":[0.02715,0],"dimensions":[0.02715,360],"name":"Default group","partialWindings":[{"parallelsProportion":[1],"winding":"Line"},{"parallelsProportion":[1],"winding":"Neutral"}],"sectionsOrientation":"contiguous","type":"Wound"}],"layersDescription":[{"coordinateSystem":"polar","coordinates":[0.001099820000000003,90],"dimensions":[0.002199640000000003,101.62765650347123],"fillingFactor":0.5644302772169552,"name":"Line section 0 layer 0","orientation":"overlapping","partialWindings":[{"parallelsProportion":[0.5526315789473685],"winding":"Line"}],"section":"Line section 0","turnsAlignment":"centered","type":"conduction","windingStyle":"windByConsecutiveTurns"},{"additionalCoordinates":[[-0.018549639999999996,90]],"coordinateSystem":"polar","coordinates":[0.00219964,90],"dimensions":[0,180],"fillingFactor":1,"name":"Line section 0 insulation layer 0","orientation":"overlapping","partialWindings":[],"section":"Line section 0","turnsAlignment":"spread","type":"insulation"},{"coordinateSystem":"polar","coordinates":[0.0032994600000000023,90],"dimensions":[0.002199640000000003,89.86260019212736],"fillingFactor":0.4569197482232494,"name":"Line section 0 layer 1","orientation":"overlapping","partialWindings":[{"parallelsProportion":[0.4473684210526316],"winding":"Line"}],"section":"Line section 0","turnsAlignment":"centered","type":"conduction","windingStyle":"windByConsecutiveTurns"},{"coordinateSystem":"polar","coordinates":[0.001099820000000003,270],"dimensions":[0.002199640000000003,101.62765650347123],"fillingFactor":0.5644302772169552,"name":"Neutral section 0 layer 0","orientation":"overlapping","partialWindings":[{"parallelsProportion":[0.5526315789473685],"winding":"Neutral"}],"section":"Neutral section 0","turnsAlignment":"centered","type":"conduction","windingStyle":"windByConsecutiveTurns"},{"additionalCoordinates":[[-0.018549639999999996,270]],"coordinateSystem":"polar","coordinates":[0.00219964,270],"dimensions":[0,180],"fillingFactor":1,"name":"Neutral section 0 insulation layer 0","orientation":"overlapping","partialWindings":[],"section":"Neutral section 0","turnsAlignment":"spread","type":"insulation"},{"coordinateSystem":"polar","coordinates":[0.0032994600000000023,270],"dimensions":[0.002199640000000003,89.86260019212736],"fillingFactor":0.4569197482232494,"name":"Neutral section 0 layer 1","orientation":"overlapping","partialWindings":[{"parallelsProportion":[0.4473684210526316],"winding":"Neutral"}],"section":"Neutral section 0","turnsAlignment":"centered","type":"conduction","windingStyle":"windByConsecutiveTurns"}],"sectionsDescription":[{"coordinateSystem":"polar","coordinates":[0.0021996400000000027,90],"dimensions":[0.004399280000000002,180],"fillingFactor":0.15879150650228727,"group":"Default group","layersOrientation":"overlapping","margin":[0,0],"name":"Line section 0","partialWindings":[{"parallelsProportion":[1],"winding":"Line"}],"type":"conduction","windingStyle":"windByConsecutiveTurns"},{"coordinateSystem":"polar","coordinates":[0.013575,180],"dimensions":[0.02715,0],"fillingFactor":1,"group":"Default group","layersOrientation":"overlapping","name":"Insulation between Line and Line section 1","partialWindings":[],"type":"insulation"},{"coordinateSystem":"polar","coordinates":[0.0021996400000000027,270],"dimensions":[0.004399280000000002,180],"fillingFactor":0.15879150650228727,"group":"Default group","layersOrientation":"overlapping","margin":[0,0],"name":"Neutral section 0","partialWindings":[{"parallelsProportion":[1],"winding":"Neutral"}],"type":"conduction","windingStyle":"windByConsecutiveTurns"},{"coordinateSystem":"polar","coordinates":[0.013575,360],"dimensions":[0.02715,0],"fillingFactor":1,"group":"Default group","layersOrientation":"overlapping","name":"Insulation between Neutral and Neutral section 3","partialWindings":[],"type":"insulation"}],"turnsDescription":[{"additionalCoordinates":[[0.03334862232717243,0.02961441089929051]],"coordinateSystem":"cartesian","coordinates":[0.019478500459752093,0.01729739569622657],"crossSectionalShape":"round","dimensions":[0.0021996399999999997,0.0021996399999999997],"layer":"Line section 0 layer 0","length":0.06661037286454224,"name":"Line parallel 0 turn 0","orientation":"clockwise","parallel":0,"rotation":41.605877855,"section":"Line section 0","winding":"Line"},{"additionalCoordinates":[[0.030731367660600615,0.03232223670696987]],"coordinateSystem":"cartesian","coordinates":[0.01794979574367845,0.018879001848419397],"crossSectionalShape":"round","dimensions":[0.0021996399999999997,0.0021996399999999997],"layer":"Line section 0 layer 0","length":0.06661037286454224,"name":"Line parallel 0 turn 1","orientation":"clockwise","parallel":0,"rotation":46.44529006945101,"section":"Line section 0","winding":"Line"},{"additionalCoordinates":[[0.027895002262567928,0.034799609089812056]],"coordinateSystem":"cartesian","coordinates":[0.016293111273550022,0.02032600312555612],"crossSectionalShape":"round","dimensions":[0.0021996399999999997,0.0021996399999999997],"layer":"Line section 0 layer 0","length":0.06661037286454224,"name":"Line parallel 0 turn 2","orientation":"clockwise","parallel":0,"rotation":51.28470228390202,"section":"Line section 0","winding":"Line"},{"additionalCoordinates":[[0.02485974905656795,0.037028864698730214]],"coordinateSystem":"cartesian","coordinates":[0.014520258998319392,0.021628082593103917],"crossSectionalShape":"round","dimensions":[0.0021996399999999997,0.0021996399999999997],"layer":"Line section 0 layer 0","length":0.06661037286454224,"name":"Line parallel 0 turn 3","orientation":"clockwise","parallel":0,"rotation":56.12411449835303,"section":"Line section 0","winding":"Line"},{"additionalCoordinates":[[0.021647249010795778,0.038994109225586895]],"coordinateSystem":"cartesian","coordinates":[0.01264387912857164,0.02277595659054676],"crossSectionalShape":"round","dimensions":[0.0021996399999999997,0.0021996399999999997],"layer":"Line section 0 layer 0","length":0.06661037286454224,"name":"Line parallel 0 turn 4","orientation":"clockwise","parallel":0,"rotation":60.96352671280404,"section":"Line section 0","winding":"Line"},{"additionalCoordinates":[[0.01828040684080531,0.040681330727583606]],"coordinateSystem":"cartesian","coordinates":[0.010677350013435248,0.023761440922700675],"crossSectionalShape":"round","dimensions":[0.0021996399999999997,0.0021996399999999997],"layer":"Line section 0 layer 0","length":0.06661037286454224,"name":"Line parallel 0 turn 5","orientation":"clockwise","parallel":0,"rotation":65.80293892725506,"section":"Line section 0","winding":"Line"},{"additionalCoordinates":[[0.014783227701808826,0.04207849953062576]],"coordinateSystem":"cartesian","coordinates":[0.008634692754659239,0.024577509211981492],"crossSectionalShape":"round","dimensions":[0.0021996399999999997,0.0021996399999999997],"layer":"Line section 0 layer 0","length":0.06661037286454224,"name":"Line parallel 0 turn 6","orientation":"clockwise","parallel":0,"rotation":70.64235114170607,"section":"Line section 0","winding":"Line"},{"additionalCoordinates":[[0.011180646034982495,0.04317565399936439]],"coordinateSystem":"cartesian","coordinates":[0.0065304712379462585,0.025218342995580748],"crossSectionalShape":"round","dimensions":[0.0021996399999999997,0.0021996399999999997],"layer":"Line section 0 layer 0","length":0.06661037286454224,"name":"Line parallel 0 turn 7","orientation":"clockwise","parallel":0,"rotation":75.48176335615709,"section":"Line section 0","winding":"Line"},{"additionalCoordinates":[[0.007498347788081177,0.04396497156238564]],"coordinateSystem":"cartesian","coordinates":[0.004379688294305146,0.02567937321036334],"crossSectionalShape":"round","dimensions":[0.0021996399999999997,0.0021996399999999997],"layer":"Line section 0 layer 0","length":0.06661037286454224,"name":"Line parallel 0 turn 8","orientation":"clockwise","parallel":0,"rotation":80.3211755706081,"section":"Line section 0","winding":"Line"},{"additionalCoordinates":[[0.003762587277907375,0.04444082448614708]],"coordinateSystem":"cartesian","coordinates":[0.0021976787317795708,0.025957312769704873],"crossSectionalShape":"round","dimensions":[0.0021996399999999997,0.0021996399999999997],"layer":"Line section 0 layer 0","length":0.06661037286454224,"name":"Line parallel 0 turn 9","orientation":"clockwise","parallel":0,"rotation":85.16058778505912,"section":"Line section 0","winding":"Line"},{"additionalCoordinates":[[3.8130369274723426e-13,0.04459982]],"coordinateSystem":"cartesian","coordinates":[2.2271457218280583e-13,0.02605018],"crossSectionalShape":"round","dimensions":[0.0021996399999999997,0.0021996399999999997],"layer":"Line section 0 layer 0","length":0.06661037286454224,"name":"Line parallel 0 turn 10","orientation":"clockwise","parallel":0,"rotation":89.99999999951014,"section":"Line section 0","winding":"Line"},{"additionalCoordinates":[[-0.003762587277147457,0.044440824486211415]],"coordinateSystem":"cartesian","coordinates":[-0.0021976787313357123,0.025957312769742454],"crossSectionalShape":"round","dimensions":[0.0021996399999999997,0.0021996399999999997],"layer":"Line section 0 layer 0","length":0.06661037286454224,"name":"Line parallel 0 turn 11","orientation":"clockwise","parallel":0,"rotation":94.83941221396115,"section":"Line section 0","winding":"Line"},{"additionalCoordinates":[[-0.007498347787329396,0.04396497156251385]],"coordinateSystem":"cartesian","coordinates":[-0.00437968829386604,0.02567937321043823],"crossSectionalShape":"round","dimensions":[0.0021996399999999997,0.0021996399999999997],"layer":"Line section 0 layer 0","length":0.06661037286454224,"name":"Line parallel 0 turn 12","orientation":"clockwise","parallel":0,"rotation":99.67882442841217,"section":"Line section 0","winding":"Line"},{"additionalCoordinates":[[-0.01118064603424423,0.04317565399955557]],"coordinateSystem":"cartesian","coordinates":[-0.006530471237515047,0.025218342995692415],"crossSectionalShape":"round","dimensions":[0.0021996399999999997,0.0021996399999999997],"layer":"Line section 0 layer 0","length":0.06661037286454224,"name":"Line parallel 0 turn 13","orientation":"clockwise","parallel":0,"rotation":104.51823664286319,"section":"Line section 0","winding":"Line"},{"additionalCoordinates":[[-0.014783227701089302,0.04207849953087854]],"coordinateSystem":"cartesian","coordinates":[-0.008634692754238974,0.024577509212129145],"crossSectionalShape":"round","dimensions":[0.0021996399999999997,0.0021996399999999997],"layer":"Line section 0 layer 0","length":0.06661037286454224,"name":"Line parallel 0 turn 14","orientation":"clockwise","parallel":0,"rotation":109.3576488573142,"section":"Line section 0","winding":"Line"},{"additionalCoordinates":[[-0.018280406840109658,0.0406813307278962]],"coordinateSystem":"cartesian","coordinates":[-0.010677350013028927,0.023761440922883254],"crossSectionalShape":"round","dimensions":[0.0021996399999999997,0.0021996399999999997],"layer":"Line section 0 layer 0","length":0.06661037286454227,"name":"Line parallel 0 turn 15","orientation":"clockwise","parallel":0,"rotation":114.19706107176522,"section":"Line section 0","winding":"Line"},{"additionalCoordinates":[[-0.021647249010128995,0.03899410922595705]],"coordinateSystem":"cartesian","coordinates":[-0.01264387912818218,0.022775956590762966],"crossSectionalShape":"round","dimensions":[0.0021996399999999997,0.0021996399999999997],"layer":"Line section 0 layer 0","length":0.06661037286454224,"name":"Line parallel 0 turn 16","orientation":"clockwise","parallel":0,"rotation":119.03647328621624,"section":"Line section 0","winding":"Line"},{"additionalCoordinates":[[-0.024859749055934778,0.0370288646991553]],"coordinateSystem":"cartesian","coordinates":[-0.014520258997949566,0.0216280825933522],"crossSectionalShape":"round","dimensions":[0.0021996399999999997,0.0021996399999999997],"layer":"Line section 0 layer 0","length":0.06661037286454227,"name":"Line parallel 0 turn 17","orientation":"clockwise","parallel":0,"rotation":123.87588550066725,"section":"Line section 0","winding":"Line"},{"additionalCoordinates":[[-0.027895002261972866,0.034799609090289056]],"coordinateSystem":"cartesian","coordinates":[-0.016293111273202456,0.020326003125834727],"crossSectionalShape":"round","dimensions":[0.0021996399999999997,0.0021996399999999997],"layer":"Line section 0 layer 0","length":0.06661037286454224,"name":"Line parallel 0 turn 18","orientation":"clockwise","parallel":0,"rotation":128.71529771511825,"section":"Line section 0","winding":"Line"},{"additionalCoordinates":[[-0.030731367660047925,0.03232223670749536]],"coordinateSystem":"cartesian","coordinates":[-0.01794979574335563,0.018879001848726328],"crossSectionalShape":"round","dimensions":[0.0021996399999999997,0.0021996399999999997],"layer":"Line section 0 layer 0","length":0.06661037286454224,"name":"Line parallel 0 turn 19","orientation":"clockwise","parallel":0,"rotation":133.55470992956927,"section":"Line section 0","winding":"Line"},{"additionalCoordinates":[[-0.033348622326666036,0.029614410899860756]],"coordinateSystem":"cartesian","coordinates":[-0.019478500459456316,0.017297395696559643],"crossSectionalShape":"round","dimensions":[0.0021996399999999997,0.0021996399999999997],"layer":"Line section 0 layer 0","length":0.06661037286454224,"name":"Line parallel 0 turn 20","orientation":"clockwise","parallel":0,"rotation":138.3941221440203,"section":"Line section 0","winding":"Line"},{"additionalCoordinates":[[0.03061695803866215,0.03453844815196772]],"coordinateSystem":"cartesian","coordinates":[0.01604810385988387,0.017643883381896982],"crossSectionalShape":"round","dimensions":[0.0021996399999999997,0.0021996399999999997],"layer":"Line section 0 layer 1","length":0.08043111859362675,"name":"Line parallel 0 turn 21","orientation":"clockwise","parallel":0,"rotation":47.711717557,"section":"Line section 0","winding":"Line"},{"additionalCoordinates":[[0.027594033628269468,0.03699826791093463]],"coordinateSystem":"cartesian","coordinates":[0.01435436032846224,0.019047325215165237],"crossSectionalShape":"round","dimensions":[0.0021996399999999997,0.0021996399999999997],"layer":"Line section 0 layer 1","length":0.08043111859362675,"name":"Line parallel 0 turn 22","orientation":"clockwise","parallel":0,"rotation":52.997752862419254,"section":"Line section 0","winding":"Line"},{"additionalCoordinates":[[0.0243743672778818,0.03919429473903423]],"coordinateSystem":"cartesian","coordinates":[0.012538523835462587,0.02028875743654935],"crossSectionalShape":"round","dimensions":[0.0021996399999999997,0.0021996399999999997],"layer":"Line section 0 layer 1","length":0.08043111859362675,"name":"Line parallel 0 turn 23","orientation":"clockwise","parallel":0,"rotation":58.28378816783851,"section":"Line section 0","winding":"Line"},{"additionalCoordinates":[[0.02098091479789079,0.041110871245097796]],"coordinateSystem":"cartesian","coordinates":[0.010616039224827702,0.02135762087566215],"crossSectionalShape":"round","dimensions":[0.0021996399999999997,0.0021996399999999997],"layer":"Line section 0 layer 1","length":0.08043111859362675,"name":"Line parallel 0 turn 24","orientation":"clockwise","parallel":0,"rotation":63.56982347325776,"section":"Line section 0","winding":"Line"},{"additionalCoordinates":[[0.017437871071624804,0.042734332483107214]],"coordinateSystem":"cartesian","coordinates":[0.008603258450551335,0.022244824169334695],"crossSectionalShape":"round","dimensions":[0.0021996399999999997,0.0021996399999999997],"layer":"Line section 0 layer 1","length":0.08043111859362675,"name":"Line parallel 0 turn 25","orientation":"clockwise","parallel":0,"rotation":68.85585877867702,"section":"Line section 0","winding":"Line"},{"additionalCoordinates":[[0.013770497548916879,0.04405310338151713]],"coordinateSystem":"cartesian","coordinates":[0.006517301492912317,0.022942821089440655],"crossSectionalShape":"round","dimensions":[0.0021996399999999997,0.0021996399999999997],"layer":"Line section 0 layer 1","length":0.08043111859362675,"name":"Line parallel 0 turn 26","orientation":"clockwise","parallel":0,"rotation":74.14189408409628,"section":"Line section 0","winding":"Line"},{"additionalCoordinates":[[0.010004942135189784,0.04505778127203852]],"coordinateSystem":"cartesian","coordinates":[0.004375910742156888,0.023445674728364632],"crossSectionalShape":"round","dimensions":[0.0021996399999999997,0.0021996399999999997],"layer":"Line section 0 layer 1","length":0.08043111859362675,"name":"Line parallel 0 turn 27","orientation":"clockwise","parallel":0,"rotation":79.42792938951554,"section":"Line section 0","winding":"Line"},{"additionalCoordinates":[[0.00616805276022557,0.04574120292946431]],"coordinateSystem":"cartesian","coordinates":[0.0021973000881883747,0.023749107996176348],"crossSectionalShape":"round","dimensions":[0.0021996399999999997,0.0021996399999999997],"layer":"Line section 0 layer 1","length":0.08043111859362675,"name":"Line parallel 0 turn 28","orientation":"clockwise","parallel":0,"rotation":84.7139646949348,"section":"Line section 0","winding":"Line"},{"additionalCoordinates":[[-0.0016099881926456353,0.04612711196581575]],"coordinateSystem":"cartesian","coordinates":[-1.4738298382462566e-13,0.02385054],"crossSectionalShape":"round","dimensions":[0.0021996399999999997,0.0021996399999999997],"layer":"Line section 0 layer 1","length":0.08043111859362675,"name":"Line parallel 0 turn 29","orientation":"clockwise","parallel":0,"rotation":90.00000000035406,"section":"Line section 0","winding":"Line"},{"additionalCoordinates":[[-0.005495683330691622,0.04582684786253708]],"coordinateSystem":"cartesian","coordinates":[-0.002197300088481876,0.02374910799614919],"crossSectionalShape":"round","dimensions":[0.0021996399999999997,0.0021996399999999997],"layer":"Line section 0 layer 1","length":0.08043111859362677,"name":"Line parallel 0 turn 30","orientation":"clockwise","parallel":0,"rotation":95.28603530577332,"section":"Line section 0","winding":"Line"},{"additionalCoordinates":[[-0.00934219494759516,0.04519984417947134]],"coordinateSystem":"cartesian","coordinates":[-0.00437591074244666,0.02344567472831055],"crossSectionalShape":"round","dimensions":[0.0021996399999999997,0.0021996399999999997],"layer":"Line section 0 layer 1","length":0.08043111859362675,"name":"Line parallel 0 turn 31","orientation":"clockwise","parallel":0,"rotation":100.57207061119259,"section":"Line section 0","winding":"Line"},{"additionalCoordinates":[[-0.013122097906172022,0.0442505713729009]],"coordinateSystem":"cartesian","coordinates":[-0.00651730149319588,0.022942821089360105],"crossSectionalShape":"round","dimensions":[0.0021996399999999997,0.0021996399999999997],"layer":"Line section 0 layer 1","length":0.08043111859362675,"name":"Line parallel 0 turn 32","orientation":"clockwise","parallel":0,"rotation":105.85810591661185,"section":"Line section 0","winding":"Line"},{"additionalCoordinates":[[-0.016808441980475396,0.042985797636851564]],"coordinateSystem":"cartesian","coordinates":[-0.00860325845082626,0.022244824169228367],"crossSectionalShape":"round","dimensions":[0.0021996399999999997,0.0021996399999999997],"layer":"Line section 0 layer 1","length":0.08043111859362675,"name":"Line parallel 0 turn 33","orientation":"clockwise","parallel":0,"rotation":111.14414122203111,"section":"Line section 0","winding":"Line"},{"additionalCoordinates":[[-0.02037494400746953,0.04141454064673231]],"coordinateSystem":"cartesian","coordinates":[-0.010616039225091658,0.021357620875530947],"crossSectionalShape":"round","dimensions":[0.0021996399999999997,0.0021996399999999997],"layer":"Line section 0 layer 1","length":0.08043111859362675,"name":"Line parallel 0 turn 34","orientation":"clockwise","parallel":0,"rotation":116.43017652745037,"section":"Line section 0","winding":"Line"},{"additionalCoordinates":[[-0.023796175282629405,0.039548003264459994]],"coordinateSystem":"cartesian","coordinates":[-0.012538523835713335,0.02028875743639438],"crossSectionalShape":"round","dimensions":[0.0021996399999999997,0.0021996399999999997],"layer":"Line section 0 layer 1","length":0.08043111859362677,"name":"Line parallel 0 turn 35","orientation":"clockwise","parallel":0,"rotation":121.71621183286963,"section":"Line section 0","winding":"Line"},{"additionalCoordinates":[[-0.027047742863360414,0.03739949366348289]],"coordinateSystem":"cartesian","coordinates":[-0.014354360328697658,0.01904732521498782],"crossSectionalShape":"round","dimensions":[0.0021996399999999997,0.0021996399999999997],"layer":"Line section 0 layer 1","length":0.08043111859362675,"name":"Line parallel 0 turn 36","orientation":"clockwise","parallel":0,"rotation":127.0022471382889,"section":"Line section 0","winding":"Line"},{"additionalCoordinates":[[-0.030106463487567767,0.03498433044320143]],"coordinateSystem":"cartesian","coordinates":[-0.01604810386010194,0.017643883381698637],"crossSectionalShape":"round","dimensions":[0.0021996399999999997,0.0021996399999999997],"layer":"Line section 0 layer 1","length":0.08043111859362675,"name":"Line parallel 0 turn 37","orientation":"clockwise","parallel":0,"rotation":132.28828244370814,"section":"Line section 0","winding":"Line"},{"additionalCoordinates":[[-0.033348622327172436,-0.029614410899290497]],"coordinateSystem":"cartesian","coordinates":[-0.0194785004597521,-0.017297395696226563],"crossSectionalShape":"round","dimensions":[0.0021996399999999997,0.0021996399999999997],"layer":"Neutral section 0 layer 0","length":0.06661037286454224,"name":"Neutral parallel 0 turn 0","orientation":"clockwise","parallel":0,"rotation":221.605877855,"section":"Neutral section 0","winding":"Neutral"},{"additionalCoordinates":[[-0.03073136766060066,-0.03232223670696983]],"coordinateSystem":"cartesian","coordinates":[-0.017949795743678474,-0.018879001848419372],"crossSectionalShape":"round","dimensions":[0.0021996399999999997,0.0021996399999999997],"layer":"Neutral section 0 layer 0","length":0.06661037286454224,"name":"Neutral parallel 0 turn 1","orientation":"clockwise","parallel":0,"rotation":226.445290069451,"section":"Neutral section 0","winding":"Neutral"},{"additionalCoordinates":[[-0.027895002262567924,-0.03479960908981206]],"coordinateSystem":"cartesian","coordinates":[-0.01629311127355002,-0.020326003125556123],"crossSectionalShape":"round","dimensions":[0.0021996399999999997,0.0021996399999999997],"layer":"Neutral section 0 layer 0","length":0.06661037286454224,"name":"Neutral parallel 0 turn 2","orientation":"clockwise","parallel":0,"rotation":231.28470228390202,"section":"Neutral section 0","winding":"Neutral"},{"additionalCoordinates":[[-0.024859749056567924,-0.037028864698730235]],"coordinateSystem":"cartesian","coordinates":[-0.014520258998319378,-0.021628082593103927],"crossSectionalShape":"round","dimensions":[0.0021996399999999997,0.0021996399999999997],"layer":"Neutral section 0 layer 0","length":0.06661037286454224,"name":"Neutral parallel 0 turn 3","orientation":"clockwise","parallel":0,"rotation":236.12411449835304,"section":"Neutral section 0","winding":"Neutral"},{"additionalCoordinates":[[-0.021647249010795774,-0.038994109225586895]],"coordinateSystem":"cartesian","coordinates":[-0.012643879128571638,-0.022775956590546764],"crossSectionalShape":"round","dimensions":[0.0021996399999999997,0.0021996399999999997],"layer":"Neutral section 0 layer 0","length":0.06661037286454224,"name":"Neutral parallel 0 turn 4","orientation":"clockwise","parallel":0,"rotation":240.96352671280405,"section":"Neutral section 0","winding":"Neutral"},{"additionalCoordinates":[[-0.018280406840805313,-0.040681330727583606]],"coordinateSystem":"cartesian","coordinates":[-0.01067735001343525,-0.023761440922700668],"crossSectionalShape":"round","dimensions":[0.0021996399999999997,0.0021996399999999997],"layer":"Neutral section 0 layer 0","length":0.06661037286454227,"name":"Neutral parallel 0 turn 5","orientation":"clockwise","parallel":0,"rotation":245.80293892725507,"section":"Neutral section 0","winding":"Neutral"},{"additionalCoordinates":[[-0.014783227701808831,-0.04207849953062576]],"coordinateSystem":"cartesian","coordinates":[-0.008634692754659242,-0.024577509211981492],"crossSectionalShape":"round","dimensions":[0.0021996399999999997,0.0021996399999999997],"layer":"Neutral section 0 layer 0","length":0.06661037286454224,"name":"Neutral parallel 0 turn 6","orientation":"clockwise","parallel":0,"rotation":250.6423511417061,"section":"Neutral section 0","winding":"Neutral"},{"additionalCoordinates":[[-0.011180646034982493,-0.04317565399936439]],"coordinateSystem":"cartesian","coordinates":[-0.006530471237946257,-0.025218342995580748],"crossSectionalShape":"round","dimensions":[0.0021996399999999997,0.0021996399999999997],"layer":"Neutral section 0 layer 0","length":0.06661037286454224,"name":"Neutral parallel 0 turn 7","orientation":"clockwise","parallel":0,"rotation":255.4817633561571,"section":"Neutral section 0","winding":"Neutral"},{"additionalCoordinates":[[-0.007498347788081241,-0.04396497156238563]],"coordinateSystem":"cartesian","coordinates":[-0.004379688294305182,-0.025679373210363336],"crossSectionalShape":"round","dimensions":[0.0021996399999999997,0.0021996399999999997],"layer":"Neutral section 0 layer 0","length":0.06661037286454224,"name":"Neutral parallel 0 turn 8","orientation":"clockwise","parallel":0,"rotation":260.3211755706081,"section":"Neutral section 0","winding":"Neutral"},{"additionalCoordinates":[[-0.00376258727790739,-0.04444082448614708]],"coordinateSystem":"cartesian","coordinates":[-0.00219767873177958,-0.025957312769704873],"crossSectionalShape":"round","dimensions":[0.0021996399999999997,0.0021996399999999997],"layer":"Neutral section 0 layer 0","length":0.06661037286454224,"name":"Neutral parallel 0 turn 9","orientation":"clockwise","parallel":0,"rotation":265.1605877850591,"section":"Neutral section 0","winding":"Neutral"},{"additionalCoordinates":[[-3.81358670396973e-13,-0.04459982]],"coordinateSystem":"cartesian","coordinates":[-2.227466839193929e-13,-0.02605018],"crossSectionalShape":"round","dimensions":[0.0021996399999999997,0.0021996399999999997],"layer":"Neutral section 0 layer 0","length":0.06661037286454224,"name":"Neutral parallel 0 turn 10","orientation":"clockwise","parallel":0,"rotation":269.99999999951007,"section":"Neutral section 0","winding":"Neutral"},{"additionalCoordinates":[[0.003762587277147392,-0.04444082448621142]],"coordinateSystem":"cartesian","coordinates":[0.0021976787313356745,-0.025957312769742457],"crossSectionalShape":"round","dimensions":[0.0021996399999999997,0.0021996399999999997],"layer":"Neutral section 0 layer 0","length":0.06661037286454224,"name":"Neutral parallel 0 turn 11","orientation":"clockwise","parallel":0,"rotation":274.83941221396105,"section":"Neutral section 0","winding":"Neutral"},{"additionalCoordinates":[[0.007498347787329301,-0.043964971562513874]],"coordinateSystem":"cartesian","coordinates":[0.004379688293865985,-0.02567937321043824],"crossSectionalShape":"round","dimensions":[0.0021996399999999997,0.0021996399999999997],"layer":"Neutral section 0 layer 0","length":0.06661037286454224,"name":"Neutral parallel 0 turn 12","orientation":"clockwise","parallel":0,"rotation":279.67882442841204,"section":"Neutral section 0","winding":"Neutral"},{"additionalCoordinates":[[0.011180646034244091,-0.043175653999555606]],"coordinateSystem":"cartesian","coordinates":[0.006530471237514966,-0.025218342995692436],"crossSectionalShape":"round","dimensions":[0.0021996399999999997,0.0021996399999999997],"layer":"Neutral section 0 layer 0","length":0.06661037286454224,"name":"Neutral parallel 0 turn 13","orientation":"clockwise","parallel":0,"rotation":284.51823664286303,"section":"Neutral section 0","winding":"Neutral"},{"additionalCoordinates":[[0.014783227701089119,-0.04207849953087861]],"coordinateSystem":"cartesian","coordinates":[0.008634692754238869,-0.02457750921212918],"crossSectionalShape":"round","dimensions":[0.0021996399999999997,0.0021996399999999997],"layer":"Neutral section 0 layer 0","length":0.06661037286454224,"name":"Neutral parallel 0 turn 14","orientation":"clockwise","parallel":0,"rotation":289.357648857314,"section":"Neutral section 0","winding":"Neutral"},{"additionalCoordinates":[[0.018280406840109502,-0.04068133072789628]],"coordinateSystem":"cartesian","coordinates":[0.010677350013028835,-0.0237614409228833],"crossSectionalShape":"round","dimensions":[0.0021996399999999997,0.0021996399999999997],"layer":"Neutral section 0 layer 0","length":0.06661037286454224,"name":"Neutral parallel 0 turn 15","orientation":"clockwise","parallel":0,"rotation":294.197061071765,"section":"Neutral section 0","winding":"Neutral"},{"additionalCoordinates":[[0.02164724901012882,-0.038994109225957155]],"coordinateSystem":"cartesian","coordinates":[0.012643879128182076,-0.022775956590763022],"crossSectionalShape":"round","dimensions":[0.0021996399999999997,0.0021996399999999997],"layer":"Neutral section 0 layer 0","length":0.06661037286454224,"name":"Neutral parallel 0 turn 16","orientation":"clockwise","parallel":0,"rotation":299.036473286216,"section":"Neutral section 0","winding":"Neutral"},{"additionalCoordinates":[[0.02485974905593451,-0.037028864699155485]],"coordinateSystem":"cartesian","coordinates":[0.014520258997949412,-0.021628082593352308],"crossSectionalShape":"round","dimensions":[0.0021996399999999997,0.0021996399999999997],"layer":"Neutral section 0 layer 0","length":0.06661037286454224,"name":"Neutral parallel 0 turn 17","orientation":"clockwise","parallel":0,"rotation":303.875885500667,"section":"Neutral section 0","winding":"Neutral"},{"additionalCoordinates":[[0.02789500226197265,-0.03479960909028923]],"coordinateSystem":"cartesian","coordinates":[0.016293111273202328,-0.020326003125834827],"crossSectionalShape":"round","dimensions":[0.0021996399999999997,0.0021996399999999997],"layer":"Neutral section 0 layer 0","length":0.06661037286454224,"name":"Neutral parallel 0 turn 18","orientation":"clockwise","parallel":0,"rotation":308.71529771511797,"section":"Neutral section 0","winding":"Neutral"},{"additionalCoordinates":[[0.030731367660047755,-0.032322236707495525]],"coordinateSystem":"cartesian","coordinates":[0.017949795743355527,-0.018879001848726425],"crossSectionalShape":"round","dimensions":[0.0021996399999999997,0.0021996399999999997],"layer":"Neutral section 0 layer 0","length":0.06661037286454224,"name":"Neutral parallel 0 turn 19","orientation":"clockwise","parallel":0,"rotation":313.55470992956896,"section":"Neutral section 0","winding":"Neutral"},{"additionalCoordinates":[[0.03334862232666586,-0.029614410899860954]],"coordinateSystem":"cartesian","coordinates":[0.019478500459456215,-0.017297395696559758],"crossSectionalShape":"round","dimensions":[0.0021996399999999997,0.0021996399999999997],"layer":"Neutral section 0 layer 0","length":0.06661037286454224,"name":"Neutral parallel 0 turn 20","orientation":"clockwise","parallel":0,"rotation":318.39412214401995,"section":"Neutral section 0","winding":"Neutral"},{"additionalCoordinates":[[-0.03061695803866219,-0.03453844815196769]],"coordinateSystem":"cartesian","coordinates":[-0.016048103859883887,-0.017643883381896965],"crossSectionalShape":"round","dimensions":[0.0021996399999999997,0.0021996399999999997],"layer":"Neutral section 0 layer 1","length":0.08043111859362675,"name":"Neutral parallel 0 turn 21","orientation":"clockwise","parallel":0,"rotation":227.711717557,"section":"Neutral section 0","winding":"Neutral"},{"additionalCoordinates":[[-0.027594033628269468,-0.03699826791093463]],"coordinateSystem":"cartesian","coordinates":[-0.014354360328462249,-0.01904732521516523],"crossSectionalShape":"round","dimensions":[0.0021996399999999997,0.0021996399999999997],"layer":"Neutral section 0 layer 1","length":0.08043111859362675,"name":"Neutral parallel 0 turn 22","orientation":"clockwise","parallel":0,"rotation":232.99775286241925,"section":"Neutral section 0","winding":"Neutral"},{"additionalCoordinates":[[-0.024374367277881778,-0.03919429473903424]],"coordinateSystem":"cartesian","coordinates":[-0.012538523835462577,-0.020288757436549357],"crossSectionalShape":"round","dimensions":[0.0021996399999999997,0.0021996399999999997],"layer":"Neutral section 0 layer 1","length":0.08043111859362675,"name":"Neutral parallel 0 turn 23","orientation":"clockwise","parallel":0,"rotation":238.2837881678385,"section":"Neutral section 0","winding":"Neutral"},{"additionalCoordinates":[[-0.020980914797890795,-0.04111087124509779]],"coordinateSystem":"cartesian","coordinates":[-0.010616039224827692,-0.02135762087566215],"crossSectionalShape":"round","dimensions":[0.0021996399999999997,0.0021996399999999997],"layer":"Neutral section 0 layer 1","length":0.08043111859362677,"name":"Neutral parallel 0 turn 24","orientation":"clockwise","parallel":0,"rotation":243.56982347325777,"section":"Neutral section 0","winding":"Neutral"},{"additionalCoordinates":[[-0.01743787107162486,-0.042734332483107186]],"coordinateSystem":"cartesian","coordinates":[-0.008603258450551326,-0.0222448241693347],"crossSectionalShape":"round","dimensions":[0.0021996399999999997,0.0021996399999999997],"layer":"Neutral section 0 layer 1","length":0.08043111859362675,"name":"Neutral parallel 0 turn 25","orientation":"clockwise","parallel":0,"rotation":248.85585877867703,"section":"Neutral section 0","winding":"Neutral"},{"additionalCoordinates":[[-0.013770497548916894,-0.04405310338151712]],"coordinateSystem":"cartesian","coordinates":[-0.00651730149291232,-0.022942821089440655],"crossSectionalShape":"round","dimensions":[0.0021996399999999997,0.0021996399999999997],"layer":"Neutral section 0 layer 1","length":0.08043111859362675,"name":"Neutral parallel 0 turn 26","orientation":"clockwise","parallel":0,"rotation":254.1418940840963,"section":"Neutral section 0","winding":"Neutral"},{"additionalCoordinates":[[-0.01000494213518975,-0.04505778127203853]],"coordinateSystem":"cartesian","coordinates":[-0.004375910742156911,-0.02344567472836463],"crossSectionalShape":"round","dimensions":[0.0021996399999999997,0.0021996399999999997],"layer":"Neutral section 0 layer 1","length":0.08043111859362675,"name":"Neutral parallel 0 turn 27","orientation":"clockwise","parallel":0,"rotation":259.42792938951555,"section":"Neutral section 0","winding":"Neutral"},{"additionalCoordinates":[[-0.006168052760225596,-0.04574120292946431]],"coordinateSystem":"cartesian","coordinates":[-0.0021973000881883617,-0.023749107996176348],"crossSectionalShape":"round","dimensions":[0.0021996399999999997,0.0021996399999999997],"layer":"Neutral section 0 layer 1","length":0.08043111859362675,"name":"Neutral parallel 0 turn 28","orientation":"clockwise","parallel":0,"rotation":264.7139646949348,"section":"Neutral section 0","winding":"Neutral"},{"additionalCoordinates":[[0.0016099881926455888,-0.04612711196581576]],"coordinateSystem":"cartesian","coordinates":[1.4739065474334185e-13,-0.02385054],"crossSectionalShape":"round","dimensions":[0.0021996399999999997,0.0021996399999999997],"layer":"Neutral section 0 layer 1","length":0.08043111859362675,"name":"Neutral parallel 0 turn 29","orientation":"clockwise","parallel":0,"rotation":270.0000000003541,"section":"Neutral section 0","winding":"Neutral"},{"additionalCoordinates":[[0.005495683330691545,-0.045826847862537094]],"coordinateSystem":"cartesian","coordinates":[0.002197300088481889,-0.023749107996149186],"crossSectionalShape":"round","dimensions":[0.0021996399999999997,0.0021996399999999997],"layer":"Neutral section 0 layer 1","length":0.08043111859362677,"name":"Neutral parallel 0 turn 30","orientation":"clockwise","parallel":0,"rotation":275.28603530577334,"section":"Neutral section 0","winding":"Neutral"},{"additionalCoordinates":[[0.009342194947595065,-0.04519984417947135]],"coordinateSystem":"cartesian","coordinates":[0.004375910742446626,-0.023445674728310554],"crossSectionalShape":"round","dimensions":[0.0021996399999999997,0.0021996399999999997],"layer":"Neutral section 0 layer 1","length":0.08043111859362675,"name":"Neutral parallel 0 turn 31","orientation":"clockwise","parallel":0,"rotation":280.5720706111926,"section":"Neutral section 0","winding":"Neutral"},{"additionalCoordinates":[[0.013122097906171868,-0.04425057137290095]],"coordinateSystem":"cartesian","coordinates":[0.006517301493195861,-0.02294282108936011],"crossSectionalShape":"round","dimensions":[0.0021996399999999997,0.0021996399999999997],"layer":"Neutral section 0 layer 1","length":0.08043111859362675,"name":"Neutral parallel 0 turn 32","orientation":"clockwise","parallel":0,"rotation":285.85810591661186,"section":"Neutral section 0","winding":"Neutral"},{"additionalCoordinates":[[0.016808441980475198,-0.04298579763685164]],"coordinateSystem":"cartesian","coordinates":[0.008603258450826263,-0.022244824169228367],"crossSectionalShape":"round","dimensions":[0.0021996399999999997,0.0021996399999999997],"layer":"Neutral section 0 layer 1","length":0.08043111859362675,"name":"Neutral parallel 0 turn 33","orientation":"clockwise","parallel":0,"rotation":291.1441412220311,"section":"Neutral section 0","winding":"Neutral"},{"additionalCoordinates":[[0.020374944007469396,-0.041414540646732376]],"coordinateSystem":"cartesian","coordinates":[0.010616039225091665,-0.021357620875530944],"crossSectionalShape":"round","dimensions":[0.0021996399999999997,0.0021996399999999997],"layer":"Neutral section 0 layer 1","length":0.08043111859362675,"name":"Neutral parallel 0 turn 34","orientation":"clockwise","parallel":0,"rotation":296.4301765274504,"section":"Neutral section 0","winding":"Neutral"},{"additionalCoordinates":[[0.023796175282629204,-0.03954800326446011]],"coordinateSystem":"cartesian","coordinates":[0.012538523835713319,-0.020288757436394397],"crossSectionalShape":"round","dimensions":[0.0021996399999999997,0.0021996399999999997],"layer":"Neutral section 0 layer 1","length":0.08043111859362675,"name":"Neutral parallel 0 turn 35","orientation":"clockwise","parallel":0,"rotation":301.71621183286965,"section":"Neutral section 0","winding":"Neutral"},{"additionalCoordinates":[[0.027047742863360195,-0.03739949366348305]],"coordinateSystem":"cartesian","coordinates":[0.014354360328697663,-0.019047325214987816],"crossSectionalShape":"round","dimensions":[0.0021996399999999997,0.0021996399999999997],"layer":"Neutral section 0 layer 1","length":0.08043111859362675,"name":"Neutral parallel 0 turn 36","orientation":"clockwise","parallel":0,"rotation":307.0022471382889,"section":"Neutral section 0","winding":"Neutral"},{"additionalCoordinates":[[0.03010646348756756,-0.0349843304432016]],"coordinateSystem":"cartesian","coordinates":[0.01604810386010195,-0.017643883381698627],"crossSectionalShape":"round","dimensions":[0.0021996399999999997,0.0021996399999999997],"layer":"Neutral section 0 layer 1","length":0.08043111859362675,"name":"Neutral parallel 0 turn 37","orientation":"clockwise","parallel":0,"rotation":312.28828244370817,"section":"Neutral section 0","winding":"Neutral"}]},"core":{"distributorsInfo":[{"cost":51.81,"country":"USA","distributedArea":"International","link":"https://www.digikey.com/en/products/detail/epcos-tdk-electronics/B64290A0730X010/6161114","name":"Digi-Key","quantity":14,"reference":"495-B64290A0730X010-ND","updatedAt":"03/02/2025"},{"cost":62,"country":"USA","distributedArea":"International","link":"https://www.mouser.es/ProductDetail/EPCOS-TDK/B64290A0730X010?qs=EU6FO9ffTweCNADp6GgO9w%3D%3D","name":"Mouser","quantity":69,"reference":"871-B64290A0730X010","updatedAt":"03/02/2025"}],"functionalDescription":{"gapping":[],"material":{"application":["Signal Processing"],"coerciveForce":[{"magneticField":66.362,"magneticFluxDensity":0,"temperature":25},{"magneticField":37.628,"magneticFluxDensity":0,"temperature":100}],"curieTemperature":150,"density":4700,"family":"K","manufacturerInfo":{"datasheetUrl":"https://www.tdk-electronics.tdk.com/download/528854/d6a20f8b9ec044975113d05211eefff5/pdf-k10.pdf","name":"TDK"},"material":"ferrite","materialComposition":"NiZn","name":"K10","permeability":{"complex":{"imaginary":[{"frequency":63096,"value":2},{"frequency":70795,"value":2},{"frequency":79433,"value":3},{"frequency":89125,"value":2},{"frequency":100000,"value":2},{"frequency":112202,"value":2},{"frequency":125893,"value":4},{"frequency":141254,"value":4},{"frequency":158489,"value":5},{"frequency":177828,"value":5},{"frequency":199526,"value":6},{"frequency":223872,"value":7},{"frequency":251189,"value":8},{"frequency":281838,"value":8},{"frequency":316228,"value":10},{"frequency":354813,"value":10},{"frequency":398107,"value":11},{"frequency":446684,"value":13},{"frequency":501187,"value":14},{"frequency":562341,"value":15},{"frequency":630957,"value":18},{"frequency":707946,"value":20},{"frequency":794328,"value":22},{"frequency":891251,"value":26},{"frequency":1000000,"value":31},{"frequency":1122019,"value":39},{"frequency":1258925,"value":49},{"frequency":1412538,"value":67},{"frequency":1584893,"value":100},{"frequency":1778279,"value":145},{"frequency":1995262,"value":210},{"frequency":2238721,"value":280},{"frequency":2511887,"value":339},{"frequency":2818383,"value":388},{"frequency":3162278,"value":413},{"frequency":3548134,"value":431},{"frequency":3981072,"value":440},{"frequency":4466836,"value":441},{"frequency":5011873,"value":439},{"frequency":5623414,"value":426},{"frequency":6309574,"value":412},{"frequency":7079458,"value":395},{"frequency":7943283,"value":376},{"frequency":8912510,"value":357},{"frequency":10000001,"value":336},{"frequency":11220185,"value":316},{"frequency":12589255,"value":296},{"frequency":14125376,"value":278},{"frequency":15848933,"value":261},{"frequency":17782795,"value":245},{"frequency":19952625,"value":230},{"frequency":22387213,"value":216},{"frequency":25118866,"value":204},{"frequency":28183831,"value":192},{"frequency":31622779,"value":180},{"frequency":35481342,"value":169},{"frequency":39810717,"value":159},{"frequency":44668359,"value":149},{"frequency":50451246,"value":138},{"frequency":56234133,"value":129},{"frequency":63095734,"value":120},{"frequency":70794578,"value":111},{"frequency":79432823,"value":103},{"frequency":89716412,"value":94},{"frequency":100000000,"value":87},{"frequency":112201845,"value":80},{"frequency":125892541,"value":73},{"frequency":141253755,"value":67},{"frequency":159540848,"value":60},{"frequency":177827941,"value":55},{"frequency":199526232,"value":50},{"frequency":223872114,"value":45},{"frequency":251188643,"value":40},{"frequency":283708205,"value":36},{"frequency":316227766,"value":33},{"frequency":354813389,"value":29},{"frequency":398107171,"value":26},{"frequency":446683592,"value":23},{"frequency":504512459,"value":21},{"frequency":562341325,"value":19},{"frequency":630957345,"value":17},{"frequency":707945784,"value":15},{"frequency":794328235,"value":14},{"frequency":897164117,"value":12},{"frequency":1000000000,"value":11}],"real":[{"frequency":10000,"value":777},{"frequency":11220,"value":802},{"frequency":12589,"value":781},{"frequency":14125,"value":796},{"frequency":15849,"value":795},{"frequency":17783,"value":803},{"frequency":19953,"value":800},{"frequency":22387,"value":797},{"frequency":25119,"value":795},{"frequency":28184,"value":796},{"frequency":31623,"value":800},{"frequency":35481,"value":795},{"frequency":39811,"value":795},{"frequency":44668,"value":793},{"frequency":50119,"value":793},{"frequency":56234,"value":794},{"frequency":63096,"value":794},{"frequency":70795,"value":794},{"frequency":79433,"value":794},{"frequency":89125,"value":793},{"frequency":100000,"value":792},{"frequency":112202,"value":793},{"frequency":125893,"value":792},{"frequency":141254,"value":792},{"frequency":158489,"value":792},{"frequency":177828,"value":792},{"frequency":199526,"value":792},{"frequency":223872,"value":792},{"frequency":251189,"value":793},{"frequency":281838,"value":793},{"frequency":316228,"value":793},{"frequency":354813,"value":794},{"frequency":398107,"value":795},{"frequency":446684,"value":795},{"frequency":501187,"value":797},{"frequency":562341,"value":800},{"frequency":630957,"value":802},{"frequency":707946,"value":806},{"frequency":794328,"value":811},{"frequency":891251,"value":818},{"frequency":1000000,"value":826},{"frequency":1122019,"value":839},{"frequency":1258925,"value":854},{"frequency":1412538,"value":874},{"frequency":1584893,"value":898},{"frequency":1778279,"value":916},{"frequency":1995262,"value":918},{"frequency":2238721,"value":894},{"frequency":2511887,"value":849},{"frequency":2818383,"value":789},{"frequency":3162278,"value":733},{"frequency":3548134,"value":672},{"frequency":3981072,"value":613},{"frequency":4466836,"value":556},{"frequency":5011873,"value":500},{"frequency":5623414,"value":453},{"frequency":6309574,"value":407},{"frequency":7079458,"value":366},{"frequency":7943283,"value":329},{"frequency":8912510,"value":295},{"frequency":10000001,"value":268},{"frequency":11220185,"value":243},{"frequency":12589255,"value":220},{"frequency":14125376,"value":201},{"frequency":15848933,"value":182},{"frequency":17782795,"value":167},{"frequency":19952625,"value":153},{"frequency":22387213,"value":139},{"frequency":25118866,"value":126},{"frequency":28183831,"value":113},{"frequency":31622779,"value":103},{"frequency":35481342,"value":92},{"frequency":39810717,"value":82},{"frequency":44668359,"value":72},{"frequency":50451246,"value":63},{"frequency":56234133,"value":55},{"frequency":63095734,"value":48},{"frequency":70794578,"value":41},{"frequency":79432823,"value":35},{"frequency":89716412,"value":30},{"frequency":100000000,"value":25},{"frequency":112201845,"value":20},{"frequency":125892541,"value":17},{"frequency":141253755,"value":13},{"frequency":159540848,"value":10},{"frequency":177827941,"value":8},{"frequency":199526232,"value":6},{"frequency":223872114,"value":4},{"frequency":251188643,"value":3},{"frequency":283708205,"value":1}]},"initial":[{"temperature":-60,"value":412},{"temperature":-50,"value":453},{"temperature":-40,"value":494},{"temperature":-30,"value":535},{"temperature":-20,"value":577},{"temperature":-10,"value":630},{"temperature":0,"value":674},{"temperature":10,"value":739},{"temperature":20,"value":805},{"temperature":30,"value":881},{"temperature":40,"value":954},{"temperature":50,"value":1044},{"temperature":60,"value":1138},{"temperature":70,"value":1264},{"temperature":80,"value":1331},{"temperature":90,"value":1453},{"temperature":100,"value":1542},{"temperature":110,"value":1631},{"temperature":120,"value":1675},{"temperature":130,"value":1697},{"temperature":140,"value":1653},{"temperature":150,"value":1497},{"temperature":160,"value":222},{"temperature":170,"value":1}]},"recommendations":{"maximumFrequency":500000000,"minimumFrequency":1000000},"remanence":[{"magneticField":0,"magneticFluxDensity":0.162676,"temperature":25},{"magneticField":0,"magneticFluxDensity":0.102296,"temperature":100}],"resistivity":[{"temperature":25,"value":100000}],"saturation":[{"magneticField":2027,"magneticFluxDensity":0.2848,"temperature":25},{"magneticField":1986,"magneticFluxDensity":0.208387,"temperature":100}],"type":"commercial","volumetricLosses":{"default":[{"factors":[{"frequency":100000,"value":1.4999999999999992e-05},{"frequency":1000000,"value":5.9999999999999995e-05}],"method":"lossFactor"}]}},"numberStacks":1,"shape":{"aliases":["R 87/54.3/13.5"],"dimensions":{"A":{"nominal":0.087},"B":{"nominal":0.0543},"C":{"nominal":0.0135}},"family":"t","magneticCircuit":"closed","name":"T 87/54.3/13.5","type":"standard"},"type":"toroidal","magneticCircuit":"closed"},"geometricalDescription":[{"coordinates":[0,0,0],"material":"K10","rotation":[1.5707963267948966,1.5707963267948966,0],"shape":{"aliases":["R 87/54.3/13.5"],"dimensions":{"A":{"nominal":0.087},"B":{"nominal":0.0543},"C":{"nominal":0.0135}},"family":"t","magneticCircuit":"closed","name":"T 87/54.3/13.5","type":"standard"},"type":"toroidal"}],"manufacturerInfo":{"name":"TDK","reference":"B64290A0730X010","status":"production"},"name":"T 87/54.3/13.5 - K10 - Ungapped","processedDescription":{"columns":[{"area":0.000220725,"coordinates":[0,0,0],"depth":0.0135,"height":0.22195352097611887,"shape":"rectangular","type":"central","width":0.016349999999999996}],"depth":0.0135,"effectiveParameters":{"effectiveArea":0.00022072499999999993,"effectiveLength":0.22195352097611887,"effectiveVolume":4.8990690917453814e-05,"minimumArea":0.00022072499999999996},"height":0.087,"width":0.087,"windingWindows":[{"angle":360,"area":0.0023157386307957424,"coordinates":[0.016349999999999996,0],"radialHeight":0.02715}]}},"manufacturerInfo":{"name":"OpenMagnetics","reference":"My custom magnetic"}}
+{
+  "coil": {
+    "bobbin": {
+      "processedDescription": {
+        "columnDepth": 0.00675,
+        "columnShape": "rectangular",
+        "columnThickness": 0,
+        "columnWidth": 0.008174999999999998,
+        "coordinates": [
+          0,
+          0,
+          0
+        ],
+        "wallThickness": 0,
+        "windingWindows": [
+          {
+            "angle": 360,
+            "area": 0.0023157386307957424,
+            "coordinates": [
+              0.02715,
+              0,
+              0
+            ],
+            "radialHeight": 0.02715,
+            "sectionsOrientation": "contiguous",
+            "shape": "round"
+          }
+        ]
+      }
+    },
+    "functionalDescription": [
+      {
+        "isolationSide": "primary",
+        "name": "Line",
+        "numberParallels": 1,
+        "numberTurns": 38,
+        "wire": {
+          "coating": {
+            "breakdownVoltage": 9000,
+            "material": "ETFE",
+            "numberLayers": 3,
+            "temperatureRating": 155,
+            "thicknessLayers": 5.08e-05,
+            "type": "insulated"
+          },
+          "conductingArea": {
+            "nominal": 1.4708308485576694e-06
+          },
+          "manufacturerInfo": {
+            "name": "Rubadue"
+          },
+          "name": "Litz TXXL180/38TXXX-2(MWXX)",
+          "numberConductors": 180,
+          "outerDiameter": {
+            "nominal": 0.0021996399999999997
+          },
+          "standard": "NEMA MW 1000 C",
+          "strand": {
+            "coating": {
+              "breakdownVoltage": 500,
+              "grade": 1,
+              "type": "enamelled"
+            },
+            "conductingDiameter": {
+              "maximum": 0.000104,
+              "minimum": 9.900000000000001e-05,
+              "nominal": 0.000102
+            },
+            "manufacturerInfo": {
+              "name": "Elektrisola"
+            },
+            "material": "copper",
+            "name": "Round 38.0 - Single Build",
+            "numberConductors": 1,
+            "outerDiameter": {
+              "maximum": 0.000118999999999,
+              "minimum": 0.000107,
+              "nominal": 0.00011300000000000001
+            },
+            "standard": "NEMA MW 1000 C",
+            "standardName": "38 AWG",
+            "type": "round"
+          },
+          "type": "litz"
+        }
+      },
+      {
+        "isolationSide": "secondary",
+        "name": "Neutral",
+        "numberParallels": 1,
+        "numberTurns": 38,
+        "wire": {
+          "coating": {
+            "breakdownVoltage": 9000,
+            "material": "ETFE",
+            "numberLayers": 3,
+            "temperatureRating": 155,
+            "thicknessLayers": 5.08e-05,
+            "type": "insulated"
+          },
+          "conductingArea": {
+            "nominal": 1.4708308485576694e-06
+          },
+          "manufacturerInfo": {
+            "name": "Rubadue"
+          },
+          "name": "Litz TXXL180/38TXXX-2(MWXX)",
+          "numberConductors": 180,
+          "outerDiameter": {
+            "nominal": 0.0021996399999999997
+          },
+          "standard": "NEMA MW 1000 C",
+          "strand": {
+            "coating": {
+              "breakdownVoltage": 500,
+              "grade": 1,
+              "type": "enamelled"
+            },
+            "conductingDiameter": {
+              "maximum": 0.000104,
+              "minimum": 9.900000000000001e-05,
+              "nominal": 0.000102
+            },
+            "manufacturerInfo": {
+              "name": "Elektrisola"
+            },
+            "material": "copper",
+            "name": "Round 38.0 - Single Build",
+            "numberConductors": 1,
+            "outerDiameter": {
+              "maximum": 0.000118999999999,
+              "minimum": 0.000107,
+              "nominal": 0.00011300000000000001
+            },
+            "standard": "NEMA MW 1000 C",
+            "standardName": "38 AWG",
+            "type": "round"
+          },
+          "type": "litz"
+        }
+      }
+    ],
+    "groupsDescription": [
+      {
+        "coordinateSystem": "polar",
+        "coordinates": [
+          0.02715,
+          0
+        ],
+        "dimensions": [
+          0.02715,
+          360
+        ],
+        "name": "Default group",
+        "partialWindings": [
+          {
+            "parallelsProportion": [
+              1
+            ],
+            "winding": "Line"
+          },
+          {
+            "parallelsProportion": [
+              1
+            ],
+            "winding": "Neutral"
+          }
+        ],
+        "sectionsOrientation": "contiguous",
+        "type": "Wound"
+      }
+    ],
+    "layersDescription": [
+      {
+        "coordinateSystem": "polar",
+        "coordinates": [
+          0.001099820000000003,
+          90
+        ],
+        "dimensions": [
+          0.002199640000000003,
+          101.62765650347123
+        ],
+        "fillingFactor": 0.5644302772169552,
+        "name": "Line section 0 layer 0",
+        "orientation": "overlapping",
+        "partialWindings": [
+          {
+            "parallelsProportion": [
+              0.5526315789473685
+            ],
+            "winding": "Line"
+          }
+        ],
+        "section": "Line section 0",
+        "turnsAlignment": "centered",
+        "type": "conduction",
+        "windingStyle": "windByConsecutiveTurns"
+      },
+      {
+        "additionalCoordinates": [
+          [
+            -0.018549639999999996,
+            90
+          ]
+        ],
+        "coordinateSystem": "polar",
+        "coordinates": [
+          0.00219964,
+          90
+        ],
+        "dimensions": [
+          0,
+          180
+        ],
+        "fillingFactor": 1,
+        "name": "Line section 0 insulation layer 0",
+        "orientation": "overlapping",
+        "partialWindings": [],
+        "section": "Line section 0",
+        "turnsAlignment": "spread",
+        "type": "insulation"
+      },
+      {
+        "coordinateSystem": "polar",
+        "coordinates": [
+          0.0032994600000000023,
+          90
+        ],
+        "dimensions": [
+          0.002199640000000003,
+          89.86260019212736
+        ],
+        "fillingFactor": 0.4569197482232494,
+        "name": "Line section 0 layer 1",
+        "orientation": "overlapping",
+        "partialWindings": [
+          {
+            "parallelsProportion": [
+              0.4473684210526316
+            ],
+            "winding": "Line"
+          }
+        ],
+        "section": "Line section 0",
+        "turnsAlignment": "centered",
+        "type": "conduction",
+        "windingStyle": "windByConsecutiveTurns"
+      },
+      {
+        "coordinateSystem": "polar",
+        "coordinates": [
+          0.001099820000000003,
+          270
+        ],
+        "dimensions": [
+          0.002199640000000003,
+          101.62765650347123
+        ],
+        "fillingFactor": 0.5644302772169552,
+        "name": "Neutral section 0 layer 0",
+        "orientation": "overlapping",
+        "partialWindings": [
+          {
+            "parallelsProportion": [
+              0.5526315789473685
+            ],
+            "winding": "Neutral"
+          }
+        ],
+        "section": "Neutral section 0",
+        "turnsAlignment": "centered",
+        "type": "conduction",
+        "windingStyle": "windByConsecutiveTurns"
+      },
+      {
+        "additionalCoordinates": [
+          [
+            -0.018549639999999996,
+            270
+          ]
+        ],
+        "coordinateSystem": "polar",
+        "coordinates": [
+          0.00219964,
+          270
+        ],
+        "dimensions": [
+          0,
+          180
+        ],
+        "fillingFactor": 1,
+        "name": "Neutral section 0 insulation layer 0",
+        "orientation": "overlapping",
+        "partialWindings": [],
+        "section": "Neutral section 0",
+        "turnsAlignment": "spread",
+        "type": "insulation"
+      },
+      {
+        "coordinateSystem": "polar",
+        "coordinates": [
+          0.0032994600000000023,
+          270
+        ],
+        "dimensions": [
+          0.002199640000000003,
+          89.86260019212736
+        ],
+        "fillingFactor": 0.4569197482232494,
+        "name": "Neutral section 0 layer 1",
+        "orientation": "overlapping",
+        "partialWindings": [
+          {
+            "parallelsProportion": [
+              0.4473684210526316
+            ],
+            "winding": "Neutral"
+          }
+        ],
+        "section": "Neutral section 0",
+        "turnsAlignment": "centered",
+        "type": "conduction",
+        "windingStyle": "windByConsecutiveTurns"
+      }
+    ],
+    "sectionsDescription": [
+      {
+        "coordinateSystem": "polar",
+        "coordinates": [
+          0.0021996400000000027,
+          90
+        ],
+        "dimensions": [
+          0.004399280000000002,
+          180
+        ],
+        "fillingFactor": 0.15879150650228727,
+        "group": "Default group",
+        "layersOrientation": "overlapping",
+        "margin": [
+          0,
+          0
+        ],
+        "name": "Line section 0",
+        "partialWindings": [
+          {
+            "parallelsProportion": [
+              1
+            ],
+            "winding": "Line"
+          }
+        ],
+        "type": "conduction",
+        "windingStyle": "windByConsecutiveTurns"
+      },
+      {
+        "coordinateSystem": "polar",
+        "coordinates": [
+          0.013575,
+          180
+        ],
+        "dimensions": [
+          0.02715,
+          0
+        ],
+        "fillingFactor": 1,
+        "group": "Default group",
+        "layersOrientation": "overlapping",
+        "name": "Insulation between Line and Line section 1",
+        "partialWindings": [],
+        "type": "insulation"
+      },
+      {
+        "coordinateSystem": "polar",
+        "coordinates": [
+          0.0021996400000000027,
+          270
+        ],
+        "dimensions": [
+          0.004399280000000002,
+          180
+        ],
+        "fillingFactor": 0.15879150650228727,
+        "group": "Default group",
+        "layersOrientation": "overlapping",
+        "margin": [
+          0,
+          0
+        ],
+        "name": "Neutral section 0",
+        "partialWindings": [
+          {
+            "parallelsProportion": [
+              1
+            ],
+            "winding": "Neutral"
+          }
+        ],
+        "type": "conduction",
+        "windingStyle": "windByConsecutiveTurns"
+      },
+      {
+        "coordinateSystem": "polar",
+        "coordinates": [
+          0.013575,
+          360
+        ],
+        "dimensions": [
+          0.02715,
+          0
+        ],
+        "fillingFactor": 1,
+        "group": "Default group",
+        "layersOrientation": "overlapping",
+        "name": "Insulation between Neutral and Neutral section 3",
+        "partialWindings": [],
+        "type": "insulation"
+      }
+    ],
+    "turnsDescription": [
+      {
+        "additionalCoordinates": [
+          [
+            0.03334862232717243,
+            0.02961441089929051
+          ]
+        ],
+        "coordinateSystem": "cartesian",
+        "coordinates": [
+          0.019478500459752093,
+          0.01729739569622657
+        ],
+        "crossSectionalShape": "round",
+        "dimensions": [
+          0.0021996399999999997,
+          0.0021996399999999997
+        ],
+        "layer": "Line section 0 layer 0",
+        "length": 0.06661037286454224,
+        "name": "Line parallel 0 turn 0",
+        "orientation": "clockwise",
+        "parallel": 0,
+        "rotation": 41.605877855,
+        "section": "Line section 0",
+        "winding": "Line"
+      },
+      {
+        "additionalCoordinates": [
+          [
+            0.030731367660600615,
+            0.03232223670696987
+          ]
+        ],
+        "coordinateSystem": "cartesian",
+        "coordinates": [
+          0.01794979574367845,
+          0.018879001848419397
+        ],
+        "crossSectionalShape": "round",
+        "dimensions": [
+          0.0021996399999999997,
+          0.0021996399999999997
+        ],
+        "layer": "Line section 0 layer 0",
+        "length": 0.06661037286454224,
+        "name": "Line parallel 0 turn 1",
+        "orientation": "clockwise",
+        "parallel": 0,
+        "rotation": 46.44529006945101,
+        "section": "Line section 0",
+        "winding": "Line"
+      },
+      {
+        "additionalCoordinates": [
+          [
+            0.027895002262567928,
+            0.034799609089812056
+          ]
+        ],
+        "coordinateSystem": "cartesian",
+        "coordinates": [
+          0.016293111273550022,
+          0.02032600312555612
+        ],
+        "crossSectionalShape": "round",
+        "dimensions": [
+          0.0021996399999999997,
+          0.0021996399999999997
+        ],
+        "layer": "Line section 0 layer 0",
+        "length": 0.06661037286454224,
+        "name": "Line parallel 0 turn 2",
+        "orientation": "clockwise",
+        "parallel": 0,
+        "rotation": 51.28470228390202,
+        "section": "Line section 0",
+        "winding": "Line"
+      },
+      {
+        "additionalCoordinates": [
+          [
+            0.02485974905656795,
+            0.037028864698730214
+          ]
+        ],
+        "coordinateSystem": "cartesian",
+        "coordinates": [
+          0.014520258998319392,
+          0.021628082593103917
+        ],
+        "crossSectionalShape": "round",
+        "dimensions": [
+          0.0021996399999999997,
+          0.0021996399999999997
+        ],
+        "layer": "Line section 0 layer 0",
+        "length": 0.06661037286454224,
+        "name": "Line parallel 0 turn 3",
+        "orientation": "clockwise",
+        "parallel": 0,
+        "rotation": 56.12411449835303,
+        "section": "Line section 0",
+        "winding": "Line"
+      },
+      {
+        "additionalCoordinates": [
+          [
+            0.021647249010795778,
+            0.038994109225586895
+          ]
+        ],
+        "coordinateSystem": "cartesian",
+        "coordinates": [
+          0.01264387912857164,
+          0.02277595659054676
+        ],
+        "crossSectionalShape": "round",
+        "dimensions": [
+          0.0021996399999999997,
+          0.0021996399999999997
+        ],
+        "layer": "Line section 0 layer 0",
+        "length": 0.06661037286454224,
+        "name": "Line parallel 0 turn 4",
+        "orientation": "clockwise",
+        "parallel": 0,
+        "rotation": 60.96352671280404,
+        "section": "Line section 0",
+        "winding": "Line"
+      },
+      {
+        "additionalCoordinates": [
+          [
+            0.01828040684080531,
+            0.040681330727583606
+          ]
+        ],
+        "coordinateSystem": "cartesian",
+        "coordinates": [
+          0.010677350013435248,
+          0.023761440922700675
+        ],
+        "crossSectionalShape": "round",
+        "dimensions": [
+          0.0021996399999999997,
+          0.0021996399999999997
+        ],
+        "layer": "Line section 0 layer 0",
+        "length": 0.06661037286454224,
+        "name": "Line parallel 0 turn 5",
+        "orientation": "clockwise",
+        "parallel": 0,
+        "rotation": 65.80293892725506,
+        "section": "Line section 0",
+        "winding": "Line"
+      },
+      {
+        "additionalCoordinates": [
+          [
+            0.014783227701808826,
+            0.04207849953062576
+          ]
+        ],
+        "coordinateSystem": "cartesian",
+        "coordinates": [
+          0.008634692754659239,
+          0.024577509211981492
+        ],
+        "crossSectionalShape": "round",
+        "dimensions": [
+          0.0021996399999999997,
+          0.0021996399999999997
+        ],
+        "layer": "Line section 0 layer 0",
+        "length": 0.06661037286454224,
+        "name": "Line parallel 0 turn 6",
+        "orientation": "clockwise",
+        "parallel": 0,
+        "rotation": 70.64235114170607,
+        "section": "Line section 0",
+        "winding": "Line"
+      },
+      {
+        "additionalCoordinates": [
+          [
+            0.011180646034982495,
+            0.04317565399936439
+          ]
+        ],
+        "coordinateSystem": "cartesian",
+        "coordinates": [
+          0.0065304712379462585,
+          0.025218342995580748
+        ],
+        "crossSectionalShape": "round",
+        "dimensions": [
+          0.0021996399999999997,
+          0.0021996399999999997
+        ],
+        "layer": "Line section 0 layer 0",
+        "length": 0.06661037286454224,
+        "name": "Line parallel 0 turn 7",
+        "orientation": "clockwise",
+        "parallel": 0,
+        "rotation": 75.48176335615709,
+        "section": "Line section 0",
+        "winding": "Line"
+      },
+      {
+        "additionalCoordinates": [
+          [
+            0.007498347788081177,
+            0.04396497156238564
+          ]
+        ],
+        "coordinateSystem": "cartesian",
+        "coordinates": [
+          0.004379688294305146,
+          0.02567937321036334
+        ],
+        "crossSectionalShape": "round",
+        "dimensions": [
+          0.0021996399999999997,
+          0.0021996399999999997
+        ],
+        "layer": "Line section 0 layer 0",
+        "length": 0.06661037286454224,
+        "name": "Line parallel 0 turn 8",
+        "orientation": "clockwise",
+        "parallel": 0,
+        "rotation": 80.3211755706081,
+        "section": "Line section 0",
+        "winding": "Line"
+      },
+      {
+        "additionalCoordinates": [
+          [
+            0.003762587277907375,
+            0.04444082448614708
+          ]
+        ],
+        "coordinateSystem": "cartesian",
+        "coordinates": [
+          0.0021976787317795708,
+          0.025957312769704873
+        ],
+        "crossSectionalShape": "round",
+        "dimensions": [
+          0.0021996399999999997,
+          0.0021996399999999997
+        ],
+        "layer": "Line section 0 layer 0",
+        "length": 0.06661037286454224,
+        "name": "Line parallel 0 turn 9",
+        "orientation": "clockwise",
+        "parallel": 0,
+        "rotation": 85.16058778505912,
+        "section": "Line section 0",
+        "winding": "Line"
+      },
+      {
+        "additionalCoordinates": [
+          [
+            3.8130369274723426e-13,
+            0.04459982
+          ]
+        ],
+        "coordinateSystem": "cartesian",
+        "coordinates": [
+          2.2271457218280583e-13,
+          0.02605018
+        ],
+        "crossSectionalShape": "round",
+        "dimensions": [
+          0.0021996399999999997,
+          0.0021996399999999997
+        ],
+        "layer": "Line section 0 layer 0",
+        "length": 0.06661037286454224,
+        "name": "Line parallel 0 turn 10",
+        "orientation": "clockwise",
+        "parallel": 0,
+        "rotation": 89.99999999951014,
+        "section": "Line section 0",
+        "winding": "Line"
+      },
+      {
+        "additionalCoordinates": [
+          [
+            -0.003762587277147457,
+            0.044440824486211415
+          ]
+        ],
+        "coordinateSystem": "cartesian",
+        "coordinates": [
+          -0.0021976787313357123,
+          0.025957312769742454
+        ],
+        "crossSectionalShape": "round",
+        "dimensions": [
+          0.0021996399999999997,
+          0.0021996399999999997
+        ],
+        "layer": "Line section 0 layer 0",
+        "length": 0.06661037286454224,
+        "name": "Line parallel 0 turn 11",
+        "orientation": "clockwise",
+        "parallel": 0,
+        "rotation": 94.83941221396115,
+        "section": "Line section 0",
+        "winding": "Line"
+      },
+      {
+        "additionalCoordinates": [
+          [
+            -0.007498347787329396,
+            0.04396497156251385
+          ]
+        ],
+        "coordinateSystem": "cartesian",
+        "coordinates": [
+          -0.00437968829386604,
+          0.02567937321043823
+        ],
+        "crossSectionalShape": "round",
+        "dimensions": [
+          0.0021996399999999997,
+          0.0021996399999999997
+        ],
+        "layer": "Line section 0 layer 0",
+        "length": 0.06661037286454224,
+        "name": "Line parallel 0 turn 12",
+        "orientation": "clockwise",
+        "parallel": 0,
+        "rotation": 99.67882442841217,
+        "section": "Line section 0",
+        "winding": "Line"
+      },
+      {
+        "additionalCoordinates": [
+          [
+            -0.01118064603424423,
+            0.04317565399955557
+          ]
+        ],
+        "coordinateSystem": "cartesian",
+        "coordinates": [
+          -0.006530471237515047,
+          0.025218342995692415
+        ],
+        "crossSectionalShape": "round",
+        "dimensions": [
+          0.0021996399999999997,
+          0.0021996399999999997
+        ],
+        "layer": "Line section 0 layer 0",
+        "length": 0.06661037286454224,
+        "name": "Line parallel 0 turn 13",
+        "orientation": "clockwise",
+        "parallel": 0,
+        "rotation": 104.51823664286319,
+        "section": "Line section 0",
+        "winding": "Line"
+      },
+      {
+        "additionalCoordinates": [
+          [
+            -0.014783227701089302,
+            0.04207849953087854
+          ]
+        ],
+        "coordinateSystem": "cartesian",
+        "coordinates": [
+          -0.008634692754238974,
+          0.024577509212129145
+        ],
+        "crossSectionalShape": "round",
+        "dimensions": [
+          0.0021996399999999997,
+          0.0021996399999999997
+        ],
+        "layer": "Line section 0 layer 0",
+        "length": 0.06661037286454224,
+        "name": "Line parallel 0 turn 14",
+        "orientation": "clockwise",
+        "parallel": 0,
+        "rotation": 109.3576488573142,
+        "section": "Line section 0",
+        "winding": "Line"
+      },
+      {
+        "additionalCoordinates": [
+          [
+            -0.018280406840109658,
+            0.0406813307278962
+          ]
+        ],
+        "coordinateSystem": "cartesian",
+        "coordinates": [
+          -0.010677350013028927,
+          0.023761440922883254
+        ],
+        "crossSectionalShape": "round",
+        "dimensions": [
+          0.0021996399999999997,
+          0.0021996399999999997
+        ],
+        "layer": "Line section 0 layer 0",
+        "length": 0.06661037286454227,
+        "name": "Line parallel 0 turn 15",
+        "orientation": "clockwise",
+        "parallel": 0,
+        "rotation": 114.19706107176522,
+        "section": "Line section 0",
+        "winding": "Line"
+      },
+      {
+        "additionalCoordinates": [
+          [
+            -0.021647249010128995,
+            0.03899410922595705
+          ]
+        ],
+        "coordinateSystem": "cartesian",
+        "coordinates": [
+          -0.01264387912818218,
+          0.022775956590762966
+        ],
+        "crossSectionalShape": "round",
+        "dimensions": [
+          0.0021996399999999997,
+          0.0021996399999999997
+        ],
+        "layer": "Line section 0 layer 0",
+        "length": 0.06661037286454224,
+        "name": "Line parallel 0 turn 16",
+        "orientation": "clockwise",
+        "parallel": 0,
+        "rotation": 119.03647328621624,
+        "section": "Line section 0",
+        "winding": "Line"
+      },
+      {
+        "additionalCoordinates": [
+          [
+            -0.024859749055934778,
+            0.0370288646991553
+          ]
+        ],
+        "coordinateSystem": "cartesian",
+        "coordinates": [
+          -0.014520258997949566,
+          0.0216280825933522
+        ],
+        "crossSectionalShape": "round",
+        "dimensions": [
+          0.0021996399999999997,
+          0.0021996399999999997
+        ],
+        "layer": "Line section 0 layer 0",
+        "length": 0.06661037286454227,
+        "name": "Line parallel 0 turn 17",
+        "orientation": "clockwise",
+        "parallel": 0,
+        "rotation": 123.87588550066725,
+        "section": "Line section 0",
+        "winding": "Line"
+      },
+      {
+        "additionalCoordinates": [
+          [
+            -0.027895002261972866,
+            0.034799609090289056
+          ]
+        ],
+        "coordinateSystem": "cartesian",
+        "coordinates": [
+          -0.016293111273202456,
+          0.020326003125834727
+        ],
+        "crossSectionalShape": "round",
+        "dimensions": [
+          0.0021996399999999997,
+          0.0021996399999999997
+        ],
+        "layer": "Line section 0 layer 0",
+        "length": 0.06661037286454224,
+        "name": "Line parallel 0 turn 18",
+        "orientation": "clockwise",
+        "parallel": 0,
+        "rotation": 128.71529771511825,
+        "section": "Line section 0",
+        "winding": "Line"
+      },
+      {
+        "additionalCoordinates": [
+          [
+            -0.030731367660047925,
+            0.03232223670749536
+          ]
+        ],
+        "coordinateSystem": "cartesian",
+        "coordinates": [
+          -0.01794979574335563,
+          0.018879001848726328
+        ],
+        "crossSectionalShape": "round",
+        "dimensions": [
+          0.0021996399999999997,
+          0.0021996399999999997
+        ],
+        "layer": "Line section 0 layer 0",
+        "length": 0.06661037286454224,
+        "name": "Line parallel 0 turn 19",
+        "orientation": "clockwise",
+        "parallel": 0,
+        "rotation": 133.55470992956927,
+        "section": "Line section 0",
+        "winding": "Line"
+      },
+      {
+        "additionalCoordinates": [
+          [
+            -0.033348622326666036,
+            0.029614410899860756
+          ]
+        ],
+        "coordinateSystem": "cartesian",
+        "coordinates": [
+          -0.019478500459456316,
+          0.017297395696559643
+        ],
+        "crossSectionalShape": "round",
+        "dimensions": [
+          0.0021996399999999997,
+          0.0021996399999999997
+        ],
+        "layer": "Line section 0 layer 0",
+        "length": 0.06661037286454224,
+        "name": "Line parallel 0 turn 20",
+        "orientation": "clockwise",
+        "parallel": 0,
+        "rotation": 138.3941221440203,
+        "section": "Line section 0",
+        "winding": "Line"
+      },
+      {
+        "additionalCoordinates": [
+          [
+            0.03061695803866215,
+            0.03453844815196772
+          ]
+        ],
+        "coordinateSystem": "cartesian",
+        "coordinates": [
+          0.01604810385988387,
+          0.017643883381896982
+        ],
+        "crossSectionalShape": "round",
+        "dimensions": [
+          0.0021996399999999997,
+          0.0021996399999999997
+        ],
+        "layer": "Line section 0 layer 1",
+        "length": 0.08043111859362675,
+        "name": "Line parallel 0 turn 21",
+        "orientation": "clockwise",
+        "parallel": 0,
+        "rotation": 47.711717557,
+        "section": "Line section 0",
+        "winding": "Line"
+      },
+      {
+        "additionalCoordinates": [
+          [
+            0.027594033628269468,
+            0.03699826791093463
+          ]
+        ],
+        "coordinateSystem": "cartesian",
+        "coordinates": [
+          0.01435436032846224,
+          0.019047325215165237
+        ],
+        "crossSectionalShape": "round",
+        "dimensions": [
+          0.0021996399999999997,
+          0.0021996399999999997
+        ],
+        "layer": "Line section 0 layer 1",
+        "length": 0.08043111859362675,
+        "name": "Line parallel 0 turn 22",
+        "orientation": "clockwise",
+        "parallel": 0,
+        "rotation": 52.997752862419254,
+        "section": "Line section 0",
+        "winding": "Line"
+      },
+      {
+        "additionalCoordinates": [
+          [
+            0.0243743672778818,
+            0.03919429473903423
+          ]
+        ],
+        "coordinateSystem": "cartesian",
+        "coordinates": [
+          0.012538523835462587,
+          0.02028875743654935
+        ],
+        "crossSectionalShape": "round",
+        "dimensions": [
+          0.0021996399999999997,
+          0.0021996399999999997
+        ],
+        "layer": "Line section 0 layer 1",
+        "length": 0.08043111859362675,
+        "name": "Line parallel 0 turn 23",
+        "orientation": "clockwise",
+        "parallel": 0,
+        "rotation": 58.28378816783851,
+        "section": "Line section 0",
+        "winding": "Line"
+      },
+      {
+        "additionalCoordinates": [
+          [
+            0.02098091479789079,
+            0.041110871245097796
+          ]
+        ],
+        "coordinateSystem": "cartesian",
+        "coordinates": [
+          0.010616039224827702,
+          0.02135762087566215
+        ],
+        "crossSectionalShape": "round",
+        "dimensions": [
+          0.0021996399999999997,
+          0.0021996399999999997
+        ],
+        "layer": "Line section 0 layer 1",
+        "length": 0.08043111859362675,
+        "name": "Line parallel 0 turn 24",
+        "orientation": "clockwise",
+        "parallel": 0,
+        "rotation": 63.56982347325776,
+        "section": "Line section 0",
+        "winding": "Line"
+      },
+      {
+        "additionalCoordinates": [
+          [
+            0.017437871071624804,
+            0.042734332483107214
+          ]
+        ],
+        "coordinateSystem": "cartesian",
+        "coordinates": [
+          0.008603258450551335,
+          0.022244824169334695
+        ],
+        "crossSectionalShape": "round",
+        "dimensions": [
+          0.0021996399999999997,
+          0.0021996399999999997
+        ],
+        "layer": "Line section 0 layer 1",
+        "length": 0.08043111859362675,
+        "name": "Line parallel 0 turn 25",
+        "orientation": "clockwise",
+        "parallel": 0,
+        "rotation": 68.85585877867702,
+        "section": "Line section 0",
+        "winding": "Line"
+      },
+      {
+        "additionalCoordinates": [
+          [
+            0.013770497548916879,
+            0.04405310338151713
+          ]
+        ],
+        "coordinateSystem": "cartesian",
+        "coordinates": [
+          0.006517301492912317,
+          0.022942821089440655
+        ],
+        "crossSectionalShape": "round",
+        "dimensions": [
+          0.0021996399999999997,
+          0.0021996399999999997
+        ],
+        "layer": "Line section 0 layer 1",
+        "length": 0.08043111859362675,
+        "name": "Line parallel 0 turn 26",
+        "orientation": "clockwise",
+        "parallel": 0,
+        "rotation": 74.14189408409628,
+        "section": "Line section 0",
+        "winding": "Line"
+      },
+      {
+        "additionalCoordinates": [
+          [
+            0.010004942135189784,
+            0.04505778127203852
+          ]
+        ],
+        "coordinateSystem": "cartesian",
+        "coordinates": [
+          0.004375910742156888,
+          0.023445674728364632
+        ],
+        "crossSectionalShape": "round",
+        "dimensions": [
+          0.0021996399999999997,
+          0.0021996399999999997
+        ],
+        "layer": "Line section 0 layer 1",
+        "length": 0.08043111859362675,
+        "name": "Line parallel 0 turn 27",
+        "orientation": "clockwise",
+        "parallel": 0,
+        "rotation": 79.42792938951554,
+        "section": "Line section 0",
+        "winding": "Line"
+      },
+      {
+        "additionalCoordinates": [
+          [
+            0.00616805276022557,
+            0.04574120292946431
+          ]
+        ],
+        "coordinateSystem": "cartesian",
+        "coordinates": [
+          0.0021973000881883747,
+          0.023749107996176348
+        ],
+        "crossSectionalShape": "round",
+        "dimensions": [
+          0.0021996399999999997,
+          0.0021996399999999997
+        ],
+        "layer": "Line section 0 layer 1",
+        "length": 0.08043111859362675,
+        "name": "Line parallel 0 turn 28",
+        "orientation": "clockwise",
+        "parallel": 0,
+        "rotation": 84.7139646949348,
+        "section": "Line section 0",
+        "winding": "Line"
+      },
+      {
+        "additionalCoordinates": [
+          [
+            -0.0016099881926456353,
+            0.04612711196581575
+          ]
+        ],
+        "coordinateSystem": "cartesian",
+        "coordinates": [
+          -1.4738298382462566e-13,
+          0.02385054
+        ],
+        "crossSectionalShape": "round",
+        "dimensions": [
+          0.0021996399999999997,
+          0.0021996399999999997
+        ],
+        "layer": "Line section 0 layer 1",
+        "length": 0.08043111859362675,
+        "name": "Line parallel 0 turn 29",
+        "orientation": "clockwise",
+        "parallel": 0,
+        "rotation": 90.00000000035406,
+        "section": "Line section 0",
+        "winding": "Line"
+      },
+      {
+        "additionalCoordinates": [
+          [
+            -0.005495683330691622,
+            0.04582684786253708
+          ]
+        ],
+        "coordinateSystem": "cartesian",
+        "coordinates": [
+          -0.002197300088481876,
+          0.02374910799614919
+        ],
+        "crossSectionalShape": "round",
+        "dimensions": [
+          0.0021996399999999997,
+          0.0021996399999999997
+        ],
+        "layer": "Line section 0 layer 1",
+        "length": 0.08043111859362677,
+        "name": "Line parallel 0 turn 30",
+        "orientation": "clockwise",
+        "parallel": 0,
+        "rotation": 95.28603530577332,
+        "section": "Line section 0",
+        "winding": "Line"
+      },
+      {
+        "additionalCoordinates": [
+          [
+            -0.00934219494759516,
+            0.04519984417947134
+          ]
+        ],
+        "coordinateSystem": "cartesian",
+        "coordinates": [
+          -0.00437591074244666,
+          0.02344567472831055
+        ],
+        "crossSectionalShape": "round",
+        "dimensions": [
+          0.0021996399999999997,
+          0.0021996399999999997
+        ],
+        "layer": "Line section 0 layer 1",
+        "length": 0.08043111859362675,
+        "name": "Line parallel 0 turn 31",
+        "orientation": "clockwise",
+        "parallel": 0,
+        "rotation": 100.57207061119259,
+        "section": "Line section 0",
+        "winding": "Line"
+      },
+      {
+        "additionalCoordinates": [
+          [
+            -0.013122097906172022,
+            0.0442505713729009
+          ]
+        ],
+        "coordinateSystem": "cartesian",
+        "coordinates": [
+          -0.00651730149319588,
+          0.022942821089360105
+        ],
+        "crossSectionalShape": "round",
+        "dimensions": [
+          0.0021996399999999997,
+          0.0021996399999999997
+        ],
+        "layer": "Line section 0 layer 1",
+        "length": 0.08043111859362675,
+        "name": "Line parallel 0 turn 32",
+        "orientation": "clockwise",
+        "parallel": 0,
+        "rotation": 105.85810591661185,
+        "section": "Line section 0",
+        "winding": "Line"
+      },
+      {
+        "additionalCoordinates": [
+          [
+            -0.016808441980475396,
+            0.042985797636851564
+          ]
+        ],
+        "coordinateSystem": "cartesian",
+        "coordinates": [
+          -0.00860325845082626,
+          0.022244824169228367
+        ],
+        "crossSectionalShape": "round",
+        "dimensions": [
+          0.0021996399999999997,
+          0.0021996399999999997
+        ],
+        "layer": "Line section 0 layer 1",
+        "length": 0.08043111859362675,
+        "name": "Line parallel 0 turn 33",
+        "orientation": "clockwise",
+        "parallel": 0,
+        "rotation": 111.14414122203111,
+        "section": "Line section 0",
+        "winding": "Line"
+      },
+      {
+        "additionalCoordinates": [
+          [
+            -0.02037494400746953,
+            0.04141454064673231
+          ]
+        ],
+        "coordinateSystem": "cartesian",
+        "coordinates": [
+          -0.010616039225091658,
+          0.021357620875530947
+        ],
+        "crossSectionalShape": "round",
+        "dimensions": [
+          0.0021996399999999997,
+          0.0021996399999999997
+        ],
+        "layer": "Line section 0 layer 1",
+        "length": 0.08043111859362675,
+        "name": "Line parallel 0 turn 34",
+        "orientation": "clockwise",
+        "parallel": 0,
+        "rotation": 116.43017652745037,
+        "section": "Line section 0",
+        "winding": "Line"
+      },
+      {
+        "additionalCoordinates": [
+          [
+            -0.023796175282629405,
+            0.039548003264459994
+          ]
+        ],
+        "coordinateSystem": "cartesian",
+        "coordinates": [
+          -0.012538523835713335,
+          0.02028875743639438
+        ],
+        "crossSectionalShape": "round",
+        "dimensions": [
+          0.0021996399999999997,
+          0.0021996399999999997
+        ],
+        "layer": "Line section 0 layer 1",
+        "length": 0.08043111859362677,
+        "name": "Line parallel 0 turn 35",
+        "orientation": "clockwise",
+        "parallel": 0,
+        "rotation": 121.71621183286963,
+        "section": "Line section 0",
+        "winding": "Line"
+      },
+      {
+        "additionalCoordinates": [
+          [
+            -0.027047742863360414,
+            0.03739949366348289
+          ]
+        ],
+        "coordinateSystem": "cartesian",
+        "coordinates": [
+          -0.014354360328697658,
+          0.01904732521498782
+        ],
+        "crossSectionalShape": "round",
+        "dimensions": [
+          0.0021996399999999997,
+          0.0021996399999999997
+        ],
+        "layer": "Line section 0 layer 1",
+        "length": 0.08043111859362675,
+        "name": "Line parallel 0 turn 36",
+        "orientation": "clockwise",
+        "parallel": 0,
+        "rotation": 127.0022471382889,
+        "section": "Line section 0",
+        "winding": "Line"
+      },
+      {
+        "additionalCoordinates": [
+          [
+            -0.030106463487567767,
+            0.03498433044320143
+          ]
+        ],
+        "coordinateSystem": "cartesian",
+        "coordinates": [
+          -0.01604810386010194,
+          0.017643883381698637
+        ],
+        "crossSectionalShape": "round",
+        "dimensions": [
+          0.0021996399999999997,
+          0.0021996399999999997
+        ],
+        "layer": "Line section 0 layer 1",
+        "length": 0.08043111859362675,
+        "name": "Line parallel 0 turn 37",
+        "orientation": "clockwise",
+        "parallel": 0,
+        "rotation": 132.28828244370814,
+        "section": "Line section 0",
+        "winding": "Line"
+      },
+      {
+        "additionalCoordinates": [
+          [
+            -0.033348622327172436,
+            -0.029614410899290497
+          ]
+        ],
+        "coordinateSystem": "cartesian",
+        "coordinates": [
+          -0.0194785004597521,
+          -0.017297395696226563
+        ],
+        "crossSectionalShape": "round",
+        "dimensions": [
+          0.0021996399999999997,
+          0.0021996399999999997
+        ],
+        "layer": "Neutral section 0 layer 0",
+        "length": 0.06661037286454224,
+        "name": "Neutral parallel 0 turn 0",
+        "orientation": "clockwise",
+        "parallel": 0,
+        "rotation": 221.605877855,
+        "section": "Neutral section 0",
+        "winding": "Neutral"
+      },
+      {
+        "additionalCoordinates": [
+          [
+            -0.03073136766060066,
+            -0.03232223670696983
+          ]
+        ],
+        "coordinateSystem": "cartesian",
+        "coordinates": [
+          -0.017949795743678474,
+          -0.018879001848419372
+        ],
+        "crossSectionalShape": "round",
+        "dimensions": [
+          0.0021996399999999997,
+          0.0021996399999999997
+        ],
+        "layer": "Neutral section 0 layer 0",
+        "length": 0.06661037286454224,
+        "name": "Neutral parallel 0 turn 1",
+        "orientation": "clockwise",
+        "parallel": 0,
+        "rotation": 226.445290069451,
+        "section": "Neutral section 0",
+        "winding": "Neutral"
+      },
+      {
+        "additionalCoordinates": [
+          [
+            -0.027895002262567924,
+            -0.03479960908981206
+          ]
+        ],
+        "coordinateSystem": "cartesian",
+        "coordinates": [
+          -0.01629311127355002,
+          -0.020326003125556123
+        ],
+        "crossSectionalShape": "round",
+        "dimensions": [
+          0.0021996399999999997,
+          0.0021996399999999997
+        ],
+        "layer": "Neutral section 0 layer 0",
+        "length": 0.06661037286454224,
+        "name": "Neutral parallel 0 turn 2",
+        "orientation": "clockwise",
+        "parallel": 0,
+        "rotation": 231.28470228390202,
+        "section": "Neutral section 0",
+        "winding": "Neutral"
+      },
+      {
+        "additionalCoordinates": [
+          [
+            -0.024859749056567924,
+            -0.037028864698730235
+          ]
+        ],
+        "coordinateSystem": "cartesian",
+        "coordinates": [
+          -0.014520258998319378,
+          -0.021628082593103927
+        ],
+        "crossSectionalShape": "round",
+        "dimensions": [
+          0.0021996399999999997,
+          0.0021996399999999997
+        ],
+        "layer": "Neutral section 0 layer 0",
+        "length": 0.06661037286454224,
+        "name": "Neutral parallel 0 turn 3",
+        "orientation": "clockwise",
+        "parallel": 0,
+        "rotation": 236.12411449835304,
+        "section": "Neutral section 0",
+        "winding": "Neutral"
+      },
+      {
+        "additionalCoordinates": [
+          [
+            -0.021647249010795774,
+            -0.038994109225586895
+          ]
+        ],
+        "coordinateSystem": "cartesian",
+        "coordinates": [
+          -0.012643879128571638,
+          -0.022775956590546764
+        ],
+        "crossSectionalShape": "round",
+        "dimensions": [
+          0.0021996399999999997,
+          0.0021996399999999997
+        ],
+        "layer": "Neutral section 0 layer 0",
+        "length": 0.06661037286454224,
+        "name": "Neutral parallel 0 turn 4",
+        "orientation": "clockwise",
+        "parallel": 0,
+        "rotation": 240.96352671280405,
+        "section": "Neutral section 0",
+        "winding": "Neutral"
+      },
+      {
+        "additionalCoordinates": [
+          [
+            -0.018280406840805313,
+            -0.040681330727583606
+          ]
+        ],
+        "coordinateSystem": "cartesian",
+        "coordinates": [
+          -0.01067735001343525,
+          -0.023761440922700668
+        ],
+        "crossSectionalShape": "round",
+        "dimensions": [
+          0.0021996399999999997,
+          0.0021996399999999997
+        ],
+        "layer": "Neutral section 0 layer 0",
+        "length": 0.06661037286454227,
+        "name": "Neutral parallel 0 turn 5",
+        "orientation": "clockwise",
+        "parallel": 0,
+        "rotation": 245.80293892725507,
+        "section": "Neutral section 0",
+        "winding": "Neutral"
+      },
+      {
+        "additionalCoordinates": [
+          [
+            -0.014783227701808831,
+            -0.04207849953062576
+          ]
+        ],
+        "coordinateSystem": "cartesian",
+        "coordinates": [
+          -0.008634692754659242,
+          -0.024577509211981492
+        ],
+        "crossSectionalShape": "round",
+        "dimensions": [
+          0.0021996399999999997,
+          0.0021996399999999997
+        ],
+        "layer": "Neutral section 0 layer 0",
+        "length": 0.06661037286454224,
+        "name": "Neutral parallel 0 turn 6",
+        "orientation": "clockwise",
+        "parallel": 0,
+        "rotation": 250.6423511417061,
+        "section": "Neutral section 0",
+        "winding": "Neutral"
+      },
+      {
+        "additionalCoordinates": [
+          [
+            -0.011180646034982493,
+            -0.04317565399936439
+          ]
+        ],
+        "coordinateSystem": "cartesian",
+        "coordinates": [
+          -0.006530471237946257,
+          -0.025218342995580748
+        ],
+        "crossSectionalShape": "round",
+        "dimensions": [
+          0.0021996399999999997,
+          0.0021996399999999997
+        ],
+        "layer": "Neutral section 0 layer 0",
+        "length": 0.06661037286454224,
+        "name": "Neutral parallel 0 turn 7",
+        "orientation": "clockwise",
+        "parallel": 0,
+        "rotation": 255.4817633561571,
+        "section": "Neutral section 0",
+        "winding": "Neutral"
+      },
+      {
+        "additionalCoordinates": [
+          [
+            -0.007498347788081241,
+            -0.04396497156238563
+          ]
+        ],
+        "coordinateSystem": "cartesian",
+        "coordinates": [
+          -0.004379688294305182,
+          -0.025679373210363336
+        ],
+        "crossSectionalShape": "round",
+        "dimensions": [
+          0.0021996399999999997,
+          0.0021996399999999997
+        ],
+        "layer": "Neutral section 0 layer 0",
+        "length": 0.06661037286454224,
+        "name": "Neutral parallel 0 turn 8",
+        "orientation": "clockwise",
+        "parallel": 0,
+        "rotation": 260.3211755706081,
+        "section": "Neutral section 0",
+        "winding": "Neutral"
+      },
+      {
+        "additionalCoordinates": [
+          [
+            -0.00376258727790739,
+            -0.04444082448614708
+          ]
+        ],
+        "coordinateSystem": "cartesian",
+        "coordinates": [
+          -0.00219767873177958,
+          -0.025957312769704873
+        ],
+        "crossSectionalShape": "round",
+        "dimensions": [
+          0.0021996399999999997,
+          0.0021996399999999997
+        ],
+        "layer": "Neutral section 0 layer 0",
+        "length": 0.06661037286454224,
+        "name": "Neutral parallel 0 turn 9",
+        "orientation": "clockwise",
+        "parallel": 0,
+        "rotation": 265.1605877850591,
+        "section": "Neutral section 0",
+        "winding": "Neutral"
+      },
+      {
+        "additionalCoordinates": [
+          [
+            -3.81358670396973e-13,
+            -0.04459982
+          ]
+        ],
+        "coordinateSystem": "cartesian",
+        "coordinates": [
+          -2.227466839193929e-13,
+          -0.02605018
+        ],
+        "crossSectionalShape": "round",
+        "dimensions": [
+          0.0021996399999999997,
+          0.0021996399999999997
+        ],
+        "layer": "Neutral section 0 layer 0",
+        "length": 0.06661037286454224,
+        "name": "Neutral parallel 0 turn 10",
+        "orientation": "clockwise",
+        "parallel": 0,
+        "rotation": 269.99999999951007,
+        "section": "Neutral section 0",
+        "winding": "Neutral"
+      },
+      {
+        "additionalCoordinates": [
+          [
+            0.003762587277147392,
+            -0.04444082448621142
+          ]
+        ],
+        "coordinateSystem": "cartesian",
+        "coordinates": [
+          0.0021976787313356745,
+          -0.025957312769742457
+        ],
+        "crossSectionalShape": "round",
+        "dimensions": [
+          0.0021996399999999997,
+          0.0021996399999999997
+        ],
+        "layer": "Neutral section 0 layer 0",
+        "length": 0.06661037286454224,
+        "name": "Neutral parallel 0 turn 11",
+        "orientation": "clockwise",
+        "parallel": 0,
+        "rotation": 274.83941221396105,
+        "section": "Neutral section 0",
+        "winding": "Neutral"
+      },
+      {
+        "additionalCoordinates": [
+          [
+            0.007498347787329301,
+            -0.043964971562513874
+          ]
+        ],
+        "coordinateSystem": "cartesian",
+        "coordinates": [
+          0.004379688293865985,
+          -0.02567937321043824
+        ],
+        "crossSectionalShape": "round",
+        "dimensions": [
+          0.0021996399999999997,
+          0.0021996399999999997
+        ],
+        "layer": "Neutral section 0 layer 0",
+        "length": 0.06661037286454224,
+        "name": "Neutral parallel 0 turn 12",
+        "orientation": "clockwise",
+        "parallel": 0,
+        "rotation": 279.67882442841204,
+        "section": "Neutral section 0",
+        "winding": "Neutral"
+      },
+      {
+        "additionalCoordinates": [
+          [
+            0.011180646034244091,
+            -0.043175653999555606
+          ]
+        ],
+        "coordinateSystem": "cartesian",
+        "coordinates": [
+          0.006530471237514966,
+          -0.025218342995692436
+        ],
+        "crossSectionalShape": "round",
+        "dimensions": [
+          0.0021996399999999997,
+          0.0021996399999999997
+        ],
+        "layer": "Neutral section 0 layer 0",
+        "length": 0.06661037286454224,
+        "name": "Neutral parallel 0 turn 13",
+        "orientation": "clockwise",
+        "parallel": 0,
+        "rotation": 284.51823664286303,
+        "section": "Neutral section 0",
+        "winding": "Neutral"
+      },
+      {
+        "additionalCoordinates": [
+          [
+            0.014783227701089119,
+            -0.04207849953087861
+          ]
+        ],
+        "coordinateSystem": "cartesian",
+        "coordinates": [
+          0.008634692754238869,
+          -0.02457750921212918
+        ],
+        "crossSectionalShape": "round",
+        "dimensions": [
+          0.0021996399999999997,
+          0.0021996399999999997
+        ],
+        "layer": "Neutral section 0 layer 0",
+        "length": 0.06661037286454224,
+        "name": "Neutral parallel 0 turn 14",
+        "orientation": "clockwise",
+        "parallel": 0,
+        "rotation": 289.357648857314,
+        "section": "Neutral section 0",
+        "winding": "Neutral"
+      },
+      {
+        "additionalCoordinates": [
+          [
+            0.018280406840109502,
+            -0.04068133072789628
+          ]
+        ],
+        "coordinateSystem": "cartesian",
+        "coordinates": [
+          0.010677350013028835,
+          -0.0237614409228833
+        ],
+        "crossSectionalShape": "round",
+        "dimensions": [
+          0.0021996399999999997,
+          0.0021996399999999997
+        ],
+        "layer": "Neutral section 0 layer 0",
+        "length": 0.06661037286454224,
+        "name": "Neutral parallel 0 turn 15",
+        "orientation": "clockwise",
+        "parallel": 0,
+        "rotation": 294.197061071765,
+        "section": "Neutral section 0",
+        "winding": "Neutral"
+      },
+      {
+        "additionalCoordinates": [
+          [
+            0.02164724901012882,
+            -0.038994109225957155
+          ]
+        ],
+        "coordinateSystem": "cartesian",
+        "coordinates": [
+          0.012643879128182076,
+          -0.022775956590763022
+        ],
+        "crossSectionalShape": "round",
+        "dimensions": [
+          0.0021996399999999997,
+          0.0021996399999999997
+        ],
+        "layer": "Neutral section 0 layer 0",
+        "length": 0.06661037286454224,
+        "name": "Neutral parallel 0 turn 16",
+        "orientation": "clockwise",
+        "parallel": 0,
+        "rotation": 299.036473286216,
+        "section": "Neutral section 0",
+        "winding": "Neutral"
+      },
+      {
+        "additionalCoordinates": [
+          [
+            0.02485974905593451,
+            -0.037028864699155485
+          ]
+        ],
+        "coordinateSystem": "cartesian",
+        "coordinates": [
+          0.014520258997949412,
+          -0.021628082593352308
+        ],
+        "crossSectionalShape": "round",
+        "dimensions": [
+          0.0021996399999999997,
+          0.0021996399999999997
+        ],
+        "layer": "Neutral section 0 layer 0",
+        "length": 0.06661037286454224,
+        "name": "Neutral parallel 0 turn 17",
+        "orientation": "clockwise",
+        "parallel": 0,
+        "rotation": 303.875885500667,
+        "section": "Neutral section 0",
+        "winding": "Neutral"
+      },
+      {
+        "additionalCoordinates": [
+          [
+            0.02789500226197265,
+            -0.03479960909028923
+          ]
+        ],
+        "coordinateSystem": "cartesian",
+        "coordinates": [
+          0.016293111273202328,
+          -0.020326003125834827
+        ],
+        "crossSectionalShape": "round",
+        "dimensions": [
+          0.0021996399999999997,
+          0.0021996399999999997
+        ],
+        "layer": "Neutral section 0 layer 0",
+        "length": 0.06661037286454224,
+        "name": "Neutral parallel 0 turn 18",
+        "orientation": "clockwise",
+        "parallel": 0,
+        "rotation": 308.71529771511797,
+        "section": "Neutral section 0",
+        "winding": "Neutral"
+      },
+      {
+        "additionalCoordinates": [
+          [
+            0.030731367660047755,
+            -0.032322236707495525
+          ]
+        ],
+        "coordinateSystem": "cartesian",
+        "coordinates": [
+          0.017949795743355527,
+          -0.018879001848726425
+        ],
+        "crossSectionalShape": "round",
+        "dimensions": [
+          0.0021996399999999997,
+          0.0021996399999999997
+        ],
+        "layer": "Neutral section 0 layer 0",
+        "length": 0.06661037286454224,
+        "name": "Neutral parallel 0 turn 19",
+        "orientation": "clockwise",
+        "parallel": 0,
+        "rotation": 313.55470992956896,
+        "section": "Neutral section 0",
+        "winding": "Neutral"
+      },
+      {
+        "additionalCoordinates": [
+          [
+            0.03334862232666586,
+            -0.029614410899860954
+          ]
+        ],
+        "coordinateSystem": "cartesian",
+        "coordinates": [
+          0.019478500459456215,
+          -0.017297395696559758
+        ],
+        "crossSectionalShape": "round",
+        "dimensions": [
+          0.0021996399999999997,
+          0.0021996399999999997
+        ],
+        "layer": "Neutral section 0 layer 0",
+        "length": 0.06661037286454224,
+        "name": "Neutral parallel 0 turn 20",
+        "orientation": "clockwise",
+        "parallel": 0,
+        "rotation": 318.39412214401995,
+        "section": "Neutral section 0",
+        "winding": "Neutral"
+      },
+      {
+        "additionalCoordinates": [
+          [
+            -0.03061695803866219,
+            -0.03453844815196769
+          ]
+        ],
+        "coordinateSystem": "cartesian",
+        "coordinates": [
+          -0.016048103859883887,
+          -0.017643883381896965
+        ],
+        "crossSectionalShape": "round",
+        "dimensions": [
+          0.0021996399999999997,
+          0.0021996399999999997
+        ],
+        "layer": "Neutral section 0 layer 1",
+        "length": 0.08043111859362675,
+        "name": "Neutral parallel 0 turn 21",
+        "orientation": "clockwise",
+        "parallel": 0,
+        "rotation": 227.711717557,
+        "section": "Neutral section 0",
+        "winding": "Neutral"
+      },
+      {
+        "additionalCoordinates": [
+          [
+            -0.027594033628269468,
+            -0.03699826791093463
+          ]
+        ],
+        "coordinateSystem": "cartesian",
+        "coordinates": [
+          -0.014354360328462249,
+          -0.01904732521516523
+        ],
+        "crossSectionalShape": "round",
+        "dimensions": [
+          0.0021996399999999997,
+          0.0021996399999999997
+        ],
+        "layer": "Neutral section 0 layer 1",
+        "length": 0.08043111859362675,
+        "name": "Neutral parallel 0 turn 22",
+        "orientation": "clockwise",
+        "parallel": 0,
+        "rotation": 232.99775286241925,
+        "section": "Neutral section 0",
+        "winding": "Neutral"
+      },
+      {
+        "additionalCoordinates": [
+          [
+            -0.024374367277881778,
+            -0.03919429473903424
+          ]
+        ],
+        "coordinateSystem": "cartesian",
+        "coordinates": [
+          -0.012538523835462577,
+          -0.020288757436549357
+        ],
+        "crossSectionalShape": "round",
+        "dimensions": [
+          0.0021996399999999997,
+          0.0021996399999999997
+        ],
+        "layer": "Neutral section 0 layer 1",
+        "length": 0.08043111859362675,
+        "name": "Neutral parallel 0 turn 23",
+        "orientation": "clockwise",
+        "parallel": 0,
+        "rotation": 238.2837881678385,
+        "section": "Neutral section 0",
+        "winding": "Neutral"
+      },
+      {
+        "additionalCoordinates": [
+          [
+            -0.020980914797890795,
+            -0.04111087124509779
+          ]
+        ],
+        "coordinateSystem": "cartesian",
+        "coordinates": [
+          -0.010616039224827692,
+          -0.02135762087566215
+        ],
+        "crossSectionalShape": "round",
+        "dimensions": [
+          0.0021996399999999997,
+          0.0021996399999999997
+        ],
+        "layer": "Neutral section 0 layer 1",
+        "length": 0.08043111859362677,
+        "name": "Neutral parallel 0 turn 24",
+        "orientation": "clockwise",
+        "parallel": 0,
+        "rotation": 243.56982347325777,
+        "section": "Neutral section 0",
+        "winding": "Neutral"
+      },
+      {
+        "additionalCoordinates": [
+          [
+            -0.01743787107162486,
+            -0.042734332483107186
+          ]
+        ],
+        "coordinateSystem": "cartesian",
+        "coordinates": [
+          -0.008603258450551326,
+          -0.0222448241693347
+        ],
+        "crossSectionalShape": "round",
+        "dimensions": [
+          0.0021996399999999997,
+          0.0021996399999999997
+        ],
+        "layer": "Neutral section 0 layer 1",
+        "length": 0.08043111859362675,
+        "name": "Neutral parallel 0 turn 25",
+        "orientation": "clockwise",
+        "parallel": 0,
+        "rotation": 248.85585877867703,
+        "section": "Neutral section 0",
+        "winding": "Neutral"
+      },
+      {
+        "additionalCoordinates": [
+          [
+            -0.013770497548916894,
+            -0.04405310338151712
+          ]
+        ],
+        "coordinateSystem": "cartesian",
+        "coordinates": [
+          -0.00651730149291232,
+          -0.022942821089440655
+        ],
+        "crossSectionalShape": "round",
+        "dimensions": [
+          0.0021996399999999997,
+          0.0021996399999999997
+        ],
+        "layer": "Neutral section 0 layer 1",
+        "length": 0.08043111859362675,
+        "name": "Neutral parallel 0 turn 26",
+        "orientation": "clockwise",
+        "parallel": 0,
+        "rotation": 254.1418940840963,
+        "section": "Neutral section 0",
+        "winding": "Neutral"
+      },
+      {
+        "additionalCoordinates": [
+          [
+            -0.01000494213518975,
+            -0.04505778127203853
+          ]
+        ],
+        "coordinateSystem": "cartesian",
+        "coordinates": [
+          -0.004375910742156911,
+          -0.02344567472836463
+        ],
+        "crossSectionalShape": "round",
+        "dimensions": [
+          0.0021996399999999997,
+          0.0021996399999999997
+        ],
+        "layer": "Neutral section 0 layer 1",
+        "length": 0.08043111859362675,
+        "name": "Neutral parallel 0 turn 27",
+        "orientation": "clockwise",
+        "parallel": 0,
+        "rotation": 259.42792938951555,
+        "section": "Neutral section 0",
+        "winding": "Neutral"
+      },
+      {
+        "additionalCoordinates": [
+          [
+            -0.006168052760225596,
+            -0.04574120292946431
+          ]
+        ],
+        "coordinateSystem": "cartesian",
+        "coordinates": [
+          -0.0021973000881883617,
+          -0.023749107996176348
+        ],
+        "crossSectionalShape": "round",
+        "dimensions": [
+          0.0021996399999999997,
+          0.0021996399999999997
+        ],
+        "layer": "Neutral section 0 layer 1",
+        "length": 0.08043111859362675,
+        "name": "Neutral parallel 0 turn 28",
+        "orientation": "clockwise",
+        "parallel": 0,
+        "rotation": 264.7139646949348,
+        "section": "Neutral section 0",
+        "winding": "Neutral"
+      },
+      {
+        "additionalCoordinates": [
+          [
+            0.0016099881926455888,
+            -0.04612711196581576
+          ]
+        ],
+        "coordinateSystem": "cartesian",
+        "coordinates": [
+          1.4739065474334185e-13,
+          -0.02385054
+        ],
+        "crossSectionalShape": "round",
+        "dimensions": [
+          0.0021996399999999997,
+          0.0021996399999999997
+        ],
+        "layer": "Neutral section 0 layer 1",
+        "length": 0.08043111859362675,
+        "name": "Neutral parallel 0 turn 29",
+        "orientation": "clockwise",
+        "parallel": 0,
+        "rotation": 270.0000000003541,
+        "section": "Neutral section 0",
+        "winding": "Neutral"
+      },
+      {
+        "additionalCoordinates": [
+          [
+            0.005495683330691545,
+            -0.045826847862537094
+          ]
+        ],
+        "coordinateSystem": "cartesian",
+        "coordinates": [
+          0.002197300088481889,
+          -0.023749107996149186
+        ],
+        "crossSectionalShape": "round",
+        "dimensions": [
+          0.0021996399999999997,
+          0.0021996399999999997
+        ],
+        "layer": "Neutral section 0 layer 1",
+        "length": 0.08043111859362677,
+        "name": "Neutral parallel 0 turn 30",
+        "orientation": "clockwise",
+        "parallel": 0,
+        "rotation": 275.28603530577334,
+        "section": "Neutral section 0",
+        "winding": "Neutral"
+      },
+      {
+        "additionalCoordinates": [
+          [
+            0.009342194947595065,
+            -0.04519984417947135
+          ]
+        ],
+        "coordinateSystem": "cartesian",
+        "coordinates": [
+          0.004375910742446626,
+          -0.023445674728310554
+        ],
+        "crossSectionalShape": "round",
+        "dimensions": [
+          0.0021996399999999997,
+          0.0021996399999999997
+        ],
+        "layer": "Neutral section 0 layer 1",
+        "length": 0.08043111859362675,
+        "name": "Neutral parallel 0 turn 31",
+        "orientation": "clockwise",
+        "parallel": 0,
+        "rotation": 280.5720706111926,
+        "section": "Neutral section 0",
+        "winding": "Neutral"
+      },
+      {
+        "additionalCoordinates": [
+          [
+            0.013122097906171868,
+            -0.04425057137290095
+          ]
+        ],
+        "coordinateSystem": "cartesian",
+        "coordinates": [
+          0.006517301493195861,
+          -0.02294282108936011
+        ],
+        "crossSectionalShape": "round",
+        "dimensions": [
+          0.0021996399999999997,
+          0.0021996399999999997
+        ],
+        "layer": "Neutral section 0 layer 1",
+        "length": 0.08043111859362675,
+        "name": "Neutral parallel 0 turn 32",
+        "orientation": "clockwise",
+        "parallel": 0,
+        "rotation": 285.85810591661186,
+        "section": "Neutral section 0",
+        "winding": "Neutral"
+      },
+      {
+        "additionalCoordinates": [
+          [
+            0.016808441980475198,
+            -0.04298579763685164
+          ]
+        ],
+        "coordinateSystem": "cartesian",
+        "coordinates": [
+          0.008603258450826263,
+          -0.022244824169228367
+        ],
+        "crossSectionalShape": "round",
+        "dimensions": [
+          0.0021996399999999997,
+          0.0021996399999999997
+        ],
+        "layer": "Neutral section 0 layer 1",
+        "length": 0.08043111859362675,
+        "name": "Neutral parallel 0 turn 33",
+        "orientation": "clockwise",
+        "parallel": 0,
+        "rotation": 291.1441412220311,
+        "section": "Neutral section 0",
+        "winding": "Neutral"
+      },
+      {
+        "additionalCoordinates": [
+          [
+            0.020374944007469396,
+            -0.041414540646732376
+          ]
+        ],
+        "coordinateSystem": "cartesian",
+        "coordinates": [
+          0.010616039225091665,
+          -0.021357620875530944
+        ],
+        "crossSectionalShape": "round",
+        "dimensions": [
+          0.0021996399999999997,
+          0.0021996399999999997
+        ],
+        "layer": "Neutral section 0 layer 1",
+        "length": 0.08043111859362675,
+        "name": "Neutral parallel 0 turn 34",
+        "orientation": "clockwise",
+        "parallel": 0,
+        "rotation": 296.4301765274504,
+        "section": "Neutral section 0",
+        "winding": "Neutral"
+      },
+      {
+        "additionalCoordinates": [
+          [
+            0.023796175282629204,
+            -0.03954800326446011
+          ]
+        ],
+        "coordinateSystem": "cartesian",
+        "coordinates": [
+          0.012538523835713319,
+          -0.020288757436394397
+        ],
+        "crossSectionalShape": "round",
+        "dimensions": [
+          0.0021996399999999997,
+          0.0021996399999999997
+        ],
+        "layer": "Neutral section 0 layer 1",
+        "length": 0.08043111859362675,
+        "name": "Neutral parallel 0 turn 35",
+        "orientation": "clockwise",
+        "parallel": 0,
+        "rotation": 301.71621183286965,
+        "section": "Neutral section 0",
+        "winding": "Neutral"
+      },
+      {
+        "additionalCoordinates": [
+          [
+            0.027047742863360195,
+            -0.03739949366348305
+          ]
+        ],
+        "coordinateSystem": "cartesian",
+        "coordinates": [
+          0.014354360328697663,
+          -0.019047325214987816
+        ],
+        "crossSectionalShape": "round",
+        "dimensions": [
+          0.0021996399999999997,
+          0.0021996399999999997
+        ],
+        "layer": "Neutral section 0 layer 1",
+        "length": 0.08043111859362675,
+        "name": "Neutral parallel 0 turn 36",
+        "orientation": "clockwise",
+        "parallel": 0,
+        "rotation": 307.0022471382889,
+        "section": "Neutral section 0",
+        "winding": "Neutral"
+      },
+      {
+        "additionalCoordinates": [
+          [
+            0.03010646348756756,
+            -0.0349843304432016
+          ]
+        ],
+        "coordinateSystem": "cartesian",
+        "coordinates": [
+          0.01604810386010195,
+          -0.017643883381698627
+        ],
+        "crossSectionalShape": "round",
+        "dimensions": [
+          0.0021996399999999997,
+          0.0021996399999999997
+        ],
+        "layer": "Neutral section 0 layer 1",
+        "length": 0.08043111859362675,
+        "name": "Neutral parallel 0 turn 37",
+        "orientation": "clockwise",
+        "parallel": 0,
+        "rotation": 312.28828244370817,
+        "section": "Neutral section 0",
+        "winding": "Neutral"
+      }
+    ]
+  },
+  "core": {
+    "distributorsInfo": [
+      {
+        "cost": 51.81,
+        "country": "USA",
+        "distributedArea": "International",
+        "link": "https://www.digikey.com/en/products/detail/epcos-tdk-electronics/B64290A0730X010/6161114",
+        "name": "Digi-Key",
+        "quantity": 14,
+        "reference": "495-B64290A0730X010-ND",
+        "updatedAt": "03/02/2025"
+      },
+      {
+        "cost": 62,
+        "country": "USA",
+        "distributedArea": "International",
+        "link": "https://www.mouser.es/ProductDetail/EPCOS-TDK/B64290A0730X010?qs=EU6FO9ffTweCNADp6GgO9w%3D%3D",
+        "name": "Mouser",
+        "quantity": 69,
+        "reference": "871-B64290A0730X010",
+        "updatedAt": "03/02/2025"
+      }
+    ],
+    "functionalDescription": {
+      "gapping": [],
+      "material": {
+        "application": [
+          "Signal Processing"
+        ],
+        "coerciveForce": [
+          {
+            "magneticField": 66.362,
+            "magneticFluxDensity": 0,
+            "temperature": 25
+          },
+          {
+            "magneticField": 37.628,
+            "magneticFluxDensity": 0,
+            "temperature": 100
+          }
+        ],
+        "curieTemperature": 150,
+        "density": 4700,
+        "family": "K",
+        "manufacturerInfo": {
+          "datasheetUrl": "https://www.tdk-electronics.tdk.com/download/528854/d6a20f8b9ec044975113d05211eefff5/pdf-k10.pdf",
+          "name": "TDK"
+        },
+        "material": "ferrite",
+        "materialComposition": "NiZn",
+        "name": "K10",
+        "permeability": {
+          "complex": {
+            "imaginary": [
+              {
+                "frequency": 63096,
+                "value": 2
+              },
+              {
+                "frequency": 70795,
+                "value": 2
+              },
+              {
+                "frequency": 79433,
+                "value": 3
+              },
+              {
+                "frequency": 89125,
+                "value": 2
+              },
+              {
+                "frequency": 100000,
+                "value": 2
+              },
+              {
+                "frequency": 112202,
+                "value": 2
+              },
+              {
+                "frequency": 125893,
+                "value": 4
+              },
+              {
+                "frequency": 141254,
+                "value": 4
+              },
+              {
+                "frequency": 158489,
+                "value": 5
+              },
+              {
+                "frequency": 177828,
+                "value": 5
+              },
+              {
+                "frequency": 199526,
+                "value": 6
+              },
+              {
+                "frequency": 223872,
+                "value": 7
+              },
+              {
+                "frequency": 251189,
+                "value": 8
+              },
+              {
+                "frequency": 281838,
+                "value": 8
+              },
+              {
+                "frequency": 316228,
+                "value": 10
+              },
+              {
+                "frequency": 354813,
+                "value": 10
+              },
+              {
+                "frequency": 398107,
+                "value": 11
+              },
+              {
+                "frequency": 446684,
+                "value": 13
+              },
+              {
+                "frequency": 501187,
+                "value": 14
+              },
+              {
+                "frequency": 562341,
+                "value": 15
+              },
+              {
+                "frequency": 630957,
+                "value": 18
+              },
+              {
+                "frequency": 707946,
+                "value": 20
+              },
+              {
+                "frequency": 794328,
+                "value": 22
+              },
+              {
+                "frequency": 891251,
+                "value": 26
+              },
+              {
+                "frequency": 1000000,
+                "value": 31
+              },
+              {
+                "frequency": 1122019,
+                "value": 39
+              },
+              {
+                "frequency": 1258925,
+                "value": 49
+              },
+              {
+                "frequency": 1412538,
+                "value": 67
+              },
+              {
+                "frequency": 1584893,
+                "value": 100
+              },
+              {
+                "frequency": 1778279,
+                "value": 145
+              },
+              {
+                "frequency": 1995262,
+                "value": 210
+              },
+              {
+                "frequency": 2238721,
+                "value": 280
+              },
+              {
+                "frequency": 2511887,
+                "value": 339
+              },
+              {
+                "frequency": 2818383,
+                "value": 388
+              },
+              {
+                "frequency": 3162278,
+                "value": 413
+              },
+              {
+                "frequency": 3548134,
+                "value": 431
+              },
+              {
+                "frequency": 3981072,
+                "value": 440
+              },
+              {
+                "frequency": 4466836,
+                "value": 441
+              },
+              {
+                "frequency": 5011873,
+                "value": 439
+              },
+              {
+                "frequency": 5623414,
+                "value": 426
+              },
+              {
+                "frequency": 6309574,
+                "value": 412
+              },
+              {
+                "frequency": 7079458,
+                "value": 395
+              },
+              {
+                "frequency": 7943283,
+                "value": 376
+              },
+              {
+                "frequency": 8912510,
+                "value": 357
+              },
+              {
+                "frequency": 10000001,
+                "value": 336
+              },
+              {
+                "frequency": 11220185,
+                "value": 316
+              },
+              {
+                "frequency": 12589255,
+                "value": 296
+              },
+              {
+                "frequency": 14125376,
+                "value": 278
+              },
+              {
+                "frequency": 15848933,
+                "value": 261
+              },
+              {
+                "frequency": 17782795,
+                "value": 245
+              },
+              {
+                "frequency": 19952625,
+                "value": 230
+              },
+              {
+                "frequency": 22387213,
+                "value": 216
+              },
+              {
+                "frequency": 25118866,
+                "value": 204
+              },
+              {
+                "frequency": 28183831,
+                "value": 192
+              },
+              {
+                "frequency": 31622779,
+                "value": 180
+              },
+              {
+                "frequency": 35481342,
+                "value": 169
+              },
+              {
+                "frequency": 39810717,
+                "value": 159
+              },
+              {
+                "frequency": 44668359,
+                "value": 149
+              },
+              {
+                "frequency": 50451246,
+                "value": 138
+              },
+              {
+                "frequency": 56234133,
+                "value": 129
+              },
+              {
+                "frequency": 63095734,
+                "value": 120
+              },
+              {
+                "frequency": 70794578,
+                "value": 111
+              },
+              {
+                "frequency": 79432823,
+                "value": 103
+              },
+              {
+                "frequency": 89716412,
+                "value": 94
+              },
+              {
+                "frequency": 100000000,
+                "value": 87
+              },
+              {
+                "frequency": 112201845,
+                "value": 80
+              },
+              {
+                "frequency": 125892541,
+                "value": 73
+              },
+              {
+                "frequency": 141253755,
+                "value": 67
+              },
+              {
+                "frequency": 159540848,
+                "value": 60
+              },
+              {
+                "frequency": 177827941,
+                "value": 55
+              },
+              {
+                "frequency": 199526232,
+                "value": 50
+              },
+              {
+                "frequency": 223872114,
+                "value": 45
+              },
+              {
+                "frequency": 251188643,
+                "value": 40
+              },
+              {
+                "frequency": 283708205,
+                "value": 36
+              },
+              {
+                "frequency": 316227766,
+                "value": 33
+              },
+              {
+                "frequency": 354813389,
+                "value": 29
+              },
+              {
+                "frequency": 398107171,
+                "value": 26
+              },
+              {
+                "frequency": 446683592,
+                "value": 23
+              },
+              {
+                "frequency": 504512459,
+                "value": 21
+              },
+              {
+                "frequency": 562341325,
+                "value": 19
+              },
+              {
+                "frequency": 630957345,
+                "value": 17
+              },
+              {
+                "frequency": 707945784,
+                "value": 15
+              },
+              {
+                "frequency": 794328235,
+                "value": 14
+              },
+              {
+                "frequency": 897164117,
+                "value": 12
+              },
+              {
+                "frequency": 1000000000,
+                "value": 11
+              }
+            ],
+            "real": [
+              {
+                "frequency": 10000,
+                "value": 777
+              },
+              {
+                "frequency": 11220,
+                "value": 802
+              },
+              {
+                "frequency": 12589,
+                "value": 781
+              },
+              {
+                "frequency": 14125,
+                "value": 796
+              },
+              {
+                "frequency": 15849,
+                "value": 795
+              },
+              {
+                "frequency": 17783,
+                "value": 803
+              },
+              {
+                "frequency": 19953,
+                "value": 800
+              },
+              {
+                "frequency": 22387,
+                "value": 797
+              },
+              {
+                "frequency": 25119,
+                "value": 795
+              },
+              {
+                "frequency": 28184,
+                "value": 796
+              },
+              {
+                "frequency": 31623,
+                "value": 800
+              },
+              {
+                "frequency": 35481,
+                "value": 795
+              },
+              {
+                "frequency": 39811,
+                "value": 795
+              },
+              {
+                "frequency": 44668,
+                "value": 793
+              },
+              {
+                "frequency": 50119,
+                "value": 793
+              },
+              {
+                "frequency": 56234,
+                "value": 794
+              },
+              {
+                "frequency": 63096,
+                "value": 794
+              },
+              {
+                "frequency": 70795,
+                "value": 794
+              },
+              {
+                "frequency": 79433,
+                "value": 794
+              },
+              {
+                "frequency": 89125,
+                "value": 793
+              },
+              {
+                "frequency": 100000,
+                "value": 792
+              },
+              {
+                "frequency": 112202,
+                "value": 793
+              },
+              {
+                "frequency": 125893,
+                "value": 792
+              },
+              {
+                "frequency": 141254,
+                "value": 792
+              },
+              {
+                "frequency": 158489,
+                "value": 792
+              },
+              {
+                "frequency": 177828,
+                "value": 792
+              },
+              {
+                "frequency": 199526,
+                "value": 792
+              },
+              {
+                "frequency": 223872,
+                "value": 792
+              },
+              {
+                "frequency": 251189,
+                "value": 793
+              },
+              {
+                "frequency": 281838,
+                "value": 793
+              },
+              {
+                "frequency": 316228,
+                "value": 793
+              },
+              {
+                "frequency": 354813,
+                "value": 794
+              },
+              {
+                "frequency": 398107,
+                "value": 795
+              },
+              {
+                "frequency": 446684,
+                "value": 795
+              },
+              {
+                "frequency": 501187,
+                "value": 797
+              },
+              {
+                "frequency": 562341,
+                "value": 800
+              },
+              {
+                "frequency": 630957,
+                "value": 802
+              },
+              {
+                "frequency": 707946,
+                "value": 806
+              },
+              {
+                "frequency": 794328,
+                "value": 811
+              },
+              {
+                "frequency": 891251,
+                "value": 818
+              },
+              {
+                "frequency": 1000000,
+                "value": 826
+              },
+              {
+                "frequency": 1122019,
+                "value": 839
+              },
+              {
+                "frequency": 1258925,
+                "value": 854
+              },
+              {
+                "frequency": 1412538,
+                "value": 874
+              },
+              {
+                "frequency": 1584893,
+                "value": 898
+              },
+              {
+                "frequency": 1778279,
+                "value": 916
+              },
+              {
+                "frequency": 1995262,
+                "value": 918
+              },
+              {
+                "frequency": 2238721,
+                "value": 894
+              },
+              {
+                "frequency": 2511887,
+                "value": 849
+              },
+              {
+                "frequency": 2818383,
+                "value": 789
+              },
+              {
+                "frequency": 3162278,
+                "value": 733
+              },
+              {
+                "frequency": 3548134,
+                "value": 672
+              },
+              {
+                "frequency": 3981072,
+                "value": 613
+              },
+              {
+                "frequency": 4466836,
+                "value": 556
+              },
+              {
+                "frequency": 5011873,
+                "value": 500
+              },
+              {
+                "frequency": 5623414,
+                "value": 453
+              },
+              {
+                "frequency": 6309574,
+                "value": 407
+              },
+              {
+                "frequency": 7079458,
+                "value": 366
+              },
+              {
+                "frequency": 7943283,
+                "value": 329
+              },
+              {
+                "frequency": 8912510,
+                "value": 295
+              },
+              {
+                "frequency": 10000001,
+                "value": 268
+              },
+              {
+                "frequency": 11220185,
+                "value": 243
+              },
+              {
+                "frequency": 12589255,
+                "value": 220
+              },
+              {
+                "frequency": 14125376,
+                "value": 201
+              },
+              {
+                "frequency": 15848933,
+                "value": 182
+              },
+              {
+                "frequency": 17782795,
+                "value": 167
+              },
+              {
+                "frequency": 19952625,
+                "value": 153
+              },
+              {
+                "frequency": 22387213,
+                "value": 139
+              },
+              {
+                "frequency": 25118866,
+                "value": 126
+              },
+              {
+                "frequency": 28183831,
+                "value": 113
+              },
+              {
+                "frequency": 31622779,
+                "value": 103
+              },
+              {
+                "frequency": 35481342,
+                "value": 92
+              },
+              {
+                "frequency": 39810717,
+                "value": 82
+              },
+              {
+                "frequency": 44668359,
+                "value": 72
+              },
+              {
+                "frequency": 50451246,
+                "value": 63
+              },
+              {
+                "frequency": 56234133,
+                "value": 55
+              },
+              {
+                "frequency": 63095734,
+                "value": 48
+              },
+              {
+                "frequency": 70794578,
+                "value": 41
+              },
+              {
+                "frequency": 79432823,
+                "value": 35
+              },
+              {
+                "frequency": 89716412,
+                "value": 30
+              },
+              {
+                "frequency": 100000000,
+                "value": 25
+              },
+              {
+                "frequency": 112201845,
+                "value": 20
+              },
+              {
+                "frequency": 125892541,
+                "value": 17
+              },
+              {
+                "frequency": 141253755,
+                "value": 13
+              },
+              {
+                "frequency": 159540848,
+                "value": 10
+              },
+              {
+                "frequency": 177827941,
+                "value": 8
+              },
+              {
+                "frequency": 199526232,
+                "value": 6
+              },
+              {
+                "frequency": 223872114,
+                "value": 4
+              },
+              {
+                "frequency": 251188643,
+                "value": 3
+              },
+              {
+                "frequency": 283708205,
+                "value": 1
+              }
+            ]
+          },
+          "initial": [
+            {
+              "temperature": -60,
+              "value": 412
+            },
+            {
+              "temperature": -50,
+              "value": 453
+            },
+            {
+              "temperature": -40,
+              "value": 494
+            },
+            {
+              "temperature": -30,
+              "value": 535
+            },
+            {
+              "temperature": -20,
+              "value": 577
+            },
+            {
+              "temperature": -10,
+              "value": 630
+            },
+            {
+              "temperature": 0,
+              "value": 674
+            },
+            {
+              "temperature": 10,
+              "value": 739
+            },
+            {
+              "temperature": 20,
+              "value": 805
+            },
+            {
+              "temperature": 30,
+              "value": 881
+            },
+            {
+              "temperature": 40,
+              "value": 954
+            },
+            {
+              "temperature": 50,
+              "value": 1044
+            },
+            {
+              "temperature": 60,
+              "value": 1138
+            },
+            {
+              "temperature": 70,
+              "value": 1264
+            },
+            {
+              "temperature": 80,
+              "value": 1331
+            },
+            {
+              "temperature": 90,
+              "value": 1453
+            },
+            {
+              "temperature": 100,
+              "value": 1542
+            },
+            {
+              "temperature": 110,
+              "value": 1631
+            },
+            {
+              "temperature": 120,
+              "value": 1675
+            },
+            {
+              "temperature": 130,
+              "value": 1697
+            },
+            {
+              "temperature": 140,
+              "value": 1653
+            },
+            {
+              "temperature": 150,
+              "value": 1497
+            },
+            {
+              "temperature": 160,
+              "value": 222
+            },
+            {
+              "temperature": 170,
+              "value": 1
+            }
+          ]
+        },
+        "recommendations": {
+          "maximumFrequency": 500000000,
+          "minimumFrequency": 1000000
+        },
+        "remanence": [
+          {
+            "magneticField": 0,
+            "magneticFluxDensity": 0.162676,
+            "temperature": 25
+          },
+          {
+            "magneticField": 0,
+            "magneticFluxDensity": 0.102296,
+            "temperature": 100
+          }
+        ],
+        "resistivity": [
+          {
+            "temperature": 25,
+            "value": 100000
+          }
+        ],
+        "saturation": [
+          {
+            "magneticField": 2027,
+            "magneticFluxDensity": 0.2848,
+            "temperature": 25
+          },
+          {
+            "magneticField": 1986,
+            "magneticFluxDensity": 0.208387,
+            "temperature": 100
+          }
+        ],
+        "type": "commercial",
+        "volumetricLosses": {
+          "default": [
+            {
+              "factors": [
+                {
+                  "frequency": 100000,
+                  "value": 1.4999999999999992e-05
+                },
+                {
+                  "frequency": 1000000,
+                  "value": 5.9999999999999995e-05
+                }
+              ],
+              "method": "lossFactor"
+            }
+          ]
+        }
+      },
+      "numberStacks": 1,
+      "shape": {
+        "aliases": [
+          "R 87/54.3/13.5"
+        ],
+        "dimensions": {
+          "A": {
+            "nominal": 0.087
+          },
+          "B": {
+            "nominal": 0.0543
+          },
+          "C": {
+            "nominal": 0.0135
+          }
+        },
+        "family": "t",
+        "magneticCircuit": "closed",
+        "name": "T 87/54.3/13.5",
+        "type": "standard"
+      },
+      "type": "toroidal"
+    },
+    "geometricalDescription": [
+      {
+        "coordinates": [
+          0,
+          0,
+          0
+        ],
+        "material": "K10",
+        "rotation": [
+          1.5707963267948966,
+          1.5707963267948966,
+          0
+        ],
+        "shape": {
+          "aliases": [
+            "R 87/54.3/13.5"
+          ],
+          "dimensions": {
+            "A": {
+              "nominal": 0.087
+            },
+            "B": {
+              "nominal": 0.0543
+            },
+            "C": {
+              "nominal": 0.0135
+            }
+          },
+          "family": "t",
+          "magneticCircuit": "closed",
+          "name": "T 87/54.3/13.5",
+          "type": "standard"
+        },
+        "type": "toroidal"
+      }
+    ],
+    "manufacturerInfo": {
+      "name": "TDK",
+      "reference": "B64290A0730X010",
+      "status": "production"
+    },
+    "name": "T 87/54.3/13.5 - K10 - Ungapped",
+    "processedDescription": {
+      "columns": [
+        {
+          "area": 0.000220725,
+          "coordinates": [
+            0,
+            0,
+            0
+          ],
+          "depth": 0.0135,
+          "height": 0.22195352097611887,
+          "shape": "rectangular",
+          "type": "central",
+          "width": 0.016349999999999996
+        }
+      ],
+      "depth": 0.0135,
+      "effectiveParameters": {
+        "effectiveArea": 0.00022072499999999993,
+        "effectiveLength": 0.22195352097611887,
+        "effectiveVolume": 4.8990690917453814e-05,
+        "minimumArea": 0.00022072499999999996
+      },
+      "height": 0.087,
+      "width": 0.087,
+      "windingWindows": [
+        {
+          "angle": 360,
+          "area": 0.0023157386307957424,
+          "coordinates": [
+            0.016349999999999996,
+            0
+          ],
+          "radialHeight": 0.02715
+        }
+      ]
+    }
+  },
+  "manufacturerInfo": {
+    "name": "OpenMagnetics",
+    "reference": "My custom magnetic"
+  }
+}
