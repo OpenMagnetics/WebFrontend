@@ -1,5 +1,5 @@
 <script setup>
-import { InsulationType, IsolationSide, Topologies } from 'WebSharedComponents/assets/ts/MAS.ts'
+import { IsolationClass, IsolationSide, Topology } from 'WebSharedComponents/assets/ts/MAS.ts'
 import { useMasStore } from '../../stores/mas'
 import { useTaskQueueStore } from '../../stores/taskQueue'
 import Dimension from 'WebSharedComponents/DataInput/Dimension.vue'
@@ -35,7 +35,7 @@ export default {
       outputInductance: 0,
       dcBlockingCapacitance: 1e-6,
       outputCapacitance: 100e-6,
-      turnsRatio: 8.0, ambientTemperature: 25, insulationType: InsulationType.Basic,
+      turnsRatio: 8.0, ambientTemperature: 25, insulationType: IsolationClass.Basic,
       designMode: 'Help me with the design',
     };
     const insulationTypes = ['no', 'basic', 'reinforced'];
@@ -117,7 +117,7 @@ export default {
     getCalculateFn() { return (aux) => this.taskQueueStore.calculateAhbInputs(aux); },
     getSimulateFn() { return (aux) => this.taskQueueStore.simulateAhbIdealWaveforms(aux); },
     getDefaultFrequency() { return this.localData.switchingFrequency; },
-    getTopology() { return Topologies.AsymmetricHalfBridgeConverter; },
+    getTopology() { return Topology.AsymmetricHalfBridgeConverter; },
     getIsolationSides() {
       // Center-tapped: two physical secondaries (Sec_a, Sec_b) on the
       // same isolation side, linked via wound_with so the section

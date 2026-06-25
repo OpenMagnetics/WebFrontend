@@ -1,5 +1,5 @@
 <script setup>
-import { InsulationType, IsolationSide } from 'WebSharedComponents/assets/ts/MAS.ts'
+import { IsolationClass, IsolationSide } from 'WebSharedComponents/assets/ts/MAS.ts'
 import { useMasStore } from '../../stores/mas'
 import { useTaskQueueStore } from '../../stores/taskQueue'
 import { deepCopy } from 'WebSharedComponents/assets/js/utils.js'
@@ -128,9 +128,9 @@ export default {
         getIsolationSides() { return [IsolationSide.Primary, IsolationSide.Secondary]; },
         getInsulationType() {
             const it = (this.localData.insulationType || '').toLowerCase();
-            if (it === 'reinforced') return InsulationType.Reinforced;
-            if (it === 'basic') return InsulationType.Basic;
-            return InsulationType.Functional;
+            if (it === 'reinforced') return IsolationClass.Reinforced;
+            if (it === 'basic') return IsolationClass.Basic;
+            return IsolationClass.Functional;
         },
 
         updateErrorMessage() {

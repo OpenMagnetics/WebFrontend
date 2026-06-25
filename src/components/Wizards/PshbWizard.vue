@@ -1,5 +1,5 @@
 <script setup>
-import { InsulationType, IsolationSide, Topologies } from 'WebSharedComponents/assets/ts/MAS.ts'
+import { IsolationClass, IsolationSide, Topology } from 'WebSharedComponents/assets/ts/MAS.ts'
 import { useMasStore } from '../../stores/mas'
 import { useTaskQueueStore } from '../../stores/taskQueue'
 import Dimension from 'WebSharedComponents/DataInput/Dimension.vue'
@@ -29,7 +29,7 @@ export default {
       phaseShift: 72, maxPhaseShift: 144, efficiency: 0.95,
       seriesInductance: 0, useLeakageInductance: true,
       rectifierType: 'fullBridge', magnetizingInductance: 1e-3,
-      turnsRatio: 8.0, ambientTemperature: 25, insulationType: InsulationType.Basic,
+      turnsRatio: 8.0, ambientTemperature: 25, insulationType: IsolationClass.Basic,
       designMode: 'Help me with the design',
     };
     const insulationTypes = ['no', 'basic', 'reinforced'];
@@ -95,7 +95,7 @@ export default {
     getCalculateFn() { return (aux) => this.taskQueueStore.calculatePshbInputs(aux); },
     getSimulateFn() { return (aux) => this.taskQueueStore.simulatePshbIdealWaveforms(aux); },
     getDefaultFrequency() { return this.localData.switchingFrequency; },
-    getTopology() { return Topologies.PhaseShiftedHalfBridgeConverter; },
+    getTopology() { return Topology.PhaseShiftedHalfBridgeConverter; },
     getIsolationSides() { return [IsolationSide.Primary, IsolationSide.Secondary]; },
     getInsulationType() { return this.localData.insulationType; },
 

@@ -1,5 +1,5 @@
 <script setup>
-import { IsolationSide, Topologies } from 'WebSharedComponents/assets/ts/MAS.ts'
+import { IsolationSide, Topology } from 'WebSharedComponents/assets/ts/MAS.ts'
 import { useMasStore } from '../../stores/mas'
 import { useTaskQueueStore } from '../../stores/taskQueue'
 import Dimension from 'WebSharedComponents/DataInput/Dimension.vue'
@@ -218,7 +218,7 @@ export default {
         buildInputs() { return this.buildParams('analytical'); },
         hasSimulatedData() { return this.simulatedOperatingPoints && this.simulatedOperatingPoints.length > 0; },
         getFrequency() { return this.localData.switchingFrequency; },
-        getTopology() { return Topologies.ViennaRectifierConverter; },
+        getTopology() { return Topology.ViennaRectifierConverter; },
         // Vienna boost inductor: 1 winding per phase. Per plan, the wizard
         // emits Phase A only (Phase B/C identical by symmetry).
         getIsolationSides() { return [IsolationSide.Primary]; },

@@ -1,5 +1,5 @@
 <script setup>
-import { IsolationSide, Topologies } from 'WebSharedComponents/assets/ts/MAS.ts'
+import { IsolationSide, Topology } from 'WebSharedComponents/assets/ts/MAS.ts'
 import { useMasStore } from '../../stores/mas'
 import { useTaskQueueStore } from '../../stores/taskQueue'
 import { combinedStyle, combinedClass, deepCopy } from 'WebSharedComponents/assets/js/utils.js'
@@ -127,7 +127,7 @@ export default {
         this.simulatedTurnsRatios = this.designRequirements.turnsRatios?.map(tr => tr.nominal) || null;
       }
     },
-    getTopology() { return Topologies.PushPullConverter; },
+    getTopology() { return Topology.PushPullConverter; },
     getIsolationSides() {
       // Push-Pull is center-tapped on BOTH primary and secondary, so MKF
       // models it as 2 primary halves + 2 secondary halves per output. The

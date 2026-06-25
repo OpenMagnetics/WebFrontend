@@ -4,7 +4,7 @@ import { useMasStore } from '../../stores/mas'
 import { toTitleCase, toPascalCase, deepCopy } from 'WebSharedComponents/assets/js/utils.js'
 import { tooltipsMagneticSynthesisDesignRequirements } from 'WebSharedComponents/assets/js/texts.js'
 import { defaultDesignRequirements, compulsoryRequirements, designRequirementsOrdered, isolationSideOrdered, IsolationSideOrdered, minimumMaximumScalePerParameter} from 'WebSharedComponents/assets/js/defaults.js'
-import { Market, ConnectionType, Topologies, WiringTechnology, IsolationSide } from 'WebSharedComponents/assets/ts/MAS.ts'
+import { Market, ConnectionType, Topology, WiringTechnology, IsolationSide } from 'WebSharedComponents/assets/ts/MAS.ts'
 import Insulation from './DesignRequirements/Insulation.vue'
 import Dimension from 'WebSharedComponents/DataInput/Dimension.vue'
 import MaximumDimensions from './DesignRequirements/MaximumDimensions.vue'
@@ -47,7 +47,7 @@ export default {
     computed: {
         topologyLabels() {
             const out = {};
-            Object.values(Topologies).forEach(v => {
+            Object.values(Topology).forEach(v => {
                 // camelCase → "Camel Case"
                 out[v] = v.replace(/([A-Z])/g, ' $1').replace(/^./, c => c.toUpperCase()).trim();
             });
@@ -520,7 +520,7 @@ export default {
                     v-if="masStore.mas.inputs.designRequirements.topology != null"
                     :name="'topology'"
                     :dataTestLabel="dataTestLabel + '-Topology'"
-                    :options="Object.values(Topologies)"
+                    :options="Object.values(Topology)"
                     :optionLabels="topologyLabels"
                     :titleSameRow="false"
                     :justifyContent="true"

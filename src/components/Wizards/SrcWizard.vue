@@ -1,5 +1,5 @@
 <script setup>
-import { InsulationType, IsolationSide, Topologies } from 'WebSharedComponents/assets/ts/MAS.ts'
+import { IsolationClass, IsolationSide, Topology } from 'WebSharedComponents/assets/ts/MAS.ts'
 import { useMasStore } from '../../stores/mas'
 import { useTaskQueueStore } from '../../stores/taskQueue'
 import Dimension from 'WebSharedComponents/DataInput/Dimension.vue'
@@ -42,7 +42,7 @@ export default {
             magnetizingInductance: 1e-3,
             ambientTemperature: 25,
             efficiency: 0.96,
-            insulationType: InsulationType.Basic,
+            insulationType: IsolationClass.Basic,
             designMode: designLevelOptions[0],
             overrideSeriesInductance: false,
             seriesInductance: 50e-6,
@@ -155,7 +155,7 @@ export default {
         buildInputs() { return this.buildParams('analytical'); },
         hasSimulatedData() { return this.simulatedOperatingPoints && this.simulatedOperatingPoints.length > 0; },
         getFrequency() { return this.localData.resonantFrequency; },
-        getTopology() { return Topologies.SeriesResonantConverter; },
+        getTopology() { return Topology.SeriesResonantConverter; },
         getIsolationSides() {
             // Same pattern as LLC: 1 primary + 2 windings per output (center-tap style coil virtualization).
             // For non-isolated SRC the topology degenerates but transformer-design path still expects sides.

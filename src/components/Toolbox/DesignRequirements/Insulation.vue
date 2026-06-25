@@ -4,7 +4,7 @@ import DimensionWithTolerance from 'WebSharedComponents/DataInput/DimensionWithT
 import ElementFromList from 'WebSharedComponents/DataInput/ElementFromList.vue'
 import SeveralElementsFromList from 'WebSharedComponents/DataInput/SeveralElementsFromList.vue'
 import { minimumMaximumScalePerParameter} from 'WebSharedComponents/assets/js/defaults.js'
-import { CTI as Cti, InsulationType, OvervoltageCategory, PollutionDegree, InsulationStandards } from 'WebSharedComponents/assets/ts/MAS.ts'
+import { CTI as Cti, IsolationClass, OvervoltageCategory, PollutionDegree, InsulationStandards } from 'WebSharedComponents/assets/ts/MAS.ts'
 import * as Utils from 'WebSharedComponents/assets/js/utils.js'
 </script>
 
@@ -74,7 +74,7 @@ export default {
         },
         insulationTypeLabels() {
             const out = {};
-            Object.values(InsulationType).forEach(v => { out[v] = v.charAt(0).toUpperCase() + v.slice(1); });
+            Object.values(IsolationClass).forEach(v => { out[v] = v.charAt(0).toUpperCase() + v.slice(1); });
             return out;
         },
         overvoltageCategoryLabels() {
@@ -159,7 +159,7 @@ export default {
             </div>
         </div>
 
-        <!-- Section 2: Classification (CTI / InsulationType / Overvoltage / Pollution) -->
+        <!-- Section 2: Classification (CTI / IsolationClass / Overvoltage / Pollution) -->
         <div class="ins-section">
             <div class="ins-section-header">
                 <i class="pi pi-list"></i>
@@ -192,7 +192,7 @@ export default {
                         :titleSameRow="true"
                         :justifyContent="true"
                         v-model="modelValue['insulation']"
-                        :options="Object.values(InsulationType)"
+                        :options="Object.values(IsolationClass)"
                         :optionLabels="insulationTypeLabels"
                         :labelWidthProportionClass="'col-6'"
                         :selectStyleClass="'col-6'"

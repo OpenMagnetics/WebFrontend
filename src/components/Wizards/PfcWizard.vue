@@ -1,5 +1,5 @@
 <script setup>
-import { IsolationSide, Topologies } from 'WebSharedComponents/assets/ts/MAS.ts'
+import { IsolationSide, Topology } from 'WebSharedComponents/assets/ts/MAS.ts'
 import { useMasStore } from '../../stores/mas'
 import { useTaskQueueStore } from '../../stores/taskQueue'
 import { combinedStyle, combinedClass, deepCopy } from 'WebSharedComponents/assets/js/utils.js'
@@ -184,7 +184,7 @@ export default {
       const dr = result?.masInputs?.designRequirements ?? result?.designRequirements;
       if (dr) this.designRequirements = dr;
     },
-    getTopology() { return Topologies.PowerFactorCorrection; },
+    getTopology() { return Topology.PowerFactorCorrection; },
     getIsolationSides() { return [IsolationSide.Primary]; },
     getInsulationType() { return null; },
 

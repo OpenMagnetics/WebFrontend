@@ -1,5 +1,5 @@
 <script setup>
-import { Topologies } from 'WebSharedComponents/assets/ts/MAS.ts'
+import { Topology } from 'WebSharedComponents/assets/ts/MAS.ts'
 import { useMasStore } from '../../stores/mas'
 import { useTaskQueueStore } from '../../stores/taskQueue'
 import { combinedStyle, combinedClass, deepCopy } from 'WebSharedComponents/assets/js/utils.js'
@@ -266,7 +266,7 @@ export default {
                 this.simulatedInductance = dr.magnetizingInductance?.nominal ?? null;
             }
         },
-        getTopology() { return Topologies.CommonModeChoke; },
+        getTopology() { return Topology.CommonModeChoke; },
         getIsolationSides() {
             return isolationSideOrdered.slice(0, this.numWindings).map(s => s.toLowerCase());
         },

@@ -1,5 +1,5 @@
 <script setup>
-import { InsulationType, IsolationSide, Topologies } from 'WebSharedComponents/assets/ts/MAS.ts'
+import { IsolationClass, IsolationSide, Topology } from 'WebSharedComponents/assets/ts/MAS.ts'
 import { useMasStore } from '../../stores/mas'
 import { useTaskQueueStore } from '../../stores/taskQueue'
 import { deepCopy } from 'WebSharedComponents/assets/js/utils.js'
@@ -37,7 +37,7 @@ export default {
       magnetizingInductance: 1e-3,
       turnsRatio: 4.0,
       ambientTemperature: 25,
-      insulationType: InsulationType.Basic,
+      insulationType: IsolationClass.Basic,
       designMode: 'Help me with the design',
     };
     const insulationTypes = ['no', 'basic', 'reinforced'];
@@ -102,7 +102,7 @@ export default {
     getCalculateFn() { return (aux) => this.taskQueueStore.calculatePsfbInputs(aux); },
     getSimulateFn() { return (aux) => this.taskQueueStore.simulatePsfbIdealWaveforms(aux); },
     getDefaultFrequency() { return this.localData.switchingFrequency; },
-    getTopology() { return Topologies.PhaseShiftedFullBridgeConverter; },
+    getTopology() { return Topology.PhaseShiftedFullBridgeConverter; },
     getIsolationSides() { return [IsolationSide.Primary, IsolationSide.Secondary]; },
     getInsulationType() { return this.localData.insulationType; },
 

@@ -1,5 +1,5 @@
 <script setup>
-import { IsolationSide, Topologies, WaveformLabel } from 'WebSharedComponents/assets/ts/MAS.ts'
+import { IsolationSide, Topology, WaveformLabel } from 'WebSharedComponents/assets/ts/MAS.ts'
 import { useMasStore } from '../../stores/mas'
 import { useTaskQueueStore } from '../../stores/taskQueue'
 import Dimension from 'WebSharedComponents/DataInput/Dimension.vue'
@@ -126,7 +126,7 @@ export default {
         buildInputs() { return this.buildParams('analytical'); },
         hasSimulatedData() { return this.simulatedOperatingPoints && this.simulatedOperatingPoints.length > 0; },
         getFrequency() { return this.localData.frequency; },
-        getTopology() { return Topologies.CurrentTransformer; },
+        getTopology() { return Topology.CurrentTransformer; },
         getIsolationSides() { return [IsolationSide.Primary, IsolationSide.Secondary]; },
         getInsulationType() { return null; },
         async process() {

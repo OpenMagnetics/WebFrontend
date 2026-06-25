@@ -1,5 +1,5 @@
 <script setup>
-import { Topologies } from 'WebSharedComponents/assets/ts/MAS.ts'
+import { Topology } from 'WebSharedComponents/assets/ts/MAS.ts'
 import { useMasStore } from '../../stores/mas'
 import { useTaskQueueStore } from '../../stores/taskQueue'
 import Dimension from 'WebSharedComponents/DataInput/Dimension.vue'
@@ -237,7 +237,7 @@ export default {
             };
         },
         getDefaultFrequency() { return this.localData.lineFrequency; },
-        getTopology() { return Topologies.DifferentialModeChoke; },
+        getTopology() { return Topology.DifferentialModeChoke; },
         getIsolationSides() {
             // DMC: every winding sits on the same line side (no isolation
             // between L/N or between phases). Returning ['primary', 'secondary',

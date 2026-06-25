@@ -1,5 +1,5 @@
 <script setup>
-import { InsulationType, IsolationSide, Topologies } from 'WebSharedComponents/assets/ts/MAS.ts'
+import { IsolationClass, IsolationSide, Topology } from 'WebSharedComponents/assets/ts/MAS.ts'
 import { useMasStore } from '../../stores/mas'
 import { useTaskQueueStore } from '../../stores/taskQueue'
 import { deepCopy } from 'WebSharedComponents/assets/js/utils.js'
@@ -45,7 +45,7 @@ export default {
       magnetizingInductance: 1e-3,
       turnsRatio: 1.0,
       ambientTemperature: 25,
-      insulationType: InsulationType.Basic,
+      insulationType: IsolationClass.Basic,
       modulationType: 'SPS',
       innerPhaseShift1: 15,      // D1 — primary intra-leg shift
       innerPhaseShift2: 15,      // D2 — secondary intra-leg shift
@@ -136,7 +136,7 @@ export default {
     getCalculateFn() { return (aux) => this.taskQueueStore.calculateDabInputs(aux); },
     getSimulateFn() { return (aux) => this.taskQueueStore.simulateDabIdealWaveforms(aux); },
     getDefaultFrequency() { return this.localData.switchingFrequency; },
-    getTopology() { return Topologies.DualActiveBridgeConverter; },
+    getTopology() { return Topology.DualActiveBridgeConverter; },
     getIsolationSides() { return [IsolationSide.Primary, IsolationSide.Secondary]; },
     getInsulationType() { return this.localData.insulationType; },
 

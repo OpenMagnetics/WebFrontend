@@ -1,5 +1,5 @@
 <script setup>
-import { InsulationType, IsolationSide, Topologies } from 'WebSharedComponents/assets/ts/MAS.ts'
+import { IsolationClass, IsolationSide, Topology } from 'WebSharedComponents/assets/ts/MAS.ts'
 import { useMasStore } from '../../stores/mas'
 import { useTaskQueueStore } from '../../stores/taskQueue'
 import { deepCopy } from 'WebSharedComponents/assets/js/utils.js'
@@ -44,7 +44,7 @@ export default {
             turnsRatio: 8.33,
             ambientTemperature: 25,
             efficiency: 0.97,
-            insulationType: InsulationType.Basic,
+            insulationType: IsolationClass.Basic,
             designMode: designLevelOptions[0],  // Default to "Help me with the design"
             overrideSeriesInductance: false,
             seriesInductance: 40e-6,
@@ -193,7 +193,7 @@ export default {
         },
         
         getTopology() {
-            return Topologies.LlcResonantConverter;
+            return Topology.LlcResonantConverter;
         },
         
         getIsolationSides() {

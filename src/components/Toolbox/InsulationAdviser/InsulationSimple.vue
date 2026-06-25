@@ -5,7 +5,7 @@ import ElementFromListRadio from 'WebSharedComponents/DataInput/ElementFromListR
 import ElementFromList from 'WebSharedComponents/DataInput/ElementFromList.vue'
 import SeveralElementsFromList from 'WebSharedComponents/DataInput/SeveralElementsFromList.vue'
 import { minimumMaximumScalePerParameter} from 'WebSharedComponents/assets/js/defaults.js'
-import { CTI as Cti, InsulationType, OvervoltageCategory, PollutionDegree, InsulationStandards } from 'WebSharedComponents/assets/ts/MAS.ts'
+import { CTI as Cti, IsolationClass, OvervoltageCategory, PollutionDegree, InsulationStandards } from 'WebSharedComponents/assets/ts/MAS.ts'
 import * as Utils from 'WebSharedComponents/assets/js/utils.js'
 import { WiringTechnology } from 'WebSharedComponents/assets/ts/MAS.ts'
 </script>
@@ -71,7 +71,7 @@ export default {
         },
         insulationTypeLabels() {
             const out = {};
-            Object.values(InsulationType).forEach(v => { out[v] = v.charAt(0).toUpperCase() + v.slice(1); });
+            Object.values(IsolationClass).forEach(v => { out[v] = v.charAt(0).toUpperCase() + v.slice(1); });
             return out;
         },
         overvoltageCategoryLabels() {
@@ -212,7 +212,7 @@ export default {
                         :titleSameRow="true"
                         :justifyContent="false"
                         v-model="modelValue['insulation']"
-                        :options="Object.values(InsulationType)"
+                        :options="Object.values(IsolationClass)"
                         :optionLabels="insulationTypeLabels"
                         :labelWidthProportionClass="'col-4'"
                         :valueWidthProportionClass="'col-8'"
