@@ -59,6 +59,7 @@ export default {
             taskQueueStore,
             loadedFile: "",
             importErrorMessage: "",
+            importErrorTimeout: null,
         }
     },
     computed: {
@@ -78,7 +79,30 @@ export default {
             }
         })
     },
+    beforeUnmount() {
+        this.clearImportError();
+    },
     methods: {
+        // Show the import error as a floating box that auto-dismisses after 10s.
+        // A fresh error restarts the timer so the latest message stays visible
+        // for the full duration.
+        setImportError(message) {
+            this.importErrorMessage = message;
+            if (this.importErrorTimeout != null) {
+                clearTimeout(this.importErrorTimeout);
+            }
+            this.importErrorTimeout = setTimeout(() => {
+                this.importErrorMessage = "";
+                this.importErrorTimeout = null;
+            }, 10000);
+        },
+        clearImportError() {
+            if (this.importErrorTimeout != null) {
+                clearTimeout(this.importErrorTimeout);
+                this.importErrorTimeout = null;
+            }
+            this.importErrorMessage = "";
+        },
         updatedWaveform(signalDescriptor) {
             this.$emit('updatedWaveform', signalDescriptor);
         },
@@ -93,7 +117,7 @@ export default {
                 this.$stateStore.operatingPointsCircuitSimulator.columnNames[this.currentOperatingPointIndex] = result;
             }
             catch (error) {
-                this.importErrorMessage = "Could not auto-detect columns: " + (error?.message || error);
+                this.setImportError("Could not auto-detect columns: " + (error?.message || error));
                 console.error(error)
             }
         },
@@ -103,7 +127,7 @@ export default {
                 this.$stateStore.operatingPointsCircuitSimulator.allLastReadColumnNames = result;
             }
             catch (error) {
-                this.importErrorMessage = "Could not read columns from the uploaded file: " + (error?.message || error);
+                this.setImportError("Could not read columns from the uploaded file: " + (error?.message || error));
                 console.error(error)
             }
         },
@@ -116,13 +140,13 @@ export default {
             fr.readAsText(this.$refs["OperatingPoint-MAS-upload-ref"].files.item(0));
         },
         onCircuitSimulatorFileTypeSelected(event) {
-            this.importErrorMessage = "";
+            this.clearImportError();
             const fileObj = this.$refs["OperatingPoint-CircuitSimulator-upload-ref"].files.item(0);
             if (!fileObj) return;
             const allowedExt = /\.(csv|txt|tsv)$/i;
             if (!allowedExt.test(fileObj.name)) {
-                this.importErrorMessage = "Unsupported file type: " + fileObj.name +
-                    ". Please upload a .csv, .txt, or .tsv file exported from your circuit simulator.";
+                this.setImportError("Unsupported file type: " + fileObj.name +
+                    ". Please upload a .csv, .txt, or .tsv file exported from your circuit simulator.");
                 return;
             }
             const fr = new FileReader();
@@ -160,6 +184,23 @@ export default {
 </script>
 <template>
     <div class="op-detail-panel">
+        <Transition name="op-import-error-fade">
+            <div v-if="importErrorMessage" class="op-import-error-toast" role="alert">
+                <i class="pi pi-exclamation-triangle op-import-error-icon"></i>
+                <label data-cy="OperatingPoint-import-error" class="op-import-error-text">
+                    {{ importErrorMessage }}
+                </label>
+                <button
+                    type="button"
+                    class="op-import-error-close"
+                    aria-label="Dismiss error"
+                    data-cy="OperatingPoint-import-error-close"
+                    @click="clearImportError"
+                >
+                    <i class="pi pi-times"></i>
+                </button>
+            </div>
+        </Transition>
         <div class="op-detail-header">
             <i class="pi pi-volume-up"></i>
             <span>Operating Point</span>
@@ -198,11 +239,6 @@ export default {
                 </div>
                 <div class="op-mode-prompt">
                     Where do you want to import your operating point from?
-                </div>
-                <div v-if="importErrorMessage" class="op-mode-error">
-                    <label data-cy="OperatingPoint-import-error" class="text-danger" style="white-space: pre-wrap;">
-                        {{ importErrorMessage }}
-                    </label>
                 </div>
                 <div class="op-mode-buttons">
                     <input type="file" id="OperatingPoint-CircuitSimulator-upload-input" ref="OperatingPoint-CircuitSimulator-upload-ref" accept=".csv,.txt,.tsv,text/csv,text/plain" @change="onCircuitSimulatorFileTypeSelected" style="display:none" hidden/>
@@ -359,5 +395,69 @@ button.op-mode-btn:hover {
 
 button.op-mode-btn i {
     font-size: 1.05rem;
+}
+
+/* Floating, auto-dismissing import-error box (clears after 10s, see setImportError). */
+.op-import-error-toast {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    z-index: 1100;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.6rem;
+    max-width: min(28rem, calc(100vw - 2rem));
+    padding: 0.75rem 0.9rem;
+    background:
+        linear-gradient(145deg,
+            rgba(var(--p-danger-rgb), 0.18) 0%,
+            rgba(var(--p-danger-rgb), 0.08) 100%),
+        var(--p-dark);
+    border: 1px solid rgba(var(--p-danger-rgb), 0.45);
+    border-radius: 10px;
+    box-shadow: 0 6px 24px rgba(var(--p-black-rgb), 0.28);
+}
+
+.op-import-error-icon {
+    color: var(--p-danger);
+    font-size: 1.05rem;
+    margin-top: 0.1rem;
+    flex-shrink: 0;
+}
+
+.op-import-error-text {
+    color: var(--p-danger);
+    font-size: 0.85rem;
+    line-height: 1.35;
+    white-space: pre-wrap;
+    margin: 0;
+}
+
+.op-import-error-close {
+    background: transparent;
+    border: none;
+    color: var(--p-danger);
+    cursor: pointer;
+    padding: 0;
+    margin-left: auto;
+    font-size: 0.9rem;
+    line-height: 1;
+    flex-shrink: 0;
+    opacity: 0.8;
+}
+
+.op-import-error-close:hover {
+    opacity: 1;
+}
+
+.op-import-error-fade-enter-active,
+.op-import-error-fade-leave-active {
+    transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.op-import-error-fade-enter-from,
+.op-import-error-fade-leave-to {
+    opacity: 0;
+    transform: translateY(-8px);
 }
 </style>

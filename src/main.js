@@ -265,9 +265,17 @@ router.beforeEach((to, from, next) => {
     // /engine_loader while already on the target route to force a remount).
     // Do not remove it as dead code — without it the app parks on
     // /engine_loader forever when switching wizards.
+    //
+    // Navigate to the explicit `loadingPath` (the intended destination), NOT
+    // `from.path`. For the wizard/tool remount trampolines loadingPath is set to
+    // the route the user is already on, so the two are identical. But for a MAS
+    // upload from home, loadingPath is `magnetic_tool` while from.path is `/`;
+    // using from.path there bounced the user silently back home when the engine
+    // was already loaded (intermittent — only when $mkf was warm at upload time).
     else if (app.config.globalProperties.$userStore.loadingPath !=null && app.config.globalProperties.$mkf != null && to.name == "EngineLoader") {
+        const newPath = app.config.globalProperties.$userStore.loadingPath;
         app.config.globalProperties.$userStore.loadingPath = null;
-        setTimeout(() => {router.push(from.path);}, 500);
+        setTimeout(() => {router.push(newPath);}, 500);
     }
 
     const nonDataViews = [`${import.meta.env.BASE_URL}`, `${import.meta.env.BASE_URL}home`, `${import.meta.env.BASE_URL}insulation_adviser`]
