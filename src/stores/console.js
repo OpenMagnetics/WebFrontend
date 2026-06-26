@@ -52,13 +52,18 @@ export const useConsoleStore = defineStore('console', {
                 }
             }
 
+            // NOTE: do NOT keep the raw args. They can be live Vue reactive
+            // proxies (e.g. a capacitance result object). Storing them in the
+            // reactive `logs` array — which ConsolePanel deep-watches — creates a
+            // reactive cycle that throws "Maximum recursive updates exceeded".
+            // `message` already holds the stringified form for display, and
+            // rawArgs was never read anywhere.
             const log = {
                 id: Date.now() + Math.random(),
                 timestamp,
                 level,
                 message,
                 source,
-                rawArgs: args,
             };
 
             this.logs.push(log);

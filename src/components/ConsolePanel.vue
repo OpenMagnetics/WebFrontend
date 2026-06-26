@@ -27,8 +27,11 @@ export default {
         },
     },
     watch: {
-        'consoleStore.logs': {
-            deep: true,
+        // Watch the log COUNT, not the array deeply — a deep watch traverses every
+        // logged value (which may include live reactive proxies) and can trigger a
+        // "Maximum recursive updates exceeded" loop. Count changes are enough to
+        // know a log was added and to auto-scroll.
+        'consoleStore.logs.length': {
             handler() {
                 if (this.autoScroll && this.consoleStore.isVisible) {
                     this.$nextTick(() => {
