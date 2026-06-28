@@ -22,6 +22,10 @@ export default {
         fixedNumberElements:{
             type: Number
         },
+        referenceWinding:{
+            type: Boolean,
+            default: false
+        },
         defaultField:{
             type: String,
             default: "nominal"
@@ -160,6 +164,19 @@ export default {
                 {{toTitleCase(name)}}
             </label>
         </div>
+        <!-- Winding 1 is the reference winding: its turns ratio is fixed at 1 and
+             not editable; only its label (name) can be changed. -->
+        <div v-if="referenceWinding" :data-cy="dataTestLabel + '-reference-container'" class="grid">
+            <div class="col-12 reference-winding-row">
+                <input
+                    :data-cy="dataTestLabel + '-reference-title'"
+                    class="reference-winding-title"
+                    type="text"
+                    :value="masStore.mas.magnetic.coil.functionalDescription[0]?.name ?? 'Winding 1'"
+                    @change="changeText($event.target.value, 0)" />
+                <span class="reference-winding-ratio" title="Reference winding - turns ratio is always 1">1</span>
+            </div>
+        </div>
         <div :data-cy="dataTestLabel + '-' + requirementIndex + '-container'" class="grid" v-for="(requirement, requirementIndex) in masStore.mas.inputs.designRequirements[name]" :key="requirementIndex">
             <DimensionWithTolerance
                 :dataTestLabel="dataTestLabel + '-' + requirementIndex" 
@@ -192,4 +209,34 @@ export default {
     </div>
 </template>
 
-
+<style scoped>
+.reference-winding-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding: 0.35rem 0;
+}
+.reference-winding-title {
+    flex: 1 1 auto;
+    min-width: 0;
+    background: transparent;
+    border: 0;
+    border-bottom: 1px solid rgba(var(--p-white-rgb), 0.15);
+    color: inherit;
+    font-size: 0.95rem;
+    font-weight: 600;
+    text-align: center;
+}
+.reference-winding-ratio {
+    flex: 0 0 auto;
+    min-width: 3rem;
+    text-align: center;
+    padding: 0.25rem 0.75rem;
+    border: 1px solid rgba(var(--p-white-rgb), 0.15);
+    border-radius: 6px;
+    opacity: 0.6;
+    cursor: not-allowed;
+    font-variant-numeric: tabular-nums;
+}
+</style>
