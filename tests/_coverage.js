@@ -68,6 +68,26 @@ async function installRouteFixtures(page) {
   await page.route('**/load_external_core_materials', async (route) => {
     route.fulfill({ status: 200, body: '{}' });
   });
+
+  // /telemetry is fire-and-forget analytics (telemetry.js → endpoint+'/telemetry').
+  // Cookie consent is pre-accepted in tests, so telemetry fires; the endpoint
+  // (VITE_API_ENDPOINT, e.g. localhost:8000) isn't running in the test env, so
+  // the cross-origin POST surfaces a CORS console error that trips
+  // expectNoConsoleErrors. Intercept it (incl. CORS preflight) and return 200
+  // so tests don't depend on a live analytics backend. (Production posts to the
+  // real backend and works normally.)
+  await page.route('**/telemetry', async (route) => {
+    route.fulfill({
+      status: 200,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
+        'Access-Control-Allow-Headers': '*',
+      },
+      contentType: 'application/json',
+      body: '{}',
+    });
+  });
 }
 
 // Cookie consent is pre-accepted via globalSetup + storageState (see
