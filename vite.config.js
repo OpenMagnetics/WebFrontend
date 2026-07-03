@@ -79,6 +79,11 @@ export default defineConfig({
             targets: [
                 { src: 'src/assets/js/libMKF.wasm.js',   dest: 'wasm' },
                 { src: 'src/assets/js/libMKF.wasm.wasm',  dest: 'wasm' },
+                // webKirchhoff (converter models): built from the Kirchhoff repo (`ninja libKirchhoff`
+                // in build-wasm-kh -> kirchhoff.js). It is an -sSINGLE_FILE=1 build: the wasm is
+                // embedded in the one .js, there is NO separate libKirchhoff.wasm (a missing target
+                // here makes vite-plugin-static-copy abort the WHOLE list and nothing gets served).
+                { src: 'src/assets/js/libKirchhoff.js',   dest: 'wasm' },
                 { src: 'src/assets/js/libInsulationCoordinator.wasm.js',   dest: 'wasm' },
                 { src: 'src/assets/js/libInsulationCoordinator.wasm.wasm', dest: 'wasm' },
                 { src: 'src/assets/js/mvbpp.js',           dest: 'wasm' },

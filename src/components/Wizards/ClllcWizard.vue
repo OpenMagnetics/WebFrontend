@@ -10,6 +10,7 @@ import ElementFromListRadio from 'WebSharedComponents/DataInput/ElementFromListR
 import PairOfDimensions from 'WebSharedComponents/DataInput/PairOfDimensions.vue'
 import { defaultClllcWizardInputs, minimumMaximumScalePerParameter } from 'WebSharedComponents/assets/js/defaults.js'
 import ConverterWizardBase from './ConverterWizardBase.vue'
+import KhDiagnosticsPanel from './KhDiagnosticsPanel.vue'
 import CompactVoltageInput from './CompactVoltageInput.vue'
 import { tooltipsConverterWizards, dropdownLabelsConverterWizards } from 'WebSharedComponents/assets/js/texts'
 </script>
@@ -76,7 +77,7 @@ export default {
             if (this._autoRunDone) return;
             this._autoRunDone = true;
             try { this.updateErrorMessage?.(); } catch (e) { return; }
-            if (!this.errorMessage) this.simulateIdealWaveforms?.();
+            if (!this.errorMessage) this.getAnalyticalWaveforms?.();
         });
     },
     methods: {
@@ -419,55 +420,8 @@ export default {
       />
     </template>
       <template v-if="clllcDiagnostics" #diagnostics>
-      <DimensionReadOnly name="clllcLrPri" :tooltip="tooltipsConverterWizards['clllcLrPri']" :replaceTitle="'L_r pri'" :value="clllcDiagnostics.computedPrimarySeriesInductance" unit="H" :numberDecimals="9":labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-ClllcLrPri'" />
-      <DimensionReadOnly name="clllcLrSec" :tooltip="tooltipsConverterWizards['clllcLrSec']" :replaceTitle="'L_r sec'" :value="clllcDiagnostics.computedSecondarySeriesInductance" unit="H" :numberDecimals="9":labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-ClllcLrSec'" />
-      <DimensionReadOnly name="clllcCrPri" :tooltip="tooltipsConverterWizards['clllcCrPri']" :replaceTitle="'C_r pri'" :value="clllcDiagnostics.computedPrimaryResonantCapacitance" unit="F" :numberDecimals="12":labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-ClllcCrPri'" />
-      <DimensionReadOnly name="clllcCrSec" :tooltip="tooltipsConverterWizards['clllcCrSec']" :replaceTitle="'C_r sec'" :value="clllcDiagnostics.computedSecondaryResonantCapacitance" unit="F" :numberDecimals="12":labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-ClllcCrSec'" />
-      <DimensionReadOnly name="clllcLm" :tooltip="tooltipsConverterWizards['clllcLm']" :replaceTitle="'L_m'" :value="clllcDiagnostics.computedMagnetizingInductance" unit="H" :numberDecimals="9":labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-ClllcLm'" />
-      <DimensionReadOnly name="clllcN" :tooltip="tooltipsConverterWizards['clllcN']" :replaceTitle="'Turns ratio'" :value="clllcDiagnostics.computedTurnsRatio" :unit="null" :numberDecimals="3":labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-ClllcN'" />
-      <DimensionReadOnly name="clllcDeadTime" :tooltip="tooltipsConverterWizards['clllcDeadTime']" :replaceTitle="'Dead time'" :value="clllcDiagnostics.computedDeadTime" unit="s" :numberDecimals="9":labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-ClllcDeadTime'" />
-      <DimensionReadOnly name="clllcK" :tooltip="tooltipsConverterWizards['clllcK']" :replaceTitle="'L_m / L_r ratio'" :value="clllcDiagnostics.computedInductanceRatioK" :unit="null" :numberDecimals="3":labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-ClllcK'" />
-      <DimensionReadOnly name="clllcQ" :tooltip="tooltipsConverterWizards['clllcQ']" :replaceTitle="'Quality factor'" :value="clllcDiagnostics.computedQualityFactor" :unit="null" :numberDecimals="3":labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-ClllcQ'" />
-      <DimensionReadOnly name="clllcFres" :tooltip="tooltipsConverterWizards['clllcFres']" :replaceTitle="'Res. freq'" :value="clllcDiagnostics.computedPrimaryResonantFrequency" unit="Hz" :numberDecimals="0":labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-ClllcFres'" />
-
-      <!-- Per-OP table for the last_* fields that vary across V_in. -->
-      <table
-        v-if="Array.isArray(clllcDiagnostics.perOp) && clllcDiagnostics.perOp.length > 1"
-        class="diagnostics-perop-table"
-        :data-cy="dataTestLabel + '-Clllc-perOp-table'"
-        :style="{ color: $styleStore.wizard.inputTextColor, fontSize: $styleStore.wizard.inputFontSize, width: '100%', borderCollapse: 'collapse', marginTop: '4px' }"
-      >
-        <thead>
-          <tr>
-            <th :style="{ textAlign: 'left', padding: '2px 4px', fontSize: $styleStore.wizard.inputLabelFontSize, opacity: 0.85 }"></th>
-            <th v-for="(op, i) in clllcDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px', fontSize: $styleStore.wizard.inputLabelFontSize, opacity: 0.85 }">
-              {{ op.operatingPointName || ('OP ' + i) }}
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr><td>Mode fwd</td><td v-for="(op, i) in clllcDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px' }">{{ op.modeForward }}</td></tr>
-          <tr><td>Mode rev</td><td v-for="(op, i) in clllcDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px' }">{{ op.modeReverse }}</td></tr>
-          <tr><td>ZVS pri lag</td><td v-for="(op, i) in clllcDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px', color: op.zvsMarginPrimaryLagging <= 0 ? 'var(--p-warning)' : 'inherit' }">{{ Number(op.zvsMarginPrimaryLagging).toFixed(3) }}</td></tr>
-          <tr><td>ZVS sec lag</td><td v-for="(op, i) in clllcDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px', color: op.zvsMarginSecondaryLagging <= 0 ? 'var(--p-warning)' : 'inherit' }">{{ Number(op.zvsMarginSecondaryLagging).toFixed(3) }}</td></tr>
-          <tr><td>ZVS load thr pri (A)</td><td v-for="(op, i) in clllcDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px' }">{{ Number(op.zvsLoadThresholdPrimary).toFixed(3) }}</td></tr>
-          <tr><td>ZVS load thr sec (A)</td><td v-for="(op, i) in clllcDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px' }">{{ Number(op.zvsLoadThresholdSecondary).toFixed(3) }}</td></tr>
-          <tr><td>Res. Trans. (s)</td><td v-for="(op, i) in clllcDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px' }">{{ Number(op.resonantTransitionTime).toExponential(2) }}</td></tr>
-          <tr><td>I_pri peak (A)</td><td v-for="(op, i) in clllcDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px' }">{{ Number(op.primaryPeakCurrent).toFixed(3) }}</td></tr>
-          <tr><td>I_sec peak (A)</td><td v-for="(op, i) in clllcDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px' }">{{ Number(op.secondaryPeakCurrent).toFixed(3) }}</td></tr>
-          <tr><td>I_pri rms (A)</td><td v-for="(op, i) in clllcDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px' }">{{ Number(op.primaryRmsCurrent).toFixed(3) }}</td></tr>
-          <tr><td>I_sec rms (A)</td><td v-for="(op, i) in clllcDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px' }">{{ Number(op.secondaryRmsCurrent).toFixed(3) }}</td></tr>
-          <tr><td>I_mag peak (A)</td><td v-for="(op, i) in clllcDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px' }">{{ Number(op.magnetizingPeakCurrent).toFixed(3) }}</td></tr>
-          <tr><td>V_Cr1 peak (V)</td><td v-for="(op, i) in clllcDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px' }">{{ Number(op.cr1PeakVoltage).toFixed(2) }}</td></tr>
-          <tr><td>V_Cr2 peak (V)</td><td v-for="(op, i) in clllcDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px' }">{{ Number(op.cr2PeakVoltage).toFixed(2) }}</td></tr>
-          <tr><td>Sharing ratio</td><td v-for="(op, i) in clllcDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px' }">{{ Number(op.currentSharingRatio).toFixed(3) }}</td></tr>
-          <tr><td>Residual</td><td v-for="(op, i) in clllcDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px', color: op.steadyStateResidual > 1e-4 ? 'var(--p-warning)' : 'inherit' }">{{ Number(op.steadyStateResidual).toExponential(2) }}</td></tr>
-        </tbody>
-      </table>
-      <template v-else>
-        <DimensionReadOnly name="clllcIprimPk" :tooltip="tooltipsConverterWizards['clllcIprimPk']" :replaceTitle="'I_pri peak'" :value="clllcDiagnostics.lastPrimaryPeakCurrent" unit="A" :numberDecimals="3":labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-ClllcIprimPk'" />
-        <DimensionReadOnly name="clllcZvsMargin" :tooltip="tooltipsConverterWizards['clllcZvsMargin']" :replaceTitle="'ZVS margin (lag)'" :value="clllcDiagnostics.lastZvsMarginPrimaryLagging" :unit="null" :numberDecimals="3":labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-ClllcZvsMargin'" />
+        <!-- KH is the master of diagnostics: render its universal envelope directly. -->
+        <KhDiagnosticsPanel :diagnostics="clllcDiagnostics" :dataTestLabel="dataTestLabel + '-KhDiagnostics'" />
       </template>
-    </template>
   </ConverterWizardBase>
 </template>

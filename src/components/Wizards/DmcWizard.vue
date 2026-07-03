@@ -13,11 +13,6 @@ import { tooltipsConverterWizards } from 'WebSharedComponents/assets/js/texts'
 </script>
 
 <script>
-// LISN reference impedance per line (CISPR / FCC standard). Used to convert
-// requested attenuation in dB to the equivalent inductor reactance for the
-// "Help me" path: A_dB ≈ 20·log10(ωL/Z_LISN)  ⇒  ωL = Z_LISN · 10^(A/20).
-const Z_LISN = 50;
-
 export default {
     props: {
         dataTestLabel: {
@@ -51,7 +46,6 @@ export default {
             designLevel:         designLevelOptions[0],
             // "I know" mode
             desiredInductance:   600e-6,
-            designFrequency:     150000,
             // "Help me" mode
             filterCapacitance:   1e-6,
             attenuationPoints:   [{ _id: 0, frequency: 150000, attenuation: 20 }],
@@ -127,14 +121,29 @@ export default {
         waveformViewMode() {
             this.$nextTick(() => { this.forceWaveformUpdate += 1; });
         },
+        // Debounced auto-refresh on any edit — same UX as CmcWizard.
+        localData: {
+            deep: true,
+            handler() {
+                clearTimeout(this._analyticalDebounceTimer);
+                this._analyticalDebounceTimer = setTimeout(() => {
+                    this.updateErrorMessage();
+                    if (!this.errorMessage) this.getAnalyticalWaveforms?.();
+                }, 800);
+            }
+        },
     },
     mounted() {
+        this._analyticalDebounceTimer = null;
         this.updateErrorMessage();
         this.$nextTick(() => {
             if (this._autoRunDone) return;
             this._autoRunDone = true;
-            if (!this.errorMessage) this.simulateIdealWaveforms?.();
+            if (!this.errorMessage) this.getAnalyticalWaveforms?.();
         });
+    },
+    beforeUnmount() {
+        clearTimeout(this._analyticalDebounceTimer);
     },
     methods: {
 
@@ -156,7 +165,14 @@ export default {
                     .filter(p => p.frequency > 0 && p.attenuation > 0)
                     .map(p => ({
                         frequency: p.frequency,
-                        impedance: { magnitude: Z_LISN * Math.pow(10, p.attenuation / 20) },
+                        // Attenuation (dB) → required series impedance over the LISN
+                        // reference: Z = Z_line·(10^(A/20) − 1), the exact insertion-loss
+                        // inverse (same formula as Kirchhoff's
+                        // cmc_insertion_loss_to_impedance — the earlier 50·10^(A/20)
+                        // hardcoded the LISN Z and overstated Z by up to ~10%).
+                        // Kirchhoff SPEC §6.2 takes impedance as a bare number.
+                        impedance: this.localData.lineImpedance
+                                   * (Math.pow(10, p.attenuation / 20) - 1),
                     }));
             }
             return aux;
@@ -205,16 +221,26 @@ export default {
                 }
                 let sweep;
                 try {
-                    sweep = await this.taskQueueStore.simulateDmcWaveforms(aux, inductance);
+                    sweep = await this.taskQueueStore.simulateDmcWaveforms(
+                        aux, inductance, this.localData.filterCapacitance);
                 } catch (e) {
                     console.warn('DMC simulation failed, falling back to analytical:', e);
                     sweep = null;
                 }
+                // Kirchhoff returns {success, converterWaveforms:[...], failedFrequencies?}
+                // (an envelope, not a bare array). Failed frequencies are surfaced, not hidden.
+                const rows = sweep?.converterWaveforms;
+                if (sweep?.failedFrequencies?.length) {
+                    console.warn('DMC simulation skipped frequencies:', sweep.failedFrequencies);
+                }
                 let result;
-                if (!Array.isArray(sweep) || sweep.length === 0) {
+                if (sweep?.success !== true || !Array.isArray(rows) || rows.length === 0) {
+                    if (sweep && sweep.success !== true && sweep.error) {
+                        console.warn('DMC simulation unavailable, using analytical:', sweep.error);
+                    }
                     result = calc;
                 } else {
-                    const s = sweep[0];
+                    const s = rows[0];
                     // simulate_dmc_waveforms now honors numberOfPeriods server
                     // side (ngspice extracts exactly N cycles), so use the
                     // returned waveforms directly.
@@ -279,11 +305,16 @@ export default {
         updateErrorMessage() {
             this.errorMessage = "";
             if (this.localData.lineFrequency <= 0) { this.errorMessage = "Line frequency must be > 0"; return; }
+            // Kirchhoff models the ripple spectrum at the switching frequency and
+            // (since the no-silent-fallback pass) throws without it — catch it here.
+            if (this.localData.switchingFrequency <= 0) { this.errorMessage = "Switching frequency must be > 0"; return; }
             if (this.localData.operatingCurrent <= 0) { this.errorMessage = "Operating current must be > 0"; return; }
+            // filterCapacitance is sent in BOTH modes (it defines the LC filter the
+            // sims verify), so validate it in both.
+            if (this.localData.filterCapacitance <= 0) { this.errorMessage = "Filter capacitance must be > 0"; return; }
             if (this.localData.designLevel === 'I know the design I want') {
                 if (this.localData.desiredInductance <= 0) { this.errorMessage = "Inductance must be > 0"; return; }
             } else {
-                if (this.localData.filterCapacitance <= 0) { this.errorMessage = "Filter capacitance must be > 0"; return; }
                 const valid = this.localData.attenuationPoints.filter(p => p.frequency > 0 && p.attenuation > 0);
                 if (valid.length === 0) { this.errorMessage = "Add at least one attenuation requirement"; return; }
             }
@@ -472,18 +503,9 @@ export default {
           :textColor="$styleStore.wizard.inputTextColor"
           @update="updateErrorMessage"
         />
-        <Dimension
-          :name="'designFrequency'" :tooltip="tooltipsConverterWizards['designFrequency']" :replaceTitle="'Design freq'" unit="Hz"
-          :dataTestLabel="dataTestLabel + '-DesignFrequency'"
-          :min="1" :max="1e10"
-          v-model="localData"
-          :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'"
-          :valueFontSize="$styleStore.wizard.inputFontSize"
-          :labelFontSize="$styleStore.wizard.inputLabelFontSize"
-          :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor"
-          :textColor="$styleStore.wizard.inputTextColor"
-          @update="updateErrorMessage"
-        />
+        <!-- No "design frequency" here on purpose: unlike the CMC, the DMC backend
+             (Kirchhoff design_dmc) sizes the excitation from lineFrequency +
+             switchingFrequency only — a design-frequency field would be dead input. -->
         <Dimension
           :name="'filterCapacitance'" :tooltip="tooltipsConverterWizards['filterCapacitance']" :replaceTitle="'Filter C'" unit="F"
           :dataTestLabel="dataTestLabel + '-FilterCapacitance'"
@@ -602,7 +624,7 @@ export default {
         :textColor="$styleStore.wizard.inputTextColor"
         @update="updateErrorMessage"
       />
-      <Dimension :name="'ambientTemperature'" :tooltip="tooltipsConverterWizards['ambientTemperature']" :replaceTitle="'Temperature'" unit=" C"
+      <Dimension :name="'ambientTemperature'" :tooltip="tooltipsConverterWizards['ambientTemperature']" :replaceTitle="'Temperature'" unit=" ºC"
         :dataTestLabel="dataTestLabel + '-AmbientTemperature'"
         :min="minimumMaximumScalePerParameter['temperature']['min']"
         :max="minimumMaximumScalePerParameter['temperature']['max']"
@@ -680,11 +702,11 @@ export default {
     </template>
 
       <template v-if="dmcDiagnostics" #diagnostics>
-      <DimensionReadOnly name="dmcInd" :tooltip="tooltipsConverterWizards['dmcInd']" :replaceTitle="'Computed L'" :value="dmcDiagnostics.computedInductance" unit="H" :numberDecimals="9":labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-DmcInd'" />
-      <DimensionReadOnly name="dmcFmin" :tooltip="tooltipsConverterWizards['dmcFmin']" :replaceTitle="'Min freq'" :value="dmcDiagnostics.computedMinFrequency" unit="Hz" :numberDecimals="0":labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-DmcFmin'" />
-      <DimensionReadOnly name="dmcFmax" :tooltip="tooltipsConverterWizards['dmcFmax']" :replaceTitle="'Max freq'" :value="dmcDiagnostics.computedMaxFrequency" unit="Hz" :numberDecimals="0":labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-DmcFmax'" />
-      <DimensionReadOnly name="dmcZmin" :tooltip="tooltipsConverterWizards['dmcZmin']" :replaceTitle="'Z at min freq'" :value="dmcDiagnostics.impedanceAtMinFrequency" unit="Ω" :numberDecimals="2":labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-DmcZmin'" />
-      <DimensionReadOnly name="dmcNwind" :tooltip="tooltipsConverterWizards['dmcNwind']" :replaceTitle="'Windings'" :value="dmcDiagnostics.numberWindings" :unit="null" :numberDecimals="0":labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-DmcNwind'" />
+      <DimensionReadOnly name="dmcInd" :tooltip="tooltipsConverterWizards['dmcInd']" :replaceTitle="'Computed L'" :value="dmcDiagnostics.computedInductance" unit="H" :numberDecimals="9" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-DmcInd'" />
+      <DimensionReadOnly name="dmcFmin" :tooltip="tooltipsConverterWizards['dmcFmin']" :replaceTitle="'Min freq'" :value="dmcDiagnostics.computedMinFrequency" unit="Hz" :numberDecimals="0" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-DmcFmin'" />
+      <DimensionReadOnly name="dmcFmax" :tooltip="tooltipsConverterWizards['dmcFmax']" :replaceTitle="'Max freq'" :value="dmcDiagnostics.computedMaxFrequency" unit="Hz" :numberDecimals="0" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-DmcFmax'" />
+      <DimensionReadOnly name="dmcZmin" :tooltip="tooltipsConverterWizards['dmcZmin']" :replaceTitle="'Z at min freq'" :value="dmcDiagnostics.impedanceAtMinFrequency" unit="Ω" :numberDecimals="2" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-DmcZmin'" />
+      <DimensionReadOnly name="dmcNwind" :tooltip="tooltipsConverterWizards['dmcNwind']" :replaceTitle="'Windings'" :value="dmcDiagnostics.numberWindings" :unit="null" :numberDecimals="0" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-DmcNwind'" />
     </template>
   </ConverterWizardBase>
 </template>

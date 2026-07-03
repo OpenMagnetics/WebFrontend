@@ -281,12 +281,26 @@ export async function openExportsModal(page, kind) {
     }
     await btn.waitFor({ state: 'visible', timeout: 10_000 });
     await btn.click();
-    await page.locator('.modal.show').first().waitFor({ state: 'visible', timeout: 5_000 });
+    // Exporters are PrimeVue Dialogs since ed89b98 ("drop Bootstrap vocabulary");
+    // keep .modal.show for any remaining Bootstrap modals.
+    await page.locator('.modal.show, .p-dialog').first().waitFor({ state: 'visible', timeout: 5_000 });
   });
 }
 
-/** Close any open Bootstrap modal. No-op if none is open. */
+/** Close any open modal/dialog (Bootstrap or PrimeVue). No-op if none is open. */
 export async function closeOpenModal(page) {
+  // PrimeVue Dialog (exporters since ed89b98): its X carries .p-dialog-close-button.
+  const pDialog = page.locator('.p-dialog');
+  if (await pDialog.count()) {
+    const pClose = pDialog.first().locator('.p-dialog-close-button, .p-dialog-header-close').first();
+    if (await pClose.count()) {
+      await pClose.click({ force: true }).catch(() => {});
+    } else {
+      await page.keyboard.press('Escape').catch(() => {});
+    }
+    await pDialog.first().waitFor({ state: 'hidden', timeout: 5_000 }).catch(() => {});
+    return;
+  }
   const modal = page.locator('.modal.show');
   if (await modal.count() === 0) return;
   // Click the modal's own X (data-bs-dismiss="modal") — Bootstrap handles
@@ -323,7 +337,7 @@ export async function closeOpenModal(page) {
  * synthesised client-side from blobs so they should appear immediately).
  */
 export async function captureModalDownload(page, re, { timeoutMs = 30_000 } = {}) {
-  const btn = page.locator('.modal.show button').filter({ hasText: re }).first();
+  const btn = page.locator('.modal.show button, .p-dialog button').filter({ hasText: re }).first();
   await btn.waitFor({ state: 'visible', timeout: 10_000 });
   await expect(btn).toBeEnabled();
   const consoleErrors = [];

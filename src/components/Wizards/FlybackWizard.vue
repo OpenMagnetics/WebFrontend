@@ -12,6 +12,7 @@ import TripleOfDimensions from 'WebSharedComponents/DataInput/TripleOfDimensions
 import DimensionWithTolerance from 'WebSharedComponents/DataInput/DimensionWithTolerance.vue'
 import { defaultFlybackWizardInputs, defaultDesignRequirements, minimumMaximumScalePerParameter, filterMas } from 'WebSharedComponents/assets/js/defaults.js'
 import ConverterWizardBase from './ConverterWizardBase.vue'
+import KhDiagnosticsPanel from './KhDiagnosticsPanel.vue'
 import CompactVoltageInput from './CompactVoltageInput.vue'
 import { tooltipsConverterWizards, dropdownLabelsConverterWizards } from 'WebSharedComponents/assets/js/texts'
 </script>
@@ -77,7 +78,7 @@ export default {
             if (this._autoRunDone) return;
             this._autoRunDone = true;
             try { this.updateErrorMessage?.(); } catch (e) { return; }
-            if (!this.errorMessage) this.simulateIdealWaveforms?.();
+            if (!this.errorMessage) this.getAnalyticalWaveforms?.();
         });
     },
     methods: {
@@ -476,39 +477,8 @@ export default {
     </template>
 
     <template v-if="flybackDiagnostics" #diagnostics>
-      <!-- Multi-OP table when perOp[] is present (multiple V_in iterations); -->
-      <!-- otherwise the old single-column DimensionReadOnly layout. -->
-      <table
-        v-if="Array.isArray(flybackDiagnostics.perOp) && flybackDiagnostics.perOp.length > 1"
-        class="diagnostics-perop-table"
-        :data-cy="dataTestLabel + '-Flyback-perOp-table'"
-        :style="{ color: $styleStore.wizard.inputTextColor, fontSize: $styleStore.wizard.inputFontSize, width: '100%', borderCollapse: 'collapse' }"
-      >
-        <thead>
-          <tr>
-            <th :style="{ textAlign: 'left', padding: '2px 4px', fontSize: $styleStore.wizard.inputLabelFontSize, opacity: 0.85 }"></th>
-            <th v-for="(op, i) in flybackDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px', fontSize: $styleStore.wizard.inputLabelFontSize, opacity: 0.85 }">
-              {{ op.operatingPointName || ('OP ' + i) }}
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr><td>Duty</td>      <td v-for="(op, i) in flybackDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px' }">{{ Number(op.dutyCycle).toFixed(3) }}</td></tr>
-          <tr><td>Mode</td>      <td v-for="(op, i) in flybackDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px' }">{{ op.isCcm ? 'CCM' : 'DCM' }}</td></tr>
-          <tr><td>I_pri avg (A)</td>    <td v-for="(op, i) in flybackDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px' }">{{ Number(op.primaryAverageCurrent).toFixed(3) }}</td></tr>
-          <tr><td>I_pri pk (A)</td>     <td v-for="(op, i) in flybackDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px' }">{{ Number(op.primaryPeakCurrent).toFixed(3) }}</td></tr>
-          <tr><td>I_pri ripple (A)</td> <td v-for="(op, i) in flybackDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px' }">{{ Number(op.primaryPeakToPeak).toFixed(3) }}</td></tr>
-          <tr><td>I_sec pk (A)</td>     <td v-for="(op, i) in flybackDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px' }">{{ Number(op.secondaryPeakCurrent).toFixed(3) }}</td></tr>
-        </tbody>
-      </table>
-      <template v-else>
-        <DimensionReadOnly name="flybackDuty"          :tooltip="tooltipsConverterWizards['flybackDuty']"          :replaceTitle="'Duty'"            :value="flybackDiagnostics.dutyCycle"             :unit="null" :numberDecimals="3" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-FlybackDuty'" />
-        <DimensionReadOnly name="flybackMode"          :tooltip="tooltipsConverterWizards['flybackMode']"          :replaceTitle="'Mode'"            :value="flybackDiagnostics.isCcm ? 'CCM' : 'DCM'" :unit="null" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-FlybackMode'" />
-        <DimensionReadOnly name="flybackIprimAvg"      :tooltip="tooltipsConverterWizards['flybackIprimAvg']"      :replaceTitle="'I_pri avg'"       :value="flybackDiagnostics.primaryAverageCurrent" unit="A" :numberDecimals="3" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-FlybackIprimAvg'" />
-        <DimensionReadOnly name="flybackIprimPk"       :tooltip="tooltipsConverterWizards['flybackIprimPk']"       :replaceTitle="'I_pri peak'"      :value="flybackDiagnostics.primaryPeakCurrent"    unit="A" :numberDecimals="3" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-FlybackIprimPk'" />
-        <DimensionReadOnly name="flybackIprimRipple"   :tooltip="tooltipsConverterWizards['flybackIprimRipple']"   :replaceTitle="'I_pri ripple'"    :value="flybackDiagnostics.primaryPeakToPeak"     unit="A" :numberDecimals="3" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-FlybackIprimRipple'" />
-        <DimensionReadOnly name="flybackIsecPk"        :tooltip="tooltipsConverterWizards['flybackIsecPk']"        :replaceTitle="'I_sec peak'"      :value="flybackDiagnostics.secondaryPeakCurrent"  unit="A" :numberDecimals="3" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-FlybackIsecPk'" />
-      </template>
+      <!-- KH is the master of diagnostics: render its universal envelope directly. -->
+      <KhDiagnosticsPanel :diagnostics="flybackDiagnostics" :dataTestLabel="dataTestLabel + '-KhDiagnostics'" />
     </template>
   </ConverterWizardBase>
 </template>

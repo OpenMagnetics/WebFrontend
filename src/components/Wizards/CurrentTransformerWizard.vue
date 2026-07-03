@@ -24,7 +24,7 @@ export default {
         // (so 1 A secondary peak), 50 Ω burden → 50 V output at full scale,
         // 50/60 Hz line current monitoring or 100 kHz switching current.
         const localData = {
-            turnsRatio: 0.01,            // primary/secondary (1:100 step-up)
+            turnsRatio: 0.01,            // I_sec = I_pri·turnsRatio → 0.01 = 1:100 CT (1 turn : 100 turns)
             burdenResistor: 50,
             diodeVoltageDrop: 0,
             secondaryDcResistance: 0.5,
@@ -38,14 +38,10 @@ export default {
             masStore,
             taskQueueStore,
             localData,
-            waveformOptions: ['Sinusoidal'],
-            // NOTE: MAS WaveformLabel enum also defines unipolarRectangular
-            // and unipolarTriangular, but MKF's process_current_transformer
-            // crashes on those today with "Data vector size is not a power
-            // of 2: 5" (FFT step requires N pow2; the rectangular/triangular
-            // analytical builders emit a 5-sample waveform). Re-add them
-            // once MKF either zero-pads to pow2 or the builders emit pow2
-            // sample counts directly. Tracked by CT-UI-4 (deep testbench).
+            // All three labels Kirchhoff's analytical_current_transformer supports.
+            // (The old MKF pow-2 FFT crash on the unipolar labels is gone — the
+            // Kirchhoff builders emit 128-sample waveforms.)
+            waveformOptions: ['Sinusoidal', 'Unipolar Rectangular', 'Unipolar Triangular'],
             dropdownLabelsConverterWizards,
             errorMessage: "",
             simulatingWaveforms: false,
@@ -70,7 +66,7 @@ export default {
             if (this._autoRunDone) return;
             this._autoRunDone = true;
             try { this.updateErrorMessage?.(); } catch (e) { return; }
-            if (!this.errorMessage) this.simulateIdealWaveforms?.();
+            if (!this.errorMessage) this.getAnalyticalWaveforms?.();
         });
     },
     methods: {
@@ -94,7 +90,9 @@ export default {
                 burdenResistor: this.localData.burdenResistor,
                 diodeVoltageDrop: this.localData.diodeVoltageDrop,
                 frequency: this.localData.frequency,
-                maximumDutyCycle: this.localData.maximumDutyCycle,
+                // Kirchhoff's design_current_transformer reads `dutyCycle` — sending
+                // `maximumDutyCycle` was silently ignored (backend defaulted to 0.5).
+                dutyCycle: this.localData.maximumDutyCycle,
                 maximumPrimaryCurrentPeak: this.localData.maximumPrimaryCurrentPeak,
                 waveformLabel: this.waveformEnum(),
             };
@@ -200,7 +198,7 @@ export default {
     <template #conditions>
       <Dimension :name="'frequency'" :tooltip="tooltipsConverterWizards['switchingFrequency']" :replaceTitle="'Freq.'" unit="Hz" :min="1" :max="minimumMaximumScalePerParameter['frequency']['max']" v-model="localData" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor" :textColor="$styleStore.wizard.inputTextColor" @update="updateErrorMessage" :dataTestLabel="dataTestLabel + '-Frequency'" />
       <Dimension :name="'maximumDutyCycle'" :tooltip="tooltipsConverterWizards['maximumDutyCycle']" :replaceTitle="'Max. D'" :unit="null" :min="0.01" :max="1" v-model="localData" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor" :textColor="$styleStore.wizard.inputTextColor" @update="updateErrorMessage" :dataTestLabel="dataTestLabel + '-MaximumDutyCycle'" />
-      <Dimension :name="'ambientTemperature'" :tooltip="tooltipsConverterWizards['ambientTemperature']" :replaceTitle="'Temp.'" unit=" C" :min="minimumMaximumScalePerParameter['temperature']['min']" :max="minimumMaximumScalePerParameter['temperature']['max']" :allowNegative="true" :allowZero="true" v-model="localData" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor" :textColor="$styleStore.wizard.inputTextColor" @update="updateErrorMessage" :dataTestLabel="dataTestLabel + '-AmbientTemperature'" />
+      <Dimension :name="'ambientTemperature'" :tooltip="tooltipsConverterWizards['ambientTemperature']" :replaceTitle="'Temp.'" unit=" ºC" :min="minimumMaximumScalePerParameter['temperature']['min']" :max="minimumMaximumScalePerParameter['temperature']['max']" :allowNegative="true" :allowZero="true" v-model="localData" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor" :textColor="$styleStore.wizard.inputTextColor" @update="updateErrorMessage" :dataTestLabel="dataTestLabel + '-AmbientTemperature'" />
       <ElementFromList :name="'waveformLabel'" :tooltip="tooltipsConverterWizards['waveformLabel']" :replaceTitle="'Waveform'" :options="waveformOptions" :titleSameRow="true" v-model="localData" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor" :textColor="$styleStore.wizard.inputTextColor" @update="updateErrorMessage" :dataTestLabel="dataTestLabel + '-WaveformLabel'" />
     </template>
 
@@ -221,7 +219,7 @@ export default {
 
     <template #outputs>
       <div class="text-color-secondary small p-2">
-        Secondary peak = I_pk / N = {{ (localData.maximumPrimaryCurrentPeak * localData.turnsRatio).toFixed(3) }} A<br>
+        Secondary peak = I<sub>pk</sub> × ratio = {{ (localData.maximumPrimaryCurrentPeak * localData.turnsRatio).toFixed(3) }} A<br>
         Burden voltage ≈ {{ (localData.maximumPrimaryCurrentPeak * localData.turnsRatio * localData.burdenResistor).toFixed(2) }} V
       </div>
     </template>

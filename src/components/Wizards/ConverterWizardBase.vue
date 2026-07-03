@@ -302,6 +302,19 @@ export default {
       if (!converterWaveforms?.length) return [];
       return converterWaveforms.map((cw, idx) => {
         const opWf = { frequency: cw.switchingFrequency || defaultFrequency, operatingPointName: cw.operatingPointName || `Operating Point ${idx+1}`, waveforms: [] };
+        // webKirchhoff per-component overlays (component_waveforms, SPEC §6.5): one V/I trace pair
+        // per non-magnetic device (Q1 V_DS/I, D1 V_AK/I, Cout V/I, ...) on the winding time grid.
+        if (Array.isArray(cw.components)) {
+          for (const comp of cw.components) {
+            const name = comp.stage && comp.stage !== comp.ref ? `${comp.ref} (${comp.stage})` : comp.ref;
+            const vwf = comp.voltage?.waveform;
+            if (vwf?.time && vwf?.data)
+              opWf.waveforms.push({ label: `${name} ${comp.voltage.label || 'V'}`, x: vwf.time, y: vwf.data, type: 'voltage', unit: 'V' });
+            const iwf = comp.current?.waveform;
+            if (iwf?.time && iwf?.data)
+              opWf.waveforms.push({ label: `${name} I`, x: iwf.time, y: iwf.data, type: 'current', unit: 'A' });
+          }
+        }
         if (cw.inputVoltage?.time && cw.inputVoltage?.data)
           opWf.waveforms.push({ label: 'Input Voltage', x: cw.inputVoltage.time, y: cw.inputVoltage.data, type: 'voltage', unit: 'V' });
         if (cw.inputCurrent?.time && cw.inputCurrent?.data)
@@ -391,11 +404,13 @@ export default {
       
       // Build magnetic waveforms from operating points
       let magneticWaveforms = this.buildMagneticWaveformsFromInputs(operatingPoints);
-      
-      // Note: We do NOT repeat waveforms here because the backend MKF already
-      // applies numberOfPeriods when generating the waveforms in operatingPoints.
-      // Repeating them again would result in 2x, 3x, etc. the requested periods.
-      
+
+      // webKirchhoff emits ONE canonical steady-state period per signal, and the MAS
+      // operating points must stay canonical (harmonics/advisers assume waveform span
+      // == 1/frequency). The Periods knob is display-only: tile the plotted arrays here,
+      // never the store data.
+      magneticWaveforms = this.tileWaveformsForDisplay(magneticWaveforms, numberOfPeriods);
+
       // Process and filter waveforms
       magneticWaveforms = magneticWaveforms.map(wf => ({
         ...wf,
@@ -439,14 +454,18 @@ export default {
       }
 
       // Build magnetic waveforms from operating points (consistent across all topologies)
-      const magneticWaveforms = this.buildMagneticWaveformsFromInputs(operatingPoints, defaultFrequency);
+      let magneticWaveforms = this.buildMagneticWaveformsFromInputs(operatingPoints, defaultFrequency);
 
       if (magneticWaveforms.length === 0) {
         throw new Error("No magnetic waveforms were generated from operating points");
       }
 
+      // Display-only period tiling — see processAnalyticalWaveforms.
+      magneticWaveforms = this.tileWaveformsForDisplay(magneticWaveforms, numberOfPeriods);
+
       // Process converter waveforms to match expected visualizer format
-      const converterWaveforms = this.convertConverterWaveforms(rawConverterWaveforms, defaultFrequency);
+      let converterWaveforms = this.convertConverterWaveforms(rawConverterWaveforms, defaultFrequency);
+      converterWaveforms = this.tileWaveformsForDisplay(converterWaveforms, numberOfPeriods);
 
       return {
         operatingPoints,
@@ -904,6 +923,32 @@ export default {
     },
 
     // ===== SHARED WAVEFORM UTILITIES (moved from individual wizards) =====
+
+    // Tile chart waveforms to the Periods knob. webKirchhoff (the engine of record) emits ONE
+    // canonical steady-state period; the MAS store keeps it canonical, only the plotted x/y
+    // arrays are replicated. Fresh arrays — never mutate the store-shared originals.
+    tileWaveformsForDisplay(waveformGroups, numberOfPeriods) {
+      const n = Number.isFinite(numberOfPeriods) && numberOfPeriods > 1 ? Math.floor(numberOfPeriods) : 1;
+      if (n === 1 || !Array.isArray(waveformGroups)) return waveformGroups;
+      return waveformGroups.map(group => ({
+        ...group,
+        waveforms: (group.waveforms || []).map(w => {
+          if (!Array.isArray(w.x) || !Array.isArray(w.y) || w.x.length < 2) return w;
+          const period = w.x[w.x.length - 1] - w.x[0];
+          if (!(period > 0)) return w;
+          const x = [], y = [];
+          for (let k = 0; k < n; k++) {
+            for (let j = 0; j < w.x.length; j++) {
+              // skip each repeat's first sample (duplicate of the previous period's last)
+              if (k > 0 && j === 0) continue;
+              x.push(w.x[j] + k * period);
+              y.push(w.y[j]);
+            }
+          }
+          return { ...w, x, y };
+        }),
+      }));
+    },
 
     // Synthesize time-domain waveform from harmonics (Fourier synthesis)
     synthesizeWaveformFromHarmonics(harmonics, frequency, numPoints = 200, numberOfPeriods = 1) {

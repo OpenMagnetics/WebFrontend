@@ -11,7 +11,7 @@ import DimensionWithTolerance from 'WebSharedComponents/DataInput/DimensionWithT
 import { defaultDesignRequirements, minimumMaximumScalePerParameter, isolationSideOrdered } from 'WebSharedComponents/assets/js/defaults.js'
 import ConverterWizardBase from './ConverterWizardBase.vue'
 import EmiSpectrumView from './EmiSpectrumView.vue'
-import { waitForMkf } from 'WebSharedComponents/assets/js/mkfRuntime'
+import { waitForKirchhoff } from 'WebSharedComponents/assets/js/kirchhoffRuntime'
 import CompactVoltageInput from './CompactVoltageInput.vue'
 import { tooltipsConverterWizards } from 'WebSharedComponents/assets/js/texts'
 </script>
@@ -184,10 +184,13 @@ export default {
     methods: {
 
         // Shared by mounted() (immediate) and the localData watcher (debounced).
+        // Auto-runs use the instant analytical action — the Simulated action now runs a real
+        // ngspice deck in the (single-threaded) kirchhoff worker and must stay on-demand only,
+        // or wizard-open/typing starves the worker and every button appears dead.
         runAutoWaveforms() {
             this.updateErrorMessage();
             if (!this.errorMessage) {
-                this.simulateIdealWaveforms();
+                this.getAnalyticalWaveforms();
             }
         },
 
@@ -238,7 +241,9 @@ export default {
         getCalculateFn() {
             const isAdvanced = this.localData.designLevel === 'I know the design I want';
             return async (aux) => {
-                const Module = await waitForMkf();
+                // CMC design moved to webKirchhoff (design_cmc; the proxy maps the legacy
+                // calculate_cmc_inputs alias) — the magnetics-only webMKF no longer has it.
+                const Module = await waitForKirchhoff();
                 await Module.ready;
                 const fn = isAdvanced ? 'calculate_advanced_cmc_inputs' : 'calculate_cmc_inputs';
                 const raw = await Module[fn](JSON.stringify(aux));
@@ -713,6 +718,36 @@ export default {
         :textColor="$styleStore.wizard.inputTextColor"
         @update="updateErrorMessage"
       />
+      <!-- The CM noise source (I_cm = C·dV/dt) is ALWAYS sent to the backend — it sets
+           the operating point's excitation amplitude (thermal sizing) in EVERY spec
+           mode, so keep it visible/editable whenever the noise-estimation panel
+           (which owns these same fields) isn't showing it. -->
+      <template v-if="localData.designLevel === 'I know the design I want' || localData.specMode !== 'Estimate from noise'">
+        <Dimension
+          :name="'parasiticCap_pF'" :tooltip="tooltipsConverterWizards['parasiticCap_pF']" :replaceTitle="'C parasitic'" unit="pF"
+          :dataTestLabel="dataTestLabel + '-ParasiticCapConditions'"
+          :min="0.01" :max="10000"
+          v-model="localData"
+          :labelWidthProportionClass="'col-6'" :valueWidthProportionClass="'col-6'"
+          :valueFontSize="$styleStore.wizard.inputFontSize"
+          :labelFontSize="$styleStore.wizard.inputLabelFontSize"
+          :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor"
+          :textColor="$styleStore.wizard.inputTextColor"
+          @update="updateErrorMessage"
+        />
+        <Dimension
+          :name="'dvdt_V_ns'" :tooltip="tooltipsConverterWizards['dvdt_V_ns']" :replaceTitle="'dV/dt'" unit="V/ns"
+          :dataTestLabel="dataTestLabel + '-DvdtConditions'"
+          :min="0.1" :max="1000"
+          v-model="localData"
+          :labelWidthProportionClass="'col-6'" :valueWidthProportionClass="'col-6'"
+          :valueFontSize="$styleStore.wizard.inputFontSize"
+          :labelFontSize="$styleStore.wizard.inputLabelFontSize"
+          :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor"
+          :textColor="$styleStore.wizard.inputTextColor"
+          @update="updateErrorMessage"
+        />
+      </template>
     </template>
 
     <!-- ══════════════════════════════════════════════════════════ -->
@@ -798,7 +833,7 @@ export default {
     </template>
 
       <template v-if="cmcDiagnostics" #diagnostics>
-      <DimensionReadOnly name="cmcInd" :tooltip="tooltipsConverterWizards['cmcInd']" :replaceTitle="'Computed L'" :value="cmcDiagnostics.computedInductance" unit="H" :numberDecimals="9":labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-CmcInd'" />
+      <DimensionReadOnly name="cmcInd" :tooltip="tooltipsConverterWizards['cmcInd']" :replaceTitle="'Computed L'" :value="cmcDiagnostics.computedInductance" unit="H" :numberDecimals="9" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-CmcInd'" />
     </template>
   </ConverterWizardBase>
 </template>

@@ -1,5 +1,13 @@
 import { defineStore } from 'pinia'
 import { waitForMkf, isWorkerMode } from 'WebSharedComponents/assets/js/mkfRuntime'
+// Converter design + ngspice simulation moved from webMKF (magnetics-only now) to webKirchhoff.
+// In the converter wizard methods below, the `mkf` local is the webKirchhoff proxy (waitForKirchhoff),
+// NOT the magnetics module. Its proxy accepts the legacy per-topology function names
+// (calculate_<topo>_inputs / simulate_<topo>_ideal_waveforms / generate_<topo>_ngspice_circuit) and
+// reshapes webKirchhoff's process_converter/design_tas output back to the legacy contract — see
+// kirchhoffRuntime.js. Magnetics methods (extract_operating_point, calculate_advised_*, mas_autocomplete,
+// load_*, current transformer / CMC / DMC below) stay on webMKF via waitForMkf().
+import { waitForKirchhoff } from 'WebSharedComponents/assets/js/kirchhoffRuntime'
 import { Convert as MasConvert } from 'WebSharedComponents/assets/ts/MAS.ts'
 import { clean } from 'WebSharedComponents/assets/js/utils'
 
@@ -919,7 +927,7 @@ export const useTaskQueueStore = defineStore('taskQueue', {
         },
 
         async calculateBuckInputs(params) {
-            const mkf = await waitForMkf();
+            const mkf = await waitForKirchhoff();
             await mkf.ready;
 
             const result = await mkf.calculate_buck_inputs(JSON.stringify(params));
@@ -935,7 +943,7 @@ export const useTaskQueueStore = defineStore('taskQueue', {
         },
 
         async calculateAdvancedBuckInputs(params) {
-            const mkf = await waitForMkf();
+            const mkf = await waitForKirchhoff();
             await mkf.ready;
 
             const result = await mkf.calculate_advanced_buck_inputs(JSON.stringify(params));
@@ -952,7 +960,7 @@ export const useTaskQueueStore = defineStore('taskQueue', {
         },
 
         async calculateBoostInputs(params) {
-            const mkf = await waitForMkf();
+            const mkf = await waitForKirchhoff();
             await mkf.ready;
 
             const result = await mkf.calculate_boost_inputs(JSON.stringify(params));
@@ -968,7 +976,7 @@ export const useTaskQueueStore = defineStore('taskQueue', {
         },
 
         async calculateAdvancedBoostInputs(params) {
-            const mkf = await waitForMkf();
+            const mkf = await waitForKirchhoff();
             await mkf.ready;
 
             const result = await mkf.calculate_advanced_boost_inputs(JSON.stringify(params));
@@ -985,7 +993,7 @@ export const useTaskQueueStore = defineStore('taskQueue', {
         },
 
         async simulateBuckIdealWaveforms(params) {
-            const mkf = await waitForMkf();
+            const mkf = await waitForKirchhoff();
             await mkf.ready;
 
             const result = await mkf.simulate_buck_ideal_waveforms(JSON.stringify(params));
@@ -1002,7 +1010,7 @@ export const useTaskQueueStore = defineStore('taskQueue', {
         },
 
         async simulateBoostIdealWaveforms(params) {
-            const mkf = await waitForMkf();
+            const mkf = await waitForKirchhoff();
             await mkf.ready;
 
             const result = await mkf.simulate_boost_ideal_waveforms(JSON.stringify(params));
@@ -1029,7 +1037,7 @@ export const useTaskQueueStore = defineStore('taskQueue', {
         // ----- Cuk -----
         cukInputsCalculated(success = true, dataOrMessage = '') {},
         async calculateCukInputs(params) {
-            const mkf = await waitForMkf();
+            const mkf = await waitForKirchhoff();
             await mkf.ready;
             const result = await mkf.calculate_cuk_inputs(JSON.stringify(params));
             if (result.startsWith('Exception')) { throw new Error(result); }
@@ -1040,7 +1048,7 @@ export const useTaskQueueStore = defineStore('taskQueue', {
         },
         cukIdealWaveformsCalculated(success = true, dataOrMessage = '') {},
         async simulateCukIdealWaveforms(params) {
-            const mkf = await waitForMkf();
+            const mkf = await waitForKirchhoff();
             await mkf.ready;
             const result = await mkf.simulate_cuk_ideal_waveforms(JSON.stringify(params));
             if (result.startsWith('Exception')) {
@@ -1059,7 +1067,7 @@ export const useTaskQueueStore = defineStore('taskQueue', {
         // ----- Zeta -----
         zetaInputsCalculated(success = true, dataOrMessage = '') {},
         async calculateZetaInputs(params) {
-            const mkf = await waitForMkf();
+            const mkf = await waitForKirchhoff();
             await mkf.ready;
             const result = await mkf.calculate_zeta_inputs(JSON.stringify(params));
             if (result.startsWith('Exception')) { throw new Error(result); }
@@ -1070,7 +1078,7 @@ export const useTaskQueueStore = defineStore('taskQueue', {
         },
         zetaIdealWaveformsCalculated(success = true, dataOrMessage = '') {},
         async simulateZetaIdealWaveforms(params) {
-            const mkf = await waitForMkf();
+            const mkf = await waitForKirchhoff();
             await mkf.ready;
             const result = await mkf.simulate_zeta_ideal_waveforms(JSON.stringify(params));
             if (result.startsWith('Exception')) {
@@ -1089,7 +1097,7 @@ export const useTaskQueueStore = defineStore('taskQueue', {
         // ----- FourSwitchBuckBoost -----
         fourSwitchBuckBoostInputsCalculated(success = true, dataOrMessage = '') {},
         async calculateFourSwitchBuckBoostInputs(params) {
-            const mkf = await waitForMkf();
+            const mkf = await waitForKirchhoff();
             await mkf.ready;
             const result = await mkf.calculate_four_switch_buck_boost_inputs(JSON.stringify(params));
             if (result.startsWith('Exception')) { throw new Error(result); }
@@ -1100,7 +1108,7 @@ export const useTaskQueueStore = defineStore('taskQueue', {
         },
         fourSwitchBuckBoostIdealWaveformsCalculated(success = true, dataOrMessage = '') {},
         async simulateFourSwitchBuckBoostIdealWaveforms(params) {
-            const mkf = await waitForMkf();
+            const mkf = await waitForKirchhoff();
             await mkf.ready;
             const result = await mkf.simulate_four_switch_buck_boost_ideal_waveforms(JSON.stringify(params));
             if (result.startsWith('Exception')) {
@@ -1119,7 +1127,7 @@ export const useTaskQueueStore = defineStore('taskQueue', {
         // ----- Weinberg -----
         weinbergInputsCalculated(success = true, dataOrMessage = '') {},
         async calculateWeinbergInputs(params) {
-            const mkf = await waitForMkf();
+            const mkf = await waitForKirchhoff();
             await mkf.ready;
             const result = await mkf.calculate_weinberg_inputs(JSON.stringify(params));
             if (result.startsWith('Exception')) { throw new Error(result); }
@@ -1130,7 +1138,7 @@ export const useTaskQueueStore = defineStore('taskQueue', {
         },
         weinbergIdealWaveformsCalculated(success = true, dataOrMessage = '') {},
         async simulateWeinbergIdealWaveforms(params) {
-            const mkf = await waitForMkf();
+            const mkf = await waitForKirchhoff();
             await mkf.ready;
             const result = await mkf.simulate_weinberg_ideal_waveforms(JSON.stringify(params));
             if (result.startsWith('Exception')) {
@@ -1149,7 +1157,7 @@ export const useTaskQueueStore = defineStore('taskQueue', {
         // ----- Clllc (bidirectional symmetric resonant) -----
         clllcInputsCalculated(success = true, dataOrMessage = '') {},
         async calculateClllcInputs(params) {
-            const mkf = await waitForMkf();
+            const mkf = await waitForKirchhoff();
             await mkf.ready;
             const result = await mkf.calculate_clllc_inputs(JSON.stringify(params));
             if (result.startsWith('Exception')) { throw new Error(result); }
@@ -1160,7 +1168,7 @@ export const useTaskQueueStore = defineStore('taskQueue', {
         },
         clllcIdealWaveformsCalculated(success = true, dataOrMessage = '') {},
         async simulateClllcIdealWaveforms(params) {
-            const mkf = await waitForMkf();
+            const mkf = await waitForKirchhoff();
             await mkf.ready;
             const result = await mkf.simulate_clllc_ideal_waveforms(JSON.stringify(params));
             if (result.startsWith('Exception')) {
@@ -1178,7 +1186,7 @@ export const useTaskQueueStore = defineStore('taskQueue', {
 
         // ----- Advanced (I-know-the-design) variants for the 5 new wizards -----
         async calculateAdvancedCukInputs(params) {
-            const mkf = await waitForMkf();
+            const mkf = await waitForKirchhoff();
             await mkf.ready;
             const result = await mkf.calculate_advanced_cuk_inputs(JSON.stringify(params));
             if (result.startsWith('Exception')) { throw new Error(result); }
@@ -1188,7 +1196,7 @@ export const useTaskQueueStore = defineStore('taskQueue', {
             return parsed;
         },
         async calculateAdvancedZetaInputs(params) {
-            const mkf = await waitForMkf();
+            const mkf = await waitForKirchhoff();
             await mkf.ready;
             const result = await mkf.calculate_advanced_zeta_inputs(JSON.stringify(params));
             if (result.startsWith('Exception')) { throw new Error(result); }
@@ -1198,7 +1206,7 @@ export const useTaskQueueStore = defineStore('taskQueue', {
             return parsed;
         },
         async calculateAdvancedFourSwitchBuckBoostInputs(params) {
-            const mkf = await waitForMkf();
+            const mkf = await waitForKirchhoff();
             await mkf.ready;
             const result = await mkf.calculate_advanced_four_switch_buck_boost_inputs(JSON.stringify(params));
             if (result.startsWith('Exception')) { throw new Error(result); }
@@ -1208,7 +1216,7 @@ export const useTaskQueueStore = defineStore('taskQueue', {
             return parsed;
         },
         async calculateAdvancedWeinbergInputs(params) {
-            const mkf = await waitForMkf();
+            const mkf = await waitForKirchhoff();
             await mkf.ready;
             const result = await mkf.calculate_advanced_weinberg_inputs(JSON.stringify(params));
             if (result.startsWith('Exception')) { throw new Error(result); }
@@ -1218,7 +1226,7 @@ export const useTaskQueueStore = defineStore('taskQueue', {
             return parsed;
         },
         async calculateAdvancedClllcInputs(params) {
-            const mkf = await waitForMkf();
+            const mkf = await waitForKirchhoff();
             await mkf.ready;
             const result = await mkf.calculate_advanced_clllc_inputs(JSON.stringify(params));
             if (result.startsWith('Exception')) { throw new Error(result); }
@@ -1236,7 +1244,7 @@ export const useTaskQueueStore = defineStore('taskQueue', {
         },
 
         async calculateSepicInputs(params) {
-            const mkf = await waitForMkf();
+            const mkf = await waitForKirchhoff();
             await mkf.ready;
 
             const result = await mkf.calculate_sepic_inputs(JSON.stringify(params));
@@ -1252,7 +1260,7 @@ export const useTaskQueueStore = defineStore('taskQueue', {
         },
 
         async calculateAdvancedSepicInputs(params) {
-            const mkf = await waitForMkf();
+            const mkf = await waitForKirchhoff();
             await mkf.ready;
 
             const result = await mkf.calculate_advanced_sepic_inputs(JSON.stringify(params));
@@ -1268,7 +1276,7 @@ export const useTaskQueueStore = defineStore('taskQueue', {
         },
 
         async simulateSepicIdealWaveforms(params) {
-            const mkf = await waitForMkf();
+            const mkf = await waitForKirchhoff();
             await mkf.ready;
 
             const result = await mkf.simulate_sepic_ideal_waveforms(JSON.stringify(params));
@@ -1289,7 +1297,7 @@ export const useTaskQueueStore = defineStore('taskQueue', {
         },
 
         async simulateForwardIdealWaveforms(params) {
-            const mkf = await waitForMkf();
+            const mkf = await waitForKirchhoff();
             await mkf.ready;
 
             const result = await mkf.simulate_forward_ideal_waveforms(JSON.stringify(params));
@@ -1310,7 +1318,7 @@ export const useTaskQueueStore = defineStore('taskQueue', {
         },
 
         async simulateTwoSwitchForwardIdealWaveforms(params) {
-            const mkf = await waitForMkf();
+            const mkf = await waitForKirchhoff();
             await mkf.ready;
 
             const result = await mkf.simulate_two_switch_forward_ideal_waveforms(JSON.stringify(params));
@@ -1333,7 +1341,7 @@ export const useTaskQueueStore = defineStore('taskQueue', {
         },
 
         async simulateActiveClampForwardIdealWaveforms(params) {
-            const mkf = await waitForMkf();
+            const mkf = await waitForKirchhoff();
             await mkf.ready;
 
             const result = await mkf.simulate_active_clamp_forward_ideal_waveforms(JSON.stringify(params));
@@ -1354,7 +1362,7 @@ export const useTaskQueueStore = defineStore('taskQueue', {
         },
 
         async simulatePushPullIdealWaveforms(params) {
-            const mkf = await waitForMkf();
+            const mkf = await waitForKirchhoff();
             await mkf.ready;
 
             const result = await mkf.simulate_push_pull_ideal_waveforms(JSON.stringify(params));
@@ -1375,7 +1383,7 @@ export const useTaskQueueStore = defineStore('taskQueue', {
         },
 
         async simulateIsolatedBuckBoostIdealWaveforms(params) {
-            const mkf = await waitForMkf();
+            const mkf = await waitForKirchhoff();
             await mkf.ready;
 
             const result = await mkf.simulate_isolated_buck_boost_ideal_waveforms(JSON.stringify(params));
@@ -1392,7 +1400,7 @@ export const useTaskQueueStore = defineStore('taskQueue', {
         },
 
         async simulateIsolatedBuckIdealWaveforms(params) {
-            const mkf = await waitForMkf();
+            const mkf = await waitForKirchhoff();
             await mkf.ready;
 
             const result = await mkf.simulate_isolated_buck_ideal_waveforms(JSON.stringify(params));
@@ -1413,7 +1421,7 @@ export const useTaskQueueStore = defineStore('taskQueue', {
         },
 
         async calculateIsolatedBuckInputs(params) {
-            const mkf = await waitForMkf();
+            const mkf = await waitForKirchhoff();
             await mkf.ready;
 
             const result = await mkf.calculate_isolated_buck_inputs(JSON.stringify(params));
@@ -1430,7 +1438,7 @@ export const useTaskQueueStore = defineStore('taskQueue', {
         },
 
         async calculateAdvancedIsolatedBuckInputs(params) {
-            const mkf = await waitForMkf();
+            const mkf = await waitForKirchhoff();
             await mkf.ready;
 
             const result = await mkf.calculate_advanced_isolated_buck_inputs(JSON.stringify(params));
@@ -1447,7 +1455,7 @@ export const useTaskQueueStore = defineStore('taskQueue', {
         },
 
         async calculateIsolatedBuckBoostInputs(params) {
-            const mkf = await waitForMkf();
+            const mkf = await waitForKirchhoff();
             await mkf.ready;
 
             const result = await mkf.calculate_isolated_buck_boost_inputs(JSON.stringify(params));
@@ -1464,7 +1472,7 @@ export const useTaskQueueStore = defineStore('taskQueue', {
         },
 
         async calculateAdvancedIsolatedBuckBoostInputs(params) {
-            const mkf = await waitForMkf();
+            const mkf = await waitForKirchhoff();
             await mkf.ready;
 
             const result = await mkf.calculate_advanced_isolated_buck_boost_inputs(JSON.stringify(params));
@@ -1485,7 +1493,7 @@ export const useTaskQueueStore = defineStore('taskQueue', {
         },
 
         async calculateFlybackInputs(params) {
-            const mkf = await waitForMkf();
+            const mkf = await waitForKirchhoff();
             await mkf.ready;
 
             const result = await mkf.calculate_flyback_inputs(JSON.stringify(params));
@@ -1502,7 +1510,7 @@ export const useTaskQueueStore = defineStore('taskQueue', {
         },
 
         async calculateAdvancedFlybackInputs(params) {
-            const mkf = await waitForMkf();
+            const mkf = await waitForKirchhoff();
             await mkf.ready;
 
             const result = await mkf.calculate_advanced_flyback_inputs(JSON.stringify(params));
@@ -1519,7 +1527,7 @@ export const useTaskQueueStore = defineStore('taskQueue', {
         },
 
         async simulateFlybackIdealWaveforms(params) {
-            const mkf = await waitForMkf();
+            const mkf = await waitForKirchhoff();
             await mkf.ready;
 
             const result = await mkf.simulate_flyback_ideal_waveforms(JSON.stringify(params));
@@ -1538,7 +1546,7 @@ export const useTaskQueueStore = defineStore('taskQueue', {
         },
 
         async simulateFlybackWithMagnetic(flybackParams, magnetic) {
-            const mkf = await waitForMkf();
+            const mkf = await waitForKirchhoff();
             await mkf.ready;
 
             masSentry('simulateFlybackWithMagnetic', 'Magnetic', magnetic);
@@ -1560,7 +1568,7 @@ export const useTaskQueueStore = defineStore('taskQueue', {
         },
 
         async generateSpiceCode(topology, params, inputVoltageIndex = 0, operatingPointIndex = 0) {
-            const mkf = await waitForMkf();
+            const mkf = await waitForKirchhoff();
             await mkf.ready;
 
             // Map topology → WASM function. Keys are MAS schema enum strings
@@ -1627,7 +1635,7 @@ export const useTaskQueueStore = defineStore('taskQueue', {
         },
 
         async calculateSingleSwitchForwardInputs(params) {
-            const mkf = await waitForMkf();
+            const mkf = await waitForKirchhoff();
             await mkf.ready;
 
             const result = await mkf.calculate_single_switch_forward_inputs(JSON.stringify(params));
@@ -1644,7 +1652,7 @@ export const useTaskQueueStore = defineStore('taskQueue', {
         },
 
         async calculateAdvancedSingleSwitchForwardInputs(params) {
-            const mkf = await waitForMkf();
+            const mkf = await waitForKirchhoff();
             await mkf.ready;
 
             const result = await mkf.calculate_advanced_single_switch_forward_inputs(JSON.stringify(params));
@@ -1666,7 +1674,7 @@ export const useTaskQueueStore = defineStore('taskQueue', {
         },
 
         async calculateTwoSwitchForwardInputs(params) {
-            const mkf = await waitForMkf();
+            const mkf = await waitForKirchhoff();
             await mkf.ready;
 
             const result = await mkf.calculate_two_switch_forward_inputs(JSON.stringify(params));
@@ -1683,7 +1691,7 @@ export const useTaskQueueStore = defineStore('taskQueue', {
         },
 
         async calculateAdvancedTwoSwitchForwardInputs(params) {
-            const mkf = await waitForMkf();
+            const mkf = await waitForKirchhoff();
             await mkf.ready;
 
             const result = await mkf.calculate_advanced_two_switch_forward_inputs(JSON.stringify(params));
@@ -1705,7 +1713,7 @@ export const useTaskQueueStore = defineStore('taskQueue', {
         },
 
         async calculateActiveClampForwardInputs(params) {
-            const mkf = await waitForMkf();
+            const mkf = await waitForKirchhoff();
             await mkf.ready;
 
             const result = await mkf.calculate_active_clamp_forward_inputs(JSON.stringify(params));
@@ -1722,7 +1730,7 @@ export const useTaskQueueStore = defineStore('taskQueue', {
         },
 
         async calculateAdvancedActiveClampForwardInputs(params) {
-            const mkf = await waitForMkf();
+            const mkf = await waitForKirchhoff();
             await mkf.ready;
 
             const result = await mkf.calculate_advanced_active_clamp_forward_inputs(JSON.stringify(params));
@@ -1748,7 +1756,7 @@ export const useTaskQueueStore = defineStore('taskQueue', {
         },
 
         async calculatePushPullInputs(params) {
-            const mkf = await waitForMkf();
+            const mkf = await waitForKirchhoff();
             await mkf.ready;
 
             const result = await mkf.calculate_push_pull_inputs(JSON.stringify(params));
@@ -1765,7 +1773,7 @@ export const useTaskQueueStore = defineStore('taskQueue', {
         },
 
         async calculateAdvancedPushPullInputs(params) {
-            const mkf = await waitForMkf();
+            const mkf = await waitForKirchhoff();
             await mkf.ready;
 
             const result = await mkf.calculate_advanced_push_pull_inputs(JSON.stringify(params));
@@ -1786,7 +1794,7 @@ export const useTaskQueueStore = defineStore('taskQueue', {
         },
 
         async calculateDabInputs(params) {
-            const mkf = await waitForMkf();
+            const mkf = await waitForKirchhoff();
             await mkf.ready;
 
             const result = await mkf.calculate_dab_inputs(JSON.stringify(params));
@@ -1803,7 +1811,7 @@ export const useTaskQueueStore = defineStore('taskQueue', {
         },
 
         async simulateDabIdealWaveforms(params) {
-            const mkf = await waitForMkf();
+            const mkf = await waitForKirchhoff();
             await mkf.ready;
 
             const result = await mkf.simulate_dab_ideal_waveforms(JSON.stringify(params));
@@ -1824,7 +1832,7 @@ export const useTaskQueueStore = defineStore('taskQueue', {
         },
 
         async calculateLlcInputs(params) {
-            const mkf = await waitForMkf();
+            const mkf = await waitForKirchhoff();
             await mkf.ready;
 
             const result = await mkf.calculate_llc_inputs(JSON.stringify(params));
@@ -1847,7 +1855,7 @@ export const useTaskQueueStore = defineStore('taskQueue', {
         },
 
         async simulateLlcIdealWaveforms(params) {
-            const mkf = await waitForMkf();
+            const mkf = await waitForKirchhoff();
             await mkf.ready;
 
             const result = await mkf.simulate_llc_ideal_waveforms(JSON.stringify(params));
@@ -1874,7 +1882,7 @@ export const useTaskQueueStore = defineStore('taskQueue', {
         },
 
         async calculateCllcInputs(params) {
-            const mkf = await waitForMkf();
+            const mkf = await waitForKirchhoff();
             await mkf.ready;
 
             const result = await mkf.calculate_cllc_inputs(JSON.stringify(params));
@@ -1897,7 +1905,7 @@ export const useTaskQueueStore = defineStore('taskQueue', {
         },
 
         async simulateCllcIdealWaveforms(params) {
-            const mkf = await waitForMkf();
+            const mkf = await waitForKirchhoff();
             await mkf.ready;
 
             const result = await mkf.simulate_cllc_ideal_waveforms(JSON.stringify(params));
@@ -1922,7 +1930,7 @@ export const useTaskQueueStore = defineStore('taskQueue', {
         },
 
         async calculatePsfbInputs(params) {
-            const mkf = await waitForMkf();
+            const mkf = await waitForKirchhoff();
             await mkf.ready;
 
             const result = await mkf.calculate_psfb_inputs(JSON.stringify(params));
@@ -1943,7 +1951,7 @@ export const useTaskQueueStore = defineStore('taskQueue', {
         },
 
         async simulatePsfbIdealWaveforms(params) {
-            const mkf = await waitForMkf();
+            const mkf = await waitForKirchhoff();
             await mkf.ready;
 
             const result = await mkf.simulate_psfb_ideal_waveforms(JSON.stringify(params));
@@ -1964,7 +1972,7 @@ export const useTaskQueueStore = defineStore('taskQueue', {
         },
 
         async calculatePshbInputs(params) {
-            const mkf = await waitForMkf();
+            const mkf = await waitForKirchhoff();
             await mkf.ready;
 
             const result = await mkf.calculate_pshb_inputs(JSON.stringify(params));
@@ -1981,7 +1989,7 @@ export const useTaskQueueStore = defineStore('taskQueue', {
         },
 
         async simulatePshbIdealWaveforms(params) {
-            const mkf = await waitForMkf();
+            const mkf = await waitForKirchhoff();
             await mkf.ready;
 
             const result = await mkf.simulate_pshb_ideal_waveforms(JSON.stringify(params));
@@ -2002,7 +2010,7 @@ export const useTaskQueueStore = defineStore('taskQueue', {
         },
 
         async calculateAhbInputs(params) {
-            const mkf = await waitForMkf();
+            const mkf = await waitForKirchhoff();
             await mkf.ready;
 
             const result = await mkf.calculate_ahb_inputs(JSON.stringify(params));
@@ -2019,7 +2027,7 @@ export const useTaskQueueStore = defineStore('taskQueue', {
         },
 
         async simulateAhbIdealWaveforms(params) {
-            const mkf = await waitForMkf();
+            const mkf = await waitForKirchhoff();
             await mkf.ready;
 
             const result = await mkf.simulate_ahb_ideal_waveforms(JSON.stringify(params));
@@ -2040,7 +2048,7 @@ export const useTaskQueueStore = defineStore('taskQueue', {
         },
 
         async calculateSrcInputs(params) {
-            const mkf = await waitForMkf();
+            const mkf = await waitForKirchhoff();
             await mkf.ready;
 
             const result = await mkf.calculate_src_inputs(JSON.stringify(params));
@@ -2057,7 +2065,7 @@ export const useTaskQueueStore = defineStore('taskQueue', {
         },
 
         async simulateSrcIdealWaveforms(params) {
-            const mkf = await waitForMkf();
+            const mkf = await waitForKirchhoff();
             await mkf.ready;
 
             const result = await mkf.simulate_src_ideal_waveforms(JSON.stringify(params));
@@ -2078,7 +2086,7 @@ export const useTaskQueueStore = defineStore('taskQueue', {
         },
 
         async calculateViennaInputs(params) {
-            const mkf = await waitForMkf();
+            const mkf = await waitForKirchhoff();
             await mkf.ready;
 
             const result = await mkf.calculate_vienna_inputs(JSON.stringify(params));
@@ -2099,7 +2107,7 @@ export const useTaskQueueStore = defineStore('taskQueue', {
             // one phase solved at peak-of-line, replicated to B/C by 120-deg
             // symmetry. The wizard surfaces this via `viennaDiagnostics.note`
             // on the returned payload. Full 3-phase netlist is MKF Phase 3+.
-            const mkf = await waitForMkf();
+            const mkf = await waitForKirchhoff();
             await mkf.ready;
 
             const result = await mkf.simulate_vienna_ideal_waveforms(JSON.stringify(params));
@@ -2120,7 +2128,7 @@ export const useTaskQueueStore = defineStore('taskQueue', {
         },
 
         async processCurrentTransformer(params) {
-            const mkf = await waitForMkf();
+            const mkf = await waitForKirchhoff();
             await mkf.ready;
 
             const result = await mkf.process_current_transformer(JSON.stringify(params));
@@ -2141,7 +2149,7 @@ export const useTaskQueueStore = defineStore('taskQueue', {
         },
 
         async calculateCmcInputs(params) {
-            const mkf = await waitForMkf();
+            const mkf = await waitForKirchhoff();
             await mkf.ready;
 
             const result = await mkf.calculate_cmc_inputs(JSON.stringify(params));
@@ -2158,7 +2166,7 @@ export const useTaskQueueStore = defineStore('taskQueue', {
         },
 
         async simulateCmcIdealWaveforms(params, inductance, parasiticCap_pF, dvdt_V_ns) {
-            const mkf = await waitForMkf();
+            const mkf = await waitForKirchhoff();
             await mkf.ready;
 
             const result = await mkf.simulate_cmc_ideal_waveforms(JSON.stringify(params), inductance, parasiticCap_pF, dvdt_V_ns);
@@ -2172,7 +2180,7 @@ export const useTaskQueueStore = defineStore('taskQueue', {
         },
 
         async simulateCmcLisnWaveforms(params, inductance) {
-            const mkf = await waitForMkf();
+            const mkf = await waitForKirchhoff();
             await mkf.ready;
 
             const result = await mkf.simulate_cmc_lisn_waveforms(JSON.stringify(params), inductance);
@@ -2193,7 +2201,7 @@ export const useTaskQueueStore = defineStore('taskQueue', {
         },
 
         async calculateDmcInputs(params) {
-            const mkf = await waitForMkf();
+            const mkf = await waitForKirchhoff();
             await mkf.ready;
 
             const result = await mkf.calculate_dmc_inputs(JSON.stringify(params));
@@ -2210,7 +2218,7 @@ export const useTaskQueueStore = defineStore('taskQueue', {
         },
 
         async verifyDmcAttenuation(params, inductance, capacitance = 0) {
-            const mkf = await waitForMkf();
+            const mkf = await waitForKirchhoff();
             await mkf.ready;
 
             const result = await mkf.verify_dmc_attenuation(JSON.stringify(params), inductance, capacitance);
@@ -2227,7 +2235,7 @@ export const useTaskQueueStore = defineStore('taskQueue', {
         },
 
         async proposeDmcDesign(params) {
-            const mkf = await waitForMkf();
+            const mkf = await waitForKirchhoff();
             await mkf.ready;
 
             const result = await mkf.propose_dmc_design(JSON.stringify(params));
@@ -2243,11 +2251,13 @@ export const useTaskQueueStore = defineStore('taskQueue', {
         dmcWaveformsSimulated(success = true, dataOrMessage = '') {
         },
 
-        async simulateDmcWaveforms(params, inductance) {
-            const mkf = await waitForMkf();
+        async simulateDmcWaveforms(params, inductance, capacitance = 0) {
+            const mkf = await waitForKirchhoff();
             await mkf.ready;
 
-            const result = await mkf.simulate_dmc_waveforms(JSON.stringify(params), inductance);
+            // capacitance 0 = let Kirchhoff resolve it (spec filterCapacitance, else
+            // the fc = fsw/10 auto-sizing). The wasm binding takes exactly 3 args.
+            const result = await mkf.simulate_dmc_waveforms(JSON.stringify(params), inductance, capacitance);
             if (result.startsWith('Exception')) {
                 setTimeout(() => { this.dmcWaveformsSimulated(false, result); }, this.task_standard_response_delay);
                 throw new Error(result);

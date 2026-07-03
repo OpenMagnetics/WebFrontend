@@ -16,6 +16,7 @@ import { useFairRiteStyleStore } from '/src/stores/fairRiteStyle'
 import { useModelSettingsStore } from '/MagneticBuilder/src/stores/modelSettings'
 import { VueWindowSizePlugin } from 'vue-window-size/plugin';
 import { initWorker } from 'WebSharedComponents/assets/js/mkfRuntime'
+import { initKirchhoffWorker } from 'WebSharedComponents/assets/js/kirchhoffRuntime'
 import VueLatex from 'vatex'
 import { checkAndClearOutdatedStores, getVersionedWasmUrl } from '/src/stores/storeVersioning'
 import { useConsoleStore } from '/src/stores/console'
@@ -205,6 +206,31 @@ function preloadMKF() {
     return preloadPromise;
 }
 
+// Preload webKirchhoff (converter models: design + ngspice simulation) in its own Web Worker,
+// alongside webMKF (magnetics-only). Fire-and-forget: it has no data to load (no core materials /
+// shapes / wires), so warming the worker is all that is needed. The wizards await waitForKirchhoff()
+// on demand, so a slow preload never blocks; this just hides the WASM compile latency behind the
+// home page like preloadMKF() does.
+let kirchhoffPreloadPromise = null;
+function preloadKirchhoff() {
+    if (kirchhoffPreloadPromise) {
+        return kirchhoffPreloadPromise;
+    }
+    kirchhoffPreloadPromise = (async () => {
+        try {
+            const wasmJsUrl = getVersionedWasmUrl(`${import.meta.env.BASE_URL}wasm/libKirchhoff.js`);
+            const kh = await initKirchhoffWorker(wasmJsUrl);
+            console.warn("webKirchhoff preload complete");
+            return kh;
+        } catch (error) {
+            console.error("Error preloading webKirchhoff:", error);
+            kirchhoffPreloadPromise = null; // Allow retry
+            throw error;
+        }
+    })();
+    return kirchhoffPreloadPromise;
+}
+
 // Console interception for debug panel
 let consoleStore = null;
 const originalConsole = {
@@ -294,9 +320,20 @@ router.beforeEach((to, from, next) => {
     // Start preloading when on home page (non-data views)
     if (!loadData && app.config.globalProperties.$mkf == null) {
         preloadMKF();
+        preloadKirchhoff();
     }
 
     if (loadData) {
+        // Data views need webKirchhoff too (wizard auto-runs fire on mount) — the home-page
+        // preload never happened on a direct /wizards deep-link, and without this the
+        // kirchhoff worker never initializes and waitForKirchhoff() pends forever (every
+        // converter action appears dead). Idempotent: guarded by kirchhoffPreloadPromise.
+        // Only start it once MKF is up: compiling the 15 MB kirchhoff WASM concurrently with
+        // the critical-path MKF cold init pushes the engine_loader past its time budget
+        // (the fresh-init branch below fires it right after MKF is ready instead).
+        if (app.config.globalProperties.$mkf != null) {
+            preloadKirchhoff();
+        }
         if (app.config.globalProperties.$mkf == null && to.name != "EngineLoader") {
             app.config.globalProperties.$userStore.loadingPath = to.path
             router.push(`${import.meta.env.BASE_URL}engine_loader`)
@@ -347,6 +384,11 @@ router.beforeEach((to, from, next) => {
                     // If preloadPromise exists, it includes data loading, so wait for it fully
                     const mkf = await initPromise;
                     app.config.globalProperties.$mkf = mkf;
+
+                    // MKF is up — now warm webKirchhoff off the critical path (fire-and-forget,
+                    // idempotent). Deep-linked wizard views get a working converter engine
+                    // moments later without having competed with the MKF cold compile above.
+                    preloadKirchhoff();
                     
                     // If preloadPromise was used, data is already loaded (preload includes data loading)
                     // Only need to load if we did fresh init without preload

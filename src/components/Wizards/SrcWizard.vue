@@ -8,6 +8,7 @@ import ElementFromList from 'WebSharedComponents/DataInput/ElementFromList.vue'
 import PairOfDimensions from 'WebSharedComponents/DataInput/PairOfDimensions.vue'
 import { minimumMaximumScalePerParameter } from 'WebSharedComponents/assets/js/defaults.js'
 import ConverterWizardBase from './ConverterWizardBase.vue'
+import KhDiagnosticsPanel from './KhDiagnosticsPanel.vue'
 import CompactVoltageInput from './CompactVoltageInput.vue'
 import { tooltipsConverterWizards, dropdownLabelsConverterWizards } from 'WebSharedComponents/assets/js/texts'
 </script>
@@ -86,7 +87,7 @@ export default {
             if (this._autoRunDone) return;
             this._autoRunDone = true;
             try { this.updateErrorMessage?.(); } catch (e) { return; }
-            if (!this.errorMessage) this.simulateIdealWaveforms?.();
+            if (!this.errorMessage) this.getAnalyticalWaveforms?.();
         });
     },
     methods: {
@@ -274,38 +275,8 @@ export default {
     </template>
 
     <template v-if="srcDiagnostics" #diagnostics>
-      <!-- Single-design computed tank values always flat. -->
-      <DimensionReadOnly :name="'srcLs'" :tooltip="tooltipsConverterWizards['srcLs']" :replaceTitle="'Series Ind.'" unit="H" :value="srcDiagnostics.computedResonantInductance" :numberDecimals="6" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-SrcLs'" />
-      <DimensionReadOnly :name="'srcCr'" :tooltip="tooltipsConverterWizards['srcCr']" :replaceTitle="'Resonant Cap.'" unit="F" :value="srcDiagnostics.computedResonantCapacitance" :numberDecimals="9" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-SrcCr'" />
-      <DimensionReadOnly :name="'srcFr'" :tooltip="tooltipsConverterWizards['srcFr']" :replaceTitle="'Res. Freq.'" unit="Hz" :value="srcDiagnostics.computedResonantFrequency" :numberDecimals="0" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-SrcFr'" />
-
-      <!-- Per-OP table for the last_* fields that vary across V_in. -->
-      <table
-        v-if="Array.isArray(srcDiagnostics.perOp) && srcDiagnostics.perOp.length > 1"
-        class="diagnostics-perop-table"
-        :data-cy="dataTestLabel + '-Src-perOp-table'"
-        :style="{ color: $styleStore.wizard.inputTextColor, fontSize: $styleStore.wizard.inputFontSize, width: '100%', borderCollapse: 'collapse', marginTop: '4px' }"
-      >
-        <thead>
-          <tr>
-            <th :style="{ textAlign: 'left', padding: '2px 4px', fontSize: $styleStore.wizard.inputLabelFontSize, opacity: 0.85 }"></th>
-            <th v-for="(op, i) in srcDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px', fontSize: $styleStore.wizard.inputLabelFontSize, opacity: 0.85 }">
-              {{ op.operatingPointName || ('OP ' + i) }}
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr><td>Gain M</td><td v-for="(op, i) in srcDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px' }">{{ Number(op.gainM).toFixed(3) }}</td></tr>
-          <tr><td>Norm. Fsw Λ</td><td v-for="(op, i) in srcDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px' }">{{ Number(op.normalizedFsw).toFixed(3) }}</td></tr>
-          <tr><td>I_r peak (A)</td><td v-for="(op, i) in srcDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px' }">{{ Number(op.irPeak).toFixed(3) }}</td></tr>
-          <tr><td>V_cr peak (V)</td><td v-for="(op, i) in srcDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px' }">{{ Number(op.vcrPeak).toFixed(2) }}</td></tr>
-          <tr><td>Above resonance</td><td v-for="(op, i) in srcDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px' }">{{ op.isAboveResonance ? 'Yes' : 'No' }}</td></tr>
-        </tbody>
-      </table>
-      <template v-else>
-        <DimensionReadOnly :name="'srcM'" :tooltip="tooltipsConverterWizards['srcM']" :replaceTitle="'Converged Gain'" :unit="null" :value="srcDiagnostics.lastGainM" :numberDecimals="3" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-SrcM'" />
-        <DimensionReadOnly :name="'srcFsw'" :tooltip="tooltipsConverterWizards['srcFsw']" :replaceTitle="'Normalized Freq.'" :unit="null" :value="srcDiagnostics.lastNormalizedFsw" :numberDecimals="3" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-SrcFsw'" />
-      </template>
+      <!-- KH is the master of diagnostics: render its universal envelope directly. -->
+      <KhDiagnosticsPanel :diagnostics="srcDiagnostics" :dataTestLabel="dataTestLabel + '-KhDiagnostics'" />
     </template>
 
     <template #conditions>

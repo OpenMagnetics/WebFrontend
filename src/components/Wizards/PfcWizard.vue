@@ -10,7 +10,10 @@ import ElementFromList from 'WebSharedComponents/DataInput/ElementFromList.vue'
 import DimensionWithTolerance from 'WebSharedComponents/DataInput/DimensionWithTolerance.vue'
 import { defaultPfcWizardInputs, defaultDesignRequirements, minimumMaximumScalePerParameter, filterMas } from 'WebSharedComponents/assets/js/defaults.js'
 import ConverterWizardBase from './ConverterWizardBase.vue'
+import KhDiagnosticsPanel from './KhDiagnosticsPanel.vue'
 import { waitForMkf } from 'WebSharedComponents/assets/js/mkfRuntime'
+// Converter (PFC) design + simulation moved to webKirchhoff; magnetics stays on webMKF.
+import { waitForKirchhoff } from 'WebSharedComponents/assets/js/kirchhoffRuntime'
 import CompactVoltageInput from './CompactVoltageInput.vue'
 import { tooltipsConverterWizards, dropdownLabelsConverterWizards } from 'WebSharedComponents/assets/js/texts'
 </script>
@@ -118,7 +121,7 @@ export default {
             if (this._autoRunDone) return;
             this._autoRunDone = true;
             try { this.updateErrorMessage?.(); } catch (e) { return; }
-            if (!this.errorMessage) this.simulateIdealWaveforms?.();
+            if (!this.errorMessage) this.getAnalyticalWaveforms?.();
         });
     },
     methods: {
@@ -159,16 +162,22 @@ export default {
     },
     getCalculateFn() {
       return async (aux) => {
-        const Module = await waitForMkf(); await Module.ready;
-        const result = JSON.parse(await Module.calculate_pfc_inputs(JSON.stringify(aux)));
+        // webKirchhoff: shim maps calculate_pfc_inputs -> process_converter('pfc', spec, 'analytical')
+        // and reshapes to the legacy MAS::Inputs-at-root + pfcDiagnostics contract.
+        const Module = await waitForKirchhoff(); await Module.ready;
+        const raw = await Module.calculate_pfc_inputs(JSON.stringify(aux));
+        if (typeof raw === 'string' && raw.startsWith('Exception')) throw new Error(raw);
+        const result = JSON.parse(raw);
         if (result.error) throw new Error(result.error);
         return result;
       };
     },
     getSimulateFn() {
       return async (aux) => {
-        const Module = await waitForMkf(); await Module.ready;
-        const result = JSON.parse(await Module.simulate_pfc_waveforms(JSON.stringify(aux)));
+        const Module = await waitForKirchhoff(); await Module.ready;
+        const raw = await Module.simulate_pfc_waveforms(JSON.stringify(aux));
+        if (typeof raw === 'string' && raw.startsWith('Exception')) throw new Error(raw);
+        const result = JSON.parse(raw);
         if (result.error) throw new Error(result.error);
         return result;
       };
@@ -565,13 +574,8 @@ export default {
       />
     </template>
       <template v-if="pfcDiagnostics" #diagnostics>
-      <DimensionReadOnly name="pfcInd" :tooltip="tooltipsConverterWizards['pfcInd']" :replaceTitle="'Computed L'" :value="pfcDiagnostics.computedInductance" unit="H" :numberDecimals="9":labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-PfcInd'" />
-      <DimensionReadOnly name="pfcMode" :tooltip="tooltipsConverterWizards['pfcMode']" :replaceTitle="'Actual mode'" :value="pfcDiagnostics.actualMode" :unit="null" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-PfcMode'" />
-      <DimensionReadOnly name="pfcDuty" :tooltip="tooltipsConverterWizards['pfcDuty']" :replaceTitle="'Duty @ peak'" :value="pfcDiagnostics.dutyCyclePeak" :unit="null" :numberDecimals="3":labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-PfcDuty'" />
-      <DimensionReadOnly name="pfcIlPk" :tooltip="tooltipsConverterWizards['pfcIlPk']" :replaceTitle="'I_L peak'" :value="pfcDiagnostics.peakInductorCurrent" unit="A" :numberDecimals="3":labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-PfcIlPk'" />
-      <DimensionReadOnly name="pfcIlRipple" :tooltip="tooltipsConverterWizards['pfcIlRipple']" :replaceTitle="'I_L ripple'" :value="pfcDiagnostics.inductorRipple" unit="A" :numberDecimals="3":labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-PfcIlRipple'" />
-      <DimensionReadOnly name="pfcIline" :tooltip="tooltipsConverterWizards['pfcIline']" :replaceTitle="'I_line rms'" :value="pfcDiagnostics.lineRmsCurrent" unit="A" :numberDecimals="3":labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-PfcIline'" />
-      <DimensionReadOnly name="pfcPin" :tooltip="tooltipsConverterWizards['pfcPin']" :replaceTitle="'P_in'" :value="pfcDiagnostics.inputPower" unit="W" :numberDecimals="1":labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-PfcPin'" />
-    </template>
+        <!-- KH is the master of diagnostics: render its universal envelope directly. -->
+        <KhDiagnosticsPanel :diagnostics="pfcDiagnostics" :dataTestLabel="dataTestLabel + '-KhDiagnostics'" />
+      </template>
   </ConverterWizardBase>
 </template>

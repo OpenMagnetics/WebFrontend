@@ -28,7 +28,9 @@ import { getWizard } from '../utils/catalog.js';
 
 const PFC = getWizard('pfc');                 // linkCy 'Pfc-link', wizardPrefix 'PfcWizard'
 const variantSel = `[data-cy="${PFC.wizardPrefix}-TopologyVariant-select"]`;
-const indValue   = `[data-cy="${PFC.wizardPrefix}-PfcInd-number-label"]`;
+// Computed inductance now renders in the shared KhDiagnosticsPanel (KH is the
+// master of diagnostics); the "Inductance" row carries a stable data-cy.
+const indValue   = `[data-cy="${PFC.wizardPrefix}-KhDiagnostics-inductance-value"]`;
 
 // enum value → visible label (must match dropdownLabelsConverterWizards.pfcVariant).
 const VARIANTS = [

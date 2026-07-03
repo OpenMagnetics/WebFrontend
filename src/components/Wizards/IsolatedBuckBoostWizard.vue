@@ -12,6 +12,7 @@ import TripleOfDimensions from 'WebSharedComponents/DataInput/TripleOfDimensions
 import DimensionWithTolerance from 'WebSharedComponents/DataInput/DimensionWithTolerance.vue'
 import { defaultIsolatedBuckWizardInputs, defaultIsolatedBuckBoostWizardInputs, defaultDesignRequirements, minimumMaximumScalePerParameter, filterMas } from 'WebSharedComponents/assets/js/defaults.js'
 import ConverterWizardBase from './ConverterWizardBase.vue'
+import KhDiagnosticsPanel from './KhDiagnosticsPanel.vue'
 import CompactVoltageInput from './CompactVoltageInput.vue'
 import { tooltipsConverterWizards, dropdownLabelsConverterWizards } from 'WebSharedComponents/assets/js/texts'
 </script>
@@ -97,7 +98,7 @@ export default {
             if (this._autoRunDone) return;
             this._autoRunDone = true;
             try { this.updateErrorMessage?.(); } catch (e) { return; }
-            if (!this.errorMessage) this.simulateIdealWaveforms?.();
+            if (!this.errorMessage) this.getAnalyticalWaveforms?.();
         });
     },
     methods: {
@@ -1057,37 +1058,8 @@ export default {
       </div>
     </template>
     <template v-if="isolatedBuckBoostDiagnostics" #diagnostics>
-      <table
-        v-if="Array.isArray(isolatedBuckBoostDiagnostics.perOp) && isolatedBuckBoostDiagnostics.perOp.length > 1"
-        class="diagnostics-perop-table"
-        :data-cy="dataTestLabel + '-IBB-perOp-table'"
-        :style="{ color: $styleStore.wizard.inputTextColor, fontSize: $styleStore.wizard.inputFontSize, width: '100%', borderCollapse: 'collapse' }"
-      >
-        <thead>
-          <tr>
-            <th :style="{ textAlign: 'left', padding: '2px 4px', fontSize: $styleStore.wizard.inputLabelFontSize, opacity: 0.85 }"></th>
-            <th v-for="(op, i) in isolatedBuckBoostDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px', fontSize: $styleStore.wizard.inputLabelFontSize, opacity: 0.85 }">
-              {{ op.operatingPointName || ('OP ' + i) }}
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr><td>Duty</td><td v-for="(op, i) in isolatedBuckBoostDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px' }">{{ Number(op.dutyCycle).toFixed(3) }}</td></tr>
-          <tr><td>Mode</td><td v-for="(op, i) in isolatedBuckBoostDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px' }">{{ op.isCcm ? 'CCM' : 'DCM' }}</td></tr>
-          <tr><td>I_pri avg (A)</td><td v-for="(op, i) in isolatedBuckBoostDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px' }">{{ Number(op.primaryAverageCurrent).toFixed(3) }}</td></tr>
-          <tr><td>I_pri peak (A)</td><td v-for="(op, i) in isolatedBuckBoostDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px' }">{{ Number(op.primaryPeakCurrent).toFixed(3) }}</td></tr>
-          <tr><td>I_sec peak (A)</td><td v-for="(op, i) in isolatedBuckBoostDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px' }">{{ Number(op.secondaryPeakCurrent).toFixed(3) }}</td></tr>
-          <tr><td>Mag I ripple (A)</td><td v-for="(op, i) in isolatedBuckBoostDiagnostics.perOp" :key="i" :style="{ textAlign: 'right', padding: '2px 4px' }">{{ Number(op.magnetizingCurrentRipple).toFixed(3) }}</td></tr>
-        </tbody>
-      </table>
-      <template v-else>
-      <DimensionReadOnly name="ibbDuty"        :tooltip="tooltipsConverterWizards['ibbDuty']"        :replaceTitle="'Duty'"            :value="isolatedBuckBoostDiagnostics.dutyCycle"                :unit="null" :numberDecimals="3" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-IbbDuty'" />
-      <DimensionReadOnly name="ibbMode"        :tooltip="tooltipsConverterWizards['ibbMode']"        :replaceTitle="'Mode'"            :value="isolatedBuckBoostDiagnostics.isCcm ? 'CCM' : 'DCM'" :unit="null" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-IbbMode'" />
-      <DimensionReadOnly name="ibbIprimAvg"    :tooltip="tooltipsConverterWizards['ibbIprimAvg']"    :replaceTitle="'I_pri avg'"       :value="isolatedBuckBoostDiagnostics.primaryAverageCurrent"    unit="A" :numberDecimals="3" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-IbbIprimAvg'" />
-      <DimensionReadOnly name="ibbIprimPk"     :tooltip="tooltipsConverterWizards['ibbIprimPk']"     :replaceTitle="'I_pri peak'"      :value="isolatedBuckBoostDiagnostics.primaryPeakCurrent"       unit="A" :numberDecimals="3" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-IbbIprimPk'" />
-      <DimensionReadOnly name="ibbIsecPk"      :tooltip="tooltipsConverterWizards['ibbIsecPk']"      :replaceTitle="'I_sec peak'"      :value="isolatedBuckBoostDiagnostics.secondaryPeakCurrent"     unit="A" :numberDecimals="3" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-IbbIsecPk'" />
-      <DimensionReadOnly name="ibbImagRipple" :tooltip="tooltipsConverterWizards['ibbImagRipple']" :replaceTitle="'Mag I ripple'"   :value="isolatedBuckBoostDiagnostics.magnetizingCurrentRipple" unit="A" :numberDecimals="3" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-IbbImagRipple'" />
-    </template>
+      <!-- KH is the master of diagnostics: render its universal envelope directly. -->
+      <KhDiagnosticsPanel :diagnostics="isolatedBuckBoostDiagnostics" :dataTestLabel="dataTestLabel + '-KhDiagnostics'" />
     </template>
   </ConverterWizardBase>
 </template>

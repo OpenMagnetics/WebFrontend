@@ -11,6 +11,7 @@
  */
 import { test } from '@playwright/test';
 import { openWizard, runAnalytical, goToMagneticAdviser, goToMagneticBuilder } from './nav.js';
+import { adviseAllWiresAndWait } from './builder-helpers.js';
 import {
   runMagneticAdviser,
   selectAdvisedResult,
@@ -82,9 +83,11 @@ export async function fullMagneticViaCoreAndWireAdvisers(page, wizard, opts = {}
 
     await runCoreAdviser(page);
 
-    // Future: once any wizard exposes Wire Adviser, run it here. Today no
-    // wizard does (catalog says wireAdviser:false for all), so we go
-    // straight to MAS validation.
+    // Core advise assigns a core but leaves the coil empty (turns/sections
+    // null). The scenario's name promises a full Core→Wire chain, and the
+    // geometry export below needs a built coil, so run the wire adviser here.
+    // (adviseAllWiresAndWait falls back to single-winding Advise.)
+    await adviseAllWiresAndWait(page);
 
     const mas = await dumpMAS(page);
     expectValidMagnetic(mas);

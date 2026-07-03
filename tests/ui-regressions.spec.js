@@ -19,7 +19,7 @@
  * server is running at BASE_URL.
  */
 import { test, expect } from './_coverage.js';
-import { BASE_URL, isBenign, screenshot, pause } from './utils.js';
+import { BASE_URL, isBenign, screenshot, pause, openWizard, runAnalytical } from './utils.js';
 
 const ss = (page, name) => screenshot(page, 'ui-regressions', name);
 
@@ -94,20 +94,20 @@ test.describe('UR-2 — SPICE button works for Flyback', () => {
   test.describe.configure({ timeout: 120000 });
 
   test('UR-2-1: Flyback SPICE opens modal with a Flyback netlist', async ({ page }) => {
-    await goToRoute(page, '/wizards');
-    await page.evaluate(() => document.querySelector('[data-cy="Flyback-link"]')?.click());
-    await pause(page, 1500, 'mechanical: settle');
+    // Use the shared nav helpers (same path the wizard battery rides): openWizard
+    // handles the home-page nav + the cold engine_loader redirect (30-90 s), and
+    // runAnalytical clicks the button and waits for the run to actually finish.
+    await openWizard(page, 'Flyback-link');
+    await runAnalytical(page);
+    await expect(page.locator('canvas').first()).toBeVisible({ timeout: 60000 });
 
-    // Flyback SPICE requires the wizard's topology to be populated; click
-    // Analytical first so the MAS/inputs are computed.
-    await page.evaluate(() => [...document.querySelectorAll('button')]
-      .find(b => b.textContent.includes('Analytical'))?.click());
-    await pause(page, 4000, 'mechanical: settle');
-
-    // Click SPICE button.
-    await page.evaluate(() => [...document.querySelectorAll('button')]
-      .find(b => b.textContent.trim() === 'SPICE' || b.textContent.includes('SPICE'))?.click());
-    await pause(page, 4000, 'mechanical: settle');
+    // Click SPICE (enabled once no waveform action is in flight) and wait for
+    // the netlist modal.
+    const spiceBtn = page.locator('button.sim-btn.spice').first();
+    await expect(spiceBtn).toBeEnabled({ timeout: 60000 });
+    await spiceBtn.click();
+    const modal = page.locator('.modal.show, [role="dialog"]').first();
+    await expect(modal).toBeVisible({ timeout: 60000 });
 
     // Modal should open with "SPICE Netlist - Flyback Converter" header
     // and a body containing flyback-specific markers.

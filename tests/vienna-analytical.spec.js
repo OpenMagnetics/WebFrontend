@@ -81,7 +81,10 @@ function firstOp(blob) {
 }
 
 test.describe('Vienna wizard — analytical waveform testbench', () => {
-  test.setTimeout(120000);
+  // webKirchhoff runs a REAL 3-phase Vienna ngspice deck (the old single-phase
+  // emulation is retired) — one simulated run measures ~76 s in-wasm, plus the
+  // cold engine_loader on first open. 300 s covers run + warm-up honestly.
+  test.setTimeout(300000);
 
   test('Vienna-UI-1: analytical returns without throwing', async ({ page }) => {
     const errors = [];
@@ -158,29 +161,32 @@ test.describe('Vienna wizard — analytical waveform testbench', () => {
   // and WebLibMKF::simulate_vienna_ideal_waveforms for details).
   // ────────────────────────────────────────────────────────────────────────
 
-  test('Vienna-UI-6: simulated returns waveforms + emulation diagnostics', async ({ page }) => {
+  test('Vienna-UI-6: simulated returns waveforms + diagnostics', async ({ page }) => {
     await openWizard(page, VIENNA_CY);
     const result = await runSimulated(page, makeAux());
     expect(result).toBeTruthy();
-    // The wizard payload mirrors SRC: { inputs:{designRequirements,
-    // operatingPoints}, converterWaveforms, viennaDiagnostics }.
-    expect(result?.inputs?.designRequirements?.magnetizingInductance).toBeTruthy();
-    expect(Array.isArray(result?.inputs?.operatingPoints)).toBe(true);
-    expect(result.inputs.operatingPoints.length).toBeGreaterThan(0);
+    // webKirchhoff contract (KH is the master): MAS Inputs at the ROOT
+    // (designRequirements / operatingPoints), the universal KH diagnostics
+    // envelope under viennaDiagnostics, and — for PFC/Vienna specifically —
+    // converter-node overlays deliberately skipped (their line-frequency
+    // window makes the extra ngspice run prohibitively slow), with the
+    // reason surfaced in converterWaveformsError. The old single-phase
+    // emulation (spiceMode badge) is retired: this is a real 3-phase deck.
+    expect(result?.designRequirements?.magnetizingInductance).toBeTruthy();
+    expect(Array.isArray(result?.operatingPoints)).toBe(true);
+    expect(result.operatingPoints.length).toBeGreaterThan(0);
     expect(Array.isArray(result?.converterWaveforms)).toBe(true);
-    expect(result.converterWaveforms.length).toBeGreaterThan(0);
+    expect(result.converterWaveforms.length).toBe(0);
+    expect(result?.converterWaveformsError).toMatch(/overlays are disabled for PFC\/Vienna/);
+    expect(result?.viennaDiagnostics).toBeTruthy();
 
-    // The emulation badge must be present so the UI can display the
-    // single-phase-emulation caveat.
-    expect(result?.viennaDiagnostics?.spiceMode).toBe('singlePhaseEmulation');
-
-    const op = result.inputs.operatingPoints[0];
+    const op = firstOp(result);
     expect(op?.excitationsPerWinding?.length).toBeGreaterThanOrEqual(1);
     const exc = op.excitationsPerWinding[0];
     expect(exc?.current?.waveform?.data?.length).toBeGreaterThan(10);
     expect(exc?.voltage?.waveform?.data?.length).toBeGreaterThan(10);
     const pk = Math.max(...exc.current.waveform.data.map(Math.abs));
-    console.log(`[Vienna-UI-6] SPICE I_L peak=${pk.toFixed(2)} A   spiceMode=${result.viennaDiagnostics.spiceMode}`);
+    console.log(`[Vienna-UI-6] SPICE I_L peak=${pk.toFixed(2)} A`);
     expect(pk).toBeGreaterThan(0.1);
   });
 
@@ -197,7 +203,7 @@ test.describe('Vienna wizard — analytical waveform testbench', () => {
     const simulated = await runSimulated(page, aux);
 
     const aOp = firstOp(analytical);
-    const sOp = simulated.inputs.operatingPoints[0];
+    const sOp = firstOp(simulated);
     const aPk = Math.max(...(aOp.excitationsPerWinding[0]?.current?.waveform?.data ?? []));
     const sPk = Math.max(...(sOp.excitationsPerWinding[0]?.current?.waveform?.data?.map(Math.abs) ?? []));
     console.log(`[Vienna-UI-7] analytical I_L peak=${aPk.toFixed(2)} A  SPICE I_L peak=${sPk.toFixed(2)} A  ratio=${(sPk/aPk).toFixed(2)}`);
