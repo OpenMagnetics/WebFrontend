@@ -6,6 +6,7 @@ import Footer from '../components/Footer.vue'
 import { toTitleCase } from 'WebSharedComponents/assets/js/utils.js'
 
 import GenericTool from '../components/Toolbox/GenericTool.vue'
+import { kirchhoffHandoff } from '/src/composables/kirchhoffHandoff'
 
 </script>
 
@@ -35,7 +36,18 @@ export default {
 
         const currentStoryline = magneticBuilderStoryline;
 
-        if (!this.$stateStore.isAnyDesignLoaded()) {
+        if (kirchhoffHandoff.value) {
+            // Kirchhoff handed us a MAS — the bridge already loaded the inputs into the mas store.
+            // KEEP them (do NOT resetMas, which would wipe the operating point back to the default),
+            // mark the design loaded, and jump straight to the magnetic adviser (it auto-runs there).
+            this.$stateStore.selectTool("magneticBuilder");
+            this.$stateStore.designLoaded();
+            const adviseCacheStore = useAdviseCacheStore();
+            adviseCacheStore.cleanCoreAdvises();
+            adviseCacheStore.cleanMasAdvises();
+            this.$stateStore.getCurrentToolState().subsection = 'magneticAdviser';
+        }
+        else if (!this.$stateStore.isAnyDesignLoaded()) {
             this.$stateStore.selectTool("magneticBuilder");
             this.$stateStore.designLoaded();
             const masStore = useMasStore();

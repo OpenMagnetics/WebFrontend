@@ -8,6 +8,7 @@ import CoreExporter from '../Exporters/CoreExporter.vue'
 import CoilExporter from '../Exporters/CoilExporter.vue'
 import MASExporter from '../Exporters/MASExporter.vue'
 import CircuitSimulatorsExporter from '../Exporters/CircuitSimulatorsExporter.vue'
+import { kirchhoffHandoff, sendMagneticToKirchhoff } from '/src/composables/kirchhoffHandoff'
 </script>
 
 
@@ -90,6 +91,8 @@ export default {
         }
     },
     computed: {
+        // Active only when Kirchhoff opened us to design a magnetic (?handoff=kirchhoff).
+        kirchhoffActive() { return kirchhoffHandoff.value != null; },
         ambientTemperature() {
             if (this.masStore.mas.inputs.operatingPoints[this.$stateStore.currentOperatingPoint] != null) {
                 return this.masStore.mas.inputs.operatingPoints[this.$stateStore.currentOperatingPoint].conditions.ambientTemperature;
@@ -125,6 +128,10 @@ export default {
                 download(JSON.stringify(prunedMas, null, 4), "custom_magnetic.json", "text/plain");
                 setTimeout(() => this.exportingMAS = false, 2000);
             }, 100);
+        },
+        // Send the currently built magnetic straight back to the Kirchhoff converter that opened us.
+        sendToKirchhoff() {
+            sendMagneticToKirchhoff(deepCopy(this.masStore.mas));
         },
         exportAnsys(solutionType) {
             this.exportingAnsys = true;
@@ -370,6 +377,19 @@ export default {
                         >
                             <img v-if="!exportingMAS" :src='masIcon' width="18" height="18" alt="MAS">
                             <span v-else class="cp-spinner"></span>
+                        </button>
+                    </div>
+
+                    <!-- Send this built magnetic back to Kirchhoff (only during a Kirchhoff handoff) -->
+                    <div v-if="kirchhoffActive" class="cp-group">
+                        <button
+                            class="cp-btn cp-btn-mas"
+                            :data-cy="dataTestLabel + '-send-to-kirchhoff-button'"
+                            @click="sendToKirchhoff"
+                            title="Send this magnetic back to Kirchhoff"
+                        >
+                            <i class="pi pi-arrow-right-arrow-left"></i>
+                            <span>Kirchhoff</span>
                         </button>
                     </div>
 

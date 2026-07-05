@@ -17,7 +17,7 @@ export default {
     components: {
         VChart,
     },
-    emits: ["adviseReady", "selectedMas", "showDetails"],
+    emits: ["adviseReady", "selectedMas", "showDetails", "sendToKirchhoff"],
     props: {
         adviseIndex: {
             type: Number,
@@ -46,6 +46,10 @@ export default {
         dataTestLabel: {
             type: String,
             default: '',
+        },
+        kirchhoffActive: {
+            type: Boolean,
+            default: false,
         },
     },
     data() {
@@ -431,6 +435,15 @@ export default {
                     <span>{{ selected ? 'Selected' : 'Select' }}</span>
                 </button>
             </div>
+            <button
+                v-if="kirchhoffActive"
+                :data-cy="dataTestLabel + '-advise-' + adviseIndex + '-send-to-kirchhoff-button'"
+                class="advise-btn advise-btn-success w-100 mt-2"
+                @click="$emit('sendToKirchhoff')"
+            >
+                <i class="pi pi-arrow-right-arrow-left"></i>
+                <span>Send this to Kirchhoff</span>
+            </button>
         </div>
     </div>
 </template>

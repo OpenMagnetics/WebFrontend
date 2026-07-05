@@ -76,6 +76,11 @@ export default {
         kirchhoffActive() { return kirchhoffHandoff.value != null; },
     },
     mounted () {
+        // Came from Kirchhoff and no advises yet → run the adviser immediately so the user just sees
+        // "Analyzing…" then the results, with no manual clicks.
+        if (this.kirchhoffActive && this.adviseCacheStore.noMasAdvises()) {
+            this.calculateAdvises();
+        }
         // If we already have advises cached, show them as up-to-date
         if (!this.adviseCacheStore.noMasAdvises()) {
             this.dataUptoDate = true;
@@ -232,10 +237,14 @@ export default {
         // Send the selected advised design back to the Kirchhoff converter that opened us (cross-origin
         // handoff); Kirchhoff binds it into the converter and re-simulates.
         sendToKirchhoff() {
-            const idx = this.$userStore.magneticAdviserSelectedAdvise;
+            this.sendAdviseToKirchhoff(this.$userStore.magneticAdviserSelectedAdvise);
+        },
+        // Send a specific advised design straight back to the Kirchhoff converter that opened us.
+        sendAdviseToKirchhoff(index) {
             const advises = this.adviseCacheStore.currentMasAdvises;
-            if (advises == null || advises.length === 0 || idx == null) return;
-            sendMagneticToKirchhoff(deepCopy(advises[idx].mas));
+            if (advises == null || index == null || advises[index] == null) return;
+            this.$userStore.magneticAdviserSelectedAdvise = index;
+            sendMagneticToKirchhoff(deepCopy(advises[index].mas));
         },
 
     }
@@ -362,9 +371,11 @@ export default {
                                 :weightedTotalScoring="advise.weightedTotalScoring"
                                 :selected="$userStore.magneticAdviserSelectedAdvise === adviseIndex"
                                 graphType="bar"
+                                :kirchhoffActive="kirchhoffActive"
                                 @selectedMas="selectedMas(adviseIndex)"
                                 @showDetails="showDetails(adviseIndex)"
                                 @adviseReady="adviseReady(adviseIndex)"
+                                @sendToKirchhoff="sendAdviseToKirchhoff(adviseIndex)"
                             />
                         </div>
                     </TransitionGroup>
