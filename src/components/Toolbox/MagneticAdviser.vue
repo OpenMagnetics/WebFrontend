@@ -8,6 +8,7 @@ import { removeTrailingZeroes, toTitleCase, deepCopy } from 'WebSharedComponents
 import { magneticAdviserWeights } from 'WebSharedComponents/assets/js/defaults.js'
 import Advise from './MagneticAdviser/Advise.vue'
 import AdviseDetails from './MagneticAdviser/AdviseDetails.vue'
+import { kirchhoffHandoff, sendMagneticToKirchhoff } from '/src/composables/kirchhoffHandoff'
 </script>
 
 <script>
@@ -71,6 +72,8 @@ export default {
             }
             return titledFilters;
         },
+        // Active only when Kirchhoff opened us to design a magnetic (?handoff=kirchhoff).
+        kirchhoffActive() { return kirchhoffHandoff.value != null; },
     },
     mounted () {
         // If we already have advises cached, show them as up-to-date
@@ -226,6 +229,14 @@ export default {
             // Go back to magneticBuilder without selecting any new design
             this.$stateStore.getCurrentToolState().subsection = 'magneticBuilder';
         },
+        // Send the selected advised design back to the Kirchhoff converter that opened us (cross-origin
+        // handoff); Kirchhoff binds it into the converter and re-simulates.
+        sendToKirchhoff() {
+            const idx = this.$userStore.magneticAdviserSelectedAdvise;
+            const advises = this.adviseCacheStore.currentMasAdvises;
+            if (advises == null || advises.length === 0 || idx == null) return;
+            sendMagneticToKirchhoff(deepCopy(advises[idx].mas));
+        },
 
     }
 }
@@ -302,6 +313,16 @@ export default {
                         >
                             <i class="pi pi-check"></i>
                             <span>Load Selected</span>
+                        </button>
+                        <button
+                            v-if="kirchhoffActive"
+                            :disabled="loading || adviseCacheStore.currentMasAdvises == null || adviseCacheStore.currentMasAdvises.length == 0"
+                            :data-cy="dataTestLabel + '-send-to-kirchhoff-button'"
+                            class="optim-btn optim-btn-success"
+                            @click="sendToKirchhoff"
+                        >
+                            <i class="pi pi-arrow-right-arrow-left"></i>
+                            <span>Send to Kirchhoff</span>
                         </button>
                         <button
                             :disabled="loading"

@@ -20,6 +20,7 @@ import { initKirchhoffWorker } from 'WebSharedComponents/assets/js/kirchhoffRunt
 import VueLatex from 'vatex'
 import { checkAndClearOutdatedStores, getVersionedWasmUrl } from '/src/stores/storeVersioning'
 import { useConsoleStore } from '/src/stores/console'
+import { installKirchhoffHandoff } from '/src/composables/kirchhoffHandoff'
 
 // PrimeVue: Aura dark preset, tinted with the OM teal as primary
 import PrimeVue from 'primevue/config'
@@ -270,6 +271,9 @@ function interceptConsole() {
 setTimeout(interceptConsole, 100);
 
 app.mount("#app");
+
+// If Kirchhoff opened us to design a magnetic, wire the cross-origin handoff (no-op otherwise).
+installKirchhoffHandoff(router);
 
 router.beforeEach((to, from, next) => {
 
