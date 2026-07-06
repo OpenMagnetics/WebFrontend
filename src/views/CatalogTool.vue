@@ -91,15 +91,17 @@ export default {
 
 <template>
     <Header />
-    <GenericTool
-        :currentStoryline="currentStoryline"
-        :dataTestLabel="'MagneticTool'"
-        :showControlPanel="true"
-        :showTitle="false"
-        :showReference="true"
-        @editMagnetic="editMagnetic"
-        @viewMagnetic="viewMagnetic"
-    />
+    <main role="main" class="main">
+        <GenericTool
+            :currentStoryline="currentStoryline"
+            :dataTestLabel="'MagneticTool'"
+            :showControlPanel="true"
+            :showTitle="false"
+            :showReference="true"
+            @editMagnetic="editMagnetic"
+            @viewMagnetic="viewMagnetic"
+        />
+    </main>
     <Footer />
 </template>
 

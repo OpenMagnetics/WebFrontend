@@ -35,7 +35,9 @@ export default {
     methods: {
         onClick() {
             var mas = deepCopy(this.mas);
-            if (this.includeInputs) {
+            // "only with magnetic" (includeInputs false) strips the excitations
+            // and results; "with excitations and results" keeps them.
+            if (!this.includeInputs) {
                 delete mas.inputs;
                 delete mas.outputs;
             }
@@ -43,8 +45,8 @@ export default {
             mas = clean(mas);
 
             download(JSON.stringify(mas, null, 4), this.mas.magnetic.manufacturerInfo.reference + ".json", "text/plain");
-            this.masExported = true
-            setTimeout(() => this.masExported = false, 2000);
+            this.exported = true
+            setTimeout(() => this.exported = false, 2000);
         },
     }
 }

@@ -378,14 +378,17 @@ export default {
     flex: 1 1 auto;
     width: 100%;
 }
-/* Only constrain the unit selector inside input groups (Dimension's
- * .dwt-unit-addon), not standalone dropdowns like CTI / Insulation Type. */
-.is-cell :deep(.p-inputgroup .p-select),
-.is-cell :deep(.dwt-unit-addon .p-select),
-.is-cell :deep(.dwt-unit-addon) {
-    flex: 0 0 auto;
-    min-width: 0;
-    max-width: 4.5rem;
+/* Dimension.vue renders value+unit as a 2fr:1fr grid (.dim-value-row-has-unit).
+ * In these tight is-grid cells the 1fr unit column is too narrow for prefixed
+ * multi-char units (kHz, km), which then truncate to "kH"/"km". Let the unit
+ * column size to its content so the full prefix+unit+chevron is shown, and the
+ * value input takes the remaining space. (The former rule targeted
+ * .dwt-unit-addon / .p-inputgroup, dead since Dimension moved to this grid.) */
+.is-cell :deep(.dim-value-row-has-unit) {
+    grid-template-columns: minmax(0, 1fr) auto;
+}
+.is-cell :deep(.dim-unit) {
+    min-width: 3.25rem;
 }
 
 /* Standalone dropdowns (CTI, Insulation Type, Overvoltage Category,

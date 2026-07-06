@@ -39,13 +39,13 @@ export default {
                 class="btn col-4 mt-4"
                 :data-cy="dataTestLabel + '-Magnetic-MAS-File-Section'"
                 :mas="masStore.mas"
-                :includeHField="false"
+                :includeInputs="false"
             />
             <MASFileExporter
                 class="btn col-offset-1 col-4 mt-4"
                 :data-cy="dataTestLabel + '-Magnetic-MAS-File-With-Excitations'"
                 :mas="masStore.mas"
-                :includeHField="true"
+                :includeInputs="true"
             />
         </div>
     </Dialog>

@@ -65,6 +65,7 @@ const TOPOLOGY_GROUPS = [
             { wizard: 'CommonModeChoke',         label: 'Common Mode Choke',       icon: 'bi-funnel-fill',           desc: 'CMC for EMI filtering, impedance-targeted.' },
             { wizard: 'DifferentialModeChoke',   label: 'Differential Mode Choke', icon: 'bi-bar-chart-steps',       desc: 'DMC + LC filter, attenuation via ngspice.' },
             { wizard: 'Pfc',                     label: 'PFC',                     icon: 'bi-plug-fill',             desc: 'Boost inductor for AC-DC PFC stages.' },
+            { wizard: 'Vienna',                  label: 'Vienna Rectifier',        icon: 'bi-lightning-charge',      desc: 'Three-phase PFC rectifier front-end.' },
         ],
     },
 ];

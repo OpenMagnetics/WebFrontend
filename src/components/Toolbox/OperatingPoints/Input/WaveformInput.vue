@@ -41,6 +41,9 @@ export default {
         waveformLabelOptions() {
             const result = {};
             Object.values(WaveformLabel).forEach(v => { result[v] = toTitleCase(v); });
+            // toTitleCase inserts a space before every capital, so the DCM
+            // acronym renders as "Rectangular D C M". Keep it intact.
+            result[WaveformLabel.RectangularDCM] = 'Rectangular DCM';
             return result;
         },
         disableOffset() {

@@ -169,10 +169,17 @@ export default {
     flex: 1 1 auto;
     width: 100%;
 }
-.iei-cell :deep(.p-select) {
+/* Dimension.vue renders value+unit as a 2fr:1fr grid (.dim-value-row-has-unit).
+ * In these tight 3-across cells the 1fr unit column is too narrow for prefixed
+ * multi-char units (kHz), which then truncate to "kt"/"kH". Let the unit column
+ * size to its content so the full prefix+unit+chevron shows, and the value
+ * input takes the rest. */
+.iei-cell :deep(.dim-value-row-has-unit) {
+    grid-template-columns: minmax(0, 1fr) auto;
+}
+.iei-cell :deep(.dim-unit) {
     flex: 0 0 auto;
-    min-width: 0;
-    max-width: 4.5rem;
+    min-width: 3.25rem;
 }
 
 .iei-cell:hover {

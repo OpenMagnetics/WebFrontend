@@ -36,7 +36,7 @@ export default {
 <template>
     <div class="d-flex flex-column min-vh-100">
         <Header />
-        <main role="main" class="main p-0 m-0">
+        <main role="main" class="main p-0 mx-0 mb-0">
             <Catalog
                 class="container content pt-2"
                 :catalogInput="catalogStore.catalogUrl"

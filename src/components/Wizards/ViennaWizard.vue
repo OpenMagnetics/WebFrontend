@@ -88,7 +88,12 @@ export default {
             if (this._autoRunDone) return;
             this._autoRunDone = true;
             this.updateErrorMessage();
-            if (!this.errorMessage) this.simulateIdealWaveforms();
+            // Auto-run the fast analytical pass on load (matches CmcWizard and
+            // the localData watcher below). Auto-running the slow SPICE
+            // simulation here left both action buttons disabled — and the
+            // Simulated button stuck in its spinner — for the whole run every
+            // time the wizard opened.
+            if (!this.errorMessage) this.getAnalyticalWaveforms();
         });
     },
     beforeUnmount() {

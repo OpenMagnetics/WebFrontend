@@ -368,6 +368,14 @@ export default {
       
       // Assign operating points
       if (operatingPoints?.length > 0) {
+        // webKirchhoff/webMKF may return operating points without a name. The
+        // Magnetic Tool renders "<name> — <winding>" as the operating-point
+        // heading, so a missing name surfaces literally as "null — Primary".
+        // Name any unnamed point with the same convention the visualizer and
+        // summary already use (never clobber a name a wizard already set).
+        operatingPoints.forEach((op, idx) => {
+          if (!op.name) op.name = `Operating Point ${idx + 1}`;
+        });
         wizardInstance.masStore.mas.inputs.operatingPoints = operatingPoints;
       }
       
@@ -806,9 +814,15 @@ export default {
     },
 
     async setupMasStore({ designRequirements, operatingPoints, topology, isolationSides, coilGroups, insulationType, wizardInstance: wi }) {
-      // Normalize operating points to ensure processed data is properly structured
-      const normalizedOperatingPoints = operatingPoints.map(op => ({
+      // Normalize operating points to ensure processed data is properly structured.
+      // Also name any unnamed point: this path REPLACES mas.inputs wholesale, and
+      // processWizardData's no-stored-data fallback builds points straight from
+      // the engine (which returns them nameless) without passing through
+      // assignResultsToMasStore — an unnamed point renders as "null — <winding>"
+      // in the Magnetic Tool heading.
+      const normalizedOperatingPoints = operatingPoints.map((op, idx) => ({
         ...op,
+        name: op.name || `Operating Point ${idx + 1}`,
         excitationsPerWinding: (op.excitationsPerWinding || []).map(exc => ({
           ...exc,
           current: exc.current ? {
