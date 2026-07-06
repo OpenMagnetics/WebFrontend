@@ -82,7 +82,9 @@ const projects = [
   {
     name: 'wizards-light',
     testDir: './tests',
-    testIgnore: ['scenarios/**', 'wizards/**', '_scratch/**'],
+    // docshots/ is the user-guide screenshot capture (playwright.docs.config.js),
+    // not a test — keep it out of the suite.
+    testIgnore: ['scenarios/**', 'wizards/**', '_scratch/**', 'docshots/**'],
     grepInvert: /@scenario|@heavy/,
     fullyParallel: true,
     use: common,
