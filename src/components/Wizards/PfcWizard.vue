@@ -11,7 +11,6 @@ import DimensionWithTolerance from 'WebSharedComponents/DataInput/DimensionWithT
 import { defaultPfcWizardInputs, defaultDesignRequirements, minimumMaximumScalePerParameter, filterMas } from 'WebSharedComponents/assets/js/defaults.js'
 import ConverterWizardBase from './ConverterWizardBase.vue'
 import KhDiagnosticsPanel from './KhDiagnosticsPanel.vue'
-import { waitForMkf } from 'WebSharedComponents/assets/js/mkfRuntime'
 // Converter (PFC) design + simulation moved to webKirchhoff; magnetics stays on webMKF.
 import { waitForKirchhoff } from 'WebSharedComponents/assets/js/kirchhoffRuntime'
 import CompactVoltageInput from './CompactVoltageInput.vue'
@@ -230,7 +229,9 @@ export default {
             }
 
             try {
-                const Module = await waitForMkf();
+                // determine_pfc_mode moved to webKirchhoff with the other converter math; asking
+                // the MKF worker raised "[MKF Worker] Method not found" on every keystroke (ABT #149).
+                const Module = await waitForKirchhoff();
                 await Module.ready;
 
                 // Reuse buildParams() — the single param source — so the variant

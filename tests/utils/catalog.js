@@ -91,10 +91,7 @@ export const WIZARD_CATALOG = Object.freeze([
   // ── Filters / PFC ──────────────────────────────────────────────────
   w('cmc',                 'CMC',                       'Cmc-link',           'CmcWizard',                'filter',   ['smoke', 'scenario'], {}, { smokeDeep: true }),
   w('dmc',                 'DMC',                       'Dmc-link',     'DmcWizard',                'filter',   ['scenario']),
-  // PFC's simulated mode is not implemented in the WASM backend yet; the
-  // wizard hides the Simulated button. Mark explicitly so flows.js falls
-  // back to Analytical instead of throwing on a missing button.
-  w('pfc',                 'PFC',                       'Pfc-link',                              'PfcWizard',                'pfc',      ['heavy', 'scenario'], { simulated: false }, { smokeDeep: true }),
+  w('pfc',                 'PFC',                       'Pfc-link',                              'PfcWizard',                'pfc',      ['heavy', 'scenario'], {}, { smokeDeep: true }),
 
   // ── Non-Isolated DC-DC ─────────────────────────────────────────────
   w('buck',                'Buck',                      'Buck-link',             'BuckWizard',               'dc-dc',    ['smoke', 'scenario'], {}, { smokeDeep: true, smokeBuilder: true }),

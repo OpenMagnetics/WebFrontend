@@ -414,7 +414,10 @@ export async function runSimulated(page, { timeoutMs = 60_000 } = {}) {
   return test.step('runSimulated', async () => {
     const btn = page.locator('.sim-btn.simulated, .sim-btn').filter({ hasText: 'Simulated' }).first();
     await btn.waitFor({ state: 'visible', timeout: 10_000 });
-    await expect(btn).toBeEnabled();
+    // Wizards auto-run Analytical on mount and disable the action buttons while
+    // it computes; the slow ones (PFC's line-cycle solve is ~15 s) need more
+    // than the 5 s expect default before Simulated becomes clickable.
+    await expect(btn).toBeEnabled({ timeout: 60_000 });
     await btn.click();
     await page.waitForFunction(
       () => !document.querySelector('.sim-btn.simulated .fa-spin'),
@@ -432,7 +435,7 @@ export async function runSpice(page, { timeoutMs = 90_000 } = {}) {
   return test.step('runSpice', async () => {
     const btn = page.locator('.sim-btn.spice').first();
     await btn.waitFor({ state: 'visible', timeout: 10_000 });
-    await expect(btn).toBeEnabled();
+    await expect(btn).toBeEnabled({ timeout: 60_000 }); // see runSimulated: auto-analytical holds buttons disabled
     await btn.click();
     // Modal: <div class="modal fade show"> with a <pre><code>{{ spiceCode }}</code></pre>.
     const modal = page.locator('.modal.fade.show').first();
