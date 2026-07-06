@@ -28,6 +28,7 @@ import {
   runMagneticAdviser,
   runCoreAdviser,
   selectAdvisedResult,
+  openExportsModal,
 } from '../utils/steps.js';
 
 import { SHOTS } from '../../../docs/pipeline/shots/shotlist.mjs';
@@ -45,6 +46,7 @@ const FLOWS = {
   runMagneticAdviser: (page) => runMagneticAdviser(page),
   runCoreAdviser: (page) => runCoreAdviser(page),
   selectAdvisedResult: (page, index) => selectAdvisedResult(page, index),
+  openExportsModal: (page, kind) => openExportsModal(page, kind),
 };
 
 async function runStep(page, step) {
@@ -78,9 +80,17 @@ async function injectCallouts(page, callouts) {
     document.querySelectorAll('.om-doc-callout').forEach((e) => e.remove());
     const boxes = [];
     cs.forEach((c, i) => {
-      const el = document.querySelector(c.sel);
+      let el = null;
+      if (c.sel) {
+        el = document.querySelector(c.sel);
+      } else if (c.text) {
+        // First element of the given tag whose trimmed text equals c.text
+        // (for buttons/labels without a data-cy).
+        el = Array.from(document.querySelectorAll(c.tag ?? 'button'))
+          .find((e) => e.textContent.trim() === c.text) ?? null;
+      }
       if (!el) {
-        boxes.push({ index: i + 1, sel: c.sel, found: false });
+        boxes.push({ index: i + 1, sel: c.sel ?? `${c.tag ?? 'button'}="${c.text}"`, found: false });
         return;
       }
       el.scrollIntoView({ block: 'center', inline: 'nearest' });
@@ -121,7 +131,7 @@ async function injectCallouts(page, callouts) {
       document.body.appendChild(badge);
       boxes.push({
         index: i + 1,
-        sel: c.sel,
+        sel: c.sel ?? `${c.tag ?? 'button'}="${c.text}"`,
         note: c.note ?? null,
         found: true,
         box: { x: r.x, y: r.y, w: r.width, h: r.height },
@@ -133,7 +143,7 @@ async function injectCallouts(page, callouts) {
 
 for (const shot of SHOTS) {
   test(`docshot: ${shot.id}`, async ({ page }) => {
-    test.setTimeout(300_000); // deep flows (adviser, builder) are WASM-heavy
+    test.setTimeout(shot.timeout ?? 300_000); // deep flows (adviser, builder) are WASM-heavy
 
     if (shot.route) {
       await page.goto(`${BASE_URL}${shot.route}`, { waitUntil: 'domcontentloaded', timeout: 30_000 });
@@ -144,6 +154,11 @@ for (const shot of SHOTS) {
     for (const step of shot.steps ?? []) {
       await runStep(page, step);
     }
+
+    // Park the mouse in the top-left corner so no hover tooltip/highlight
+    // from the last flow step contaminates the screenshot.
+    await page.mouse.move(0, 0);
+    await settleAnimations(page, 300);
 
     let boxes = [];
     if (shot.callouts?.length) {
