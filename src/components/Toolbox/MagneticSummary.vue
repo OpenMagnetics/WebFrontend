@@ -38,6 +38,32 @@ export default {
         }
     },
     computed: {
+        // ABT #162: the datasheet/summary is only meaningful for a fully
+        // characterised design. Detect the required pieces explicitly so we can
+        // render a loud "design incomplete" state — instead of crashing in the
+        // mounted hook (reading magnetizingInductance off an undefined output)
+        // or silently rendering a blank datasheet full of "N/A".
+        missingRequirements() {
+            const missing = [];
+            const mas = this.mas;
+            if (mas == null) {
+                missing.push('the design (MAS) object');
+                return missing;
+            }
+            if (mas.inputs?.designRequirements == null) missing.push('design requirements');
+            if (mas.magnetic?.core?.functionalDescription == null) missing.push('a selected core');
+            if (mas.magnetic?.coil?.functionalDescription == null) missing.push('a wound coil');
+            const outputs = mas.outputs?.[0];
+            if (outputs == null) {
+                missing.push('computed outputs (magnetizing inductance, losses)');
+            } else if (outputs.magnetizingInductance?.magnetizingInductance == null) {
+                missing.push('magnetizing inductance');
+            }
+            return missing;
+        },
+        isDesignComplete() {
+            return this.missingRequirements.length === 0;
+        },
         partNumber() {
             return this.mas?.magnetic?.manufacturerInfo?.reference || 'Custom Design';
         },
@@ -571,6 +597,17 @@ export default {
         }
     },
     mounted() {
+        // ABT #162: never run computeTexts / recordDesign on a partial design.
+        // computeTexts dereferences mas.magnetic.core... and recordDesign would
+        // register a bogus "finished design". Fail loudly instead; the template
+        // renders an explicit "design incomplete" panel.
+        if (!this.isDesignComplete) {
+            console.error(
+                '[MagneticSummary] Cannot render summary — design is incomplete. Missing: '
+                + this.missingRequirements.join(', ')
+            );
+            return;
+        }
         this.computeTexts();
         // Reaching the magnetic-adviser report = a finished design (screenshot-safe,
         // counted even if the user never downloads anything).
@@ -636,7 +673,21 @@ export default {
 </script>
 
 <template>
-    <div class="datasheet-wrapper">
+    <!-- ABT #162: loud, explicit incomplete-design state. No silent blanks. -->
+    <div v-if="!isDesignComplete" class="datasheet-incomplete" :data-cy="dataTestLabel + '-incomplete'">
+        <i class="pi pi-exclamation-triangle datasheet-incomplete-icon"></i>
+        <h2 class="datasheet-incomplete-title">Design incomplete</h2>
+        <p class="datasheet-incomplete-text">
+            The summary cannot be generated yet — this design is still missing:
+        </p>
+        <ul class="datasheet-incomplete-list">
+            <li v-for="item in missingRequirements" :key="item">{{ item }}</li>
+        </ul>
+        <p class="datasheet-incomplete-text">
+            Go back and complete the earlier steps (requirements, core, coil, and run the adviser/simulation) before opening the summary.
+        </p>
+    </div>
+    <div v-else class="datasheet-wrapper">
         <!-- Exporters -->
         <CoreExporter v-model:visible="coreExporterVisible" :data-cy="dataTestLabel + '-CoreExporter'"/>
         <CoilExporter v-model:visible="coilExporterVisible" :data-cy="dataTestLabel + '-CoilExporter'" />
@@ -988,6 +1039,38 @@ export default {
     background: var(--p-dark);
     min-height: 100vh;
     padding: 15px;
+}
+
+/* ABT #162: incomplete-design panel */
+.datasheet-incomplete {
+    background: var(--p-dark);
+    min-height: 60vh;
+    padding: 40px 15px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: var(--p-text-color, #eee);
+}
+.datasheet-incomplete-icon {
+    font-size: 3rem;
+    color: #e0a800;
+    margin-bottom: 12px;
+}
+.datasheet-incomplete-title {
+    margin: 0 0 8px 0;
+    font-weight: 600;
+}
+.datasheet-incomplete-text {
+    max-width: 520px;
+    opacity: 0.85;
+}
+.datasheet-incomplete-list {
+    text-align: left;
+    display: inline-block;
+    margin: 8px auto 16px auto;
+    color: #ffca6b;
 }
 
 .datasheet-toolbar {
