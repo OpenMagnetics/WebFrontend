@@ -187,6 +187,22 @@ export default {
             }
         },
         async continueMagneticToolDesign() {
+            // ABT #161: restore a valid Magnetic-Tool workflow/tool before
+            // navigating. Flows like the Insulation Coordinator (and the
+            // Magnetic Viewer) leave selectedWorkflow pointing at a workflow
+            // that has no magneticBuilder tool. GenericTool then resolves
+            // getCurrentToolState() = toolboxStates[workflow][magneticBuilder]
+            // to undefined and renders a blank page. If the current workflow
+            // can host the magnetic builder, keep the user's in-progress
+            // context; otherwise fall back to the design workflow deterministically.
+            const workflow = this.$stateStore.selectedWorkflow;
+            const workflowState = this.$stateStore.toolboxStates[workflow];
+            if (!workflowState || !workflowState.magneticBuilder) {
+                this.$stateStore.selectWorkflow("design");
+            }
+            this.$stateStore.selectTool("magneticBuilder");
+
+            await this.$nextTick();
             if (this.$route.name != 'MagneticTool')
                 await this.$router.push(`${import.meta.env.BASE_URL}magnetic_tool`);
             else

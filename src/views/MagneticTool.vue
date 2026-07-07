@@ -36,6 +36,19 @@ export default {
 
         const currentStoryline = magneticBuilderStoryline;
 
+        // ABT #161: a prior visit to the Insulation Coordinator (or Magnetic
+        // Viewer) leaves selectedWorkflow pointing at a workflow that has no
+        // magneticBuilder tool. GenericTool then resolves getCurrentToolState()
+        // to undefined and renders a blank page. Restore a magnetic-tool
+        // workflow deterministically whenever the current one cannot host the
+        // magnetic builder — covers both the "Continue design" button and a
+        // direct navigation / deep-link to /magnetic_tool.
+        const activeWorkflow = this.$stateStore.selectedWorkflow;
+        const activeWorkflowState = this.$stateStore.toolboxStates[activeWorkflow];
+        if (!activeWorkflowState || !activeWorkflowState.magneticBuilder) {
+            this.$stateStore.selectWorkflow("design");
+        }
+
         if (kirchhoffHandoff.value) {
             // Kirchhoff handed us a MAS — the bridge already loaded the inputs into the mas store.
             // KEEP them (do NOT resetMas, which would wipe the operating point back to the default),
