@@ -6,6 +6,7 @@ import { combinedStyle, combinedClass, checkAndFixMas, deepCopy } from 'WebShare
 import { defineAsyncComponent } from "vue";
 import { useElementVisibility  } from '@vueuse/core'
 import { ref } from 'vue'
+import { startTourForContext } from '../tours'
 import '../assets/scss/custom.scss'
 </script>
 
@@ -104,10 +105,23 @@ export default {
             wizardGroups,
             navCollapseOpen: false,
             openDropdown: null,
+            helpPulse: localStorage.getItem('omHelpTourSeen') == null,
         }
     },
     methods: {
         toggleDropdown(key) { this.openDropdown = this.openDropdown === key ? null : key; },
+        async startHelpTour() {
+            localStorage.setItem('omHelpTourSeen', '1');
+            this.helpPulse = false;
+            this.openDropdown = null;
+            // On narrow screens the nav items live inside the hamburger menu;
+            // expand it so the tour can highlight them.
+            if (headerTogglerIsVisible.value) {
+                this.navCollapseOpen = true;
+                await this.$nextTick();
+            }
+            startTourForContext(this.$route.name, this.$stateStore);
+        },
         closeDropdowns() { this.openDropdown = null; this.navCollapseOpen = false; },
         async onNewPowerMagneticDesign() {
             this.$stateStore.resetMagneticTool();
@@ -465,6 +479,19 @@ export default {
                 <ul class="navbar-nav ms-auto text-center">
                     <li class="nav-item">
                         <span class="nav-item">
+                            <button
+                                data-cy="Header-help-tour-button"
+                                :class="[headerTogglerIsVisible? 'w-100' : 'mx-1', helpPulse? 'om-help-pulse' : '']"
+                                class="btn nav-link om-help-btn text-center"
+                                title="Interactive tour of this page"
+                                @click="startHelpTour"
+                            >
+                                {{headerTogglerIsVisible? 'Page tour' : 'Help'}} <i class="pi pi-question-circle"></i>
+                            </button>
+                        </span>
+                    </li>
+                    <li class="nav-item">
+                        <span class="nav-item">
                             <a
                                 data-cy="Header-donate-link"
                                 href="https://en.liberapay.com/OpenMagnetics/"
@@ -725,6 +752,30 @@ export default {
         transform: translateY(-1px);
         box-shadow: 0 2px 10px rgba(var(--p-info-rgb), 0.22) !important;
         filter: none !important;
+    }
+
+    .om-help-btn {
+        color: var(--p-primary) !important;
+        background: rgba(var(--p-primary-rgb), 0.08) !important;
+        border: 1px solid rgba(var(--p-primary-rgb), 0.35) !important;
+        border-radius: 10px !important;
+        transition: background 0.15s, border-color 0.15s, transform 0.1s, box-shadow 0.15s !important;
+    }
+    .om-help-btn:hover {
+        background: rgba(var(--p-primary-rgb), 0.18) !important;
+        border-color: rgba(var(--p-primary-rgb), 0.6) !important;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 10px rgba(var(--p-primary-rgb), 0.2) !important;
+        filter: none !important;
+    }
+    /* One-time attention pulse for users who have never opened a tour. */
+    .om-help-pulse {
+        animation: om-help-pulse 2s ease-out infinite;
+    }
+    @keyframes om-help-pulse {
+        0% { box-shadow: 0 0 0 0 rgba(var(--p-primary-rgb), 0.55); }
+        70% { box-shadow: 0 0 0 9px rgba(var(--p-primary-rgb), 0); }
+        100% { box-shadow: 0 0 0 0 rgba(var(--p-primary-rgb), 0); }
     }
 
     .om-bug-btn {

@@ -26,6 +26,7 @@
     "comlink": "^4.4.2",
     "cors": "^2.8.5",
     "datatables.net-vue3": "^3.0.4",
+    "driver.js": "^1.6.0",
     "echarts": "^6.0.0",
     "katex": "^0.16.21",
     "mathjs": "^15.1.0",
