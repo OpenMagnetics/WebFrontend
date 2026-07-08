@@ -11,6 +11,7 @@
 // a normal openmagnetics.com visit is unaffected.
 import { ref } from 'vue'
 import { useMasStore } from '/src/stores/mas'
+import { useTaskQueueStore } from '/src/stores/taskQueue'
 
 // Reactive flag the adviser UI reads to show a "Send to Kirchhoff" button on each advised design.
 export const kirchhoffHandoff = ref(null)   // { ref, origin } while a handoff is active, else null
@@ -21,9 +22,28 @@ let openerOrigin = null
 
 // Post the chosen design back to the Kirchhoff tab. `mas` is a full MAS (inputs + magnetic); Kirchhoff
 // binds mas.magnetic into the converter component and re-simulates.
-export function sendMagneticToKirchhoff(mas) {
+//
+// Before posting, the MKF-exported NGSPICE subcircuit (real winding Rdc + AC-resistance ladder +
+// magnetizing L + leakage coupling) is attached as magnetic.modelOutputs.spiceSubcircuit
+// {text, reference} — the contract Kirchhoff's MKF_MODEL deck path renders (it hoists the .subckt
+// and instantiates it with the winding terminals). Without it Kirchhoff can only simulate this
+// magnetic as the ideal seed model: a designed magnetic carries no catalog datasheetInfo, so the
+// DATASHEET path refuses it (no-fallbacks). The export runs in OUR wasm (MKF lives here, not in
+// Kirchhoff); on failure the design is still posted, minus its real model, and the error is logged —
+// Kirchhoff then surfaces the missing-subcircuit state explicitly instead of faking a model.
+export async function sendMagneticToKirchhoff(mas) {
   if (!opener || !handoffRef) return false
-  opener.postMessage({ source: 'openmagnetics', type: 'magnetic', ref: handoffRef, mas }, openerOrigin || '*')
+  const payload = JSON.parse(JSON.stringify(mas))   // plain data — postMessage needs structured-cloneable
+  try {
+    const text = await useTaskQueueStore().exportMagneticAsSubcircuit(payload.magnetic, 25, 'NGSPICE', '')
+    const m = /^\.subckt\s+(\S+)/im.exec(text)
+    if (!m) throw new Error('exported subcircuit has no .subckt header')
+    payload.magnetic.modelOutputs = { spiceSubcircuit: { text, reference: m[1] } }
+  } catch (e) {
+    console.error('Kirchhoff handoff: NGSPICE subcircuit export failed — posting the design without '
+                  + 'its real model (Kirchhoff will offer only the ideal model for it).', e)
+  }
+  opener.postMessage({ source: 'openmagnetics', type: 'magnetic', ref: handoffRef, mas: payload }, openerOrigin || '*')
   return true
 }
 
