@@ -20,30 +20,66 @@ let opener = null
 let handoffRef = null
 let openerOrigin = null
 
-// Post the chosen design back to the Kirchhoff tab. `mas` is a full MAS (inputs + magnetic); Kirchhoff
-// binds mas.magnetic into the converter component and re-simulates.
-//
-// Before posting, the MKF-exported NGSPICE subcircuit (real winding Rdc + AC-resistance ladder +
-// magnetizing L + leakage coupling) is attached as magnetic.modelOutputs.spiceSubcircuit
-// {text, reference} — the contract Kirchhoff's MKF_MODEL deck path renders (it hoists the .subckt
-// and instantiates it with the winding terminals). Without it Kirchhoff can only simulate this
-// magnetic as the ideal seed model: a designed magnetic carries no catalog datasheetInfo, so the
-// DATASHEET path refuses it (no-fallbacks). The export runs in OUR wasm (MKF lives here, not in
-// Kirchhoff); on failure the design is still posted, minus its real model, and the error is logged —
-// Kirchhoff then surfaces the missing-subcircuit state explicitly instead of faking a model.
-export async function sendMagneticToKirchhoff(mas) {
-  if (!opener || !handoffRef) return false
-  const payload = JSON.parse(JSON.stringify(mas))   // plain data — postMessage needs structured-cloneable
+// Attach the MKF-exported NGSPICE subcircuit (real winding Rdc + AC-resistance ladder + magnetizing
+// L + leakage coupling) as magnetic.modelOutputs.spiceSubcircuit {text, reference} — the contract
+// Kirchhoff's MKF_MODEL deck path renders (it hoists the .subckt and instantiates it with the
+// winding terminals). Without it Kirchhoff can only simulate this magnetic as the ideal seed model:
+// a designed magnetic carries no catalog datasheetInfo, so the DATASHEET path refuses it
+// (no-fallbacks). The export runs in OUR wasm (MKF lives here, not in Kirchhoff); on failure the
+// design is still posted minus its real model, the error is logged, and Kirchhoff surfaces the
+// missing-subcircuit state explicitly instead of faking a model. Mutates + returns `mas`.
+async function attachNgspiceSubcircuit(mas) {
   try {
-    const text = await useTaskQueueStore().exportMagneticAsSubcircuit(payload.magnetic, 25, 'NGSPICE', '')
+    // NB the simulator token is 'NgSpice' — CircuitSimulatorInterface.h's from_json matches exact
+    // strings ("SIMBA"/"NgSpice"/"LtSpice"/"NL5"/"PLECS"); 'NGSPICE' throws its generic
+    // does-not-conform error.
+    const text = await useTaskQueueStore().exportMagneticAsSubcircuit(mas.magnetic, 25, 'NgSpice', '')
     const m = /^\.subckt\s+(\S+)/im.exec(text)
     if (!m) throw new Error('exported subcircuit has no .subckt header')
-    payload.magnetic.modelOutputs = { spiceSubcircuit: { text, reference: m[1] } }
+    mas.magnetic.modelOutputs = { spiceSubcircuit: { text, reference: m[1] } }
   } catch (e) {
     console.error('Kirchhoff handoff: NGSPICE subcircuit export failed — posting the design without '
                   + 'its real model (Kirchhoff will offer only the ideal model for it).', e)
   }
+  return mas
+}
+
+// Post the chosen design back to the Kirchhoff tab (interactive 'design' mode). `mas` is a full MAS
+// (inputs + magnetic); Kirchhoff binds mas.magnetic into the converter component and re-simulates.
+export async function sendMagneticToKirchhoff(mas) {
+  if (!opener || !handoffRef) return false
+  const payload = await attachNgspiceSubcircuit(JSON.parse(JSON.stringify(mas)))  // plain data — postMessage needs structured-cloneable
   opener.postMessage({ source: 'openmagnetics', type: 'magnetic', ref: handoffRef, mas: payload }, openerOrigin || '*')
+  return true
+}
+
+// MKF's CoilAdviser keeps designs whose coil failed its validity filters in the result list, marked
+// by prefixing the reference (INVALID_COIL_REFERENCE_PREFIX in advisers/CoilAdviser.h) so the OM UI
+// can show WHY a slot is empty. They are not buildable designs — never offer them to Kirchhoff.
+const INVALID_ADVISE_PREFIX = 'INVALID (failed validity filters): '
+const adviseIsValid = (a) =>
+  !(a?.mas?.magnetic?.manufacturerInfo?.reference ?? '').startsWith(INVALID_ADVISE_PREFIX)
+
+// 'advise' mode: post the WHOLE advise list back in one message — Kirchhoff renders it as a
+// candidate table (like its TAS-DB parts) and binds the row the user picks there. Each advise gets
+// its subcircuit attached so the picked design immediately renders as the real (MKF_MODEL) magnetic.
+// `advises` are the adviser's result rows ({mas, scoringPerFilter, weightedTotalScoring, ...});
+// invalid-marked rows are dropped and reported via droppedInvalid so Kirchhoff can say why the
+// list is shorter (or empty) rather than silently shrinking it.
+export async function sendMagneticListToKirchhoff(advises) {
+  if (!opener || !handoffRef) return false
+  const valid = advises.filter(adviseIsValid)
+  const list = []
+  for (const a of valid) {
+    const mas = await attachNgspiceSubcircuit(JSON.parse(JSON.stringify(a.mas)))
+    list.push({
+      mas,
+      scoringPerFilter: a.scoringPerFilter ? JSON.parse(JSON.stringify(a.scoringPerFilter)) : null,
+      weightedTotalScoring: a.weightedTotalScoring ?? null,
+    })
+  }
+  opener.postMessage({ source: 'openmagnetics', type: 'magnetics', ref: handoffRef, advises: list,
+                       droppedInvalid: advises.length - valid.length }, openerOrigin || '*')
   return true
 }
 
@@ -60,7 +96,10 @@ export function installKirchhoffHandoff(router) {
       const masStore = useMasStore()
       masStore.resetMas('power')            // seed a valid power MAS, then overlay Kirchhoff's inputs
       masStore.setInputs(ev.data.inputs)
-      kirchhoffHandoff.value = { ref: handoffRef, origin: openerOrigin }
+      // mode 'design' (default): the user picks ONE design here and sends it back.
+      // mode 'advise': the adviser auto-runs (it already does when kirchhoffActive) and, when the
+      // advises land, MagneticAdviser posts the WHOLE list back + closes this tab — headless flow.
+      kirchhoffHandoff.value = { ref: handoffRef, origin: openerOrigin, mode: ev.data.mode ?? 'design' }
       router.push(`${import.meta.env.BASE_URL}magnetic_tool`)   // → engine loader → magnetic adviser
     }
   })

@@ -8,7 +8,7 @@ import { removeTrailingZeroes, toTitleCase, deepCopy } from 'WebSharedComponents
 import { magneticAdviserWeights } from 'WebSharedComponents/assets/js/defaults.js'
 import Advise from './MagneticAdviser/Advise.vue'
 import AdviseDetails from './MagneticAdviser/AdviseDetails.vue'
-import { kirchhoffHandoff, sendMagneticToKirchhoff } from '/src/composables/kirchhoffHandoff'
+import { kirchhoffHandoff, sendMagneticToKirchhoff, sendMagneticListToKirchhoff } from '/src/composables/kirchhoffHandoff'
 </script>
 
 <script>
@@ -135,6 +135,16 @@ export default {
 
                         this.loading = false;
                         this.dataUptoDate = true;
+
+                        // Kirchhoff 'advise' handoff: this tab exists only to run the adviser —
+                        // post the whole list back (each with its NGSPICE subcircuit attached) and
+                        // close; Kirchhoff shows the advises as a candidate table and binds the
+                        // row the user picks there.
+                        if (kirchhoffHandoff.value?.mode === 'advise'
+                            && this.adviseCacheStore.currentMasAdvises.length > 0) {
+                            await sendMagneticListToKirchhoff(this.adviseCacheStore.currentMasAdvises);
+                            window.close();
+                        }
 
                     }
                     else {
