@@ -13,6 +13,7 @@ import { useStateStore } from '/src/stores/state'
 import { initTelemetry } from 'WebSharedComponents/assets/js/telemetry.js'
 import { useStyleStore } from '/src/stores/style'
 import { useFairRiteStyleStore } from '/src/stores/fairRiteStyle'
+import { useCustomPartsStore } from '/src/stores/customParts'
 import { useModelSettingsStore } from '/MagneticBuilder/src/stores/modelSettings'
 import { VueWindowSizePlugin } from 'vue-window-size/plugin';
 import { initWorker } from 'WebSharedComponents/assets/js/mkfRuntime'
@@ -187,6 +188,10 @@ function preloadMKF() {
                 mkf.load_core_shapes("").then(() => console.log("Preload: Core shapes loaded")),
                 mkf.load_wires("").then(() => console.log("Preload: Wires loaded"))
             ]);
+
+            // Re-inject the user's Core Studio parts (custom shapes/materials)
+            // on top of the catalog so they show up in every selector.
+            await useCustomPartsStore().reinject(mkf);
             
             // Initialize model settings from WASM during preload
             console.warn("Preload: Initializing model settings...");
@@ -419,6 +424,11 @@ router.beforeEach((to, from, next) => {
                     if (loadPromises.length > 0) {
                         await Promise.all(loadPromises);
                     }
+
+                    // Re-inject the user's Core Studio parts (custom shapes/
+                    // materials) on top of the catalog. The preload path does
+                    // this too; the loaders upsert by name so it's idempotent.
+                    await useCustomPartsStore().reinject(mkf);
                     console.warn("All data loaded");
                     
                     // Initialize model settings from WASM

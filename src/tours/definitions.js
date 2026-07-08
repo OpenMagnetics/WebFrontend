@@ -434,6 +434,40 @@ export const TOURS = {
         ],
     },
 
+    coreStudio: {
+        steps: [
+            {
+                title: 'Core Studio',
+                description: 'Author core shapes, materials and complete cores in the open MAS format — aimed at engineers and manufacturers who want their parts in the OpenMagnetics database. Everything you create is checked by the real simulation engine.',
+            },
+            {
+                element: '[data-cy="CoreStudio-tab-shape"]',
+                title: 'Shapes',
+                description: 'Start from the closest standard size of any family (E, ETD, RM, PQ, toroids, …), rename it and adjust the IEC dimensions in millimeters.',
+            },
+            {
+                element: '[data-cy="CoreStudio-tab-material"]',
+                title: 'Materials',
+                description: 'Duplicate an existing grade or start from zero: set the key properties, and give it a loss model — type Steinmetz coefficients directly or fit them from datasheet loss points.',
+            },
+            {
+                element: '[data-cy="CoreStudio-tab-core"]',
+                title: 'Cores',
+                description: 'Combine any shape and material (including your custom ones), choose the gapping, and validate the finished core.',
+            },
+            {
+                element: '[data-cy="CoreStudio-shape-validate-button"]',
+                title: 'Validate with the engine',
+                description: 'Every record is processed by the same WebAssembly engine the advisers use — if it validates here, it simulates everywhere.',
+            },
+            {
+                element: '[data-cy="CoreStudio-shape-download-button"]',
+                title: 'Contribute to the database',
+                description: 'Download your part as one .ndjson line in the official MAS format, ready for a pull request to the OpenMagnetics database — or keep it saved in this browser for your own designs.',
+            },
+        ],
+    },
+
     insulationAdviser: {
         steps: [
             {
@@ -487,6 +521,7 @@ const ROUTE_TOURS = {
     WizardsLanding: 'wizardsLanding',
     Wizards: 'wizard',
     InsulationAdviser: 'insulationAdviser',
+    CoreStudio: 'coreStudio',
     // Cross-referencer views render no Header; their Help affordance is the
     // FloatingHelpButton, which resolves the tour by route name just like the
     // Header button does. The Fair-Rite variants reuse the same tours since

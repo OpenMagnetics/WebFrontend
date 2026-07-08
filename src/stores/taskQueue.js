@@ -2268,6 +2268,87 @@ export const useTaskQueueStore = defineStore('taskQueue', {
         },
 
         // ==========================================
+        // Core Studio (/core_studio) wrappers
+        // ==========================================
+
+        coreShapeFamiliesGotten(success = true, dataOrMessage = '') {
+        },
+
+        async getCoreShapeFamilies() {
+            const mkf = await waitForMkf();
+            await mkf.ready;
+
+            const families = toArray(await mkf.get_available_core_shape_families());
+            setTimeout(() => { this.coreShapeFamiliesGotten(true, families); }, this.task_standard_response_delay);
+            return families;
+        },
+
+        coreShapesByFamilyGotten(success = true, dataOrMessage = '') {
+        },
+
+        async getCoreShapesByFamily(family) {
+            const mkf = await waitForMkf();
+            await mkf.ready;
+
+            const shapes = toArray(await mkf.get_available_core_shapes_by_family(family));
+            setTimeout(() => { this.coreShapesByFamilyGotten(true, shapes); }, this.task_standard_response_delay);
+            return shapes;
+        },
+
+        shapeDataGotten(success = true, dataOrMessage = '') {
+        },
+
+        async getShapeData(shapeName) {
+            const mkf = await waitForMkf();
+            await mkf.ready;
+
+            const shapeResult = await mkf.get_shape_data(shapeName);
+            if (shapeResult.startsWith('Exception')) {
+                setTimeout(() => { this.shapeDataGotten(false, shapeResult); }, this.task_standard_response_delay);
+                throw new Error(shapeResult);
+            }
+            const shape = JSON.parse(shapeResult);
+            setTimeout(() => { this.shapeDataGotten(true, shape); }, this.task_standard_response_delay);
+            return shape;
+        },
+
+        coreMaterialManufacturersGotten(success = true, dataOrMessage = '') {
+        },
+
+        async getCoreMaterialsByManufacturer() {
+            const mkf = await waitForMkf();
+            await mkf.ready;
+
+            const materialsPerManufacturer = {};
+            const manufacturers = toArray(await mkf.get_available_core_manufacturers()).sort();
+            for (const manufacturer of manufacturers) {
+                materialsPerManufacturer[manufacturer] = toArray(await mkf.get_available_core_materials(manufacturer));
+            }
+            setTimeout(() => { this.coreMaterialManufacturersGotten(true, materialsPerManufacturer); }, this.task_standard_response_delay);
+            return materialsPerManufacturer;
+        },
+
+        steinmetzCoefficientsCalculated(success = true, dataOrMessage = '') {
+        },
+
+        async calculateSteinmetzCoefficients(volumetricLossesPoints, frequencyRanges) {
+            const mkf = await waitForMkf();
+            await mkf.ready;
+
+            const result = await mkf.calculate_steinmetz_coefficients(
+                JSON.stringify(volumetricLossesPoints),
+                JSON.stringify(frequencyRanges)
+            );
+            if (typeof result === 'string' && result.startsWith('Exception')) {
+                setTimeout(() => { this.steinmetzCoefficientsCalculated(false, result); }, this.task_standard_response_delay);
+                throw new Error(result);
+            }
+            const coefficients = JSON.parse(result);
+            setTimeout(() => { this.steinmetzCoefficientsCalculated(true, coefficients); }, this.task_standard_response_delay);
+            return coefficients;
+        },
+
+        // ==========================================
         // Database Loading Methods (for main.js)
         // ==========================================
 

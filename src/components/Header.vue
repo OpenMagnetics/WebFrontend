@@ -186,6 +186,10 @@ export default {
                 await this.$router.push(`${import.meta.env.BASE_URL}engine_loader`);
             }
         },
+        async onCoreStudio() {
+            if (this.$route.name != 'CoreStudio')
+                await this.$router.push(`${import.meta.env.BASE_URL}core_studio`);
+        },
         async continueMagneticToolDesign() {
             // ABT #161: restore a valid Magnetic-Tool workflow/tool before
             // navigating. Flows like the Insulation Coordinator (and the
@@ -416,6 +420,16 @@ export default {
                                 @click="onInsulationCoordinator"
                             >
                                 <i class="mr-2 pi pi-bolt-charge-fill"></i>{{'Insulation Coordinator'}}
+                            </button>
+                        </li>
+                        <li>
+                            <button
+                                data-cy="Header-core-studio-link"
+                                :class="headerTogglerIsVisible? 'w-100' : 'mx-1' "
+                                class="dropdown-item nav-link w-100 px-2"
+                                @click="onCoreStudio"
+                            >
+                                <i class="mr-2 pi pi-wrench"></i>{{'Core Studio'}}
                             </button>
                         </li>
                       </ul>

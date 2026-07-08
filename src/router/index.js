@@ -36,6 +36,11 @@ const routes = [
         name: 'InsulationAdviser',
         component: () => import('../views/InsulationAdviser.vue')
     },
+    {
+        path: '/core_studio',
+        name: 'CoreStudio',
+        component: () => import('../views/CoreStudio.vue')
+    },
 
 
     {
