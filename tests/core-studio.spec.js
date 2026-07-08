@@ -64,6 +64,30 @@ test.describe('core studio', () => {
         expect(ae).toBeLessThan(65);
     });
 
+    test('shape from zero: family dimension letters generate and engine validates', async ({ page }) => {
+        await openCoreStudio(page);
+        const familySelect = page.locator('[data-cy="CoreStudio-shape-family-select"]');
+        await expect(async () => {
+            expect(await familySelect.locator('option').count()).toBeGreaterThan(5);
+        }).toPass({ timeout: 30000 });
+        await familySelect.selectOption('e');
+        await page.click('[data-cy="CoreStudio-shape-blank-button"]');
+        await page.waitForSelector('[data-cy="CoreStudio-shape-dim-A-nominal"]', { timeout: 15000 });
+
+        await page.fill('[data-cy="CoreStudio-shape-name-input"]', 'E 20 ScratchSpec');
+        const dims = { A: '20', B: '10', C: '5', D: '7', E: '14', F: '5' };
+        for (const [key, value] of Object.entries(dims)) {
+            const input = page.locator(`[data-cy="CoreStudio-shape-dim-${key}-nominal"]`);
+            await input.fill(value);
+            await input.press('Tab');
+        }
+        await page.click('[data-cy="CoreStudio-shape-validate-button"]');
+        const results = page.locator('[data-cy="CoreStudio-shape-results"]');
+        await expect(results).toBeVisible({ timeout: 30000 });
+        const ae = parseFloat((await results.innerText()).match(/([\d.]+)\s*mm²/)[1]);
+        expect(ae).toBeGreaterThan(10);
+    });
+
     test('material from zero: engine round-trip accepts a steinmetz material', async ({ page }) => {
         await openCoreStudio(page);
         await page.click('[data-cy="CoreStudio-tab-material"]');

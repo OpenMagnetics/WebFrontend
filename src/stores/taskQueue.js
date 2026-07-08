@@ -2312,6 +2312,30 @@ export const useTaskQueueStore = defineStore('taskQueue', {
             return shape;
         },
 
+        shapeFamilySubtypesGotten(success = true, dataOrMessage = '') {
+        },
+
+        async getShapeFamilySubtypes(family) {
+            const mkf = await waitForMkf();
+            await mkf.ready;
+
+            const subtypes = toArray(await mkf.get_shape_family_subtypes(family));
+            setTimeout(() => { this.shapeFamilySubtypesGotten(true, subtypes); }, this.task_standard_response_delay);
+            return subtypes;
+        },
+
+        shapeFamilyDimensionsGotten(success = true, dataOrMessage = '') {
+        },
+
+        async getShapeFamilyDimensions(family, subtype = '') {
+            const mkf = await waitForMkf();
+            await mkf.ready;
+
+            const dimensions = toArray(await mkf.get_shape_family_dimensions(family, subtype));
+            setTimeout(() => { this.shapeFamilyDimensionsGotten(true, dimensions); }, this.task_standard_response_delay);
+            return dimensions;
+        },
+
         coreMaterialManufacturersGotten(success = true, dataOrMessage = '') {
         },
 

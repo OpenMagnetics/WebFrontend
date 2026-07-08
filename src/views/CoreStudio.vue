@@ -57,7 +57,9 @@ export default {
             shapeFamily: "",
             shapeTemplates: [],
             shapeTemplate: "",
+            shapeSubtypes: [],           // subtypes of the selected family ('' when none)
             shapeRecord: null,           // full MAS shape record being edited
+            shapeFromScratch: false,     // blank record: subtype changes rebuild the dimension grid
             shapeDimensionKeys: [],
             shapeValidation: null,       // { effectiveParameters, columns, windingWindows }
             shapePreviewCore: null,
@@ -112,6 +114,11 @@ export default {
             const initial = this.materialRecord?.permeability?.initial;
             return initial != null && !Array.isArray(initial);
         },
+        // The 3D visualizer needs an explicit scene background; the page
+        // theme variable is the source of truth.
+        visualizerBackground() {
+            return getComputedStyle(document.documentElement).getPropertyValue('--p-dark').trim();
+        },
         proprietaryCoefficientKeys() {
             if (this.proprietaryDraft == null) return [];
             // magnetics/poco use a·B^b·f^c style (a,b,c); micrometals/tdg also use d.
@@ -161,9 +168,62 @@ export default {
         },
 
         // =============== SHAPE ===============
+        // Same labeling convention as the builder's shape selector: planar
+        // families are camelCase ("planarEr") and unreadable uppercased.
+        familyLabel(family) {
+            if (/^planar/i.test(family)) {
+                return 'Planar ' + family.slice(6).toUpperCase();
+            }
+            if (family === 't') {
+                return 'T (toroid)';
+            }
+            return family.toUpperCase();
+        },
         async onShapeFamilyChanged() {
             this.shapeTemplates = await this.taskQueueStore.getCoreShapesByFamily(this.shapeFamily);
             this.shapeTemplate = this.shapeTemplates[0] || "";
+            this.shapeSubtypes = await this.taskQueueStore.getShapeFamilySubtypes(this.shapeFamily);
+        },
+        async startBlankShape() {
+            if (this.shapeFamily === "") {
+                this.setError(new Error("Pick a shape family first."));
+                return;
+            }
+            this.busy = true;
+            try {
+                const familySubtype = this.shapeSubtypes[0] ?? null;
+                const dimensionKeys = await this.taskQueueStore.getShapeFamilyDimensions(this.shapeFamily, familySubtype ?? '');
+                const dimensions = {};
+                dimensionKeys.forEach((key) => { dimensions[key] = {}; });
+                this.shapeRecord = {
+                    type: 'custom',
+                    family: this.shapeFamily,
+                    name: "",
+                    aliases: [],
+                    dimensions,
+                    familySubtype,
+                    magneticCircuit: this.shapeFamily === 't' ? 'closed' : 'open',
+                };
+                this.shapeFromScratch = true;
+                this.shapeDimensionKeys = dimensionKeys;
+                this.shapeValidation = null;
+                this.shapePreviewCore = null;
+                this.setStatus(`Blank ${this.familyLabel(this.shapeFamily)} shape started — name it and fill the ${dimensionKeys.length} dimensions (datasheet letters, mm).`);
+            }
+            catch (error) { this.setError(error); }
+            finally { this.busy = false; }
+        },
+        async onShapeSubtypeChanged(subtype) {
+            this.shapeRecord.familySubtype = subtype === "" ? null : subtype;
+            if (!this.shapeFromScratch) {
+                return;
+            }
+            // From-scratch record: the dimension letters depend on the subtype.
+            const dimensionKeys = await this.taskQueueStore.getShapeFamilyDimensions(this.shapeFamily, subtype ?? '');
+            const dimensions = {};
+            dimensionKeys.forEach((key) => { dimensions[key] = this.shapeRecord.dimensions[key] ?? {}; });
+            this.shapeRecord.dimensions = dimensions;
+            this.shapeDimensionKeys = dimensionKeys;
         },
         async loadShapeTemplate() {
             this.busy = true;
@@ -173,6 +233,7 @@ export default {
                 shape.aliases = [];
                 shape.name = `${this.shapeTemplate} custom`;
                 this.shapeRecord = shape;
+                this.shapeFromScratch = false;
                 this.shapeDimensionKeys = Object.keys(shape.dimensions || {}).sort();
                 this.shapeValidation = null;
                 this.shapePreviewCore = null;
@@ -592,13 +653,14 @@ export default {
                                 <div class="studio-field-row">
                                     <label>Family</label>
                                     <select data-cy="CoreStudio-shape-family-select" v-model="shapeFamily" @change="onShapeFamilyChanged">
-                                        <option v-for="family in shapeFamilies" :key="family" :value="family">{{ family.toUpperCase() }}</option>
+                                        <option v-for="family in shapeFamilies" :key="family" :value="family">{{ familyLabel(family) }}</option>
                                     </select>
                                     <label>Template</label>
                                     <select data-cy="CoreStudio-shape-template-select" v-model="shapeTemplate">
                                         <option v-for="shape in shapeTemplates" :key="shape" :value="shape">{{ shape }}</option>
                                     </select>
                                     <button data-cy="CoreStudio-shape-load-button" class="studio-btn" :disabled="busy || shapeTemplate == ''" @click="loadShapeTemplate">Load</button>
+                                    <button data-cy="CoreStudio-shape-blank-button" class="studio-btn" :disabled="busy || shapeFamily == ''" @click="startBlankShape">Start from zero</button>
                                 </div>
                             </div>
                         </div>
@@ -609,8 +671,10 @@ export default {
                                 <div class="studio-field-row">
                                     <label>Name</label>
                                     <input data-cy="CoreStudio-shape-name-input" type="text" v-model="shapeRecord.name" placeholder="e.g. E 25/13/7 (My Company)" />
-                                    <label>Subtype</label>
-                                    <input type="text" v-model="shapeRecord.familySubtype" style="width: 4rem" />
+                                    <label v-if="shapeSubtypes.length > 0">Subtype</label>
+                                    <select v-if="shapeSubtypes.length > 0" data-cy="CoreStudio-shape-subtype-select" :value="shapeRecord.familySubtype ?? ''" @change="onShapeSubtypeChanged($event.target.value)">
+                                        <option v-for="subtype in shapeSubtypes" :key="subtype" :value="subtype">{{ subtype }}</option>
+                                    </select>
                                 </div>
                                 <div class="studio-table-wrap">
                                     <table class="studio-table">
@@ -659,7 +723,7 @@ export default {
                                         :forceUpdate="shapePreviewUpdate"
                                         :fullCoreModel="true"
                                         :loadingGif="$settingsStore.loadingGif"
-                                        :backgroundColor="$styleStore.magneticBuilder.main['background-color']"
+                                        :backgroundColor="visualizerBackground"
                                     />
                                 </div>
                             </div>
@@ -861,7 +925,7 @@ export default {
                                         :forceUpdate="corePreviewUpdate"
                                         :fullCoreModel="true"
                                         :loadingGif="$settingsStore.loadingGif"
-                                        :backgroundColor="$styleStore.magneticBuilder.main['background-color']"
+                                        :backgroundColor="visualizerBackground"
                                     />
                                 </div>
                             </div>
