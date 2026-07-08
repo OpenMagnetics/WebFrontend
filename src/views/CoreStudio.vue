@@ -69,7 +69,8 @@ export default {
             materialTemplate: "",
             materialRecord: null,        // full MAS material record being edited
             materialTemplateName: null,  // name of the template it was copied from
-            lossesMode: 'template',      // template | steinmetz | fit
+            lossesMode: 'template',      // template | proprietary | steinmetz | fit
+            proprietaryDraft: null,      // { method, a, b, c, d? } — by reference into the record when it came from the template
             steinmetzRanges: [emptySteinmetzRange()],
             fitPointsText: "",
             fitRangesText: "150000",
@@ -110,6 +111,21 @@ export default {
         materialInitialPermeabilityIsScalar() {
             const initial = this.materialRecord?.permeability?.initial;
             return initial != null && !Array.isArray(initial);
+        },
+        proprietaryCoefficientKeys() {
+            if (this.proprietaryDraft == null) return [];
+            // magnetics/poco use a·B^b·f^c style (a,b,c); micrometals/tdg also use d.
+            return ['micrometals', 'tdg'].includes(this.proprietaryDraft.method) ? ['a', 'b', 'c', 'd'] : ['a', 'b', 'c'];
+        },
+        proprietaryEquationHint() {
+            if (this.proprietaryDraft == null) return "";
+            const equations = {
+                micrometals: "Pv = f / (a/B³ + b/B^2.3 + c/B^1.65) + d·B²·f²",
+                magnetics: "Pv = a · B^b · f^c",
+                poco: "Pv = 1000·(a·(f/1000)·(10B)^b + c·(10B·f/1000)²)",
+                tdg: "Pv = 1000·(10B)^a·(b·f/1000 + c·(f/1000)^d)",
+            };
+            return equations[this.proprietaryDraft.method];
         },
     },
     mounted() {
@@ -321,6 +337,38 @@ export default {
         addSteinmetzRange() {
             this.steinmetzRanges.push(emptySteinmetzRange());
         },
+        // Bind the proprietary editor: reuse the record's existing method
+        // object (edits go straight into the record) or start a fresh
+        // coefficient block for the chosen model.
+        initProprietaryDraft(preferredMethod = null) {
+            const methods = this.materialRecord?.volumetricLosses?.default ?? [];
+            const existing = methods.find((m) => !Array.isArray(m)
+                && ['micrometals', 'magnetics', 'poco', 'tdg'].includes(m.method)
+                && (preferredMethod == null || m.method === preferredMethod));
+            if (existing != null) {
+                this.proprietaryDraft = existing;
+            }
+            else {
+                this.proprietaryDraft = { method: preferredMethod ?? 'micrometals', a: null, b: null, c: null, d: null };
+            }
+        },
+        onProprietaryMethodChange(method) {
+            this.initProprietaryDraft(method);
+            this.proprietaryDraft.method = method;
+        },
+        applyProprietaryToRecord() {
+            const draft = this.proprietaryDraft;
+            this.proprietaryCoefficientKeys.forEach((key) => {
+                if (draft[key] == null || !Number.isFinite(Number(draft[key]))) {
+                    throw new Error(`${draft.method} model: coefficient "${key}" is missing`);
+                }
+                draft[key] = Number(draft[key]);
+            });
+            const methods = this.materialRecord.volumetricLosses?.default ?? [];
+            if (!methods.includes(draft)) {
+                this.materialRecord.volumetricLosses = { default: [draft] };
+            }
+        },
         applySteinmetzToRecord() {
             const ranges = deepCopy(this.steinmetzRanges);
             ranges.forEach((range, index) => {
@@ -347,6 +395,9 @@ export default {
                 }
                 if (this.lossesMode === 'steinmetz' || this.lossesMode === 'fit') {
                     this.applySteinmetzToRecord();
+                }
+                else if (this.lossesMode === 'proprietary') {
+                    this.applyProprietaryToRecord();
                 }
                 if ((record.volumetricLosses?.default ?? []).length === 0) {
                     throw new Error("The material has no volumetric losses model — add Steinmetz coefficients or fit them from points.");
@@ -673,11 +724,26 @@ export default {
                             <div class="studio-card-body">
                                 <div class="studio-field-row">
                                     <label>Source</label>
-                                    <select data-cy="CoreStudio-material-losses-mode" v-model="lossesMode">
+                                    <select data-cy="CoreStudio-material-losses-mode" v-model="lossesMode" @change="lossesMode == 'proprietary' && initProprietaryDraft()">
                                         <option value="template" :disabled="materialTemplateName == null">Keep template model ({{ materialLossMethods.join(', ') || 'none' }})</option>
+                                        <option value="proprietary">Proprietary fit coefficients (micrometals, magnetics, …)</option>
                                         <option value="steinmetz">Steinmetz coefficients (I have k, α, β)</option>
                                         <option value="fit">Fit Steinmetz from datasheet points</option>
                                     </select>
+                                </div>
+
+                                <div v-if="lossesMode == 'proprietary' && proprietaryDraft != null" class="mt-2">
+                                    <div class="studio-field-row">
+                                        <label>Model</label>
+                                        <select data-cy="CoreStudio-material-proprietary-method" :value="proprietaryDraft.method" @change="onProprietaryMethodChange($event.target.value)">
+                                            <option v-for="method in ['micrometals', 'magnetics', 'poco', 'tdg']" :key="method" :value="method">{{ method }}</option>
+                                        </select>
+                                        <label v-for="key in proprietaryCoefficientKeys" :key="key">
+                                            {{ key }}
+                                            <input :data-cy="'CoreStudio-material-proprietary-' + key" type="number" step="any" v-model.number="proprietaryDraft[key]" style="width: 7rem" />
+                                        </label>
+                                    </div>
+                                    <p class="studio-hint mt-1"><code>{{ proprietaryEquationHint }}</code> — Pv in W/m³, f in Hz, B in T. Coefficients come from the manufacturer's datasheet fit.</p>
                                 </div>
 
                                 <div v-if="lossesMode == 'fit'" class="mt-2">
