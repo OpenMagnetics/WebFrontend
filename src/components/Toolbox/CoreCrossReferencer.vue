@@ -296,9 +296,9 @@ export default {
             </div>
         </div>
         <div class="row">
-            <div class="lg:col-3 text-center text-white bg-dark p-3">
+            <div data-cy="CrossReferencer-inputs-panel" class="lg:col-3 text-center text-white bg-dark p-3">
                 {{(keepMaterialConstant)? onlyManufacturer : ''}}
-                <CoreCrossReferencerInputs 
+                <CoreCrossReferencerInputs
                 @inputsUpdated="inputsUpdated"
                 :hasError="hasError"
                 :disabled="loading"
@@ -321,7 +321,7 @@ export default {
                     </div>
                 </div>
             </div>
-            <div class="lg:col-6 text-center text-white">
+            <div data-cy="CrossReferencer-results-panel" class="lg:col-6 text-center text-white">
                 <div class="row" v-if="hideOutputs" >
                     <img data-cy="CoreAdviser-loading" class="mx-auto d-block col-12" alt="loading" style="width: 50%; height: auto;" :src="loadingGif">
                 </div>
@@ -372,7 +372,7 @@ export default {
 
                 </div>
             </div>
-            <div v-if="!hideOutputs" class="lg:col-3 text-center text-white" style="height: 45vh">
+            <div v-if="!hideOutputs" data-cy="CrossReferencer-analyze-panel" class="lg:col-3 text-center text-white" style="height: 45vh">
                 <CoreCrossReferencerOutput
                     v-if="crossReferencerStore.selectedCoreIndex != -1"
                     :dataTestLabel="`${dataTestLabel}-CoreCrossReferencerFinalizer`"
@@ -383,7 +383,7 @@ export default {
                     Select a core to view details, either by clicking on the graph point or in the name in the table
                 </h2>
             </div>
-            <div v-else class="lg:col-3">
+            <div v-else data-cy="CrossReferencer-analyze-panel" class="lg:col-3">
                 <img data-cy="CoreAdviser-loading" class="mx-auto d-block col-12" alt="loading" style="width: 50%; height: auto;" :src="loadingGif">
             </div>
         </div>

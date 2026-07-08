@@ -1,6 +1,7 @@
 <script setup>
 import CoreCrossReferencer from '../../components/Toolbox/CoreCrossReferencer.vue'
 import CoreMaterialCrossReferencer from '../../components/Toolbox/CoreMaterialCrossReferencer.vue'
+import FloatingHelpButton from '../../components/FloatingHelpButton.vue'
 import { toTitleCase } from 'WebSharedComponents/assets/js/utils.js'
 import {useRoute} from 'vue-router'
 
@@ -25,6 +26,7 @@ export default {
     <CoreMaterialCrossReferencer
         v-if="currentRoute == '/core_material_cross_referencer'"
     />
+    <FloatingHelpButton />
 </template>
 
 <style>

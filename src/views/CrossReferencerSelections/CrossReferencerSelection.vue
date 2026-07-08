@@ -1,5 +1,8 @@
 <script>
+import FloatingHelpButton from '../../components/FloatingHelpButton.vue'
+
 export default {
+    components: { FloatingHelpButton },
     props: {
         suffix: {
             type: String,
@@ -56,6 +59,7 @@ export default {
                 </div>
             </div>
         </main>
+        <FloatingHelpButton />
     </div>
 </template>
 

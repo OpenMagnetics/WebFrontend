@@ -338,6 +338,102 @@ export const TOURS = {
         ],
     },
 
+    crossReferencerSelection: {
+        steps: [
+            {
+                title: 'Cross Referencer — pick your goal',
+                description: 'Already have a core in mind but need an alternative? This tool finds substitute cores, shapes or materials that match your original as closely as possible. Pick what you want to substitute.',
+            },
+            {
+                element: '[data-cy="ToolSelection-core_cross_referencer-button"]',
+                title: 'Substitute the whole core',
+                description: 'Explore alternative cores with different shapes AND materials — the broadest search, useful when you just need something equivalent that is available to you.',
+            },
+            {
+                element: '[data-cy="ToolSelection-core_shape_cross_referencer-button"]',
+                title: 'Keep the material, change the shape',
+                description: 'Lock your current material and look only for a substitute shape — handy when you trust a material but need a different footprint.',
+            },
+            {
+                element: '[data-cy="ToolSelection-core_material_cross_referencer-button"]',
+                title: 'Keep the shape, change the material',
+                description: 'Lock your current shape and compare alternative materials — for example to trade off losses against saturation at your operating point.',
+            },
+        ],
+    },
+
+    crossReferencerCore: {
+        steps: [
+            {
+                title: 'Core Cross Referencer',
+                description: 'Enter the core you have today and OpenMagnetics searches its whole database for the closest alternatives, scoring each on losses, size, permeance and saturation.',
+            },
+            {
+                element: '[data-cy="CrossReferencer-inputs-panel"]',
+                title: '1 — Your current core',
+                description: 'Describe the core you are replacing: its shape, material, number of turns and the core types you will accept (toroids, two-piece sets, in-stock only). Results update automatically as you change these.',
+            },
+            {
+                element: '[data-cy="CrossReferencer-results-panel"]',
+                title: '2 — The alternatives',
+                description: 'Every candidate core is plotted against your reference on the two metrics you choose. Points closer to the reference (and toward the better corner) are the best substitutes — click one to inspect it.',
+            },
+            {
+                element: '[data-cy="CrossReferencer-analyze-panel"]',
+                title: '3 — Analyze your pick',
+                description: 'Once you select a candidate, its full details and how it compares to your original core appear here.',
+            },
+        ],
+    },
+
+    crossReferencerShape: {
+        steps: [
+            {
+                title: 'Core Shape Cross Referencer',
+                description: 'Keep your material and find a substitute core SHAPE. OpenMagnetics ranks alternative shapes in the same material by how closely they match your original.',
+            },
+            {
+                element: '[data-cy="CrossReferencer-inputs-panel"]',
+                title: '1 — Your current core',
+                description: 'Describe the core you are replacing. The material is held constant here — only the shape varies among the candidates.',
+            },
+            {
+                element: '[data-cy="CrossReferencer-results-panel"]',
+                title: '2 — The alternative shapes',
+                description: 'Candidate shapes are plotted against your reference on the two metrics you choose. Click a point to inspect that shape.',
+            },
+            {
+                element: '[data-cy="CrossReferencer-analyze-panel"]',
+                title: '3 — Analyze your pick',
+                description: 'Select a candidate to see its full details and how it compares to your original core.',
+            },
+        ],
+    },
+
+    crossReferencerMaterial: {
+        steps: [
+            {
+                title: 'Core Material Cross Referencer',
+                description: 'Keep your core shape and compare alternative MATERIALS. OpenMagnetics scores each material against your reference at your operating temperature.',
+            },
+            {
+                element: '[data-cy="CrossReferencer-inputs-panel"]',
+                title: '1 — Your current material',
+                description: 'Describe your current core material and operating temperature. The shape is held constant — only the material varies among the candidates.',
+            },
+            {
+                element: '[data-cy="CrossReferencer-results-panel"]',
+                title: '2 — The alternative materials',
+                description: 'Candidate materials are plotted against your reference on the two metrics you choose (losses, permeance, saturation…). Click a point to inspect that material.',
+            },
+            {
+                element: '[data-cy="CrossReferencer-analyze-panel"]',
+                title: '3 — Analyze your pick',
+                description: 'Select a candidate to see its full material characteristics and how it compares to your original.',
+            },
+        ],
+    },
+
     insulationAdviser: {
         steps: [
             {
@@ -391,6 +487,17 @@ const ROUTE_TOURS = {
     WizardsLanding: 'wizardsLanding',
     Wizards: 'wizard',
     InsulationAdviser: 'insulationAdviser',
+    // Cross-referencer views render no Header; their Help affordance is the
+    // FloatingHelpButton, which resolves the tour by route name just like the
+    // Header button does. The Fair-Rite variants reuse the same tours since
+    // they render the same components.
+    CrossReferencerSelection: 'crossReferencerSelection',
+    CoreCrossReferencer: 'crossReferencerCore',
+    CoreCrossReferencerFairRite: 'crossReferencerCore',
+    CoreShapeCrossReferencer: 'crossReferencerShape',
+    CoreShapeCrossReferencerFairRite: 'crossReferencerShape',
+    CoreMaterialCrossReferencer: 'crossReferencerMaterial',
+    CoreMaterialCrossReferencerFairRite: 'crossReferencerMaterial',
 };
 
 export function resolveTourId(routeName, stateStore) {
