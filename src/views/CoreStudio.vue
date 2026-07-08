@@ -366,19 +366,11 @@ export default {
             this.busy = true;
             try {
                 const points = this.parseFitPoints();
-                // The MKF Steinmetz fitter needs a real grid to converge: with a
-                // single temperature (or too few f/B values) it returns its seed
-                // coefficients instead of a fit (verified 2026-07-08). Require
-                // the minimum grid loudly instead of accepting garbage.
-                const distinct = (getter) => new Set(points.map(getter)).size;
-                const distinctTemperatures = distinct((p) => p.temperature);
-                const distinctFrequencies = distinct((p) => p.magneticFluxDensity.frequency);
-                const distinctFluxDensities = distinct((p) => p.magneticFluxDensity.magneticFluxDensity.processed.peak);
-                if (distinctTemperatures < 2 || distinctFrequencies < 3 || distinctFluxDensities < 3) {
-                    throw new Error(`The fit needs at least 2 temperatures, 3 frequencies and 3 flux densities `
-                        + `(got ${distinctTemperatures} temperature(s), ${distinctFrequencies} frequency(ies), ${distinctFluxDensities} flux density(ies)). `
-                        + `Add the missing datasheet points — with less data the fitter returns meaningless coefficients.`);
-                }
+                // The engine validates determinacy itself (ABT #168): it throws
+                // specific errors for single-frequency or single-flux-density
+                // ranges, and fits the reduced k/alpha/beta model (no ct0-ct2)
+                // for single-temperature data.
+                const distinctTemperatures = new Set(points.map((p) => p.temperature)).size;
                 const boundaries = this.fitRangesText.split(/[,;\s]+/).map(Number).filter((v) => Number.isFinite(v) && v > 0).sort((a, b) => a - b);
                 const frequencies = points.map((p) => p.magneticFluxDensity.frequency);
                 const edges = [Math.min(...frequencies), ...boundaries, Math.max(...frequencies)];
@@ -386,10 +378,16 @@ export default {
                 for (let i = 0; i < edges.length - 1; i++) {
                     if (edges[i + 1] > edges[i]) ranges.push([edges[i], edges[i + 1]]);
                 }
-                const coefficientsPerRange = await this.taskQueueStore.calculateSteinmetzCoefficients(points, ranges);
-                this.steinmetzRanges = coefficientsPerRange;
+                const fit = await this.taskQueueStore.calculateSteinmetzCoefficients(points, ranges);
+                this.steinmetzRanges = fit.coefficientsPerRange;
                 this.lossesMode = 'steinmetz';
-                this.fitReport = `Fitted ${coefficientsPerRange.length} range(s) from ${points.length} points. Review the coefficients below, then validate.`;
+                const errorSummary = fit.errorPerRange
+                    .map((error, index) => `range ${index + 1}: ${(error * 100).toFixed(1)} %`)
+                    .join(', ');
+                const temperatureNote = distinctTemperatures < 2
+                    ? ' Single temperature: k, α, β fitted; temperature coefficients (ct0–ct2) need points at 2+ temperatures.'
+                    : '';
+                this.fitReport = `Fitted ${fit.coefficientsPerRange.length} range(s) from ${points.length} points — average fit error ${errorSummary}.${temperatureNote}`;
                 this.setStatus(this.fitReport);
             }
             catch (error) { this.setError(error); }
