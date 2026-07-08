@@ -892,6 +892,14 @@ select, input[type="text"], input[type="number"], textarea {
     padding: 0.3rem 0.5rem;
     font-size: 0.9rem;
 }
+/* The open dropdown popup is rendered by the browser, not the page: without
+   an explicit dark color-scheme it comes out white with unreadable pale
+   options. */
+select { color-scheme: dark; }
+select option {
+    background-color: var(--p-dark);
+    color: var(--p-white);
+}
 textarea { width: 100%; font-family: monospace; }
 select:focus, input:focus, textarea:focus { outline: 1px solid var(--p-primary); }
 
