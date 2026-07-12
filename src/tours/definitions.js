@@ -496,6 +496,94 @@ export const TOURS = {
             },
         ],
     },
+
+    // ── Account pages (optional accounts: designs, inventory, orgs) ──────
+    myDesigns: {
+        steps: [
+            {
+                title: 'Your cloud designs',
+                description: 'Designs saved to your free account live here — from any device. The tool itself never requires an account; this is purely optional persistence.',
+            },
+            {
+                element: '[data-cy="MyDesigns-save-current-button"]',
+                title: 'Save what you are working on',
+                description: 'Stores the design currently open in the builder to your account. Saving again updates the same design, keeping a revision history.',
+            },
+            {
+                element: '[data-cy="OrgSelector"]',
+                title: 'Personal or company space',
+                description: 'If you belong to an organization, switch here: designs created in a company space belong to the company and stay when people leave.',
+            },
+            {
+                element: '[data-cy="MyDesigns-table"]',
+                title: 'Open, share, download',
+                description: 'Open a design back into the builder, rename it, download it as a MAS file, create a public share link, or delete it.',
+            },
+        ],
+    },
+
+    myInventory: {
+        steps: [
+            {
+                title: 'Your parts inventory',
+                description: 'Keep the cores, shapes, materials and wires you actually stock — and let the advisers design with them.',
+            },
+            {
+                element: '[data-cy="MyInventory-scope-public"]',
+                title: 'Adviser scope',
+                description: 'Choose what the advisers search: the public catalog, the catalog plus your inventory, or exclusively your inventory.',
+            },
+            {
+                element: '[data-cy="MyInventory-import-button"]',
+                title: 'Import your parts',
+                description: 'Upload MAS ndjson files — the exact format the Core Studio exports — or reference public catalog parts you keep in stock.',
+            },
+            {
+                element: '[data-cy="MyInventory-share-button"]',
+                title: 'Share your inventory',
+                description: 'Create a public link so colleagues (or customers) can browse your parts and mount them into their own advisers.',
+            },
+        ],
+    },
+
+    organizations: {
+        steps: [
+            {
+                title: 'Company spaces',
+                description: 'An organization is a shared space: shared designs, a shared parts inventory with an approval workflow, and teammates with roles.',
+            },
+            {
+                element: '[data-cy="Organizations-new-name"]',
+                title: 'Create your company',
+                description: 'You become the owner. Everything created inside the organization belongs to it — not to individual employees.',
+            },
+            {
+                element: '[data-cy="Organizations-invite-email"]',
+                title: 'Invite your team',
+                description: 'Invitations go out by email with a role: viewers read, members design and propose draft parts, librarians approve parts for adviser use, admins manage people.',
+            },
+        ],
+    },
+
+    account: {
+        steps: [
+            {
+                title: 'Your account',
+                description: 'Manage your credentials and your data. Everything the account stores can be exported or deleted at any time — your data is yours.',
+            },
+            {
+                element: '[data-cy="Account-export-button"]',
+                title: 'Take your data with you',
+                description: 'Downloads everything in your account (designs as MAS JSON) as a zip. No lock-in, ever.',
+            },
+            {
+                element: '[data-cy="Account-delete-button"]',
+                title: 'Delete forever',
+                description: 'Removes the account and everything in it. Export first — there is no undo.',
+            },
+        ],
+    },
+
 };
 
 // Map the current app context (route + state-store subsection) to a tour id.
@@ -518,6 +606,10 @@ const SUBSECTION_TOURS = {
 
 const ROUTE_TOURS = {
     Home: 'home',
+    MyDesigns: 'myDesigns',
+    MyInventory: 'myInventory',
+    Organizations: 'organizations',
+    Account: 'account',
     WizardsLanding: 'wizardsLanding',
     Wizards: 'wizard',
     InsulationAdviser: 'insulationAdviser',

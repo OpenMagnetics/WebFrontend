@@ -156,7 +156,7 @@ export default {
 </script>
 
 <template>
-  <div class="d-flex flex-column min-vh-100">
+  <div class="om-account-page d-flex flex-column min-vh-100">
     <Header />
     <div class="container text-white mt-4 flex-grow-1" style="min-height: 60vh">
         <div class="d-flex align-items-center gap-3 mb-4">

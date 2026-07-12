@@ -47,7 +47,7 @@ export default {
 </script>
 
 <template>
-  <div class="d-flex flex-column min-vh-100">
+  <div class="om-account-page d-flex flex-column min-vh-100">
     <Header />
     <div class="container text-white mt-5 flex-grow-1" style="max-width: 520px">
         <h3 data-cy="AcceptInvite-title"><i class="pi pi-building mr-2"></i>Organization invitation</h3>

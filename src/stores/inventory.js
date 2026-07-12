@@ -1,11 +1,9 @@
 import { defineStore } from 'pinia'
 import api from '../services/accountApi'
 
-// Gate for the 'only my inventory' adviser scope: the shipped engine does not
-// yet carry the 6-arg calculate_advised_*_with_context twins (the WebLibMKF
-// build tree currently produces a broken engine — ABT-tracked, critical).
-// Flip to true when a fixed engine with those exports ships.
-export const ENGINE_HAS_CONTEXT_ADVISERS = false;
+// The shipped engine (MKF main 0585475c, WebLibMKF 31f268c) carries the
+// 6-arg calculate_advised_*_with_context twins — 'only my inventory' is live.
+export const ENGINE_HAS_CONTEXT_ADVISERS = true;
 
 // Account inventory (Phase 2): the user's approved-parts list, fetched from
 // the backend and fed to the WASM engine. Two integration modes, selected by

@@ -116,7 +116,7 @@ export default {
 </script>
 
 <template>
-  <div class="d-flex flex-column min-vh-100">
+  <div class="om-account-page d-flex flex-column min-vh-100">
     <Header />
     <div class="container text-white mt-4 flex-grow-1" style="max-width: 860px; min-height: 60vh">
         <h2 data-cy="Organizations-title" class="mb-4"><i class="pi pi-building mr-2"></i>Organizations</h2>

@@ -82,7 +82,7 @@ export default {
 </script>
 
 <template>
-  <div class="d-flex flex-column min-vh-100">
+  <div class="om-account-page d-flex flex-column min-vh-100">
     <Header />
     <div class="container text-white mt-5 flex-grow-1" style="max-width: 760px">
         <div v-if="loading" class="text-secondary">Loading shared inventory…</div>

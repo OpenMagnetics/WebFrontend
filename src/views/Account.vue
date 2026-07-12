@@ -83,7 +83,7 @@ export default {
 </script>
 
 <template>
-  <div class="d-flex flex-column min-vh-100">
+  <div class="om-account-page d-flex flex-column min-vh-100">
     <Header />
     <div class="container text-white mt-4 flex-grow-1" style="min-height: 60vh; max-width: 640px">
         <h2 data-cy="Account-title" class="mb-4"><i class="pi pi-user mr-2"></i>Account</h2>
