@@ -10,6 +10,7 @@ import { waitForMkf, isWorkerMode } from 'WebSharedComponents/assets/js/mkfRunti
 import { waitForKirchhoff } from 'WebSharedComponents/assets/js/kirchhoffRuntime'
 import { Convert as MasConvert } from 'WebSharedComponents/assets/ts/MAS.ts'
 import { clean } from 'WebSharedComponents/assets/js/utils'
+import { useInventoryStore, ENGINE_HAS_CONTEXT_ADVISERS } from '../stores/inventory'
 
 // MAS sentry. Validates an outgoing payload against the generated MAS schema
 // (via quicktype's `Convert.to*`) before we hand it to the WASM. Loud failure
@@ -293,7 +294,21 @@ export const useTaskQueueStore = defineStore('taskQueue', {
             }
 
             masSentry('calculateAdvisedCores', 'Inputs', inputs);
-            const result = await mkf.calculate_advised_cores(JSON.stringify(inputs), JSON.stringify(weights), count, modeString);
+            // Inventory scoping: with scope 'only', run against the account
+            // inventory through the engine's LibraryContext instead of the
+            // public catalog (the context is loaded on engine init /
+            // scope change by inventory.applyScope).
+            const inventoryStore = useInventoryStore();
+            let result;
+            if (inventoryStore.scope === 'only') {
+                if (!ENGINE_HAS_CONTEXT_ADVISERS) {
+                    throw new Error("Inventory-only advising needs the next engine update (gate in inventory.js)");
+                }
+                result = await mkf.calculate_advised_cores_with_context(
+                    JSON.stringify(inputs), JSON.stringify(weights), count, modeString, '{}', true);
+            } else {
+                result = await mkf.calculate_advised_cores(JSON.stringify(inputs), JSON.stringify(weights), count, modeString);
+            }
             if (result.startsWith('Exception')) {
                 setTimeout(() => { this.advisedCoresCalculated(false, result); }, this.task_standard_response_delay);
                 throw new Error(result);
@@ -390,7 +405,18 @@ export const useTaskQueueStore = defineStore('taskQueue', {
             }
 
             masSentry('calculateAdvisedMagnetics', 'Inputs', inputs);
-            const result = await mkf.calculate_advised_magnetics(JSON.stringify(inputs), JSON.stringify(transformedWeights), count, modeString);
+            // Inventory scoping — see calculateAdvisedCores.
+            const inventoryStore = useInventoryStore();
+            let result;
+            if (inventoryStore.scope === 'only') {
+                if (!ENGINE_HAS_CONTEXT_ADVISERS) {
+                    throw new Error("Inventory-only advising needs the next engine update (gate in inventory.js)");
+                }
+                result = await mkf.calculate_advised_magnetics_with_context(
+                    JSON.stringify(inputs), JSON.stringify(transformedWeights), count, modeString, '{}', true);
+            } else {
+                result = await mkf.calculate_advised_magnetics(JSON.stringify(inputs), JSON.stringify(transformedWeights), count, modeString);
+            }
             if (result.startsWith('Exception')) {
                 setTimeout(() => { this.advisedMagneticsCalculated(false, result); }, this.task_standard_response_delay);
                 throw new Error(result);

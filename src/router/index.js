@@ -122,6 +122,11 @@ const routes = [
         component: () => import('../views/Account.vue')
     },
     {
+        path: '/inventory',
+        name: 'MyInventory',
+        component: () => import('../views/MyInventory.vue')
+    },
+    {
         path: '/verify_email',
         name: 'VerifyEmail',
         component: () => import('../views/EmailAction.vue')

@@ -14,6 +14,7 @@ import { initTelemetry } from 'WebSharedComponents/assets/js/telemetry.js'
 import { useStyleStore } from '/src/stores/style'
 import { useFairRiteStyleStore } from '/src/stores/fairRiteStyle'
 import { useCustomPartsStore } from '/src/stores/customParts'
+import { useInventoryStore } from '/src/stores/inventory'
 import { useModelSettingsStore } from '/MagneticBuilder/src/stores/modelSettings'
 import { VueWindowSizePlugin } from 'vue-window-size/plugin';
 import { initWorker } from 'WebSharedComponents/assets/js/mkfRuntime'
@@ -176,6 +177,9 @@ initTelemetry({
     environment: import.meta.env.VITE_ENV || 'production',
     appVersion: import.meta.env.VITE_APP_VERSION || null,
     masProvider: () => (_masStore && _masStore.mas) || null,
+    // Privacy filter: designs referencing private inventory parts are
+    // recorded without their MAS payload (see telemetry.js).
+    privatePartNamesProvider: () => useInventoryStore().privatePartNames,
 })
 
 export const globals = app.config.globalProperties
@@ -209,6 +213,16 @@ function preloadMKF() {
             // Re-inject the user's Core Studio parts (custom shapes/materials)
             // on top of the catalog so they show up in every selector.
             await useCustomPartsStore().reinject(mkf);
+
+            // Account inventory (Phase 2): bring the engine in line with the
+            // persisted adviser scope (merge-inject / LibraryContext). No-op
+            // for scope 'public' or when signed out; failures are loud but
+            // must not block the engine boot for anonymous use.
+            try {
+                await useInventoryStore().applyScope(mkf);
+            } catch (error) {
+                console.error('Inventory scope could not be applied:', error);
+            }
             
             // Initialize model settings from WASM during preload
             console.warn("Preload: Initializing model settings...");
@@ -446,6 +460,13 @@ router.beforeEach((to, from, next) => {
                     // materials) on top of the catalog. The preload path does
                     // this too; the loaders upsert by name so it's idempotent.
                     await useCustomPartsStore().reinject(mkf);
+
+                    // Account inventory scope (idempotent, see preload path).
+                    try {
+                        await useInventoryStore().applyScope(mkf);
+                    } catch (error) {
+                        console.error('Inventory scope could not be applied:', error);
+                    }
                     console.warn("All data loaded");
                     
                     // Initialize model settings from WASM

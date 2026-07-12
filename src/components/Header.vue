@@ -526,6 +526,16 @@ export default {
                             </li>
                             <li>
                                 <router-link
+                                    data-cy="Header-my-inventory-link"
+                                    class="dropdown-item nav-link w-100 px-2"
+                                    to="/inventory"
+                                    @click="openDropdown = null"
+                                >
+                                    <i class="mr-2 pi pi-box"></i>My inventory
+                                </router-link>
+                            </li>
+                            <li>
+                                <router-link
                                     data-cy="Header-account-link"
                                     class="dropdown-item nav-link w-100 px-2"
                                     to="/account"
