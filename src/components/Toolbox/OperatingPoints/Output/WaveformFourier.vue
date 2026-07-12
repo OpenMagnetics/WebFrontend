@@ -5,6 +5,7 @@ import { Chart, registerables } from 'chart.js'
 import { formatCurrent, removeTrailingZeroes, formatFrequency, formatVoltage } from 'WebSharedComponents/assets/js/utils.js'
 import { defaultSamplingNumberPoints, defaultMaximumNumberHarmonicsShown } from 'WebSharedComponents/assets/js/defaults.js'
 import { deepCopy } from 'WebSharedComponents/assets/js/utils.js'
+import { themeColor, themeRgba } from '../../../../assets/js/chartTheme.js'
 </script>
 
 <script>
@@ -123,10 +124,12 @@ export default {
                     }
                 },
                 tooltip: {
-                    backgroundColor: 'rgba(var(--p-dark-rgb), 0.92)',
-                    titleColor: 'var(--p-light)',
-                    bodyColor: 'var(--p-light)',
-                    borderColor: 'rgba(var(--p-primary-rgb), 0.6)',
+                    // Concrete colors only: canvas ignores 'var(...)' values, which made
+                    // the 'Freq:' title draw black-on-black (web bug report #166).
+                    backgroundColor: themeRgba('--p-dark-rgb', 0.92, '20, 20, 25'),
+                    titleColor: themeColor('--p-light', '#f8f9fa'),
+                    bodyColor: themeColor('--p-light', '#f8f9fa'),
+                    borderColor: themeRgba('--p-primary-rgb', 0.6, '80, 200, 175'),
                     borderWidth: 1,
                     padding: 8,
                     cornerRadius: 6,
