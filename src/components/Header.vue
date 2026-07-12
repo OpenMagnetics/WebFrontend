@@ -2,7 +2,9 @@
 import { useMasStore } from '/MagneticBuilder/src/stores/mas'
 import { useHistoryStore } from '/MagneticBuilder/src/stores/history'
 import { useTaskQueueStore } from '../stores/taskQueue'
-import { combinedStyle, combinedClass, checkAndFixMas, deepCopy } from 'WebSharedComponents/assets/js/utils.js'
+import { useAuthStore } from '../stores/auth'
+import { useCloudDesignStore } from '../stores/cloudDesign'
+import { loadMasIntoApp } from '../services/loadMasIntoApp'
 import { defineAsyncComponent } from "vue";
 import { useElementVisibility  } from '@vueuse/core'
 import { ref } from 'vue'
@@ -19,13 +21,17 @@ export default {
     emits: ["toolSelected"],
     components: {
         BugReporterModal: defineAsyncComponent(() => import('/src/components/User/BugReporter.vue') ),
+        AccountModal: defineAsyncComponent(() => import('/src/components/User/AccountModal.vue') ),
     },
     data() {
         const masStore = useMasStore();
         const historyStore = useHistoryStore();
         const taskQueueStore = useTaskQueueStore();
+        const authStore = useAuthStore();
+        const cloudDesignStore = useCloudDesignStore();
         const loading = false;
         const bugReporterVisible = false;
+        const accountModalVisible = false;
         // Grouped wizard menu — keeps the header dropdown compact by hiding
         // each topology family behind a fly-out submenu. Keys (cy, store,
         // hoverKey, icon, label) match the prior flat menu 1:1 so existing
@@ -98,8 +104,12 @@ export default {
             masStore,
             historyStore,
             taskQueueStore,
+            authStore,
+            cloudDesignStore,
             loading,
             bugReporterVisible,
+            accountModalVisible,
+            savingToCloud: false,
             hoveredWizard: null,
             openWizardGroup: null,
             wizardGroups,
@@ -223,90 +233,16 @@ export default {
                 const newMas = JSON.parse(e.target.result);
                 if (newMas.magnetic != null) {
                     try {
-                        const response = await checkAndFixMas(newMas, this.taskQueueStore);
-
-                        // Save coil processed data that masAutocomplete may strip
-                        const savedCoilData = {
-                            layersDescription: response.magnetic?.coil?.layersDescription,
-                            turnsDescription: response.magnetic?.coil?.turnsDescription,
-                            sectionsDescription: response.magnetic?.coil?.sectionsDescription,
-                        };
-
-                        // Always autocomplete the MAS to resolve wire/strand string names to
-                        // full objects and populate core processedDescription, bobbin, etc.
-                        let autocompletedMas = response;
-                        try {
-                            autocompletedMas = await this.taskQueueStore.masAutocomplete(response, false, {});
-                        } catch (autocompleteError) {
-                            console.warn('masAutocomplete failed, using checkAndFixMas result:', autocompleteError);
-                        }
-
-                        // Restore coil processed data if masAutocomplete stripped it
-                        if (autocompletedMas.magnetic?.coil) {
-                            if (!autocompletedMas.magnetic.coil.layersDescription && savedCoilData.layersDescription) {
-                                autocompletedMas.magnetic.coil.layersDescription = savedCoilData.layersDescription;
-                            }
-                            if (!autocompletedMas.magnetic.coil.turnsDescription && savedCoilData.turnsDescription) {
-                                autocompletedMas.magnetic.coil.turnsDescription = savedCoilData.turnsDescription;
-                            }
-                            if (!autocompletedMas.magnetic.coil.sectionsDescription && savedCoilData.sectionsDescription) {
-                                autocompletedMas.magnetic.coil.sectionsDescription = savedCoilData.sectionsDescription;
-                            }
-                        }
-
-                        this.masStore.resetMas();
-                        this.masStore.mas = autocompletedMas;
-                        this.masStore.importedMas();
-
-                        // Reset coil view to Basic mode when loading a new MAS file
-                        this.$stateStore.closeCoilAdvancedInfo();
-
-                        this.$stateStore.selectWorkflow("design");
-                        this.$stateStore.selectApplication(this.$stateStore.SupportedApplications.Power);
-                        this.$stateStore.selectTool("magneticBuilder");
-                        this.$stateStore.setCurrentToolSubsection("magneticBuilder");
-                        this.$stateStore.setCurrentToolSubsectionStatus("designRequirements", true);
-                        this.$stateStore.setCurrentToolSubsectionStatus("operatingPoints", true);
-                        this.$stateStore.operatingPoints.modePerPoint = [];
-                        for (let i = 0; i < this.masStore.mas.inputs.operatingPoints.length; i++) {
-                            const excitation = this.masStore.mas.inputs.operatingPoints[i].excitationsPerWinding[0];
-                            // Determine mode based on what data is present:
-                            // - HarmonicsList: has harmonics with multiple entries (DC + at least one harmonic)
-                            //   This means the user entered harmonics manually
-                            // - Manual: only has waveform/processed without meaningful harmonics
-                            const hasMultipleHarmonics = excitation.current?.harmonics?.amplitudes?.length > 1;
-
-                            if (hasMultipleHarmonics) {
-                                this.$stateStore.operatingPoints.modePerPoint.push(this.$stateStore.OperatingPointsMode.HarmonicsList);
-                            }
-                            else {
-                                this.$stateStore.operatingPoints.modePerPoint.push(this.$stateStore.OperatingPointsMode.Manual);
-                            }
-                        }
-                        this.$stateStore.setCurrentToolSubsectionStatus("designRequirements", true);
-                        this.$stateStore.setCurrentToolSubsectionStatus("operatingPoints", true);
-                        this.$stateStore.loadingDesign = true;
-
-                        if (this.$router.currentRoute.value.path != `${import.meta.env.BASE_URL}magnetic_tool`) {
-                            this.$userStore.loadingPath = `${import.meta.env.BASE_URL}magnetic_tool`;
-
-                            // Wait for pinia-plugin-persistedstate to write to localStorage
-                            await new Promise(resolve => {
-                                const unsubscribe = this.masStore.$subscribe(() => {
-                                    unsubscribe();
-                                    resolve();
-                                }, { flush: 'sync' });
-                                // Trigger a sync by touching the store
-                                this.masStore.$patch({});
-                            });
-
-                            await this.$router.push(`${import.meta.env.BASE_URL}engine_loader`);
-                        }
-                        else {
-                            this.masStore.mas.magnetic.core = autocompletedMas.magnetic.core;
-                            this.masStore.mas.magnetic.coil = autocompletedMas.magnetic.coil;
-                            this.masStore.mas.magnetic.coil.functionalDescription = autocompletedMas.magnetic.coil.functionalDescription;
-                        }
+                        // A file import is a new working design, not the linked cloud one.
+                        this.cloudDesignStore.unlink();
+                        await loadMasIntoApp(newMas, {
+                            masStore: this.masStore,
+                            stateStore: this.$stateStore,
+                            userStore: this.$userStore,
+                            taskQueueStore: this.taskQueueStore,
+                            router: this.$router,
+                            route: this.$router.currentRoute.value,
+                        });
                     } catch (error) {
                         console.error(error);
                     } finally {
@@ -317,6 +253,43 @@ export default {
                 }
             };
             fr.readAsText(this.$refs['masFileReader'].files.item(0), "ISO-8859-1");
+        },
+        onLoggedIn() {
+            // Post-login hook: settings sync starts lazily from main.js watcher.
+        },
+        async signOut() {
+            try {
+                await this.authStore.logout();
+            } catch (error) {
+                console.error("Logout failed:", error);
+            }
+            this.cloudDesignStore.unlink();
+            this.openDropdown = null;
+        },
+        async saveCurrentDesignToCloud() {
+            // Quick-save from the header: updates the linked design, or sends
+            // the user to My Designs to name a new one.
+            if (!this.cloudDesignStore.isLinked) {
+                await this.$router.push(`${import.meta.env.BASE_URL}designs`);
+                return;
+            }
+            this.savingToCloud = true;
+            try {
+                await this.cloudDesignStore.save(this.masStore.mas, null);
+            } catch (error) {
+                if (error.response?.status === 409) {
+                    const current = error.response.data.detail.current_version;
+                    if (window.confirm(`This design was modified elsewhere (now at version ${current}). Overwrite it with your local copy?`)) {
+                        await this.cloudDesignStore.overwrite(this.masStore.mas);
+                    }
+                }
+                else {
+                    console.error("Cloud save failed:", error);
+                    window.alert("Could not save to your account: " + (error.response?.data?.detail || error.message));
+                }
+            } finally {
+                this.savingToCloud = false;
+            }
         },
     },
     computed: {
@@ -507,6 +480,71 @@ export default {
                     </li>
                 </ul>
                 <ul class="navbar-nav ms-auto text-center">
+                    <li v-if="!authStore.isLoggedIn" class="nav-item">
+                        <span class="nav-item">
+                            <button
+                                data-cy="Header-sign-in-button"
+                                :class="headerTogglerIsVisible? 'w-100' : 'mx-1' "
+                                class="btn nav-link om-signin-btn text-center"
+                                title="Optional account: cloud-saved designs"
+                                @click="accountModalVisible = true"
+                            >
+                                {{'Sign in '}}<i class="pi pi-user"></i>
+                            </button>
+                        </span>
+                    </li>
+                    <li v-else class="nav-item dropdown" @click.stop>
+                        <button
+                            data-cy="Header-account-menu-button"
+                            :class="headerTogglerIsVisible? 'w-100' : 'mx-1' "
+                            class="btn nav-link om-account-btn text-center dropdown-toggle"
+                            @click="toggleDropdown('account')"
+                        >
+                            <i class="pi pi-user mr-1"></i>{{ authStore.user.display_name }}
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end" :class="{ show: openDropdown === 'account' }">
+                            <li v-if="$stateStore.isAnyDesignLoaded()">
+                                <button
+                                    data-cy="Header-save-design-button"
+                                    class="dropdown-item nav-link w-100 px-2"
+                                    :disabled="savingToCloud"
+                                    @click="saveCurrentDesignToCloud"
+                                >
+                                    <i class="mr-2 pi" :class="savingToCloud ? 'pi-refresh fa-spin' : 'pi-save'"></i>
+                                    {{ cloudDesignStore.isLinked ? `Save "${cloudDesignStore.name}"` : 'Save design to account' }}
+                                </button>
+                            </li>
+                            <li>
+                                <router-link
+                                    data-cy="Header-my-designs-link"
+                                    class="dropdown-item nav-link w-100 px-2"
+                                    to="/designs"
+                                    @click="openDropdown = null"
+                                >
+                                    <i class="mr-2 pi pi-cloud"></i>My designs
+                                </router-link>
+                            </li>
+                            <li>
+                                <router-link
+                                    data-cy="Header-account-link"
+                                    class="dropdown-item nav-link w-100 px-2"
+                                    to="/account"
+                                    @click="openDropdown = null"
+                                >
+                                    <i class="mr-2 pi pi-cog"></i>Account
+                                </router-link>
+                            </li>
+                            <li>
+                                <button
+                                    data-cy="Header-sign-out-button"
+                                    class="dropdown-item nav-link w-100 px-2"
+                                    @click="signOut"
+                                >
+                                    <i class="mr-2 pi pi-sign-out"></i>Sign out
+                                </button>
+                            </li>
+                        </ul>
+                    </li>
                     <li class="nav-item">
                         <span class="nav-item">
                             <button
@@ -567,6 +605,7 @@ export default {
 
     <!-- Modal -->
     <BugReporterModal v-model:visible="bugReporterVisible"/>
+    <AccountModal v-model:visible="accountModalVisible" @logged-in="onLoggedIn"/>
 </template>
 
 <style>

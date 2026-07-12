@@ -43,6 +43,8 @@ Used only by the package that owns them. Safe to refactor freely.
 | `dataCache` | MagneticBuilder | Timestamped wire-data cache |
 | `catalog` | MagneticBuilder | Catalog tool filters + advises |
 | `crossReferencer` | MagneticBuilder | Cross-referencer tool state |
+| `auth` | WebFrontend | Optional account session (mirrors `/auth/me`; not persisted — cookie is the source of truth) |
+| `cloudDesign` | WebFrontend | Link between the local working design and its server-side "My Designs" entry (persisted; deliberately NOT in the storeVersioning wipe list, like `customParts`) |
 
 ## Theme selection
 

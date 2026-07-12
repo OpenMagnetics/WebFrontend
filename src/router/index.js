@@ -112,6 +112,16 @@ const routes = [
         component: () => import('../views/CrossReferencers/CrossReferencer.vue')
     },
     {
+        path: '/designs',
+        name: 'MyDesigns',
+        component: () => import('../views/MyDesigns.vue')
+    },
+    {
+        path: '/account',
+        name: 'Account',
+        component: () => import('../views/Account.vue')
+    },
+    {
         // Catch-all: unknown paths render a blank page otherwise (vue-router
         // mounts nothing without a matching route). Send the user home.
         path: '/:pathMatch(.*)*',

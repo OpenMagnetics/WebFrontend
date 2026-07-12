@@ -146,6 +146,23 @@ app.config.globalProperties.$userStore = useUserStore()
 app.config.globalProperties.$settingsStore = useSettingsStore()
 app.config.globalProperties.$stateStore = useStateStore()
 
+// Optional account session: ask the backend once per boot whether the session
+// cookie is still valid, and start settings sync while logged in. Everything
+// is fire-and-forget — anonymous use must never wait on the account service.
+import { useAuthStore } from '/src/stores/auth'
+import { startSettingsSync } from '/src/services/settingsSync'
+const _authStore = useAuthStore()
+_authStore.fetchMe().then(() => {
+    if (_authStore.isLoggedIn) {
+        startSettingsSync(app.config.globalProperties.$settingsStore)
+    }
+})
+_authStore.$subscribe(() => {
+    if (_authStore.isLoggedIn) {
+        startSettingsSync(app.config.globalProperties.$settingsStore)
+    }
+})
+
 // Tab-scoped telemetry session ID (resets on tab close; not tied to user identity)
 const _sid = sessionStorage.getItem('om_telemetry_sid') || crypto.randomUUID()
 sessionStorage.setItem('om_telemetry_sid', _sid)
