@@ -1,5 +1,36 @@
 import { checkAndFixMas } from 'WebSharedComponents/assets/js/utils.js'
 
+// Sessions saved by older frontend versions carry enum spellings the current
+// MAS schema rejects ('P2' instead of 'PD2', 'OVC-III' instead of 'III',
+// 'Wound' instead of 'wound'). The MAS sentry then fails every
+// autocomplete/simulate call with a console-only error and the whole builder
+// silently stops working (web bug reports #144/#145). Normalize the known
+// legacy spellings before anything validates the document.
+export function migrateLegacyMas(mas) {
+    const requirements = mas?.inputs?.designRequirements;
+    if (requirements == null) {
+        return mas;
+    }
+    const insulation = requirements.insulation;
+    if (insulation != null) {
+        const pollutionDegrees = { 'P1': 'PD1', 'P2': 'PD2', 'P3': 'PD3', 'P4': 'PD4' };
+        if (insulation.pollutionDegree in pollutionDegrees) {
+            insulation.pollutionDegree = pollutionDegrees[insulation.pollutionDegree];
+        }
+        const overvoltageCategories = { 'OVC-I': 'I', 'OVC-II': 'II', 'OVC-III': 'III', 'OVC-IV': 'IV' };
+        if (insulation.overvoltageCategory in overvoltageCategories) {
+            insulation.overvoltageCategory = overvoltageCategories[insulation.overvoltageCategory];
+        }
+    }
+    if (typeof requirements.wiringTechnology === 'string') {
+        const lowercased = requirements.wiringTechnology.toLowerCase();
+        if (['wound', 'printed', 'stamped', 'deposition'].includes(lowercased)) {
+            requirements.wiringTechnology = lowercased;
+        }
+    }
+    return mas;
+}
+
 // Load a MAS document into the app exactly like the Header's "Load MAS" file
 // import: fix + autocomplete it, reset the mas store, prime the state store,
 // and navigate to the magnetic tool. Extracted from Header.readMASFile so the
@@ -8,6 +39,8 @@ export async function loadMasIntoApp(newMas, { masStore, stateStore, userStore, 
     if (newMas.magnetic == null) {
         throw new Error('Not a MAS document: missing "magnetic"');
     }
+
+    migrateLegacyMas(newMas);
 
     const response = await checkAndFixMas(newMas, taskQueueStore);
 
