@@ -74,6 +74,23 @@ export default {
                 this.error = "Could not add: " + (error.response?.data?.detail || error.message);
             }
         },
+        async shareInventory() {
+            this.error = "";
+            try {
+                const { data } = await api.post('/inventory/share');
+                const url = `${window.location.origin}/share/i/${data.token}`;
+                let copied = false;
+                try {
+                    await navigator.clipboard.writeText(url);
+                    copied = true;
+                } catch (clipboardError) {
+                    // Clipboard needs a secure context / permission; the prompt below still shows the URL.
+                }
+                window.prompt(copied ? "Share link (copied to clipboard):" : "Share link:", url);
+            } catch (error) {
+                this.error = "Could not create the share link: " + (error.response?.data?.detail || error.message);
+            }
+        },
         pickImportFile() {
             this.$refs.ndjsonInput.click();
         },
@@ -130,7 +147,16 @@ export default {
   <div class="d-flex flex-column min-vh-100">
     <Header />
     <div class="container text-white mt-4 flex-grow-1" style="min-height: 60vh">
-        <h2 data-cy="MyInventory-title" class="mb-4"><i class="pi pi-box mr-2"></i>My inventory</h2>
+        <div class="d-flex align-items-center gap-3 mb-4">
+            <h2 data-cy="MyInventory-title" class="mb-0"><i class="pi pi-box mr-2"></i>My inventory</h2>
+            <button v-if="authStore.isLoggedIn && parts.length > 0"
+                    data-cy="MyInventory-share-button"
+                    class="p-button p-button-outlined p-button-sm"
+                    title="Anyone with the link can browse these parts and mount them into their advisers"
+                    @click="shareInventory">
+                <i class="pi pi-share-alt mr-2"></i>Share
+            </button>
+        </div>
 
         <div v-if="loading" class="text-secondary">Loading…</div>
         <div v-else-if="!authStore.isLoggedIn" data-cy="MyInventory-signed-out" class="alert alert-info">

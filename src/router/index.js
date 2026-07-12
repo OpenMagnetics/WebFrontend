@@ -127,6 +127,16 @@ const routes = [
         component: () => import('../views/MyInventory.vue')
     },
     {
+        path: '/share/d/:token',
+        name: 'SharedDesign',
+        component: () => import('../views/SharedDesign.vue')
+    },
+    {
+        path: '/share/i/:token',
+        name: 'SharedInventory',
+        component: () => import('../views/SharedInventory.vue')
+    },
+    {
         path: '/verify_email',
         name: 'VerifyEmail',
         component: () => import('../views/EmailAction.vue')

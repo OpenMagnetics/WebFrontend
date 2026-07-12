@@ -106,6 +106,26 @@ export default {
                 this.busyId = null;
             }
         },
+        async shareDesign(design) {
+            this.error = "";
+            this.busyId = design.id;
+            try {
+                const { data } = await api.post(`/designs/${design.id}/share`, {});
+                const url = `${window.location.origin}/share/d/${data.token}`;
+                let copied = false;
+                try {
+                    await navigator.clipboard.writeText(url);
+                    copied = true;
+                } catch (clipboardError) {
+                    // Clipboard needs a secure context / permission; the prompt below still shows the URL.
+                }
+                window.prompt(copied ? "Share link (copied to clipboard):" : "Share link:", url);
+            } catch (error) {
+                this.error = "Could not create the share link: " + (error.response?.data?.detail || error.message);
+            } finally {
+                this.busyId = null;
+            }
+        },
         async downloadDesign(design) {
             this.busyId = design.id;
             try {
@@ -232,6 +252,11 @@ export default {
                                 </button>
                                 <button class="p-button p-button-outlined p-button-sm mx-1" @click="downloadDesign(design)" title="Download MAS file">
                                     <i class="pi pi-download"></i>
+                                </button>
+                                <button :data-cy="`MyDesigns-share-${design.name}`"
+                                        class="p-button p-button-outlined p-button-sm mx-1"
+                                        @click="shareDesign(design)" title="Create a public share link">
+                                    <i class="pi pi-share-alt"></i>
                                 </button>
                                 <button class="p-button p-button-outlined p-button-sm mx-1" @click="renameDesign(design)" title="Rename">
                                     <i class="pi pi-pencil"></i>
