@@ -3,6 +3,7 @@ import { ref, watch, computed  } from 'vue'
 import * as MAS from 'WebSharedComponents/assets/ts/MAS.ts'
 import * as Defaults from 'WebSharedComponents/assets/js/defaults.js'
 import { useAdviseCacheStore } from './adviseCache'
+import { migrateLegacyMas } from '../services/loadMasIntoApp'
 
 export const useMasStore = defineStore("mas", () => {
 
@@ -97,6 +98,19 @@ export const useMasStore = defineStore("mas", () => {
     }
 },
 {
-    persist: true,
+    persist: {
+        // Sessions persisted by older frontend versions carry legacy enum
+        // spellings the MAS sentry rejects ('P2', 'OVC-III', 'Wound'), which
+        // left restored sessions permanently broken (web bug report #145).
+        // File/cloud loads are migrated in loadMasIntoApp; this covers the
+        // localStorage-restore path. Log loudly but never brick hydration.
+        afterHydrate: (ctx) => {
+            try {
+                migrateLegacyMas(ctx.store.mas);
+            } catch (e) {
+                console.error('[mas store] legacy MAS migration on restore failed:', e);
+            }
+        },
+    },
 }
 )
