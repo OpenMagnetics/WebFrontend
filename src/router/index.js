@@ -122,6 +122,16 @@ const routes = [
         component: () => import('../views/Account.vue')
     },
     {
+        path: '/verify_email',
+        name: 'VerifyEmail',
+        component: () => import('../views/EmailAction.vue')
+    },
+    {
+        path: '/reset_password',
+        name: 'ResetPassword',
+        component: () => import('../views/EmailAction.vue')
+    },
+    {
         // Catch-all: unknown paths render a blank page otherwise (vue-router
         // mounts nothing without a matching route). Send the user home.
         path: '/:pathMatch(.*)*',
