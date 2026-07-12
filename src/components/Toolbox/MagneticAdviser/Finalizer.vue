@@ -40,7 +40,6 @@ export default {
     },
     mounted () {
         this.computeTexts();
-        setTimeout(() => this.insertMas(), 2000);
     },
     methods: {
         plotModeChange(newMode) {
@@ -499,17 +498,6 @@ export default {
                 console.error("Error reading material data")
                 console.error(error)
             }
-        },
-        insertMas() {
-            const url = import.meta.env.VITE_API_ENDPOINT + '/insert_mas'
-
-            this.$axios.post(url, this.masStore.mas)
-            .then(response => {
-            })
-            .catch(error => {
-                console.error("Error inserting")
-                console.error(error)
-            });
         },
     }
 }

@@ -1,7 +1,27 @@
 {
-  "name": "open-magnetics-web",
+  "name": "openmagnetics-web-frontend",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
+  "description": "Web frontend for openmagnetics.com — free, open-source magnetics design: advisers, converter wizards, simulation and export, powered by the MKF C++ engine compiled to WebAssembly.",
+  "license": "MIT",
+  "author": "OpenMagnetics",
+  "homepage": "https://openmagnetics.com",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/OpenMagnetics/WebFrontend.git"
+  },
+  "bugs": {
+    "url": "https://github.com/OpenMagnetics/WebFrontend/issues"
+  },
+  "keywords": [
+    "magnetics",
+    "transformer",
+    "inductor",
+    "power-electronics",
+    "magnetic-design",
+    "webassembly",
+    "vue"
+  ],
   "type": "module",
   "scripts": {
     "start": "vite",
