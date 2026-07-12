@@ -137,6 +137,16 @@ const routes = [
         component: () => import('../views/SharedInventory.vue')
     },
     {
+        path: '/orgs',
+        name: 'Organizations',
+        component: () => import('../views/Organizations.vue')
+    },
+    {
+        path: '/accept_invite',
+        name: 'AcceptInvite',
+        component: () => import('../views/AcceptInvite.vue')
+    },
+    {
         path: '/verify_email',
         name: 'VerifyEmail',
         component: () => import('../views/EmailAction.vue')

@@ -6,6 +6,8 @@ import { useTaskQueueStore } from '../stores/taskQueue'
 import { useAuthStore } from '../stores/auth'
 import { useCloudDesignStore } from '../stores/cloudDesign'
 import api from '../services/accountApi'
+import OrgSelector from '../components/User/OrgSelector.vue'
+import { useOrgContextStore } from '../stores/orgContext'
 import { loadMasIntoApp } from '../services/loadMasIntoApp'
 import { download } from 'WebSharedComponents/assets/js/utils.js'
 </script>
@@ -17,7 +19,9 @@ export default {
         const taskQueueStore = useTaskQueueStore();
         const authStore = useAuthStore();
         const cloudDesignStore = useCloudDesignStore();
+        const orgContextStore = useOrgContextStore();
         return {
+            orgContextStore,
             masStore,
             taskQueueStore,
             authStore,
@@ -43,7 +47,7 @@ export default {
         async refresh() {
             this.error = "";
             try {
-                const { data } = await api.get('/designs');
+                const { data } = await api.get('/designs' + this.orgContextStore.orgQuery);
                 this.designs = data.designs;
             } catch (error) {
                 this.error = "Could not load your designs: " + (error.response?.data?.detail || error.message);
@@ -66,7 +70,15 @@ export default {
             this.error = "";
             this.showSaveInput = false;
             try {
-                const result = await this.cloudDesignStore.save(this.masStore.mas, name);
+                let result;
+                if (this.orgContextStore.selectedOrgId != null) {
+                    // Org designs belong to the organization; no local link.
+                    const { data } = await api.post('/designs' + this.orgContextStore.orgQuery,
+                        { name: name || this.defaultName(), mas: this.masStore.mas });
+                    result = data;
+                } else {
+                    result = await this.cloudDesignStore.save(this.masStore.mas, name);
+                }
                 if (result.schema_errors != null && result.schema_errors.length > 0) {
                     this.error = "Saved, but the design does not validate against the current MAS schema: "
                         + result.schema_errors[0];
@@ -177,7 +189,10 @@ export default {
   <div class="d-flex flex-column min-vh-100">
     <Header />
     <div class="container text-white mt-4 flex-grow-1" style="min-height: 60vh">
-        <h2 data-cy="MyDesigns-title" class="mb-4"><i class="pi pi-cloud mr-2"></i>My designs</h2>
+        <div class="d-flex align-items-center gap-3 mb-4 flex-wrap">
+            <h2 data-cy="MyDesigns-title" class="mb-0"><i class="pi pi-cloud mr-2"></i>My designs</h2>
+            <OrgSelector v-if="authStore.isLoggedIn" @changed="refresh" />
+        </div>
 
         <div v-if="loading" class="text-secondary">Loading…</div>
 

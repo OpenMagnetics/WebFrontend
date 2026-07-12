@@ -536,6 +536,16 @@ export default {
                             </li>
                             <li>
                                 <router-link
+                                    data-cy="Header-orgs-link"
+                                    class="dropdown-item nav-link w-100 px-2"
+                                    to="/orgs"
+                                    @click="openDropdown = null"
+                                >
+                                    <i class="mr-2 pi pi-building"></i>Organizations
+                                </router-link>
+                            </li>
+                            <li>
+                                <router-link
                                     data-cy="Header-account-link"
                                     class="dropdown-item nav-link w-100 px-2"
                                     to="/account"

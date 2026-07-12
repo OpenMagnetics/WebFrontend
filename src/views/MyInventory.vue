@@ -4,6 +4,8 @@ import Footer from '../components/Footer.vue'
 import { useAuthStore } from '../stores/auth'
 import { useInventoryStore, ENGINE_HAS_CONTEXT_ADVISERS } from '../stores/inventory'
 import api from '../services/accountApi'
+import OrgSelector from '../components/User/OrgSelector.vue'
+import { useOrgContextStore } from '../stores/orgContext'
 import { download } from 'WebSharedComponents/assets/js/utils.js'
 </script>
 
@@ -18,7 +20,9 @@ export default {
     data() {
         const authStore = useAuthStore();
         const inventoryStore = useInventoryStore();
+        const orgContextStore = useOrgContextStore();
         return {
+            orgContextStore,
             authStore,
             inventoryStore,
             PART_TYPES,
@@ -55,7 +59,7 @@ export default {
         async refresh() {
             this.error = "";
             try {
-                const { data } = await api.get('/inventory');
+                const { data } = await api.get('/inventory' + this.orgContextStore.orgQuery);
                 this.parts = data.parts;
                 await this.inventoryStore.fetchContext();
             } catch (error) {
@@ -65,7 +69,7 @@ export default {
         async addCatalogRef() {
             this.error = "";
             try {
-                await api.post('/inventory', {
+                await api.post('/inventory' + this.orgContextStore.orgQuery, {
                     part_type: this.refType, source: 'catalog', catalog_ref: this.refName.trim(),
                 });
                 this.refName = "";
@@ -103,7 +107,7 @@ export default {
             }
             try {
                 const text = await file.text();
-                const { data } = await api.post(`/inventory/import?part_type=${this.importType}`, text,
+                const { data } = await api.post(`/inventory/import?part_type=${this.importType}` + (this.orgContextStore.selectedOrgId ? `&org=${this.orgContextStore.selectedOrgId}` : ''), text,
                     { headers: { 'Content-Type': 'application/x-ndjson' } });
                 const withIssues = data.imported.filter((r) => r.schema_errors.length > 0).length;
                 this.info = `Imported ${data.imported.length} ${TYPE_LABELS[this.importType].toLowerCase()} records`
@@ -118,11 +122,19 @@ export default {
         },
         async exportNdjson(partType) {
             try {
-                const { data } = await api.get(`/inventory/export.ndjson?part_type=${partType}`,
+                const { data } = await api.get(`/inventory/export.ndjson?part_type=${partType}` + (this.orgContextStore.selectedOrgId ? `&org=${this.orgContextStore.selectedOrgId}` : ''),
                     { responseType: 'text' });
                 download(data, `my-inventory-${partType}s.ndjson`, "application/x-ndjson");
             } catch (error) {
                 this.error = "Export failed: " + (error.response?.data?.detail || error.message);
+            }
+        },
+        async approvePart(part) {
+            try {
+                await api.patch(`/inventory/${part.id}`, { lifecycle: 'approved' });
+                await this.refresh();
+            } catch (error) {
+                this.error = "Could not approve: " + (error.response?.data?.detail || error.message);
             }
         },
         async deletePart(part) {
@@ -149,6 +161,7 @@ export default {
     <div class="container text-white mt-4 flex-grow-1" style="min-height: 60vh">
         <div class="d-flex align-items-center gap-3 mb-4">
             <h2 data-cy="MyInventory-title" class="mb-0"><i class="pi pi-box mr-2"></i>My inventory</h2>
+            <OrgSelector v-if="authStore.isLoggedIn" @changed="refresh" />
             <button v-if="authStore.isLoggedIn && parts.length > 0"
                     data-cy="MyInventory-share-button"
                     class="p-button p-button-outlined p-button-sm"
@@ -233,11 +246,18 @@ export default {
                             <tbody>
                                 <tr v-for="part in partsOfType(partType)" :key="part.id">
                                     <td>{{ part.name }}</td>
-                                    <td><span class="badge" :class="part.source === 'private' ? 'bg-primary' : 'bg-secondary'">{{ part.source }}</span></td>
+                                    <td><span class="badge" :class="part.source === 'private' ? 'bg-primary' : 'bg-secondary'">{{ part.source }}</span>
+                                        <span v-if="part.lifecycle && part.lifecycle !== 'approved'" class="badge bg-warning text-dark ms-1">{{ part.lifecycle }}</span></td>
                                     <td>{{ part.stock_qty ?? '—' }}</td>
                                     <td>{{ part.order_code ?? '—' }}</td>
                                     <td class="text-truncate" style="max-width: 16rem">{{ part.notes ?? '' }}</td>
                                     <td class="text-end">
+                                        <button v-if="part.lifecycle === 'draft' && orgContextStore.isLibrarian"
+                                                class="p-button p-button-outlined p-button-sm me-1"
+                                                :data-cy="`MyInventory-approve-${part.name}`"
+                                                @click="approvePart(part)" title="Approve for adviser use">
+                                            <i class="pi pi-check"></i>
+                                        </button>
                                         <button class="p-button p-button-outlined p-button-danger p-button-sm"
                                                 :data-cy="`MyInventory-delete-${part.name}`"
                                                 @click="deletePart(part)" title="Remove"><i class="pi pi-trash"></i></button>
