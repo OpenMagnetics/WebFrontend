@@ -174,17 +174,21 @@ export default {
                 });
             }
             
-            // Leakage inductance (for transformers)
+            // Leakage inductance (for transformers). All values are referred to the
+            // primary winding (web bug report #134: a user compared the displayed value
+            // against a secondary-side measurement — off by the turns ratio squared).
             if (outputs?.leakageInductance?.leakageInductancePerWinding?.length > 0) {
-                const leak = outputs.leakageInductance.leakageInductancePerWinding[0];
-                const aux = formatInductance(leak.nominal || leak);
-                specs.push({
-                    parameter: 'Leakage Inductance',
-                    symbol: 'Llk',
-                    typ: removeTrailingZeroes(aux.label, 2),
-                    unit: aux.unit,
-                    conditions: 'Secondary shorted'
-                });
+                const leak = this.leakageForWinding(1);
+                if (leak != null) {
+                    const aux = formatInductance(leak.nominal || leak);
+                    specs.push({
+                        parameter: 'Leakage Inductance',
+                        symbol: 'Llk',
+                        typ: removeTrailingZeroes(aux.label, 2),
+                        unit: aux.unit,
+                        conditions: 'Referred to primary, secondary shorted'
+                    });
+                }
             }
             
             return specs;
@@ -504,7 +508,7 @@ export default {
             return windings.map((w, i) => {
                 const wLoss = outputs.windingLosses.windingLossesPerWinding[i];
                 const dcr = outputs.windingLosses.dcResistancePerWinding?.[i];
-                const leak = outputs.leakageInductance?.leakageInductancePerWinding?.[i - 1];
+                const leak = this.leakageForWinding(i);
                 
                 const ohmicLoss = wLoss?.ohmicLosses?.losses || 0;
                 const skinLoss = (wLoss?.skinEffectLosses?.lossesPerHarmonic || []).reduce((a, b) => a + b, 0);
@@ -614,6 +618,19 @@ export default {
         recordDesign({ event_type: 'design_report', source: 'adviser', mas: this.mas });
     },
     methods: {
+        // Per-winding leakage (referred to the primary) for winding index i, tolerating both
+        // producer shapes of outputs.leakageInductance.leakageInductancePerWinding:
+        // - current engine (winding-indexed, N entries, 0 at the primary slot)
+        // - legacy saved MAS (secondaries-only, N-1 entries)
+        // Returns null for the primary and when no value exists (web bug reports #125/#134/#139).
+        leakageForWinding(windingIndex) {
+            if (windingIndex === 0) return null;
+            const perWinding = this.mas?.outputs?.[0]?.leakageInductance?.leakageInductancePerWinding;
+            if (!perWinding?.length) return null;
+            const numberWindings = this.mas?.magnetic?.coil?.functionalDescription?.length || 0;
+            const isWindingIndexed = perWinding.length === numberWindings;
+            return perWinding[isWindingIndexed ? windingIndex : windingIndex - 1] ?? null;
+        },
         plotModeChange(newMode) {
             this.plotMode = newMode;
         },
@@ -993,7 +1010,7 @@ export default {
                                     <th>Winding</th>
                                     <th>DCR</th>
                                     <th>Loss</th>
-                                    <th>Leakage</th>
+                                    <th>Leakage (ref. primary)</th>
                                 </tr>
                             </thead>
                             <tbody>

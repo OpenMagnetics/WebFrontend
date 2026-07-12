@@ -630,7 +630,7 @@ export default {
                                 <div v-if="windingIndex == 0" class="col-2 p-0 m-0 border text-center pl-2">DC Res.</div>
                                 <div v-if="windingIndex == 0" class="col-3 p-0 m-0 border text-center pl-2">Curr. Density</div>
                                 <div v-if="windingIndex == 0" class="col-2 p-0 m-0 border text-center pl-2">Wind. Loss</div>
-                                <div v-if="windingIndex == 0" class="col-2 p-0 m-0 border text-center pl-2">Leak. Ind.</div>
+                                <div v-if="windingIndex == 0" class="col-2 p-0 m-0 border text-center pl-2" title="Referred to the primary winding">Leak. Ind. (ref. primary)</div>
 
                                 <div v-if="'outputsTable' in localTexts" class="col-3 p-0 m-0 border  text-left pl-2">{{localTexts.outputsTable.coil[operationPointIndex][windingIndex].dcResistance.text}}</div>
                                 <div v-if="'outputsTable' in localTexts" class="col-2 p-0 m-0 border text-center">{{localTexts.outputsTable.coil[operationPointIndex][windingIndex].dcResistance.value}}</div>

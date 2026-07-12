@@ -345,7 +345,7 @@ export default {
                                             <th>Winding</th>
                                             <th>DC Res.</th>
                                             <th>Wind. Loss</th>
-                                            <th>Leak. Ind.</th>
+                                            <th>Leak. Ind. (ref. primary)</th>
                                         </tr>
                                     </thead>
                                     <tbody>
