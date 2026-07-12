@@ -8,10 +8,7 @@ import { checkAndFixMas } from 'WebSharedComponents/assets/js/utils.js'
 // legacy spellings before anything validates the document.
 export function migrateLegacyMas(mas) {
     const requirements = mas?.inputs?.designRequirements;
-    if (requirements == null) {
-        return mas;
-    }
-    const insulation = requirements.insulation;
+    const insulation = requirements?.insulation;
     if (insulation != null) {
         const pollutionDegrees = { 'P1': 'PD1', 'P2': 'PD2', 'P3': 'PD3', 'P4': 'PD4' };
         if (insulation.pollutionDegree in pollutionDegrees) {
@@ -22,10 +19,29 @@ export function migrateLegacyMas(mas) {
             insulation.overvoltageCategory = overvoltageCategories[insulation.overvoltageCategory];
         }
     }
-    if (typeof requirements.wiringTechnology === 'string') {
+    if (typeof requirements?.wiringTechnology === 'string') {
         const lowercased = requirements.wiringTechnology.toLowerCase();
         if (['wound', 'printed', 'stamped', 'deposition'].includes(lowercased)) {
             requirements.wiringTechnology = lowercased;
+        }
+    }
+    // Old Outputs kept magnetizingInductance/leakageInductance at the top level;
+    // the current schema nests both under outputs[].inductance. The converter
+    // rejects the whole document otherwise (additionalProperties: false).
+    // magnetizingInductance is required inside InductanceOutput, so a leakage
+    // without it cannot be relocated — drop it (stale result; simulate recomputes).
+    for (const output of (Array.isArray(mas?.outputs) ? mas.outputs : [])) {
+        if (output == null) continue;
+        const legacyMagnetizing = output.magnetizingInductance;
+        const legacyLeakage = output.leakageInductance;
+        if (legacyMagnetizing == null && legacyLeakage == null) continue;
+        delete output.magnetizingInductance;
+        delete output.leakageInductance;
+        if (output.inductance == null && legacyMagnetizing != null) {
+            output.inductance = { magnetizingInductance: legacyMagnetizing };
+            if (legacyLeakage != null) {
+                output.inductance.leakageInductance = legacyLeakage;
+            }
         }
     }
     return mas;
