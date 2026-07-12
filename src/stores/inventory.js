@@ -1,9 +1,13 @@
 import { defineStore } from 'pinia'
 import api from '../services/accountApi'
 
-// The shipped engine (MKF main 0585475c, WebLibMKF 31f268c) carries the
-// 6-arg calculate_advised_*_with_context twins — 'only my inventory' is live.
-export const ENGINE_HAS_CONTEXT_ADVISERS = true;
+// Gate for the 'only my inventory' adviser scope. The engine EXPORTS the
+// calculate_advised_*_with_context twins, but MKF's LibraryContext flow is
+// not production-ready: with a replace-context loaded, the standard-cores
+// adviser still dereferences catalog shapes internally and throws
+// CORE_SHAPE_NOT_FOUND ('E 100/60/28') — reproduced live 2026-07-13,
+// ABT-filed to MKF. Flip when MKF's ctx flow survives a replace-context.
+export const ENGINE_HAS_CONTEXT_ADVISERS = false;
 
 // Account inventory (Phase 2): the user's approved-parts list, fetched from
 // the backend and fed to the WASM engine. Two integration modes, selected by
