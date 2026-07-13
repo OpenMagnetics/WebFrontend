@@ -375,7 +375,10 @@ router.beforeEach((to, from, next) => {
             preloadKirchhoff();
         }
         if (app.config.globalProperties.$mkf == null && to.name != "EngineLoader") {
-            app.config.globalProperties.$userStore.loadingPath = to.path
+            // fullPath, not path: emailed links (/reset_password?token=...,
+            // /accept_invite?id=..., share pages) must keep their query
+            // string across the engine-loader bounce.
+            app.config.globalProperties.$userStore.loadingPath = to.fullPath
             router.push(`${import.meta.env.BASE_URL}engine_loader`)
         }
         else if (app.config.globalProperties.$mkf == null && to.name == "EngineLoader") {
