@@ -304,6 +304,12 @@ export const useTaskQueueStore = defineStore('taskQueue', {
                 if (!ENGINE_HAS_CONTEXT_ADVISERS) {
                     throw new Error("Inventory-only advising needs the next engine update (gate in inventory.js)");
                 }
+                if (!inventoryStore.engineContextLoaded) {
+                    // Never advise from the full catalog while claiming 'only my
+                    // inventory' — if the context failed to load at engine init,
+                    // fail loudly instead.
+                    throw new Error("Adviser scope is 'only my inventory' but your inventory could not be loaded into the engine — sign in again or reload the page (see console for the original error).");
+                }
                 result = await mkf.calculate_advised_cores_with_context(
                     JSON.stringify(inputs), JSON.stringify(weights), count, modeString, '{}', true);
             } else {
@@ -411,6 +417,9 @@ export const useTaskQueueStore = defineStore('taskQueue', {
             if (inventoryStore.scope === 'only') {
                 if (!ENGINE_HAS_CONTEXT_ADVISERS) {
                     throw new Error("Inventory-only advising needs the next engine update (gate in inventory.js)");
+                }
+                if (!inventoryStore.engineContextLoaded) {
+                    throw new Error("Adviser scope is 'only my inventory' but your inventory could not be loaded into the engine — sign in again or reload the page (see console for the original error).");
                 }
                 result = await mkf.calculate_advised_magnetics_with_context(
                     JSON.stringify(inputs), JSON.stringify(transformedWeights), count, modeString, '{}', true);

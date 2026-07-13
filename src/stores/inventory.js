@@ -26,6 +26,10 @@ export const useInventoryStore = defineStore("inventory", {
             catalogRefs: null,
             fetchedAt: null,
             lastError: null,
+            // True only after library_context_load succeeded in the RUNNING
+            // engine. The 'only'-scope adviser routes refuse to run without it
+            // (an unloaded context would silently behave like the full catalog).
+            engineContextLoaded: false,
         };
     },
     getters: {
@@ -123,6 +127,7 @@ export const useInventoryStore = defineStore("inventory", {
                 console.error('[inventory] ' + this.lastError);
             }
             await mkf.library_context_load(JSON.stringify(payload), 'replace');
+            this.engineContextLoaded = true;
         },
         // One entry point for the app: bring the engine in line with the
         // current scope. Called after engine init and on scope changes.
@@ -153,6 +158,7 @@ export const useInventoryStore = defineStore("inventory", {
             this.catalogRefs = null;
             this.fetchedAt = null;
             this.lastError = null;
+            this.engineContextLoaded = false;
         },
     },
     persist: {
