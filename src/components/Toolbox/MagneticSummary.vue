@@ -43,6 +43,16 @@ export default {
         // render a loud "design incomplete" state — instead of crashing in the
         // mounted hook (reading magnetizingInductance off an undefined output)
         // or silently rendering a blank datasheet full of "N/A".
+        // The magnetizing-inductance output moved from the legacy top level of
+        // outputs[] into outputs[].inductance (current MAS schema). Read the
+        // current path first; keep the legacy fallback for in-memory documents
+        // that predate the load-time migration.
+        magnetizingInductanceOutput() {
+            const outputs = this.mas?.outputs?.[0];
+            return outputs?.inductance?.magnetizingInductance?.magnetizingInductance
+                ?? outputs?.magnetizingInductance?.magnetizingInductance
+                ?? null;
+        },
         missingRequirements() {
             const missing = [];
             const mas = this.mas;
@@ -56,7 +66,7 @@ export default {
             const outputs = mas.outputs?.[0];
             if (outputs == null) {
                 missing.push('computed outputs (magnetizing inductance, losses)');
-            } else if (outputs.magnetizingInductance?.magnetizingInductance == null) {
+            } else if (this.magnetizingInductanceOutput == null) {
                 missing.push('magnetizing inductance');
             }
             return missing;
@@ -102,8 +112,8 @@ export default {
             const params = [];
             const outputs = this.mas?.outputs?.[0];
 
-            if (outputs?.magnetizingInductance?.magnetizingInductance) {
-                const val = outputs.magnetizingInductance.magnetizingInductance.nominal || outputs.magnetizingInductance.magnetizingInductance;
+            if (this.magnetizingInductanceOutput != null) {
+                const val = this.magnetizingInductanceOutput.nominal || this.magnetizingInductanceOutput;
                 const aux = formatInductance(val);
                 params.push({ label: 'Inductance', value: removeTrailingZeroes(aux.label, 2), unit: aux.unit, icon: 'bi-infinity' });
             }
@@ -137,8 +147,8 @@ export default {
             const inputs = this.mas?.inputs?.operatingPoints?.[0];
             
             // Inductance
-            if (outputs?.magnetizingInductance?.magnetizingInductance) {
-                const val = outputs.magnetizingInductance.magnetizingInductance.nominal || outputs.magnetizingInductance.magnetizingInductance;
+            if (this.magnetizingInductanceOutput != null) {
+                const val = this.magnetizingInductanceOutput.nominal || this.magnetizingInductanceOutput;
                 const aux = formatInductance(val);
                 specs.push({
                     parameter: 'Magnetizing Inductance',

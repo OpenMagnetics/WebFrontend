@@ -119,6 +119,12 @@ export async function loadMasIntoApp(newMas, { masStore, stateStore, userStore, 
         }
     }
     stateStore.loadingDesign = true;
+    // Mark a design as loaded BEFORE navigating: MagneticTool's mount wipes
+    // the mas store (resetMas) whenever anyDesignLoaded is false — on a fresh
+    // browser or right after a STORE_VERSION_DATE wipe, that reset silently
+    // destroyed the document we just loaded (report: '2KW IH 19.3.json' →
+    // empty builder + 'Design incomplete' summary).
+    stateStore.designLoaded();
 
     if (route.path != `${import.meta.env.BASE_URL}magnetic_tool`) {
         userStore.loadingPath = `${import.meta.env.BASE_URL}magnetic_tool`;
