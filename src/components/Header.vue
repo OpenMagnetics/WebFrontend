@@ -324,9 +324,28 @@ export default {
 
         this._closeDropdownsBound = this.closeDropdowns.bind(this);
         document.addEventListener('click', this._closeDropdownsBound);
+
+        // The header is position:fixed, so page content clears it with a top
+        // offset. Its height is NOT constant: at ~1280px (and below the xl
+        // breakpoint) the nav wraps to two rows and grows to ~101px, while the
+        // offset assumed a fixed 60px — so the header covered the top of the
+        // page and swallowed clicks on the first row of controls (the Core
+        // Advise button; ABT #234). Publish the real height as
+        // --om-header-height so every offset tracks it instead of guessing.
+        const headerEl = document.getElementById('header_wrapper');
+        if (headerEl) {
+            const publishHeight = () => {
+                document.documentElement.style.setProperty(
+                    '--om-header-height', `${Math.ceil(headerEl.getBoundingClientRect().height)}px`);
+            };
+            publishHeight();
+            this._headerResizeObserver = new ResizeObserver(publishHeight);
+            this._headerResizeObserver.observe(headerEl);
+        }
     },
     beforeUnmount() {
         if (this._closeDropdownsBound) document.removeEventListener('click', this._closeDropdownsBound);
+        if (this._headerResizeObserver) this._headerResizeObserver.disconnect();
     }
 }
 </script>
@@ -1060,7 +1079,7 @@ export default {
     }
 
     .main {
-      margin-top: 60px;
+      margin-top: var(--om-header-height, 60px);
     }
     ::-webkit-scrollbar { height: 3px;}
     ::-webkit-scrollbar-button {  background-color: var(--p-light); }

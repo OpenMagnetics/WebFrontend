@@ -178,11 +178,14 @@ $dr-content-indent: 1.5rem;
    header/home glass-teal language.
    - Clears the fixed .om-header (padding, not margin on the
      child .container: Bootstrap's mt-* utilities are !important).
+     Tracks the real header height (--om-header-height, published by
+     Header.vue) + a small gap; the fixed 68px overlapped the two-row
+     header at ~1280px (ABT #234).
    - Primary actions = dark text on teal (the header's Load-MAS
      look); secondary = teal-outline chips with glow hovers.
    ============================================================ */
 .om-account-page {
-    padding-top: 68px;
+    padding-top: calc(var(--om-header-height, 60px) + 8px);
     background:
         radial-gradient(ellipse 90% 40% at 50% -5%, rgba(var(--p-primary-rgb), 0.07) 0%, transparent 60%);
 }

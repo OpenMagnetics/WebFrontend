@@ -104,7 +104,7 @@ export default {
         align-items: center !important;
     }
     .main {
-      margin-top: 60px;
+      margin-top: var(--om-header-height, 60px);
     }
     ::-webkit-scrollbar { height: 3px;}
     ::-webkit-scrollbar-button {  background-color: var(--p-light); }
