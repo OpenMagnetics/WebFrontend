@@ -1,6 +1,6 @@
 <script setup>
 import Module from '../../../assets/js/libCrossReferencers.wasm.js'
-import { toTitleCase, removeTrailingZeroes, processCoreTexts, deepCopy, downloadBase64asPDF, clean, download } from 'WebSharedComponents/assets/js/utils.js'
+import { toTitleCase, removeTrailingZeroes, processCoreTexts, coreTextsToLatex, deepCopy, downloadBase64asPDF, clean, download } from 'WebSharedComponents/assets/js/utils.js'
 import Core3DVisualizer from 'WebSharedComponents/Common/Core3DVisualizer.vue'
 import CoreSTPExporter from '../../Exporters/CoreSTPExporter.vue'
 import CoreStlExporter from '../../Exporters/CoreStlExporter.vue'
@@ -106,6 +106,11 @@ export default {
             download(JSON.stringify(masOnlyCore, null, 4), this.mas.magnetic.manufacturerInfo.reference + ".json", "text/plain");
             this.masExported = true
             setTimeout(() => this.masExported = false, 2000);
+        },
+        computeLatex() {
+            // Restored (lost in the 2023 tool-unification refactor): format the
+            // already-computed core report data as LaTeX for /process_latex.
+            return coreTextsToLatex(this.localTexts, this.mas?.magnetic?.manufacturerInfo?.reference);
         },
         exportPDF() {
             this.STPExported = true;

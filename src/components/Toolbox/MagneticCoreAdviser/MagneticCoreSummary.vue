@@ -1,7 +1,7 @@
 <script setup>
 import { useMasStore } from '../../../stores/mas'
 import { useTaskQueueStore } from '../../../stores/taskQueue'
-import { toTitleCase, removeTrailingZeroes, processCoreTexts, deepCopy, downloadBase64asPDF, clean, download } from 'WebSharedComponents/assets/js/utils.js'
+import { toTitleCase, removeTrailingZeroes, processCoreTexts, coreTextsToLatex, deepCopy, downloadBase64asPDF, clean, download } from 'WebSharedComponents/assets/js/utils.js'
 import { recordDesign } from 'WebSharedComponents/assets/js/telemetry.js'
 
 </script>
@@ -83,6 +83,11 @@ export default {
             download(JSON.stringify(masOnlyCore, null, 4), this.masStore.mas.magnetic.manufacturerInfo.reference + ".json", "text/plain");
             this.masExported = true
             setTimeout(() => this.masExported = false, 2000);
+        },
+        computeLatex() {
+            // Restored (lost in the 2023 tool-unification refactor): format the
+            // already-computed core report data as LaTeX for /process_latex.
+            return coreTextsToLatex(this.localTexts, this.masStore.mas?.magnetic?.manufacturerInfo?.reference);
         },
         exportPDF() {
             this.STPExported = true;
