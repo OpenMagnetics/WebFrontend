@@ -294,6 +294,16 @@ export default {
     },
     computed: {
     },
+    watch: {
+        // Any navigation closes the header menus. The dropdown <li>s stop
+        // click propagation (@click.stop), so the document-level closer never
+        // sees a click INSIDE a menu — without this, choosing a wizard or tool
+        // from a dropdown left that menu open, overlaying the destination page.
+        $route() {
+            this.closeDropdowns();
+            this.openWizardGroup = null;
+        },
+    },
     mounted() {
         this.$settingsStore.loadingGif = "/images/loading.gif";
 
