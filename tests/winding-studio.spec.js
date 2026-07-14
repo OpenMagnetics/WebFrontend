@@ -148,6 +148,9 @@ test.describe('Winding Studio P0', () => {
     const chips = studio.locator('.winding-studio-chip');
     await expect(chips).toHaveCount(parsed.magnetic.coil.functionalDescription.length);
 
+    // The fit badge reports the wound design fits.
+    await expect(studio.locator('[data-cy$="-WindingStudio-fit"]')).toHaveText(/✓ fits/);
+
     // Return crossings render dimmed (opacity 0.55) and are present for every
     // turn that carries additionalCoordinates.
     const nReturns = parsed.magnetic.coil.turnsDescription.reduce(
@@ -158,5 +161,68 @@ test.describe('Winding Studio P0', () => {
       nodes.filter((node) => Number(node.getAttribute('opacity')) === 0.55).length,
     );
     expect(dimmed).toBe(nReturns);
+  });
+
+  test('WS-4 dragging a winding chip onto a leg re-winds it there (full stack)', async ({ page }) => {
+    test.setTimeout(180000);
+    const parsed = JSON.parse(fs.readFileSync(MULTICOLUMN_FIXTURE, 'utf-8'));
+    await page.goto(`${BASE_URL}/winding_studio_dev`, { waitUntil: 'domcontentloaded', timeout: 20000 });
+    await page.waitForFunction(() => typeof window.__setStudioMas === 'function', null, { timeout: 60000 });
+    await page.evaluate((mas) => window.__setStudioMas(mas), parsed);
+    await expect(page.locator('.winding-studio').first()).toBeVisible({ timeout: 5000 });
+
+    // The fixture has the Secondary on the LEFT lateral leg (own x < 0).
+    const secondaryX = () => page.evaluate(() => {
+      const mas = window.__getStudioMas();
+      return (mas?.magnetic?.coil?.turnsDescription ?? [])
+        .filter((turn) => turn.winding === 'Secondary')
+        .map((turn) => turn.coordinates[0]);
+    });
+    expect((await secondaryX()).every((x) => x < 0)).toBe(true);
+
+    // Drag the Secondary chip onto a leg and wait for the WASM re-wind. The
+    // slot overlays only exist mid-drag, so start the drag, then aim at the
+    // requested column's slot.
+    async function dragSecondaryToColumn(columnIndex) {
+      const chip = page.locator('[data-cy="WindingStudioDev-WindingStudio-chip-Secondary"]');
+      const chipBox = await chip.boundingBox();
+      await page.mouse.move(chipBox.x + chipBox.width / 2, chipBox.y + chipBox.height / 2);
+      await page.mouse.down();
+      await page.mouse.move(chipBox.x + chipBox.width / 2 + 30, chipBox.y + chipBox.height / 2 + 30, { steps: 3 });
+      const slot = page.locator(`[data-studio-column="${columnIndex}"]`);
+      await expect(slot).toBeVisible({ timeout: 3000 });
+      const slotBox = await slot.boundingBox();
+      await page.mouse.move(slotBox.x + slotBox.width / 2, slotBox.y + slotBox.height / 2, { steps: 5 });
+      await page.mouse.up();
+      // Re-wind finished: busy overlay gone and no error banner.
+      await expect(page.locator('.winding-studio-busy')).not.toBeVisible({ timeout: 90000 });
+      const error = await page.evaluate(() => window.__getStudioError());
+      expect(error).toBeNull();
+    }
+
+    // 1. Onto the CENTER leg (column 0): secondary moves to the main window (+x).
+    await dragSecondaryToColumn(0);
+    await page.waitForFunction(() => {
+      const mas = window.__getStudioMas();
+      const turns = (mas?.magnetic?.coil?.turnsDescription ?? []).filter((t) => t.winding === 'Secondary');
+      return turns.length > 0 && turns.every((t) => t.coordinates[0] > 0);
+    }, null, { timeout: 30000 });
+    await ss(page, 'ws4-secondary-on-center');
+
+    // 2. Back onto the LEFT leg (column 2): secondary returns to negative x.
+    await dragSecondaryToColumn(2);
+    await page.waitForFunction(() => {
+      const mas = window.__getStudioMas();
+      const turns = (mas?.magnetic?.coil?.turnsDescription ?? []).filter((t) => t.winding === 'Secondary');
+      return turns.length > 0 && turns.every((t) => t.coordinates[0] < 0);
+    }, null, { timeout: 30000 });
+    await ss(page, 'ws4-secondary-back-left');
+
+    // The placement intent landed in the MAS (winding-level windingWindow).
+    const windingWindow = await page.evaluate(() => {
+      const mas = window.__getStudioMas();
+      return mas.magnetic.coil.functionalDescription.find((w) => w.name === 'Secondary').windingWindow;
+    });
+    expect(windingWindow).toBe(2);
   });
 });
