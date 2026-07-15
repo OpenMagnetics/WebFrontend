@@ -288,4 +288,57 @@ test.describe('Winding Studio P0', () => {
     }, null, { timeout: 90000 });
     await ss(page, 'ws5-builder-secondary-left');
   });
+
+  test('WS-6 builder: dragging a section boundary re-winds with new proportions', async ({ page }) => {
+    test.setTimeout(180000);
+    await goToMagneticTool(page);
+    await injectMas(page, MULTICOLUMN_FIXTURE, { heal: false, mountFirst: true });
+    await pause(page, 2000, 'mechanical: builder settle after injection');
+    const studio = await openStudio(page);
+
+    // Normalization: both windings in window 0, adjacent sections.
+    await page.waitForFunction(() => {
+      const pinia = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia;
+      const sections = pinia._s.get('mas').mas?.magnetic?.coil?.sectionsDescription ?? [];
+      return sections.filter((s) => s.type === 'conduction').length === 2;
+    }, null, { timeout: 60000 });
+
+    // The contract under test: boundary drag → studio re-derives the
+    // per-winding proportions → the builder re-winds with them. On this
+    // single-layer fixture the WOUND geometry is proportion-invariant
+    // (delimit_and_compact collapses each section to its actual layers), so
+    // the observable is the proportions reaching the wind call — the same
+    // knob the Alignment panel's proportion editor drives.
+    await page.evaluate(() => {
+      const pinia = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia;
+      const taskQueue = pinia._s.get('magneticBuilderTaskQueue');
+      window.__windProportions = [];
+      const original = taskQueue.wind;
+      taskQueue.wind = async function (...args) {
+        window.__windProportions.push(JSON.parse(JSON.stringify(args[2])));
+        return original.apply(this, args);
+      };
+    });
+
+    const boundary = studio.locator('[data-cy$="-WindingStudio-boundary"]').first();
+    await expect(boundary).toBeVisible({ timeout: 5000 });
+    const box = await boundary.boundingBox();
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(box.x + box.width / 2 + 15, box.y + box.height / 2, { steps: 5 });
+    await page.mouse.up();
+
+    // A re-wind fires with primary-heavier proportions and completes cleanly.
+    await page.waitForFunction(() => {
+      const calls = window.__windProportions ?? [];
+      return calls.length > 0 && calls[calls.length - 1][0] > 0.55;
+    }, null, { timeout: 60000 });
+    await page.waitForFunction(() => {
+      const pinia = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia;
+      const turns = pinia._s.get('mas').mas?.magnetic?.coil?.turnsDescription ?? [];
+      return turns.length === 36;
+    }, null, { timeout: 60000 });
+    await expect(studio.locator('[data-cy$="-WindingStudio-fit"]')).toHaveText(/✓ fits/, { timeout: 15000 });
+    await ss(page, 'ws6-boundary-resized');
+  });
 });
