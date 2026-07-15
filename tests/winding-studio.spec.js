@@ -460,5 +460,42 @@ test.describe('Winding Studio P0', () => {
     // Turns stayed inside the custom rectangle's vertical extent.
     expect(after.turnYMax - after.turnYMin).toBeLessThan(after.height);
     await ss(page, 'ws8-custom-rect');
+
+    // --- WS-9 part: the drawn rectangle is PINNED and survives a full re-wind ---
+
+    // Deselect (plain click on the transform body), then change the
+    // proportions via the boundary drag: a FULL wind runs, and the engine
+    // re-imposes the pinned rectangle after its compaction pass.
+    const moveZone = studio.locator('[data-cy$="-WindingStudio-transform-move"]');
+    await moveZone.click({ force: true });
+    await expect(moveZone).not.toBeVisible({ timeout: 5000 });
+
+    const boundary = studio.locator('[data-cy$="-WindingStudio-boundary"]').first();
+    await expect(boundary).toBeVisible({ timeout: 5000 });
+    const bBox = await boundary.boundingBox();
+    await page.mouse.move(bBox.x + bBox.width / 2, bBox.y + bBox.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(bBox.x + bBox.width / 2 + 12, bBox.y + bBox.height / 2, { steps: 5 });
+    await page.mouse.up();
+    await pause(page, 4000, 'mechanical: full re-wind settles');
+
+    const rewound = await primaryState();
+    expect(rewound.height).toBeLessThan(before.height * 0.7);   // pin survived
+    expect(rewound.layers).toBeGreaterThanOrEqual(2);
+    await ss(page, 'ws9-pin-survives-rewind');
+
+    // Clearing the custom layout returns to the automatic placement.
+    const clearChip = studio.locator('[data-cy$="-WindingStudio-clear-custom"]');
+    await expect(clearChip).toBeVisible({ timeout: 5000 });
+    await clearChip.click();
+    await page.waitForFunction((heightBefore) => {
+      const pinia = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia;
+      const coil = pinia._s.get('mas').mas?.magnetic?.coil ?? {};
+      const primary = (coil.sectionsDescription ?? []).find((s) => s.type === 'conduction' && s.partialWindings[0].winding === 'Primary');
+      return primary != null && primary.dimensions[1] > heightBefore * 0.8;
+    }, before.height, { timeout: 60000 });
+    const cleared = await primaryState();
+    expect(cleared.layers).toBe(1);
+    await ss(page, 'ws9-cleared');
   });
 });
