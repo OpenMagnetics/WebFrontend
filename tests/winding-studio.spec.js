@@ -42,35 +42,73 @@ async function goToMagneticTool(page) {
   await pause(page, 800, 'mechanical: settle');
 }
 
-async function injectMas(page, fixturePath) {
+async function injectMas(page, fixturePath, { heal = true, mountFirst = false } = {}) {
   const parsed = JSON.parse(fs.readFileSync(fixturePath, 'utf-8'));
 
-  await page.evaluate((parsedMas) => {
+  const selectBuilderState = (page_) => page_.evaluate(() => {
     const pinia = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia;
-    const mas = pinia._s.get('mas');
     const state = pinia._s.get('state');
-
-    let healing = false;
-    mas.$subscribe(() => {
-      if (healing) return;
-      const tdStripped = mas.mas?.magnetic?.coil?.turnsDescription == null && mas.mas?.magnetic?.coil;
-      if (tdStripped) {
-        healing = true;
-        mas.mas.magnetic = JSON.parse(JSON.stringify(parsedMas.magnetic));
-        healing = false;
-      }
-    });
-    mas.setMas(parsedMas);
-
     state.selectWorkflow?.('design');
     state.selectTool?.('magneticBuilder');
     state.setCurrentToolSubsection('magneticBuilder');
     state.setCurrentToolSubsectionStatus('designRequirements', true);
     state.setCurrentToolSubsectionStatus('operatingPoints', true);
-  }, parsed);
+  });
+
+  if (mountFirst) {
+    // Mount the builder BEFORE injecting: needed by tests that let the
+    // builder legitimately re-wind the fixture (no healing) — injecting
+    // before the tool mounts loses the race against its mount-time design
+    // reset. The magneticBuilderTaskQueue store existing means the builder
+    // machinery is up.
+    await selectBuilderState(page);
+    await page.waitForFunction(() => {
+      const pinia = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia;
+      return pinia._s.get('magneticBuilderTaskQueue') != null;
+    }, null, { timeout: 30000 });
+  }
+
+  await page.evaluate(([parsedMas, healFlag]) => {
+    const pinia = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia;
+    const mas = pinia._s.get('mas');
+
+    if (healFlag) {
+      // Keeps the fixture's wound coil in place against checkAndFixMas's
+      // strip-then-rewind. Do NOT use in tests that intentionally re-wind
+      // (the heal would revert the new placement).
+      let healing = false;
+      mas.$subscribe(() => {
+        if (healing) return;
+        const tdStripped = mas.mas?.magnetic?.coil?.turnsDescription == null && mas.mas?.magnetic?.coil;
+        if (tdStripped) {
+          healing = true;
+          mas.mas.magnetic = JSON.parse(JSON.stringify(parsedMas.magnetic));
+          healing = false;
+        }
+      });
+    }
+    mas.setMas(parsedMas);
+  }, [parsed, heal]);
+  if (!mountFirst) {
+    await selectBuilderState(page);
+  }
 
   await pause(page, 2500, 'mechanical: settle');
   return parsed;
+}
+
+// Drag a winding chip onto a core-leg drop slot. Slots only exist mid-drag,
+// so start the drag, then aim at the requested column's slot.
+async function dragChipToColumn(page, chipLocator, columnIndex) {
+  const chipBox = await chipLocator.boundingBox();
+  await page.mouse.move(chipBox.x + chipBox.width / 2, chipBox.y + chipBox.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(chipBox.x + chipBox.width / 2 + 30, chipBox.y + chipBox.height / 2 + 30, { steps: 3 });
+  const slot = page.locator(`[data-studio-column="${columnIndex}"]`);
+  await expect(slot).toBeVisible({ timeout: 3000 });
+  const slotBox = await slot.boundingBox();
+  await page.mouse.move(slotBox.x + slotBox.width / 2, slotBox.y + slotBox.height / 2, { steps: 5 });
+  await page.mouse.up();
 }
 
 async function openStudio(page) {
@@ -180,20 +218,9 @@ test.describe('Winding Studio P0', () => {
     });
     expect((await secondaryX()).every((x) => x < 0)).toBe(true);
 
-    // Drag the Secondary chip onto a leg and wait for the WASM re-wind. The
-    // slot overlays only exist mid-drag, so start the drag, then aim at the
-    // requested column's slot.
+    // Drag the Secondary chip onto a leg and wait for the WASM re-wind.
     async function dragSecondaryToColumn(columnIndex) {
-      const chip = page.locator('[data-cy="WindingStudioDev-WindingStudio-chip-Secondary"]');
-      const chipBox = await chip.boundingBox();
-      await page.mouse.move(chipBox.x + chipBox.width / 2, chipBox.y + chipBox.height / 2);
-      await page.mouse.down();
-      await page.mouse.move(chipBox.x + chipBox.width / 2 + 30, chipBox.y + chipBox.height / 2 + 30, { steps: 3 });
-      const slot = page.locator(`[data-studio-column="${columnIndex}"]`);
-      await expect(slot).toBeVisible({ timeout: 3000 });
-      const slotBox = await slot.boundingBox();
-      await page.mouse.move(slotBox.x + slotBox.width / 2, slotBox.y + slotBox.height / 2, { steps: 5 });
-      await page.mouse.up();
+      await dragChipToColumn(page, page.locator('[data-cy="WindingStudioDev-WindingStudio-chip-Secondary"]'), columnIndex);
       // Re-wind finished: busy overlay gone and no error banner.
       await expect(page.locator('.winding-studio-busy')).not.toBeVisible({ timeout: 90000 });
       const error = await page.evaluate(() => window.__getStudioError());
@@ -224,5 +251,41 @@ test.describe('Winding Studio P0', () => {
       return mas.magnetic.coil.functionalDescription.find((w) => w.name === 'Secondary').windingWindow;
     });
     expect(windingWindow).toBe(2);
+  });
+
+  test('WS-5 builder: dragging Secondary onto the left leg re-winds it there', async ({ page }) => {
+    test.setTimeout(180000);
+    await goToMagneticTool(page);
+    // No healing: the builder legitimately owns the coil here — it normalizes
+    // the injected fixture through its own (columns-aware) wind machinery,
+    // and the drag below must be able to CHANGE the result.
+    await injectMas(page, MULTICOLUMN_FIXTURE, { heal: false, mountFirst: true });
+    await pause(page, 2000, 'mechanical: builder settle after injection');
+    const studio = await openStudio(page);
+
+    // Wait for the builder's normalization rewind to settle: secondary wound
+    // (in window 0 → +x, since the fixture windings carry no windingWindow).
+    await page.waitForFunction(() => {
+      const pinia = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia;
+      const turns = pinia._s.get('mas').mas?.magnetic?.coil?.turnsDescription ?? [];
+      const secondary = turns.filter((t) => t.winding === 'Secondary');
+      return secondary.length > 0 && secondary.every((t) => t.coordinates[0] > 0);
+    }, null, { timeout: 60000 });
+    await ss(page, 'ws5-builder-normalized');
+
+    // Drag Secondary onto the LEFT lateral leg (column 2).
+    await dragChipToColumn(page, page.locator('[data-cy$="-WindingStudio-chip-Secondary"]').first(), 2);
+
+    // The placement round-trip (settings flip → core reprocess → bobbin regen →
+    // columns-aware rewind) moves every secondary turn to negative x.
+    await page.waitForFunction(() => {
+      const pinia = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia;
+      const mas = pinia._s.get('mas').mas;
+      const turns = mas?.magnetic?.coil?.turnsDescription ?? [];
+      const secondary = turns.filter((t) => t.winding === 'Secondary');
+      const intent = mas?.magnetic?.coil?.functionalDescription?.find((w) => w.name === 'Secondary')?.windingWindow;
+      return intent === 2 && secondary.length > 0 && secondary.every((t) => t.coordinates[0] < 0);
+    }, null, { timeout: 90000 });
+    await ss(page, 'ws5-builder-secondary-left');
   });
 });
