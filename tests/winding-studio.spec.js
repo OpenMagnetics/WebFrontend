@@ -341,4 +341,51 @@ test.describe('Winding Studio P0', () => {
     await expect(studio.locator('[data-cy$="-WindingStudio-fit"]')).toHaveText(/✓ fits/, { timeout: 15000 });
     await ss(page, 'ws6-boundary-resized');
   });
+
+  test('WS-7 builder: dragging a section edge sets its margin and re-winds', async ({ page }) => {
+    test.setTimeout(180000);
+    await goToMagneticTool(page);
+    await injectMas(page, MULTICOLUMN_FIXTURE, { heal: false, mountFirst: true });
+    await pause(page, 2000, 'mechanical: builder settle after injection');
+    const studio = await openStudio(page);
+
+    await page.waitForFunction(() => {
+      const pinia = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia;
+      const sections = pinia._s.get('mas').mas?.magnetic?.coil?.sectionsDescription ?? [];
+      return sections.filter((s) => s.type === 'conduction').length === 2;
+    }, null, { timeout: 60000 });
+
+    const primarySection = () => page.evaluate(() => {
+      const pinia = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia;
+      const sections = pinia._s.get('mas').mas?.magnetic?.coil?.sectionsDescription ?? [];
+      const primary = sections.find((s) => s.type === 'conduction' && s.partialWindings[0].winding === 'Primary');
+      return primary == null ? null : { margin: primary.margin ?? [0, 0], y: primary.coordinates[1] };
+    });
+    const before = await primarySection();
+    expect(before.margin[0] ?? 0).toBeLessThan(1e-6);
+
+    // Drag the Primary section's TOP edge DOWNWARD: the gap to the window wall
+    // becomes topOrLeft margin tape and the turns re-spread below it.
+    const edge = studio.locator('[data-cy$="-WindingStudio-edge-top"]').first();
+    await expect(edge).toBeVisible({ timeout: 5000 });
+    const box = await edge.boundingBox();
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2 + 20, { steps: 5 });
+    await page.mouse.up();
+
+    await page.waitForFunction(() => {
+      const pinia = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia;
+      const sections = pinia._s.get('mas').mas?.magnetic?.coil?.sectionsDescription ?? [];
+      const primary = sections.find((s) => s.type === 'conduction' && s.partialWindings[0].winding === 'Primary');
+      return primary != null && (primary.margin?.[0] ?? 0) > 0.0005;
+    }, null, { timeout: 60000 });
+    const after = await primarySection();
+    expect(after.margin[0]).toBeGreaterThan(0.0005);
+    // The turns don't need to re-pack here (24 x 0.855 mm fits the reduced
+    // span), so the observable is the section shifting AWAY from the margined
+    // top wall (physical y decreases by roughly half the margin).
+    expect(after.y).toBeLessThan(before.y - 0.0002);
+    await ss(page, 'ws7-margin-resized');
+  });
 });
