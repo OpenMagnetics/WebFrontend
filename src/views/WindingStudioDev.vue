@@ -112,6 +112,39 @@ async function placeWinding({ winding, columnIndex }) {
     }
 }
 
+async function resizeSectionRect({ sectionName, coordinates, dimensions }) {
+    // Free transform: write the custom rectangle into the section and re-flow
+    // layers+turns INSIDE it (no section recomputation, no compaction).
+    if (busy.value || masStore.mas.magnetic == null) {
+        return;
+    }
+    busy.value = true;
+    error.value = null;
+    try {
+        const mkf = await waitForMkf();
+        await mkf.ready;
+        const coil = deepCopy(masStore.mas.magnetic.coil);
+        const section = (coil.sectionsDescription ?? []).find((candidate) => candidate.name === sectionName);
+        if (section == null) {
+            throw new Error(`Section ${sectionName} not found`);
+        }
+        section.coordinates = coordinates;
+        section.dimensions = dimensions;
+        const columns = masStore.mas.magnetic.core?.processedDescription?.columns;
+        const resultRaw = await mkf.wind_layers_and_turns_with_columns(
+            JSON.stringify(coil), columns != null ? JSON.stringify(columns) : '');
+        throwIfException('wind_layers_and_turns_with_columns', resultRaw);
+        const rewound = JSON.parse(resultRaw);
+        masStore.mas = { ...masStore.mas, magnetic: { ...masStore.mas.magnetic, coil: rewound } };
+    }
+    catch (exception) {
+        error.value = String(exception?.message ?? exception);
+    }
+    finally {
+        busy.value = false;
+    }
+}
+
 onMounted(() => {
     // Test hooks: let Playwright inject a MAS / read errors without any UI.
     window.__setStudioMas = loadMas;
@@ -144,6 +177,7 @@ onBeforeUnmount(() => {
             :editable="true"
             :busy="busy"
             @placeWinding="placeWinding"
+            @resizeSectionRect="resizeSectionRect"
         />
     </div>
 </template>

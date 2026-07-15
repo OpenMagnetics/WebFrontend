@@ -388,4 +388,77 @@ test.describe('Winding Studio P0', () => {
     expect(after.y).toBeLessThan(before.y - 0.0002);
     await ss(page, 'ws7-margin-resized');
   });
+
+  test('WS-8 builder: custom section rectangle — shrink height, winder re-flows into 2 layers', async ({ page }) => {
+    test.setTimeout(180000);
+    await goToMagneticTool(page);
+    await injectMas(page, MULTICOLUMN_FIXTURE, { heal: false, mountFirst: true });
+    await pause(page, 2000, 'mechanical: builder settle after injection');
+    const studio = await openStudio(page);
+
+    await page.waitForFunction(() => {
+      const pinia = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia;
+      const sections = pinia._s.get('mas').mas?.magnetic?.coil?.sectionsDescription ?? [];
+      return sections.filter((s) => s.type === 'conduction').length === 2;
+    }, null, { timeout: 60000 });
+
+    const primaryState = () => page.evaluate(() => {
+      const pinia = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia;
+      const coil = pinia._s.get('mas').mas?.magnetic?.coil ?? {};
+      const primary = (coil.sectionsDescription ?? []).find((s) => s.type === 'conduction' && s.partialWindings[0].winding === 'Primary');
+      if (primary == null) return null;
+      const layers = (coil.layersDescription ?? []).filter((l) => l.type === 'conduction' && l.section === primary.name).length;
+      const turnYs = (coil.turnsDescription ?? []).filter((t) => t.winding === 'Primary').map((t) => t.coordinates[1]);
+      return { height: primary.dimensions[1], layers, turnYMin: Math.min(...turnYs), turnYMax: Math.max(...turnYs) };
+    });
+    const before = await primaryState();
+    expect(before.layers).toBe(1);
+
+    // Select the Primary section: the free-transform overlay appears.
+    await studio.locator('[data-cy$="-WindingStudio-section-Primary section 0"]').click({ force: true });
+    const south = studio.locator('[data-cy$="-WindingStudio-transform-s"]');
+    await expect(south).toBeVisible({ timeout: 5000 });
+
+    // 1. Drag the bottom edge UP by ~45% of the section height (24 turns no
+    //    longer fit in one column)...
+    const sectionBox = await studio.locator('[data-cy$="-WindingStudio-transform-move"]').boundingBox();
+    const south_ = await south.boundingBox();
+    await page.mouse.move(south_.x + south_.width / 2, south_.y + south_.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(south_.x + south_.width / 2, south_.y + south_.height / 2 - sectionBox.height * 0.45, { steps: 6 });
+    await page.mouse.up();
+    await page.waitForFunction((heightBefore) => {
+      const pinia = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia;
+      const coil = pinia._s.get('mas').mas?.magnetic?.coil ?? {};
+      const primary = (coil.sectionsDescription ?? []).find((s) => s.type === 'conduction' && s.partialWindings[0].winding === 'Primary');
+      return primary != null && primary.dimensions[1] < heightBefore * 0.7;
+    }, before.height, { timeout: 60000 });
+
+    // 2. ...then drag the EAST edge outward (the lateral resize) so the custom
+    //    rectangle is wide enough for a second radial layer, and the winder
+    //    re-flows the turns into it (sections are not recomputed).
+    const east = studio.locator('[data-cy$="-WindingStudio-transform-e"]');
+    await expect(east).toBeVisible({ timeout: 5000 });
+    const east_ = await east.boundingBox();
+    await page.mouse.move(east_.x + east_.width / 2, east_.y + east_.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(east_.x + east_.width / 2 + Math.max(12, sectionBox.width * 1.2), east_.y + east_.height / 2, { steps: 6 });
+    await page.mouse.up();
+
+    await page.waitForFunction(() => {
+      const pinia = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia;
+      const coil = pinia._s.get('mas').mas?.magnetic?.coil ?? {};
+      const primary = (coil.sectionsDescription ?? []).find((s) => s.type === 'conduction' && s.partialWindings[0].winding === 'Primary');
+      if (primary == null) return false;
+      const layers = (coil.layersDescription ?? []).filter((l) => l.type === 'conduction' && l.section === primary.name).length;
+      return layers >= 2;
+    }, null, { timeout: 60000 });
+
+    const after = await primaryState();
+    expect(after.height).toBeLessThan(before.height * 0.7);
+    expect(after.layers).toBeGreaterThanOrEqual(2);
+    // Turns stayed inside the custom rectangle's vertical extent.
+    expect(after.turnYMax - after.turnYMin).toBeLessThan(after.height);
+    await ss(page, 'ws8-custom-rect');
+  });
 });
