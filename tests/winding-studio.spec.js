@@ -23,6 +23,7 @@ import { BASE_URL, screenshot, pause } from './utils.js';
 
 const CLASSIC_FIXTURE = '/home/alf/OpenMagnetics/WebFrontend/MagneticBuilder/src/public/test_wound_coil.json';
 const MULTICOLUMN_FIXTURE = '/home/alf/OpenMagnetics/WebFrontend/tests/fixtures/multicolumn_e42_transformer.json';
+const TOROIDAL_FIXTURE = '/home/alf/OpenMagnetics/WebFrontend/tests/fixtures/toroidal_cmc_t2515.json';
 const ss = (page, name) => screenshot(page, 'winding-studio', name);
 
 function countTurnGlyphs(parsed) {
@@ -497,5 +498,63 @@ test.describe('Winding Studio P0', () => {
     const cleared = await primaryState();
     expect(cleared.layers).toBe(1);
     await ss(page, 'ws9-cleared');
+  });
+
+  test('WS-10 toroid: sector render + rotate drag re-winds at the new angle', async ({ page }) => {
+    test.setTimeout(180000);
+    const parsed = JSON.parse(fs.readFileSync(TOROIDAL_FIXTURE, 'utf-8'));
+    await page.goto(`${BASE_URL}/winding_studio_dev`, { waitUntil: 'domcontentloaded', timeout: 20000 });
+    await page.waitForFunction(() => typeof window.__setStudioMas === 'function', null, { timeout: 60000 });
+    await page.evaluate((mas) => window.__setStudioMas(mas), parsed);
+    const studio = page.locator('.winding-studio').first();
+    await expect(studio).toBeVisible({ timeout: 5000 });
+
+    // Render: ring + all sections as sector paths + one glyph per crossing.
+    const expectedTurnGlyphs = parsed.magnetic.coil.turnsDescription.reduce(
+      (count, turn) => count + 1 + (turn.additionalCoordinates?.length ?? 0), 0);
+    await expect(studio.locator('.winding-studio-turn')).toHaveCount(expectedTurnGlyphs, { timeout: 5000 });
+    await expect(studio.locator('path.winding-studio-section')).toHaveCount(parsed.magnetic.coil.sectionsDescription.length);
+    await ss(page, 'ws10-toroid-render');
+
+    const sectionTheta = () => page.evaluate(() => {
+      const section = window.__getStudioMas().magnetic.coil.sectionsDescription.find((s) => s.name === 'Winding 1 section 0');
+      return { theta: section.coordinates[1], span: section.dimensions[1] };
+    });
+    const before = await sectionTheta();
+
+    // Select Winding 1 via its first turn; the sector transform appears.
+    await studio.locator('.winding-studio-turn').first().click({ force: true });
+    await expect(studio.locator('[data-cy$="-WindingStudio-sector-rotate"]')).toBeVisible({ timeout: 5000 });
+
+    // Rotate the sector +30 degrees along its center-radius circle.
+    const points = await page.evaluate(() => {
+      const svg = document.querySelector('.winding-studio-svg');
+      const ctm = svg.getScreenCTM();
+      const mas = window.__getStudioMas();
+      const core = mas.magnetic.core.processedDescription;
+      const windowRadius = core.windingWindows[0].radialHeight * 1000;
+      const section = mas.magnetic.coil.sectionsDescription.find((s) => s.name === 'Winding 1 section 0');
+      const radius = windowRadius - section.coordinates[0] * 1000;
+      const toClient = (angleDegrees) => {
+        const angle = (angleDegrees * Math.PI) / 180;
+        return { x: radius * Math.cos(angle) * ctm.a + ctm.e, y: -radius * Math.sin(angle) * ctm.d + ctm.f };
+      };
+      const theta = section.coordinates[1];
+      return { from: toClient(theta), mid: toClient(theta + 15), to: toClient(theta + 30) };
+    });
+    await page.mouse.move(points.from.x, points.from.y);
+    await page.mouse.down();
+    await page.mouse.move(points.mid.x, points.mid.y, { steps: 4 });
+    await page.mouse.move(points.to.x, points.to.y, { steps: 4 });
+    await page.mouse.up();
+
+    await page.waitForFunction((thetaBefore) => {
+      const section = window.__getStudioMas()?.magnetic?.coil?.sectionsDescription?.find((s) => s.name === 'Winding 1 section 0');
+      return section != null && Math.abs(section.coordinates[1] - thetaBefore - 30) < 3;
+    }, before.theta, { timeout: 60000 });
+    const after = await sectionTheta();
+    expect(Math.abs(after.span - before.span)).toBeLessThan(1);
+    expect(await page.evaluate(() => window.__getStudioError())).toBeNull();
+    await ss(page, 'ws10-toroid-rotated');
   });
 });
