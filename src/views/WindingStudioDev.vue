@@ -112,7 +112,7 @@ async function placeWinding({ winding, columnIndex }) {
     }
 }
 
-async function resizeSectionRect({ sectionName, coordinates, dimensions }) {
+async function resizeSectionRect({ sectionName, coordinates, dimensions, margin = null }) {
     // Free transform: write the custom rectangle into the section and re-flow
     // layers+turns INSIDE it (no section recomputation, no compaction).
     if (busy.value || masStore.mas.magnetic == null) {
@@ -130,6 +130,9 @@ async function resizeSectionRect({ sectionName, coordinates, dimensions }) {
         }
         section.coordinates = coordinates;
         section.dimensions = dimensions;
+        if (margin != null) {
+            section.margin = margin;
+        }
         const columns = masStore.mas.magnetic.core?.processedDescription?.columns;
         const resultRaw = await mkf.wind_layers_and_turns_with_columns(
             JSON.stringify(coil), columns != null ? JSON.stringify(columns) : '');
