@@ -130,6 +130,8 @@ async function resizeSectionRect({ sectionName, coordinates, dimensions, margin 
         }
         section.coordinates = coordinates;
         section.dimensions = dimensions;
+        // Stale layer count would prevent re-packing into the new rectangle.
+        section.numberLayers = null;
         if (margin != null) {
             section.margin = margin;
         }
