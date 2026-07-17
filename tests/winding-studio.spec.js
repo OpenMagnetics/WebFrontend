@@ -515,6 +515,15 @@ test.describe('Winding Studio P0', () => {
       (count, turn) => count + 1 + (turn.additionalCoordinates?.length ?? 0), 0);
     await expect(studio.locator('.winding-studio-turn')).toHaveCount(expectedTurnGlyphs, { timeout: 5000 });
     await expect(studio.locator('path.winding-studio-section')).toHaveCount(parsed.magnetic.coil.sectionsDescription.length);
+
+    // Orientation matches the painter: MKF's export_svg wraps toroidal SVGs in
+    // scale(1,-1), so the displayed painter view has data y pointing DOWN the
+    // screen. The studio mirrors the same way — a turn at data (x, y) renders
+    // at SVG (x, +y) mm (unlike the two-piece view, which flips y).
+    const firstTurn = parsed.magnetic.coil.turnsDescription[0];
+    const firstGlyph = studio.locator('.winding-studio-turn').first();
+    expect(Number(await firstGlyph.getAttribute('cx'))).toBeCloseTo(firstTurn.coordinates[0] * 1000, 3);
+    expect(Number(await firstGlyph.getAttribute('cy'))).toBeCloseTo(firstTurn.coordinates[1] * 1000, 3);
     await ss(page, 'ws10-toroid-render');
 
     const sectionTheta = () => page.evaluate(() => {
@@ -537,8 +546,9 @@ test.describe('Winding Studio P0', () => {
       const section = mas.magnetic.coil.sectionsDescription.find((s) => s.name === 'Winding 1 section 0');
       const radius = windowRadius - section.coordinates[0] * 1000;
       const toClient = (angleDegrees) => {
+        // Painter-matched mirror: data y maps DOWN the screen for toroids.
         const angle = (angleDegrees * Math.PI) / 180;
-        return { x: radius * Math.cos(angle) * ctm.a + ctm.e, y: -radius * Math.sin(angle) * ctm.d + ctm.f };
+        return { x: radius * Math.cos(angle) * ctm.a + ctm.e, y: radius * Math.sin(angle) * ctm.d + ctm.f };
       };
       const theta = section.coordinates[1];
       return { from: toClient(theta), mid: toClient(theta + 15), to: toClient(theta + 30) };
@@ -556,6 +566,16 @@ test.describe('Winding Studio P0', () => {
     const after = await sectionTheta();
     expect(Math.abs(after.span - before.span)).toBeLessThan(1);
     expect(await page.evaluate(() => window.__getStudioError())).toBeNull();
+
+    // Regression: the re-flow used to drop every toroidal outer return
+    // crossing (additionalCoordinates) because rewind_layers_and_turns skipped
+    // delimit_and_compact_round_window, the only pass that generated them —
+    // "the toroid is missing the external turns" after any studio edit.
+    const additionalAfterRewind = await page.evaluate(() => {
+      const turns = window.__getStudioMas().magnetic.coil.turnsDescription;
+      return { total: turns.length, withAdditional: turns.filter((t) => t.additionalCoordinates?.length).length };
+    });
+    expect(additionalAfterRewind.withAdditional).toBe(additionalAfterRewind.total);
     await ss(page, 'ws10-toroid-rotated');
   });
 
