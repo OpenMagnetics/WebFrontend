@@ -24,6 +24,7 @@ import { BASE_URL, screenshot, pause } from './utils.js';
 const CLASSIC_FIXTURE = '/home/alf/OpenMagnetics/WebFrontend/MagneticBuilder/src/public/test_wound_coil.json';
 const MULTICOLUMN_FIXTURE = '/home/alf/OpenMagnetics/WebFrontend/tests/fixtures/multicolumn_e42_transformer.json';
 const TOROIDAL_FIXTURE = '/home/alf/OpenMagnetics/WebFrontend/tests/fixtures/toroidal_cmc_t2515.json';
+const CORRUPT_TOROID_FIXTURE = '/home/alf/OpenMagnetics/WebFrontend/tests/fixtures/toroidal_stale_pin_corrupt_t402416.json';
 const ss = (page, name) => screenshot(page, 'winding-studio', name);
 
 function countTurnGlyphs(parsed) {
@@ -556,5 +557,83 @@ test.describe('Winding Studio P0', () => {
     expect(Math.abs(after.span - before.span)).toBeLessThan(1);
     expect(await page.evaluate(() => window.__getStudioError())).toBeNull();
     await ss(page, 'ws10-toroid-rotated');
+  });
+
+  test('WS-11 a pinned section rect is dropped when the core shape changes', async ({ page }) => {
+    // Regression: a rect pinned on an E core (cartesian meters) used to survive
+    // an E->T shape change and get re-imposed on the toroid's polar section —
+    // meters read as degrees shrank the section to 0.005deg and silently wound
+    // 4 of 42 turns. The BasicCoilSelector shape watcher must clear the pins.
+    await goToMagneticTool(page);
+    await injectMas(page, CLASSIC_FIXTURE);
+
+    const pinned = await page.evaluate(() => {
+      const pinia = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia;
+      const mas = pinia._s.get('mas');
+      const studio = pinia._s.get('windingStudio');
+      const coil = mas.mas.magnetic.coil;
+      const section = (coil.sectionsDescription ?? []).find((s) => s.type === 'conduction');
+      if (section == null) {
+        throw new Error('fixture has no conduction section to pin');
+      }
+      const windowShape = coil.bobbin?.processedDescription?.windingWindows?.[0]?.shape ?? null;
+      studio.setCustomSectionRect(section.name, {
+        coordinates: section.coordinates.slice(0, 2),
+        dimensions: section.dimensions.slice(0, 2),
+        windowShape,
+      });
+      return { count: studio.customSectionCount, windowShape };
+    });
+    expect(pinned.count).toBe(1);
+    expect(pinned.windowShape).toBe('rectangular');
+
+    // Change the core shape identity (same mutation the shape dropdown makes).
+    await page.evaluate(() => {
+      const pinia = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia;
+      const shape = pinia._s.get('mas').mas.magnetic.core.functionalDescription.shape;
+      shape.family = 't';
+      shape.name = 'T 40/24/16';
+    });
+
+    await page.waitForFunction(() => {
+      const pinia = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia;
+      return pinia._s.get('windingStudio').customSectionCount === 0;
+    }, null, { timeout: 10000 });
+  });
+
+  test('WS-12 a MAS corrupted by a stale pin imports and re-winds whole', async ({ page }) => {
+    // Regression: the file a user exported after the WS-11 corruption (0.005deg
+    // secondary section, 4/42 secondary turns, windingLosses missing its
+    // required total) crashed the builder on import — the section-derived
+    // proportions rounded to [1, 0] and wind() threw "Turns not created", while
+    // the schema-invalid outputs blocked every simulate call. The import
+    // quarantine + degenerate-proportion guard must recover the full coil.
+    test.setTimeout(180000);
+    await page.goto(`${BASE_URL}/`, { waitUntil: 'domcontentloaded', timeout: 20000 });
+    await page.locator('[data-cy="Header-Load-MAS-file-button"]').setInputFiles(CORRUPT_TOROID_FIXTURE);
+    await page.waitForURL('**/magnetic_tool**', { timeout: 45000 });
+
+    await page.waitForFunction(() => {
+      const pinia = document.querySelector('#app').__vue_app__?.config?.globalProperties?.$pinia;
+      const coil = pinia?._s?.get('mas')?.mas?.magnetic?.coil;
+      const turns = coil?.turnsDescription;
+      if (!Array.isArray(turns)) return false;
+      const perWinding = {};
+      turns.forEach((turn) => { perWinding[turn.winding] = (perWinding[turn.winding] ?? 0) + 1; });
+      return perWinding.Primary === 42 && perWinding.Secondary === 42;
+    }, null, { timeout: 90000 });
+
+    // The degenerate 0.005deg section must be gone from the re-wound coil.
+    const spans = await page.evaluate(() => {
+      const pinia = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia;
+      const coil = pinia._s.get('mas').mas.magnetic.coil;
+      return (coil.sectionsDescription ?? [])
+        .filter((s) => s.type === 'conduction')
+        .map((s) => s.dimensions[1]);
+    });
+    for (const span of spans) {
+      expect(span).toBeGreaterThan(1);
+    }
+    await ss(page, 'ws12-corrupt-import-recovered');
   });
 });

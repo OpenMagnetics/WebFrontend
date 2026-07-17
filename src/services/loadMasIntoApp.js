@@ -1,4 +1,55 @@
 import { checkAndFixMas } from 'WebSharedComponents/assets/js/utils.js'
+import { Convert } from 'WebSharedComponents/assets/ts/MAS.ts'
+
+// Same null-stripping the MAS sentry applies before Convert validation:
+// quicktype optionals reject explicit null, and files exported by the app
+// carry plenty of them. Works on a deep copy — callers pass a throwaway.
+function stripNulls(value) {
+    if (Array.isArray(value)) {
+        value.forEach(stripNulls);
+        return value;
+    }
+    if (value && typeof value === 'object') {
+        for (const key of Object.keys(value)) {
+            if (value[key] === null || value[key] === 'null' || value[key] === undefined) {
+                delete value[key];
+            } else {
+                stripNulls(value[key]);
+            }
+        }
+    }
+    return value;
+}
+
+// Quarantine schema-invalid outputs at the import boundary. A file exported
+// mid-failure (e.g. windingLosses missing its required total after a partial
+// wind) otherwise poisons every later simulate/masAutocomplete call: the MAS
+// sentry validates the WHOLE document, so the stale outputs block the very
+// simulation that would replace them. Outputs are always recomputed live, so
+// dropping invalid ones loses nothing — but only drop them when they are
+// provably the problem: document invalid WITH outputs, valid WITHOUT.
+function quarantineInvalidOutputs(mas) {
+    if (!Array.isArray(mas.outputs) || mas.outputs.length === 0) {
+        return mas;
+    }
+    try {
+        Convert.toMas(JSON.stringify(stripNulls(JSON.parse(JSON.stringify(mas)))));
+        return mas;
+    } catch (originalError) {
+        try {
+            const probe = stripNulls(JSON.parse(JSON.stringify(mas)));
+            probe.outputs = [];
+            Convert.toMas(JSON.stringify(probe));
+        } catch (stillInvalid) {
+            // Outputs are not (or not the only) problem — leave the document
+            // untouched so the failure stays loud and points at the real field.
+            return mas;
+        }
+        console.warn(`Imported MAS has schema-invalid outputs — dropping them (simulation recomputes all outputs). Validation error: ${originalError.message}`);
+        mas.outputs = [];
+        return mas;
+    }
+}
 
 // Sessions saved by older frontend versions carry enum spellings the current
 // MAS schema rejects ('P2' instead of 'PD2', 'OVC-III' instead of 'III',
@@ -57,6 +108,7 @@ export async function loadMasIntoApp(newMas, { masStore, stateStore, userStore, 
     }
 
     migrateLegacyMas(newMas);
+    quarantineInvalidOutputs(newMas);
 
     const response = await checkAndFixMas(newMas, taskQueueStore);
 
