@@ -567,6 +567,16 @@ test.describe('Winding Studio P0', () => {
     await goToMagneticTool(page);
     await injectMas(page, CLASSIC_FIXTURE);
 
+    // The windingStudio store is instantiated by BasicCoilSelector's mount —
+    // wait for it (and for the fixture's sections to be in place) rather than
+    // racing the builder's mount timing.
+    await page.waitForFunction(() => {
+      const pinia = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia;
+      const mas = pinia._s.get('mas');
+      return pinia._s.get('windingStudio') != null
+        && (mas?.mas?.magnetic?.coil?.sectionsDescription ?? []).some((s) => s.type === 'conduction');
+    }, null, { timeout: 30000 });
+
     const pinned = await page.evaluate(() => {
       const pinia = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia;
       const mas = pinia._s.get('mas');
