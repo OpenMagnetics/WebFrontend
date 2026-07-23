@@ -394,7 +394,8 @@ export default {
                             description: thickness && thickness.label > 0
                                 ? `Apply ${material} (${removeTrailingZeroes(thickness.label, 2)} ${thickness.unit})` 
                                 : `Apply ${material}`,
-                            icon: 'bi-record-circle'
+                            icon: 'bi-record-circle',
+                            isolation: null
                         });
                     } else if (layerType === 'conduction') {
                         const partialWinding = layer.partialWindings?.[0];
@@ -432,7 +433,8 @@ export default {
                             step: stepNum++,
                             type: 'winding',
                             description: `Wind ${toTitleCase(windingName)}: ${turnsDisplay} turns${parallelInfo}${wireDesc}`,
-                            icon: 'bi-arrow-repeat'
+                            icon: 'bi-arrow-repeat',
+                            isolation: winding?.isolationSide ? toTitleCase(winding.isolationSide) : null
                         });
                     }
                 });
@@ -447,7 +449,8 @@ export default {
                             step: stepNum++,
                             type: 'insulation',
                             description: 'Apply insulation layer',
-                            icon: 'bi-record-circle'
+                            icon: 'bi-record-circle',
+                            isolation: null
                         });
                     } else if (sectionType === 'conduction') {
                         const partialWinding = section.partialWindings?.[0];
@@ -459,7 +462,8 @@ export default {
                             step: stepNum++,
                             type: 'winding',
                             description: `Wind ${toTitleCase(windingName)}: ${totalTurns} turns`,
-                            icon: 'bi-arrow-repeat'
+                            icon: 'bi-arrow-repeat',
+                            isolation: winding?.isolationSide ? toTitleCase(winding.isolationSide) : null
                         });
                     }
                 });
@@ -1048,6 +1052,9 @@ export default {
                             <i :class="'bi ' + step.icon"></i>
                         </div>
                         <div class="step-description">{{ step.description }}</div>
+                        <div v-if="step.isolation" class="step-isolation" :title="'Isolation side: ' + step.isolation">
+                            <i class="bi bi-shield-fill"></i>{{ step.isolation }}
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1485,6 +1492,21 @@ export default {
 .step-description {
     font-size: 11px;
     color: var(--p-white);
+}
+
+.step-isolation {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    font-size: 10px;
+    font-weight: 600;
+    color: rgb(var(--p-info-rgb));
+    background: rgba(var(--p-info-rgb), 0.12);
+    border-radius: 10px;
+    white-space: nowrap;
+    flex-shrink: 0;
 }
 
 /* Operating Point Excitation */
