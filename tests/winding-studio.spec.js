@@ -25,6 +25,7 @@ const CLASSIC_FIXTURE = '/home/alf/OpenMagnetics/WebFrontend/MagneticBuilder/src
 const MULTICOLUMN_FIXTURE = '/home/alf/OpenMagnetics/WebFrontend/tests/fixtures/multicolumn_e42_transformer.json';
 const TOROIDAL_FIXTURE = '/home/alf/OpenMagnetics/WebFrontend/tests/fixtures/toroidal_cmc_t2515.json';
 const CORRUPT_TOROID_FIXTURE = '/home/alf/OpenMagnetics/WebFrontend/tests/fixtures/toroidal_stale_pin_corrupt_t402416.json';
+const CATALOG_BOBBIN_FIXTURE = '/home/alf/OpenMagnetics/WebFrontend/tests/fixtures/multicolumn_e42_catalog_bobbin.json';
 const ss = (page, name) => screenshot(page, 'winding-studio', name);
 
 function countTurnGlyphs(parsed) {
@@ -665,5 +666,88 @@ test.describe('Winding Studio P0', () => {
       expect(span).toBeGreaterThan(1);
     }
     await ss(page, 'ws12-corrupt-import-recovered');
+  });
+
+  test('WS-13 builder: catalog bobbin + lateral drop appends an ad-hoc bobbin (two BOM items)', async ({ page }) => {
+    // A design with a real CATALOG bobbin (Bobbin E42/20). Dropping a winding
+    // on a lateral leg must KEEP the catalog part and add a generated ad-hoc
+    // bobbin for that leg: coil.bobbin becomes the MAS per-column ARRAY
+    // [catalog, lateral] — two BOM items. Dropping it back on the centre leg
+    // prunes the unused lateral part and collapses back to the plain catalog
+    // scalar (no phantom BOM items).
+    test.setTimeout(180000);
+    await goToMagneticTool(page);
+    await injectMas(page, CATALOG_BOBBIN_FIXTURE, { heal: false, mountFirst: true });
+    await pause(page, 2000, 'mechanical: builder settle after injection');
+    const studio = await openStudio(page);
+
+    const coilState = () => page.evaluate(() => {
+      const pinia = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia;
+      const coil = pinia._s.get('mas').mas?.magnetic?.coil ?? {};
+      const secondary = (coil.turnsDescription ?? []).filter((t) => t.winding === 'Secondary');
+      return {
+        bobbinIsArray: Array.isArray(coil.bobbin),
+        bobbinNames: Array.isArray(coil.bobbin) ? coil.bobbin.map((p) => p?.name ?? null) : [coil.bobbin?.name ?? null],
+        windingWindow: coil.functionalDescription?.find((w) => w.name === 'Secondary')?.windingWindow ?? null,
+        secondaryTurnCount: secondary.length,
+        secondaryAllPositive: secondary.length > 0 && secondary.every((t) => t.coordinates[0] > 0),
+        secondaryAllNegative: secondary.length > 0 && secondary.every((t) => t.coordinates[0] < 0),
+      };
+    });
+
+    // Normalization: everything wound in the catalog bobbin's window (+x),
+    // catalog part untouched.
+    await page.waitForFunction(() => {
+      const pinia = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia;
+      const turns = pinia._s.get('mas').mas?.magnetic?.coil?.turnsDescription ?? [];
+      const secondary = turns.filter((t) => t.winding === 'Secondary');
+      return secondary.length > 0 && secondary.every((t) => t.coordinates[0] > 0);
+    }, null, { timeout: 60000 });
+    const before = await coilState();
+    expect(before.bobbinIsArray).toBe(false);
+    expect(before.bobbinNames).toEqual(['Bobbin E42/20']);
+    await ss(page, 'ws13-catalog-normalized');
+
+    // Drag Secondary onto the LEFT lateral leg (column 2).
+    await dragChipToColumn(page, page.locator('[data-cy$="-WindingStudio-chip-Secondary"]').first(), 2);
+
+    // The array assembles ([catalog, ad-hoc lateral]), the placement intent
+    // points at the lateral part's merged window (index 1: one catalog window
+    // + first lateral window) and every secondary turn moves to negative x.
+    await page.waitForFunction(() => {
+      const pinia = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia;
+      const mas = pinia._s.get('mas').mas;
+      const coil = mas?.magnetic?.coil ?? {};
+      const secondary = (coil.turnsDescription ?? []).filter((t) => t.winding === 'Secondary');
+      return Array.isArray(coil.bobbin) && coil.bobbin.length === 2
+        && coil.functionalDescription?.find((w) => w.name === 'Secondary')?.windingWindow === 1
+        && secondary.length > 0 && secondary.every((t) => t.coordinates[0] < 0);
+    }, null, { timeout: 90000 });
+    const lateral = await coilState();
+    expect(lateral.bobbinNames[0]).toBe('Bobbin E42/20');
+    // The ad-hoc part carries exactly the dropped column's window.
+    const lateralPart = await page.evaluate(() => {
+      const pinia = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia;
+      return pinia._s.get('mas').mas.magnetic.coil.bobbin[1];
+    });
+    expect(lateralPart.processedDescription.windingWindows.length).toBe(1);
+    expect(lateralPart.processedDescription.windingWindows[0].column).toBe(2);
+    expect(lateralPart.processedDescription.windingWindows[0].coordinates[0]).toBeLessThan(0);
+    await ss(page, 'ws13-catalog-lateral');
+
+    // Back onto the CENTER leg: the unused ad-hoc part is pruned and the
+    // bobbin collapses back to the plain catalog scalar.
+    await dragChipToColumn(page, page.locator('[data-cy$="-WindingStudio-chip-Secondary"]').first(), 0);
+    await page.waitForFunction(() => {
+      const pinia = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia;
+      const coil = pinia._s.get('mas').mas?.magnetic?.coil ?? {};
+      const secondary = (coil.turnsDescription ?? []).filter((t) => t.winding === 'Secondary');
+      return !Array.isArray(coil.bobbin)
+        && coil.functionalDescription?.find((w) => w.name === 'Secondary')?.windingWindow === 0
+        && secondary.length > 0 && secondary.every((t) => t.coordinates[0] > 0);
+    }, null, { timeout: 90000 });
+    const restored = await coilState();
+    expect(restored.bobbinNames).toEqual(['Bobbin E42/20']);
+    await ss(page, 'ws13-catalog-back-center');
   });
 });
