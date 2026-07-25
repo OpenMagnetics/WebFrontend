@@ -44,21 +44,29 @@ async function attachNgspiceSubcircuit(mas) {
   return mas
 }
 
+// MKF's CoilAdviser keeps designs whose coil failed its validity filters in the result list, marked
+// by prefixing the reference (INVALID_COIL_REFERENCE_PREFIX in advisers/CoilAdviser.h) so the OM UI
+// can show WHY a slot is empty. They are not buildable designs — never offer them to Kirchhoff.
+export const INVALID_ADVISE_PREFIX = 'INVALID (failed validity filters): '
+export const masIsBuildable = (mas) =>
+  !(mas?.magnetic?.manufacturerInfo?.reference ?? '').startsWith(INVALID_ADVISE_PREFIX)
+const adviseIsValid = (a) => masIsBuildable(a?.mas)
+
 // Post the chosen design back to the Kirchhoff tab (interactive 'design' mode). `mas` is a full MAS
 // (inputs + magnetic); Kirchhoff binds mas.magnetic into the converter component and re-simulates.
+// ABT #260: refuses INVALID-marked (failed-validity-filter) designs — an unbuildable core+winding
+// must never leave OM, in either handoff mode.
 export async function sendMagneticToKirchhoff(mas) {
   if (!opener || !handoffRef) return false
+  if (!masIsBuildable(mas)) {
+    console.error('Kirchhoff handoff: refusing to send a design that failed MKF coil validity '
+                  + 'filters (not buildable):', mas?.magnetic?.manufacturerInfo?.reference)
+    return false
+  }
   const payload = await attachNgspiceSubcircuit(JSON.parse(JSON.stringify(mas)))  // plain data — postMessage needs structured-cloneable
   opener.postMessage({ source: 'openmagnetics', type: 'magnetic', ref: handoffRef, mas: payload }, openerOrigin || '*')
   return true
 }
-
-// MKF's CoilAdviser keeps designs whose coil failed its validity filters in the result list, marked
-// by prefixing the reference (INVALID_COIL_REFERENCE_PREFIX in advisers/CoilAdviser.h) so the OM UI
-// can show WHY a slot is empty. They are not buildable designs — never offer them to Kirchhoff.
-const INVALID_ADVISE_PREFIX = 'INVALID (failed validity filters): '
-const adviseIsValid = (a) =>
-  !(a?.mas?.magnetic?.manufacturerInfo?.reference ?? '').startsWith(INVALID_ADVISE_PREFIX)
 
 // 'advise' mode: post the WHOLE advise list back in one message — Kirchhoff renders it as a
 // candidate table (like its TAS-DB parts) and binds the row the user picks there. Each advise gets

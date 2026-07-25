@@ -8,7 +8,7 @@ import { removeTrailingZeroes, toTitleCase, deepCopy } from 'WebSharedComponents
 import { magneticAdviserWeights } from 'WebSharedComponents/assets/js/defaults.js'
 import Advise from './MagneticAdviser/Advise.vue'
 import AdviseDetails from './MagneticAdviser/AdviseDetails.vue'
-import { kirchhoffHandoff, sendMagneticToKirchhoff, sendMagneticListToKirchhoff } from '/src/composables/kirchhoffHandoff'
+import { kirchhoffHandoff, sendMagneticToKirchhoff, sendMagneticListToKirchhoff, masIsBuildable } from '/src/composables/kirchhoffHandoff'
 </script>
 
 <script>
@@ -62,6 +62,7 @@ export default {
             currentAdviseToShow: 0,
             detailMas: null,
             adviseDetailsVisible: false,
+            droppedInvalidAdvises: 0,
         }
     },
     computed: {
@@ -83,6 +84,16 @@ export default {
         }
         // If we already have advises cached, show them as up-to-date
         if (!this.adviseCacheStore.noMasAdvises()) {
+            // ABT #260: the advise cache is persisted — a cache written before the validity
+            // filter existed may still hold INVALID (failed-validity-filter) rows. Drop them.
+            const cached = this.adviseCacheStore.currentMasAdvises.filter((a) => masIsBuildable(a.mas));
+            this.droppedInvalidAdvises = this.adviseCacheStore.currentMasAdvises.length - cached.length;
+            if (this.droppedInvalidAdvises > 0) {
+                this.adviseCacheStore.currentMasAdvises = cached;
+                if (this.$userStore.magneticAdviserSelectedAdvise >= cached.length) {
+                    this.$userStore.magneticAdviserSelectedAdvise = cached.length > 0 ? 0 : null;
+                }
+            }
             this.dataUptoDate = true;
             this.currentAdviseToShow = this.adviseCacheStore.currentMasAdvises.length - 1;
         }
@@ -124,8 +135,21 @@ export default {
 
                         const data = aux["data"];
 
+                        // ABT #260: MKF keeps designs whose coil failed its validity filters in the
+                        // result list (reference prefixed 'INVALID (failed validity filters): ').
+                        // They are not buildable — never render them as selectable designs. The
+                        // dropped count stays visible in the UI so an empty/short list explains
+                        // itself instead of silently shrinking.
+                        const buildable = data.filter((datum) => masIsBuildable(datum.mas));
+                        this.droppedInvalidAdvises = data.length - buildable.length;
+                        if (this.droppedInvalidAdvises > 0) {
+                            console.warn(`Magnetic adviser: hiding ${this.droppedInvalidAdvises} design(s) that failed MKF coil validity filters:`,
+                                         data.filter((datum) => !masIsBuildable(datum.mas))
+                                             .map((datum) => datum.mas?.magnetic?.manufacturerInfo?.reference));
+                        }
+
                         this.adviseCacheStore.currentMasAdvises = [];
-                        data.forEach((datum) => {
+                        buildable.forEach((datum) => {
                             this.adviseCacheStore.currentMasAdvises.push(datum);
                         })
                         this.$userStore.magneticAdviserSelectedAdvise = 0;
@@ -139,10 +163,11 @@ export default {
                         // Kirchhoff 'advise' handoff: this tab exists only to run the adviser —
                         // post the whole list back (each with its NGSPICE subcircuit attached) and
                         // close; Kirchhoff shows the advises as a candidate table and binds the
-                        // row the user picks there.
-                        if (kirchhoffHandoff.value?.mode === 'advise'
-                            && this.adviseCacheStore.currentMasAdvises.length > 0) {
-                            await sendMagneticListToKirchhoff(this.adviseCacheStore.currentMasAdvises);
+                        // row the user picks there. Post the RAW list: sendMagneticListToKirchhoff
+                        // drops the INVALID rows itself and reports droppedInvalid, so Kirchhoff
+                        // can explain a short (or empty) candidate table.
+                        if (kirchhoffHandoff.value?.mode === 'advise' && data.length > 0) {
+                            await sendMagneticListToKirchhoff(data);
                             window.close();
                         }
 
@@ -366,6 +391,14 @@ export default {
 
                 <!-- Results Grid -->
                 <div v-else class="row g-3" style="max-height: calc(100vh - 220px); overflow-y: auto;">
+                    <!-- ABT #260: unbuildable (failed-validity-filter) designs are excluded from the
+                         pick list; say so instead of letting the list silently shrink. -->
+                    <div v-if="droppedInvalidAdvises > 0" class="col-12">
+                        <div class="dropped-invalid-note" :data-cy="dataTestLabel + '-dropped-invalid-advises'">
+                            <i class="pi pi-exclamation-triangle"></i>
+                            <span>{{ droppedInvalidAdvises }} advised design{{ droppedInvalidAdvises > 1 ? 's' : '' }} failed the coil validity filters (not buildable) and {{ droppedInvalidAdvises > 1 ? 'are' : 'is' }} not shown.</span>
+                        </div>
+                    </div>
                     <TransitionGroup name="card-fade">
                         <div
                             v-for="(advise, adviseIndex) in adviseCacheStore.currentMasAdvises"
@@ -586,6 +619,19 @@ export default {
 .optim-btn-outline-danger:hover:not(:disabled) {
     background: rgb(var(--p-danger-rgb) / 0.25);
     border-color: rgb(var(--p-danger-rgb) / 0.75);
+}
+
+/* ABT #260: note shown when failed-validity-filter designs are excluded from the pick list */
+.dropped-invalid-note {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    padding: 0.6rem 0.9rem;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    color: var(--p-warning);
+    background: rgba(var(--p-warning-rgb), 0.12);
+    border: 1px solid rgba(var(--p-warning-rgb), 0.45);
 }
 
 /* Transitions */
