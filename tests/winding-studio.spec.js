@@ -193,14 +193,14 @@ test.describe('Winding Studio P0', () => {
     // The fit badge reports the wound design fits.
     await expect(studio.locator('[data-cy$="-WindingStudio-fit"]')).toHaveText(/✓ fits/);
 
-    // Return crossings render dimmed (opacity 0.55) and are present for every
-    // turn that carries additionalCoordinates.
+    // Return crossings render shadowed (darker, .winding-studio-shadow) and
+    // are present for every turn that carries additionalCoordinates.
     const nReturns = parsed.magnetic.coil.turnsDescription.reduce(
       (count, turn) => count + (turn.additionalCoordinates?.length ?? 0),
       0,
     );
     const dimmed = await turnGlyphs.evaluateAll((nodes) =>
-      nodes.filter((node) => Number(node.getAttribute('opacity')) === 0.55).length,
+      nodes.filter((node) => node.classList.contains('winding-studio-shadow')).length,
     );
     expect(dimmed).toBe(nReturns);
   });
