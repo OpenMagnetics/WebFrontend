@@ -1039,17 +1039,21 @@ test.describe('Winding Studio P0', () => {
   });
 
   // Groups editor: the wound-together partition (e.g. center-tapped halves).
-  // Engine constraints disable ineligible members with a reason; applying
-  // writes mutual woundWith; chips show the link marker; outside click applies.
-  test('WS-23 builder: groups editor winds windings together and ungroups', async ({ page }) => {
-    test.setTimeout(240000);
+  // Cross-side grouping JOINS the isolation sides; wire/parallels mismatches
+  // are refused with a visible reason; grouped windings move between legs as
+  // one; chips show the link marker; outside click applies.
+  test('WS-23 builder: groups editor winds windings together, joins sides, moves as one', async ({ page }) => {
+    test.setTimeout(300000);
     await goToMagneticTool(page);
     const parsed = JSON.parse(fs.readFileSync(MULTICOLUMN_FIXTURE, 'utf-8'));
-    // Third winding matching the Primary (a bias winding) — groupable with it.
-    // The Secondary stays on the other isolation side: NOT groupable.
+    // Third winding with a DIFFERENT wire — never groupable. The Secondary
+    // shares the Primary's wire but sits on the other isolation side —
+    // groupable, with the sides joining.
     const bias = JSON.parse(JSON.stringify(parsed.magnetic.coil.functionalDescription[0]));
     bias.name = 'Bias';
     bias.numberTurns = 6;
+    // Same object shape, different wire IDENTITY (name) — never groupable.
+    bias.wire.name = 'Round 0.475 - Grade 1';
     parsed.magnetic.coil.functionalDescription.push(bias);
     delete parsed.magnetic.coil.sectionsDescription;
     delete parsed.magnetic.coil.layersDescription;
@@ -1069,13 +1073,16 @@ test.describe('Winding Studio P0', () => {
       return sections.filter((s) => s.type === 'conduction').length === 3;
     }, null, { timeout: 90000 });
 
-    // Group Primary + Bias; the cross-barrier Secondary must be refused.
+    // Group Primary + Secondary (cross-side: allowed, sides join); the
+    // different-wire Bias is refused with a VISIBLE reason.
     await studio.locator('[data-cy$="-WindingStudio-groups"]').click();
     const menu = studio.locator('[data-cy$="-WindingStudio-groups-menu"]');
     await expect(menu).toBeVisible({ timeout: 3000 });
     await studio.locator('[data-cy$="-WindingStudio-group-0-Primary"]').click();
-    await studio.locator('[data-cy$="-WindingStudio-group-0-Bias"]').click();
-    await expect(studio.locator('[data-cy$="-WindingStudio-group-0-Secondary"]')).toBeDisabled();
+    await studio.locator('[data-cy$="-WindingStudio-group-0-Secondary"]').click();
+    await expect(studio.locator('[data-cy$="-WindingStudio-group-0-Bias"]')).toBeDisabled();
+    await expect(menu).toContainText(/Bias: needs the same wire/);
+    await expect(menu).toContainText(/isolation sides join/);
     await studio.locator('[data-cy$="-WindingStudio-groups-apply"]').click();
     await expect(menu).not.toBeVisible({ timeout: 3000 });
 
@@ -1083,25 +1090,40 @@ test.describe('Winding Studio P0', () => {
       const pinia = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia;
       const coil = pinia._s.get('mas').mas?.magnetic?.coil ?? {};
       const primary = coil.functionalDescription?.find((w) => w.name === 'Primary');
-      const biasWinding = coil.functionalDescription?.find((w) => w.name === 'Bias');
+      const secondary = coil.functionalDescription?.find((w) => w.name === 'Secondary');
       const shared = (coil.sectionsDescription ?? []).some(
         (s) => s.type === 'conduction' && (s.partialWindings ?? []).length === 2);
       const counts = {};
       (coil.turnsDescription ?? []).forEach((t) => { counts[t.winding] = (counts[t.winding] ?? 0) + 1; });
-      return primary?.woundWith?.includes('Bias') === true
-        && biasWinding?.woundWith?.includes('Primary') === true
-        && shared && counts.Primary === 24 && counts.Bias === 6 && counts.Secondary === 12;
+      return primary?.woundWith?.includes('Secondary') === true
+        && secondary?.woundWith?.includes('Primary') === true
+        && secondary?.isolationSide === 'primary'
+        && shared && counts.Primary === 24 && counts.Secondary === 12 && counts.Bias === 6;
     }, null, { timeout: 90000 });
 
     // Grouped chips carry the link marker; the ungrouped one does not.
     await expect(studio.locator('[data-cy$="-WindingStudio-chip-Primary"]')).toContainText('⛓');
-    await expect(studio.locator('[data-cy$="-WindingStudio-chip-Secondary"]')).not.toContainText('⛓');
+    await expect(studio.locator('[data-cy$="-WindingStudio-chip-Bias"]')).not.toContainText('⛓');
     await ss(page, 'ws23-grouped');
 
-    // Ungroup by removing Bias, applying via OUTSIDE CLICK.
+    // Group placement: dragging ONE member to the left leg moves BOTH.
+    await dragChipToColumn(page, studio.locator('[data-cy$="-WindingStudio-chip-Primary"]').first(), 2);
+    await page.waitForFunction(() => {
+      const pinia = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia;
+      const coil = pinia._s.get('mas').mas?.magnetic?.coil ?? {};
+      const primary = coil.functionalDescription?.find((w) => w.name === 'Primary');
+      const secondary = coil.functionalDescription?.find((w) => w.name === 'Secondary');
+      const turns = coil.turnsDescription ?? [];
+      const grouped = turns.filter((t) => t.winding === 'Primary' || t.winding === 'Secondary');
+      return primary?.windingWindow === 2 && secondary?.windingWindow === 2
+        && grouped.length > 0 && grouped.every((t) => t.coordinates[0] < 0);
+    }, null, { timeout: 120000 });
+    await ss(page, 'ws23-group-moved');
+
+    // Ungroup by removing Secondary, applying via OUTSIDE CLICK.
     await studio.locator('[data-cy$="-WindingStudio-groups"]').click();
     await expect(menu).toBeVisible({ timeout: 3000 });
-    await studio.locator('[data-cy$="-WindingStudio-group-0-Bias"]').click();
+    await studio.locator('[data-cy$="-WindingStudio-group-0-Secondary"]').click();
     await studio.locator('.winding-studio-title').click();
     await expect(menu).not.toBeVisible({ timeout: 3000 });
     await page.waitForFunction(() => {
