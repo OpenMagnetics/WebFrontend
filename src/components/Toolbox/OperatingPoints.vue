@@ -101,6 +101,18 @@ export default {
                         this.errorMessages += "Missing waveforms for winding " + this.masStore.mas.magnetic.coil.functionalDescription[windingIndex].name + " in operating point " + this.masStore.mas.inputs.operatingPoints[operatingPointIndex].name + ".\n"
                         allSet = false;
                     }
+                    else if (exc.current.processed?.rms == null) {
+                        // Every winding is SEEDED with a default excitation at
+                        // initialization, so the structural checks above pass
+                        // without the user ever looking at the winding. Actually
+                        // opening a winding's editor runs the MKF processing that
+                        // fills processed.rms — the same signal the winding
+                        // buttons use for their processed/unprocessed color.
+                        // Without it, Continue would silently design against a
+                        // default waveform nobody entered.
+                        this.errorMessages += "Waveforms for winding " + this.masStore.mas.magnetic.coil.functionalDescription[windingIndex].name + " in operating point " + this.masStore.mas.inputs.operatingPoints[operatingPointIndex].name + " have not been defined yet: open the winding to review or edit them.\n"
+                        allSet = false;
+                    }
                 }
             }
             return allSet;
@@ -108,6 +120,15 @@ export default {
     },
     created () {
 
+    },
+    watch: {
+        // The gate depends on fields (e.g. processed.rms) that are filled by
+        // direct store mutations, not store actions — the $onAction re-emit in
+        // mounted() never fires for those. Watching the computed keeps the
+        // Continue button in sync the moment a winding becomes processed.
+        canContinue(value) {
+            this.$emit("canContinue", value);
+        },
     },
     mounted () {
 

@@ -1018,4 +1018,152 @@ test.describe('Winding Studio P0', () => {
     expect(result.backStep).toBe('pre');
     expect(result.afterNewGesture).toBe('drag4');
   });
+
+  // N-filar grouping + parallels winding style: "Wind together (bifilar)"
+  // marks the pair as woundWith (mutual, shared sections); the section gear's
+  // Parallels select forces multifilar vs turn-by-turn for a winding with
+  // multiple parallels.
+  test('WS-21 builder: bifilar grouping and parallels winding style', async ({ page }) => {
+    test.setTimeout(240000);
+    await goToMagneticTool(page);
+    const parsed = JSON.parse(fs.readFileSync(MULTICOLUMN_FIXTURE, 'utf-8'));
+    // Two parallels on the Primary so the Parallels style knob applies, and a
+    // GROUPABLE pair: the engine requires wound-together windings to share
+    // parallels, isolation side and wire (think primary + bias, not primary +
+    // secondary across the barrier).
+    parsed.magnetic.coil.functionalDescription[0].numberParallels = 2;
+    parsed.magnetic.coil.functionalDescription[1].numberParallels = 2;
+    parsed.magnetic.coil.functionalDescription[1].isolationSide = parsed.magnetic.coil.functionalDescription[0].isolationSide;
+    parsed.magnetic.coil.functionalDescription[1].wire = JSON.parse(JSON.stringify(parsed.magnetic.coil.functionalDescription[0].wire));
+    delete parsed.magnetic.coil.sectionsDescription;
+    delete parsed.magnetic.coil.layersDescription;
+    delete parsed.magnetic.coil.turnsDescription;
+    const fixturePath = 'tests/fixtures/.ws21-tmp.json';
+    fs.writeFileSync(fixturePath, JSON.stringify(parsed));
+    try {
+      await injectMas(page, fixturePath, { heal: false, mountFirst: true });
+    } finally {
+      fs.unlinkSync(fixturePath);
+    }
+    await pause(page, 2000, 'mechanical: builder settle after injection');
+    const studio = await openStudio(page);
+    await page.waitForFunction(() => {
+      const pinia = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia;
+      const sections = pinia._s.get('mas').mas?.magnetic?.coil?.sectionsDescription ?? [];
+      return sections.filter((s) => s.type === 'conduction').length === 2;
+    }, null, { timeout: 60000 });
+
+    // 1. Parallels style: select the Primary section, force turn-by-turn.
+    await studio.locator('.winding-studio-turn[data-studio-winding="Primary"]').first().click();
+    const sectionGear = studio.locator('[data-cy$="-WindingStudio-section-gear"]');
+    await expect(sectionGear).toBeVisible({ timeout: 5000 });
+    await sectionGear.click();
+    const styleSelect = studio.locator('[data-cy$="-WindingStudio-section-winding-style"]');
+    await expect(styleSelect).toBeVisible({ timeout: 3000 });
+    await styleSelect.selectOption('windByConsecutiveTurns');
+    await studio.locator('[data-cy$="-WindingStudio-section-apply"]').click();
+    await page.waitForFunction(() => {
+      const pinia = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia;
+      const sections = pinia._s.get('mas').mas?.magnetic?.coil?.sectionsDescription ?? [];
+      const primary = sections.find((s) => s.type === 'conduction' && s.partialWindings[0].winding === 'Primary');
+      return primary?.windingStyle === 'windByConsecutiveTurns';
+    }, null, { timeout: 90000 });
+    await ss(page, 'ws21-winding-style');
+
+    // Deselect before the chip drag.
+    await studio.locator('.winding-studio-title').click();
+
+    // 2. Bifilar grouping: drop Secondary on Primary → "Wind together".
+    async function dropSecondaryOnPrimary() {
+      const chip = studio.locator('[data-cy$="-WindingStudio-chip-Secondary"]').first();
+      const chipBox = await chip.boundingBox();
+      await page.mouse.move(chipBox.x + chipBox.width / 2, chipBox.y + chipBox.height / 2);
+      await page.mouse.down();
+      await page.mouse.move(chipBox.x + chipBox.width / 2 + 30, chipBox.y + chipBox.height / 2 + 30, { steps: 3 });
+      const primaryTurn = studio.locator('.winding-studio-turn[data-studio-winding="Primary"]').first();
+      const turnBox = await primaryTurn.boundingBox();
+      await page.mouse.move(turnBox.x + turnBox.width / 2, turnBox.y + turnBox.height / 2, { steps: 5 });
+      await page.mouse.up();
+      await expect(page.locator('[data-cy$="-WindingStudio-interleave-menu"]')).toBeVisible({ timeout: 3000 });
+    }
+    await dropSecondaryOnPrimary();
+    await page.locator('[data-cy$="-WindingStudio-interleave-group"]').click();
+    await page.waitForFunction(() => {
+      const pinia = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia;
+      const coil = pinia._s.get('mas').mas?.magnetic?.coil ?? {};
+      const primary = coil.functionalDescription?.find((w) => w.name === 'Primary');
+      const secondary = coil.functionalDescription?.find((w) => w.name === 'Secondary');
+      const shared = (coil.sectionsDescription ?? []).some(
+        (s) => s.type === 'conduction' && (s.partialWindings ?? []).length === 2);
+      return primary?.woundWith?.includes('Secondary') === true
+        && secondary?.woundWith?.includes('Primary') === true
+        && shared;
+    }, null, { timeout: 90000 });
+    await ss(page, 'ws21-bifilar');
+
+    // 3. Ungroup: the menu now offers "Stop winding together".
+    await dropSecondaryOnPrimary();
+    await page.locator('[data-cy$="-WindingStudio-interleave-ungroup"]').click();
+    await page.waitForFunction(() => {
+      const pinia = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia;
+      const coil = pinia._s.get('mas').mas?.magnetic?.coil ?? {};
+      const primary = coil.functionalDescription?.find((w) => w.name === 'Primary');
+      const secondary = coil.functionalDescription?.find((w) => w.name === 'Secondary');
+      const sections = (coil.sectionsDescription ?? []).filter((s) => s.type === 'conduction');
+      return primary?.woundWith == null && secondary?.woundWith == null
+        && sections.length === 2 && sections.every((s) => (s.partialWindings ?? []).length === 1);
+    }, null, { timeout: 90000 });
+    await ss(page, 'ws21-ungrouped');
+  });
+
+  // Per-section gear (only while a section is selected): turns alignment +
+  // layers orientation for THAT section; cosmetic alignment labels (enum
+  // values untouched); click-outside closes the menu APPLYING the changes.
+  test('WS-20 builder: section gear sets per-section layout, applies on outside click', async ({ page }) => {
+    test.setTimeout(240000);
+    await goToMagneticTool(page);
+    await injectMas(page, MULTICOLUMN_FIXTURE, { heal: false, mountFirst: true });
+    await pause(page, 2000, 'mechanical: builder settle after injection');
+    const studio = await openStudio(page);
+    await page.waitForFunction(() => {
+      const pinia = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia;
+      const sections = pinia._s.get('mas').mas?.magnetic?.coil?.sectionsDescription ?? [];
+      return sections.filter((s) => s.type === 'conduction').length === 2;
+    }, null, { timeout: 60000 });
+
+    // Select the Primary section (clicking a turn selects its section) — the
+    // section gear appears only while selected.
+    const sectionGear = studio.locator('[data-cy$="-WindingStudio-section-gear"]');
+    await expect(sectionGear).not.toBeVisible();
+    await studio.locator('.winding-studio-turn[data-studio-winding="Primary"]').first().click();
+    await expect(sectionGear).toBeVisible({ timeout: 5000 });
+
+    await sectionGear.click();
+    const menu = studio.locator('[data-cy$="-WindingStudio-section-menu"]');
+    await expect(menu).toBeVisible({ timeout: 3000 });
+
+    // Cosmetic labels: with overlapping layers the 'innerOrTop' OPTION reads
+    // 'top' — while its VALUE stays the real enum.
+    const topOption = menu.locator('option[value="innerOrTop"]').first();
+    await expect(topOption).toHaveText('top');
+
+    // Pick 'innerOrTop' turns alignment, then click OUTSIDE the menu: it
+    // must close AND apply (re-wind with the new per-section alignment).
+    await studio.locator('[data-cy$="-WindingStudio-section-turns-alignment"]').selectOption('innerOrTop');
+    const primarySectionName = await page.evaluate(() => {
+      const pinia = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia;
+      return (pinia._s.get('mas').mas.magnetic.coil.sectionsDescription ?? [])
+        .find((s) => s.type === 'conduction' && s.partialWindings[0].winding === 'Primary').name;
+    });
+    await studio.locator('.winding-studio-title').click();
+    await expect(menu).not.toBeVisible({ timeout: 3000 });
+
+    await page.waitForFunction((sectionName) => {
+      const pinia = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia;
+      const layers = pinia._s.get('mas').mas?.magnetic?.coil?.layersDescription ?? [];
+      const sectionLayers = layers.filter((l) => l.type === 'conduction' && l.section === sectionName);
+      return sectionLayers.length > 0 && sectionLayers.every((l) => l.turnsAlignment === 'innerOrTop');
+    }, primarySectionName, { timeout: 90000 });
+    await ss(page, 'ws20-section-layout');
+  });
 });
