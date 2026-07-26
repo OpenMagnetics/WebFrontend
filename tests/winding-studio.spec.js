@@ -1038,6 +1038,82 @@ test.describe('Winding Studio P0', () => {
     await ss(page, 'ws22-auto-fit');
   });
 
+  // Groups editor: the wound-together partition (e.g. center-tapped halves).
+  // Engine constraints disable ineligible members with a reason; applying
+  // writes mutual woundWith; chips show the link marker; outside click applies.
+  test('WS-23 builder: groups editor winds windings together and ungroups', async ({ page }) => {
+    test.setTimeout(240000);
+    await goToMagneticTool(page);
+    const parsed = JSON.parse(fs.readFileSync(MULTICOLUMN_FIXTURE, 'utf-8'));
+    // Third winding matching the Primary (a bias winding) — groupable with it.
+    // The Secondary stays on the other isolation side: NOT groupable.
+    const bias = JSON.parse(JSON.stringify(parsed.magnetic.coil.functionalDescription[0]));
+    bias.name = 'Bias';
+    bias.numberTurns = 6;
+    parsed.magnetic.coil.functionalDescription.push(bias);
+    delete parsed.magnetic.coil.sectionsDescription;
+    delete parsed.magnetic.coil.layersDescription;
+    delete parsed.magnetic.coil.turnsDescription;
+    const fixturePath = 'tests/fixtures/.ws23-tmp.json';
+    fs.writeFileSync(fixturePath, JSON.stringify(parsed));
+    try {
+      await injectMas(page, fixturePath, { heal: false, mountFirst: true });
+    } finally {
+      fs.unlinkSync(fixturePath);
+    }
+    await pause(page, 2000, 'mechanical: builder settle after injection');
+    const studio = await openStudio(page);
+    await page.waitForFunction(() => {
+      const pinia = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia;
+      const sections = pinia._s.get('mas').mas?.magnetic?.coil?.sectionsDescription ?? [];
+      return sections.filter((s) => s.type === 'conduction').length === 3;
+    }, null, { timeout: 90000 });
+
+    // Group Primary + Bias; the cross-barrier Secondary must be refused.
+    await studio.locator('[data-cy$="-WindingStudio-groups"]').click();
+    const menu = studio.locator('[data-cy$="-WindingStudio-groups-menu"]');
+    await expect(menu).toBeVisible({ timeout: 3000 });
+    await studio.locator('[data-cy$="-WindingStudio-group-0-Primary"]').click();
+    await studio.locator('[data-cy$="-WindingStudio-group-0-Bias"]').click();
+    await expect(studio.locator('[data-cy$="-WindingStudio-group-0-Secondary"]')).toBeDisabled();
+    await studio.locator('[data-cy$="-WindingStudio-groups-apply"]').click();
+    await expect(menu).not.toBeVisible({ timeout: 3000 });
+
+    await page.waitForFunction(() => {
+      const pinia = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia;
+      const coil = pinia._s.get('mas').mas?.magnetic?.coil ?? {};
+      const primary = coil.functionalDescription?.find((w) => w.name === 'Primary');
+      const biasWinding = coil.functionalDescription?.find((w) => w.name === 'Bias');
+      const shared = (coil.sectionsDescription ?? []).some(
+        (s) => s.type === 'conduction' && (s.partialWindings ?? []).length === 2);
+      const counts = {};
+      (coil.turnsDescription ?? []).forEach((t) => { counts[t.winding] = (counts[t.winding] ?? 0) + 1; });
+      return primary?.woundWith?.includes('Bias') === true
+        && biasWinding?.woundWith?.includes('Primary') === true
+        && shared && counts.Primary === 24 && counts.Bias === 6 && counts.Secondary === 12;
+    }, null, { timeout: 90000 });
+
+    // Grouped chips carry the link marker; the ungrouped one does not.
+    await expect(studio.locator('[data-cy$="-WindingStudio-chip-Primary"]')).toContainText('⛓');
+    await expect(studio.locator('[data-cy$="-WindingStudio-chip-Secondary"]')).not.toContainText('⛓');
+    await ss(page, 'ws23-grouped');
+
+    // Ungroup by removing Bias, applying via OUTSIDE CLICK.
+    await studio.locator('[data-cy$="-WindingStudio-groups"]').click();
+    await expect(menu).toBeVisible({ timeout: 3000 });
+    await studio.locator('[data-cy$="-WindingStudio-group-0-Bias"]').click();
+    await studio.locator('.winding-studio-title').click();
+    await expect(menu).not.toBeVisible({ timeout: 3000 });
+    await page.waitForFunction(() => {
+      const pinia = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia;
+      const coil = pinia._s.get('mas').mas?.magnetic?.coil ?? {};
+      return coil.functionalDescription?.every((w) => w.woundWith == null)
+        && (coil.sectionsDescription ?? []).filter((s) => s.type === 'conduction')
+          .every((s) => (s.partialWindings ?? []).length === 1);
+    }, null, { timeout: 90000 });
+    await ss(page, 'ws23-ungrouped');
+  });
+
   // Undo coalescing: successive states carrying the same gesture key collapse
   // into ONE history entry, and back() lands on the pre-gesture state.
   test('WS-19 history coalesces same-gesture entries into one undo step', async ({ page }) => {
