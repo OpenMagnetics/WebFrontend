@@ -185,8 +185,9 @@ test.describe('Winding Studio P0', () => {
     expect(positions.some((x) => x < 0)).toBe(true);
     expect(positions.some((x) => x > 0)).toBe(true);
 
-    // Both windings appear in the legend.
-    const chips = studio.locator('.winding-studio-chip');
+    // Both windings appear in the legend (winding chips only — the toolbar
+    // also hosts Auto fit / gear chips with the same base class).
+    const chips = studio.locator('[data-cy*="-WindingStudio-chip-"]');
     await expect(chips).toHaveCount(parsed.magnetic.coil.functionalDescription.length);
 
     // The fit badge reports the wound design fits.
@@ -980,6 +981,55 @@ test.describe('Winding Studio P0', () => {
       expect(wedges).toBeGreaterThanOrEqual(2);
     }).toPass({ timeout: 10000 });
     await ss(page, 'ws18-margin-wedges');
+  });
+
+  // Auto fit: drops the drawn rectangles and re-winds with the engine's own
+  // wire-based per-winding proportions (24-turn primary vs 12-turn secondary
+  // on the same wire → ~[2/3, 1/3]).
+  test('WS-22 builder: Auto fit re-winds with wire-based proportions', async ({ page }) => {
+    test.setTimeout(240000);
+    await goToMagneticTool(page);
+    await injectMas(page, MULTICOLUMN_FIXTURE, { heal: false, mountFirst: true });
+    await pause(page, 2000, 'mechanical: builder settle after injection');
+    const studio = await openStudio(page);
+    await page.waitForFunction(() => {
+      const pinia = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia;
+      const sections = pinia._s.get('mas').mas?.magnetic?.coil?.sectionsDescription ?? [];
+      return sections.filter((s) => s.type === 'conduction').length === 2;
+    }, null, { timeout: 60000 });
+
+    await page.evaluate(() => {
+      const pinia = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia;
+      const taskQueue = pinia._s.get('magneticBuilderTaskQueue');
+      window.__windProportions = [];
+      const original = taskQueue.wind;
+      taskQueue.wind = async function (...args) {
+        window.__windProportions.push(JSON.parse(JSON.stringify(args[2])));
+        return original.apply(this, args);
+      };
+    });
+
+    // Skew the proportions away from auto with a boundary drag (primary smaller).
+    const boundary = studio.locator('[data-cy$="-WindingStudio-boundary"]').first();
+    await expect(boundary).toBeVisible({ timeout: 5000 });
+    const box = await boundary.boundingBox();
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(box.x + box.width / 2 - 15, box.y + box.height / 2, { steps: 5 });
+    await page.mouse.up();
+    await page.waitForFunction(() => {
+      const calls = window.__windProportions ?? [];
+      return calls.length > 0 && calls[calls.length - 1][0] < 0.45;
+    }, null, { timeout: 60000 });
+
+    // Auto fit restores the engine's wire-based split.
+    await studio.locator('[data-cy$="-WindingStudio-autofit"]').click();
+    await page.waitForFunction(() => {
+      const calls = window.__windProportions ?? [];
+      const last = calls[calls.length - 1];
+      return calls.length > 1 && Math.abs(last[0] - 2 / 3) < 0.08 && Math.abs(last[1] - 1 / 3) < 0.08;
+    }, null, { timeout: 60000 });
+    await ss(page, 'ws22-auto-fit');
   });
 
   // Undo coalescing: successive states carrying the same gesture key collapse
