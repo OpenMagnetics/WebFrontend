@@ -954,6 +954,9 @@ test.describe('Winding Studio P0', () => {
     // 1. Litz: Primary re-typed as litz — buildTurnViews only reads wire.type.
     const parsed = JSON.parse(fs.readFileSync(MULTICOLUMN_FIXTURE, 'utf-8'));
     parsed.magnetic.coil.functionalDescription[0].wire = { type: 'litz', strand: 'Round 0.1 - Grade 1', numberConductors: 60 };
+    // Margins in the schema's OBJECT form (marginInfo, as the Insulation panel
+    // writes them) must render tape exactly like the engine's array form.
+    parsed.magnetic.coil.sectionsDescription[0].margin = { topOrLeftWidth: 0.002, bottomOrRightWidth: 0.002 };
     await page.goto(`${BASE_URL}/winding_studio_dev`, { waitUntil: 'domcontentloaded', timeout: 20000 });
     await page.waitForFunction(() => typeof window.__setStudioMas === 'function', null, { timeout: 30000 });
     await page.evaluate((mas) => window.__setStudioMas(mas), parsed);
@@ -965,6 +968,9 @@ test.describe('Winding Studio P0', () => {
       .reduce((count, turn) => count + 1 + (turn.additionalCoordinates?.length ?? 0), 0);
     // 7 strands per Primary glyph, none for the plain Secondary.
     await expect(studio.locator('.winding-studio-litz-strand')).toHaveCount(primaryGlyphs * 7, { timeout: 5000 });
+    // Object-form margins draw tape (2 rects at margin opacity).
+    const marginRects = await studio.locator('rect[opacity="0.8"]').count();
+    expect(marginRects).toBeGreaterThanOrEqual(2);
     await ss(page, 'ws18-litz-strands');
 
     // 2. Toroid margin wedges: a conduction sector with margins grows the
