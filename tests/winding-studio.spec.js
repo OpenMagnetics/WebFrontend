@@ -750,4 +750,272 @@ test.describe('Winding Studio P0', () => {
     expect(restored.bobbinNames).toEqual(['Bobbin E42/20']);
     await ss(page, 'ws13-catalog-back-center');
   });
+
+  // Drag a winding chip onto another winding (turn or section) and pick an
+  // action from the {interleave, swap, clear} menu — PI Expert's gesture,
+  // driving the same pattern/repetitions knobs the Alignment panel edits.
+  test('WS-14 builder: chip-on-winding drop interleaves, swaps and clears', async ({ page }) => {
+    test.setTimeout(240000);
+    await goToMagneticTool(page);
+    await injectMas(page, MULTICOLUMN_FIXTURE, { heal: false, mountFirst: true });
+    await pause(page, 2000, 'mechanical: builder settle after injection');
+    const studio = await openStudio(page);
+
+    const conductionSections = () => page.evaluate(() => {
+      const pinia = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia;
+      return (pinia._s.get('mas').mas?.magnetic?.coil?.sectionsDescription ?? [])
+        .filter((s) => s.type === 'conduction')
+        .map((s) => s.partialWindings[0].winding);
+    });
+    await page.waitForFunction(() => {
+      const pinia = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia;
+      const sections = pinia._s.get('mas').mas?.magnetic?.coil?.sectionsDescription ?? [];
+      return sections.filter((s) => s.type === 'conduction').length === 2;
+    }, null, { timeout: 60000 });
+
+    // Drag the Secondary chip onto a Primary turn; the menu opens on release.
+    async function dropSecondaryOnPrimary() {
+      const chip = page.locator('[data-cy$="-WindingStudio-chip-Secondary"]').first();
+      const chipBox = await chip.boundingBox();
+      await page.mouse.move(chipBox.x + chipBox.width / 2, chipBox.y + chipBox.height / 2);
+      await page.mouse.down();
+      await page.mouse.move(chipBox.x + chipBox.width / 2 + 30, chipBox.y + chipBox.height / 2 + 30, { steps: 3 });
+      const primaryTurn = studio.locator('.winding-studio-turn[data-studio-winding="Primary"]').first();
+      const turnBox = await primaryTurn.boundingBox();
+      await page.mouse.move(turnBox.x + turnBox.width / 2, turnBox.y + turnBox.height / 2, { steps: 5 });
+      await page.mouse.up();
+      await expect(page.locator('[data-cy$="-WindingStudio-interleave-menu"]')).toBeVisible({ timeout: 3000 });
+    }
+
+    // 1. Interleave: repetitions 1 → 2, so 2 conduction sections become 4
+    //    alternating P/S.
+    await dropSecondaryOnPrimary();
+    await page.locator('[data-cy$="-WindingStudio-interleave-interleave"]').click();
+    await page.waitForFunction(() => {
+      const pinia = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia;
+      const sections = (pinia._s.get('mas').mas?.magnetic?.coil?.sectionsDescription ?? [])
+        .filter((s) => s.type === 'conduction');
+      return sections.length === 4;
+    }, null, { timeout: 90000 });
+    const interleaved = await conductionSections();
+    expect(interleaved.filter((name) => name === 'Primary').length).toBe(2);
+    expect(interleaved.filter((name) => name === 'Secondary').length).toBe(2);
+    await ss(page, 'ws14-interleaved');
+
+    // 2. Clear: back to one section per winding, natural order.
+    await dropSecondaryOnPrimary();
+    await page.locator('[data-cy$="-WindingStudio-interleave-clear"]').click();
+    await page.waitForFunction(() => {
+      const pinia = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia;
+      const sections = (pinia._s.get('mas').mas?.magnetic?.coil?.sectionsDescription ?? [])
+        .filter((s) => s.type === 'conduction');
+      return sections.length === 2 && sections[0].partialWindings[0].winding === 'Primary';
+    }, null, { timeout: 90000 });
+
+    // 3. Swap: the two sections change order (Secondary wound first).
+    await dropSecondaryOnPrimary();
+    await page.locator('[data-cy$="-WindingStudio-interleave-swap"]').click();
+    await page.waitForFunction(() => {
+      const pinia = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia;
+      const sections = (pinia._s.get('mas').mas?.magnetic?.coil?.sectionsDescription ?? [])
+        .filter((s) => s.type === 'conduction');
+      return sections.length === 2 && sections[0].partialWindings[0].winding === 'Secondary';
+    }, null, { timeout: 90000 });
+    await ss(page, 'ws14-swapped');
+  });
+
+  // The painter's H-field map as an aligned background layer behind the
+  // interactive SVG.
+  test('WS-15 builder: field overlay renders behind the studio', async ({ page }) => {
+    test.setTimeout(240000);
+    await goToMagneticTool(page);
+    await injectMas(page, MULTICOLUMN_FIXTURE, { heal: false, mountFirst: true });
+    await pause(page, 2000, 'mechanical: builder settle after injection');
+    const studio = await openStudio(page);
+    await page.waitForFunction(() => {
+      const pinia = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia;
+      return (pinia._s.get('mas').mas?.magnetic?.coil?.turnsDescription ?? []).length > 0;
+    }, null, { timeout: 60000 });
+
+    await studio.locator('[data-cy$="-WindingStudio-field"]').check();
+    const overlay = studio.locator('[data-cy$="-WindingStudio-field-overlay"]');
+    await expect(overlay).toBeVisible({ timeout: 120000 });
+    const width = Number(await overlay.getAttribute('width'));
+    const height = Number(await overlay.getAttribute('height'));
+    // Painter px / 30 = studio mm: the E42 overlay must be core-sized (~44 mm
+    // wide incl. the lateral return overhang), not degenerate or px-sized.
+    expect(width).toBeGreaterThan(20);
+    expect(width).toBeLessThan(200);
+    expect(height).toBeGreaterThan(20);
+    expect(height).toBeLessThan(200);
+    await ss(page, 'ws15-field-overlay');
+
+    // Toggling off removes the overlay and restores the decoration.
+    await studio.locator('[data-cy$="-WindingStudio-field"]').uncheck();
+    await expect(overlay).not.toBeVisible({ timeout: 5000 });
+  });
+
+  // Per-window sections layout: the window gear applies orientation/alignment
+  // to THAT window's bobbin entry and re-winds.
+  test('WS-16 builder: window gear sets sections orientation for the window', async ({ page }) => {
+    test.setTimeout(240000);
+    await goToMagneticTool(page);
+    await injectMas(page, MULTICOLUMN_FIXTURE, { heal: false, mountFirst: true });
+    await pause(page, 2000, 'mechanical: builder settle after injection');
+    const studio = await openStudio(page);
+    await page.waitForFunction(() => {
+      const pinia = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia;
+      const sections = pinia._s.get('mas').mas?.magnetic?.coil?.sectionsDescription ?? [];
+      return sections.filter((s) => s.type === 'conduction').length === 2;
+    }, null, { timeout: 60000 });
+
+    await studio.locator('[data-cy$="-WindingStudio-window-gear-0"]').click();
+    const menu = studio.locator('[data-cy$="-WindingStudio-window-menu"]');
+    await expect(menu).toBeVisible({ timeout: 3000 });
+    await studio.locator('[data-cy$="-WindingStudio-window-orientation"]').selectOption('contiguous');
+    await studio.locator('[data-cy$="-WindingStudio-window-apply"]').click();
+    await expect(menu).not.toBeVisible({ timeout: 3000 });
+
+    // The window entry carries the new orientation and the re-wound sections
+    // stack along y (contiguous) instead of x.
+    await page.waitForFunction(() => {
+      const pinia = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia;
+      const coil = pinia._s.get('mas').mas?.magnetic?.coil;
+      const window0 = coil?.bobbin?.processedDescription?.windingWindows?.[0];
+      const conduction = (coil?.sectionsDescription ?? []).filter((s) => s.type === 'conduction');
+      if (window0?.sectionsOrientation !== 'contiguous' || conduction.length !== 2) {
+        return false;
+      }
+      const [a, b] = conduction;
+      return Math.abs(a.coordinates[0] - b.coordinates[0]) < 1e-6
+        && Math.abs(a.coordinates[1] - b.coordinates[1]) > 1e-4;
+    }, null, { timeout: 90000 });
+    await ss(page, 'ws16-window-contiguous');
+  });
+
+  // Toroid polish: angular margin wedges render from the MAS margins, and the
+  // boundary between two adjacent sectors drags to new proportions.
+  test('WS-17 builder: toroid margin wedges + sector boundary proportions', async ({ page }) => {
+    test.setTimeout(240000);
+    await goToMagneticTool(page);
+    await injectMas(page, TOROIDAL_FIXTURE, { heal: false, mountFirst: true });
+    await pause(page, 2000, 'mechanical: builder settle after injection');
+    const studio = await openStudio(page);
+    await page.waitForFunction(() => {
+      const pinia = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia;
+      const sections = pinia._s.get('mas').mas?.magnetic?.coil?.sectionsDescription ?? [];
+      return sections.filter((s) => s.type === 'conduction').length >= 2;
+    }, null, { timeout: 60000 });
+
+    // Boundary drag: spy on the wind proportions like WS-6.
+    await page.evaluate(() => {
+      const pinia = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia;
+      const taskQueue = pinia._s.get('magneticBuilderTaskQueue');
+      window.__windProportions = [];
+      const original = taskQueue.wind;
+      taskQueue.wind = async function (...args) {
+        window.__windProportions.push(JSON.parse(JSON.stringify(args[2])));
+        return original.apply(this, args);
+      };
+    });
+    const boundary = studio.locator('[data-cy$="-WindingStudio-sector-boundary"]').first();
+    await expect(boundary).toBeVisible({ timeout: 5000 });
+    // The wedge is annular: its bounding-box center can miss the path, so
+    // compute exact screen points from the boundary's polar mid-point and
+    // rotate it 15° around the ring center.
+    const points = await page.evaluate(() => {
+      const svg = document.querySelector('.winding-studio-svg');
+      const el = document.querySelector('[data-cy$="-WindingStudio-sector-boundary"]');
+      const theta = (Number(el.getAttribute('data-theta')) * Math.PI) / 180;
+      const radius = Number(el.getAttribute('data-r-mid'));
+      const ctm = svg.getScreenCTM();
+      const toClient = (angle) => ({
+        x: ctm.a * radius * Math.cos(angle) + ctm.e,
+        y: ctm.d * radius * Math.sin(angle) + ctm.f,
+      });
+      return { from: toClient(theta), to: toClient(theta + (15 * Math.PI) / 180) };
+    });
+    await page.mouse.move(points.from.x, points.from.y);
+    await page.mouse.down();
+    await page.mouse.move(points.to.x, points.to.y, { steps: 8 });
+    await page.mouse.up();
+    await page.waitForFunction(() => {
+      const calls = window.__windProportions ?? [];
+      return calls.length > 0
+        && Math.abs(calls[calls.length - 1][0] - calls[calls.length - 1][1]) > 0.02;
+    }, null, { timeout: 60000 });
+    await ss(page, 'ws17-sector-boundary');
+  });
+
+  // Display-only polish, verified on the harness (no builder rewind in the
+  // loop): litz strand bundles and toroidal margin wedges.
+  test('WS-18 litz strand bundles + toroid margin wedges render', async ({ page }) => {
+    // 1. Litz: Primary re-typed as litz — buildTurnViews only reads wire.type.
+    const parsed = JSON.parse(fs.readFileSync(MULTICOLUMN_FIXTURE, 'utf-8'));
+    parsed.magnetic.coil.functionalDescription[0].wire = { type: 'litz', strand: 'Round 0.1 - Grade 1', numberConductors: 60 };
+    await page.goto(`${BASE_URL}/winding_studio_dev`, { waitUntil: 'domcontentloaded', timeout: 20000 });
+    await page.waitForFunction(() => typeof window.__setStudioMas === 'function', null, { timeout: 30000 });
+    await page.evaluate((mas) => window.__setStudioMas(mas), parsed);
+    const studio = page.locator('.winding-studio').first();
+    await expect(studio).toBeVisible({ timeout: 5000 });
+
+    const primaryGlyphs = parsed.magnetic.coil.turnsDescription
+      .filter((turn) => turn.winding === 'Primary')
+      .reduce((count, turn) => count + 1 + (turn.additionalCoordinates?.length ?? 0), 0);
+    // 7 strands per Primary glyph, none for the plain Secondary.
+    await expect(studio.locator('.winding-studio-litz-strand')).toHaveCount(primaryGlyphs * 7, { timeout: 5000 });
+    await ss(page, 'ws18-litz-strands');
+
+    // 2. Toroid margin wedges: a conduction sector with margins grows the
+    //    wedge layer (marginColor paths, pointer-events none).
+    const toroid = JSON.parse(fs.readFileSync(TOROIDAL_FIXTURE, 'utf-8'));
+    const conduction = toroid.magnetic.coil.sectionsDescription.find((s) => s.type === 'conduction');
+    conduction.margin = [0.002, 0.002];
+    await page.evaluate((mas) => window.__setStudioMas(mas), toroid);
+    await expect(async () => {
+      const wedges = await studio.locator('path').evaluateAll(
+        (nodes) => nodes.filter((node) => node.getAttribute('pointer-events') === 'none'
+          && node.getAttribute('opacity') === '0.8').length,
+      );
+      expect(wedges).toBeGreaterThanOrEqual(2);
+    }).toPass({ timeout: 10000 });
+    await ss(page, 'ws18-margin-wedges');
+  });
+
+  // Undo coalescing: successive states carrying the same gesture key collapse
+  // into ONE history entry, and back() lands on the pre-gesture state.
+  test('WS-19 history coalesces same-gesture entries into one undo step', async ({ page }) => {
+    await goToMagneticTool(page);
+    await pause(page, 1500, 'mechanical: builder settle');
+    const result = await page.evaluate(async () => {
+      const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+      const pinia = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia;
+      const history = pinia._s.get('history');
+      // The 100ms rebound blocker sits between real wind completions too.
+      history.unblockAdditions();
+      history.addToHistory({ step: 'base' });
+      await sleep(150);
+      history.addToHistory({ step: 'pre' });
+      await sleep(150);
+      const lengthBeforeGesture = history.masHistory.length;
+      history.addToHistory({ step: 'drag1' }, 'studio:test-gesture');
+      await sleep(150);
+      history.addToHistory({ step: 'drag2' }, 'studio:test-gesture');
+      await sleep(150);
+      history.addToHistory({ step: 'drag3' }, 'studio:test-gesture');
+      await sleep(150);
+      const grewBy = history.masHistory.length - lengthBeforeGesture;
+      const top = history.masHistory[history.historyPointer].step;
+      const backState = history.back();
+      // A NEW gesture after undo must not coalesce into the restored entry.
+      await sleep(150);
+      history.addToHistory({ step: 'drag4' }, 'studio:test-gesture');
+      const afterNewGesture = history.masHistory[history.historyPointer].step;
+      return { grewBy, top, backStep: backState.step, afterNewGesture };
+    });
+    expect(result.grewBy).toBe(1);
+    expect(result.top).toBe('drag3');
+    expect(result.backStep).toBe('pre');
+    expect(result.afterNewGesture).toBe('drag4');
+  });
 });
