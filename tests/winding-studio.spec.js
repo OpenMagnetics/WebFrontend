@@ -29,10 +29,17 @@ const CATALOG_BOBBIN_FIXTURE = '/home/alf/OpenMagnetics/WebFrontend/tests/fixtur
 const ss = (page, name) => screenshot(page, 'winding-studio', name);
 
 function countTurnGlyphs(parsed) {
-  return parsed.magnetic.coil.turnsDescription.reduce(
+  const turns = parsed.magnetic.coil.turnsDescription;
+  const base = turns.reduce(
     (count, turn) => count + 1 + (turn.additionalCoordinates?.length ?? 0),
     0,
   );
+  // Single-window coils carry no far-side crossings in the MAS (physics
+  // consumers would misread them); the studio synthesizes the center-leg
+  // mirror as display geometry — one extra shadowed glyph per turn.
+  const bobbin = parsed.magnetic.coil.bobbin;
+  const windowCount = (typeof bobbin === 'object' ? bobbin?.processedDescription?.windingWindows?.length : 1) ?? 1;
+  return windowCount <= 1 ? base + turns.length : base;
 }
 
 async function goToMagneticTool(page) {
