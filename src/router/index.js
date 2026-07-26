@@ -32,6 +32,13 @@ const routes = [
         component: () => import('../views/MagneticTool.vue')
     },
     {
+        // Winding Studio dev harness (winding-studio feature branch): mounts
+        // the studio without the builder machinery, for development + e2e.
+        path: '/winding_studio_dev',
+        name: 'WindingStudioDev',
+        component: () => import('../views/WindingStudioDev.vue')
+    },
+    {
         path: '/insulation_adviser',
         name: 'InsulationAdviser',
         component: () => import('../views/InsulationAdviser.vue')
