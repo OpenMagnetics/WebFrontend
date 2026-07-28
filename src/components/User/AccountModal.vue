@@ -110,7 +110,7 @@ export default {
             </div>
         </template>
         <div class="px-2 py-2">
-            <small class="text-secondary d-block mb-3">
+            <small class="text-color-secondary d-block mb-3">
                 Optional — everything keeps working without an account. Signing in adds cloud-saved
                 designs and, soon, your own parts inventory.
             </small>
@@ -123,7 +123,7 @@ export default {
                     type="email"
                     required
                     autocomplete="email"
-                    class="form-control bg-secondary text-white border-secondary"
+                    class="form-control"
                     placeholder="you@example.com"
                 />
                 <button
@@ -152,7 +152,7 @@ export default {
                     required
                     minlength="8"
                     :autocomplete="emailExists ? 'current-password' : 'new-password'"
-                    class="form-control bg-secondary text-white border-secondary"
+                    class="form-control"
                 />
                 <button
                     data-cy="AccountModal-submit-button"

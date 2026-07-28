@@ -69,7 +69,7 @@ export default {
     <div class="container text-white mt-5 flex-grow-1" style="max-width: 480px">
         <template v-if="mode === 'verify'">
             <h3 data-cy="EmailAction-title"><i class="pi pi-envelope mr-2"></i>Email verification</h3>
-            <div v-if="busy" class="text-secondary mt-3">Verifying…</div>
+            <div v-if="busy" class="text-color-secondary mt-3">Verifying…</div>
             <div v-else-if="done" data-cy="EmailAction-done" class="alert alert-success mt-3">
                 Your email is verified. You can now recover your password if you ever forget it.
             </div>
@@ -82,7 +82,7 @@ export default {
             <form v-else-if="token !== ''" @submit.prevent="submitReset" class="mt-3">
                 <input v-model="newPassword" data-cy="EmailAction-password-input" type="password" required minlength="8"
                        autocomplete="new-password" placeholder="New password (8+ characters)"
-                       class="form-control bg-secondary text-white border-secondary mb-2" />
+                       class="form-control mb-2" />
                 <button :disabled="busy || newPassword.length < 8" data-cy="EmailAction-submit-button"
                         type="submit" class="p-button p-button-primary">
                     <i v-if="busy" class="pi pi-refresh fa-spin mr-2"></i>Change password

@@ -166,6 +166,8 @@ button, input, select, textarea, optgroup, .btn, .form-control, a.p-button, butt
 .btn-outline-light:hover { background-color: rgba(var(--p-white-rgb), 0.1); }
 .btn-outline-danger { color: var(--p-danger); border-color: var(--p-danger); }
 .btn-outline-danger:hover { background-color: var(--p-danger); color: var(--p-white); }
+.btn-link { color: var(--p-primary); text-decoration: underline; }
+.btn-link:hover { color: var(--p-white); }
 .btn-sm  { padding: 0.25rem 0.5rem; font-size: 0.875rem; border-radius: var(--p-border-radius-sm); }
 .btn-lg  { padding: 0.5rem 1rem;    font-size: 1.25rem;  border-radius: var(--p-border-radius-lg); }
 .btn-group { display: inline-flex; }
@@ -397,6 +399,8 @@ a.p-button:disabled, button.p-button:disabled, a.p-button.disabled, button.p-but
 }
 .alert-dark   { color: var(--p-white); background-color: var(--p-dark);   border-color: rgba(var(--p-white-rgb), 0.15); }
 .alert-danger { color: var(--p-white); background-color: rgba(var(--p-danger-rgb), 0.25); border-color: var(--p-danger); }
+.alert-success{ color: var(--p-white); background-color: rgba(var(--p-success-rgb), 0.2);  border-color: var(--p-success); }
+.alert-info   { color: var(--p-white); background-color: rgba(var(--p-info-rgb), 0.2);     border-color: var(--p-info); }
 .alert-dismissible .btn-close { position: absolute; top: 0; right: 0; z-index: 2; padding: 1rem; }
 
 /* ========== Spinners ========== */
