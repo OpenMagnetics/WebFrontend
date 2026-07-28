@@ -1,5 +1,6 @@
 <script setup>
 import Core3DVisualizer from '/WebSharedComponents/Common/Core3DVisualizer.vue'
+import MaterialCurveEditor from './MaterialCurveEditor.vue'
 import { useTaskQueueStore } from '../../stores/taskQueue'
 import { useCustomPartsStore } from '../../stores/customParts'
 import { deepCopy } from 'WebSharedComponents/assets/js/utils.js'
@@ -37,6 +38,53 @@ function minimalMaterialRecord() {
 function emptySteinmetzRange() {
     return { minimumFrequency: 1, maximumFrequency: 1000000, k: null, alpha: null, beta: null, ct0: 1, ct1: 0, ct2: 0 };
 }
+
+// Every measured-curve property of the MAS coreMaterial schema (ABT #323).
+// The column lists mirror the schema point types exactly — permeabilityPoint,
+// bhCyclePoint and resistivityPoint — and their order is the paste order.
+const PERMEABILITY_COLUMNS = [
+    { key: 'value', label: 'μ', required: true },
+    { key: 'temperature', label: 'T (°C)', required: false },
+    { key: 'frequency', label: 'f (Hz)', required: false },
+    { key: 'magneticFieldDcBias', label: 'H DC (A/m)', required: false },
+    { key: 'magneticFluxDensityPeak', label: 'B peak (T)', required: false },
+    { key: 'magneticFieldPeak', label: 'H peak (A/m)', required: false },
+];
+const BH_COLUMNS = [
+    { key: 'magneticFluxDensity', label: 'B (T)', required: true },
+    { key: 'magneticField', label: 'H (A/m)', required: true },
+    { key: 'temperature', label: 'T (°C)', required: true },
+];
+const RESISTIVITY_COLUMNS = [
+    { key: 'value', label: 'ρ (Ω·m)', required: true },
+    { key: 'temperature', label: 'T (°C)', required: false },
+];
+const MATERIAL_CURVES = [
+    { path: 'permeability.initial', label: 'Initial permeability μi', columns: PERMEABILITY_COLUMNS, removable: false,
+      hint: 'Required. A single point with only μ is the scalar catalog value; add points vs temperature/frequency to make it a measured curve.' },
+    { path: 'permeability.amplitude', label: 'Amplitude permeability μa', columns: PERMEABILITY_COLUMNS, removable: true,
+      hint: 'Secant permeability at a given AC peak flux density — each point pins B peak, frequency and temperature.' },
+    { path: 'permeability.incremental', label: 'Incremental permeability μΔ (DC bias)', columns: PERMEABILITY_COLUMNS, removable: true,
+      hint: 'Small-signal permeability under DC bias — each point pins H DC. Needed for PFC chokes, output filters, flyback primaries.' },
+    { path: 'permeability.reversible', label: 'Reversible permeability μrev', columns: PERMEABILITY_COLUMNS, removable: true,
+      hint: 'Limit of μΔ as the AC excursion tends to zero, tabulated vs H DC.' },
+    { path: 'permeability.complex.real', label: 'Complex permeability μ′ (real part)', columns: PERMEABILITY_COLUMNS, removable: true,
+      hint: 'μ′ vs frequency — this is what CMC impedance work keys off. μ′ and μ″ form one curve: removing one removes both.' },
+    { path: 'permeability.complex.imaginary', label: 'Complex permeability μ″ (imaginary part)', columns: PERMEABILITY_COLUMNS, removable: true,
+      hint: 'μ″ vs frequency (the loss part). μ′ and μ″ form one curve: removing one removes both.' },
+    { path: 'saturation', label: 'Saturation B-H points', columns: BH_COLUMNS, removable: false,
+      hint: 'Required. B-H points characterising saturation, per temperature.' },
+    { path: 'bhCycle', label: 'B-H cycle', columns: BH_COLUMNS, removable: true,
+      hint: 'Full hysteresis cycle points.' },
+    { path: 'remanence', label: 'Remanence (H = 0)', columns: BH_COLUMNS, removable: true,
+      hint: 'B-H cycle points where the magnetic field is zero.' },
+    { path: 'coerciveForce', label: 'Coercive force (B = 0)', columns: BH_COLUMNS, removable: true,
+      hint: 'B-H cycle points where the flux density is zero.' },
+    { path: 'resistivity', label: 'Resistivity vs temperature', columns: RESISTIVITY_COLUMNS, removable: false,
+      hint: 'Required. At least one point; add more for the temperature dependence.' },
+];
+const MATERIAL_COMPOSITIONS = ['carbonylIron', 'FeMo', 'FeNi', 'FeNiMo', 'FeSi', 'FeSiAl', 'iron', 'MgZn', 'MnZn', 'NiZn', 'proprietary'];
+const MATERIAL_APPLICATIONS = ['power', 'interferenceSuppression', 'signalProcessing'];
 
 export default {
     data() {
@@ -111,6 +159,16 @@ export default {
         materialInitialPermeabilityIsScalar() {
             const initial = this.materialRecord?.permeability?.initial;
             return initial != null && !Array.isArray(initial);
+        },
+        materialCurveSpecs() { return MATERIAL_CURVES; },
+        materialCompositions() { return MATERIAL_COMPOSITIONS; },
+        materialApplications() { return MATERIAL_APPLICATIONS; },
+        massLossesSummary() {
+            const massLosses = this.materialRecord?.massLosses;
+            if (massLosses == null) return "";
+            return Object.entries(massLosses)
+                .map(([key, methods]) => `${key}: ${methods.map((m) => Array.isArray(m) ? `points(${m.length})` : m.method).join(', ')}`)
+                .join(' · ');
         },
         // The 3D visualizer needs an explicit scene background; the theme
         // variable is the source of truth. Read it from the panel's own root
@@ -335,7 +393,138 @@ export default {
             this.lossesMode = 'steinmetz';
             this.steinmetzRanges = [emptySteinmetzRange()];
             this.materialValidation = null;
-            this.setStatus("Blank material started — every field shown is REQUIRED by the MAS schema.");
+            this.setStatus("Blank material started — fill the required identity fields, and add measured curves (permeability, B-H, complex μ) in the curves card if you have them.");
+        },
+
+        // ---- Measured-curve editing (ABT #323) ----
+        // Dotted-path access into the material record; intermediate objects
+        // (permeability.complex) are created on write and pruned on remove.
+        pathGet(object, path) {
+            return path.split('.').reduce((node, key) => node?.[key], object);
+        },
+        curvePoints(path) {
+            const raw = this.pathGet(this.materialRecord, path);
+            if (raw == null) return null;
+            // The schema allows scalar-or-array for permeability entries;
+            // normalize to an array for display. The record itself is only
+            // rewritten when the user edits.
+            return Array.isArray(raw) ? raw : [raw];
+        },
+        curveSet(path, points) {
+            const keys = path.split('.');
+            const last = keys.pop();
+            let node = this.materialRecord;
+            keys.forEach((key) => {
+                if (node[key] == null) node[key] = {};
+                node = node[key];
+            });
+            node[last] = points;
+        },
+        curveRemove(path) {
+            // μ′ and μ″ are one schema object (complex requires BOTH): removing
+            // either half removes the whole complex block — a half-present
+            // complex permeability would be schema-invalid.
+            if (path.startsWith('permeability.complex')) {
+                delete this.materialRecord.permeability.complex;
+                return;
+            }
+            const keys = path.split('.');
+            const last = keys.pop();
+            const parent = this.pathGet(this.materialRecord, keys.join('.')) ?? this.materialRecord;
+            delete (keys.length === 0 ? this.materialRecord : parent)[last];
+        },
+        removeMassLosses() {
+            delete this.materialRecord.massLosses;
+        },
+        // ---- Optional scalar metadata ----
+        optionalTextSet(key, rawValue) {
+            const value = rawValue.trim();
+            if (value === "") delete this.materialRecord[key];
+            else this.materialRecord[key] = value;
+        },
+        optionalEnumSet(key, rawValue) {
+            if (rawValue === "") delete this.materialRecord[key];
+            else this.materialRecord[key] = rawValue;
+        },
+        commaListGet(key) {
+            return (this.materialRecord[key] ?? []).join(', ');
+        },
+        commaListSet(key, rawValue) {
+            const list = rawValue.split(',').map((s) => s.trim()).filter((s) => s !== "");
+            if (list.length === 0) delete this.materialRecord[key];
+            else this.materialRecord[key] = list;
+        },
+        dimTolGet(key) {
+            return this.materialRecord[key]?.nominal ?? "";
+        },
+        dimTolSet(key, rawValue) {
+            if (rawValue === "" || rawValue == null) {
+                delete this.materialRecord[key];
+                return;
+            }
+            const value = Number(rawValue);
+            if (!Number.isFinite(value)) {
+                this.setError(new Error(`${key}: "${rawValue}" is not a number`));
+                return;
+            }
+            this.materialRecord[key] = { nominal: value };
+        },
+        applicationHas(value) {
+            return (this.materialRecord.application ?? []).includes(value);
+        },
+        applicationToggle(value) {
+            const current = this.materialRecord.application ?? [];
+            const next = current.includes(value) ? current.filter((v) => v !== value) : [...current, value];
+            if (next.length === 0) delete this.materialRecord.application;
+            else this.materialRecord.application = next;
+        },
+        recommendationGet(key) {
+            return this.materialRecord.recommendations?.[key] ?? "";
+        },
+        recommendationSet(key, rawValue) {
+            const recommendations = this.materialRecord.recommendations ?? {};
+            if (rawValue === "" || rawValue == null) {
+                delete recommendations[key];
+            }
+            else {
+                const value = Number(rawValue);
+                if (!Number.isFinite(value)) {
+                    this.setError(new Error(`Recommendation ${key}: "${rawValue}" is not a number`));
+                    return;
+                }
+                recommendations[key] = value;
+            }
+            if (Object.keys(recommendations).length === 0) delete this.materialRecord.recommendations;
+            else this.materialRecord.recommendations = recommendations;
+        },
+        // Empty optional structures must be ABSENT from the emitted record —
+        // the MAS schemas are closed and a half-filled optional block is a
+        // latent schema violation. Throws (never trims silently) when a block
+        // is inconsistent rather than merely empty.
+        pruneMaterialRecord(record) {
+            ['bhCycle', 'remanence', 'coerciveForce', 'alternatives', 'application'].forEach((key) => {
+                if (Array.isArray(record[key]) && record[key].length === 0) delete record[key];
+            });
+            const permeability = record.permeability ?? {};
+            ['amplitude', 'incremental', 'reversible'].forEach((key) => {
+                if (Array.isArray(permeability[key]) && permeability[key].length === 0) delete permeability[key];
+            });
+            const complex = permeability.complex;
+            if (complex != null) {
+                const realEmpty = complex.real == null || (Array.isArray(complex.real) && complex.real.length === 0);
+                const imaginaryEmpty = complex.imaginary == null || (Array.isArray(complex.imaginary) && complex.imaginary.length === 0);
+                if (realEmpty && imaginaryEmpty) delete permeability.complex;
+                else if (realEmpty || imaginaryEmpty) {
+                    throw new Error("Complex permeability needs BOTH μ′ (real) and μ″ (imaginary) — add the missing part in the Measured curves card, or remove the curve.");
+                }
+            }
+            ['heatConductivity', 'heatCapacity'].forEach((key) => {
+                if (record[key] != null && Object.keys(record[key]).length === 0) delete record[key];
+            });
+            if (record.recommendations != null && Object.keys(record.recommendations).length === 0) {
+                delete record.recommendations;
+            }
+            Object.keys(record).forEach((key) => { if (record[key] == null) delete record[key]; });
         },
         parseFitPoints() {
             // One point per line: frequency_Hz, B_peak_T, temperature_C, Pv_W/m3
@@ -468,14 +657,19 @@ export default {
                 if (this.materialInitialPermeabilityIsScalar && !Number.isFinite(record.permeability?.initial?.value)) {
                     throw new Error("Initial permeability is required — enter μi.");
                 }
+                if (Array.isArray(record.permeability?.initial)
+                    && (record.permeability.initial.length === 0 || !record.permeability.initial.every((p) => Number.isFinite(p.value)))) {
+                    throw new Error("Initial permeability curve: every point needs a numeric μ value (or remove the empty points).");
+                }
                 if (!Array.isArray(record.saturation) || !Number.isFinite(record.saturation[0]?.magneticFluxDensity)) {
                     throw new Error("Saturation is required — enter Bsat (T) at 25 °C.");
                 }
                 if (!Array.isArray(record.resistivity) || !Number.isFinite(record.resistivity[0]?.value)) {
                     throw new Error("Resistivity is required — enter the value (Ω·m) at 25 °C.");
                 }
-                // Optional fields left empty must be ABSENT, not null.
-                Object.keys(record).forEach((key) => { if (record[key] == null) delete record[key]; });
+                // Optional fields left empty must be ABSENT, not null; empty
+                // optional curve/metadata blocks are pruned the same way.
+                this.pruneMaterialRecord(record);
                 // Round-trip through the engine: upsert into the session DB,
                 // read it back, and compute temperature-dependent parameters on
                 // a test core. Any inconsistency throws loudly.
@@ -516,7 +710,13 @@ export default {
             catch (error) { this.setError(error); }
             finally { this.busy = false; }
         },
-        downloadMaterial() { this.downloadNdjson(`${this.materialRecord.name}.core_materials.ndjson`, JSON.stringify(this.materialRecord)); },
+        downloadMaterial() {
+            try {
+                this.pruneMaterialRecord(this.materialRecord);
+                this.downloadNdjson(`${this.materialRecord.name}.core_materials.ndjson`, JSON.stringify(this.materialRecord));
+            }
+            catch (error) { this.setError(error); }
+        },
 
         // =============== CORE ===============
         async validateCore() {
@@ -763,24 +963,70 @@ export default {
                                     <label>Curie temperature (°C) <input type="number" step="any" v-model.number="materialRecord.curieTemperature" /></label>
                                     <label>Density (kg/m³) <input type="number" step="any" v-model.number="materialRecord.density" /></label>
                                     <label v-if="materialInitialPermeabilityIsScalar">Initial permeability μ<sub>i</sub> <input data-cy="CoreStudio-material-mu-input" type="number" step="any" v-model.number="materialRecord.permeability.initial.value" /></label>
-                                    <label v-else class="studio-static">Initial permeability: measured curve from template ({{ (materialRecord.permeability && materialRecord.permeability.initial || []).length }} points)</label>
+                                    <label v-else class="studio-static">Initial permeability: measured curve ({{ (materialRecord.permeability && materialRecord.permeability.initial || []).length }} points) — edit in the Measured curves card</label>
                                     <label v-if="!Array.isArray(materialRecord.saturation) || materialRecord.saturation.length <= 1">Saturation B<sub>sat</sub> (T) @25 °C
                                         <input data-cy="CoreStudio-material-bsat-input" type="number" step="any"
                                             :value="materialRecord.saturation && materialRecord.saturation[0] ? materialRecord.saturation[0].magneticFluxDensity : null"
                                             @change="materialRecord.saturation = [{ magneticFluxDensity: Number($event.target.value), magneticField: materialRecord.saturation && materialRecord.saturation[0] ? materialRecord.saturation[0].magneticField || 1200 : 1200, temperature: 25 }]" />
                                     </label>
-                                    <label v-else class="studio-static">Saturation: measured curve from template ({{ materialRecord.saturation.length }} points)</label>
-                                    <label>Resistivity (Ω·m) @25 °C
+                                    <label v-else class="studio-static">Saturation: measured curve ({{ materialRecord.saturation.length }} points) — edit in the Measured curves card</label>
+                                    <label v-if="!Array.isArray(materialRecord.resistivity) || materialRecord.resistivity.length <= 1">Resistivity (Ω·m) @25 °C
                                         <input data-cy="CoreStudio-material-resistivity-input" type="number" step="any"
                                             :value="materialRecord.resistivity && materialRecord.resistivity[0] ? materialRecord.resistivity[0].value : null"
                                             @change="materialRecord.resistivity = [{ value: Number($event.target.value), temperature: 25 }]" />
                                     </label>
+                                    <label v-else class="studio-static">Resistivity: measured curve ({{ materialRecord.resistivity.length }} points) — edit in the Measured curves card</label>
+                                    <label>Commercial name <input data-cy="CoreStudio-material-commercialname-input" type="text" :value="materialRecord.commercialName ?? ''" @change="optionalTextSet('commercialName', $event.target.value)" placeholder="optional" /></label>
+                                    <label>Family <input data-cy="CoreStudio-material-family-input" type="text" :value="materialRecord.family ?? ''" @change="optionalTextSet('family', $event.target.value)" placeholder="optional, e.g. High DC bias" /></label>
+                                    <label>Composition
+                                        <select data-cy="CoreStudio-material-composition-select" :value="materialRecord.materialComposition ?? ''" @change="optionalEnumSet('materialComposition', $event.target.value)">
+                                            <option value="">— not specified —</option>
+                                            <option v-for="composition in materialCompositions" :key="composition" :value="composition">{{ composition }}</option>
+                                        </select>
+                                    </label>
+                                    <label>Alternative materials <input data-cy="CoreStudio-material-alternatives-input" type="text" :value="commaListGet('alternatives')" @change="commaListSet('alternatives', $event.target.value)" placeholder="optional, comma-separated: 3C97, N97" /></label>
+                                    <label>Heat conductivity (W/(m·K)) <input data-cy="CoreStudio-material-heatconductivity-input" type="number" step="any" :value="dimTolGet('heatConductivity')" @change="dimTolSet('heatConductivity', $event.target.value)" placeholder="optional" /></label>
+                                    <label>Heat capacity (J/(kg·K)) <input data-cy="CoreStudio-material-heatcapacity-input" type="number" step="any" :value="dimTolGet('heatCapacity')" @change="dimTolSet('heatCapacity', $event.target.value)" placeholder="optional" /></label>
+                                    <label class="wide">Applications
+                                        <span class="studio-checks">
+                                            <label v-for="application in materialApplications" :key="application">
+                                                <input type="checkbox" :data-cy="'CoreStudio-material-application-' + application" :checked="applicationHas(application)" @change="applicationToggle(application)" /> {{ application }}
+                                            </label>
+                                        </span>
+                                    </label>
+                                    <label>Recommended max frequency (Hz) <input data-cy="CoreStudio-material-rec-maxf-input" type="number" step="any" :value="recommendationGet('maximumFrequency')" @change="recommendationSet('maximumFrequency', $event.target.value)" placeholder="optional" /></label>
+                                    <label>Recommended min frequency (Hz) <input data-cy="CoreStudio-material-rec-minf-input" type="number" step="any" :value="recommendationGet('minimumFrequency')" @change="recommendationSet('minimumFrequency', $event.target.value)" placeholder="optional" /></label>
+                                    <label>Recommended max flux density (T) <input data-cy="CoreStudio-material-rec-maxb-input" type="number" step="any" :value="recommendationGet('maximumMagneticFluxDensity')" @change="recommendationSet('maximumMagneticFluxDensity', $event.target.value)" placeholder="optional" /></label>
+                                    <label>Recommended max temperature (°C) <input data-cy="CoreStudio-material-rec-maxt-input" type="number" step="any" :value="recommendationGet('maximumOperatingTemperature')" @change="recommendationSet('maximumOperatingTemperature', $event.target.value)" placeholder="optional" /></label>
                                 </div>
                             </div>
                         </div>
 
                         <div v-if="materialRecord != null" class="studio-card">
-                            <div class="studio-card-header">3 · Core losses model</div>
+                            <div class="studio-card-header">3 · Measured curves <span class="unit-note">(SI units — every curve the MAS schema knows)</span></div>
+                            <div class="studio-card-body" data-cy="CoreStudio-material-curves">
+                                <p class="studio-hint">Curves inherited from the template are listed with their point count — nothing is kept silently. Edit points in place, paste a whole table straight from a datasheet or Excel, or remove a curve your material should not carry.</p>
+                                <MaterialCurveEditor
+                                    v-for="spec in materialCurveSpecs"
+                                    :key="spec.path"
+                                    :label="spec.label"
+                                    :hint="spec.hint"
+                                    :points="curvePoints(spec.path)"
+                                    :columns="spec.columns"
+                                    :removable="spec.removable"
+                                    :dataTestLabel="'CoreStudio-material-curve-' + spec.path.replaceAll('.', '-')"
+                                    @update:points="curveSet(spec.path, $event)"
+                                    @remove="curveRemove(spec.path)"
+                                />
+                                <div v-if="materialRecord.massLosses != null" class="studio-field-row mt-2">
+                                    <span class="studio-hint mb-0">Mass losses (W/kg) — {{ massLossesSummary }}</span>
+                                    <button class="studio-btn small" data-cy="CoreStudio-material-masslosses-remove" @click="removeMassLosses">Remove</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div v-if="materialRecord != null" class="studio-card">
+                            <div class="studio-card-header">4 · Core losses model</div>
                             <div class="studio-card-body">
                                 <div class="studio-field-row">
                                     <label>Source</label>
@@ -836,7 +1082,7 @@ export default {
 
                     <div class="col-12 md:col-5">
                         <div v-if="materialRecord != null" class="studio-card">
-                            <div class="studio-card-header">4 · Validate, save, contribute</div>
+                            <div class="studio-card-header">5 · Validate, save, contribute</div>
                             <div class="studio-card-body">
                                 <div class="studio-actions">
                                     <button data-cy="CoreStudio-material-validate-button" class="studio-btn primary" :disabled="busy" @click="validateMaterial">Validate with engine</button>
@@ -1006,6 +1252,8 @@ export default {
 .studio-grid-2 label { display: flex; flex-direction: column; gap: 0.2rem; color: rgba(var(--p-white-rgb), 0.7); font-size: 0.85rem; }
 .studio-grid-2 label.wide { grid-column: 1 / -1; }
 .studio-static { justify-content: center; font-style: italic; }
+.studio-checks { display: flex; gap: 1rem; flex-wrap: wrap; }
+.studio-checks label { flex-direction: row; align-items: center; gap: 0.35rem; cursor: pointer; }
 
 select, input[type="text"], input[type="number"], textarea {
     background: rgba(var(--p-white-rgb), 0.06);

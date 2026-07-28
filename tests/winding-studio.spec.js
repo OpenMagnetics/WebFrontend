@@ -125,7 +125,7 @@ async function openStudio(page) {
   const toggle = page.locator('[data-cy$="-Coil-WindingStudio-button"]').first();
   await expect(toggle).toBeVisible({ timeout: 10000 });
   const studio = page.locator('.winding-studio');
-  if (!(await studio.isVisible().catch(() => false))) {
+  if (!(await studio.first().isVisible())) {
     await toggle.click();
   }
   await expect(studio.first()).toBeVisible({ timeout: 5000 });
