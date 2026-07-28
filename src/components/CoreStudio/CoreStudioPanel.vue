@@ -49,6 +49,7 @@ const PERMEABILITY_COLUMNS = [
     { key: 'magneticFieldDcBias', label: 'H DC (A/m)', required: false },
     { key: 'magneticFluxDensityPeak', label: 'B peak (T)', required: false },
     { key: 'magneticFieldPeak', label: 'H peak (A/m)', required: false },
+    { key: 'tolerance', label: 'tolerance', required: false },
 ];
 const BH_COLUMNS = [
     { key: 'magneticFluxDensity', label: 'B (T)', required: true },
@@ -85,6 +86,7 @@ const MATERIAL_CURVES = [
 ];
 const MATERIAL_COMPOSITIONS = ['carbonylIron', 'FeMo', 'FeNi', 'FeNiMo', 'FeSi', 'FeSiAl', 'iron', 'MgZn', 'MnZn', 'NiZn', 'proprietary'];
 const MATERIAL_APPLICATIONS = ['power', 'interferenceSuppression', 'signalProcessing'];
+const MANUFACTURER_STATUSES = ['production', 'prototype', 'preview', 'nrnd', 'obsolete'];
 
 export default {
     data() {
@@ -117,13 +119,15 @@ export default {
             materialTemplate: "",
             materialRecord: null,        // full MAS material record being edited
             materialTemplateName: null,  // name of the template it was copied from
-            lossesMode: 'template',      // template | proprietary | steinmetz | fit
+            lossesMode: 'template',      // template | proprietary | steinmetz | fit | points
             proprietaryDraft: null,      // { method, a, b, c, d? } — by reference into the record when it came from the template
             steinmetzRanges: [emptySteinmetzRange()],
             fitPointsText: "",
             fitRangesText: "150000",
             fitReport: "",
             materialValidation: null,    // readback from the engine
+            materialJsonOpen: false,     // "Load JSON" catch-all import
+            materialJsonText: "",
 
             // ---------------- Core tab ----------------
             coreRecord: {
@@ -163,6 +167,7 @@ export default {
         materialCurveSpecs() { return MATERIAL_CURVES; },
         materialCompositions() { return MATERIAL_COMPOSITIONS; },
         materialApplications() { return MATERIAL_APPLICATIONS; },
+        manufacturerStatuses() { return MANUFACTURER_STATUSES; },
         massLossesSummary() {
             const massLosses = this.materialRecord?.massLosses;
             if (massLosses == null) return "";
@@ -454,20 +459,32 @@ export default {
             if (list.length === 0) delete this.materialRecord[key];
             else this.materialRecord[key] = list;
         },
-        dimTolGet(key) {
-            return this.materialRecord[key]?.nominal ?? "";
+        dimTolGet(key, bound) {
+            return this.materialRecord[key]?.[bound] ?? "";
         },
-        dimTolSet(key, rawValue) {
+        dimTolSet(key, bound, rawValue) {
+            const dimension = { ...(this.materialRecord[key] ?? {}) };
             if (rawValue === "" || rawValue == null) {
-                delete this.materialRecord[key];
-                return;
+                delete dimension[bound];
             }
-            const value = Number(rawValue);
-            if (!Number.isFinite(value)) {
-                this.setError(new Error(`${key}: "${rawValue}" is not a number`));
-                return;
+            else {
+                const value = Number(rawValue);
+                if (!Number.isFinite(value)) {
+                    this.setError(new Error(`${key}.${bound}: "${rawValue}" is not a number`));
+                    return;
+                }
+                dimension[bound] = value;
             }
-            this.materialRecord[key] = { nominal: value };
+            if (Object.keys(dimension).length === 0) delete this.materialRecord[key];
+            else this.materialRecord[key] = dimension;
+        },
+        mfrGet(key) {
+            return this.materialRecord.manufacturerInfo?.[key] ?? "";
+        },
+        mfrSet(key, rawValue) {
+            const value = rawValue.trim();
+            if (value === "") delete this.materialRecord.manufacturerInfo[key];
+            else this.materialRecord.manufacturerInfo[key] = value;
         },
         applicationHas(value) {
             return (this.materialRecord.application ?? []).includes(value);
@@ -477,6 +494,17 @@ export default {
             const next = current.includes(value) ? current.filter((v) => v !== value) : [...current, value];
             if (next.length === 0) delete this.materialRecord.application;
             else this.materialRecord.application = next;
+        },
+        recommendationListGet(key) {
+            return (this.materialRecord.recommendations?.[key] ?? []).join(', ');
+        },
+        recommendationListSet(key, rawValue) {
+            const recommendations = this.materialRecord.recommendations ?? {};
+            const list = rawValue.split(',').map((s) => s.trim()).filter((s) => s !== "");
+            if (list.length === 0) delete recommendations[key];
+            else recommendations[key] = list;
+            if (Object.keys(recommendations).length === 0) delete this.materialRecord.recommendations;
+            else this.materialRecord.recommendations = recommendations;
         },
         recommendationGet(key) {
             return this.materialRecord.recommendations?.[key] ?? "";
@@ -496,6 +524,31 @@ export default {
             }
             if (Object.keys(recommendations).length === 0) delete this.materialRecord.recommendations;
             else this.materialRecord.recommendations = recommendations;
+        },
+        // Catch-all import: paste a full MAS core-material JSON record (e.g.
+        // from Copy JSON, a database ndjson line, or hand-authored vendor
+        // data). This is also the editing path for the deep nested blocks the
+        // form does not table-ize (permeability modifiers, non-sinusoidal
+        // loss-point excitations, massLosses).
+        applyMaterialJson() {
+            try {
+                const record = JSON.parse(this.materialJsonText);
+                if (record == null || typeof record !== 'object' || Array.isArray(record)) {
+                    throw new Error("Not a JSON object.");
+                }
+                if (typeof record.name !== 'string' || record.permeability == null) {
+                    throw new Error("Not a MAS core material record — it needs at least \"name\" and \"permeability\".");
+                }
+                if (record.manufacturerInfo == null) record.manufacturerInfo = { name: "" };
+                this.materialRecord = record;
+                this.materialTemplateName = null;
+                this.lossesMode = 'template';
+                this.materialValidation = null;
+                this.materialJsonOpen = false;
+                this.materialJsonText = "";
+                this.setStatus(`JSON record "${record.name}" loaded — every field is editable; validate with the engine before saving.`);
+            }
+            catch (error) { this.setError(error); }
         },
         // Empty optional structures must be ABSENT from the emitted record —
         // the MAS schemas are closed and a half-filled optional block is a
@@ -526,7 +579,7 @@ export default {
             }
             Object.keys(record).forEach((key) => { if (record[key] == null) delete record[key]; });
         },
-        parseFitPoints() {
+        parseFitPoints(minimumPoints = 3) {
             // One point per line: frequency_Hz, B_peak_T, temperature_C, Pv_W/m3
             const points = [];
             this.fitPointsText.split('\n').forEach((line, index) => {
@@ -547,8 +600,8 @@ export default {
                     origin: "manufacturer",
                 });
             });
-            if (points.length < 3) {
-                throw new Error(`Need at least 3 loss points to fit Steinmetz coefficients, got ${points.length}.`);
+            if (points.length < minimumPoints) {
+                throw new Error(`Need at least ${minimumPoints} loss points, got ${points.length}.`);
             }
             return points;
         },
@@ -647,6 +700,11 @@ export default {
                 }
                 else if (this.lossesMode === 'proprietary') {
                     this.applyProprietaryToRecord();
+                }
+                else if (this.lossesMode === 'points') {
+                    // Store the measured datasheet points directly (no fit) —
+                    // the engine interpolates measured volumetricLosses lists.
+                    record.volumetricLosses = { default: [this.parseFitPoints(1)] };
                 }
                 if ((record.volumetricLosses?.default ?? []).length === 0) {
                     throw new Error("The material has no volumetric losses model — add Steinmetz coefficients or fit them from points.");
@@ -944,6 +1002,12 @@ export default {
                                     </select>
                                     <button data-cy="CoreStudio-material-load-button" class="studio-btn" :disabled="busy || materialTemplate == ''" @click="loadMaterialTemplate">Duplicate &amp; edit</button>
                                     <button data-cy="CoreStudio-material-blank-button" class="studio-btn" :disabled="busy" @click="startBlankMaterial">Start from zero</button>
+                                    <button data-cy="CoreStudio-material-json-button" class="studio-btn" :disabled="busy" @click="materialJsonOpen = !materialJsonOpen">Load JSON</button>
+                                </div>
+                                <div v-if="materialJsonOpen" class="mt-2">
+                                    <p class="studio-hint">Paste a full MAS core-material record (one <code>core_materials.ndjson</code> line, or the output of Copy JSON). This is also the editing path for the deep nested blocks the form does not table-ize: permeability <code>modifiers</code>, non-sinusoidal loss-point excitations, <code>massLosses</code>.</p>
+                                    <textarea data-cy="CoreStudio-material-json-text" v-model="materialJsonText" rows="5" placeholder='{"name": "…", "permeability": {…}, …}'></textarea>
+                                    <button data-cy="CoreStudio-material-json-apply" class="studio-btn" @click="applyMaterialJson">Apply</button>
                                 </div>
                                 <p class="studio-hint">Duplicating an existing grade keeps its full measured curves (permeability, B-H, losses); from-zero asks only for the fields the MAS schema requires.</p>
                             </div>
@@ -960,6 +1024,23 @@ export default {
                                             <option v-for="klass in ['ferrite', 'powder', 'nanocrystalline', 'amorphous', 'electricalSteel']" :key="klass" :value="klass">{{ klass }}</option>
                                         </select>
                                     </label>
+                                    <label>Record type
+                                        <select data-cy="CoreStudio-material-type-select" v-model="materialRecord.type">
+                                            <option v-for="recordType in ['commercial', 'custom']" :key="recordType" :value="recordType">{{ recordType }}</option>
+                                        </select>
+                                    </label>
+                                    <label>Manufacturer status
+                                        <select data-cy="CoreStudio-material-mfr-status-select" :value="mfrGet('status')" @change="mfrSet('status', $event.target.value)">
+                                            <option value="">— not specified —</option>
+                                            <option v-for="status in manufacturerStatuses" :key="status" :value="status">{{ status }}</option>
+                                        </select>
+                                    </label>
+                                    <label>Manufacturer reference <input data-cy="CoreStudio-material-mfr-reference-input" type="text" :value="mfrGet('reference')" @change="mfrSet('reference', $event.target.value)" placeholder="optional part number" /></label>
+                                    <label>Manufacturer family <input data-cy="CoreStudio-material-mfr-family-input" type="text" :value="mfrGet('family')" @change="mfrSet('family', $event.target.value)" placeholder="optional product line" /></label>
+                                    <label>Manufacturer series <input data-cy="CoreStudio-material-mfr-series-input" type="text" :value="mfrGet('series')" @change="mfrSet('series', $event.target.value)" placeholder="optional" /></label>
+                                    <label>Manufacturer order code <input data-cy="CoreStudio-material-mfr-ordercode-input" type="text" :value="mfrGet('orderCode')" @change="mfrSet('orderCode', $event.target.value)" placeholder="optional" /></label>
+                                    <label class="wide">Datasheet URL <input data-cy="CoreStudio-material-mfr-datasheet-input" type="text" :value="mfrGet('datasheetUrl')" @change="mfrSet('datasheetUrl', $event.target.value)" placeholder="optional, https://…" /></label>
+                                    <label class="wide">Manufacturer description <input data-cy="CoreStudio-material-mfr-description-input" type="text" :value="mfrGet('description')" @change="mfrSet('description', $event.target.value)" placeholder="optional" /></label>
                                     <label>Curie temperature (°C) <input type="number" step="any" v-model.number="materialRecord.curieTemperature" /></label>
                                     <label>Density (kg/m³) <input type="number" step="any" v-model.number="materialRecord.density" /></label>
                                     <label v-if="materialInitialPermeabilityIsScalar">Initial permeability μ<sub>i</sub> <input data-cy="CoreStudio-material-mu-input" type="number" step="any" v-model.number="materialRecord.permeability.initial.value" /></label>
@@ -985,8 +1066,16 @@ export default {
                                         </select>
                                     </label>
                                     <label>Alternative materials <input data-cy="CoreStudio-material-alternatives-input" type="text" :value="commaListGet('alternatives')" @change="commaListSet('alternatives', $event.target.value)" placeholder="optional, comma-separated: 3C97, N97" /></label>
-                                    <label>Heat conductivity (W/(m·K)) <input data-cy="CoreStudio-material-heatconductivity-input" type="number" step="any" :value="dimTolGet('heatConductivity')" @change="dimTolSet('heatConductivity', $event.target.value)" placeholder="optional" /></label>
-                                    <label>Heat capacity (J/(kg·K)) <input data-cy="CoreStudio-material-heatcapacity-input" type="number" step="any" :value="dimTolGet('heatCapacity')" @change="dimTolSet('heatCapacity', $event.target.value)" placeholder="optional" /></label>
+                                    <label>Heat conductivity (W/(m·K))
+                                        <span class="studio-trio">
+                                            <input v-for="bound in ['minimum', 'nominal', 'maximum']" :key="bound" :data-cy="'CoreStudio-material-heatconductivity-' + bound" type="number" step="any" :value="dimTolGet('heatConductivity', bound)" @change="dimTolSet('heatConductivity', bound, $event.target.value)" :placeholder="bound" />
+                                        </span>
+                                    </label>
+                                    <label>Heat capacity (J/(kg·K))
+                                        <span class="studio-trio">
+                                            <input v-for="bound in ['minimum', 'nominal', 'maximum']" :key="bound" :data-cy="'CoreStudio-material-heatcapacity-' + bound" type="number" step="any" :value="dimTolGet('heatCapacity', bound)" @change="dimTolSet('heatCapacity', bound, $event.target.value)" :placeholder="bound" />
+                                        </span>
+                                    </label>
                                     <label class="wide">Applications
                                         <span class="studio-checks">
                                             <label v-for="application in materialApplications" :key="application">
@@ -998,6 +1087,8 @@ export default {
                                     <label>Recommended min frequency (Hz) <input data-cy="CoreStudio-material-rec-minf-input" type="number" step="any" :value="recommendationGet('minimumFrequency')" @change="recommendationSet('minimumFrequency', $event.target.value)" placeholder="optional" /></label>
                                     <label>Recommended max flux density (T) <input data-cy="CoreStudio-material-rec-maxb-input" type="number" step="any" :value="recommendationGet('maximumMagneticFluxDensity')" @change="recommendationSet('maximumMagneticFluxDensity', $event.target.value)" placeholder="optional" /></label>
                                     <label>Recommended max temperature (°C) <input data-cy="CoreStudio-material-rec-maxt-input" type="number" step="any" :value="recommendationGet('maximumOperatingTemperature')" @change="recommendationSet('maximumOperatingTemperature', $event.target.value)" placeholder="optional" /></label>
+                                    <label>Typical applications <input data-cy="CoreStudio-material-rec-typicalapps-input" type="text" :value="recommendationListGet('typicalApplications')" @change="recommendationListSet('typicalApplications', $event.target.value)" placeholder="optional, comma-separated" /></label>
+                                    <label>Typical topologies <input data-cy="CoreStudio-material-rec-typicaltopos-input" type="text" :value="recommendationListGet('typicalTopologies')" @change="recommendationListSet('typicalTopologies', $event.target.value)" placeholder="optional, comma-separated" /></label>
                                 </div>
                             </div>
                         </div>
@@ -1019,7 +1110,7 @@ export default {
                                     @remove="curveRemove(spec.path)"
                                 />
                                 <div v-if="materialRecord.massLosses != null" class="studio-field-row mt-2">
-                                    <span class="studio-hint mb-0">Mass losses (W/kg) — {{ massLossesSummary }}</span>
+                                    <span class="studio-hint mb-0">Mass losses (W/kg) — {{ massLossesSummary }} (edit via Load JSON)</span>
                                     <button class="studio-btn small" data-cy="CoreStudio-material-masslosses-remove" @click="removeMassLosses">Remove</button>
                                 </div>
                             </div>
@@ -1031,10 +1122,11 @@ export default {
                                 <div class="studio-field-row">
                                     <label>Source</label>
                                     <select data-cy="CoreStudio-material-losses-mode" v-model="lossesMode" @change="lossesMode == 'proprietary' && initProprietaryDraft()">
-                                        <option value="template" :disabled="materialTemplateName == null">Keep template model ({{ materialLossMethods.join(', ') || 'none' }})</option>
+                                        <option value="template" :disabled="materialLossMethods.length === 0">Keep current model ({{ materialLossMethods.join(', ') || 'none' }})</option>
                                         <option value="proprietary">Proprietary fit coefficients (micrometals, magnetics, …)</option>
                                         <option value="steinmetz">Steinmetz coefficients (I have k, α, β)</option>
                                         <option value="fit">Fit Steinmetz from datasheet points</option>
+                                        <option value="points">Measured loss points (store the datasheet table as-is)</option>
                                     </select>
                                 </div>
 
@@ -1052,10 +1144,11 @@ export default {
                                     <p class="studio-hint mt-1"><code>{{ proprietaryEquationHint }}</code> — Pv in W/m³, f in Hz, B in T. Coefficients come from the manufacturer's datasheet fit.</p>
                                 </div>
 
-                                <div v-if="lossesMode == 'fit'" class="mt-2">
-                                    <p class="studio-hint">One point per line: <code>frequency_Hz, B_peak_T, temperature_C, Pv_W/m³</code>. Range boundaries (Hz) split the fit into frequency ranges.</p>
+                                <div v-if="lossesMode == 'fit' || lossesMode == 'points'" class="mt-2">
+                                    <p v-if="lossesMode == 'fit'" class="studio-hint">One point per line: <code>frequency_Hz, B_peak_T, temperature_C, Pv_W/m³</code>. Range boundaries (Hz) split the fit into frequency ranges.</p>
+                                    <p v-else class="studio-hint">One point per line: <code>frequency_Hz, B_peak_T, temperature_C, Pv_W/m³</code> (sinusoidal excitation). The points are stored directly as the material's measured volumetric losses — no fit.</p>
                                     <textarea data-cy="CoreStudio-material-fit-points" v-model="fitPointsText" rows="6" placeholder="100000, 0.1, 25, 48000&#10;100000, 0.2, 25, 320000&#10;200000, 0.1, 25, 110000&#10;…"></textarea>
-                                    <div class="studio-field-row mt-1">
+                                    <div v-if="lossesMode == 'fit'" class="studio-field-row mt-1">
                                         <label>Range boundaries (Hz)</label>
                                         <input type="text" v-model="fitRangesText" style="width: 12rem" />
                                         <button data-cy="CoreStudio-material-fit-button" class="studio-btn primary" :disabled="busy" @click="fitSteinmetz">Fit coefficients</button>
@@ -1254,6 +1347,8 @@ export default {
 .studio-static { justify-content: center; font-style: italic; }
 .studio-checks { display: flex; gap: 1rem; flex-wrap: wrap; }
 .studio-checks label { flex-direction: row; align-items: center; gap: 0.35rem; cursor: pointer; }
+.studio-trio { display: flex; gap: 0.4rem; }
+.studio-trio input { width: 100%; min-width: 0; }
 
 select, input[type="text"], input[type="number"], textarea {
     background: rgba(var(--p-white-rgb), 0.06);

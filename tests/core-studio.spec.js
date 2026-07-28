@@ -174,6 +174,46 @@ test.describe('core studio', () => {
         await expect(results).toContainText('2200');
     });
 
+    test('material JSON import: full record loads, metadata editable, 1-point curve reads back its value (ABT #323/#339)', async ({ page }) => {
+        await openCoreStudio(page);
+        await page.click('[data-cy="CoreStudio-tab-material"]');
+
+        // Load a complete MAS record through the JSON catch-all, with a
+        // SINGLE-POINT initial-permeability curve — the exact shape that used
+        // to read back mu_i = 1 from the engine (ABT #339).
+        const record = {
+            name: 'JsonSpec 01', type: 'custom', material: 'ferrite',
+            manufacturerInfo: { name: 'Spec Co', status: 'prototype', reference: 'JS-01' },
+            curieTemperature: 215, density: 4800,
+            permeability: { initial: [{ value: 2200, temperature: 25 }] },
+            saturation: [{ magneticFluxDensity: 0.39, magneticField: 1200, temperature: 25 }],
+            resistivity: [{ value: 5, temperature: 25 }],
+            volumetricLosses: { default: [{ method: 'steinmetz', ranges: [{ minimumFrequency: 1, maximumFrequency: 1000000, k: 1.54, alpha: 1.46, beta: 2.86, ct0: 1, ct1: 0, ct2: 0 }] }] },
+            massLosses: { default: [{ method: 'magnetec' }] },
+        };
+        await page.click('[data-cy="CoreStudio-material-json-button"]');
+        await page.fill('[data-cy="CoreStudio-material-json-text"]', JSON.stringify(record));
+        await page.click('[data-cy="CoreStudio-material-json-apply"]');
+        await page.waitForSelector('[data-cy="CoreStudio-material-curves"]', { timeout: 10000 });
+
+        // Every-property surfaces: type, manufacturer status, massLosses.
+        await expect(page.locator('[data-cy="CoreStudio-material-type-select"]')).toHaveValue('custom');
+        await expect(page.locator('[data-cy="CoreStudio-material-mfr-status-select"]')).toHaveValue('prototype');
+        await expect(page.locator('[data-cy="CoreStudio-material-masslosses-remove"]')).toBeVisible();
+        await expect(page.locator('[data-cy="CoreStudio-material-curve-permeability-initial-count"]')).toHaveText('1 point');
+
+        // Optional metadata fields write into the record.
+        await page.fill('[data-cy="CoreStudio-material-family-input"]', 'Spec Family');
+        await page.locator('[data-cy="CoreStudio-material-family-input"]').press('Tab');
+        await page.selectOption('[data-cy="CoreStudio-material-composition-select"]', 'MnZn');
+
+        // Engine round-trip: the 1-point curve must read back 2200, not 1.
+        await page.click('[data-cy="CoreStudio-material-validate-button"]');
+        const results = page.locator('[data-cy="CoreStudio-material-results"]');
+        await expect(results).toBeVisible({ timeout: 60000 });
+        await expect(results).toContainText('2200');
+    });
+
     test('material from zero: engine round-trip accepts a steinmetz material', async ({ page }) => {
         await openCoreStudio(page);
         await page.click('[data-cy="CoreStudio-tab-material"]');
