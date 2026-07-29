@@ -268,9 +268,11 @@ export default {
         },
         async saveCurrentDesignToCloud() {
             // Quick-save from the header: updates the linked design, or sends
-            // the user to My Designs to name a new one.
+            // the user to My Designs with the save dialog ALREADY OPEN — a
+            // bare redirect looked like "save did nothing" and dropped
+            // first-time users on an empty page (ABT #344).
             if (!this.cloudDesignStore.isLinked) {
-                await this.$router.push(`${import.meta.env.BASE_URL}designs`);
+                await this.$router.push(`${import.meta.env.BASE_URL}designs?save=1`);
                 return;
             }
             this.savingToCloud = true;

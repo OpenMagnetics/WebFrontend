@@ -151,7 +151,12 @@ export async function loadMasIntoApp(newMas, { masStore, stateStore, userStore, 
     stateStore.selectWorkflow("design");
     stateStore.selectApplication(stateStore.SupportedApplications.Power);
     stateStore.selectTool("magneticBuilder");
-    stateStore.setCurrentToolSubsection("magneticBuilder");
+    // A design saved before anything was built (inputs only, no core shape)
+    // has nothing to show in the builder pane — land on the inputs instead
+    // of an empty Design section (ABT #344).
+    const loadedShape = autocompletedMas.magnetic?.core?.functionalDescription?.shape;
+    const hasDesignedCore = loadedShape != null && !(typeof loadedShape === 'string' && loadedShape.trim() === '');
+    stateStore.setCurrentToolSubsection(hasDesignedCore ? "magneticBuilder" : "designRequirements");
     stateStore.setCurrentToolSubsectionStatus("designRequirements", true);
     stateStore.setCurrentToolSubsectionStatus("operatingPoints", true);
     stateStore.operatingPoints.modePerPoint = [];

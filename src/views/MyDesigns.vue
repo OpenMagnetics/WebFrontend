@@ -40,6 +40,11 @@ export default {
         }
         if (this.authStore.isLoggedIn) {
             await this.refresh();
+            // Arriving from the header's "Save design to account" (ABT #344):
+            // open the save flow immediately instead of showing a bare list.
+            if (this.$route.query.save === '1') {
+                this.startSaveCurrent();
+            }
         }
         this.loading = false;
     },

@@ -135,6 +135,25 @@ test.describe('accounts', () => {
         await expect(page.locator('[data-cy="Header-account-menu-button"]')).toHaveCount(0);
     });
 
+    test('header quick-save (unlinked) lands on My Designs with the save dialog OPEN (ABT #344)', async ({ page }) => {
+        const state = { loggedIn: true, emailExists: true, designs: [] };
+        await mockAccountsApi(page, state);
+        // fetchMe() only asks the backend when the has-session hint is set.
+        await page.addInitScript(() => localStorage.setItem('om_has_session', '1'));
+
+        // /designs?save=1 is what the header's "Save design to account"
+        // pushes for a not-yet-linked design: the name input must already be
+        // open — a bare empty list looked like the save did nothing.
+        await page.goto(`${BASE_URL}/designs?save=1`, { waitUntil: 'domcontentloaded' });
+        const nameInput = page.locator('[data-cy="MyDesigns-save-name-input"]');
+        await expect(nameInput).toBeVisible({ timeout: 15000 });
+
+        // And saving from here works end-to-end against the mocked API.
+        await nameInput.fill('Quick-saved design');
+        await page.click('[data-cy="MyDesigns-save-confirm-button"]');
+        await expect(page.locator('[data-cy="MyDesigns-row-Quick-saved design"]')).toBeVisible({ timeout: 15000 });
+    });
+
     test('My Designs: signed-out notice, then list after login', async ({ page }) => {
         const state = { loggedIn: false, emailExists: true, designs: [designRow()] };
         await mockAccountsApi(page, state);

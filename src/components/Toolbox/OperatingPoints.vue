@@ -238,7 +238,11 @@ export default {
         addNewOperatingPoint() {
             this.$stateStore.addNewOperatingPoint(this.currentOperatingPointIndex, this.$stateStore.operatingPoints.modePerPoint[this.currentOperatingPointIndex]);
 
-            this.currentOperatingPointIndex += 1;
+            // The store PUSHES the new operating point at the END of the list;
+            // `+= 1` only pointed at it when the current point was the last
+            // one, otherwise the mode below clobbered a neighbour's mode and
+            // the new point was left without one (ABT #345).
+            this.currentOperatingPointIndex = this.masStore.mas.inputs.operatingPoints.length - 1;
             this.$stateStore.operatingPoints.modePerPoint[this.currentOperatingPointIndex] = this.defaultMode;
             this.$emit("canContinue", this.canContinue);
         },

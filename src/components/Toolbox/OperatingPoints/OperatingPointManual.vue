@@ -115,6 +115,14 @@ export default {
             this.autoInduceVoltageFromCurrent();
         },
         async induce(sourceSignalDescriptor){
+            const excitation = this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex]?.excitationsPerWinding[this.currentWindingIndex];
+            if (excitation?.[sourceSignalDescriptor]?.processed == null) {
+                // A desynced/new operating point without processed source data
+                // used to die here with a bare TypeError on .dutyCycle,
+                // leaving the builder stuck (ABT #345). Say what is missing.
+                console.error(`[induce] Operating point ${this.currentOperatingPointIndex}, winding ${this.currentWindingIndex}: ${sourceSignalDescriptor} has no processed data — define its waveform before inducing the counterpart signal.`);
+                return;
+            }
             if (sourceSignalDescriptor == 'current'){
 
                 try {

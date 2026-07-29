@@ -123,6 +123,16 @@ export default {
                 }
             })
         },
+        // The selector's displayed value was captured once in data(), before
+        // the operating points had settled — a stale/numeric value matches no
+        // option and PrimeVue renders an EMPTY select (ABT #345). Keep it in
+        // sync with the store instead.
+        syncOperatingPointSelection() {
+            const operatingPoint = this.masStore.mas.inputs.operatingPoints[this.$stateStore.currentOperatingPoint];
+            if (operatingPoint != null && operatingPoint.conditions != null) {
+                this.localData.operatingPoint = operatingPoint.name + ' - ' + operatingPoint.conditions.ambientTemperature + '°C';
+            }
+        },
         isMobile($windowWidth) {
             if( window.innerWidth <= 760 ) {
                 return true;
@@ -131,6 +141,13 @@ export default {
                 return false;
             }
         },
+    },
+    watch: {
+        operatingPointNames: {
+            handler() { this.syncOperatingPointSelection(); },
+            immediate: true,
+        },
+        '$stateStore.currentOperatingPoint'() { this.syncOperatingPointSelection(); },
     },
     computed: {
         operatingPointNames() {

@@ -367,6 +367,13 @@ export default {
             chart.update()
         },
         async runFFT(signalDescriptor){
+            if (this.modelValue[signalDescriptor]?.waveform == null) {
+                // Signal not defined yet (e.g. a freshly added operating point
+                // whose voltage has not been generated). Passing undefined
+                // reached WASM as a non-string and errored on every render;
+                // the chart refreshes once the waveform exists (ABT #345).
+                return;
+            }
             try {
                 const result = await this.taskQueueStore.calculateHarmonics(this.modelValue[signalDescriptor].waveform, this.modelValue.frequency);
 
