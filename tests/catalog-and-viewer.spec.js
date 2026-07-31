@@ -116,10 +116,14 @@ test.describe('Magnetic Viewer — interactive view', () => {
     await ss(page, 'MV1-loaded');
   });
 
-  test('MV2: viewer exposes a summary region', async ({ page }) => {
+  test('MV2: viewer exposes the magnetic panels', async ({ page }) => {
     await reachViewerViaCatalog(page);
-    const anySummary = page.locator('.compact-card, [data-cy*="summary" i], h2, h3').first();
-    await expect(anySummary).toBeVisible({ timeout: 10000 });
+    // The viewer subsection renders the read-only MagneticBuilder (GenericTool
+    // mounts it for subsection == 'magneticViewer'). The old `.compact-card` /
+    // h2 / h3 heuristic died in the Bootstrap -> PrimeVue refactor (headings
+    // became styled generics); anchor on the builder's stable data-cy instead.
+    const viewerPanel = page.locator('[data-cy$="-Core-Advise-button"]').first();
+    await expect(viewerPanel).toBeVisible({ timeout: 10000 });
     await ss(page, 'MV2-summary');
   });
 

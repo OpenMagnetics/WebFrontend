@@ -9,6 +9,11 @@ import { useCatalogStore } from '../../stores/catalog'
 
 <script>
 
+// Which catalog URL is currently loaded into the WASM magnetics cache.
+// Module scope on purpose: it lives exactly as long as the engine worker
+// (both reset together on a full page load), so no store persistence.
+let loadedCatalogUrl = null;
+
 const style = getComputedStyle(document.body);
 const theme = {
   primary: style.getPropertyValue('--p-primary'),
@@ -32,13 +37,15 @@ export default {
             type: String,
             default: '',
         },
-        // When true, run the adviser entirely in the browser via the MKF WASM
-        // engine (cache must be pre-populated, e.g. via load_magnetics on boot).
-        // When false (default), POST to the backend's /calculate_advised_magnetics
-        // endpoint as before.
+        // Historical switch between the in-browser WASM adviser and a backend
+        // POST. The backend endpoint /calculate_advised_magnetics never existed
+        // (ABT #192), so the adviser now always runs via the MKF WASM engine and
+        // populates its own cache from the catalog NDJSON on first use. The prop
+        // is kept so external embedders passing it don't break; its value is
+        // ignored.
         useWasmCache: {
             type: Boolean,
-            default: false,
+            default: true,
         },
         // When true (default), shows a "Continue without search" button that
         // lets the user skip the catalogue and proceed to a custom design.
@@ -193,46 +200,58 @@ export default {
             this.catalogStore.advises = [];
             this.catalogStore.advisesKey = "";
             this.loading = true;
-            if (this.useWasmCache) {
-                this.calculateAdvisedMagneticsFromWasmCache();
-            } else {
-                this.calculateAdvisedMagneticsFromBackend();
-            }
+            this.calculateAdvisedMagneticsFromWasmCache();
         },
-        calculateAdvisedMagneticsFromBackend() {
-            setTimeout(() => {
-                const url = import.meta.env.VITE_API_ENDPOINT + '/calculate_advised_magnetics';
-                const data = {
-                    inputs:  this.masStore.mas.inputs,
-                    maximum_number_results:  9,
-                    filter_flow: this.buildFilterFlow(),
+        // Load the catalog NDJSON into the engine's magnetics cache. Runs once
+        // per catalog URL per page load; every entry must load or we throw —
+        // a corrupt catalog line is a bug to surface, not skip (an entry that
+        // silently vanishes from the adviser is undiagnosable).
+        async ensureCatalogCache(mkf) {
+            const url = this.catalogStore.catalogUrl || '/cmcs.ndjson';
+            if (loadedCatalogUrl === url) return;
+            const response = await fetch(url);
+            if (!response.ok) {
+                throw new Error(`Catalog fetch failed: ${url} -> HTTP ${response.status}`);
+            }
+            const text = await response.text();
+            if (text.startsWith('<')) {
+                throw new Error(`Catalog URL ${url} returned HTML — the NDJSON is not being served`);
+            }
+            const lines = text.split('\n').filter((line) => line.trim());
+            if (lines.length === 0) {
+                throw new Error(`Catalog ${url} contains no entries`);
+            }
+            const windingCounts = new Set();
+            for (const [index, line] of lines.entries()) {
+                let magnetic;
+                try {
+                    magnetic = JSON.parse(line);
+                } catch (parseError) {
+                    throw new Error(`Catalog line ${index + 1} of ${url} is not valid JSON: ${parseError.message}`);
                 }
-
-                this.$axios.post(url, data)
-                .then(response => {
-                    this.catalogStore.advises = [];
-                    this.loading = false;
-                    this.hasSearched = true;
-
-                    response.data.data.forEach((datum) => {
-                        this.catalogStore.advises.push(datum);
-                    })
-                    this.catalogStore.advisesKey = this.buildAdvisesKey();
-                    this.$emit('canContinue', this.catalogStore.advises.length > 0);
-                })
-                .catch(error => {
-                    this.loading = false;
-                    this.hasSearched = true;
-                    this.$emit('canContinue', false);
-                    console.error(error);
-                });
-
-            }, 100);
+                const key = magnetic?.manufacturerInfo?.reference || `catalog-${index}`;
+                // Entries ship fully expanded (processed core + turns), so no
+                // magnetic_autocomplete pass is needed (expand=false).
+                const result = await mkf.load_magnetic(key, line, false);
+                // load_magnetic returns the cache size on success and the raw
+                // exception message otherwise (no "Exception:" prefix).
+                if (!/^\d+$/.test(String(result))) {
+                    throw new Error(`load_magnetic failed for catalog entry '${key}': ${result}`);
+                }
+                const numberWindings = magnetic?.coil?.functionalDescription?.length;
+                if (numberWindings) {
+                    windingCounts.add(numberWindings);
+                }
+            }
+            this.$stateStore.catalogAvailableWindingCounts = [...windingCounts].sort((a, b) => a - b);
+            loadedCatalogUrl = url;
         },
         async calculateAdvisedMagneticsFromWasmCache() {
             try {
                 const mkf = this.$mkf;
                 if (!mkf) throw new Error('MKF WASM engine not available');
+
+                await this.ensureCatalogCache(mkf);
 
                 // Short-circuit: if the requested winding count isn't present
                 // in the cache, the C++ scorer either crashes ("Exception:
@@ -250,6 +269,23 @@ export default {
                         `[CatalogAdviser] No catalog entry has ${requestedWindings} windings ` +
                         `(available: ${available.join(', ')}); skipping C++ adviser.`
                     );
+                    this.catalogStore.advises = [];
+                    this.catalogStore.advisesKey = "";
+                    this.$emit('canContinue', false);
+                    return;
+                }
+
+                // An undefined winding excitation (e.g. the user added a second
+                // winding but never defined or derived its waveform) reaches the
+                // C++ scorer as null and crashes it with a raw JSON type error.
+                // Surface the actionable problem instead.
+                const missingExcitation = (inputs?.operatingPoints || []).some(
+                    (operatingPoint) => (operatingPoint?.excitationsPerWinding || []).some(
+                        (excitation) => excitation == null));
+                if (missingExcitation) {
+                    console.info(
+                        '[CatalogAdviser] An operating point has an undefined winding ' +
+                        'excitation — define or derive every winding waveform before searching.');
                     this.catalogStore.advises = [];
                     this.catalogStore.advisesKey = "";
                     this.$emit('canContinue', false);
