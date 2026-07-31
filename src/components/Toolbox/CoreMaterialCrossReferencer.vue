@@ -78,11 +78,17 @@ export default {
     methods: {
         calculateCrossReferencedCoreMaterialsValues() {
             crossReferencers.ready.then(_ => {
-                const aux = JSON.parse(crossReferencers.calculate_cross_referenced_core_material(this.crossReferencerStore.coreMaterialReferenceInputs.material,
-                                                                                                 this.crossReferencerStore.coreMaterialReferenceInputs.temperature,
-                                                                                                 this.crossReferencerStore.coreMaterialReferenceInputs.numberMaximumResults,
-                                                                                                 this.onlyManufacturer,
-                                                                                                 this.crossReferencerStore.coreMaterialReferenceInputs.enabledCoreTypes.includes("Only Cores In Stock")));
+                const auxString = crossReferencers.calculate_cross_referenced_core_material(this.crossReferencerStore.coreMaterialReferenceInputs.material,
+                                                                                            this.crossReferencerStore.coreMaterialReferenceInputs.temperature,
+                                                                                            this.crossReferencerStore.coreMaterialReferenceInputs.numberMaximumResults,
+                                                                                            this.onlyManufacturer,
+                                                                                            this.crossReferencerStore.coreMaterialReferenceInputs.enabledCoreTypes.includes("Only Cores In Stock"));
+                // The WASM binding returns the raw exception text on failure —
+                // parsing it as JSON buries the real error under a SyntaxError.
+                if (typeof auxString === 'string' && auxString.startsWith('Exception')) {
+                    throw new Error(auxString);
+                }
+                const aux = JSON.parse(auxString);
 
                 const auxCrossReferencedCoreMaterialsValues = [];
                 aux.coreMaterials.forEach((elem, index) => {
@@ -111,6 +117,7 @@ export default {
                     resistivity: aux.referenceScoredValues.RESISTIVITY,
                 };
 
+                this.errorMessage = "";
                 this.hideOutputs = false;
                 this.loading = false;
 
@@ -118,6 +125,7 @@ export default {
 
             }).catch(error => {
                 console.error(error);
+                this.errorMessage = String(error?.message || error);
                 this.hideOutputs = false;
                 this.loading = false;
             });

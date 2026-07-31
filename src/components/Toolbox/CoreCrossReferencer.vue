@@ -133,6 +133,11 @@ export default {
                                                                                         this.crossReferencerStore.coreReferenceInputs.enabledCoreTypes.includes("Only Cores In Stock"),
                                                                                         this.keepMaterialConstant);
 
+                // The WASM binding returns the raw exception text on failure —
+                // parsing it as JSON buries the real error under a SyntaxError.
+                if (typeof auxString === 'string' && auxString.startsWith('Exception')) {
+                    throw new Error(auxString);
+                }
                 const aux = JSON.parse(auxString);
                 const auxCrossReferencedCoresValues = [];
                 aux.cores.forEach((elem, index) => {
@@ -160,6 +165,7 @@ export default {
                     windingWindowArea: aux.referenceScoredValues.WINDING_WINDOW_AREA,
                 };
 
+                this.errorMessage = "";
                 this.hideOutputs = false;
                 this.loading = false;
 
@@ -167,6 +173,7 @@ export default {
 
             } catch (error) {
                 console.error(error);
+                this.errorMessage = String(error?.message || error);
                 this.hideOutputs = false;
                 this.loading = false;
             }
