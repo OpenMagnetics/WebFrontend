@@ -15,14 +15,14 @@
  */
 
 import fs from 'node:fs';
-import path from 'node:path';
 import { test, expect } from './_coverage.js';
 import { BASE_URL, screenshot, pause } from './utils.js';
 
 const MAS_FIXTURE = new URL('./fixtures/04_forward_xfmr_e3216_n87.json', import.meta.url).pathname;
-const CSV_FIXTURE = path.resolve(
-  '/home/alf/OpenMagnetics/WebFrontend/.playwright-mcp/plecs_test.csv',
-);
+// PLECS-style export: one time axis + V/I per winding (3-winding forward,
+// 100 kHz, rectangular V / triangular I) — validated against the WASM
+// extract_operating_point (3 excitations, triangular label detected).
+const CSV_FIXTURE = new URL('./fixtures/plecs_test.csv', import.meta.url).pathname;
 
 const ss = (page, name) => screenshot(page, 'file-uploads', name);
 

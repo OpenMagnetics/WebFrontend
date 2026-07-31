@@ -20,12 +20,20 @@ async function primeSharedPage(sharedPage) {
   const url = sharedPage.url();
   if (url === 'about:blank' || !url.includes(BASE_URL.replace(/^https?:\/\//, ''))) {
     await sharedPage.goto(`${BASE_URL}/magnetic_tool`, { waitUntil: 'domcontentloaded' });
-    // Wait for the actual destination, not merely "not engine_loader": the
-    // guard redirects to /engine_loader asynchronously, so a negative check
-    // can pass before the redirect even happens and the test then observes
-    // the loader URL.
+    // Wait for the actual destination WITH the engine mounted. A bare
+    // pathname check is satisfied by the PRE-redirect URL (goto lands on
+    // /magnetic_tool first; the guard bounces to /engine_loader
+    // asynchronously), so it resolves instantly and the test then observes
+    // the loader. $mkf non-null without the loader's `_loading: true` stub is
+    // the signal that the engine_loader round-trip finished. (On the real
+    // worker proxy `_loading` is a generated async method — truthy but not
+    // the boolean — hence the strict comparison; see main.js beforeEach.)
     await sharedPage.waitForFunction(
-      () => window.location.pathname.includes('magnetic_tool'),
+      () => {
+        const mkf = document.querySelector('#app')?.__vue_app__?.config?.globalProperties?.$mkf;
+        return window.location.pathname.includes('magnetic_tool') && mkf != null && mkf._loading !== true;
+      },
+      null,
       { timeout: 90000 },
     );
     await pause(sharedPage, 800, 'mechanical: settle');
@@ -46,15 +54,22 @@ test.describe('Warm fixture — shared page across tests', () => {
 
   test('WARM-2: reuses the same worker — MKF is already initialized', async ({ sharedPage }) => {
     await primeSharedPage(sharedPage);
-    // Touch the MKF WASM via Pinia's taskQueue store — if the worker survived,
-    // mkf.ready resolves effectively instantly.
+    // Touch the MKF WASM via the app's own $mkf proxy — if the worker
+    // survived, mkf.ready resolves effectively instantly. Do NOT re-import
+    // mkfRuntime here: a dynamic import from the test uses a different module
+    // URL than the app's, so it gets a FRESH module instance whose singleton
+    // was never initialized and waitForMkf() pends forever (the old version
+    // of this test hung to the 120 s timeout on exactly that).
     const t0 = Date.now();
     const ok = await sharedPage.evaluate(async () => {
-      const waitForMkfMod = await import('/WebSharedComponents/assets/js/mkfRuntime');
-      const mkf = await waitForMkfMod.waitForMkf();
+      const mkf = document.querySelector('#app')?.__vue_app__?.config?.globalProperties?.$mkf;
+      if (mkf == null || mkf._loading === true) return false;
       await mkf.ready;
       const types = await mkf.get_available_wire_types();
-      return types && typeof types.size === 'function';
+      if (types == null) return false;
+      // Worker-converted results arrive as plain arrays; a direct embind
+      // vector exposes .size() — accept either.
+      return Array.isArray(types) || typeof types.size === 'function';
     }).then((v) => v, () => false);
     const elapsed = Date.now() - t0;
     expect(ok).toBe(true);

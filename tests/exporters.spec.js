@@ -148,7 +148,11 @@ test.describe('Exporters — Core (STP/STL)', () => {
     await openModal(page, 'Core-exports-modal-button');
 
     const dl = page.locator('.p-dialog [data-cy$="-download-button"]').first();
-    const download = await expectDownload(page, dl, 30000);
+    // The STP build is a full-magnetic STEP via OCC in the 39 MB MVB WASM:
+    // measured ~31 s on a cold worker (2026-07-31, solo run) — 30 s sat just
+    // under reality even with the export working. Budget 120 s so parallel
+    // load doesn't reintroduce a false failure.
+    const download = await expectDownload(page, dl, 120000);
     expect(download.suggestedFilename()).toMatch(/\.(stp|stl)$/i);
     await ss(page, 'CORE2-downloaded');
   });

@@ -452,8 +452,18 @@ test.describe('Group G — Magnetic Builder step', () => {
       'utf-8',
     ));
     await page.goto(`${BASE_URL}/magnetic_tool`, { waitUntil: 'domcontentloaded', timeout: 20000 });
+    // Wait for the engine-loader ROUND-TRIP, not merely "not engine_loader":
+    // that check passes on the pre-redirect URL, so the fixture used to be
+    // injected while the loader was still active — MagneticTool then mounted
+    // with anyDesignLoaded false and resetMas() wiped the injected design
+    // (empty Core Configuration, G5 red). $mkf without the loader's
+    // `_loading: true` stub means the bounce finished and the mount-time
+    // reset already ran.
     await tryWaitForFunction(page,
-      () => !window.location.pathname.includes('engine_loader'), null, { timeout: 45000 },
+      () => {
+        const mkf = document.querySelector('#app')?.__vue_app__?.config?.globalProperties?.$mkf;
+        return window.location.pathname.includes('magnetic_tool') && mkf != null && mkf._loading !== true;
+      }, null, { timeout: 45000 },
     );
     await pause(page, 1000, 'mechanical: settle');
     await page.evaluate((parsedMas) => {
@@ -461,6 +471,7 @@ test.describe('Group G — Magnetic Builder step', () => {
       const mas = pinia._s.get('mas');
       const state = pinia._s.get('state');
       mas.setMas(parsedMas);
+      state.designLoaded?.();
       state.selectTool?.('magneticBuilder');
       state.setCurrentToolSubsectionStatus('designRequirements', true);
       state.setCurrentToolSubsectionStatus('operatingPoints', true);
@@ -500,6 +511,10 @@ test.describe('Group G — Magnetic Builder step', () => {
 // ── Group H — Magnetic Summary ────────────────────────────────────────────────
 
 test.describe('Group H — Magnetic Summary', () => {
+  // goToSummary is a full wizard → advise-core → advise-wire drive: the
+  // default 30 s test timeout is structurally too short (H2/H3 timed out on
+  // every run). Same budget as Groups G and I.
+  test.describe.configure({ timeout: 120000 });
   /**
    * Navigate to magneticSummary: wizard → DR → OP → Core Advise → wire advise → Continue.
    * Falls back to clicking the Summary storyline tab if it becomes enabled.
@@ -509,27 +524,31 @@ test.describe('Group H — Magnetic Summary', () => {
     await clickContinue(page); // → OP
     await clickContinue(page); // → builder
 
-    // Advise core
+    // Advise core + wire. Hard expects, not softVisible guards: when the
+    // Advise button took >5 s to render (slow builder mount under coverage),
+    // the soft guard silently SKIPPED the advise, the Summary never enabled,
+    // and H2/H3 failed 30 s later with a misleading "button must be visible".
+    // Same semantics as exporters.spec.js setupCompleteMagnetic (which passes).
     const coreBtn = page.locator('[data-cy$="-Core-Advise-button"]').first();
-    if (await softVisible(coreBtn, 5000)) {
-      await coreBtn.click();
-      await page.waitForFunction(
-        () => !document.querySelector('[data-cy$="-BasicCoreSelector-loading"]'),
-        { timeout: 60000 }
-      );
-      await pause(page, 500, 'mechanical: settle');
-    }
+    await expect(coreBtn, 'Core Advise button must appear on the builder step').toBeVisible({ timeout: 15000 });
+    await coreBtn.click();
+    await page.waitForFunction(
+      () => !document.querySelector('[data-cy$="-BasicCoreSelector-loading"]'),
+      { timeout: 60000 }
+    );
+    await pause(page, 500, 'mechanical: settle');
 
-    // Advise wire
-    const wireBtn = page.locator('[data-cy$="-Wire-Advise-button"]').first();
-    if (await softVisible(wireBtn, 5000)) {
-      await wireBtn.click();
-      await tryWaitForFunction(page,
-        () => !document.querySelector('[data-cy$="-BasicWireSelector-loading"]'),
-        { timeout: 60000 }
-      );
-      await pause(page, 500, 'mechanical: settle');
-    }
+    // No leading dash: BasicWireSelector mounts without a dataTestLabel, so
+    // its button's data-cy is exactly 'Wire-Advise-button' — the old
+    // '-Wire-Advise-button' suffix could never match it.
+    const wireBtn = page.locator('[data-cy$="Wire-Advise-button"]').first();
+    await expect(wireBtn, 'Wire Advise button must appear after core advise').toBeVisible({ timeout: 10000 });
+    await wireBtn.click();
+    await page.waitForFunction(
+      () => !document.querySelector('[data-cy$="-BasicWireSelector-loading"]'),
+      { timeout: 60000 }
+    );
+    await pause(page, 500, 'mechanical: settle');
 
     // Continue to summary
     await clickContinue(page);
