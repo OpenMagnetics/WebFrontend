@@ -1,5 +1,11 @@
 import { checkAndFixMas } from 'WebSharedComponents/assets/js/utils.js'
-import { Convert } from 'WebSharedComponents/assets/ts/MAS.ts'
+import { Convert, WaveformLabel } from 'WebSharedComponents/assets/ts/MAS.ts'
+
+// Map every WaveformLabel enum value by its lowercase form so legacy documents
+// with capitalized labels ("Triangular", "Rectangular") resolve to the current
+// schema spelling case-insensitively.
+const waveformLabelByLowercase = Object.fromEntries(
+    Object.values(WaveformLabel).map((value) => [value.toLowerCase(), value]));
 
 // Same null-stripping the MAS sentry applies before Convert validation:
 // quicktype optionals reject explicit null, and files exported by the app
@@ -58,6 +64,13 @@ function quarantineInvalidOutputs(mas) {
 // silently stops working (web bug reports #144/#145). Normalize the known
 // legacy spellings before anything validates the document.
 export function migrateLegacyMas(mas) {
+    // The app's own "Download MAS file" export strips `outputs` (stale results),
+    // but the engine's Mas parser requires the key — re-importing an exported
+    // design failed mas_autocomplete with "key 'outputs' not found", leaving the
+    // core unprocessed and the builder in a worker-returned-minus-one loop.
+    if (!Array.isArray(mas.outputs)) {
+        mas.outputs = [];
+    }
     const requirements = mas?.inputs?.designRequirements;
     const insulation = requirements?.insulation;
     if (insulation != null) {
@@ -74,6 +87,25 @@ export function migrateLegacyMas(mas) {
         const lowercased = requirements.wiringTechnology.toLowerCase();
         if (['wound', 'printed', 'stamped', 'deposition'].includes(lowercased)) {
             requirements.wiringTechnology = lowercased;
+        }
+    }
+    // Legacy exports capitalized waveform labels ("Triangular"). The engine's
+    // from_json rejects them ("Input JSON does not conform to schema!") and the
+    // worker call returns -1, which the builder then retries in a loop — the
+    // loaded design floods the console and never renders losses. Normalize
+    // case-insensitively against the current enum.
+    for (const operatingPoint of (mas?.inputs?.operatingPoints || [])) {
+        for (const excitation of (operatingPoint?.excitationsPerWinding || [])) {
+            if (excitation == null) continue;
+            for (const signal of [excitation.current, excitation.voltage, excitation.magnetizingCurrent]) {
+                const label = signal?.processed?.label;
+                if (typeof label === 'string') {
+                    const canonical = waveformLabelByLowercase[label.toLowerCase()];
+                    if (canonical && canonical !== label) {
+                        signal.processed.label = canonical;
+                    }
+                }
+            }
         }
     }
     // Old Outputs kept magnetizingInductance/leakageInductance at the top level;
