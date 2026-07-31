@@ -168,21 +168,32 @@ test('DMC → Advise Core + Advise Wire produces a complete magnetic without con
   );
   await page.screenshot({ path: 'tests/screenshots/dmc-magn-B2-after-advise-core.png', fullPage: true });
 
-  // For each winding, click "Advise" or the wire-side adviser button and wait
-  // for that winding's wire to populate. The wire panel typically only shows
-  // one winding at a time — find a winding switcher and iterate.
-  const adviseWireForCurrent = async () => {
-    const buttons = await page.locator('button').filter({ hasText: /Advise|Get Wire/i }).all();
-    for (const b of buttons) {
-      const txt = (await softText(b)) || '';
-      if (/wire/i.test(txt) || /Advise All/i.test(txt) || /^Advise$/i.test(txt)) {
-        if (await softVisible(b) && await softEnabled(b)) {
-          await b.click();
-          break;
-        }
-      }
-    }
-    await pause(page, 1500, 'mechanical: settle');
+  // For each winding, click the wire adviser button and wait for that
+  // winding's wire to populate. The wire panel only shows one winding at a
+  // time — switch via the winding pills and iterate. The button's data-cy is
+  // exactly 'Wire-Advise-button' (BasicWireSelector mounts with no
+  // dataTestLabel). The old fuzzy /^Advise$/ text matcher hit the CORE
+  // Configuration's Advise button first on every iteration, so no wire was
+  // ever advised and the test burned its full 360 s timeout waiting for
+  // wires that could not appear (ABT #77's "hang" on the current engine —
+  // the real per-winding calculate_advised_coil returns in ~2 s).
+  const adviseWireForCurrent = async (windingIndex) => {
+    const wireBtn = page.locator('[data-cy$="Wire-Advise-button"]').first();
+    await wireBtn.waitFor({ state: 'visible', timeout: 15000 });
+    await wireBtn.click();
+    // Wait for THIS winding's wire to actually populate (measured ~1.7 s per
+    // winding) instead of a blind pause — a fixed pause let the next pill
+    // click race the loading overlay and occasionally swallowed an advise.
+    await page.waitForFunction(
+      (idx) => {
+        const app = document.querySelector('#app').__vue_app__;
+        const pinia = app._context?.config?.globalProperties?.$pinia || app.config?.globalProperties?.$pinia;
+        const wire = pinia?._s?.get('mas')?.mas?.magnetic?.coil?.functionalDescription?.[idx]?.wire;
+        return wire && wire !== 'Dummy' && wire !== '';
+      },
+      windingIndex,
+      { timeout: 60000 },
+    );
   };
 
   // First, try "Advise All Wires" if it exists (common helper button).
@@ -200,13 +211,13 @@ test('DMC → Advise Core + Advise Wire produces a complete magnetic without con
       return masStore?.mas?.magnetic?.coil?.functionalDescription?.length || 0;
     });
     for (let i = 0; i < numWindings; i++) {
-      // Click the i-th winding-selector tab if it exists
-      const tab = page.locator('[class*="winding"] button, [data-cy*="WindingSelector"] button').nth(i);
+      // Switch to the i-th winding via its pill (WindingSelector.vue).
+      const tab = page.locator('button.winding-pill').nth(i);
       if (await softVisible(tab)) {
         await clickIfPresent(tab);
         await pause(page, 800, 'mechanical: settle');
       }
-      await adviseWireForCurrent();
+      await adviseWireForCurrent(i);
     }
   }
 
