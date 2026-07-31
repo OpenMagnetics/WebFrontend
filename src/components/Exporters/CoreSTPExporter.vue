@@ -8,6 +8,7 @@ export default {
     props: {
         dataTestLabel: { type: String, default: '' },
         core: { type: Object, required: true },
+        coil: { type: Object, default: null },
         fullCoreModel: { type: Boolean, default: true },
         classProp: { type: String, default: 'btn-primary m-0 p-0' },
     },
@@ -29,7 +30,13 @@ export default {
                     coreAux.functionalDescription.shape.familySubtype =
                         String(coreAux.functionalDescription.shape.familySubtype);
                 }
-                const magnetic = { core: coreAux };
+                // MVB's drawMagnetic parses a full MAS Magnetic — a coil-less
+                // {core} payload dies inside the WASM with bad_optional_access
+                // (no core-only STEP draw exists, unlike STL's buildCoreSTL).
+                if (this.coil == null) {
+                    throw new Error('[CoreSTPExporter] STEP export needs the coil: pass the wound magnetic\'s coil prop (MVB has no core-only STEP draw)');
+                }
+                const magnetic = { core: coreAux, coil: deepCopy(this.coil) };
 
                 const buf = await buildMagneticSTEP(magnetic, {
                     includeBobbin: this.fullCoreModel,

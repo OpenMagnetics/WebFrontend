@@ -40,11 +40,12 @@ export default {
                 class="btn col-4 mt-4"
                 :data-cy="dataTestLabel + '-download-STP-File-button'"
                 :core="masStore.mas.magnetic.core"
+                :coil="masStore.mas.magnetic.coil"
                 :fullCoreModel="true"
             />
             <CoreStlExporter
                 class="btn col-offset-1 col-4 mt-4"
-                :data-cy="dataTestLabel + '-download-STP-File-button'"
+                :data-cy="dataTestLabel + '-download-STL-File-button'"
                 :core="masStore.mas.magnetic.core"
                 :coil="masStore.mas.magnetic.coil"
                 :fullCoreModel="true"
