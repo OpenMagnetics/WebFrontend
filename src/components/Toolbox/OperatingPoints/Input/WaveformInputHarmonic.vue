@@ -50,11 +50,14 @@ export default {
 
 <template>
     <div class="container">
-        <div class="row">
-            <Dimension class="col-6 mb-1 text-left"
+        <div class="row align-items-center">
+            <div class="col-12 md:col-2 harmonic-title">
+                {{ title }}
+            </div>
+            <Dimension class="col-12 md:col-4 mb-1 text-left"
                 :name="String(index)"
                 :unit="'Hz'"
-                :replaceTitle="title"
+                :replaceTitle="''"
                 :dataTestLabel="dataTestLabel + '-HarmonicFrequency-' + index"
                 :min="1"
                 :justifyContent="true"
@@ -65,8 +68,6 @@ export default {
                 :allowZero="true"
                 :modelValue="modelValue.frequencies"
                 @update="$emit('onFrequencyChanged')"
-                :labelWidthProportionClass="'col-3'"
-                :valueWidthProportionClass="'col-9'"
                 :valueFontSize="$styleStore.operatingPoints.inputFontSize"
                 :labelFontSize="$styleStore.operatingPoints.inputLabelFontSize"
                 :labelBgColor="$styleStore.operatingPoints.inputLabelBgColor"
@@ -74,11 +75,11 @@ export default {
                 :textColor="$styleStore.operatingPoints.inputTextColor"
             />
 
-            <Dimension class="col-4 mb-1 text-left"
+            <Dimension class="col-12 md:col-4 mb-1 text-left"
                 :name="String(index)"
                 :unit="unit"
                 :replaceTitle="''"
-                :dataTestLabel="dataTestLabel + '-HarmonicFrequency-' + index"
+                :dataTestLabel="dataTestLabel + '-HarmonicAmplitude-' + index"
                 :min="0"
                 :unitMin="0.001"
                 :unitMax="1000"
@@ -89,8 +90,6 @@ export default {
                 :allowZero="true"
                 :modelValue="modelValue.amplitudes"
                 @update="$emit('onAmplitudeChanged')"
-                :labelWidthProportionClass="'col-0'"
-                :valueWidthProportionClass="'col-12'"
                 :valueFontSize="$styleStore.operatingPoints.inputFontSize"
                 :labelFontSize="$styleStore.operatingPoints.inputLabelFontSize"
                 :labelBgColor="$styleStore.operatingPoints.inputLabelBgColor"
@@ -107,7 +106,7 @@ export default {
                     <i
                         :style="combinedStyle([$styleStore.operatingPoints.addElementButtonColor])"
                         :class="combinedClass([$styleStore.operatingPoints.addElementButtonColor])"
-                        class="pi pi-plus-circle text-secondary"
+                        class="pi pi-plus-circle"
                     ></i>
                 </button>
                 <button
@@ -133,18 +132,42 @@ export default {
 </template>
 
 <style scoped>
+.harmonic-title {
+    display: flex;
+    align-items: center;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    padding: 0 0.25rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
 .harmonic-btn-group {
     display: flex;
     flex-direction: row;
     align-items: center;
-    gap: 2px;
-    height: 40px;
+    gap: 0.25rem;
+    height: 1.75rem;
     flex-shrink: 0;
 }
 
 .harmonic-btn-group .wih-circle-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.5rem;
+    height: 1.5rem;
     padding: 0;
     line-height: 1;
     flex-shrink: 0;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    cursor: pointer;
+}
+
+.harmonic-btn-group .wih-circle-btn i {
+    font-size: 1rem;
 }
 </style>
