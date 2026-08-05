@@ -91,7 +91,7 @@ export default {
     created () {
 
     },
-    mounted () {
+    async mounted () {
         // Only process harmonics if waveform doesn't exist (initial setup)
         // Don't regenerate waveform when returning from other tools.
         // Process for ALL windings, not just the currently selected one,
@@ -103,8 +103,16 @@ export default {
             if (exc == null) continue;
             const needsCurrent = exc.current?.waveform == null && exc.current?.harmonics?.frequencies?.length >= 2;
             const needsVoltage = exc.voltage?.waveform == null && exc.voltage?.harmonics?.frequencies?.length >= 2;
-            if (needsCurrent) this.processHarmonics("current", w);
-            if (needsVoltage) this.processHarmonics("voltage", w);
+            if (needsCurrent) await this.processHarmonicsSequentially("current", w);
+            // Inductor mode: voltage harmonics inputs are disabled and the
+            // voltage is derived from the current via the magnetizing
+            // inductance — standardizing it from its default harmonics
+            // would produce a wrong waveform.
+            if (needsVoltage && !this.isInductor) await this.processHarmonicsSequentially("voltage", w);
+        }
+        if (this.isInductor && this.hasInductance) {
+            // Induce the voltage from the reconstructed current waveform.
+            this.induceVoltageFromCurrent();
         }
     },
     methods: {
@@ -148,8 +156,22 @@ export default {
                 console.error('[induceVoltageFromCurrent] failed:', error);
             }
         },
+        async processHarmonicsSequentially(signalDescriptor, windingIndex) {
+            // Run one pass and then wait out the 500 ms cooldown so the NEXT
+            // pass isn't dropped by the busy guard (mounted() needs a current
+            // pass AND a voltage pass back-to-back).
+            await this.processHarmonics(signalDescriptor, windingIndex);
+            await new Promise((resolve) => setTimeout(resolve, 600));
+        },
         async processHarmonics(signalDescriptor, windingIndexOverride = null) {
             if (this.processingHarmonics) {
+                // Skip, do NOT defer-and-retry: the store-object replacement at
+                // the end of each pass re-triggers this via the Dimension
+                // @update handlers, and a retry turns that self-trigger into
+                // an endless reprocessing loop. The 500 ms cooldown in
+                // finally{} is what breaks the cycle. Callers that legitimately
+                // need back-to-back passes (mounted) must serialize through
+                // processHarmonicsSequentially instead.
                 console.log(`[processHarmonics] SKIPPED (already processing)`);
                 return;
             }
@@ -288,10 +310,10 @@ export default {
             }
             this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex][signalDescriptor].harmonics.frequencies.splice(index + 1, 0, newFrequency);
             this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex][signalDescriptor].harmonics.amplitudes.splice(index + 1, 0, newAmplitude);
+            this.processHarmonics(signalDescriptor);
             if (signalDescriptor == "current") {
                 this.forceUpdateCurrent += 1;
                 if (this.isInductor) {
-                    this.processHarmonics('current');
                     setTimeout(() => this.induceVoltageFromCurrent(), 600);
                 }
             }
@@ -302,10 +324,10 @@ export default {
         onRemovePoint(index, signalDescriptor) {
             this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex][signalDescriptor].harmonics.frequencies.splice(index, 1);
             this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex][signalDescriptor].harmonics.amplitudes.splice(index, 1);
+            this.processHarmonics(signalDescriptor);
             if (signalDescriptor == "current") {
                 this.forceUpdateCurrent += 1;
                 if (this.isInductor) {
-                    this.processHarmonics('current');
                     setTimeout(() => this.induceVoltageFromCurrent(), 600);
                 }
             }

@@ -107,7 +107,7 @@ export default {
                     <i
                         :style="combinedStyle([$styleStore.operatingPoints.addElementButtonColor])"
                         :class="combinedClass([$styleStore.operatingPoints.addElementButtonColor])"
-                        class="pi pi-plus-circle-fill text-secondary"
+                        class="pi pi-plus-circle text-secondary"
                     ></i>
                 </button>
                 <button
