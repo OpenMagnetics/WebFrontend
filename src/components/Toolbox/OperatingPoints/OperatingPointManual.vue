@@ -134,6 +134,15 @@ export default {
                     const userDutyCycle = this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex].current.processed.dutyCycle;
                     const originalVoltageLabel = this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex].voltage.processed?.label;
                     var voltage = await this.taskQueueStore.calculateInducedVoltage(this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex], magnetizingInductance);
+                    // Never store a null/absent field: consumers read
+                    // voltage.processed.rms unconditionally, so a stored null
+                    // poisons every later render. Fail loudly instead.
+                    if (voltage?.waveform == null || voltage?.harmonics == null || voltage?.processed == null) {
+                        throw new Error(`calculateInducedVoltage returned an incomplete signal `
+                            + `(waveform=${voltage?.waveform == null ? 'null' : 'ok'}, `
+                            + `harmonics=${voltage?.harmonics == null ? 'null' : 'ok'}, `
+                            + `processed=${voltage?.processed == null ? 'null' : 'ok'}) — store left untouched`);
+                    }
                     if (userDutyCycle != null) voltage.processed.dutyCycle = userDutyCycle;
                     if (originalVoltageLabel && originalVoltageLabel.toLowerCase() !== 'custom') voltage.processed.label = originalVoltageLabel;
                     this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex].voltage.waveform = voltage.waveform;
@@ -151,6 +160,12 @@ export default {
                     var magnetizingInductance = await this.taskQueueStore.resolveDimensionWithTolerance(this.masStore.mas.inputs.designRequirements.magnetizingInductance);
                     var current = await this.taskQueueStore.calculateInducedCurrent(this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex], magnetizingInductance);
 
+                    if (current?.waveform == null || current?.harmonics == null || current?.processed == null) {
+                        throw new Error(`calculateInducedCurrent returned an incomplete signal `
+                            + `(waveform=${current?.waveform == null ? 'null' : 'ok'}, `
+                            + `harmonics=${current?.harmonics == null ? 'null' : 'ok'}, `
+                            + `processed=${current?.processed == null ? 'null' : 'ok'}) — store left untouched`);
+                    }
                     this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex].current.waveform = current.waveform;
                     this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex].current.harmonics = current.harmonics;
                     this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex].current.processed = current.processed;

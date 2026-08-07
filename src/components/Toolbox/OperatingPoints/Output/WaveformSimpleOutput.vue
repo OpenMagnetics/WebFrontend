@@ -183,7 +183,10 @@ export default {
             <span>Quick stats</span>
         </div>
         <div class="wso-body">
+            <!-- processed.rms only exists once MKF has standardized the signal.
+                 Render nothing until then — never a placeholder number. -->
             <DimensionReadOnly
+                v-if="modelValue.current?.processed?.rms != null"
                 :name="'rms'"
                 :replaceTitle="'Current RMS:'"
                 :unit="'A'"
@@ -201,6 +204,7 @@ export default {
                 :textColor="$styleStore.operatingPoints.inputTextColor"
             />
             <DimensionReadOnly
+                v-if="modelValue.voltage?.processed?.rms != null"
                 :name="'rms'"
                 :replaceTitle="'Voltage RMS:'"
                 :unit="'V'"

@@ -61,6 +61,7 @@ export default {
             forceUpdateCurrent,
             forceUpdateVoltage,
             blockingRebounds,
+            blockingReboundsFrequency: false,
             processingHarmonics: false,
             errorMessages: {
                 current: "",
@@ -146,6 +147,15 @@ export default {
                 const magnetizingInductance = await this.taskQueueStore.resolveDimensionWithTolerance(this.masStore.mas.inputs.designRequirements.magnetizingInductance);
                 const excitation = this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex];
                 const voltage = await this.taskQueueStore.calculateInducedVoltage(excitation, magnetizingInductance);
+                // Never write a null/absent field into the store: consumers read
+                // voltage.processed.rms unconditionally and a stored null poisons
+                // every subsequent render. Fail loudly on a bad MKF result instead.
+                if (voltage?.waveform == null || voltage?.harmonics == null || voltage?.processed == null) {
+                    throw new Error(`calculateInducedVoltage returned an incomplete signal `
+                        + `(waveform=${voltage?.waveform == null ? 'null' : 'ok'}, `
+                        + `harmonics=${voltage?.harmonics == null ? 'null' : 'ok'}, `
+                        + `processed=${voltage?.processed == null ? 'null' : 'ok'}) — store left untouched`);
+                }
                 excitation.voltage.waveform = voltage.waveform;
                 excitation.voltage.harmonics = voltage.harmonics;
                 excitation.voltage.processed = voltage.processed;
@@ -195,22 +205,26 @@ export default {
                 console.log(`[processHarmonics] input harmonics:`, JSON.parse(JSON.stringify(excitation.harmonics)));
                 console.log(`[processHarmonics] has waveform:`, !!excitation.waveform, 'has processed:', !!excitation.processed);
 
-                // Save the user-entered harmonics and current state before clearing
+                // Save the user-entered harmonics before standardizing
                 const userHarmonics = JSON.parse(JSON.stringify(excitation.harmonics));
-                const signalBackup = JSON.parse(JSON.stringify(this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[windingIndex][signalDescriptor]));
 
-                // Clear waveform/processed so standardize reconstructs from harmonics
-                this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[windingIndex][signalDescriptor].waveform = null;
-                this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[windingIndex][signalDescriptor].processed = null;
+                // Standardize on a DETACHED copy. Nulling waveform/processed on the
+                // live store object publishes a half-erased signal to every consumer
+                // for the whole duration of the await below, and they re-render
+                // inside that window — WaveformSimpleOutput reads
+                // voltage.processed.rms and throws, once per re-render, forever.
+                // Build the input off-store and swap the result in atomically.
+                const signalForStandardize = JSON.parse(JSON.stringify(this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[windingIndex][signalDescriptor]));
+                signalForStandardize.waveform = null;
+                signalForStandardize.processed = null;
 
                 console.log(`[processHarmonics] calling standardizeSignalDescriptor with frequency=${frequency}`);
                 let parsedResult;
                 try {
-                    parsedResult = await this.taskQueueStore.standardizeSignalDescriptor(this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[windingIndex][signalDescriptor], frequency);
+                    parsedResult = await this.taskQueueStore.standardizeSignalDescriptor(signalForStandardize, frequency);
                 } catch (e) {
-                    // WASM failed — restore the signal to its previous state
-                    console.error('[processHarmonics] standardize FAILED, restoring signal:', e);
-                    this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[windingIndex][signalDescriptor] = signalBackup;
+                    // WASM failed — the store was never mutated, nothing to restore.
+                    console.error('[processHarmonics] standardize FAILED:', e);
                     return;
                 }
 
@@ -250,6 +264,18 @@ export default {
                 return;
             }
 
+            // Rebound guard — the same one onAmplitudeChanged has, and for the same
+            // reason. The cross-signal write below bumps forceUpdateCurrent/Voltage,
+            // Dimension's forceUpdate watcher answers with an 'update' emit, and
+            // WaveformInputHarmonic turns that back into onFrequencyChanged. That
+            // ricochet is supposed to stop once both fundamentals are equal, but the
+            // value round-trips through Dimension's scale/rounding, so the raw !=
+            // below can stay true forever and current<->voltage ping-pong without
+            // end (console flood + the UI stuck "thinking").
+            if (this.blockingReboundsFrequency) return;
+            this.blockingReboundsFrequency = true;
+            setTimeout(() => this.blockingReboundsFrequency = false, 20);
+
             if (this.checkFrequencies(signalDescriptor)) {
                 this.processHarmonics(signalDescriptor);
                 if (signalDescriptor == "current" && this.isInductor) {
@@ -259,13 +285,26 @@ export default {
 
                 if (this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex].voltage.harmonics.frequencies[1] != this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex].current.harmonics.frequencies[1]) {
 
+                    let mirroredSignal;
                     if (signalDescriptor == "current") {
                         this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex].voltage.harmonics.frequencies[1] = this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex].current.harmonics.frequencies[1];
                         this.forceUpdateVoltage += 1;
+                        mirroredSignal = "voltage";
                     }
                     else {
                         this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex].current.harmonics.frequencies[1] = this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex].voltage.harmonics.frequencies[1];
                         this.forceUpdateCurrent += 1;
+                        mirroredSignal = "current";
+                    }
+
+                    // The mirrored signal's fundamental just changed, so it has to
+                    // be re-standardized too. That used to happen by accident, via
+                    // the Dimension forceUpdate -> 'update' -> onFrequencyChanged
+                    // ricochet that caused the infinite loop; do it explicitly and
+                    // serialized instead. Inductor mode derives the voltage from
+                    // the current (see induceVoltageFromCurrent), so it is exempt.
+                    if (!(mirroredSignal == "voltage" && this.isInductor)) {
+                        this.processHarmonicsSequentially(mirroredSignal, this.currentWindingIndex);
                     }
                 }
             }
