@@ -45,6 +45,15 @@ export const useSettingsStore = defineStore("settings", () => {
         enableSimulation: true,
         enableAutoSimulation: true,
         enableDebugConsole: false,
+        // Real winding: draw the coil as it is actually wound — continuous conductor with
+        // real leads, pitch and dragbacks — instead of the idealised per-turn rings, in
+        // BOTH the 2D and the 3D views. Lives in the GLOBAL settings store because both
+        // visualizers are in WebSharedComponents and read it directly; one flag, one
+        // source of truth, so the two views can never disagree about what they are drawing.
+        // Default OFF: MKF re-winds and the conductor is swept rather than instanced, so it
+        // costs seconds to minutes, and designs whose leads collide with their dragbacks
+        // cannot be routed at all (ABT #646).
+        useRealWindingGeometry: false,
         // Optional whitelist of core shape families (case-insensitive codes
         // like "t", "e", "etd"). When null (default) all families MKF reports
         // are shown. When set to an array, both Basic and Advanced core
@@ -91,6 +100,7 @@ export const useSettingsStore = defineStore("settings", () => {
             enableSimulation: true,
             enableAutoSimulation: true,
             enableDebugConsole: false,
+            useRealWindingGeometry: false,
             restrictedShapeFamilies: null,
         };
         this.coreAdviserSettings ={

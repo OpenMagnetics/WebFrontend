@@ -306,9 +306,12 @@ test.describe('3D on the web', () => {
         const ideal = await readScene();
         await testInfo.attach('viewer-ideal.png', { body: await page.screenshot(), contentType: 'image/png' });
 
-        const toggle = page.locator('[data-cy$="-real-winding-toggle"]').first();
-        await toggle.waitFor({ state: 'visible', timeout: 30000 });
-        await toggle.click();
+        // Real winding is a global Display setting (Tool menu > Settings > Display), not a
+        // per-view button: flip the store the settings dialog writes to.
+        await page.evaluate(() => {
+            const pinia = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia;
+            pinia._s.get('settings').magneticBuilderSettings.useRealWindingGeometry = true;
+        });
 
         // What must hold is that the toggle REBUILDS the conductors — silently doing
         // nothing is the regression to catch. What must NOT be asserted here is that the

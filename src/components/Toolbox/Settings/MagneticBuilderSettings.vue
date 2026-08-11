@@ -45,6 +45,7 @@ export default {
             enableTemperatureFilter: this.$settingsStore.adviserSettings.enableTemperatureFilter,
             maximumTemperature: this.$settingsStore.adviserSettings.maximumTemperature,
             enableVisualizers: magneticBuilderSettingsStore.enableVisualizers,
+            useRealWindingGeometry: this.$settingsStore.magneticBuilderSettings.useRealWindingGeometry,
             enableSimulation: this.$settingsStore.magneticBuilderSettings.enableSimulation,
             enableAutoSimulation: this.$settingsStore.magneticBuilderSettings.enableAutoSimulation,
             enableSubmenu: magneticBuilderSettingsStore.enableSubmenu,
@@ -325,13 +326,33 @@ export default {
                                 <span class="text-white">3D Visualization</span>
                             </div>
                             <div class="form-check form-switch">
-                                <input 
+                                <input
                                     :data-cy="dataTestLabel + '-Settings-Modal-enable-visualization-button'"
-                                    class="form-check-input custom-switch" 
-                                    type="checkbox" 
+                                    class="form-check-input custom-switch"
+                                    type="checkbox"
                                     role="switch"
                                     :checked="localData.enableVisualizers"
                                     @change="onMagneticBuilderSettingChanged('enableVisualizers')"
+                                >
+                            </div>
+                        </div>
+
+                        <div class="setting-item d-flex justify-content-between align-items-center py-2 border-bottom border-secondary">
+                            <div>
+                                <span class="text-white">Real winding</span>
+                                <small class="d-block text-secondary">
+                                    Draw the coil as it is actually wound — continuous conductor with leads,
+                                    pitch and dragbacks — in both the 2D and 3D views. Slower to build.
+                                </small>
+                            </div>
+                            <div class="form-check form-switch">
+                                <input
+                                    :data-cy="dataTestLabel + '-Settings-Modal-real-winding-button'"
+                                    class="form-check-input custom-switch"
+                                    type="checkbox"
+                                    role="switch"
+                                    :checked="localData.useRealWindingGeometry"
+                                    @change="onSettingChanged('useRealWindingGeometry')"
                                 >
                             </div>
                         </div>
