@@ -112,8 +112,11 @@ test.describe('3D on the web', () => {
                 }
             };
             return [
+                // drawTurns and drawMagnetic both take the trailing real-winding pair
+                // (useRealWindingGeometry, femReady); embind enforces exact arity, so pass
+                // undefined to select the documented default.
                 run('drawCore', () => mvbpp.drawCore(...args)),
-                run('drawTurns', () => mvbpp.drawTurns(...args, true)),
+                run('drawTurns', () => mvbpp.drawTurns(...args, true, undefined, undefined)),
                 run('drawMagnetic', () => mvbpp.drawMagnetic(...args, true, undefined, undefined)),
             ];
         }, RAW_BY_NAME_MAGNETIC);
@@ -155,6 +158,37 @@ test.describe('3D on the web', () => {
         // The two modes describe the same metal with different topology — one continuous
         // body per (winding, parallel) vs per-turn closed loops — so they must not be
         // byte-identical, or the flag silently did nothing.
+        expect(out.real.bytes).not.toBe(out.ideal.bytes);
+    });
+
+    // The 3D VIEWER draws core, bobbin and turns as separate meshes so each can carry its
+    // own colour and visibility toggle — so it cannot use the single-call drawMagnetic
+    // assembly, and for a long time that meant it could not show the real winding at all.
+    // drawTurns now has the real-winding form (MVB++), routed through the same
+    // MagneticBuilder implementation the export uses, so the picture and the CAD agree.
+    test('3DW-4: buildTurnsSTL draws the real winding, and it differs from the idealised loops', async ({ page }) => {
+        await goToRoute(page, '/magnetic_tool');
+
+        const out = await page.evaluate(async (magnetic) => {
+            const rt = await import('/WebSharedComponents/assets/js/mvbRuntime.js');
+            await rt.initMvbWorker();
+            const res = {};
+            for (const [label, opts] of [['ideal', {}], ['real', { useRealWindingGeometry: true }]]) {
+                try {
+                    const buf = await rt.buildTurnsSTL(magnetic, opts);
+                    res[label] = { bytes: buf.byteLength ?? buf.length };
+                } catch (e) {
+                    res[label] = { error: String(e.message || e).slice(0, 200) };
+                }
+            }
+            return res;
+        }, REAL_WINDING_MAGNETIC);
+
+        expect(out.ideal.error ?? null, 'idealised turns build failed').toBeNull();
+        expect(out.real.error ?? null, 'real-winding turns build failed').toBeNull();
+        // Binary STL: 84-byte header + 50 bytes/triangle. Anything near 84 is empty.
+        expect(out.ideal.bytes).toBeGreaterThan(10000);
+        expect(out.real.bytes).toBeGreaterThan(10000);
         expect(out.real.bytes).not.toBe(out.ideal.bytes);
     });
 
@@ -224,5 +258,96 @@ test.describe('3D on the web', () => {
         expect(warnings, `viewer could not build part of the magnetic:\n${warnings.join('\n')}`).toEqual([]);
 
         await expect(page.locator('[data-cy$="-core-build-failed"]')).toHaveCount(0);
+    });
+
+    // The whole point of giving drawTurns a real-winding form: the INTERACTIVE viewer can
+    // now show it, not just the export. Drives the toggle the user actually clicks and
+    // checks the scene changed. @heavy — core adviser + wire adviser + a swept conductor
+    // rebuild is minutes, not seconds.
+    test('3DW-5: the viewer rebuilds the conductors when real winding is toggled on', async ({ page }, testInfo) => {
+        test.setTimeout(600000);
+        const warnings = [];
+        page.on('console', (m) => {
+            if (!isAppNoise(m.text()) && /Could not build/i.test(m.text())) warnings.push(m.text().slice(0, 200));
+        });
+
+        await openWizard(page, 'Flyback-link');
+        await runAnalytical(page, 60000);
+        await goToMagneticBuilder(page);
+        await pause(page, 2500, 'mechanical: tool mount');
+        await page.getByRole('button', { name: /Essential only/i }).click({ timeout: 5000 }).catch(() => {});
+        await runCoreAdviser(page, { timeoutMs: 180000 });
+
+        // Real winding routes real CONDUCTORS, so the design needs real wires: without
+        // them the coil has no turnsDescription and the toggle has nothing to rebuild.
+        await page.locator('[data-cy$="Wire-Advise-All-button"]').first().click({ timeout: 60000 });
+        await page.waitForFunction(() => {
+            const pinia = document.querySelector('#app')?.__vue_app__?.config?.globalProperties?.$pinia;
+            return (pinia?._s?.get('mas')?.mas?.magnetic?.coil?.turnsDescription?.length ?? 0) > 0;
+        }, null, { timeout: 240000 });
+
+        const readScene = () => page.waitForFunction(() => {
+            const el = document.querySelector('.magnetic-3d-visualizer-container');
+            const scene = el?.__vueParentComponent?.proxy?.$refs?.scene?.scene;
+            if (!scene) return false;
+            let meshes = 0, vertices = 0;
+            const walk = (o) => {
+                for (const c of (o.children ?? [])) {
+                    if (c.isMesh && c.geometry?.attributes?.position) {
+                        meshes++; vertices += c.geometry.attributes.position.count;
+                    }
+                    walk(c);
+                }
+            };
+            walk(scene);
+            return meshes ? { meshes, vertices } : false;
+        }, null, { timeout: 180000 }).then((h) => h.jsonValue());
+
+        const ideal = await readScene();
+        await testInfo.attach('viewer-ideal.png', { body: await page.screenshot(), contentType: 'image/png' });
+
+        const toggle = page.locator('[data-cy$="-real-winding-toggle"]').first();
+        await toggle.waitFor({ state: 'visible', timeout: 30000 });
+        await toggle.click();
+
+        // What must hold is that the toggle REBUILDS the conductors — silently doing
+        // nothing is the regression to catch. What must NOT be asserted here is that the
+        // conductor routes: ConductorBuilder legitimately refuses designs whose leads and
+        // dragbacks collide (the auto-advised Flyback is one — ABT #646), and turning that
+        // upstream geometry defect into a red test here would only teach us to ignore it.
+        // So: the geometry changed, or the viewer SAID it could not route. Never neither.
+        const outcome = await page.waitForFunction((idealVertices) => {
+            const el = document.querySelector('.magnetic-3d-visualizer-container');
+            const vm = el?.__vueParentComponent?.proxy;
+            const scene = vm?.$refs?.scene?.scene;
+            if (!scene || vm.updating) return false;
+            let meshes = 0, vertices = 0;
+            const walk = (o) => {
+                for (const c of (o.children ?? [])) {
+                    if (c.isMesh && c.geometry?.attributes?.position) {
+                        meshes++; vertices += c.geometry.attributes.position.count;
+                    }
+                    walk(c);
+                }
+            };
+            walk(scene);
+            if (vm.turnsBuildFailed) return { refused: true, error: String(vm.turnsBuildError).slice(0, 300) };
+            return (meshes && vertices !== idealVertices) ? { meshes, vertices } : false;
+        }, ideal.vertices, { timeout: 300000 }).then((h) => h.jsonValue());
+        await testInfo.attach('viewer-realwinding.png', { body: await page.screenshot(), contentType: 'image/png' });
+
+        if (outcome.refused) {
+            // Refusal is an acceptable OUTCOME, not an acceptable silence: it has to be on
+            // screen, and it has to name a routing failure rather than any old error.
+            await expect(page.locator('[data-cy$="-turns-build-failed"]')).toHaveCount(1);
+            expect(outcome.error, `turns build failed for a non-routing reason: ${outcome.error}`)
+                .toMatch(/ConductorBuilder|collision|route/i);
+            testInfo.annotations.push({ type: 'issue', description: `real winding refused: ${outcome.error}` });
+            return;
+        }
+
+        expect(outcome.meshes, 'real-winding scene lost its meshes').toBeGreaterThan(0);
+        expect(outcome.vertices).not.toBe(ideal.vertices);
+        expect(warnings, `viewer could not build part of the magnetic:\n${warnings.join('\n')}`).toEqual([]);
     });
 });
