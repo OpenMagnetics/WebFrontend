@@ -54,13 +54,6 @@ export const useSettingsStore = defineStore("settings", () => {
         // costs seconds to minutes, and designs whose leads collide with their dragbacks
         // cannot be routed at all (ABT #646).
         useRealWindingGeometry: false,
-        // U/Z winding order, remembered here so the picker keeps its position between
-        // visits. It is NOT an engine setting: MKF reads windingOrder off the design
-        // (section, else bobbin winding window, else Z), so changing it re-winds the
-        // CURRENT design and writes the order into its bobbin — see applyWindingOrder
-        // in mkfRuntime. 'Z' is MKF's own default: every layer wound the same
-        // direction with a return. 'U' alternates direction every layer.
-        windingOrder: 'Z',
         // Optional whitelist of core shape families (case-insensitive codes
         // like "t", "e", "etd"). When null (default) all families MKF reports
         // are shown. When set to an array, both Basic and Advanced core
