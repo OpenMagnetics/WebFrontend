@@ -4,6 +4,7 @@ import { useMagneticBuilderSettingsStore } from '/MagneticBuilder/src/stores/mag
 import { useModelSettingsStore } from '/MagneticBuilder/src/stores/modelSettings'
 import { useMasStore } from '/src/stores/mas'
 import ElementFromList from 'WebSharedComponents/DataInput/ElementFromList.vue'
+import { applyWindingOrder } from 'WebSharedComponents/assets/js/mkfRuntime'
 </script>
 
 <script>
@@ -46,6 +47,9 @@ export default {
             maximumTemperature: this.$settingsStore.adviserSettings.maximumTemperature,
             enableVisualizers: magneticBuilderSettingsStore.enableVisualizers,
             useRealWindingGeometry: this.$settingsStore.magneticBuilderSettings.useRealWindingGeometry,
+            windingOrder: this.$settingsStore.magneticBuilderSettings.windingOrder ?? 'Z',
+            windingOrderError: '',
+            windingOrderBusy: false,
             enableSimulation: this.$settingsStore.magneticBuilderSettings.enableSimulation,
             enableAutoSimulation: this.$settingsStore.magneticBuilderSettings.enableAutoSimulation,
             enableSubmenu: magneticBuilderSettingsStore.enableSubmenu,
@@ -65,6 +69,37 @@ export default {
             this.localData[setting] = !this.localData[setting];
             this.$settingsStore.magneticBuilderSettings[setting] = this.localData[setting];
             this.settingsChanged = true;
+        },
+        // U/Z is design data, not an engine flag: MKF takes windingOrder off the section,
+        // else the bobbin's winding window, else Z. So swapping it stamps the current
+        // design's bobbin and winds again — the turns themselves move, which is why this
+        // costs a re-wind rather than just a redraw, and why it is reported when it fails
+        // instead of leaving the picker showing an order the coil is not wound in.
+        async onWindingOrderChanged(order) {
+            if (this.localData.windingOrder === order || this.localData.windingOrderBusy) {
+                return;
+            }
+            const previousOrder = this.localData.windingOrder;
+            this.localData.windingOrder = order;
+            this.localData.windingOrderError = '';
+            if (this.masStore.mas?.magnetic?.coil?.bobbin?.processedDescription == null) {
+                // Nothing is built yet; remember the choice and let the next build use it.
+                this.$settingsStore.magneticBuilderSettings.windingOrder = order;
+                this.settingsChanged = true;
+                return;
+            }
+            this.localData.windingOrderBusy = true;
+            try {
+                this.masStore.mas = await applyWindingOrder(this.masStore.mas, order);
+                this.$settingsStore.magneticBuilderSettings.windingOrder = order;
+                this.settingsChanged = true;
+            } catch (error) {
+                this.localData.windingOrder = previousOrder;
+                this.localData.windingOrderError = String(error?.message ?? error);
+                console.error('Could not change the winding order:', error);
+            } finally {
+                this.localData.windingOrderBusy = false;
+            }
         },
         onAdviserSettingChanged(setting) {
             this.localData[setting] = !this.localData[setting];
@@ -354,6 +389,39 @@ export default {
                                     :checked="localData.useRealWindingGeometry"
                                     @change="onSettingChanged('useRealWindingGeometry')"
                                 >
+                            </div>
+                        </div>
+
+                        <div class="setting-item d-flex justify-content-between align-items-center py-2 border-bottom border-secondary">
+                            <div>
+                                <span class="text-white">Winding order</span>
+                                <small class="d-block text-secondary">
+                                    How consecutive layers are wound. <strong>Z</strong> winds every layer in the
+                                    same direction with a return wire; <strong>U</strong> alternates direction every
+                                    layer (back-and-forth). This is part of the design, not just the drawing —
+                                    changing it re-winds the coil.
+                                </small>
+                                <small
+                                    v-if="localData.windingOrderError"
+                                    :data-cy="dataTestLabel + '-Settings-Modal-winding-order-error'"
+                                    class="d-block text-warning"
+                                >
+                                    {{ localData.windingOrderError }}
+                                </small>
+                            </div>
+                            <div class="btn-group" role="group" aria-label="Winding order">
+                                <button
+                                    v-for="order in ['Z', 'U']"
+                                    :key="order"
+                                    :data-cy="dataTestLabel + '-Settings-Modal-winding-order-' + order"
+                                    type="button"
+                                    class="btn btn-sm"
+                                    :class="localData.windingOrder === order ? 'btn-primary' : 'btn-outline-secondary'"
+                                    :disabled="localData.windingOrderBusy"
+                                    @click="onWindingOrderChanged(order)"
+                                >
+                                    {{ order }}
+                                </button>
                             </div>
                         </div>
 
