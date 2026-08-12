@@ -4,6 +4,7 @@ import { useMagneticBuilderSettingsStore } from '/MagneticBuilder/src/stores/mag
 import { useModelSettingsStore } from '/MagneticBuilder/src/stores/modelSettings'
 import { useMasStore } from '/src/stores/mas'
 import ElementFromList from 'WebSharedComponents/DataInput/ElementFromList.vue'
+import { waitForMkf, applyRealWindingGeometrySetting } from 'WebSharedComponents/assets/js/mkfRuntime'
 </script>
 
 <script>
@@ -65,6 +66,36 @@ export default {
             this.localData[setting] = !this.localData[setting];
             this.$settingsStore.magneticBuilderSettings[setting] = this.localData[setting];
             this.settingsChanged = true;
+            if (setting === 'useRealWindingGeometry') {
+                this.rewindForRealWindingGeometry(this.localData[setting]);
+            }
+        },
+        // The flag decides how the coil is WOUND, and the painter only draws what it is
+        // given — so flipping it has to reach the engine and re-wind the design that is
+        // already in the store, or the views keep showing a layout made under the old
+        // setting until something else happens to wind again.
+        async rewindForRealWindingGeometry(useRealWindingGeometry) {
+            try {
+                const mkf = await waitForMkf();
+                await applyRealWindingGeometrySetting(mkf, useRealWindingGeometry);
+                if (this.masStore.mas?.magnetic?.coil?.turnsDescription == null) {
+                    return;   // nothing wound yet; the next wind picks the flag up
+                }
+                const resultRaw = await mkf.mas_autocomplete(JSON.stringify(this.masStore.mas), false, '{}');
+                if (typeof resultRaw === 'string' && resultRaw.startsWith('Exception')) {
+                    throw new Error(resultRaw);
+                }
+                const result = JSON.parse(resultRaw);
+                if (result?.magnetic?.coil?.turnsDescription == null) {
+                    throw new Error('the winder produced no turns');
+                }
+                this.masStore.mas = result;
+            } catch (error) {
+                // Loud, not silent: the setting is on but the design on screen is still
+                // the one wound without it, and the user needs to know which they are
+                // looking at (ABT #650 was a day lost to exactly this kind of silence).
+                console.error('Real winding was set but the design could not be re-wound:', error);
+            }
         },
         onAdviserSettingChanged(setting) {
             this.localData[setting] = !this.localData[setting];

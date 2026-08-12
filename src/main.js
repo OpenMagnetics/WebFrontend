@@ -17,7 +17,7 @@ import { useCustomPartsStore } from '/src/stores/customParts'
 import { useInventoryStore } from '/src/stores/inventory'
 import { useModelSettingsStore } from '/MagneticBuilder/src/stores/modelSettings'
 import { VueWindowSizePlugin } from 'vue-window-size/plugin';
-import { initWorker } from 'WebSharedComponents/assets/js/mkfRuntime'
+import { initWorker, applyRealWindingGeometrySetting } from 'WebSharedComponents/assets/js/mkfRuntime'
 import { initKirchhoffWorker } from 'WebSharedComponents/assets/js/kirchhoffRuntime'
 import VueLatex from 'vatex'
 import { checkAndClearOutdatedStores, getVersionedWasmUrl } from '/src/stores/storeVersioning'
@@ -201,6 +201,13 @@ function preloadMKF() {
             const wasmJsUrl = getVersionedWasmUrl(`${import.meta.env.BASE_URL}wasm/libMKF.wasm.js`);
             const mkf = await initWorker(wasmJsUrl);
             preloadedMkf = mkf; // Store but don't set globally yet
+
+            // Real winding BEFORE the first wind. The painter draws the turns it is
+            // given and never re-winds, so a coil wound while this was still off is
+            // painted as idealised rings however the flag reads later — which is what
+            // made the 2D view fall back to the ideal layout on every page reload.
+            await applyRealWindingGeometrySetting(
+                mkf, useSettingsStore().magneticBuilderSettings.useRealWindingGeometry);
             
             // Load data and wait for completion
             console.warn("[MAIN] Preload: Loading core materials, shapes and wires...");
@@ -399,7 +406,12 @@ router.beforeEach((to, from, next) => {
                         console.warn("Initializing MKF in Web Worker (fresh)...")
                         // WASM files are in public/wasm folder, served at /wasm/ in production
                         const wasmJsUrl = getVersionedWasmUrl(`${import.meta.env.BASE_URL}wasm/libMKF.wasm.js`);
-                        return await initWorker(wasmJsUrl);
+                        const freshMkf = await initWorker(wasmJsUrl);
+                        // Same as the preload path: the flag has to be in the engine
+                        // before anything winds, not before anything paints.
+                        await applyRealWindingGeometrySetting(
+                            freshMkf, useSettingsStore().magneticBuilderSettings.useRealWindingGeometry);
+                        return freshMkf;
                     })();
             
             (async () => {
