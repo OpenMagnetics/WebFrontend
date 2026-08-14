@@ -1,0 +1,19 @@
+{
+  "name": "openmagnetics-mcp-app",
+  "version": "0.1.0",
+  "description": "OpenMagnetics MCP App — the sweep-curves widget",
+  "scripts": {
+    "build": "rm -rf dist && INPUT=curves.html vite build",
+    "dev": "vite"
+  },
+  "license": "ISC",
+  "type": "module",
+  "private": "true",
+  "dependencies": {
+    "@modelcontextprotocol/ext-apps": "^1.7.5"
+  },
+  "devDependencies": {
+    "vite": "^8.1.5",
+    "vite-plugin-singlefile": "^2.3.3"
+  }
+}
