@@ -116,7 +116,7 @@ export default {
                 newElementsCoil.push(this.masStore.mas.magnetic.coil.functionalDescription[i]);
             }
             else {
-                newElementsCoil.push({'name': toTitleCase(isolationSideOrdered[i])});
+                newElementsCoil.push({'name': 'Winding ' + (i + 1)});
             }
         }
     },
@@ -168,7 +168,7 @@ export default {
                         newElementsCoil.push(this.masStore.mas.magnetic.coil.functionalDescription[i]);
                     }
                     else {
-                        newElementsCoil.push({'name': toTitleCase(isolationSideOrdered[i])});
+                        newElementsCoil.push({'name': 'Winding ' + (i + 1)});
                     }
                 }
                 for (var operationPointIndex = 0; operationPointIndex < this.masStore.mas.inputs.operatingPoints.length; operationPointIndex++) {
@@ -327,7 +327,8 @@ export default {
 
                 <ArrayDimensionWithTolerance class="border-bottom-1 border-solid border-300 py-2"
                     :style = "$styleStore.designRequirements.inputBorderColor"
-                    v-if="!masStore.hasMirroredWindings && masStore.mas.inputs.designRequirements.turnsRatios != null && masStore.mas.inputs.designRequirements.turnsRatios.length > 0"
+                    v-if="!masStore.hasMirroredWindings && masStore.mas.inputs.designRequirements.turnsRatios != null"
+                    :referenceWinding="true"
                     :name="'turnsRatios'"
                     :dataTestLabel="dataTestLabel + '-TurnsRatios'"
                     :defaultField="'nominal'"
