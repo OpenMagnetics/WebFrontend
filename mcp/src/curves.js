@@ -6,9 +6,14 @@
  * kept working — invisible in a plain client, broken exactly where the feature is meant to shine
  * (ABT #651).
  *
- * Payload, as _curves_result builds it in mcp/server.py:
- *   { title, subtitle, x_label, y_label, note?,
- *     series: [{ name, points: [[x, y], …] }] }
+ * Payload — a `curves` result under the Moebius pipeline contract:
+ *   { mode: "curves", title, subtitle?, caveat?,
+ *     axes: { x: {label, unit, scale?}, y: {label, unit} },
+ *     series: [{ name, kind?, points: [[x, y], …] }] }
+ *
+ * The axes carry label and unit SEPARATELY. They used to arrive as one string ("|Z| (Ω)"),
+ * which a chart can print and a consumer can do nothing else with — not convert it, not
+ * compare two sweeps, not decide that a second one is in different units.
  *
  * The x axis is log by default because every sweep here is against frequency, DC bias or
  * temperature over decades — but it falls back to linear when the data cannot be logged (a
@@ -248,16 +253,28 @@ function render() {
   if (state.note) root.append(el("div", { class: "note" }, state.note));
 }
 
+/** An axis label the way an engineer writes it: "impedance (ohm)". */
+const axisLabel = (a) => (a ? [a.label, a.unit && `(${a.unit})`].filter(Boolean).join(" ") : "");
+
 function apply(data) {
   if (!data || typeof data !== "object") {
     state.error = "The tool returned no chart payload.";
     return;
   }
+  if (data.mode !== "curves") {
+    // A payload of another shape is not a chart with pieces missing — it is a different
+    // answer, and drawing an empty frame over it would hide that.
+    state.error = `This widget draws curves; the tool returned a '${data.mode ?? "shapeless"}' result.`;
+    state.series = [];
+    return;
+  }
   state.title = data.title || "";
   state.subtitle = data.subtitle || "";
-  state.note = data.note || "";
-  state.xLabel = data.x_label || "";
-  state.yLabel = data.y_label || "";
+  state.note = data.caveat || "";
+  // The axes are DECLARED now, label and unit apart, so the chart can label an ordinate
+  // without parsing "|Z| (Ω)" back into its two halves.
+  state.xLabel = axisLabel(data.axes?.x);
+  state.yLabel = axisLabel(data.axes?.y);
   state.series = Array.isArray(data.series) ? data.series : [];
   state.error = state.series.length ? "" : "The tool result carried no series.";
 }
