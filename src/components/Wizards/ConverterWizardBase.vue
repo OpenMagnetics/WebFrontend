@@ -147,6 +147,28 @@ export default {
       type: Boolean,
       default: true
     },
+    /**
+     * Offer a "Search catalog" action under the wizard's own footer buttons.
+     * Default false: the standalone OpenMagnetics app has no part catalogue to
+     * search from a converter wizard. Branded consumers with one (el-magnetic
+     * searches the Würth catalogue) turn it on and listen for the
+     * 'search-catalog' emit; the wizard's own process/navigate pipeline is the
+     * consumer's to run, so the base only reports the click.
+     */
+    showCatalogButton: {
+      type: Boolean,
+      default: false
+    },
+    /** Disable the catalog action (e.g. the catalogue cannot serve this topology). */
+    catalogButtonDisabled: {
+      type: Boolean,
+      default: false
+    },
+    /** Why it is disabled — shown as the button's tooltip so the user is told, not stranded. */
+    catalogButtonDisabledReason: {
+      type: String,
+      default: ''
+    },
   },
   emits: [
     'update:waveformViewMode',
@@ -156,6 +178,7 @@ export default {
     'get-simulated-waveforms',
     'get-spice-code',
     'dismiss-error',
+    'search-catalog',
   ],
 
   computed: {
@@ -1175,6 +1198,18 @@ export default {
         <slot name="col1-footer" :catalogMode="catalogMode">
           <!-- Wizard can place action buttons here -->
         </slot>
+        <!-- Optional catalog search, opt-in via showCatalogButton (see prop doc) -->
+        <div v-if="showCatalogButton" class="catalog-action-row">
+          <span v-tooltip.top="catalogButtonDisabled ? catalogButtonDisabledReason : ''">
+            <button
+              type="button"
+              data-cy="ConverterWizard-search-catalog-button"
+              class="action-btn-sm catalog"
+              :disabled="catalogButtonDisabled || disableActions"
+              @click="$emit('search-catalog')"
+            ><i class="pi pi-search mr-1"></i>Search catalog</button>
+          </span>
+        </div>
       </div>
 
       <!-- Column 2 -->
@@ -1413,6 +1448,9 @@ export default {
 .action-btn-sm.primary { background: linear-gradient(135deg, var(--om-primary) 0%, rgb(from var(--om-primary) r g b / 0.7) 100%); color: var(--p-white); }
 .action-btn-sm.secondary { background: rgb(from var(--om-primary) r g b / 0.15); border: 1px solid rgb(from var(--om-primary) r g b / 0.3); color: var(--om-primary); }
 .action-btn-sm:disabled { opacity: 0.4; cursor: not-allowed; }
+.catalog-action-row { display: flex; justify-content: flex-end; gap: 8px; margin-top: 8px; }
+.action-btn-sm.catalog { background: transparent; border: 1px solid rgb(from var(--om-primary) r g b / 0.45); color: var(--p-white); }
+.action-btn-sm.catalog:not(:disabled):hover { border-color: var(--om-primary); }
 
 /* Sim Buttons - using primary color tones */
 .sim-btns { display: flex; gap: 4px; }
