@@ -21,6 +21,16 @@ export default {
         mas: {
             type: Object,
         },
+        /**
+         * Name shown on the generated summary sheet (header and footer).
+         * Defaults to OpenMagnetics; branded consumers embedding this summary
+         * (el-magnetic, el-choker, …) pass their own, otherwise their users get
+         * a document that appears to come from someone else.
+         */
+        brandName: {
+            type: String,
+            default: 'OpenMagnetics',
+        },
     },
     data() {
         const taskQueueStore = useTaskQueueStore();
@@ -759,7 +769,7 @@ export default {
                         <p class="part-type">{{ componentType }}</p>
                     </div>
                     <div class="header-right">
-                        <div class="company-name">OpenMagnetics</div>
+                        <div class="company-name">{{ brandName }}</div>
                         <div class="revision">{{ currentDate }}</div>
                     </div>
                 </div>
@@ -1055,7 +1065,7 @@ export default {
             <div class="document-footer">
                 <i class="pi pi-info-circle"></i>
                 <span>Auto-generated from design specs and simulation. Verify before production use.</span>
-                <span class="footer-brand">OpenMagnetics</span>
+                <span class="footer-brand">{{ brandName }}</span>
             </div>
         </div>
     </div>

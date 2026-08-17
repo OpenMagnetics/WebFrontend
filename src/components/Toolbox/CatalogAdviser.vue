@@ -54,6 +54,15 @@ export default {
             type: Boolean,
             default: true,
         },
+        // What the catalogue is a catalogue OF, used in the no-results
+        // message. Defaults to "choke" because the standalone app ships the
+        // CMC catalogue; a consumer pointing catalogUrl at a different
+        // catalogue (el-magnetic searches Würth power transformers) passes
+        // its own noun, otherwise the empty state names the wrong part kind.
+        partNoun: {
+            type: String,
+            default: 'choke',
+        },
     },
     data() {
         const adviseCacheStore = useAdviseCacheStore();
@@ -383,7 +392,7 @@ export default {
                     <div v-if="hasSearched && !loading && catalogStore.advises.length === 0"
                          class="col-12 text-center py-5">
                         <i class="pi pi-ban text-5xl text-danger"></i>
-                        <p class="mt-3 fw-semibold">No choke available in the catalog for your requirements.</p>
+                        <p class="mt-3 fw-semibold">No {{ partNoun }} available in the catalog for your requirements.</p>
                         <p class="text-color-secondary small">Adjust your requirements or use the custom design path.</p>
                     </div>
                     <template v-for="(advise, adviseIndex) in catalogStore.advises" :key="adviseIndex">

@@ -41,6 +41,17 @@ export default {
             type: Boolean,
             default: true,
         },
+        // Branding pass-throughs for embedders. Defaults keep the standalone
+        // OpenMagnetics app unchanged; see MagneticSummary.brandName and
+        // CatalogAdviser.partNoun.
+        brandName: {
+            type: String,
+            default: 'OpenMagnetics',
+        },
+        partNoun: {
+            type: String,
+            default: 'choke',
+        },
         showReference: {
             type: Boolean,
             default: false,
@@ -297,6 +308,7 @@ export default {
                     <CatalogAdviser
                         v-if="$stateStore.getCurrentToolState().subsection == 'catalogAdviser'"
                         :dataTestLabel="`${dataTestLabel}-CatalogAdviser`"
+                        :partNoun="partNoun"
                         @canContinue="updateCanContinue('catalogAdviser', $event)"
                     />
                     <CoreCustomizer
@@ -334,6 +346,7 @@ export default {
                         v-if="$stateStore.getCurrentToolState().subsection == 'magneticSummary'"
                         :mas="masStore.mas"
                         :dataTestLabel="`${dataTestLabel}-MagneticSummary`"
+                        :brandName="brandName"
                     />
                     <MagneticCoreSummary
                         v-if="$stateStore.getCurrentToolState().subsection == 'magneticCoreSummary'"
