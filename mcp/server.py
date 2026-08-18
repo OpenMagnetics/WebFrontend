@@ -19,8 +19,13 @@ Run:
 
 from __future__ import annotations
 
+import functools
+import gzip
+import hashlib
+import json
 import os
 import sys
+import tempfile
 from pathlib import Path
 
 _REPO = Path(__file__).resolve().parent.parent
@@ -138,6 +143,127 @@ def _core_mode(mode: str) -> str:
     if mode not in CORE_MODES:
         raise ValueError(f"mode must be one of {', '.join(CORE_MODES)} -- got {mode!r}")
     return mode
+
+
+# --- the document store: what a model gets a HANDLE to, not a copy of ------------------
+#
+# The adviser's own output is megabytes. One advise_cores call measured 5,367,760 characters,
+# advise_magnetics 966,180 and 1,283,786; Claude Code refused each with "exceeds maximum
+# allowed tokens", the model retried with another tool, and the turn ended having produced no
+# answer at all. The engine was working perfectly and the user got nothing.
+#
+# So the DOCUMENT stays here and the model carries a reference. Not a compression problem:
+# gzip+base64 costs about a fifth of the tokens, which sounds like the answer until you scale
+# it — that 5.4 MB payload is still ~300,000 tokens — and a model cannot decompress base64 in
+# its context anyway, so it would be holding bytes it cannot read. Compression belongs on the
+# DISK side of a handle, which is where it is used here (8x, and free).
+
+_STORE = Path(os.environ.get("OPENMAGNETICS_WORK_DIR")
+              or (Path(tempfile.gettempdir()) / "openmagnetics-mas"))
+_REF_SCHEME = "mas://"
+
+
+def _register_mas(document: dict) -> str:
+    """Keep a document and return the handle that fetches it back."""
+    blob = gzip.compress(json.dumps(document, separators=(",", ":")).encode(), 6)
+    ident = hashlib.sha256(blob).hexdigest()[:16]
+    _STORE.mkdir(parents=True, exist_ok=True)
+    path = _STORE / f"{ident}.json.gz"
+    if not path.exists():
+        path.write_bytes(blob)
+    return f"{_REF_SCHEME}{ident}"
+
+
+def _resolve_mas(ref: str) -> dict:
+    ident = ref[len(_REF_SCHEME):].strip()
+    if not ident or "/" in ident or ".." in ident:
+        raise ValueError(f"{ref!r} is not a document handle")
+    path = _STORE / f"{ident}.json.gz"
+    if not path.exists():
+        raise ValueError(
+            f"{ref} is not in this server's store. Handles live as long as the server does; "
+            f"re-run the adviser call that produced it.")
+    return json.loads(gzip.decompress(path.read_bytes()))
+
+
+def _dig(document: dict, name: str):
+    """The part of a stored document a parameter of this name is asking for.
+
+    A handle names a MAS; `magnetic=` wants its magnetic and `coil=` wants that magnetic's
+    coil. Resolving to the whole document instead would hand the engine a shape it rejects
+    several frames deep, where the error names a C++ field rather than the argument.
+    """
+    if name == "magnetic":
+        return document.get("magnetic") or document
+    if name == "coil":
+        return ((document.get("magnetic") or document).get("coil") or {})
+    if name == "inputs":
+        return document.get("inputs") or document
+    if name in ("mas", "document"):
+        return document
+    return document
+
+
+def resolves_refs(fn):
+    """Let any document parameter be given as a handle instead of a document.
+
+    functools.wraps matters here beyond tidiness: FastMCP builds each tool's input schema
+    from inspect.signature, which follows __wrapped__ — so the schema stays the real one.
+    """
+    @functools.wraps(fn)
+    def wrapper(**kwargs):
+        for key, value in list(kwargs.items()):
+            if isinstance(value, str) and value.startswith(_REF_SCHEME):
+                kwargs[key] = _dig(_resolve_mas(value), key)
+        return fn(**kwargs)
+    return wrapper
+
+
+def _digest(mas: dict) -> dict:
+    """What a reader needs to CHOOSE between designs, without the document behind it.
+
+    Deliberately small and deliberately physical: shape, material, gap, turns, wire. A rank
+    and a score alone say one design beat another without saying what either IS, which leaves
+    a model no basis to pick and nothing to tell the user.
+    """
+    magnetic = (mas or {}).get("magnetic") or mas or {}
+    core = magnetic.get("core") or {}
+    fd = core.get("functionalDescription") or {}
+    shape = fd.get("shape")
+    material = fd.get("material")
+    out: dict = {}
+    if isinstance(shape, dict):
+        out["shape"] = shape.get("name")
+    elif shape:
+        out["shape"] = shape
+    if isinstance(material, dict):
+        out["material"] = material.get("name")
+        out["manufacturer"] = ((material.get("manufacturerInfo") or {}).get("name"))
+    elif material:
+        out["material"] = material
+    gaps = fd.get("gapping") or []
+    grinding = [g for g in gaps if g.get("type") == "subtractive"]
+    if grinding:
+        out["gap_mm"] = round(float(grinding[0].get("length") or 0.0) * 1000, 4)
+    effective = ((core.get("processedDescription") or {}).get("effectiveParameters") or {})
+    if effective.get("effectiveArea"):
+        out["effective_area_mm2"] = round(float(effective["effectiveArea"]) * 1e6, 3)
+    windings = (magnetic.get("coil") or {}).get("functionalDescription") or []
+    if windings:
+        out["turns"] = [w.get("numberTurns") for w in windings]
+        wire = (windings[0].get("wire") or {})
+        if wire.get("name"):
+            out["wire"] = wire["name"]
+    outputs = (mas or {}).get("outputs") or []
+    if outputs:
+        first = outputs[0] if isinstance(outputs, list) else outputs
+        losses = (first or {}).get("coreLosses") or {}
+        if losses.get("coreLosses") is not None:
+            out["core_losses_w"] = round(float(losses["coreLosses"]), 4)
+        winding = (first or {}).get("windingLosses") or {}
+        if winding.get("windingLosses") is not None:
+            out["winding_losses_w"] = round(float(winding["windingLosses"]), 4)
+    return out
 
 
 def _reference(magnetic: dict) -> str:
@@ -259,8 +385,8 @@ def _catalogue_result(summary: str, names: list, kind: str, units: str | None = 
     return _result(summary, payload)
 
 
-def _designs_result(summary: str, entries: list, kind: str, caveat: str | None = None
-                    ) -> CallToolResult:
+def _designs_result(summary: str, entries: list, kind: str, caveat: str | None = None,
+                    detail: bool = False) -> CallToolResult:
     """A `design` result: ranked things the ENGINE produced.
 
     Not `candidates`: a candidate requires an MPN because it is a part somebody can order, and
@@ -275,10 +401,18 @@ def _designs_result(summary: str, entries: list, kind: str, caveat: str | None =
         score = entry.get("scoring") if isinstance(entry, dict) else None
         if isinstance(score, (int, float)) and not isinstance(score, bool):
             design["score"] = float(score)
-        if mas:
-            design["document"] = mas
-        elif isinstance(entry, dict):
-            design["document"] = entry
+        document = mas if mas else (entry if isinstance(entry, dict) else None)
+        if document:
+            # The digest and the handle, not the document — unless the caller asked. See the
+            # note above _register_mas: the documents here reach millions of characters, and a
+            # tool result the model is refused is worse than a small one, because the engine
+            # still ran and the turn still ends with nothing.
+            properties = _digest(document)
+            if properties:
+                design["properties"] = properties
+            design["ref"] = _register_mas(document)
+            if detail:
+                design["document"] = document
         designs.append(design)
     payload = {"mode": "design", "kind": kind, "designs": designs}
     if caveat:
@@ -346,8 +480,9 @@ FREQ_AXIS = _axis("frequency", "Hz", "log")
     ),
     structured_output=False,
 )
-def advise_magnetics(inputs: dict, count: int = 3, mode: str = DEFAULT_CORE_MODE,
-                     fast: bool = True) -> CallToolResult:
+@resolves_refs
+def advise_magnetics(inputs: dict | str | str, count: int = 3, mode: str = DEFAULT_CORE_MODE,
+                     fast: bool = True, detail: bool = False) -> CallToolResult:
     """Ranked core+coil designs for MAS Inputs.
 
     Args:
@@ -358,6 +493,10 @@ def advise_magnetics(inputs: dict, count: int = 3, mode: str = DEFAULT_CORE_MODE
         fast: True ranks quickly (~8 s) but stops at the core — good for browsing,
             NOT usable for impedance/SPICE/loss analysis. False runs the full
             adviser (~1 min) and returns designs every other tool here accepts.
+        detail: inline each full MAS document in the result. Off by default and rarely
+            what you want: these run to millions of characters and will be refused as
+            too large. Every design carries a `ref` handle that any tool here accepts
+            in place of the document, and fetch_design reads a part of one.
     """
     fn = om.calculate_advised_magnetics_fast if fast else om.calculate_advised_magnetics
     designs = _unwrap(fn(inputs, count, _core_mode(mode)))
@@ -374,7 +513,7 @@ def advise_magnetics(inputs: dict, count: int = 3, mode: str = DEFAULT_CORE_MODE
               if fast else "")
     return _designs_result(
         f"{len(designs)} design(s), best first:\n" + "\n".join(rows) + caveat,
-        designs, "magnetic",
+        designs, "magnetic", detail=detail,
         # The FAST caveat is a FIELD, not only a sentence: a design with no coil described
         # makes every downstream loss model return NaN deep inside the engine, and a consumer
         # that cannot read it from the payload will pass one on and be told "Energy cannot be nan".
@@ -383,21 +522,77 @@ def advise_magnetics(inputs: dict, count: int = 3, mode: str = DEFAULT_CORE_MODE
 
 
 @mcp.tool(
+    title="Read part of a stored design",
+    description=(
+        "Read one part of a design document held by handle. The advisers return a `ref` "
+        "instead of the document because a full MAS runs to millions of characters; this "
+        "fetches the piece you actually need."
+    ),
+    structured_output=False,
+)
+def fetch_design(ref: str, path: str = "") -> CallToolResult:
+    """A subtree of a stored document.
+
+    Args:
+        ref: the handle from a design (`mas://…`).
+        path: dotted path into the document, e.g. `magnetic.core.functionalDescription`
+            or `magnetic.coil.functionalDescription.0.numberTurns`. Empty returns the
+            whole document, which for a full MAS is usually too large to be accepted —
+            ask for the part you need.
+    """
+    document = _resolve_mas(ref if ref.startswith(_REF_SCHEME) else _REF_SCHEME + ref)
+    node, walked = document, []
+    for step in [x for x in path.split(".") if x]:
+        walked.append(step)
+        if isinstance(node, list):
+            try:
+                node = node[int(step)]
+            except (ValueError, IndexError):
+                raise ValueError(
+                    f"{'.'.join(walked)} does not exist: that level is a list of "
+                    f"{len(node)} item(s), so the step must be an index within it.")
+        elif isinstance(node, dict):
+            if step not in node:
+                raise ValueError(f"{'.'.join(walked)} does not exist. Available here: "
+                                 f"{', '.join(sorted(node)[:14]) or '(nothing)'}")
+            node = node[step]
+        else:
+            raise ValueError(f"{'.'.join(walked[:-1])} is a {type(node).__name__}, "
+                             f"which has no {step!r} inside it.")
+    size = len(json.dumps(node, separators=(",", ":")))
+    subject = _reference(document.get("magnetic") or {})
+    if not isinstance(node, (dict, list)):
+        # A leaf comes back as the one-key excerpt it IS in its parent, not as a `quantity`.
+        # A quantity must carry a unit for a number, and NOTHING here knows the unit of an
+        # arbitrary MAS field — emitting unit: null to fill the slot is what the boundary
+        # validator caught, correctly. The value's own name is the honest key, and the summary
+        # line above carries the readable form.
+        node = {path.rsplit(".", 1)[-1] or "value": node}
+    return _document_result(
+        f"{path or 'the whole document'}: {size:,} characters"
+        + ("  — large; ask for a narrower path if this is refused" if size > 60_000 else ""),
+        schema="MAS", operation="read", document=node, subject=subject)
+
+
+@mcp.tool(
     title="Advise cores only",
     description="Rank candidate CORES (shape + material + gap) for a set of MAS Inputs.",
     structured_output=False,
 )
-def advise_cores(inputs: dict, count: int = 3, mode: str = DEFAULT_CORE_MODE,
-                 weights: dict | None = None) -> CallToolResult:
+@resolves_refs
+def advise_cores(inputs: dict | str | str, count: int = 3, mode: str = DEFAULT_CORE_MODE,
+                 weights: dict | None = None, detail: bool = False) -> CallToolResult:
     """Ranked cores.
 
     Args:
         weights: optional per-filter weighting object for the core adviser.
+        detail: inline each full document. Off by default — one measured call returned
+            5,367,760 characters, which no model can be handed. Use the `ref` handles.
     """
     cores = _unwrap(om.calculate_advised_cores(inputs, weights or {}, count, _core_mode(mode)))
     names = [_reference((c.get("mas") or {}).get("magnetic") or c) for c in (cores or [])]
     return _designs_result(f"{len(cores or [])} core(s): " + ", ".join(names[:8]),
-                           cores, "core")
+                           cores, "core", detail=detail)
 
 
 @mcp.tool(
@@ -408,7 +603,8 @@ def advise_cores(inputs: dict, count: int = 3, mode: str = DEFAULT_CORE_MODE,
     ),
     structured_output=False,
 )
-def advise_coil(mas: dict) -> CallToolResult:
+@resolves_refs
+def advise_coil(mas: dict | str) -> CallToolResult:
     """Complete the coil of a MAS whose core is already chosen."""
     out = _unwrap(om.calculate_advised_coil(mas))
     magnetic = (out or {}).get("magnetic") or {}
@@ -427,7 +623,8 @@ def advise_coil(mas: dict) -> CallToolResult:
     description="Rank off-the-shelf catalog magnetics against MAS Inputs (no custom design).",
     structured_output=False,
 )
-def advise_from_catalog(inputs: dict, catalog: list, count: int = 3) -> CallToolResult:
+@resolves_refs
+def advise_from_catalog(inputs: dict | str | str, catalog: list, count: int = 3) -> CallToolResult:
     """Catalog parts that meet the requirements.
 
     Args:
@@ -453,7 +650,8 @@ def advise_from_catalog(inputs: dict, catalog: list, count: int = 3) -> CallTool
     description="Core loss of a magnetic at an operating point, with the model used.",
     structured_output=False,
 )
-def core_losses(magnetic: dict, operating_point: dict, temperature: float = 25.0,
+@resolves_refs
+def core_losses(magnetic: dict | str, operating_point: dict, temperature: float = 25.0,
                 models: dict | None = None) -> CallToolResult:
     """Core losses in W."""
     _require_complete(magnetic, "core loss calculation")
@@ -489,7 +687,8 @@ def core_losses(magnetic: dict, operating_point: dict, temperature: float = 25.0
     description="DC + AC winding losses (skin and proximity) per winding and per turn.",
     structured_output=False,
 )
-def winding_losses(magnetic: dict, operating_point: dict,
+@resolves_refs
+def winding_losses(magnetic: dict | str, operating_point: dict,
                    temperature: float = 25.0) -> CallToolResult:
     """Winding losses breakdown."""
     _require_complete(magnetic, "winding loss calculation")
@@ -529,7 +728,8 @@ def winding_losses(magnetic: dict, operating_point: dict,
     description="Leakage inductance matrix between windings at a frequency.",
     structured_output=False,
 )
-def leakage_inductance(magnetic: dict, frequency: float = 100000.0,
+@resolves_refs
+def leakage_inductance(magnetic: dict | str, frequency: float = 100000.0,
                        models: dict | None = None) -> CallToolResult:
     """Leakage inductance matrix, H."""
     _require_complete(magnetic, "leakage inductance")
@@ -565,7 +765,8 @@ def leakage_inductance(magnetic: dict, frequency: float = 100000.0,
     description="Peak current in one winding at an operating point.",
     structured_output=False,
 )
-def peak_winding_current(magnetic: dict, operating_point: dict,
+@resolves_refs
+def peak_winding_current(magnetic: dict | str, operating_point: dict,
                          winding_index: int = 0) -> CallToolResult:
     """Peak current, A."""
     out = _unwrap(om.calculate_peak_winding_current(magnetic, operating_point, winding_index))
@@ -584,7 +785,8 @@ def peak_winding_current(magnetic: dict, operating_point: dict,
     description="Core temperature rise from its thermal resistance and total losses.",
     structured_output=False,
 )
-def core_temperature(magnetic: dict, total_losses: float) -> CallToolResult:
+@resolves_refs
+def core_temperature(magnetic: dict | str, total_losses: float) -> CallToolResult:
     """Core temperature, °C.
 
     The engine takes the CORE and the losses; ambient comes from the core's own conditions, so
@@ -614,7 +816,8 @@ def core_temperature(magnetic: dict, total_losses: float) -> CallToolResult:
     description="Sweep a magnetic's impedance across frequency and chart it.",
     meta=UI_CURVES_META, structured_output=False,
 )
-def sweep_impedance(magnetic: dict, start_hz: float = 1e3, stop_hz: float = 1e7,
+@resolves_refs
+def sweep_impedance(magnetic: dict | str, start_hz: float = 1e3, stop_hz: float = 1e7,
                     points: int = 40, mode: str = "log") -> CallToolResult:
     """|Z| vs frequency."""
     _require_complete(magnetic, "an impedance sweep")
@@ -627,7 +830,8 @@ def sweep_impedance(magnetic: dict, start_hz: float = 1e3, stop_hz: float = 1e7,
     description="Sweep core losses across frequency at an operating point and chart it.",
     meta=UI_CURVES_META, structured_output=False,
 )
-def sweep_core_losses(magnetic: dict, operating_point: dict, start_hz: float = 1e4,
+@resolves_refs
+def sweep_core_losses(magnetic: dict | str, operating_point: dict, start_hz: float = 1e4,
                       stop_hz: float = 1e6, points: int = 30, temperature: float = 25.0,
                       mode: str = "log") -> CallToolResult:
     """Core loss vs frequency."""
@@ -641,7 +845,8 @@ def sweep_core_losses(magnetic: dict, operating_point: dict, start_hz: float = 1
     description="Sweep winding losses across frequency and chart it.",
     meta=UI_CURVES_META, structured_output=False,
 )
-def sweep_winding_losses(magnetic: dict, operating_point: dict, start_hz: float = 1e4,
+@resolves_refs
+def sweep_winding_losses(magnetic: dict | str, operating_point: dict, start_hz: float = 1e4,
                          stop_hz: float = 1e7, points: int = 30, temperature: float = 25.0,
                          mode: str = "log") -> CallToolResult:
     """Winding loss vs frequency."""
@@ -658,7 +863,8 @@ def sweep_winding_losses(magnetic: dict, operating_point: dict, start_hz: float 
     ),
     meta=UI_CURVES_META, structured_output=False,
 )
-def sweep_inductance_vs_dc_bias(magnetic: dict, start_a: float = 0.0, stop_a: float = 10.0,
+@resolves_refs
+def sweep_inductance_vs_dc_bias(magnetic: dict | str, start_a: float = 0.0, stop_a: float = 10.0,
                                 points: int = 30, temperature: float = 25.0,
                                 mode: str = "linear") -> CallToolResult:
     """L vs DC bias."""
@@ -673,7 +879,8 @@ def sweep_inductance_vs_dc_bias(magnetic: dict, start_a: float = 0.0, stop_a: fl
     description="Sweep magnetizing inductance across frequency.",
     meta=UI_CURVES_META, structured_output=False,
 )
-def sweep_inductance_vs_frequency(magnetic: dict, start_hz: float = 1e3, stop_hz: float = 1e7,
+@resolves_refs
+def sweep_inductance_vs_frequency(magnetic: dict | str, start_hz: float = 1e3, stop_hz: float = 1e7,
                                   points: int = 30, temperature: float = 25.0,
                                   mode: str = "log") -> CallToolResult:
     """L vs frequency."""
@@ -688,7 +895,8 @@ def sweep_inductance_vs_frequency(magnetic: dict, start_hz: float = 1e3, stop_hz
     description="Sweep magnetizing inductance across temperature.",
     meta=UI_CURVES_META, structured_output=False,
 )
-def sweep_inductance_vs_temperature(magnetic: dict, start_c: float = -40.0, stop_c: float = 125.0,
+@resolves_refs
+def sweep_inductance_vs_temperature(magnetic: dict | str, start_c: float = -40.0, stop_c: float = 125.0,
                                     points: int = 30, frequency: float = 100000.0,
                                     mode: str = "linear") -> CallToolResult:
     """L vs temperature."""
@@ -704,7 +912,8 @@ def sweep_inductance_vs_temperature(magnetic: dict, start_c: float = -40.0, stop
     description="Sweep the quality factor across frequency.",
     meta=UI_CURVES_META, structured_output=False,
 )
-def sweep_q_factor(magnetic: dict, start_hz: float = 1e3, stop_hz: float = 1e7,
+@resolves_refs
+def sweep_q_factor(magnetic: dict | str, start_hz: float = 1e3, stop_hz: float = 1e7,
                    points: int = 30, mode: str = "log") -> CallToolResult:
     """Q vs frequency."""
     _require_complete(magnetic, "a Q-factor sweep")
@@ -717,7 +926,8 @@ def sweep_q_factor(magnetic: dict, start_hz: float = 1e3, stop_hz: float = 1e7,
     description="Sweep AC resistance across frequency (skin and proximity effects).",
     meta=UI_CURVES_META, structured_output=False,
 )
-def sweep_resistance(magnetic: dict, start_hz: float = 1e3, stop_hz: float = 1e7,
+@resolves_refs
+def sweep_resistance(magnetic: dict | str, start_hz: float = 1e3, stop_hz: float = 1e7,
                      temperature: float = 25.0,
                      points: int = 30, mode: str = "log") -> CallToolResult:
     """R_ac vs frequency."""
@@ -734,7 +944,8 @@ def sweep_resistance(magnetic: dict, start_hz: float = 1e3, stop_hz: float = 1e7
     description="Lay out a coil's turns from its winding description.",
     structured_output=False,
 )
-def wind_coil(coil: dict, repetitions: int = 1, proportion_per_winding: list | None = None,
+@resolves_refs
+def wind_coil(coil: dict | str, repetitions: int = 1, proportion_per_winding: list | None = None,
               pattern: list | None = None, margin_pairs: list | None = None) -> CallToolResult:
     """Full winding pass."""
     out = _unwrap(om.wind(coil, repetitions, proportion_per_winding or [],
@@ -753,7 +964,8 @@ def wind_coil(coil: dict, repetitions: int = 1, proportion_per_winding: list | N
     description="Lay out a coil turn by turn from an existing section/layer description.",
     structured_output=False,
 )
-def wind_by_turns(coil: dict) -> CallToolResult:
+@resolves_refs
+def wind_by_turns(coil: dict | str) -> CallToolResult:
     """Turn-level winding."""
     out = _unwrap(om.wind_by_turns(coil))
     return _document_result(
@@ -768,7 +980,8 @@ def wind_by_turns(coil: dict) -> CallToolResult:
     description="Split a coil into sections with a winding pattern and insulation.",
     structured_output=False,
 )
-def wind_by_sections(coil: dict, repetitions: int = 1,
+@resolves_refs
+def wind_by_sections(coil: dict | str, repetitions: int = 1,
                      proportion_per_winding: list | None = None, pattern: list | None = None,
                      insulation_thickness: float = 0.0) -> CallToolResult:
     """Section-level winding."""
@@ -786,7 +999,8 @@ def wind_by_sections(coil: dict, repetitions: int = 1,
     description="Split a coil's sections into layers with inter-layer insulation.",
     structured_output=False,
 )
-def wind_by_layers(coil: dict, insulation_layers: dict | None = None,
+@resolves_refs
+def wind_by_layers(coil: dict | str, insulation_layers: dict | None = None,
                    insulation_thickness: float = 0.0) -> CallToolResult:
     """Layer-level winding."""
     out = _unwrap(om.wind_by_layers(coil, insulation_layers or {}, insulation_thickness))
@@ -802,7 +1016,8 @@ def wind_by_layers(coil: dict, insulation_layers: dict | None = None,
     description="Lay out a planar (PCB) winding from a stack-up.",
     structured_output=False,
 )
-def wind_planar(coil: dict, stack_up: list, border_to_wire_distance: float = 0.0,
+@resolves_refs
+def wind_planar(coil: dict | str, stack_up: list, border_to_wire_distance: float = 0.0,
                 wire_to_wire_distance: list | None = None,
                 insulation_thickness: list | None = None,
                 core_to_layer_distance: float = 0.0) -> CallToolResult:
@@ -832,7 +1047,8 @@ def wind_planar(coil: dict, stack_up: list, border_to_wire_distance: float = 0.0
     ),
     structured_output=False,
 )
-def export_spice_subcircuit(magnetic: dict) -> CallToolResult:
+@resolves_refs
+def export_spice_subcircuit(magnetic: dict | str) -> CallToolResult:
     """SPICE subcircuit text."""
     _require_complete(magnetic, "a SPICE subcircuit export")
     text = _unwrap(om.export_magnetic_as_subcircuit(magnetic))
@@ -849,7 +1065,8 @@ def export_spice_subcircuit(magnetic: dict) -> CallToolResult:
     description="Export a magnetic as a schematic symbol.",
     structured_output=False,
 )
-def export_symbol(magnetic: dict, inputs: dict) -> CallToolResult:
+@resolves_refs
+def export_symbol(magnetic: dict | str, inputs: dict | str) -> CallToolResult:
     """Symbol text."""
     text = _unwrap(om.export_magnetic_as_symbol(magnetic, inputs))
     return _document_result(
@@ -936,7 +1153,8 @@ def list_core_manufacturers() -> CallToolResult:
     ),
     structured_output=False,
 )
-def list_core_loss_models(magnetic: dict) -> CallToolResult:
+@resolves_refs
+def list_core_loss_models(magnetic: dict | str) -> CallToolResult:
     """Applicable core-loss models."""
     methods = _unwrap(om.get_available_core_losses_methods(magnetic))
     # The models are a catalogue of what CAN answer, not an answer: they disagree by more
