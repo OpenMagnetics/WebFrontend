@@ -198,16 +198,26 @@ export default {
         },
         
         getIsolationSides() {
-            // LLC has 1 primary + N center-tapped secondaries = 1 + 2*N windings.
-            // Each output's two halves share the same isolation side so the
-            // coil virtualization can wind them together on a single section.
+            // The winding structure follows the RECTIFIER (ABT #789): only a
+            // center-tapped secondary is two half-windings per output; the
+            // full-bridge / current-doubler / voltage-doubler variants wind ONE
+            // secondary per output (they are Kirchhoff's single-winding
+            // variants). This used to hard-code the CT structure, so a
+            // full-bridge LLC declared three isolation sides for the
+            // two-winding transformer it actually builds — and the catalog
+            // adviser, which sizes its winding filter from isolationSides,
+            // then matched it against three-winding parts.
+            // CT halves share their output's side so the coil virtualization
+            // can wind them together on a single section.
             // Side labels: primary, secondary (output 0), tertiary (output 1), ...
             const sideAt = (i) => [IsolationSide.Primary, IsolationSide.Secondary, IsolationSide.Tertiary, IsolationSide.Quaternary, IsolationSide.Quinary, IsolationSide.Senary, IsolationSide.Septenary, IsolationSide.Octonary, IsolationSide.Nonary, IsolationSide.Denary][i] || ('winding' + i);
+            const windingsPerOutput = this.localData.rectifierType === 'centerTapped' ? 2 : 1;
             const sides = [IsolationSide.Primary];
             const numOutputs = (this.localData.outputsParameters || []).length || 1;
             for (let i = 0; i < numOutputs; i++) {
-                sides.push(sideAt(i + 1));
-                sides.push(sideAt(i + 1));
+                for (let w = 0; w < windingsPerOutput; w++) {
+                    sides.push(sideAt(i + 1));
+                }
             }
             return sides;
         },
