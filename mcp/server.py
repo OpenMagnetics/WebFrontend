@@ -286,22 +286,31 @@ def _designs_result(summary: str, entries: list, kind: str, caveat: str | None =
     return _result(summary, payload)
 
 
-def _curves_result(title, subtitle, series, summary, *, x_axis, y_axis, note=None):
+def _curves_result(title, subtitle, series, summary, *, x_axis, y_axis, note=None,
+                   subject=None):
     payload = {"mode": "curves", "title": title, "axes": {"x": x_axis, "y": y_axis},
                "series": series}
     if subtitle:
         payload["subtitle"] = subtitle
+    if subject:
+        payload["subject"] = subject
     if note:
         payload["caveat"] = note
     return _result(summary, payload)
 
 
 def _sweep_result(sweep: dict, title: str, x_axis: dict, y_axis: dict,
-                  extra: str = "") -> CallToolResult:
+                  extra: str = "", magnetic: dict | None = None) -> CallToolResult:
     """The engine's {title, xPoints, yPoints} sweep as a `curves` result.
 
     The axes are DECLARED rather than left in a label string: '|Z| (Ω)' told a reader what the
     ordinate was and told a consumer nothing it could convert, compare or re-label.
+
+    The MAGNETIC rides along as the subject. Two things need it. A chart was anonymous — '|Z|
+    against frequency' never said which magnetic, so two sweeps differed only by title. And a
+    widget in a host that permits WebAssembly can run this engine itself: with the subject in
+    hand it recomputes as the user drags a slider, instead of a round trip per frame. Hosts
+    that refuse WASM ignore it and draw the points, exactly as before.
     """
     xs = sweep.get("xPoints") or []
     ys = sweep.get("yPoints") or []
@@ -309,13 +318,17 @@ def _sweep_result(sweep: dict, title: str, x_axis: dict, y_axis: dict,
         raise RuntimeError(f"sweep returned {len(xs)} x-points and {len(ys)} y-points")
     finite = [y for y in ys if isinstance(y, (int, float))]
     span = (f"{min(finite):.4g} to {max(finite):.4g}" if finite else "no finite values")
+    subject = None
+    if magnetic:
+        subject = {"kind": "magnetic", "name": _reference(magnetic),
+                   "schema": {"name": "MAS"}, "document": magnetic}
     return _curves_result(
         sweep.get("title") or title, f"{len(xs)} points",
         [{"name": sweep.get("title") or title, "kind": "modelled",
           "points": [[float(a), float(b)] for a, b in zip(xs, ys)]}],
         f"{title}: {len(xs)} points from {xs[0]:.4g} to {xs[-1]:.4g}; "
         f"{y_axis['label']} ranges {span}.{extra}",
-        x_axis=x_axis, y_axis=y_axis)
+        x_axis=x_axis, y_axis=y_axis, subject=subject)
 
 
 FREQ_AXIS = _axis("frequency", "Hz", "log")
@@ -606,7 +619,7 @@ def sweep_impedance(magnetic: dict, start_hz: float = 1e3, stop_hz: float = 1e7,
     """|Z| vs frequency."""
     _require_complete(magnetic, "an impedance sweep")
     out = _unwrap(om.sweep_impedance_over_frequency(magnetic, start_hz, stop_hz, points, mode, ""))
-    return _sweep_result(out, "Impedance", FREQ_AXIS, _axis("impedance", "ohm"))
+    return _sweep_result(out, "Impedance", FREQ_AXIS, _axis("impedance", "ohm"), magnetic=magnetic)
 
 
 @mcp.tool(
@@ -620,7 +633,7 @@ def sweep_core_losses(magnetic: dict, operating_point: dict, start_hz: float = 1
     """Core loss vs frequency."""
     out = _unwrap(om.sweep_core_losses_over_frequency(
         magnetic, operating_point, start_hz, stop_hz, points, temperature, mode, ""))
-    return _sweep_result(out, "Core losses", FREQ_AXIS, _axis("core loss", "W"))
+    return _sweep_result(out, "Core losses", FREQ_AXIS, _axis("core loss", "W"), magnetic=magnetic)
 
 
 @mcp.tool(
@@ -635,7 +648,7 @@ def sweep_winding_losses(magnetic: dict, operating_point: dict, start_hz: float 
     _require_complete(magnetic, "a winding-loss sweep")
     out = _unwrap(om.sweep_winding_losses_over_frequency(
         magnetic, operating_point, start_hz, stop_hz, points, temperature, mode, ""))
-    return _sweep_result(out, "Winding losses", FREQ_AXIS, _axis("winding loss", "W"))
+    return _sweep_result(out, "Winding losses", FREQ_AXIS, _axis("winding loss", "W"), magnetic=magnetic)
 
 
 @mcp.tool(
@@ -652,7 +665,7 @@ def sweep_inductance_vs_dc_bias(magnetic: dict, start_a: float = 0.0, stop_a: fl
     out = _unwrap(om.sweep_magnetizing_inductance_over_dc_bias(
         magnetic, start_a, stop_a, points, temperature, mode, ""))
     return _sweep_result(out, "Magnetizing inductance vs DC bias", _axis("DC bias", "A"),
-                         _axis("magnetizing inductance", "H"))
+                         _axis("magnetizing inductance", "H"), magnetic=magnetic)
 
 
 @mcp.tool(
@@ -667,7 +680,7 @@ def sweep_inductance_vs_frequency(magnetic: dict, start_hz: float = 1e3, stop_hz
     out = _unwrap(om.sweep_magnetizing_inductance_over_frequency(
         magnetic, start_hz, stop_hz, points, temperature, mode, ""))
     return _sweep_result(out, "Magnetizing inductance vs frequency", FREQ_AXIS,
-                         _axis("magnetizing inductance", "H"))
+                         _axis("magnetizing inductance", "H"), magnetic=magnetic)
 
 
 @mcp.tool(
@@ -683,7 +696,7 @@ def sweep_inductance_vs_temperature(magnetic: dict, start_c: float = -40.0, stop
         magnetic, start_c, stop_c, points, frequency, mode, ""))
     return _sweep_result(out, "Magnetizing inductance vs temperature",
                          _axis("temperature", "degC"),
-                         _axis("magnetizing inductance", "H"))
+                         _axis("magnetizing inductance", "H"), magnetic=magnetic)
 
 
 @mcp.tool(
@@ -696,7 +709,7 @@ def sweep_q_factor(magnetic: dict, start_hz: float = 1e3, stop_hz: float = 1e7,
     """Q vs frequency."""
     _require_complete(magnetic, "a Q-factor sweep")
     out = _unwrap(om.sweep_q_factor_over_frequency(magnetic, start_hz, stop_hz, points, mode, ""))
-    return _sweep_result(out, "Q factor", FREQ_AXIS, _axis("Q factor", "1"))
+    return _sweep_result(out, "Q factor", FREQ_AXIS, _axis("Q factor", "1"), magnetic=magnetic)
 
 
 @mcp.tool(
@@ -711,7 +724,7 @@ def sweep_resistance(magnetic: dict, start_hz: float = 1e3, stop_hz: float = 1e7
     _require_complete(magnetic, "a resistance sweep")
     out = _unwrap(om.sweep_resistance_over_frequency(
         magnetic, start_hz, stop_hz, points, temperature, mode, ""))
-    return _sweep_result(out, "AC resistance", FREQ_AXIS, _axis("AC resistance", "ohm"))
+    return _sweep_result(out, "AC resistance", FREQ_AXIS, _axis("AC resistance", "ohm"), magnetic=magnetic)
 
 
 # --- tools: winding ---------------------------------------------------------

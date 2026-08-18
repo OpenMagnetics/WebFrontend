@@ -25,6 +25,11 @@ const app = new App({ name: "OpenMagnetics Sweeps", version: "0.1.0" });
 
 const state = {
   title: "", subtitle: "", note: "", xLabel: "", yLabel: "", series: [], error: "",
+  // The subject the server swept, when the payload names one, plus the controls that only
+  // mean anything once the engine is here. `live` is what the user last computed locally —
+  // kept apart from the server's series so the two are never confused for one another.
+  subject: null, axes: null, spec: null, logX: true, live: null, status: "",
+  range: null, scalar: null,
 };
 
 const NS = "http://www.w3.org/2000/svg";
@@ -251,6 +256,97 @@ function render() {
   const t = table();
   if (t) root.append(t);
   if (state.note) root.append(el("div", { class: "note" }, state.note));
+  root.append(controls());
+}
+
+/** The local-sweep controls, and an honest line when there cannot be any.
+ *
+ * Four different "no" cases, each said in its own words, because "interactive sweeping is
+ * unavailable" would send a reader looking in the wrong place three times out of four.
+ */
+function controls() {
+  if (!state.subject?.document) {
+    return el("div", { class: "note" },
+      "Static chart: this result does not carry the magnetic it swept, so it can only be "
+      + "redrawn, not recomputed.");
+  }
+  if (!state.spec) {
+    const y = state.axes?.y?.unit ?? "?";
+    return el("div", { class: "note" },
+      `Static chart: a ${y}-axis sweep needs an operating point, which a curves result does `
+      + "not carry — that one stays with the server.");
+  }
+  if (!wasmAllowed()) {
+    return el("div", { class: "note" },
+      "Static chart: this host does not permit WebAssembly in a widget (the MCP Apps "
+      + "recommended CSP grants neither wasm-unsafe-eval nor unsafe-eval), so the engine "
+      + "cannot run here. The server's points are shown.");
+  }
+
+  const box = el("div", { class: "controls" });
+  box.append(el("div", { class: "sub" },
+    `${state.subject.name} — recompute ${state.spec.label} here, in this panel`));
+
+  const num = (label, key, value, step) => {
+    const input = el("input", { type: "number", value: String(value), step: String(step),
+                                class: "ctl" });
+    input.addEventListener("change", () => {
+      const v = Number(input.value);
+      if (Number.isFinite(v)) {
+        if (key === "scalar") state.scalar = v; else state.range[key] = v;
+      }
+    });
+    return el("label", { class: "ctllabel" }, label, input);
+  };
+
+  const xUnit = state.axes?.x?.unit || "";
+  box.append(num(`from (${xUnit})`, "from", state.range.from, state.range.from / 10 || 1));
+  box.append(num(`to (${xUnit})`, "to", state.range.to, state.range.to / 10 || 1));
+  box.append(num("points", "points", state.range.points, 1));
+  if (state.spec.extra.length) {
+    const unit = state.spec.extra[0] === "temperature" ? "degC" : "Hz";
+    box.append(num(`${state.spec.extra[0]} (${unit})`, "scalar", state.scalar, 1));
+  }
+
+  const go = el("button", { class: "btn" },
+                engine.module ? "Sweep again" : "Load the engine and sweep");
+  go.addEventListener("click", () => recompute(go));
+  box.append(go);
+  if (state.status) box.append(el("span", { class: "status" }, state.status));
+  if (engine.error) box.append(el("span", { class: "err" }, engine.error));
+  if (engine.module) {
+    box.append(el("div", { class: "note" },
+      `libMKF is running in this panel (${(engine.bytes / 1e6).toFixed(0)} MB, no server round `
+      + "trip). These curves are yours to explore; the answer the assistant stated is still "
+      + "the server's."));
+  }
+  return box;
+}
+
+async function recompute(button) {
+  button.disabled = true;
+  engine.error = "";
+  try {
+    state.status = "loading…";
+    render();
+    const mkf = await loadEngine((msg) => { state.status = msg; render(); });
+    state.status = "sweeping…";
+    render();
+    const pts = localSweep(mkf, state.spec, state.subject.document,
+                           state.range.from, state.range.to,
+                           Math.max(2, Math.round(state.range.points)), state.scalar);
+    // A SEPARATE series, labelled as computed here. Overwriting the server's would erase the
+    // thing the model actually answered from.
+    state.live = { name: `${state.spec.label} — computed in this panel`, points: pts };
+    state.series = [state.series[0], state.live].filter(Boolean);
+    state.status = `${pts.length} points`;
+  } catch (err) {
+    state.status = "";
+    engine.error = `could not sweep here: ${err.message || err}`;
+  } finally {
+    button.disabled = false;
+    render();
+  }
 }
 
 /** An axis label the way an engineer writes it: "impedance (ohm)". */
@@ -277,9 +373,148 @@ function apply(data) {
   state.yLabel = axisLabel(data.axes?.y);
   state.series = Array.isArray(data.series) ? data.series : [];
   state.error = state.series.length ? "" : "The tool result carried no series.";
+  // What the curves are OF. Present only when the server put it there, and the reason the
+  // controls below can exist at all.
+  state.subject = data.subject || null;
+  state.axes = data.axes || null;
+  state.spec = state.subject?.document ? sweepFor(data.axes) : null;
+  state.live = null;
+  const xs = state.series.flatMap((s2) => (s2.points || []).map((pt) => pt[0]))
+                         .filter(Number.isFinite);
+  if (xs.length) {
+    // Seed the controls from what the server actually swept, so the first local run
+    // reproduces the chart on screen rather than jumping somewhere else.
+    state.range = { from: Math.min(...xs), to: Math.max(...xs), points: xs.length };
+    state.logX = state.axes?.x?.scale ? state.axes.x.scale === "log"
+                                      : Math.min(...xs) > 0 && Math.max(...xs) / Math.min(...xs) >= 20;
+  }
+  if (state.spec?.extra.length) {
+    // The scalar the sweep holds fixed: temperature for a frequency or bias sweep, frequency
+    // for a temperature sweep. Defaults are the engine's own conventional ones.
+    state.scalar = state.spec.extra[0] === "temperature" ? 25 : 100000;
+  }
 }
 
-app.onToolResult = ({ structuredContent }) => { apply(structuredContent); render(); };
+
+/* ---------------------------------------------------------------------------
+ * Running the engine HERE, when the host allows it.
+ *
+ * The server sweeps once and sends the points. That is the whole answer for a
+ * static chart — and useless the moment someone wants to see the same magnetic
+ * over a different range, because every change is another round trip to an engine
+ * that needs gigabytes to answer.
+ *
+ * So: if the payload names its subject (a `curves` result may carry the magnetic
+ * it swept) and this host permits WebAssembly, the widget loads libMKF and sweeps
+ * locally as the controls move. Nothing is asserted from here — the model already
+ * has the server's answer, and this is exploration on top of it.
+ *
+ * WHY IT MIGHT NOT WORK, and why that is fine: the MCP Apps spec's recommended
+ * CSP (script-src 'self' 'unsafe-inline') grants neither wasm-unsafe-eval nor
+ * unsafe-eval, so a spec-following host BLOCKS this. Hertz ships a whole tool
+ * (wasm_probe) to find out per host. The probe below is the same question, asked
+ * quietly: on failure the widget stays exactly what it was.
+ * ------------------------------------------------------------------------- */
+
+/** Can this sandbox instantiate WebAssembly at all? Eight bytes: magic + version. */
+function wasmAllowed() {
+  try {
+    new WebAssembly.Module(new Uint8Array([0, 97, 115, 109, 1, 0, 0, 0]));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+// Which engine call answers which chart. Keyed on the AXES, not the title: the title is
+// prose the server chose, the axes are declared units.
+//
+// Only sweeps whose arguments are fully derivable are here. The loss sweeps need an
+// operating point, which a curves payload does not carry — so they stay server-side and the
+// widget says so rather than inventing an excitation.
+const SWEEPS = [
+  { x: "Hz", y: "ohm", label: "impedance", fn: "sweep_impedance_over_frequency", extra: [] },
+  { x: "Hz", y: "1", label: "Q factor", fn: "sweep_q_factor_over_frequency", extra: [] },
+  { x: "Hz", y: "H", label: "inductance vs frequency",
+    fn: "sweep_magnetizing_inductance_over_frequency", extra: ["temperature"] },
+  { x: "A", y: "H", label: "inductance vs DC bias",
+    fn: "sweep_magnetizing_inductance_over_dc_bias", extra: ["temperature"] },
+  { x: "degC", y: "H", label: "inductance vs temperature",
+    fn: "sweep_magnetizing_inductance_over_temperature", extra: ["frequency"] },
+];
+
+const engine = { module: null, loading: false, error: "", bytes: 0 };
+
+function sweepFor(axes) {
+  return SWEEPS.find((s) => s.x === axes?.x?.unit && s.y === axes?.y?.unit) || null;
+}
+
+/** Fetch the engine and instantiate it on THIS thread.
+ *
+ * Main thread, not a worker: the web app runs libMKF in a Web Worker, but a worker cannot be
+ * constructed from an opaque origin — which is what a sandbox without allow-same-origin gives
+ * us. And `wasmBinary` is passed directly so emscripten never tries to locate the file
+ * itself, which would resolve against about:srcdoc and fail.
+ */
+async function loadEngine(onProgress) {
+  if (engine.module || engine.loading) return engine.module;
+  engine.loading = true;
+  try {
+    const origin = window.__MOEBIUS_ORIGIN__;
+    const pipeline = window.__MOEBIUS_PIPELINE__ || "openmagnetics";
+    if (!origin) throw new Error("this host did not say where it lives (no __MOEBIUS_ORIGIN__)");
+    const url = `${origin}/api/engine/${pipeline}/libMKF.wasm`;
+    onProgress("fetching the engine…");
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`${res.status} fetching ${url}`);
+    const wasmBinary = await res.arrayBuffer();
+    engine.bytes = wasmBinary.byteLength;
+    onProgress(`instantiating ${(engine.bytes / 1e6).toFixed(0)} MB…`);
+    // The glue is fetched too, NOT imported. A static import makes vite follow it to the
+    // 33 MB .wasm and inline both into this single-file bundle — 44 MB of base64 per tool
+    // result, which is the opposite of the point. @vite-ignore keeps the build out of it.
+    const glue = `${origin}/api/engine/${pipeline}/libMKF.js`;
+    const factory = (await import(/* @vite-ignore */ glue)).default;
+    engine.module = await factory({ wasmBinary });
+    return engine.module;
+  } catch (err) {
+    engine.error = err.message || String(err);
+    throw err;
+  } finally {
+    engine.loading = false;
+  }
+}
+
+/** One local sweep, in the engine's own units, returned as contract-shaped points. */
+function localSweep(mkf, spec, magnetic, from, to, points, scalar) {
+  const args = [JSON.stringify(magnetic), from, to, points];
+  if (spec.extra.length) args.push(scalar);
+  args.push(state.logX ? "log" : "linear", "");
+  const raw = mkf[spec.fn](...args);
+  const out = typeof raw === "string" ? JSON.parse(raw) : raw;
+  const xs = out.xPoints || [];
+  const ys = out.yPoints || [];
+  if (!xs.length || xs.length !== ys.length) {
+    throw new Error(`the engine returned ${xs.length} x and ${ys.length} y points`);
+  }
+  return xs.map((x, i) => [x, ys[i]]);
+}
+
+// --- start, LAST ---------------------------------------------------------------
+//
+// Two ordering rules, and both were learned by breaking them:
+//
+// `ontoolresult`, all lowercase — the name the SDK actually dispatches (App defines
+// `set ontoolresult`; there is no `toolResult` property at all). This file used
+// `onToolResult` and read `app.toolResult`, so the handler never fired and every render said
+// "the tool returned no chart payload". Nothing had ever rendered this widget to notice: its
+// tools need an advised magnetic, so the widget suite listed it as unreachable.
+//
+// And this runs at the END of the module, not the middle. A top-level `await connect()` lets
+// the host's tool-result notification arrive while the rest of the file is still evaluating,
+// so `apply()` reached the sweep table before its `const` was initialised — a temporal dead
+// zone. The visible symptom was not an error: the chart drew, and the interactive controls
+// silently decided this sweep was one they could not recompute.
+app.ontoolresult = (result) => { apply(result?.structuredContent); render(); };
 await app.connect();
-apply(app.toolResult?.structuredContent);
 render();
