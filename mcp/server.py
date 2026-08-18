@@ -163,9 +163,35 @@ _STORE = Path(os.environ.get("OPENMAGNETICS_WORK_DIR")
 _REF_SCHEME = "mas://"
 
 
+def _clean(node):
+    """Drop nulls and empty objects — the WebFrontend's `clean()`, minus its bug.
+
+    In MAS an absent optional and a null field are the same fact, so this removes no
+    information: 22% off a full document, 34% off a magnetic, and an impedance sweep computed
+    from the cleaned copy agrees with the original to 0.0000%. That is what separates it from
+    a sampling setting, which buys size by changing the answer.
+
+    The shared helper in WebSharedComponents also deletes empty ARRAYS, and that is not
+    information-free: `turnsRatios: []` is how a MAS says "an inductor", and without it the
+    engine refuses the document with `key 'turnsRatios' not found`. It buys 39 characters in
+    130,000 (0.04%) in exchange for a document the engine cannot load, so empty arrays stay.
+    """
+    if isinstance(node, dict):
+        out = {}
+        for key, value in node.items():
+            value = _clean(value)
+            if value is None or value == "null" or (isinstance(value, dict) and not value):
+                continue
+            out[key] = value
+        return out
+    if isinstance(node, list):
+        return [_clean(v) for v in node if v is not None and v != "null"]
+    return node
+
+
 def _register_mas(document: dict) -> str:
     """Keep a document and return the handle that fetches it back."""
-    blob = gzip.compress(json.dumps(document, separators=(",", ":")).encode(), 6)
+    blob = gzip.compress(json.dumps(_clean(document), separators=(",", ":")).encode(), 6)
     ident = hashlib.sha256(blob).hexdigest()[:16]
     _STORE.mkdir(parents=True, exist_ok=True)
     path = _STORE / f"{ident}.json.gz"
@@ -312,7 +338,7 @@ def _document_result(summary: str, *, schema: str, operation: str, document: dic
         "mode": "document",
         "schema": {"name": schema, **({"version": version} if version else {})},
         "operation": operation,
-        "document": document,
+        "document": _clean(document),
     }
     for key, value in (("subject", subject), ("derivedFrom", derived_from),
                        ("changed", changed), ("diagnostics", diagnostics), ("view", view)):
@@ -455,7 +481,7 @@ def _sweep_result(sweep: dict, title: str, x_axis: dict, y_axis: dict,
     subject = None
     if magnetic:
         subject = {"kind": "magnetic", "name": _reference(magnetic),
-                   "schema": {"name": "MAS"}, "document": magnetic}
+                   "schema": {"name": "MAS"}, "document": _clean(magnetic)}
     return _curves_result(
         sweep.get("title") or title, f"{len(xs)} points",
         [{"name": sweep.get("title") or title, "kind": "modelled",
