@@ -274,7 +274,12 @@ def _digest(mas: dict) -> dict:
     effective = ((core.get("processedDescription") or {}).get("effectiveParameters") or {})
     if effective.get("effectiveArea"):
         out["effective_area_mm2"] = round(float(effective["effectiveArea"]) * 1e6, 3)
-    windings = (magnetic.get("coil") or {}).get("functionalDescription") or []
+    coil = magnetic.get("coil") or {}
+    for key, name in (("sectionsDescription", "sections"), ("layersDescription", "layers"),
+                      ("turnsDescription", "turns_described")):
+        if coil.get(key):
+            out[name] = len(coil[key])
+    windings = coil.get("functionalDescription") or []
     if windings:
         out["turns"] = [w.get("numberTurns") for w in windings]
         wire = (windings[0].get("wire") or {})
@@ -636,12 +641,16 @@ def advise_coil(mas: dict | str) -> CallToolResult:
     magnetic = (out or {}).get("magnetic") or {}
     coil = magnetic.get("coil") or {}
     turns = len(coil.get("turnsDescription") or [])
-    return _document_result(
+    # A digest and a handle, like the other two advisers — because this one's size is driven by
+    # the TURN COUNT and it was already at 93% of a client's limit for a 9-turn inductor:
+    # 66,861 characters at 9 turns, 92,599 at 28, about 1.35 kB per turn. Any transformer
+    # crosses it, and crossing it means the model is handed nothing and the turn dies quietly.
+    # Inlining here was safe only for the smallest thing anyone would design.
+    return _designs_result(
         f"Coil designed for {_reference(magnetic)}: {turns} turn(s) described, "
-        f"{len(coil.get('sectionsDescription') or [])} section(s).",
-        schema="MAS", operation="transformed", document=out, subject=_reference(magnetic),
-        changed=[{"ref": _reference(magnetic), "change": f"coil designed: {turns} turn(s), "
-                  f"{len(coil.get('sectionsDescription') or [])} section(s)"}])
+        f"{len(coil.get('sectionsDescription') or [])} section(s). The wound MAS is behind the "
+        f"handle below; fetch_design reads any part of it.",
+        [{"mas": out}], "magnetic")
 
 
 @mcp.tool(
