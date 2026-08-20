@@ -122,26 +122,58 @@ export default {
     },
     mounted () {
         this.masStore.$subscribe((mutation, state) => {
-            this.$emit("canContinue", this.canContinue(state));
+            this.emitCanContinue(state);
         })
-        this.$emit("canContinue", this.canContinue(this.masStore));
+        this.emitCanContinue(this.masStore);
 
 
     },
     methods: {
-        canContinue(store){
-            var canContinue = store.mas.inputs.designRequirements.magnetizingInductance != null;
-            canContinue &= store.mas.inputs.designRequirements.name != '';
-            canContinue &= store.mas.inputs.designRequirements.magnetizingInductance.minimum != null ||
-                           store.mas.inputs.designRequirements.magnetizingInductance.nominal != null ||
-                           store.mas.inputs.designRequirements.magnetizingInductance.maximum != null;
-            for (var index in store.mas.inputs.designRequirements.turnsRatios) {
-                canContinue &= store.mas.inputs.designRequirements.turnsRatios[index].minimum != null ||
-                               store.mas.inputs.designRequirements.turnsRatios[index].nominal != null ||
-                               store.mas.inputs.designRequirements.turnsRatios[index].maximum != null;
+        emitCanContinue(store) {
+            // The Continue button used to receive a bare boolean, so when it
+            // flipped to "Fix Errors" the user had no way to find out WHICH
+            // requirement was incomplete. Send the reasons along with the
+            // verdict; the sidebar renders them under Actions.
+            const errors = this.validationErrors(store);
+            this.$emit("canContinue", errors.length == 0, errors);
+        },
+        // Every reason the Continue button is blocked, as user-facing text.
+        // Derived from the store on each mutation, so it can never go stale.
+        validationErrors(store) {
+            const errors = [];
+            const designRequirements = store.mas.inputs.designRequirements;
 
+            if (designRequirements.name == '') {
+                errors.push("The design has no name. Give it one at the top of the Configuration panel.");
             }
-            return Boolean(canContinue);
+
+            if (designRequirements.magnetizingInductance == null) {
+                errors.push("Magnetizing Inductance is required. Add it from the Requirements list on the left.");
+            }
+            else if (designRequirements.magnetizingInductance.minimum == null &&
+                     designRequirements.magnetizingInductance.nominal == null &&
+                     designRequirements.magnetizingInductance.maximum == null) {
+                errors.push("Magnetizing Inductance has no value. Set a minimum, nominal or maximum.");
+            }
+
+            for (var index in designRequirements.turnsRatios) {
+                const turnsRatio = designRequirements.turnsRatios[index];
+                if (turnsRatio.minimum == null && turnsRatio.nominal == null && turnsRatio.maximum == null) {
+                    errors.push("Turns ratio for " + this.windingLabel(store, Number(index) + 1) +
+                                " has no value. Set a minimum, nominal or maximum.");
+                }
+            }
+
+            return errors;
+        },
+        // Name the winding the way the turns-ratio rows label it, so the error
+        // text points at a row the user can actually see.
+        windingLabel(store, windingIndex) {
+            const winding = store.mas.magnetic.coil.functionalDescription[windingIndex];
+            if (winding != null && winding.name != null) {
+                return winding.name;
+            }
+            return toTitleCase(isolationSideOrdered[windingIndex]);
         },
         requirementButtonClicked(requirementName) {
             if (this.masStore.mas.inputs.designRequirements[requirementName] == null) {
@@ -191,7 +223,11 @@ export default {
             }
         },
         hasError() {
-            this.$emit("canContinue", false);
+            // A child input rejected its own value (out of order, empty, <= 0).
+            // The child renders the detail inline in red; the store never took
+            // the bad value, so validationErrors() cannot see it. Say where to
+            // look rather than blocking with a silent button.
+            this.$emit("canContinue", false, ["A requirement has an invalid value. Check the fields marked in red in the Configuration panel."]);
         },
         updatedIsolationSides(value, index) {
             this.masStore.mas.magnetic.coil.functionalDescription[index].isolationSide = value;

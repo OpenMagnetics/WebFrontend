@@ -127,7 +127,7 @@ export default {
         // mounted() never fires for those. Watching the computed keeps the
         // Continue button in sync the moment a winding becomes processed.
         canContinue(value) {
-            this.$emit("canContinue", value);
+            this.emitCanContinue();
         },
     },
     mounted () {
@@ -140,7 +140,7 @@ export default {
                 this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex].voltage.processed = deepCopy(defaultOperatingPointExcitation.voltage.processed)
             }
         }
-        this.$emit("canContinue", this.canContinue);
+        this.emitCanContinue();
 
         // Only set default mode if no mode is currently selected
         // Don't reset user-selected modes when navigating back from magnetic builder
@@ -166,10 +166,22 @@ export default {
                 const signalDescriptor = action.args[0];
             }
 
-            this.$emit("canContinue", this.canContinue);
+            this.emitCanContinue();
         })
     },
     methods: {
+        // canContinue already builds errorMessages naming the exact operating
+        // point and winding that is incomplete — that text was computed on
+        // every evaluation and then dropped on the floor, which is why the
+        // button could only say "Fix Errors". Ship the reasons with the
+        // verdict so the sidebar can list them.
+        emitCanContinue() {
+            const canContinue = this.canContinue;
+            const errors = canContinue
+                ? []
+                : this.errorMessages.split('\n').map(line => line.trim()).filter(line => line != '');
+            this.$emit("canContinue", canContinue, errors);
+        },
         async updatedSignal(signalDescriptor) {
             if (!this.blockingRebounds) {
                 this.blockingRebounds = true;
@@ -244,23 +256,23 @@ export default {
             // the new point was left without one (ABT #345).
             this.currentOperatingPointIndex = this.masStore.mas.inputs.operatingPoints.length - 1;
             this.$stateStore.operatingPoints.modePerPoint[this.currentOperatingPointIndex] = this.defaultMode;
-            this.$emit("canContinue", this.canContinue);
+            this.emitCanContinue();
         },
         removePoint(index) {
             if (index < this.currentOperatingPointIndex) {
                 this.currentOperatingPointIndex -= 1;
             }
             this.$stateStore.removeOperatingPoint(index);
-            this.$emit("canContinue", this.canContinue);
+            this.emitCanContinue();
         },
         importedWaveform() {
-            this.$emit("canContinue", this.canContinue);
+            this.emitCanContinue();
         },
         selectedManualOrImported() {
             setTimeout(() => {
                 this.masStore.updatedInputExcitationWaveformUpdatedFromProcessed('current');
             }, 100);
-            this.$emit("canContinue", this.canContinue);
+            this.emitCanContinue();
         },
         changeWinding(windingIndex) {
 
@@ -274,7 +286,7 @@ export default {
             setTimeout(() => {
                 this.masStore.updatedInputExcitationWaveformUpdatedFromProcessed('current');
             }, 100);
-            this.$emit("canContinue", this.canContinue);
+            this.emitCanContinue();
         },
         async reflectWinding(windingIndexToBeReflected){
             try {
@@ -288,7 +300,7 @@ export default {
                     var secondaryExcitation = await this.taskQueueStore.calculateReflectedSecondary(this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[0], turnRatio);
                     this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[1] = secondaryExcitation;
                 }
-                this.$emit("canContinue", this.canContinue);
+                this.emitCanContinue();
             } catch (error) {
                 console.error(error);
             }

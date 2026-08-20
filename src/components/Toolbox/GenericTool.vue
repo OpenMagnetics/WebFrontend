@@ -1,5 +1,6 @@
 <script setup>
 import Storyline from './Storyline.vue'
+import StorylineErrors from './StorylineErrors.vue'
 import ContextMenu from './ContextMenu.vue'
 
 import ElementFromList from 'WebSharedComponents/DataInput/ElementFromList.vue'
@@ -72,6 +73,12 @@ export default {
             masStore,
             localData,
             updateStoryline: 0,
+            // Reasons the current subsection is blocking Continue, keyed by
+            // subsection. Deliberately NOT in the persisted state store: it is
+            // derived on every evaluation and persisting it would change the
+            // toolboxStates shape (and force a STORE_VERSION_DATE bump that
+            // wipes everyone's saved state) for something with no shelf life.
+            toolErrors: {},
         }
     },
     methods: {
@@ -101,8 +108,12 @@ export default {
         traversableLeft() {
             return this.currentStoryline[this.$stateStore.getCurrentToolState().subsection].basicTool != null;
         },
-        updateCanContinue(tool, value) {
+        updateCanContinue(tool, value, errors) {
             this.$stateStore.getCurrentToolState().canContinue[tool] = value;
+            // Subsections that have not been taught to report reasons yet emit
+            // the bare boolean; keep an empty list for them rather than
+            // inventing a message.
+            this.toolErrors[tool] = value ? [] : (errors ?? []);
             this.updateStoryline += 1;
         },
         changeTool(tool) {
@@ -265,6 +276,11 @@ export default {
                         @toolSelected="toolSelected"
                     />
                 </div>
+                <StorylineErrors
+                    :dataTestLabel="`${dataTestLabel}-StorylineErrors`"
+                    :blocked="$stateStore.getCurrentToolState().canContinue[$stateStore.getCurrentToolState().subsection] === false"
+                    :errors="toolErrors[$stateStore.getCurrentToolState().subsection] ?? []"
+                />
             </div>
             <div class="text-center col-12 col-12 md:col-11 bg-transparent px container pt-0" >
                 <div class="row">
@@ -276,28 +292,28 @@ export default {
                     <DesignRequirements
                         v-if="$stateStore.getCurrentToolState().subsection == 'designRequirements' && ($stateStore.selectedWorkflow == 'design' || $stateStore.selectedWorkflow == 'catalog')"
                         :dataTestLabel="`${dataTestLabel}-DesignRequirements`"
-                        @canContinue="updateCanContinue('designRequirements', $event)"
+                        @canContinue="(...args) => updateCanContinue('designRequirements', ...args)"
                     />
                     <OperatingPoints
                         v-if="$stateStore.getCurrentToolState().subsection == 'operatingPoints'"
                         :dataTestLabel="`${dataTestLabel}-OperatingPoints`"
-                        @canContinue="updateCanContinue('operatingPoints', $event)" 
+                        @canContinue="(...args) => updateCanContinue('operatingPoints', ...args)" 
                         @changeTool="changeTool"
                     />
                     <MagneticCoreAdviser
                         v-if="$stateStore.getCurrentToolState().subsection == 'magneticCoreAdviser'"
                         :dataTestLabel="`${dataTestLabel}-MagneticmagneticCoreAdviser`"
-                        @canContinue="updateCanContinue('magneticCoreAdviser', $event)"
+                        @canContinue="(...args) => updateCanContinue('magneticCoreAdviser', ...args)"
                     />
                     <MagneticAdviser
                         v-if="$stateStore.getCurrentToolState().subsection == 'magneticAdviser'"
                         :dataTestLabel="`${dataTestLabel}-MagneticAdviser`"
-                        @canContinue="updateCanContinue('magneticAdviser', $event)"
+                        @canContinue="(...args) => updateCanContinue('magneticAdviser', ...args)"
                     />
                     <CatalogAdviser
                         v-if="$stateStore.getCurrentToolState().subsection == 'catalogAdviser'"
                         :dataTestLabel="`${dataTestLabel}-CatalogAdviser`"
-                        @canContinue="updateCanContinue('catalogAdviser', $event)"
+                        @canContinue="(...args) => updateCanContinue('catalogAdviser', ...args)"
                     />
                     <CoreCustomizer
                         v-if="$stateStore.getCurrentToolState().subsection == 'coreCustomizer'"
@@ -328,7 +344,7 @@ export default {
                         :enableAdvisers="true"
                         :enableSimulation="true"
                         :enableInsertIntermediateMas="enableInsertIntermediateMas"
-                        @canContinue="updateCanContinue('magneticBuilder', $event)"
+                        @canContinue="(...args) => updateCanContinue('magneticBuilder', ...args)"
                     />
                     <MagneticSummary
                         v-if="$stateStore.getCurrentToolState().subsection == 'magneticSummary'"
