@@ -147,16 +147,41 @@ export default {
       return aux;
     },
     _getForwardApiPrefix() {
-      if (this.converterName === 'Single-Switch Forward') return 'SingleSwitchForward';
-      if (this.converterName === 'Two-Switch Forward') return 'TwoSwitchForward';
-      return 'ActiveClampForward';
+      const prefixMap = {
+        'Single-Switch Forward': 'SingleSwitchForward',
+        'Two-Switch Forward':    'TwoSwitchForward',
+        'Active Clamp Forward':  'ActiveClampForward',
+      };
+      if (!prefixMap[this.converterName]) {
+        throw new Error(`ForwardWizard: unknown converterName '${this.converterName}'`);
+      }
+      return prefixMap[this.converterName];
     },
     getCalculateFn() {
       const p = this._getForwardApiPrefix();
       if (this.localData.designLevel == 'I know the design I want') return (aux) => this.taskQueueStore[`calculateAdvanced${p}Inputs`](aux);
       return (aux) => this.taskQueueStore[`calculate${p}Inputs`](aux);
     },
-    getSimulateFn() { return (aux) => this.taskQueueStore.simulateForwardIdealWaveforms(aux); },
+    // The Simulated button MUST hit this converter's own topology. It used to call
+    // simulateForwardIdealWaveforms() unconditionally, which routes through
+    // kirchhoffRuntime's legacy alias `forward` == SINGLE-switch forward — so a
+    // Two-Switch / Active Clamp design came back with the single-switch reset
+    // winding ("Demagnetization winding", turnsRatios[0] == 1) and those bogus
+    // three-winding results were then merged straight into the MAS store.
+    // Two-switch forward resets through the clamp diodes and active clamp through
+    // the clamp cap/FET: neither has a demag winding.
+    getSimulateFn() {
+      const simulateMap = {
+        'Single-Switch Forward': 'simulateForwardIdealWaveforms',
+        'Two-Switch Forward':    'simulateTwoSwitchForwardIdealWaveforms',
+        'Active Clamp Forward':  'simulateActiveClampForwardIdealWaveforms',
+      };
+      const fnName = simulateMap[this.converterName];
+      if (!fnName) {
+        throw new Error(`ForwardWizard: unknown converterName '${this.converterName}'`);
+      }
+      return (aux) => this.taskQueueStore[fnName](aux);
+    },
     getDefaultFrequency() { return this.localData.switchingFrequency; },
     postProcessResults(result, mode) {
             this.forwardDiagnostics = result?.singleSwitchForwardDiagnostics ?? result?.twoSwitchForwardDiagnostics ?? result?.activeClampForwardDiagnostics ?? null;
@@ -178,6 +203,13 @@ export default {
     },
     getIsolationSides() {
       const sides = [IsolationSide.Primary];
+      // Single-Switch Forward resets through a tertiary demagnetization winding,
+      // which the engine returns as excitation index 1. It sits on the PRIMARY
+      // side (same reference as the main primary), so it needs its own entry —
+      // otherwise every side below it shifts by one and the demag winding is
+      // labelled `secondary` while the real secondary falls off the end.
+      // Two-Switch (clamp diodes) and Active Clamp have no such winding.
+      if (this.converterName === 'Single-Switch Forward') sides.push(IsolationSide.Primary);
       for (let i = 0; i < this.localData.outputsParameters.length; i++) sides.push(IsolationSide.Secondary);
       return sides;
     },
