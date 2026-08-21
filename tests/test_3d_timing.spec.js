@@ -30,15 +30,25 @@ test.describe('3D visualizer timing', () => {
       const createMvbpp = new Function(code + '\nreturn createMvbpp;')();
       const mvbpp = await createMvbpp({ locateFile: (f) => `/wasm/${f}` });
 
-      // drawTurns now accepts a full Magnetic JSON (uses bobbin context for
-      // toroidal turns). Signature:
+      // drawTurns takes a full Magnetic JSON (uses bobbin context for toroidal
+      // turns). Signature — keep this in step with mvbWorker.js:290, which is
+      // what the real app calls:
       //   drawTurns(json, mode, plane, offset, format, scale,
-      //             polygonSegments, symmetry, side, paintCoating)
+      //             polygonSegments, symmetry, side, paintCoating,
+      //             useRealWindingGeometry, femReady)
       // paintCoating=true → OUTER (insulation) diameter (frontend default).
+      //
+      // This test used to stop at paintCoating, pinning the OLD 10-argument
+      // arity. That made it pass against a binary the real app could not use:
+      // mvbWorker.js has passed twelve arguments since the real-winding work,
+      // so a 10-arg mvbpp answers the test and throws for every actual user
+      // ("Could not build turns … called with 12 arguments, expected 10").
+      // The test was the stale side, not the engine — so it must call exactly
+      // what the app calls.
       const turnsKey = mag.coil.turns_description ? 'turns_description' : 'turnsDescription';
 
       const t0 = performance.now();
-      const full = mvbpp.drawTurns(JSON.stringify(mag), '3D', 'XY', 0.0, 'stl', 1.0, 16, 'none', '', true);
+      const full = mvbpp.drawTurns(JSON.stringify(mag), '3D', 'XY', 0.0, 'stl', 1.0, 16, 'none', '', true, undefined, undefined);
       const elapsed = performance.now() - t0;
 
       // Geometry check: build a 2-turn slice and a 1-turn slice. Each turn in
@@ -47,12 +57,12 @@ test.describe('3D visualizer timing', () => {
       const clone2 = JSON.parse(JSON.stringify(mag));
       clone2.coil[turnsKey] = clone2.coil[turnsKey].slice(0, 2);
       const twoTurns = mvbpp.drawTurns(JSON.stringify(clone2),
-                                        '3D', 'XY', 0.0, 'stl', 1.0, 16, 'none', '', true);
+                                        '3D', 'XY', 0.0, 'stl', 1.0, 16, 'none', '', true, undefined, undefined);
 
       const clone1 = JSON.parse(JSON.stringify(mag));
       clone1.coil[turnsKey] = clone1.coil[turnsKey].slice(0, 1);
       const oneTurn  = mvbpp.drawTurns(JSON.stringify(clone1),
-                                        '3D', 'XY', 0.0, 'stl', 1.0, 16, 'none', '', true);
+                                        '3D', 'XY', 0.0, 'stl', 1.0, 16, 'none', '', true, undefined, undefined);
 
       // STL binary: 80-byte header + 4-byte triangle count + 50 bytes/triangle
       const triCount = (n) => n ? (n.length - 84) / 50 : 0;
