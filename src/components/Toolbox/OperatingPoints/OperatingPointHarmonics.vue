@@ -144,7 +144,7 @@ export default {
             // magnetizing inductance. Mirror OperatingPointManual.induce('current').
             if (!this.isInductor || !this.hasInductance) return;
             try {
-                const magnetizingInductance = await this.taskQueueStore.resolveDimensionWithTolerance(this.masStore.mas.inputs.designRequirements.magnetizingInductance);
+                const magnetizingInductance = await this.taskQueueStore.resolveDimensionWithTolerance(this.masStore.mas.inputs.designRequirements.magnetizingInductance, 'the magnetizing inductance in Design Requirements');
                 const excitation = this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex];
                 const voltage = await this.taskQueueStore.calculateInducedVoltage(excitation, magnetizingInductance);
                 // Never write a null/absent field into the store: consumers read

@@ -291,7 +291,7 @@ export default {
         async reflectWinding(windingIndexToBeReflected){
             try {
                 // Reflection only allowed with two windings
-                var turnRatio = await this.taskQueueStore.resolveDimensionWithTolerance(this.masStore.mas.inputs.designRequirements.turnsRatios[0]);  
+                var turnRatio = await this.taskQueueStore.resolveDimensionWithTolerance(this.masStore.mas.inputs.designRequirements.turnsRatios[0], 'the turns ratio in Design Requirements');  
                 if (windingIndexToBeReflected == 0) {
                     var primaryExcitation = await this.taskQueueStore.calculateReflectedPrimary(this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[1], turnRatio);
                     this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[0] = primaryExcitation;

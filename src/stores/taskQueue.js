@@ -654,11 +654,43 @@ export const useTaskQueueStore = defineStore('taskQueue', {
         dimensionResolved(success = true, dataOrMessage = '') {
         },
 
-        async resolveDimensionWithTolerance(dimension) {
+        async resolveDimensionWithTolerance(dimension, fieldName = 'value') {
             const mkf = await waitForMkf();
             await mkf.ready;
 
-            const result = await mkf.resolve_dimension_with_tolerance(JSON.stringify(dimension));
+            // Web bug report #171: "I struggle to use the waveform import. No matter how the
+            // file is formatted, it always gives 'bad_optional_access'."
+            //
+            // That string is a raw std::bad_optional_access escaping the engine. Unlike every
+            // binding around it, resolve_dimension_with_tolerance has no try/catch in
+            // WebLibMKF (it returns a double, so it cannot answer with an "ERROR:" string),
+            // so the C++ throw arrives in JS as an opaque WebAssembly.Exception whose message
+            // is the exception's type name. resolve_dimensional_values() throws that way ON
+            // PURPOSE when a dimensionWithTolerance carries no nominal, minimum or maximum --
+            // it refuses to invent a number, which is right -- but the user was shown the
+            // C++ type name instead of which field they had left blank.
+            //
+            // Check it here, where we know what the field IS, and say so.
+            const hasValue = dimension != null && typeof dimension === 'object' &&
+                [dimension.nominal, dimension.minimum, dimension.maximum].some(v => typeof v === 'number' && Number.isFinite(v));
+            if (!hasValue) {
+                const reason = `No value for ${fieldName}: it has no nominal, minimum or maximum. Set it before continuing.`;
+                setTimeout(() => { this.dimensionResolved(false, reason); }, this.task_standard_response_delay);
+                throw new Error(reason);
+            }
+
+            let result;
+            try {
+                result = await mkf.resolve_dimension_with_tolerance(JSON.stringify(dimension));
+            }
+            catch (error) {
+                // Anything still coming out of the engine here is a genuine engine fault, not a
+                // blank field. Name the field anyway so the message is actionable.
+                const detail = error?.message ?? String(error);
+                const reason = `Could not read ${fieldName} (${detail}).`;
+                setTimeout(() => { this.dimensionResolved(false, reason); }, this.task_standard_response_delay);
+                throw new Error(reason);
+            }
             setTimeout(() => { this.dimensionResolved(true, result); }, this.task_standard_response_delay);
             return result;
         },

@@ -126,7 +126,7 @@ export default {
             if (sourceSignalDescriptor == 'current'){
 
                 try {
-                    var magnetizingInductance = await this.taskQueueStore.resolveDimensionWithTolerance(this.masStore.mas.inputs.designRequirements.magnetizingInductance);
+                    var magnetizingInductance = await this.taskQueueStore.resolveDimensionWithTolerance(this.masStore.mas.inputs.designRequirements.magnetizingInductance, 'the magnetizing inductance in Design Requirements');
                     // Capture user preferences before WASM overwrites them.
                     // WASM discretizes waveforms into N points causing dutyCycle = k/N rounding
                     // (e.g. 94.37% → 95% with N=20). WASM also returns label="custom" which
@@ -157,7 +157,7 @@ export default {
             else if (sourceSignalDescriptor == 'voltage'){
 
                 try {
-                    var magnetizingInductance = await this.taskQueueStore.resolveDimensionWithTolerance(this.masStore.mas.inputs.designRequirements.magnetizingInductance);
+                    var magnetizingInductance = await this.taskQueueStore.resolveDimensionWithTolerance(this.masStore.mas.inputs.designRequirements.magnetizingInductance, 'the magnetizing inductance in Design Requirements');
                     var current = await this.taskQueueStore.calculateInducedCurrent(this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex], magnetizingInductance);
 
                     if (current?.waveform == null || current?.harmonics == null || current?.processed == null) {
