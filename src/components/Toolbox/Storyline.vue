@@ -46,27 +46,33 @@ export default {
             }
             return basicStoryline
         },
+        // Untruncated step names, for the title attribute (web bug report #172: a
+        // truncated label the user cannot expand is a label they cannot find).
+        fullLabels() {
+            const fullLabels = {}
+            for (var key in this.storyline) {
+                fullLabels[key] = toTitleCase(this.storyline[key].title);
+            }
+            return fullLabels
+        },
         shortenedLabels() {
             const shortenedLabels = {}
 
             for (var key in this.storyline) {
                 var label = toTitleCase(this.storyline[key].title);
                 if (window.innerWidth < 1450) {
+                    // Floor of 5 characters. The old ladder bottomed out at ONE, which
+                    // rendered the steps as "D. R.", "O. P.", "M. B." -- there is no
+                    // window narrow enough for that to be more useful than a scrollbar.
                     var slice = 8
                     if (window.innerWidth < 1100)
                         slice = 7
                     if (window.innerWidth < 1000)
                         slice = 6
                     if (window.innerWidth < 900)
-                        slice = 4
-                    if (window.innerWidth < 700)
-                        slice = 3
-                    if (window.innerWidth < 600)
-                        slice = 2
-                    if (window.innerWidth < 500)
-                        slice = 1
+                        slice = 5
                     label = label.split(' ')
-                        .map(item => item.length < slice? item + ' ' : item.slice(0, slice) + '. ')
+                        .map(item => item.length <= slice? item + ' ' : item.slice(0, slice) + '. ')
                         .join('');
                 }
                 shortenedLabels[key] =label;
@@ -167,6 +173,7 @@ export default {
                             'storyline-step-pending': index != selectedTool && !enabledAdventures[index]
                         }"
                         :disabled="!enabledAdventures[index]"
+                        :title="fullLabels[index]"
                         @click="$emit('changeTool', index)"
                     >
                         {{shortenedLabels[index]}}

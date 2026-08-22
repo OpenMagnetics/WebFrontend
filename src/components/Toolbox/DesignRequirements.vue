@@ -82,27 +82,44 @@ export default {
             }
             return Array.from({length: 12}, (_, i) => i + 1);
         },
+        // Full, untruncated names, for the title attribute. Web bug report #172, "For
+        // inductor design, input for Temp is missing": it is not missing, it is called
+        // "Operating Temperature" and the responsive shortener was rendering it as
+        // "Opera. Tempe." -- at which point nobody scanning for "Temp" finds it. The
+        // shortening below is still useful on a narrow window, but a truncated word must
+        // always be recoverable by hovering, and it must stay recognisable.
+        fullLabels() {
+            const fullLabels = {"numberWindings": "Number of Windings"};
+            designRequirementsOrdered[this.$stateStore.getCurrentApplication()].forEach((value) => {
+                fullLabels[value] = toTitleCase(value);
+            })
+            return fullLabels
+        },
         shortenedLabels() {
             const shortenedLabels = {"numberWindings": "No. Windings"};
             designRequirementsOrdered[this.$stateStore.getCurrentApplication()].forEach((value) => {
                 var label = value;
                 if (window.innerWidth < 1200 && label.length > 10) {
-                    var slice = 3;
-                    if (window.innerWidth <= 768) {
-                        slice = 8;
+                    // Never cut a word below 6 characters. The old ladder went down to 3,
+                    // which turned "Operating Temperature" into "Ope. Tem." and
+                    // "Magnetizing Inductance" into "Mag. Ind." -- unreadable, and chosen
+                    // from window.innerWidth rather than from how much room the label
+                    // actually has (measured on production: the label box was 203 px wide
+                    // while showing "Numbe. Windi.").
+                    var slice = 8;
+                    if (window.innerWidth >= 850 && window.innerWidth < 970) {
+                        slice = 6;
                     }
-                    else{
-                        if (window.innerWidth >= 850 && window.innerWidth < 970) {
-                            slice = 5;
-                        }
-                        if (window.innerWidth >= 970 && window.innerWidth < 1200) {
-                            slice = 7;
-                        }
+                    else if (window.innerWidth >= 970 && window.innerWidth < 1200) {
+                        slice = 7;
                     }
 
                     label = toTitleCase(label).split(' ')
-                        .map(item => item.length < slice? item + ' ' : item.slice(0, slice) + '. ')
+                        .map(item => item.length <= slice? item + ' ' : item.slice(0, slice) + '. ')
                         .join('')
+                }
+                else {
+                    label = toTitleCase(label);
                 }
                 shortenedLabels[value] = label;
             })
@@ -266,6 +283,7 @@ export default {
                             'dr-req-item-required': compulsoryRequirements[$stateStore.getCurrentApplication()].includes(requirementName)
                          }">
                         <label v-tooltip="tooltipsMagneticSynthesisDesignRequirements[requirementName]"
+                               :title="fullLabels[requirementName]"
                                class="dr-req-label">{{ toTitleCase(shortenedLabels[requirementName]) }}</label>
                         <button
                             :data-cy="dataTestLabel + '-' + toPascalCase(requirementName) + '-add-remove-button'"
