@@ -47,8 +47,10 @@ test.describe('3D visualizer timing', () => {
       // what the app calls.
       const turnsKey = mag.coil.turns_description ? 'turns_description' : 'turnsDescription';
 
+      // wirePolygonSegments 0 = analytic, as mvbWorker now passes (ABT #211/#860).
+      // The 16-gon profile is what made this slow and what killed large designs.
       const t0 = performance.now();
-      const full = mvbpp.drawTurns(JSON.stringify(mag), '3D', 'XY', 0.0, 'stl', 1.0, 16, 'none', '', true, undefined, undefined);
+      const full = mvbpp.drawTurns(JSON.stringify(mag), '3D', 'XY', 0.0, 'stl', 1.0, 0, 'none', '', true, undefined, undefined);
       const elapsed = performance.now() - t0;
 
       // Geometry check: build a 2-turn slice and a 1-turn slice. Each turn in
@@ -57,12 +59,12 @@ test.describe('3D visualizer timing', () => {
       const clone2 = JSON.parse(JSON.stringify(mag));
       clone2.coil[turnsKey] = clone2.coil[turnsKey].slice(0, 2);
       const twoTurns = mvbpp.drawTurns(JSON.stringify(clone2),
-                                        '3D', 'XY', 0.0, 'stl', 1.0, 16, 'none', '', true, undefined, undefined);
+                                        '3D', 'XY', 0.0, 'stl', 1.0, 0, 'none', '', true, undefined, undefined);
 
       const clone1 = JSON.parse(JSON.stringify(mag));
       clone1.coil[turnsKey] = clone1.coil[turnsKey].slice(0, 1);
       const oneTurn  = mvbpp.drawTurns(JSON.stringify(clone1),
-                                        '3D', 'XY', 0.0, 'stl', 1.0, 16, 'none', '', true, undefined, undefined);
+                                        '3D', 'XY', 0.0, 'stl', 1.0, 0, 'none', '', true, undefined, undefined);
 
       // STL binary: 80-byte header + 4-byte triangle count + 50 bytes/triangle
       const triCount = (n) => n ? (n.length - 84) / 50 : 0;

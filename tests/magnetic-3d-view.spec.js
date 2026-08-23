@@ -99,7 +99,10 @@ test.describe('3D on the web', () => {
             const mvbpp = await createMvbpp({ locateFile: (f) => `/wasm/${f}` });
 
             const json = JSON.stringify(magnetic);
-            const args = [json, '3D', 'XY', 0.0, 'stl', 1.0, 16, 'none', ''];
+            // wirePolygonSegments 0 = analytic, matching what mvbWorker passes (ABT #211).
+            // 16 built a polygon profile costing 120-280 MB per turn and blew the browser's
+            // memory cap on large designs; a test pinning 16 pins behaviour no user gets.
+            const args = [json, '3D', 'XY', 0.0, 'stl', 1.0, 0, 'none', ''];
             const run = (name, call) => {
                 try {
                     const out = call();
