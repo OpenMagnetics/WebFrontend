@@ -594,8 +594,13 @@ export default {
             delete masOnlyInputs.magnetic.coil.layersDescription;
             delete masOnlyInputs.magnetic.coil.sectionsDescription;
             delete masOnlyInputs.magnetic.coil.turnsDescription;
-            delete masOnlyInputs.magnetic.coil.functionalDescription.forEach((winding) => {
-                for (let [key, value] of Object.entries(winding)) {
+            // ABT #819 aside: this read as `delete ....forEach(...)`, which applies delete
+            // to forEach's return value (undefined) and therefore does nothing. The
+            // mutation inside the callback still ran, so it worked by accident while
+            // looking like it removed functionalDescription. Strip the windings down to
+            // their names and say so.
+            masOnlyInputs.magnetic.coil.functionalDescription.forEach((winding) => {
+                for (const key of Object.keys(winding)) {
                     if (key != 'name') {
                         delete winding[key];
                     }
