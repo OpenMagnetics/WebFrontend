@@ -15,7 +15,9 @@
  *   1. the voltage field accepts and keeps a negative value,
  *   2. a -12 V rail designs identically to a +12 V one (turns ratio, Lm, RMS currents),
  *   3. a mixed +5 / +12 / -12 multi-output design produces four windings and no errors,
- *   4. the sign reaches the engine — Kirchhoff wires the rail below ground (ABT #904).
+ *   4. the sign reaches the engine — Kirchhoff puts the rail below ground (ABT #904),
+ *   5. the same holds for the other topologies that gained polarity (forward family, push-pull),
+ *      and does NOT leak into Active Clamp Forward, whose engine still takes magnitudes only.
  */
 import { test, expect } from '../_coverage.js';
 import { openWizard, runAnalytical } from '../utils/index.js';
@@ -114,3 +116,66 @@ test.describe('Flyback negative output rails @scenario', () => {
     expect(result.windings[3].currentRms).toEqual(result.windings[2].currentRms);
   });
 });
+
+
+/**
+ * The other topologies that gained per-rail polarity (Kirchhoff ABT #904). Active Clamp Forward is
+ * deliberately EXCLUDED — kirchhoffRuntime still sends |Vout| for 'acf', so the wizard must not offer
+ * a minus sign there or the user would silently get a positive rail.
+ */
+const NEGATIVE_CAPABLE = [
+  { key: 'single-switch-forward', linkCy: 'SingleSwitchForward-link', cy: 'SingleSwitchForwardWizard' },
+  { key: 'two-switch-forward', linkCy: 'TwoSwitchForward-link', cy: 'TwoSwitchForwardWizard' },
+  { key: 'push-pull', linkCy: 'PushPull-link', cy: 'PushPullWizard' },
+];
+
+for (const { key, linkCy, cy } of NEGATIVE_CAPABLE) {
+  test.describe(`${key} negative output rails @scenario`, () => {
+    test(`${key} accepts a -12 V rail and still designs it`, async ({ page }) => {
+      test.setTimeout(300_000);
+      const errors = [];
+      page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()); });
+      page.on('pageerror', (e) => errors.push(`pageerror: ${e.message}`));
+
+      await openWizard(page, linkCy);
+      const voltageCy = `${cy}-OutputsParameters voltage-number-input`;
+      const shown = await typeInto(page, voltageCy, 0, -12);
+      expect(shown.startsWith('-'), `voltage field must keep the minus sign, got "${shown}"`).toBe(true);
+
+      await runAnalytical(page, 120_000);
+
+      const state = await page.evaluate((selector) => {
+        let node = document.querySelector(`[data-cy="${selector}"]`);
+        while (node && !node.__vueParentComponent) node = node.parentElement;
+        let component = node?.__vueParentComponent;
+        while (component && !component.proxy?.localData?.outputsParameters) component = component.parent;
+        if (!component) throw new Error('wizard component instance not found');
+        const wizard = component.proxy;
+        return JSON.parse(JSON.stringify({
+          rails: wizard.localData.outputsParameters.map((o) => o.voltage),
+          errorMessage: wizard.errorMessage,
+          waveformError: wizard.waveformError,
+          windingCount: (wizard.simulatedOperatingPoints?.[0]?.excitationsPerWinding ?? []).length,
+        }));
+      }, voltageCy);
+
+      expect(state.rails[0]).toBe(-12);
+      expect(state.errorMessage).toBeFalsy();
+      expect(state.waveformError).toBeFalsy();
+      expect(state.windingCount).toBeGreaterThan(1);
+      expect(errors.filter((e) => /Exception|WebAssembly|RuntimeError/i.test(e))).toEqual([]);
+    });
+  });
+}
+
+test('active clamp forward does NOT offer negative rails (engine takes magnitudes only) @scenario',
+  async ({ page }) => {
+    test.setTimeout(300_000);
+    await openWizard(page, 'ActiveClampForward-link');
+    const shown = await typeInto(page, 'ActiveClampForwardWizard-OutputsParameters voltage-number-input', 0, -12);
+    // The field must clamp the minus away rather than let the user ask for something the engine
+    // would quietly turn back into a positive rail.
+    expect(shown.startsWith('-'),
+      `ACF must not accept a negative rail while kirchhoffRuntime sends |Vout| for it, got "${shown}"`)
+      .toBe(false);
+  });

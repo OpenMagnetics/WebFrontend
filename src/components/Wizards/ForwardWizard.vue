@@ -69,6 +69,14 @@ export default {
         }
     },
     computed: {
+        // Negative output rails (ABT #904) are supported engine-side for the single- and two-switch
+        // forward, but NOT for the active-clamp variant — kirchhoffRuntime still sends |Vout| for
+        // 'acf', so offering a minus sign there would silently design a POSITIVE rail. Gate the input
+        // on the variant rather than letting the user ask for something the engine will quietly ignore.
+        supportsNegativeRails() {
+            return this.converterName === 'Single-Switch Forward'
+                || this.converterName === 'Two-Switch Forward';
+        },
         wizardIcon() {
             switch (this.converterName) {
                 case 'Single-Switch Forward': return 'pi pi-circle-off';
@@ -553,6 +561,7 @@ export default {
           :units="['V', 'A', null]"
           :mins="[minimumMaximumScalePerParameter['voltage']['min'], minimumMaximumScalePerParameter['current']['min'], 0.01]"
           :maxs="[minimumMaximumScalePerParameter['voltage']['max'], minimumMaximumScalePerParameter['current']['max'], 100]"
+          :allowNegatives="[supportsNegativeRails, false, false]"
           v-model="localData.outputsParameters[index]"
           :dataTestLabel="dataTestLabel + '-OutputsParameters'"
           :labelWidthProportionClass="'col-2'"
@@ -570,6 +579,7 @@ export default {
           :units="['V', 'A']"
           :mins="[minimumMaximumScalePerParameter['voltage']['min'], minimumMaximumScalePerParameter['current']['min']]"
           :maxs="[minimumMaximumScalePerParameter['voltage']['max'], minimumMaximumScalePerParameter['current']['max']]"
+          :allowNegatives="[supportsNegativeRails, false]"
           v-model="localData.outputsParameters[index]"
           :dataTestLabel="dataTestLabel + '-OutputsParameters'"
           :labelWidthProportionClass="'col-2'"
