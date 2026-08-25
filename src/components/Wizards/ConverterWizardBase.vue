@@ -298,7 +298,14 @@ export default {
       }).filter(op => op.waveforms.length > 0);
     },
 
-    convertConverterWaveforms(converterWaveforms, defaultFrequency) {
+    // outputPolarities: optional array of +1/-1 per output rail, from the wizard's
+    // getOutputPolarities() hook. The engine designs every rail from its MAGNITUDE (a negative
+    // rail is the same transformer with the secondary's dot reversed — same turns ratio, same
+    // volt-seconds, same RMS current), so KH always returns a positive output-voltage trace.
+    // Referenced to ground the rail really does sit at -Vout, so flip the plotted voltage back
+    // for rails the user declared negative. Currents are left as the engine reports them: they
+    // are winding/rectifier currents, whose sign is a probe-orientation choice, not a rail property.
+    convertConverterWaveforms(converterWaveforms, defaultFrequency, outputPolarities = null) {
       if (!converterWaveforms?.length) return [];
       return converterWaveforms.map((cw, idx) => {
         const opWf = { frequency: cw.switchingFrequency || defaultFrequency, operatingPointName: cw.operatingPointName || `Operating Point ${idx+1}`, waveforms: [] };
@@ -320,7 +327,10 @@ export default {
         if (cw.inputCurrent?.time && cw.inputCurrent?.data)
           opWf.waveforms.push({ label: 'Input Current', x: cw.inputCurrent.time, y: cw.inputCurrent.data, type: 'current', unit: 'A' });
         if (cw.outputVoltages) cw.outputVoltages.forEach((v, i) => {
-          if (v.time && v.data) opWf.waveforms.push({ label: `Output ${i+1} Voltage`, x: v.time, y: v.data, type: 'voltage', unit: 'V' });
+          if (!v.time || !v.data) return;
+          const polarity = outputPolarities?.[i] === -1 ? -1 : 1;
+          const data = polarity === -1 ? v.data.map(y => -y) : v.data;
+          opWf.waveforms.push({ label: `Output ${i+1} Voltage`, x: v.time, y: data, type: 'voltage', unit: 'V' });
         });
         if (cw.outputCurrents) cw.outputCurrents.forEach((c, i) => {
           if (c.time && c.data) opWf.waveforms.push({ label: `Output ${i+1} Current`, x: c.time, y: c.data, type: 'current', unit: 'A' });
@@ -335,8 +345,9 @@ export default {
       
       // Determine which processing method to use
       let processed;
+      const outputPolarities = wizardInstance.getOutputPolarities?.() ?? null;
       if (isSimulation) {
-        processed = this.processSimulationWaveforms(result, { defaultFrequency, numberOfPeriods });
+        processed = this.processSimulationWaveforms(result, { defaultFrequency, numberOfPeriods, outputPolarities });
       } else {
         processed = this.processAnalyticalWaveforms(result, { numberOfPeriods });
       }
@@ -445,7 +456,7 @@ export default {
     },
     
     processSimulationWaveforms(result, options = {}) {
-      const { defaultFrequency = 100000, numberOfPeriods = 2 } = options;
+      const { defaultFrequency = 100000, numberOfPeriods = 2, outputPolarities = null } = options;
 
       if (result.error) {
         throw new Error(result.error);
@@ -472,7 +483,7 @@ export default {
       magneticWaveforms = this.tileWaveformsForDisplay(magneticWaveforms, numberOfPeriods);
 
       // Process converter waveforms to match expected visualizer format
-      let converterWaveforms = this.convertConverterWaveforms(rawConverterWaveforms, defaultFrequency);
+      let converterWaveforms = this.convertConverterWaveforms(rawConverterWaveforms, defaultFrequency, outputPolarities);
       converterWaveforms = this.tileWaveformsForDisplay(converterWaveforms, numberOfPeriods);
 
       return {
