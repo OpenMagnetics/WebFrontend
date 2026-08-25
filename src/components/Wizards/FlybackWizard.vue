@@ -131,14 +131,6 @@ export default {
       return sides;
     },
     getInsulationType() { return this.localData.insulationType; },
-    // Negative rails (ABT: user report). A rail entered as e.g. -12 V is the same transformer as a
-    // +12 V one with that secondary's dot/rectifier reversed: identical turns ratio, volt-seconds and
-    // RMS current, so the engine is fed |Vout| (kirchhoffRuntime.buildKhConverterSpec already takes
-    // the magnitude) and the magnetic design is unchanged. The sign is carried here so the converter
-    // view plots the rail where it actually sits with respect to ground.
-    getOutputPolarities() {
-      return this.localData.outputsParameters.map(o => (o.voltage < 0 ? -1 : 1));
-    },
 
         updateErrorMessage() {
             this.errorMessage = "";

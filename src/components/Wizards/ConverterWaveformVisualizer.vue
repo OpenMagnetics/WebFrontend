@@ -50,6 +50,24 @@ export default {
         clipVoltage: {
             type: Boolean,
             default: true
+        },
+        /**
+         * True when converter-node overlays EXIST but have not been fetched yet (KH ABT #905): the
+         * simulation carried a TAS and `component_waveforms` can still be run on demand. Without this
+         * the toggle was gated purely on `converterWaveforms.length`, which the simulate path always
+         * left empty — so the Converter view was unreachable for every topology.
+         */
+        converterAvailable: {
+            type: Boolean,
+            default: false
+        },
+        converterLoading: {
+            type: Boolean,
+            default: false
+        },
+        converterError: {
+            type: String,
+            default: ''
         }
     },
     emits: ['update:viewMode'],
@@ -183,7 +201,7 @@ export default {
 <template>
     <div class="waveform-visualizer">
         <!-- View Mode Toggle -->
-        <div v-if="magneticWaveforms?.length > 0 && converterWaveforms?.length > 0"
+        <div v-if="magneticWaveforms?.length > 0 && (converterWaveforms?.length > 0 || converterAvailable)"
              class="view-toggle mb-2 d-flex justify-content-center">
             <div class="btn-group btn-group-sm">
                 <button 
@@ -203,8 +221,16 @@ export default {
             </div>
         </div>
 
+        <!-- Converter-node overlays are fetched on demand; show progress / failure, never a blank panel -->
+        <div v-if="viewMode === 'converter' && converterLoading" class="converter-state">
+            <i class="pi pi-refresh fa-spin mr-1"></i>Simulating converter nodes…
+        </div>
+        <div v-else-if="viewMode === 'converter' && converterError" class="converter-state converter-state-error">
+            <i class="pi pi-exclamation-circle mr-1"></i>{{ converterError }}
+        </div>
+
         <!-- Waveforms -->
-        <div v-if="hasWaveforms" class="waveforms-container">
+        <div v-else-if="hasWaveforms" class="waveforms-container">
             <div v-for="(op, opIndex) in currentWaveforms" :key="`op-${opIndex}-${forceUpdate}`">
                 <div class="operating-point-label">{{ getOperatingPointName(opIndex) }}</div>
                 
@@ -296,5 +322,19 @@ export default {
 
 .empty-text {
     font-size: 0.9rem;
+}
+
+.converter-state {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem 0.75rem;
+    font-size: 0.875rem;
+    color: var(--p-secondary);
+    text-align: center;
+}
+
+.converter-state-error {
+    color: var(--p-red-500, var(--p-danger));
 }
 </style>

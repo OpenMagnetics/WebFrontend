@@ -1628,6 +1628,44 @@ export const useTaskQueueStore = defineStore('taskQueue', {
         },
 
         // ==========================================
+        // Converter-node waveforms (per-component overlays)
+        // ==========================================
+
+        componentWaveformsCalculated(success = true, dataOrMessage = '') {
+        },
+
+        /**
+         * Per-component time-domain waveforms (switch V_DS, diode current, cap ripple, …) for an
+         * assembled TAS — Kirchhoff's `component_waveforms`, SPEC §6.5. This is a SECOND full ngspice
+         * run over the deck, so it is NOT part of the Simulated click: the wizard calls it lazily the
+         * first time the user opens the converter view, using the `__converterTas` that
+         * simulate_<topo>_ideal_waveforms carried on its result.
+         * @param {Object} tas assembled TAS document from the simulation result
+         * @returns {Promise<Object>} {engine, referencePeriod, components:[…]}
+         */
+        async getComponentWaveforms(tas) {
+            if (!tas) throw new Error('getComponentWaveforms: no TAS to simulate (run Simulated first)');
+            const mkf = await waitForKirchhoff();
+            await mkf.ready;
+
+            const result = await mkf.component_waveforms(JSON.stringify(tas), '{"origin":"REQUIREMENTS"}');
+            if (typeof result === 'string' && result.startsWith('Exception')) {
+                setTimeout(() => { this.componentWaveformsCalculated(false, result); }, this.task_standard_response_delay);
+                throw new Error(result);
+            }
+            const parsed = JSON.parse(result);
+            // KH returns {"success":false,…} when it was built without libngspice — surface it, never
+            // fall back to an empty overlay that would read as "this converter has no components".
+            if (parsed.success === false) {
+                const message = parsed.error || 'component_waveforms failed in webKirchhoff';
+                setTimeout(() => { this.componentWaveformsCalculated(false, message); }, this.task_standard_response_delay);
+                throw new Error(message);
+            }
+            setTimeout(() => { this.componentWaveformsCalculated(true, parsed); }, this.task_standard_response_delay);
+            return parsed;
+        },
+
+        // ==========================================
         // SPICE Code Generation Methods
         // ==========================================
 

@@ -15,7 +15,7 @@
  *   1. the voltage field accepts and keeps a negative value,
  *   2. a -12 V rail designs identically to a +12 V one (turns ratio, Lm, RMS currents),
  *   3. a mixed +5 / +12 / -12 multi-output design produces four windings and no errors,
- *   4. getOutputPolarities() reports the sign the user typed.
+ *   4. the sign reaches the engine — Kirchhoff wires the rail below ground (ABT #904).
  */
 import { test, expect } from '../_coverage.js';
 import { openWizard, runAnalytical } from '../utils/index.js';
@@ -52,7 +52,6 @@ const readWizard = (page) => page.evaluate(() => {
   // Structured-clone the reactive tree: Vue proxies are not serialisable across the CDP bridge.
   return JSON.parse(JSON.stringify({
     rails: wizard.localData.outputsParameters.map((o) => o.voltage),
-    polarities: wizard.getOutputPolarities(),
     errorMessage: wizard.errorMessage,
     waveformError: wizard.waveformError,
     turnsRatios: wizard.designRequirements?.turnsRatios?.map((t) => t.nominal) ?? null,
@@ -80,7 +79,6 @@ test.describe('Flyback negative output rails @scenario', () => {
     const negative = await readWizard(page);
 
     expect(negative.rails).toEqual([-12]);
-    expect(negative.polarities).toEqual([-1]);
     expect(negative.errorMessage).toBeFalsy();
     expect(negative.waveformError).toBeFalsy();
 
@@ -106,7 +104,6 @@ test.describe('Flyback negative output rails @scenario', () => {
     const result = await readWizard(page);
 
     expect(result.rails).toEqual([5, 12, -12]);
-    expect(result.polarities).toEqual([1, 1, -1]);
     expect(result.errorMessage).toBeFalsy();
     expect(result.waveformError).toBeFalsy();
     expect(result.windings.map((w) => w.name)).toEqual(

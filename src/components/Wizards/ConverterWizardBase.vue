@@ -1,6 +1,7 @@
 <script>
 import ConverterWaveformVisualizer from './ConverterWaveformVisualizer.vue'
 import { recordDesign } from 'WebSharedComponents/assets/js/telemetry.js'
+import { useTaskQueueStore } from '../../stores/taskQueue'
 /**
  * ConverterWizardBase - Base layout + common logic for all converter wizards.
  * Child wizards access common methods via this.$refs.base.methodName().
@@ -159,6 +160,11 @@ export default {
   ],
 
   computed: {
+    // A wizard that produces its own converter traces wins; otherwise use the ones we fetched
+    // lazily from component_waveforms when the user opened the converter view (KH ABT #905).
+    effectiveConverterWaveforms() {
+      return this.converterWaveforms?.length ? this.converterWaveforms : this.lazyConverterWaveforms;
+    },
     primaryColor() {
       return this.$styleStore?.theme?.primary;
     },
@@ -203,6 +209,14 @@ export default {
       spiceCodeLoading: false,
       spiceCodeTopology: '',
       justCopied: false,
+      // Lazy converter-node overlays (KH ABT #905). simulate_<topo>_ideal_waveforms returns the
+      // assembled TAS but NOT the per-component traces: those need a second full ngspice run
+      // (component_waveforms), which would double every Simulated click. So we keep the TAS here and
+      // fetch the overlays the first time the user actually opens the converter view.
+      converterTas: null,
+      lazyConverterWaveforms: [],
+      loadingConverterWaveforms: false,
+      converterWaveformsError: '',
     };
   },
 
@@ -220,6 +234,9 @@ export default {
       wizard.waveformError = '';
       wizard.waveforms = [];
       wizard.converterWaveforms = [];
+      this.converterTas = null;
+      this.lazyConverterWaveforms = [];
+      this.converterWaveformsError = '';
 
       try {
         const aux = wizard.buildParams(mode);
@@ -261,7 +278,53 @@ export default {
       wizard.simulatingWaveforms = false;
     },
     // ===== LAYOUT EMITTERS =====
-    setWaveformViewMode(mode) { this.$emit('update:waveformViewMode', mode); },
+    setWaveformViewMode(mode) {
+      this.$emit('update:waveformViewMode', mode);
+      // Opening the converter view is what pays for the second ngspice run (KH ABT #905).
+      if (mode === 'converter') this.ensureConverterWaveforms();
+    },
+
+    /**
+     * Fetch the per-component converter overlays for the current TAS, once.
+     * No-op when the wizard already supplied converterWaveforms itself, when there is no TAS
+     * (analytical run, or a topology whose simulate path returns none), or when a fetch is in
+     * flight / already done. Errors surface in the converter panel — never silently empty.
+     */
+    async ensureConverterWaveforms() {
+      if (this.converterWaveforms?.length || this.lazyConverterWaveforms.length) return;
+      if (!this.converterTas || this.loadingConverterWaveforms) return;
+
+      this.loadingConverterWaveforms = true;
+      this.converterWaveformsError = '';
+      try {
+        const tqs = this.$taskQueueStore || useTaskQueueStore();
+        const result = await tqs.getComponentWaveforms(this.converterTas);
+        const period = result.referencePeriod > 0 ? result.referencePeriod : null;
+        // convertConverterWaveforms consumes one entry per operating point; component_waveforms
+        // covers the single simulated point, so wrap its payload in a one-element array.
+        const wrapped = [{
+          switchingFrequency: period ? 1 / period : undefined,
+          operatingPointName: 'Converter Nodes',
+          components: result.components || [],
+        }];
+        let converted = this.convertConverterWaveforms(wrapped, this.getDefaultFrequencyForDisplay());
+        converted = this.tileWaveformsForDisplay(converted, this.numberOfPeriods);
+        if (!converted.length || !converted[0].waveforms?.length) {
+          throw new Error('webKirchhoff returned no component waveforms for this design');
+        }
+        this.lazyConverterWaveforms = converted;
+      } catch (e) {
+        console.error('ensureConverterWaveforms:', e);
+        this.converterWaveformsError = e.message || String(e);
+      } finally {
+        this.loadingConverterWaveforms = false;
+      }
+    },
+
+    getDefaultFrequencyForDisplay() {
+      const fromWaveforms = this.magneticWaveforms?.[0]?.frequency;
+      return fromWaveforms > 0 ? fromWaveforms : 100000;
+    },
     onGetAnalyticalWaveforms() { this.$emit('get-analytical-waveforms'); },
     onGetSimulatedWaveforms() { this.$emit('get-simulated-waveforms'); },
     onDismissError() { this.$emit('dismiss-error'); },
@@ -298,14 +361,7 @@ export default {
       }).filter(op => op.waveforms.length > 0);
     },
 
-    // outputPolarities: optional array of +1/-1 per output rail, from the wizard's
-    // getOutputPolarities() hook. The engine designs every rail from its MAGNITUDE (a negative
-    // rail is the same transformer with the secondary's dot reversed — same turns ratio, same
-    // volt-seconds, same RMS current), so KH always returns a positive output-voltage trace.
-    // Referenced to ground the rail really does sit at -Vout, so flip the plotted voltage back
-    // for rails the user declared negative. Currents are left as the engine reports them: they
-    // are winding/rectifier currents, whose sign is a probe-orientation choice, not a rail property.
-    convertConverterWaveforms(converterWaveforms, defaultFrequency, outputPolarities = null) {
+    convertConverterWaveforms(converterWaveforms, defaultFrequency) {
       if (!converterWaveforms?.length) return [];
       return converterWaveforms.map((cw, idx) => {
         const opWf = { frequency: cw.switchingFrequency || defaultFrequency, operatingPointName: cw.operatingPointName || `Operating Point ${idx+1}`, waveforms: [] };
@@ -326,11 +382,10 @@ export default {
           opWf.waveforms.push({ label: 'Input Voltage', x: cw.inputVoltage.time, y: cw.inputVoltage.data, type: 'voltage', unit: 'V' });
         if (cw.inputCurrent?.time && cw.inputCurrent?.data)
           opWf.waveforms.push({ label: 'Input Current', x: cw.inputCurrent.time, y: cw.inputCurrent.data, type: 'current', unit: 'A' });
+        // Rail polarity is the ENGINE's business: KH designs from |Vout| and mirrors the output-side
+        // wiring, so a negative rail already arrives negative. Never re-sign it here.
         if (cw.outputVoltages) cw.outputVoltages.forEach((v, i) => {
-          if (!v.time || !v.data) return;
-          const polarity = outputPolarities?.[i] === -1 ? -1 : 1;
-          const data = polarity === -1 ? v.data.map(y => -y) : v.data;
-          opWf.waveforms.push({ label: `Output ${i+1} Voltage`, x: v.time, y: data, type: 'voltage', unit: 'V' });
+          if (v.time && v.data) opWf.waveforms.push({ label: `Output ${i+1} Voltage`, x: v.time, y: v.data, type: 'voltage', unit: 'V' });
         });
         if (cw.outputCurrents) cw.outputCurrents.forEach((c, i) => {
           if (c.time && c.data) opWf.waveforms.push({ label: `Output ${i+1} Current`, x: c.time, y: c.data, type: 'current', unit: 'A' });
@@ -345,9 +400,8 @@ export default {
       
       // Determine which processing method to use
       let processed;
-      const outputPolarities = wizardInstance.getOutputPolarities?.() ?? null;
       if (isSimulation) {
-        processed = this.processSimulationWaveforms(result, { defaultFrequency, numberOfPeriods, outputPolarities });
+        processed = this.processSimulationWaveforms(result, { defaultFrequency, numberOfPeriods });
       } else {
         processed = this.processAnalyticalWaveforms(result, { numberOfPeriods });
       }
@@ -363,6 +417,7 @@ export default {
       wizardInstance.designRequirements = processed.designRequirements;
       wizardInstance.magneticWaveforms = processed.magneticWaveforms;
       wizardInstance.converterWaveforms = processed.converterWaveforms;
+      this.converterTas = processed.converterTas ?? null;
       
       // Assign to masStore inputs
       this.assignResultsToMasStore(wizardInstance, processed);
@@ -456,7 +511,7 @@ export default {
     },
     
     processSimulationWaveforms(result, options = {}) {
-      const { defaultFrequency = 100000, numberOfPeriods = 2, outputPolarities = null } = options;
+      const { defaultFrequency = 100000, numberOfPeriods = 2 } = options;
 
       if (result.error) {
         throw new Error(result.error);
@@ -465,6 +520,8 @@ export default {
       // Standard format: { converterWaveforms: [...], inputs: { operatingPoints: [...], designRequirements: {...} } }
       // Or: { converterWaveforms: [...], operatingPoints: [...], designRequirements: {...} }
       const rawConverterWaveforms = result.converterWaveforms || [];
+      // KH hands back the assembled TAS so the converter view can fetch its overlays on demand.
+      const converterTas = result.__converterTas ?? null;
       const operatingPoints = result.inputs?.operatingPoints || result.operatingPoints || [];
       const designRequirements = result.inputs?.designRequirements || result.designRequirements || null;
 
@@ -483,14 +540,15 @@ export default {
       magneticWaveforms = this.tileWaveformsForDisplay(magneticWaveforms, numberOfPeriods);
 
       // Process converter waveforms to match expected visualizer format
-      let converterWaveforms = this.convertConverterWaveforms(rawConverterWaveforms, defaultFrequency, outputPolarities);
+      let converterWaveforms = this.convertConverterWaveforms(rawConverterWaveforms, defaultFrequency);
       converterWaveforms = this.tileWaveformsForDisplay(converterWaveforms, numberOfPeriods);
 
       return {
         operatingPoints,
         designRequirements,
         magneticWaveforms,
-        converterWaveforms
+        converterWaveforms,
+        converterTas
       };
     },
 
@@ -1302,7 +1360,10 @@ export default {
               <slot name="waveforms">
                 <ConverterWaveformVisualizer
                   :magneticWaveforms="magneticWaveforms"
-                  :converterWaveforms="converterWaveforms"
+                  :converterWaveforms="effectiveConverterWaveforms"
+                  :converterAvailable="!!converterTas"
+                  :converterLoading="loadingConverterWaveforms"
+                  :converterError="converterWaveformsError"
                   :viewMode="waveformViewMode"
                   @update:viewMode="setWaveformViewMode"
                   :forceUpdate="waveformForceUpdate"
