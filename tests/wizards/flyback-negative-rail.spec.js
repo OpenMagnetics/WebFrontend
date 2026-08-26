@@ -123,13 +123,18 @@ test.describe('Flyback negative output rails @scenario', () => {
  * deliberately EXCLUDED — kirchhoffRuntime still sends |Vout| for 'acf', so the wizard must not offer
  * a minus sign there or the user would silently get a positive rail.
  */
+// `voltageCy` differs by wizard: the SMPS ones label the group `-OutputsParameters`, while the
+// resonant/DAB ones suffix the rail index (`-OutputsParameters-0`).
 const NEGATIVE_CAPABLE = [
-  { key: 'single-switch-forward', linkCy: 'SingleSwitchForward-link', cy: 'SingleSwitchForwardWizard' },
-  { key: 'two-switch-forward', linkCy: 'TwoSwitchForward-link', cy: 'TwoSwitchForwardWizard' },
-  { key: 'push-pull', linkCy: 'PushPull-link', cy: 'PushPullWizard' },
+  { key: 'single-switch-forward', linkCy: 'SingleSwitchForward-link', voltageCy: 'SingleSwitchForwardWizard-OutputsParameters voltage-number-input' },
+  { key: 'two-switch-forward', linkCy: 'TwoSwitchForward-link', voltageCy: 'TwoSwitchForwardWizard-OutputsParameters voltage-number-input' },
+  { key: 'active-clamp-forward', linkCy: 'ActiveClampForward-link', voltageCy: 'ActiveClampForwardWizard-OutputsParameters voltage-number-input' },
+  { key: 'push-pull', linkCy: 'PushPull-link', voltageCy: 'PushPullWizard-OutputsParameters voltage-number-input' },
+  { key: 'llc', linkCy: 'Llc-link', voltageCy: 'LlcWizard-OutputsParameters-0 voltage-number-input' },
+  { key: 'src', linkCy: 'Src-link', voltageCy: 'SrcWizard-OutputsParameters-0 voltage-number-input' },
 ];
 
-for (const { key, linkCy, cy } of NEGATIVE_CAPABLE) {
+for (const { key, linkCy, voltageCy } of NEGATIVE_CAPABLE) {
   test.describe(`${key} negative output rails @scenario`, () => {
     test(`${key} accepts a -12 V rail and still designs it`, async ({ page }) => {
       test.setTimeout(300_000);
@@ -138,7 +143,6 @@ for (const { key, linkCy, cy } of NEGATIVE_CAPABLE) {
       page.on('pageerror', (e) => errors.push(`pageerror: ${e.message}`));
 
       await openWizard(page, linkCy);
-      const voltageCy = `${cy}-OutputsParameters voltage-number-input`;
       const shown = await typeInto(page, voltageCy, 0, -12);
       expect(shown.startsWith('-'), `voltage field must keep the minus sign, got "${shown}"`).toBe(true);
 
@@ -168,14 +172,22 @@ for (const { key, linkCy, cy } of NEGATIVE_CAPABLE) {
   });
 }
 
-test('active clamp forward does NOT offer negative rails (engine takes magnitudes only) @scenario',
-  async ({ page }) => {
-    test.setTimeout(300_000);
-    await openWizard(page, 'ActiveClampForward-link');
-    const shown = await typeInto(page, 'ActiveClampForwardWizard-OutputsParameters voltage-number-input', 0, -12);
-    // The field must clamp the minus away rather than let the user ask for something the engine
-    // would quietly turn back into a positive rail.
-    expect(shown.startsWith('-'),
-      `ACF must not accept a negative rail while kirchhoffRuntime sends |Vout| for it, got "${shown}"`)
-      .toBe(false);
-  });
+/**
+ * The active-bridge topologies still take magnitudes only (Kirchhoff throws on a negative rail),
+ * so their wizards must NOT offer a minus sign — otherwise the user would silently get a POSITIVE
+ * rail. This is the guard that keeps the allowlist and the UI honest with each other.
+ */
+for (const { key, linkCy, voltageCy } of [
+  { key: 'dab', linkCy: 'Dab-link', voltageCy: 'DabWizard-OutputsParameters-0 voltage-number-input' },
+  { key: 'cllc', linkCy: 'Cllc-link', voltageCy: 'CllcWizard-OutputsParameters voltage-number-input' },
+]) {
+  test(`${key} does NOT offer negative rails (active bridge — engine takes magnitudes only) @scenario`,
+    async ({ page }) => {
+      test.setTimeout(300_000);
+      await openWizard(page, linkCy);
+      const shown = await typeInto(page, voltageCy, 0, -12);
+      expect(shown.startsWith('-'),
+        `${key} must not accept a negative rail while its engine takes |Vout|, got "${shown}"`)
+        .toBe(false);
+    });
+}

@@ -107,7 +107,8 @@ export default {
                 efficiency: this.localData.efficiency,
                 operatingPoints: [{
                     outputVoltages: outs.map(o => o.voltage),
-                    outputCurrents: outs.map(o => (o.voltage > 0 ? o.power / o.voltage : 0)),
+                    // |V|: power is a magnitude and a rail may be NEGATIVE (ABT #904).
+                    outputCurrents: outs.map(o => (o.voltage ? o.power / Math.abs(o.voltage) : 0)),
                     switchingFrequency: opFreq,
                     ambientTemperature: this.localData.ambientTemperature,
                 }],
@@ -324,6 +325,7 @@ export default {
           :units="['V', 'W']"
           :mins="[minimumMaximumScalePerParameter['voltage']['min'], 1]"
           :maxs="[minimumMaximumScalePerParameter['voltage']['max'], minimumMaximumScalePerParameter['power']['max']]"
+          :allowNegatives="[true, false]"
           v-model="localData.outputsParameters[index]"
           :labelWidthProportionClass="'col-4'"
           :valueWidthProportionClass="'col-7'"

@@ -318,17 +318,58 @@ app.mount("#app");
 // If Kirchhoff opened us to design a magnetic, wire the cross-origin handoff (no-op otherwise).
 installKirchhoffHandoff(router);
 
+// Every exit from /engine_loader must be VERIFIED, not fire-and-forget. A one-shot router.push can be
+// issued while the loader navigation is still in flight and simply be superseded, which parks the app
+// on the loader until the tab is closed (ABT #909). Sitting on the loader once the engine is ready is
+// ALWAYS wrong, so: push, then keep re-checking until we are actually off it. Stops immediately when
+// we leave — including when the user navigated somewhere else themselves, since then the route is no
+// longer EngineLoader and we must not yank them.
+function leaveEngineLoader(router, targetPath) {
+    if (targetPath == null) return;
+    const deadline = Date.now() + 60000;
+    let attempts = 0;
+    const tryLeave = () => {
+        if (router.currentRoute.value.name !== 'EngineLoader') return;   // out, or the user moved
+        attempts++;
+        if (attempts === 1 || attempts % 20 === 0) {
+            console.warn(`[EngineLoader] still on the loader after ${attempts} exit attempt(s); `
+                         + `target=${targetPath}`);
+        }
+        router.push(targetPath).catch((e) => {
+            const msg = String(e?.message || e);
+            console.warn('[EngineLoader] router.push was rejected:', msg);
+            // A route's lazy chunk failed to load, so the SPA navigation can never succeed and
+            // retrying it is pointless — every attempt fails the same way and the app sits on the
+            // loader forever (ABT #909). This happens in dev when vite cannot serve a module under
+            // concurrent cold loads, and in production when a deploy has replaced the hashed chunk
+            // this tab still references. Both recover from a hard navigation, which re-fetches the
+            // current index.html and its chunk map. Once per target, so a genuinely broken build
+            // cannot put us in a reload loop.
+            if (!/dynamically imported module|Importing a module script failed|Failed to fetch/i.test(msg)) return;
+            const key = 'omHardNavAfterChunkFailure:' + targetPath;
+            try {
+                if (sessionStorage.getItem(key)) return;
+                sessionStorage.setItem(key, '1');
+            } catch { /* private mode: fall through and navigate anyway */ }
+            console.warn('[EngineLoader] lazy chunk unavailable — recovering with a full page load');
+            window.location.assign(targetPath);
+        });
+        if (Date.now() < deadline) setTimeout(tryLeave, 250);
+    };
+    tryLeave();
+}
+
 router.beforeEach((to, from, next) => {
 
     if (app.config.globalProperties.$mkf != null && !app.config.globalProperties.$mkf._loading && to.name == "EngineLoader") {
         if (app.config.globalProperties.$userStore.loadingPath != null) {
             const newPath = app.config.globalProperties.$userStore.loadingPath;
             app.config.globalProperties.$userStore.loadingPath = null;
-            router.push(newPath);
+            leaveEngineLoader(router, newPath);
         }
         else {
             // If WASM is loaded and we go to engine loader, we just return to where we were
-            setTimeout(() => {router.push(from.path);}, 500);
+            setTimeout(() => leaveEngineLoader(router, from.path), 500);
         }
     }
     // On the fully-initialized worker proxy, `$mkf._loading` resolves to a
@@ -348,7 +389,7 @@ router.beforeEach((to, from, next) => {
     else if (app.config.globalProperties.$userStore.loadingPath !=null && app.config.globalProperties.$mkf != null && to.name == "EngineLoader") {
         const newPath = app.config.globalProperties.$userStore.loadingPath;
         app.config.globalProperties.$userStore.loadingPath = null;
-        setTimeout(() => {router.push(newPath);}, 500);
+        setTimeout(() => leaveEngineLoader(router, newPath), 500);
     }
 
     const nonDataViews = [`${import.meta.env.BASE_URL}`, `${import.meta.env.BASE_URL}home`, `${import.meta.env.BASE_URL}insulation_adviser`]
@@ -439,6 +480,9 @@ router.beforeEach((to, from, next) => {
                     // If preloadPromise exists, it includes data loading, so wait for it fully
                     const mkf = await initPromise;
                     app.config.globalProperties.$mkf = mkf;
+                    // Diagnostic flag (ABT #909): lets a stalled page be classified as "engine came
+                    // up but the router never left the loader" vs "the engine never came up".
+                    window.__omEngineReady = true;
 
                     // MKF is up — now warm webKirchhoff off the critical path (fire-and-forget,
                     // idempotent). Deep-linked wizard views get a working converter engine
@@ -511,19 +555,40 @@ router.beforeEach((to, from, next) => {
                     // currentRoute is still the previous route at the first check.
                     // A one-shot check loses that race and parks the app on
                     // /engine_loader forever.
-                    const redirectDeadline = Date.now() + 10000;
-                    const redirectWhenOnLoader = () => {
+                    // This used to be a 100 ms poll bounded by a 10 s deadline. Under load — several
+                    // WASM engines compiling at once, or a cold vite dep-optimise after a rebuild —
+                    // the router can take longer than that to resolve the lazy-loaded EngineLoader
+                    // route. When the poll gave up first, nothing was left to move the app on and it
+                    // parked on /engine_loader until the tab was closed: the stall behind ABT #909
+                    // (and the reason batch Playwright runs produced a different set of
+                    // openWizard timeouts every time).
+                    //
+                    // Watch the router instead of racing a clock. The guard is unchanged — only ever
+                    // redirect while we are ACTUALLY on the loader — so a user who navigated away is
+                    // never yanked, which is what makes an unbounded watcher safe: the loader is a
+                    // trampoline, never a destination.
+                    // Not necessarily on the loader yet — the navigation to it may still be
+                    // resolving — so watch for it landing as well as retrying the exit itself.
+                    let stopWatching = null;
+                    const exit = () => {
                         if (router.currentRoute.value.name === 'EngineLoader') {
-                            router.push(newPath);
+                            if (stopWatching) { stopWatching(); stopWatching = null; }
+                            leaveEngineLoader(router, newPath);
+                            return true;
                         }
-                        else if (Date.now() < redirectDeadline) {
-                            setTimeout(redirectWhenOnLoader, 100);
-                        }
-                        // else: the user really navigated somewhere else — leave them be.
+                        return false;
                     };
-                    setTimeout(redirectWhenOnLoader, remainingTime)
+                    setTimeout(() => {
+                        if (exit()) return;
+                        stopWatching = router.afterEach(() => { exit(); });
+                    }, remainingTime)
                 } catch (error) {
-                    console.error("Error initializing MKF:", error);
+                    // A throw here leaves the app on /engine_loader with a spinner and no
+                    // explanation. Mark it distinctively so a stall can be told apart from the
+                    // routing race above (ABT #909) instead of both looking like "it hung".
+                    window.__omEngineLoadError = String(error?.message || error);
+                    console.error("[EngineLoader] engine initialization FAILED — the app cannot leave "
+                                  + "the loader:", error);
                 }
             })();
 

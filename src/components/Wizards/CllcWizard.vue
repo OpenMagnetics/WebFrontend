@@ -126,7 +126,9 @@ export default {
         // CLLC is single-output (backend enforces this).
         operatingPoints: [{
           outputVoltages: [out0.voltage],
-          outputCurrents: [out0.voltage > 0 ? out0.power / out0.voltage : 0],
+          // |V| for symmetry with the other resonant wizards; CLLC itself stays positive-only
+          // (its active bridge refuses a negative rail engine-side, ABT #904).
+          outputCurrents: [out0.voltage ? out0.power / Math.abs(out0.voltage) : 0],
           switchingFrequency: opFreq,
           ambientTemperature: this.localData.ambientTemperature,
           powerFlow: this.localData.powerFlow,

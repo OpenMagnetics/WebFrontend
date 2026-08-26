@@ -69,13 +69,12 @@ export default {
         }
     },
     computed: {
-        // Negative output rails (ABT #904) are supported engine-side for the single- and two-switch
-        // forward, but NOT for the active-clamp variant — kirchhoffRuntime still sends |Vout| for
-        // 'acf', so offering a minus sign there would silently design a POSITIVE rail. Gate the input
-        // on the variant rather than letting the user ask for something the engine will quietly ignore.
+        // Negative output rails (ABT #904). All three forward variants are supported engine-side now:
+        // active clamp joined once it was clear its synchronous rectifier is no obstacle — the emitted
+        // ideal switches are controlled by (gate, 0), independent of their power terminals, so the
+        // mirror never disturbs the gate drive.
         supportsNegativeRails() {
-            return this.converterName === 'Single-Switch Forward'
-                || this.converterName === 'Two-Switch Forward';
+            return true;
         },
         wizardIcon() {
             switch (this.converterName) {

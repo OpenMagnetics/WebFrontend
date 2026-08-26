@@ -119,7 +119,9 @@ export default {
         rectifierType: this.localData.rectifierType,
         operatingPoints: [{
           outputVoltages: outs.map(o => o.voltage),
-          outputCurrents: outs.map(o => (o.voltage > 0 ? o.power / o.voltage : 0)),
+          // Divide by |V|: `power` is a magnitude and a rail may be NEGATIVE (ABT #904). The old
+          // `voltage > 0` guard yielded 0 for those, so the engine got power = 0 and threw.
+          outputCurrents: outs.map(o => (o.voltage ? o.power / Math.abs(o.voltage) : 0)),
           switchingFrequency: opFreq,
           ambientTemperature: this.localData.ambientTemperature,
         }],
@@ -449,6 +451,7 @@ export default {
           :units="['V', 'W']"
           :mins="[minimumMaximumScalePerParameter['voltage']['min'], 1]"
           :maxs="[minimumMaximumScalePerParameter['voltage']['max'], minimumMaximumScalePerParameter['power']['max']]"
+          :allowNegatives="[true, false]"
           v-model="localData.outputsParameters[index]"
           :labelWidthProportionClass="'col-4'"
           :valueWidthProportionClass="'col-7'"

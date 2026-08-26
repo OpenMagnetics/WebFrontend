@@ -28,6 +28,13 @@ export async function openWizard(page, dataCy) {
   // before we try to click a wizard link.
   await settleAnimations(page, 500);
 
+  // Wait for the link to exist rather than taking one shot at it. Under load the nav can still be
+  // mounting when we look, and a one-shot querySelector then reported "not found in nav" — a
+  // harness artefact that reads exactly like a missing wizard (ABT #909).
+  await page.locator(`[data-cy="${dataCy}"]`).first()
+    .waitFor({ state: 'attached', timeout: 30_000 })
+    .catch(() => { /* fall through: the evaluate below reports it precisely */ });
+
   const clicked = await page.evaluate((cy) => {
     const toggles = Array.from(document.querySelectorAll('.dropdown-toggle'));
     const wizardsToggle = toggles.find((el) => el.textContent.includes('Wizards'));
