@@ -134,6 +134,41 @@ export default {
 
         updateErrorMessage() {
             this.errorMessage = "";
+
+            // Every secondary of a flyback shares one core, so the rails are NOT independent: each
+            // turns ratio must satisfy n_i*(|V_i| + Vd) = Vor, the same reflected voltage for all of
+            // them. In "I know the design I want" the user supplies BOTH the rail voltage and the
+            // ratio, and the engine honours the ratio (req::provided_turns_ratio) — so an
+            // inconsistent pair silently designs a DIFFERENT converter than the one described.
+            //
+            // That is what a user hit (ABT #914): `turnsRatio` defaults to 8 and updateNumberOutputs
+            // copies the previous rail's values, so four rails all carried 8. Their entered voltages
+            // were ignored and every winding came out at the same ~10.5 V — the "5 V" rail included.
+            // Say so instead of quietly building it.
+            if (this.localData.designLevel != 'I know the design I want') return;
+
+            const rails = this.localData.outputsParameters;
+            if (!rails?.length) return;
+            const vd = Number(this.localData.diodeVoltageDrop) || 0;
+            const reflected = (r) => Number(r.turnsRatio) * (Math.abs(Number(r.voltage)) + vd);
+            const vor0 = reflected(rails[0]);
+            if (!(vor0 > 0)) return;
+
+            for (let i = 1; i < rails.length; i++) {
+                const vorI = reflected(rails[i]);
+                if (!(vorI > 0)) continue;
+                // 2% is well inside what rounding the ratio to 2 decimals can explain.
+                if (Math.abs(vorI - vor0) / vor0 <= 0.02) continue;
+                // What this rail will ACTUALLY be, given the ratio the engine will use.
+                const actual = vor0 / Number(rails[i].turnsRatio) - vd;
+                this.errorMessage =
+                    `Output ${i + 1}: a turns ratio of ${rails[i].turnsRatio} makes this rail ` +
+                    `${actual.toFixed(2)} V, not the ${rails[i].voltage} V entered. All secondaries ` +
+                    `share one core, so every ratio must give the same reflected voltage as Output 1 ` +
+                    `(${vor0.toFixed(1)} V). Use ${(vor0 / (Math.abs(Number(rails[i].voltage)) + vd)).toFixed(2)} ` +
+                    `for ${rails[i].voltage} V.`;
+                return;
+            }
         },
         updateNumberOutputs(newNumber) {
             if (newNumber > this.localData.outputsParameters.length) {
