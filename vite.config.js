@@ -111,10 +111,13 @@ export default defineConfig({
     server: {
         fs: { allow: ['..'] },
         watch: { usePolling: true, interval: 1000 },
+        // No hardcoded HMR port: vite falls back to 5174+ when 5173 is taken
+        // (another dev server on the box), and a pinned 5173 then makes every
+        // page open a doomed HMR socket — a console error in every Playwright
+        // run. Omitting `port` lets the client follow the resolved server port.
         hmr: {
             protocol: 'ws',
             host: 'localhost',
-            port: 5173
         },
         proxy: {
             '/api': {
