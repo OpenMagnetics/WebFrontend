@@ -18,14 +18,20 @@
  */
 
 import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { test, expect } from './_coverage.js';
 import { BASE_URL, screenshot, pause } from './utils.js';
 
-const CLASSIC_FIXTURE = '/home/alf/OpenMagnetics/WebFrontend/MagneticBuilder/src/public/test_wound_coil.json';
-const MULTICOLUMN_FIXTURE = '/home/alf/OpenMagnetics/WebFrontend/tests/fixtures/multicolumn_e42_transformer.json';
-const TOROIDAL_FIXTURE = '/home/alf/OpenMagnetics/WebFrontend/tests/fixtures/toroidal_cmc_t2515.json';
-const CORRUPT_TOROID_FIXTURE = '/home/alf/OpenMagnetics/WebFrontend/tests/fixtures/toroidal_stale_pin_corrupt_t402416.json';
-const CATALOG_BOBBIN_FIXTURE = '/home/alf/OpenMagnetics/WebFrontend/tests/fixtures/multicolumn_e42_catalog_bobbin.json';
+// ABT #929: repo-relative, not '/home/alf/...'. These only ever resolved on one machine.
+const REPO_ROOT = fileURLToPath(new URL('..', import.meta.url));
+const fixture = (...parts) => path.join(REPO_ROOT, ...parts);
+
+const CLASSIC_FIXTURE = fixture('MagneticBuilder', 'src', 'public', 'test_wound_coil.json');
+const MULTICOLUMN_FIXTURE = fixture('tests', 'fixtures', 'multicolumn_e42_transformer.json');
+const TOROIDAL_FIXTURE = fixture('tests', 'fixtures', 'toroidal_cmc_t2515.json');
+const CORRUPT_TOROID_FIXTURE = fixture('tests', 'fixtures', 'toroidal_stale_pin_corrupt_t402416.json');
+const CATALOG_BOBBIN_FIXTURE = fixture('tests', 'fixtures', 'multicolumn_e42_catalog_bobbin.json');
 const ss = (page, name) => screenshot(page, 'winding-studio', name);
 
 function countTurnGlyphs(parsed) {
@@ -42,6 +48,20 @@ function countTurnGlyphs(parsed) {
   return windowCount <= 1 ? base + turns.length : base;
 }
 
+// ABT #929: every helper below reaches into
+// document.querySelector('#app').__vue_app__.config.globalProperties.$pinia, and nothing used to
+// guarantee Vue had attached __vue_app__ before the first one did. goToMagneticTool leaving
+// engine_loader plus a fixed 800 ms pause is not that guarantee — on a cold or loaded run the
+// mount lands later, and the reach throws "Cannot read properties of undefined (reading
+// 'config')". Whether it did depended on what ran before, which is why a different subset of
+// WS-* failed on every identical run. Wait on the real signal instead.
+async function waitForVueApp(page) {
+  await page.waitForFunction(() => {
+    const pinia = document.querySelector('#app')?.__vue_app__?.config?.globalProperties?.$pinia;
+    return pinia != null && pinia._s.get('state') != null && pinia._s.get('mas') != null;
+  }, null, { timeout: 45000 });
+}
+
 async function goToMagneticTool(page) {
   await page.goto(`${BASE_URL}/magnetic_tool`, { waitUntil: 'domcontentloaded', timeout: 20000 });
   await page.waitForFunction(
@@ -49,11 +69,39 @@ async function goToMagneticTool(page) {
     null,
     { timeout: 45000 },
   );
+  await waitForVueApp(page);
   await pause(page, 800, 'mechanical: settle');
+}
+
+// ABT #929: drive the builder to mount, re-asserting the tool selection each round so a
+// mount-time design reset that lands between our selection and the builder coming up cannot
+// strand us. Waits on a real signal (the store existing), never a fixed sleep.
+async function waitForBuilderMounted(page, selectBuilderState, { attempts = 12, perAttemptMs = 5000 } = {}) {
+  let lastError;
+  for (let attempt = 0; attempt < attempts; attempt++) {
+    await selectBuilderState(page);
+    try {
+      await page.waitForFunction(() => {
+        const pinia = document.querySelector('#app')?.__vue_app__?.config?.globalProperties?.$pinia;
+        if (pinia == null) return false;
+        return pinia._s.get('magneticBuilderTaskQueue') != null;
+      }, null, { timeout: perAttemptMs });
+      return;
+    }
+    catch (error) {
+      lastError = error;   // re-assert the selection and try again
+    }
+  }
+  throw new Error(
+    `the Magnetic Builder never mounted after ${attempts} attempts to select it `
+    + `(${attempts * perAttemptMs} ms total): ${lastError?.message ?? 'unknown'}`);
 }
 
 async function injectMas(page, fixturePath, { heal = true, mountFirst = false } = {}) {
   const parsed = JSON.parse(fs.readFileSync(fixturePath, 'utf-8'));
+  // ABT #929: callers reach here from several entry points, not all of them via
+  // goToMagneticTool. Re-assert the app is mounted before touching the stores.
+  await waitForVueApp(page);
 
   const selectBuilderState = (page_) => page_.evaluate(() => {
     const pinia = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia;
@@ -71,11 +119,14 @@ async function injectMas(page, fixturePath, { heal = true, mountFirst = false } 
     // before the tool mounts loses the race against its mount-time design
     // reset. The magneticBuilderTaskQueue store existing means the builder
     // machinery is up.
-    await selectBuilderState(page);
-    await page.waitForFunction(() => {
-      const pinia = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia;
-      return pinia._s.get('magneticBuilderTaskQueue') != null;
-    }, null, { timeout: 30000 });
+    //
+    // ABT #929: selecting the tool ONCE and then waiting lost that same race the
+    // comment above describes — the builder's mount-time design reset can land after our
+    // selection and undo it, and then the store we are waiting for never appears and the
+    // test dies on a 30 s timeout. Which tests it hit depended on what ran before, which
+    // is why a different subset failed on every run. Re-assert the selection while
+    // waiting instead of asserting it once and hoping.
+    await waitForBuilderMounted(page, selectBuilderState);
   }
 
   await page.evaluate(([parsedMas, healFlag]) => {
@@ -122,8 +173,17 @@ async function dragChipToColumn(page, chipLocator, columnIndex) {
 }
 
 async function openStudio(page) {
+  // ABT #929: the toggle only exists once the builder has mounted its coil section, and the
+  // callers that reach here without mountFirst were racing that mount — "element(s) not found"
+  // after 10 s, on whichever test happened to lose. Wait for the builder machinery on a real
+  // signal first, then for the button itself.
+  await page.waitForFunction(() => {
+    const pinia = document.querySelector('#app')?.__vue_app__?.config?.globalProperties?.$pinia;
+    if (pinia == null) return false;
+    return pinia._s.get('magneticBuilderTaskQueue') != null;
+  }, null, { timeout: 60000 });
   const toggle = page.locator('[data-cy$="-Coil-WindingStudio-button"]').first();
-  await expect(toggle).toBeVisible({ timeout: 10000 });
+  await expect(toggle).toBeVisible({ timeout: 30000 });
   const studio = page.locator('.winding-studio');
   if (!(await studio.first().isVisible())) {
     await toggle.click();
@@ -277,7 +337,8 @@ test.describe('Winding Studio P0', () => {
     // Wait for the builder's normalization rewind to settle: secondary wound
     // (in window 0 → +x, since the fixture windings carry no windingWindow).
     await page.waitForFunction(() => {
-      const pinia = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia;
+      const pinia = document.querySelector('#app')?.__vue_app__?.config?.globalProperties?.$pinia;
+      if (pinia == null) return false;   // ABT #929: not mounted yet — poll again, do not throw
       const turns = pinia._s.get('mas').mas?.magnetic?.coil?.turnsDescription ?? [];
       const secondary = turns.filter((t) => t.winding === 'Secondary');
       return secondary.length > 0 && secondary.every((t) => t.coordinates[0] > 0);
@@ -290,7 +351,8 @@ test.describe('Winding Studio P0', () => {
     // The placement round-trip (settings flip → core reprocess → bobbin regen →
     // columns-aware rewind) moves every secondary turn to negative x.
     await page.waitForFunction(() => {
-      const pinia = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia;
+      const pinia = document.querySelector('#app')?.__vue_app__?.config?.globalProperties?.$pinia;
+      if (pinia == null) return false;   // ABT #929: not mounted yet — poll again, do not throw
       const mas = pinia._s.get('mas').mas;
       const turns = mas?.magnetic?.coil?.turnsDescription ?? [];
       const secondary = turns.filter((t) => t.winding === 'Secondary');
@@ -309,7 +371,8 @@ test.describe('Winding Studio P0', () => {
 
     // Normalization: both windings in window 0, adjacent sections.
     await page.waitForFunction(() => {
-      const pinia = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia;
+      const pinia = document.querySelector('#app')?.__vue_app__?.config?.globalProperties?.$pinia;
+      if (pinia == null) return false;   // ABT #929: not mounted yet — poll again, do not throw
       const sections = pinia._s.get('mas').mas?.magnetic?.coil?.sectionsDescription ?? [];
       return sections.filter((s) => s.type === 'conduction').length === 2;
     }, null, { timeout: 60000 });
@@ -345,7 +408,8 @@ test.describe('Winding Studio P0', () => {
       return calls.length > 0 && calls[calls.length - 1][0] > 0.55;
     }, null, { timeout: 60000 });
     await page.waitForFunction(() => {
-      const pinia = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia;
+      const pinia = document.querySelector('#app')?.__vue_app__?.config?.globalProperties?.$pinia;
+      if (pinia == null) return false;   // ABT #929: not mounted yet — poll again, do not throw
       const turns = pinia._s.get('mas').mas?.magnetic?.coil?.turnsDescription ?? [];
       return turns.length === 36;
     }, null, { timeout: 60000 });
@@ -361,7 +425,8 @@ test.describe('Winding Studio P0', () => {
     const studio = await openStudio(page);
 
     await page.waitForFunction(() => {
-      const pinia = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia;
+      const pinia = document.querySelector('#app')?.__vue_app__?.config?.globalProperties?.$pinia;
+      if (pinia == null) return false;   // ABT #929: not mounted yet — poll again, do not throw
       const sections = pinia._s.get('mas').mas?.magnetic?.coil?.sectionsDescription ?? [];
       return sections.filter((s) => s.type === 'conduction').length === 2;
     }, null, { timeout: 60000 });
@@ -386,7 +451,8 @@ test.describe('Winding Studio P0', () => {
     await page.mouse.up();
 
     await page.waitForFunction(() => {
-      const pinia = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia;
+      const pinia = document.querySelector('#app')?.__vue_app__?.config?.globalProperties?.$pinia;
+      if (pinia == null) return false;   // ABT #929: not mounted yet — poll again, do not throw
       const sections = pinia._s.get('mas').mas?.magnetic?.coil?.sectionsDescription ?? [];
       const primary = sections.find((s) => s.type === 'conduction' && s.partialWindings[0].winding === 'Primary');
       return primary != null && (primary.margin?.[0] ?? 0) > 0.0005;
@@ -408,7 +474,8 @@ test.describe('Winding Studio P0', () => {
     const studio = await openStudio(page);
 
     await page.waitForFunction(() => {
-      const pinia = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia;
+      const pinia = document.querySelector('#app')?.__vue_app__?.config?.globalProperties?.$pinia;
+      if (pinia == null) return false;   // ABT #929: not mounted yet — poll again, do not throw
       const sections = pinia._s.get('mas').mas?.magnetic?.coil?.sectionsDescription ?? [];
       return sections.filter((s) => s.type === 'conduction').length === 2;
     }, null, { timeout: 60000 });
@@ -457,7 +524,8 @@ test.describe('Winding Studio P0', () => {
     await page.mouse.up();
 
     await page.waitForFunction(() => {
-      const pinia = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia;
+      const pinia = document.querySelector('#app')?.__vue_app__?.config?.globalProperties?.$pinia;
+      if (pinia == null) return false;   // ABT #929: not mounted yet — poll again, do not throw
       const coil = pinia._s.get('mas').mas?.magnetic?.coil ?? {};
       const primary = (coil.sectionsDescription ?? []).find((s) => s.type === 'conduction' && s.partialWindings[0].winding === 'Primary');
       if (primary == null) return false;
@@ -600,7 +668,8 @@ test.describe('Winding Studio P0', () => {
     // wait for it (and for the fixture's sections to be in place) rather than
     // racing the builder's mount timing.
     await page.waitForFunction(() => {
-      const pinia = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia;
+      const pinia = document.querySelector('#app')?.__vue_app__?.config?.globalProperties?.$pinia;
+      if (pinia == null) return false;   // ABT #929: not mounted yet — poll again, do not throw
       const mas = pinia._s.get('mas');
       return pinia._s.get('windingStudio') != null
         && (mas?.mas?.magnetic?.coil?.sectionsDescription ?? []).some((s) => s.type === 'conduction');
@@ -635,7 +704,8 @@ test.describe('Winding Studio P0', () => {
     });
 
     await page.waitForFunction(() => {
-      const pinia = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia;
+      const pinia = document.querySelector('#app')?.__vue_app__?.config?.globalProperties?.$pinia;
+      if (pinia == null) return false;   // ABT #929: not mounted yet — poll again, do not throw
       return pinia._s.get('windingStudio').customSectionCount === 0;
     }, null, { timeout: 10000 });
   });
@@ -706,7 +776,8 @@ test.describe('Winding Studio P0', () => {
     // Normalization: everything wound in the catalog bobbin's window (+x),
     // catalog part untouched.
     await page.waitForFunction(() => {
-      const pinia = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia;
+      const pinia = document.querySelector('#app')?.__vue_app__?.config?.globalProperties?.$pinia;
+      if (pinia == null) return false;   // ABT #929: not mounted yet — poll again, do not throw
       const turns = pinia._s.get('mas').mas?.magnetic?.coil?.turnsDescription ?? [];
       const secondary = turns.filter((t) => t.winding === 'Secondary');
       return secondary.length > 0 && secondary.every((t) => t.coordinates[0] > 0);
@@ -723,7 +794,8 @@ test.describe('Winding Studio P0', () => {
     // points at the lateral part's merged window (index 1: one catalog window
     // + first lateral window) and every secondary turn moves to negative x.
     await page.waitForFunction(() => {
-      const pinia = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia;
+      const pinia = document.querySelector('#app')?.__vue_app__?.config?.globalProperties?.$pinia;
+      if (pinia == null) return false;   // ABT #929: not mounted yet — poll again, do not throw
       const mas = pinia._s.get('mas').mas;
       const coil = mas?.magnetic?.coil ?? {};
       const secondary = (coil.turnsDescription ?? []).filter((t) => t.winding === 'Secondary');
@@ -747,7 +819,8 @@ test.describe('Winding Studio P0', () => {
     // bobbin collapses back to the plain catalog scalar.
     await dragChipToColumn(page, page.locator('[data-cy$="-WindingStudio-chip-Secondary"]').first(), 0);
     await page.waitForFunction(() => {
-      const pinia = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia;
+      const pinia = document.querySelector('#app')?.__vue_app__?.config?.globalProperties?.$pinia;
+      if (pinia == null) return false;   // ABT #929: not mounted yet — poll again, do not throw
       const coil = pinia._s.get('mas').mas?.magnetic?.coil ?? {};
       const secondary = (coil.turnsDescription ?? []).filter((t) => t.winding === 'Secondary');
       return !Array.isArray(coil.bobbin)
@@ -776,7 +849,8 @@ test.describe('Winding Studio P0', () => {
         .map((s) => s.partialWindings[0].winding);
     });
     await page.waitForFunction(() => {
-      const pinia = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia;
+      const pinia = document.querySelector('#app')?.__vue_app__?.config?.globalProperties?.$pinia;
+      if (pinia == null) return false;   // ABT #929: not mounted yet — poll again, do not throw
       const sections = pinia._s.get('mas').mas?.magnetic?.coil?.sectionsDescription ?? [];
       return sections.filter((s) => s.type === 'conduction').length === 2;
     }, null, { timeout: 60000 });
@@ -800,7 +874,8 @@ test.describe('Winding Studio P0', () => {
     await dropSecondaryOnPrimary();
     await page.locator('[data-cy$="-WindingStudio-interleave-interleave"]').click();
     await page.waitForFunction(() => {
-      const pinia = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia;
+      const pinia = document.querySelector('#app')?.__vue_app__?.config?.globalProperties?.$pinia;
+      if (pinia == null) return false;   // ABT #929: not mounted yet — poll again, do not throw
       const sections = (pinia._s.get('mas').mas?.magnetic?.coil?.sectionsDescription ?? [])
         .filter((s) => s.type === 'conduction');
       return sections.length === 4;
@@ -814,7 +889,8 @@ test.describe('Winding Studio P0', () => {
     await dropSecondaryOnPrimary();
     await page.locator('[data-cy$="-WindingStudio-interleave-clear"]').click();
     await page.waitForFunction(() => {
-      const pinia = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia;
+      const pinia = document.querySelector('#app')?.__vue_app__?.config?.globalProperties?.$pinia;
+      if (pinia == null) return false;   // ABT #929: not mounted yet — poll again, do not throw
       const sections = (pinia._s.get('mas').mas?.magnetic?.coil?.sectionsDescription ?? [])
         .filter((s) => s.type === 'conduction');
       return sections.length === 2 && sections[0].partialWindings[0].winding === 'Primary';
@@ -824,7 +900,8 @@ test.describe('Winding Studio P0', () => {
     await dropSecondaryOnPrimary();
     await page.locator('[data-cy$="-WindingStudio-interleave-swap"]').click();
     await page.waitForFunction(() => {
-      const pinia = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia;
+      const pinia = document.querySelector('#app')?.__vue_app__?.config?.globalProperties?.$pinia;
+      if (pinia == null) return false;   // ABT #929: not mounted yet — poll again, do not throw
       const sections = (pinia._s.get('mas').mas?.magnetic?.coil?.sectionsDescription ?? [])
         .filter((s) => s.type === 'conduction');
       return sections.length === 2 && sections[0].partialWindings[0].winding === 'Secondary';
@@ -841,7 +918,8 @@ test.describe('Winding Studio P0', () => {
     await pause(page, 2000, 'mechanical: builder settle after injection');
     const studio = await openStudio(page);
     await page.waitForFunction(() => {
-      const pinia = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia;
+      const pinia = document.querySelector('#app')?.__vue_app__?.config?.globalProperties?.$pinia;
+      if (pinia == null) return false;   // ABT #929: not mounted yet — poll again, do not throw
       return (pinia._s.get('mas').mas?.magnetic?.coil?.turnsDescription ?? []).length > 0;
     }, null, { timeout: 60000 });
 
@@ -872,7 +950,8 @@ test.describe('Winding Studio P0', () => {
     await pause(page, 2000, 'mechanical: builder settle after injection');
     const studio = await openStudio(page);
     await page.waitForFunction(() => {
-      const pinia = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia;
+      const pinia = document.querySelector('#app')?.__vue_app__?.config?.globalProperties?.$pinia;
+      if (pinia == null) return false;   // ABT #929: not mounted yet — poll again, do not throw
       const sections = pinia._s.get('mas').mas?.magnetic?.coil?.sectionsDescription ?? [];
       return sections.filter((s) => s.type === 'conduction').length === 2;
     }, null, { timeout: 60000 });
@@ -887,7 +966,8 @@ test.describe('Winding Studio P0', () => {
     // The window entry carries the new orientation and the re-wound sections
     // stack along y (contiguous) instead of x.
     await page.waitForFunction(() => {
-      const pinia = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia;
+      const pinia = document.querySelector('#app')?.__vue_app__?.config?.globalProperties?.$pinia;
+      if (pinia == null) return false;   // ABT #929: not mounted yet — poll again, do not throw
       const coil = pinia._s.get('mas').mas?.magnetic?.coil;
       const window0 = coil?.bobbin?.processedDescription?.windingWindows?.[0];
       const conduction = (coil?.sectionsDescription ?? []).filter((s) => s.type === 'conduction');
@@ -910,7 +990,8 @@ test.describe('Winding Studio P0', () => {
     await pause(page, 2000, 'mechanical: builder settle after injection');
     const studio = await openStudio(page);
     await page.waitForFunction(() => {
-      const pinia = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia;
+      const pinia = document.querySelector('#app')?.__vue_app__?.config?.globalProperties?.$pinia;
+      if (pinia == null) return false;   // ABT #929: not mounted yet — poll again, do not throw
       const sections = pinia._s.get('mas').mas?.magnetic?.coil?.sectionsDescription ?? [];
       return sections.filter((s) => s.type === 'conduction').length >= 2;
     }, null, { timeout: 60000 });
@@ -1006,7 +1087,8 @@ test.describe('Winding Studio P0', () => {
     await pause(page, 2000, 'mechanical: builder settle after injection');
     const studio = await openStudio(page);
     await page.waitForFunction(() => {
-      const pinia = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia;
+      const pinia = document.querySelector('#app')?.__vue_app__?.config?.globalProperties?.$pinia;
+      if (pinia == null) return false;   // ABT #929: not mounted yet — poll again, do not throw
       const sections = pinia._s.get('mas').mas?.magnetic?.coil?.sectionsDescription ?? [];
       return sections.filter((s) => s.type === 'conduction').length === 2;
     }, null, { timeout: 60000 });
@@ -1075,7 +1157,8 @@ test.describe('Winding Studio P0', () => {
     await pause(page, 2000, 'mechanical: builder settle after injection');
     const studio = await openStudio(page);
     await page.waitForFunction(() => {
-      const pinia = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia;
+      const pinia = document.querySelector('#app')?.__vue_app__?.config?.globalProperties?.$pinia;
+      if (pinia == null) return false;   // ABT #929: not mounted yet — poll again, do not throw
       const sections = pinia._s.get('mas').mas?.magnetic?.coil?.sectionsDescription ?? [];
       return sections.filter((s) => s.type === 'conduction').length === 3;
     }, null, { timeout: 90000 });
@@ -1094,7 +1177,8 @@ test.describe('Winding Studio P0', () => {
     await expect(menu).not.toBeVisible({ timeout: 3000 });
 
     await page.waitForFunction(() => {
-      const pinia = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia;
+      const pinia = document.querySelector('#app')?.__vue_app__?.config?.globalProperties?.$pinia;
+      if (pinia == null) return false;   // ABT #929: not mounted yet — poll again, do not throw
       const coil = pinia._s.get('mas').mas?.magnetic?.coil ?? {};
       const primary = coil.functionalDescription?.find((w) => w.name === 'Primary');
       const secondary = coil.functionalDescription?.find((w) => w.name === 'Secondary');
@@ -1116,7 +1200,8 @@ test.describe('Winding Studio P0', () => {
     // Group placement: dragging ONE member to the left leg moves BOTH.
     await dragChipToColumn(page, studio.locator('[data-cy$="-WindingStudio-chip-Primary"]').first(), 2);
     await page.waitForFunction(() => {
-      const pinia = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia;
+      const pinia = document.querySelector('#app')?.__vue_app__?.config?.globalProperties?.$pinia;
+      if (pinia == null) return false;   // ABT #929: not mounted yet — poll again, do not throw
       const coil = pinia._s.get('mas').mas?.magnetic?.coil ?? {};
       const primary = coil.functionalDescription?.find((w) => w.name === 'Primary');
       const secondary = coil.functionalDescription?.find((w) => w.name === 'Secondary');
@@ -1134,7 +1219,8 @@ test.describe('Winding Studio P0', () => {
     await studio.locator('.winding-studio-title').click();
     await expect(menu).not.toBeVisible({ timeout: 3000 });
     await page.waitForFunction(() => {
-      const pinia = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia;
+      const pinia = document.querySelector('#app')?.__vue_app__?.config?.globalProperties?.$pinia;
+      if (pinia == null) return false;   // ABT #929: not mounted yet — poll again, do not throw
       const coil = pinia._s.get('mas').mas?.magnetic?.coil ?? {};
       return coil.functionalDescription?.every((w) => w.woundWith == null)
         && (coil.sectionsDescription ?? []).filter((s) => s.type === 'conduction')
@@ -1209,7 +1295,8 @@ test.describe('Winding Studio P0', () => {
     await pause(page, 2000, 'mechanical: builder settle after injection');
     const studio = await openStudio(page);
     await page.waitForFunction(() => {
-      const pinia = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia;
+      const pinia = document.querySelector('#app')?.__vue_app__?.config?.globalProperties?.$pinia;
+      if (pinia == null) return false;   // ABT #929: not mounted yet — poll again, do not throw
       const sections = pinia._s.get('mas').mas?.magnetic?.coil?.sectionsDescription ?? [];
       return sections.filter((s) => s.type === 'conduction').length === 2;
     }, null, { timeout: 60000 });
@@ -1224,7 +1311,8 @@ test.describe('Winding Studio P0', () => {
     await styleSelect.selectOption('windByConsecutiveTurns');
     await studio.locator('[data-cy$="-WindingStudio-section-apply"]').click();
     await page.waitForFunction(() => {
-      const pinia = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia;
+      const pinia = document.querySelector('#app')?.__vue_app__?.config?.globalProperties?.$pinia;
+      if (pinia == null) return false;   // ABT #929: not mounted yet — poll again, do not throw
       const sections = pinia._s.get('mas').mas?.magnetic?.coil?.sectionsDescription ?? [];
       const primary = sections.find((s) => s.type === 'conduction' && s.partialWindings[0].winding === 'Primary');
       return primary?.windingStyle === 'windByConsecutiveTurns';
@@ -1250,7 +1338,8 @@ test.describe('Winding Studio P0', () => {
     await dropSecondaryOnPrimary();
     await page.locator('[data-cy$="-WindingStudio-interleave-group"]').click();
     await page.waitForFunction(() => {
-      const pinia = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia;
+      const pinia = document.querySelector('#app')?.__vue_app__?.config?.globalProperties?.$pinia;
+      if (pinia == null) return false;   // ABT #929: not mounted yet — poll again, do not throw
       const coil = pinia._s.get('mas').mas?.magnetic?.coil ?? {};
       const primary = coil.functionalDescription?.find((w) => w.name === 'Primary');
       const secondary = coil.functionalDescription?.find((w) => w.name === 'Secondary');
@@ -1266,7 +1355,8 @@ test.describe('Winding Studio P0', () => {
     await dropSecondaryOnPrimary();
     await page.locator('[data-cy$="-WindingStudio-interleave-ungroup"]').click();
     await page.waitForFunction(() => {
-      const pinia = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia;
+      const pinia = document.querySelector('#app')?.__vue_app__?.config?.globalProperties?.$pinia;
+      if (pinia == null) return false;   // ABT #929: not mounted yet — poll again, do not throw
       const coil = pinia._s.get('mas').mas?.magnetic?.coil ?? {};
       const primary = coil.functionalDescription?.find((w) => w.name === 'Primary');
       const secondary = coil.functionalDescription?.find((w) => w.name === 'Secondary');
@@ -1287,7 +1377,8 @@ test.describe('Winding Studio P0', () => {
     await pause(page, 2000, 'mechanical: builder settle after injection');
     const studio = await openStudio(page);
     await page.waitForFunction(() => {
-      const pinia = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia;
+      const pinia = document.querySelector('#app')?.__vue_app__?.config?.globalProperties?.$pinia;
+      if (pinia == null) return false;   // ABT #929: not mounted yet — poll again, do not throw
       const sections = pinia._s.get('mas').mas?.magnetic?.coil?.sectionsDescription ?? [];
       return sections.filter((s) => s.type === 'conduction').length === 2;
     }, null, { timeout: 60000 });
