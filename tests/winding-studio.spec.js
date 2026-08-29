@@ -56,45 +56,121 @@ function countTurnGlyphs(parsed) {
 // 'config')". Whether it did depended on what ran before, which is why a different subset of
 // WS-* failed on every identical run. Wait on the real signal instead.
 async function waitForVueApp(page) {
-  await page.waitForFunction(() => {
-    const pinia = document.querySelector('#app')?.__vue_app__?.config?.globalProperties?.$pinia;
-    return pinia != null && pinia._s.get('state') != null && pinia._s.get('mas') != null;
-  }, null, { timeout: 45000 });
+  try {
+    await page.waitForFunction(() => {
+      const pinia = document.querySelector('#app')?.__vue_app__?.config?.globalProperties?.$pinia;
+      return pinia != null && pinia._s.get('state') != null && pinia._s.get('mas') != null;
+    }, null, { timeout: 45000 });
+  }
+  catch (error) {
+    // ABT #929: same reason as waitForBuilderMounted — a bare timeout here says nothing about
+    // WHICH of the three conditions was missing, and this wait is where the surviving failures
+    // land. Report what the page actually had.
+    const state = await page.evaluate(() => ({
+      url: window.location.pathname,
+      hasAppEl: document.querySelector('#app') != null,
+      hasVueApp: document.querySelector('#app')?.__vue_app__ != null,
+      stores: [...(document.querySelector('#app')?.__vue_app__?.config?.globalProperties?.$pinia?._s.keys() ?? [])],
+      bodyText: (document.body?.innerText ?? '').slice(0, 120).replace(/\s+/g, ' '),
+    })).catch(evaluateError => ({ evaluateFailed: String(evaluateError).slice(0, 160) }));
+    throw new Error(`the Vue app never became usable within 45 s. Page state: ${JSON.stringify(state)}`);
+  }
+}
+
+// ABT #929: the app can park on /engine_loader. main.js already recovers from one cause of
+// that (a lazy chunk vite cannot serve under concurrent cold loads, ABT #909) with a hard
+// navigation, but the other cause — the 32 MB engine's own fetch being aborted mid-stream,
+// which this file provokes by cold-loading it once per test, 22 times — has no such recovery
+// and the app sits there. That is what the diagnosis caught: "url":"/engine_loader" after 60 s
+// of retries. Do what the app does for its sibling case: reload once, loudly, and only then
+// fail. The log line matters — if this ever starts firing on every run it is a real regression,
+// not the dev server, and silence would hide that.
+async function reachMagneticTool(page, { reloads = 1 } = {}) {
+  for (let attempt = 0; attempt <= reloads; attempt++) {
+    if (attempt === 0) {
+      await page.goto(`${BASE_URL}/magnetic_tool`, { waitUntil: 'domcontentloaded', timeout: 20000 });
+    }
+    else {
+      console.warn('[ABT #929] app parked on /engine_loader; recovering with a full page load '
+                   + `(attempt ${attempt} of ${reloads})`);
+      await page.reload({ waitUntil: 'domcontentloaded', timeout: 30000 });
+    }
+    try {
+      await page.waitForFunction(
+        () => !window.location.pathname.includes('engine_loader'),
+        null,
+        { timeout: 45000 },
+      );
+      return;
+    }
+    catch (error) {
+      if (attempt === reloads) {
+        throw new Error(`the app never left /engine_loader, even after ${reloads} full reload(s). `
+                        + `The engine did not finish loading: ${error.message}`);
+      }
+    }
+  }
 }
 
 async function goToMagneticTool(page) {
-  await page.goto(`${BASE_URL}/magnetic_tool`, { waitUntil: 'domcontentloaded', timeout: 20000 });
-  await page.waitForFunction(
-    () => !window.location.pathname.includes('engine_loader'),
-    null,
-    { timeout: 45000 },
-  );
+  await reachMagneticTool(page);
   await waitForVueApp(page);
   await pause(page, 800, 'mechanical: settle');
 }
 
-// ABT #929: drive the builder to mount, re-asserting the tool selection each round so a
-// mount-time design reset that lands between our selection and the builder coming up cannot
-// strand us. Waits on a real signal (the store existing), never a fixed sleep.
-async function waitForBuilderMounted(page, selectBuilderState, { attempts = 12, perAttemptMs = 5000 } = {}) {
-  let lastError;
-  for (let attempt = 0; attempt < attempts; attempt++) {
-    await selectBuilderState(page);
-    try {
-      await page.waitForFunction(() => {
-        const pinia = document.querySelector('#app')?.__vue_app__?.config?.globalProperties?.$pinia;
-        if (pinia == null) return false;
-        return pinia._s.get('magneticBuilderTaskQueue') != null;
-      }, null, { timeout: perAttemptMs });
-      return;
-    }
-    catch (error) {
-      lastError = error;   // re-assert the selection and try again
-    }
+// ABT #929: selecting the builder pushes /engine_loader on purpose — main.js calls it the
+// "trampoline", a remount forced by navigating to the loader and bouncing straight back. When
+// that bounce loses (leaveEngineLoader retrying a push that cannot succeed) the app parks on the
+// loader, and THAT is what the diagnosis caught: url "/engine_loader" with the builder store
+// never registering.
+//
+// An earlier version of this helper re-asserted the selection twelve times while waiting. That
+// made it worse, not better: every re-selection fires the trampoline again, so a parked app got
+// pushed back onto the loader eleven more times. Select once, and if we end up parked, recover
+// the way main.js recovers from its sibling case — a full page load — rather than pushing again.
+async function waitForBuilderMounted(page, selectBuilderState, { settleMs = 20000 } = {}) {
+  const builderIsUp = () => page.waitForFunction(() => {
+    const pinia = document.querySelector('#app')?.__vue_app__?.config?.globalProperties?.$pinia;
+    if (pinia == null) return false;
+    return pinia._s.get('magneticBuilderTaskQueue') != null;
+  }, null, { timeout: settleMs });
+
+  await selectBuilderState(page);
+  try {
+    await builderIsUp();
+    return;
   }
-  throw new Error(
-    `the Magnetic Builder never mounted after ${attempts} attempts to select it `
-    + `(${attempts * perAttemptMs} ms total): ${lastError?.message ?? 'unknown'}`);
+  catch { /* fall through to the one recovery below */ }
+
+  const parked = page.url().includes('engine_loader');
+  console.warn(`[ABT #929] builder did not mount in ${settleMs} ms (parked on engine_loader: ${parked}); `
+               + 'recovering with a full page load');
+  // Navigate, do not reload. Reloading while parked on /engine_loader lands back ON the loader,
+  // and main.js then bounces to `from.path`, which on a fresh document is "/" — so the recovery
+  // put the app on the HOME page and the builder could never mount there. That is exactly what
+  // the diagnosis reported: 'never mounted, even after a full page load ... "url":"/"'.
+  await reachMagneticTool(page, { reloads: 0 });
+  await waitForVueApp(page);
+  await selectBuilderState(page);
+  try {
+    await builderIsUp();
+    return;
+  }
+  catch (error) {
+    const diagnosis = await page.evaluate(() => {
+      const pinia = document.querySelector('#app')?.__vue_app__?.config?.globalProperties?.$pinia;
+      if (pinia == null) return { app: 'no vue app on the page' };
+      const state = pinia._s.get('state');
+      return {
+        url: window.location.pathname,
+        stores: [...pinia._s.keys()],
+        currentTool: state?.currentTool ?? null,
+        currentToolSubsection: state?.currentToolSubsection ?? null,
+      };
+    }).catch(evaluateError => ({ evaluateFailed: String(evaluateError).slice(0, 160) }));
+    throw new Error('the Magnetic Builder never mounted, even after a full page load. '
+                    + `Last wait: ${error.message}. App state: ${JSON.stringify(diagnosis)}`);
+  }
 }
 
 async function injectMas(page, fixturePath, { heal = true, mountFirst = false } = {}) {
