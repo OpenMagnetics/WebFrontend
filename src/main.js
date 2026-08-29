@@ -483,6 +483,9 @@ router.beforeEach((to, from, next) => {
                     // Diagnostic flag (ABT #909): lets a stalled page be classified as "engine came
                     // up but the router never left the loader" vs "the engine never came up".
                     window.__omEngineReady = true;
+                    // ABT #929: the engine is up, so a LATER transient failure deserves its own
+                    // retry budget rather than inheriting a spent one from earlier in this session.
+                    try { sessionStorage.removeItem('omEngineInitRetries'); } catch { /* private mode */ }
 
                     // MKF is up — now warm webKirchhoff off the critical path (fire-and-forget,
                     // idempotent). Deep-linked wizard views get a working converter engine
@@ -589,6 +592,29 @@ router.beforeEach((to, from, next) => {
                     window.__omEngineLoadError = String(error?.message || error);
                     console.error("[EngineLoader] engine initialization FAILED — the app cannot leave "
                                   + "the loader:", error);
+                    // ABT #929: "cannot leave the loader" used to be the end of it — the spinner ran
+                    // forever under a heading promising "just a few seconds", and the tab had to be
+                    // closed. The dominant cause is a transient failure fetching the 32 MB engine,
+                    // which a fresh document clears, so retry before giving up. Bounded via
+                    // sessionStorage exactly like the chunk-failure recovery in leaveEngineLoader,
+                    // so a genuinely broken build cannot put the app in a reload loop.
+                    const retryKey = 'omEngineInitRetries';
+                    let attempts = 0;
+                    try { attempts = Number(sessionStorage.getItem(retryKey) || 0); } catch { /* private mode */ }
+                    if (attempts < 2) {
+                        try { sessionStorage.setItem(retryKey, String(attempts + 1)); } catch { /* private mode */ }
+                        console.warn(`[EngineLoader] retrying engine initialization `
+                                     + `(attempt ${attempts + 1} of 2) with a full page load`);
+                        window.location.reload();
+                        return;
+                    }
+                    // Out of retries: stop showing a spinner that implies progress. The loader view
+                    // renders this instead (EngineLoader.vue), so the user learns what happened and
+                    // can retry deliberately rather than watching an animation that means nothing.
+                    console.error('[EngineLoader] giving up after ' + attempts + ' retries');
+                    window.dispatchEvent(new CustomEvent('om-engine-load-failed', {
+                        detail: { message: window.__omEngineLoadError },
+                    }));
                 }
             })();
 

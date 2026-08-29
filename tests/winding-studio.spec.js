@@ -55,14 +55,40 @@ function countTurnGlyphs(parsed) {
 // mount lands later, and the reach throws "Cannot read properties of undefined (reading
 // 'config')". Whether it did depended on what ran before, which is why a different subset of
 // WS-* failed on every identical run. Wait on the real signal instead.
-async function waitForVueApp(page) {
+async function waitForVueApp(page, { reloads = 1 } = {}) {
+  const appIsUsable = () => page.waitForFunction(() => {
+    const pinia = document.querySelector('#app')?.__vue_app__?.config?.globalProperties?.$pinia;
+    return pinia != null && pinia._s.get('state') != null && pinia._s.get('mas') != null;
+  }, null, { timeout: 45000 });
+
   try {
-    await page.waitForFunction(() => {
-      const pinia = document.querySelector('#app')?.__vue_app__?.config?.globalProperties?.$pinia;
-      return pinia != null && pinia._s.get('state') != null && pinia._s.get('mas') != null;
-    }, null, { timeout: 45000 });
+    await appIsUsable();
+    return;
   }
-  catch (error) {
+  catch (firstError) {
+    // ABT #929: MEASURED CAUSE. A 25-load probe caught the failure in the act — one load in 25
+    // (4 %, which matches the ~1-failure-per-22-test run this file was showing) dies with
+    //   net::ERR_NETWORK_CHANGED on /src/stores/{user,mas,settings,state}.js
+    // and the page state reads {hasAppEl:true, hasVueApp:false, stores:[], bodyText:""}: the HTML
+    // shell arrived, the module graph did not, so Vue never mounted. ERR_NETWORK_CHANGED is the
+    // network stack moving under an in-flight request (a WSL2 virtual-adapter artefact here), not
+    // the app, the engine or this spec. main.js has a hard-reload recovery for this class of
+    // failure but cannot run it — main.js is one of the modules that failed to arrive.
+    //
+    // A blank page is unambiguous, so recovering from it is safe and targeted: re-fetch once.
+    // Anything still broken after that fails loudly with the state below.
+    const blank = await page.evaluate(() =>
+      document.querySelector('#app') != null
+      && document.querySelector('#app').__vue_app__ == null
+      && (document.body?.innerText ?? '').trim() === '');
+    if (blank && reloads > 0) {
+      console.warn('[ABT #929] the app shell loaded but Vue never mounted (blank page — the JS '
+                   + 'modules did not arrive); reloading once to re-fetch them');
+      await page.reload({ waitUntil: 'domcontentloaded', timeout: 30000 });
+      await waitForVueApp(page, { reloads: reloads - 1 });
+      return;
+    }
+    const error = firstError;
     // ABT #929: same reason as waitForBuilderMounted — a bare timeout here says nothing about
     // WHICH of the three conditions was missing, and this wait is where the surviving failures
     // land. Report what the page actually had.
@@ -71,6 +97,8 @@ async function waitForVueApp(page) {
       hasAppEl: document.querySelector('#app') != null,
       hasVueApp: document.querySelector('#app')?.__vue_app__ != null,
       stores: [...(document.querySelector('#app')?.__vue_app__?.config?.globalProperties?.$pinia?._s.keys() ?? [])],
+      engineReady: window.__omEngineReady ?? false,
+      engineLoadError: window.__omEngineLoadError ?? null,
       bodyText: (document.body?.innerText ?? '').slice(0, 120).replace(/\s+/g, ' '),
     })).catch(evaluateError => ({ evaluateFailed: String(evaluateError).slice(0, 160) }));
     throw new Error(`the Vue app never became usable within 45 s. Page state: ${JSON.stringify(state)}`);
