@@ -89,7 +89,8 @@ export default {
     },
     methods: {
         getShapeNames() {
-            crossReferencers.ready.then(_ => {
+            // async: canonicalizeReferenceShape() below awaits the engine (ABT #937).
+            crossReferencers.ready.then(async _ => {
                 const coreShapeFamiliesHandle = crossReferencers.get_available_core_shape_families();
                 for (var i = coreShapeFamiliesHandle.size() - 1; i >= 0; i--) {
                     this.coreShapeFamilies.push(coreShapeFamiliesHandle.get(i));
@@ -126,10 +127,45 @@ export default {
                 })
                 this.coreShapeNames = this.coreShapeNames.sort();
 
-                if (!this.coreShapeNames.includes(this.crossReferencerStore.coreReferenceInputs.core.functionalDescription.shape)) {
-                    this.crossReferencerStore.coreReferenceInputs.core.functionalDescription.shape = this.coreShapeNames[1];
-                }
+                // ABT #937/#924: this used to test MEMBERSHIP of the listing and, on a miss,
+                // silently overwrite the user's reference core with coreShapeNames[1] — an
+                // arbitrary other core, no error, just a different answer. That was already
+                // wrong, and #924 made it dangerous: the listing now offers each shape once,
+                // under its CANONICAL name, so all 444 alias names ("EFD 25", "RM 6", "PQ27.3/18"
+                // …) stopped appearing in it while still resolving perfectly through the engine.
+                // A saved design naming one would have had its core swapped out from under it.
+                // Exactly the break that cost heimdall 118 records (their fix: cb774cc).
+                //
+                // A listing is not an existence test. Ask the engine to resolve the name and keep
+                // the canonical form it echoes back — that IS in the listing, so the dropdown
+                // shows the right entry and the user's core is preserved.
+                await this.canonicalizeReferenceShape();
             });
+        },
+        // ABT #937: resolve the stored reference shape through the engine rather than looking it
+        // up in a dropdown list. Aliases resolve to their canonical record, so a saved design
+        // keeps the core it named. Only a name the engine genuinely cannot resolve falls back,
+        // and it says so instead of swapping silently.
+        async canonicalizeReferenceShape() {
+            const reference = this.crossReferencerStore.coreReferenceInputs.core.functionalDescription;
+            const stored = reference.shape;
+            if (typeof stored === 'string' && this.coreShapeNames.includes(stored)) {
+                return;                              // already canonical and offered
+            }
+            const mkf = this.$mkf;
+            if (typeof stored === 'string' && mkf != null && mkf._loading !== true) {
+                const resolved = await mkf.get_shape_data(stored);
+                if (typeof resolved === 'string' && !resolved.startsWith('Exception')) {
+                    const canonical = JSON.parse(resolved).name;
+                    if (this.coreShapeNames.includes(canonical)) {
+                        reference.shape = canonical;   // e.g. "EFD 25" -> "EFD 25/13/9"
+                        return;
+                    }
+                }
+                console.warn(`[CoreCrossReferencer] the stored reference shape '${stored}' cannot be `
+                             + 'resolved by the engine; falling back to the first offered shape.');
+            }
+            reference.shape = this.coreShapeNames[1];
         },
         getMaterialNames() {
             crossReferencers.ready.then(_ => {
