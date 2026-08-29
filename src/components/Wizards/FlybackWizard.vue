@@ -132,6 +132,38 @@ export default {
     },
     getInsulationType() { return this.localData.insulationType; },
 
+        // A flyback's secondaries all share one core, so only the MAIN rail's (voltage, ratio) pair is
+        // free — it fixes the reflected voltage Vor. Every other rail's ratio then follows from its
+        // own voltage: n_i = Vor / (|V_i| + Vd). Keep those in step automatically, so the common case
+        // is right without the user having to compute anything (ABT #914). A ratio the user edits
+        // DELIBERATELY is left alone — turns are integers in practice, so accepting a slightly
+        // different rail voltage is a legitimate choice — and updateErrorMessage() then reports the
+        // discrepancy rather than silently designing something else.
+        onOutputParameterUpdate(event, index) {
+            const rails = this.localData.outputsParameters;
+            const dimension = event?.dimension;
+            const vd = Number(this.localData.diodeVoltageDrop) || 0;
+            const vor0 = Number(rails[0]?.turnsRatio) * (Math.abs(Number(rails[0]?.voltage)) + vd);
+
+            if (vor0 > 0) {
+                // Changing THIS rail's voltage re-derives THIS rail's ratio; changing the main rail's
+                // voltage or ratio moves Vor, so every dependent rail follows.
+                if (dimension === 'voltage' && index > 0) {
+                    this.deriveTurnsRatio(index, vor0, vd);
+                }
+                else if (index === 0 && (dimension === 'voltage' || dimension === 'turnsRatio')) {
+                    for (let i = 1; i < rails.length; i++) this.deriveTurnsRatio(i, vor0, vd);
+                }
+            }
+            this.updateErrorMessage();
+        },
+        deriveTurnsRatio(index, vor0, vd) {
+            const rail = this.localData.outputsParameters[index];
+            const denominator = Math.abs(Number(rail.voltage)) + vd;
+            if (!(denominator > 0)) return;
+            // 2 decimals: the engine rounds provided ratios the same way.
+            rail.turnsRatio = Math.round((vor0 / denominator) * 100) / 100;
+        },
         updateErrorMessage() {
             this.errorMessage = "";
 
@@ -490,7 +522,7 @@ export default {
           :labelBgColor="'transparent'"
           :valueBgColor="$styleStore.wizard.inputValueBgColor"
           :textColor="$styleStore.wizard.inputTextColor"
-          @update="updateErrorMessage"
+          @update="onOutputParameterUpdate($event, index)"
         />
         <PairOfDimensions v-else
           :names="['voltage', 'current']"
