@@ -59,7 +59,7 @@ async function waitForVueApp(page, { reloads = 1 } = {}) {
   const appIsUsable = () => page.waitForFunction(() => {
     const pinia = document.querySelector('#app')?.__vue_app__?.config?.globalProperties?.$pinia;
     return pinia != null && pinia._s.get('state') != null && pinia._s.get('mas') != null;
-  }, null, { timeout: 45000 });
+  }, null, { timeout: 15000 });
 
   try {
     await appIsUsable();
@@ -101,7 +101,8 @@ async function waitForVueApp(page, { reloads = 1 } = {}) {
       engineLoadError: window.__omEngineLoadError ?? null,
       bodyText: (document.body?.innerText ?? '').slice(0, 120).replace(/\s+/g, ' '),
     })).catch(evaluateError => ({ evaluateFailed: String(evaluateError).slice(0, 160) }));
-    throw new Error(`the Vue app never became usable within 45 s. Page state: ${JSON.stringify(state)}`);
+    throw new Error(`the Vue app never became usable within 15 s (after ${1 - reloads} reload(s)). `
+                    + `Page state: ${JSON.stringify(state)}`);
   }
 }
 
@@ -285,9 +286,9 @@ async function openStudio(page) {
     const pinia = document.querySelector('#app')?.__vue_app__?.config?.globalProperties?.$pinia;
     if (pinia == null) return false;
     return pinia._s.get('magneticBuilderTaskQueue') != null;
-  }, null, { timeout: 60000 });
+  }, null, { timeout: 20000 });
   const toggle = page.locator('[data-cy$="-Coil-WindingStudio-button"]').first();
-  await expect(toggle).toBeVisible({ timeout: 30000 });
+  await expect(toggle).toBeVisible({ timeout: 15000 });
   const studio = page.locator('.winding-studio');
   if (!(await studio.first().isVisible())) {
     await toggle.click();
@@ -297,6 +298,17 @@ async function openStudio(page) {
 }
 
 test.describe('Winding Studio P0', () => {
+  // ABT #929: the budget has to exceed the waits inside a test, or the recovery below can never
+  // run. It did not: waitForVueApp waited 45 s and openStudio 60 s against a 30 s default budget,
+  // so Playwright killed the test before either could time out — the diagnosis and the blank-page
+  // reload were unreachable dead code, which is why every surviving failure reads
+  // "Test timeout of 30000ms exceeded" and none of them ever logged a recovery.
+  //
+  // Waits are now short enough that detect + reload + retry fits (15 s x2 + a reload, ~31 s), and
+  // the budget has headroom for that plus the test's own work. Deliberately 90 s, matching the
+  // lighter sibling specs — not the 180 s I tried earlier, which only hid how long failures took.
+  test.describe.configure({ timeout: 90000 });
+
   test('WS-1 studio toggle renders turns and sections for the classic wound coil', async ({ page }) => {
     const parsed = JSON.parse(fs.readFileSync(CLASSIC_FIXTURE, 'utf-8'));
     await goToMagneticTool(page);
