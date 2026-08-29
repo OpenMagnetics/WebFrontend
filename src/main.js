@@ -30,6 +30,13 @@ import Aura from '@primeuix/themes/aura'
 import { definePreset } from '@primeuix/themes'
 import 'primeicons/primeicons.css'
 import 'bootstrap-icons/font/bootstrap-icons.css'
+// ABT #944: was a <script src="https://unpkg.com/default-passive-events"> in index.html — an
+// UNVERSIONED CDN specifier, so unpkg served whatever that package published most recently and it
+// executed on every page load with no pin, no review and no integrity hash. Bundled now, like
+// bootstrap-icons above (whose CDN <link> was pulling an OLDER 1.11.3 over the 1.13.1 this import
+// already provides). Removes a supply-chain exposure, a hard dependency on two third parties being
+// reachable, and an IP/User-Agent leak to them on every visit.
+import 'default-passive-events'
 // primeflex.css is imported from src/assets/scss/custom.scss after the
 // theme-base so PrimeFlex's grid utilities win the cascade for col-N.
 
