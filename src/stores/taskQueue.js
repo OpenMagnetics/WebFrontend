@@ -10,6 +10,7 @@ import { waitForMkf, isWorkerMode } from 'WebSharedComponents/assets/js/mkfRunti
 import { waitForKirchhoff } from 'WebSharedComponents/assets/js/kirchhoffRuntime'
 import { Convert as MasConvert } from 'WebSharedComponents/assets/ts/MAS.ts'
 import { clean } from 'WebSharedComponents/assets/js/utils'
+import { unitSystem } from 'WebSharedComponents/assets/js/units.js'
 import { useInventoryStore, ENGINE_HAS_CONTEXT_ADVISERS } from '../stores/inventory'
 
 // MAS sentry. Validates an outgoing payload against the generated MAS schema
@@ -206,6 +207,23 @@ export const useTaskQueueStore = defineStore('taskQueue', {
         settingsSet(success = true, dataOrMessage = '') {
         },
 
+        /**
+         * The wire standard follows the profile unit system (ABT #1110): IEC 60317
+         * under SI, NEMA MW 1000 C under imperial. The magnetic and core advisers
+         * wind their candidates with MKF's coil adviser, which only offers wires of
+         * the engine's preferred standard, so it is pushed before every advise.
+         */
+        async applyPreferredWireStandard(mkf) {
+            const settings = JSON.parse(await mkf.get_settings());
+            if (!('preferredWireStandard' in settings)) {
+                throw new Error('Engine settings do not expose preferredWireStandard: libMKF is older than the wire-standard preference (ABT #1110)');
+            }
+            const wanted = unitSystem() === 'imperial' ? 'NEMA MW 1000 C' : 'IEC 60317';
+            if (settings.preferredWireStandard === wanted) return;
+            settings.preferredWireStandard = wanted;
+            await mkf.set_settings(JSON.stringify(settings));
+        },
+
         async setSettings(settings) {
             const mkf = await waitForMkf();
             await mkf.ready;
@@ -225,6 +243,7 @@ export const useTaskQueueStore = defineStore('taskQueue', {
         async calculateAdvisedCores(inputs, weights, count, mode) {
             const mkf = await waitForMkf();
             await mkf.ready;
+            await this.applyPreferredWireStandard(mkf);
 
             // Deep-clone so sanitization below never mutates the caller's MAS store
             inputs = JSON.parse(JSON.stringify(inputs));
@@ -330,6 +349,7 @@ export const useTaskQueueStore = defineStore('taskQueue', {
         async calculateAdvisedMagnetics(inputs, weights, count, mode) {
             const mkf = await waitForMkf();
             await mkf.ready;
+            await this.applyPreferredWireStandard(mkf);
 
             // Deep-clone so sanitization below never mutates the caller's MAS store
             inputs = JSON.parse(JSON.stringify(inputs));

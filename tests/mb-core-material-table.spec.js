@@ -85,10 +85,10 @@ test.describe('MB – material table and header catalogue buttons (ABT #1072, #1
     const all = await counts(page, MAT, 'materials');
     expect(all.total, 'the catalogue offers many materials').toBeGreaterThan(50);
 
-    for (const title of ['Name', 'Manufacturer', 'Type', 'Permeability @25', 'Bsat @25', 'Curie', 'Losses @100 kHz']) {
+    for (const title of ['Name', 'Manufacturer', 'Type', 'µi @25', 'Bsat @25', 'Tc', 'Pv']) {
       await columnIndex(page, MAT, title);
     }
-    const mu = (await columnCells(page, MAT, 'Permeability @25')).map(Number);
+    const mu = (await columnCells(page, MAT, 'µi @25')).map(Number);
     expect(mu.some(v => Number.isFinite(v) && v > 0), 'initial permeability cells must carry engine-resolved numbers').toBe(true);
     const bsat = (await columnCells(page, MAT, 'Bsat @25')).map(Number).filter(Number.isFinite);
     expect(bsat.length).toBeGreaterThan(0);
@@ -106,7 +106,7 @@ test.describe('MB – material table and header catalogue buttons (ABT #1072, #1
     const ranged = await counts(page, MAT, 'materials');
     expect(ranged.filtered).toBeGreaterThan(0);
     expect(ranged.filtered).toBeLessThan(ranged.total);
-    for (const cell of await columnCells(page, MAT, 'Permeability @25')) {
+    for (const cell of await columnCells(page, MAT, 'µi @25')) {
       expect(Number(cell)).toBeGreaterThanOrEqual(2000);
     }
 
