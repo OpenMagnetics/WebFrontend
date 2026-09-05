@@ -111,8 +111,14 @@ test.describe('MB – core shape table filters and orders by column value', () =
     await page.keyboard.press('Escape');
     const stacked = await counts(page);
     expect(stacked.filtered, 'name filter must combine with the range filter').toBeLessThanOrEqual(ranged.filtered);
-    for (const cell of await columnCells(page, 'Name')) {
-      expect(cell.toUpperCase(), 'every visible name must contain the search text').toContain('E');
+    // The name filter searches the aliases too ("EFD 20" finds "EFD 20/10/7"),
+    // which the cell carries in its "Also known as" title.
+    const nameIdx = await columnIndex(page, 'Name');
+    const nameCells = page.locator(`[data-cy$="${LABEL}"] table tbody tr td:nth-child(${nameIdx + 1})`);
+    for (let i = 0; i < await nameCells.count(); i++) {
+      const cell = nameCells.nth(i);
+      const searchable = `${await cell.innerText()} ${(await cell.locator('span.shape-name').getAttribute('title')) ?? ''}`;
+      expect(searchable.toUpperCase(), 'every visible name or alias must contain the search text').toContain('E');
     }
 
     // ── Family multi-select: pick a family from the list.

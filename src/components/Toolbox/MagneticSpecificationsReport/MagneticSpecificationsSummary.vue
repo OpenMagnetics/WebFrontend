@@ -1,6 +1,7 @@
 <script setup>
 import { useMasStore } from '../../../stores/mas'
-import { formatUnit, removeTrailingZeroes, deepCopy, downloadBase64asPDF, download } from 'WebSharedComponents/assets/js/utils.js'
+import { formatUnit, formatDimension, formatTemperature, removeTrailingZeroes, deepCopy, downloadBase64asPDF, download } from 'WebSharedComponents/assets/js/utils.js'
+import { formatInUnitSystem } from 'WebSharedComponents/assets/js/units.js'
 import { recordDesign } from 'WebSharedComponents/assets/js/telemetry.js'
 
 </script>
@@ -57,39 +58,43 @@ export default {
         getValueColor(text) {
             return `<font color="${this.theme.primary}">${text}</font>`
         },
+        // Lengths follow the profile unit system (ABT #1099); other units keep SI prefixes.
+        formatForReport(value, unit) {
+            return formatInUnitSystem(value, unit) ?? formatUnit(value, unit);
+        },
         computeDimensionText(dimension, unit) {
             var text = '';
             if (dimension.minimum == null && dimension.nominal != null && dimension.maximum == null) {
-                const aux = formatUnit(dimension.nominal, unit);
+                const aux = this.formatForReport(dimension.nominal, unit);
                 text += `A ${this.getFieldColor('nominal value')} of ${this.getValueColor(`${removeTrailingZeroes(aux.label)} ${aux.unit}`)}`
             }
             if (dimension.minimum == null && dimension.nominal == null && dimension.maximum != null) {
-                const aux = formatUnit(dimension.maximum, unit);
+                const aux = this.formatForReport(dimension.maximum, unit);
                 text += `A ${this.getFieldColor('maximum value')} of ${this.getValueColor(`${removeTrailingZeroes(aux.label)} ${aux.unit}`)}`
             }
             if (dimension.minimum != null && dimension.nominal == null && dimension.maximum == null) {
-                const aux = formatUnit(dimension.minimum, unit);
+                const aux = this.formatForReport(dimension.minimum, unit);
                 text += `A ${this.getFieldColor('minimum value')} of ${this.getValueColor(`${removeTrailingZeroes(aux.label)} ${aux.unit}`)}`
             }
             if (dimension.minimum != null && dimension.nominal != null && dimension.maximum == null) {
-                const auxNominal = formatUnit(dimension.nominal, unit);
-                const auxMinimum = formatUnit(dimension.minimum, unit);
+                const auxNominal = this.formatForReport(dimension.nominal, unit);
+                const auxMinimum = this.formatForReport(dimension.minimum, unit);
                 text += `A ${this.getFieldColor('nominal value')} of ${this.getValueColor(`${removeTrailingZeroes(auxNominal.label)} ${auxNominal.unit}`)}, with a ${this.getFieldColor('minimum value')} of ${this.getValueColor(`${removeTrailingZeroes(auxMinimum.label)} ${auxMinimum.unit}`)}`
             }
             if (dimension.minimum == null && dimension.nominal != null && dimension.maximum != null) {
-                const auxNominal = formatUnit(dimension.nominal, unit);
-                const auxMaximum = formatUnit(dimension.maximum, unit);
+                const auxNominal = this.formatForReport(dimension.nominal, unit);
+                const auxMaximum = this.formatForReport(dimension.maximum, unit);
                 text += `A ${this.getFieldColor('nominal value')} of ${this.getValueColor(`${removeTrailingZeroes(auxNominal.label)} ${auxNominal.unit}`)}, with a ${this.getFieldColor('maximum value')} of ${this.getValueColor(`${removeTrailingZeroes(auxMaximum.label)} ${auxMaximum.unit}`)}`
             }
             if (dimension.minimum != null && dimension.nominal == null && dimension.maximum != null) {
-                const auxMinimum = formatUnit(dimension.minimum, unit);
-                const auxMaximum = formatUnit(dimension.maximum, unit);
+                const auxMinimum = this.formatForReport(dimension.minimum, unit);
+                const auxMaximum = this.formatForReport(dimension.maximum, unit);
                 text += `A value between ${this.getValueColor(`${removeTrailingZeroes(auxMinimum.label)} ${auxMinimum.unit}`)} and ${this.getValueColor(`${removeTrailingZeroes(auxMaximum.label)} ${auxMaximum.unit}`)}`
             }
             if (dimension.minimum != null && dimension.nominal != null && dimension.maximum != null) {
-                const auxMinimum = formatUnit(dimension.minimum, unit);
-                const auxNominal = formatUnit(dimension.nominal, unit);
-                const auxMaximum = formatUnit(dimension.maximum, unit);
+                const auxMinimum = this.formatForReport(dimension.minimum, unit);
+                const auxNominal = this.formatForReport(dimension.nominal, unit);
+                const auxMaximum = this.formatForReport(dimension.maximum, unit);
                 text += `A ${this.getFieldColor('nominal value')} of ${this.getValueColor(`${removeTrailingZeroes(auxNominal.label)} ${auxNominal.unit}`)}, with a ${this.getFieldColor('minimum value')} of ${this.getValueColor(`${removeTrailingZeroes(auxMinimum.label)} ${auxMinimum.unit}`)} and a ${this.getFieldColor('maximum value')} of ${this.getValueColor(`${removeTrailingZeroes(auxMaximum.label)} ${auxMaximum.unit}`)}`
             }
             return text
@@ -100,7 +105,7 @@ export default {
                 text = '';
             }
             else {
-                const aux = formatUnit(value, unit);
+                const aux = this.formatForReport(value, unit);
                 text = `${removeTrailingZeroes(aux.label, decimals)} ${aux.unit}`;
             }
             return text;
@@ -399,7 +404,7 @@ export default {
                 var text = `Overview of operating point ${this.getTitleColor(operatingPoint.name)}: </br>`;
                 {
                     const auxFrequency = formatUnit(operatingPoint.excitationsPerWinding[0].frequency, 'Hz');
-                    const auxTemperature = formatUnit(operatingPoint.conditions.ambientTemperature, '°C');
+                    const auxTemperature = formatTemperature(operatingPoint.conditions.ambientTemperature);
                     text += `&emsp;It has switching frequency of ${this.getValueColor(`${removeTrailingZeroes(auxFrequency.label, 1)} ${auxFrequency.unit}`)} and an ambient temperature of ${this.getValueColor(`${removeTrailingZeroes(auxTemperature.label, 1)} ${auxTemperature.unit}`)}: </br>`;
                 }
                 text += `&emsp;About its windings: </br>`;
@@ -504,21 +509,21 @@ export default {
             if (this.masStore.mas.inputs.designRequirements.maximumDimensions != null) {
                 this.texts.designRequirements.maximumDimensions = `${this.getTitleColor('Maximum dimensions')}: This magnetic has`
                 if (this.masStore.mas.inputs.designRequirements.maximumDimensions.height != null) {
-                    const aux = formatUnit(this.masStore.mas.inputs.designRequirements.maximumDimensions.height, 'm')
+                    const aux = formatDimension(this.masStore.mas.inputs.designRequirements.maximumDimensions.height)
                     this.texts.designRequirements.maximumDimensions += ` a required maximum height of ${this.getValueColor(`${removeTrailingZeroes(aux.label)} ${aux.unit}`)},`
                 }
                 else {
                     this.texts.designRequirements.maximumDimensions += ` no required maximum height,`
                 }
                 if (this.masStore.mas.inputs.designRequirements.maximumDimensions.width != null) {
-                    const aux = formatUnit(this.masStore.mas.inputs.designRequirements.maximumDimensions.width, 'm')
+                    const aux = formatDimension(this.masStore.mas.inputs.designRequirements.maximumDimensions.width)
                     this.texts.designRequirements.maximumDimensions += ` a required maximum width of ${this.getValueColor(`${removeTrailingZeroes(aux.label)} ${aux.unit}`)},`
                 }
                 else {
                     this.texts.designRequirements.maximumDimensions += ` no required maximum width,`
                 }
                 if (this.masStore.mas.inputs.designRequirements.maximumDimensions.depth != null) {
-                    const aux = formatUnit(this.masStore.mas.inputs.designRequirements.maximumDimensions.depth, 'm')
+                    const aux = formatDimension(this.masStore.mas.inputs.designRequirements.maximumDimensions.depth)
                     this.texts.designRequirements.maximumDimensions += ` and a required maximum depth of ${this.getValueColor(`${removeTrailingZeroes(aux.label)} ${aux.unit}`)}.`
                 }
                 else {

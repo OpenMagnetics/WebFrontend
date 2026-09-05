@@ -99,11 +99,11 @@ test.describe('Profile preferences: unit system and preferred manufacturer (ABT 
     const errors = [];
     page.on('console', msg => { if (msg.type() === 'error' && !isBenign(msg.text())) errors.push(msg.text()); });
 
-    // One fresh builder per preference: a third consecutive advise on the same
-    // page trips the 3D worker's Dummy-wire autocomplete (ABT #1100), which
-    // has nothing to do with the preference under test.
+    // Three consecutive advises on ONE page: this used to trip the 3D worker's
+    // Dummy-wire autocomplete on the third (ABT #1100, enrichment sent no
+    // `inputs`), so the console-error check below also guards that fix.
+    await goToBuilderStep(page);
     async function adviseWith(preference) {
-      await goToBuilderStep(page);
       await setPreference(page, 'preferredCoreManufacturer', preference);
       await adviseCoreAndWait(page);
       return coreState(page);
