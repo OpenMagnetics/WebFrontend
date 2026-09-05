@@ -1,6 +1,6 @@
 /**
- * The Magnetic Builder core-shape table (the modal behind the table icon
- * next to the shape dropdown) must let the user order and filter by the
+ * The Magnetic Builder core-shape table (the modal behind the "Shapes" button in
+ * the Core Configuration header) must let the user order and filter by the
  * VALUE of every column, not only by one global text search.
  *
  * Users reported: "the table doesn't allow filtering by the column values".
@@ -42,8 +42,9 @@ async function counts(page) {
 }
 
 async function openShapeTable(page) {
-  const btn = page.locator('.shape-table-btn').first();
-  await expect(btn, 'the "open core shape table" button must be visible').toBeVisible({ timeout: 15000 });
+  // ABT #1072: the button lives in the Core Configuration header, reachable before any family is chosen.
+  const btn = page.locator('[data-cy$="-Core-ShapeTable-button"]').first();
+  await expect(btn, 'the "Shapes" button must be in the Core Configuration header').toBeVisible({ timeout: 15000 });
   await btn.click();
   const table = page.locator(`[data-cy$="${LABEL}"] table`);
   await expect(table, 'the shape table must open').toBeVisible({ timeout: 15000 });
