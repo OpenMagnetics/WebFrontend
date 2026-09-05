@@ -1,11 +1,12 @@
 <script setup>
 import Dialog from 'primevue/dialog'
+import UserPreferencesSettings from 'WebSharedComponents/Common/UserPreferencesSettings.vue'
 </script>
 
 <script>
 
 export default {
-    components: { Dialog },
+    components: { Dialog, UserPreferencesSettings },
     emits: ["onSettingsUpdated", "update:visible"],
     props: {
         modalName: {
@@ -58,6 +59,9 @@ export default {
             </div>
         </template>
         <div class="px-2 py-2">
+            <div class="mb-3">
+                <UserPreferencesSettings dataTestLabel="AdviserSettingsModal" @changed="settingsChanged = true" />
+            </div>
             <div class="mb-2">
                 <h6 class="text-secondary text-uppercase small font-bold mb-3">Core Selection</h6>
 

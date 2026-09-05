@@ -4,6 +4,7 @@ import { useMagneticBuilderSettingsStore } from '/MagneticBuilder/src/stores/mag
 import { useModelSettingsStore } from '/MagneticBuilder/src/stores/modelSettings'
 import { useMasStore } from '/src/stores/mas'
 import ElementFromList from 'WebSharedComponents/DataInput/ElementFromList.vue'
+import UserPreferencesSettings from 'WebSharedComponents/Common/UserPreferencesSettings.vue'
 import { waitForMkf, applyRealWindingGeometrySetting } from 'WebSharedComponents/assets/js/mkfRuntime'
 </script>
 
@@ -315,6 +316,11 @@ export default {
                                 @change="onMaxTemperatureChanged($event.target.value)"
                             >
                         </div>
+                    </div>
+
+                    <!-- Preferences (profile, ABT #1099) -->
+                    <div class="mb-3">
+                        <UserPreferencesSettings dataTestLabel="MagneticBuilderSettingsModal" @changed="settingsChanged = true" />
                     </div>
 
                     <!-- Display Section -->
