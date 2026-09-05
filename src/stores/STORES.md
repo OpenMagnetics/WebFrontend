@@ -22,12 +22,24 @@ These stores have multiple implementations across apps. The **public API** (what
 |---|---|---|
 | `mas` | WebFrontend, MagneticBuilder, el-choker | `mas` MAS object, `resetMas`, `hasMirroredWindings` |
 | `state` | WebFrontend, MagneticBuilder (+ submodule copies) | Selected tool/workflow/application, operating-points UI, subsection status |
-| `settings` | WebFrontend, MagneticBuilder, el-choker | Per-tool display settings (decimals, auto-recalc, etc.) |
+| `settings` | WebFrontend, MagneticBuilder, el-choker | Per-tool display settings (decimals, auto-recalc, etc.) and `userPreferences` (`unitSystem`, `preferredCoreManufacturer`) |
 | `user` | WebFrontend, MagneticBuilder | Tool-box workflow state, visualizer state (mis-named; has nothing to do with users) |
 | `style` | Theme variants: `style`, `fairRiteStyle` — host picks one and binds it to `$styleStore` | Per-consumer visual theme |
 | `storeVersioning` | Full impl in WebFrontend + MagneticBuilder; thin stubs elsewhere | Clears persisted stores when a breaking change ships (see `STORE_VERSION_DATE`) |
 
 **Before changing any of these:** list the consumer repos, confirm the API change lands in each, and run each consumer's tests.
+
+## Roaming (profile) settings
+
+`src/services/profileSettings.js` (ABT #1099) syncs the user's tunables with the account
+profile, one *section* per store with a whitelist of keys, merged per section (last write
+wins on the section's own timestamp). Sections are registered in `src/main.js`:
+`settings` (the contract store above minus assets/timings), `models` (`user.selectedModels`,
+`simulationUseCurrentAsInput`), `simulationModels` (MagneticBuilder `modelSettings` model
+choices + painter resolution) and `magneticBuilder` (MagneticBuilder `magneticBuilderSettings`
+panel toggles). Navigation state (`state`), consent, `history` and `mas` never roam. To make a
+new setting roam, add its key to the whitelist in `main.js`; the server (`PATCH
+/me/settings/sections/{name}`) stores sections opaquely.
 
 ## Local stores (not overridable)
 

@@ -4,6 +4,7 @@ import Footer from '../components/Footer.vue'
 import { useAuthStore } from '../stores/auth'
 import { useCloudDesignStore } from '../stores/cloudDesign'
 import api from '../services/accountApi'
+import { profileSettingsStatus, pushAllProfileSettings, profileSectionNames } from '../services/profileSettings'
 </script>
 
 <script>
@@ -14,6 +15,8 @@ export default {
         return {
             authStore,
             cloudDesignStore,
+            profileSettingsStatus,
+            syncingSettings: false,
             currentPassword: "",
             newPassword: "",
             deletePassword: "",
@@ -29,6 +32,35 @@ export default {
         }
     },
     methods: {
+        formatWhen(iso) {
+            if (iso == null) return 'never';
+            return new Date(iso).toLocaleString();
+        },
+        sectionLabel(name) {
+            return {
+                settings: 'Advisers, builder and operating-point settings',
+                models: 'Simulation model choices',
+                simulationModels: 'Magnetic Builder simulation models',
+                magneticBuilder: 'Magnetic Builder panels',
+            }[name] ?? name;
+        },
+        async syncSettingsNow() {
+            this.error = "";
+            this.info = "";
+            this.syncingSettings = true;
+            try {
+                await pushAllProfileSettings();
+                if (this.profileSettingsStatus.error) {
+                    this.error = "Could not sync the settings: " + this.profileSettingsStatus.error;
+                }
+                else {
+                    this.info = "Settings synced to your profile.";
+                }
+            } finally {
+                this.syncingSettings = false;
+            }
+        },
+        profileSectionNames,
         async changePassword() {
             this.error = "";
             this.info = "";
@@ -122,6 +154,25 @@ export default {
             </div>
 
             <div class="card bg-dark border-secondary mb-4 p-3">
+                <h5 class="mb-3">Settings sync</h5>
+                <p class="text-secondary" data-cy="Account-settings-sync-intro">
+                    Your tunables (adviser and builder settings, simulation models, unit system, preferred
+                    manufacturer) follow this account: they are pulled when you sign in on any computer and
+                    pushed a moment after you change them. Each group merges on its own, last edit wins.
+                </p>
+                <ul class="list-unstyled mb-3" data-cy="Account-settings-sync-sections">
+                    <li v-for="name in profileSectionNames()" :key="name" class="mb-1">
+                        <span class="fw-semibold">{{ sectionLabel(name) }}</span>
+                        <small class="text-secondary ms-2">
+                            edited here {{ formatWhen(profileSettingsStatus.sections[name]?.updatedAt) }} ·
+                            on profile {{ formatWhen(profileSettingsStatus.sections[name]?.pushedAt) }}
+                        </small>
+                    </li>
+                </ul>
+                <button :disabled="syncingSettings" data-cy="Account-settings-sync-button" class="p-button p-button-outlined mb-4" @click="syncSettingsNow">
+                    <i class="pi pi-sync mr-2"></i>Sync settings now
+                </button>
+
                 <h5 class="mb-3">Your data</h5>
                 <p class="text-secondary mb-2">Download everything in your account (designs as MAS JSON) as a zip.</p>
                 <button data-cy="Account-export-button" class="p-button p-button-outlined" @click="exportEverything">

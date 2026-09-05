@@ -158,16 +158,38 @@ app.config.globalProperties.$stateStore = useStateStore()
 // cookie is still valid, and start settings sync while logged in. Everything
 // is fire-and-forget — anonymous use must never wait on the account service.
 import { useAuthStore } from '/src/stores/auth'
-import { startSettingsSync } from '/src/services/settingsSync'
+import { installProfileSettings, registerProfileSection, syncProfileSettings } from '/src/services/profileSettings'
+import { useMagneticBuilderSettingsStore } from '/MagneticBuilder/src/stores/magneticBuilderSettings'
 const _authStore = useAuthStore()
+// Roaming sections (ABT #1099): each store's tunables, never navigation state
+// or consent. Add a key here and it roams; see services/profileSettings.js.
+registerProfileSection('settings', app.config.globalProperties.$settingsStore, [
+    'adviserSettings', 'magneticBuilderSettings', 'coreAdviserSettings',
+    'magneticAdviserSettings', 'operatingPointSettings', 'catalogAdviserSettings',
+    'userPreferences',
+])
+registerProfileSection('models', app.config.globalProperties.$userStore, [
+    'selectedModels', 'simulationUseCurrentAsInput',
+])
+registerProfileSection('simulationModels', useModelSettingsStore(), [
+    'magneticFieldStrengthModel', 'magneticFieldStrengthFringingEffectModel', 'reluctanceModel',
+    'coreLossesModel', 'coreTemperatureModel', 'coreThermalResistanceModel',
+    'windingSkinEffectLossesModel', 'windingProximityEffectLossesModel', 'strayCapacitanceModel',
+    'coilEnableUserWindingLossesModels', 'painterNumberPointsX', 'painterNumberPointsY',
+])
+registerProfileSection('magneticBuilder', useMagneticBuilderSettingsStore(), [
+    'enableVisualizers', 'enableSimulation', 'enableAutoSimulation', 'enableSubmenu',
+    'enableCustomize', 'enableGraphs', 'enableContextMenu', 'enableWindingStudio',
+])
+installProfileSettings(() => _authStore.isLoggedIn)
 _authStore.fetchMe().then(() => {
     if (_authStore.isLoggedIn) {
-        startSettingsSync(app.config.globalProperties.$settingsStore)
+        syncProfileSettings()
     }
 })
 _authStore.$subscribe(() => {
     if (_authStore.isLoggedIn) {
-        startSettingsSync(app.config.globalProperties.$settingsStore)
+        syncProfileSettings()
     }
 })
 
