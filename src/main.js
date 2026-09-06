@@ -180,6 +180,8 @@ registerProfileSection('simulationModels', useModelSettingsStore(), [
 registerProfileSection('magneticBuilder', useMagneticBuilderSettingsStore(), [
     'enableVisualizers', 'enableSimulation', 'enableAutoSimulation', 'enableSubmenu',
     'enableCustomize', 'enableGraphs', 'enableContextMenu', 'enableWindingStudio',
+    // The builder's arrangement (ABT #1121) follows the account like the rest.
+    'layout',
 ])
 installProfileSettings(() => _authStore.isLoggedIn)
 _authStore.fetchMe().then(() => {

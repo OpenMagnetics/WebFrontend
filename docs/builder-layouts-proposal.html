@@ -1,0 +1,448 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Magnetic Builder — layout proposals</title>
+<style>
+  :root{
+    --dark:#1a1a1a; --light:#2a2a2a; --white:#d4d4d4;
+    --primary:#539796; --secondary:#005f48;
+    --info:#b18aea; --success:#00b6ff; --warning:#ffb94e; --danger:#ff8800;
+    --panel:#212121; --line:#3a3a3a; --muted:#8a8a8a;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--dark);color:var(--white);
+       font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+       font-size:14px;line-height:1.5}
+  .wrap{max-width:1500px;margin:0 auto;padding:28px 22px 70px}
+  h1{font-size:1.6rem;margin:0 0 .2rem;color:#fff;font-weight:600}
+  .sub{color:var(--muted);margin:0 0 1.6rem}
+  h2{font-size:1.15rem;margin:2.6rem 0 .3rem;color:var(--primary);font-weight:600;
+     border-bottom:1px solid var(--line);padding-bottom:.4rem}
+  h2 .tag{font-size:.7rem;background:rgba(83,151,150,.16);border:1px solid rgba(83,151,150,.5);
+          color:var(--primary);border-radius:1rem;padding:.1rem .55rem;margin-left:.5rem;
+          vertical-align:middle;font-weight:500;text-transform:none}
+  h3{font-size:.95rem;margin:1.4rem 0 .5rem;color:#fff;font-weight:600}
+  p.note{color:var(--muted);margin:.35rem 0 1rem;max-width:105ch}
+  .app{background:var(--dark);border:1px solid var(--line);border-radius:8px;padding:12px;margin:.9rem 0 .4rem}
+  .row{display:flex;gap:10px;align-items:stretch}
+  .row + .row{margin-top:10px}
+  .col{flex:1 1 0;min-width:0}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:6px;
+         display:flex;flex-direction:column;min-height:0;overflow:hidden}
+  .panel > .head{display:flex;align-items:center;justify-content:space-between;gap:8px;
+       padding:7px 10px;border-bottom:1px solid var(--line);background:#1f1f1f}
+  .panel > .head .name{color:var(--primary);font-weight:600;font-size:.82rem;
+       display:flex;align-items:center;gap:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .panel > .head .name::before{content:"";width:9px;height:9px;border-radius:2px;background:var(--primary);flex:0 0 auto}
+  .panel.wire > .head .name::before{background:var(--danger)}
+  .panel.coil > .head .name::before{background:var(--success)}
+  .panel.alt  > .head .name::before{background:var(--info)}
+  .panel > .body{padding:9px 10px;flex:1;display:flex;flex-direction:column;gap:7px}
+  .btn{font-size:.68rem;border:1px solid rgba(83,151,150,.45);color:var(--primary);
+       background:transparent;border-radius:4px;padding:.1rem .45rem;white-space:nowrap}
+  .btn.solid{background:var(--primary);color:#10302f;border-color:var(--primary);font-weight:600}
+  .sel{font-size:.68rem;border:1px solid var(--line);background:#191919;color:var(--white);
+       border-radius:4px;padding:.12rem 1.1rem .12rem .4rem;position:relative;white-space:nowrap;
+       background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),linear-gradient(135deg,var(--muted) 50%,transparent 50%);
+       background-position:calc(100% - 9px) 55%,calc(100% - 5px) 55%;
+       background-size:4px 4px,4px 4px;background-repeat:no-repeat}
+  .field{display:flex;align-items:center;gap:6px;font-size:.72rem}
+  .field .lab{color:var(--muted);flex:0 0 41%;text-align:left}
+  .field .val{flex:1;background:#191919;border:1px solid var(--line);border-radius:4px;
+       padding:.14rem .4rem;color:var(--white);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .kv{display:grid;grid-template-columns:repeat(var(--n,2),minmax(0,1fr));gap:4px 10px}
+  .kv div{font-size:.68rem;color:var(--muted);display:flex;justify-content:space-between;gap:6px;
+          border-bottom:1px dotted #333;padding-bottom:1px}
+  .kv div b{color:var(--white);font-weight:500}
+  .art{flex:1;min-height:74px;border:1px dashed #3d3d3d;border-radius:5px;display:flex;
+       align-items:center;justify-content:center;color:var(--muted);font-size:.7rem;text-align:center;
+       padding:6px;background:repeating-linear-gradient(45deg,#1d1d1d,#1d1d1d 6px,#1f1f1f 6px,#1f1f1f 12px)}
+  .art.chart{background:
+      linear-gradient(to top,rgba(83,151,150,.10),transparent),
+      repeating-linear-gradient(to right,#242424,#242424 1px,transparent 1px,transparent 26px),
+      repeating-linear-gradient(to top,#242424,#242424 1px,transparent 1px,transparent 20px),#1c1c1c;
+      border-style:solid;border-color:var(--line);position:relative}
+  .art.chart span{position:relative;z-index:2;background:rgba(26,26,26,.72);padding:2px 6px;border-radius:3px}
+  .art.scatter{position:relative}
+  .art.scatter i{position:absolute;width:7px;height:7px;border-radius:50%;background:var(--info);opacity:.75}
+  .art.scatter i.ref{background:var(--warning);width:10px;height:10px;box-shadow:0 0 0 3px rgba(255,185,78,.22)}
+  .tabs{display:flex;gap:4px;flex-wrap:wrap}
+  .tab{font-size:.68rem;padding:.12rem .5rem;border-radius:4px;border:1px solid var(--line);color:var(--muted)}
+  .tab.on{border-color:var(--primary);color:var(--primary);background:rgba(83,151,150,.12)}
+  .h{height:var(--h)}
+  .legend{display:flex;gap:14px;flex-wrap:wrap;color:var(--muted);font-size:.72rem;margin:.5rem 0 0}
+  .legend b{color:var(--white);font-weight:500}
+  table{border-collapse:collapse;width:100%;font-size:.78rem;margin:.6rem 0 0}
+  th,td{border:1px solid var(--line);padding:.35rem .5rem;text-align:left;vertical-align:top}
+  th{background:#1f1f1f;color:var(--primary);font-weight:600}
+  td code,p code,li code{background:#191919;border:1px solid var(--line);border-radius:3px;
+       padding:0 .25rem;font-size:.92em;color:#cbd8d8}
+  ul{margin:.4rem 0 .9rem;padding-left:1.1rem}
+  li{margin:.22rem 0}
+  .cap{color:var(--muted);font-size:.75rem;margin:.15rem 0 0}
+  .rail{flex:0 0 210px}
+  .rail .body{gap:5px}
+  .stack{display:flex;flex-direction:column;gap:3px}
+  .layer{font-size:.66rem;border:1px solid var(--line);border-radius:3px;padding:.14rem .4rem;
+         display:flex;justify-content:space-between;background:#1d1d1d;color:var(--muted)}
+  .layer.cu{background:rgba(255,136,0,.14);border-color:rgba(255,136,0,.4);color:#f0c9a0}
+  .layer.core{background:rgba(83,151,150,.14);border-color:rgba(83,151,150,.4);color:#b6d6d5}
+  .badge{font-size:.62rem;color:var(--muted);border:1px solid var(--line);border-radius:3px;padding:0 .3rem}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>Magnetic Builder — layout proposals</h1>
+<p class="sub">Wireframes in the app's own palette. Every block is an existing component; nothing here is a new
+visual language. Layout is picked in Settings and roams with the profile.</p>
+
+<div class="legend">
+  <span><b style="color:var(--primary)">■</b> core</span>
+  <span><b style="color:var(--danger)">■</b> wire</span>
+  <span><b style="color:var(--success)">■</b> coil</span>
+  <span><b style="color:var(--info)">■</b> alternatives / cross-reference</span>
+  <span>dashed = visualizer or chart canvas</span>
+</div>
+
+<!-- ─────────────────────────────  A  ───────────────────────────── -->
+<h2>A · Columns <span class="tag">today, unchanged, stays the default</span></h2>
+<p class="note">Three equal columns, each a selector over its info card, with the graph strip underneath.
+It survives as-is so nothing regresses and so narrow screens keep a layout that stacks cleanly.</p>
+
+<div class="app">
+  <div class="row">
+    <div class="col"><div class="panel">
+      <div class="head"><span class="name">Core Configuration</span>
+        <span><span class="btn">Shapes</span> <span class="btn">Materials</span> <span class="btn solid">Advise</span></span></div>
+      <div class="body">
+        <div class="art" style="--h:96px;min-height:96px">Core2D / 3D</div>
+        <div class="field"><span class="lab">Shape family</span><span class="val">P</span></div>
+        <div class="field"><span class="lab">Shape</span><span class="val">P 11/7/I</span></div>
+        <div class="field"><span class="lab">Material</span><span class="val">98</span></div>
+        <div class="field"><span class="lab">Gap</span><span class="val">155.8 µm</span></div>
+        <div class="kv" style="--n:2"><div>L<sub>eff</sub><b>17.02 mm</b></div><div>A<sub>eff</sub><b>18.9 mm²</b></div>
+          <div>V<sub>eff</sub><b>320.9 mm³</b></div><div>µ<sub>ini</sub><b>2375</b></div></div>
+      </div></div></div>
+    <div class="col"><div class="panel wire">
+      <div class="head"><span class="name">Wire Configuration</span>
+        <span><span class="btn">Wires</span> <span class="btn solid">Advise</span></span></div>
+      <div class="body">
+        <div class="art" style="min-height:96px">Wire2D</div>
+        <div class="field"><span class="lab">Turns</span><span class="val">15</span></div>
+        <div class="field"><span class="lab">Type</span><span class="val">Round</span></div>
+        <div class="field"><span class="lab">Cond. diameter</span><span class="val">0.475 mm</span></div>
+        <div class="kv" style="--n:2"><div>R<sub>DC</sub><b>96.6 mΩ/m</b></div><div>R<sub>S</sub><b>96.7 mΩ/m</b></div>
+          <div>P<sub>DC</sub><b>0.39 W/m</b></div><div>δ<sub>eff</sub><b>446 µm</b></div></div>
+      </div></div></div>
+    <div class="col"><div class="panel coil">
+      <div class="head"><span class="name">Coil Configuration</span>
+        <span><span class="btn">Alignment</span> <span class="btn">Insulation</span></span></div>
+      <div class="body">
+        <div class="art" style="min-height:96px">Magnetic2D</div>
+        <div class="field"><span class="lab">Wall thickness</span><span class="val">855.9 µm</span></div>
+        <div class="field"><span class="lab">Column thickness</span><span class="val">770.0 µm</span></div>
+        <div class="kv" style="--n:2"><div>P<sub>total</sub><b>0.16 W</b></div><div>P<sub>AC</sub><b>13.5 mW</b></div>
+          <div>Fill<b>90 %</b></div><div>P<sub>skin</sub><b>103 µW</b></div></div>
+      </div></div></div>
+  </div>
+  <div class="row"><div class="col"><div class="panel">
+    <div class="head"><span class="name">Graphs</span><span class="sel">Impedance over frequency</span></div>
+    <div class="body"><div class="art chart" style="min-height:80px"><span>GraphInfo · one chart at a time</span></div></div>
+  </div></div></div>
+</div>
+<p class="cap">A · Columns — <code>CoreBuilder</code> + <code>BasicWireBuilder</code> + <code>BasicCoilBuilder</code> + <code>GraphInfo</code>.</p>
+
+<!-- ─────────────────────────────  B  ───────────────────────────── -->
+<h2>B · Bands <span class="tag">the one you described</span></h2>
+<p class="note">One horizontal band per domain, each reading left to right: <b>inputs → what it gives you → how it
+compares</b>. The third cell is the one that is new to the builder, and it is where the advisers and the
+cross-referencers finally become part of the design loop instead of a separate tool.</p>
+
+<div class="app">
+  <!-- core band -->
+  <div class="row">
+    <div class="col" style="flex:0 0 26%"><div class="panel">
+      <div class="head"><span class="name">Core</span>
+        <span><span class="btn">Shapes</span> <span class="btn">Materials</span> <span class="btn solid">Advise</span></span></div>
+      <div class="body">
+        <div class="field"><span class="lab">Shape family</span><span class="val">P</span></div>
+        <div class="field"><span class="lab">Shape</span><span class="val">P 11/7/I</span></div>
+        <div class="field"><span class="lab">Manufacturer</span><span class="val">Fair-Rite</span></div>
+        <div class="field"><span class="lab">Material</span><span class="val">98</span></div>
+        <div class="field"><span class="lab">Gap type</span><span class="val">Ground</span></div>
+        <div class="field"><span class="lab">Gap length</span><span class="val">155.8 µm</span></div>
+      </div></div></div>
+    <div class="col" style="flex:0 0 30%"><div class="panel">
+      <div class="head"><span class="name">Core info</span><span class="badge">at 100 kHz · 25 °C</span></div>
+      <div class="body">
+        <div class="kv" style="--n:3">
+          <div>L<sub>eff</sub><b>17.02 mm</b></div><div>A<sub>eff</sub><b>18.9 mm²</b></div><div>V<sub>eff</sub><b>320.9 mm³</b></div>
+          <div>A<sub>min</sub><b>15.2 mm²</b></div><div>µ<sub>ini</sub><b>2375</b></div><div>µ<sub>eff</sub><b>103</b></div>
+          <div>A<sub>L</sub><b>3 µH/tu²</b></div><div>Mass<b>1.5 g</b></div><div>B<sub>peak</sub><b>0.20 T</b></div>
+          <div>P<sub>core</sub><b>62 mW</b></div><div>T<sub>rise</sub><b>11 K</b></div><div>I<sub>sat</sub><b>3.1 A</b></div></div>
+        <div class="art" style="min-height:62px">Core2D · Core3D (small)</div>
+      </div></div></div>
+    <div class="col"><div class="panel alt">
+      <div class="head"><span class="name">Alternative cores</span>
+        <span><span class="sel">Cross-reference: shape</span> <span class="sel">y: losses</span></span></div>
+      <div class="body">
+        <div class="art chart scatter" style="min-height:132px">
+          <i class="ref" style="left:38%;top:46%"></i>
+          <i style="left:20%;top:66%"></i><i style="left:29%;top:34%"></i><i style="left:52%;top:58%"></i>
+          <i style="left:61%;top:29%"></i><i style="left:70%;top:70%"></i><i style="left:47%;top:22%"></i>
+          <i style="left:80%;top:44%"></i><i style="left:26%;top:52%"></i><i style="left:66%;top:52%"></i>
+          <span>ScatterChartComparator · ◆ current design, ● candidates — click one to load it</span>
+        </div>
+      </div></div></div>
+  </div>
+
+  <!-- wire band -->
+  <div class="row">
+    <div class="col" style="flex:0 0 26%"><div class="panel wire">
+      <div class="head"><span class="name">Wire</span>
+        <span><span class="btn">Wires</span> <span class="btn solid">Advise</span></span></div>
+      <div class="body">
+        <div class="field"><span class="lab">Winding</span><span class="val">Primary</span></div>
+        <div class="field"><span class="lab">Turns</span><span class="val">15</span></div>
+        <div class="field"><span class="lab">Parallels</span><span class="val">1</span></div>
+        <div class="field"><span class="lab">Type</span><span class="val">Round</span></div>
+        <div class="field"><span class="lab">Cond. diameter</span><span class="val">0.475 mm</span></div>
+        <div class="field"><span class="lab">Coating</span><span class="val">Enamel grade 1</span></div>
+      </div></div></div>
+    <div class="col" style="flex:0 0 30%"><div class="panel wire">
+      <div class="head"><span class="name">Wire info</span><span class="badge">Primary</span></div>
+      <div class="body">
+        <div class="kv" style="--n:3">
+          <div>R<sub>DC</sub><b>96.6 mΩ/m</b></div><div>R<sub>S</sub><b>96.7 mΩ/m</b></div><div>F<sub>skin</sub><b>1.00</b></div>
+          <div>P<sub>DC</sub><b>0.39 W/m</b></div><div>P<sub>S</sub><b>277 µW/m</b></div><div>δ<sub>eff</sub><b>446 µm</b></div>
+          <div>Width<b>509 µm</b></div><div>Height<b>509 µm</b></div><div>J<sub>eff</sub><b>1.6 A/mm²</b></div></div>
+        <div class="art" style="min-height:62px">Wire2D · turn cross-section</div>
+      </div></div></div>
+    <div class="col"><div class="panel wire">
+      <div class="head"><span class="name">Wire response</span>
+        <span><span class="sel">Resistances over frequency</span></span></div>
+      <div class="body"><div class="art chart" style="min-height:132px"><span>the existing per-wire frequency graphs, in place</span></div></div>
+    </div></div>
+  </div>
+
+  <!-- coil band -->
+  <div class="row">
+    <div class="col" style="flex:0 0 56%"><div class="panel coil">
+      <div class="head"><span class="name">Coil</span>
+        <span><span class="btn">Alignment</span> <span class="btn">Insulation</span> <span class="btn">Studio</span></span></div>
+      <div class="body">
+        <div class="row" style="gap:10px">
+          <div class="col" style="display:flex;flex-direction:column;gap:7px">
+            <div class="field"><span class="lab">Interleaving</span><span class="val">P · S · P</span></div>
+            <div class="field"><span class="lab">Sections align</span><span class="val">Spread</span></div>
+            <div class="field"><span class="lab">Turns align</span><span class="val">Centred</span></div>
+            <div class="field"><span class="lab">Wall thickness</span><span class="val">855.9 µm</span></div>
+            <div class="field"><span class="lab">Column thickness</span><span class="val">770.0 µm</span></div>
+          </div>
+          <div class="col"><div class="kv" style="--n:2">
+            <div>P<sub>total</sub><b>0.16 W</b></div><div>P<sub>winding</sub><b>0.16 W</b></div>
+            <div>P<sub>DC</sub><b>0.14 W</b></div><div>P<sub>AC</sub><b>13.5 mW</b></div>
+            <div>Fill (wind.)<b>90 %</b></div><div>Fill (sect.)<b>100 %</b></div>
+            <div>L<sub>leak</sub><b>0.9 µH</b></div><div>C<sub>stray</sub><b>4.2 pF</b></div></div></div>
+        </div>
+      </div></div></div>
+    <div class="col"><div class="panel coil">
+      <div class="head"><span class="name">Geometry</span><span class="sel">3D</span></div>
+      <div class="body"><div class="art" style="min-height:150px">Magnetic2D / Magnetic3D — full height, one dropdown</div></div>
+    </div></div>
+  </div>
+</div>
+<p class="cap">B · Bands — same components, arranged in rows. The alternatives cell is <code>ScatterChartComparator</code>,
+fed by the cross-referencer in the site and by the core adviser in the embedded builder.</p>
+
+<!-- ─────────────────────────────  C  ───────────────────────────── -->
+<h2>C · Cockpit <span class="tag">wide screens, one big canvas</span></h2>
+<p class="note">Every input collapses into a narrow rail on the left; the rest of the screen is one large canvas you
+switch with tabs. For the part of the work that is looking rather than typing — checking a field plot, reading a
+loss curve, turning the 3D model.</p>
+
+<div class="app">
+  <div class="row" style="min-height:250px">
+    <div class="col rail"><div class="panel">
+      <div class="head"><span class="name">Design</span><span class="btn solid">Advise</span></div>
+      <div class="body">
+        <div class="badge" style="color:var(--primary);border-color:rgba(83,151,150,.45)">CORE</div>
+        <div class="field"><span class="lab">Shape</span><span class="val">P 11/7/I</span></div>
+        <div class="field"><span class="lab">Material</span><span class="val">98</span></div>
+        <div class="field"><span class="lab">Gap</span><span class="val">155.8 µm</span></div>
+        <div class="badge" style="color:var(--danger);border-color:rgba(255,136,0,.45)">WIRE</div>
+        <div class="field"><span class="lab">Turns</span><span class="val">15</span></div>
+        <div class="field"><span class="lab">Wire</span><span class="val">Round 0.475</span></div>
+        <div class="badge" style="color:var(--success);border-color:rgba(0,182,255,.45)">COIL</div>
+        <div class="field"><span class="lab">Interleaving</span><span class="val">P·S·P</span></div>
+        <div class="field"><span class="lab">Alignment</span><span class="val">Spread</span></div>
+      </div></div></div>
+    <div class="col"><div class="panel">
+      <div class="head">
+        <span class="tabs"><span class="tab on">3D</span><span class="tab">2D</span><span class="tab">Field</span>
+          <span class="tab">Graphs</span><span class="tab">Alternatives</span><span class="tab">Studio</span></span>
+        <span class="sel">Operating point 1</span></div>
+      <div class="body"><div class="art" style="min-height:200px">the selected canvas, full width</div></div>
+    </div></div>
+    <div class="col" style="flex:0 0 235px"><div class="panel">
+      <div class="head"><span class="name">Results</span><span class="badge">live</span></div>
+      <div class="body">
+        <div class="kv" style="--n:1">
+          <div>L<sub>mag</sub><b>36.5 µH</b></div><div>B<sub>peak</sub><b>0.20 T</b></div>
+          <div>P<sub>core</sub><b>62 mW</b></div><div>P<sub>winding</sub><b>0.16 W</b></div>
+          <div>P<sub>total</sub><b>0.22 W</b></div><div>T<sub>rise</sub><b>11 K</b></div>
+          <div>Fill<b>90 %</b></div><div>I<sub>sat</sub><b>3.1 A</b></div>
+          <div>Mass<b>1.5 g</b></div><div>Cost<b>0.42 €</b></div></div>
+        <div class="art" style="min-height:56px">warnings / DRC</div>
+      </div></div></div>
+  </div>
+</div>
+<p class="cap">C · Cockpit — the info cards move to a single results rail; the canvas is whatever tab is selected.</p>
+
+<!-- ─────────────────────────────  D  ───────────────────────────── -->
+<h2>D · Compare <span class="tag">cross-reference first</span></h2>
+<p class="note">The question this one answers is "what else could I build this with, and what does it cost me?" — the
+current design is pinned as the reference and everything else is ranked against it. This is the cross-referencer and
+the catalogue tables, promoted from a separate tool into a builder layout.</p>
+
+<div class="app">
+  <div class="row">
+    <div class="col" style="flex:0 0 24%"><div class="panel">
+      <div class="head"><span class="name">Reference design</span><span class="badge">pinned</span></div>
+      <div class="body">
+        <div class="art" style="min-height:70px">Magnetic2D</div>
+        <div class="kv" style="--n:1"><div>Core<b>P 11/7/I · 98</b></div><div>Wire<b>Round 0.475</b></div>
+          <div>P<sub>total</sub><b>0.22 W</b></div><div>Cost<b>0.42 €</b></div><div>Mass<b>1.5 g</b></div></div>
+      </div></div></div>
+    <div class="col"><div class="panel alt">
+      <div class="head"><span class="name">Alternatives</span>
+        <span><span class="sel">Shape + material</span><span class="sel">x: cost  y: losses</span><span class="btn">Only in stock</span></span></div>
+      <div class="body">
+        <div class="art chart scatter" style="min-height:118px">
+          <i class="ref" style="left:34%;top:52%"></i>
+          <i style="left:18%;top:36%"></i><i style="left:24%;top:70%"></i><i style="left:44%;top:30%"></i>
+          <i style="left:56%;top:62%"></i><i style="left:63%;top:40%"></i><i style="left:72%;top:24%"></i>
+          <i style="left:78%;top:64%"></i><i style="left:50%;top:47%"></i><i style="left:86%;top:38%"></i>
+        </div>
+        <div class="art" style="min-height:74px;border-style:solid;border-color:var(--line)">
+          FilterableDataTable — the ranked list, same rows as the chart, click to load
+        </div>
+      </div></div></div>
+  </div>
+</div>
+<p class="cap">D · Compare — <code>ScatterChartComparator</code> over <code>FilterableDataTable</code>, both already built.</p>
+
+<!-- ─────────────────────────────  E  ───────────────────────────── -->
+<h2>E · Planar <span class="tag">stackup is the design</span></h2>
+<p class="note">For a printed winding the turn table and the round-wire fields mean nothing: the design is a
+layer stack. The middle column becomes the stack itself, top copper to bottom copper, and everything else arranges
+around it. This layout auto-suggests itself when the design requirement says the wiring technology is printed.</p>
+
+<div class="app">
+  <div class="row">
+    <div class="col" style="flex:0 0 25%"><div class="panel">
+      <div class="head"><span class="name">Planar core</span>
+        <span><span class="btn">Shapes</span> <span class="btn solid">Advise</span></span></div>
+      <div class="body">
+        <div class="field"><span class="lab">Shape family</span><span class="val">E planar</span></div>
+        <div class="field"><span class="lab">Shape</span><span class="val">E 32/6/20</span></div>
+        <div class="field"><span class="lab">Material</span><span class="val">3C95</span></div>
+        <div class="field"><span class="lab">Gap</span><span class="val">250 µm</span></div>
+        <div class="kv" style="--n:2"><div>A<sub>eff</sub><b>130 mm²</b></div><div>µ<sub>eff</sub><b>180</b></div>
+          <div>Window h<b>3.0 mm</b></div><div>A<sub>L</sub><b>250 nH/tu²</b></div></div>
+        <div class="art" style="min-height:60px">Core2D</div>
+      </div></div></div>
+    <div class="col" style="flex:0 0 30%"><div class="panel wire">
+      <div class="head"><span class="name">Stackup</span>
+        <span><span class="sel">8 layers</span><span class="btn">Insulation</span></span></div>
+      <div class="body"><div class="stack">
+        <div class="layer core"><span>core · top half</span><span>E 32/6/20</span></div>
+        <div class="layer cu"><span>L1 · Primary</span><span>4 tu · 70 µm</span></div>
+        <div class="layer"><span>prepreg</span><span>100 µm</span></div>
+        <div class="layer cu"><span>L2 · Primary</span><span>4 tu · 70 µm</span></div>
+        <div class="layer"><span>core (FR4)</span><span>200 µm</span></div>
+        <div class="layer cu"><span>L3 · Secondary</span><span>2 tu · 105 µm</span></div>
+        <div class="layer"><span>prepreg</span><span>100 µm</span></div>
+        <div class="layer cu"><span>L4 · Secondary</span><span>2 tu · 105 µm</span></div>
+        <div class="layer core"><span>core · bottom half</span><span>E 32/6/20</span></div>
+      </div>
+      <div class="kv" style="--n:2"><div>Board h<b>1.55 mm</b></div><div>Fits window<b>yes</b></div>
+        <div>Creepage<b>0.6 mm</b></div><div>Turns ratio<b>4:1</b></div></div>
+      </div></div></div>
+    <div class="col"><div class="panel coil">
+      <div class="head"><span class="name">Cross-section &amp; response</span>
+        <span><span class="sel">2D</span><span class="sel">Winding losses over frequency</span></span></div>
+      <div class="body">
+        <div class="art" style="min-height:86px">Magnetic2D — the real stack in the window</div>
+        <div class="art chart" style="min-height:78px"><span>AC resistance / losses per layer</span></div>
+      </div></div></div>
+  </div>
+</div>
+<p class="cap">E · Planar — <code>PlanarWireSelector</code> and <code>PlanarCoilSelector</code> already hold this
+logic; the stack column is a presentation of what they edit.</p>
+
+<!-- ─────────────────────────────  how  ───────────────────────────── -->
+<h2>How it is built</h2>
+<p class="note">The rule is that a layout owns arrangement and nothing else. No layout may hold a rule about
+magnetics, a call to the engine, or a copy of a panel — if a layout needs something a component does not expose, the
+component grows a prop and every layout gets it.</p>
+
+<table>
+  <tr><th>Piece</th><th>What it is</th><th>Why</th></tr>
+  <tr><td><code>layouts/index.js</code></td><td>key → component registry, one entry per layout</td>
+      <td>The builder renders <code>&lt;component :is&gt;</code>. Adding a layout is one file plus one line.</td></tr>
+  <tr><td><code>BuilderLayoutProps</code></td><td>the prop set every layout takes, unchanged from today</td>
+      <td>Layouts are interchangeable, so the same battery of tests runs against all of them.</td></tr>
+  <tr><td><code>PanelFrame.vue</code></td><td>card chrome: header, title, actions slot</td>
+      <td>The header markup is copied three times today. Extract once, then every layout and both new panels use it.</td></tr>
+  <tr><td><code>AlternativesPanel.vue</code></td><td>the third cell of band B and the body of D</td>
+      <td>Wraps <code>ScatterChartComparator</code>. Its rows come from a slot, so the site fills it with the
+          cross-referencer and the embedded builder falls back to the core adviser.</td></tr>
+  <tr><td><code>VisualizerSwitch.vue</code></td><td>2D / 3D dropdown over the two existing visualizers</td>
+      <td>The choice is asked for in three of the five layouts.</td></tr>
+  <tr><td><code>graphRegistry.js</code></td><td>the graph map lifted out of <code>GraphInfo</code></td>
+      <td>Lets a band show the wire subset without a second copy of the list. <code>GraphInfo</code> consumes the same map.</td></tr>
+  <tr><td><code>density</code> prop on the info cards</td><td>changes <code>grid-template-columns</code> only</td>
+      <td>The info cards are already CSS grids; a horizontal band needs three columns instead of one. No markup fork.</td></tr>
+</table>
+
+<h3>Why the alternatives panel needs a slot</h3>
+<p class="note">Cross-referencing lives in <code>libCrossReferencers.wasm</code>, which the site ships and the
+embedded builder does not — putting it inside MagneticBuilder would add about 24 MB to every embedder. So the panel
+declares what it needs and the host supplies it: on openmagnetics.com it is the real cross-referencer, embedded it is
+the core adviser asked for several candidates instead of one, which costs nothing because it is the same call.</p>
+
+<h3>Where the switch lives</h3>
+<p class="note">Settings, next to the other builder toggles, as a dropdown of the five names. It is a key in
+<code>magneticBuilderSettings</code>, and that store is already in the profile's roaming whitelist, so the layout
+follows the account to another computer the same way the unit system does. A printed-winding design offers the planar
+layout on first open; the choice is remembered and never forced.</p>
+
+<h3>Tests</h3>
+<ul>
+  <li><b>One contract battery, run against every layout.</b> Set the layout, then advise a core, change shape and
+      material, advise a wire, and assert the design in the store changed and the console stayed clean. Each layout
+      must satisfy it, which is what stops a layout from quietly dropping a control.</li>
+  <li><b>Per-layout placement tests</b> only for what is unique: the alternatives chart appears and clicking a point
+      loads that core; the 2D/3D dropdown swaps the canvas; the planar layout renders one row per copper layer and
+      the turn count matches the coil.</li>
+  <li><b>A switching test</b>: change the layout in Settings with a design loaded, and the design is untouched —
+      layouts arrange, they do not edit.</li>
+  <li><b>Persistence</b>: the choice survives a reload and travels with the profile, the same check the unit system has.</li>
+</ul>
+
+<h3>Order I would build them</h3>
+<ul>
+  <li><b>First</b> the registry, <code>PanelFrame</code>, the <code>density</code> prop and the contract battery,
+      with only layout A registered. Nothing changes on screen; the seam is in place and proven by tests.</li>
+  <li><b>Then</b> B, which is the one you asked for and the one that needs the two new panels.</li>
+  <li><b>Then</b> E, because the planar path has the most to gain and the least overlap with the others.</li>
+  <li><b>Last</b> C and D, which are arrangements of what B already built.</li>
+</ul>
+
+</div>
+</body>
+</html>
