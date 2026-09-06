@@ -75,10 +75,15 @@ test.describe('Builder layouts (ABT #1121)', () => {
       const other = shapes.find((name) => name !== current);
       expect(other, `the ${layout} layout must offer another shape`).toBeTruthy();
 
-      // … and editing there reaches the design.
+      // … and editing there reaches the design. Wait on the design itself: the
+      // panels around it are busy reprocessing, and a fixed pause races them.
       await pickOption(page, '-AdvancedCoreInfo-ShapeNames', other);
-      await pause(page, SETTLE, 'checkAndFixMas + autocomplete + reprocess');
-      expect(await coreShape(page), `the ${layout} layout must apply a shape change`).toBe(other);
+      await page.waitForFunction((expected) => {
+        const app = document.querySelector('#app').__vue_app__;
+        const shape = app.config.globalProperties.$pinia._s.get('mas').mas.magnetic.core.functionalDescription.shape;
+        return (typeof shape === 'string' ? shape : shape?.name) === expected;
+      }, other, { timeout: 60000 });
+      await pause(page, SETTLE, 'autocomplete + reprocess after the shape change');
 
       // The core's numbers are on screen in every layout, wherever it puts them.
       await expect(
@@ -153,8 +158,12 @@ test.describe('Builder layouts (ABT #1121)', () => {
       await expect(page.locator(`[data-cy$="${band}"]`), `the ${band} row`).toHaveCount(1);
     }
 
-    // The third cell of the core row: alternatives, not yet fetched.
-    await expect(page.locator('[data-cy$="-Band-Alternatives-empty"]')).toBeVisible();
+    // The third cell of the core row: the alternatives map, which fetches itself
+    // as soon as the design can be ranked — no button press to see it.
+    await expect(
+      page.locator('[data-cy$="-Band-Alternatives"] .chart').first(),
+      'the alternatives map loads by itself',
+    ).toBeVisible({ timeout: 90000 });
     await expect(page.locator('[data-cy$="-Band-Alternatives-find-button"]')).toBeEnabled();
 
     // The third cell of the wire row: a winding graph, chosen from the winding domain only.
