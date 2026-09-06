@@ -7,12 +7,12 @@
  */
 
 /** Registry keys, in the order Settings offers them. */
-export const BUILDER_LAYOUTS = ['columns', 'bands', 'cockpit', 'compare', 'planar'];
+export const BUILDER_LAYOUTS = ['columns', 'rosano', 'cockpit', 'compare', 'planar'];
 
 /** The root marker each layout renders, for asserting which one is on screen. */
 export const LAYOUT_MARKERS = {
     columns: '-LayoutColumns',
-    bands: '-LayoutBands',
+    rosano: '-LayoutRosano',
     cockpit: '-LayoutCockpit',
     compare: '-LayoutCompare',
     planar: '-LayoutPlanar',

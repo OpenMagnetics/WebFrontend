@@ -105,7 +105,7 @@ test.describe('Builder layouts (ABT #1121)', () => {
     await pause(page, SETTLE, 'design settles');
 
     const before = await designFingerprint(page);
-    for (const layout of ['bands', 'cockpit', 'compare', 'planar', 'columns']) {
+    for (const layout of ['rosano', 'cockpit', 'compare', 'planar', 'columns']) {
       await setBuilderLayout(page, layout);
       await pause(page, 2500, `${layout} mounts`);
     }
@@ -127,23 +127,23 @@ test.describe('Builder layouts (ABT #1121)', () => {
     // MagneticBuilder's both offer the same choice, writing the same setting.
     const select = page.locator('[data-cy$="layout-select"]').first();
     await expect(select, 'Settings offers the layout').toBeVisible({ timeout: 15000 });
-    await select.selectOption('bands');
+    await select.selectOption('rosano');
     await page.keyboard.press('Escape');
     await pause(page, 2500, 'dialog closes, layout mounts');
 
-    await expect(page.locator('[data-cy$="-LayoutBands"]')).toHaveCount(1);
-    expect(await currentBuilderLayout(page)).toBe('bands');
+    await expect(page.locator('[data-cy$="-LayoutRosano"]')).toHaveCount(1);
+    expect(await currentBuilderLayout(page)).toBe('rosano');
 
     // Persisted: the store is written to localStorage, so a reload keeps it.
     await page.reload();
     await pause(page, 4000, 'app boots');
-    expect(await currentBuilderLayout(page), 'the choice is remembered').toBe('bands');
+    expect(await currentBuilderLayout(page), 'the choice is remembered').toBe('rosano');
 
     await setBuilderLayout(page, 'columns');
     expect(errors, `console errors: ${errors.join(' | ')}`).toHaveLength(0);
   });
 
-  test('bands: a row per part, with the alternatives and the wire response', async ({ page }) => {
+  test('rosano: a row per part, with the alternatives and the wire response', async ({ page }) => {
     const errors = [];
     watchConsole(page, errors);
     await page.setViewportSize({ width: 1500, height: 950 });
@@ -151,8 +151,8 @@ test.describe('Builder layouts (ABT #1121)', () => {
     await goToBuilderStep(page);
     await adviseCoreAndWait(page);
     await adviseWireAndWait(page);
-    await setBuilderLayout(page, 'bands');
-    await pause(page, SETTLE, 'bands mount');
+    await setBuilderLayout(page, 'rosano');
+    await pause(page, SETTLE, 'rosano mount');
 
     for (const band of ['-Band-Core', '-Band-Wire', '-Band-Coil']) {
       await expect(page.locator(`[data-cy$="${band}"]`), `the ${band} row`).toHaveCount(1);
@@ -228,8 +228,8 @@ test.describe('Builder layouts (ABT #1121)', () => {
     await goToBuilderStep(page);
     await adviseCoreAndWait(page);
     await adviseWireAndWait(page);
-    await setBuilderLayout(page, 'bands');
-    await pause(page, SETTLE, 'bands mount');
+    await setBuilderLayout(page, 'rosano');
+    await pause(page, SETTLE, 'rosano mount');
 
     // The solid needs a wound coil, so wait for the winding rather than racing it.
     await page.waitForFunction(() => {
