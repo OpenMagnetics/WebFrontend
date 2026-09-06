@@ -23,6 +23,7 @@ import {
   setBuilderLayout,
   currentBuilderLayout,
   designFingerprint,
+  auditGeometry,
 } from './utils/layouts.js';
 
 const SETTLE = 4000;
@@ -244,6 +245,42 @@ test.describe('Builder layouts (ABT #1121)', () => {
     await expect(page.locator('[data-cy$="-Band-VisualizerSwitch-2D"]')).toHaveCount(0);
 
     await setBuilderLayout(page, 'columns');
+    expect(errors, `console errors: ${errors.join(' | ')}`).toHaveLength(0);
+  });
+
+  /**
+   * Every layout must fit: nothing drawn outside the card it belongs to, no two
+   * cards on top of each other, neighbours in a row sharing a top edge, and the
+   * page never scrolling sideways. Header button rows used to spill past the
+   * right edge of a narrow card, and Compare's stacked column collapsed to its
+   * content width — both invisible to a test that only asserts a control exists.
+   */
+  test('nothing overflows, overlaps or sits out of line in any layout', async ({ page }) => {
+    const errors = [];
+    watchConsole(page, errors);
+
+    await page.setViewportSize({ width: 1500, height: 950 });
+    await goToBuilderStep(page);
+    await adviseCoreAndWait(page);
+    await adviseWireAndWait(page);
+    await pause(page, SETTLE, 'design settles');
+
+    for (const width of [1500, 1280]) {
+      await page.setViewportSize({ width, height: 950 });
+      await pause(page, 1500, 'reflow');
+      for (const layout of BUILDER_LAYOUTS) {
+        await setBuilderLayout(page, layout);
+        await pause(page, SETTLE, `${layout} settles`);
+
+        const found = await page.evaluate(auditGeometry);
+        const where = `${layout} at ${width}px`;
+        expect(found.pageOverflow, `${where}: the page scrolls sideways`).toBeNull();
+        expect(found.escaping, `${where}: drawn outside its card`).toEqual([]);
+        expect(found.overlaps, `${where}: cards on top of each other`).toEqual([]);
+        expect(found.misaligned, `${where}: neighbours out of line`).toEqual([]);
+      }
+    }
+
     expect(errors, `console errors: ${errors.join(' | ')}`).toHaveLength(0);
   });
 });
