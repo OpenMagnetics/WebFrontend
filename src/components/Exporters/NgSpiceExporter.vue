@@ -38,19 +38,14 @@ export default {
     methods: {
         onClick() {
             this.exported = true
-            if (this.isSymbol) {
-                setTimeout(() => this.createLtSpiceSymbol(), 20);
-            }
-            else {
-                setTimeout(() => this.createLtSpiceSubcircuit(), 20);
-            }
+            setTimeout(() => this.createNgSpiceSubcircuit(), 20);
             setTimeout(() => this.exported = false, 2000);
         },
-        async createLtSpiceSubcircuit() {
+        async createNgSpiceSubcircuit() {
             try {
                 const magnetic = deepCopy(this.magnetic);
                 magnetic.manufacturerInfo.reference = magnetic.manufacturerInfo.reference.replaceAll(" ", "_").replaceAll("-", "_").replaceAll(".", "_").replaceAll(",", "_").replaceAll(":", "_").replaceAll("___", "_").replaceAll("__", "_");
-                var subcircuit = await this.taskQueueStore.exportMagneticAsSubcircuit(magnetic, this.temperature, "LtSpice", "");
+                var subcircuit = await this.taskQueueStore.exportMagneticAsSubcircuit(magnetic, this.temperature, "NgSpice", "");
                 var blob = new Blob([subcircuit], {
                     type: 'text/csv; charset=utf-8'
                 });
