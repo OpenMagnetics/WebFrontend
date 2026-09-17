@@ -4,7 +4,7 @@ import { useHistoryStore } from '/MagneticBuilder/src/stores/history'
 import { useTaskQueueStore } from '../stores/taskQueue'
 import { useAuthStore } from '../stores/auth'
 import { useCloudDesignStore } from '../stores/cloudDesign'
-import { loadMasIntoApp } from '../services/loadMasIntoApp'
+import { loadMasIntoApp, describeNonMasDocument } from '../services/loadMasIntoApp'
 import { defineAsyncComponent } from "vue";
 import { useElementVisibility  } from '@vueuse/core'
 import { ref } from 'vue'
@@ -230,25 +230,35 @@ export default {
             const fr = new FileReader();
 
             fr.onload = async (e) => {
-                const newMas = JSON.parse(e.target.result);
-                if (newMas.magnetic != null) {
-                    try {
-                        // A file import is a new working design, not the linked cloud one.
-                        this.cloudDesignStore.unlink();
-                        await loadMasIntoApp(newMas, {
-                            masStore: this.masStore,
-                            stateStore: this.$stateStore,
-                            userStore: this.$userStore,
-                            taskQueueStore: this.taskQueueStore,
-                            router: this.$router,
-                            route: this.$router.currentRoute.value,
-                        });
-                    } catch (error) {
-                        console.error(error);
-                    } finally {
-                        this.loading = false;
+                // Every failure here is reported to the USER, not only to the
+                // console: a file that silently does nothing is indistinguishable
+                // from a broken app. loadMasIntoApp rejects non-MAS documents with
+                // a message naming what is wrong with the file.
+                try {
+                    const newMas = JSON.parse(e.target.result);
+                    // Reject before touching any store: a file we cannot load must
+                    // leave the current design — and its cloud link — untouched.
+                    const notMas = describeNonMasDocument(newMas);
+                    if (notMas != null) {
+                        throw new Error(`This file is not a MAS design: ${notMas}`);
                     }
-                } else {
+                    // A file import is a new working design, not the linked cloud one.
+                    this.cloudDesignStore.unlink();
+                    await loadMasIntoApp(newMas, {
+                        masStore: this.masStore,
+                        stateStore: this.$stateStore,
+                        userStore: this.$userStore,
+                        taskQueueStore: this.taskQueueStore,
+                        router: this.$router,
+                        route: this.$router.currentRoute.value,
+                    });
+                } catch (error) {
+                    console.error(error);
+                    const reason = error instanceof SyntaxError
+                        ? 'the file is not valid JSON.'
+                        : error.message;
+                    window.alert(`Could not load this file: ${reason}`);
+                } finally {
                     this.loading = false;
                 }
             };
