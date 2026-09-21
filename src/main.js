@@ -17,7 +17,7 @@ import { useCustomPartsStore } from '/src/stores/customParts'
 import { useInventoryStore } from '/src/stores/inventory'
 import { useModelSettingsStore } from '/MagneticBuilder/src/stores/modelSettings'
 import { VueWindowSizePlugin } from 'vue-window-size/plugin';
-import { initWorker, applyRealWindingGeometrySetting } from 'WebSharedComponents/assets/js/mkfRuntime'
+import { initWorker, applyRealWindingGeometrySetting, setEngineRestoreHandler } from 'WebSharedComponents/assets/js/mkfRuntime'
 import { initKirchhoffWorker } from 'WebSharedComponents/assets/js/kirchhoffRuntime'
 import VueLatex from 'vatex'
 import { checkAndClearOutdatedStores, getVersionedWasmUrl } from '/src/stores/storeVersioning'
@@ -216,6 +216,35 @@ export const globals = app.config.globalProperties
 // Preload function to start loading WASM and data in background from home page
 let preloadPromise = null;
 let preloadedMkf = null; // Store preloaded mkf separately, don't set $mkf until engine loader
+
+// Everything the app loads into a fresh engine: the catalogues, the user's Core Studio parts on
+// top of them, and the account inventory scope. Start-up runs it once; the runtime runs it again
+// if its watchdog has to replace a stuck engine worker, which otherwise comes back empty (the
+// runtime replays the engine settings itself).
+async function loadEngineData(mkf) {
+    console.warn("[MAIN] Preload: Loading core materials, shapes and wires...");
+    await Promise.all([
+        mkf.load_core_materials("").then(() => console.log("Preload: Core materials loaded")),
+        mkf.load_core_shapes("").then(() => console.log("Preload: Core shapes loaded")),
+        mkf.load_wires("").then(() => console.log("Preload: Wires loaded"))
+    ]);
+
+    // Re-inject the user's Core Studio parts (custom shapes/materials)
+    // on top of the catalog so they show up in every selector.
+    await useCustomPartsStore().reinject(mkf);
+
+    // Account inventory (Phase 2): bring the engine in line with the
+    // persisted adviser scope (merge-inject / LibraryContext). No-op
+    // for scope 'public' or when signed out; failures are loud but
+    // must not block the engine boot for anonymous use.
+    try {
+        await useInventoryStore().applyScope(mkf);
+    } catch (error) {
+        console.error('Inventory scope could not be applied:', error);
+    }
+}
+setEngineRestoreHandler(loadEngineData);
+
 function preloadMKF() {
     if (preloadPromise || app.config.globalProperties.$mkf != null) {
         return preloadPromise; // Already preloading or loaded
@@ -239,26 +268,7 @@ function preloadMKF() {
                 mkf, useSettingsStore().magneticBuilderSettings.useRealWindingGeometry);
             
             // Load data and wait for completion
-            console.warn("[MAIN] Preload: Loading core materials, shapes and wires...");
-            await Promise.all([
-                mkf.load_core_materials("").then(() => console.log("Preload: Core materials loaded")),
-                mkf.load_core_shapes("").then(() => console.log("Preload: Core shapes loaded")),
-                mkf.load_wires("").then(() => console.log("Preload: Wires loaded"))
-            ]);
-
-            // Re-inject the user's Core Studio parts (custom shapes/materials)
-            // on top of the catalog so they show up in every selector.
-            await useCustomPartsStore().reinject(mkf);
-
-            // Account inventory (Phase 2): bring the engine in line with the
-            // persisted adviser scope (merge-inject / LibraryContext). No-op
-            // for scope 'public' or when signed out; failures are loud but
-            // must not block the engine boot for anonymous use.
-            try {
-                await useInventoryStore().applyScope(mkf);
-            } catch (error) {
-                console.error('Inventory scope could not be applied:', error);
-            }
+            await loadEngineData(mkf);
             
             // Initialize model settings from WASM during preload
             console.warn("Preload: Initializing model settings...");
