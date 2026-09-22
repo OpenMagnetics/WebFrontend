@@ -3,6 +3,7 @@ import { useMasStore } from '../../../stores/mas'
 import { formatUnit, formatDimension, formatTemperature, removeTrailingZeroes, deepCopy, downloadBase64asPDF, download } from 'WebSharedComponents/assets/js/utils.js'
 import { formatInUnitSystem } from 'WebSharedComponents/assets/js/units.js'
 import { recordDesign } from 'WebSharedComponents/assets/js/telemetry.js'
+import { escapeHtml } from '../../../assets/js/escapeHtml.js'
 
 </script>
 
@@ -49,14 +50,18 @@ export default {
         recordDesign({ event_type: 'design_report', source: 'spec_report', mas: this.masStore.mas });
     },
     methods: {
+        // The report texts are rendered with v-html, so every piece of data that goes
+        // into them (winding and operating-point names, enum values from an imported
+        // MAS, formatted numbers) is escaped here or through escapeHtml below. Only
+        // the markup written in this file may reach the DOM as HTML.
         getTitleColor(text) {
-            return `<b><font color="${this.theme.info}">${text}</font></b>`
+            return `<b><font color="${escapeHtml(this.theme.info)}">${escapeHtml(text)}</font></b>`
         },
         getFieldColor(text) {
-            return `<font color="${this.theme.primary}">${text}</font>`
+            return `<font color="${escapeHtml(this.theme.primary)}">${escapeHtml(text)}</font>`
         },
         getValueColor(text) {
-            return `<font color="${this.theme.primary}">${text}</font>`
+            return `<font color="${escapeHtml(this.theme.primary)}">${escapeHtml(text)}</font>`
         },
         // Lengths follow the profile unit system (ABT #1099); other units keep SI prefixes.
         formatForReport(value, unit) {
@@ -414,7 +419,7 @@ export default {
                         const auxVoltage = formatUnit(excitation.voltage?.processed?.rms || 0, 'A');
                         const currentLabel = excitation.current?.processed?.label || 'Custom';
                         const voltageLabel = excitation.voltage?.processed?.label || 'Custom';
-                        text += ` &emsp;&emsp;Winding ${this.masStore.mas.magnetic.coil.functionalDescription[windingIndex].name} has a ${this.getValueColor(currentLabel.toLowerCase())} current, with an RMS of ${this.getValueColor(`${removeTrailingZeroes(auxCurrent.label, 2)} ${auxCurrent.unit}`)};`;
+                        text += ` &emsp;&emsp;Winding ${escapeHtml(this.masStore.mas.magnetic.coil.functionalDescription[windingIndex].name)} has a ${this.getValueColor(currentLabel.toLowerCase())} current, with an RMS of ${this.getValueColor(`${removeTrailingZeroes(auxCurrent.label, 2)} ${auxCurrent.unit}`)};`;
                         text += ` and a ${this.getValueColor(voltageLabel.toLowerCase())} voltage, with an RMS of ${this.getValueColor(`${removeTrailingZeroes(auxVoltage.label, 2)} ${auxVoltage.unit}`)}; </br>`;
                     }
 
@@ -442,7 +447,7 @@ export default {
                 this.masStore.mas.inputs.designRequirements.turnsRatios.forEach((dimension, dimensionIndex) => {
                     const windingName = this.masStore.mas.magnetic.coil.functionalDescription[dimensionIndex + 1].name;
                     this.texts.designRequirements.turnsRatios += this.computeDimensionText(dimension, '');
-                    this.texts.designRequirements.turnsRatios += ` between ${primaryWindingName} and ${windingName} winding`;
+                    this.texts.designRequirements.turnsRatios += ` between ${escapeHtml(primaryWindingName)} and ${escapeHtml(windingName)} winding`;
                     if (dimensionIndex != this.masStore.mas.inputs.designRequirements.turnsRatios.length - 1) {
                         this.texts.designRequirements.turnsRatios += `. `;
                     }
@@ -458,7 +463,7 @@ export default {
                 this.masStore.mas.inputs.designRequirements.leakageInductance.forEach((dimension, dimensionIndex) => {
                     const windingName = this.masStore.mas.magnetic.coil.functionalDescription[dimensionIndex + 1].name;
                     this.texts.designRequirements.leakageInductance += this.computeDimensionText(dimension, 'H');
-                    this.texts.designRequirements.leakageInductance += ` between ${primaryWindingName} and ${windingName} winding`;
+                    this.texts.designRequirements.leakageInductance += ` between ${escapeHtml(primaryWindingName)} and ${escapeHtml(windingName)} winding`;
                     if (dimensionIndex != this.masStore.mas.inputs.designRequirements.leakageInductance.length - 1) {
                         this.texts.designRequirements.leakageInductance += `. `;
                     }
@@ -474,7 +479,7 @@ export default {
                 this.masStore.mas.inputs.designRequirements.strayCapacitance.forEach((dimension, dimensionIndex) => {
                     const windingName = this.masStore.mas.magnetic.coil.functionalDescription[dimensionIndex + 1].name;
                     this.texts.designRequirements.strayCapacitance += this.computeDimensionText(dimension, 'F');
-                    this.texts.designRequirements.strayCapacitance += ` between ${primaryWindingName} and ${windingName} winding`;
+                    this.texts.designRequirements.strayCapacitance += ` between ${escapeHtml(primaryWindingName)} and ${escapeHtml(windingName)} winding`;
                     if (dimensionIndex != this.masStore.mas.inputs.designRequirements.strayCapacitance.length - 1) {
                         this.texts.designRequirements.strayCapacitance += `. `;
                     }
