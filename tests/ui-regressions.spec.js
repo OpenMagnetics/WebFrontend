@@ -188,6 +188,9 @@ test.describe('UR-4 — SVG viewBox fits content (no clipping)', () => {
   test.describe.configure({ timeout: 180000 });
 
   test('UR-4-1: all Magnetic2DVisualizer SVGs have viewBox ⊇ content bbox', async ({ page }) => {
+    // Two real advisers run back to back (core ~15 s, then every winding's wire).
+    test.setTimeout(600000);
+    test.setTimeout(600000);
     // Drive through a real end-to-end CMC flow to force the Magnetic2D
     // Visualizer to render a temperature SVG (the bug surfaced there).
     await goToRoute(page, '/wizards');
@@ -212,17 +215,35 @@ test.describe('UR-4 — SVG viewBox fits content (no clipping)', () => {
       const b = [...document.querySelectorAll('button')].filter(b => b.textContent.trim() === 'Advise')[0];
       b?.click();
     });
-    // Give the core adviser time to run (it can take ~10s on first run).
-    await pause(page, 12000, 'mechanical: settle');
+    // Wait for the core adviser to actually land a core in the store (a CMC
+    // advise takes ~15 s). A fixed 12 s pause here timed out on the CMC and
+    // the test then failed downstream with "no Magnetic2DVisualizer SVG".
+    await page.waitForFunction(() => {
+      const pinia = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia;
+      const shape = pinia._s.get('mas')?.mas?.magnetic?.core?.functionalDescription?.shape;
+      const name = typeof shape === 'string' ? shape : shape?.name;
+      if (/No core can be advised/.test(document.body.innerText)) {
+        throw new Error('the core adviser returned no core for the CMC design');
+      }
+      return !!name;
+    }, null, { timeout: 180000, polling: 500 });
 
-    await page.evaluate(() =>
-      [...document.querySelectorAll('button')].find(b => b.textContent.includes('Advise all'))?.click());
-    await pause(page, 10000, 'mechanical: settle');
+    // The wire panel keeps "Advise all" disabled while it processes the new
+    // core; a DOM click in that window is silently dropped. The locator click
+    // waits for the button to be enabled.
+    await page.locator('button', { hasText: 'Advise all' }).first().click({ timeout: 120000 });
+    // Wait for the wire advise to wind the coil: "Show Temperature" only
+    // appears once the magnetic is complete. (The CMC windings already carry a
+    // placeholder wire, so the wire field itself is not a signal.)
+    const showTemperature = page.locator('button', { hasText: 'Show Temperature' }).first();
+    await showTemperature.waitFor({ state: 'visible', timeout: 240000 });
 
-    // With a complete magnetic loaded, flip to temperature view.
-    await page.evaluate(() =>
-      [...document.querySelectorAll('button')].find(b => b.textContent.includes('Show Temperature'))?.click());
-    await pause(page, 3000, 'mechanical: settle');
+    // With a complete magnetic loaded, flip to temperature view and wait for
+    // the plot to render.
+    await showTemperature.click();
+    await page.waitForFunction(() =>
+      document.querySelectorAll('.Magnetic2DVisualizer svg, [data-cy*="plot-image"] svg').length > 0,
+      null, { timeout: 120000, polling: 500 });
 
     const report = await page.evaluate(() => {
       const svgs = [...document.querySelectorAll('.Magnetic2DVisualizer svg, [data-cy*="plot-image"] svg')];
