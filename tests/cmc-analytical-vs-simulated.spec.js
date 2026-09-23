@@ -8,8 +8,8 @@
  *   · the wizard loads and wires the store correctly,
  *   · both WASM entry points return JSON with the expected shape,
  *   · the operating-point label is "Simulated",
- *   · the numberOfPeriods / numberOfSteadyStatePeriods params from the UI
- *     flow through to the backend (time span grows with numberOfPeriods),
+ *   · the simulated operating point is one canonical period at the excitation
+ *     frequency whatever numberOfPeriods says (the knob is display tiling),
  *   · nothing throws in the browser.
  */
 
@@ -118,20 +118,39 @@ test.describe('CMC wizard — UI wiring', () => {
     expect(op?.name).toBe('Simulated');
   });
 
-  test('CMC-UI-5: numberOfPeriods from the UI flows through to the backend', async ({ page }) => {
+  // The Periods knob is display-only: ConverterWizardBase.tileWaveformsForDisplay
+  // tiles the PLOTTED arrays, while the operating point the engine returns must
+  // stay canonical — exactly one steady-state period at the excitation
+  // frequency, since harmonics and advisers read a timed waveform's span as
+  // 1/f. Kirchhoff used to hand back numberOfPeriods cycles as one waveform, so
+  // a 150 kHz CM sine came back with its fundamental at 300 kHz and THD in the
+  // hundreds (ABT #1356); this test pinned that as "the span grows with
+  // numberOfPeriods" until 2026-09-23.
+  test('CMC-UI-5: the simulated operating point is one canonical period whatever numberOfPeriods is', async ({ page }) => {
     await openWizard(page, CMC_CY);
     const { simulated: sim2 } = await runBothPaths(page, makeAux(2, 5));
     const { simulated: sim4 } = await runBothPaths(page, makeAux(4, 5));
 
-    const t2 = firstOp(sim2)?.excitationsPerWinding?.[0]?.current?.waveform?.time ?? [];
-    const t4 = firstOp(sim4)?.excitationsPerWinding?.[0]?.current?.waveform?.time ?? [];
-    expect(t2.length).toBeGreaterThan(5);
-    expect(t4.length).toBeGreaterThan(5);
-
-    const span2 = t2[t2.length - 1] - t2[0];
-    const span4 = t4[t4.length - 1] - t4[0];
-    console.log(`[CMC-UI-5] span2=${span2.toExponential(3)}s  span4=${span4.toExponential(3)}s`);
-    expect(span4).toBeGreaterThan(span2 * 1.5);
+    const spans = [];
+    for (const [periods, sim] of [[2, sim2], [4, sim4]]) {
+      const exc = firstOp(sim)?.excitationsPerWinding?.[0];
+      const f = exc?.frequency;
+      const t = exc?.current?.waveform?.time ?? [];
+      expect(f, `numberOfPeriods=${periods}: excitation frequency`).toBeGreaterThan(0);
+      expect(t.length, `numberOfPeriods=${periods}: current samples`).toBeGreaterThan(5);
+      const span = t[t.length - 1] - t[0];
+      spans.push(span);
+      console.log(`[CMC-UI-5] numberOfPeriods=${periods}: f=${f} span=${span.toExponential(3)}s (1/f=${(1 / f).toExponential(3)}s)`
+        + ` label=${exc.current.processed?.label} acEff=${exc.current.processed?.acEffectiveFrequency}`);
+      // One period, within 2 % (the engine interpolates the window's first point at tEnd - 1/f).
+      expect(Math.abs(span * f - 1), `numberOfPeriods=${periods}: span must be 1/f`).toBeLessThan(0.02);
+      // ... and processed as the sine it is, with the fundamental at f — not at numberOfPeriods·f.
+      expect(exc.current.processed?.label, `numberOfPeriods=${periods}: current label`).toBe('sinusoidal');
+      expect(Math.abs(exc.current.processed.acEffectiveFrequency / f - 1), `numberOfPeriods=${periods}: AC effective frequency`).toBeLessThan(0.05);
+      expect(exc.voltage?.processed?.label, `numberOfPeriods=${periods}: voltage label`).toBe('sinusoidal');
+    }
+    // The knob never leaks into the stored data.
+    expect(Math.abs(spans[1] / spans[0] - 1)).toBeLessThan(0.01);
   });
 
   test('CMC-UI-6: wizard renders canvases after an analytical run', async ({ page }) => {
