@@ -240,6 +240,11 @@ export default {
 
       try {
         const aux = wizard.buildParams(mode);
+        // The inputs this run answers for, captured BEFORE the engine call:
+        // processWizardData only reuses the stored result while the wizard's
+        // inputs still produce this same key. Keying after the call would
+        // stamp a result computed for the old inputs with the new ones.
+        const paramsKey = JSON.stringify(wizard.buildParams('analytical'));
         aux.numberOfPeriods = parseInt(wizard.numberOfPeriods, 10);
         if (mode === 'simulation') {
           aux.numberOfSteadyStatePeriods = parseInt(wizard.numberOfSteadyStatePeriods, 10);
@@ -258,6 +263,7 @@ export default {
           isSimulation: (mode === 'simulation'),
           defaultFrequency: wizard.getDefaultFrequency(),
           numberOfPeriods: wizard.numberOfPeriods,
+          paramsKey,
         });
 
         if (wizard.postProcessResults) {
@@ -396,7 +402,7 @@ export default {
 
     // ===== UNIFIED WAVEFORM PROCESSING =====
     async processWaveformResults(wizardInstance, result, options = {}) {
-      const { isSimulation = false, defaultFrequency = 100000, numberOfPeriods = 2 } = options;
+      const { isSimulation = false, defaultFrequency = 100000, numberOfPeriods = 2, paramsKey = null } = options;
       
       // Determine which processing method to use
       let processed;
@@ -415,6 +421,8 @@ export default {
       // Assign to wizard instance properties
       wizardInstance.simulatedOperatingPoints = processed.operatingPoints;
       wizardInstance.designRequirements = processed.designRequirements;
+      // Which inputs these stored points answer for (null: unknown, never reused).
+      wizardInstance.storedResultParamsKey = paramsKey;
       wizardInstance.magneticWaveforms = processed.magneticWaveforms;
       wizardInstance.converterWaveforms = processed.converterWaveforms;
       this.converterTas = processed.converterTas ?? null;
@@ -851,8 +859,18 @@ export default {
         const freq = wi.getDefaultFrequency ? wi.getDefaultFrequency() : (wi.getFrequency ? wi.getFrequency() : 100000);
         let ops, dr;
         
-        // Check if we have stored operating points with waveforms (from Analytical or Simulated)
-        const hasStoredData = wi.simulatedOperatingPoints && wi.simulatedOperatingPoints.length > 0;
+        // Reuse the stored operating points (from the last Analytical or
+        // Simulated run) ONLY while they answer for the wizard's current
+        // inputs. The wizards auto-run on mount with their defaults and
+        // re-run edits after a debounce, so a click on "Design Magnetic"
+        // right after an edit — or while the re-run is still in flight —
+        // used to build the magnetic from the PREVIOUS inputs: the DMC
+        // wizard shipped a 2-winding single-phase choke for a three-phase
+        // configuration once the engine got fast enough to finish the
+        // mount-time run before the user had changed anything.
+        const currentParamsKey = wi.buildParams ? JSON.stringify(wi.buildParams('analytical')) : undefined;
+        const hasStoredData = wi.simulatedOperatingPoints && wi.simulatedOperatingPoints.length > 0
+          && wi.storedResultParamsKey != null && wi.storedResultParamsKey === currentParamsKey;
         
         if (hasStoredData) {
           // Use stored data (from last Analytical or Simulated run)
