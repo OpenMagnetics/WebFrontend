@@ -1,6 +1,6 @@
 <script setup>
 import { useMasStore } from '../../../stores/mas'
-import { toTitleCase, getMultiplier, combinedStyle, combinedClass } from 'WebSharedComponents/assets/js/utils.js'
+import { toTitleCase, getMultiplier, combinedStyle, combinedClass, renameWinding } from 'WebSharedComponents/assets/js/utils.js'
 import DimensionWithTolerance from 'WebSharedComponents/DataInput/DimensionWithTolerance.vue'
 import { isolationSideOrdered } from 'WebSharedComponents/assets/js/defaults.js'
 </script>
@@ -21,6 +21,10 @@ export default {
         },
         fixedNumberElements:{
             type: Number
+        },
+        referenceWinding:{
+            type: Boolean,
+            default: false
         },
         defaultField:{
             type: String,
@@ -94,6 +98,7 @@ export default {
         return {
             masStore,
             errorMessages,
+            referenceRatio: { nominal: 1 },
         }
     },
     mounted () {
@@ -137,7 +142,7 @@ export default {
         changeText(value, index) {
             if (value != '') {
                 this.errorMessages = '';
-                this.masStore.mas.magnetic.coil.functionalDescription[index].name = value;
+                renameWinding(this.masStore.mas, index, value);
             }
             else {
                 this.errorMessages = "Winding name cannot be empty";
@@ -159,6 +164,30 @@ export default {
             >
                 {{toTitleCase(name)}}
             </label>
+        </div>
+        <!-- Winding 1 is the reference winding: ratio fixed at 1 (locked), label editable.
+             Uses the same DimensionWithTolerance as the rows below so the row is identical. -->
+        <div v-if="referenceWinding" :data-cy="dataTestLabel + '-reference-container'" class="grid">
+            <DimensionWithTolerance
+                :dataTestLabel="dataTestLabel + '-reference'"
+                :allowAllNull="true"
+                :disabled="true"
+                :disabledScaling="disabledScaling"
+                :varText="true"
+                :name="masStore.mas.magnetic.coil.functionalDescription[0]?.name ?? 'Winding 1'"
+                :unit="unit"
+                :modelValue="referenceRatio"
+                @changeText="changeText($event, 0)"
+                :addButtonStyle="addButtonStyle"
+                :removeButtonBgColor="removeButtonBgColor"
+                :titleFontSize="valueFontSize"
+                :valueFontSize="valueFontSize"
+                :labelBgColor="labelBgColor"
+                :valueBgColor="valueBgColor"
+                :textColor="textColor"
+                :unitExtraStyleClass="unitExtraStyleClass"
+                class="col-12 array-dwt-row reference-dwt"
+            />
         </div>
         <div :data-cy="dataTestLabel + '-' + requirementIndex + '-container'" class="grid" v-for="(requirement, requirementIndex) in masStore.mas.inputs.designRequirements[name]" :key="requirementIndex">
             <DimensionWithTolerance
@@ -191,5 +220,22 @@ export default {
         </div>
     </div>
 </template>
+
+
+<style scoped>
+/* Winding 1 reference row: reuse the shared row layout, but lock the ratio
+   value + add/remove controls. The label (title) stays editable. */
+.reference-dwt :deep(.dwt-fields-row) {
+    pointer-events: none;
+}
+/* The reference ratio is exactly 1 (no tolerance) - show only the locked
+   nominal value, not the Min/Max add-fields or the removable 'Nom.' addon. */
+.reference-dwt :deep(.dwt-fields-row > .dwt-field:not(:nth-child(2))) {
+    display: none;
+}
+.reference-dwt :deep(.dwt-remove-addon) {
+    display: none !important;
+}
+</style>
 
 
