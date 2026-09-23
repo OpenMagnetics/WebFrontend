@@ -5,8 +5,10 @@ import { waitForMkf, isWorkerMode } from 'WebSharedComponents/assets/js/mkfRunti
 // NOT the magnetics module. Its proxy accepts the legacy per-topology function names
 // (calculate_<topo>_inputs / simulate_<topo>_ideal_waveforms / generate_<topo>_ngspice_circuit) and
 // reshapes webKirchhoff's process_converter/design_tas output back to the legacy contract — see
-// kirchhoffRuntime.js. Magnetics methods (extract_operating_point, calculate_advised_*, mas_autocomplete,
-// load_*, current transformer / CMC / DMC below) stay on webMKF via waitForMkf().
+// kirchhoffRuntime.js. The current transformer, CMC and DMC methods below also run on webKirchhoff
+// (waitForKirchhoff): their requirement synthesis and ngspice decks live in Kirchhoff, not MKF.
+// Magnetics methods (extract_operating_point, calculate_advised_*, mas_autocomplete, load_*) stay on
+// webMKF via waitForMkf().
 import { waitForKirchhoff } from 'WebSharedComponents/assets/js/kirchhoffRuntime'
 import { Convert as MasConvert } from 'WebSharedComponents/assets/ts/MAS.ts'
 import { clean } from 'WebSharedComponents/assets/js/utils'
