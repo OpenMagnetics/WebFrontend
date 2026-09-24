@@ -14,9 +14,9 @@
  *   · Confirm simulated returns waveforms with > 10 samples on both
  *     primary and secondary current/voltage probes (proves the SPICE
  *     ran and the probes are wired, not just empty stubs).
- *   · Confirm `numberOfPeriods` flows through and stretches the time
- *     span proportionally (sanity check that the UI param actually
- *     reaches the netlist).
+ *   · Confirm the simulated operating point is one canonical period at the
+ *     switching frequency whatever `numberOfPeriods` says (the knob is
+ *     display tiling, done in the chart layer).
  *   · Confirm secondary current scales by ~1/turnsRatio versus primary
  *     (a basic converter input/output correctness check — distinguishes
  *     a real SPICE simulation from a zero/garbage stub).
@@ -27,6 +27,7 @@
 
 import { test, expect } from './_coverage.js';
 import { openWizard, pause } from './utils.js';
+import { runSimulated } from './utils/index.js';
 
 const SRC_CY = 'Src-link';
 
@@ -129,32 +130,60 @@ test.describe('SRC wizard — analytical vs simulated', () => {
     }
   });
 
-  test('SRC-UI-4: simulated operating point has a non-empty name', async ({ page }) => {
-    // Unlike CMC (which labels its sim op "Simulated"), SRC names ops by
-    // their input voltage rail ("Nominal input (400V)" etc.). The contract
-    // is only that *some* non-empty label is set so the wizard chart can
-    // render it.
+  // webKirchhoff returns its operating points unnamed (for every topology); the
+  // old webMKF SRC path named them after the input rail. The wizard base names
+  // any unnamed point ("Operating Point N", ConverterWizardBase.
+  // assignResultsToMasStore) before it reaches the design, because the Magnetic
+  // Tool renders "<name> — <winding>" and an unnamed point showed as
+  // "null — Primary". So the contract is on what the wizard STORES after a
+  // Simulated run, not on the raw engine JSON.
+  test('SRC-UI-4: the simulated operating point the wizard stores has a non-empty name', async ({ page }) => {
     await openWizard(page, SRC_CY);
-    const { simulated } = await runBothPaths(page, makeAux());
-    const op = firstOp(simulated);
-    expect(typeof op?.name).toBe('string');
-    expect(op?.name?.length).toBeGreaterThan(0);
+    await runSimulated(page, { timeoutMs: 120_000 });
+    const op = await page.evaluate(() => {
+      const mas = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia._s.get('mas').mas;
+      const p = mas.inputs.operatingPoints?.[0];
+      return p ? { name: p.name, samples: p.excitationsPerWinding?.[0]?.current?.waveform?.data?.length ?? 0 } : null;
+    });
+    expect(op, 'a simulated operating point is stored').toBeTruthy();
+    expect(op.samples, 'the stored point carries the simulated waveform').toBeGreaterThan(10);
+    expect(typeof op.name).toBe('string');
+    expect(op.name.length).toBeGreaterThan(0);
+    expect(op.name).not.toMatch(/null|undefined/);
   });
 
-  test('SRC-UI-5: numberOfPeriods stretches the simulated time span', async ({ page }) => {
+  // The Periods knob is display-only: ConverterWizardBase.tileWaveformsForDisplay
+  // tiles the PLOTTED arrays, while the operating point the engine returns stays
+  // canonical — one steady-state period at the switching frequency, because
+  // harmonics and advisers read a timed waveform's span as 1/f (see CMC-UI-5 and
+  // ABT #1356, where N periods handed over as one put the fundamental at N·f).
+  // This test pinned "the span grows with numberOfPeriods" until 2026-09-24.
+  test('SRC-UI-5: the simulated operating point is one canonical period whatever numberOfPeriods is', async ({ page }) => {
     await openWizard(page, SRC_CY);
     const { simulated: sim2 } = await runBothPaths(page, makeAux(2, 30));
     const { simulated: sim4 } = await runBothPaths(page, makeAux(4, 30));
 
-    const t2 = firstOp(sim2)?.excitationsPerWinding?.[0]?.current?.waveform?.time ?? [];
-    const t4 = firstOp(sim4)?.excitationsPerWinding?.[0]?.current?.waveform?.time ?? [];
-    expect(t2.length).toBeGreaterThan(5);
-    expect(t4.length).toBeGreaterThan(5);
-
-    const span2 = t2[t2.length - 1] - t2[0];
-    const span4 = t4[t4.length - 1] - t4[0];
-    console.log(`[SRC-UI-5] span2=${span2.toExponential(3)}s  span4=${span4.toExponential(3)}s`);
-    expect(span4).toBeGreaterThan(span2 * 1.5);
+    const spans = [];
+    for (const [periods, sim] of [[2, sim2], [4, sim4]]) {
+      const exc = firstOp(sim)?.excitationsPerWinding?.[0];
+      const f = exc?.frequency;
+      const t = exc?.current?.waveform?.time ?? [];
+      expect(f, `numberOfPeriods=${periods}: excitation frequency`).toBeGreaterThan(0);
+      expect(t.length, `numberOfPeriods=${periods}: current samples`).toBeGreaterThan(5);
+      const span = t[t.length - 1] - t[0];
+      spans.push(span);
+      // The dominant AC harmonic of the tank current must sit at f, not at N·f.
+      const h = exc.current.harmonics;
+      expect(h?.frequencies?.length, `numberOfPeriods=${periods}: current harmonics`).toBeGreaterThan(2);
+      let k = 1;
+      for (let i = 1; i < h.amplitudes.length; i++) if (h.amplitudes[i] > h.amplitudes[k]) k = i;
+      console.log(`[SRC-UI-5] numberOfPeriods=${periods}: f=${f} span=${span.toExponential(3)}s (1/f=${(1 / f).toExponential(3)}s) dominant harmonic ${h.frequencies[k]} Hz`);
+      // One period, within 2 % (sampled at 128 points, the last sample sits one step before 1/f).
+      expect(Math.abs(span * f - 1), `numberOfPeriods=${periods}: span must be 1/f`).toBeLessThan(0.02);
+      expect(Math.abs(h.frequencies[k] / f - 1), `numberOfPeriods=${periods}: fundamental at f`).toBeLessThan(0.01);
+    }
+    // The knob never leaks into the returned data.
+    expect(Math.abs(spans[1] / spans[0] - 1)).toBeLessThan(0.01);
   });
 
   test('SRC-UI-6: secondary current ≈ primary current / turnsRatio', async ({ page }) => {

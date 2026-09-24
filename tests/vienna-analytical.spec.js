@@ -1,10 +1,9 @@
 /**
  * Vienna wizard — analytical waveform testbench.
  *
- * Vienna has no SPICE in MKF yet (Phase-1 SPICE is single-phase emulation
- * and not wired to the wizard — `getSimulateFn` falls back to the
- * analytical path). So this spec exercises only `calculate_vienna_inputs`,
- * but checks:
+ * Vienna runs on webKirchhoff: `calculate_vienna_inputs` (analytical) and
+ * a real three-phase ngspice deck for the Simulated path (UI-6/UI-7). The
+ * analytical checks:
  *
  *   · The JSON has a `designRequirements` block.
  *   · The Phase-A operating point carries `excitationsPerWinding` (the
@@ -157,8 +156,8 @@ test.describe('Vienna wizard — analytical waveform testbench', () => {
   });
 
   // ────────────────────────────────────────────────────────────────────────
-  // SPICE path (Phase-1 single-phase emulation — see Vienna.h FIXME-vienna-1
-  // and WebLibMKF::simulate_vienna_ideal_waveforms for details).
+  // SPICE path: webKirchhoff's three-phase Vienna deck. With peakOfLineOnly
+  // sampling the extracted switching period sits on phase A's line peak.
   // ────────────────────────────────────────────────────────────────────────
 
   test('Vienna-UI-6: simulated returns waveforms + diagnostics', async ({ page }) => {
@@ -166,18 +165,21 @@ test.describe('Vienna wizard — analytical waveform testbench', () => {
     const result = await runSimulated(page, makeAux());
     expect(result).toBeTruthy();
     // webKirchhoff contract (KH is the master): MAS Inputs at the ROOT
-    // (designRequirements / operatingPoints), the universal KH diagnostics
-    // envelope under viennaDiagnostics, and — for PFC/Vienna specifically —
-    // converter-node overlays deliberately skipped (their line-frequency
-    // window makes the extra ngspice run prohibitively slow), with the
-    // reason surfaced in converterWaveformsError. The old single-phase
-    // emulation (spiceMode badge) is retired: this is a real 3-phase deck.
+    // (designRequirements / operatingPoints) and the universal KH diagnostics
+    // envelope under viennaDiagnostics. Converter-node overlays are LAZY for
+    // every topology since the converter-view rework (WebFrontend 4240004,
+    // ABT #905): the Simulated result carries no overlays, only the TAS
+    // (__converterTas) the converter view hands to component_waveforms on
+    // demand. This test used to pin the older PFC/Vienna-only
+    // "converterWaveformsError: overlays are disabled" message, which that
+    // rework retired. The old single-phase emulation is retired too: this is
+    // a real 3-phase deck.
     expect(result?.designRequirements?.magnetizingInductance).toBeTruthy();
     expect(Array.isArray(result?.operatingPoints)).toBe(true);
     expect(result.operatingPoints.length).toBeGreaterThan(0);
     expect(Array.isArray(result?.converterWaveforms)).toBe(true);
     expect(result.converterWaveforms.length).toBe(0);
-    expect(result?.converterWaveformsError).toMatch(/overlays are disabled for PFC\/Vienna/);
+    expect(result?.__converterTas, 'the TAS the lazy converter view needs').toBeTruthy();
     expect(result?.viennaDiagnostics).toBeTruthy();
 
     const op = firstOp(result);
@@ -191,8 +193,8 @@ test.describe('Vienna wizard — analytical waveform testbench', () => {
   });
 
   test('Vienna-UI-7: SPICE inductor current peak ≈ analytical (within 25 %)', async ({ page }) => {
-    // The Phase-1 SPICE single-phase emulation should converge to the
-    // same per-phase peak inductor current as the analytical solver
+    // The three-phase SPICE deck, read at phase A's line peak, should reach
+    // the same per-phase peak inductor current as the analytical solver
     // (which computes I_L,peak from line-current peak + ripple). Looser
     // tolerance than SRC because the analytical model uses an idealised
     // duty d=1-M while SPICE switches finite-time. ±25 % catches a hard

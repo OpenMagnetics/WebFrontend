@@ -76,6 +76,16 @@ async function installRouteFixtures(page) {
   // expectNoConsoleErrors. Intercept it (incl. CORS preflight) and return 200
   // so tests don't depend on a live analytics backend. (Production posts to the
   // real backend and works normally.)
+  // /stats/script.js is the self-hosted Umami analytics script (CookieConsent.vue
+  // loadUmami). Production nginx serves it from the Umami app under /stats; the
+  // vite dev server has no such route, so with consent pre-accepted every test
+  // logged "Failed to load resource: 404". operating-points-multi, which counts
+  // every console error, failed on it alone. Serve an empty script: tests must
+  // not record analytics anyway (data-domains restricts Umami to production).
+  await page.route('**/stats/script.js', async (route) => {
+    route.fulfill({ status: 200, contentType: 'application/javascript', body: '' });
+  });
+
   await page.route('**/telemetry', async (route) => {
     route.fulfill({
       status: 200,

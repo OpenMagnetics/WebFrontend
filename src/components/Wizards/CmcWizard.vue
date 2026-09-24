@@ -254,12 +254,23 @@ export default {
         },
         getSimulateFn() {
             return async (aux) => {
-                const lm = this.designRequirements?.magnetizingInductance;
-                const inductance = lm?.nominal ?? lm?.minimum ?? this.localData.desiredInductance;
-
-                return await this.taskQueueStore.simulateCmcIdealWaveforms(
+                // Design first (the same call the Analytical button makes), then simulate
+                // THAT design. The simulation returns only operating points, so the result
+                // carries the design's requirements: without them "Design Magnetic" after a
+                // simulated run built the MAS from a null designRequirements and threw. The
+                // inductance comes from the design — never from a stale previous run or the
+                // "desired inductance" field of the other design mode.
+                const calc = await this.getCalculateFn()(aux);
+                const dr = calc?.designRequirements;
+                const lm = dr?.magnetizingInductance;
+                const inductance = lm?.nominal ?? lm?.minimum;
+                if (!(inductance > 0)) {
+                    throw new Error(`CMC design returned no magnetizing inductance (got ${JSON.stringify(lm)})`);
+                }
+                const sim = await this.taskQueueStore.simulateCmcIdealWaveforms(
                     aux, inductance, this.localData.parasiticCap_pF, this.localData.dvdt_V_ns
                 );
+                return { ...sim, designRequirements: dr, cmcDiagnostics: calc.cmcDiagnostics ?? sim?.cmcDiagnostics ?? null };
             };
         },
         getDefaultFrequency() { return this.localData.lineFrequency; },

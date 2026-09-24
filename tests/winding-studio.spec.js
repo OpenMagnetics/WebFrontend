@@ -1354,25 +1354,30 @@ test.describe('Winding Studio P0', () => {
       const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
       const pinia = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia;
       const history = pinia._s.get('history');
+      // Since ABT #1084 the store skips a state whose DESIGN (inputs + magnetic)
+      // equals the current entry — a rebound echo or an outputs-only write, not
+      // an edit. Each synthetic state must therefore carry its own design, or
+      // every add after the first is (correctly) ignored.
+      const state = (step) => ({ step, inputs: {}, magnetic: { testStep: step } });
       // The 100ms rebound blocker sits between real wind completions too.
       history.unblockAdditions();
-      history.addToHistory({ step: 'base' });
+      history.addToHistory(state('base'));
       await sleep(150);
-      history.addToHistory({ step: 'pre' });
+      history.addToHistory(state('pre'));
       await sleep(150);
       const lengthBeforeGesture = history.masHistory.length;
-      history.addToHistory({ step: 'drag1' }, 'studio:test-gesture');
+      history.addToHistory(state('drag1'), 'studio:test-gesture');
       await sleep(150);
-      history.addToHistory({ step: 'drag2' }, 'studio:test-gesture');
+      history.addToHistory(state('drag2'), 'studio:test-gesture');
       await sleep(150);
-      history.addToHistory({ step: 'drag3' }, 'studio:test-gesture');
+      history.addToHistory(state('drag3'), 'studio:test-gesture');
       await sleep(150);
       const grewBy = history.masHistory.length - lengthBeforeGesture;
       const top = history.masHistory[history.historyPointer].step;
       const backState = history.back();
       // A NEW gesture after undo must not coalesce into the restored entry.
       await sleep(150);
-      history.addToHistory({ step: 'drag4' }, 'studio:test-gesture');
+      history.addToHistory(state('drag4'), 'studio:test-gesture');
       const afterNewGesture = history.masHistory[history.historyPointer].step;
       return { grewBy, top, backStep: backState.step, afterNewGesture };
     });

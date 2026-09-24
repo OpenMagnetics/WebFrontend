@@ -536,6 +536,11 @@ export default {
       if (operatingPoints.length === 0) {
         throw new Error("Simulation did not return operating points");
       }
+      // "Design Magnetic" builds the MAS from these; without them it failed much later
+      // with "Cannot set properties of null (setting 'topology')".
+      if (designRequirements == null) {
+        throw new Error("Simulation result carries no designRequirements");
+      }
 
       // Build magnetic waveforms from operating points (consistent across all topologies)
       let magneticWaveforms = this.buildMagneticWaveformsFromInputs(operatingPoints, defaultFrequency);
