@@ -1709,6 +1709,7 @@ export const useTaskQueueStore = defineStore('taskQueue', {
                 'boostConverter':                   'generate_boost_ngspice_circuit',
                 'sepicConverter':                   'generate_sepic_ngspice_circuit',
                 'powerFactorCorrection':            'generate_boost_ngspice_circuit',
+                'viennaRectifierConverter':         'generate_vienna_ngspice_circuit',
                 'pushPullConverter':                'generate_push_pull_ngspice_circuit',
                 'singleSwitchForwardConverter':     'generate_forward_ngspice_circuit',
                 'twoSwitchForwardConverter':        'generate_two_switch_forward_ngspice_circuit',

@@ -215,48 +215,49 @@ export default {
                     calc = await this.taskQueueStore.calculateDmcInputs(aux);
                 } else {
                     const proposal = await this.taskQueueStore.proposeDmcDesign(aux);
-                    inductance = proposal?.inductance ?? proposal?.minimumInductance ?? this.localData.desiredInductance;
+                    inductance = proposal?.inductance ?? proposal?.minimumInductance;
+                    if (!(inductance > 0)) {
+                        throw new Error(`DMC design proposal returned no inductance (got ${JSON.stringify(proposal)?.slice(0, 200)})`);
+                    }
                     const auxWithL = { ...aux, minimumInductance: inductance };
                     calc = await this.taskQueueStore.calculateDmcInputs(auxWithL);
                 }
-                let sweep;
-                try {
-                    sweep = await this.taskQueueStore.simulateDmcWaveforms(
-                        aux, inductance, this.localData.filterCapacitance);
-                } catch (e) {
-                    console.warn('DMC simulation failed, falling back to analytical:', e);
-                    sweep = null;
+                // A failed simulation is an error the user must see — never
+                // silently replaced by the analytical result (no-fallback rule).
+                // ConverterWizardBase shows the message in the waveform panel.
+                const sweep = await this.taskQueueStore.simulateDmcWaveforms(
+                    aux, inductance, this.localData.filterCapacitance);
+                // Kirchhoff returns {success, converterWaveforms:[...], failedFrequencies?}.
+                if (sweep?.success !== true) {
+                    throw new Error(`DMC simulation failed: ${sweep?.error ?? JSON.stringify(sweep)?.slice(0, 200)}`);
                 }
-                // Kirchhoff returns {success, converterWaveforms:[...], failedFrequencies?}
-                // (an envelope, not a bare array). Failed frequencies are surfaced, not hidden.
-                const rows = sweep?.converterWaveforms;
-                if (sweep?.failedFrequencies?.length) {
+                const rows = sweep.converterWaveforms;
+                if (!Array.isArray(rows) || rows.length === 0) {
+                    throw new Error('DMC simulation returned no waveforms');
+                }
+                if (sweep.failedFrequencies?.length) {
                     console.warn('DMC simulation skipped frequencies:', sweep.failedFrequencies);
                 }
-                let result;
-                if (sweep?.success !== true || !Array.isArray(rows) || rows.length === 0) {
-                    if (sweep && sweep.success !== true && sweep.error) {
-                        console.warn('DMC simulation unavailable, using analytical:', sweep.error);
-                    }
-                    result = calc;
-                } else {
-                    const s = rows[0];
-                    // simulate_dmc_waveforms now honors numberOfPeriods server
-                    // side (ngspice extracts exactly N cycles), so use the
-                    // returned waveforms directly.
-                    const numWindings = this.numWindings;
-                    const operatingPoint = {
-                        name: s.operatingPointName || `Simulated @ ${s.frequency} Hz`,
-                        conditions: { ambientTemperature: this.localData.ambientTemperature },
-                        excitationsPerWinding: Array.from({ length: numWindings }, (_, i) => ({
-                            name: this.windingName(i),
-                            frequency: s.frequency,
-                            current: { waveform: { time: s.time, data: s.inductorCurrent } },
-                            voltage: { waveform: { time: s.time, data: s.inputVoltage } },
-                        })),
-                    };
-                    result = { designRequirements: calc.designRequirements, operatingPoints: [operatingPoint], dmcDiagnostics: calc?.dmcDiagnostics ?? null };
+                const s = rows[0];
+                if (!Array.isArray(s.inductorVoltage) || s.inductorVoltage.length !== s.time?.length) {
+                    throw new Error('DMC simulation row has no inductorVoltage (the voltage across the choke); the engine is too old');
                 }
+                // simulate_dmc_waveforms returns one canonical steady-state period;
+                // the Periods knob tiles it for display only.
+                const numWindings = this.numWindings;
+                const operatingPoint = {
+                    name: s.operatingPointName || `Simulated @ ${s.frequency} Hz`,
+                    conditions: { ambientTemperature: this.localData.ambientTemperature },
+                    excitationsPerWinding: Array.from({ length: numWindings }, (_, i) => ({
+                        name: this.windingName(i),
+                        frequency: s.frequency,
+                        current: { waveform: { time: s.time, data: s.inductorCurrent } },
+                        // The voltage ACROSS the choke, not the input rail (which
+                        // carries the 230 V DC line voltage and is no winding voltage).
+                        voltage: { waveform: { time: s.time, data: s.inductorVoltage } },
+                    })),
+                };
+                const result = { designRequirements: calc.designRequirements, operatingPoints: [operatingPoint], dmcDiagnostics: calc?.dmcDiagnostics ?? null };
                 // numberOfSteadyStatePeriods is not yet wired into MKF's DMC
                 // simulation path — pending future MKF change.
                 return result;

@@ -7,7 +7,7 @@
 
 import { test, expect } from './_coverage.js';
 import { isBenign, openWizard, pause } from './utils.js';
-import { ss, FLYBACK_CY, PP_CY, goToBuilderStep, adviseCoreAndWait, adviseWireAndWait, adviseAllWiresAndWait, selectOptions, pickFirstOption, pickOption, numberInput } from './utils/builder-helpers.js';
+import { ss, FLYBACK_CY, PP_CY, goToBuilderStep, adviseCoreAndWait, adviseWireAndWait, adviseAllWiresAndWait, selectOptions, pickOption, numberInput } from './utils/builder-helpers.js';
 
 // =====================================================================
 // GROUP U – End-to-end complete build
@@ -66,7 +66,7 @@ test.describe('MB – Group U – End-to-end complete build', () => {
     await pickOption(page, '-WireType', 'Round');
     await pause(page, 500, 'mechanical: settle');
 
-    await pickFirstOption(page, '-WireStandard');
+    // No standard selector since ABT #1110: the standard follows the unit system.
     const diamOpts = await selectOptions(page, '-WireConductingDiameter');
     expect(diamOpts.length).toBeGreaterThan(0);
     await pickOption(page, '-WireConductingDiameter', diamOpts[Math.min(1, diamOpts.length - 1)]);

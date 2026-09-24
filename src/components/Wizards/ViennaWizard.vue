@@ -101,40 +101,10 @@ export default {
     },
     methods: {
         buildParams(mode) {
-            if (mode === 'spice') {
-                // generate_boost_ngspice_circuit (single-phase emulation) needs
-                // boost-style params. Per-leg input peak ≈ V_LL,RMS × √(2/3).
-                // lineToLineVoltage is a DimensionWithTolerance object — pull
-                // the nominal RMS value out before scaling (the original code
-                // multiplied the object by a scalar and silently produced NaN).
-                const vll = this.localData.lineToLineVoltage ?? {};
-                const vllNominal = vll.nominal ?? ((vll.minimum != null && vll.maximum != null) ? (vll.minimum + vll.maximum) / 2 : (vll.maximum ?? vll.minimum));
-                if (!(vllNominal > 0)) {
-                    throw new Error('Vienna: lineToLineVoltage.nominal is required for SPICE export');
-                }
-                const k = Math.sqrt(2 / 3);
-                // Phase peak voltage seen by each boost inductor in the
-                // single-phase emulation = V_LL,RMS × √(2/3). Carry
-                // min/max through so the boost SPICE generator has a
-                // proper input-voltage range.
-                const vMin = (vll.minimum ?? vllNominal * 0.9) * k;
-                const vMax = (vll.maximum ?? vllNominal * 1.1) * k;
-                const vNom = vllNominal * k;
-                const outputCurrent = this.localData.outputPower / this.localData.outputDcVoltage;
-                return {
-                    inputVoltage: { minimum: vMin, nominal: vNom, maximum: vMax },
-                    switchingFrequency: this.localData.switchingFrequency,
-                    efficiency: this.localData.efficiency,
-                    currentRippleRatio: this.localData.currentRippleRatio,
-                    diodeVoltageDrop: 0,
-                    operatingPoints: [{
-                        outputVoltage: this.localData.outputDcVoltage,
-                        outputCurrent,
-                        switchingFrequency: this.localData.switchingFrequency,
-                        ambientTemperature: this.localData.ambientTemperature,
-                    }],
-                };
-            }
+            // Every mode, SPICE included, sends the same Vienna spec: webKirchhoff designs the real
+            // three-phase Vienna deck (design_tas + generate_ngspice_circuit), the same deck the
+            // Simulated button runs. The old single-phase boost emulation params went to a
+            // topology the SPICE map never listed, so the button threw before reaching the engine.
             const aux = {
                 lineToLineVoltage: this.localData.lineToLineVoltage,
                 lineFrequency: this.localData.lineFrequency,

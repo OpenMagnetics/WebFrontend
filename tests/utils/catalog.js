@@ -124,12 +124,8 @@ export const WIZARD_CATALOG = Object.freeze([
   w('src',                 'SRC',                       'Src-link',                              'SrcWizard',                'resonant', ['heavy', 'scenario']),
 
   // ── 3-phase PFC ───────────────────────────────────────────────────
-  // Vienna SPICE is single-phase boost emulation (MKF Phase-1): one phase
-  // solved at peak-of-line and replicated across B/C by 120-deg symmetry.
-  // Returned payload carries `viennaDiagnostics.note` explaining the
-  // limitation. Full 3-phase netlist deferred to MKF Phase 3+.
-  // Vienna's SPICE is wired in the wizard but the `@get-spice-code` listener is
-  // intentionally omitted (single-phase emulation only). Skip in tests.
+  // Vienna SPICE exports webKirchhoff's three-phase Vienna deck (design_tas +
+  // generate_ngspice_circuit), the same deck the Simulated button runs.
   w('vienna',              'Vienna Rectifier',          'Vienna-link',                           'ViennaWizard',             'pfc',      ['scenario']),
 
   // ── Measurement (hidden from UI) ──────────────────────────────────

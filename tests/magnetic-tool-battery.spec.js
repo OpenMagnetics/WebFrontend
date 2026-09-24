@@ -77,13 +77,16 @@ async function clickContinue(page) {
 }
 
 /** Run Magnetic Adviser "Get Advised Magnetics" and wait for loading to finish. */
-async function runMagneticAdviser(page, timeoutMs = 90000) {
+// A full Magnetic Adviser run takes ~55 s on production (core + coil + simulate
+// per candidate). The loading indicator must clear: a run that never finishes
+// is a failure, not something to carry on past.
+async function runMagneticAdviser(page, timeoutMs = 180000) {
   const btn = page.locator(`[data-cy="${MA_PFX}-calculate-mas-advises-button"]`);
-  await softWaitFor(btn, { timeout: 10000 });
+  await expect(btn).toBeVisible({ timeout: 10000 });
   await btn.click();
-  await tryWaitForFunction(page,
+  await page.waitForFunction(
     () => !document.querySelector('[data-cy="magneticAdviser-loading"]'),
-    { timeout: timeoutMs }
+    null, { timeout: timeoutMs, polling: 500 }
   );
   await pause(page, 500, 'mechanical: settle');
 }
@@ -290,6 +293,7 @@ test.describe('Group C — Operating Points', () => {
 // ── Group E — Magnetic Adviser ────────────────────────────────────────────────
 
 test.describe('Group E — Magnetic Adviser', () => {
+  test.describe.configure({ timeout: 300000 });
   test('E1: Magnetic Adviser accessible via "Design Magnetic" from wizard', async ({ page }) => {
     const ok = await goToMagneticAdviser(page, () => openWizard(page, BUCK_CY));
     expect(ok, 'Design Magnetic flow must reach the Magnetic Adviser').toBe(true);
@@ -311,10 +315,12 @@ test.describe('Group E — Magnetic Adviser', () => {
     await ss(page, 'E2-adviser-from-builder');
   });
 
-  test('E3: running Get Advised Magnetics shows results or finishes loading', async ({ page }) => {
+  test('E3: running Get Advised Magnetics finishes with at least one result', async ({ page }) => {
     const ok = await goToMagneticAdviser(page, () => openWizard(page, BUCK_CY));
     expect(ok).toBe(true);
     await runMagneticAdviser(page);
+    await expect(page.locator('[data-cy$="-advise-0-select-button"]').first(),
+      'the Magnetic Adviser must return at least one magnetic for the default buck').toBeVisible({ timeout: 15000 });
     await ss(page, 'E3-magnetic-adviser-results');
   });
 
@@ -756,6 +762,7 @@ test.describe('Group I — Exports & Control Panel', () => {
 // ── Group J — End-to-end flows ────────────────────────────────────────────────
 
 test.describe('Group J — End-to-end flows', () => {
+  test.describe.configure({ timeout: 300000 });
   test('J1: Buck wizard → Review Specs → 4 storyline tabs visible', async ({ page }) => {
     const ok = await openViaWizard(page, BUCK_CY);
     expect(ok).toBe(true);

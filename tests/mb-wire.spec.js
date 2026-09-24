@@ -11,7 +11,7 @@
 import { test, expect } from './_coverage.js';
 import { isBenign, pause } from './utils.js';
 import { ss, goToBuilderStep, adviseCoreAndWait, adviseWireAndWait,
-         selectOptions, selectValue, pickOption, pickFirstOption } from './utils/builder-helpers.js';
+         selectOptions, selectValue, pickOption } from './utils/builder-helpers.js';
 
 // =====================================================================
 // GROUP H – Wire Advise buttons
@@ -78,41 +78,45 @@ test.describe('MB – Group I – Round Wire', () => {
     await ss(page, 'I1-wire-type-selector');
   });
 
-  test('MB-I2 – Select round wire reveals standard, diameter, coating selectors', async ({ page }) => {
+  // ABT #1110: the wire standard follows the profile unit system (IEC 60317 under
+  // SI, NEMA MW 1000 C under imperial), so the round-wire panel has no standard
+  // selector any more — only size and coating. Imperial is covered end to end in
+  // mb-wire-table-and-standard.spec.js.
+  test('MB-I2 – Select round wire reveals diameter and coating selectors, and no standard selector', async ({ page }) => {
     await goToBuilderStep(page);
     await adviseCoreAndWait(page);
 
     await pickOption(page, '-WireType', 'Round');
     await pause(page, 600, 'mechanical: settle');
 
-    await expect(page.locator('[data-cy$="-WireStandard-container"]').first()).toBeVisible();
     await expect(page.locator('[data-cy$="-WireConductingDiameter-container"]').first()).toBeVisible();
     await expect(page.locator('[data-cy$="-WireCoating-container"]').first()).toBeVisible();
+    await expect(page.locator('[data-cy$="-WireStandard-container"]'), 'the standard follows the unit system; no selector').toHaveCount(0);
     await ss(page, 'I2-round-wire-controls');
   });
 
-  test('MB-I3 – Wire Standard selector has options', async ({ page }) => {
+  test('MB-I3 – Under SI the round-wire sizes are metric, not AWG', async ({ page }) => {
     await goToBuilderStep(page);
     await adviseCoreAndWait(page);
 
     await pickOption(page, '-WireType', 'Round');
     await pause(page, 500, 'mechanical: settle');
 
-    const opts = await selectOptions(page, '-WireStandard');
-    expect(opts.length, 'wire standard select must have at least one option').toBeGreaterThan(0);
-    await ss(page, 'I3-wire-standard');
+    const opts = await selectOptions(page, '-WireConductingDiameter');
+    expect(opts.length, 'diameter select must have options').toBeGreaterThan(0);
+    expect(opts.some(o => /AWG/.test(o)), `no AWG sizes under SI (got ${opts.slice(0, 5).join(', ')}…)`).toBe(false);
+    await ss(page, 'I3-wire-sizes-si');
   });
 
-  test('MB-I4 – Conducting diameter selector populated after standard is chosen', async ({ page }) => {
+  test('MB-I4 – Conducting diameter selector is populated and a pick applies', async ({ page }) => {
     await goToBuilderStep(page);
     await adviseCoreAndWait(page);
 
     await pickOption(page, '-WireType', 'Round');
     await pause(page, 500, 'mechanical: settle');
-    await pickFirstOption(page, '-WireStandard');
 
     const diamOpts = await selectOptions(page, '-WireConductingDiameter');
-    expect(diamOpts.length, 'diameter select must have options after a standard is chosen').toBeGreaterThan(0);
+    expect(diamOpts.length, 'diameter select must have options').toBeGreaterThan(0);
 
     const pick = diamOpts[Math.floor(diamOpts.length / 2)];
     await pickOption(page, '-WireConductingDiameter', pick);
