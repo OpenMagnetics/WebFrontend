@@ -915,21 +915,38 @@ export default {
       const normalizedOperatingPoints = operatingPoints.map((op, idx) => ({
         ...op,
         name: op.name || `Operating Point ${idx + 1}`,
-        excitationsPerWinding: (op.excitationsPerWinding || []).map(exc => ({
-          ...exc,
-          current: exc.current ? {
-            ...exc.current,
-            processed: exc.current.processed || { label: 'sinusoidal', dutyCycle: 0.5 }
-          } : undefined,
-          voltage: exc.voltage ? {
-            ...exc.voltage,
-            processed: exc.voltage.processed || { label: 'sinusoidal', dutyCycle: 0.5 }
-          } : undefined
-        }))
+        // Every signal must arrive processed (processSimulatedOperatingPoints runs just
+        // before this). A missing one used to be filled with an invented 50 % sinusoid,
+        // which the advisers then sized the magnetic against. Say which one is missing.
+        excitationsPerWinding: (op.excitationsPerWinding || []).map((exc, windingIndex) => {
+          for (const signal of ['current', 'voltage']) {
+            if (exc[signal] && !exc[signal].processed) {
+              throw new Error(`Operating point ${idx + 1}, winding ${windingIndex + 1} (${exc.name ?? 'unnamed'}): the ${signal} has no processed data`);
+            }
+          }
+          return exc;
+        })
       }));
+      // One isolation side per winding. A wizard's fixed list (e.g. [primary,
+      // secondary]) is right only when it has exactly one entry per winding; a
+      // Weinberg (4 windings) or a multi-output DAB/PSFB has more, and the extra
+      // windings used to be labelled 'primary' by default — a secondary marked
+      // primary, and a designRequirements.isolationSides shorter than the coil.
+      // The engine returns one side per winding, so use it then; never guess.
+      const windingCount = operatingPoints[0].excitationsPerWinding.length;
+      const engineSides = designRequirements?.isolationSides;
+      let sides;
+      if (Array.isArray(isolationSides) && isolationSides.length === windingCount) {
+        sides = isolationSides;
+      } else if (Array.isArray(engineSides) && engineSides.length === windingCount) {
+        sides = engineSides;
+      } else {
+        throw new Error(`setupMasStore: ${windingCount} windings but the wizard gives ${JSON.stringify(isolationSides)} `
+          + `and the engine ${JSON.stringify(engineSides)} as isolation sides — one per winding is required`);
+      }
       wi.masStore.mas.inputs = { designRequirements, operatingPoints: normalizedOperatingPoints };
       wi.masStore.mas.magnetic.coil.functionalDescription = operatingPoints[0].excitationsPerWinding.map((e, i) => ({
-        name: e.name, numberTurns: 0, numberParallels: 0, isolationSide: isolationSides[i] || 'primary', wire: "Dummy"
+        name: e.name, numberTurns: 0, numberParallels: 0, isolationSide: sides[i], wire: "Dummy"
       }));
       // Apply coil groups (windings that share sections via wound_with).
       // Each group is a list of winding names; every member's woundWith is
@@ -954,7 +971,7 @@ export default {
         }
       }
       wi.masStore.mas.inputs.designRequirements.topology = topology;
-      wi.masStore.mas.inputs.designRequirements.isolationSides = isolationSides;
+      wi.masStore.mas.inputs.designRequirements.isolationSides = sides;
       // turnsRatios is required-array on the MAS DesignRequirements schema
       // (quicktype validator rejects undefined). For non-isolated topologies
       // there is no transformer ratio, so an empty array is the correct

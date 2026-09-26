@@ -125,16 +125,24 @@ export default {
     },
     methods: {
 
-    // Topology-variant params shared by every MKF call. The MAS schema parses
-    // these directly (PowerFactorCorrection(json)), so no extra backend wiring
-    // is needed. numberOfPhases only matters for interleavedBoost;
-    // wideBandgapSwitch only for totemPole CCM — both are harmless otherwise.
+    // Topology-variant params shared by every engine call. numberOfPhases belongs to
+    // interleavedBoost only: Kirchhoff rejects a phase count on any other variant
+    // ("numberOfPhases 2 needs topologyVariant interleavedBoost; the 'boost' variant is
+    // single-phase"), and this used to send 2 on every variant, so the default PFC
+    // (boost) failed to design. wideBandgapSwitch only matters for totemPole CCM.
     variantParams() {
-      return {
+      const params = {
         topologyVariant: this.localData.topologyVariant,
-        numberOfPhases: Number(this.localData.numberOfPhases) || 2,
         wideBandgapSwitch: this.localData.wideBandgapSwitch !== false,
       };
+      if (this.localData.topologyVariant === 'interleavedBoost') {
+        const phases = Number(this.localData.numberOfPhases);
+        if (!Number.isInteger(phases) || phases < 2) {
+          throw new Error(`Interleaved boost PFC needs at least 2 phases, got ${this.localData.numberOfPhases}`);
+        }
+        params.numberOfPhases = phases;
+      }
+      return params;
     },
 
     // ===== WIZARD CONTRACT =====
