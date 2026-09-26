@@ -32,6 +32,17 @@ export async function setBuilderLayout(page, key) {
     }, key);
 }
 
+/**
+ * Turn the builder's graphs on or off, as the Settings checkbox does. They are
+ * off by default (magneticBuilderSettings.enableGraphs), and every layout honours it.
+ */
+export async function setBuilderGraphs(page, enabled) {
+    await page.evaluate((on) => {
+        const app = document.querySelector('#app').__vue_app__;
+        app.config.globalProperties.$pinia._s.get('magneticBuilderSettings').enableGraphs = on;
+    }, enabled);
+}
+
 /** The layout the store currently holds. */
 export async function currentBuilderLayout(page) {
     return page.evaluate(() => {

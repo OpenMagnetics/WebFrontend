@@ -21,6 +21,7 @@ import {
   BUILDER_LAYOUTS,
   LAYOUT_MARKERS,
   setBuilderLayout,
+  setBuilderGraphs,
   currentBuilderLayout,
   designFingerprint,
   auditGeometry,
@@ -167,9 +168,13 @@ test.describe('Builder layouts (ABT #1121) @heavy', () => {
     ).toBeVisible({ timeout: 90000 });
     await expect(page.locator('[data-cy$="-Band-Alternatives-find-button"]')).toBeEnabled();
 
-    // The third cell of the wire row: a winding graph, chosen from the winding domain only.
+    // The third cell of the wire row: a winding graph, chosen from the winding domain
+    // only — when the builder's graphs are on (Settings; off by default).
     const graphSelect = page.locator('[data-cy$="-Band-WireGraph-GraphPanel-GraphSelector-select"]').first();
-    await expect(graphSelect, 'the wire row plots the winding').toBeVisible();
+    await expect(graphSelect, 'graphs are off by default, so the wire row plots nothing').toHaveCount(0);
+    await expect(page.getByText('Graphs are off in this builder.').first()).toBeVisible();
+    await setBuilderGraphs(page, true);
+    await expect(graphSelect, 'the wire row plots the winding').toBeVisible({ timeout: 30000 });
 
     await setBuilderLayout(page, 'columns');
     expect(errors, `console errors: ${errors.join(' | ')}`).toHaveLength(0);
