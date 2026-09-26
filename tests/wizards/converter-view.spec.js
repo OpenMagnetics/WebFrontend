@@ -19,17 +19,12 @@ import { collectConsoleErrors } from '../utils/console.js';
 
 /** Read the base component's converter-view state. */
 const readBase = (page) => page.evaluate(() => {
-  let node = document.querySelector('[data-cy="FlybackWizard-OutputsParameters voltage-number-input"]');
-  while (node && !node.__vueParentComponent) node = node.parentElement;
-  let component = node?.__vueParentComponent;
-  while (component && (component.type?.__name || component.type?.name) !== 'FlybackWizard') {
-    component = component.parent;
-  }
-  if (!component) throw new Error('FlybackWizard component instance not found in the page');
-  const base = component.proxy.$refs.base;
+  const wizard = window.__omFindComponent('FlybackWizard');
+  if (!wizard) throw new Error('FlybackWizard component instance not found in the page');
+  const base = wizard.$refs.base;
   const traces = base.effectiveConverterWaveforms?.[0]?.waveforms ?? [];
   return JSON.parse(JSON.stringify({
-    viewMode: component.proxy.waveformViewMode,
+    viewMode: wizard.waveformViewMode,
     hasTas: !!base.converterTas,
     error: base.converterWaveformsError,
     labels: traces.map((t) => t.label),

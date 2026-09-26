@@ -67,17 +67,18 @@ export async function runMagneticAdviser(page, { timeoutMs = 180_000 } = {}) {
     }
     await btn.click();
 
-    // Done when the loading panel goes away AND at least one result-card's
-    // select-button is in the DOM (or the empty-state appears). The card
-    // data-cy is `${parentLabel}-advise-N-select-button`; parentLabel may
-    // be empty so we match by suffix.
+    // The run is done when the loading marker has APPEARED and then cleared.
+    // This used to wait for "a result card OR the 'No Results Yet' text" —
+    // but that empty state is on screen BEFORE the run starts, so the wait
+    // could resolve on its first poll and report 0 results for an adviser
+    // that had not begun (and `{ timeout }` was passed as the page-function
+    // argument, not as options, so the timeout was never applied).
+    await page.locator('[data-cy="magneticAdviser-loading"]').first()
+      .waitFor({ state: 'visible', timeout: 15_000 });
     await page.waitForFunction(
-      () =>
-        document.querySelector(
-          '[data-cy*="-advise-"][data-cy$="-select-button"]'
-        ) !== null
-        || /No Results Yet/i.test(document.body.innerText),
-      { timeout: timeoutMs }
+      () => !document.querySelector('[data-cy="magneticAdviser-loading"]'),
+      null,
+      { timeout: timeoutMs, polling: 500 }
     );
     await settleAnimations(page, 500);
 

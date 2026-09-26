@@ -43,14 +43,8 @@ async function typeInto(page, cy, index, value) {
 
 /** Read the wizard component's own state (localData + the engine's design requirements). */
 const readWizard = (page) => page.evaluate(() => {
-  let node = document.querySelector('[data-cy="FlybackWizard-OutputsParameters voltage-number-input"]');
-  while (node && !node.__vueParentComponent) node = node.parentElement;
-  let component = node?.__vueParentComponent;
-  while (component && (component.type?.__name || component.type?.name) !== 'FlybackWizard') {
-    component = component.parent;
-  }
-  if (!component) throw new Error('FlybackWizard component instance not found in the page');
-  const wizard = component.proxy;
+  const wizard = window.__omFindComponent('FlybackWizard');
+  if (!wizard) throw new Error('FlybackWizard component instance not found in the page');
   // Structured-clone the reactive tree: Vue proxies are not serialisable across the CDP bridge.
   return JSON.parse(JSON.stringify({
     rails: wizard.localData.outputsParameters.map((o) => o.voltage),
@@ -149,12 +143,8 @@ for (const { key, linkCy, voltageCy } of NEGATIVE_CAPABLE) {
       await runAnalytical(page, 120_000);
 
       const state = await page.evaluate((selector) => {
-        let node = document.querySelector(`[data-cy="${selector}"]`);
-        while (node && !node.__vueParentComponent) node = node.parentElement;
-        let component = node?.__vueParentComponent;
-        while (component && !component.proxy?.localData?.outputsParameters) component = component.parent;
-        if (!component) throw new Error('wizard component instance not found');
-        const wizard = component.proxy;
+        const wizard = window.__omFindComponent((inst) => inst.proxy?.localData?.outputsParameters != null);
+        if (!wizard) throw new Error('wizard component instance not found');
         return JSON.parse(JSON.stringify({
           rails: wizard.localData.outputsParameters.map((o) => o.voltage),
           errorMessage: wizard.errorMessage,

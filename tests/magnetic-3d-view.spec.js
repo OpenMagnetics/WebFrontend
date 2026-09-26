@@ -34,6 +34,7 @@ import { test, expect } from '@playwright/test';
 import { BASE_URL, pause } from './utils.js';
 import { openWizard, runAnalytical, goToMagneticBuilder } from './utils/nav.js';
 import { runCoreAdviser } from './utils/steps.js';
+import { installVueComponentFinder } from './_coverage.js';
 
 // A raw MAS as it comes out of the catalogue: core shape by NAME, bobbin left as
 // the "basic" placeholder, no geometricalDescription. This is the shape of design
@@ -88,6 +89,10 @@ async function goToRoute(page, route, timeout = 60000) {
 const isAppNoise = (text) => /\[vite\]|WebSocket|HMR/i.test(text);
 
 test.describe('3D on the web', () => {
+    // This spec uses the plain Playwright fixture, so it installs the Vue component finder
+    // (window.__omFindComponent, which works in production builds) itself.
+    test.beforeEach(async ({ context }) => { await installVueComponentFinder(context); });
+
     test.describe.configure({ timeout: 180000 });
 
     test('3DW-1: the SERVED engine builds core, turns and assembly geometry for a by-name design (ABT #631)', async ({ page }) => {
@@ -239,7 +244,7 @@ test.describe('3D on the web', () => {
         // empty frame, and an empty frame is precisely the #631 symptom.
         const scene = await page.waitForFunction(() => {
             const el = document.querySelector('.magnetic-3d-visualizer-container');
-            const threeScene = el?.__vueParentComponent?.proxy?.$refs?.scene?.scene;
+            const threeScene = el && window.__omFindComponent((i) => i.proxy?.$refs?.scene?.scene && i.proxy.$el?.contains?.(el))?.$refs?.scene?.scene;
             if (!threeScene) return false;
             const meshes = [];
             const walk = (obj) => {
@@ -291,7 +296,7 @@ test.describe('3D on the web', () => {
 
         const readScene = () => page.waitForFunction(() => {
             const el = document.querySelector('.magnetic-3d-visualizer-container');
-            const scene = el?.__vueParentComponent?.proxy?.$refs?.scene?.scene;
+            const scene = el && window.__omFindComponent((i) => i.proxy?.$refs?.scene?.scene && i.proxy.$el?.contains?.(el))?.$refs?.scene?.scene;
             if (!scene) return false;
             let meshes = 0, vertices = 0;
             const walk = (o) => {
@@ -324,7 +329,7 @@ test.describe('3D on the web', () => {
         // So: the geometry changed, or the viewer SAID it could not route. Never neither.
         const outcome = await page.waitForFunction((idealVertices) => {
             const el = document.querySelector('.magnetic-3d-visualizer-container');
-            const vm = el?.__vueParentComponent?.proxy;
+            const vm = el && window.__omFindComponent((i) => i.proxy?.$refs?.scene?.scene && i.proxy.$el?.contains?.(el));
             const scene = vm?.$refs?.scene?.scene;
             if (!scene || vm.updating) return false;
             let meshes = 0, vertices = 0;

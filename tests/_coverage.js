@@ -113,12 +113,56 @@ async function installFallbackCookieConsent(context) {
   });
 }
 
+// Component lookup that works on a PRODUCTION build too. Tests used to climb
+// `element.__vueParentComponent`, which Vue only attaches in dev builds, so every
+// such test failed against openmagnetics.com ("component instance not found").
+// Production still exposes the app (`#app.__vue_app__`) and its instance tree,
+// and SFC components keep `__name`, so walk the vnode tree from the root.
+//   window.__omFindComponent('FlybackWizard')            -> proxy or null
+//   window.__omFindComponent((i) => i.proxy?.localData?.x) -> first match
+export async function installVueComponentFinder(context) {
+  await context.addInitScript(() => {
+    window.__omFindComponent = (nameOrTest) => {
+      const test = typeof nameOrTest === 'function'
+        ? nameOrTest
+        : (inst) => (inst.type?.__name || inst.type?.name) === nameOrTest;
+      const seen = new Set();
+      const walk = (vnode) => {
+        if (!vnode || typeof vnode !== 'object' || seen.has(vnode)) return null;
+        seen.add(vnode);
+        const inst = vnode.component;
+        if (inst) {
+          if (test(inst)) return inst;
+          const hit = walk(inst.subTree);
+          if (hit) return hit;
+        }
+        if (vnode.suspense?.activeBranch) {
+          const hit = walk(vnode.suspense.activeBranch);
+          if (hit) return hit;
+        }
+        if (Array.isArray(vnode.children)) {
+          for (const child of vnode.children) {
+            const hit = walk(child);
+            if (hit) return hit;
+          }
+        }
+        return null;
+      };
+      const root = document.querySelector('#app')?.__vue_app__?._instance;
+      if (!root) return null;
+      if (test(root)) return root.proxy;
+      return walk(root.subTree)?.proxy ?? null;
+    };
+  });
+}
+
 const withFixtures = base.extend({
   autoRouteFixtures: [
     async ({ page, context }, use) => {
       // Belt-and-braces: storageState usually handles this, but in case a
       // test runner launches without the globalSetup file, still set the flag.
       await installFallbackCookieConsent(context);
+      await installVueComponentFinder(context);
       await installRouteFixtures(page);
       await use();
     },

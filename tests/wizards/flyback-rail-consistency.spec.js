@@ -27,14 +27,8 @@ import { openWizard } from '../utils/index.js';
 
 /** Set the wizard's design level + rails, run its validation, return the resulting error text. */
 const validate = (page, designLevel, rails) => page.evaluate(([level, outputs]) => {
-  let node = document.querySelector('[data-cy="FlybackWizard-OutputsParameters voltage-number-input"]');
-  while (node && !node.__vueParentComponent) node = node.parentElement;
-  let component = node?.__vueParentComponent;
-  while (component && (component.type?.__name || component.type?.name) !== 'FlybackWizard') {
-    component = component.parent;
-  }
-  if (!component) throw new Error('FlybackWizard component instance not found');
-  const wizard = component.proxy;
+  const wizard = window.__omFindComponent('FlybackWizard');
+  if (!wizard) throw new Error('FlybackWizard component instance not found');
   wizard.localData.designLevel = level;
   wizard.localData.outputsParameters = outputs;
   wizard.updateErrorMessage();
@@ -43,14 +37,8 @@ const validate = (page, designLevel, rails) => page.evaluate(([level, outputs]) 
 
 /** Set rails, fire the wizard's own update handler for one field, return {rails, error}. */
 const edit = (page, rails, dimension, index) => page.evaluate(([outputs, dim, i]) => {
-  let node = document.querySelector('[data-cy="FlybackWizard-OutputsParameters voltage-number-input"]');
-  while (node && !node.__vueParentComponent) node = node.parentElement;
-  let component = node?.__vueParentComponent;
-  while (component && (component.type?.__name || component.type?.name) !== 'FlybackWizard') {
-    component = component.parent;
-  }
-  if (!component) throw new Error('FlybackWizard component instance not found');
-  const wizard = component.proxy;
+  const wizard = window.__omFindComponent('FlybackWizard');
+  if (!wizard) throw new Error('FlybackWizard component instance not found');
   wizard.localData.designLevel = 'I know the design I want';
   wizard.localData.outputsParameters = outputs;
   wizard.onOutputParameterUpdate({ dimension: dim }, i);
