@@ -3,6 +3,7 @@ import { useMasStore } from '../../stores/mas'
 import Dialog from 'primevue/dialog'
 import CoreSTPExporter from './CoreSTPExporter.vue'
 import CoreStlExporter from './CoreStlExporter.vue'
+import MagneticFemStepExporter from './MagneticFemStepExporter.vue'
 </script>
 
 <script>
@@ -49,6 +50,11 @@ export default {
                 :core="masStore.mas.magnetic.core"
                 :coil="masStore.mas.magnetic.coil"
                 :fullCoreModel="true"
+            />
+            <MagneticFemStepExporter
+                class="btn col-4 mt-4"
+                :dataTestLabel="dataTestLabel + '-FEM-STEP'"
+                :magnetic="masStore.mas.magnetic"
             />
         </div>
     </Dialog>
