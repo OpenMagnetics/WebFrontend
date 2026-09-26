@@ -121,7 +121,11 @@ test.describe('Exporter content — MAS JSON', () => {
 
     expect(dl.filename).toMatch(/\.json$/i);
     const parsed = JSON.parse(dl.body);
-    expect('magnetic' in parsed || 'inputs' in parsed || 'outputs' in parsed).toBe(true);
+    // The first entry is "only with magnetic": a MAS Magnetic document, the magnetic
+    // alone ({core, coil, ...}, ABT #1388); the others are full MAS files.
+    const magnetic = 'magnetic' in parsed ? parsed.magnetic : parsed;
+    expect(magnetic.core, 'the download carries the core').toBeTruthy();
+    expect(magnetic.coil, 'the download carries the coil').toBeTruthy();
     await ss(page, 'MAS1-json-valid');
   });
 });
