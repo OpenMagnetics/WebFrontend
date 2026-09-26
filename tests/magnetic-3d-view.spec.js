@@ -288,7 +288,20 @@ test.describe('3D on the web', () => {
 
         // Real winding routes real CONDUCTORS, so the design needs real wires: without
         // them the coil has no turnsDescription and the toggle has nothing to rebuild.
+        // Wait for the wire adviser itself to finish: the coil already has turns from the
+        // core advise, and waiting on turnsDescription alone raced ahead with that coil.
+        await page.evaluate(() => {
+            const pinia = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia;
+            window.__wireAdviseOutcome = null;
+            const unsubscribe = pinia._s.get('magneticBuilderTaskQueue').$onAction(({ name, after, onError }) => {
+                if (name !== 'adviseAllWires') return;
+                after(() => { window.__wireAdviseOutcome = 'done'; unsubscribe(); });
+                onError((error) => { window.__wireAdviseOutcome = `failed: ${error?.message ?? error}`; unsubscribe(); });
+            });
+        });
         await page.locator('[data-cy$="Wire-Advise-All-button"]').first().click({ timeout: 60000 });
+        await page.waitForFunction(() => window.__wireAdviseOutcome != null, null, { timeout: 240000 });
+        expect(await page.evaluate(() => window.__wireAdviseOutcome), 'the wire adviser').toBe('done');
         await page.waitForFunction(() => {
             const pinia = document.querySelector('#app')?.__vue_app__?.config?.globalProperties?.$pinia;
             return (pinia?._s?.get('mas')?.mas?.magnetic?.coil?.turnsDescription?.length ?? 0) > 0;
@@ -349,10 +362,13 @@ test.describe('3D on the web', () => {
 
         if (outcome.refused) {
             // Refusal is an acceptable OUTCOME, not an acceptable silence: it has to be on
-            // screen, and it has to name a routing failure rather than any old error.
+            // screen, and it has to name a routing failure rather than any old error. A
+            // wind with turns inside the leads' connection corridors is one: the leads have
+            // no room to route (the auto-advised Flyback's interleaved coil fits only as an
+            // ideal wind).
             await expect(page.locator('[data-cy$="-turns-build-failed"]')).toHaveCount(1);
             expect(outcome.error, `turns build failed for a non-routing reason: ${outcome.error}`)
-                .toMatch(/ConductorBuilder|collision|route/i);
+                .toMatch(/ConductorBuilder|collision|route|connection corridor/i);
             testInfo.annotations.push({ type: 'issue', description: `real winding refused: ${outcome.error}` });
             return;
         }
