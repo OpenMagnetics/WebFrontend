@@ -11,6 +11,8 @@ import { useMasStore } from '/src/stores/mas'
 import { useSettingsStore } from '/src/stores/settings'
 import { useStateStore } from '/src/stores/state'
 import { initTelemetry } from 'WebSharedComponents/assets/js/telemetry.js'
+import { assertValidMas } from 'WebSharedComponents/assets/js/masValidator.js'
+import { setMasSchemaValidator } from '/MagneticBuilder/src/stores/taskQueue'
 import { useStyleStore } from '/src/stores/style'
 import { useFairRiteStyleStore } from '/src/stores/fairRiteStyle'
 import { useCustomPartsStore } from '/src/stores/customParts'
@@ -244,6 +246,9 @@ async function loadEngineData(mkf) {
     }
 }
 setEngineRestoreHandler(loadEngineData);
+// The builder's MAS sentry validates against the real MAS JSON Schema, which this
+// host bundles (ABT #1388); hosts that install nothing keep its type check.
+setMasSchemaValidator(assertValidMas);
 
 function preloadMKF() {
     if (preloadPromise || app.config.globalProperties.$mkf != null) {

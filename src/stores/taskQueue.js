@@ -10,7 +10,7 @@ import { waitForMkf, isWorkerMode } from 'WebSharedComponents/assets/js/mkfRunti
 // Magnetics methods (extract_operating_point, calculate_advised_*, mas_autocomplete, load_*) stay on
 // webMKF via waitForMkf().
 import { waitForKirchhoff } from 'WebSharedComponents/assets/js/kirchhoffRuntime'
-import { Convert as MasConvert } from 'WebSharedComponents/assets/ts/MAS.ts'
+import { assertValidMas } from 'WebSharedComponents/assets/js/masValidator.js'
 import { clean } from 'WebSharedComponents/assets/js/utils'
 import { unitSystem } from 'WebSharedComponents/assets/js/units.js'
 import { useInventoryStore, ENGINE_HAS_CONTEXT_ADVISERS } from '../stores/inventory'
@@ -27,10 +27,6 @@ import { useInventoryStore, ENGINE_HAS_CONTEXT_ADVISERS } from '../stores/invent
 // We never silently downgrade — on failure we throw with the full quicktype
 // error message (which includes the offending field path).
 function masSentry(where, kind, obj) {
-    const fn = MasConvert['to' + kind];
-    if (typeof fn !== 'function') {
-        throw new Error(`[MAS sentry @ ${where}] Unknown sentry kind "${kind}" (no Convert.to${kind} in MAS.ts)`);
-    }
     // Sentry-local cleaner. Recursively strips keys whose value is `null`,
     // `"null"`, or `undefined` from objects (not arrays). Quicktype's optional
     // fields are decoded as `u(undefined, ...)` and reject explicit `null`.
@@ -55,7 +51,9 @@ function masSentry(where, kind, obj) {
     }
     try {
         const cleaned = stripNulls(JSON.parse(JSON.stringify(obj)));
-        fn(JSON.stringify(cleaned));
+        // The real MAS JSON Schema (ABT #1388), not only quicktype's type check:
+        // bounds, patterns, const and oneOf included.
+        assertValidMas(kind, cleaned, where);
     } catch (e) {
         const cleaned = stripNulls(JSON.parse(JSON.stringify(obj)));
         const dr = cleaned?.inputs?.designRequirements ?? cleaned?.designRequirements ?? cleaned;

@@ -134,10 +134,20 @@ export function migrateLegacyMas(mas) {
 // import: fix + autocomplete it, reset the mas store, prime the state store,
 // and navigate to the magnetic tool. Extracted from Header.readMASFile so the
 // Header (file import) and My Designs (cloud open) share one code path.
+/**
+ * A MAS file is either a full MAS document ({inputs, magnetic, outputs}) or a
+ * MAS Magnetic document (the magnetic alone: {core, coil, ...}), which is what
+ * "Download MAS file only with magnetic" produces (ABT #1388). Return the MAS
+ * shape the app loads; throw for anything else.
+ */
+export function asMasDocument(doc) {
+    if (doc != null && typeof doc === 'object' && doc.magnetic != null) return doc;
+    if (doc != null && typeof doc === 'object' && doc.core != null && doc.coil != null) return { magnetic: doc };
+    throw new Error('Not a MAS document: neither a MAS file (with "magnetic") nor a MAS Magnetic (with "core" and "coil")');
+}
+
 export async function loadMasIntoApp(newMas, { masStore, stateStore, userStore, taskQueueStore, router, route }) {
-    if (newMas.magnetic == null) {
-        throw new Error('Not a MAS document: missing "magnetic"');
-    }
+    newMas = asMasDocument(newMas);
 
     migrateLegacyMas(newMas);
     quarantineInvalidOutputs(newMas);

@@ -66,11 +66,18 @@ export default defineConfig({
         // the existing MAS.ts. Catches schema drift at dev-server startup
         // (and at build time) instead of via runtime errors deep in WASM.
         masRegen({
+            // The MAS / PEAS schemas the engine is built with. Defaults to MKF's MAS + PEAS
+            // submodules next to this checkout; OM_MAS_SCHEMAS_DIR / OM_PEAS_SCHEMAS_DIR point
+            // at the engine's own tree when that checkout lags MKF main's pins.
+            schemasDir: process.env.OM_MAS_SCHEMAS_DIR || undefined,
+            peasDir: process.env.OM_PEAS_SCHEMAS_DIR || undefined,
             targets: [
                 fileURLToPath(new URL('./WebSharedComponents/assets/ts/MAS.ts', import.meta.url)),
                 fileURLToPath(new URL('./MagneticBuilder/src/assets/ts/MAS.ts', import.meta.url)),
                 fileURLToPath(new URL('./MagneticBuilder/WebSharedComponents/assets/ts/MAS.ts', import.meta.url)),
             ],
+            // JSON Schema bundle for the MAS sentry (WebSharedComponents/assets/js/masValidator.js).
+            schemaBundleTarget: fileURLToPath(new URL('./WebSharedComponents/assets/js/masSchemas.json', import.meta.url)),
         }),
         vue(),
         viteCompression({filter: /\.(js|mjs|json|css|html|wasm)$/i}),

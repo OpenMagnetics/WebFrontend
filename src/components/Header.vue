@@ -231,7 +231,8 @@ export default {
 
             fr.onload = async (e) => {
                 const newMas = JSON.parse(e.target.result);
-                if (newMas.magnetic != null) {
+                // A full MAS file or a MAS Magnetic document ("only with magnetic").
+                if (newMas.magnetic != null || (newMas.core != null && newMas.coil != null)) {
                     try {
                         // A file import is a new working design, not the linked cloud one.
                         this.cloudDesignStore.unlink();
