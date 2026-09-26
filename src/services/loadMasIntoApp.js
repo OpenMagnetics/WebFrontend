@@ -138,16 +138,62 @@ export function migrateLegacyMas(mas) {
  * A MAS file is either a full MAS document ({inputs, magnetic, outputs}) or a
  * MAS Magnetic document (the magnetic alone: {core, coil, ...}), which is what
  * "Download MAS file only with magnetic" produces (ABT #1388). Return the MAS
- * shape the app loads; throw for anything else.
+ * shape the app loads: a Magnetic document is wrapped, anything else is
+ * returned as it is for describeNonMasDocument to judge.
  */
 export function asMasDocument(doc) {
-    if (doc != null && typeof doc === 'object' && doc.magnetic != null) return doc;
-    if (doc != null && typeof doc === 'object' && doc.core != null && doc.coil != null) return { magnetic: doc };
-    throw new Error('Not a MAS document: neither a MAS file (with "magnetic") nor a MAS Magnetic (with "core" and "coil")');
+    const isMagneticDocument = doc != null && typeof doc === 'object' && !Array.isArray(doc)
+        && doc.magnetic == null && doc.core != null && doc.coil != null;
+    return isMagneticDocument ? { magnetic: doc } : doc;
 }
 
-export async function loadMasIntoApp(newMas, { masStore, stateStore, userStore, taskQueueStore, router, route }) {
-    newMas = asMasDocument(newMas);
+// The keys magnetic.json declares. Only the MAGNETIC key set is checked: files in
+// the wild carry extra TOP-LEVEL keys the current schema no longer defines
+// (tests/fixtures/etd49_wound_10uH_5T.json has 'masVersion'), and those load fine.
+const MAS_MAGNETIC_KEYS = ['name', 'core', 'coil', 'manufacturerInfo', 'distributorsInfo',
+    'rotation', 'coreElectricalReference', 'shunts'];
+
+// "Is this a MAS document at all?" — a shape sniff, not schema validation (legacy
+// documents are migrated, not rejected). Returns null when the document is
+// plausibly MAS, otherwise a message naming what is actually wrong with it.
+//
+// A bare `newMas.magnetic != null` gate was not enough: a customer's in-house
+// sizing export (MAS_2_Custom_16_Sep_2026.json) carried a `magnetic` key holding
+// scalars — Lmag_calc_uH, AL_nH_per_turn2, C_CM_pF — so it sailed past the gate
+// and died deep inside checkAndFixMas with "Cannot read properties of undefined
+// (reading 'functionalDescription')", logged to a console the user never opens.
+//
+// A MAS Magnetic document has no inputs by definition, so only a full MAS file
+// must carry them.
+export function describeNonMasDocument(doc) {
+    if (doc == null || typeof doc !== 'object' || Array.isArray(doc)) {
+        return 'the file does not contain a JSON object.';
+    }
+    const mas = asMasDocument(doc);
+    const magneticOnly = mas !== doc;
+    const magnetic = mas.magnetic;
+    if (magnetic == null || typeof magnetic !== 'object' || Array.isArray(magnetic)) {
+        return 'it has no "magnetic" section, and it is not a MAS Magnetic (a "core" and a "coil").';
+    }
+    const magneticKeys = Object.keys(magnetic);
+    if (!magneticKeys.some((key) => MAS_MAGNETIC_KEYS.includes(key))) {
+        return `its "magnetic" section holds ${magneticKeys.join(', ')} instead of a core and a coil.`;
+    }
+    if (!magneticOnly) {
+        const inputs = mas.inputs;
+        if (inputs == null || inputs.designRequirements == null || inputs.operatingPoints == null) {
+            return 'it has no "inputs" with design requirements and operating points.';
+        }
+    }
+    return null;
+}
+
+export async function loadMasIntoApp(doc, { masStore, stateStore, userStore, taskQueueStore, router, route }) {
+    const notMas = describeNonMasDocument(doc);
+    if (notMas != null) {
+        throw new Error(`This file is not a MAS design: ${notMas}`);
+    }
+    const newMas = asMasDocument(doc);
 
     migrateLegacyMas(newMas);
     quarantineInvalidOutputs(newMas);
