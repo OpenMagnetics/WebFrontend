@@ -8,7 +8,7 @@ import DimensionReadOnly from 'WebSharedComponents/DataInput/DimensionReadOnly.v
 import ElementFromList from 'WebSharedComponents/DataInput/ElementFromList.vue'
 import DimensionWithTolerance from 'WebSharedComponents/DataInput/DimensionWithTolerance.vue'
 import PairOfDimensions from 'WebSharedComponents/DataInput/PairOfDimensions.vue'
-import TripleOfDimensions from 'WebSharedComponents/DataInput/TripleOfDimensions.vue'
+import { outputTurnsRatioTitle as turnsRatioTitleFor } from './turnsRatioLabels.js'
 import { minimumMaximumScalePerParameter } from 'WebSharedComponents/assets/js/defaults.js'
 import ConverterWizardBase from './ConverterWizardBase.vue'
 import KhDiagnosticsPanel from './KhDiagnosticsPanel.vue'
@@ -88,6 +88,9 @@ export default {
     });
   },
   methods: {
+    outputTurnsRatioTitle(index) {
+      return turnsRatioTitleFor(index, this.localData.outputsParameters.length);
+    },
 
     // ===== WIZARD CONTRACT =====
     buildParams(mode) {
@@ -294,7 +297,7 @@ export default {
     </template>
 
     <template v-if="localData.designMode === 'I know the design I want'" #design-or-switch-parameters>
-      <Dimension :name="'turnsRatio'" :tooltip="tooltipsConverterWizards['turnsRatio']" :replaceTitle="'Turns'" :unit="null" :min="0.1" :max="100" v-model="localData" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor" :textColor="$styleStore.wizard.inputTextColor" @update="updateErrorMessage" :dataTestLabel="dataTestLabel + '-TurnsRatio'" />
+      <Dimension :name="'turnsRatio'" :tooltip="tooltipsConverterWizards['turnsRatio']" :replaceTitle="'Turns ratio (Np/Ns)'" :unit="null" :min="0.1" :max="100" v-model="localData" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor" :textColor="$styleStore.wizard.inputTextColor" @update="updateErrorMessage" :dataTestLabel="dataTestLabel + '-TurnsRatio'" />
       <Dimension :name="'magnetizingInductance'" :tooltip="tooltipsConverterWizards['magnetizingInductance']" :replaceTitle="'Mag. Ind.'" unit="H" :min="minimumMaximumScalePerParameter['inductance']['min']" :max="minimumMaximumScalePerParameter['inductance']['max']" v-model="localData" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor" :textColor="$styleStore.wizard.inputTextColor" @update="updateErrorMessage" :dataTestLabel="dataTestLabel + '-MagnetizingInductance'" />
       <Dimension :name="'seriesInductance'" :tooltip="tooltipsConverterWizards['seriesInductance']" :replaceTitle="'Series Ind.'" unit="H" :min="0" :max="minimumMaximumScalePerParameter['inductance']['max']" v-model="localData" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor" :textColor="$styleStore.wizard.inputTextColor" @update="updateErrorMessage" :dataTestLabel="dataTestLabel + '-SeriesInductance'" />
       <div class="form-check mt-2"><input class="form-check-input" type="checkbox" v-model="localData.useLeakageInductance" id="useLeakageInductanceDab"><label class="form-check-label small" for="useLeakageInductanceDab" :style="{ color: $styleStore.wizard.inputTextColor }">Use Leakage L</label></div>
@@ -336,23 +339,34 @@ export default {
         />
       </div>
       <div v-for="(datum, index) in localData.outputsParameters" :key="'output-' + index" class="mb-2">
-        <TripleOfDimensions v-if="localData.designMode === 'I know the design I want'"
-          :names="['voltage', 'current', 'turnsRatio']"
-          :dataTestLabel="dataTestLabel + '-OutputsParameters-' + index"
-          :replaceTitle="['V', 'I', 'n']"
-          :units="['V', 'A', null]"
-          :mins="[minimumMaximumScalePerParameter['voltage']['min'], minimumMaximumScalePerParameter['current']['min'], 0.01]"
-          :maxs="[minimumMaximumScalePerParameter['voltage']['max'], minimumMaximumScalePerParameter['current']['max'], 100]"
-          v-model="localData.outputsParameters[index]"
-          :labelWidthProportionClass="'col-4'"
-          :valueWidthProportionClass="'col-7'"
-          :valueFontSize="$styleStore.wizard.inputFontSize"
-          :labelFontSize="$styleStore.wizard.inputLabelFontSize"
-          :labelBgColor="'transparent'"
-          :valueBgColor="$styleStore.wizard.inputValueBgColor"
-          :textColor="$styleStore.wizard.inputTextColor"
-          @update="updateErrorMessage"
-        />
+        <template v-if="localData.designMode === 'I know the design I want'">
+          <PairOfDimensions
+            :names="['voltage', 'current']"
+            :dataTestLabel="dataTestLabel + '-OutputsParameters-' + index"
+            :replaceTitle="['Volt.', 'Curr.']"
+            :units="['V', 'A']"
+            :mins="[minimumMaximumScalePerParameter['voltage']['min'], minimumMaximumScalePerParameter['current']['min']]"
+            :maxs="[minimumMaximumScalePerParameter['voltage']['max'], minimumMaximumScalePerParameter['current']['max']]"
+            v-model="localData.outputsParameters[index]"
+            :labelWidthProportionClass="'col-4'"
+            :valueWidthProportionClass="'col-7'"
+            :valueFontSize="$styleStore.wizard.inputFontSize"
+            :labelFontSize="$styleStore.wizard.inputLabelFontSize"
+            :labelBgColor="'transparent'"
+            :valueBgColor="$styleStore.wizard.inputValueBgColor"
+            :textColor="$styleStore.wizard.inputTextColor"
+            @update="updateErrorMessage"
+          />
+          <Dimension :name="'turnsRatio'" :tooltip="tooltipsConverterWizards['turnsRatio']"
+            :replaceTitle="outputTurnsRatioTitle(index)" :unit="null" :min="0.01" :max="100"
+            v-model="localData.outputsParameters[index]"
+            :dataTestLabel="dataTestLabel + '-OutputsParameters-' + index + ' turnsRatio'"
+            :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'"
+            :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize"
+            :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor" :textColor="$styleStore.wizard.inputTextColor"
+            @update="updateErrorMessage"
+          />
+        </template>
         <PairOfDimensions v-else
           :names="['voltage', 'current']"
           :dataTestLabel="dataTestLabel + '-OutputsParameters-' + index"

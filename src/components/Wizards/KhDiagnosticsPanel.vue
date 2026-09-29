@@ -41,7 +41,11 @@ export default {
             const mainL = this.computedVals.magnetizingInductance
                 ?? (this.computedVals.extraInductors || [])[0]?.inductance;
             if (mainL != null) rows.push(['inductance', 'Inductance', this.fmtH(mainL)]);
-            if (this.computedVals.turnsRatio != null) rows.push(['turnsRatio', 'Turns ratio', Number(this.computedVals.turnsRatio).toFixed(3)]);
+            // computed.turnsRatio is the main magnetic's designRequirements.turnsRatios[0]: primary turns over
+            // the turns of the SECOND winding (MKF Coil::get_turns_ratios = N1/N2). That second winding is the
+            // secondary for most topologies, but the other primary half for push-pull/Weinberg and the reset
+            // (demagnetising) winding for the single-switch forward, so name the windings the way the table below does.
+            if (this.computedVals.turnsRatio != null) rows.push(['turnsRatio', 'Turns ratio (Primary / Winding 2)', Number(this.computedVals.turnsRatio).toFixed(3)]);
             if (this.computedVals.resonantCapacitance != null) rows.push(['resonantCapacitance', 'Resonant capacitance', this.fmtF(this.computedVals.resonantCapacitance)]);
             (this.computedVals.extraInductors || []).forEach((ind, i) => {
                 if (i === 0 && this.computedVals.magnetizingInductance == null) return; // already shown as "Inductance"
