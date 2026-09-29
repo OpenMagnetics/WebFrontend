@@ -29,7 +29,7 @@ export default {
         const taskQueueStore = useTaskQueueStore();
         const designLevelOptions = ['Help me with the design', 'I know the design I want'];
         const localData = {
-            inputVoltage: { nominal: 400, tolerance: 0.1 },
+            inputVoltage: { nominal: 400 },
             bridgeType: 'Full Bridge',  // Full bridge gives k=1.0, so Vi_min = 360V > Vo = 200V (with n=4.17)
             numberOutputs: 1,
             outputsParameters: [{ voltage: 48, power: 500 }],
@@ -113,6 +113,7 @@ export default {
         minSwitchingFrequency: this.localData.minSwitchingFrequency,
         maxSwitchingFrequency: this.localData.maxSwitchingFrequency,
         resonantFrequency: this.localData.resonantFrequency,
+        efficiency: this.localData.efficiency,
         qualityFactor: this.localData.qualityFactor,
         inductanceRatio: this.localData.inductanceRatio,
         integratedResonantInductor: this.localData.integratedResonantInductor,
