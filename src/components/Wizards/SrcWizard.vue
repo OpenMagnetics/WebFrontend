@@ -92,7 +92,11 @@ export default {
     },
     methods: {
         buildParams(mode) {
-            const opFreq = this.localData.operatingSwitchingFrequency || this.localData.resonantFrequency;
+            // ABT #1539. I know the design: the Op. Frequency FORCES the drive (driveAtSwitchingFrequency
+            // below) and the output voltage is the engine's result. Help me: the resonance is sent, the
+            // engine drives the tank there, and the wizard shows that frequency read-only from the result.
+            const iKnow = this.localData.designMode === 'I know the design I want';
+            const opFreq = iKnow ? this.localData.operatingSwitchingFrequency : this.localData.resonantFrequency;
             const outs = this.localData.outputsParameters || [];
             const aux = {
                 inputVoltage: this.localData.inputVoltage,
@@ -114,6 +118,7 @@ export default {
                 }],
             };
             if (this.localData.designMode === 'I know the design I want') {
+                aux.driveAtSwitchingFrequency = true;
                 aux.desiredTurnsRatios = [this.localData.turnsRatio];
             }
             if (this.localData.overrideSeriesInductance && this.localData.seriesInductance > 0) {
@@ -131,6 +136,12 @@ export default {
         getCalculateFn() { return (aux) => this.taskQueueStore.calculateSrcInputs(aux); },
         getSimulateFn() { return (aux) => this.taskQueueStore.simulateSrcIdealWaveforms(aux); },
         getDefaultFrequency() { return this.localData.resonantFrequency; },
+        // The drive frequency the engine ran the last design at (help-me: the tank resonance, ABT #1539). Engine value
+        // only; null until a run has produced diagnostics, which hides the read-only row.
+        getSolvedOperatingFrequency() {
+            const f = this.srcDiagnostics?.switchingFrequency;
+            return (typeof f === 'number' && f > 0) ? f : null;
+        },
         postProcessResults(result, mode) {
             this.srcDiagnostics = result?.srcDiagnostics || null;
             const Ls = this.srcDiagnostics?.computedResonantInductance;
@@ -284,7 +295,8 @@ export default {
       <Dimension :name="'minSwitchingFrequency'" :tooltip="tooltipsConverterWizards['minSwitchingFrequency']" :replaceTitle="'Min. Freq.'" unit="Hz" :min="minimumMaximumScalePerParameter['frequency']['min']" :max="minimumMaximumScalePerParameter['frequency']['max']" v-model="localData" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor" :textColor="$styleStore.wizard.inputTextColor" @update="updateErrorMessage" :dataTestLabel="dataTestLabel + '-MinSwitchingFrequency'" />
       <Dimension :name="'maxSwitchingFrequency'" :tooltip="tooltipsConverterWizards['maxSwitchingFrequency']" :replaceTitle="'Max. Freq.'" unit="Hz" :min="minimumMaximumScalePerParameter['frequency']['min']" :max="minimumMaximumScalePerParameter['frequency']['max']" v-model="localData" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor" :textColor="$styleStore.wizard.inputTextColor" @update="updateErrorMessage" :dataTestLabel="dataTestLabel + '-MaxSwitchingFrequency'" />
       <Dimension :name="'resonantFrequency'" :tooltip="tooltipsConverterWizards['resonantFrequency']" :replaceTitle="'Res. Freq.'" unit="Hz" :min="minimumMaximumScalePerParameter['frequency']['min']" :max="minimumMaximumScalePerParameter['frequency']['max']" v-model="localData" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor" :textColor="$styleStore.wizard.inputTextColor" @update="updateErrorMessage" :dataTestLabel="dataTestLabel + '-ResonantFrequency'" />
-      <Dimension :name="'operatingSwitchingFrequency'" :tooltip="tooltipsConverterWizards['operatingSwitchingFrequency']" :replaceTitle="'Op. Freq.'" unit="Hz" :min="minimumMaximumScalePerParameter['frequency']['min']" :max="minimumMaximumScalePerParameter['frequency']['max']" v-model="localData" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor" :textColor="$styleStore.wizard.inputTextColor" @update="updateErrorMessage" :dataTestLabel="dataTestLabel + '-OperatingSwitchingFrequency'" />
+      <Dimension v-if="localData.designMode === 'I know the design I want'" :name="'operatingSwitchingFrequency'" :tooltip="tooltipsConverterWizards['operatingSwitchingFrequency']" :replaceTitle="'Op. Freq.'" unit="Hz" :min="minimumMaximumScalePerParameter['frequency']['min']" :max="minimumMaximumScalePerParameter['frequency']['max']" v-model="localData" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor" :textColor="$styleStore.wizard.inputTextColor" @update="updateErrorMessage" :dataTestLabel="dataTestLabel + '-OperatingSwitchingFrequency'" />
+      <DimensionReadOnly v-else-if="getSolvedOperatingFrequency() != null" :name="'operatingFrequencySolved'" :tooltip="tooltipsConverterWizards['operatingFrequencySolved']" :replaceTitle="'Operating frequency (solved)'" unit="Hz" :value="getSolvedOperatingFrequency()" :numberDecimals="2" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'bg-transparent'" :valueBgColor="'bg-transparent'" :textColor="$styleStore.wizard.inputTextColor" :dataTestLabel="dataTestLabel + '-OperatingFrequencySolved'" />
       <Dimension :name="'ambientTemperature'" :tooltip="tooltipsConverterWizards['ambientTemperature']" :replaceTitle="'Temp.'" unit=" C" :min="minimumMaximumScalePerParameter['temperature']['min']" :max="minimumMaximumScalePerParameter['temperature']['max']" :allowNegative="true" :allowZero="true" v-model="localData" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor" :textColor="$styleStore.wizard.inputTextColor" @update="updateErrorMessage" :dataTestLabel="dataTestLabel + '-AmbientTemperature'" />
       <Dimension :name="'efficiency'" :tooltip="tooltipsConverterWizards['efficiency']" :replaceTitle="'Efficiency'" unit="%" :visualScale="100" :min="0.5" :max="1" v-model="localData" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor" :textColor="$styleStore.wizard.inputTextColor" @update="updateErrorMessage" :dataTestLabel="dataTestLabel + '-Efficiency'" />
       <ElementFromList :name="'insulationType'" :tooltip="tooltipsConverterWizards['insulationType']" :replaceTitle="'Insulation'" :options="insulationTypes" :optionLabels="dropdownLabelsConverterWizards.insulationType" :titleSameRow="true" v-model="localData" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor" :textColor="$styleStore.wizard.inputTextColor" @update="updateErrorMessage" :dataTestLabel="dataTestLabel + '-InsulationType'" />
