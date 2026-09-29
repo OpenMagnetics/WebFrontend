@@ -31,7 +31,7 @@ export default {
         // Defaults: HV-DC bidirectional charger reference design (CLLC Telecom-500W class).
         // Single output (backend enforces this — libMKF.cpp:8348).
         const localData = {
-            inputVoltage: { nominal: 400, tolerance: 0.1 },
+            inputVoltage: { nominal: 400 },
             bridgeType: 'fullBridge',  // CLLC requires camelCase enum (strict MAS schema validation).
             outputsParameters: [{ voltage: 400, power: 3300 }],
             minSwitchingFrequency: 80000,
@@ -43,7 +43,10 @@ export default {
             integratedResonantInductor1: true,   // primary leakage as Lr1
             integratedResonantInductor2: false,  // discrete Lr2 by default
             magnetizingInductance: 200e-6,
-            turnsRatio: 1.0,
+            // "I know the design I want" seed. With the wizard's 97% efficiency forwarded, n = 1
+            // needs a tank gain of 1.031 at 400 V -> 400 V, above what the band reaches; n = 0.97
+            // gives the output at resonance.
+            turnsRatio: 0.97,
             bidirectional: false,
             resonantInductorRatio: 1.0,          // a = n^2 * Lr2 / Lr1, symmetric tank
             resonantCapacitorRatio: 1.0,         // b = Cr2 / (n^2 * Cr1), symmetric tank
@@ -116,6 +119,7 @@ export default {
         minSwitchingFrequency: this.localData.minSwitchingFrequency,
         maxSwitchingFrequency: this.localData.maxSwitchingFrequency,
         resonantFrequency: this.localData.resonantFrequency,
+        efficiency: this.localData.efficiency,
         qualityFactor: this.localData.qualityFactor,
         inductanceRatio: this.localData.inductanceRatio,
         integratedResonantInductor1: this.localData.integratedResonantInductor1,
@@ -134,11 +138,13 @@ export default {
           powerFlow: this.localData.powerFlow,
         }],
       };
-      // desiredTurnsRatios + desiredMagnetizingInductance are required by
-      // AdvancedCllc::from_json (j.at(...) — throws if missing). Always send
-      // them: seed values in help-me, pinned values in I-know.
-      aux.desiredTurnsRatios = [this.localData.turnsRatio];
-      aux.desiredMagnetizingInductance = this.localData.magnetizingInductance;
+      // Pin the turns ratio and Lm only in "I know the design I want". In help-me the
+      // engine sizes them; sending the I-know seed there pinned n = 1 and Lm = 200 uH on
+      // every help-me run, so the engine design never ran.
+      if (this.localData.designMode === 'I know the design I want') {
+        aux.desiredTurnsRatios = [this.localData.turnsRatio];
+        aux.desiredMagnetizingInductance = this.localData.magnetizingInductance;
+      }
       // Backend keys are desiredResonant{Inductance,Capacitance}{Primary,Secondary}
       // — not the legacy `desiredPrimary*` form. Field order matters: noun
       // before primary/secondary suffix.
@@ -152,10 +158,6 @@ export default {
         // Wizard exposes a single Cr; MKF derives secondary from
         // resonantCapacitorRatio. Pin only the primary here.
         aux.desiredResonantCapacitancePrimary = this.localData.resonantCapacitance;
-      }
-      if (mode === 'simulation') {
-        aux.magnetizingInductance = this.localData.magnetizingInductance;
-        aux.turnsRatio = this.localData.turnsRatio;
       }
       return aux;
     },
