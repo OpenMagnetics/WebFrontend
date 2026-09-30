@@ -88,44 +88,38 @@ test.describe('Wizard results out of date (ABT #1520) @scenario', () => {
     await expect(page.locator('[data-cy="LlcWizard-KhDiagnostics-primaryRmsCurrent-value"]')).not.toHaveText(rmsBefore);
   });
 
-  test('LLC: an engine throw never leaves the previous results looking current', async ({ page }) => {
+  test('SRC: an engine throw never leaves the previous results looking current', async ({ page }) => {
     test.setTimeout(240_000);
-    await openWizard(page, 'Llc-link');
+    await openWizard(page, 'Src-link');
     await waitForAnalyticalDone(page, 120_000);
     await expectCurrent(page, 'after the mount-time run');
 
-    // ABT #1503 case: pinned n = 3, full bridge, 425 V -> 90 V / 3.3 kW cannot reach the output in
-    // the 100-300 kHz band, so the engine throws a gain error.
+    // A design the engine genuinely refuses: "I know the design I want" forces the drive frequency
+    // (ABT #1539), and 90 kHz is below the default 100 kHz series-tank resonance, where the tank input
+    // is capacitive and the engine throws "below-resonance operation is not modelled". (This test
+    // used an LLC with a pinned n = 3 that could not reach the output; since #1539 an I-know LLC is
+    // driven at its Op. Frequency and returns whatever Vout the tank gives, so it no longer throws.)
     await page.evaluate(() => {
-      const wizard = window.__omFindComponent('LlcWizard');
-      if (!wizard) throw new Error('LlcWizard instance not found');
+      const wizard = window.__omFindComponent('SrcWizard');
+      if (!wizard) throw new Error('SrcWizard instance not found');
       Object.assign(wizard.localData, {
         designMode: 'I know the design I want',
-        bridgeType: 'Full Bridge',
-        rectifierType: 'fullBridge',
-        inputVoltage: { nominal: 425 },
-        outputsParameters: [{ voltage: 90, power: 3300 }],
-        qualityFactor: 0.3,
-        inductanceRatio: 4.8,
-        turnsRatio: 3,
-        magnetizingInductance: 29e-6,
-        minSwitchingFrequency: 100000,
-        maxSwitchingFrequency: 300000,
-        resonantFrequency: 180000,
-        operatingSwitchingFrequency: 180000,
+        resonantFrequency: 100000,
+        operatingSwitchingFrequency: 90000,
       });
     });
     await runAnalytical(page, 120_000);
 
-    await expect(page.locator('.simulation-body .error-text'), 'the engine must throw for this design').toContainText(/gain/i);
+    await expect(page.locator('.simulation-body .error-text'), 'the engine must throw for this design')
+      .toContainText(/below-resonance operation is not modelled/);
     await expectStale(page, 'failed', 'after the engine throw');
     await expect(banner(page)).toContainText('The last run failed');
-    expect((await readBase(page)).lastRunError).toMatch(/gain/i);
+    expect((await readBase(page)).lastRunError).toMatch(/below-resonance operation is not modelled/);
 
-    // Going back to inputs that work and re-running clears it.
+    // Going back to a design that works and re-running clears it.
     await page.evaluate(() => {
-      const wizard = window.__omFindComponent('LlcWizard');
-      wizard.localData.designMode = 'Help me with the design';
+      const wizard = window.__omFindComponent('SrcWizard');
+      wizard.localData.operatingSwitchingFrequency = 120000;
     });
     await runAnalytical(page, 120_000);
     expect((await readBase(page)).lastRunError).toBe('');
