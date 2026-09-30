@@ -128,8 +128,11 @@ export async function runMagneticAdviserAndLoad(page, { resultIndex = 0 } = {}) 
 
     const count = await runMagneticAdviser(page);
     if (count <= resultIndex) {
+      // The adviser says why a run produced nothing (watchdog abort, engine restart, engine error).
+      const note = page.locator('[data-cy="MagneticBuilder-MagneticAdviser-adviser-error"]');
+      const reason = (await note.count()) > 0 ? ` — the adviser reported: ${await note.innerText()}` : '';
       throw new Error(
-        `runMagneticAdviserAndLoad: requested resultIndex=${resultIndex} but only ${count} returned`
+        `runMagneticAdviserAndLoad: requested resultIndex=${resultIndex} but only ${count} returned${reason}`
       );
     }
     await selectAdvisedResult(page, resultIndex);

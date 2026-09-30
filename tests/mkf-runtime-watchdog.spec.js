@@ -158,4 +158,36 @@ test.describe('MKF worker watchdog', () => {
         expect(slowCall.ok).toBe(false);
         expect(slowCall.message).toContain("MKF call 'take' did not return within 0s");
     });
+
+    test('an aborted call says why, in words a page can show the user', async ({}, testInfo) => {
+        const workers = [];
+        installFakeWorker(workers);
+        const runtime = await loadRuntime(testInfo);
+        runtime.setEngineRestoreHandler(async (mkf) => { await mkf.load_data(); });
+        const mkf = await runtime.initWorker('/wasm/libMKF.wasm.js');
+        const rejection = (promise) => promise.then(
+            (value) => { throw new Error(`expected a rejection, got ${JSON.stringify(value)}`); },
+            (error) => error);
+
+        // A stuck search, and a call queued behind it that dies with the worker.
+        const [stuck, behind] = await Promise.all([
+            rejection(mkf.calculate_advised_magnetics(Infinity)),
+            rejection(mkf.calculate_advised_cores(10)),
+        ]);
+        expect(stuck).toBeInstanceOf(runtime.MkfCallAbortedError);
+        expect(stuck).toMatchObject({ kind: 'watchdog', methodName: 'calculate_advised_magnetics', budgetMs: 1500 });
+        expect(runtime.engineAbortMessage(stuck, 'The adviser')).toBe(
+            'The adviser was stopped after 2 s without finishing \u2014 try narrower requirements or run it again.');
+        expect(behind).toBeInstanceOf(runtime.MkfCallAbortedError);
+        expect(behind).toMatchObject({ kind: 'restarted', methodName: 'calculate_advised_cores' });
+        expect(runtime.engineAbortMessage(behind, 'The adviser')).toBe(
+            'The adviser was stopped because the engine had to be restarted \u2014 run it again.');
+
+        // A call through the dead worker's proxy is an abort too.
+        const stale = await rejection(mkf.fast());
+        expect(runtime.engineAbortMessage(stale, 'The adviser')).toContain('engine had to be restarted');
+
+        // An engine exception is not an abort: the page reports it with its own message.
+        expect(runtime.engineAbortMessage(new Error('Exception: no cores fit'), 'The adviser')).toBeNull();
+    });
 });
