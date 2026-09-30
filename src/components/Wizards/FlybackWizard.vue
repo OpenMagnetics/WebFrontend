@@ -61,6 +61,9 @@ export default {
             converterWaveforms: [],
             waveformViewMode: 'magnetic', // 'magnetic' or 'converter'
             forceWaveformUpdate: 0,
+            // Per-rail counters bound to each derived turns-ratio input's forceUpdate: Dimension caches its
+            // displayed value, so a ratio re-derived here would stay stale on screen without a bump (ABT #1543).
+            turnsRatioRefresh: {},
             numberOfPeriods: 2,
             numberOfSteadyStatePeriods: 50}
     },
@@ -166,6 +169,7 @@ export default {
             if (!(denominator > 0)) return;
             // 2 decimals: the engine rounds provided ratios the same way.
             rail.turnsRatio = Math.round((vor0 / denominator) * 100) / 100;
+            this.turnsRatioRefresh[index] = (this.turnsRatioRefresh[index] ?? 0) + 1;
         },
         updateErrorMessage() {
             this.errorMessage = "";
@@ -531,6 +535,7 @@ export default {
           <Dimension :name="'turnsRatio'" :tooltip="tooltipsConverterWizards['turnsRatio']"
             :replaceTitle="outputTurnsRatioTitle(index)" :unit="null" :min="0.01" :max="100"
             v-model="localData.outputsParameters[index]"
+            :forceUpdate="turnsRatioRefresh[index] ?? 0"
             :dataTestLabel="dataTestLabel + '-OutputsParameters' + ' turnsRatio'"
             :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'"
             :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize"

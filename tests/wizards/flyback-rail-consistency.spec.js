@@ -134,3 +134,38 @@ test.describe('Flyback dependent turns ratios @scenario', () => {
       expect(r.error).toMatch(/not the 5 V entered/);
     });
 });
+
+test.describe('Flyback derived turns ratio on screen (ABT #1543) @scenario', () => {
+  test('typing output 2’s voltage updates the ratio shown in its turns-ratio field', async ({ page }) => {
+    test.setTimeout(300_000);
+    await openWizard(page, 'Flyback-link');
+    // Two rails in "I know the design I want", so each rail shows its turns-ratio field.
+    await page.evaluate((level) => {
+      const wizard = window.__omFindComponent('FlybackWizard');
+      if (!wizard) throw new Error('FlybackWizard component instance not found');
+      wizard.localData.designLevel = level;
+      wizard.localData.numberOutputs = 2;
+      wizard.updateNumberOutputs(2);
+    }, I_KNOW);
+
+    const voltage2 = page.locator('[data-cy="FlybackWizard-OutputsParameters voltage-number-input"] input').nth(1);
+    const ratio2 = page.locator('[data-cy="FlybackWizard-OutputsParameters turnsRatio-number-input"] input').nth(1);
+    await ratio2.waitFor({ state: 'visible', timeout: 15_000 });
+    const storedRatio2 = () => page.evaluate(() =>
+      window.__omFindComponent('FlybackWizard').localData.outputsParameters[1].turnsRatio);
+    const before = await storedRatio2();
+    expect(Number(await ratio2.inputValue()), 'the field starts on the stored ratio').toBeCloseTo(before, 2);
+
+    // Type a new voltage for output 2 the way a user does.
+    await voltage2.click();
+    await voltage2.press('Control+a');
+    await voltage2.type('3.3', { delay: 30 });
+    await voltage2.press('Tab');
+
+    // The stored ratio is re-derived from the new voltage ...
+    await expect.poll(storedRatio2, { timeout: 10_000 }).not.toBe(before);
+    const after = await storedRatio2();
+    // ... and the field must show it, not the value it had before the edit.
+    await expect.poll(async () => Number(await ratio2.inputValue()), { timeout: 10_000 }).toBeCloseTo(after, 2);
+  });
+});
