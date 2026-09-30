@@ -44,7 +44,6 @@ export default {
       seriesInductance: 0,
       useLeakageInductance: true,
       magnetizingInductance: 1e-3,
-      turnsRatio: 1.0,
       ambientTemperature: 25,
       insulationType: IsolationClass.Basic,
       modulationType: 'SPS',
@@ -144,10 +143,24 @@ export default {
     getIsolationSides() { return [IsolationSide.Primary, IsolationSide.Secondary]; },
     getInsulationType() { return this.localData.insulationType; },
 
+    // The engine's designRequirements.turnsRatios (Np/Ns, one per output) are the ratios the run used.
+    // No fallback: a run that comes back without them is an engine fault and must say so.
+    turnsRatiosFromDesignRequirements(designRequirements) {
+      const trs = designRequirements?.turnsRatios;
+      if (!Array.isArray(trs) || trs.length === 0) {
+        throw new Error('DAB: the engine returned no designRequirements.turnsRatios');
+      }
+      return trs.map((tr, i) => {
+        if (!Number.isFinite(tr?.nominal)) {
+          throw new Error(`DAB: the engine's designRequirements.turnsRatios[${i}] has no nominal value`);
+        }
+        return tr.nominal;
+      });
+    },
     postProcessResults(result) {
       this.dabDiagnostics = result?.dabDiagnostics ?? null;
       if (result?.designRequirements) {
-        this.simulatedTurnsRatios = result.designRequirements.turnsRatios?.map(tr => tr.nominal) ?? [this.localData.turnsRatio];
+        this.simulatedTurnsRatios = this.turnsRatiosFromDesignRequirements(result.designRequirements);
       }
     },
     dabModLabel(n) {
@@ -196,7 +209,7 @@ export default {
           return false;
         }
         this.designRequirements = result.designRequirements;
-        this.simulatedTurnsRatios = result.designRequirements?.turnsRatios?.map(tr => tr.nominal) || [this.localData.turnsRatio];
+        this.simulatedTurnsRatios = this.turnsRatiosFromDesignRequirements(result.designRequirements);
         return true;
       } catch (error) {
         this.errorMessage = error.message || "Failed to process DAB inputs";
@@ -297,7 +310,6 @@ export default {
     </template>
 
     <template v-if="localData.designMode === 'I know the design I want'" #design-or-switch-parameters>
-      <Dimension :name="'turnsRatio'" :tooltip="tooltipsConverterWizards['turnsRatio']" :replaceTitle="'Turns ratio (Np/Ns)'" :unit="null" :min="0.1" :max="100" v-model="localData" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor" :textColor="$styleStore.wizard.inputTextColor" @update="updateErrorMessage" :dataTestLabel="dataTestLabel + '-TurnsRatio'" />
       <Dimension :name="'magnetizingInductance'" :tooltip="tooltipsConverterWizards['magnetizingInductance']" :replaceTitle="'Mag. Ind.'" unit="H" :min="minimumMaximumScalePerParameter['inductance']['min']" :max="minimumMaximumScalePerParameter['inductance']['max']" v-model="localData" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor" :textColor="$styleStore.wizard.inputTextColor" @update="updateErrorMessage" :dataTestLabel="dataTestLabel + '-MagnetizingInductance'" />
       <Dimension :name="'seriesInductance'" :tooltip="tooltipsConverterWizards['seriesInductance']" :replaceTitle="'Series Ind.'" unit="H" :min="0" :max="minimumMaximumScalePerParameter['inductance']['max']" v-model="localData" :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'" :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize" :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor" :textColor="$styleStore.wizard.inputTextColor" @update="updateErrorMessage" :dataTestLabel="dataTestLabel + '-SeriesInductance'" />
       <div class="form-check mt-2"><input class="form-check-input" type="checkbox" v-model="localData.useLeakageInductance" id="useLeakageInductanceDab"><label class="form-check-label small" for="useLeakageInductanceDab" :style="{ color: $styleStore.wizard.inputTextColor }">Use Leakage L</label></div>
