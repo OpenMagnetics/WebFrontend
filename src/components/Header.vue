@@ -276,6 +276,11 @@ export default {
             this.cloudDesignStore.unlink();
             this.openDropdown = null;
         },
+        async saveCurrentDesignAs() {
+            // "Save as…" asks for a name: open My Designs with the save-as input ready.
+            this.openDropdown = null;
+            await this.$router.push(`${import.meta.env.BASE_URL}designs?saveAs=1`);
+        },
         async saveCurrentDesignToCloud() {
             // Quick-save from the header: updates the linked design, or sends
             // the user to My Designs with the save dialog ALREADY OPEN — a
@@ -553,6 +558,16 @@ export default {
                                 >
                                     <i class="mr-2 pi" :class="savingToCloud ? 'pi-refresh fa-spin' : 'pi-save'"></i>
                                     {{ cloudDesignStore.isLinked ? `Save "${cloudDesignStore.name}"` : 'Save design to account' }}
+                                </button>
+                            </li>
+                            <li v-if="$stateStore.isAnyDesignLoaded()">
+                                <button
+                                    data-cy="Header-save-as-design-button"
+                                    class="dropdown-item nav-link w-100 px-2"
+                                    title="Save the current design as a new design with another name"
+                                    @click="saveCurrentDesignAs"
+                                >
+                                    <i class="mr-2 pi pi-copy"></i>Save design as…
                                 </button>
                             </li>
                             <li>

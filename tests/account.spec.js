@@ -70,12 +70,53 @@ async function mockAccountsApi(page, state) {
         if (route.request().method() === 'GET') {
             return route.fulfill({ json: { designs: state.designs } });
         }
-        // POST: create
+        // POST: create (unique id per created design)
         const body = route.request().postDataJSON();
-        const created = designRow({ name: body.name });
+        state.posts = [...(state.posts || []), body];
+        const created = designRow({ id: `created-${(state.posts.length)}`, name: body.name });
+        state.mas = { ...(state.mas || {}), [created.id]: body.mas };
         state.designs = [created, ...state.designs];
         return route.fulfill({ json: { ...created, schema_errors: [] } });
     });
+    // Single design: GET returns the full MAS, PUT records the update.
+    await page.route('**/designs/*', (route) => {
+        if (route.request().resourceType() === 'document') {
+            return route.fallback();
+        }
+        const id = new URL(route.request().url()).pathname.split('/').pop();
+        const design = state.designs.find((row) => row.id === id);
+        if (design == null) {
+            return route.fulfill({ status: 404, json: { detail: 'Design not found' } });
+        }
+        if (route.request().method() === 'GET') {
+            state.gets = [...(state.gets || []), id];
+            return route.fulfill({ json: { ...design, mas: (state.mas || {})[id] } });
+        }
+        if (route.request().method() === 'PUT') {
+            state.puts = [...(state.puts || []), id];
+            design.version += 1;
+            return route.fulfill({ json: { ...design, schema_errors: [] } });
+        }
+        return route.fallback();
+    });
+}
+
+const ORIGINAL = designRow({ id: 'orig', name: 'Original' });
+const ORIGINAL_MAS = { inputs: { designRequirements: { name: 'original-mas-marker' } } };
+
+// Start logged in on My Designs with the working design linked to ORIGINAL.
+async function openMyDesignsLinkedToOriginal(page, state) {
+    await mockAccountsApi(page, state);
+    await page.addInitScript(() => {
+        localStorage.setItem('om_has_session', '1');
+        localStorage.setItem('cloudDesign', JSON.stringify({ designId: 'orig', version: 1, name: 'Original' }));
+    });
+    await page.goto(`${BASE_URL}/designs`, { waitUntil: 'domcontentloaded' });
+    await expect(page.locator('[data-cy="MyDesigns-row-Original"]')).toBeVisible({ timeout: 15000 });
+}
+
+function linkedDesignId(page) {
+    return page.evaluate(() => JSON.parse(localStorage.getItem('cloudDesign')).designId);
 }
 
 test.describe('accounts', () => {
@@ -152,6 +193,60 @@ test.describe('accounts', () => {
         await nameInput.fill('Quick-saved design');
         await page.click('[data-cy="MyDesigns-save-confirm-button"]');
         await expect(page.locator('[data-cy="MyDesigns-row-Quick-saved design"]')).toBeVisible({ timeout: 15000 });
+    });
+
+    test('My Designs: Duplicate copies the full MAS as "(copy)", "(copy 2)" and leaves the link alone', async ({ page }) => {
+        const state = { loggedIn: true, emailExists: true, designs: [{ ...ORIGINAL }], mas: { orig: ORIGINAL_MAS } };
+        await openMyDesignsLinkedToOriginal(page, state);
+
+        await page.click('[data-cy="MyDesigns-duplicate-Original"]');
+        await expect(page.locator('[data-cy="MyDesigns-row-Original (copy)"]')).toBeVisible({ timeout: 15000 });
+        await page.click('[data-cy="MyDesigns-duplicate-Original"]');
+        await expect(page.locator('[data-cy="MyDesigns-row-Original (copy 2)"]')).toBeVisible({ timeout: 15000 });
+
+        // The copy carries the full MAS fetched from the server, not a summary.
+        expect(state.gets).toEqual(['orig', 'orig']);
+        expect(state.posts.map((body) => body.name)).toEqual(['Original (copy)', 'Original (copy 2)']);
+        expect(state.posts[0].mas).toEqual(ORIGINAL_MAS);
+        // Original untouched, working design still linked to it.
+        expect(state.puts || []).toEqual([]);
+        expect(await linkedDesignId(page)).toBe('orig');
+        await expect(page.locator('[data-cy="MyDesigns-row-Original"] .pi-link')).toHaveCount(1);
+        await expect(page.locator('[data-cy="MyDesigns-row-Original (copy)"] .pi-link')).toHaveCount(0);
+        await expect(page.locator('[data-cy="MyDesigns-error"]')).toHaveCount(0);
+    });
+
+    test('My Designs: Save as… creates a new design, relinks, and the next save updates the copy', async ({ page }) => {
+        const state = { loggedIn: true, emailExists: true, designs: [{ ...ORIGINAL }], mas: { orig: ORIGINAL_MAS } };
+        await openMyDesignsLinkedToOriginal(page, state);
+
+        await page.click('[data-cy="MyDesigns-save-as-button"]');
+        const nameInput = page.locator('[data-cy="MyDesigns-save-name-input"]');
+        await expect(nameInput).toHaveValue('Original (copy)');
+        await nameInput.fill('Variant B');
+        await page.click('[data-cy="MyDesigns-save-confirm-button"]');
+        await expect(page.locator('[data-cy="MyDesigns-row-Variant B"] .pi-link')).toHaveCount(1, { timeout: 15000 });
+        await expect(page.locator('[data-cy="MyDesigns-row-Original"] .pi-link')).toHaveCount(0);
+        expect(state.posts.map((body) => body.name)).toEqual(['Variant B']);
+        expect(await linkedDesignId(page)).toBe('created-1');
+
+        // A following plain save goes to the copy, never the original.
+        await page.click('[data-cy="MyDesigns-save-current-button"]');
+        await expect.poll(() => (state.puts || []).length, { timeout: 15000 }).toBe(1);
+        expect(state.puts).toEqual(['created-1']);
+        await expect(page.locator('[data-cy="MyDesigns-error"]')).toHaveCount(0);
+    });
+
+    test('header "Save design as…" opens My Designs with the save-as name input', async ({ page }) => {
+        const state = { loggedIn: true, emailExists: true, designs: [{ ...ORIGINAL }], mas: { orig: ORIGINAL_MAS } };
+        await mockAccountsApi(page, state);
+        await page.addInitScript(() => {
+            localStorage.setItem('om_has_session', '1');
+            localStorage.setItem('cloudDesign', JSON.stringify({ designId: 'orig', version: 1, name: 'Original' }));
+        });
+        await page.goto(`${BASE_URL}/designs?saveAs=1`, { waitUntil: 'domcontentloaded' });
+        await expect(page.locator('[data-cy="MyDesigns-save-name-input"]')).toHaveValue('Original (copy)', { timeout: 15000 });
+        await expect(page.locator('[data-cy="MyDesigns-save-confirm-button"]')).toHaveText('Save as new design');
     });
 
     test('My Designs: signed-out notice, then list after login', async ({ page }) => {
