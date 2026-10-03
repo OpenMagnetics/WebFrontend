@@ -384,7 +384,7 @@ export default {
                 class="navbar-toggler om-toggler"
                 ref="headerToggler"
                 type="button"
-                @click="navCollapseOpen = !navCollapseOpen"
+                @click.stop="navCollapseOpen = !navCollapseOpen"
                 aria-controls="navbarNavDropdown"
                 :aria-expanded="navCollapseOpen ? 'true' : 'false'"
                 aria-label="Toggle navigation">
