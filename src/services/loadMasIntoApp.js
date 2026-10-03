@@ -209,11 +209,13 @@ export async function loadMasIntoApp(doc, { masStore, stateStore, userStore, tas
 
     // Always autocomplete the MAS to resolve wire/strand string names to
     // full objects and populate core processedDescription, bobbin, etc.
-    let autocompletedMas = response;
+    // A design MKF cannot complete is not loaded half-processed: the user
+    // would edit and simulate something MKF never validated (ABT #1234).
+    let autocompletedMas;
     try {
         autocompletedMas = await taskQueueStore.masAutocomplete(response, false, {});
     } catch (autocompleteError) {
-        console.warn('masAutocomplete failed, using checkAndFixMas result:', autocompleteError);
+        throw new Error(`MKF could not complete this design: ${autocompleteError.message}`);
     }
 
     // Restore coil processed data if masAutocomplete stripped it
