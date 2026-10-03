@@ -597,6 +597,27 @@ test.describe('Winding Studio P0', () => {
     await ss(page, 'ws7-margin-resized');
   });
 
+  test('WS-7b builder: a bottom margin larger than the window is refused', async ({ page }) => {
+    // The bottom-margin field used to check the TOP margin against the window, so an
+    // oversized bottom margin was accepted while a valid one could be refused.
+    test.setTimeout(180000);
+    await goToMagneticTool(page);
+    await injectMas(page, MULTICOLUMN_FIXTURE, { heal: false, mountFirst: true });
+    const insulationButton = page.locator('button').filter({ hasText: /^\s*Insulation\s*$/ }).first();
+    await expect(insulationButton).toBeVisible({ timeout: 30000 });
+    await insulationButton.click();
+
+    const bottomMargin = page.locator('[data-cy$="-BottomOrRightMargin-number-input"] input').first();
+    await expect(bottomMargin).toBeVisible({ timeout: 10000 });
+    await bottomMargin.focus();
+    await bottomMargin.press('Control+a');
+    await bottomMargin.pressSequentially('900');
+    await bottomMargin.press('Enter');
+    await expect(page.locator('[data-cy$="-BottomOrRightMarginErrorMessage"]').first())
+      .toHaveText('Margin is larger than winding window', { timeout: 30000 });
+    await expect(page.locator('[data-cy$="-TopOrLeftMarginErrorMessage"]').first()).toHaveText('');
+  });
+
   test('WS-8 builder: custom section rectangle — shrink height, winder re-flows into 2 layers', async ({ page }) => {
     test.setTimeout(180000);
     await goToMagneticTool(page);
