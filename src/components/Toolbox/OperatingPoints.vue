@@ -337,6 +337,13 @@ export default {
             }, 100);
             this.emitCanContinue();
         },
+        selectOperatingPoint(operatingPointIndex) {
+            // Switching operating point keeps the selected winding, so go through
+            // changeWinding: it opens that winding in the new operating point the same
+            // way clicking it does (user report #181 crashed rendering it).
+            this.currentOperatingPointIndex = operatingPointIndex;
+            this.changeWinding(this.currentWindingIndex);
+        },
         changeWinding(windingIndex) {
 
             if (this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[windingIndex] == null) {
@@ -560,7 +567,7 @@ export default {
                                 <button
                                     :data-cy="dataTestLabel + '-select-operating-point-' + operatingPointIndex + '-button'"
                                     class="op-btn op-btn-primary w-100 mt-2"
-                                    @click="currentOperatingPointIndex = operatingPointIndex"
+                                    @click="selectOperatingPoint(operatingPointIndex)"
                                 >
                                     <i class="pi pi-check"></i>
                                     <span>Select</span>

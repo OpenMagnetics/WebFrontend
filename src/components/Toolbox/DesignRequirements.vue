@@ -3,7 +3,7 @@ import { ref } from 'vue'
 import { useMasStore } from '../../stores/mas'
 import { toTitleCase, toPascalCase, deepCopy } from 'WebSharedComponents/assets/js/utils.js'
 import { tooltipsMagneticSynthesisDesignRequirements } from 'WebSharedComponents/assets/js/texts.js'
-import { defaultDesignRequirements, compulsoryRequirements, designRequirementsOrdered, isolationSideOrdered, IsolationSideOrdered, minimumMaximumScalePerParameter} from 'WebSharedComponents/assets/js/defaults.js'
+import { defaultDesignRequirements, defaultOperatingPointExcitation, compulsoryRequirements, designRequirementsOrdered, isolationSideOrdered, IsolationSideOrdered, minimumMaximumScalePerParameter} from 'WebSharedComponents/assets/js/defaults.js'
 import { Market, ConnectionType, Topology, WiringTechnology, IsolationSide } from 'WebSharedComponents/assets/ts/MAS.ts'
 import Insulation from './DesignRequirements/Insulation.vue'
 import Dimension from 'WebSharedComponents/DataInput/Dimension.vue'
@@ -228,7 +228,12 @@ export default {
                             newExcitationsPerWinding.push(this.masStore.mas.inputs.operatingPoints[operationPointIndex].excitationsPerWinding[i]);
                         }
                         else {
-                            newExcitationsPerWinding.push(null);
+                            // Seed the new winding in EVERY operating point, as initialization
+                            // does. A null here made the Op. Points page crash when another
+                            // operating point was selected, and the saved file would not load
+                            // again (user report #181). The seed counts as 'not defined yet'
+                            // until the user opens the winding, so nothing is designed from it.
+                            newExcitationsPerWinding.push(deepCopy(defaultOperatingPointExcitation));
                         }
                     }
                     this.masStore.mas.inputs.operatingPoints[operationPointIndex].excitationsPerWinding = newExcitationsPerWinding;

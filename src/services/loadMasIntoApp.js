@@ -1,4 +1,5 @@
-import { checkAndFixMas } from 'WebSharedComponents/assets/js/utils.js'
+import { checkAndFixMas, deepCopy } from 'WebSharedComponents/assets/js/utils.js'
+import { defaultOperatingPointExcitation } from 'WebSharedComponents/assets/js/defaults.js'
 import { Convert, WaveformLabel } from 'WebSharedComponents/assets/ts/MAS.ts'
 
 // Map every WaveformLabel enum value by its lowercase form so legacy documents
@@ -87,6 +88,19 @@ export function migrateLegacyMas(mas) {
         const lowercased = requirements.wiringTechnology.toLowerCase();
         if (['wound', 'printed', 'stamped', 'deposition'].includes(lowercased)) {
             requirements.wiringTechnology = lowercased;
+        }
+    }
+    // Files saved before user report #181 was fixed carry null excitations: adding a
+    // winding in Design Requirements padded every operating point with null. Seed them
+    // the way the app now does; the Op. Points page reports each one as 'not defined
+    // yet' until the user opens it, so no design is made from the seed.
+    for (const operatingPoint of (mas?.inputs?.operatingPoints || [])) {
+        const excitations = operatingPoint?.excitationsPerWinding;
+        if (!Array.isArray(excitations)) continue;
+        for (let windingIndex = 0; windingIndex < excitations.length; windingIndex++) {
+            if (excitations[windingIndex] == null) {
+                excitations[windingIndex] = deepCopy(defaultOperatingPointExcitation);
+            }
         }
     }
     // Legacy exports capitalized waveform labels ("Triangular"). The engine's
