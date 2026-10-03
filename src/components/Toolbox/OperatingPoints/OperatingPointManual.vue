@@ -54,6 +54,9 @@ export default {
         }
     },
     computed: {
+        currentWindingName() {
+            return this.masStore.mas.magnetic.coil.functionalDescription[this.currentWindingIndex].name;
+        },
         isInductor() {
             return this.masStore.mas.inputs.designRequirements.turnsRatios.length === 0;
         },
@@ -239,7 +242,7 @@ export default {
                 <div class="opm-card opm-card-current" :class="{ 'opm-disabled': currentIsDerived }">
                     <div class="opm-card-header">
                         <i class="pi pi-volume-up"></i>
-                        <span>Current waveform</span>
+                        <span :data-cy="dataTestLabel + '-current-card-title'">Current through {{ currentWindingName }}</span>
                     </div>
                     <div class="opm-card-body">
                         <WaveformInput
@@ -270,7 +273,7 @@ export default {
                 <div class="opm-card opm-card-voltage" :class="{ 'opm-disabled': voltageIsDerived }">
                     <div class="opm-card-header">
                         <i class="pi pi-bolt"></i>
-                        <span>Voltage waveform</span>
+                        <span :data-cy="dataTestLabel + '-voltage-card-title'">Voltage across {{ currentWindingName }}'s terminals</span>
                     </div>
                     <div v-if="isInductor" class="opm-derived-note">
                         <template v-if="voltageIsDerived">

@@ -224,6 +224,17 @@ test.describe('Group C — Operating Points', () => {
     await expect(addOpBtn).toBeVisible({ timeout: 10000 });
   });
 
+  test('C1b: the waveform cards say which winding and which voltage (ABT #203)', async ({ page }) => {
+    // 'Voltage waveform' did not say which voltage; on a coupled inductor a user could
+    // not tell. The cards name the winding: current THROUGH it, voltage ACROSS its terminals.
+    await openViaWizard(page, BUCK_CY);
+    await clickContinue(page);
+    const windingName = await page.evaluate(() => document.querySelector('#app').__vue_app__.config.globalProperties.$pinia
+      ._s.get('mas').mas.magnetic.coil.functionalDescription[0].name);
+    await expect(page.locator('[data-cy$="-current-card-title"]').first()).toHaveText(`Current through ${windingName}`, { timeout: 15000 });
+    await expect(page.locator('[data-cy$="-voltage-card-title"]').first()).toHaveText(`Voltage across ${windingName}'s terminals`);
+  });
+
   test('C2: Add operating point button creates a new OP row', async ({ page }) => {
     await openViaWizard(page, BUCK_CY);
     await clickContinue(page);
