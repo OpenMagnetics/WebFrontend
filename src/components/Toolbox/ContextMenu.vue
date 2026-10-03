@@ -1,6 +1,7 @@
 <script setup>
 import { useCatalogStore } from '../../stores/catalog'
 import { useMasStore } from '../../stores/mas'
+import { useMagneticBuilderSettingsStore } from '/MagneticBuilder/src/stores/magneticBuilderSettings'
 import { toDashCase, toPascalCase, toTitleCase } from 'WebSharedComponents/assets/js/utils.js'
 import MagneticBuilderSettings from './Settings/MagneticBuilderSettings.vue'
 import AdviserSettings from './Settings/AdviserSettings.vue'
@@ -21,9 +22,13 @@ export default {
     data() {
         const catalogStore = useCatalogStore();
         const masStore = useMasStore();
+        // The builder simulates (or not) by ITS settings store, so the Resimulate button reads
+        // that one too: reading the global copy hid the button while the builder sat Outdated.
+        const magneticBuilderSettingsStore = useMagneticBuilderSettingsStore();
         return {
             catalogStore,
             masStore,
+            magneticBuilderSettingsStore,
             settingsVisible: false,
         }
     },
@@ -121,7 +126,7 @@ export default {
                     <span>Redraw</span>
                 </button>
                 <button
-                    v-if="$stateStore.getCurrentToolState().subsection == 'magneticBuilder' && $settingsStore.magneticBuilderSettings.enableSimulation && !$settingsStore.magneticBuilderSettings.enableAutoSimulation"
+                    v-if="$stateStore.getCurrentToolState().subsection == 'magneticBuilder' && magneticBuilderSettingsStore.enableSimulation && !magneticBuilderSettingsStore.enableAutoSimulation"
                     :data-cy="dataTestLabel + 'resimulate-button'"
                     class="toolmenu-btn toolmenu-btn-outline"
                     @click="$stateStore.resimulate()"

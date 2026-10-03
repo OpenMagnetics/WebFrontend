@@ -56,8 +56,10 @@ export default {
             maximumTemperature: this.$settingsStore.adviserSettings.maximumTemperature,
             enableVisualizers: magneticBuilderSettingsStore.enableVisualizers,
             useRealWindingGeometry: this.$settingsStore.magneticBuilderSettings.useRealWindingGeometry,
-            enableSimulation: this.$settingsStore.magneticBuilderSettings.enableSimulation,
-            enableAutoSimulation: this.$settingsStore.magneticBuilderSettings.enableAutoSimulation,
+            // Shown from the store the builder actually honours (magneticBuilderSettings); the
+            // global copy could disagree, so the switch said "on" while the builder did not simulate.
+            enableSimulation: magneticBuilderSettingsStore.enableSimulation,
+            enableAutoSimulation: magneticBuilderSettingsStore.enableAutoSimulation,
             enableSubmenu: magneticBuilderSettingsStore.enableSubmenu,
             enableGraphs: magneticBuilderSettingsStore.enableGraphs,
             enableDebugConsole: this.$settingsStore.magneticBuilderSettings.enableDebugConsole,
