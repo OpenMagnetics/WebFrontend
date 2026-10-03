@@ -13,7 +13,7 @@ cannot run this engine.
 ## Run
 
 ```bash
-cd mcp && npm install && npm run build      # the sweep widget
+cd mcp && npm install && npm run build      # the sweep and design-picker widgets
 python3 mcp/server.py                       # streamable HTTP on 127.0.0.1:8402/mcp
 ```
 
@@ -60,6 +60,29 @@ Two things the contract made explicit, and both are load-bearing:
 impedance, SPICE-export and winding tool refuses such a magnetic by name rather than returning
 `Energy cannot be nan` from deep inside the engine — re-run with `fast=false` (~70 s), or pass
 it through `advise_coil`.
+
+## Widgets
+
+| Resource | Source | Attached to |
+|---|---|---|
+| `ui://openmagnetics/curves.html` | `curves.html` + `src/curves.js` | the eight sweeps |
+| `ui://openmagnetics/picker.html` | `picker.html` + `src/picker.js` | `advise_magnetics`, `advise_cores`, `advise_coil`, `advise_from_catalog` |
+
+The picker is the shared ranked-candidate component in
+`WebSharedComponents/mcpApps/` (ABT #663) wired to this server (ABT #652): the advisers' digests
+in a sortable, filterable table with a detail panel and a "why ranked" line, and **use this**
+sends the chosen design's `mas://` handle back to the model through `updateModelContext`.
+The result carries a `tiebreaker` because the two adviser paths rank in opposite directions:
+the full / catalogue adviser by its weighted filter total (higher first), the fast one by total
+loss in W (lower first) — the fast "score" is that loss sum.
+
+The server refuses to start when any advertised `ui://` has no bundle in `dist/`.
+
+```bash
+cd mcp && npm test     # build, node:test (picker logic + the built widget in headless
+                       # Chromium behind a real AppBridge host), then pytest (registration,
+                       # resource, startup refusal, all four advisers through the engine)
+```
 
 ## Checking it
 

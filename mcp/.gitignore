@@ -1,2 +1,5 @@
 node_modules/
 dist/
+__pycache__/
+# The root .gitignore drops *.mjs; the widget tests are node ES modules and must be tracked.
+!tests/*.mjs

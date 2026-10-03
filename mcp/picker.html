@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>OpenMagnetics designs</title>
+    <style>
+      /* The shared picker (WebSharedComponents/mcpApps) reads only --cp-* tokens. Each one
+         maps onto the MCP Apps host's own theme variable first (applied from the host context
+         by src/picker.js), then onto this server's palette — the same roles and steps the
+         curves widget uses, so the two widgets read as one product. */
+      :root {
+        color-scheme: light;
+        --om-surface: #fcfcfb;
+        --om-text: #0b0b0b;
+        --om-text-muted: #52514e;
+        --om-grid: #e6e5e1;
+        --om-hover: rgba(11, 11, 11, .04);
+        --om-accent: #2a78d6;
+        --om-on-accent: #ffffff;
+        --om-chosen: rgba(42, 120, 214, .10);
+        --om-pass: #1baf7a;
+        --om-warn: #b37a00;
+        --om-fail: #c4372b;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root:where(:not([data-theme="light"])) {
+          color-scheme: dark;
+          --om-surface: #1a1a19;
+          --om-text: #ffffff;
+          --om-text-muted: #c3c2b7;
+          --om-grid: #2e2e2c;
+          --om-hover: rgba(255, 255, 255, .06);
+          --om-accent: #3987e5;
+          --om-on-accent: #ffffff;
+          --om-chosen: rgba(57, 135, 229, .16);
+          --om-pass: #199e70;
+          --om-warn: #c98500;
+          --om-fail: #e5634f;
+        }
+      }
+      :root[data-theme="dark"] {
+        color-scheme: dark;
+        --om-surface: #1a1a19;
+        --om-text: #ffffff;
+        --om-text-muted: #c3c2b7;
+        --om-grid: #2e2e2c;
+        --om-hover: rgba(255, 255, 255, .06);
+        --om-accent: #3987e5;
+        --om-on-accent: #ffffff;
+        --om-chosen: rgba(57, 135, 229, .16);
+        --om-pass: #199e70;
+        --om-warn: #c98500;
+        --om-fail: #e5634f;
+      }
+      :root {
+        --cp-bg: var(--color-background-primary, var(--om-surface));
+        --cp-fg: var(--color-text-primary, var(--om-text));
+        --cp-muted: var(--color-text-secondary, var(--om-text-muted));
+        --cp-line: var(--color-border-tertiary, var(--om-grid));
+        --cp-hover: var(--color-background-secondary, var(--om-hover));
+        --cp-accent: var(--color-text-info, var(--om-accent));
+        --cp-accent-fg: var(--color-text-inverse, var(--om-on-accent));
+        --cp-chosen: var(--om-chosen);
+        --cp-pass: var(--color-text-success, var(--om-pass));
+        --cp-warn: var(--color-text-warning, var(--om-warn));
+        --cp-fail: var(--color-text-danger, var(--om-fail));
+        --cp-font: var(--font-sans, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif);
+        --cp-mono: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+      }
+      body { margin: 0; background: var(--cp-bg); }
+      #app { padding: 14px 16px 16px; }
+    </style>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/src/picker.js"></script>
+  </body>
+</html>

@@ -1,0 +1,39 @@
+{
+ "designRequirements": {
+  "name": "conformance inductor",
+  "magnetizingInductance": {
+   "nominal": 0.0001
+  },
+  "turnsRatios": []
+ },
+ "operatingPoints": [
+  {
+   "name": "nominal",
+   "conditions": {
+    "ambientTemperature": 25
+   },
+   "excitationsPerWinding": [
+    {
+     "name": "primary",
+     "frequency": 100000,
+     "current": {
+      "processed": {
+       "label": "Triangular",
+       "dutyCycle": 0.5,
+       "peakToPeak": 2,
+       "offset": 5
+      }
+     },
+     "voltage": {
+      "processed": {
+       "label": "Rectangular",
+       "dutyCycle": 0.5,
+       "peakToPeak": 48,
+       "offset": 0
+      }
+     }
+    }
+   ]
+  }
+ ]
+}

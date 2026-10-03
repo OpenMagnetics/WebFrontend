@@ -53,6 +53,7 @@ from mcp.types import CallToolResult, TextContent      # noqa: E402
 
 UI_RESOURCE_MIME = "text/html;profile=mcp-app"
 UI_CURVES_URI = "ui://openmagnetics/curves.html"
+UI_PICKER_URI = "ui://openmagnetics/picker.html"
 
 
 def _ui_meta(uri: str) -> dict:
@@ -60,6 +61,24 @@ def _ui_meta(uri: str) -> dict:
 
 
 UI_CURVES_META = _ui_meta(UI_CURVES_URI)
+# The ranked-design picker (ABT #652): the advisers' digests in a sortable table, and the
+# chosen design's mas:// handle sent back to the model through the MCP Apps bridge.
+UI_PICKER_META = _ui_meta(UI_PICKER_URI)
+
+# Every ui:// this server advertises and the dist/ bundle that serves it. One table, read by
+# both the resources and the startup assertion, so a widget cannot be added to one and not
+# the other.
+UI_WIDGETS = {UI_CURVES_URI: "curves.html", UI_PICKER_URI: "picker.html"}
+
+# How each adviser orders what it returns, stated as a field so the picker can say why a design
+# sits where it does instead of showing a bare number. The two paths rank in OPPOSITE
+# directions, which is exactly why this cannot be left implicit (MKF MagneticAdviser.cpp):
+#   full / catalogue: the weighted filter total, sorted descending, ties by magnetic reference;
+#   fast:             the "score" IS the total loss in W (core + winding), sorted ascending.
+MAGNETIC_ADVISER_ORDER = ("the MagneticAdviser weighted filter total (higher first; equal "
+                          "scores by magnetic reference)")
+FAST_ADVISER_ORDER = ("total losses, core + winding, in W (lower first): the fast adviser's "
+                      "score is that loss sum, not a weighted total")
 
 # CoreAdviser modes, in the engine's own JSON spelling (lowercase with spaces —
 # NOT the C++ enum names, which the parser rejects).
@@ -417,7 +436,7 @@ def _catalogue_result(summary: str, names: list, kind: str, units: str | None = 
 
 
 def _designs_result(summary: str, entries: list, kind: str, caveat: str | None = None,
-                    detail: bool = False) -> CallToolResult:
+                    detail: bool = False, tiebreaker: str | None = None) -> CallToolResult:
     """A `design` result: ranked things the ENGINE produced.
 
     Not `candidates`: a candidate requires an MPN because it is a part somebody can order, and
@@ -432,6 +451,15 @@ def _designs_result(summary: str, entries: list, kind: str, caveat: str | None =
         score = entry.get("scoring") if isinstance(entry, dict) else None
         if isinstance(score, (int, float)) and not isinstance(score, bool):
             design["score"] = float(score)
+        # What the total is made of: the engine's per-filter scores, when it reports them.
+        # They are the answer to "why is this one above that one", which the total alone hides.
+        per_filter = entry.get("scoringPerFilter") if isinstance(entry, dict) else None
+        if isinstance(per_filter, dict) and per_filter:
+            # Labelled as the engine's per-filter figure and nothing more: they are not the
+            # weighted terms of the total (they do not sum to it), so no arithmetic is implied.
+            design["notes"] = [f"filter score {name}: {value:.4g}" if isinstance(value, (int, float))
+                               else f"filter score {name}: {value}"
+                               for name, value in per_filter.items()]
         document = mas if mas else (entry if isinstance(entry, dict) else None)
         if document:
             # The digest and the handle, not the document — unless the caller asked. See the
@@ -448,6 +476,8 @@ def _designs_result(summary: str, entries: list, kind: str, caveat: str | None =
     payload = {"mode": "design", "kind": kind, "designs": designs}
     if caveat:
         payload["caveat"] = caveat
+    if tiebreaker:
+        payload["tiebreaker"] = tiebreaker
     return _result(summary, payload)
 
 
@@ -509,7 +539,7 @@ FREQ_AXIS = _axis("frequency", "Hz", "log")
         "Kirchhoff's magnetic_inputs, so a converter's magnetic can be designed without "
         "leaving the conversation."
     ),
-    structured_output=False,
+    meta=UI_PICKER_META, structured_output=False,
 )
 @resolves_refs
 def advise_magnetics(inputs: dict | str | str, count: int = 3, mode: str = DEFAULT_CORE_MODE,
@@ -545,6 +575,7 @@ def advise_magnetics(inputs: dict | str | str, count: int = 3, mode: str = DEFAU
     return _designs_result(
         f"{len(designs)} design(s), best first:\n" + "\n".join(rows) + caveat,
         designs, "magnetic", detail=detail,
+        tiebreaker=FAST_ADVISER_ORDER if fast else MAGNETIC_ADVISER_ORDER,
         # The FAST caveat is a FIELD, not only a sentence: a design with no coil described
         # makes every downstream loss model return NaN deep inside the engine, and a consumer
         # that cannot read it from the payload will pass one on and be told "Energy cannot be nan".
@@ -608,7 +639,7 @@ def fetch_design(ref: str, path: str = "") -> CallToolResult:
 @mcp.tool(
     title="Advise cores only",
     description="Rank candidate CORES (shape + material + gap) for a set of MAS Inputs.",
-    structured_output=False,
+    meta=UI_PICKER_META, structured_output=False,
 )
 @resolves_refs
 def advise_cores(inputs: dict | str | str, count: int = 3, mode: str = DEFAULT_CORE_MODE,
@@ -632,7 +663,7 @@ def advise_cores(inputs: dict | str | str, count: int = 3, mode: str = DEFAULT_C
         "Design the winding (sections, layers, turns, wires) for a magnetic that already "
         "has a core — the step the FAST adviser skips."
     ),
-    structured_output=False,
+    meta=UI_PICKER_META, structured_output=False,
 )
 @resolves_refs
 def advise_coil(mas: dict | str) -> CallToolResult:
@@ -656,7 +687,7 @@ def advise_coil(mas: dict | str) -> CallToolResult:
 @mcp.tool(
     title="Advise magnetics from a catalog",
     description="Rank off-the-shelf catalog magnetics against MAS Inputs (no custom design).",
-    structured_output=False,
+    meta=UI_PICKER_META, structured_output=False,
 )
 @resolves_refs
 def advise_from_catalog(inputs: dict | str | str, catalog: list, count: int = 3) -> CallToolResult:
@@ -675,7 +706,7 @@ def advise_from_catalog(inputs: dict | str | str, catalog: list, count: int = 3)
     out = _unwrap(om.calculate_advised_magnetics_from_catalog(inputs, catalog, count))
     names = [_reference((d.get("mas") or {}).get("magnetic") or {}) for d in (out or [])]
     return _designs_result(f"{len(out or [])} catalog magnetic(s): " + ", ".join(names[:8]),
-                           out, "magnetic")
+                           out, "magnetic", tiebreaker=MAGNETIC_ADVISER_ORDER)
 
 
 # --- tools: losses and analysis --------------------------------------------
@@ -1214,7 +1245,14 @@ def _widget(filename: str) -> str:
               title="OpenMagnetics sweeps", mime_type=UI_RESOURCE_MIME)
 def curves_widget() -> str:
     """Sweep chart for impedance, losses and inductance."""
-    return _widget("curves.html")
+    return _widget(UI_WIDGETS[UI_CURVES_URI])
+
+
+@mcp.resource(UI_PICKER_URI, name="openmagnetics-picker-widget",
+              title="OpenMagnetics designs", mime_type=UI_RESOURCE_MIME)
+def picker_widget() -> str:
+    """Ranked-design picker for the advise_* tools: choose one, its handle goes to the model."""
+    return _widget(UI_WIDGETS[UI_PICKER_URI])
 
 
 def assert_widgets_resolve() -> None:
@@ -1229,7 +1267,7 @@ def assert_widgets_resolve() -> None:
     A tool that advertises a chart the host cannot fetch is worse than one that advertises
     nothing, so this fails at startup rather than per request.
     """
-    missing = [name for uri, name in ((UI_CURVES_URI, "curves.html"),)
+    missing = [f"{uri} -> dist/{name}" for uri, name in UI_WIDGETS.items()
                if not (Path(__file__).parent / "dist" / name).exists()]
     if missing:
         raise RuntimeError(

@@ -1,0 +1,105 @@
+{
+ "tool": "advise_magnetics",
+ "arguments": {
+  "count": 3,
+  "fast": false,
+  "mode": "standard cores"
+ },
+ "structuredContent": {
+  "mode": "design",
+  "kind": "magnetic",
+  "designs": [
+   {
+    "rank": 1,
+    "label": "97 PQ 32/15 gapped 0.23 mm, Turns: 12, Order: 0, Non-Interleaved, Margin Taped 00",
+    "score": 1.7790866213852068,
+    "notes": [
+     "filter score COST: 0.7791",
+     "filter score DIMENSIONS: 0",
+     "filter score EFFECTIVE_CURRENT_DENSITY: 0.6866",
+     "filter score EFFECTIVE_RESISTANCE: 1",
+     "filter score LOSSES: 1",
+     "filter score MAGNETOMOTIVE_FORCE: 1"
+    ],
+    "properties": {
+     "shape": "PQ 32/15",
+     "material": "97",
+     "manufacturer": "Fair-Rite",
+     "gap_mm": 0.2263,
+     "effective_area_mm2": 163.195,
+     "sections": 1,
+     "layers": 3,
+     "turns_described": 12,
+     "turns": [
+      12
+     ],
+     "wire": "Synthesized Litz 20x0.167mm",
+     "core_losses_w": 0.1015,
+     "winding_losses_w": 0.662
+    },
+    "ref": "mas://69ae7e399a79b9a5"
+   },
+   {
+    "rank": 2,
+    "label": "97 PQ 32/15 gapped 0.23 mm, Turns: 12, Order: 0, Non-Interleaved, Margin Taped 01",
+    "score": 1.7343661419894794,
+    "notes": [
+     "filter score COST: 0.8826",
+     "filter score DIMENSIONS: 0",
+     "filter score EFFECTIVE_CURRENT_DENSITY: 0",
+     "filter score EFFECTIVE_RESISTANCE: 0.9717",
+     "filter score LOSSES: 0.8517",
+     "filter score MAGNETOMOTIVE_FORCE: 1"
+    ],
+    "properties": {
+     "shape": "PQ 32/15",
+     "material": "97",
+     "manufacturer": "Fair-Rite",
+     "gap_mm": 0.2263,
+     "effective_area_mm2": 163.195,
+     "sections": 1,
+     "layers": 3,
+     "turns_described": 12,
+     "turns": [
+      12
+     ],
+     "wire": "Synthesized Litz 9x0.251mm",
+     "core_losses_w": 0.1015,
+     "winding_losses_w": 0.6827
+    },
+    "ref": "mas://665b84a2148c78ec"
+   },
+   {
+    "rank": 3,
+    "label": "95 EQ 26/19/8.8 gapped 0.30 mm, Turns: 17, Order: 0, Non-Interleaved, Margin Taped 01",
+    "score": 1.7099328029145386,
+    "notes": [
+     "filter score COST: 1",
+     "filter score DIMENSIONS: 0.6012",
+     "filter score EFFECTIVE_CURRENT_DENSITY: 0",
+     "filter score EFFECTIVE_RESISTANCE: 0.9717",
+     "filter score LOSSES: 0.1087",
+     "filter score MAGNETOMOTIVE_FORCE: 5.551e-16"
+    ],
+    "properties": {
+     "shape": "EQ 26/19/8.8",
+     "material": "95",
+     "manufacturer": "Fair-Rite",
+     "gap_mm": 0.5,
+     "effective_area_mm2": 121.91,
+     "sections": 1,
+     "layers": 2,
+     "turns_described": 17,
+     "turns": [
+      17
+     ],
+     "wire": "Synthesized Litz 9x0.251mm",
+     "core_losses_w": 0.05,
+     "winding_losses_w": 0.8468
+    },
+    "ref": "mas://83ad4053e30515bc"
+   }
+  ],
+  "tiebreaker": "the MagneticAdviser weighted filter total (higher first; equal scores by magnetic reference)"
+ }
+}

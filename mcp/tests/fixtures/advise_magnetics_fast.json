@@ -1,0 +1,100 @@
+{
+ "tool": "advise_magnetics",
+ "arguments": {
+  "count": 4,
+  "fast": true,
+  "mode": "standard cores"
+ },
+ "structuredContent": {
+  "mode": "design",
+  "kind": "magnetic",
+  "designs": [
+   {
+    "rank": 1,
+    "label": "E 64/10/50 - 3F36 - Ungapped gapped 0.20 mm",
+    "score": 0.49543026322442507,
+    "properties": {
+     "shape": "E 64/10/50",
+     "material": "3F36",
+     "manufacturer": "Ferroxcube",
+     "gap_mm": 0.2,
+     "effective_area_mm2": 519.924,
+     "sections": 1,
+     "layers": 3,
+     "turns_described": 36,
+     "turns": [
+      6
+     ],
+     "core_losses_w": 0.0596,
+     "winding_losses_w": 0.4358
+    },
+    "ref": "mas://7693c1fd3b711074"
+   },
+   {
+    "rank": 2,
+    "label": "ER 64/13/51 - 3C92 - Ungapped gapped 0.30 mm",
+    "score": 0.500362006128101,
+    "properties": {
+     "shape": "ER 64/13/51",
+     "material": "3C92",
+     "manufacturer": "Ferroxcube",
+     "gap_mm": 0.3,
+     "effective_area_mm2": 624.768,
+     "sections": 1,
+     "layers": 3,
+     "turns_described": 42,
+     "turns": [
+      7
+     ],
+     "core_losses_w": 0.1594,
+     "winding_losses_w": 0.3409
+    },
+    "ref": "mas://8e94116e9c170760"
+   },
+   {
+    "rank": 3,
+    "label": "PM 62/49 - 3C94 - Ungapped gapped 0.50 mm",
+    "score": 0.507233421537415,
+    "properties": {
+     "shape": "PM 62/49",
+     "material": "3C94",
+     "manufacturer": "Ferroxcube",
+     "gap_mm": 0.5,
+     "effective_area_mm2": 563.215,
+     "sections": 1,
+     "layers": 1,
+     "turns_described": 54,
+     "turns": [
+      9
+     ],
+     "core_losses_w": 0.0565,
+     "winding_losses_w": 0.4508
+    },
+    "ref": "mas://10e79b9680fc02dd"
+   },
+   {
+    "rank": 4,
+    "label": "PQ 35/35 - N95 - Distributed gapped 0.34 mm",
+    "score": 0.5268169587660806,
+    "properties": {
+     "shape": "PQ 35/35",
+     "material": "N95",
+     "manufacturer": "TDK",
+     "gap_mm": 0.344,
+     "effective_area_mm2": 171.169,
+     "sections": 1,
+     "layers": 2,
+     "turns_described": 78,
+     "turns": [
+      13
+     ],
+     "core_losses_w": 0.1253,
+     "winding_losses_w": 0.4015
+    },
+    "ref": "mas://34f5b9254b720969"
+   }
+  ],
+  "caveat": "fast designs: the core is chosen, the coil is not described \u2014 re-run with fast=false before impedance, SPICE export or loss analysis",
+  "tiebreaker": "total losses, core + winding, in W (lower first): the fast adviser's score is that loss sum, not a weighted total"
+ }
+}
