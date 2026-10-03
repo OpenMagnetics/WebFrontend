@@ -1057,6 +1057,36 @@ test.describe('Winding Studio P0', () => {
     await expect(overlay).not.toBeVisible({ timeout: 5000 });
   });
 
+  // ABT #1420: real winding changes how the coil is WOUND, so turning it on must re-wind
+  // the design (with connection blocking), not only redraw the ideal layout.
+  test('WS-RW1 builder: turning real winding on re-winds the coil with the engine flag on', async ({ page }) => {
+    test.setTimeout(240000);
+    await goToMagneticTool(page);
+    await injectMas(page, MULTICOLUMN_FIXTURE, { heal: false, mountFirst: true });
+    await page.waitForFunction(() => {
+      const pinia = document.querySelector('#app')?.__vue_app__?.config?.globalProperties?.$pinia;
+      return (pinia?._s.get('mas')?.mas?.magnetic?.coil?.turnsDescription?.length ?? 0) > 0;
+    }, null, { timeout: 60000 });
+    await pause(page, 3000, 'mechanical: let the mount-time winds finish');
+
+    await page.evaluate(() => {
+      const pinia = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia;
+      window.__rewind = { winds: 0, engineFlag: null };
+      pinia._s.get('magneticBuilderTaskQueue').$onAction(({ name, after }) => {
+        if (name !== 'wind') return;
+        after(async () => {
+          const settings = await pinia._s.get('taskQueue').getSettings();
+          window.__rewind.winds += 1;
+          window.__rewind.engineFlag = settings.coilUseRealWindingGeometry;
+        });
+      });
+      pinia._s.get('settings').magneticBuilderSettings.useRealWindingGeometry = true;
+    });
+
+    await page.waitForFunction(() => window.__rewind.winds > 0 && window.__rewind.engineFlag != null, null, { timeout: 120000 });
+    expect(await page.evaluate(() => window.__rewind.engineFlag), 'the engine winds with real winding on').toBe(true);
+  });
+
   // Per-window sections layout: the window gear applies orientation/alignment
   // to THAT window's bobbin entry and re-winds.
   test('WS-16 builder: window gear sets sections orientation for the window', async ({ page }) => {

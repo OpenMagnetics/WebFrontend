@@ -90,32 +90,14 @@ export default {
                 this.rewindForRealWindingGeometry(this.localData[setting]);
             }
         },
-        // The flag decides how the coil is WOUND, and the painter only draws what it is
-        // given — so flipping it has to reach the engine and re-wind the design that is
-        // already in the store, or the views keep showing a layout made under the old
-        // setting until something else happens to wind again.
+        // The flag decides how the coil is WOUND. The engine gets it here; the re-wind
+        // itself is the builder's (its coil selector watches this setting and re-winds
+        // through the normal wind path, which re-reads the flag), so the user's sections,
+        // pattern and drawn rectangles are kept and a misfit is reported where the coil is
+        // shown (ABT #1420). Re-winding here through mas_autocomplete kept the ideal turns.
         async rewindForRealWindingGeometry(useRealWindingGeometry) {
-            try {
-                const mkf = await waitForMkf();
-                await applyRealWindingGeometrySetting(mkf, useRealWindingGeometry);
-                if (this.masStore.mas?.magnetic?.coil?.turnsDescription == null) {
-                    return;   // nothing wound yet; the next wind picks the flag up
-                }
-                const resultRaw = await mkf.mas_autocomplete(JSON.stringify(this.masStore.mas), false, '{}');
-                if (typeof resultRaw === 'string' && resultRaw.startsWith('Exception')) {
-                    throw new Error(resultRaw);
-                }
-                const result = JSON.parse(resultRaw);
-                if (result?.magnetic?.coil?.turnsDescription == null) {
-                    throw new Error('the winder produced no turns');
-                }
-                this.masStore.mas = result;
-            } catch (error) {
-                // Loud, not silent: the setting is on but the design on screen is still
-                // the one wound without it, and the user needs to know which they are
-                // looking at (ABT #650 was a day lost to exactly this kind of silence).
-                console.error('Real winding was set but the design could not be re-wound:', error);
-            }
+            const mkf = await waitForMkf();
+            await applyRealWindingGeometrySetting(mkf, useRealWindingGeometry);
         },
         onAdviserSettingChanged(setting) {
             this.localData[setting] = !this.localData[setting];
