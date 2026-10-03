@@ -416,7 +416,7 @@ export default {
                 operatingPoint.excitationsPerWinding.forEach((excitation, windingIndex) => {
                     {
                         const auxCurrent = formatUnit(excitation.current?.processed?.rms || 0, 'A');
-                        const auxVoltage = formatUnit(excitation.voltage?.processed?.rms || 0, 'A');
+                        const auxVoltage = formatUnit(excitation.voltage?.processed?.rms || 0, 'V');
                         const currentLabel = excitation.current?.processed?.label || 'Custom';
                         const voltageLabel = excitation.voltage?.processed?.label || 'Custom';
                         text += ` &emsp;&emsp;Winding ${escapeHtml(this.masStore.mas.magnetic.coil.functionalDescription[windingIndex].name)} has a ${this.getValueColor(currentLabel.toLowerCase())} current, with an RMS of ${this.getValueColor(`${removeTrailingZeroes(auxCurrent.label, 2)} ${auxCurrent.unit}`)};`;

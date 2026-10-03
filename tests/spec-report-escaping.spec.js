@@ -71,4 +71,27 @@ test.describe('Specifications report — escaping', () => {
     await pause(page, 500, 'mechanical: let any image error handler fire');
     expect(await page.evaluate(() => window.__specReportInjected ?? null)).toBeNull();
   });
+
+  // User bug reports #20 and #81: the voltage RMS was printed in amperes.
+  // The app recomputes the processed RMS values on load, so only units are asserted.
+  test('SR2: winding RMS values carry their own units, V for voltage and A for current', async ({ page }) => {
+    await page.goto(`${BASE_URL}/`, { waitUntil: 'domcontentloaded', timeout: 20000 });
+    await page.waitForFunction(() => !window.location.pathname.includes('engine_loader'), null, { timeout: 45000 });
+    await pause(page, 800, 'mechanical: settle');
+    await page.locator('[data-cy="Header-Load-MAS-file-button"]').setInputFiles(BASE_FIXTURE);
+    await page.waitForURL('**/magnetic_tool**', { timeout: 30000 });
+    await pause(page, 3500, 'mechanical: settle');
+    await page.evaluate(() => {
+      document.querySelector('#app').__vue_app__
+        .config.globalProperties.$stateStore
+        .setCurrentToolSubsection('magneticSpecificationsSummary');
+    });
+    await expect(page.locator(PDF_BTN)).toBeVisible({ timeout: 10000 });
+
+    const text = await page.locator('h3', { hasText: 'Overview of operating point' }).innerText();
+    const currents = text.match(/current, with an RMS of [\d.]+ \S*?A;/g) ?? [];
+    const voltages = text.match(/voltage, with an RMS of [\d.]+ \S*?V;/g) ?? [];
+    expect(currents.length, text).toBe(3);
+    expect(voltages.length, text).toBe(3);
+  });
 });
