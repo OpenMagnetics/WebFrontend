@@ -2,6 +2,7 @@
 import ConverterWaveformVisualizer from './ConverterWaveformVisualizer.vue'
 import { recordDesign } from 'WebSharedComponents/assets/js/telemetry.js'
 import { useTaskQueueStore } from '../../stores/taskQueue'
+import { toTitleCase } from 'WebSharedComponents/assets/js/utils.js'
 /**
  * ConverterWizardBase - Base layout + common logic for all converter wizards.
  * Child wizards access common methods via this.$refs.base.methodName().
@@ -159,7 +160,33 @@ export default {
     'dismiss-error',
   ],
 
+  // Inputs that rejected what the user typed (user report #188). A rejected value is
+  // never written to the wizard's data, so the wizard would design with the previous
+  // value while the field shows the typed one. Each input reports here; while any is
+  // rejected its reason is shown and the actions are disabled.
+  provide() {
+    return {
+      reportWizardInputValidity: (inputName, message) => {
+        const rejected = { ...this.rejectedInputs };
+        if (message) rejected[inputName] = message;
+        else delete rejected[inputName];
+        this.rejectedInputs = rejected;
+      },
+    };
+  },
+
   computed: {
+    rejectedInputMessage() {
+      const entries = Object.entries(this.rejectedInputs);
+      if (entries.length === 0) return '';
+      return entries.map(([inputName, message]) => `${toTitleCase(inputName)}: ${message}`).join(' ');
+    },
+    shownErrorMessage() {
+      return this.rejectedInputMessage || this.errorMessage;
+    },
+    actionsDisabled() {
+      return this.disableActions || this.rejectedInputMessage !== '';
+    },
     // A wizard that produces its own converter traces wins; otherwise use the ones we fetched
     // lazily from component_waveforms when the user opened the converter view (KH ABT #905).
     effectiveConverterWaveforms() {
@@ -247,6 +274,7 @@ export default {
       resultsRunId: 0,
       resultsParamsKey: null,
       lastRunError: '',
+      rejectedInputs: {},
     };
   },
 
@@ -1295,8 +1323,8 @@ export default {
     </slot>
 
     <!-- Top-level Error Message (dismissible) -->
-    <div v-if="errorMessage" class="alert alert-danger alert-dismissible fade show py-2 mt-3" role="alert" style="font-size: 0.85rem;">
-      <i class="pi pi-exclamation-circle mr-2"></i>{{ errorMessage }}
+    <div v-if="shownErrorMessage" class="alert alert-danger alert-dismissible fade show py-2 mt-3" role="alert" style="font-size: 0.85rem;" data-cy="ConverterWizard-error-message">
+      <i class="pi pi-exclamation-circle mr-2"></i>{{ shownErrorMessage }}
       <button type="button" class="btn-close btn-close-sm" @click="onDismissError"></button>
     </div>
 
@@ -1416,7 +1444,7 @@ export default {
                   <slot name="waveform-controls">
                     <button
                       class="sim-btn analytical"
-                      :disabled="disableActions || simulatingWaveforms"
+                      :disabled="actionsDisabled || simulatingWaveforms"
                       @click="onGetAnalyticalWaveforms"
                       title="Get analytical waveforms"
                     >
@@ -1427,7 +1455,7 @@ export default {
                     </button>
                     <button
                       class="sim-btn simulated"
-                      :disabled="disableActions || simulatingWaveforms"
+                      :disabled="actionsDisabled || simulatingWaveforms"
                       @click="onGetSimulatedWaveforms"
                       title="Simulate ideal waveforms"
                     >
@@ -1439,7 +1467,7 @@ export default {
                     <button
                       v-if="showSpiceCodeButton"
                       class="sim-btn spice"
-                      :disabled="disableActions || spiceCodeLoading"
+                      :disabled="actionsDisabled || spiceCodeLoading"
                       @click="onGetSpiceCode"
                       title="Get SPICE netlist for external simulation"
                     >

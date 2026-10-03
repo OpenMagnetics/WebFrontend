@@ -10,7 +10,10 @@ import DimensionWithTolerance from 'WebSharedComponents/DataInput/DimensionWithT
 export default {
     name: 'CompactVoltageInput',
     components: { DimensionWithTolerance },
-    emits: ['update'],
+    emits: ['update', 'hasError'],
+    // Provided by ConverterWizardBase: a rejected value blocks the wizard's actions
+    // and shows why (user report #188). Absent when used outside a wizard.
+    inject: { reportWizardInputValidity: { default: null } },
     props: {
         modelValue: { type: Object, required: true },
         name: { type: String, default: 'inputVoltage' },
@@ -21,7 +24,14 @@ export default {
         tooltip: { type: String, default: null },
     },
     methods: {
-        forwardUpdate(...args) { this.$emit('update', ...args); }
+        forwardUpdate(...args) {
+            this.reportWizardInputValidity?.(this.name, null);
+            this.$emit('update', ...args);
+        },
+        forwardError(message) {
+            this.reportWizardInputValidity?.(this.name, message);
+            this.$emit('hasError', message);
+        },
     }
 }
 </script>
@@ -37,6 +47,8 @@ export default {
             :modelValue="modelValue"
             :allowAllNull="false"
             @update="forwardUpdate"
+            @hasError="forwardError"
+            @accepted="reportWizardInputValidity?.(name, null)"
         />
     </div>
 </template>
