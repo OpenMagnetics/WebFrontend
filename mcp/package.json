@@ -1,9 +1,9 @@
 {
   "name": "openmagnetics-mcp-app",
   "version": "0.1.0",
-  "description": "OpenMagnetics MCP App — the sweep-curves and design-picker widgets",
+  "description": "OpenMagnetics MCP App \u2014 the sweep-curves, design-picker, wound-coil and result-panel widgets",
   "scripts": {
-    "build": "rm -rf dist && INPUT=curves.html vite build && INPUT=picker.html vite build",
+    "build": "rm -rf dist && for w in curves picker coil result; do INPUT=$w.html vite build || exit 1; done",
     "dev": "vite",
     "test": "npm run build && node --test tests/*.test.mjs && python3 -m pytest tests -q -p no:cacheprovider"
   },

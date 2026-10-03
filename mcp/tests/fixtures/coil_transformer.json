@@ -1,0 +1,651 @@
+{
+ "content": [
+  {
+   "type": "text",
+   "text": "Coil wound: 9 turn(s), 4 section(s).\n  primary section 0: conduction, primary, 1 layer(s), 6 turn(s), filling factor 0.0901\n  Insulation between primary and secondary section 1: insulation, 1 layer(s), 0 turn(s), filling factor 1\n  secondary section 0: conduction, secondary, 1 layer(s), 3 turn(s), filling factor 0.045\n  Insulation between secondary and primary section 3: insulation, 1 layer(s), 0 turn(s), filling factor 1\nThe widget shows MKF's Painter cross-section.",
+   "annotations": null,
+   "meta": null
+  }
+ ],
+ "structuredContent": {
+  "mode": "document",
+  "schema": {
+   "name": "MAS",
+   "version": "coil"
+  },
+  "operation": "transformed",
+  "document": {
+   "bobbin": {
+    "processedDescription": {
+     "columnDepth": 0.026735927494319356,
+     "columnShape": "rectangular",
+     "columnThickness": 0.001335927494319357,
+     "columnWidth": 0.006435927494319357,
+     "coordinates": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "wallThickness": 0.0011132729119327969,
+     "windingWindows": [
+      {
+       "area": 0.00016237199896352317,
+       "coordinates": [
+        0.016617963747159677,
+        0.0,
+        0.0
+       ],
+       "height": 0.007973454176134407,
+       "sectionsAlignment": "innerOrTop",
+       "sectionsOrientation": "overlapping",
+       "shape": "rectangular",
+       "width": 0.02036407250568064
+      }
+     ]
+    }
+   },
+   "functionalDescription": [
+    {
+     "isolationSide": "primary",
+     "name": "primary",
+     "numberParallels": 1,
+     "numberTurns": 6,
+     "wire": {
+      "coating": {
+       "numberLayers": 1,
+       "type": "served"
+      },
+      "conductingArea": {
+       "nominal": 4.5396013844372514e-07
+      },
+      "material": "copper",
+      "name": "Synthesized Litz 20x0.167mm",
+      "numberConductors": 20,
+      "outerDiameter": {
+       "nominal": 0.0011031839209713048
+      },
+      "strand": {
+       "coating": {
+        "breakdownVoltage": 850.0,
+        "grade": 1,
+        "type": "enamelled"
+       },
+       "conductingDiameter": {
+        "maximum": 0.00017299999999900002,
+        "minimum": 0.00016800000000000002,
+        "nominal": 0.00017
+       },
+       "manufacturerInfo": {
+        "name": "Elektrisola"
+       },
+       "material": "copper",
+       "name": "Round 33.5 - Single Build",
+       "numberConductors": 1,
+       "outerDiameter": {
+        "maximum": 0.000194,
+        "minimum": 0.00017999999999900002,
+        "nominal": 0.000187
+       },
+       "standard": "NEMA MW 1000 C",
+       "standardName": "33.5 AWG",
+       "type": "round"
+      },
+      "type": "litz"
+     }
+    },
+    {
+     "isolationSide": "secondary",
+     "name": "secondary",
+     "numberParallels": 1,
+     "numberTurns": 3,
+     "wire": {
+      "coating": {
+       "numberLayers": 1,
+       "type": "served"
+      },
+      "conductingArea": {
+       "nominal": 4.5396013844372514e-07
+      },
+      "material": "copper",
+      "name": "Synthesized Litz 20x0.167mm",
+      "numberConductors": 20,
+      "outerDiameter": {
+       "nominal": 0.0011031839209713048
+      },
+      "strand": {
+       "coating": {
+        "breakdownVoltage": 850.0,
+        "grade": 1,
+        "type": "enamelled"
+       },
+       "conductingDiameter": {
+        "maximum": 0.00017299999999900002,
+        "minimum": 0.00016800000000000002,
+        "nominal": 0.00017
+       },
+       "manufacturerInfo": {
+        "name": "Elektrisola"
+       },
+       "material": "copper",
+       "name": "Round 33.5 - Single Build",
+       "numberConductors": 1,
+       "outerDiameter": {
+        "maximum": 0.000194,
+        "minimum": 0.00017999999999900002,
+        "nominal": 0.000187
+       },
+       "standard": "NEMA MW 1000 C",
+       "standardName": "33.5 AWG",
+       "type": "round"
+      },
+      "type": "litz"
+     }
+    }
+   ],
+   "groupsDescription": [
+    {
+     "coordinateSystem": "cartesian",
+     "coordinates": [
+      0.016617963747159677,
+      0.0
+     ],
+     "dimensions": [
+      0.02036407250568064,
+      0.007973454176134407
+     ],
+     "name": "Default group",
+     "partialWindings": [
+      {
+       "parallelsProportion": [
+        1.0
+       ],
+       "winding": "primary"
+      },
+      {
+       "parallelsProportion": [
+        1.0
+       ],
+       "winding": "secondary"
+      }
+     ],
+     "sectionsOrientation": "overlapping",
+     "type": "wound"
+    }
+   ],
+   "layersDescription": [
+    {
+     "coordinateSystem": "cartesian",
+     "coordinates": [
+      0.00698751945480501,
+      -2.168404344971009e-19
+     ],
+     "dimensions": [
+      0.0011031839209713048,
+      0.006619103525827829
+     ],
+     "fillingFactor": 1.0,
+     "name": "primary section 0 layer 0",
+     "orientation": "overlapping",
+     "partialWindings": [
+      {
+       "parallelsProportion": [
+        1.0
+       ],
+       "winding": "primary"
+      }
+     ],
+     "section": "primary section 0",
+     "turnsAlignment": "centered",
+     "type": "conduction",
+     "windingStyle": "windByConsecutiveTurns"
+    },
+    {
+     "coordinateSystem": "cartesian",
+     "coordinates": [
+      0.007551610920971306,
+      0.0
+     ],
+     "dimensions": [
+      2.5e-05,
+      0.007973454176134407
+     ],
+     "fillingFactor": 1.0,
+     "insulationMaterial": {
+      "aliases": [
+       "Tefzel ETFE"
+      ],
+      "composition": "Ethylene Tetrafluoroethylene",
+      "density": 1700.0,
+      "dielectricStrength": [
+       {
+        "temperature": 23.0,
+        "thickness": 2.5e-05,
+        "value": 160000000.0
+       }
+      ],
+      "manufacturerInfo": {
+       "name": "Chemours"
+      },
+      "meltingPoint": 220.0,
+      "name": "ETFE",
+      "provenance": [
+       {
+        "fields": [
+         "density"
+        ],
+        "retrievedDate": "2026-10-03",
+        "source": "manufacturerDatasheet",
+        "sourceName": "Chemours Tefzel ETFE Film Properties Bulletin",
+        "sourceUrl": "https://chemours.com/en/-/media/files/teflon/tefzel-etfe-film-properties.pdf",
+        "verification": "valuesReadFromSource",
+        "verificationDate": "2026-10-03",
+        "verificationMethod": "Density 1700 kg/m3 (106 lb/ft3), ASTM D1505, Tefzel ETFE film. No conversion."
+       }
+      ],
+      "relativePermittivity": 2.7,
+      "resistivity": [
+       {
+        "temperature": 170.0,
+        "value": 1000000000000000.0
+       }
+      ],
+      "specificHeat": 1172.0,
+      "temperatureClass": 155.0,
+      "thermalConductivity": 0.24
+     },
+     "name": "Insulation between primary and secondary section 1 insulation layer 0",
+     "orientation": "overlapping",
+     "partialWindings": [],
+     "section": "Insulation between primary and secondary section 1",
+     "turnsAlignment": "spread",
+     "type": "insulation"
+    },
+    {
+     "coordinateSystem": "cartesian",
+     "coordinates": [
+      0.008115703375776315,
+      0.0
+     ],
+     "dimensions": [
+      0.0011031839209713048,
+      0.0033095517629139143
+     ],
+     "fillingFactor": 1.0,
+     "name": "secondary section 0 layer 0",
+     "orientation": "overlapping",
+     "partialWindings": [
+      {
+       "parallelsProportion": [
+        1.0
+       ],
+       "winding": "secondary"
+      }
+     ],
+     "section": "secondary section 0",
+     "turnsAlignment": "centered",
+     "type": "conduction",
+     "windingStyle": "windByConsecutiveTurns"
+    },
+    {
+     "coordinateSystem": "cartesian",
+     "coordinates": [
+      0.008679794841942614,
+      0.0
+     ],
+     "dimensions": [
+      2.5e-05,
+      0.007973454176134407
+     ],
+     "fillingFactor": 1.0,
+     "insulationMaterial": {
+      "aliases": [
+       "Tefzel ETFE"
+      ],
+      "composition": "Ethylene Tetrafluoroethylene",
+      "density": 1700.0,
+      "dielectricStrength": [
+       {
+        "temperature": 23.0,
+        "thickness": 2.5e-05,
+        "value": 160000000.0
+       }
+      ],
+      "manufacturerInfo": {
+       "name": "Chemours"
+      },
+      "meltingPoint": 220.0,
+      "name": "ETFE",
+      "provenance": [
+       {
+        "fields": [
+         "density"
+        ],
+        "retrievedDate": "2026-10-03",
+        "source": "manufacturerDatasheet",
+        "sourceName": "Chemours Tefzel ETFE Film Properties Bulletin",
+        "sourceUrl": "https://chemours.com/en/-/media/files/teflon/tefzel-etfe-film-properties.pdf",
+        "verification": "valuesReadFromSource",
+        "verificationDate": "2026-10-03",
+        "verificationMethod": "Density 1700 kg/m3 (106 lb/ft3), ASTM D1505, Tefzel ETFE film. No conversion."
+       }
+      ],
+      "relativePermittivity": 2.7,
+      "resistivity": [
+       {
+        "temperature": 170.0,
+        "value": 1000000000000000.0
+       }
+      ],
+      "specificHeat": 1172.0,
+      "temperatureClass": 155.0,
+      "thermalConductivity": 0.24
+     },
+     "name": "Insulation between secondary and primary section 3 insulation layer 0",
+     "orientation": "overlapping",
+     "partialWindings": [],
+     "section": "Insulation between secondary and primary section 3",
+     "turnsAlignment": "spread",
+     "type": "insulation"
+    }
+   ],
+   "sectionsDescription": [
+    {
+     "coordinateSystem": "cartesian",
+     "coordinates": [
+      0.00698751945480501,
+      0.0
+     ],
+     "dimensions": [
+      0.001103183920971305,
+      0.006619103525827829
+     ],
+     "fillingFactor": 0.09005326354030575,
+     "group": "Default group",
+     "layersOrientation": "overlapping",
+     "margin": [
+      0.0,
+      0.0
+     ],
+     "name": "primary section 0",
+     "partialWindings": [
+      {
+       "parallelsProportion": [
+        1.0
+       ],
+       "winding": "primary"
+      }
+     ],
+     "type": "conduction",
+     "windingStyle": "windByConsecutiveTurns"
+    },
+    {
+     "coordinateSystem": "cartesian",
+     "coordinates": [
+      0.007551611415290663,
+      0.0
+     ],
+     "dimensions": [
+      2.5e-05,
+      0.007973454176134407
+     ],
+     "fillingFactor": 1.0,
+     "group": "Default group",
+     "layersOrientation": "overlapping",
+     "name": "Insulation between primary and secondary section 1",
+     "partialWindings": [],
+     "type": "insulation"
+    },
+    {
+     "coordinateSystem": "cartesian",
+     "coordinates": [
+      0.008115703375776315,
+      0.0
+     ],
+     "dimensions": [
+      0.001103183920971305,
+      0.0033095517629139143
+     ],
+     "fillingFactor": 0.045026631770152876,
+     "group": "Default group",
+     "layersOrientation": "overlapping",
+     "margin": [
+      0.0,
+      0.0
+     ],
+     "name": "secondary section 0",
+     "partialWindings": [
+      {
+       "parallelsProportion": [
+        1.0
+       ],
+       "winding": "secondary"
+      }
+     ],
+     "type": "conduction",
+     "windingStyle": "windByConsecutiveTurns"
+    },
+    {
+     "coordinateSystem": "cartesian",
+     "coordinates": [
+      0.00867979533626197,
+      0.0
+     ],
+     "dimensions": [
+      2.5e-05,
+      0.007973454176134407
+     ],
+     "fillingFactor": 1.0,
+     "group": "Default group",
+     "layersOrientation": "overlapping",
+     "name": "Insulation between secondary and primary section 3",
+     "partialWindings": [],
+     "type": "insulation"
+    }
+   ],
+   "turnsDescription": [
+    {
+     "coordinateSystem": "cartesian",
+     "coordinates": [
+      0.00698751945480501,
+      -0.0027579598024282622
+     ],
+     "crossSectionalShape": "round",
+     "dimensions": [
+      0.0011031839209713048,
+      0.0011031839209713048
+     ],
+     "layer": "primary section 0 layer 0",
+     "length": 0.13615317445623668,
+     "name": "primary parallel 0 turn 0",
+     "orientation": "clockwise",
+     "parallel": 0,
+     "rotation": 0.0,
+     "section": "primary section 0",
+     "winding": "primary"
+    },
+    {
+     "coordinateSystem": "cartesian",
+     "coordinates": [
+      0.00698751945480501,
+      -0.0016547758814569574
+     ],
+     "crossSectionalShape": "round",
+     "dimensions": [
+      0.0011031839209713048,
+      0.0011031839209713048
+     ],
+     "layer": "primary section 0 layer 0",
+     "length": 0.13615317445623668,
+     "name": "primary parallel 0 turn 1",
+     "orientation": "clockwise",
+     "parallel": 0,
+     "rotation": 0.0,
+     "section": "primary section 0",
+     "winding": "primary"
+    },
+    {
+     "coordinateSystem": "cartesian",
+     "coordinates": [
+      0.00698751945480501,
+      -0.0005515919604856525
+     ],
+     "crossSectionalShape": "round",
+     "dimensions": [
+      0.0011031839209713048,
+      0.0011031839209713048
+     ],
+     "layer": "primary section 0 layer 0",
+     "length": 0.13615317445623668,
+     "name": "primary parallel 0 turn 2",
+     "orientation": "clockwise",
+     "parallel": 0,
+     "rotation": 0.0,
+     "section": "primary section 0",
+     "winding": "primary"
+    },
+    {
+     "coordinateSystem": "cartesian",
+     "coordinates": [
+      0.00698751945480501,
+      0.0005515919604856523
+     ],
+     "crossSectionalShape": "round",
+     "dimensions": [
+      0.0011031839209713048,
+      0.0011031839209713048
+     ],
+     "layer": "primary section 0 layer 0",
+     "length": 0.13615317445623668,
+     "name": "primary parallel 0 turn 3",
+     "orientation": "clockwise",
+     "parallel": 0,
+     "rotation": 0.0,
+     "section": "primary section 0",
+     "winding": "primary"
+    },
+    {
+     "coordinateSystem": "cartesian",
+     "coordinates": [
+      0.00698751945480501,
+      0.0016547758814569572
+     ],
+     "crossSectionalShape": "round",
+     "dimensions": [
+      0.0011031839209713048,
+      0.0011031839209713048
+     ],
+     "layer": "primary section 0 layer 0",
+     "length": 0.13615317445623668,
+     "name": "primary parallel 0 turn 4",
+     "orientation": "clockwise",
+     "parallel": 0,
+     "rotation": 0.0,
+     "section": "primary section 0",
+     "winding": "primary"
+    },
+    {
+     "coordinateSystem": "cartesian",
+     "coordinates": [
+      0.00698751945480501,
+      0.002757959802428262
+     ],
+     "crossSectionalShape": "round",
+     "dimensions": [
+      0.0011031839209713048,
+      0.0011031839209713048
+     ],
+     "layer": "primary section 0 layer 0",
+     "length": 0.13615317445623668,
+     "name": "primary parallel 0 turn 5",
+     "orientation": "clockwise",
+     "parallel": 0,
+     "rotation": 0.0,
+     "section": "primary section 0",
+     "winding": "primary"
+    },
+    {
+     "coordinateSystem": "cartesian",
+     "coordinates": [
+      0.008115703375776315,
+      -0.0011031839209713048
+     ],
+     "crossSectionalShape": "round",
+     "dimensions": [
+      0.0011031839209713048,
+      0.0011031839209713048
+     ],
+     "layer": "secondary section 0 layer 0",
+     "length": 0.14324176309227984,
+     "name": "secondary parallel 0 turn 0",
+     "orientation": "clockwise",
+     "parallel": 0,
+     "rotation": 0.0,
+     "section": "secondary section 0",
+     "winding": "secondary"
+    },
+    {
+     "coordinateSystem": "cartesian",
+     "coordinates": [
+      0.008115703375776315,
+      0.0
+     ],
+     "crossSectionalShape": "round",
+     "dimensions": [
+      0.0011031839209713048,
+      0.0011031839209713048
+     ],
+     "layer": "secondary section 0 layer 0",
+     "length": 0.14324176309227984,
+     "name": "secondary parallel 0 turn 1",
+     "orientation": "clockwise",
+     "parallel": 0,
+     "rotation": 0.0,
+     "section": "secondary section 0",
+     "winding": "secondary"
+    },
+    {
+     "coordinateSystem": "cartesian",
+     "coordinates": [
+      0.008115703375776315,
+      0.0011031839209713048
+     ],
+     "crossSectionalShape": "round",
+     "dimensions": [
+      0.0011031839209713048,
+      0.0011031839209713048
+     ],
+     "layer": "secondary section 0 layer 0",
+     "length": 0.14324176309227984,
+     "name": "secondary parallel 0 turn 2",
+     "orientation": "clockwise",
+     "parallel": 0,
+     "rotation": 0.0,
+     "section": "secondary section 0",
+     "winding": "secondary"
+    }
+   ]
+  },
+  "subject": "E 64/10/50 - 3F36 - Ungapped gapped 0.20 mm",
+  "changed": [
+   {
+    "ref": "coil",
+    "change": "wound: 9 turn(s), 4 section(s)"
+   }
+  ],
+  "view": "ui://openmagnetics/coil.html",
+  "companions": {
+   "crossSection": {
+    "schema": {
+     "name": "SVG"
+    },
+    "subject": "E 64/10/50 - 3F36 - Ungapped gapped 0.20 mm",
+    "document": {
+     "svg": "<svg height=\"632.0\" viewBox=\"-10.0 -316.0 980.0 632.0\" width=\"980.0\" xmlns=\"http://www.w3.org/2000/svg\">\n\t<style type=\"text/css\">\n\t\t<![CDATA[\n\t\t\t.FHBnAxSW {\n\t\t\t\tfill: #e7e7e8;\n\t\t\t\topacity: 1.0;\n\t\t\t}\n\t\t\t.HGvEcrPL {\n\t\t\t\tfill: #e7e7e8;\n\t\t\t\topacity: 1.0;\n\t\t\t}\n\t\t\t.HXkPdlTK {\n\t\t\t\tfill: none;\n\t\t\t\tstroke: #010000;\n\t\t\t\tstroke-width: 0.0;\n\t\t\t}\n\t\t\t.KhQsbrIB {\n\t\t\t\tfill: none;\n\t\t\t\tstroke: #010000;\n\t\t\t\tstroke-width: 0.0;\n\t\t\t}\n\t\t\t.TCOisQfz {\n\t\t\t\tfill: none;\n\t\t\t\tstroke: #010000;\n\t\t\t\tstroke-width: 0.0;\n\t\t\t}\n\t\t\t.XlqDcUba {\n\t\t\t\tfill: #e7e7e8;\n\t\t\t\topacity: 1.0;\n\t\t\t}\n\t\t\t.YaEOmgCx {\n\t\t\t\tfill: #e7e7e8;\n\t\t\t\topacity: 1.0;\n\t\t\t}\n\t\t\t.YzoqAkPW {\n\t\t\t\tfill: none;\n\t\t\t\tstroke: #010000;\n\t\t\t\tstroke-width: 0.0;\n\t\t\t}\n\t\t\t.ZDfiBKWO {\n\t\t\t\tfill: none;\n\t\t\t\tstroke: #010000;\n\t\t\t\tstroke-width: 0.0;\n\t\t\t}\n\t\t\t.bobbin {\n\t\t\t\tfill: #539796;\n\t\t\t}\n\t\t\t.bobbin_translucent {\n\t\t\t\tfill: #539796;\n\t\t\t\topacity: 0.5;\n\t\t\t}\n\t\t\t.cURPBfLu {\n\t\t\t\tfill: #e7e7e8;\n\t\t\t\topacity: 1.0;\n\t\t\t}\n\t\t\t.copper {\n\t\t\t\tfill: #b87333;\n\t\t\t}\n\t\t\t.copper_translucent {\n\t\t\t\tfill: #b87333;\n\t\t\t\topacity: 0.5;\n\t\t\t}\n\t\t\t.current_density {\n\t\t\t\tfill: #0892D0;\n\t\t\t}\n\t\t\t.ferrite {\n\t\t\t\tfill: #7b7c7d;\n\t\t\t}\n\t\t\t.fr4 {\n\t\t\t\tfill: #008000;\n\t\t\t}\n\t\t\t.fr4_translucent {\n\t\t\t\tfill: #008000;\n\t\t\t\topacity: 0.5;\n\t\t\t}\n\t\t\t.fwNTkLjY {\n\t\t\t\tfill: #e7e7e8;\n\t\t\t\topacity: 1.0;\n\t\t\t}\n\t\t\t.insulation {\n\t\t\t\tfill: #fff05b;\n\t\t\t}\n\t\t\t.insulation_translucent {\n\t\t\t\tfill: #fff05b;\n\t\t\t\topacity: 0.5;\n\t\t\t}\n\t\t\t.lBLniWCc {\n\t\t\t\tfill: none;\n\t\t\t\tstroke: #010000;\n\t\t\t\tstroke-width: 0.0;\n\t\t\t}\n\t\t\t.mXwEitTN {\n\t\t\t\tfill: #e7e7e8;\n\t\t\t\topacity: 1.0;\n\t\t\t}\n\t\t\t.margin {\n\t\t\t\tfill: #fff05b;\n\t\t\t}\n\t\t\t.margin_translucent {\n\t\t\t\tfill: #fff05b;\n\t\t\t\topacity: 0.5;\n\t\t\t}\n\t\t\t.point {\n\t\t\t\tfill: #ff0000;\n\t\t\t}\n\t\t\t.rUWQHnml {\n\t\t\t\tfill: none;\n\t\t\t\tstroke: #010000;\n\t\t\t\tstroke-width: 0.0;\n\t\t\t}\n\t\t\t.rtcygPeo {\n\t\t\t\tfill: #e7e7e8;\n\t\t\t\topacity: 1.0;\n\t\t\t}\n\t\t\t.shunt {\n\t\t\t\tfill: #6a5acd;\n\t\t\t}\n\t\t\t.spacer {\n\t\t\t\tfill: #3b3b3b;\n\t\t\t}\n\t\t\t.svuwRijI {\n\t\t\t\tfill: none;\n\t\t\t\tstroke: #010000;\n\t\t\t\tstroke-width: 0.0;\n\t\t\t}\n\t\t\t.text {\n\t\t\t\tfill: #000000;\n\t\t\t}\n\t\t\t.uMasrISd {\n\t\t\t\tfill: none;\n\t\t\t\tstroke: #010000;\n\t\t\t\tstroke-width: 0.0;\n\t\t\t}\n\t\t\t.white {\n\t\t\t\tfill: #ffffff;\n\t\t\t}\n\t\t\t.zEVHaOLt {\n\t\t\t\tfill: #e7e7e8;\n\t\t\t\topacity: 1.0;\n\t\t\t}\n\t\t]]>\n\t</style>\n\t<g>\n\t\t<polygon class=\"ferrite\" points=\"0.0,-306.0 960.0,-306.0 960.0,-0.1 804.0,-0.1 804.0,-153.0 153.0,-153.0 153.0,-6.0 0.0,-6.0 \" />\n\t\t<polygon class=\"ferrite\" points=\"0.0,306.0 960.0,306.0 960.0,0.1 804.0,0.1 804.0,153.0 153.0,153.0 153.0,0.0 0.0,0.0 \" />\n\t</g>\n\t<g>\n\t\t<polygon class=\"bobbin\" points=\"153.0,-153.0 804.0,-153.0 804.0,-119.6 193.1,-119.6 193.1,119.6 804.0,119.6 804.0,153.0 153.0,153.0 \" />\n\t</g>\n\t<g>\n\t\t<polygon class=\"insulation\" points=\"226.2,-119.6 226.9,-119.6 226.9,119.6 226.2,119.6 \" transform=\"rotate( -0.000000 0.000000 0.000000) \" />\n\t\t<polygon class=\"insulation\" points=\"260.0,-119.6 260.8,-119.6 260.8,119.6 260.0,119.6 \" transform=\"rotate( -0.000000 0.000000 0.000000) \" />\n\t</g>\n\t<g>\n\t\t<circle class=\"XlqDcUba\" cx=\"209.6\" cy=\"82.7\" r=\"16.5\">\n\t\t\t<title>primary parallel 0 turn 0</title>\n\t\t</circle>\n\t\t<circle class=\"lBLniWCc\" cx=\"209.6\" cy=\"82.7\" r=\"16.1\">\n\t\t\t<title>primary parallel 0 turn 0</title>\n\t\t</circle>\n\t\t<circle class=\"lBLniWCc\" cx=\"209.6\" cy=\"82.7\" r=\"16.5\">\n\t\t\t<title>primary parallel 0 turn 0</title>\n\t\t</circle>\n\t\t<circle class=\"copper\" cx=\"209.6\" cy=\"82.7\" r=\"16.1\">\n\t\t\t<title>primary parallel 0 turn 0</title>\n\t\t</circle>\n\t</g>\n\t<g>\n\t\t<circle class=\"cURPBfLu\" cx=\"209.6\" cy=\"49.6\" r=\"16.5\">\n\t\t\t<title>primary parallel 0 turn 1</title>\n\t\t</circle>\n\t\t<circle class=\"KhQsbrIB\" cx=\"209.6\" cy=\"49.6\" r=\"16.1\">\n\t\t\t<title>primary parallel 0 turn 1</title>\n\t\t</circle>\n\t\t<circle class=\"KhQsbrIB\" cx=\"209.6\" cy=\"49.6\" r=\"16.5\">\n\t\t\t<title>primary parallel 0 turn 1</title>\n\t\t</circle>\n\t\t<circle class=\"copper\" cx=\"209.6\" cy=\"49.6\" r=\"16.1\">\n\t\t\t<title>primary parallel 0 turn 1</title>\n\t\t</circle>\n\t</g>\n\t<g>\n\t\t<circle class=\"FHBnAxSW\" cx=\"209.6\" cy=\"16.5\" r=\"16.5\">\n\t\t\t<title>primary parallel 0 turn 2</title>\n\t\t</circle>\n\t\t<circle class=\"svuwRijI\" cx=\"209.6\" cy=\"16.5\" r=\"16.1\">\n\t\t\t<title>primary parallel 0 turn 2</title>\n\t\t</circle>\n\t\t<circle class=\"svuwRijI\" cx=\"209.6\" cy=\"16.5\" r=\"16.5\">\n\t\t\t<title>primary parallel 0 turn 2</title>\n\t\t</circle>\n\t\t<circle class=\"copper\" cx=\"209.6\" cy=\"16.5\" r=\"16.1\">\n\t\t\t<title>primary parallel 0 turn 2</title>\n\t\t</circle>\n\t</g>\n\t<g>\n\t\t<circle class=\"rtcygPeo\" cx=\"209.6\" cy=\"-16.5\" r=\"16.5\">\n\t\t\t<title>primary parallel 0 turn 3</title>\n\t\t</circle>\n\t\t<circle class=\"ZDfiBKWO\" cx=\"209.6\" cy=\"-16.5\" r=\"16.1\">\n\t\t\t<title>primary parallel 0 turn 3</title>\n\t\t</circle>\n\t\t<circle class=\"ZDfiBKWO\" cx=\"209.6\" cy=\"-16.5\" r=\"16.5\">\n\t\t\t<title>primary parallel 0 turn 3</title>\n\t\t</circle>\n\t\t<circle class=\"copper\" cx=\"209.6\" cy=\"-16.5\" r=\"16.1\">\n\t\t\t<title>primary parallel 0 turn 3</title>\n\t\t</circle>\n\t</g>\n\t<g>\n\t\t<circle class=\"zEVHaOLt\" cx=\"209.6\" cy=\"-49.6\" r=\"16.5\">\n\t\t\t<title>primary parallel 0 turn 4</title>\n\t\t</circle>\n\t\t<circle class=\"uMasrISd\" cx=\"209.6\" cy=\"-49.6\" r=\"16.1\">\n\t\t\t<title>primary parallel 0 turn 4</title>\n\t\t</circle>\n\t\t<circle class=\"uMasrISd\" cx=\"209.6\" cy=\"-49.6\" r=\"16.5\">\n\t\t\t<title>primary parallel 0 turn 4</title>\n\t\t</circle>\n\t\t<circle class=\"copper\" cx=\"209.6\" cy=\"-49.6\" r=\"16.1\">\n\t\t\t<title>primary parallel 0 turn 4</title>\n\t\t</circle>\n\t</g>\n\t<g>\n\t\t<circle class=\"fwNTkLjY\" cx=\"209.6\" cy=\"-82.7\" r=\"16.5\">\n\t\t\t<title>primary parallel 0 turn 5</title>\n\t\t</circle>\n\t\t<circle class=\"TCOisQfz\" cx=\"209.6\" cy=\"-82.7\" r=\"16.1\">\n\t\t\t<title>primary parallel 0 turn 5</title>\n\t\t</circle>\n\t\t<circle class=\"TCOisQfz\" cx=\"209.6\" cy=\"-82.7\" r=\"16.5\">\n\t\t\t<title>primary parallel 0 turn 5</title>\n\t\t</circle>\n\t\t<circle class=\"copper\" cx=\"209.6\" cy=\"-82.7\" r=\"16.1\">\n\t\t\t<title>primary parallel 0 turn 5</title>\n\t\t</circle>\n\t</g>\n\t<g>\n\t\t<circle class=\"mXwEitTN\" cx=\"243.5\" cy=\"33.1\" r=\"16.5\">\n\t\t\t<title>secondary parallel 0 turn 0</title>\n\t\t</circle>\n\t\t<circle class=\"YzoqAkPW\" cx=\"243.5\" cy=\"33.1\" r=\"16.1\">\n\t\t\t<title>secondary parallel 0 turn 0</title>\n\t\t</circle>\n\t\t<circle class=\"YzoqAkPW\" cx=\"243.5\" cy=\"33.1\" r=\"16.5\">\n\t\t\t<title>secondary parallel 0 turn 0</title>\n\t\t</circle>\n\t\t<circle class=\"copper\" cx=\"243.5\" cy=\"33.1\" r=\"16.1\">\n\t\t\t<title>secondary parallel 0 turn 0</title>\n\t\t</circle>\n\t</g>\n\t<g>\n\t\t<circle class=\"YaEOmgCx\" cx=\"243.5\" cy=\"-0.0\" r=\"16.5\">\n\t\t\t<title>secondary parallel 0 turn 1</title>\n\t\t</circle>\n\t\t<circle class=\"HXkPdlTK\" cx=\"243.5\" cy=\"-0.0\" r=\"16.1\">\n\t\t\t<title>secondary parallel 0 turn 1</title>\n\t\t</circle>\n\t\t<circle class=\"HXkPdlTK\" cx=\"243.5\" cy=\"-0.0\" r=\"16.5\">\n\t\t\t<title>secondary parallel 0 turn 1</title>\n\t\t</circle>\n\t\t<circle class=\"copper\" cx=\"243.5\" cy=\"-0.0\" r=\"16.1\">\n\t\t\t<title>secondary parallel 0 turn 1</title>\n\t\t</circle>\n\t</g>\n\t<g>\n\t\t<circle class=\"HGvEcrPL\" cx=\"243.5\" cy=\"-33.1\" r=\"16.5\">\n\t\t\t<title>secondary parallel 0 turn 2</title>\n\t\t</circle>\n\t\t<circle class=\"rUWQHnml\" cx=\"243.5\" cy=\"-33.1\" r=\"16.1\">\n\t\t\t<title>secondary parallel 0 turn 2</title>\n\t\t</circle>\n\t\t<circle class=\"rUWQHnml\" cx=\"243.5\" cy=\"-33.1\" r=\"16.5\">\n\t\t\t<title>secondary parallel 0 turn 2</title>\n\t\t</circle>\n\t\t<circle class=\"copper\" cx=\"243.5\" cy=\"-33.1\" r=\"16.1\">\n\t\t\t<title>secondary parallel 0 turn 2</title>\n\t\t</circle>\n\t</g>\n</svg>",
+     "painter": "MKF Painter (plot_magnetic)",
+     "level": "turns",
+     "shows": "core, bobbin and every turn"
+    }
+   }
+  }
+ }
+}

@@ -22,6 +22,7 @@ from __future__ import annotations
 import functools
 import gzip
 import hashlib
+import inspect
 import json
 import os
 import sys
@@ -54,6 +55,8 @@ from mcp.types import CallToolResult, TextContent      # noqa: E402
 UI_RESOURCE_MIME = "text/html;profile=mcp-app"
 UI_CURVES_URI = "ui://openmagnetics/curves.html"
 UI_PICKER_URI = "ui://openmagnetics/picker.html"
+UI_COIL_URI = "ui://openmagnetics/coil.html"
+UI_RESULT_URI = "ui://openmagnetics/result.html"
 
 
 def _ui_meta(uri: str) -> dict:
@@ -64,11 +67,18 @@ UI_CURVES_META = _ui_meta(UI_CURVES_URI)
 # The ranked-design picker (ABT #652): the advisers' digests in a sortable table, and the
 # chosen design's mas:// handle sent back to the model through the MCP Apps bridge.
 UI_PICKER_META = _ui_meta(UI_PICKER_URI)
+# The wound-coil view (ABT #653): MKF's own Painter cross-section of what a wind_* tool laid
+# out, beside a per-section / per-layer table read from the wound coil.
+UI_COIL_META = _ui_meta(UI_COIL_URI)
+# The result panel for the analysis tools (ABT #654): the number, its breakdown as the engine
+# reported it, the model that computed it and the operating point it holds at.
+UI_RESULT_META = _ui_meta(UI_RESULT_URI)
 
 # Every ui:// this server advertises and the dist/ bundle that serves it. One table, read by
 # both the resources and the startup assertion, so a widget cannot be added to one and not
 # the other.
-UI_WIDGETS = {UI_CURVES_URI: "curves.html", UI_PICKER_URI: "picker.html"}
+UI_WIDGETS = {UI_CURVES_URI: "curves.html", UI_PICKER_URI: "picker.html",
+              UI_COIL_URI: "coil.html", UI_RESULT_URI: "result.html"}
 
 # How each adviser orders what it returns, stated as a field so the picker can say why a design
 # sits where it does instead of showing a bare number. The two paths rank in OPPOSITE
@@ -244,6 +254,11 @@ def _dig(document: dict, name: str):
         return ((document.get("magnetic") or document).get("coil") or {})
     if name == "inputs":
         return document.get("inputs") or document
+    if name == "core":
+        core = (document.get("magnetic") or document).get("core")
+        if not core:
+            raise ValueError("the document behind this handle has no core to pass as `core`")
+        return core
     if name in ("mas", "document"):
         return document
     return document
@@ -255,11 +270,25 @@ def resolves_refs(fn):
     functools.wraps matters here beyond tidiness: FastMCP builds each tool's input schema
     from inspect.signature, which follows __wrapped__ — so the schema stays the real one.
     """
+    takes_core = "core" in inspect.signature(fn).parameters
+
     @functools.wraps(fn)
     def wrapper(**kwargs):
+        coil_document = None
         for key, value in list(kwargs.items()):
             if isinstance(value, str) and value.startswith(_REF_SCHEME):
-                kwargs[key] = _dig(_resolve_mas(value), key)
+                document = _resolve_mas(value)
+                if key == "coil":
+                    coil_document = document
+                kwargs[key] = _dig(document, key)
+        # A coil given BY HANDLE comes from a stored magnetic, and that magnetic's core is the
+        # one this coil is wound on — the same design, not a substitute. The wind_* tools need
+        # it only to have the Painter draw the result; a coil passed inline carries no core,
+        # and then the caller must name one (or the drawing says it could not be made).
+        if takes_core and coil_document is not None and kwargs.get("core") is None:
+            magnetic = coil_document.get("magnetic") or coil_document
+            if magnetic.get("core"):
+                kwargs["core"] = magnetic["core"]
         return fn(**kwargs)
     return wrapper
 
@@ -710,11 +739,71 @@ def advise_from_catalog(inputs: dict | str | str, catalog: list, count: int = 3)
 
 
 # --- tools: losses and analysis --------------------------------------------
+#
+# Each answers as a `quantity` and is viewed through ui://…/result.html: the number, the parts
+# the engine split it into, the model that computed it and the operating point it holds at.
+# Nothing here models anything. The values are the engine's, read out of its own output; the
+# conditions are the caller's operating point, read back. Where a field is absent it is absent
+# from the panel too — an omitted breakdown and a breakdown of zeros are different facts.
+
+# The processed waveform fields an operating point may state, with their units. Read, never
+# derived: a waveform given only as samples states none of them, and then none are shown.
+# Each is (MAS field, unit or None for the signal's own, label).
+_PROCESSED_FIELDS = (("label", None, "waveform"), ("peakToPeak", None, "peak-to-peak"),
+                     ("offset", None, "offset"), ("peak", None, "peak"), ("rms", None, "RMS"),
+                     ("dutyCycle", "1", "duty cycle"))
+
+
+def _operating_point_conditions(operating_point: dict) -> dict:
+    """The operating point as named conditions, exactly as the caller stated it."""
+    if not isinstance(operating_point, dict):
+        raise ValueError(f"operating_point must be a MAS operating point object, got "
+                         f"{type(operating_point).__name__}")
+    excitations = operating_point.get("excitationsPerWinding")
+    if not isinstance(excitations, list) or not excitations:
+        raise ValueError("operating_point has no excitationsPerWinding, so it states no "
+                         "operating point to compute at")
+    out: dict = {}
+    ambient = (operating_point.get("conditions") or {}).get("ambientTemperature")
+    if isinstance(ambient, (int, float)) and not isinstance(ambient, bool):
+        out["ambientTemperature"] = {"value": float(ambient), "unit": "degC",
+                                     "label": "ambient temperature"}
+    for i, excitation in enumerate(excitations):
+        name = (excitation or {}).get("name") or f"winding {i}"
+        frequency = (excitation or {}).get("frequency")
+        if isinstance(frequency, (int, float)) and not isinstance(frequency, bool):
+            out[f"{name}.frequency"] = {"value": float(frequency), "unit": "Hz",
+                                        "label": f"{name} frequency"}
+        for signal, unit in (("current", "A"), ("voltage", "V")):
+            processed = (((excitation or {}).get(signal) or {}).get("processed") or {})
+            for field, field_unit, field_label in _PROCESSED_FIELDS:
+                value = processed.get(field)
+                if value is None:
+                    continue
+                entry = {"value": value if isinstance(value, str) else float(value),
+                         "label": f"{name} {signal} {field_label}"}
+                if not isinstance(value, str):
+                    entry["unit"] = field_unit or unit
+                out[f"{name}.{signal}.{field}"] = entry
+    return out
+
+
+def _harmonic_sum(element: dict | None, what: str) -> float | None:
+    """The engine's per-harmonic losses of one element, added up — the sum MKF itself takes
+    for its total. None when the engine did not report the element at all."""
+    if element is None:
+        return None
+    per = element.get("lossesPerHarmonic")
+    if not isinstance(per, list) or not all(isinstance(v, (int, float)) for v in per):
+        raise RuntimeError(f"{what}: the engine reported the element without numeric "
+                           f"lossesPerHarmonic: {element!r}"[:400])
+    return float(sum(per))
+
 
 @mcp.tool(
     title="Core losses",
     description="Core loss of a magnetic at an operating point, with the model used.",
-    structured_output=False,
+    meta=UI_RESULT_META, structured_output=False,
 )
 @resolves_refs
 def core_losses(magnetic: dict | str, operating_point: dict, temperature: float = 25.0,
@@ -727,31 +816,51 @@ def core_losses(magnetic: dict | str, operating_point: dict, temperature: float 
     #
     # TEMPERATURE travels in the operating point's conditions, where the engine looks for it;
     # passing it as a fifth argument silently did nothing.
+    at = _at_temperature(operating_point, temperature)
     inputs = {"designRequirements": {"magnetizingInductance": {"nominal": 0}, "turnsRatios": []},
-              "operatingPoints": [_at_temperature(operating_point, temperature)]}
+              "operatingPoints": [at]}
     out = _unwrap(om.calculate_core_losses(magnetic.get("core") or {}, magnetic.get("coil") or {},
                                            inputs, models or {}))
-    losses = out.get("coreLosses") if isinstance(out, dict) else out
+    if not isinstance(out, dict):
+        raise RuntimeError(f"the core-loss model returned {out!r}, not a core-loss output"[:400])
+    losses = _scalar(out.get("coreLosses"), "W", "core losses")
+    if not losses:
+        raise RuntimeError(f"the core-loss model returned no numeric coreLosses: "
+                           f"{sorted(out)}")
     # WHICH MODEL SAID SO is half the answer: Steinmetz, iGSE and Roshen disagree by more
     # than most thermal margins, and a bare number cannot be checked against another run.
-    model = ((out or {}).get("methodUsed") if isinstance(out, dict) else None) \
-        or (models or {}).get("coreLosses") or "the engine's default core-loss model"
-    quantities = {"coreLosses": _scalar(losses, "W", "core losses")}
-    for key, unit in (("magneticFluxDensityPeak", "T"), ("volumetricLosses", "W/m3")):
-        entry = _scalar((out or {}).get(key) if isinstance(out, dict) else None, unit)
+    model = out.get("methodUsed") or (models or {}).get("coreLosses")
+    if not model:
+        raise RuntimeError("the core-loss output does not name the model that computed it")
+    quantities = {"coreLosses": losses}
+    for key, unit, label in (("volumetricLosses", "W/m3", "volumetric core losses"),
+                             ("magneticFluxDensityPeak", "T", "peak flux density"),
+                             ("magneticFluxDensityAcPeak", "T", "AC peak flux density"),
+                             ("temperature", "degC", "core temperature the losses hold at"),
+                             ("maximumCoreTemperatureRise", "K",
+                              "core temperature rise the engine estimated")):
+        entry = _scalar(out.get(key), unit, label)
         if entry:
             quantities[key] = entry
+    conditions = {"temperature": {"value": float(temperature), "unit": "degC",
+                                  "label": "temperature requested"},
+                  **_operating_point_conditions(at)}
+    # The excitation as the ENGINE processed it, beside the one the caller stated.
+    for key, unit, label in (("currentRms", "A", "RMS current (engine-processed)"),
+                             ("voltageRms", "V", "RMS voltage (engine-processed)")):
+        if isinstance(out.get(key), (int, float)) and not isinstance(out.get(key), bool):
+            conditions[key] = {"value": float(out[key]), "unit": unit, "label": label}
     return _quantity_result(
-        f"Core losses {_eng(losses, 'W')} at {temperature} °C for {_reference(magnetic)}.",
-        subject=_reference(magnetic), model=str(model),
-        quantities={k: v for k, v in quantities.items() if v},
-        conditions={"temperature": {"value": float(temperature), "unit": "degC"}})
+        f"Core losses {_eng(losses['value'], 'W')} ({model}) at {temperature} °C for "
+        f"{_reference(magnetic)}.",
+        subject=_reference(magnetic), model=str(model), quantities=quantities,
+        conditions=conditions)
 
 
 @mcp.tool(
     title="Winding losses",
-    description="DC + AC winding losses (skin and proximity) per winding and per turn.",
-    structured_output=False,
+    description="DC + AC winding losses (skin and proximity) per winding.",
+    meta=UI_RESULT_META, structured_output=False,
 )
 @resolves_refs
 def winding_losses(magnetic: dict | str, operating_point: dict,
@@ -759,40 +868,75 @@ def winding_losses(magnetic: dict | str, operating_point: dict,
     """Winding losses breakdown."""
     _require_complete(magnetic, "winding loss calculation")
     out = _unwrap(om.calculate_winding_losses(magnetic, operating_point, temperature))
-    total = out.get("windingLosses") if isinstance(out, dict) else None
-    per = out.get("dcResistancePerWinding") if isinstance(out, dict) else None
-    # Per-winding split as a `breakdown`, in the same unit as the total, so nobody has to
-    # guess whether 1.2 W was the whole coil or one of its windings.
-    breakdown = {}
-    if isinstance(per, dict):
-        breakdown = {str(k): float(v) for k, v in per.items()
-                     if isinstance(v, (int, float)) and not isinstance(v, bool)}
-    elif isinstance(per, list):
-        breakdown = {f"winding {i}": float(v) for i, v in enumerate(per)
-                     if isinstance(v, (int, float)) and not isinstance(v, bool)}
-    losses_entry = _scalar(total, "W", "winding losses")
-    if losses_entry and breakdown:
-        losses_entry["breakdown"] = breakdown
-    quantities = {"windingLosses": losses_entry} if losses_entry else {}
-    for key, unit in (("dcResistance", "ohm"), ("acResistance", "ohm"),
-                      ("skinEffectLosses", "W"), ("proximityEffectLosses", "W")):
-        entry = _scalar((out or {}).get(key) if isinstance(out, dict) else None, unit)
-        if entry:
-            quantities[key] = entry
-    if not quantities:
-        raise RuntimeError("the winding-loss model returned no usable number")
+    if not isinstance(out, dict):
+        raise RuntimeError(f"the winding-loss model returned {out!r}, not a loss output"[:400])
+    total = _scalar(out.get("windingLosses"), "W", "winding losses")
+    if not total:
+        raise RuntimeError(f"the winding-loss model returned no numeric windingLosses: "
+                           f"{sorted(out)}")
+    quantities = {"windingLosses": total}
+    # The split the engine reports PER WINDING — DC (ohmic), skin, proximity — each as its own
+    # quantity whose breakdown is per winding, in W like the total. (This used to put the DC
+    # RESISTANCE per winding, in ohms, under a breakdown of the loss in W.)
+    per_winding = out.get("windingLossesPerWinding")
+    if isinstance(per_winding, list) and per_winding:
+        parts = {"ohmicLosses": {}, "skinEffectLosses": {}, "proximityEffectLosses": {}}
+        for i, element in enumerate(per_winding):
+            name = (element or {}).get("name") or f"winding {i}"
+            ohmic = (element or {}).get("ohmicLosses")
+            if ohmic is not None:
+                if not isinstance(ohmic.get("losses"), (int, float)):
+                    raise RuntimeError(f"{name}: ohmicLosses carries no numeric losses: {ohmic!r}")
+                parts["ohmicLosses"][name] = float(ohmic["losses"])
+            for key in ("skinEffectLosses", "proximityEffectLosses"):
+                value = _harmonic_sum((element or {}).get(key), f"{name} {key}")
+                if value is not None:
+                    parts[key][name] = value
+        labels = {"ohmicLosses": "DC (ohmic) losses",
+                  "skinEffectLosses": "skin-effect losses (sum over harmonics)",
+                  "proximityEffectLosses": "proximity-effect losses (sum over harmonics)"}
+        for key, breakdown in parts.items():
+            if breakdown:
+                quantities[key] = {"value": float(sum(breakdown.values())), "unit": "W",
+                                   "label": labels[key], "breakdown": breakdown}
+        # The parts must add up to the engine's own total. If they do not, this reading of its
+        # output is wrong, and a panel that shows parts disagreeing with their sum is worse than
+        # one that shows only the sum.
+        split = sum(q["value"] for k, q in quantities.items() if k in parts)
+        if abs(split - total["value"]) > 1e-6 + 1e-3 * abs(total["value"]):
+            raise RuntimeError(f"the per-winding DC + skin + proximity losses add up to {split} W "
+                               f"but the engine's total is {total['value']} W")
+    resistance = out.get("dcResistancePerWinding")
+    if isinstance(resistance, list) and resistance:
+        names = ([(e or {}).get("name") for e in per_winding]
+                 if isinstance(per_winding, list) else [])
+        quantities["dcResistancePerWinding"] = {
+            # No single value: the resistances of different windings do not add to anything.
+            "value": None, "unit": "ohm", "label": "DC resistance per winding",
+            "breakdown": {(names[i] if i < len(names) and names[i] else f"winding {i}"): float(v)
+                          for i, v in enumerate(resistance)}}
+    if not out.get("methodUsed"):
+        raise RuntimeError("the winding-loss output does not name the method that computed it")
+    settings = om.get_settings()
+    model = (f"{out['methodUsed']} (skin: "
+             f"{settings['windingSkinEffectLossesModel']}, proximity: "
+             f"{settings['windingProximityEffectLossesModel']})")
     return _quantity_result(
-        f"Winding losses {_eng(total, 'W')} at {temperature} °C"
-        + (f"; DC resistance per winding {per}" if per else ""),
-        subject=_reference(magnetic), model="Dowell (skin and proximity effect)",
-        quantities=quantities,
-        conditions={"temperature": {"value": float(temperature), "unit": "degC"}})
+        f"Winding losses {_eng(total['value'], 'W')} at {temperature} °C for "
+        f"{_reference(magnetic)}"
+        + "".join(f"; {quantities[k]['label']} {_eng(quantities[k]['value'], 'W')}"
+                  for k in ("ohmicLosses", "skinEffectLosses", "proximityEffectLosses")
+                  if k in quantities),
+        subject=_reference(magnetic), model=model, quantities=quantities,
+        conditions={"temperature": {"value": float(temperature), "unit": "degC",
+                                    "label": "winding temperature"},
+                    **_operating_point_conditions(operating_point)})
 
 
 @mcp.tool(
     title="Leakage inductance",
     description="Leakage inductance matrix between windings at a frequency.",
-    structured_output=False,
+    meta=UI_RESULT_META, structured_output=False,
 )
 @resolves_refs
 def leakage_inductance(magnetic: dict | str, frequency: float = 100000.0,
@@ -815,8 +959,13 @@ def leakage_inductance(magnetic: dict | str, frequency: float = 100000.0,
         for name in (row or {}):
             if name not in windings:
                 windings.append(name)
-    matrix = [[_resolve_dimension((magnitude.get(a) or {}).get(b, 0.0)) for b in windings]
-              for a in windings]
+    missing = [f"{a}->{b}" for a in windings for b in windings
+               if b not in (magnitude.get(a) or {})]
+    if missing:
+        # Not filled with 0 H: a pair the engine did not report is not a pair with no leakage.
+        raise RuntimeError("the leakage-inductance matrix the engine returned is not square; "
+                           "missing pairs: " + ", ".join(missing))
+    matrix = [[_resolve_dimension(magnitude[a][b]) for b in windings] for a in windings]
     return _quantity_result(
         f"Leakage inductance matrix at {_eng(frequency, 'Hz')} for {_reference(magnetic)}.",
         subject=_reference(magnetic), model="MKF leakage-inductance matrix",
@@ -828,28 +977,36 @@ def leakage_inductance(magnetic: dict | str, frequency: float = 100000.0,
 
 @mcp.tool(
     title="Peak winding current",
-    description="Peak current in one winding at an operating point.",
-    structured_output=False,
+    description="Peak magnetizing (flux-driving) current at an operating point, referred to "
+                "one winding.",
+    meta=UI_RESULT_META, structured_output=False,
 )
 @resolves_refs
 def peak_winding_current(magnetic: dict | str, operating_point: dict,
                          winding_index: int = 0) -> CallToolResult:
-    """Peak current, A."""
+    """Peak magnetizing current, A.
+
+    What MKF's calculate_peak_winding_current returns: the peak of the MAGNETIZING current, the
+    part that drives core flux, referred to `winding_index` — not the peak of that winding's
+    own current, which for a transformer also carries reflected load current.
+    """
     out = _unwrap(om.calculate_peak_winding_current(magnetic, operating_point, winding_index))
-    peak = _scalar(out, "A", f"peak current in winding {winding_index}")
+    peak = _scalar(out, "A", f"peak magnetizing current, referred to winding {winding_index}")
     if not peak:
         raise RuntimeError(f"the engine returned no numeric peak current: {out!r}")
     return _quantity_result(
-        f"Peak current in winding {winding_index}: {_eng(out, 'A')}",
-        subject=_reference(magnetic), model="MKF peak winding current",
+        f"Peak magnetizing current referred to winding {winding_index}: {_eng(out, 'A')}",
+        subject=_reference(magnetic), model="MKF peak magnetizing current",
         quantities={"peakWindingCurrent": peak},
-        conditions={"winding": {"value": winding_index, "label": "winding index"}})
+        conditions={"winding": {"value": winding_index, "unit": "1",
+                                "label": "winding index referred to"},
+                    **_operating_point_conditions(operating_point)})
 
 
 @mcp.tool(
     title="Temperature from thermal resistance",
-    description="Core temperature rise from its thermal resistance and total losses.",
-    structured_output=False,
+    description="Core temperature from its thermal resistance and total losses.",
+    meta=UI_RESULT_META, structured_output=False,
 )
 @resolves_refs
 def core_temperature(magnetic: dict | str, total_losses: float) -> CallToolResult:
@@ -868,11 +1025,15 @@ def core_temperature(magnetic: dict | str, total_losses: float) -> CallToolResul
     # its ambient from the core, so subtracting an ambient this layer invented would be a
     # number nobody computed — and the rise is the figure an engineer compares against a
     # datasheet limit, so a wrong one is worse than none.
+    model = om.get_settings().get("coreThermalResistanceModel")
+    if not model:
+        raise RuntimeError("the engine settings name no coreThermalResistanceModel")
     return _quantity_result(
         f"Core reaches {out} °C with {_eng(total_losses, 'W')} of loss.",
-        subject=_reference(magnetic), model="core thermal resistance",
+        subject=_reference(magnetic), model=f"core thermal resistance ({model})",
         quantities={"coreTemperature": temperature},
-        conditions={"totalLosses": {"value": float(total_losses), "unit": "W"}})
+        conditions={"totalLosses": {"value": float(total_losses), "unit": "W",
+                                    "label": "total losses dissipated"}})
 
 
 # --- tools: sweeps (all chart into the curves widget) -----------------------
@@ -1004,103 +1165,224 @@ def sweep_resistance(magnetic: dict | str, start_hz: float = 1e3, stop_hz: float
 
 
 # --- tools: winding ---------------------------------------------------------
+#
+# Every wind_* result is the wound coil as a `document`, viewed through ui://…/coil.html. The
+# picture is MKF's own Painter (PyOpenMagnetics plot_*), never geometry drawn here: the Painter
+# is what the web app and every MKF report draw, so the cross-section an engineer judges in a
+# chat is the one the engine itself believes in. It needs the CORE as well as the coil — a
+# coil alone has no window to sit in — which is why each tool takes an optional `core`.
+
+# Which Painter call can draw a coil wound to a given depth. The deepest description present
+# decides: plot_magnetic draws turns (and needs them — "Winding turns not created" otherwise),
+# plot_layers needs layers, plot_sections needs only sections.
+_PAINTERS = (
+    ("turns", "turnsDescription", "plot_magnetic", "core, bobbin and every turn"),
+    ("layers", "layersDescription", "plot_layers", "core, bobbin and the layers"),
+    ("sections", "sectionsDescription", "plot_sections", "core, bobbin and the sections"),
+)
+
+
+def _core_name(core: dict) -> str:
+    fd = core.get("functionalDescription") or {}
+    shape = fd.get("shape")
+    name = core.get("name") or (shape.get("name") if isinstance(shape, dict) else shape)
+    if not name:
+        raise ValueError("the core names neither itself nor its shape, so the cross-section "
+                         "cannot say what it is a cross-section OF")
+    return str(name)
+
+
+def _cross_section(coil: dict, core: dict | None) -> tuple[dict | None, str | None]:
+    """The Painter's SVG of `coil` on `core` as a companion document, or why there is none.
+
+    Returns (companion, None) or (None, reason). A missing core or a Painter refusal is a
+    reason the widget shows in place of the drawing — never a substitute picture, and never a
+    reason to withhold the wound coil, which is valid either way.
+    """
+    if not core:
+        return None, ("cross-section not drawn: no core was given, and the Painter cannot place "
+                      "a coil without one. Pass `core` (the core of the magnetic this coil "
+                      "belongs to; a mas:// handle works), or pass the coil itself as a handle.")
+    for level, key, painter, shows in _PAINTERS:
+        if coil.get(key):
+            break
+    else:
+        raise RuntimeError("the winding returned no sections, layers or turns, so there is "
+                           "nothing wound to draw")
+    drawn = getattr(om, painter)({"core": core, "coil": coil})
+    if not isinstance(drawn, dict) or not drawn.get("success"):
+        error = (drawn or {}).get("error") if isinstance(drawn, dict) else drawn
+        return None, f"cross-section not drawn: MKF's Painter ({painter}) refused it: {error}"
+    svg = drawn.get("svg")
+    if not isinstance(svg, str) or "<svg" not in svg:
+        return None, (f"cross-section not drawn: MKF's Painter ({painter}) reported success but "
+                      f"returned no SVG")
+    return {"schema": {"name": "SVG"}, "subject": _core_name(core),
+            "document": {"svg": svg, "painter": f"MKF Painter ({painter})", "level": level,
+                         "shows": shows}}, None
+
+
+def _section_lines(coil: dict) -> list[str]:
+    """One line per section for the model's text digest: what is in it, counted from the coil.
+    Counting, not computing: the filling factor is the engine's own figure, read back."""
+    layers = coil.get("layersDescription") or []
+    turns = coil.get("turnsDescription") or []
+    lines = []
+    for section in coil.get("sectionsDescription") or []:
+        name = section.get("name")
+        windings = ", ".join(pw.get("winding") or "?" for pw in section.get("partialWindings") or [])
+        parts = [f"{section.get('type') or 'section'}"]
+        if windings:
+            parts.append(windings)
+        if layers:
+            parts.append(f"{sum(1 for l in layers if l.get('section') == name)} layer(s)")
+        if turns:
+            parts.append(f"{sum(1 for t in turns if t.get('section') == name)} turn(s)")
+        if isinstance(section.get("fillingFactor"), (int, float)):
+            parts.append(f"filling factor {section['fillingFactor']:.3g}")
+        lines.append(f"  {name}: " + ", ".join(parts))
+    return lines
+
+
+def _wound_result(headline: str, change: str, out, core: dict | None) -> CallToolResult:
+    if not isinstance(out, dict):
+        raise RuntimeError(f"the winding returned {type(out).__name__}, not a coil: {out!r}"[:400])
+    companion, why_not = _cross_section(out, core)
+    lines = _section_lines(out)
+    summary = headline + ("\n" + "\n".join(lines) if lines else "")
+    summary += ("\nThe widget shows MKF's Painter cross-section." if companion
+                else f"\n{why_not}")
+    result = _document_result(
+        summary, schema="MAS", version="coil", operation="transformed", document=out,
+        subject=companion["subject"] if companion else None,
+        changed=[{"ref": "coil", "change": change}],
+        diagnostics=[why_not] if why_not else None, view=UI_COIL_URI)
+    if companion:
+        # Beside the document, not inside it: the wound coil stays exactly the MAS the engine
+        # returned, and the picture is a separate artifact that says which Painter made it.
+        result.structuredContent["companions"] = {"crossSection": companion}
+    return result
+
+
+def _counts(out) -> tuple[int, int, int]:
+    out = out or {}
+    return (len(out.get("sectionsDescription") or []), len(out.get("layersDescription") or []),
+            len(out.get("turnsDescription") or []))
+
 
 @mcp.tool(
     title="Wind a coil",
-    description="Lay out a coil's turns from its winding description.",
-    structured_output=False,
+    description="Lay out a coil's turns from its winding description, and draw the result.",
+    meta=UI_COIL_META, structured_output=False,
 )
 @resolves_refs
 def wind_coil(coil: dict | str, repetitions: int = 1, proportion_per_winding: list | None = None,
-              pattern: list | None = None, margin_pairs: list | None = None) -> CallToolResult:
-    """Full winding pass."""
+              pattern: list | None = None, margin_pairs: list | None = None,
+              core: dict | str | None = None) -> CallToolResult:
+    """Full winding pass.
+
+    Args:
+        core: the MAS core this coil is wound on, or a mas:// handle. Only the
+            cross-section needs it; a coil given as a handle brings its own.
+    """
     out = _unwrap(om.wind(coil, repetitions, proportion_per_winding or [],
                           pattern or [], margin_pairs or []))
-    return _document_result(
-        f"Coil wound: {len((out or {}).get('turnsDescription') or [])} turn(s), "
-        f"{len((out or {}).get('sectionsDescription') or [])} section(s).",
-        schema="MAS", version="coil", operation="transformed", document=out,
-        changed=[{"ref": "coil", "change":
-                  f"wound: {len((out or {}).get('turnsDescription') or [])} turn(s), "
-                  f"{len((out or {}).get('sectionsDescription') or [])} section(s)"}])
+    sections, _, turns = _counts(out)
+    return _wound_result(f"Coil wound: {turns} turn(s), {sections} section(s).",
+                         f"wound: {turns} turn(s), {sections} section(s)", out, core)
 
 
 @mcp.tool(
     title="Wind by turns",
-    description="Lay out a coil turn by turn from an existing section/layer description.",
-    structured_output=False,
+    description="Lay out a coil turn by turn from an existing section/layer description, and "
+                "draw the result.",
+    meta=UI_COIL_META, structured_output=False,
 )
 @resolves_refs
-def wind_by_turns(coil: dict | str) -> CallToolResult:
-    """Turn-level winding."""
+def wind_by_turns(coil: dict | str, core: dict | str | None = None) -> CallToolResult:
+    """Turn-level winding.
+
+    Args:
+        core: the MAS core this coil is wound on, or a mas:// handle. Only the
+            cross-section needs it; a coil given as a handle brings its own.
+    """
     out = _unwrap(om.wind_by_turns(coil))
-    return _document_result(
-        f"Wound {len((out or {}).get('turnsDescription') or [])} turn(s).",
-        schema="MAS", version="coil", operation="transformed", document=out,
-        changed=[{"ref": "coil", "change":
-                  f"wound turn by turn: {len((out or {}).get('turnsDescription') or [])} turn(s)"}])
+    _, _, turns = _counts(out)
+    return _wound_result(f"Wound {turns} turn(s).", f"wound turn by turn: {turns} turn(s)",
+                         out, core)
 
 
 @mcp.tool(
     title="Wind by sections",
-    description="Split a coil into sections with a winding pattern and insulation.",
-    structured_output=False,
+    description="Split a coil into sections with a winding pattern and insulation, and draw "
+                "the result.",
+    meta=UI_COIL_META, structured_output=False,
 )
 @resolves_refs
 def wind_by_sections(coil: dict | str, repetitions: int = 1,
                      proportion_per_winding: list | None = None, pattern: list | None = None,
-                     insulation_thickness: float = 0.0) -> CallToolResult:
-    """Section-level winding."""
+                     insulation_thickness: float = 0.0,
+                     core: dict | str | None = None) -> CallToolResult:
+    """Section-level winding.
+
+    Args:
+        core: the MAS core this coil is wound on, or a mas:// handle. Only the
+            cross-section needs it; a coil given as a handle brings its own.
+    """
     out = _unwrap(om.wind_by_sections(coil, repetitions, proportion_per_winding or [],
                                       pattern or [], insulation_thickness))
-    return _document_result(
-        f"Wound into {len((out or {}).get('sectionsDescription') or [])} section(s).",
-        schema="MAS", version="coil", operation="transformed", document=out,
-        changed=[{"ref": "coil", "change":
-                  f"split into {len((out or {}).get('sectionsDescription') or [])} section(s)"}])
+    sections, _, _ = _counts(out)
+    return _wound_result(f"Wound into {sections} section(s).",
+                         f"split into {sections} section(s)", out, core)
 
 
 @mcp.tool(
     title="Wind by layers",
-    description="Split a coil's sections into layers with inter-layer insulation.",
-    structured_output=False,
+    description="Split a coil's sections into layers with inter-layer insulation, and draw "
+                "the result.",
+    meta=UI_COIL_META, structured_output=False,
 )
 @resolves_refs
 def wind_by_layers(coil: dict | str, insulation_layers: dict | None = None,
-                   insulation_thickness: float = 0.0) -> CallToolResult:
-    """Layer-level winding."""
+                   insulation_thickness: float = 0.0,
+                   core: dict | str | None = None) -> CallToolResult:
+    """Layer-level winding.
+
+    Args:
+        core: the MAS core this coil is wound on, or a mas:// handle. Only the
+            cross-section needs it; a coil given as a handle brings its own.
+    """
     out = _unwrap(om.wind_by_layers(coil, insulation_layers or {}, insulation_thickness))
-    return _document_result(
-        f"Wound into {len((out or {}).get('layersDescription') or [])} layer(s).",
-        schema="MAS", version="coil", operation="transformed", document=out,
-        changed=[{"ref": "coil", "change":
-                  f"split into {len((out or {}).get('layersDescription') or [])} layer(s)"}])
+    _, layers, _ = _counts(out)
+    return _wound_result(f"Wound into {layers} layer(s).", f"split into {layers} layer(s)",
+                         out, core)
 
 
 @mcp.tool(
     title="Wind a planar coil",
-    description="Lay out a planar (PCB) winding from a stack-up.",
-    structured_output=False,
+    description="Lay out a planar (PCB) winding from a stack-up, and draw the result.",
+    meta=UI_COIL_META, structured_output=False,
 )
 @resolves_refs
 def wind_planar(coil: dict | str, stack_up: list, border_to_wire_distance: float = 0.0,
                 wire_to_wire_distance: list | None = None,
                 insulation_thickness: list | None = None,
-                core_to_layer_distance: float = 0.0) -> CallToolResult:
+                core_to_layer_distance: float = 0.0,
+                core: dict | str | None = None) -> CallToolResult:
     """Planar winding.
 
     Args:
         stack_up: one WINDING INDEX per PCB layer — [0, 0] puts winding 0 on two layers. Not
             turn counts: an index past the last winding walks off the end of the engine's
             winding list and dies with std::bad_alloc rather than a message.
+        core: the MAS core this coil is wound on, or a mas:// handle. Only the
+            cross-section needs it; a coil given as a handle brings its own.
     """
     out = _unwrap(om.wind_planar(coil, stack_up, border_to_wire_distance,
                                  wire_to_wire_distance or [], insulation_thickness or [],
                                  core_to_layer_distance))
-    return _document_result(
-        f"Planar coil wound over {len(stack_up)} layer(s).",
-        schema="MAS", version="coil", operation="transformed", document=out,
-        changed=[{"ref": "coil", "change": f"planar layout over {len(stack_up)} layer(s)"}])
+    return _wound_result(f"Planar coil wound over {len(stack_up)} layer(s).",
+                         f"planar layout over {len(stack_up)} layer(s)", out, core)
 
 
 # --- tools: export ----------------------------------------------------------
@@ -1253,6 +1535,20 @@ def curves_widget() -> str:
 def picker_widget() -> str:
     """Ranked-design picker for the advise_* tools: choose one, its handle goes to the model."""
     return _widget(UI_WIDGETS[UI_PICKER_URI])
+
+
+@mcp.resource(UI_COIL_URI, name="openmagnetics-coil-widget",
+              title="OpenMagnetics wound coil", mime_type=UI_RESOURCE_MIME)
+def coil_widget() -> str:
+    """The wind_* tools' view: MKF's Painter cross-section and a per-section / per-layer table."""
+    return _widget(UI_WIDGETS[UI_COIL_URI])
+
+
+@mcp.resource(UI_RESULT_URI, name="openmagnetics-result-widget",
+              title="OpenMagnetics result", mime_type=UI_RESOURCE_MIME)
+def result_widget() -> str:
+    """The analysis tools' panel: value, breakdown, model and operating point."""
+    return _widget(UI_WIDGETS[UI_RESULT_URI])
 
 
 def assert_widgets_resolve() -> None:

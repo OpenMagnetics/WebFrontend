@@ -13,7 +13,7 @@ cannot run this engine.
 ## Run
 
 ```bash
-cd mcp && npm install && npm run build      # the sweep and design-picker widgets
+cd mcp && npm install && npm run build      # the four widgets
 python3 mcp/server.py                       # streamable HTTP on 127.0.0.1:8402/mcp
 ```
 
@@ -67,6 +67,8 @@ it through `advise_coil`.
 |---|---|---|
 | `ui://openmagnetics/curves.html` | `curves.html` + `src/curves.js` | the eight sweeps |
 | `ui://openmagnetics/picker.html` | `picker.html` + `src/picker.js` | `advise_magnetics`, `advise_cores`, `advise_coil`, `advise_from_catalog` |
+| `ui://openmagnetics/coil.html` | `coil.html` + `src/coil.js`, `src/coilView.js` | `wind_coil`, `wind_by_turns`, `wind_by_sections`, `wind_by_layers`, `wind_planar` |
+| `ui://openmagnetics/result.html` | `result.html` + `src/result.js`, `src/resultView.js` | `core_losses`, `winding_losses`, `leakage_inductance`, `peak_winding_current`, `core_temperature` |
 
 The picker is the shared ranked-candidate component in
 `WebSharedComponents/mcpApps/` (ABT #663) wired to this server (ABT #652): the advisers' digests
@@ -76,12 +78,28 @@ The result carries a `tiebreaker` because the two adviser paths rank in opposite
 the full / catalogue adviser by its weighted filter total (higher first), the fast one by total
 loss in W (lower first) — the fast "score" is that loss sum.
 
+The **wound-coil view** (ABT #653) shows the cross-section MKF's own Painter draws —
+PyOpenMagnetics `plot_magnetic` for a coil wound to turns, `plot_layers` / `plot_sections` for
+one wound only that far — never geometry drawn here. The SVG travels as the result's
+`companions.crossSection`, beside the wound coil, and the view tabulates windings, sections and
+layers from the coil itself. The Painter needs the core as well as the coil: every `wind_*` tool
+takes an optional `core`, and a coil passed as a `mas://` handle brings its own magnetic's core.
+Without one the result says so in `diagnostics` and the view shows that reason, not a picture.
+
+The **result panel** (ABT #654) shows a `quantity` result as the engine returned it: the
+number, its breakdown (winding losses: DC / skin / proximity per winding), the model and the
+operating point it holds at. For core and winding losses the curve beside the number is the
+sweep tool's: the panel asks the assistant (`ui/message`) to run `sweep_core_losses` /
+`sweep_winding_losses`, which draws in the sweeps widget.
+
+All four widgets map onto the host's theme variables (`src/omWidget.css` for the two new ones).
 The server refuses to start when any advertised `ui://` has no bundle in `dist/`.
 
 ```bash
-cd mcp && npm test     # build, node:test (picker logic + the built widget in headless
+cd mcp && npm test     # build, node:test (view logic + every built widget in headless
                        # Chromium behind a real AppBridge host), then pytest (registration,
-                       # resource, startup refusal, all four advisers through the engine)
+                       # resources, startup refusal, the advisers, winders and analyses
+                       # through the real engine)
 ```
 
 ## Checking it

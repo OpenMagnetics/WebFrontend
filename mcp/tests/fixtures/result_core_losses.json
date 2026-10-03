@@ -1,0 +1,132 @@
+{
+ "content": [
+  {
+   "type": "text",
+   "text": "Core losses 56.6 mW (iGSE) at 80.0 \u00b0C for E 64/10/50 - 3F36 - Ungapped gapped 0.20 mm, Turns: 6, Order: 0, Non-Interleaved, Margin Taped 00.",
+   "annotations": null,
+   "meta": null
+  }
+ ],
+ "structuredContent": {
+  "mode": "quantity",
+  "subject": "E 64/10/50 - 3F36 - Ungapped gapped 0.20 mm, Turns: 6, Order: 0, Non-Interleaved, Margin Taped 00",
+  "model": "iGSE",
+  "quantities": {
+   "coreLosses": {
+    "value": 0.05659264345800508,
+    "unit": "W",
+    "label": "core losses"
+   },
+   "volumetricLosses": {
+    "value": 1362.3520984861252,
+    "unit": "W/m3",
+    "label": "volumetric core losses"
+   },
+   "magneticFluxDensityPeak": {
+    "value": 0.18869858022100944,
+    "unit": "T",
+    "label": "peak flux density"
+   },
+   "magneticFluxDensityAcPeak": {
+    "value": 0.03144976337016819,
+    "unit": "T",
+    "label": "AC peak flux density"
+   },
+   "temperature": {
+    "value": 80.38627115202885,
+    "unit": "degC",
+    "label": "core temperature the losses hold at"
+   },
+   "maximumCoreTemperatureRise": {
+    "value": 0.3862711520288542,
+    "unit": "K",
+    "label": "core temperature rise the engine estimated"
+   }
+  },
+  "conditions": {
+   "temperature": {
+    "value": 80.0,
+    "unit": "degC",
+    "label": "temperature requested"
+   },
+   "ambientTemperature": {
+    "value": 80.0,
+    "unit": "degC",
+    "label": "ambient temperature"
+   },
+   "primary.frequency": {
+    "value": 100000.0,
+    "unit": "Hz",
+    "label": "primary frequency"
+   },
+   "primary.current.label": {
+    "value": "triangular",
+    "label": "primary current waveform"
+   },
+   "primary.current.peakToPeak": {
+    "value": 1.9999999999999973,
+    "label": "primary current peak-to-peak",
+    "unit": "A"
+   },
+   "primary.current.offset": {
+    "value": 4.999999999999998,
+    "label": "primary current offset",
+    "unit": "A"
+   },
+   "primary.current.peak": {
+    "value": 5.999999999999997,
+    "label": "primary current peak",
+    "unit": "A"
+   },
+   "primary.current.rms": {
+    "value": 5.033239125429071,
+    "label": "primary current RMS",
+    "unit": "A"
+   },
+   "primary.current.dutyCycle": {
+    "value": 0.4999999999999997,
+    "label": "primary current duty cycle",
+    "unit": "1"
+   },
+   "primary.voltage.label": {
+    "value": "rectangular",
+    "label": "primary voltage waveform"
+   },
+   "primary.voltage.peakToPeak": {
+    "value": 48.0,
+    "label": "primary voltage peak-to-peak",
+    "unit": "V"
+   },
+   "primary.voltage.offset": {
+    "value": 0.0,
+    "label": "primary voltage offset",
+    "unit": "V"
+   },
+   "primary.voltage.peak": {
+    "value": 24.0,
+    "label": "primary voltage peak",
+    "unit": "V"
+   },
+   "primary.voltage.rms": {
+    "value": 24.0,
+    "label": "primary voltage RMS",
+    "unit": "V"
+   },
+   "primary.voltage.dutyCycle": {
+    "value": 0.4921874999999997,
+    "label": "primary voltage duty cycle",
+    "unit": "1"
+   },
+   "currentRms": {
+    "value": 5.033239125429071,
+    "unit": "A",
+    "label": "RMS current (engine-processed)"
+   },
+   "voltageRms": {
+    "value": 24.0,
+    "unit": "V",
+    "label": "RMS voltage (engine-processed)"
+   }
+  }
+ }
+}

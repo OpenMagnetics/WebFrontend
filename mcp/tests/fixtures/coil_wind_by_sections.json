@@ -1,0 +1,177 @@
+{
+ "content": [
+  {
+   "type": "text",
+   "text": "Wound into 1 section(s).\n  primary section 0: conduction, primary, filling factor 0.045\nThe widget shows MKF's Painter cross-section.",
+   "annotations": null,
+   "meta": null
+  }
+ ],
+ "structuredContent": {
+  "mode": "document",
+  "schema": {
+   "name": "MAS",
+   "version": "coil"
+  },
+  "operation": "transformed",
+  "document": {
+   "bobbin": {
+    "processedDescription": {
+     "columnDepth": 0.026735927494319356,
+     "columnShape": "rectangular",
+     "columnThickness": 0.001335927494319357,
+     "columnWidth": 0.006435927494319357,
+     "coordinates": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "wallThickness": 0.0011132729119327969,
+     "windingWindows": [
+      {
+       "area": 0.00016237199896352317,
+       "coordinates": [
+        0.016617963747159677,
+        0.0,
+        0.0
+       ],
+       "height": 0.007973454176134407,
+       "sectionsAlignment": "innerOrTop",
+       "sectionsOrientation": "overlapping",
+       "shape": "rectangular",
+       "width": 0.02036407250568064
+      }
+     ]
+    }
+   },
+   "functionalDescription": [
+    {
+     "isolationSide": "primary",
+     "name": "primary",
+     "numberParallels": 1,
+     "numberTurns": 6,
+     "wire": {
+      "coating": {
+       "numberLayers": 1,
+       "type": "served"
+      },
+      "conductingArea": {
+       "nominal": 4.5396013844372514e-07
+      },
+      "material": "copper",
+      "name": "Synthesized Litz 20x0.167mm",
+      "numberConductors": 20,
+      "outerDiameter": {
+       "nominal": 0.0011031839209713048
+      },
+      "strand": {
+       "coating": {
+        "breakdownVoltage": 850.0,
+        "grade": 1,
+        "type": "enamelled"
+       },
+       "conductingDiameter": {
+        "maximum": 0.00017299999999900002,
+        "minimum": 0.00016800000000000002,
+        "nominal": 0.00017
+       },
+       "manufacturerInfo": {
+        "name": "Elektrisola"
+       },
+       "material": "copper",
+       "name": "Round 33.5 - Single Build",
+       "numberConductors": 1,
+       "outerDiameter": {
+        "maximum": 0.000194,
+        "minimum": 0.00017999999999900002,
+        "nominal": 0.000187
+       },
+       "standard": "NEMA MW 1000 C",
+       "standardName": "33.5 AWG",
+       "type": "round"
+      },
+      "type": "litz"
+     }
+    }
+   ],
+   "groupsDescription": [
+    {
+     "coordinateSystem": "cartesian",
+     "coordinates": [
+      0.016617963747159677,
+      0.0
+     ],
+     "dimensions": [
+      0.02036407250568064,
+      0.007973454176134407
+     ],
+     "name": "Default group",
+     "partialWindings": [
+      {
+       "parallelsProportion": [
+        1.0
+       ],
+       "winding": "primary"
+      }
+     ],
+     "sectionsOrientation": "overlapping",
+     "type": "wound"
+    }
+   ],
+   "sectionsDescription": [
+    {
+     "coordinateSystem": "cartesian",
+     "coordinates": [
+      0.016617963994319356,
+      0.0,
+      0.0
+     ],
+     "dimensions": [
+      0.020364073,
+      0.007973454176134407
+     ],
+     "fillingFactor": 0.044971352513351666,
+     "group": "Default group",
+     "layersOrientation": "overlapping",
+     "margin": [
+      0.0,
+      0.0
+     ],
+     "name": "primary section 0",
+     "partialWindings": [
+      {
+       "parallelsProportion": [
+        1.0
+       ],
+       "winding": "primary"
+      }
+     ],
+     "type": "conduction",
+     "windingStyle": "windByConsecutiveTurns"
+    }
+   ]
+  },
+  "subject": "E 64/10/50 - 3F36 - Ungapped gapped 0.20 mm",
+  "changed": [
+   {
+    "ref": "coil",
+    "change": "split into 1 section(s)"
+   }
+  ],
+  "view": "ui://openmagnetics/coil.html",
+  "companions": {
+   "crossSection": {
+    "schema": {
+     "name": "SVG"
+    },
+    "subject": "E 64/10/50 - 3F36 - Ungapped gapped 0.20 mm",
+    "document": {
+     "svg": "<svg height=\"632.0\" viewBox=\"-10.0 -316.0 980.0 632.0\" width=\"980.0\" xmlns=\"http://www.w3.org/2000/svg\">\n\t<style type=\"text/css\">\n\t\t<![CDATA[\n\t\t\t.bobbin {\n\t\t\t\tfill: #539796;\n\t\t\t}\n\t\t\t.bobbin_translucent {\n\t\t\t\tfill: #539796;\n\t\t\t\topacity: 0.5;\n\t\t\t}\n\t\t\t.copper {\n\t\t\t\tfill: #b87333;\n\t\t\t}\n\t\t\t.copper_translucent {\n\t\t\t\tfill: #b87333;\n\t\t\t\topacity: 0.5;\n\t\t\t}\n\t\t\t.current_density {\n\t\t\t\tfill: #0892D0;\n\t\t\t}\n\t\t\t.ferrite {\n\t\t\t\tfill: #7b7c7d;\n\t\t\t}\n\t\t\t.fr4 {\n\t\t\t\tfill: #008000;\n\t\t\t}\n\t\t\t.fr4_translucent {\n\t\t\t\tfill: #008000;\n\t\t\t\topacity: 0.5;\n\t\t\t}\n\t\t\t.insulation {\n\t\t\t\tfill: #fff05b;\n\t\t\t}\n\t\t\t.insulation_translucent {\n\t\t\t\tfill: #fff05b;\n\t\t\t\topacity: 0.5;\n\t\t\t}\n\t\t\t.margin {\n\t\t\t\tfill: #fff05b;\n\t\t\t}\n\t\t\t.margin_translucent {\n\t\t\t\tfill: #fff05b;\n\t\t\t\topacity: 0.5;\n\t\t\t}\n\t\t\t.point {\n\t\t\t\tfill: #ff0000;\n\t\t\t}\n\t\t\t.section_0 {\n\t\t\t\tfill: #539796;\n\t\t\t\topacity: 1.0;\n\t\t\t}\n\t\t\t.shunt {\n\t\t\t\tfill: #6a5acd;\n\t\t\t}\n\t\t\t.spacer {\n\t\t\t\tfill: #3b3b3b;\n\t\t\t}\n\t\t\t.text {\n\t\t\t\tfill: #000000;\n\t\t\t}\n\t\t\t.white {\n\t\t\t\tfill: #ffffff;\n\t\t\t}\n\t\t]]>\n\t</style>\n\t<g>\n\t\t<polygon class=\"ferrite\" points=\"0.0,-306.0 960.0,-306.0 960.0,-0.1 804.0,-0.1 804.0,-153.0 153.0,-153.0 153.0,-6.0 0.0,-6.0 \" />\n\t\t<polygon class=\"ferrite\" points=\"0.0,306.0 960.0,306.0 960.0,0.1 804.0,0.1 804.0,153.0 153.0,153.0 153.0,0.0 0.0,0.0 \" />\n\t</g>\n\t<g>\n\t\t<polygon class=\"bobbin\" points=\"153.0,-153.0 804.0,-153.0 804.0,-119.6 193.1,-119.6 193.1,119.6 804.0,119.6 804.0,153.0 153.0,153.0 \" />\n\t</g>\n\t<g>\n\t\t<polygon class=\"section_0\" points=\"193.1,-119.6 804.0,-119.6 804.0,119.6 193.1,119.6 \" transform=\"rotate( -0.000000 0.000000 0.000000) \" />\n\t</g>\n</svg>",
+     "painter": "MKF Painter (plot_sections)",
+     "level": "sections",
+     "shows": "core, bobbin and the sections"
+    }
+   }
+  }
+ }
+}

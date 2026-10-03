@@ -1,0 +1,196 @@
+{
+ "content": [
+  {
+   "type": "text",
+   "text": "Winding losses 1.19 W at 25.0 \u00b0C for hand-built 2-winding transformer; DC (ohmic) losses 1.19 W; skin-effect losses (sum over harmonics) 571 \u00b5W; proximity-effect losses (sum over harmonics) 1.16 mW",
+   "annotations": null,
+   "meta": null
+  }
+ ],
+ "structuredContent": {
+  "mode": "quantity",
+  "subject": "hand-built 2-winding transformer",
+  "model": "AnalyticalModels (skin: Dowell, proximity: Ferreira)",
+  "quantities": {
+   "windingLosses": {
+    "value": 1.192700182014335,
+    "unit": "W",
+    "label": "winding losses"
+   },
+   "ohmicLosses": {
+    "value": 1.1909660467642988,
+    "unit": "W",
+    "label": "DC (ohmic) losses",
+    "breakdown": {
+     "primary": 0.7804333758335031,
+     "secondary": 0.4105326709307957
+    }
+   },
+   "skinEffectLosses": {
+    "value": 0.0005712163083702626,
+    "unit": "W",
+    "label": "skin-effect losses (sum over harmonics)",
+    "breakdown": {
+     "primary": 0.00037431484556904577,
+     "secondary": 0.0001969014628012169
+    }
+   },
+   "proximityEffectLosses": {
+    "value": 0.0011629189416658353,
+    "unit": "W",
+    "label": "proximity-effect losses (sum over harmonics)",
+    "breakdown": {
+     "primary": 0.0003328058610478871,
+     "secondary": 0.0008301130806179484
+    }
+   },
+   "dcResistancePerWinding": {
+    "value": null,
+    "unit": "ohm",
+    "label": "DC resistance per winding",
+    "breakdown": {
+     "primary": 0.03080638270159811,
+     "secondary": 0.01620513289644527
+    }
+   }
+  },
+  "conditions": {
+   "temperature": {
+    "value": 25.0,
+    "unit": "degC",
+    "label": "winding temperature"
+   },
+   "ambientTemperature": {
+    "value": 25.0,
+    "unit": "degC",
+    "label": "ambient temperature"
+   },
+   "primary.frequency": {
+    "value": 100000.0,
+    "unit": "Hz",
+    "label": "primary frequency"
+   },
+   "primary.current.label": {
+    "value": "triangular",
+    "label": "primary current waveform"
+   },
+   "primary.current.peakToPeak": {
+    "value": 1.9999999999999973,
+    "label": "primary current peak-to-peak",
+    "unit": "A"
+   },
+   "primary.current.offset": {
+    "value": 4.999999999999998,
+    "label": "primary current offset",
+    "unit": "A"
+   },
+   "primary.current.peak": {
+    "value": 5.999999999999997,
+    "label": "primary current peak",
+    "unit": "A"
+   },
+   "primary.current.rms": {
+    "value": 5.033239125429071,
+    "label": "primary current RMS",
+    "unit": "A"
+   },
+   "primary.current.dutyCycle": {
+    "value": 0.4999999999999997,
+    "label": "primary current duty cycle",
+    "unit": "1"
+   },
+   "primary.voltage.label": {
+    "value": "rectangular",
+    "label": "primary voltage waveform"
+   },
+   "primary.voltage.peakToPeak": {
+    "value": 48.0,
+    "label": "primary voltage peak-to-peak",
+    "unit": "V"
+   },
+   "primary.voltage.offset": {
+    "value": 0.0,
+    "label": "primary voltage offset",
+    "unit": "V"
+   },
+   "primary.voltage.peak": {
+    "value": 24.0,
+    "label": "primary voltage peak",
+    "unit": "V"
+   },
+   "primary.voltage.rms": {
+    "value": 24.0,
+    "label": "primary voltage RMS",
+    "unit": "V"
+   },
+   "primary.voltage.dutyCycle": {
+    "value": 0.4921874999999997,
+    "label": "primary voltage duty cycle",
+    "unit": "1"
+   },
+   "secondary.frequency": {
+    "value": 100000.0,
+    "unit": "Hz",
+    "label": "secondary frequency"
+   },
+   "secondary.current.label": {
+    "value": "triangular",
+    "label": "secondary current waveform"
+   },
+   "secondary.current.peakToPeak": {
+    "value": 1.9999999999999973,
+    "label": "secondary current peak-to-peak",
+    "unit": "A"
+   },
+   "secondary.current.offset": {
+    "value": 4.999999999999998,
+    "label": "secondary current offset",
+    "unit": "A"
+   },
+   "secondary.current.peak": {
+    "value": 5.999999999999997,
+    "label": "secondary current peak",
+    "unit": "A"
+   },
+   "secondary.current.rms": {
+    "value": 5.033239125429071,
+    "label": "secondary current RMS",
+    "unit": "A"
+   },
+   "secondary.current.dutyCycle": {
+    "value": 0.4999999999999997,
+    "label": "secondary current duty cycle",
+    "unit": "1"
+   },
+   "secondary.voltage.label": {
+    "value": "rectangular",
+    "label": "secondary voltage waveform"
+   },
+   "secondary.voltage.peakToPeak": {
+    "value": 48.0,
+    "label": "secondary voltage peak-to-peak",
+    "unit": "V"
+   },
+   "secondary.voltage.offset": {
+    "value": 0.0,
+    "label": "secondary voltage offset",
+    "unit": "V"
+   },
+   "secondary.voltage.peak": {
+    "value": 24.0,
+    "label": "secondary voltage peak",
+    "unit": "V"
+   },
+   "secondary.voltage.rms": {
+    "value": 24.0,
+    "label": "secondary voltage RMS",
+    "unit": "V"
+   },
+   "secondary.voltage.dutyCycle": {
+    "value": 0.4921874999999997,
+    "label": "secondary voltage duty cycle",
+    "unit": "1"
+   }
+  }
+ }
+}

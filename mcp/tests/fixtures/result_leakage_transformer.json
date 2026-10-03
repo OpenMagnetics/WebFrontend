@@ -1,0 +1,37 @@
+{
+ "content": [
+  {
+   "type": "text",
+   "text": "Leakage inductance matrix at 100 kHz for hand-built 2-winding transformer.",
+   "annotations": null,
+   "meta": null
+  }
+ ],
+ "structuredContent": {
+  "mode": "quantity",
+  "subject": "hand-built 2-winding transformer",
+  "model": "MKF leakage-inductance matrix",
+  "quantities": {
+   "leakageInductance": {
+    "matrix": [
+     [
+      0.0,
+      9.75557854622089e-07
+     ],
+     [
+      2.4388946365552225e-07,
+      0.0
+     ]
+    ],
+    "unit": "H",
+    "label": "per winding pair, in the order primary, secondary"
+   }
+  },
+  "conditions": {
+   "frequency": {
+    "value": 100000.0,
+    "unit": "Hz"
+   }
+  }
+ }
+}

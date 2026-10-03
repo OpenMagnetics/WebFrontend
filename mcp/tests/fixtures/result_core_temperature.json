@@ -1,0 +1,29 @@
+{
+ "content": [
+  {
+   "type": "text",
+   "text": "Core reaches 35.626567283304865 \u00b0C with 1.5 W of loss.",
+   "annotations": null,
+   "meta": null
+  }
+ ],
+ "structuredContent": {
+  "mode": "quantity",
+  "subject": "E 64/10/50 - 3F36 - Ungapped gapped 0.20 mm, Turns: 6, Order: 0, Non-Interleaved, Margin Taped 00",
+  "model": "core thermal resistance (Maniktala)",
+  "quantities": {
+   "coreTemperature": {
+    "value": 35.626567283304865,
+    "unit": "degC",
+    "label": "core temperature"
+   }
+  },
+  "conditions": {
+   "totalLosses": {
+    "value": 1.5,
+    "unit": "W",
+    "label": "total losses dissipated"
+   }
+  }
+ }
+}

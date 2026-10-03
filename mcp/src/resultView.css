@@ -1,0 +1,15 @@
+/* Result panel (ABT #654). Colours are --w-* tokens only (omWidget.css). */
+.rp-head { margin-bottom: 10px; }
+.rp-model-name { font-family: var(--w-mono); font-size: 12px; color: var(--w-fg); }
+.rp-quantity { margin-top: 10px; }
+.rp-label { color: var(--w-muted); font-size: 12px; }
+.rp-value { font-size: 15px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.rp-headline .rp-value { font-size: 26px; letter-spacing: -0.01em; }
+.rp-more {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0 18px;
+  border-top: 1px solid var(--w-line); margin-top: 12px;
+}
+.rp-breakdown, .rp-matrix { margin-top: 4px; }
+.rp-curve { margin-top: 14px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.rp-curve-error { color: var(--w-fail); }
+.rp-matrix { width: auto; min-width: 50%; }

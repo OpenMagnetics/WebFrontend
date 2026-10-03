@@ -1,0 +1,8 @@
+/* Wound-coil view (ABT #653). Colours are --w-* tokens only (omWidget.css). The cross-section
+   itself is the Painter's own drawing, coloured by MKF's painter settings. */
+.cg-head { margin-bottom: 8px; }
+.cg-drawing {
+  margin-top: 8px; padding: 8px; border-radius: 6px;
+  background: var(--w-panel); border: 1px solid var(--w-line);
+}
+.cg-changed { margin-top: 6px; }

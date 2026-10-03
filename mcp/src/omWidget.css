@@ -1,0 +1,102 @@
+/*
+ * Theme and base styles shared by the wound-coil view (ABT #653) and the result panel
+ * (ABT #654). The views read only --w-* tokens. Each one maps onto the MCP Apps host's own
+ * theme variable first (applied from the host context by the widget's entry script), then
+ * onto this server's palette — the same roles and steps picker.html and the curves widget use,
+ * so every OpenMagnetics widget reads as one product. Both views refuse to mount when a token
+ * is missing rather than drawing in browser defaults.
+ */
+:root {
+  color-scheme: light;
+  --om-surface: #fcfcfb;
+  --om-panel: #f3f2ef;
+  --om-text: #0b0b0b;
+  --om-text-muted: #52514e;
+  --om-grid: #e6e5e1;
+  --om-accent: #2a78d6;
+  --om-on-accent: #ffffff;
+  --om-warn: #b37a00;
+  --om-fail: #c4372b;
+}
+@media (prefers-color-scheme: dark) {
+  :root:where(:not([data-theme="light"])) {
+    color-scheme: dark;
+    --om-surface: #1a1a19;
+    --om-panel: #242423;
+    --om-text: #ffffff;
+    --om-text-muted: #c3c2b7;
+    --om-grid: #2e2e2c;
+    --om-accent: #3987e5;
+    --om-on-accent: #ffffff;
+    --om-warn: #c98500;
+    --om-fail: #e5634f;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --om-surface: #1a1a19;
+  --om-panel: #242423;
+  --om-text: #ffffff;
+  --om-text-muted: #c3c2b7;
+  --om-grid: #2e2e2c;
+  --om-accent: #3987e5;
+  --om-on-accent: #ffffff;
+  --om-warn: #c98500;
+  --om-fail: #e5634f;
+}
+:root {
+  --w-bg: var(--color-background-primary, var(--om-surface));
+  --w-panel: var(--color-background-secondary, var(--om-panel));
+  --w-fg: var(--color-text-primary, var(--om-text));
+  --w-muted: var(--color-text-secondary, var(--om-text-muted));
+  --w-line: var(--color-border-tertiary, var(--om-grid));
+  --w-accent: var(--color-text-info, var(--om-accent));
+  --w-accent-fg: var(--color-text-inverse, var(--om-on-accent));
+  --w-warn: var(--color-text-warning, var(--om-warn));
+  --w-fail: var(--color-text-danger, var(--om-fail));
+  --w-font: var(--font-sans, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif);
+  --w-mono: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+}
+
+body { margin: 0; background: var(--w-bg); }
+#app { padding: 14px 16px 16px; }
+
+.w-root {
+  background: var(--w-bg);
+  color: var(--w-fg);
+  font-family: var(--w-font);
+  font-size: 13px;
+  line-height: 1.45;
+}
+.w-root * { box-sizing: border-box; }
+.w-title { font-size: 15px; font-weight: 600; margin: 0; letter-spacing: -0.01em; }
+.w-sub, .w-waiting { color: var(--w-muted); font-size: 12px; }
+.w-sub { margin-top: 2px; }
+.w-waiting { padding: 12px 2px; }
+.w-h2 {
+  font-size: 12px; font-weight: 600; margin: 16px 0 6px; color: var(--w-muted);
+  text-transform: uppercase; letter-spacing: .04em;
+}
+.w-error {
+  margin-top: 10px; padding: 8px 10px; border-radius: 6px;
+  border: 1px solid var(--w-fail); color: var(--w-fail); white-space: pre-wrap;
+}
+.w-note {
+  margin-top: 10px; color: var(--w-muted); font-size: 12px;
+  border-left: 2px solid var(--w-warn); padding-left: 9px;
+}
+.w-table-wrap { overflow-x: auto; }
+.w-table { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; }
+.w-table th, .w-table td {
+  text-align: left; padding: 4px 10px 4px 0; border-bottom: 1px solid var(--w-line);
+  white-space: nowrap;
+}
+.w-table th { font-weight: 600; color: var(--w-muted); font-size: 12px; }
+.w-table td.w-num, .w-table th.w-num { text-align: right; }
+.w-absent { color: var(--w-muted); }
+.w-mono { font-family: var(--w-mono); font-size: 12px; }
+.w-button {
+  font: inherit; font-size: 12px; cursor: pointer; border-radius: 6px; padding: 4px 10px;
+  border: 1px solid var(--w-accent); background: var(--w-accent); color: var(--w-accent-fg);
+}
+.w-button:disabled { opacity: .6; cursor: default; }

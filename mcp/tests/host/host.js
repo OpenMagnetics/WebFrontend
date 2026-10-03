@@ -3,14 +3,16 @@
  * dist/picker.html in an iframe over postMessage — the same path a real host uses, so the
  * test exercises the widget's actual bridge calls rather than a stub of them.
  *
- * window.startHost(opts) loads the widget, sends one tool result once the view has
- * initialised, and records every ui/update-model-context request in window.__host.contexts.
+ * window.startHost(opts) loads the widget (opts.widget, default the picker), sends one tool
+ * result once the view has initialised, and records every ui/update-model-context request in
+ * window.__host.contexts and every ui/message request in window.__host.messages.
  */
 import { AppBridge, PostMessageTransport } from "@modelcontextprotocol/ext-apps/app-bridge";
 
-window.__host = { contexts: [], initialized: false, errors: [] };
+window.__host = { contexts: [], messages: [], initialized: false, errors: [] };
 
-window.startHost = async ({ result, capabilities, toolName, refuseContext, theme = "light" }) => {
+window.startHost = async ({ result, capabilities, toolName, refuseContext, refuseMessage, theme = "light",
+                             widget = "/picker.html" }) => {
   const iframe = document.getElementById("view");
   const bridge = new AppBridge(null, { name: "picker-test-host", version: "0.0.0" }, capabilities, {
     hostContext: {
@@ -23,10 +25,15 @@ window.startHost = async ({ result, capabilities, toolName, refuseContext, theme
     window.__host.contexts.push(params);
     return {};
   };
+  bridge.onmessage = async (params) => {
+    if (refuseMessage) throw new Error("the test host refused the message");
+    window.__host.messages.push(params);
+    return {};
+  };
   bridge.oninitialized = () => {
     window.__host.initialized = true;
     bridge.sendToolResult(result).catch((e) => window.__host.errors.push(String(e)));
   };
   await bridge.connect(new PostMessageTransport(iframe.contentWindow, iframe.contentWindow));
-  iframe.src = "/picker.html";
+  iframe.src = widget;
 };
