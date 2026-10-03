@@ -49,14 +49,18 @@ test.describe('Wire standard follows the unit system; wire table (ABT #1110)', (
     await expect(page.locator('[data-cy$="-WireStandard"]'), 'the standard dropdown is gone').toHaveCount(0);
 
     await adviseWireAndWait(page);
-    const si = await wireState(page);
-    expect(si.standard, `SI advises an IEC 60317 wire (got ${si.name} / ${si.standard})`).toBe('IEC 60317');
+    // The advised coil lands in the design shortly after the advise action resolves;
+    // under load a single read could still see the previous wire, so poll for it.
+    let si = null;
+    await expect.poll(async () => (si = await wireState(page)).standard,
+      { message: 'SI advises an IEC 60317 wire', timeout: 30000 }).toBe('IEC 60317');
 
     await setPreference(page, 'unitSystem', 'imperial');
     await pause(page, 800, 'unit watchers');
     await adviseWireAndWait(page);
-    const imperial = await wireState(page);
-    expect(imperial.standard, `imperial advises a NEMA MW 1000 C wire (got ${imperial.name} / ${imperial.standard})`).toBe('NEMA MW 1000 C');
+    let imperial = null;
+    await expect.poll(async () => (imperial = await wireState(page)).standard,
+      { message: 'imperial advises a NEMA MW 1000 C wire', timeout: 30000 }).toBe('NEMA MW 1000 C');
 
     // The size list follows the standard: an AWG size is offered under imperial.
     const sizeSelect = page.locator('[data-cy$="-WireConductingDiameter-select"], [data-cy$="-StrandConductingDiameter-select"]').first();
