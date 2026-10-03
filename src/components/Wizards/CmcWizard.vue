@@ -11,7 +11,6 @@ import DimensionWithTolerance from 'WebSharedComponents/DataInput/DimensionWithT
 import { defaultDesignRequirements, minimumMaximumScalePerParameter, isolationSideOrdered } from 'WebSharedComponents/assets/js/defaults.js'
 import ConverterWizardBase from './ConverterWizardBase.vue'
 import EmiSpectrumView from './EmiSpectrumView.vue'
-import { waitForKirchhoff } from 'WebSharedComponents/assets/js/kirchhoffRuntime'
 import CompactVoltageInput from './CompactVoltageInput.vue'
 import { tooltipsConverterWizards } from 'WebSharedComponents/assets/js/texts'
 </script>
@@ -240,17 +239,7 @@ export default {
         },
         getCalculateFn() {
             const isAdvanced = this.localData.designLevel === 'I know the design I want';
-            return async (aux) => {
-                // CMC design moved to webKirchhoff (design_cmc; the proxy maps the legacy
-                // calculate_cmc_inputs alias) — the magnetics-only webMKF no longer has it.
-                const Module = await waitForKirchhoff();
-                await Module.ready;
-                const fn = isAdvanced ? 'calculate_advanced_cmc_inputs' : 'calculate_cmc_inputs';
-                const raw = await Module[fn](JSON.stringify(aux));
-                if (typeof raw === 'string' && raw.startsWith('Exception:'))
-                    throw new Error(raw);
-                return typeof raw === 'string' ? JSON.parse(raw) : raw;
-            };
+            return (aux) => this.taskQueueStore.calculateCmcInputs(aux, { advanced: isAdvanced });
         },
         getSimulateFn() {
             return async (aux) => {

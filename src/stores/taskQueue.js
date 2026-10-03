@@ -2174,6 +2174,23 @@ export const useTaskQueueStore = defineStore('taskQueue', {
         cmcInputsCalculated(success = true, dataOrMessage = '') {
         },
 
+        // CMC design lives in webKirchhoff (design_cmc; its proxy maps the legacy
+        // calculate_cmc_inputs names). The CMC wizard's analytical path runs through here.
+        async calculateCmcInputs(params, { advanced = false } = {}) {
+            const kirchhoff = await waitForKirchhoff();
+            await kirchhoff.ready;
+
+            const fn = advanced ? 'calculate_advanced_cmc_inputs' : 'calculate_cmc_inputs';
+            const result = await kirchhoff[fn](JSON.stringify(params));
+            if (typeof result === 'string' && result.startsWith('Exception')) {
+                setTimeout(() => { this.cmcInputsCalculated(false, result); }, this.task_standard_response_delay);
+                throw new Error(result);
+            }
+            const inputs = typeof result === 'string' ? JSON.parse(result) : result;
+            setTimeout(() => { this.cmcInputsCalculated(true, inputs); }, this.task_standard_response_delay);
+            return inputs;
+        },
+
         cmcWaveformsSimulated(success = true, dataOrMessage = '') {
         },
 
