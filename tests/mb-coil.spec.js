@@ -215,3 +215,41 @@ test.describe('MB – Group Q – Temperature Visualization', () => {
     await ss(page, 'Q2-temperature-toggled');
   });
 });
+
+// =====================================================================
+// GROUP W – Winding-loss breakdown (ABT #203)
+// =====================================================================
+test.describe('MB – Group W – Winding-loss breakdown', () => {
+  test.describe.configure({ timeout: 240000 });
+
+  test('MB-W1 – simple Coil Info says what the winding losses are made of', async ({ page }) => {
+    // Advanced mode (the default) lists DC/skin/proximity per winding; the simple
+    // view only had the total, so it now says what the total is made of.
+    await goToBuilderWithCoil(page);
+    await page.evaluate(() => {
+      const settings = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia._s.get('settings');
+      settings.magneticBuilderSettings.advancedMode = false;
+    });
+    const breakdown = page.locator('[data-cy$="-WindingLossesBreakdown"]').first();
+    await expect(breakdown).toBeVisible({ timeout: 60000 });
+    await expect(breakdown).toContainText('DC');
+    await expect(breakdown).toContainText('skin');
+    await expect(breakdown).toContainText('proximity');
+    await expect(breakdown).toContainText('Advanced mode');
+
+    // The three parts add up to the total the panel shows (the same MAS output).
+    const parts = await page.evaluate(() => {
+      const output = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia._s.get('mas').mas.outputs[0].windingLosses;
+      const sum = (list) => list.reduce((a, c) => a + c, 0);
+      let dc = 0, skin = 0, proximity = 0;
+      for (const w of output.windingLossesPerWinding) {
+        dc += w.ohmicLosses.losses;
+        skin += sum(w.skinEffectLosses.lossesPerHarmonic);
+        proximity += sum(w.proximityEffectLosses.lossesPerHarmonic);
+      }
+      return { dc, skin, proximity, total: output.windingLosses };
+    });
+    expect(parts.dc + parts.skin + parts.proximity).toBeCloseTo(parts.total, 6);
+    expect(parts.dc).toBeGreaterThan(0);
+  });
+});
