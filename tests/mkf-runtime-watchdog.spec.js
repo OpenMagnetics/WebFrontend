@@ -9,9 +9,14 @@
  * waiting on the dead worker each fired later and replaced the NEW worker too. The replacement
  * also came up with no catalogues and default settings.
  *
- * The runtime source is loaded with two substitutions, both asserted so a refactor that moves
+ * The runtime source is loaded with three substitutions, all asserted so a refactor that moves
  * them fails here instead of silently testing something else: the 120 s watchdog becomes 300 ms,
- * and comlink becomes a stub that hands back the fake worker's API.
+ * the 600 s adviser budget becomes 1500 ms, and comlink becomes a stub that hands back the fake
+ * worker's API.
+ *
+ * The Magnetic Adviser F1 runs of DAB, PSFB, flyback, push-pull and single-switch forward came
+ * back with zero magnetics because a legitimate adviser search (110-160 s on a fast desktop) ran
+ * into the 120 s stuck-detector, which killed it and restarted the engine.
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -50,6 +55,11 @@ function installFakeWorker(workers) {
                     if (name === 'load_data') { worker.loaded = true; answer(true); return; }
                     if (name === 'get_state') { answer({ worker: worker.id, settings: worker.settings, loaded: worker.loaded }); return; }
                     if (name === 'fail') { reject(new Error('restore failed on purpose')); return; }
+                    // Adviser searches: args[0] is how long this one takes, Infinity = never returns.
+                    if (name.startsWith('calculate_advised')) {
+                        if (args[0] !== Infinity) setTimeout(() => answer(`${name} answered after ${args[0]} ms`), args[0]);
+                        return;
+                    }
                     answer(`${name} answered`);
                 }))),
             };
@@ -61,6 +71,7 @@ function installFakeWorker(workers) {
 async function loadRuntime(testInfo) {
     let source = fs.readFileSync(RUNTIME, 'utf8');
     source = substitute(source, 'const MKF_CALL_WATCHDOG_MS = 120_000;', 'const MKF_CALL_WATCHDOG_MS = 300;');
+    source = substitute(source, 'const MKF_ADVISER_WATCHDOG_MS = 600_000;', 'const MKF_ADVISER_WATCHDOG_MS = 1500;');
     source = substitute(source, "import * as Comlink from 'comlink';", 'const Comlink = { wrap: (worker) => worker.api };');
     const file = testInfo.outputPath('mkfRuntime.under-test.mjs');
     fs.mkdirSync(path.dirname(file), { recursive: true });
@@ -116,5 +127,67 @@ test.describe('MKF worker watchdog', () => {
         expect(afterFailedRestart.ok).toBe(false);
         expect(afterFailedRestart.message).toContain('could not be restarted');
         expect(afterFailedRestart.message).toContain('restore failed on purpose');
+    });
+
+    test('an adviser search longer than the call budget completes; a stuck one is still aborted', async ({}, testInfo) => {
+        const workers = [];
+        installFakeWorker(workers);
+        const runtime = await loadRuntime(testInfo);
+        runtime.setEngineRestoreHandler(async (mkf) => { await mkf.load_data(); });
+        const mkf = await runtime.initWorker('/wasm/libMKF.wasm.js');
+
+        // 800 ms is past the 300 ms call budget (the scaled 120 s) but inside the adviser budget: the
+        // search must finish and hand back its result, on the same worker.
+        const search = await settle(mkf.calculate_advised_magnetics(800));
+        expect(search).toEqual({ ok: true, value: 'calculate_advised_magnetics answered after 800 ms' });
+        const contextSearch = await settle(mkf.calculate_advised_cores_with_context(800));
+        expect(contextSearch.ok).toBe(true);
+        expect(workers).toHaveLength(1);
+        expect(workers[0].dead).toBe(false);
+
+        // A search that never returns is still a stuck call: aborted loudly and the engine restarted.
+        const stuckSearch = await settle(mkf.calculate_advised_coil(Infinity));
+        expect(stuckSearch.ok).toBe(false);
+        expect(stuckSearch.message).toContain("MKF call 'calculate_advised_coil' did not return within 2s");
+        const fresh = await runtime.waitForMkf();
+        expect(workers).toHaveLength(2);
+        expect(await fresh.get_state()).toEqual({ worker: 1, settings: null, loaded: true });
+
+        // Every other call keeps the short budget.
+        const slowCall = await settle(fresh.take(800));
+        expect(slowCall.ok).toBe(false);
+        expect(slowCall.message).toContain("MKF call 'take' did not return within 0s");
+    });
+
+    test('an aborted call says why, in words a page can show the user', async ({}, testInfo) => {
+        const workers = [];
+        installFakeWorker(workers);
+        const runtime = await loadRuntime(testInfo);
+        runtime.setEngineRestoreHandler(async (mkf) => { await mkf.load_data(); });
+        const mkf = await runtime.initWorker('/wasm/libMKF.wasm.js');
+        const rejection = (promise) => promise.then(
+            (value) => { throw new Error(`expected a rejection, got ${JSON.stringify(value)}`); },
+            (error) => error);
+
+        // A stuck search, and a call queued behind it that dies with the worker.
+        const [stuck, behind] = await Promise.all([
+            rejection(mkf.calculate_advised_magnetics(Infinity)),
+            rejection(mkf.calculate_advised_cores(10)),
+        ]);
+        expect(stuck).toBeInstanceOf(runtime.MkfCallAbortedError);
+        expect(stuck).toMatchObject({ kind: 'watchdog', methodName: 'calculate_advised_magnetics', budgetMs: 1500 });
+        expect(runtime.engineAbortMessage(stuck, 'The adviser')).toBe(
+            'The adviser was stopped after 2 s without finishing \u2014 try narrower requirements or run it again.');
+        expect(behind).toBeInstanceOf(runtime.MkfCallAbortedError);
+        expect(behind).toMatchObject({ kind: 'restarted', methodName: 'calculate_advised_cores' });
+        expect(runtime.engineAbortMessage(behind, 'The adviser')).toBe(
+            'The adviser was stopped because the engine had to be restarted \u2014 run it again.');
+
+        // A call through the dead worker's proxy is an abort too.
+        const stale = await rejection(mkf.fast());
+        expect(runtime.engineAbortMessage(stale, 'The adviser')).toContain('engine had to be restarted');
+
+        // An engine exception is not an abort: the page reports it with its own message.
+        expect(runtime.engineAbortMessage(new Error('Exception: no cores fit'), 'The adviser')).toBeNull();
     });
 });

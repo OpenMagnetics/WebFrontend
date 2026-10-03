@@ -249,7 +249,7 @@ export default {
           :textColor="$styleStore.wizard.inputTextColor"
           @update="updateErrorMessage"
         />
-        <Dimension :name="'turnsRatio'" :tooltip="tooltipsConverterWizards['turnsRatio']" :replaceTitle="'Turns ratio'" :unit="null"
+        <Dimension :name="'turnsRatio'" :tooltip="tooltipsConverterWizards['turnsRatio']" :replaceTitle="'Turns ratio (Np/Ns)'" :unit="null"
           :dataTestLabel="dataTestLabel + '-TurnsRatio'"
           :min="0.01" :max="100"
           v-model="localData"
@@ -381,13 +381,13 @@ export default {
       />
     </template>
 
-    <template #col1-footer>
+    <template #col1-footer="{ resultsStale }">
       <div class="d-flex align-items-center justify-content-between mt-2">
         <span v-if="errorMessage" class="error-text"><i class="pi pi-exclamation-triangle mr-1"></i>{{ errorMessage }}</span>
         <span v-else></span>
         <div class="action-btns">
           <button :disabled="errorMessage != ''" class="action-btn-sm secondary" @click="processAndReview"><i class="pi pi-search mr-1"></i>Review Specs</button>
-          <button :disabled="errorMessage != ''" class="action-btn-sm primary" @click="processAndAdvise"><i class="pi pi-sparkles mr-1"></i>Design Magnetic</button>
+          <button data-cy="wizard-design-magnetic-button" :title="resultsStale ? 'These results are out of date: run again before designing the magnetic' : undefined" :disabled="errorMessage != '' || resultsStale" class="action-btn-sm primary" @click="processAndAdvise"><i class="pi pi-sparkles mr-1"></i>Design Magnetic</button>
         </div>
       </div>
     </template>

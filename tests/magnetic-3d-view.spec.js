@@ -34,6 +34,7 @@ import { test, expect } from '@playwright/test';
 import { BASE_URL, pause } from './utils.js';
 import { openWizard, runAnalytical, goToMagneticBuilder } from './utils/nav.js';
 import { runCoreAdviser } from './utils/steps.js';
+import { clickIfPresent } from './utils/wait.js';
 import { installVueComponentFinder } from './_coverage.js';
 
 // A raw MAS as it comes out of the catalogue: core shape by NAME, bobbin left as
@@ -217,7 +218,7 @@ test.describe('3D on the web', () => {
         await pause(page, 2500, 'mechanical: tool mount');
 
         // The cookie banner sits over the bottom of the page and eats clicks.
-        await page.getByRole('button', { name: /Essential only/i }).click({ timeout: 5000 }).catch(() => {});
+        await clickIfPresent(page.getByRole('button', { name: /Essential only/i }), 5000);
 
         // /magnetic_tool opens on Design Requirements; the visualizer lives in the
         // Magnetic Builder step. Run the Core Adviser and take a result: until a
@@ -283,7 +284,7 @@ test.describe('3D on the web', () => {
         await runAnalytical(page, 60000);
         await goToMagneticBuilder(page);
         await pause(page, 2500, 'mechanical: tool mount');
-        await page.getByRole('button', { name: /Essential only/i }).click({ timeout: 5000 }).catch(() => {});
+        await clickIfPresent(page.getByRole('button', { name: /Essential only/i }), 5000);
         await runCoreAdviser(page, { timeoutMs: 180000 });
 
         // Real winding routes real CONDUCTORS, so the design needs real wires: without

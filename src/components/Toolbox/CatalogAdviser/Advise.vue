@@ -94,15 +94,11 @@ export default {
                 this.localTexts.core = `Core: ${shapeName ?? '—'} - ${materialName ?? '—'}`;
             }
             {
-                this.localTexts.turnsRatios = "Turns ratios: ";
-                this.masData.magnetic.coil.functionalDescription.forEach((elem, index) => {
-                    if (index > 0) {
-                        this.localTexts.turnsRatios += `${removeTrailingZeroes(this.masData.magnetic.coil.functionalDescription[0].numberTurns / elem.numberTurns, 1)}:`;
-                    }
-                })
-                if (this.localTexts.turnsRatios != "Turns ratios: ") {
-                    this.localTexts.turnsRatios = this.localTexts.turnsRatios.slice(0, -1);
-                }
+                // One Np/Ns per secondary. Comma-separated: joined with ':' they read as a single "8:4"-style ratio.
+                const primaryTurns = this.masData.magnetic.coil.functionalDescription[0].numberTurns;
+                const ratios = this.masData.magnetic.coil.functionalDescription.slice(1)
+                    .map((elem) => removeTrailingZeroes(primaryTurns / elem.numberTurns, 1));
+                this.localTexts.turnsRatios = `Turns ratios (Np/Ns): ${ratios.join(', ')}`;
             }
             {
                 // outputs[0].inductance.magnetizingInductance.magnetizingInductance.nominal

@@ -5,6 +5,7 @@ import { useTaskQueueStore } from '../../stores/taskQueue'
 import { nextTick } from 'vue'
 import Slider from '@vueform/slider'
 import { removeTrailingZeroes, toTitleCase, deepCopy } from 'WebSharedComponents/assets/js/utils.js'
+import { engineAbortMessage } from 'WebSharedComponents/assets/js/mkfRuntime'
 import { magneticAdviserWeights } from 'WebSharedComponents/assets/js/defaults.js'
 import Advise from './MagneticAdviser/Advise.vue'
 import AdviseDetails from './MagneticAdviser/AdviseDetails.vue'
@@ -63,6 +64,10 @@ export default {
             detailMas: null,
             adviseDetailsVisible: false,
             droppedInvalidAdvises: 0,
+            // Why the last run produced nothing, shown where the results go. An adviser run the
+            // engine watchdog aborted (or lost to an engine restart) used to leave only
+            // "No Results Yet" on the page and the reason in the console.
+            adviserError: null,
         }
     },
     computed: {
@@ -102,6 +107,7 @@ export default {
     methods: {
         async calculateAdvisedMagnetics() {
             this.currentAdviseToShow = 0;
+            this.adviserError = null;
 
             // Timeout to give time to gif to load
             setTimeout(async () => {
@@ -165,11 +171,14 @@ export default {
                     }
                     else {
                         console.error("No operating points found")
+                        this.adviserError = "The adviser needs at least one operating point \u2014 add one in the operating points step.";
                         this.loading = false;
                     }
                 } catch (error) {
                     console.error("Error calculating advising magnetics");
                     console.error(error);
+                    this.adviserError = engineAbortMessage(error, 'The adviser')
+                        ?? `The adviser failed: ${error?.message ?? String(error)}`;
                     this.loading = false;
                 }
             }, 10);
@@ -390,6 +399,12 @@ export default {
                             <span>{{ droppedInvalidAdvises }} advised design{{ droppedInvalidAdvises > 1 ? 's' : '' }} failed the coil validity filters (not buildable) and {{ droppedInvalidAdvises > 1 ? 'are' : 'is' }} not shown.</span>
                         </div>
                     </div>
+                    <div v-if="adviserError" class="col-12">
+                        <div class="adviser-error-note" role="alert" :data-cy="dataTestLabel + '-adviser-error'">
+                            <i class="pi pi-times-circle"></i>
+                            <span>{{ adviserError }}</span>
+                        </div>
+                    </div>
                     <TransitionGroup name="card-fade">
                         <div
                             v-for="(advise, adviseIndex) in adviseCacheStore.currentMasAdvises"
@@ -415,7 +430,7 @@ export default {
                     </TransitionGroup>
 
                     <!-- Empty State -->
-                    <div v-if="!adviseCacheStore.currentMasAdvises || adviseCacheStore.currentMasAdvises.length === 0" class="col-12">
+                    <div v-if="!adviserError && (!adviseCacheStore.currentMasAdvises || adviseCacheStore.currentMasAdvises.length === 0)" class="col-12">
                         <div class="d-flex flex-column align-items-center justify-content-center text-center py-5">
                             <div style="font-size: 4rem; opacity: 0.5;">🧲</div>
                             <h4 class="text-white-50 mt-3">No Results Yet</h4>
@@ -623,6 +638,18 @@ export default {
     color: var(--p-warning);
     background: rgba(var(--p-warning-rgb), 0.12);
     border: 1px solid rgba(var(--p-warning-rgb), 0.45);
+}
+
+.adviser-error-note {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    padding: 0.6rem 0.9rem;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    color: var(--p-danger);
+    background: rgba(var(--p-danger-rgb), 0.12);
+    border: 1px solid rgba(var(--p-danger-rgb), 0.45);
 }
 
 /* Transitions */

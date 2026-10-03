@@ -222,7 +222,7 @@ export default {
 
             if (this.masStore.mas.inputs.designRequirements.turnsRatios.length > 0){
                 text +=`
-                                \\multicolumn{4}{|l|}{\\textbf{Turns ratios}}\\\\ 
+                                \\multicolumn{4}{|l|}{\\textbf{Turns ratios ($N_p/N_s$)}}\\\\ 
                                 \\hline`;
                 const primaryWindingName = this.masStore.mas.magnetic.coil.functionalDescription[0].name;
 
@@ -442,7 +442,7 @@ export default {
             }
 
             if (this.masStore.mas.inputs.designRequirements.turnsRatios != null && this.masStore.mas.inputs.designRequirements.turnsRatios.length > 0) {
-                this.texts.designRequirements.turnsRatios = `${this.getTitleColor('Turns ratios')}: `
+                this.texts.designRequirements.turnsRatios = `${this.getTitleColor('Turns ratios (Np/Ns)')}: `
                 const primaryWindingName = this.masStore.mas.magnetic.coil.functionalDescription[0].name;
                 this.masStore.mas.inputs.designRequirements.turnsRatios.forEach((dimension, dimensionIndex) => {
                     const windingName = this.masStore.mas.magnetic.coil.functionalDescription[dimensionIndex + 1].name;

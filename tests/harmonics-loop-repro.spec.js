@@ -10,6 +10,7 @@
  */
 import { test, expect } from './_coverage.js';
 import { BASE_URL } from './utils/env.js';
+import { pause } from './utils/wait.js';
 
 test.describe('harmonics edit does not loop', () => {
     test.describe.configure({ timeout: 240000 });
@@ -50,7 +51,7 @@ test.describe('harmonics edit does not loop', () => {
         await expect(page.locator('text=Quick stats').first()).toBeVisible({ timeout: 30000 });
 
         // Let the mount-time processing chain settle before measuring.
-        await page.waitForTimeout(9000);
+        await pause(page, 9000, 'quiescence window: no event marks the end of the mount-time processing chain');
         const baseline = errors.length;
 
         // Edit the current fundamental frequency — the path that cross-writes the
@@ -63,14 +64,15 @@ test.describe('harmonics edit does not loop', () => {
         await target.pressSequentially('1000', { delay: 60 });
         await target.press('Tab');
 
-        await page.waitForTimeout(12000);
-        expect(starts.length - startsBefore,
-            'the edit must actually reach processHarmonics, otherwise this test proves nothing')
-            .toBeGreaterThan(0);
+        await expect.poll(() => starts.length - startsBefore, {
+            message: 'the edit must actually reach processHarmonics, otherwise this test proves nothing',
+            timeout: 30000,
+        }).toBeGreaterThan(0);
+        await pause(page, 12000, 'quiescence window: let the edit-triggered processing chain finish before sampling the idle window');
 
         // Now sit idle: a reactive loop keeps logging even with no interaction.
         const settled = errors.length;
-        await page.waitForTimeout(8000);
+        await pause(page, 8000, 'the measurement itself: a reactive loop shows up as errors logged during an idle interval');
         const whileIdle = errors.length - settled;
 
         const rmsErrors = errors.filter((e) => /processed/.test(e) && /null|undefined/.test(e));

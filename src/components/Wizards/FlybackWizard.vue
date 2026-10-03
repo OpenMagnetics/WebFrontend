@@ -8,7 +8,7 @@ import DimensionReadOnly from 'WebSharedComponents/DataInput/DimensionReadOnly.v
 import ElementFromListRadio from 'WebSharedComponents/DataInput/ElementFromListRadio.vue'
 import ElementFromList from 'WebSharedComponents/DataInput/ElementFromList.vue'
 import PairOfDimensions from 'WebSharedComponents/DataInput/PairOfDimensions.vue'
-import TripleOfDimensions from 'WebSharedComponents/DataInput/TripleOfDimensions.vue'
+import { outputTurnsRatioTitle as turnsRatioTitleFor } from './turnsRatioLabels.js'
 import DimensionWithTolerance from 'WebSharedComponents/DataInput/DimensionWithTolerance.vue'
 import { defaultFlybackWizardInputs, defaultDesignRequirements, minimumMaximumScalePerParameter, filterMas } from 'WebSharedComponents/assets/js/defaults.js'
 import ConverterWizardBase from './ConverterWizardBase.vue'
@@ -61,6 +61,9 @@ export default {
             converterWaveforms: [],
             waveformViewMode: 'magnetic', // 'magnetic' or 'converter'
             forceWaveformUpdate: 0,
+            // Per-rail counters bound to each derived turns-ratio input's forceUpdate: Dimension caches its
+            // displayed value, so a ratio re-derived here would stay stale on screen without a bump (ABT #1543).
+            turnsRatioRefresh: {},
             numberOfPeriods: 2,
             numberOfSteadyStatePeriods: 50}
     },
@@ -82,6 +85,9 @@ export default {
         });
     },
     methods: {
+        outputTurnsRatioTitle(index) {
+            return turnsRatioTitleFor(index, this.localData.outputsParameters.length);
+        },
 
     // ===== WIZARD CONTRACT (used by ConverterWizardBase.executeWaveformAction) =====
     buildParams(mode) {
@@ -163,6 +169,7 @@ export default {
             if (!(denominator > 0)) return;
             // 2 decimals: the engine rounds provided ratios the same way.
             rail.turnsRatio = Math.round((vor0 / denominator) * 100) / 100;
+            this.turnsRatioRefresh[index] = (this.turnsRatioRefresh[index] ?? 0) + 1;
         },
         updateErrorMessage() {
             this.errorMessage = "";
@@ -470,13 +477,13 @@ export default {
       />
     </template>
 
-    <template #col1-footer>
+    <template #col1-footer="{ resultsStale }">
       <div class="d-flex align-items-center justify-content-between mt-2">
         <span v-if="errorMessage" class="error-text"><i class="pi pi-exclamation-triangle mr-1"></i>{{ errorMessage }}</span>
         <span v-else></span>
         <div class="action-btns">
           <button :disabled="errorMessage != ''" class="action-btn-sm secondary" @click="processAndReview"><i class="pi pi-search mr-1"></i>Review Specs</button>
-          <button :disabled="errorMessage != ''" class="action-btn-sm primary" @click="processAndAdvise"><i class="pi pi-sparkles mr-1"></i>Design Magnetic</button>
+          <button data-cy="wizard-design-magnetic-button" :title="resultsStale ? 'These results are out of date: run again before designing the magnetic' : undefined" :disabled="errorMessage != '' || resultsStale" class="action-btn-sm primary" @click="processAndAdvise"><i class="pi pi-sparkles mr-1"></i>Design Magnetic</button>
         </div>
       </div>
     </template>
@@ -506,24 +513,36 @@ export default {
         />
       </div>
       <div v-for="(datum, index) in localData.outputsParameters" :key="'output-' + index" class="mb-2">
-        <TripleOfDimensions v-if="localData.designLevel == 'I know the design I want'"
-          :names="['voltage', 'current', 'turnsRatio']"
-          :replaceTitle="['V', 'I', 'n']"
-          :units="['V', 'A', null]"
-          :mins="[minimumMaximumScalePerParameter['voltage']['min'], minimumMaximumScalePerParameter['current']['min'], 0.01]"
-          :maxs="[minimumMaximumScalePerParameter['voltage']['max'], minimumMaximumScalePerParameter['current']['max'], 100]"
-          :allowNegatives="[true, false, false]"
-          v-model="localData.outputsParameters[index]"
-          :dataTestLabel="dataTestLabel + '-OutputsParameters'"
-          :labelWidthProportionClass="'col-4'"
-          :valueWidthProportionClass="'col-7'"
-          :valueFontSize="$styleStore.wizard.inputFontSize"
-          :labelFontSize="$styleStore.wizard.inputLabelFontSize"
-          :labelBgColor="'transparent'"
-          :valueBgColor="$styleStore.wizard.inputValueBgColor"
-          :textColor="$styleStore.wizard.inputTextColor"
-          @update="onOutputParameterUpdate($event, index)"
-        />
+        <template v-if="localData.designLevel == 'I know the design I want'">
+          <PairOfDimensions
+            :names="['voltage', 'current']"
+            :replaceTitle="['Volt.', 'Curr.']"
+            :units="['V', 'A']"
+            :mins="[minimumMaximumScalePerParameter['voltage']['min'], minimumMaximumScalePerParameter['current']['min']]"
+            :maxs="[minimumMaximumScalePerParameter['voltage']['max'], minimumMaximumScalePerParameter['current']['max']]"
+            :allowNegatives="[true, false]"
+            v-model="localData.outputsParameters[index]"
+            :dataTestLabel="dataTestLabel + '-OutputsParameters'"
+            :labelWidthProportionClass="'col-4'"
+            :valueWidthProportionClass="'col-7'"
+            :valueFontSize="$styleStore.wizard.inputFontSize"
+            :labelFontSize="$styleStore.wizard.inputLabelFontSize"
+            :labelBgColor="'transparent'"
+            :valueBgColor="$styleStore.wizard.inputValueBgColor"
+            :textColor="$styleStore.wizard.inputTextColor"
+            @update="onOutputParameterUpdate($event, index)"
+          />
+          <Dimension :name="'turnsRatio'" :tooltip="tooltipsConverterWizards['turnsRatio']"
+            :replaceTitle="outputTurnsRatioTitle(index)" :unit="null" :min="0.01" :max="100"
+            v-model="localData.outputsParameters[index]"
+            :forceUpdate="turnsRatioRefresh[index] ?? 0"
+            :dataTestLabel="dataTestLabel + '-OutputsParameters' + ' turnsRatio'"
+            :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'"
+            :valueFontSize="$styleStore.wizard.inputFontSize" :labelFontSize="$styleStore.wizard.inputLabelFontSize"
+            :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor" :textColor="$styleStore.wizard.inputTextColor"
+            @update="(value) => onOutputParameterUpdate({ value, dimension: 'turnsRatio' }, index)"
+          />
+        </template>
         <PairOfDimensions v-else
           :names="['voltage', 'current']"
           :replaceTitle="['Volt.', 'Curr.']"

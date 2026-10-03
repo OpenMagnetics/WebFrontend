@@ -288,7 +288,7 @@ export default {
                                         <th>Winding</th>
                                         <th>Turns</th>
                                         <th>Parallels</th>
-                                        <th>Turns ratio</th>
+                                        <th>Turns ratio (Np/Ns)</th>
                                     </tr>
                                 </thead>
                                 <tbody>

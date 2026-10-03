@@ -32,6 +32,8 @@ export default {
             error: "",
             saveName: "",
             showSaveInput: false,
+            // 'save' (first save of an unlinked design) or 'saveAs' (new copy, relinked).
+            saveMode: 'save',
         }
     },
     async mounted() {
@@ -45,8 +47,19 @@ export default {
             if (this.$route.query.save === '1') {
                 this.startSaveCurrent();
             }
+            else if (this.$route.query.saveAs === '1') {
+                this.startSaveAs();
+            }
         }
         this.loading = false;
+    },
+    watch: {
+        // The header's "Save design as…" while already on this page.
+        '$route.query.saveAs'(value) {
+            if (value === '1' && this.authStore.isLoggedIn) {
+                this.startSaveAs();
+            }
+        },
     },
     methods: {
         async refresh() {
@@ -67,8 +80,78 @@ export default {
                 this.saveCurrent(null);
             }
             else {
+                this.saveMode = 'save';
                 this.saveName = this.defaultName();
                 this.showSaveInput = true;
+            }
+        },
+        startSaveAs() {
+            this.saveMode = 'saveAs';
+            this.saveName = this.cloudDesignStore.name
+                ? this.uniqueCopyName(this.cloudDesignStore.name)
+                : this.defaultName();
+            this.showSaveInput = true;
+        },
+        confirmSaveInput() {
+            if (this.saveName === '') {
+                return;
+            }
+            if (this.saveMode === 'saveAs') {
+                this.saveCurrentAs(this.saveName);
+            }
+            else {
+                this.saveCurrent(this.saveName);
+            }
+        },
+        // "<name> (copy)", then "(copy 2)", "(copy 3)"… — first one not in the list.
+        uniqueCopyName(name) {
+            const taken = new Set(this.designs.map((design) => design.name));
+            let candidate = `${name} (copy)`;
+            for (let index = 2; taken.has(candidate); index++) {
+                candidate = `${name} (copy ${index})`;
+            }
+            return candidate;
+        },
+        async saveCurrentAs(name) {
+            this.error = "";
+            this.showSaveInput = false;
+            try {
+                let result;
+                if (this.orgContextStore.selectedOrgId != null) {
+                    // Org designs belong to the organization; no local link.
+                    const { data } = await api.post('/designs' + this.orgContextStore.orgQuery,
+                        { name, mas: this.masStore.mas });
+                    result = data;
+                } else {
+                    result = await this.cloudDesignStore.saveAs(this.masStore.mas, name);
+                }
+                if (result.schema_errors != null && result.schema_errors.length > 0) {
+                    this.error = "Saved, but the design does not validate against the current MAS schema: "
+                        + result.schema_errors[0];
+                }
+                await this.refresh();
+            } catch (error) {
+                this.error = "Could not save as a new design: " + (error.response?.data?.detail || error.message);
+            }
+        },
+        // Copy a saved design server-side. Fetches the FULL MAS (the list only
+        // has summaries) and creates a new design; the working design and its
+        // link are not touched.
+        async duplicateDesign(design) {
+            this.error = "";
+            this.busyId = design.id;
+            try {
+                const { data } = await api.get(`/designs/${design.id}`);
+                if (data.mas == null) {
+                    throw new Error(`the server returned no MAS for "${design.name}"`);
+                }
+                await api.post('/designs' + this.orgContextStore.orgQuery,
+                    { name: this.uniqueCopyName(design.name), mas: data.mas });
+                await this.refresh();
+            } catch (error) {
+                this.error = "Could not duplicate: " + (error.response?.data?.detail || error.message);
+            } finally {
+                this.busyId = null;
             }
         },
         async saveCurrent(name) {
@@ -214,19 +297,27 @@ export default {
                     <i class="pi pi-save mr-2"></i>
                     {{ cloudDesignStore.isLinked ? `Save current design (${cloudDesignStore.name})` : "Save current design" }}
                 </button>
+                <button
+                    data-cy="MyDesigns-save-as-button"
+                    class="p-button p-button-outlined p-button-primary"
+                    title="Save the current design as a new design with another name; later saves go to the new one"
+                    @click="startSaveAs">
+                    <i class="pi pi-copy mr-2"></i>Save as…
+                </button>
                 <template v-if="showSaveInput">
                     <input
                         data-cy="MyDesigns-save-name-input"
                         v-model.trim="saveName"
                         class="form-control bg-secondary text-white border-secondary"
                         style="max-width: 20rem"
-                        @keyup.enter="saveCurrent(saveName)"
+                        :placeholder="saveMode === 'saveAs' ? 'Name of the new design' : 'Design name'"
+                        @keyup.enter="confirmSaveInput"
                     />
                     <button
                         data-cy="MyDesigns-save-confirm-button"
                         :disabled="saveName === ''"
                         class="p-button p-button-primary"
-                        @click="saveCurrent(saveName)">Save</button>
+                        @click="confirmSaveInput">{{ saveMode === 'saveAs' ? 'Save as new design' : 'Save' }}</button>
                     <button class="p-button p-button-outlined p-button-secondary" @click="showSaveInput = false">Cancel</button>
                 </template>
             </div>
@@ -277,6 +368,13 @@ export default {
                                         class="p-button p-button-outlined p-button-sm mx-1"
                                         @click="shareDesign(design)" title="Create a public share link">
                                     <i class="pi pi-share-alt"></i>
+                                </button>
+                                <button
+                                    :data-cy="`MyDesigns-duplicate-${design.name}`"
+                                    :disabled="busyId === design.id"
+                                    class="p-button p-button-outlined p-button-sm mx-1"
+                                    @click="duplicateDesign(design)" title="Duplicate: save a copy of this design">
+                                    <i class="pi pi-copy"></i>
                                 </button>
                                 <button class="p-button p-button-outlined p-button-sm mx-1" @click="renameDesign(design)" title="Rename">
                                     <i class="pi pi-pencil"></i>

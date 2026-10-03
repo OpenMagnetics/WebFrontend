@@ -21,10 +21,16 @@ test.describe('Magnetic Builder Graphs panel — DC-bias fields', () => {
     test('graph DC-bias fields render a visible input', async ({ page }) => {
         await page.goto(`${BASE_URL}/`, { waitUntil: 'domcontentloaded', timeout: 20000 });
         await page.waitForFunction(() => !window.location.pathname.includes('engine_loader'), null, { timeout: 60000 });
-        await page.waitForTimeout(800);
-        await page.locator('[data-cy="Header-Load-MAS-file-button"]').setInputFiles(MAS_FIXTURE);
+        const loadMas = page.locator('[data-cy="Header-Load-MAS-file-button"]');
+        await expect(loadMas).toBeAttached({ timeout: 30000 });
+        await loadMas.setInputFiles(MAS_FIXTURE);
         await page.waitForURL('**/magnetic_tool**', { timeout: 60000 });
-        await page.waitForTimeout(5000);
+        // The loaded design is in the store once its core shape is.
+        await page.waitForFunction(() => {
+            const pinia = document.querySelector('#app')?.__vue_app__?.config.globalProperties.$pinia;
+            const shape = pinia?.state.value.mas?.mas?.magnetic?.core?.functionalDescription?.shape;
+            return shape != null && shape !== '';
+        }, null, { timeout: 60000 });
 
         await page.evaluate(() => {
             const ss = document.querySelector('#app').__vue_app__.config.globalProperties.$stateStore;
@@ -35,7 +41,8 @@ test.describe('Magnetic Builder Graphs panel — DC-bias fields', () => {
             if (mbs) mbs.enableGraphs = true;
             ss.graphParameters.graph = 'magnetizingInductanceOverDcBias';
         });
-        await page.waitForTimeout(12000);
+        await expect(page.locator('[data-cy*="GraphCommonParameters"][data-cy$="DcBias-container"]').first())
+            .toBeAttached({ timeout: 60000 });
 
         const probe = await page.evaluate(() => {
             const rows = [];

@@ -45,6 +45,20 @@ export const useCloudDesignStore = defineStore("cloudDesign", {
             this.version = data.version;
             return data;
         },
+        // "Save as…": create a NEW server design from the current document and
+        // relink the working design to it, so later saves update the copy.
+        // The previously linked design is left untouched.
+        async saveAs(mas, name) {
+            if (mas == null) {
+                throw new Error("cloudDesign.saveAs: there is no design to save");
+            }
+            if (name == null || String(name).trim() === "") {
+                throw new Error("cloudDesign.saveAs: a name is required");
+            }
+            const { data } = await api.post('/designs', { name: String(name).trim(), mas });
+            this.link(data);
+            return data;
+        },
         // After a 409: take the server's current version and save on top of it.
         async overwrite(mas) {
             if (this.designId == null) {
