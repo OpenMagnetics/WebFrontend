@@ -122,4 +122,28 @@ test.describe('Adviser — Insulation Adviser (standalone)', () => {
     expect(found, 'at least one insulation output field must be visible').toBeGreaterThan(0);
     await ss(page, 'INS3-outputs');
   });
+  // ABT #1228: on an engine failure the four distances must not render at
+  // all. A 0 mm creepage shown beside the error reads as "no separation
+  // required" on a safety tool. The failure is a real one from the engine
+  // (an excitation without a voltage), not a stub.
+  test('AD-INS4: a failed coordination shows the error and no distance', async ({ page }) => {
+    await openInsulation(page);
+    const clearance = page.locator('.ia-card-result [data-cy$="-Clearance-number-label"]');
+    await expect(clearance, 'a complete input must compute a clearance').toBeVisible({ timeout: 15000 });
+
+    await page.evaluate(() => {
+      const app = document.querySelector('#app').__vue_app__;
+      const mas = app.config.globalProperties.$pinia._s.get('mas').mas;
+      delete mas.inputs.operatingPoints[0].excitationsPerWinding[0].voltage;
+    });
+    // Any input edit re-runs the coordination with the broken excitation.
+    const frequency = page.locator('[data-cy$="-SwitchingFrequency-number-input"] input').first();
+    await frequency.fill('150');
+    await frequency.press('Enter');
+
+    await expect(page.locator('.ia-card-result [data-cy$="-ErrorMessage"]')).toContainText('Missing voltage', { timeout: 15000 });
+    for (const field of ['Clearance', 'CreepageDistance', 'WithstandVoltage', 'DistanceThroughInsulation']) {
+      await expect(page.locator(`.ia-card-result [data-cy*="-${field}-"]`), `${field} must not render on failure`).toHaveCount(0);
+    }
+  });
 });

@@ -11,6 +11,22 @@ import Module from '../../assets/js/libInsulationCoordinator.wasm.js'
 
 <script>
 
+// Every field is a number the engine computed; anything else is an engine
+// failure, and no distance is ever shown that was not computed (ABT #1228).
+// A distance through insulation of 0 is the standard's own answer (e.g. IEC
+// 62368-1 5.4.4.6 sets no minimum thickness for basic insulation), so it is
+// said in words rather than shown as 0 mm.
+const INSULATION_RESULT_FIELDS = [
+    { key: 'clearance', label: 'Clearance', unit: 'm', icon: 'bi bi-arrows', testLabel: 'Clearance' },
+    { key: 'creepageDistance', label: 'Creepage distance', unit: 'm', icon: 'bi bi-signpost-split-fill', testLabel: 'CreepageDistance' },
+    { key: 'withstandVoltage', label: 'Withstand voltage', unit: 'V', icon: 'bi bi-lightning-charge-fill', testLabel: 'WithstandVoltage' },
+    { key: 'distanceThroughInsulation', label: 'Distance through insulation', unit: 'm', icon: 'bi bi-layers-fill', testLabel: 'DistanceThroughInsulation', zeroMeans: 'No minimum thickness (the standard sets none)' },
+];
+
+function isInsulationValue(value) {
+    return Number.isFinite(value);
+}
+
 var insulationCoordinator = {
     ready: new Promise(resolve => {
         Module({
@@ -74,10 +90,15 @@ export default {
         return {
             masStore,
             standardsToDisable,
-            insulation
+            insulation,
+            resultFields: INSULATION_RESULT_FIELDS,
         }
     },
     computed: {
+        insulationComputed() {
+            return !this.insulation.errorMessage
+                && INSULATION_RESULT_FIELDS.every((field) => isInsulationValue(this.insulation[field.key]));
+        },
     },
     created () {
     },
@@ -93,7 +114,14 @@ export default {
                         exc.voltage.processed.peakToPeak = 2 * Number(exc.voltage.processed.peak);
                     }
                     const raw = insulationCoordinator.calculate_insulation(JSON.stringify(this.masStore.mas.inputs));
-                    this.insulation = JSON.parse(raw);
+                    const parsed = JSON.parse(raw);
+                    if (!parsed.errorMessage) {
+                        const missing = INSULATION_RESULT_FIELDS.filter((field) => !isInsulationValue(parsed[field.key]));
+                        if (missing.length > 0) {
+                            throw new Error(`Insulation engine returned no ${missing.map((field) => field.label.toLowerCase()).join(', ')}`);
+                        }
+                    }
+                    this.insulation = parsed;
                 } catch (e) {
                     const message = (e && e.message)
                         || (typeof e === 'string' ? e : 'Insulation calculation failed; check inputs.');
@@ -163,15 +191,25 @@ export default {
                         <span>Coordination result</span>
                     </div>
                     <div class="ia-result-body">
-                        <div class="ia-result-row">
-                            <div class="ia-result-icon"><i class="bi bi-arrows"></i></div>
+                        <!-- Distances render only when the engine computed all four:
+                             a 0 mm shown beside an error reads as "no separation
+                             required" (ABT #1228). -->
+                        <template v-if="insulationComputed">
+                        <div v-for="field in resultFields" :key="field.key" class="ia-result-row">
+                            <div class="ia-result-icon"><i :class="field.icon"></i></div>
                             <div class="ia-result-text">
-                                <small>Clearance</small>
+                                <small>{{ field.label }}</small>
+                                <span
+                                    v-if="field.zeroMeans && insulation[field.key] === 0"
+                                    class="ia-result-not-required"
+                                    :data-cy="dataTestLabel + '-' + field.testLabel + '-NoMinimum'"
+                                >{{ field.zeroMeans }}</span>
                                 <DimensionReadOnly
-                                    :name="'clearance'"
-                                    :unit="'m'"
-                                    :dataTestLabel="dataTestLabel + '-Clearance'"
-                                    :value="insulation.clearance"
+                                    v-else
+                                    :name="field.key"
+                                    :unit="field.unit"
+                                    :dataTestLabel="dataTestLabel + '-' + field.testLabel"
+                                    :value="insulation[field.key]"
                                     :disableShortenLabels="true"
                                     :replaceTitle="' '"
                                     :valueFontSize="'text-4xl'"
@@ -183,66 +221,7 @@ export default {
                                 />
                             </div>
                         </div>
-                        <div class="ia-result-row">
-                            <div class="ia-result-icon"><i class="bi bi-signpost-split-fill"></i></div>
-                            <div class="ia-result-text">
-                                <small>Creepage distance</small>
-                                <DimensionReadOnly
-                                    :name="'creepageDistance'"
-                                    :unit="'m'"
-                                    :dataTestLabel="dataTestLabel + '-CreepageDistance'"
-                                    :value="insulation.creepageDistance"
-                                    :disableShortenLabels="true"
-                                    :replaceTitle="' '"
-                                    :valueFontSize="'text-4xl'"
-                                    :labelWidthProportionClass="'col-1'"
-                                    :valueWidthProportionClass="'col-11'"
-                                    :labelBgColor="'bg-transparent'"
-                                    :valueBgColor="'bg-transparent'"
-                                    :textColor="$settingsStore.textColor"
-                                />
-                            </div>
-                        </div>
-                        <div class="ia-result-row">
-                            <div class="ia-result-icon"><i class="bi bi-lightning-charge-fill"></i></div>
-                            <div class="ia-result-text">
-                                <small>Withstand voltage</small>
-                                <DimensionReadOnly
-                                    :name="'withstandVoltage'"
-                                    :unit="'V'"
-                                    :dataTestLabel="dataTestLabel + '-WithstandVoltage'"
-                                    :value="insulation.withstandVoltage"
-                                    :disableShortenLabels="true"
-                                    :replaceTitle="' '"
-                                    :valueFontSize="'text-4xl'"
-                                    :labelWidthProportionClass="'col-1'"
-                                    :valueWidthProportionClass="'col-11'"
-                                    :labelBgColor="'bg-transparent'"
-                                    :valueBgColor="'bg-transparent'"
-                                    :textColor="$settingsStore.textColor"
-                                />
-                            </div>
-                        </div>
-                        <div class="ia-result-row">
-                            <div class="ia-result-icon"><i class="bi bi-layers-fill"></i></div>
-                            <div class="ia-result-text">
-                                <small>Distance through insulation</small>
-                                <DimensionReadOnly
-                                    :name="'distanceThroughInsulation'"
-                                    :unit="'m'"
-                                    :dataTestLabel="dataTestLabel + '-DistanceThroughInsulation'"
-                                    :value="insulation.distanceThroughInsulation"
-                                    :disableShortenLabels="true"
-                                    :replaceTitle="' '"
-                                    :valueFontSize="'text-4xl'"
-                                    :labelWidthProportionClass="'col-1'"
-                                    :valueWidthProportionClass="'col-11'"
-                                    :labelBgColor="'bg-transparent'"
-                                    :valueBgColor="'bg-transparent'"
-                                    :textColor="$settingsStore.textColor"
-                                />
-                            </div>
-                        </div>
+                        </template>
                         <div v-if="insulation.errorMessage" class="ia-result-error">
                             <i class="pi pi-exclamation-triangle"></i>
                             <span :data-cy="dataTestLabel + '-ErrorMessage'">{{ insulation.errorMessage }}</span>
@@ -430,6 +409,12 @@ export default {
     background: transparent !important;
     font-size: 1.2rem !important;
     line-height: 1.15 !important;
+    font-weight: 600;
+}
+
+.ia-result-not-required {
+    color: rgba(var(--p-white-rgb), 0.85);
+    font-size: 1.5rem;
     font-weight: 600;
 }
 
