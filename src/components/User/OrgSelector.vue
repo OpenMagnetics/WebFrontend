@@ -31,7 +31,7 @@ export default {
     <select
         v-if="orgContextStore.orgs.length > 0"
         data-cy="OrgSelector"
-        class="form-select bg-secondary text-white border-secondary"
+        class="form-select"
         style="max-width: 16rem"
         :value="orgContextStore.selectedOrgId || ''"
         @change="onChange">

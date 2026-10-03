@@ -121,7 +121,7 @@ export default {
     <div class="container text-white mt-4 flex-grow-1" style="max-width: 860px; min-height: 60vh">
         <h2 data-cy="Organizations-title" class="mb-4"><i class="pi pi-building mr-2"></i>Organizations</h2>
 
-        <div v-if="loading" class="text-secondary">Loading…</div>
+        <div v-if="loading" class="text-color-secondary">Loading…</div>
         <div v-else-if="!authStore.isLoggedIn" data-cy="Organizations-signed-out" class="alert alert-info">
             Sign in from the header to create a company space: shared designs, a shared parts
             inventory with an approval workflow, and teammates with roles.
@@ -132,20 +132,20 @@ export default {
                 <h5 class="mb-2">Create an organization</h5>
                 <div class="d-flex gap-2 flex-wrap">
                     <input v-model="newName" data-cy="Organizations-new-name" placeholder="Company name"
-                           class="form-control bg-secondary text-white border-secondary" style="max-width: 18rem" />
+                           class="form-control" style="max-width: 18rem" />
                     <input v-model="newSlug" data-cy="Organizations-new-slug" placeholder="slug (a-z, 0-9, dashes)"
-                           class="form-control bg-secondary text-white border-secondary" style="max-width: 16rem" />
+                           class="form-control" style="max-width: 16rem" />
                     <button :disabled="newName.trim() === '' || newSlug.trim() === ''"
                             data-cy="Organizations-create-button" class="p-button p-button-primary" @click="createOrg">Create</button>
                 </div>
-                <small class="text-secondary mt-1">You become the owner. Designs and inventory created in the
+                <small class="text-color-secondary mt-1">You become the owner. Designs and inventory created in the
                     organization belong to it — they stay when people leave.</small>
             </div>
 
             <div v-if="error" data-cy="Organizations-error" class="alert alert-warning py-2">{{ error }}</div>
             <div v-if="info" data-cy="Organizations-info" class="alert alert-info py-2">{{ info }}</div>
 
-            <div v-if="orgContextStore.orgs.length === 0" class="text-secondary">You are not in any organization yet.</div>
+            <div v-if="orgContextStore.orgs.length === 0" class="text-color-secondary">You are not in any organization yet.</div>
 
             <div v-for="org in orgContextStore.orgs" :key="org.id" class="card bg-dark border-secondary p-3 mb-3">
                 <div class="d-flex align-items-center gap-2">
@@ -160,8 +160,8 @@ export default {
                 <div v-if="expanded === org.id" class="mt-3">
                     <div v-if="can(org, 'admin')" class="d-flex gap-2 flex-wrap mb-3">
                         <input v-model="inviteEmail" data-cy="Organizations-invite-email" placeholder="colleague@company.com"
-                               class="form-control bg-secondary text-white border-secondary" style="max-width: 18rem" />
-                        <select v-model="inviteRole" class="form-select bg-secondary text-white border-secondary" style="max-width: 9rem">
+                               class="form-control" style="max-width: 18rem" />
+                        <select v-model="inviteRole" class="form-select" style="max-width: 9rem">
                             <option v-for="role in ROLES.slice(0, 4)" :key="role" :value="role">{{ role }}</option>
                         </select>
                         <button :disabled="inviteEmail.trim() === ''" data-cy="Organizations-invite-button"
@@ -172,10 +172,10 @@ export default {
                             <tr v-for="member in members[org.id] || []" :key="member.id">
                                 <td>{{ member.display_name || member.email }}
                                     <span v-if="member.pending" class="badge bg-warning text-dark ms-1">invited</span></td>
-                                <td class="text-secondary">{{ member.email }}</td>
+                                <td class="text-color-secondary">{{ member.email }}</td>
                                 <td style="width: 9rem">
                                     <select v-if="can(org, 'admin') && !member.pending"
-                                            class="form-select form-select-sm bg-secondary text-white border-secondary"
+                                            class="form-select form-select-sm"
                                             :value="member.role" @change="changeRole(org, member, $event)">
                                         <option v-for="role in ROLES" :key="role" :value="role">{{ role }}</option>
                                     </select>

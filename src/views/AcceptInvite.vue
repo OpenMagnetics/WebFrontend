@@ -69,7 +69,7 @@ export default {
                 Sign in (or create a free account) from the header first, then reload this page.
             </div>
         </template>
-        <div v-else class="text-secondary mt-3">Loading…</div>
+        <div v-else class="text-color-secondary mt-3">Loading…</div>
     </div>
     <Footer />
   </div>

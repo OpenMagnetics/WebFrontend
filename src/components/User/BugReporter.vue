@@ -61,9 +61,9 @@ export default {
         <div class="px-2 py-2">
             <div class="mb-3">
                 <h6 class="text-white mb-1">What happened?</h6>
-                <small class="text-secondary">Let us know what happened and any contact info (in case you want to be contacted)</small>
+                <small class="text-color-secondary">Let us know what happened and any contact info (in case you want to be contacted)</small>
             </div>
-            <textarea data-cy="BugReporter-user-information-input" class="form-control bg-secondary text-white border-secondary" placeholder="Describe the issue..." rows="4" v-model="userInformation"></textarea>
+            <textarea data-cy="BugReporter-user-information-input" class="form-control" placeholder="Describe the issue..." rows="4" v-model="userInformation"></textarea>
         </div>
         <template #footer>
             <button data-cy="BugReporter-close-modal-button" :disabled="posting" class="p-button p-button-outlined p-button-secondary" @click="$emit('update:visible', false)">Cancel</button>
