@@ -90,6 +90,16 @@ export function migrateLegacyMas(mas) {
             requirements.wiringTechnology = lowercased;
         }
     }
+    // Engines before MKF cfa6d126 (2026-09-17) wrote spacers as {material: 'plastic',
+    // rotation} without insulationMaterial, which the MAS schema rejects, so designs
+    // with spacers saved then were refused on load (user reports #184/#185). The
+    // geometrical description is derived from the functional one; drop it so the
+    // engine rebuilds it in the current form.
+    const geometricalDescription = mas?.magnetic?.core?.geometricalDescription;
+    if (Array.isArray(geometricalDescription)
+        && geometricalDescription.some((element) => element?.type === 'spacer' && element.insulationMaterial == null)) {
+        delete mas.magnetic.core.geometricalDescription;
+    }
     // Files saved before user report #181 was fixed carry null excitations: adding a
     // winding in Design Requirements padded every operating point with null. Seed them
     // the way the app now does; the Op. Points page reports each one as 'not defined
