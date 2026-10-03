@@ -228,7 +228,10 @@ export default {
             this.$refs.masFileReader.click();
         },
         readMASFile(event) {
-            const file = this.$refs['masFileReader'].files.item(0);
+            // Keep the element: the load navigates away and can unmount this header,
+            // after which this.$refs.masFileReader is null.
+            const input = this.$refs['masFileReader'];
+            const file = input.files.item(0);
             if (file == null) {
                 return;
             }
@@ -272,7 +275,7 @@ export default {
                     this.loading = false;
                     this.loadingMasFileName = null;
                     // Let the same file be picked again (an unchanged input fires no change).
-                    this.$refs['masFileReader'].value = '';
+                    input.value = '';
                 }
             };
             fr.readAsText(file, "ISO-8859-1");
