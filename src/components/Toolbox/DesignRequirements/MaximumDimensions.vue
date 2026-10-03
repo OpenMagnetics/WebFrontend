@@ -1,7 +1,7 @@
 <script setup>
 import { toTitleCase, getMultiplier, combinedStyle, combinedClass } from 'WebSharedComponents/assets/js/utils.js'
 import DimensionUnit from 'WebSharedComponents/DataInput/DimensionUnit.vue'
-import InputNumber from 'primevue/inputnumber'
+import InputNumber from 'WebSharedComponents/DataInput/DecimalInputNumber.js'
 import InputGroup from 'primevue/inputgroup'
 import InputGroupAddon from 'primevue/inputgroupaddon'
 import Button from 'primevue/button'
