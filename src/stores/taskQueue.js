@@ -822,6 +822,13 @@ export const useTaskQueueStore = defineStore('taskQueue', {
 
             masSentry('exportMagneticAsSymbol', 'Magnetic', magnetic);
             const result = await mkf.export_magnetic_as_symbol(JSON.stringify(magnetic), format, extra);
+            // MKF writes symbols only for some simulators and answers "" for the rest; an
+            // empty file offered as a symbol is a silent failure (ABT #1233).
+            if (typeof result !== 'string' || result.startsWith('Exception') || result.trim() === '') {
+                const reason = typeof result === 'string' && result.startsWith('Exception') ? result : `MKF returned no ${format} symbol`;
+                setTimeout(() => { this.magneticExportedAsSymbol(false, reason); }, this.task_standard_response_delay);
+                throw new Error(reason);
+            }
             setTimeout(() => { this.magneticExportedAsSymbol(true, result); }, this.task_standard_response_delay);
             return result;
         },
@@ -2167,20 +2174,6 @@ export const useTaskQueueStore = defineStore('taskQueue', {
         cmcInputsCalculated(success = true, dataOrMessage = '') {
         },
 
-        async calculateCmcInputs(params) {
-            const mkf = await waitForKirchhoff();
-            await mkf.ready;
-
-            const result = await mkf.calculate_cmc_inputs(JSON.stringify(params));
-            if (result.startsWith('Exception')) {
-                setTimeout(() => { this.cmcInputsCalculated(false, result); }, this.task_standard_response_delay);
-                throw new Error(result);
-            }
-            const inputs = JSON.parse(result);
-            setTimeout(() => { this.cmcInputsCalculated(true, inputs); }, this.task_standard_response_delay);
-            return inputs;
-        },
-
         cmcWaveformsSimulated(success = true, dataOrMessage = '') {
         },
 
@@ -2189,20 +2182,6 @@ export const useTaskQueueStore = defineStore('taskQueue', {
             await mkf.ready;
 
             const result = await mkf.simulate_cmc_ideal_waveforms(JSON.stringify(params), inductance, parasiticCap_pF, dvdt_V_ns);
-            if (result.startsWith('Exception')) {
-                setTimeout(() => { this.cmcWaveformsSimulated(false, result); }, this.task_standard_response_delay);
-                throw new Error(result);
-            }
-            const waveforms = JSON.parse(result);
-            setTimeout(() => { this.cmcWaveformsSimulated(true, waveforms); }, this.task_standard_response_delay);
-            return waveforms;
-        },
-
-        async simulateCmcLisnWaveforms(params, inductance) {
-            const mkf = await waitForKirchhoff();
-            await mkf.ready;
-
-            const result = await mkf.simulate_cmc_lisn_waveforms(JSON.stringify(params), inductance);
             if (result.startsWith('Exception')) {
                 setTimeout(() => { this.cmcWaveformsSimulated(false, result); }, this.task_standard_response_delay);
                 throw new Error(result);
@@ -2234,20 +2213,6 @@ export const useTaskQueueStore = defineStore('taskQueue', {
         },
 
         dmcAttenuationVerified(success = true, dataOrMessage = '') {
-        },
-
-        async verifyDmcAttenuation(params, inductance, capacitance = 0) {
-            const mkf = await waitForKirchhoff();
-            await mkf.ready;
-
-            const result = await mkf.verify_dmc_attenuation(JSON.stringify(params), inductance, capacitance);
-            if (result.startsWith('Exception')) {
-                setTimeout(() => { this.dmcAttenuationVerified(false, result); }, this.task_standard_response_delay);
-                throw new Error(result);
-            }
-            const verificationResults = JSON.parse(result);
-            setTimeout(() => { this.dmcAttenuationVerified(true, verificationResults); }, this.task_standard_response_delay);
-            return verificationResults;
         },
 
         dmcDesignProposed(success = true, dataOrMessage = '') {
@@ -2431,12 +2396,5 @@ export const useTaskQueueStore = defineStore('taskQueue', {
         coresLoaded(success = true, dataOrMessage = '') {
         },
 
-        async loadCores(data, allowToroidal, useOnlyInStock) {
-            const mkf = await waitForMkf();
-            await mkf.ready;
-
-            await mkf.load_cores(data, allowToroidal, useOnlyInStock);
-            setTimeout(() => { this.coresLoaded(true); }, this.task_standard_response_delay);
-        },
     }
 });

@@ -8,6 +8,17 @@ The reference implementation is **`DabWizard.vue`** (golden standard). The
 **`ConverterWizardBase.vue`**, which provides the layout, waveform
 orchestration, MAS-store wiring, navigation helpers and SPICE-code generation.
 
+> **Where the converter models live now (2026-10, ABT #1233).** Converter design,
+> waveforms and ngspice decks moved from MKF to **Kirchhoff**. Wizards reach them
+> through `waitForKirchhoff()` (`WebSharedComponents/assets/js/kirchhoffRuntime.js`),
+> which reshapes Kirchhoff's `process_converter` / `design_tas` output into the
+> contract this guide describes; MKF's `src/converter_models/` now holds only
+> `KirchhoffBridge`. Read every `MKF/src/converter_models/<X>.{h,cpp}` path below as
+> `Kirchhoff/src/<X>.{hpp,cpp}` (e.g. `Ahb.cpp`, `Dab.cpp`, `Flyback.cpp`), and every
+> "rebuild libMKF / WebLibMKF" step for a converter change as a libKirchhoff rebuild
+> (`src/assets/js/libKirchhoff.js`). The CMC/DMC flows run on Kirchhoff too. MKF stays
+> authoritative for the magnetics themselves.
+
 ---
 
 ## 0. Hard rules (read first, no exceptions)

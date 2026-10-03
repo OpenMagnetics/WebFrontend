@@ -34,11 +34,11 @@ export default {
                 if (this.fullCoreModel && this.coil) {
                     magnetic.coil = deepCopy(this.coil);
                 }
-                const stlOpts = { tolMm: 0.1, angTol: 0.2, binary: true };
-
+                // MVB++ meshes at its own tolerance and always writes binary STL; it
+                // takes no tolerance options (ABT #1233).
                 const buf = (this.fullCoreModel && this.coil)
-                    ? await buildMagneticSTL(magnetic, stlOpts)
-                    : await buildCoreSTL(magnetic, stlOpts);
+                    ? await buildMagneticSTL(magnetic)
+                    : await buildCoreSTL(magnetic);
 
                 download(buf, coreName + '.stl', 'binary/octet-stream; charset=utf-8');
                 this.$emit('export', coreName + '.stl');

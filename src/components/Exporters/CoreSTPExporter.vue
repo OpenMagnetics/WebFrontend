@@ -33,14 +33,18 @@ export default {
                 // MVB's drawMagnetic parses a full MAS Magnetic — a coil-less
                 // {core} payload dies inside the WASM with bad_optional_access
                 // (no core-only STEP draw exists, unlike STL's buildCoreSTL).
+                // MVB draws the whole magnetic (core, bobbin, coil) as STEP; there is no
+                // core-only or bobbin-less STEP build, so a partial model is refused
+                // rather than silently exported whole (ABT #1233).
+                if (!this.fullCoreModel) {
+                    throw new Error('[CoreSTPExporter] STEP export has no core-only model: MVB++ draws the whole magnetic');
+                }
                 if (this.coil == null) {
                     throw new Error('[CoreSTPExporter] STEP export needs the coil: pass the wound magnetic\'s coil prop (MVB has no core-only STEP draw)');
                 }
                 const magnetic = { core: coreAux, coil: deepCopy(this.coil) };
 
-                const buf = await buildMagneticSTEP(magnetic, {
-                    includeBobbin: this.fullCoreModel,
-                });
+                const buf = await buildMagneticSTEP(magnetic);
 
                 download(buf, coreName + '.stp', 'binary/octet-stream; charset=utf-8');
                 this.$emit('export', coreName + '.stp');
