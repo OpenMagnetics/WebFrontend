@@ -1147,7 +1147,9 @@ test.describe('Winding Studio P0', () => {
     await expect(menu).not.toBeVisible({ timeout: 3000 });
 
     // The window entry carries the new orientation and the re-wound sections
-    // stack along y (contiguous) instead of x.
+    // stack along y (contiguous) instead of x. Both rest on the bobbin barrel:
+    // their INNER edges (x - width/2) sit on the window's inner side. Their
+    // centres differ when their layer counts differ (MKF dece26ff, ABT #1646).
     await page.waitForFunction(() => {
       const pinia = document.querySelector('#app')?.__vue_app__?.config?.globalProperties?.$pinia;
       if (pinia == null) return false;   // ABT #929: not mounted yet — poll again, do not throw
@@ -1158,7 +1160,10 @@ test.describe('Winding Studio P0', () => {
         return false;
       }
       const [a, b] = conduction;
-      return Math.abs(a.coordinates[0] - b.coordinates[0]) < 1e-6
+      const windowInnerSide = window0.coordinates[0] - window0.width / 2;
+      const innerEdge = (section) => section.coordinates[0] - section.dimensions[0] / 2;
+      return Math.abs(innerEdge(a) - windowInnerSide) < 1e-6
+        && Math.abs(innerEdge(b) - windowInnerSide) < 1e-6
         && Math.abs(a.coordinates[1] - b.coordinates[1]) > 1e-4;
     }, null, { timeout: 90000 });
     await ss(page, 'ws16-window-contiguous');
