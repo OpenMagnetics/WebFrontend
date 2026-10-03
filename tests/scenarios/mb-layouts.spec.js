@@ -9,7 +9,7 @@
  * nothing in the design, and it is remembered.
  */
 import { test, expect } from '../_coverage.js';
-import { isBenign, pause } from '../utils.js';
+import { isBenign } from '../utils.js';
 import {
   goToBuilderStep,
   adviseCoreAndWait,
@@ -26,8 +26,57 @@ import {
   designFingerprint,
   auditGeometry,
 } from '../utils/layouts.js';
+import {
+  installActivityProbe,
+  activityMark,
+  waitForIdle,
+  waitForStableLayout,
+} from '../utils/activity.js';
 
-const SETTLE = 4000;
+// ABT #1415: every step used to settle on a fixed pause (1.5-4 s, 18 of them). Each one now waits
+// on what the step actually sets off: the builder's store actions and engine requests going idle
+// (utils/activity.js), the layout's own data-cy marker, the store a reload rehydrates, and the
+// three.js scene holding meshes. Each wait is taken from a mark set BEFORE the step, so work left
+// over from the previous step cannot satisfy it.
+
+/** The cards auditGeometry measures: when their boxes stop moving, the reflow is over. */
+const CARDS = '.panel-frame, .core-config-panel, .wire-config-panel, .coil-config-panel,'
+  + ' .coreinfo-panel, .wireinfo-panel, .coilinfo-panel, .graph-panel';
+
+/** Switch layout and wait for it to be mounted AND for everything its mount set off to finish. */
+async function switchLayout(page, layout) {
+  const mark = await activityMark(page);
+  await setBuilderLayout(page, layout);
+  await expect(
+    page.locator(`[data-cy$="${LAYOUT_MARKERS[layout]}"]`),
+    `the ${layout} layout must mount`,
+  ).toHaveCount(1, { timeout: 30000 });
+  await waitForIdle(page, { since: mark, label: `the ${layout} layout's mount` });
+}
+
+/** Read the three.js scene under `container`: resolves once it holds meshes with vertices. */
+async function waitForSolid(page, container, timeout = 120000) {
+  const handle = await page.waitForFunction((css) => {
+    const el = document.querySelector(css);
+    const vm = el && window.__omFindComponent((i) => i.proxy?.$refs?.scene?.scene && i.proxy.$el?.contains?.(el));
+    const scene = vm?.$refs?.scene?.scene;
+    if (!scene || vm.updating) return false;
+    let meshes = 0;
+    let vertices = 0;
+    const walk = (object) => {
+      for (const child of (object.children ?? [])) {
+        if (child.isMesh && child.geometry?.attributes?.position) {
+          meshes += 1;
+          vertices += child.geometry.attributes.position.count;
+        }
+        walk(child);
+      }
+    };
+    walk(scene);
+    return meshes > 0 ? { meshes, vertices } : false;
+  }, container, { timeout });
+  return handle.jsonValue();
+}
 
 function watchConsole(page, errors) {
   page.on('console', (message) => {
@@ -47,6 +96,9 @@ async function coreShape(page) {
 test.describe('Builder layouts (ABT #1121) @heavy', () => {
   test.describe.configure({ timeout: 900000 });
 
+  // Before the first navigation: the probe is an init script and must see the app boot.
+  test.beforeEach(async ({ page }) => { await installActivityProbe(page); });
+
   test('every layout renders, and the core can be edited in each', async ({ page }) => {
     const errors = [];
     watchConsole(page, errors);
@@ -55,11 +107,10 @@ test.describe('Builder layouts (ABT #1121) @heavy', () => {
     await goToBuilderStep(page);
     await adviseCoreAndWait(page);
     await adviseWireAndWait(page);
-    await pause(page, SETTLE, 'first design settles');
+    await waitForIdle(page, { label: 'the first design' });
 
     for (const layout of BUILDER_LAYOUTS) {
-      await setBuilderLayout(page, layout);
-      await pause(page, SETTLE, `${layout} mounts and resimulates`);
+      await switchLayout(page, layout);
 
       // The layout is the one asked for …
       await expect(
@@ -79,13 +130,14 @@ test.describe('Builder layouts (ABT #1121) @heavy', () => {
 
       // … and editing there reaches the design. Wait on the design itself: the
       // panels around it are busy reprocessing, and a fixed pause races them.
+      const beforeEdit = await activityMark(page);
       await pickOption(page, '-AdvancedCoreInfo-ShapeNames', other);
       await page.waitForFunction((expected) => {
         const app = document.querySelector('#app').__vue_app__;
         const shape = app.config.globalProperties.$pinia._s.get('mas').mas.magnetic.core.functionalDescription.shape;
         return (typeof shape === 'string' ? shape : shape?.name) === expected;
       }, other, { timeout: 60000 });
-      await pause(page, SETTLE, 'autocomplete + reprocess after the shape change');
+      await waitForIdle(page, { since: beforeEdit, label: `autocomplete + reprocess after the shape change in ${layout}` });
 
       // The core's numbers are on screen in every layout, wherever it puts them.
       await expect(
@@ -100,16 +152,14 @@ test.describe('Builder layouts (ABT #1121) @heavy', () => {
   test('switching layout leaves the design untouched', async ({ page }) => {
     const errors = [];
     watchConsole(page, errors);
-
     await goToBuilderStep(page);
     await adviseCoreAndWait(page);
     await adviseWireAndWait(page);
-    await pause(page, SETTLE, 'design settles');
+    await waitForIdle(page, { label: 'the advised design' });
 
     const before = await designFingerprint(page);
     for (const layout of ['rosano', 'cockpit', 'compare', 'planar', 'columns']) {
-      await setBuilderLayout(page, layout);
-      await pause(page, 2500, `${layout} mounts`);
+      await switchLayout(page, layout);
     }
     const after = await designFingerprint(page);
 
@@ -122,23 +172,30 @@ test.describe('Builder layouts (ABT #1121) @heavy', () => {
     watchConsole(page, errors);
 
     await goToBuilderStep(page);
-    await pause(page, 1500, 'builder mounts');
+    await waitForIdle(page, { label: 'the builder mount' });
 
     await page.locator('[data-cy$="settings-modal-button"]').first().click();
     // Either settings dialog: the site's own (MagneticBuilderSettingsModal) and
     // MagneticBuilder's both offer the same choice, writing the same setting.
     const select = page.locator('[data-cy$="layout-select"]').first();
     await expect(select, 'Settings offers the layout').toBeVisible({ timeout: 15000 });
+    const beforeChoice = await activityMark(page);
     await select.selectOption('rosano');
     await page.keyboard.press('Escape');
-    await pause(page, 2500, 'dialog closes, layout mounts');
+    await expect(select, 'the settings dialog closes').toBeHidden({ timeout: 15000 });
 
-    await expect(page.locator('[data-cy$="-LayoutRosano"]')).toHaveCount(1);
+    await expect(page.locator('[data-cy$="-LayoutRosano"]')).toHaveCount(1, { timeout: 30000 });
+    await waitForIdle(page, { since: beforeChoice, label: 'the rosano layout mount' });
     expect(await currentBuilderLayout(page)).toBe('rosano');
 
     // Persisted: the store is written to localStorage, so a reload keeps it.
+    // The reload rehydrates magneticBuilderSettings when the store is first created,
+    // so wait for that store to exist — that is the moment the remembered value is in.
     await page.reload();
-    await pause(page, 4000, 'app boots');
+    await page.waitForFunction(() => {
+      const pinia = document.querySelector('#app')?.__vue_app__?.config?.globalProperties?.$pinia;
+      return pinia?._s?.get('magneticBuilderSettings') != null;
+    }, null, { timeout: 60000 });
     expect(await currentBuilderLayout(page), 'the choice is remembered').toBe('rosano');
 
     await setBuilderLayout(page, 'columns');
@@ -153,8 +210,7 @@ test.describe('Builder layouts (ABT #1121) @heavy', () => {
     await goToBuilderStep(page);
     await adviseCoreAndWait(page);
     await adviseWireAndWait(page);
-    await setBuilderLayout(page, 'rosano');
-    await pause(page, SETTLE, 'rosano mount');
+    await switchLayout(page, 'rosano');
 
     for (const band of ['-Band-Core', '-Band-Wire', '-Band-Coil']) {
       await expect(page.locator(`[data-cy$="${band}"]`), `the ${band} row`).toHaveCount(1);
@@ -187,20 +243,18 @@ test.describe('Builder layouts (ABT #1121) @heavy', () => {
 
     await goToBuilderStep(page);
     await adviseCoreAndWait(page);
-    await setBuilderLayout(page, 'cockpit');
-    await pause(page, SETTLE, 'cockpit mounts');
+    await switchLayout(page, 'cockpit');
 
     // Geometry is the first tab: the view switch is there.
     await expect(page.locator('[data-cy$="-Cockpit-VisualizerSwitch"]')).toHaveCount(1);
 
+    // The tab's own panel appearing IS the switch having happened; toHaveCount polls for it.
     await page.locator('[data-cy$="-Cockpit-tab-alternatives"]').first().click();
-    await pause(page, 1500, 'tab switch');
-    await expect(page.locator('[data-cy$="-Cockpit-Alternatives"]')).toHaveCount(1);
+    await expect(page.locator('[data-cy$="-Cockpit-Alternatives"]')).toHaveCount(1, { timeout: 15000 });
     await expect(page.locator('[data-cy$="-Cockpit-VisualizerSwitch"]')).toHaveCount(0);
 
     await page.locator('[data-cy$="-Cockpit-tab-geometry"]').first().click();
-    await pause(page, 1500, 'tab switch back');
-    await expect(page.locator('[data-cy$="-Cockpit-VisualizerSwitch"]')).toHaveCount(1);
+    await expect(page.locator('[data-cy$="-Cockpit-VisualizerSwitch"]')).toHaveCount(1, { timeout: 15000 });
 
     await setBuilderLayout(page, 'columns');
     expect(errors, `console errors: ${errors.join(' | ')}`).toHaveLength(0);
@@ -213,8 +267,7 @@ test.describe('Builder layouts (ABT #1121) @heavy', () => {
 
     await goToBuilderStep(page);
     await adviseCoreAndWait(page);
-    await setBuilderLayout(page, 'planar');
-    await pause(page, SETTLE, 'planar mounts');
+    await switchLayout(page, 'planar');
 
     // The buck design under test is wound, so both the layout and the stack say so
     // rather than presenting winding layers as a board.
@@ -234,20 +287,23 @@ test.describe('Builder layouts (ABT #1121) @heavy', () => {
     await goToBuilderStep(page);
     await adviseCoreAndWait(page);
     await adviseWireAndWait(page);
-    await setBuilderLayout(page, 'rosano');
-    await pause(page, SETTLE, 'rosano mount');
+    await switchLayout(page, 'rosano');
 
     // The solid needs a wound coil, so wait for the winding rather than racing it.
+    // (The options go THIRD: passed second they were the page function's argument, so the
+    // 90 s limit never applied and a coil that never wound ran into the 900 s test budget.)
     await page.waitForFunction(() => {
       const app = document.querySelector('#app').__vue_app__;
       return app.config.globalProperties.$pinia._s.get('mas').mas.magnetic.coil.turnsDescription != null;
-    }, { timeout: 90000 });
+    }, null, { timeout: 90000 });
 
     await expect(page.locator('[data-cy$="-Band-VisualizerSwitch-2D"]')).toHaveCount(1);
     await pickOption(page, '-Band-VisualizerSwitch-View', 'Solid (3D)');
-    await pause(page, 3000, '3D builds');
-    await expect(page.locator('[data-cy$="-Band-VisualizerSwitch-3D"]')).toHaveCount(1);
+    await expect(page.locator('[data-cy$="-Band-VisualizerSwitch-3D"]')).toHaveCount(1, { timeout: 15000 });
     await expect(page.locator('[data-cy$="-Band-VisualizerSwitch-2D"]')).toHaveCount(0);
+    // The solid is built: the three.js scene in that cell holds meshes.
+    const solid = await waitForSolid(page, '[data-cy$="-Band-VisualizerSwitch-3D"] .magnetic-3d-visualizer-container');
+    expect(solid.vertices, 'the solid carries geometry').toBeGreaterThan(0);
 
     await setBuilderLayout(page, 'columns');
     expect(errors, `console errors: ${errors.join(' | ')}`).toHaveLength(0);
@@ -268,14 +324,16 @@ test.describe('Builder layouts (ABT #1121) @heavy', () => {
     await goToBuilderStep(page);
     await adviseCoreAndWait(page);
     await adviseWireAndWait(page);
-    await pause(page, SETTLE, 'design settles');
+    await waitForIdle(page, { label: 'the advised design' });
 
     for (const width of [1500, 1280]) {
+      const beforeResize = await activityMark(page);
       await page.setViewportSize({ width, height: 950 });
-      await pause(page, 1500, 'reflow');
+      await waitForIdle(page, { since: beforeResize, label: `the redraw at ${width}px` });
+      await waitForStableLayout(page, CARDS);
       for (const layout of BUILDER_LAYOUTS) {
-        await setBuilderLayout(page, layout);
-        await pause(page, SETTLE, `${layout} settles`);
+        await switchLayout(page, layout);
+        await waitForStableLayout(page, CARDS);
 
         const found = await page.evaluate(auditGeometry);
         const where = `${layout} at ${width}px`;
