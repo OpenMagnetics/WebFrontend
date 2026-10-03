@@ -95,4 +95,30 @@ test.describe('MAS schema validation (ABT #1388)', () => {
             return shape != null && (typeof shape === 'string' ? shape : shape.name);
         }, null, { timeout: 60000, polling: 500 });
     });
+    test('a design changed away from its catalogue part still downloads (user report #186)', async ({ page }, testInfo) => {
+        // Changing the core clears magnetic.manufacturerInfo; the download built its file
+        // name from manufacturerInfo.reference, threw on the null, and did nothing.
+        await goToBuilderStep(page);
+        await adviseCoreAndWait(page);
+        await adviseWireAndWait(page);
+        const coreName = await page.evaluate(() => {
+            const mas = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia._s.get('mas').mas;
+            mas.magnetic.manufacturerInfo = null;
+            return mas.magnetic.core.name;
+        });
+        expect(coreName, 'the advised core has a name').toBeTruthy();
+        const pageErrors = [];
+        page.on('pageerror', (e) => pageErrors.push(String(e)));
+
+        for (const label of ['only with magnetic', 'with excitations and results']) {
+            await page.locator('.cp-btn-all').first().click();
+            await page.locator('[data-cy="MAS-exports-modal-button"]').first().click();
+            const button = page.locator('.p-dialog [data-cy$="-download-button"]', { hasText: label }).first();
+            const [download] = await Promise.all([page.waitForEvent('download', { timeout: 30000 }), button.click()]);
+            expect(download.suggestedFilename()).toBe(`${coreName}.json`);
+            await download.saveAs(testInfo.outputPath(`${label}.json`));
+            await page.keyboard.press('Escape');
+        }
+        expect(pageErrors).toEqual([]);
+    });
 });
