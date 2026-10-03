@@ -83,13 +83,31 @@ export async function adviseWireAndWait(page, timeoutMs = 90000) {
   const btn = page.locator('[data-cy$="Wire-Advise-button"]').first();
   await expect(btn, 'Wire Advise button must be visible').toBeVisible({ timeout: 15000 });
   await expect(btn, 'Wire Advise button must be enabled').toBeEnabled();
+  // Record whether the adviser itself succeeded: the button re-enabling only says it
+  // stopped, and an engine refusal ("No coil found") used to let callers carry on with
+  // an unwound coil.
+  await page.evaluate(() => {
+    const pinia = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia;
+    window.__wireAdviseOutcome = null;
+    const unsubscribe = pinia._s.get('magneticBuilderTaskQueue').$onAction(({ name, after, onError }) => {
+      if (name !== 'adviseWire' && name !== 'adviseAllWires') return;
+      after(() => { window.__wireAdviseOutcome = 'done'; unsubscribe(); });
+      onError((error) => { window.__wireAdviseOutcome = `failed: ${error?.message ?? error}`; unsubscribe(); });
+    });
+  });
   await btn.click();
+  await page.waitForFunction(() => window.__wireAdviseOutcome != null, null, { timeout: timeoutMs });
+  const outcome = await page.evaluate(() => window.__wireAdviseOutcome);
+  if (outcome !== 'done') {
+    throw new Error(`Wire Advise did not produce a coil: ${outcome}`);
+  }
   await page.waitForFunction(
     () => {
       const loading = document.querySelector('[data-cy$="-BasicWireSelector-loading"]');
       const b = document.querySelector('[data-cy$="Wire-Advise-button"]');
       return !loading && b && !b.disabled;
     },
+    null,
     { timeout: timeoutMs }
   );
   await pause(page, 500, 'wire advise settle: coil-config-panel mount');
