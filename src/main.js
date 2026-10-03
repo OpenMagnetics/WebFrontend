@@ -25,6 +25,7 @@ import { initKirchhoffWorker } from 'WebSharedComponents/assets/js/kirchhoffRunt
 import VueLatex from 'vatex'
 import { checkAndClearOutdatedStores, getVersionedWasmUrl } from '/src/stores/storeVersioning'
 import { useConsoleStore } from '/src/stores/console'
+import { useEngineDiagnosticsStore } from '/src/stores/engineDiagnostics'
 import { installKirchhoffHandoff } from '/src/composables/kirchhoffHandoff'
 
 // PrimeVue: Aura dark preset, tinted with the OM teal as primary
@@ -249,7 +250,20 @@ async function loadEngineData(mkf) {
         console.error('Inventory scope could not be applied:', error);
     }
 }
-setEngineRestoreHandler(loadEngineData);
+// The engine settings an advanced user chose (temperature gate, material-data extrapolation) and
+// the engine log collection, applied to a freshly started engine. Failures are loud (console and
+// the Settings dialog) but must not block the engine boot: the engine then keeps its own defaults.
+async function applyEngineUserSettings(mkf) {
+    try {
+        await useEngineDiagnosticsStore().applyUserSettings(mkf);
+    } catch (error) {
+        console.error('Engine user settings could not be applied:', error);
+    }
+}
+setEngineRestoreHandler(async (mkf) => {
+    await loadEngineData(mkf);
+    await applyEngineUserSettings(mkf);
+});
 // The builder's MAS sentry validates against the real MAS JSON Schema, which this
 // host bundles (ABT #1388); hosts that install nothing keep its type check.
 setMasSchemaValidator(assertValidMas);
@@ -275,6 +289,7 @@ function preloadMKF() {
             // made the 2D view fall back to the ideal layout on every page reload.
             await applyRealWindingGeometrySetting(
                 mkf, useSettingsStore().magneticBuilderSettings.useRealWindingGeometry);
+            await applyEngineUserSettings(mkf);
             
             // Load data and wait for completion
             await loadEngineData(mkf);
@@ -500,6 +515,7 @@ router.beforeEach((to, from, next) => {
                         // before anything winds, not before anything paints.
                         await applyRealWindingGeometrySetting(
                             freshMkf, useSettingsStore().magneticBuilderSettings.useRealWindingGeometry);
+                        await applyEngineUserSettings(freshMkf);
                         return freshMkf;
                     })();
             

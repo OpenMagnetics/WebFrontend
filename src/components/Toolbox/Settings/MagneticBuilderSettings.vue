@@ -3,6 +3,7 @@ import Dialog from 'primevue/dialog'
 import { useMagneticBuilderSettingsStore } from '/MagneticBuilder/src/stores/magneticBuilderSettings'
 import { useModelSettingsStore } from '/MagneticBuilder/src/stores/modelSettings'
 import { useMasStore } from '/src/stores/mas'
+import { useEngineDiagnosticsStore, ENGINE_LOG_LEVELS } from '/src/stores/engineDiagnostics'
 import ElementFromList from 'WebSharedComponents/DataInput/ElementFromList.vue'
 import UserPreferencesSettings from 'WebSharedComponents/Common/UserPreferencesSettings.vue'
 import { waitForMkf, applyRealWindingGeometrySetting } from 'WebSharedComponents/assets/js/mkfRuntime'
@@ -44,6 +45,7 @@ export default {
         const magneticBuilderSettingsStore = useMagneticBuilderSettingsStore();
         const modelSettingsStore = useModelSettingsStore();
         const masStore = useMasStore();
+        const engineDiagnosticsStore = useEngineDiagnosticsStore();
         const settingsChanged = false;
         const localData = {
             autoRedraw: this.$settingsStore.magneticBuilderSettings.autoRedraw,
@@ -52,8 +54,6 @@ export default {
             allowDistributedGaps: this.$settingsStore.magneticBuilderSettings.allowDistributedGaps,
             allowStacks: this.$settingsStore.magneticBuilderSettings.allowStacks,
             allowToroidalCores: this.$settingsStore.magneticBuilderSettings.allowToroidalCores,
-            enableTemperatureFilter: this.$settingsStore.adviserSettings.enableTemperatureFilter,
-            maximumTemperature: this.$settingsStore.adviserSettings.maximumTemperature,
             enableVisualizers: magneticBuilderSettingsStore.enableVisualizers,
             useRealWindingGeometry: this.$settingsStore.magneticBuilderSettings.useRealWindingGeometry,
             // Shown from the store the builder actually honours (magneticBuilderSettings); the
@@ -63,11 +63,16 @@ export default {
             enableSubmenu: magneticBuilderSettingsStore.enableSubmenu,
             enableGraphs: magneticBuilderSettingsStore.enableGraphs,
             enableDebugConsole: this.$settingsStore.magneticBuilderSettings.enableDebugConsole,
+            showEngineLog: this.$settingsStore.engineLogSettings.showEngineLog,
+            engineLogLevel: this.$settingsStore.engineLogSettings.level,
         }
         return {
             magneticBuilderSettingsStore,
             modelSettingsStore,
             masStore,
+            engineDiagnosticsStore,
+            engineLogLevels: ENGINE_LOG_LEVELS,
+            engineSettingError: null,
             settingsChanged,
             localData,
             layoutOptions,
@@ -101,15 +106,54 @@ export default {
             const mkf = await waitForMkf();
             await applyRealWindingGeometrySetting(mkf, useRealWindingGeometry);
         },
-        onAdviserSettingChanged(setting) {
-            this.localData[setting] = !this.localData[setting];
-            this.$settingsStore.adviserSettings[setting] = this.localData[setting];
-            this.settingsChanged = true;
+        // Engine-backed settings: written to the engine and read back from it, so the switches
+        // always show what the engine holds. A failure is shown under the section, never hidden.
+        async runEngineSettingChange(change) {
+            try {
+                await change();
+                this.engineSettingError = null;
+                this.settingsChanged = true;
+            } catch (error) {
+                this.engineSettingError = String(error?.message ?? error);
+                console.error('[Settings] engine setting could not be changed:', error);
+            }
+        },
+        onTemperatureFilterToggled() {
+            return this.runEngineSettingChange(() => this.engineDiagnosticsStore.setTemperatureFilter(
+                !this.engineDiagnosticsStore.coreAdviserEnableTemperatureFilter, undefined));
         },
         onMaxTemperatureChanged(value) {
-            this.localData.maximumTemperature = parseFloat(value);
-            this.$settingsStore.adviserSettings.maximumTemperature = this.localData.maximumTemperature;
-            this.settingsChanged = true;
+            return this.runEngineSettingChange(() => this.engineDiagnosticsStore.setTemperatureFilter(
+                undefined, parseFloat(value)));
+        },
+        onAllowMaterialDataExtrapolationToggled() {
+            const allow = !this.engineDiagnosticsStore.allowMaterialDataExtrapolation;
+            return this.runEngineSettingChange(async () => {
+                await this.engineDiagnosticsStore.setAllowMaterialDataExtrapolation(allow);
+                // Every extrapolation is reported as a warning: switching it on opens the log
+                // panel that shows them (it can be switched off again below).
+                if (allow && !this.localData.showEngineLog) {
+                    await this.setShowEngineLog(true);
+                }
+            });
+        },
+        async setShowEngineLog(show) {
+            this.localData.showEngineLog = show;
+            this.$settingsStore.engineLogSettings.showEngineLog = show;
+            if (show) {
+                await this.engineDiagnosticsStore.startCollection(this.localData.engineLogLevel);
+            } else {
+                await this.engineDiagnosticsStore.stopCollection();
+            }
+        },
+        onShowEngineLogToggled() {
+            return this.runEngineSettingChange(() => this.setShowEngineLog(!this.localData.showEngineLog));
+        },
+        onEngineLogLevelChanged(level) {
+            this.localData.engineLogLevel = level;
+            this.$settingsStore.engineLogSettings.level = level;
+            if (!this.localData.showEngineLog) return;
+            return this.runEngineSettingChange(() => this.engineDiagnosticsStore.startCollection(level));
         },
         onMagneticBuilderSettingChanged(setting) {
             this.localData[setting] = !this.localData[setting];
@@ -198,6 +242,9 @@ export default {
     },
     mounted() {
         this.initializeModels();
+        this.engineDiagnosticsStore.loadFromEngine().catch((error) => {
+            console.error('[Settings] engine settings could not be read:', error);
+        });
     },
     created() {
     }
@@ -291,22 +338,24 @@ export default {
                     <div class="mb-3">
                         <h6 class="text-secondary text-uppercase small font-bold mb-3">Core Adviser</h6>
 
-                        <div class="setting-item d-flex justify-content-between align-items-center py-2" :class="localData.enableTemperatureFilter ? 'border-bottom border-secondary' : ''">
+                        <div class="setting-item d-flex justify-content-between align-items-center py-2" :class="engineDiagnosticsStore.coreAdviserEnableTemperatureFilter ? 'border-bottom border-secondary' : ''">
                             <div>
                                 <span class="text-white">Enable temperature filter</span>
                             </div>
                             <div class="form-check form-switch">
                                 <input
+                                    data-cy="Settings-Modal-temperature-filter-switch"
                                     class="form-check-input custom-switch"
                                     type="checkbox"
                                     role="switch"
-                                    :checked="localData.enableTemperatureFilter"
-                                    @change="onAdviserSettingChanged('enableTemperatureFilter')"
+                                    :disabled="engineDiagnosticsStore.coreAdviserEnableTemperatureFilter === null"
+                                    :checked="engineDiagnosticsStore.coreAdviserEnableTemperatureFilter === true"
+                                    @change="onTemperatureFilterToggled()"
                                 >
                             </div>
                         </div>
 
-                        <div v-if="localData.enableTemperatureFilter" class="setting-item d-flex justify-content-between align-items-center py-2">
+                        <div v-if="engineDiagnosticsStore.coreAdviserEnableTemperatureFilter" class="setting-item d-flex justify-content-between align-items-center py-2">
                             <div>
                                 <span class="text-white">Maximum temperature (°C)</span>
                             </div>
@@ -314,7 +363,8 @@ export default {
                                 type="number"
                                 class="form-control form-control-sm bg-dark text-white border-secondary"
                                 style="width: 80px"
-                                :value="localData.maximumTemperature"
+                                data-cy="Settings-Modal-maximum-temperature-input"
+                                :value="engineDiagnosticsStore.coreAdviserMaximumTemperature"
                                 :min="25" :max="300" :step="5"
                                 @change="onMaxTemperatureChanged($event.target.value)"
                             >
@@ -655,6 +705,63 @@ export default {
                             >
                             <small class="text-white d-block mt-1" style="opacity: 0.7">Higher values = finer plots but slower rendering</small>
                         </div>
+                    </div>
+
+                    <!-- Advanced Section: explicit opt-ins for debugging and prospecting -->
+                    <div class="mb-3">
+                        <h6 class="text-secondary text-uppercase small font-bold mb-3">Advanced</h6>
+
+                        <div class="setting-item d-flex justify-content-between align-items-center py-2 border-bottom border-secondary">
+                            <div v-tooltip.top="'Off by default. When on, MKF evaluates a core material where its data does not reach: core losses at a frequency outside the fitted Steinmetz range (or between its ranges), or at a temperature at or above the material\'s Curie point. The same loss model is extrapolated, so the numbers are not backed by data. Every such use is reported as a warning in the Engine log panel. It applies to the analyses and simulations you run by hand only: the advisers (core, wire, coil, magnetic and the cross-referencers) never extrapolate, whatever this switch says. Use it for debugging and prospecting, not for design decisions. Not kept after a reload.'">
+                                <span class="text-white">Allow use outside material data range (extrapolate, with warnings)</span>
+                                <small class="text-white d-block" style="opacity: 0.7">Off: MKF refuses such materials. On: extrapolated analysis and simulation results, each one logged as a warning; advisers never extrapolate</small>
+                            </div>
+                            <div class="form-check form-switch">
+                                <input
+                                    data-cy="Settings-Modal-allow-material-data-extrapolation-switch"
+                                    class="form-check-input custom-switch"
+                                    type="checkbox"
+                                    role="switch"
+                                    :checked="engineDiagnosticsStore.allowMaterialDataExtrapolation"
+                                    @change="onAllowMaterialDataExtrapolationToggled()"
+                                >
+                            </div>
+                        </div>
+
+                        <div class="setting-item d-flex justify-content-between align-items-center py-2" :class="localData.showEngineLog ? 'border-bottom border-secondary' : ''">
+                            <div v-tooltip.top="'Shows the warnings and log lines MKF itself records during engine calls (for example each material-data extrapolation), in a collapsible panel at the bottom left.'">
+                                <span class="text-white">Engine log panel</span>
+                                <small class="text-white d-block" style="opacity: 0.7">MKF warnings and log after each engine call, for advanced users</small>
+                            </div>
+                            <div class="form-check form-switch">
+                                <input
+                                    data-cy="Settings-Modal-engine-log-switch"
+                                    class="form-check-input custom-switch"
+                                    type="checkbox"
+                                    role="switch"
+                                    :checked="localData.showEngineLog"
+                                    @change="onShowEngineLogToggled()"
+                                >
+                            </div>
+                        </div>
+
+                        <div v-if="localData.showEngineLog" class="setting-item d-flex justify-content-between align-items-center py-2">
+                            <div>
+                                <span class="text-white">Lowest level shown</span>
+                            </div>
+                            <select
+                                data-cy="Settings-Modal-engine-log-level-select"
+                                class="builder-layout-select"
+                                :value="localData.engineLogLevel"
+                                @change="onEngineLogLevelChanged($event.target.value)"
+                            >
+                                <option v-for="level in engineLogLevels" :key="level" :value="level">{{ level }}</option>
+                            </select>
+                        </div>
+
+                        <small v-if="engineSettingError || engineDiagnosticsStore.settingsError" data-cy="Settings-Modal-engine-setting-error" class="text-danger d-block mt-1">
+                            {{ engineSettingError || engineDiagnosticsStore.settingsError }}
+                        </small>
                     </div>
 
                     <!-- Developer Section -->

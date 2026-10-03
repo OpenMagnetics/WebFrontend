@@ -31,8 +31,21 @@ export const useSettingsStore = defineStore("settings", () => {
         allowStacks: true,
         allowToroidalCores: true,
         coreAdviseMode: "standard cores",
-        enableTemperatureFilter: false,
-        maximumTemperature: 130,
+        // The adviser temperature gate is the ENGINE's setting (MKF Settings
+        // coreAdviserEnableTemperatureFilter / coreAdviserMaximumTemperature). These hold only
+        // what the user chose in Settings; null means "the engine's own default", which the
+        // Settings dialog reads back from the engine to show. They replaced
+        // enableTemperatureFilter/maximumTemperature, which defaulted to false/130 and never
+        // reached the engine.
+        coreAdviserEnableTemperatureFilter: null,
+        coreAdviserMaximumTemperature: null,
+    })
+
+    // Advanced users: a panel showing MKF's own warnings and log after engine calls
+    // (off unless enabled here). `level` is the lowest MKF log level it collects.
+    const engineLogSettings = ref({
+        showEngineLog: false,
+        level: "WARNING",
     })
 
     const magneticBuilderSettings = ref({
@@ -95,8 +108,12 @@ export const useSettingsStore = defineStore("settings", () => {
             allowStacks: true,
             allowToroidalCores: true,
             coreAdviseMode: "standard cores",
-            enableTemperatureFilter: false,
-            maximumTemperature: 130,
+            coreAdviserEnableTemperatureFilter: null,
+            coreAdviserMaximumTemperature: null,
+        };
+        this.engineLogSettings = {
+            showEngineLog: false,
+            level: "WARNING",
         };
         this.magneticBuilderSettings = {
             useOnlyCoresInStock: true,
@@ -137,6 +154,7 @@ export const useSettingsStore = defineStore("settings", () => {
 
     return {
         adviserSettings,
+        engineLogSettings,
         magneticBuilderSettings,
         coreAdviserSettings,
         magneticAdviserSettings,

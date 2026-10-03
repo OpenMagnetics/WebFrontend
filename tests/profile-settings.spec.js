@@ -86,7 +86,7 @@ test.describe('Profile settings sync (ABT #1099)', () => {
     await page.waitForLoadState('networkidle');
 
     // A local edit while anonymous is stamped, never pushed.
-    await setStoreValue(page, 'settings', 'adviserSettings.maximumTemperature', 111);
+    await setStoreValue(page, 'settings', 'adviserSettings.coreAdviserMaximumTemperature', 111);
     await pause(page, 2500, 'debounce window');
     expect(state.calls.filter(c => c.method !== 'GET'), 'no push while anonymous').toHaveLength(0);
 
@@ -96,7 +96,7 @@ test.describe('Profile settings sync (ABT #1099)', () => {
     expect(gets.length, 'the profile is pulled once at login').toBe(1);
     const patched = state.calls.filter(c => c.method === 'PATCH').map(c => c.section).sort();
     expect(patched, 'every section is seeded into the empty profile').toEqual(['magneticBuilder', 'models', 'settings', 'simulationModels']);
-    expect(state.document.sections.settings.values.adviserSettings.maximumTemperature, 'the local edit reached the profile').toBe(111);
+    expect(state.document.sections.settings.values.adviserSettings.coreAdviserMaximumTemperature, 'the local edit reached the profile').toBe(111);
     expect(state.document.sections.settings.values.userPreferences, 'preferences roam').toEqual({ unitSystem: 'si', preferredCoreManufacturer: null });
     expect(Object.keys(state.document.sections.settings.values), 'only whitelisted keys roam').not.toContain('loadingGif');
   });
@@ -108,7 +108,7 @@ test.describe('Profile settings sync (ABT #1099)', () => {
       loggedIn: false,
       calls: [],
       document: { version: 2, sections: {
-        settings: { values: { adviserSettings: { useOnlyCoresInStock: true, allowDistributedGaps: false, allowStacks: true, allowToroidalCores: true, coreAdviseMode: 'standard cores', enableTemperatureFilter: true, maximumTemperature: 77 } }, updatedAt: profileStamp },
+        settings: { values: { adviserSettings: { useOnlyCoresInStock: true, allowDistributedGaps: false, allowStacks: true, allowToroidalCores: true, coreAdviseMode: 'standard cores', coreAdviserEnableTemperatureFilter: true, coreAdviserMaximumTemperature: 77 } }, updatedAt: profileStamp },
         models: { values: { selectedModels: { gapReluctance: 'Zhang', coreLosses: 'Steinmetz', coreTemperature: 'Maniktala' }, simulationUseCurrentAsInput: 1 }, updatedAt: profileStamp },
       } },
     };
@@ -118,18 +118,18 @@ test.describe('Profile settings sync (ABT #1099)', () => {
     await login(page);
     await pause(page, 2500, 'pull + apply');
 
-    expect(await storeValue(page, 'settings', 'adviserSettings.maximumTemperature'), 'the newer profile section wins').toBe(77);
+    expect(await storeValue(page, 'settings', 'adviserSettings.coreAdviserMaximumTemperature'), 'the newer profile section wins').toBe(77);
     expect(await storeValue(page, 'settings', 'adviserSettings.allowDistributedGaps')).toBe(false);
     expect(await storeValue(page, 'user', 'selectedModels.coreLosses')).toBe('Steinmetz');
     expect(state.calls.filter(c => c.method === 'PATCH' && c.section === 'settings'), 'an applied section is not pushed back').toHaveLength(0);
 
     // A later local edit: only the edited section is pushed, with the new value.
     state.calls.length = 0;
-    await setStoreValue(page, 'settings', 'adviserSettings.maximumTemperature', 88);
+    await setStoreValue(page, 'settings', 'adviserSettings.coreAdviserMaximumTemperature', 88);
     await pause(page, 3000, 'debounce + push');
     const pushes = state.calls.filter(c => c.method === 'PATCH');
     expect(pushes.map(c => c.section), 'only the edited section is pushed').toEqual(['settings']);
-    expect(pushes[0].body.values.adviserSettings.maximumTemperature).toBe(88);
+    expect(pushes[0].body.values.adviserSettings.coreAdviserMaximumTemperature).toBe(88);
     expect(pushes[0].body.updatedAt > profileStamp, 'the push carries the edit time (newer than the applied section)').toBe(true);
 
     // Another device wins: the server's newer copy is applied locally.
