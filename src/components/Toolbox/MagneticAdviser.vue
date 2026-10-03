@@ -114,17 +114,8 @@ export default {
                         settings["useOnlyCoresInStock"] = this.$settingsStore.adviserSettings.useOnlyCoresInStock;
                         await this.taskQueueStore.setSettings(settings);
 
-                        // Ensure coreAdviseMode is a string, not an object
-                        let coreAdviseMode = this.$settingsStore.adviserSettings.coreAdviseMode;
-                        
-                        // Handle case where it's an object or [object Object]
-                        if (typeof coreAdviseMode === 'object' || String(coreAdviseMode) === '[object Object]') {
-                            coreAdviseMode = "standard cores";
-                            this.$settingsStore.adviserSettings.coreAdviseMode = coreAdviseMode;
-                        }
-                        
-                        // Final safety: ensure it's a string
-                        coreAdviseMode = String(coreAdviseMode);
+                        // calculateAdvisedMagnetics throws on an invalid mode (ABT #1417).
+                        const coreAdviseMode = this.$settingsStore.adviserSettings.coreAdviseMode;
                         
                         const aux = await this.taskQueueStore.calculateAdvisedMagnetics(
                             this.masStore.mas.inputs,

@@ -14,6 +14,7 @@ import { assertValidMas } from 'WebSharedComponents/assets/js/masValidator.js'
 import { clean } from 'WebSharedComponents/assets/js/utils'
 import { unitSystem } from 'WebSharedComponents/assets/js/units.js'
 import { useInventoryStore, ENGINE_HAS_CONTEXT_ADVISERS } from '../stores/inventory'
+import { requireAdviserExcitations, requireCoreAdviseMode } from 'WebSharedComponents/assets/js/adviserInputs.js'
 
 // MAS sentry. Validates an outgoing payload against the generated MAS schema
 // (via quicktype's `Convert.to*`) before we hand it to the WASM. Loud failure
@@ -245,72 +246,13 @@ export const useTaskQueueStore = defineStore('taskQueue', {
             await mkf.ready;
             await this.applyPreferredWireStandard(mkf);
 
-            // Deep-clone so sanitization below never mutates the caller's MAS store
+            // Deep-clone so nothing below mutates the caller's MAS store
             inputs = JSON.parse(JSON.stringify(inputs));
 
-            // Ensure mode is a valid string
-            let modeString = String(mode);
-            // Fix case where mode is "[object Object]" due to JS object corruption
-            if (modeString === '[object Object]' || !['available cores', 'standard cores', 'custom cores', 'hybrid cores'].includes(modeString)) {
-                console.warn('[DEBUG calculateAdvisedCores] Invalid mode detected:', modeString, '- resetting to "standard cores"');
-                modeString = 'standard cores';
-            }
-            console.log('[DEBUG calculateAdvisedCores] mode:', modeString);
-            console.log('[DEBUG calculateAdvisedCores] weights:', weights);
-            console.log('[DEBUG calculateAdvisedCores] count:', count);
-
-            // Validate and fix frequency before calling WASM
-            // Frequency must be a reasonable value (1 Hz to 100 MHz range)
-            // Values outside this range are likely uninitialized/garbage
-            const DEFAULT_FREQUENCY = 100000; // 100 kHz default
-            const MIN_VALID_FREQUENCY = 1; // 1 Hz minimum
-            const MAX_VALID_FREQUENCY = 100000000; // 100 MHz maximum
-            if (inputs.operatingPoints && inputs.operatingPoints.length > 0) {
-                inputs.operatingPoints.forEach((op, opIndex) => {
-                    if (op.excitationsPerWinding && op.excitationsPerWinding.length > 0) {
-                        op.excitationsPerWinding.forEach((exc, excIndex) => {
-                            const freq = exc.frequency;
-                            if (!freq || !Number.isFinite(freq) || freq < MIN_VALID_FREQUENCY || freq > MAX_VALID_FREQUENCY) {
-                                console.warn(`[DEBUG calculateAdvisedCores] Invalid frequency=${freq} in operating point ${opIndex}, excitation ${excIndex}. Set to ${DEFAULT_FREQUENCY}`);
-                                exc.frequency = DEFAULT_FREQUENCY;
-                            }
-                        });
-                    }
-                });
-            }
-
-            // Sanitize harmonics and waveforms before sending to WASM.
-            // calculate_buck_inputs returns zero-freq harmonics and null-padded waveform
-            // time arrays for some operating points; strip them before WASM validation.
-            if (inputs.operatingPoints) {
-                inputs.operatingPoints.forEach((op) => {
-                    if (op.excitationsPerWinding) {
-                        op.excitationsPerWinding.forEach((exc) => {
-                            for (const signal of ['current', 'voltage']) {
-                                if (!exc[signal]) continue;
-                                if (exc[signal].harmonics) {
-                                    const sanitized = this._sanitizeHarmonics(exc[signal].harmonics);
-                                    if (this._hasValidHarmonics(sanitized)) {
-                                        exc[signal].harmonics = sanitized;
-                                    } else {
-                                        delete exc[signal].harmonics;
-                                    }
-                                }
-                                const waveform = exc[signal].waveform;
-                                if (waveform?.time) {
-                                    const firstNull = waveform.time.indexOf(null);
-                                    if (firstNull === 0) {
-                                        delete exc[signal].waveform;
-                                    } else if (firstNull > 0) {
-                                        waveform.time = waveform.time.slice(0, firstNull);
-                                        if (waveform.data) waveform.data = waveform.data.slice(0, firstNull);
-                                    }
-                                }
-                            }
-                        });
-                    }
-                });
-            }
+            // Bad inputs throw, naming the operating point and winding, instead
+            // of being rewritten to a default the user never chose (ABT #1417).
+            const modeString = requireCoreAdviseMode(mode);
+            requireAdviserExcitations(inputs);
 
             masSentry('calculateAdvisedCores', 'Inputs', inputs);
             // Inventory scoping: with scope 'only', run against the account
@@ -351,7 +293,7 @@ export const useTaskQueueStore = defineStore('taskQueue', {
             await mkf.ready;
             await this.applyPreferredWireStandard(mkf);
 
-            // Deep-clone so sanitization below never mutates the caller's MAS store
+            // Deep-clone so nothing below mutates the caller's MAS store
             inputs = JSON.parse(JSON.stringify(inputs));
 
             // Transform weights keys from UPPERCASE to Title Case for MKF compatibility
@@ -376,59 +318,10 @@ export const useTaskQueueStore = defineStore('taskQueue', {
                 transformedWeights[transformedKey] = value;
             }
             
-            // Ensure mode is a valid string
-            let modeString = String(mode);
-            // Fix case where mode is "[object Object]" due to JS object corruption
-            if (modeString === '[object Object]' || !['available cores', 'standard cores', 'custom cores', 'hybrid cores'].includes(modeString)) {
-                modeString = 'standard cores';
-            }
-
-            // Validate and fix frequency before calling WASM
-            const DEFAULT_FREQUENCY = 100000; // 100 kHz default
-            if (inputs.operatingPoints && inputs.operatingPoints.length > 0) {
-                inputs.operatingPoints.forEach((op, opIndex) => {
-                    if (op.excitationsPerWinding && op.excitationsPerWinding.length > 0) {
-                        op.excitationsPerWinding.forEach((exc, excIndex) => {
-                            if (!exc.frequency || exc.frequency <= 0) {
-                                exc.frequency = DEFAULT_FREQUENCY;
-                            }
-                        });
-                    }
-                });
-            }
-
-            // Sanitize harmonics and waveforms before sending to WASM.
-            // calculate_buck_inputs can return zero-freq harmonics and null-padded waveform
-            // time arrays for some operating points; strip them before WASM validation.
-            if (inputs.operatingPoints) {
-                inputs.operatingPoints.forEach((op) => {
-                    if (op.excitationsPerWinding) {
-                        op.excitationsPerWinding.forEach((exc) => {
-                            for (const signal of ['current', 'voltage']) {
-                                if (!exc[signal]) continue;
-                                if (exc[signal].harmonics) {
-                                    const sanitized = this._sanitizeHarmonics(exc[signal].harmonics);
-                                    if (this._hasValidHarmonics(sanitized)) {
-                                        exc[signal].harmonics = sanitized;
-                                    } else {
-                                        delete exc[signal].harmonics;
-                                    }
-                                }
-                                const waveform = exc[signal].waveform;
-                                if (waveform?.time) {
-                                    const firstNull = waveform.time.indexOf(null);
-                                    if (firstNull === 0) {
-                                        delete exc[signal].waveform;
-                                    } else if (firstNull > 0) {
-                                        waveform.time = waveform.time.slice(0, firstNull);
-                                        if (waveform.data) waveform.data = waveform.data.slice(0, firstNull);
-                                    }
-                                }
-                            }
-                        });
-                    }
-                });
-            }
+            // Bad inputs throw, naming the operating point and winding, instead
+            // of being rewritten to a default the user never chose (ABT #1417).
+            const modeString = requireCoreAdviseMode(mode);
+            requireAdviserExcitations(inputs);
 
             masSentry('calculateAdvisedMagnetics', 'Inputs', inputs);
             // Inventory scoping — see calculateAdvisedCores.
