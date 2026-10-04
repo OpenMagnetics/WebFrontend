@@ -12,7 +12,9 @@ import fs from 'node:fs';
 import { test, expect } from './_coverage.js';
 import { BASE_URL } from './utils.js';
 import { goToBuilderStep, adviseCoreAndWait, adviseWireAndWait } from './utils/builder-helpers.js';
-import { buildSchemaBundle } from '../WebSharedComponents/build-tools/vite-plugin-mas-regen.js';
+import os from 'node:os';
+import path from 'node:path';
+import { buildSchemaBundle, checkGeneratedAgainstEngine } from '../WebSharedComponents/build-tools/vite-plugin-mas-regen.js';
 
 const ETD49 = JSON.parse(fs.readFileSync(new URL('./fixtures/etd49_wound_10uH_5T.json', import.meta.url), 'utf-8'));
 const MKF = new URL('../../MKF/', import.meta.url).pathname;
@@ -37,6 +39,32 @@ test.describe('MAS schema validation (ABT #1388)', () => {
         const fresh = buildSchemaBundle(process.env.OM_MAS_SCHEMAS_DIR || `${MKF}MAS/schemas`,
                                         process.env.OM_PEAS_SCHEMAS_DIR || `${MKF}PEAS/schemas`);
         expect(committed === fresh, 'masSchemas.json is stale: run the dev server (mas-regen) and commit it').toBe(true);
+    });
+
+    test('MAS.ts and masSchemas.json come from the MAS / PEAS the engine is built from (ABT #1697)', async () => {
+        // The build runs this same check (vite.config.js engineManifest); it is repeated here so
+        // the gate reports it, and its negative case proves the check can fail.
+        const file = (rel) => new URL(`../${rel}`, import.meta.url).pathname;
+        const options = {
+            manifestPath: file('src/assets/js/engineManifest.json'),
+            schemaBundleTarget: file('WebSharedComponents/assets/js/masSchemas.json'),
+            targets: [file('WebSharedComponents/assets/ts/MAS.ts'), file('MagneticBuilder/src/assets/ts/MAS.ts'),
+                      file('MagneticBuilder/WebSharedComponents/assets/ts/MAS.ts')],
+        };
+        checkGeneratedAgainstEngine(options);
+
+        // An engine built from another MAS commit: the same generated files must be refused.
+        const manifest = JSON.parse(fs.readFileSync(options.manifestPath, 'utf-8'));
+        const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'engine-manifest-'));
+        const otherManifest = path.join(dir, 'engineManifest.json');
+        const engines = Object.fromEntries(Object.entries(manifest.engines).map(
+            ([rel, sha]) => [path.relative(dir, path.resolve(path.dirname(options.manifestPath), rel)), sha]));
+        fs.writeFileSync(otherManifest, JSON.stringify({ ...manifest, mas: '0'.repeat(40), engines }));
+        try {
+            expect(() => checkGeneratedAgainstEngine({ ...options, manifestPath: otherManifest })).toThrow(/generated from MAS/);
+        } finally {
+            fs.rmSync(dir, { recursive: true, force: true });
+        }
     });
 
     test('a valid MAS passes; values the type check accepted but the schema forbids are rejected', async ({ page }) => {

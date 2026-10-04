@@ -78,6 +78,11 @@ export default defineConfig({
             ],
             // JSON Schema bundle for the MAS sentry (WebSharedComponents/assets/js/masValidator.js).
             schemaBundleTarget: fileURLToPath(new URL('./WebSharedComponents/assets/js/masSchemas.json', import.meta.url)),
+            // ABT #1697: the MKF / MAS / PEAS commits the engines are built from and their
+            // hashes (scripts/record-engine-manifest.mjs). The build fails when MAS.ts or
+            // masSchemas.json come from other MAS / PEAS commits, or an engine file changed
+            // without the manifest being re-recorded.
+            engineManifest: fileURLToPath(new URL('./src/assets/js/engineManifest.json', import.meta.url)),
         }),
         vue(),
         viteCompression({filter: /\.(js|mjs|json|css|html|wasm)$/i}),
