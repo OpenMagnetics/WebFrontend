@@ -110,12 +110,12 @@ export default {
 
             try {
                 if (this.masStore.mas.inputs.operatingPoints.length > 0) {
-                    const settings = await this.taskQueueStore.getSettings();
-                    settings["coreIncludeDistributedGaps"] = this.$settingsStore.adviserSettings.allowDistributedGaps;
-                    settings["coreIncludeStacks"] = this.$settingsStore.adviserSettings.allowStacks;
-                    settings["useToroidalCores"] = this.$settingsStore.adviserSettings.allowToroidalCores;
-                    settings["useOnlyCoresInStock"] = this.$settingsStore.adviserSettings.useOnlyCoresInStock;
-                    await this.taskQueueStore.setSettings(settings);
+                    await this.taskQueueStore.updateSettings((settings) => {
+                        settings["coreIncludeDistributedGaps"] = this.$settingsStore.adviserSettings.allowDistributedGaps;
+                        settings["coreIncludeStacks"] = this.$settingsStore.adviserSettings.allowStacks;
+                        settings["useToroidalCores"] = this.$settingsStore.adviserSettings.allowToroidalCores;
+                        settings["useOnlyCoresInStock"] = this.$settingsStore.adviserSettings.useOnlyCoresInStock;
+                    });
 
                     // Ensure coreAdviseMode is a string, not an object
                     let coreAdviseMode = this.$settingsStore.adviserSettings.coreAdviseMode;

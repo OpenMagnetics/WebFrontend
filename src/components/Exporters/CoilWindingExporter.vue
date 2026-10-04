@@ -1,6 +1,6 @@
 <script setup>
 import { clean, download } from 'WebSharedComponents/assets/js/utils.js'
-import { waitForMkf } from 'WebSharedComponents/assets/js/mkfRuntime'
+import { waitForMkf, updateEngineSettings } from 'WebSharedComponents/assets/js/mkfRuntime'
 
 </script>
 <script>
@@ -43,23 +43,27 @@ export default {
                 const mkf = await waitForMkf();
                 await mkf.ready;
                 if (this.includeHField) {
-                    const settings = JSON.parse(await mkf.get_settings());
-                    const previousFringing = settings.painterIncludeFringing;
-                    settings.painterIncludeFringing = this.includeFringing;
-                    await mkf.set_settings(JSON.stringify(settings));
-                    try {
-                        const svg = await mkf.plot_magnetic_field(
-                            JSON.stringify(this.mas.magnetic),
-                            JSON.stringify(this.mas.inputs.operatingPoints[0])
-                        );
-                        if (typeof svg === 'string' && svg.startsWith('Exception')) throw new Error(svg);
-                        download(svg, this.mas.magnetic.manufacturerInfo.reference + "_Magnetic_Section_And_H_Field.svg", "image/svg+xml");
-                        this.exported = true;
-                        setTimeout(() => this.exported = false, 2000);
-                    } finally {
-                        settings.painterIncludeFringing = previousFringing;
-                        await mkf.set_settings(JSON.stringify(settings));
-                    }
+                    // The plot runs inside the settings queue with the fringing flag it
+                    // needs, and the flag is restored before any other settings writer runs.
+                    let previousFringing;
+                    const svg = await updateEngineSettings(mkf, (settings) => {
+                        previousFringing = settings.painterIncludeFringing;
+                        settings.painterIncludeFringing = this.includeFringing;
+                    }, async (settings) => {
+                        try {
+                            return await mkf.plot_magnetic_field(
+                                JSON.stringify(this.mas.magnetic),
+                                JSON.stringify(this.mas.inputs.operatingPoints[0])
+                            );
+                        } finally {
+                            settings.painterIncludeFringing = previousFringing;
+                            await mkf.set_settings(JSON.stringify(settings));
+                        }
+                    });
+                    if (typeof svg === 'string' && svg.startsWith('Exception')) throw new Error(svg);
+                    download(svg, this.mas.magnetic.manufacturerInfo.reference + "_Magnetic_Section_And_H_Field.svg", "image/svg+xml");
+                    this.exported = true;
+                    setTimeout(() => this.exported = false, 2000);
                 } else {
                     const svg = await mkf.plot_turns(JSON.stringify(this.mas.magnetic));
                     if (typeof svg === 'string' && svg.startsWith('Exception')) throw new Error(svg);

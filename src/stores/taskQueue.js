@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { waitForMkf, isWorkerMode } from 'WebSharedComponents/assets/js/mkfRuntime'
+import { waitForMkf, isWorkerMode, updateEngineSettings, queueEngineSettingsTask } from 'WebSharedComponents/assets/js/mkfRuntime'
 // Converter design + ngspice simulation moved from webMKF (magnetics-only now) to webKirchhoff.
 // In the converter wizard methods below, the `mkf` local is the webKirchhoff proxy (waitForKirchhoff),
 // NOT the magnetics module. Its proxy accepts the legacy per-topology function names
@@ -212,24 +212,38 @@ export const useTaskQueueStore = defineStore('taskQueue', {
          * The wire standard follows the profile unit system (ABT #1110): IEC 60317
          * under SI, NEMA MW 1000 C under imperial. The magnetic and core advisers
          * wind their candidates with MKF's coil adviser, which only offers wires of
-         * the engine's preferred standard, so it is pushed before every advise.
+         * the engine's preferred standard, so it is set for every advise: inside the
+         * settings queue, together with the advise call itself, so no other settings
+         * writer can put the other standard back in between (ABT #1660).
          */
-        async applyPreferredWireStandard(mkf) {
-            const settings = JSON.parse(await mkf.get_settings());
-            if (!('preferredWireStandard' in settings)) {
-                throw new Error('Engine settings do not expose preferredWireStandard: libMKF is older than the wire-standard preference (ABT #1110)');
-            }
+        withPreferredWireStandard(mkf, engineCall) {
             const wanted = unitSystem() === 'imperial' ? 'NEMA MW 1000 C' : 'IEC 60317';
-            if (settings.preferredWireStandard === wanted) return;
-            settings.preferredWireStandard = wanted;
-            await mkf.set_settings(JSON.stringify(settings));
+            return updateEngineSettings(mkf, (settings) => {
+                if (!('preferredWireStandard' in settings)) {
+                    throw new Error('Engine settings do not expose preferredWireStandard: libMKF is older than the wire-standard preference (ABT #1110)');
+                }
+                settings.preferredWireStandard = wanted;
+            }, engineCall);
         },
 
         async setSettings(settings) {
             const mkf = await waitForMkf();
             await mkf.ready;
 
-            await mkf.set_settings(JSON.stringify(settings));
+            await queueEngineSettingsTask(() => mkf.set_settings(JSON.stringify(settings)));
+            setTimeout(() => { this.settingsSet(true, settings); }, this.task_standard_response_delay);
+            return settings;
+        },
+
+        /**
+         * Change some engine settings without overwriting anyone else's: `change`
+         * sets its fields on the current settings (see updateEngineSettings).
+         */
+        async updateSettings(change) {
+            const mkf = await waitForMkf();
+            await mkf.ready;
+
+            const settings = await updateEngineSettings(mkf, change);
             setTimeout(() => { this.settingsSet(true, settings); }, this.task_standard_response_delay);
             return settings;
         },
@@ -244,7 +258,6 @@ export const useTaskQueueStore = defineStore('taskQueue', {
         async calculateAdvisedCores(inputs, weights, count, mode) {
             const mkf = await waitForMkf();
             await mkf.ready;
-            await this.applyPreferredWireStandard(mkf);
 
             // Deep-clone so nothing below mutates the caller's MAS store
             inputs = JSON.parse(JSON.stringify(inputs));
@@ -271,10 +284,10 @@ export const useTaskQueueStore = defineStore('taskQueue', {
                     // fail loudly instead.
                     throw new Error("Adviser scope is 'only my inventory' but your inventory could not be loaded into the engine — sign in again or reload the page (see console for the original error).");
                 }
-                result = await mkf.calculate_advised_cores_with_context(
-                    JSON.stringify(inputs), JSON.stringify(weights), count, modeString, '{}', true);
+                result = await this.withPreferredWireStandard(mkf, () => mkf.calculate_advised_cores_with_context(
+                    JSON.stringify(inputs), JSON.stringify(weights), count, modeString, '{}', true));
             } else {
-                result = await mkf.calculate_advised_cores(JSON.stringify(inputs), JSON.stringify(weights), count, modeString);
+                result = await this.withPreferredWireStandard(mkf, () => mkf.calculate_advised_cores(JSON.stringify(inputs), JSON.stringify(weights), count, modeString));
             }
             if (result.startsWith('Exception')) {
                 setTimeout(() => { this.advisedCoresCalculated(false, result); }, this.task_standard_response_delay);
@@ -291,7 +304,6 @@ export const useTaskQueueStore = defineStore('taskQueue', {
         async calculateAdvisedMagnetics(inputs, weights, count, mode) {
             const mkf = await waitForMkf();
             await mkf.ready;
-            await this.applyPreferredWireStandard(mkf);
 
             // Deep-clone so nothing below mutates the caller's MAS store
             inputs = JSON.parse(JSON.stringify(inputs));
@@ -334,10 +346,10 @@ export const useTaskQueueStore = defineStore('taskQueue', {
                 if (!inventoryStore.engineContextLoaded) {
                     throw new Error("Adviser scope is 'only my inventory' but your inventory could not be loaded into the engine — sign in again or reload the page (see console for the original error).");
                 }
-                result = await mkf.calculate_advised_magnetics_with_context(
-                    JSON.stringify(inputs), JSON.stringify(transformedWeights), count, modeString, '{}', true);
+                result = await this.withPreferredWireStandard(mkf, () => mkf.calculate_advised_magnetics_with_context(
+                    JSON.stringify(inputs), JSON.stringify(transformedWeights), count, modeString, '{}', true));
             } else {
-                result = await mkf.calculate_advised_magnetics(JSON.stringify(inputs), JSON.stringify(transformedWeights), count, modeString);
+                result = await this.withPreferredWireStandard(mkf, () => mkf.calculate_advised_magnetics(JSON.stringify(inputs), JSON.stringify(transformedWeights), count, modeString));
             }
             if (result.startsWith('Exception')) {
                 setTimeout(() => { this.advisedMagneticsCalculated(false, result); }, this.task_standard_response_delay);

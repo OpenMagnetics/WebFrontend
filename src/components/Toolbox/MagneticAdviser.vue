@@ -113,12 +113,12 @@ export default {
             setTimeout(async () => {
                 try {
                     if (this.masStore.mas.inputs.operatingPoints.length > 0) {
-                        const settings = await this.taskQueueStore.getSettings();
-                        settings["coreIncludeDistributedGaps"] = this.$settingsStore.adviserSettings.allowDistributedGaps;
-                        settings["coreIncludeStacks"] = this.$settingsStore.adviserSettings.allowStacks;
-                        settings["useToroidalCores"] = this.$settingsStore.adviserSettings.allowToroidalCores;
-                        settings["useOnlyCoresInStock"] = this.$settingsStore.adviserSettings.useOnlyCoresInStock;
-                        await this.taskQueueStore.setSettings(settings);
+                        await this.taskQueueStore.updateSettings((settings) => {
+                            settings["coreIncludeDistributedGaps"] = this.$settingsStore.adviserSettings.allowDistributedGaps;
+                            settings["coreIncludeStacks"] = this.$settingsStore.adviserSettings.allowStacks;
+                            settings["useToroidalCores"] = this.$settingsStore.adviserSettings.allowToroidalCores;
+                            settings["useOnlyCoresInStock"] = this.$settingsStore.adviserSettings.useOnlyCoresInStock;
+                        });
 
                         // calculateAdvisedMagnetics throws on an invalid mode (ABT #1417).
                         const coreAdviseMode = this.$settingsStore.adviserSettings.coreAdviseMode;

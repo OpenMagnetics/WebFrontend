@@ -12,7 +12,7 @@
 // The C++ winder recomputes every coordinate — the studio only displays them.
 import { reactive, ref, onMounted, onBeforeUnmount } from 'vue';
 import WindingStudio from '/MagneticBuilder/src/components/MagneticBuilder/WindingStudio/WindingStudio.vue';
-import { waitForMkf } from '/WebSharedComponents/assets/js/mkfRuntime';
+import { waitForMkf, updateEngineSettings } from '/WebSharedComponents/assets/js/mkfRuntime';
 
 const masStore = reactive({
     mas: { magnetic: null, inputs: null, outputs: null },
@@ -54,11 +54,9 @@ async function placeWinding({ winding, columnIndex }) {
         await mkf.ready;
 
         // 1. Per-column winding windows on (idempotent).
-        const settings = JSON.parse(await mkf.get_settings());
-        if (!settings.corePerColumnWindingWindows) {
+        await updateEngineSettings(mkf, (settings) => {
             settings.corePerColumnWindingWindows = true;
-            await mkf.set_settings(JSON.stringify(settings));
-        }
+        });
 
         // 2. Reprocess the core so it carries one winding window per wound
         //    column edge, and map the dropped leg to its window index.
