@@ -6,8 +6,11 @@ import { useSettingsStore } from '/src/stores/settings'
 //
 // - allowMaterialDataExtrapolation: MKF's explicit opt-in to use a core material outside its data
 //   (a core-loss frequency outside the fitted Steinmetz span, a temperature at or above its Curie
-//   point), extrapolating with a WARNING per use instead of throwing. Session-only on purpose: it
-//   is not persisted, so a reload always starts from the engine's default (off).
+//   point), extrapolating with a WARNING per use instead of throwing. The user's choice is persisted
+//   in settingsStore.magneticBuilderSettings (default ON for manual work, decided with the
+//   maintainer; MKF never extrapolates under an adviser). While it is on, the engine collects its
+//   log and it is drained after every builder calculation that uses core-loss data (no polling),
+//   so every extrapolation reaches the user as a warning.
 // - the adviser temperature gate: the engine's value is shown; a user's choice is persisted in the
 //   settings store (null = the engine's default) and pushed to the engine at start-up and on change.
 // - the engine log: MKF's structured log collector, drained after engine calls while the panel is
@@ -16,6 +19,19 @@ import { useSettingsStore } from '/src/stores/settings'
 export const ENGINE_LOG_LEVELS = ['TRACE', 'DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'];
 const MAXIMUM_RECORDS = 2000;
 const DRAIN_INTERVAL_MS = 1000;
+// Builder actions that evaluate core-loss data, i.e. the ones that can extrapolate it.
+const CORE_LOSS_ACTIONS = new Set(['simulate', 'calculateCoreLosses', 'sweepCoreLossesOverFrequency', 'sweepVolumetricLossesOverFrequency']);
+
+// Pinia plugin (registered in main.js): when the builder creates its task queue, hook its
+// core-loss calculations so their extrapolation warnings are drained right after them. Done as a
+// plugin so nothing creates the builder's store before the builder does.
+export function drainEngineLogAfterCoreLossCalculations({ store }) {
+    if (store.$id !== 'magneticBuilderTaskQueue') return;
+    store.$onAction(({ name, after }) => {
+        if (!CORE_LOSS_ACTIONS.has(name)) return;
+        after(() => useEngineDiagnosticsStore().drainExtrapolationWarnings());
+    }, true);
+}
 
 function parseEngineReply(methodName, reply) {
     if (typeof reply === 'string' && reply.startsWith('Exception')) {
@@ -80,11 +96,16 @@ export const useEngineDiagnosticsStore = defineStore('engineDiagnostics', {
             await this.loadFromEngine(engine);
         },
 
-        // Start-up (and engine restart): apply the user's persisted temperature-gate choice and the
-        // session's extrapolation flag, and re-arm log collection if the panel is enabled.
+        // Start-up (and engine restart): apply the user's persisted temperature-gate and
+        // extrapolation choices, and arm log collection when the panel is enabled or extrapolation
+        // is allowed (its warnings are how the user learns a result was extrapolated).
         async applyUserSettings(mkf) {
             const settingsStore = useSettingsStore();
-            const changes = { allowMaterialDataExtrapolation: this.allowMaterialDataExtrapolation };
+            const allow = settingsStore.magneticBuilderSettings.allowMaterialDataExtrapolation;
+            if (typeof allow !== 'boolean') {
+                throw new Error(`settings.magneticBuilderSettings.allowMaterialDataExtrapolation must be true or false, got ${JSON.stringify(allow)}`);
+            }
+            const changes = { allowMaterialDataExtrapolation: allow };
             const enabled = settingsStore.adviserSettings.coreAdviserEnableTemperatureFilter;
             const maximum = settingsStore.adviserSettings.coreAdviserMaximumTemperature;
             if (enabled !== null && enabled !== undefined) changes.coreAdviserEnableTemperatureFilter = enabled;
@@ -93,10 +114,33 @@ export const useEngineDiagnosticsStore = defineStore('engineDiagnostics', {
             if (settingsStore.engineLogSettings.showEngineLog) {
                 await this.startCollection(settingsStore.engineLogSettings.level, mkf);
             }
+            else if (allow) {
+                await this.armCollector(settingsStore.engineLogSettings.level, mkf);
+            }
+        },
+
+        // While extrapolation is allowed and the panel is not polling, called right after each
+        // builder calculation that uses core-loss data (see drainEngineLogAfterCoreLossCalculations),
+        // so its warnings show without a timer.
+        drainExtrapolationWarnings() {
+            if (this.collecting || !this.allowMaterialDataExtrapolation) return;
+            this.drain().catch((error) => {
+                this.collectionError = String(error?.message ?? error);
+                console.error('[EngineLog] could not drain the MKF log:', error);
+            });
         },
 
         async setAllowMaterialDataExtrapolation(value) {
+            const settingsStore = useSettingsStore();
+            settingsStore.magneticBuilderSettings.allowMaterialDataExtrapolation = !!value;
             await this.writeEngineSettings({ allowMaterialDataExtrapolation: !!value });
+            if (settingsStore.engineLogSettings.showEngineLog) return;
+            if (value) {
+                await this.armCollector(settingsStore.engineLogSettings.level);
+            }
+            else {
+                await this.stopCollection();
+            }
         },
 
         async setTemperatureFilter(enabled, maximumTemperature) {
@@ -120,6 +164,18 @@ export const useEngineDiagnosticsStore = defineStore('engineDiagnostics', {
             if (!ENGINE_LOG_LEVELS.includes(level)) {
                 throw new Error(`Unknown engine log level '${level}'`);
             }
+            await this.armCollector(level, mkf);
+            if (!this.collecting) {
+                this.collecting = true;
+                this.scheduleDrain();
+            }
+        },
+
+        // Has the engine collect at `level` without draining it on a timer.
+        async armCollector(level, mkf = null) {
+            if (!ENGINE_LOG_LEVELS.includes(level)) {
+                throw new Error(`Unknown engine log level '${level}'`);
+            }
             // A libMKF older than the engine log rejects this ("Method not found: set_log_collection").
             const engine = mkf ?? await waitForMkf();
             try {
@@ -129,14 +185,13 @@ export const useEngineDiagnosticsStore = defineStore('engineDiagnostics', {
                 this.collectionError = String(error?.message ?? error);
                 throw error;
             }
-            if (!this.collecting) {
-                this.collecting = true;
-                this.scheduleDrain();
-            }
         },
 
+        // Stops the timer; the engine keeps collecting while extrapolation is allowed, because its
+        // warnings are then drained after each core-loss calculation (drainEngineLogAfterCoreLossCalculations).
         async stopCollection() {
             this.collecting = false;
+            if (this.allowMaterialDataExtrapolation) return;
             const engine = await waitForMkf();
             parseEngineReply('set_log_collection', await engine.set_log_collection('OFF'));
         },

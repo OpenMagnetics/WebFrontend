@@ -25,7 +25,7 @@ import { initKirchhoffWorker } from 'WebSharedComponents/assets/js/kirchhoffRunt
 import VueLatex from 'vatex'
 import { checkAndClearOutdatedStores, getVersionedWasmUrl } from '/src/stores/storeVersioning'
 import { useConsoleStore } from '/src/stores/console'
-import { useEngineDiagnosticsStore } from '/src/stores/engineDiagnostics'
+import { useEngineDiagnosticsStore, drainEngineLogAfterCoreLossCalculations } from '/src/stores/engineDiagnostics'
 import { installKirchhoffHandoff } from '/src/composables/kirchhoffHandoff'
 
 // PrimeVue: Aura dark preset, tinted with the OM teal as primary
@@ -102,6 +102,7 @@ const axiosInstance = axios.create()
 const pinia = createPinia()
 pinia.use(piniaActionGuard)
 pinia.use(piniaPluginPersistedstate)
+pinia.use(drainEngineLogAfterCoreLossCalculations)
 {
     const v = new URLSearchParams(window.location.search).get('colortest');
     let testColor = null;

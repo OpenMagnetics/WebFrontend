@@ -19,7 +19,10 @@ export default {
     },
     computed: {
         isEnabled() {
-            return this.$settingsStore?.engineLogSettings?.showEngineLog || false;
+            // Extrapolated material data is reported only here, so the log is reachable whenever
+            // extrapolation is allowed, even with the full panel switched off (ABT #1652).
+            return this.$settingsStore?.engineLogSettings?.showEngineLog === true
+                || this.engineDiagnosticsStore.allowMaterialDataExtrapolation === true;
         },
         filteredRecords() {
             const records = this.engineDiagnosticsStore.records;

@@ -58,6 +58,11 @@ export const useSettingsStore = defineStore("settings", () => {
         enableSimulation: true,
         enableAutoSimulation: true,
         enableDebugConsole: false,
+        // Material data outside its fitted span (core losses beyond the Steinmetz frequency
+        // span, at or above the Curie point): extrapolated with a warning for manual work,
+        // as decided with the maintainer; MKF itself never lets an adviser extrapolate
+        // (ABT #1652). Persisted, so a user who switches it off keeps it off.
+        allowMaterialDataExtrapolation: true,
         // Real winding: draw the coil as it is actually wound — continuous conductor with
         // real leads, pitch and dragbacks — instead of the idealised per-turn rings, in
         // BOTH the 2D and the 3D views. Lives in the GLOBAL settings store because both
@@ -125,6 +130,7 @@ export const useSettingsStore = defineStore("settings", () => {
             enableSimulation: true,
             enableAutoSimulation: true,
             enableDebugConsole: false,
+            allowMaterialDataExtrapolation: true,
             useRealWindingGeometry: false,
             restrictedShapeFamilies: null,
         };
