@@ -201,7 +201,8 @@ export default {
             //
             // parasiticCap_pF / dvdt_V_ns are ALWAYS forwarded — the
             // backend uses them for the operating-point CM current
-            // (I_cm = C·dV/dt) in every spec mode, so analytical and
+            // (the switch-node CM current at the excitation frequency, from
+            // C_par, dV/dt and the bus voltage) in every spec mode, so analytical and
             // simulated always see the same excitation. They only
             // influence the L spec when the user hasn't provided an
             // explicit impedance or insertion-loss requirement.
@@ -718,7 +719,7 @@ export default {
         :textColor="$styleStore.wizard.inputTextColor"
         @update="updateErrorMessage"
       />
-      <!-- The CM noise source (I_cm = C·dV/dt) is ALWAYS sent to the backend — it sets
+      <!-- The CM noise source (C_par, dV/dt) is ALWAYS sent to the backend — it sets
            the operating point's excitation amplitude (thermal sizing) in EVERY spec
            mode, so keep it visible/editable whenever the noise-estimation panel
            (which owns these same fields) isn't showing it. -->
