@@ -1,6 +1,7 @@
 import { checkAndFixMas, deepCopy } from 'WebSharedComponents/assets/js/utils.js'
 import { defaultOperatingPointExcitation } from 'WebSharedComponents/assets/js/defaults.js'
-import { Convert, WaveformLabel } from 'WebSharedComponents/assets/ts/MAS.ts'
+import { WaveformLabel } from 'WebSharedComponents/assets/ts/MAS.ts'
+import { masSchemaErrors } from 'WebSharedComponents/assets/js/masValidator.js'
 
 // Map every WaveformLabel enum value by its lowercase form so legacy documents
 // with capitalized labels ("Triangular", "Rectangular") resolve to the current
@@ -35,27 +36,31 @@ function stripNulls(value) {
 // simulation that would replace them. Outputs are always recomputed live, so
 // dropping invalid ones loses nothing — but only drop them when they are
 // provably the problem: document invalid WITH outputs, valid WITHOUT.
+//
+// Judged by the real MAS JSON Schema, the same one the sentry applies — not
+// quicktype's Convert.toMas, which checks types only. Files exported by older
+// engines carry outputs that type-check but break the schema's bounds (zero core
+// and winding losses for an unexcited operating point, gappingReluctance 0 on a
+// gapless core); the type check let them through and the sentry then refused the
+// load with "/outputs/0/coreLosses/coreLosses must be > 0" (user report, EPC_6x3mm).
 function quarantineInvalidOutputs(mas) {
     if (!Array.isArray(mas.outputs) || mas.outputs.length === 0) {
         return mas;
     }
-    try {
-        Convert.toMas(JSON.stringify(stripNulls(JSON.parse(JSON.stringify(mas)))));
-        return mas;
-    } catch (originalError) {
-        try {
-            const probe = stripNulls(JSON.parse(JSON.stringify(mas)));
-            probe.outputs = [];
-            Convert.toMas(JSON.stringify(probe));
-        } catch (stillInvalid) {
-            // Outputs are not (or not the only) problem — leave the document
-            // untouched so the failure stays loud and points at the real field.
-            return mas;
-        }
-        console.warn(`Imported MAS has schema-invalid outputs — dropping them (simulation recomputes all outputs). Validation error: ${originalError.message}`);
-        mas.outputs = [];
+    const originalErrors = masSchemaErrors('Mas', stripNulls(JSON.parse(JSON.stringify(mas))));
+    if (originalErrors.length === 0) {
         return mas;
     }
+    const probe = stripNulls(JSON.parse(JSON.stringify(mas)));
+    probe.outputs = [];
+    if (masSchemaErrors('Mas', probe).length > 0) {
+        // Outputs are not (or not the only) problem — leave the document
+        // untouched so the failure stays loud and points at the real field.
+        return mas;
+    }
+    console.warn(`Imported MAS has schema-invalid outputs — dropping them (simulation recomputes all outputs). Validation errors: ${originalErrors.slice(0, 8).join('; ')}`);
+    mas.outputs = [];
+    return mas;
 }
 
 // Sessions saved by older frontend versions carry enum spellings the current
