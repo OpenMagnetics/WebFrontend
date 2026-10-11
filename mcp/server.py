@@ -1058,12 +1058,14 @@ def sweep_impedance(magnetic: dict | str, start_hz: float = 1e3, stop_hz: float 
     meta=UI_CURVES_META, structured_output=False,
 )
 @resolves_refs
-def sweep_core_losses(magnetic: dict | str, operating_point: dict, start_hz: float = 1e4,
-                      stop_hz: float = 1e6, points: int = 30, temperature: float = 25.0,
-                      mode: str = "log") -> CallToolResult:
-    """Core loss vs frequency."""
+def sweep_core_losses(magnetic: dict | str, operating_point: dict, topology: str | None,
+                      start_hz: float = 1e4, stop_hz: float = 1e6, points: int = 30,
+                      temperature: float = 25.0, mode: str = "log") -> CallToolResult:
+    """Core loss vs frequency. topology is the design's designRequirements.topology (e.g.
+    "Differential Mode Choke"), None when it has none: the current that drives the core
+    depends on it."""
     out = _unwrap(om.sweep_core_losses_over_frequency(
-        magnetic, operating_point, start_hz, stop_hz, points, temperature, mode, ""))
+        magnetic, operating_point, topology, start_hz, stop_hz, points, temperature, mode, ""))
     return _sweep_result(out, "Core losses", FREQ_AXIS, _axis("core loss", "W"), magnetic=magnetic)
 
 
