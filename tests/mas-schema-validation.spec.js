@@ -143,7 +143,8 @@ test.describe('MAS schema validation (ABT #1388)', () => {
             await page.locator('[data-cy="MAS-exports-modal-button"]').first().click();
             const button = page.locator('.p-dialog [data-cy$="-download-button"]', { hasText: label }).first();
             const [download] = await Promise.all([page.waitForEvent('download', { timeout: 30000 }), button.click()]);
-            expect(download.suggestedFilename()).toBe(`${coreName}.json`);
+            // A file name cannot hold '/': the browser saves '97 P 14/8/I...' as '97 P 14_8_I...'.
+            expect(download.suggestedFilename()).toBe(`${coreName.replaceAll('/', '_')}.json`);
             await download.saveAs(testInfo.outputPath(`${label}.json`));
             await page.keyboard.press('Escape');
         }

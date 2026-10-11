@@ -63,6 +63,72 @@ function quarantineInvalidOutputs(mas) {
     return mas;
 }
 
+// The app's default excitation carried a primary voltage of -20.5 / +70.5 V switching at half
+// the period: 25 V of net volt-seconds against its own processed data (offset 0, 100 V peak to
+// peak, duty 0.5). A secondary reflected from it by the ABT #1670 bug got 0 / -100 V. Both are
+// unbalanced, and since ABT #1585 the engine refuses to integrate them, so every saved design
+// still carrying them stopped loading. Only these exact waveforms are replaced: the primary by the
+// corrected default, the #1670 secondary by the primary over the turns ratio (Faraday, point by
+// point, as MKF's reflect does). Anything else is left as it is, so a real imbalance stays loud.
+// Each legacy waveform is a fixed shape on a period T of any length (the app rescaled the time
+// axis when the frequency changed): the samples and the switching instants as fractions of T.
+const LEGACY_DEFAULT_PRIMARY_VOLTAGE = { data: [-20.5, 70.5, 70.5, -20.5, -20.5], timeFractions: [0, 0, 0.5, 0.5, 1] };
+const LEGACY_ABT1670_SECONDARY_VOLTAGE = { data: [0, 0, -100, -100, 0], timeFractions: [0, 0.5, 0.5, 1, 1] };
+
+function sameSamples(actual, expected, tolerance) {
+    return Array.isArray(actual) && actual.length === expected.length
+        && actual.every((value, index) => Math.abs(value - expected[index]) <= tolerance);
+}
+
+function isLegacyVoltage(voltage, legacy) {
+    const waveform = voltage?.waveform;
+    const period = Array.isArray(waveform?.time) ? waveform.time[waveform.time.length - 1] : null;
+    return period > 0 && sameSamples(waveform.data, legacy.data, 1e-12)
+        && sameSamples(waveform.time, legacy.timeFractions.map((fraction) => fraction * period), period * 1e-9);
+}
+
+// Same rule as MKF's resolve_dimensional_values (preferred nominal): nominal, else the midpoint
+// of minimum and maximum, else whichever bound exists; throws when none is present.
+function resolveDimension(value, description) {
+    if (typeof value === 'number') return value;
+    if (value?.nominal != null) return value.nominal;
+    if (value?.minimum != null && value?.maximum != null) return (value.minimum + value.maximum) / 2;
+    if (value?.maximum != null) return value.maximum;
+    if (value?.minimum != null) return value.minimum;
+    throw new Error(`${description} has no nominal, minimum or maximum`);
+}
+
+function migrateLegacyDefaultVoltages(mas) {
+    const turnsRatios = mas?.inputs?.designRequirements?.turnsRatios || [];
+    for (const operatingPoint of (mas?.inputs?.operatingPoints || [])) {
+        const excitations = operatingPoint?.excitationsPerWinding;
+        if (!Array.isArray(excitations)) continue;
+        for (let windingIndex = 0; windingIndex < excitations.length; windingIndex++) {
+            const excitation = excitations[windingIndex];
+            if (isLegacyVoltage(excitation?.voltage, LEGACY_DEFAULT_PRIMARY_VOLTAGE)) {
+                const legacyTime = [...excitation.voltage.waveform.time];
+                excitation.voltage = deepCopy(defaultOperatingPointExcitation.voltage);
+                excitation.voltage.waveform.time = legacyTime;
+                console.warn(`Imported MAS: '${operatingPoint.name ?? 'operating point'}', winding ${windingIndex} carried the old default voltage (-20.5 / +70.5 V, not volt-second balanced); replaced by the corrected default (+-50 V)`);
+            }
+        }
+        const primaryVoltage = excitations[0]?.voltage;
+        for (let windingIndex = 1; windingIndex < excitations.length; windingIndex++) {
+            const excitation = excitations[windingIndex];
+            if (!isLegacyVoltage(excitation?.voltage, LEGACY_ABT1670_SECONDARY_VOLTAGE) || primaryVoltage?.waveform == null) continue;
+            const turnsRatio = resolveDimension(turnsRatios[windingIndex - 1], `Turns ratio ${windingIndex}`);
+            excitation.voltage = {
+                waveform: {
+                    data: primaryVoltage.waveform.data.map((value) => value / turnsRatio),
+                    time: [...primaryVoltage.waveform.time],
+                },
+            };
+            console.warn(`Imported MAS: '${operatingPoint.name ?? 'operating point'}', winding ${windingIndex} carried the 0 / -100 V voltage the ABT #1670 reflect bug wrote; replaced by the primary voltage over the turns ratio (${turnsRatio})`);
+        }
+    }
+    return mas;
+}
+
 // Sessions saved by older frontend versions carry enum spellings the current
 // MAS schema rejects ('P2' instead of 'PD2', 'OVC-III' instead of 'III',
 // 'Wound' instead of 'wound'). The MAS sentry then fails every
@@ -118,6 +184,7 @@ export function migrateLegacyMas(mas) {
             }
         }
     }
+    migrateLegacyDefaultVoltages(mas);
     // Legacy exports capitalized waveform labels ("Triangular"). The engine's
     // from_json rejects them ("Input JSON does not conform to schema!") and the
     // worker call returns -1, which the builder then retries in a loop — the
