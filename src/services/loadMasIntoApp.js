@@ -227,6 +227,43 @@ function migrateLegacyDefaultVoltages(mas) {
     return mas;
 }
 
+// The app's seed excitation (Defaults.defaultOperatingPointExcitation: a +-5 A triangle and a
+// +-50 V rectangle) is one period of a fixed shape, and the app rescales its time axis when the
+// frequency of the excitation is edited. Saved designs nevertheless carry seeds whose frequency
+// says 1 MHz while their time axis spans 100 ns
+// (tests/fixtures/pq2715_95_1mhz_outside_steinmetz_span.json, second winding). Engines up to MKF 426ec505 took the frequency and ignored the length of the axis;
+// since ABT #1467 MKF refuses a waveform that does not span 1 / frequency, because for a real
+// waveform it cannot tell which of the two is wrong. For the seed there is nothing to tell: it
+// is the app's own shape, defined per period, so it is put back on the period of its excitation.
+// Only signals that are sample for sample the seed are touched; any other waveform that does not
+// span its period is left for MKF to refuse by name.
+function placeSeedExcitationsOnTheirPeriod(mas) {
+    for (const operatingPoint of (mas?.inputs?.operatingPoints || [])) {
+        for (const [windingIndex, excitation] of (operatingPoint?.excitationsPerWinding || []).entries()) {
+            if (!(excitation?.frequency > 0)) continue;
+            const period = 1 / excitation.frequency;
+            for (const signalName of ['current', 'voltage']) {
+                const seed = defaultOperatingPointExcitation[signalName];
+                const seedTime = seed.waveform.time;
+                const seedShape = {
+                    data: seed.waveform.data,
+                    timeFractions: seedTime.map((time) => (time - seedTime[0]) / (seedTime[seedTime.length - 1] - seedTime[0])),
+                };
+                const signal = excitation[signalName];
+                const time = signal?.waveform?.time;
+                if (!Array.isArray(time) || time[0] !== 0 || !isLegacyVoltage(signal, seedShape)) continue;
+                const span = time[time.length - 1];
+                if (Math.abs(span - period) <= 1e-6 * period) continue;
+                const onPeriod = deepCopy(seed);
+                onPeriod.waveform.time = seedShape.timeFractions.map((fraction) => fraction * period);
+                excitation[signalName] = onPeriod;
+                console.warn(`Imported MAS: '${operatingPoint.name ?? 'operating point'}', winding ${windingIndex} carried the app's default ${signalName} on a time axis of ${span} s while its frequency is ${excitation.frequency} Hz; put back on its period (${period} s)`);
+            }
+        }
+    }
+    return mas;
+}
+
 // Topology names from before the MAS enum sweep (RFC 0007) that the case- and punctuation-
 // insensitive matcher in checkAndFixMas cannot map, because the word itself changed. Keyed by
 // the lowercase alphanumeric form.
@@ -373,6 +410,7 @@ export function migrateLegacyMas(mas) {
         }
     }
     migrateLegacyDefaultVoltages(mas);
+    placeSeedExcitationsOnTheirPeriod(mas);
     // Legacy exports capitalized waveform labels ("Triangular"). The engine's
     // from_json rejects them ("Input JSON does not conform to schema!") and the
     // worker call returns -1, which the builder then retries in a loop — the
@@ -507,6 +545,44 @@ async function completeHarmonicsOnlySignals(mas, taskQueueStore) {
     return mas;
 }
 
+// A signal given by its processed data alone (label, peak to peak, offset, duty cycle) is a valid
+// MAS signal, and MKF builds its waveform and harmonics when it completes the design. When MKF
+// refuses the design that never happens, and the builder cannot ask MKF for anything on a current
+// without a waveform ("processed values carry no timing") or without harmonics ("Current is
+// missing harmonics": the Wire Info panel then showed -1 for every AC figure), so it could not
+// even say why. MKF is asked for each of those signals on its own, the way the Op. Points page
+// does when it shows one: the waveform from the processed data, the harmonics from the waveform.
+// A signal MKF cannot build has nothing the builder could work on: the load is refused with the
+// name of the signal and MKF's reason.
+async function completeProcessedOnlySignals(mas, taskQueueStore) {
+    for (const operatingPoint of (mas?.inputs?.operatingPoints || [])) {
+        for (const excitation of (operatingPoint?.excitationsPerWinding || [])) {
+            if (excitation == null) continue;
+            for (const signalName of ['current', 'voltage']) {
+                const signal = excitation[signalName];
+                if (signal == null || signal.waveform != null || signal.processed == null) continue;
+                const description = `'${operatingPoint.name ?? 'operating point'}', '${excitation.name ?? 'excitation'}' ${signalName}`;
+                let standardized;
+                try {
+                    standardized = await taskQueueStore.standardizeSignalDescriptor(deepCopy(signal), excitation.frequency);
+                } catch (standardizeError) {
+                    throw new Error(`MKF could not build the waveform of ${description} from its processed data: ${standardizeError.message}`);
+                }
+                if (standardized?.waveform == null || standardized?.processed == null) {
+                    throw new Error(`MKF returned no waveform or processed data for ${description} from its processed data`);
+                }
+                try {
+                    standardized.harmonics = await taskQueueStore.calculateHarmonics(standardized.waveform, excitation.frequency);
+                } catch (harmonicsError) {
+                    throw new Error(`MKF could not calculate the harmonics of ${description}: ${harmonicsError.message}`);
+                }
+                excitation[signalName] = standardized;
+            }
+        }
+    }
+    return mas;
+}
+
 // A MAS Magnetic document ("Download MAS file only with magnetic") has no inputs, and the app
 // works on a full MAS. It opens with the inputs a new design starts from (Defaults.powerMas),
 // completed with what the magnetic itself states: the turns ratios of its windings, their
@@ -594,11 +670,11 @@ export async function loadMasIntoApp(doc, { masStore, stateStore, userStore, tas
     // builder asks MKF again for everything it shows, and reports each refusal
     // in its "Calculation issue" banner.
     //
-    // That holds only for a file that already carries a completed magnetic (a
-    // processed core and resolved wires), which is what the app saves. A file
-    // that names its core or a wire and leaves the rest to MKF has nothing to
-    // show when MKF refuses it (the builder cannot draw a wire it only knows by
-    // name), so that one is still refused with MKF's reason.
+    // A file that already carries a completed magnetic (a processed core and
+    // resolved wires), which is what the app saves, opens as it is. A file that
+    // names its core or a wire and leaves the rest to MKF needs its magnetic
+    // completed first (see the catch below): the builder cannot draw a wire it
+    // only knows by name.
     // A design saved before a core was chosen (inputs only) has nothing for MKF to complete:
     // asking anyway fails with "Core shape not found", which refused the very files ABT #344
     // lands on the inputs page.
@@ -621,10 +697,35 @@ export async function loadMasIntoApp(doc, { masStore, stateStore, userStore, tas
             const holdsCompletedMagnetic = core.processedDescription != null
                 && typeof core.functionalDescription.shape === 'object'
                 && response.magnetic.coil.functionalDescription.every((winding) => winding?.wire != null && typeof winding.wire === 'object');
-            if (!holdsCompletedMagnetic) {
-                throw new Error(`MKF could not complete this design: ${autocompleteError.message}`);
+            if (holdsCompletedMagnetic) {
+                console.warn(`Imported MAS: MKF could not complete this design, so it is opened as the file holds it: ${autocompleteError.message}`);
             }
-            console.warn(`Imported MAS: MKF could not complete this design, so it is opened as the file holds it: ${autocompleteError.message}`);
+            else {
+                // The file names its core or its wires and leaves the rest to MKF. What MKF
+                // refuses is most often the operating point, not the magnetic (since ABT #1467 /
+                // #1740: a voltage whose volt-seconds saturate the core, a waveform that does not
+                // span its period), and MKF can complete the magnetic without it. Then the design
+                // opens like the one above: its magnetic completed, its inputs as the file holds
+                // them, MKF's reason in the builder. When MKF cannot complete the magnetic either
+                // (a wire in no catalogue), or cannot build a signal the file gives by its processed
+                // data alone, there is nothing to show, and the load is refused.
+                let completedMagnetic;
+                try {
+                    completedMagnetic = await taskQueueStore.magneticAutocomplete(response.magnetic);
+                } catch (magneticError) {
+                    const alsoTheMagnetic = magneticError.message === autocompleteError.message
+                        ? ''
+                        : `; nor its magnetic alone: ${magneticError.message}`;
+                    throw new Error(`MKF could not complete this design: ${autocompleteError.message}${alsoTheMagnetic}`);
+                }
+                try {
+                    await completeProcessedOnlySignals(response, taskQueueStore);
+                } catch (signalError) {
+                    throw new Error(`MKF could not complete this design: ${autocompleteError.message}; and with its magnetic completed alone, ${signalError.message}`);
+                }
+                autocompletedMas = { ...response, magnetic: completedMagnetic };
+                console.warn(`Imported MAS: MKF could not complete this design, so it is opened with its magnetic completed and its inputs as the file holds them: ${autocompleteError.message}`);
+            }
         }
     }
 

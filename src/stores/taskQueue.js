@@ -184,6 +184,26 @@ export const useTaskQueueStore = defineStore('taskQueue', {
             return masResult;
         },
 
+        magneticAutocompleted(success = true, dataOrMessage = '') {
+        },
+
+        // Completes a magnetic on its own (core processed, wires and bobbin resolved), without
+        // the inputs: what is left to do for a design whose operating points MKF refuses.
+        async magneticAutocomplete(magnetic, settings = {}) {
+            const mkf = await waitForMkf();
+            await mkf.ready;
+
+            masSentry('magneticAutocomplete', 'Magnetic', magnetic);
+            const result = await mkf.magnetic_autocomplete(JSON.stringify(magnetic), JSON.stringify(settings));
+            if (result.startsWith('Exception')) {
+                setTimeout(() => { this.magneticAutocompleted(false, result); }, this.task_standard_response_delay);
+                throw new Error(result);
+            }
+            const magneticResult = JSON.parse(result);
+            setTimeout(() => { this.magneticAutocompleted(true, magneticResult); }, this.task_standard_response_delay);
+            return magneticResult;
+        },
+
         // ==========================================
         // Settings Methods
         // ==========================================

@@ -187,6 +187,173 @@ test.describe('legacy MAS documents load', () => {
     await expect(page.locator('[data-cy$="-CalculationIssue"]').first()).toBeVisible({ timeout: 60000 });
   });
 
+  test('LOADMAS-LEGACY-11: a core material stored with a single application loads (user file 750372438rA.json)', async ({ page }) => {
+    // MAS c2432e7 made CoreMaterial.application a list; files saved before it embed their
+    // material with `application: "Power"`. Unconverted, MKF's parser refuses the whole core
+    // ("type must be array, but is string").
+    const mas = fixture('multicolumn_e42_transformer.json');
+    const material = mas.magnetic.core.functionalDescription.material;
+    expect(Array.isArray(material.application), 'the fixture embeds its core material').toBe(true);
+    material.application = 'Power';
+    const { mas: loaded } = await load(page, mas, 'legacy_material_application.json');
+    expect(loaded.magnetic.core.functionalDescription.material.application).toEqual(['power']);
+  });
+
+  test('LOADMAS-LEGACY-12: a completed design with the harmonics default (100 V at 50 Hz) opens whatever MKF says of it', async ({ page }) => {
+    // User file 750372438rA.json: a second operating point left on the app's harmonics default.
+    // 100 V at 50 Hz is 0.45 V*s per half cycle, which saturates any core this app designs, and
+    // since ABT #1740 MKF says so instead of computing with it. The design must still open, as
+    // the file holds it, and the builder must give MKF's reason. An engine that does not refuse
+    // these volt-seconds opens it without one. Which of the two this engine is, MKF is asked.
+    const mas = fixture('multicolumn_e42_transformer.json');
+    mas.inputs.operatingPoints.push({
+      name: 'Op. Point No. 2',
+      conditions: { ambientTemperature: 100 },
+      excitationsPerWinding: mas.inputs.operatingPoints[0].excitationsPerWinding.map(() => ({
+        name: 'Primary winding excitation',
+        frequency: 50,
+        current: { harmonics: { amplitudes: [0, 10], frequencies: [0, 50] } },
+        voltage: { harmonics: { amplitudes: [0, 100], frequencies: [0, 50] } },
+      })),
+    });
+    const turns = mas.magnetic.coil.functionalDescription.map((winding) => winding.numberTurns);
+    const warnings = [];
+    page.on('console', (message) => { if (message.type() === 'warning') warnings.push(message.text()); });
+    const { mas: loaded } = await load(page, mas, 'harmonics_default_operating_point.json');
+    expect(loaded.inputs.operatingPoints.length).toBe(2);
+    expect(loaded.magnetic.coil.functionalDescription.map((winding) => winding.numberTurns)).toEqual(turns);
+    expect(loaded.magnetic.core.processedDescription, 'the magnetic is the completed one').toBeTruthy();
+
+    const verdict = await page.evaluate(async (document) => {
+      const taskQueue = window.document.querySelector('#app').__vue_app__.config.globalProperties.$pinia._s.get('taskQueue');
+      try {
+        await taskQueue.masAutocomplete(document, false, {});
+        return null;
+      } catch (error) {
+        return error.message;
+      }
+    }, loaded);
+    const refusals = warnings.filter((text) => text.includes('MKF could not complete this design'));
+    if (verdict == null) {
+      expect(refusals, 'MKF completes this design, so nothing is reported').toEqual([]);
+    }
+    else {
+      expect(verdict, 'the only thing MKF objects to is the saturating operating point').toContain('CALCULATION_CORE_SATURATES');
+      expect(verdict).toContain('Op. Point No. 2');
+      expect(refusals.length, 'the loader reports that MKF refused the design').toBeGreaterThan(0);
+      expect(refusals[0]).toContain('CALCULATION_CORE_SATURATES');
+      const issue = page.locator('[data-cy$="-CalculationIssue"]').first();
+      await expect(issue).toBeVisible({ timeout: 60000 });
+      await expect(issue).toContainText('The core saturates');
+      await expect(issue).toContainText('Op. Point No. 2');
+    }
+  });
+
+  test('LOADMAS-LEGACY-13: the default excitation on a stale time axis is put back on its period', async ({ page }) => {
+    // tests/fixtures/pq2715_95_1mhz_outside_steinmetz_span.json: the second winding says 1 MHz
+    // and still carries the default shapes on a 100 ns axis. MKF refuses that since ABT #1467.
+    const mas = fixture('default_two_winding_pq2715.json');
+    const [primary, secondary] = mas.inputs.operatingPoints[0].excitationsPerWinding;
+    const stalePeriod = 1e-7;
+    for (const excitation of [primary, secondary]) {
+      excitation.frequency = 1e6;
+    }
+    primary.current = { waveform: { data: [-5, 5, -5], time: [0, 5e-7, 1e-6] }, processed: { label: 'triangular', peakToPeak: 10, offset: 0, dutyCycle: 0.5 } };
+    primary.voltage = { waveform: { data: [-50, 50, 50, -50, -50], time: [0, 0, 5e-7, 5e-7, 1e-6] }, processed: { label: 'rectangular', peakToPeak: 100, offset: 0, dutyCycle: 0.5 } };
+    secondary.current = { waveform: { data: [-5, 5, -5], time: [0, stalePeriod / 2, stalePeriod] }, processed: { label: 'triangular', peakToPeak: 10, offset: 0, dutyCycle: 0.5 } };
+    // The old default voltage as well, so the two migrations are seen working together.
+    secondary.voltage = { waveform: { data: [-20.5, 70.5, 70.5, -20.5, -20.5], time: [0, 0, stalePeriod / 2, stalePeriod / 2, stalePeriod] }, processed: { label: 'rectangular', peakToPeak: 100, offset: 0, dutyCycle: 0.5 } };
+    const warnings = [];
+    page.on('console', (message) => { if (message.type() === 'warning') warnings.push(message.text()); });
+    const { mas: loaded } = await load(page, mas, 'default_on_stale_axis.json');
+    expect(warnings.filter((text) => text.includes('MKF could not complete this design')), 'MKF completes the design').toEqual([]);
+    for (const excitation of loaded.inputs.operatingPoints[0].excitationsPerWinding) {
+      expect(excitation.frequency).toBe(1e6);
+      for (const [signalName, peak] of [['current', 5], ['voltage', 50]]) {
+        const { data, time } = excitation[signalName].waveform;
+        const span = time[time.length - 1] - time[0];
+        // One period of 1 MHz, closed or (once MKF has sampled it) open by one step.
+        const step = time[time.length - 1] - time[time.length - 2];
+        expect(Math.min(Math.abs(span - 1e-6), Math.abs(span + step - 1e-6)), `${excitation.name} ${signalName} spans 1 us, not ${span} s`).toBeLessThan(1e-9);
+        expect(Math.max(...data)).toBeCloseTo(peak, 6);
+        expect(Math.min(...data)).toBeCloseTo(-peak, 6);
+      }
+    }
+  });
+
+  test('LOADMAS-LEGACY-14: a design that names its core and wires opens with its magnetic completed when MKF refuses its operating point', async ({ page }) => {
+    const mas = fixture('forward_xfmr_unknown_wire.json');
+    for (const winding of mas.magnetic.coil.functionalDescription) {
+      expect(typeof winding.wire, 'the fixture names its wires').toBe('string');
+      winding.wire = 'Round 0.80 - Grade 1';
+    }
+    expect(typeof mas.magnetic.core.functionalDescription.shape, 'the fixture names its core shape').toBe('string');
+    // A primary voltage whose volt-seconds do not balance (0 / +60 V): MKF refuses the design.
+    const excitations = mas.inputs.operatingPoints[0].excitationsPerWinding;
+    const period = 1 / excitations[0].frequency;
+    excitations[0].voltage = { waveform: { data: [0, 60, 60, 0, 0], time: [0, 0, period / 2, period / 2, period] } };
+    expect(excitations[1].current.waveform, 'the other signals are given by their processed data alone').toBeUndefined();
+    const warnings = [];
+    page.on('console', (message) => { if (message.type() === 'warning') warnings.push(message.text()); });
+    const { mas: loaded } = await load(page, mas, 'named_parts_unbalanced.json');
+    const refusals = warnings.filter((text) => text.includes('MKF could not complete this design'));
+    expect(refusals.length, 'MKF refused the design').toBeGreaterThan(0);
+    expect(refusals[0]).toContain('not volt-second balanced');
+    expect(refusals[0]).toContain('opened with its magnetic completed');
+    // The magnetic is MKF's completion of what the file names.
+    const core = loaded.magnetic.core;
+    expect(core.functionalDescription.shape.name).toBe(mas.magnetic.core.functionalDescription.shape);
+    expect(core.functionalDescription.material.name).toBe(mas.magnetic.core.functionalDescription.material);
+    expect(core.processedDescription.effectiveParameters.effectiveArea).toBeGreaterThan(0);
+    for (const winding of loaded.magnetic.coil.functionalDescription) {
+      expect(winding.wire.conductingDiameter.nominal, `${winding.name} wire is resolved`).toBeCloseTo(0.0008, 9);
+    }
+    expect(loaded.magnetic.coil.functionalDescription.map((winding) => winding.numberTurns))
+      .toEqual(mas.magnetic.coil.functionalDescription.map((winding) => winding.numberTurns));
+    // The inputs are the file's: the unbalanced voltage is still there for the user to correct,
+    // and the signals given by processed data alone have the waveform MKF builds from it.
+    const loadedExcitations = loaded.inputs.operatingPoints[0].excitationsPerWinding;
+    expect(loadedExcitations[0].voltage.waveform.data).toEqual([0, 60, 60, 0, 0]);
+    const builtCurrent = loadedExcitations[1].current;
+    expect(builtCurrent.waveform.data.length).toBeGreaterThan(2);
+    expect(Math.max(...builtCurrent.waveform.data) - Math.min(...builtCurrent.waveform.data))
+      .toBeCloseTo(excitations[1].current.processed.peakToPeak, 1);
+    // ... and its harmonics: without them the Wire Info panel showed -1 for every AC figure
+    // ("[MISSING_DATA] Current is missing harmonics").
+    for (const [index, excitation] of loadedExcitations.entries()) {
+      expect(excitation.current.harmonics?.amplitudes?.length, `winding ${index} current has harmonics`).toBeGreaterThan(1);
+      expect(excitation.current.harmonics.frequencies[1], `winding ${index} fundamental`).toBeCloseTo(excitations[index].frequency, 3);
+    }
+    const issue = page.locator('[data-cy$="-CalculationIssue"]').first();
+    await expect(issue).toBeVisible({ timeout: 60000 });
+    await expect(issue).toContainText('not volt-second balanced');
+  });
+
+  test('LOADMAS-LEGACY-15: a signal MKF cannot build from its processed data refuses the load by name', async ({ page }) => {
+    const mas = fixture('forward_xfmr_unknown_wire.json');
+    for (const winding of mas.magnetic.coil.functionalDescription) winding.wire = 'Round 0.80 - Grade 1';
+    const excitations = mas.inputs.operatingPoints[0].excitationsPerWinding;
+    const period = 1 / excitations[0].frequency;
+    // MKF refuses the design (volt-seconds do not balance) ...
+    excitations[0].voltage = { waveform: { data: [0, 60, 60, 0, 0], time: [0, 0, period / 2, period / 2, period] } };
+    // ... and a 'custom' label has no shape MKF could build a waveform from.
+    excitations[2].name = 'Auxiliary';
+    excitations[2].current = { processed: { label: 'custom', peakToPeak: 2, offset: 10, dutyCycle: 0.35 } };
+    const alerts = [];
+    page.on('dialog', async (dialog) => { alerts.push(dialog.message()); await dialog.accept(); });
+    await page.goto(`${BASE_URL}/`, { waitUntil: 'domcontentloaded' });
+    await page.locator('[data-cy="Header-Load-MAS-file-button"]').setInputFiles({
+      name: 'named_parts_unbuildable_signal.json',
+      mimeType: 'application/json',
+      buffer: Buffer.from(JSON.stringify(mas)),
+    });
+    await expect.poll(() => alerts.length, { timeout: 120000 }).toBe(1);
+    expect(alerts[0]).toContain('Could not load this file: MKF could not complete this design');
+    expect(alerts[0], 'the signal is named').toContain("'Auxiliary' current");
+    expect(alerts[0], "MKF's reason is given").toContain('Waveform must have at least 2 data points');
+    expect(new URL(page.url()).pathname, 'nothing is opened').not.toContain('magnetic_tool');
+  });
+
   test('LOADMAS-LEGACY-8: a design saved before a core was chosen opens on its inputs (ABT #344)', async ({ page }) => {
     const mas = fixture('etd49_wound_10uH_5T.json');
     mas.magnetic = {
