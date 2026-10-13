@@ -281,6 +281,43 @@ test.describe('legacy MAS documents load', () => {
     }
   });
 
+  test('LOADMAS-LEGACY-16: the secondary voltage of the old two-switch-forward example is balanced on load', async ({ page }) => {
+    // example.mas.json and the designs started from it: +7.2913 V for 0.45 T against -6.1353 V
+    // for 0.405 T. MKF refuses it as not volt-second balanced since ABT #1467 (0.259 of the mean
+    // absolute voltage against a limit of 0.25) and corrected its own copy (ABT #1837).
+    const mas = fixture('default_two_winding_pq2715.json');
+    const period = 5e-6;
+    const [primary, secondary] = mas.inputs.operatingPoints[0].excitationsPerWinding;
+    for (const excitation of [primary, secondary]) {
+      excitation.frequency = 1 / period;
+    }
+    primary.current = { waveform: { data: [-5, 5, -5], time: [0, period / 2, period] }, processed: { label: 'triangular', peakToPeak: 10, offset: 0, dutyCycle: 0.5 } };
+    primary.voltage = { waveform: { data: [-50, 50, 50, -50, -50], time: [0, 0, period / 2, period / 2, period] }, processed: { label: 'rectangular', peakToPeak: 100, offset: 0, dutyCycle: 0.5 } };
+    secondary.current = { waveform: { data: [-5, 5, -5], time: [0, period / 2, period] }, processed: { label: 'triangular', peakToPeak: 10, offset: 0, dutyCycle: 0.5 } };
+    secondary.voltage = {
+      waveform: {
+        data: [0, 7.291333333333334, 7.291333333333334, -6.135333333333334, -6.135333333333334, 0, 0],
+        time: [0, 0, 2.25e-06, 2.25e-06, 4.275e-06, 4.275e-06, 5e-06],
+      },
+      processed: { label: 'rectangularWithDeadtime', peakToPeak: 13.426666666666668, offset: 0, dutyCycle: 0.45 },
+    };
+    const warnings = [];
+    page.on('console', (message) => { if (message.type() === 'warning') warnings.push(message.text()); });
+    const { mas: loaded } = await load(page, mas, 'old_forward_example_secondary.json');
+    expect(warnings.filter((text) => text.includes('MKF could not complete this design')), 'MKF completes the design').toEqual([]);
+    const { data, time } = loaded.inputs.operatingPoints[0].excitationsPerWinding[1].voltage.waveform;
+    let voltSeconds = 0;
+    let absoluteVoltSeconds = 0;
+    for (let index = 1; index < data.length; index++) {
+      const step = time[index] - time[index - 1];
+      voltSeconds += (data[index] + data[index - 1]) / 2 * step;
+      absoluteVoltSeconds += (Math.abs(data[index]) + Math.abs(data[index - 1])) / 2 * step;
+    }
+    expect(Math.max(...data)).toBeCloseTo(7.291333333333334, 6);
+    expect(Math.min(...data)).toBeCloseTo(-6.135333333333334, 6);
+    expect(Math.abs(voltSeconds) / absoluteVoltSeconds, 'net volt-seconds over the period, against the absolute ones').toBeLessThan(0.03);
+  });
+
   test('LOADMAS-LEGACY-14: a design that names its core and wires opens with its magnetic completed when MKF refuses its operating point', async ({ page }) => {
     const mas = fixture('forward_xfmr_unknown_wire.json');
     for (const winding of mas.magnetic.coil.functionalDescription) {

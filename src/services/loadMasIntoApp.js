@@ -143,6 +143,16 @@ function quarantineInvalidOutputs(mas) {
 // axis when the frequency changed): the samples and the switching instants as fractions of T.
 const LEGACY_DEFAULT_PRIMARY_VOLTAGE = { data: [-20.5, 70.5, 70.5, -20.5, -20.5], timeFractions: [0, 0, 0.5, 0.5, 1] };
 const LEGACY_ABT1670_SECONDARY_VOLTAGE = { data: [0, 0, -100, -100, 0], timeFractions: [0, 0.5, 0.5, 1, 1] };
+// The secondary voltage of the old two-switch-forward example (example.mas.json and every design
+// started from it): +7.2913 V for 0.45 T against -6.1353 V for 0.405 T, 0.259 of its mean absolute
+// voltage left over per period against the engine's limit of 0.25. MKF corrected its own copy of
+// the example by letting the reset interval run until the volt-seconds cancel (ABT #1837); the same
+// correction is applied here, to this exact waveform only.
+const LEGACY_FORWARD_EXAMPLE_SECONDARY_VOLTAGE = {
+    data: [0, 7.291333333333334, 7.291333333333334, -6.135333333333334, -6.135333333333334, 0, 0],
+    timeFractions: [0, 0, 0.45, 0.45, 0.855, 0.855, 1],
+    balancedResetEndFraction: 0.9847876,
+};
 
 function sameSamples(actual, expected, tolerance) {
     return Array.isArray(actual) && actual.length === expected.length
@@ -185,6 +195,16 @@ function migrateLegacyDefaultVoltages(mas) {
         if (!Array.isArray(excitations)) continue;
         for (let windingIndex = 0; windingIndex < excitations.length; windingIndex++) {
             const excitation = excitations[windingIndex];
+            if (isLegacyVoltage(excitation?.voltage, LEGACY_FORWARD_EXAMPLE_SECONDARY_VOLTAGE)) {
+                const time = [...excitation.voltage.waveform.time];
+                const period = time[time.length - 1];
+                time[4] = LEGACY_FORWARD_EXAMPLE_SECONDARY_VOLTAGE.balancedResetEndFraction * period;
+                time[5] = time[4];
+                // The stored processed data and harmonics describe the old waveform; MKF recomputes both.
+                excitation.voltage = { waveform: { data: [...excitation.voltage.waveform.data], time } };
+                console.warn(`Imported MAS: '${operatingPoint.name ?? 'operating point'}', winding ${windingIndex} carried the secondary voltage of the old two-switch-forward example (not volt-second balanced); its reset interval now ends where the volt-seconds cancel`);
+                continue;
+            }
             const corrected = deepCopy(defaultOperatingPointExcitation.voltage);
             if (isLegacyVoltage(excitation?.voltage, LEGACY_DEFAULT_PRIMARY_VOLTAGE)) {
                 corrected.waveform.time = [...excitation.voltage.waveform.time];
