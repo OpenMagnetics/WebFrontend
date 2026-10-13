@@ -2,7 +2,6 @@
 import { useMasStore } from '../../../stores/mas'
 import { toTitleCase, getMultiplier, combinedStyle, combinedClass } from 'WebSharedComponents/assets/js/utils.js'
 import ElementFromList from 'WebSharedComponents/DataInput/ElementFromList.vue'
-import { isolationSideOrdered } from 'WebSharedComponents/assets/js/defaults.js'
 </script>
 
 <script>
@@ -163,7 +162,7 @@ export default {
                 v-model="masStore.mas.inputs.designRequirements[name]"
                 :options="options"
                 :optionLabels="optionLabels"
-                :replaceTitle="isolationSideOrdered[requirementIndex - 1]"
+                :replaceTitle="(masStore.mas.magnetic.coil.functionalDescription[requirementIndex - 1]?.name ?? ('Winding ' + requirementIndex))"
                 :labelWidthProportionClass="labelWidthProportionClass"
                 :selectStyleClass="selectStyleClass"
                 :labelFontSize='valueFontSize'
