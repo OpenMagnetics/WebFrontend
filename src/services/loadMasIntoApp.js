@@ -1,7 +1,9 @@
 import { checkAndFixMas, deepCopy } from 'WebSharedComponents/assets/js/utils.js'
-import { defaultOperatingPointExcitation } from 'WebSharedComponents/assets/js/defaults.js'
+import { defaultOperatingPointExcitation, defaultOperatingConditions, powerMas } from 'WebSharedComponents/assets/js/defaults.js'
 import { WaveformLabel } from 'WebSharedComponents/assets/ts/MAS.ts'
-import { masSchemaErrors } from 'WebSharedComponents/assets/js/masValidator.js'
+import Ajv2020 from 'ajv/dist/2020'
+import addFormats from 'ajv-formats'
+import masSchemaBundle from 'WebSharedComponents/assets/js/masSchemas.json'
 
 // Map every WaveformLabel enum value by its lowercase form so legacy documents
 // with capitalized labels ("Triangular", "Rectangular") resolve to the current
@@ -29,36 +31,103 @@ function stripNulls(value) {
     return value;
 }
 
+// The MAS JSON Schema violations of a document, as ajv reports them (instancePath, keyword,
+// params). The same schemas the MAS sentry applies (masValidator.js), compiled here as well
+// because the import migrations below act on WHERE and WHAT each violation is, and the sentry
+// only exposes them as text. Compiled on the first imported document that needs it.
+let masImportValidator = null;
+function masImportErrors(mas) {
+    if (masImportValidator == null) {
+        const ajv = new Ajv2020({ strict: false, allErrors: true });
+        addFormats(ajv);
+        for (const schema of masSchemaBundle.schemas) ajv.addSchema(schema);
+        masImportValidator = ajv.getSchema('https://psma.com/mas/MAS.json');
+        if (!masImportValidator) {
+            throw new Error('loadMasIntoApp: the MAS schema is not in masSchemas.json; regenerate the bundle');
+        }
+    }
+    const probe = stripNulls(JSON.parse(JSON.stringify(mas)));
+    return masImportValidator(probe) ? [] : (masImportValidator.errors || []);
+}
+
+function describeSchemaError(error) {
+    const extra = error.params && Object.keys(error.params).length ? ` ${JSON.stringify(error.params)}` : '';
+    return `${error.instancePath || '/'} ${error.message}${extra}`;
+}
+
+function valueAtPointer(root, pointer) {
+    let value = root;
+    for (const token of pointer.split('/').slice(1)) {
+        if (value == null) return undefined;
+        value = value[token.replace(/~1/g, '/').replace(/~0/g, '~')];
+    }
+    return value;
+}
+
+// Files written by older versions of the app, of the engine and of other tools carry keys the
+// MAS schema has since dropped or never had: `masVersion` at the root, `recommendations` in a
+// manufacturerInfo, `leakageInductanceMatrix` in a leakage output, `windingOrientation` on the
+// coil. The engine never reads them, but the MAS sentry validates the whole document on every
+// call, so one such key refused the load and every later simulation. Remove them on import.
+//
+// Only keys the schema rejects outright are removed. Inside a oneOf / anyOf / if the same error
+// is also reported for each branch the value did NOT match (a rectangular wire's
+// conductingWidth is "unknown" to the round-wire branch), so a key is left alone whenever its
+// object or any ancestor also fails such a combinator: there the problem is which branch the
+// object is, not the key.
+function removeKeysTheSchemaDoesNotKnow(mas) {
+    for (let pass = 0; pass < 5; pass++) {
+        const errors = masImportErrors(mas);
+        const combinatorPaths = errors
+            .filter((error) => ['oneOf', 'anyOf', 'if'].includes(error.keyword))
+            .map((error) => error.instancePath);
+        const removed = [];
+        for (const error of errors) {
+            const key = error.params?.additionalProperty ?? error.params?.unevaluatedProperty;
+            if (key == null || !['additionalProperties', 'unevaluatedProperties'].includes(error.keyword)) continue;
+            const insideCombinator = combinatorPaths.some((path) =>
+                error.instancePath === path || error.instancePath.startsWith(`${path}/`));
+            if (insideCombinator) continue;
+            const holder = valueAtPointer(mas, error.instancePath);
+            if (holder != null && typeof holder === 'object' && key in holder) {
+                delete holder[key];
+                removed.push(`${error.instancePath || '/'}: ${key}`);
+            }
+        }
+        if (removed.length === 0) return mas;
+        console.warn(`Imported MAS carried keys the MAS schema does not define; removed them: ${[...new Set(removed)].join(', ')}`);
+    }
+    return mas;
+}
+
 // Quarantine schema-invalid outputs at the import boundary. A file exported
 // mid-failure (e.g. windingLosses missing its required total after a partial
 // wind) otherwise poisons every later simulate/masAutocomplete call: the MAS
 // sentry validates the WHOLE document, so the stale outputs block the very
 // simulation that would replace them. Outputs are always recomputed live, so
-// dropping invalid ones loses nothing — but only drop them when they are
-// provably the problem: document invalid WITH outputs, valid WITHOUT.
+// dropping invalid ones loses nothing.
 //
 // Judged by the real MAS JSON Schema, the same one the sentry applies — not
 // quicktype's Convert.toMas, which checks types only. Files exported by older
-// engines carry outputs that type-check but break the schema's bounds (zero core
-// and winding losses for an unexcited operating point, gappingReluctance 0 on a
-// gapless core); the type check let them through and the sentry then refused the
-// load with "/outputs/0/coreLosses/coreLosses must be > 0" (user report, EPC_6x3mm).
+// engines carry outputs that type-check but break the schema's bounds
+// (gappingReluctance 0 on a gapless core, a negative loss); the type check let
+// them through and the sentry then refused the load.
+//
+// They are dropped whenever a violation lies inside `outputs`, whatever else is
+// wrong with the document: this used to require the document to be valid
+// without them, so a file with stale outputs AND another problem kept both and
+// was refused for the outputs. Violations outside `outputs` are left to be
+// reported as they are.
 function quarantineInvalidOutputs(mas) {
     if (!Array.isArray(mas.outputs) || mas.outputs.length === 0) {
         return mas;
     }
-    const originalErrors = masSchemaErrors('Mas', stripNulls(JSON.parse(JSON.stringify(mas))));
-    if (originalErrors.length === 0) {
+    const outputErrors = masImportErrors(mas).filter((error) =>
+        error.instancePath === '/outputs' || error.instancePath.startsWith('/outputs/'));
+    if (outputErrors.length === 0) {
         return mas;
     }
-    const probe = stripNulls(JSON.parse(JSON.stringify(mas)));
-    probe.outputs = [];
-    if (masSchemaErrors('Mas', probe).length > 0) {
-        // Outputs are not (or not the only) problem — leave the document
-        // untouched so the failure stays loud and points at the real field.
-        return mas;
-    }
-    console.warn(`Imported MAS has schema-invalid outputs — dropping them (simulation recomputes all outputs). Validation errors: ${originalErrors.slice(0, 8).join('; ')}`);
+    console.warn(`Imported MAS has schema-invalid outputs — dropping them (simulation recomputes all outputs). Validation errors: ${outputErrors.slice(0, 8).map(describeSchemaError).join('; ')}`);
     mas.outputs = [];
     return mas;
 }
@@ -80,11 +149,22 @@ function sameSamples(actual, expected, tolerance) {
         && actual.every((value, index) => Math.abs(value - expected[index]) <= tolerance);
 }
 
-function isLegacyVoltage(voltage, legacy) {
+function isLegacyVoltage(voltage, legacy, scale = 1) {
     const waveform = voltage?.waveform;
     const period = Array.isArray(waveform?.time) ? waveform.time[waveform.time.length - 1] : null;
-    return period > 0 && sameSamples(waveform.data, legacy.data, 1e-12)
+    return period > 0 && sameSamples(waveform.data, legacy.data.map((value) => value * scale), 1e-9 * Math.abs(scale))
         && sameSamples(waveform.time, legacy.timeFractions.map((fraction) => fraction * period), period * 1e-9);
+}
+
+// The same two legacy waveforms after the engine had sampled them (it stores a processed signal
+// as equidistant samples): every sample sits on one of the two levels, and both levels occur.
+function isSampledTwoLevelVoltage(voltage, levels) {
+    const data = voltage?.waveform?.data;
+    if (!Array.isArray(data) || data.length < 8) return false;
+    const tolerance = 1e-9 * Math.max(Math.abs(levels[0]), Math.abs(levels[1]));
+    const onLevel = (value, level) => Math.abs(value - level) <= tolerance;
+    return data.every((value) => onLevel(value, levels[0]) || onLevel(value, levels[1]))
+        && data.some((value) => onLevel(value, levels[0])) && data.some((value) => onLevel(value, levels[1]));
 }
 
 // Same rule as MKF's resolve_dimensional_values (preferred nominal): nominal, else the midpoint
@@ -105,17 +185,35 @@ function migrateLegacyDefaultVoltages(mas) {
         if (!Array.isArray(excitations)) continue;
         for (let windingIndex = 0; windingIndex < excitations.length; windingIndex++) {
             const excitation = excitations[windingIndex];
+            const corrected = deepCopy(defaultOperatingPointExcitation.voltage);
             if (isLegacyVoltage(excitation?.voltage, LEGACY_DEFAULT_PRIMARY_VOLTAGE)) {
-                const legacyTime = [...excitation.voltage.waveform.time];
-                excitation.voltage = deepCopy(defaultOperatingPointExcitation.voltage);
-                excitation.voltage.waveform.time = legacyTime;
-                console.warn(`Imported MAS: '${operatingPoint.name ?? 'operating point'}', winding ${windingIndex} carried the old default voltage (-20.5 / +70.5 V, not volt-second balanced); replaced by the corrected default (+-50 V)`);
+                corrected.waveform.time = [...excitation.voltage.waveform.time];
             }
+            else if (isSampledTwoLevelVoltage(excitation?.voltage, [-20.5, 70.5]) && excitation.frequency > 0) {
+                const period = 1 / excitation.frequency;
+                corrected.waveform.time = LEGACY_DEFAULT_PRIMARY_VOLTAGE.timeFractions.map((fraction) => fraction * period);
+            }
+            else {
+                continue;
+            }
+            excitation.voltage = corrected;
+            console.warn(`Imported MAS: '${operatingPoint.name ?? 'operating point'}', winding ${windingIndex} carried the old default voltage (-20.5 / +70.5 V, not volt-second balanced); replaced by the corrected default (+-50 V)`);
         }
         const primaryVoltage = excitations[0]?.voltage;
         for (let windingIndex = 1; windingIndex < excitations.length; windingIndex++) {
             const excitation = excitations[windingIndex];
-            if (!isLegacyVoltage(excitation?.voltage, LEGACY_ABT1670_SECONDARY_VOLTAGE) || primaryVoltage?.waveform == null) continue;
+            if (excitation?.voltage?.waveform == null || primaryVoltage?.waveform == null) continue;
+            // The #1670 reflect wrote 0 / -100 V; versions around it divided that by the turns
+            // ratio (0 / -20 V for a ratio of 5). Both are the same bug on the same default.
+            const isUnscaled = isLegacyVoltage(excitation.voltage, LEGACY_ABT1670_SECONDARY_VOLTAGE)
+                || isSampledTwoLevelVoltage(excitation.voltage, [0, -100]);
+            let isScaled = false;
+            if (!isUnscaled && turnsRatios[windingIndex - 1] != null) {
+                const scale = 1 / resolveDimension(turnsRatios[windingIndex - 1], `Turns ratio ${windingIndex}`);
+                isScaled = isLegacyVoltage(excitation.voltage, LEGACY_ABT1670_SECONDARY_VOLTAGE, scale)
+                    || isSampledTwoLevelVoltage(excitation.voltage, [0, -100 * scale]);
+            }
+            if (!isUnscaled && !isScaled) continue;
             const turnsRatio = resolveDimension(turnsRatios[windingIndex - 1], `Turns ratio ${windingIndex}`);
             excitation.voltage = {
                 waveform: {
@@ -127,6 +225,54 @@ function migrateLegacyDefaultVoltages(mas) {
         }
     }
     return mas;
+}
+
+// Topology names from before the MAS enum sweep (RFC 0007) that the case- and punctuation-
+// insensitive matcher in checkAndFixMas cannot map, because the word itself changed. Keyed by
+// the lowercase alphanumeric form.
+const LEGACY_TOPOLOGY_NAMES = {
+    flyback: 'flybackConverter',
+    llcconverter: 'llcResonantConverter',
+    sepic: 'sepicConverter',
+};
+// Topologies MAS no longer defines and that have no successor. `topology` is optional, and a
+// name the schema rejects refuses the whole document, so the tag is dropped (with a warning).
+const REMOVED_TOPOLOGY_NAMES = ['invertingbuckboostconverter', 'halfbridgeconverter'];
+
+// The dimension keys each wire type defines in MAS (magnetic/wire/<type>.json). The wire
+// editor used to keep the keys of the previous type when the type was changed (a rectangular
+// wire still holding conductingDiameter, a foil holding outerDiameter), and a wire with keys
+// of another type matches no branch of the wire schema. Read from the schema bundle so the
+// table cannot drift from the schemas.
+const WIRE_KEYS_PER_TYPE = Object.fromEntries(['round', 'rectangular', 'foil', 'litz', 'planar'].map((type) => {
+    const schema = masSchemaBundle.schemas.find((candidate) => candidate.$id === `https://psma.com/mas/magnetic/wire/${type}.json`);
+    if (schema?.properties == null) {
+        throw new Error(`loadMasIntoApp: the ${type} wire schema is not in masSchemas.json; regenerate the bundle`);
+    }
+    return [type, Object.keys(schema.properties)];
+}));
+const BASIC_WIRE_KEYS = (() => {
+    const schema = masSchemaBundle.schemas.find((candidate) => candidate.$id === 'https://psma.com/mas/magnetic/wire/basicWire.json');
+    if (schema?.properties == null) {
+        throw new Error('loadMasIntoApp: the basic wire schema is not in masSchemas.json; regenerate the bundle');
+    }
+    return Object.keys(schema.properties);
+})();
+
+function removeKeysOfOtherWireTypes(wire, description) {
+    if (wire == null || typeof wire !== 'object' || !(wire.type in WIRE_KEYS_PER_TYPE)) return;
+    const ownKeys = [...WIRE_KEYS_PER_TYPE[wire.type], ...BASIC_WIRE_KEYS];
+    const foreignKeys = [...new Set(Object.values(WIRE_KEYS_PER_TYPE).flat())]
+        .filter((key) => !ownKeys.includes(key) && wire[key] != null);
+    for (const key of foreignKeys) {
+        delete wire[key];
+    }
+    if (foreignKeys.length > 0) {
+        console.warn(`Imported MAS: ${description} is a ${wire.type} wire carrying keys of other wire types (${foreignKeys.join(', ')}); removed them`);
+    }
+    if (wire.type === 'litz') {
+        removeKeysOfOtherWireTypes(wire.strand, `${description} strand`);
+    }
 }
 
 // Sessions saved by older frontend versions carry enum spellings the current
@@ -155,6 +301,42 @@ export function migrateLegacyMas(mas) {
             insulation.overvoltageCategory = overvoltageCategories[insulation.overvoltageCategory];
         }
     }
+    // An empty list of standards says the same as no list, and the schema requires at least
+    // one entry when the key is present.
+    if (Array.isArray(insulation?.standards) && insulation.standards.length === 0) {
+        delete insulation.standards;
+    }
+    if (typeof requirements?.topology === 'string') {
+        const legacyName = requirements.topology.toLowerCase().replace(/[^a-z0-9]/g, '');
+        if (legacyName in LEGACY_TOPOLOGY_NAMES) {
+            requirements.topology = LEGACY_TOPOLOGY_NAMES[legacyName];
+        }
+        else if (REMOVED_TOPOLOGY_NAMES.includes(legacyName)) {
+            console.warn(`Imported MAS: topology '${requirements.topology}' is no longer defined by MAS and has no successor; the design is loaded without a topology`);
+            delete requirements.topology;
+        }
+    }
+    // A design with a single winding has no turns ratios; files from before the key became
+    // required leave it out. With more windings the ratios cannot be known from here.
+    if (requirements != null && requirements.turnsRatios == null) {
+        const numberWindings = mas?.magnetic?.coil?.functionalDescription?.length;
+        if (numberWindings === 1) {
+            requirements.turnsRatios = [];
+        }
+    }
+    for (const [windingIndex, winding] of (mas?.magnetic?.coil?.functionalDescription || []).entries()) {
+        removeKeysOfOtherWireTypes(winding?.wire, `winding ${windingIndex} wire`);
+    }
+    // Distributor prices used to be a bare number; MAS now needs {value, currency}, and the
+    // currency of an old price is not in the file. The price is dropped, the distributor kept.
+    for (const part of [mas?.magnetic, mas?.magnetic?.core, mas?.magnetic?.coil?.bobbin]) {
+        for (const distributor of (Array.isArray(part?.distributorsInfo) ? part.distributorsInfo : [])) {
+            if (typeof distributor?.cost === 'number') {
+                console.warn(`Imported MAS: ${distributor.name ?? 'a distributor'} quotes a cost without currency (${distributor.cost}); removed the cost`);
+                delete distributor.cost;
+            }
+        }
+    }
     if (typeof requirements?.wiringTechnology === 'string') {
         const lowercased = requirements.wiringTechnology.toLowerCase();
         if (['wound', 'printed', 'stamped', 'deposition'].includes(lowercased)) {
@@ -178,6 +360,12 @@ export function migrateLegacyMas(mas) {
     for (const operatingPoint of (mas?.inputs?.operatingPoints || [])) {
         const excitations = operatingPoint?.excitationsPerWinding;
         if (!Array.isArray(excitations)) continue;
+        // An operating point shorter than the number of windings is the same gap:
+        // checkAndFixMas pads it with null.
+        const numberWindings = Array.isArray(requirements?.turnsRatios) ? requirements.turnsRatios.length + 1 : excitations.length;
+        while (excitations.length < numberWindings) {
+            excitations.push(null);
+        }
         for (let windingIndex = 0; windingIndex < excitations.length; windingIndex++) {
             if (excitations[windingIndex] == null) {
                 excitations[windingIndex] = deepCopy(defaultOperatingPointExcitation);
@@ -284,15 +472,107 @@ export function describeNonMasDocument(doc) {
     return null;
 }
 
+// An operating point entered as a list of harmonics starts as the app's harmonics default:
+// signals holding `harmonics` alone. The Op. Points page has the engine rebuild each waveform
+// when it is opened, so a design saved before that page was visited (or with a winding added
+// afterwards) carries harmonics-only signals. The MAS schema requires a waveform or processed
+// data on every signal, so the sentry refused the whole file ("/voltage must have required
+// property 'waveform'", user file 750372438rA.json). Rebuild them here the way the Op. Points
+// page does: MKF reconstructs the waveform and its processed data from the harmonics.
+async function completeHarmonicsOnlySignals(mas, taskQueueStore) {
+    for (const operatingPoint of (mas?.inputs?.operatingPoints || [])) {
+        for (const excitation of (operatingPoint?.excitationsPerWinding || [])) {
+            if (excitation == null) continue;
+            for (const signalName of ['current', 'voltage', 'magnetizingCurrent']) {
+                const signal = excitation[signalName];
+                if (signal == null || signal.waveform != null || signal.processed != null || signal.harmonics == null) continue;
+                const description = `'${operatingPoint.name ?? 'operating point'}', '${excitation.name ?? 'excitation'}' ${signalName}`;
+                const { amplitudes, frequencies } = signal.harmonics;
+                if (!Array.isArray(amplitudes) || !Array.isArray(frequencies) || frequencies.length < 2 || amplitudes.length !== frequencies.length) {
+                    throw new Error(`${description} holds only harmonics, and they are not a DC term plus at least a fundamental with one amplitude per frequency`);
+                }
+                let standardized;
+                try {
+                    standardized = await taskQueueStore.standardizeSignalDescriptor({ harmonics: deepCopy(signal.harmonics) }, frequencies[1]);
+                } catch (standardizeError) {
+                    throw new Error(`MKF could not rebuild the waveform of ${description} from its harmonics: ${standardizeError.message}`);
+                }
+                if (standardized?.waveform == null || standardized?.processed == null) {
+                    throw new Error(`MKF returned no waveform or processed data for ${description} from its harmonics`);
+                }
+                excitation[signalName] = standardized;
+            }
+        }
+    }
+    return mas;
+}
+
+// A MAS Magnetic document ("Download MAS file only with magnetic") has no inputs, and the app
+// works on a full MAS. It opens with the inputs a new design starts from (Defaults.powerMas),
+// completed with what the magnetic itself states: the turns ratios of its windings, their
+// isolation sides, and one operating point with an excitation per winding. That operating
+// point is left without a mode, which the Op. Points page shows as "Choose a mode for this
+// operating point first": the excitations are the app's seed, not the designer's.
+function inputsForMagneticDocument(magnetic) {
+    const windings = magnetic?.coil?.functionalDescription;
+    if (!Array.isArray(windings) || windings.length === 0) {
+        throw new Error('this magnetic has no windings (coil.functionalDescription is empty).');
+    }
+    windings.forEach((winding, windingIndex) => {
+        if (!(winding?.numberTurns > 0)) {
+            throw new Error(`winding ${windingIndex + 1} (${winding?.name ?? 'unnamed'}) of this magnetic has no number of turns, so its turns ratio cannot be derived.`);
+        }
+    });
+    const designRequirements = deepCopy(powerMas.inputs.designRequirements);
+    designRequirements.turnsRatios = windings.slice(1).map((winding) => ({ nominal: windings[0].numberTurns / winding.numberTurns }));
+    if (windings.every((winding) => typeof winding.isolationSide === 'string')) {
+        designRequirements.isolationSides = windings.map((winding) => winding.isolationSide);
+    }
+    return { designRequirements, operatingPoints: [seedOperatingPoint(windings.length)] };
+}
+
+function seedOperatingPoint(numberWindings) {
+    return {
+        name: 'Op. Point No. 1',
+        conditions: deepCopy(defaultOperatingConditions),
+        excitationsPerWinding: Array.from({ length: numberWindings }, () => deepCopy(defaultOperatingPointExcitation)),
+    };
+}
+
+// Everything an imported document needs before the engine sees it that does not itself need
+// the engine: the legacy migrations, then the two schema-driven clean-ups.
+export function prepareMasForImport(mas) {
+    migrateLegacyMas(mas);
+    removeKeysTheSchemaDoesNotKnow(mas);
+    quarantineInvalidOutputs(mas);
+    return mas;
+}
+
 export async function loadMasIntoApp(doc, { masStore, stateStore, userStore, taskQueueStore, router, route }) {
     const notMas = describeNonMasDocument(doc);
     if (notMas != null) {
         throw new Error(`This file is not a MAS design: ${notMas}`);
     }
     const newMas = asMasDocument(doc);
+    const isMagneticDocument = newMas.inputs == null;
+    if (isMagneticDocument) {
+        newMas.inputs = inputsForMagneticDocument(newMas.magnetic);
+    }
+    // A design saved before any operating point was defined gets the same seed, for the same
+    // reason: MAS requires at least one, and it stays without a mode until the user gives it one.
+    const hasSeededOperatingPoint = isMagneticDocument
+        || (Array.isArray(newMas.inputs.operatingPoints) && newMas.inputs.operatingPoints.length === 0);
+    if (!isMagneticDocument && hasSeededOperatingPoint) {
+        const turnsRatios = newMas.inputs.designRequirements?.turnsRatios;
+        const numberWindings = Array.isArray(turnsRatios) ? turnsRatios.length + 1 : newMas.magnetic?.coil?.functionalDescription?.length;
+        if (!(numberWindings > 0)) {
+            throw new Error('this design has no operating points, and neither turns ratios nor windings to seed one from.');
+        }
+        newMas.inputs.operatingPoints = [seedOperatingPoint(numberWindings)];
+    }
 
-    migrateLegacyMas(newMas);
-    quarantineInvalidOutputs(newMas);
+    prepareMasForImport(newMas);
+    await completeHarmonicsOnlySignals(newMas, taskQueueStore);
 
     const response = await checkAndFixMas(newMas, taskQueueStore);
 
@@ -305,13 +585,47 @@ export async function loadMasIntoApp(doc, { masStore, stateStore, userStore, tas
 
     // Always autocomplete the MAS to resolve wire/strand string names to
     // full objects and populate core processedDescription, bobbin, etc.
-    // A design MKF cannot complete is not loaded half-processed: the user
-    // would edit and simulate something MKF never validated (ABT #1234).
-    let autocompletedMas;
-    try {
-        autocompletedMas = await taskQueueStore.masAutocomplete(response, false, {});
-    } catch (autocompleteError) {
-        throw new Error(`MKF could not complete this design: ${autocompleteError.message}`);
+    //
+    // A design MKF cannot complete (a core saturated by its DC bias, a voltage
+    // whose volt-seconds do not balance, a wire in no catalogue) is opened as the
+    // file holds it. Refusing it (ABT #1234) left the user unable to open their
+    // own design to correct the very input MKF objects to (Alf, 2026-10-13:
+    // "make sure no old MAS fails in loading"). MKF's reason is not lost: the
+    // builder asks MKF again for everything it shows, and reports each refusal
+    // in its "Calculation issue" banner.
+    //
+    // That holds only for a file that already carries a completed magnetic (a
+    // processed core and resolved wires), which is what the app saves. A file
+    // that names its core or a wire and leaves the rest to MKF has nothing to
+    // show when MKF refuses it (the builder cannot draw a wire it only knows by
+    // name), so that one is still refused with MKF's reason.
+    // A design saved before a core was chosen (inputs only) has nothing for MKF to complete:
+    // asking anyway fails with "Core shape not found", which refused the very files ABT #344
+    // lands on the inputs page.
+    const importedShape = response.magnetic?.core?.functionalDescription?.shape;
+    const hasCoreToComplete = importedShape != null && !(typeof importedShape === 'string' && importedShape.trim() === '');
+    let autocompletedMas = response;
+    if (hasCoreToComplete) {
+        // What MKF is asked to complete must be a valid MAS: the sentry refuses anything else on
+        // this and on every later call, so a document the migrations above could not bring to
+        // the schema would open into a builder where nothing computes. Say what is wrong instead.
+        const schemaErrors = masImportErrors(response);
+        if (schemaErrors.length > 0) {
+            const shown = [...new Set(schemaErrors.map(describeSchemaError))];
+            throw new Error(`this file does not follow the MAS schema: ${shown.slice(0, 8).join('; ')}${shown.length > 8 ? ` (+${shown.length - 8} more)` : ''}`);
+        }
+        try {
+            autocompletedMas = await taskQueueStore.masAutocomplete(response, false, {});
+        } catch (autocompleteError) {
+            const core = response.magnetic.core;
+            const holdsCompletedMagnetic = core.processedDescription != null
+                && typeof core.functionalDescription.shape === 'object'
+                && response.magnetic.coil.functionalDescription.every((winding) => winding?.wire != null && typeof winding.wire === 'object');
+            if (!holdsCompletedMagnetic) {
+                throw new Error(`MKF could not complete this design: ${autocompleteError.message}`);
+            }
+            console.warn(`Imported MAS: MKF could not complete this design, so it is opened as the file holds it: ${autocompleteError.message}`);
+        }
     }
 
     // Restore coil processed data if masAutocomplete stripped it
@@ -346,7 +660,12 @@ export async function loadMasIntoApp(doc, { masStore, stateStore, userStore, tas
     stateStore.setCurrentToolSubsectionStatus("designRequirements", true);
     stateStore.setCurrentToolSubsectionStatus("operatingPoints", true);
     stateStore.operatingPoints.modePerPoint = [];
-    for (let i = 0; i < masStore.mas.inputs.operatingPoints.length; i++) {
+    if (hasSeededOperatingPoint) {
+        // The seeded operating point has no mode until the user gives it one.
+        stateStore.setCurrentToolSubsectionStatus("operatingPoints", false);
+        stateStore.operatingPoints.modePerPoint = masStore.mas.inputs.operatingPoints.map(() => null);
+    }
+    for (let i = 0; !hasSeededOperatingPoint && i < masStore.mas.inputs.operatingPoints.length; i++) {
         const excitation = masStore.mas.inputs.operatingPoints[i].excitationsPerWinding[0];
         // Determine mode based on what data is present:
         // - HarmonicsList: has harmonics with multiple entries (DC + at least one harmonic)
