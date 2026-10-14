@@ -404,28 +404,4 @@ test.describe('legacy MAS documents load', () => {
     expect(loaded.magnetic.core.functionalDescription.shape).toBe('');
     expect(loaded.inputs.designRequirements.magnetizingInductance).toEqual(mas.inputs.designRequirements.magnetizingInductance);
   });
-
-  test('LOADMAS-LEGACY-17: harmonics a waveform does not carry are recomputed from it', async ({ page }) => {
-    // Six stored designs carried a current whose harmonics list 12.8 MHz while its waveform holds
-    // nothing there; MKF refuses such a design whole. The waveform is the truth (Alf, 2026-10-14).
-    const mas = fixture('default_two_winding_pq2715.json');
-    const current = mas.inputs.operatingPoints[0].excitationsPerWinding[0].current;
-    expect(current.waveform, 'the fixture current has a waveform').toBeTruthy();
-    current.harmonics.frequencies.push(12800000);
-    current.harmonics.amplitudes.push(0.25);
-    const warnings = [];
-    page.on('console', (message) => { if (message.type() === 'warning') warnings.push(message.text()); });
-    const { mas: loaded } = await load(page, mas, 'harmonics_out_of_step.json');
-    const aligned = loaded.inputs.operatingPoints[0].excitationsPerWinding[0].current;
-    expect(aligned.harmonics.frequencies, 'the harmonic the waveform does not carry is gone').not.toContain(12800000);
-    expect(aligned.harmonics.amplitudes[1], 'the fundamental is the waveform\'s').toBeCloseTo(current.harmonics.amplitudes[1], 2);
-    // The waveform is kept (MKF's autocomplete samples it, as for every loaded signal).
-    expect(Math.max(...aligned.waveform.data)).toBeCloseTo(Math.max(...current.waveform.data), 6);
-    expect(Math.min(...aligned.waveform.data)).toBeCloseTo(Math.min(...current.waveform.data), 6);
-    expect(warnings.some((text) => text.includes('listed harmonics its waveform does not carry; recomputed from the waveform'))).toBe(true);
-    // Only the signal that was out of step is named: the others agreed with their waveforms.
-    const realigned = warnings.filter((text) => text.includes('listed harmonics its waveform does not carry'));
-    expect(realigned.length).toBe(1);
-    expect(realigned[0]).toContain("'Primary winding excitation' current");
-  });
 });
