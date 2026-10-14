@@ -18,6 +18,7 @@ import MagneticSummary from './MagneticSummary.vue'
 import MagneticCoreSummary from './MagneticCoreAdviser/MagneticCoreSummary.vue'
 import MagneticSpecificationsSummary from './MagneticSpecificationsReport/MagneticSpecificationsSummary.vue'
 import MagneticBuilder from '/MagneticBuilder/src/components/MagneticBuilder.vue'
+import OutdatedCoreMaterialNotice from './OutdatedCoreMaterialNotice.vue'
 import ControlPanel from './ControlPanel.vue'
 import ToolSelector from './ToolSelector.vue'
 
@@ -330,6 +331,10 @@ export default {
                     <InsulationAdviser
                         v-if="$stateStore.getCurrentToolState().subsection == 'insulationRequirements'"
                         :dataTestLabel="`${dataTestLabel}-InsulationAdviser`"
+                    />
+                    <OutdatedCoreMaterialNotice
+                        v-if="$stateStore.getCurrentToolState().subsection == 'magneticBuilder'"
+                        :dataTestLabel="`${dataTestLabel}-MagneticBuilder`"
                     />
                     <MagneticBuilder 
                         v-if="$stateStore.getCurrentToolState().subsection == 'magneticBuilder' || 

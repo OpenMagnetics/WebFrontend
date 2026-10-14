@@ -57,6 +57,7 @@ Used only by the package that owns them. Safe to refactor freely.
 | `crossReferencer` | MagneticBuilder | Cross-referencer tool state |
 | `storedCoilLayout` | MagneticBuilder | Per MAS store id, a hash of the wind inputs a loaded, already wound coil stands for; the coil panel keeps the stored layout while the hash matches and winds once it does not (ABT #1838). Persisted (a page reload must not wind the loaded coil either) and in the storeVersioning wipe list; holds no design data |
 | `auth` | WebFrontend | Optional account session (mirrors `/auth/me`; not persisted — cookie is the source of truth) |
+| `coreMaterialNotice` | WebFrontend | The outdated core material copy the last loaded design carries (core losses differ from the library's by more than 10 %), shown above the builder until the user switches or keeps it. Not persisted |
 | `cloudDesign` | WebFrontend | Link between the local working design and its server-side "My Designs" entry (persisted; deliberately NOT in the storeVersioning wipe list, like `customParts`) |
 
 ## Theme selection

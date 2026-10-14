@@ -33,6 +33,16 @@ export function drainEngineLogAfterCoreLossCalculations({ store }) {
     }, true);
 }
 
+// Settles once the engine boot has applied the user's engine settings (applyUserSettings), whether
+// or not that succeeded; main.js reports a failure. A design loaded in the first seconds after the
+// page opens used to reach the engine before the user's material-data extrapolation choice did, so
+// MKF refused, at load, losses the builder computes a moment later.
+let settleUserSettings;
+const userSettingsSettled = new Promise((resolve) => { settleUserSettings = resolve; });
+export function engineUserSettingsSettled() {
+    return userSettingsSettled;
+}
+
 function parseEngineReply(methodName, reply) {
     if (typeof reply === 'string' && reply.startsWith('Exception')) {
         throw new Error(`MKF ${methodName}: ${reply}`);
@@ -100,6 +110,15 @@ export const useEngineDiagnosticsStore = defineStore('engineDiagnostics', {
         // extrapolation choices, and arm log collection when the panel is enabled or extrapolation
         // is allowed (its warnings are how the user learns a result was extrapolated).
         async applyUserSettings(mkf) {
+            try {
+                await this.applyUserSettingsToEngine(mkf);
+            }
+            finally {
+                settleUserSettings();
+            }
+        },
+
+        async applyUserSettingsToEngine(mkf) {
             const settingsStore = useSettingsStore();
             const allow = settingsStore.magneticBuilderSettings.allowMaterialDataExtrapolation;
             if (typeof allow !== 'boolean') {

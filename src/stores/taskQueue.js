@@ -149,6 +149,21 @@ export const useTaskQueueStore = defineStore('taskQueue', {
             return materialData;
         },
 
+        // Core losses of one operating point with the core exactly as given (its material included),
+        // for the loader's comparison of a stored material copy with the library's
+        // (services/coreMaterialFreshness.js). Not the builder's calculateCoreLosses: nothing listens
+        // to this one, so it never lands in the builder's displays.
+        async calculateCoreLossesForMaterialCheck(core, coil, inputs, modelsData, operatingPointIndex) {
+            const mkf = await waitForMkf();
+            await mkf.ready;
+
+            const result = await mkf.calculate_core_losses(JSON.stringify(core), JSON.stringify(coil), JSON.stringify(inputs), JSON.stringify(modelsData), operatingPointIndex);
+            if (result.startsWith('Exception')) {
+                throw new Error(result);
+            }
+            return JSON.parse(result);
+        },
+
         coreTemperatureDependantParametersGotten(success = true, dataOrMessage = '') {
         },
 

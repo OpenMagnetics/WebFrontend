@@ -4,6 +4,9 @@ import { WaveformLabel } from 'WebSharedComponents/assets/ts/MAS.ts'
 import Ajv2020 from 'ajv/dist/2020'
 import addFormats from 'ajv-formats'
 import masSchemaBundle from 'WebSharedComponents/assets/js/masSchemas.json'
+import { findOutdatedCoreMaterial } from './coreMaterialFreshness.js'
+import { useCoreMaterialNoticeStore } from '../stores/coreMaterialNotice.js'
+import { engineUserSettingsSettled } from '../stores/engineDiagnostics.js'
 
 // Map every WaveformLabel enum value by its lowercase form so legacy documents
 // with capitalized labels ("Triangular", "Rectangular") resolve to the current
@@ -668,6 +671,8 @@ export async function loadMasIntoApp(doc, { masStore, stateStore, userStore, tas
     }
 
     prepareMasForImport(newMas);
+    // Every engine call below must see the user's engine settings (material-data extrapolation).
+    await engineUserSettingsSettled();
     await completeHarmonicsOnlySignals(newMas, taskQueueStore);
 
     const response = await checkAndFixMas(newMas, taskQueueStore);
@@ -762,8 +767,18 @@ export async function loadMasIntoApp(doc, { masStore, stateStore, userStore, tas
         }
     }
 
+    // Before the design replaces the current one: a notice left by the previous load must not
+    // describe this design.
+    const coreMaterialNotice = useCoreMaterialNoticeStore();
+    coreMaterialNotice.clear();
+    const outdatedCoreMaterial = await findOutdatedCoreMaterial(autocompletedMas, { taskQueueStore, userStore });
+    if (outdatedCoreMaterial != null) {
+        console.warn(`Imported MAS: the design's copy of core material '${outdatedCoreMaterial.name}' gives other core losses than the library's; the file's copy is kept`);
+    }
+
     masStore.resetMas();
     masStore.mas = autocompletedMas;
+    coreMaterialNotice.set(outdatedCoreMaterial);
     masStore.importedMas();
 
     // Reset coil view to Basic mode when loading a new MAS document
