@@ -568,6 +568,54 @@ async function completeHarmonicsOnlySignals(mas, taskQueueStore) {
     return mas;
 }
 
+// A signal's waveform and its harmonics are two descriptions of one signal, and a stored file can
+// carry them out of step: an edit that rewrote the waveform kept the harmonics of the old one (six
+// stored designs list a current harmonic at 12.8 MHz that the waveform does not hold). MKF refuses
+// such a design whole ("does not contain the harmonic its MAS harmonics list"). The waveform is the
+// truth (Alf, 2026-10-14): it is what the operating-point editor shows and edits. Where a stored
+// harmonic is one the waveform does not carry, by MKF's own test (its DFT amplitude there under
+// 1e-6 of the stored amplitude), the harmonics are replaced by MKF's from the waveform. Harmonics
+// that merely differ (another sampling of the same waveform) are left as they are, and so are the
+// processed values: MKF's calculate_processed can return a negative duty cycle, which the MAS
+// schema refuses, so writing them into a design that did not need them would refuse the load.
+function holdsHarmonicTheWaveformLacks(stored, fromWaveform) {
+    if (!Array.isArray(stored?.amplitudes) || !Array.isArray(stored?.frequencies)) return false;
+    for (let index = 0; index < stored.frequencies.length; index++) {
+        const amplitude = Math.abs(stored.amplitudes[index]);
+        if (!(amplitude > 0)) continue;
+        const match = fromWaveform.frequencies.findIndex((frequency) => Math.abs(frequency - stored.frequencies[index]) <= 1e-6 * Math.abs(frequency));
+        const computed = match < 0 ? 0 : Math.abs(fromWaveform.amplitudes[match]);
+        if (!(computed >= 1e-6 * amplitude)) return true;
+    }
+    return false;
+}
+
+async function alignHarmonicsWithTheirWaveforms(mas, taskQueueStore) {
+    for (const operatingPoint of (mas?.inputs?.operatingPoints || [])) {
+        for (const excitation of (operatingPoint?.excitationsPerWinding || [])) {
+            if (excitation == null) continue;
+            for (const signalName of ['current', 'voltage', 'magnetizingCurrent']) {
+                const signal = excitation[signalName];
+                if (signal?.waveform == null || signal.harmonics == null) continue;
+                const description = `'${operatingPoint.name ?? 'operating point'}', '${excitation.name ?? 'excitation'}' ${signalName}`;
+                let harmonics;
+                try {
+                    harmonics = await taskQueueStore.calculateHarmonics(signal.waveform, excitation.frequency);
+                } catch (error) {
+                    // The waveform itself is what MKF cannot read (e.g. a time axis that does not
+                    // span its period): nothing to align it with. The builder reports MKF's reason.
+                    console.warn(`Imported MAS: ${description}: MKF could not compute harmonics from its waveform, the stored ones are kept: ${error.message}`);
+                    continue;
+                }
+                if (!holdsHarmonicTheWaveformLacks(signal.harmonics, harmonics)) continue;
+                console.warn(`Imported MAS: ${description} listed harmonics its waveform does not carry; recomputed from the waveform`);
+                excitation[signalName] = { ...signal, harmonics };
+            }
+        }
+    }
+    return mas;
+}
+
 // A signal given by its processed data alone (label, peak to peak, offset, duty cycle) is a valid
 // MAS signal, and MKF builds its waveform and harmonics when it completes the design. When MKF
 // refuses the design that never happens, and the builder cannot ask MKF for anything on a current
@@ -674,6 +722,7 @@ export async function loadMasIntoApp(doc, { masStore, stateStore, userStore, tas
     // Every engine call below must see the user's engine settings (material-data extrapolation).
     await engineUserSettingsSettled();
     await completeHarmonicsOnlySignals(newMas, taskQueueStore);
+    await alignHarmonicsWithTheirWaveforms(newMas, taskQueueStore);
 
     const response = await checkAndFixMas(newMas, taskQueueStore);
 
