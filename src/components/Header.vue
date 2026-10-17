@@ -135,6 +135,14 @@ export default {
             startTourForContext(this.$route.name, this.$stateStore);
         },
         closeDropdowns() { this.openDropdown = null; this.navCollapseOpen = false; },
+        // A click inside a menu or on the toggler must not close it. Their @click.stop is not enough:
+        // Vue drops a handler for an event stamped before the handler was attached, and a wall
+        // clock that steps back (NTP, WSL time sync) makes a fresh click look older than that.
+        closeDropdownsOnOutsideClick(event) {
+            if (event.target instanceof Element && event.target.closest('#header_wrapper') &&
+                (event.target.closest('.nav-item.dropdown') || event.target.closest('.navbar-toggler'))) return;
+            this.closeDropdowns();
+        },
         async onNewPowerMagneticDesign() {
             this.$stateStore.resetMagneticTool();
             this.$stateStore.selectWorkflow("design");
@@ -355,7 +363,7 @@ export default {
         };
         this.$styleStore.setTheme(theme);
 
-        this._closeDropdownsBound = this.closeDropdowns.bind(this);
+        this._closeDropdownsBound = this.closeDropdownsOnOutsideClick.bind(this);
         document.addEventListener('click', this._closeDropdownsBound);
 
         // The header is position:fixed, so page content clears it with a top

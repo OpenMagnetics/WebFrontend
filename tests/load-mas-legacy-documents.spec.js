@@ -172,17 +172,19 @@ test.describe('legacy MAS documents load', () => {
 
   test('LOADMAS-LEGACY-10: a completed design MKF refuses opens as stored, and the builder says why', async ({ page }) => {
     const mas = fixture('multicolumn_e42_transformer.json');
-    // A real (not legacy-default) primary voltage whose volt-seconds do not balance: 0 / +60 V.
+    // A primary voltage given over its on-time alone (half the period), which MKF refuses. Until
+    // ABT #1855 this used a voltage whose volt-seconds do not balance; MKF now simulates that and
+    // reports it per operating point (SIMFIND-2).
     const excitation = mas.inputs.operatingPoints[0].excitationsPerWinding[0];
     const period = 1 / excitation.frequency;
-    excitation.voltage = { waveform: { data: [0, 60, 60, 0, 0], time: [0, 0, period / 2, period / 2, period] } };
+    excitation.voltage = { waveform: { data: [60, 60, 60], time: [0, period / 4, period / 2] } };
     const turns = mas.magnetic.coil.functionalDescription.map((winding) => winding.numberTurns);
     const warnings = [];
     page.on('console', (message) => { if (message.type() === 'warning') warnings.push(message.text()); });
-    const { mas: loaded } = await load(page, mas, 'unbalanced_transformer.json');
+    const { mas: loaded } = await load(page, mas, 'on_time_only_voltage.json');
     const refusals = warnings.filter((text) => text.includes('MKF could not complete this design'));
     expect(refusals.length, 'MKF refused the design').toBeGreaterThan(0);
-    expect(refusals[0]).toContain('not volt-second balanced');
+    expect(refusals[0]).toContain('a waveform must be given over exactly one period');
     expect(loaded.magnetic.coil.functionalDescription.map((winding) => winding.numberTurns)).toEqual(turns);
     await expect(page.locator('[data-cy$="-CalculationIssue"]').first()).toBeVisible({ timeout: 60000 });
   });
@@ -318,6 +320,100 @@ test.describe('legacy MAS documents load', () => {
     expect(Math.abs(voltSeconds) / absoluteVoltSeconds, 'net volt-seconds over the period, against the absolute ones').toBeLessThan(0.03);
   });
 
+  // The waveform of a loaded design spans one period of its frequency: closed, or (once MKF has
+  // sampled it) open by one step.
+  const spansOnePeriod = (waveform, period) => {
+    const { time } = waveform;
+    const span = time[time.length - 1] - time[0];
+    const step = time[time.length - 1] - time[time.length - 2];
+    return Math.min(Math.abs(span - period), Math.abs(span + step - period)) < 1e-3 * period;
+  };
+
+  const loadCorrections = (page) => page.evaluate(() => {
+    const pinia = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia;
+    return JSON.parse(JSON.stringify(pinia._s.get('loadCorrections').corrections));
+  });
+
+  async function openOperatingPointEditor(page) {
+    await page.locator('[data-cy="storyline-Op.Points-button"]').click();
+    const manual = page.locator('[data-cy="OperatingPoint-source-Manual-button"]').filter({ hasText: /manually/i }).first();
+    if (await manual.isVisible()) await manual.click();
+  }
+
+  test('LOADMAS-LEGACY-17: a waveform stored on a time axis 1000 times its period is scaled onto the period', async ({ page }) => {
+    // A stored 3C95 design: 60 kHz, every waveform on a 1 / 60 s axis, and a magnetizing current
+    // derived on that axis (36 kA). Alf, 2026-10-16: the frequency holds, the axis is scaled.
+    const mas = fixture('default_two_winding_pq2715.json');
+    const period = 1e-5;
+    const slipped = 1000 * period;
+    const [primary, secondary] = mas.inputs.operatingPoints[0].excitationsPerWinding;
+    for (const excitation of [primary, secondary]) {
+      excitation.frequency = 1 / period;
+      // Not the app's default shapes: those are put back on their period by their own rule.
+      excitation.current = { waveform: { data: [-3, 7, -3], time: [0, 0.4 * slipped, slipped] }, processed: { label: 'triangular', peakToPeak: 10, offset: 2, dutyCycle: 0.4 } };
+      excitation.voltage = { waveform: { data: [-40, 60, 60, -40, -40], time: [0, 0, 0.4 * slipped, 0.4 * slipped, slipped] }, processed: { label: 'rectangular', peakToPeak: 100, offset: 0, dutyCycle: 0.4 } };
+    }
+    primary.magnetizingCurrent = { waveform: { data: [-36000, 36000, -36000], time: [0, slipped / 2, slipped] }, processed: { label: 'triangular', peakToPeak: 72000, offset: 0, dutyCycle: 0.5 } };
+    const warnings = [];
+    page.on('console', (message) => { if (message.type() === 'warning') warnings.push(message.text()); });
+    const { mas: loaded } = await load(page, mas, 'time_axis_unit_slip.json');
+    expect(warnings.filter((text) => text.includes('MKF could not complete this design')), 'MKF completes the design').toEqual([]);
+    for (const excitation of loaded.inputs.operatingPoints[0].excitationsPerWinding) {
+      expect(excitation.frequency).toBe(1 / period);
+      for (const signalName of ['current', 'voltage']) {
+        expect(spansOnePeriod(excitation[signalName].waveform, period), `${excitation.name} ${signalName} spans ${period} s`).toBe(true);
+      }
+    }
+    // The magnetizing current derived on the slipped axis is gone; MKF derived it on the period.
+    const magnetizing = loaded.inputs.operatingPoints[0].excitationsPerWinding[0].magnetizingCurrent;
+    if (magnetizing != null) {
+      expect(Math.max(...magnetizing.waveform.data.map(Math.abs)), 'not the 36 kA derived on the slipped axis').toBeLessThan(1000);
+    }
+
+    const corrections = await loadCorrections(page);
+    expect(corrections.filter((correction) => correction.windingIndex === 0).map((correction) => correction.signal).sort()).toEqual(['current', 'magnetizingCurrent', 'voltage']);
+    expect(corrections.filter((correction) => correction.windingIndex === 1).map((correction) => correction.signal).sort()).toEqual(['current', 'voltage']);
+    await openOperatingPointEditor(page);
+    const note = page.locator('[data-cy$="-load-correction"]');
+    await expect(note).toContainText('Corrected when the file was loaded', { timeout: 60000 });
+    await expect(note).toContainText('its time axis was scaled to one period');
+    await expect(note).toContainText('MKF derives it again');
+  });
+
+  test('LOADMAS-LEGACY-18: a record that stops short of its period by less than a sample interval is closed', async ({ page }) => {
+    // A stored simulated flyback: unevenly sampled, ending 39 ns before 10 us (the closing sample
+    // is missing). Alf, 2026-10-16: the first value is repeated at the end of the period.
+    const mas = fixture('default_two_winding_pq2715.json');
+    const period = 1e-5;
+    const end = period - 3e-8;
+    const [primary, secondary] = mas.inputs.operatingPoints[0].excitationsPerWinding;
+    for (const excitation of [primary, secondary]) {
+      excitation.frequency = 1 / period;
+    }
+    primary.current = { waveform: { data: [-5, -1, 2.5, 5, 1, -4.9], time: [0, 2e-6, 3.5e-6, 5e-6, 7e-6, end] }, processed: { label: 'custom', peakToPeak: 10, offset: 0, dutyCycle: 0.5 } };
+    primary.voltage = { waveform: { data: [-50, 50, 50, -50, -50], time: [0, 0, 5e-6, 5e-6, end] }, processed: { label: 'custom', peakToPeak: 100, offset: 0, dutyCycle: 0.5 } };
+    // The open-sampled form MKF itself takes (uniform, open by exactly one step) is left alone.
+    const points = 128;
+    const step = period / points;
+    const openTime = Array.from({ length: points }, (_, index) => index * step);
+    secondary.current = { waveform: { data: openTime.map((time) => (time < period / 2 ? -5 + 20 * time / period : 5 - 20 * (time - period / 2) / period)), time: openTime }, processed: { label: 'custom', peakToPeak: 10, offset: 0, dutyCycle: 0.5 } };
+    secondary.voltage = { waveform: { data: openTime.map((time) => (time < period / 2 ? 50 : -50)), time: openTime }, processed: { label: 'custom', peakToPeak: 100, offset: 0, dutyCycle: 0.5 } };
+    const warnings = [];
+    page.on('console', (message) => { if (message.type() === 'warning') warnings.push(message.text()); });
+    const { mas: loaded } = await load(page, mas, 'record_short_of_its_period.json');
+    expect(warnings.filter((text) => text.includes('MKF could not complete this design')), 'MKF completes the design').toEqual([]);
+    for (const signalName of ['current', 'voltage']) {
+      expect(spansOnePeriod(loaded.inputs.operatingPoints[0].excitationsPerWinding[0][signalName].waveform, period), `primary ${signalName} spans ${period} s`).toBe(true);
+    }
+
+    const corrections = await loadCorrections(page);
+    expect(corrections.filter((correction) => correction.windingIndex === 0).map((correction) => correction.signal).sort()).toEqual(['current', 'voltage']);
+    expect(corrections.filter((correction) => correction.windingIndex === 1), 'the open-sampled secondary is not touched').toEqual([]);
+    await openOperatingPointEditor(page);
+    const note = page.locator('[data-cy$="-load-correction"]');
+    await expect(note).toContainText('its first value was repeated at the end of the period', { timeout: 60000 });
+  });
+
   test('LOADMAS-LEGACY-14: a design that names its core and wires opens with its magnetic completed when MKF refuses its operating point', async ({ page }) => {
     const mas = fixture('forward_xfmr_unknown_wire.json');
     for (const winding of mas.magnetic.coil.functionalDescription) {
@@ -325,17 +421,17 @@ test.describe('legacy MAS documents load', () => {
       winding.wire = 'Round 0.80 - Grade 1';
     }
     expect(typeof mas.magnetic.core.functionalDescription.shape, 'the fixture names its core shape').toBe('string');
-    // A primary voltage whose volt-seconds do not balance (0 / +60 V): MKF refuses the design.
+    // A primary voltage given over its on-time alone (half the period): MKF refuses the design.
     const excitations = mas.inputs.operatingPoints[0].excitationsPerWinding;
     const period = 1 / excitations[0].frequency;
-    excitations[0].voltage = { waveform: { data: [0, 60, 60, 0, 0], time: [0, 0, period / 2, period / 2, period] } };
+    excitations[0].voltage = { waveform: { data: [60, 60, 60], time: [0, period / 4, period / 2] } };
     expect(excitations[1].current.waveform, 'the other signals are given by their processed data alone').toBeUndefined();
     const warnings = [];
     page.on('console', (message) => { if (message.type() === 'warning') warnings.push(message.text()); });
-    const { mas: loaded } = await load(page, mas, 'named_parts_unbalanced.json');
+    const { mas: loaded } = await load(page, mas, 'named_parts_on_time_only.json');
     const refusals = warnings.filter((text) => text.includes('MKF could not complete this design'));
     expect(refusals.length, 'MKF refused the design').toBeGreaterThan(0);
-    expect(refusals[0]).toContain('not volt-second balanced');
+    expect(refusals[0]).toContain('a waveform must be given over exactly one period');
     expect(refusals[0]).toContain('opened with its magnetic completed');
     // The magnetic is MKF's completion of what the file names.
     const core = loaded.magnetic.core;
@@ -347,10 +443,10 @@ test.describe('legacy MAS documents load', () => {
     }
     expect(loaded.magnetic.coil.functionalDescription.map((winding) => winding.numberTurns))
       .toEqual(mas.magnetic.coil.functionalDescription.map((winding) => winding.numberTurns));
-    // The inputs are the file's: the unbalanced voltage is still there for the user to correct,
+    // The inputs are the file's: the on-time-only voltage is still there for the user to correct,
     // and the signals given by processed data alone have the waveform MKF builds from it.
     const loadedExcitations = loaded.inputs.operatingPoints[0].excitationsPerWinding;
-    expect(loadedExcitations[0].voltage.waveform.data).toEqual([0, 60, 60, 0, 0]);
+    expect(loadedExcitations[0].voltage.waveform.data).toEqual([60, 60, 60]);
     const builtCurrent = loadedExcitations[1].current;
     expect(builtCurrent.waveform.data.length).toBeGreaterThan(2);
     expect(Math.max(...builtCurrent.waveform.data) - Math.min(...builtCurrent.waveform.data))
@@ -363,7 +459,7 @@ test.describe('legacy MAS documents load', () => {
     }
     const issue = page.locator('[data-cy$="-CalculationIssue"]').first();
     await expect(issue).toBeVisible({ timeout: 60000 });
-    await expect(issue).toContainText('not volt-second balanced');
+    await expect(issue).toContainText('a waveform must be given over exactly one period');
   });
 
   test('LOADMAS-LEGACY-15: a signal MKF cannot build from its processed data refuses the load by name', async ({ page }) => {
@@ -371,8 +467,8 @@ test.describe('legacy MAS documents load', () => {
     for (const winding of mas.magnetic.coil.functionalDescription) winding.wire = 'Round 0.80 - Grade 1';
     const excitations = mas.inputs.operatingPoints[0].excitationsPerWinding;
     const period = 1 / excitations[0].frequency;
-    // MKF refuses the design (volt-seconds do not balance) ...
-    excitations[0].voltage = { waveform: { data: [0, 60, 60, 0, 0], time: [0, 0, period / 2, period / 2, period] } };
+    // MKF refuses the design (a voltage given over its on-time alone) ...
+    excitations[0].voltage = { waveform: { data: [60, 60, 60], time: [0, period / 4, period / 2] } };
     // ... and a 'custom' label has no shape MKF could build a waveform from.
     excitations[2].name = 'Auxiliary';
     excitations[2].current = { processed: { label: 'custom', peakToPeak: 2, offset: 10, dutyCycle: 0.35 } };
@@ -403,5 +499,52 @@ test.describe('legacy MAS documents load', () => {
     expect(warnings.filter((text) => text.includes('MKF could not complete')), 'MKF is not asked to complete a design without a core').toEqual([]);
     expect(loaded.magnetic.core.functionalDescription.shape).toBe('');
     expect(loaded.inputs.designRequirements.magnetizingInductance).toEqual(mas.inputs.designRequirements.magnetizingInductance);
+  });
+
+  // 45 of the 266 stored designs carry pre-1.0 labels: "Triangular", "Flyback Primary", "Rectangular
+  // With Deadtime", on the processed data and on the waveform's ancillaryLabel (the fixture's voltage
+  // is an old default the loader replaces, so the current carries both). MKF's bindings that
+  // parse a bare waveform read a label they do not know as bipolarRectangular, and since MKF
+  // 900418bf (ABT #1878) refuse a 3-point triangle labelled so (ABT #1881).
+  test('LOADMAS-LEGACY-19: pre-1.0 waveform labels, with capitals and spaces, load as their 1.0 spelling', async ({ page }) => {
+    const mas = fixture('etd49_wound_10uH_5T.json');
+    const { current } = mas.inputs.operatingPoints[0].excitationsPerWinding[0];
+    current.waveform.ancillaryLabel = 'Bipolar Triangular';
+    current.processed.label = 'Triangular';
+    // What the loader hands on. The store cannot show it: the Op. Points editor rebuilds a labelled
+    // waveform from its processed data, with a label of its own.
+    await page.goto(`${BASE_URL}/`, { waitUntil: 'domcontentloaded' });
+    const prepared = await page.evaluate(async (document) => {
+      const { prepareMasForImport } = await import('/src/services/loadMasIntoApp.js');
+      const copy = JSON.parse(JSON.stringify(document));
+      prepareMasForImport(copy);
+      return copy.inputs.operatingPoints[0].excitationsPerWinding[0];
+    }, mas);
+    expect(prepared.current.waveform.ancillaryLabel).toBe('bipolarTriangular');
+    expect(prepared.current.processed.label).toBe('triangular');
+    await load(page, mas, 'pre_1_0_labels.json');
+  });
+
+  test('LOADMAS-LEGACY-20: harmonics off the excitation-frequency grid load recomputed from the waveform', async ({ page }) => {
+    // 19 of the 266 stored designs list harmonics that are not multiples of their frequency: most
+    // spaced at f * 127 / 128 (a closed 128-point record an earlier MKF read as open), some
+    // magnetizing currents at f / 4. MKF's field plot refuses them ("99218.75 Hz is not a harmonic
+    // of the excitation frequency 100000 Hz"). Alf, 2026-10-16: the waveform is the truth, recompute
+    // them on load. MKF's completion of the loaded design already does: the harmonics it leaves are
+    // those of the stored waveform. This guards that a loaded design never keeps the stored list.
+    const mas = fixture('multicolumn_e42_transformer.json');
+    const [primary, secondary] = mas.inputs.operatingPoints[0].excitationsPerWinding;
+    const frequency = primary.frequency;
+    const offTheGrid = (harmonics) => harmonics.frequencies.some((value) => Math.abs(value / frequency - Math.round(value / frequency)) > 1e-6);
+    for (const signal of [primary.current, primary.voltage, secondary.magnetizingCurrent]) {
+      signal.harmonics.frequencies = signal.harmonics.frequencies.map((value) => value * 127 / 128);
+    }
+    const { mas: loaded } = await load(page, mas, 'harmonics_off_the_grid.json');
+    const [loadedPrimary, loadedSecondary] = loaded.inputs.operatingPoints[0].excitationsPerWinding;
+    for (const signalName of ['current', 'voltage']) {
+      expect(offTheGrid(loadedPrimary[signalName].harmonics), `primary ${signalName} harmonics are multiples of ${frequency} Hz`).toBe(false);
+      expect(loadedPrimary[signalName].waveform, `primary ${signalName} keeps its waveform`).toEqual(primary[signalName].waveform);
+    }
+    expect(offTheGrid(loadedSecondary.magnetizingCurrent.harmonics), 'secondary magnetizing current harmonics are multiples of the frequency').toBe(false);
   });
 });

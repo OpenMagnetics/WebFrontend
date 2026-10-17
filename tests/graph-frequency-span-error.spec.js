@@ -1,8 +1,10 @@
 /**
  * A graph whose frequency range starts below the material's complex
  * permeability data (Fair-Rite 97 is tabulated from 10 kHz; the graphs start
- * at 1 kHz) is refused by MKF. The impedance graph used to say only "Error
- * calculating impedance"; it must say why and what to change.
+ * at 1 kHz). MKF used to refuse it, and the graph had to say why and what to
+ * change. Since ABT #1861 (Alf, 2026-10-14) MKF estimates the permeability
+ * outside its measured span and says where: the graph draws that stretch
+ * dashed and names the material and its measured span under the chart.
  */
 import fs from 'node:fs';
 import { test, expect } from './_coverage.js';
@@ -13,7 +15,7 @@ const BASE_FIXTURE = new URL('./fixtures/04_forward_xfmr_e3216_n87.json', import
 test.describe('Builder graphs — frequency outside the material data', () => {
     test.describe.configure({ timeout: 180000 });
 
-    test('GRAPHSPAN-1: the impedance graph names the material range and the setting to change', async ({ page }, testInfo) => {
+    test('GRAPHSPAN-1: below the material data the impedance graph is dashed and names the measured span', async ({ page }, testInfo) => {
         const mas = JSON.parse(fs.readFileSync(BASE_FIXTURE, 'utf8'));
         mas.magnetic.core.functionalDescription.material = '97';
         const fixture = testInfo.outputPath('material_97.json');
@@ -37,8 +39,10 @@ test.describe('Builder graphs — frequency outside the material data', () => {
             ss.graphParameters.minimumFrequency = 1e3;
         });
 
-        const label = page.getByText(/Cannot calculate the impedance at 1 kHz: material 97 has complex permeability data only from 10 kHz to/);
-        await expect(label).toBeVisible({ timeout: 90000 });
-        await expect(label).toContainText('set the minimum frequency to at least 10 kHz');
+        const notes = page.locator('[data-cy$="-Graph-DataLimits"]');
+        await expect(notes).toContainText('Dashed, ', { timeout: 90000 });
+        await expect(notes).toContainText("97's");
+        await expect(notes).toContainText('is measured from');
+        await expect(page.getByText(/Cannot calculate the impedance/)).toHaveCount(0);
     });
 });

@@ -64,6 +64,8 @@ test.describe('Load MAS: a stored core material older than the library', () => {
         if (name == 'coreLossesCalculated' && args[0]) window.__builderCoreLosses.push(args[1].coreLossesData.coreLosses);
       });
     });
+    // Alf, 2026-10-16: one option that updates the material to the latest library data.
+    await expect(page.locator('[data-cy$="-OutdatedCoreMaterial-useLibrary"]')).toHaveText(`Update ${material.name} to the latest library data`);
     await page.locator('[data-cy$="-OutdatedCoreMaterial-useLibrary"]').click();
     await expect(notice).toHaveCount(0);
     await page.waitForFunction((expected) => (window.__builderCoreLosses ?? []).some((value) => Math.abs(value - expected) <= 0.01 * expected),

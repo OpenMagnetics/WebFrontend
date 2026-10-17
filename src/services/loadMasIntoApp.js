@@ -6,13 +6,15 @@ import addFormats from 'ajv-formats'
 import masSchemaBundle from 'WebSharedComponents/assets/js/masSchemas.json'
 import { findOutdatedCoreMaterial } from './coreMaterialFreshness.js'
 import { useCoreMaterialNoticeStore } from '../stores/coreMaterialNotice.js'
+import { useLoadCorrectionsStore } from '../stores/loadCorrections.js'
 import { engineUserSettingsSettled } from '../stores/engineDiagnostics.js'
 
-// Map every WaveformLabel enum value by its lowercase form so legacy documents
-// with capitalized labels ("Triangular", "Rectangular") resolve to the current
-// schema spelling case-insensitively.
-const waveformLabelByLowercase = Object.fromEntries(
-    Object.values(WaveformLabel).map((value) => [value.toLowerCase(), value]));
+// Map every WaveformLabel enum value by its lowercase, space-free form so legacy
+// documents with pre-1.0 labels ("Triangular", "Flyback Primary", "Rectangular
+// With Deadtime") resolve to the current schema spelling.
+const waveformLabelKey = (label) => label.toLowerCase().replace(/\s+/g, '');
+const waveformLabelByKey = Object.fromEntries(
+    Object.values(WaveformLabel).map((value) => [waveformLabelKey(value), value]));
 
 // Same null-stripping the MAS sentry applies before Convert validation:
 // quicktype optionals reject explicit null, and files exported by the app
@@ -287,6 +289,89 @@ function placeSeedExcitationsOnTheirPeriod(mas) {
     return mas;
 }
 
+const SIGNAL_DESCRIPTIONS = { current: 'current', voltage: 'voltage', magnetizingCurrent: 'magnetizing current' };
+
+// Whether MKF takes a time axis as one period of its frequency: the same rule as
+// WaveformProcessor::check_time_axis_spans_one_period (ABT #1467), a span within 1e-3 of the
+// period, closed, or on a uniform axis open by one step.
+function mkfTakesTimeAxis(time, period) {
+    const span = time[time.length - 1] - time[0];
+    const lastStep = time[time.length - 1] - time[time.length - 2];
+    const uniform = lastStep > 0 && time.slice(1).every((value, index) => Math.abs((value - time[index]) - lastStep) <= 1e-6 * lastStep);
+    return Math.abs(span - period) <= 1e-3 * period || (uniform && Math.abs(span + lastStep - period) <= 1e-3 * period);
+}
+
+// Two kinds of stored waveform whose time axis does not span 1 / frequency, which MKF refuses
+// since ABT #1467, are put on their period on load (Alf, 2026-10-16). Each correction is
+// reported per operating point and winding, and the Op. Points page shows it next to the signal.
+// - A time axis 1000 (or 1 / 1000) times the period: a unit slip (ms for us). The frequency
+//   holds: a 14-turn 3C95 transformer at 1.5 kV stored at 60 kHz on a 1 / 60 s axis gives a
+//   36 kA magnetizing current at 60 Hz, 33 A at 60 kHz. Time scales exactly, so the harmonics
+//   keep their amplitudes and the processed data its levels; only their frequencies and times
+//   scale with it. A stored magnetizing current was derived from the voltage on the wrong
+//   period, so its values are wrong as well: it is removed, and MKF derives it again.
+// - A record that stops before the end of its period by no more than its own longest sample
+//   interval (a simulated flyback ending 39 ns short of 10 us): the closing sample is missing.
+//   The waveform is periodic, so its first value is repeated at the end of the period. Not done
+//   to a stored magnetizing current: MKF derives that one itself, often on an axis of its own
+//   (ABT #1474, #1793), and never takes the stored one as an input.
+// An axis MKF takes is never touched (mkfTakesTimeAxis). Any other waveform that does not span
+// its period is left for MKF to refuse by name.
+function placeWaveformsOnTheirPeriod(mas, corrections) {
+    for (const [operatingPointIndex, operatingPoint] of (mas?.inputs?.operatingPoints || []).entries()) {
+        for (const [windingIndex, excitation] of (operatingPoint?.excitationsPerWinding || []).entries()) {
+            if (!(excitation?.frequency > 0)) continue;
+            const period = 1 / excitation.frequency;
+            const correct = (signalName, message) => {
+                corrections.push({ operatingPointIndex, operatingPointName: operatingPoint.name ?? null, windingIndex, signal: signalName, message });
+                console.warn(`Imported MAS: '${operatingPoint.name ?? 'operating point'}', winding ${windingIndex}: ${message}`);
+            };
+            for (const signalName of ['current', 'voltage', 'magnetizingCurrent']) {
+                const signal = excitation[signalName];
+                const time = signal?.waveform?.time;
+                const data = signal?.waveform?.data;
+                if (!Array.isArray(time) || !Array.isArray(data) || time.length < 2 || time.length !== data.length || time[0] !== 0) continue;
+                if (mkfTakesTimeAxis(time, period)) continue;
+                const span = time[time.length - 1];
+                const description = SIGNAL_DESCRIPTIONS[signalName];
+
+                const unitSlip = [1e3, 1e-3].find((factor) => Math.abs(span - factor * period) <= 1e-6 * factor * period);
+                if (unitSlip != null) {
+                    if (signalName === 'magnetizingCurrent') {
+                        delete excitation.magnetizingCurrent;
+                        correct(signalName, `the magnetizing current was stored over ${span} s, ${unitSlip} times the period of ${excitation.frequency} Hz, so its values were derived on the wrong period; it was removed and MKF derives it again`);
+                        continue;
+                    }
+                    const scale = period / span;
+                    signal.waveform.time = time.map((value) => value * scale);
+                    if (Array.isArray(signal.harmonics?.frequencies)) {
+                        signal.harmonics.frequencies = signal.harmonics.frequencies.map((value) => value / scale);
+                    }
+                    const processed = signal.processed;
+                    if (processed != null) {
+                        for (const key of ['effectiveFrequency', 'acEffectiveFrequency']) {
+                            if (typeof processed[key] === 'number') processed[key] /= scale;
+                        }
+                        if (typeof processed.deadTime === 'number') processed.deadTime *= scale;
+                    }
+                    correct(signalName, `the ${description} waveform was stored over ${span} s, ${unitSlip} times the period of ${excitation.frequency} Hz; its time axis was scaled to one period (${period} s)`);
+                    continue;
+                }
+
+                const steps = time.slice(1).map((value, index) => value - time[index]);
+                const longestStep = Math.max(...steps);
+                const gap = period - span;
+                if (signalName !== 'magnetizingCurrent' && gap > 0 && gap <= longestStep) {
+                    signal.waveform.time = [...time, period];
+                    signal.waveform.data = [...data, data[0]];
+                    correct(signalName, `the ${description} waveform stopped ${gap} s before the end of its period (${period} s); its first value was repeated at the end of the period`);
+                }
+            }
+        }
+    }
+    return mas;
+}
+
 // Topology names from before the MAS enum sweep (RFC 0007) that the case- and punctuation-
 // insensitive matcher in checkAndFixMas cannot map, because the word itself changed. Keyed by
 // the lowercase alphanumeric form.
@@ -341,7 +426,9 @@ function removeKeysOfOtherWireTypes(wire, description) {
 // autocomplete/simulate call with a console-only error and the whole builder
 // silently stops working (web bug reports #144/#145). Normalize the known
 // legacy spellings before anything validates the document.
-export function migrateLegacyMas(mas) {
+// `corrections` collects what was changed in a stored waveform (see placeWaveformsOnTheirPeriod),
+// for the caller to show.
+export function migrateLegacyMas(mas, corrections = []) {
     // The app's own "Download MAS file" export strips `outputs` (stale results),
     // but the engine's Mas parser requires the key — re-importing an exported
     // design failed mas_autocomplete with "key 'outputs' not found", leaving the
@@ -434,20 +521,25 @@ export function migrateLegacyMas(mas) {
     }
     migrateLegacyDefaultVoltages(mas);
     placeSeedExcitationsOnTheirPeriod(mas);
+    placeWaveformsOnTheirPeriod(mas, corrections);
     // Legacy exports capitalized waveform labels ("Triangular"). The engine's
     // from_json rejects them ("Input JSON does not conform to schema!") and the
     // worker call returns -1, which the builder then retries in a loop — the
     // loaded design floods the console and never renders losses. Normalize
-    // case-insensitively against the current enum.
+    // against the current enum, ignoring case and spaces. The waveform's
+    // ancillaryLabel too: MKF's bindings that parse a bare waveform read an
+    // unknown label as bipolarRectangular, and since MKF 900418bf (ABT #1878) a
+    // 3-point triangle labelled so is refused (ABT #1881).
     for (const operatingPoint of (mas?.inputs?.operatingPoints || [])) {
         for (const excitation of (operatingPoint?.excitationsPerWinding || [])) {
             if (excitation == null) continue;
             for (const signal of [excitation.current, excitation.voltage, excitation.magnetizingCurrent]) {
-                const label = signal?.processed?.label;
-                if (typeof label === 'string') {
-                    const canonical = waveformLabelByLowercase[label.toLowerCase()];
+                for (const [holder, key] of [[signal?.processed, 'label'], [signal?.waveform, 'ancillaryLabel']]) {
+                    const label = holder?.[key];
+                    if (typeof label !== 'string') continue;
+                    const canonical = waveformLabelByKey[waveformLabelKey(label)];
                     if (canonical && canonical !== label) {
-                        signal.processed.label = canonical;
+                        holder[key] = canonical;
                     }
                 }
             }
@@ -640,8 +732,8 @@ function seedOperatingPoint(numberWindings) {
 
 // Everything an imported document needs before the engine sees it that does not itself need
 // the engine: the legacy migrations, then the two schema-driven clean-ups.
-export function prepareMasForImport(mas) {
-    migrateLegacyMas(mas);
+export function prepareMasForImport(mas, corrections = []) {
+    migrateLegacyMas(mas, corrections);
     removeKeysTheSchemaDoesNotKnow(mas);
     quarantineInvalidOutputs(mas);
     return mas;
@@ -670,7 +762,8 @@ export async function loadMasIntoApp(doc, { masStore, stateStore, userStore, tas
         newMas.inputs.operatingPoints = [seedOperatingPoint(numberWindings)];
     }
 
-    prepareMasForImport(newMas);
+    const corrections = [];
+    prepareMasForImport(newMas, corrections);
     // Every engine call below must see the user's engine settings (material-data extrapolation).
     await engineUserSettingsSettled();
     await completeHarmonicsOnlySignals(newMas, taskQueueStore);
@@ -771,6 +864,8 @@ export async function loadMasIntoApp(doc, { masStore, stateStore, userStore, tas
     // describe this design.
     const coreMaterialNotice = useCoreMaterialNoticeStore();
     coreMaterialNotice.clear();
+    const loadCorrections = useLoadCorrectionsStore();
+    loadCorrections.clear();
     const outdatedCoreMaterial = await findOutdatedCoreMaterial(autocompletedMas, { taskQueueStore, userStore });
     if (outdatedCoreMaterial != null) {
         console.warn(`Imported MAS: the design's copy of core material '${outdatedCoreMaterial.name}' gives other core losses than the library's; the file's copy is kept`);
@@ -779,6 +874,7 @@ export async function loadMasIntoApp(doc, { masStore, stateStore, userStore, tas
     masStore.resetMas();
     masStore.mas = autocompletedMas;
     coreMaterialNotice.set(outdatedCoreMaterial);
+    loadCorrections.set(corrections);
     masStore.importedMas();
 
     // Reset coil view to Basic mode when loading a new MAS document

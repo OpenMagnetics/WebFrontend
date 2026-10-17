@@ -59,6 +59,35 @@ test.describe('MB – Group H – Wire Advise', () => {
     expect(wireType.length, 'wire type select must have a non-empty value after advise').toBeGreaterThan(0);
     expect(errors).toEqual([]);
   });
+
+  // ABT #1892: the advised coil's layers carry its interlayer insulation, which cannot be rebuilt
+  // from sections and turns; the builder took the advised sections and turns and left the layers
+  // out. The rewind that newWireCreated starts winds the layers again, but whatever runs before it
+  // (the core losses of the advised coil) saw a coil whose turns lay in layers it did not have.
+  // So the coil is read when the builder announces the new wire, before that rewind.
+  test('MB-H4 – Wire Advise keeps the advised coil\'s layers with its sections and turns', async ({ page }) => {
+    await goToBuilderStep(page);
+    await adviseCoreAndWait(page);
+    await page.evaluate(() => {
+      const pinia = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia;
+      const mas = pinia._s.get('mas');
+      window.__advisedCoils = [];
+      window.__coilsAtNewWire = [];
+      pinia._s.get('magneticBuilderTaskQueue').$onAction(({ name, after }) => {
+        if (name == 'adviseWire') after((result) => { if (result) window.__advisedCoils.push(JSON.parse(JSON.stringify(result.coil))); });
+        if (name == 'newWireCreated') window.__coilsAtNewWire.push(JSON.parse(JSON.stringify(mas.mas.magnetic.coil)));
+      });
+    });
+    await adviseWireAndWait(page);
+    const advised = await page.evaluate(() => window.__advisedCoils.at(-1));
+    expect(advised, 'the wire adviser returned a coil').toBeTruthy();
+    expect(advised.layersDescription?.length, 'the advised coil is wound in layers').toBeGreaterThan(0);
+
+    const coil = await page.evaluate(() => window.__coilsAtNewWire[0]);
+    expect(coil, 'the builder announced the advised wire').toBeTruthy();
+    expect(coil.turnsDescription).toEqual(advised.turnsDescription);
+    expect(coil.layersDescription, 'the builder took the advised layers with the advised turns').toEqual(advised.layersDescription);
+  });
 });
 
 // =====================================================================

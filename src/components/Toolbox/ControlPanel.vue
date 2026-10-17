@@ -109,16 +109,6 @@ export default {
             return this.masStore.mas.magnetic.coil.turnsDescription != null;
         },
     },
-    mounted () {
-        const url = import.meta.env.VITE_API_ENDPOINT + '/is_high_performance_backend_available';
-        this.$axios.post(url, {})
-        .then(response => {
-            this.isHighPerformanceBackendAvailable = response.data;
-        })
-        .catch(error => {
-            console.error(error);
-        });
-    },
     methods: {
         exportMASFile() {
             this.exportingMAS = true;
@@ -281,9 +271,25 @@ export default {
         closeDropdowns() {
             this.openDropdown = null;
         },
+        // A click inside a dropdown must not close it. The dropdowns' @click.stop is not enough:
+        // Vue drops a handler for an event stamped before the handler was attached, and a wall
+        // clock that steps back (NTP, WSL time sync) makes a fresh click look older than that.
+        closeDropdownsOnOutsideClick(event) {
+            if (event.target instanceof Element && event.target.closest('.dropdown') && this.$el.contains(event.target)) return;
+            this.closeDropdowns();
+        },
     },
     mounted() {
-        this._closeDropdownsBound = this.closeDropdowns.bind(this);
+        const url = import.meta.env.VITE_API_ENDPOINT + '/is_high_performance_backend_available';
+        this.$axios.post(url, {})
+        .then(response => {
+            this.isHighPerformanceBackendAvailable = response.data;
+        })
+        .catch(error => {
+            console.error(error);
+        });
+
+        this._closeDropdownsBound = this.closeDropdownsOnOutsideClick.bind(this);
         document.addEventListener('click', this._closeDropdownsBound);
     },
     beforeUnmount() {

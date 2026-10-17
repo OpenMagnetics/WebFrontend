@@ -1,6 +1,7 @@
 <script setup>
 import { useMasStore } from '../../../stores/mas'
 import { useTaskQueueStore } from '../../../stores/taskQueue'
+import { useLoadCorrectionsStore } from '../../../stores/loadCorrections'
 import OperatingPointManual from './OperatingPointManual.vue'
 import OperatingPointHarmonics from './OperatingPointHarmonics.vue'
 import OperatingPointCircuitSimulator from './OperatingPointCircuitSimulator.vue'
@@ -57,12 +58,18 @@ export default {
         return {
             masStore,
             taskQueueStore,
+            loadCorrectionsStore: useLoadCorrectionsStore(),
             loadedFile: "",
             importErrorMessage: "",
             importErrorTimeout: null,
         }
     },
     computed: {
+        // What the load changed in this winding's stored waveforms (loadMasIntoApp.js,
+        // placeWaveformsOnTheirPeriod), shown whichever editor the point is in.
+        loadCorrections() {
+            return this.loadCorrectionsStore.of(this.currentOperatingPointIndex, this.currentWindingIndex);
+        },
     },
     watch: { 
     },
@@ -206,6 +213,13 @@ export default {
             <span>Operating Point</span>
         </div>
         <div class="op-detail-body">
+            <div v-if="loadCorrections.length > 0" class="op-load-correction" role="status" :data-cy="dataTestLabel + '-load-correction'">
+                <i class="pi pi-info-circle"></i>
+                <div>
+                    <div>Corrected when the file was loaded:</div>
+                    <div v-for="(correction, index) in loadCorrections" :key="index">{{ correction.message.charAt(0).toUpperCase() + correction.message.slice(1) }}.</div>
+                </div>
+            </div>
             <OperatingPointManual
                 v-if="$stateStore.operatingPoints.modePerPoint[currentOperatingPointIndex] === $stateStore.OperatingPointsMode.Manual"
                 :currentOperatingPointIndex="currentOperatingPointIndex"
@@ -279,6 +293,20 @@ export default {
 </template>
 
 <style scoped>
+.op-load-correction {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.4rem;
+    margin: 0 0 0.75rem;
+    padding: 0.4rem 0.6rem;
+    background: rgb(var(--p-warning-rgb) / 0.12);
+    border: 1px solid rgb(var(--p-warning-rgb) / 0.4);
+    border-radius: 8px;
+    color: var(--p-warning);
+    font-size: 0.78rem;
+    line-height: 1.3;
+}
+
 .op-detail-panel {
     display: flex;
     flex-direction: column;

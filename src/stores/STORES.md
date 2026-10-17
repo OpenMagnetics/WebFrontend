@@ -56,8 +56,10 @@ Used only by the package that owns them. Safe to refactor freely.
 | `catalog` | MagneticBuilder | Catalog tool filters + advises |
 | `crossReferencer` | MagneticBuilder | Cross-referencer tool state |
 | `storedCoilLayout` | MagneticBuilder | Per MAS store id, a hash of the wind inputs a loaded, already wound coil stands for; the coil panel keeps the stored layout while the hash matches and winds once it does not (ABT #1838). Persisted (a page reload must not wind the loaded coil either) and in the storeVersioning wipe list; holds no design data |
+| `simulationFindings` | MagneticBuilder | Per MAS store id, MKF's findings on the last simulation (`analyze_results`, ABT #1855: saturation, volt-second imbalance, temperature limits), shown above the builder grouped by operating point; replaced by every simulation, dropped when one fails or the design changes. Not persisted, not part of the MAS |
 | `auth` | WebFrontend | Optional account session (mirrors `/auth/me`; not persisted — cookie is the source of truth) |
 | `coreMaterialNotice` | WebFrontend | The outdated core material copy the last loaded design carries (core losses differ from the library's by more than 10 %), shown above the builder until the user switches or keeps it. Not persisted |
+| `loadCorrections` | WebFrontend | What the last load changed in the design's stored waveforms (a time axis 1000 times its period scaled onto it, a record short of its period closed), per operating point and winding, shown on the Op. Points page next to the point. Not persisted |
 | `cloudDesign` | WebFrontend | Link between the local working design and its server-side "My Designs" entry (persisted; deliberately NOT in the storeVersioning wipe list, like `customParts`) |
 
 ## Theme selection

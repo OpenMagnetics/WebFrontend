@@ -64,6 +64,13 @@ async function installRouteFixtures(page) {
     }
   });
 
+  // /is_high_performance_backend_available is asked by every ControlPanel mount (enables the
+  // ANSYS export). The backend isn't running in the test env, so answer "not available";
+  // tests that need the other answer register their own route, which takes precedence.
+  await page.route('**/is_high_performance_backend_available', async (route) => {
+    route.fulfill({ status: 200, contentType: 'application/json', body: 'false' });
+  });
+
   // /load_external_core_materials is fire-and-forget from main.js; return 200.
   await page.route('**/load_external_core_materials', async (route) => {
     route.fulfill({ status: 200, body: '{}' });

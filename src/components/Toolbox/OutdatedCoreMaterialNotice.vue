@@ -7,7 +7,8 @@ import { deepCopy } from 'WebSharedComponents/assets/js/utils.js'
 <script>
 // The loaded design's core material is an older copy than the library's and gives other core
 // losses (services/coreMaterialFreshness.js). Says so with MKF's numbers for both, and lets the
-// user switch to the library's copy or keep the file's (Alf, 2026-10-14: warn, keep the file's copy).
+// user switch to the library's copy or keep the file's (Alf, 2026-10-14: warn, keep the file's copy;
+// 2026-10-16: keep the rule, and offer one option that updates to the latest library data).
 export default {
     props: {
         dataTestLabel: {
@@ -65,7 +66,7 @@ export default {
             :data-cy="dataTestLabel + '-OutdatedCoreMaterial-useLibrary'"
             @click="useLibraryMaterial"
         >
-            Use the library's {{finding.name}}
+            Update {{finding.name}} to the latest library data
         </button>
         <button
             type="button"
