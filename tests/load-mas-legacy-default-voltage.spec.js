@@ -32,5 +32,5 @@ test('LOADMAS-LEGACYV-1: a transformer saved with the old default voltages loads
   expect(Math.max(...loaded.secondary)).toBeCloseTo(50 / loaded.turnsRatio, 9);
   expect(Math.min(...loaded.secondary)).toBeCloseTo(-50 / loaded.turnsRatio, 9);
   expect(warnings.some((text) => text.includes('old default voltage')), 'the primary migration is reported').toBe(true);
-  expect(warnings.some((text) => text.includes('ABT #1670')), 'the secondary migration is reported').toBe(true);
+  expect(warnings.some((text) => text.includes('older versions wrote when reflecting a winding')), 'the secondary migration is reported').toBe(true);
 });

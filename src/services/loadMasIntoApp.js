@@ -247,7 +247,7 @@ function migrateLegacyDefaultVoltages(mas) {
                     time: [...primaryVoltage.waveform.time],
                 },
             };
-            console.warn(`Imported MAS: '${operatingPoint.name ?? 'operating point'}', winding ${windingIndex} carried the 0 / -100 V voltage the ABT #1670 reflect bug wrote; replaced by the primary voltage over the turns ratio (${turnsRatio})`);
+            console.warn(`Imported MAS: '${operatingPoint.name ?? 'operating point'}', winding ${windingIndex} carried the 0 / -100 V voltage that older versions wrote when reflecting a winding; replaced by the primary voltage over the turns ratio (${turnsRatio})`);
         }
     }
     return mas;

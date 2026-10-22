@@ -255,7 +255,7 @@ export const useTaskQueueStore = defineStore('taskQueue', {
             const wanted = unitSystem() === 'imperial' ? 'NEMA MW 1000 C' : 'IEC 60317';
             return updateEngineSettings(mkf, (settings) => {
                 if (!('preferredWireStandard' in settings)) {
-                    throw new Error('Engine settings do not expose preferredWireStandard: libMKF is older than the wire-standard preference (ABT #1110)');
+                    throw new Error('Engine settings do not expose preferredWireStandard: libMKF is older than the wire-standard preference');
                 }
                 settings.preferredWireStandard = wanted;
             }, engineCall);
