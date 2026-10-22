@@ -1,5 +1,5 @@
 /**
- * Every builder graph says why the engine refused its sweep. Seven of them
+ * Every builder graph says why the engine refused its sweep, in the chart and in the Engine log. Seven of them
  * used to drop the error into the console and show an empty chart (ABT #1669).
  *
  * The sweep is made to fail in-page with a known engine-style message, one
@@ -60,6 +60,8 @@ test.describe('Builder graphs report a refused sweep (ABT #1669)', () => {
                 await expect.poll(async () => (await engineLogRecords(page, { level: 'ERROR' }))
                     .some((r) => r.module.endsWith(' graph') && r.message.includes(`Error calculating ${each}: the engine refused this sweep`)),
                     { timeout: 60000 }).toBe(true);
+                // And where the chart would be, so an empty graph is never left unexplained (Alf, 2026-10-23).
+                await expect(page.locator('[data-cy$="-Graph-ErrorMessage"]').filter({ hasText: `Error calculating ${each}: the engine refused this sweep` }).first()).toBeVisible({ timeout: 10000 });
             }
         });
     }
