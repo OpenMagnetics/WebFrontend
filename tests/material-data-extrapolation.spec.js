@@ -8,6 +8,7 @@
  */
 import { test, expect } from './_coverage.js';
 import { BASE_URL } from './utils/env.js';
+import { engineLogMessages } from './utils/index.js';
 
 const FIXTURE = new URL('./fixtures/pq2715_95_1mhz_outside_steinmetz_span.json', import.meta.url).pathname;
 
@@ -43,7 +44,7 @@ test.describe('Material data extrapolation (ABT #1652)', () => {
         await expect(record).toBeVisible({ timeout: 120000 });
         await expect(record).toContainText('extrapolated');
         await expect(record).toContainText('1000000');
-        await expect(page.locator('[data-cy$="-CalculationIssue"]').filter({ hasText: 'MATERIAL_FREQUENCY_OUT_OF_SPAN' })).toHaveCount(0);
+        expect((await engineLogMessages(page, { source: 'Builder', level: 'ERROR' })).filter((m) => m.includes('MATERIAL_FREQUENCY_OUT_OF_SPAN'))).toEqual([]);
     });
 
     test('EXTRAP-2: switched off (and kept off across a reload), the engine refuses and the builder says why', async ({ page }) => {
@@ -54,6 +55,8 @@ test.describe('Material data extrapolation (ABT #1652)', () => {
         await openApp(page);
         expect(await persistedChoice(page)).toBe(false);
         await loadFixtureIntoBuilder(page);
-        await expect(page.locator('[data-cy$="-CalculationIssue"]').filter({ hasText: 'MATERIAL_FREQUENCY_OUT_OF_SPAN' }).first()).toBeVisible({ timeout: 120000 });
+        // ... in the Engine log (Alf, 2026-10-22: not a banner over the cards).
+        await expect.poll(async () => (await engineLogMessages(page, { source: 'Builder', level: 'ERROR' })).some((m) => m.includes('MATERIAL_FREQUENCY_OUT_OF_SPAN')),
+            { timeout: 120000 }).toBe(true);
     });
 });

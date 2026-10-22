@@ -1,12 +1,15 @@
 /**
  * ABT #1855 (Alf, 2026-10-14): a saturating operating point gives a saturation warning for that point
  * and does not stop the simulation of the others. MKF's simulate returns numbers for every point;
- * analyze_results says which of them describe a saturated core, and the builder shows that next to
- * the point.
+ * analyze_results says which of them describe a saturated core, and the Engine log says so for the
+ * point (Alf, 2026-10-22: no warning is drawn over the builder's cards).
  */
 import fs from 'node:fs';
 import { test, expect } from './_coverage.js';
 import { BASE_URL } from './utils.js';
+import { engineLogMessages } from './utils/index.js';
+
+const findings = (page) => engineLogMessages(page, { source: 'Simulation findings', level: 'WARNING' });
 
 const fixture = (name) => JSON.parse(fs.readFileSync(new URL(`./fixtures/${name}`, import.meta.url).pathname, 'utf8'));
 
@@ -46,10 +49,10 @@ test.describe('Simulation findings per operating point (ABT #1855)', () => {
     await page.waitForURL('**/magnetic_tool**', { timeout: 120000 });
     expect(alerts, 'the load is not refused').toEqual([]);
 
-    const slowPoint = page.locator('[data-cy$="-SimulationFindings-1"]');
-    await expect(slowPoint).toContainText('Twenty times slower', { timeout: 180000 });
-    await expect(slowPoint).toContainText('The core saturates');
-    await expect(page.locator('[data-cy$="-SimulationFindings-0"]').filter({ hasText: 'saturates' })).toHaveCount(0);
+    await expect.poll(async () => (await findings(page)).filter((m) => m.startsWith('Twenty times slower: ') && m.includes('The core saturates')).length,
+      { timeout: 180000 }).toBe(1);
+    expect((await findings(page)).filter((m) => m.startsWith('Nominal: ') && m.includes('saturates'))).toEqual([]);
+    await expect(page.locator('[data-cy$="-SimulationFindings"]'), 'no findings banner over the cards').toHaveCount(0);
 
     // Both points were simulated: the saturating one does not take the other's numbers with it.
     const outputs = await page.evaluate(() => {
@@ -80,9 +83,9 @@ test.describe('Simulation findings per operating point (ABT #1855)', () => {
     await page.waitForURL('**/magnetic_tool**', { timeout: 120000 });
     expect(alerts, 'the load is not refused').toEqual([]);
     expect(warnings.filter((text) => text.includes('MKF could not complete this design')), 'MKF completes the design').toEqual([]);
-    const point = page.locator('[data-cy$="-SimulationFindings-0"]');
-    await expect(point).toContainText('not volt-second balanced', { timeout: 180000 });
-    await expect(point).toContainText('the mean removed');
-    await expect(page.locator('[data-cy$="-CalculationIssue"]')).toHaveCount(0);
+    await expect.poll(async () => (await findings(page)).filter((m) => m.includes('not volt-second balanced') && m.includes('the mean removed')).length,
+      { timeout: 180000 }).toBe(1);
+    expect(await engineLogMessages(page, { source: 'Builder' }), 'no calculation failed').toEqual([]);
+    await expect(page.locator('[data-cy$="-SimulationFindings"]'), 'no findings banner over the cards').toHaveCount(0);
   });
 });

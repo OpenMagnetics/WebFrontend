@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { waitForMkf, updateEngineSettings } from 'WebSharedComponents/assets/js/mkfRuntime'
 import { useSettingsStore } from '/src/stores/settings'
+import { useMasStore } from '/src/stores/mas'
 
 // Engine settings an advanced user changes in Settings, and MKF's own log for advanced users.
 //
@@ -30,6 +31,20 @@ export function drainEngineLogAfterCoreLossCalculations({ store }) {
     store.$onAction(({ name, after }) => {
         if (!CORE_LOSS_ACTIONS.has(name)) return;
         after(() => useEngineDiagnosticsStore().drainExtrapolationWarnings());
+    }, true);
+}
+
+// The builder's findings on its last simulation (ABT #1855; the simulationFindings store) are
+// warnings in this log, not a banner above the builder's cards (Alf, 2026-10-22): each simulation's
+// findings replace the previous simulation's, and a failed simulation drops them.
+export const SIMULATION_FINDINGS_MODULE = 'Simulation findings';
+export function logSimulationFindings({ store }) {
+    if (store.$id !== 'simulationFindings') return;
+    store.$onAction(({ name, args, after }) => {
+        // The findings of the design being built (the app's MAS store), not of a comparison copy.
+        if (args[0] !== useMasStore().$id) return;
+        if (name === 'set') after(() => useEngineDiagnosticsStore().replaceSimulationFindings(args[1]));
+        else if (name === 'clear') after(() => useEngineDiagnosticsStore().replaceSimulationFindings([]));
     }, true);
 }
 
@@ -251,6 +266,37 @@ export const useEngineDiagnosticsStore = defineStore('engineDiagnostics', {
             }
             if (this.records.length > MAXIMUM_RECORDS) {
                 this.records = this.records.slice(-MAXIMUM_RECORDS);
+            }
+        },
+
+        // A record that does not come from MKF's collector (the builder's calculation failures, what a
+        // load corrected): the same message from the same source as the last record counts up.
+        addRecord(level, module, message) {
+            if (!ENGINE_LOG_LEVELS.includes(level)) {
+                throw new Error(`Unknown engine log level '${level}'`);
+            }
+            const last = this.records[this.records.length - 1];
+            if (last != null && last.level === level && last.module === module && last.message === message) {
+                last.count += 1;
+                last.timestamp = new Date().toISOString();
+                return;
+            }
+            this.records.push({ id: this.nextRecordId++, timestamp: new Date().toISOString(), level, module, message, count: 1 });
+            if (this.records.length > MAXIMUM_RECORDS) {
+                this.records = this.records.slice(-MAXIMUM_RECORDS);
+            }
+        },
+
+        // findings: [{operatingPointIndex, operatingPointName?, code, message}] from analyze_results.
+        // MKF's message opens with the point it is about; the record names it once, in front.
+        replaceSimulationFindings(findings) {
+            this.records = this.records.filter((record) => record.module !== SIMULATION_FINDINGS_MODULE);
+            const operatingPoints = useMasStore().mas.inputs?.operatingPoints ?? [];
+            for (const finding of findings) {
+                const index = finding.operatingPointIndex;
+                const pointName = finding.operatingPointName ?? operatingPoints[index]?.name ?? `Operating point ${index + 1}`;
+                const message = finding.message.replace(/^At operating point \d+( \('[^']*'\))?(: |, )/, '');
+                this.addRecord('WARNING', SIMULATION_FINDINGS_MODULE, `${pointName}: ${message.charAt(0).toUpperCase() + message.slice(1)}`);
             }
         },
 

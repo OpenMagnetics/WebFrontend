@@ -13,6 +13,9 @@
  */
 import { test, expect } from './_coverage.js';
 import { BASE_URL } from './utils/env.js';
+import { engineLogMessages } from './utils/index.js';
+
+const fitWarnings = async (page) => (await engineLogMessages(page, { source: 'Magnetic drawing', level: 'WARNING' })).filter((m) => m.includes('does not fit'));
 
 const MAS_FIXTURE = new URL('./fixtures/pq65_stacked_sections_real_winding_unfit.json', import.meta.url).pathname;
 const PLOT = '[data-cy="MagneticAdvise-core-field-plot-image"]';
@@ -48,22 +51,23 @@ test.describe('2D real winding — a coil that does not fit', () => {
         const plotSvg = page.locator(`${PLOT} svg`).first();
         await expect(plotSvg).toBeVisible({ timeout: 120000 });
         await expect(page.locator(`${PLOT} .fit_problem_turn`)).toHaveCount(0);
-        await expect(page.locator('[data-cy$="-FitWarning"]')).toHaveCount(0);
+        expect(await fitWarnings(page)).toEqual([]);
 
-        // Real winding on: the same view redraws the re-wound coil, with the overflow marked.
+        // Real winding on: the same view redraws the re-wound coil, with the overflow marked, and the
+        // reason is a warning in the Engine log (Alf, 2026-10-22: not text under the drawing).
         await setRealWinding(page, true);
-        const warning = page.locator('[data-cy$="-FitWarning"]').first();
-        await expect(warning).toBeVisible({ timeout: 180000 });
-        await expect(warning).toContainText('does not fit');
+        await expect.poll(async () => (await fitWarnings(page)).length, { timeout: 180000 }).toBeGreaterThan(0);
+        await expect(page.locator('[data-cy$="-FitWarning"]'), 'nothing drawn under the plot').toHaveCount(0);
         await expect(page.locator(`${PLOT} svg`).first()).toBeVisible();
         expect(await page.locator(`${PLOT} .fit_problem_turn`).count(), 'no escaping turn is ringed').toBeGreaterThan(0);
         expect(await page.locator(`${PLOT} .fit_problem_window`).count(), 'the winding window is not outlined').toBeGreaterThan(0);
         // The reason travels as a warning, not as an error that replaces the drawing.
-        await expect(page.locator('[data-cy$="-ErrorMessage"]').first()).toHaveText('');
+        expect(await engineLogMessages(page, { source: 'Magnetic drawing', level: 'ERROR' })).toEqual([]);
 
-        // And off again: the warning goes with it.
+        // And off again: the overflow marks go, and no new warning is logged.
+        const warningsWithRealWinding = (await fitWarnings(page)).length;
         await setRealWinding(page, false);
-        await expect(page.locator('[data-cy$="-FitWarning"]')).toHaveCount(0, { timeout: 120000 });
-        await expect(page.locator(`${PLOT} .fit_problem_turn`)).toHaveCount(0);
+        await expect(page.locator(`${PLOT} .fit_problem_turn`)).toHaveCount(0, { timeout: 120000 });
+        expect((await fitWarnings(page)).length).toBe(warningsWithRealWinding);
     });
 });

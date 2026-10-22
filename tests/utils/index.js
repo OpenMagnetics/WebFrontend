@@ -22,3 +22,4 @@ export * from './catalog.js';
 export * from './battery.js';
 export * from './verification.js';
 export * from './flows.js';
+export * from './engineLog.js';

@@ -181,10 +181,9 @@ export async function runCoreAdviser(page, { timeoutMs = 120_000 } = {}) {
       const core = store?.mas?.magnetic?.core?.functionalDescription;
       const shape = typeof core?.shape === 'string' ? core.shape : core?.shape?.name;
       if (shape && shape !== '') return true;
-      // Error label is `text-danger` inside the core selector; match by text.
-      const err = Array.from(document.querySelectorAll('label.text-danger'))
-        .some(el => /No core can be advised/i.test(el.textContent || ''));
-      return err;
+      // The core selector's error is a record in the Engine log (notices.js); match by text.
+      return (app?.config?.globalProperties?.$pinia?._s?.get?.('engineDiagnostics')?.records ?? [])
+        .some(r => /No core can be advised/i.test(r.message));
     }, { timeout: timeoutMs });
 
     const result = await page.evaluate(() => {
@@ -193,12 +192,12 @@ export async function runCoreAdviser(page, { timeoutMs = 120_000 } = {}) {
       const core = store?.mas?.magnetic?.core?.functionalDescription;
       const shape = typeof core?.shape === 'string' ? core.shape : core?.shape?.name ?? null;
       const material = typeof core?.material === 'string' ? core.material : core?.material?.name ?? null;
-      const errEl = Array.from(document.querySelectorAll('label.text-danger'))
-        .find(el => /No core can be advised/i.test(el.textContent || ''));
+      const errRecord = (app?.config?.globalProperties?.$pinia?._s?.get?.('engineDiagnostics')?.records ?? [])
+        .find(r => /No core can be advised/i.test(r.message));
       return {
         shape,
         material,
-        onPageError: errEl ? errEl.textContent.trim().slice(0, 200) : null,
+        onPageError: errRecord ? errRecord.message.trim().slice(0, 200) : null,
       };
     });
     if (!result.shape || !result.material) {

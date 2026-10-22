@@ -7,6 +7,7 @@ import masSchemaBundle from 'WebSharedComponents/assets/js/masSchemas.json'
 import { findOutdatedCoreMaterial } from './coreMaterialFreshness.js'
 import { useCoreMaterialNoticeStore } from '../stores/coreMaterialNotice.js'
 import { useLoadCorrectionsStore } from '../stores/loadCorrections.js'
+import { reportNotice } from 'WebSharedComponents/assets/js/notices.js'
 import { engineUserSettingsSettled } from '../stores/engineDiagnostics.js'
 
 // Map every WaveformLabel enum value by its lowercase, space-free form so legacy
@@ -372,6 +373,22 @@ function placeWaveformsOnTheirPeriod(mas, corrections) {
     return mas;
 }
 
+// MKF refers every winding current to the primary winding (the MAS excitation convention), so
+// since ABT #1843 it refuses a coil without one. A coil with one winding has nothing else to be
+// primary to: a winding stored on another side is put on the primary side (Alf, 2026-10-18), and
+// the correction is reported for the design rather than for an operating point. With more
+// windings the reference cannot be guessed, and MKF's refusal stands.
+function putLoneWindingOnThePrimarySide(mas, corrections) {
+    const windings = mas?.magnetic?.coil?.functionalDescription;
+    if (!Array.isArray(windings) || windings.length !== 1) return;
+    const winding = windings[0];
+    if (typeof winding?.isolationSide !== 'string' || winding.isolationSide === 'primary') return;
+    const message = `the design's only winding ('${winding.name}') was stored on the ${winding.isolationSide} side; a single winding is the primary, so it was put on the primary side`;
+    winding.isolationSide = 'primary';
+    corrections.push({ operatingPointIndex: null, operatingPointName: null, windingIndex: 0, signal: null, message });
+    console.warn(`Imported MAS: ${message}`);
+}
+
 // Topology names from before the MAS enum sweep (RFC 0007) that the case- and punctuation-
 // insensitive matcher in checkAndFixMas cannot map, because the word itself changed. Keyed by
 // the lowercase alphanumeric form.
@@ -474,6 +491,7 @@ export function migrateLegacyMas(mas, corrections = []) {
     for (const [windingIndex, winding] of (mas?.magnetic?.coil?.functionalDescription || []).entries()) {
         removeKeysOfOtherWireTypes(winding?.wire, `winding ${windingIndex} wire`);
     }
+    putLoneWindingOnThePrimarySide(mas, corrections);
     // Distributor prices used to be a bare number; MAS now needs {value, currency}, and the
     // currency of an old price is not in the file. The price is dropped, the distributor kept.
     for (const part of [mas?.magnetic, mas?.magnetic?.core, mas?.magnetic?.coil?.bobbin]) {
@@ -875,6 +893,11 @@ export async function loadMasIntoApp(doc, { masStore, stateStore, userStore, tas
     masStore.mas = autocompletedMas;
     coreMaterialNotice.set(outdatedCoreMaterial);
     loadCorrections.set(corrections);
+    // What the load changed in the magnetic itself is reported in the Engine log; waveform
+    // corrections are shown on the Op. Points page, next to their signal.
+    for (const correction of corrections.filter((correction) => correction.operatingPointIndex == null)) {
+        reportNotice('WARNING', 'Load', `This file was corrected on load: ${correction.message}`);
+    }
     masStore.importedMas();
 
     // Reset coil view to Basic mode when loading a new MAS document

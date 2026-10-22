@@ -724,7 +724,7 @@ export default {
         border-radius: 0.5rem;
         border: 1px solid var(--p-primary);
         background: var(--p-dark);
-        color: var(--p-light);
+        color: var(--p-white);
         box-shadow: 0 4px 16px rgba(var(--p-black-rgb), 0.35);
     }
 

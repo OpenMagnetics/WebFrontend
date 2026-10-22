@@ -13,11 +13,17 @@
  * the sweep fails again on every wind.
  *
  * Signal: wait until the taskQueue reports the failed sweep (the very event
- * that used to raise the banner), then require the chart's own label and no
- * banner.
+ * that used to raise the banner), then require the chart's own record and no
+ * builder record. Since 2026-10-22 (Alf) both live in the Engine log, not on
+ * the page: the chart's failure is logged under the chart's name, and a design
+ * failure would be logged under 'Builder'.
  */
 import { test, expect } from './_coverage.js';
 import { BASE_URL } from './utils/env.js';
+import { engineLogMessages } from './utils/index.js';
+
+const TP5_REFUSED = 'Complex permeability data is not available for TP5';
+const chartRecords = async (page) => (await engineLogMessages(page, { source: 'Impedance Over Frequency graph', level: 'ERROR' })).filter((m) => m.includes(TP5_REFUSED));
 
 const MAS_FIXTURE = new URL('./fixtures/flyback_e16_tdg_tp5_no_complex_permeability.json', import.meta.url).pathname;
 
@@ -45,14 +51,14 @@ test.describe('Magnetic Builder — a chart-local failure is not a design failur
             ss.graphParameters.graph = 'impedanceOverFrequency';
         });
 
-        // The chart explains the refused sweep where the chart is: MKF has no
-        // complex permeability for TP5, and the graph says so under itself.
-        const chartLabel = page.getByText('Complex permeability data is not available for TP5');
-        await expect(chartLabel).toBeVisible({ timeout: 90000 });
+        // The chart reports the refused sweep as its own: MKF has no complex
+        // permeability for TP5, and the graph's record says so.
+        await expect.poll(async () => (await chartRecords(page)).length, { timeout: 90000 }).toBeGreaterThan(0);
 
         // ... and the builder does not turn it into a design failure.
-        const banner = page.locator('.alert-danger', { hasText: 'Calculation issue' });
-        await expect(banner).toHaveCount(0);
+        const builderFailures = async () => (await engineLogMessages(page, { source: 'Builder' })).filter((m) => m.includes(TP5_REFUSED));
+        expect(await builderFailures()).toEqual([]);
+        await expect(page.getByText(TP5_REFUSED), 'nothing drawn over or inside the cards').toHaveCount(0);
 
         // Nor when the sweep fails again. Count the failures as the builder's
         // taskQueue reports them (the very event that used to raise the
@@ -75,7 +81,7 @@ test.describe('Magnetic Builder — a chart-local failure is not a design failur
             ss.graphParameters.numberPoints = ss.graphParameters.numberPoints + 1;
         });
         await page.waitForFunction(() => window.__failedImpedanceSweeps >= 1, null, { timeout: 90000 });
-        await expect(chartLabel).toBeVisible();
-        await expect(banner).toHaveCount(0);
+        expect((await chartRecords(page)).length).toBeGreaterThan(0);
+        expect(await builderFailures()).toEqual([]);
     });
 });

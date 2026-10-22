@@ -6,6 +6,7 @@
  */
 import { test, expect } from './_coverage.js';
 import { BASE_URL } from './utils.js';
+import { engineLogMessages } from './utils/index.js';
 
 const FIXTURE = new URL('./fixtures/etd49_wound_10uH_5T.json', import.meta.url).pathname;
 
@@ -28,6 +29,9 @@ test('COILOUT-1: a failed simulation drops the outputs of the earlier design sta
     pinia._s.get('state').resimulate();
   });
 
-  await expect(page.locator('[data-cy$="-SimulationError"]').filter({ hasText: 'forced simulation failure' }).first()).toBeVisible({ timeout: 30000 });
+  // Reported in the Engine log, not inside the card (Alf, 2026-10-22).
+  await expect.poll(async () => (await engineLogMessages(page, { source: 'Coil info', level: 'ERROR' })).some((m) => m.includes('forced simulation failure')),
+    { timeout: 30000 }).toBe(true);
+  await expect(page.locator('[data-cy$="-SimulationError"]')).toHaveCount(0);
   expect(await outputsCount(page), 'outputs of the earlier state are not kept').toBe(0);
 });

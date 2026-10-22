@@ -9,6 +9,10 @@
 import fs from 'node:fs';
 import { test, expect } from './_coverage.js';
 import { BASE_URL } from './utils.js';
+import { engineLogMessages } from './utils/index.js';
+
+// The builder's calculation failures, in the Engine log (Alf, 2026-10-22: not a banner over the cards).
+const builderErrors = (page) => engineLogMessages(page, { source: 'Builder', level: 'ERROR' });
 
 const fixture = (name) => JSON.parse(fs.readFileSync(new URL(`./fixtures/${name}`, import.meta.url).pathname, 'utf8'));
 
@@ -186,7 +190,7 @@ test.describe('legacy MAS documents load', () => {
     expect(refusals.length, 'MKF refused the design').toBeGreaterThan(0);
     expect(refusals[0]).toContain('a waveform must be given over exactly one period');
     expect(loaded.magnetic.coil.functionalDescription.map((winding) => winding.numberTurns)).toEqual(turns);
-    await expect(page.locator('[data-cy$="-CalculationIssue"]').first()).toBeVisible({ timeout: 60000 });
+    await expect.poll(async () => (await builderErrors(page)).length, { timeout: 60000 }).toBeGreaterThan(0);
   });
 
   test('LOADMAS-LEGACY-11: a core material stored with a single application loads (user file 750372438rA.json)', async ({ page }) => {
@@ -244,10 +248,8 @@ test.describe('legacy MAS documents load', () => {
       expect(verdict).toContain('Op. Point No. 2');
       expect(refusals.length, 'the loader reports that MKF refused the design').toBeGreaterThan(0);
       expect(refusals[0]).toContain('CALCULATION_CORE_SATURATES');
-      const issue = page.locator('[data-cy$="-CalculationIssue"]').first();
-      await expect(issue).toBeVisible({ timeout: 60000 });
-      await expect(issue).toContainText('The core saturates');
-      await expect(issue).toContainText('Op. Point No. 2');
+      await expect.poll(async () => (await builderErrors(page)).some((m) => m.includes('The core saturates') && m.includes('Op. Point No. 2')),
+        { timeout: 60000 }).toBe(true);
     }
   });
 
@@ -414,6 +416,38 @@ test.describe('legacy MAS documents load', () => {
     await expect(note).toContainText('its first value was repeated at the end of the period', { timeout: 60000 });
   });
 
+  test('LOADMAS-LEGACY-21: a design whose only winding is stored on the secondary side opens with it on the primary side', async ({ page }) => {
+    // A stored inductor: one winding, named Secondary, on the secondary side. Since ABT #1843 MKF
+    // refuses a coil without a primary winding (INVALID_COIL_CONFIGURATION). Alf, 2026-10-18: a
+    // single winding is the primary; the loader moves it there and says so in the builder.
+    const mas = fixture('etd49_wound_10uH_5T.json');
+    expect(mas.magnetic.coil.functionalDescription.length, 'the fixture has one winding').toBe(1);
+    mas.magnetic.coil.functionalDescription[0].name = 'Secondary';
+    mas.magnetic.coil.functionalDescription[0].isolationSide = 'secondary';
+    // The stored winding layout names the winding too; MKF winds the renamed one again.
+    delete mas.magnetic.coil.sectionsDescription;
+    delete mas.magnetic.coil.layersDescription;
+    delete mas.magnetic.coil.turnsDescription;
+    mas.outputs = [];
+    const { mas: loaded } = await load(page, mas, 'lone_secondary_winding.json');
+    expect(loaded.magnetic.coil.functionalDescription[0].isolationSide).toBe('primary');
+    expect(loaded.magnetic.coil.functionalDescription[0].name, 'the name is the file\'s').toBe('Secondary');
+
+    const corrections = await loadCorrections(page);
+    expect(corrections.map((correction) => [correction.operatingPointIndex, correction.windingIndex])).toEqual([[null, 0]]);
+    // Reported in the Engine log, not over the builder's cards (Alf, 2026-10-22).
+    expect((await engineLogMessages(page, { source: 'Load', level: 'WARNING' }))
+      .filter((m) => m.includes('was stored on the secondary side') && m.includes('it was put on the primary side')).length).toBe(1);
+
+    // The builder simulates the design instead of showing MKF's refusal.
+    await page.waitForFunction(() => {
+      const pinia = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia;
+      return (pinia._s.get('mas').mas.outputs?.length ?? 0) > 0
+        || (pinia._s.get('engineDiagnostics')?.records ?? []).some((r) => r.module === 'Builder' && r.level === 'ERROR');
+    }, null, { timeout: 120000 });
+    expect(await builderErrors(page)).toEqual([]);
+  });
+
   test('LOADMAS-LEGACY-14: a design that names its core and wires opens with its magnetic completed when MKF refuses its operating point', async ({ page }) => {
     const mas = fixture('forward_xfmr_unknown_wire.json');
     for (const winding of mas.magnetic.coil.functionalDescription) {
@@ -457,9 +491,8 @@ test.describe('legacy MAS documents load', () => {
       expect(excitation.current.harmonics?.amplitudes?.length, `winding ${index} current has harmonics`).toBeGreaterThan(1);
       expect(excitation.current.harmonics.frequencies[1], `winding ${index} fundamental`).toBeCloseTo(excitations[index].frequency, 3);
     }
-    const issue = page.locator('[data-cy$="-CalculationIssue"]').first();
-    await expect(issue).toBeVisible({ timeout: 60000 });
-    await expect(issue).toContainText('a waveform must be given over exactly one period');
+    await expect.poll(async () => (await builderErrors(page)).some((m) => m.includes('a waveform must be given over exactly one period')),
+      { timeout: 60000 }).toBe(true);
   });
 
   test('LOADMAS-LEGACY-15: a signal MKF cannot build from its processed data refuses the load by name', async ({ page }) => {

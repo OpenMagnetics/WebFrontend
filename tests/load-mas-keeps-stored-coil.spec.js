@@ -12,7 +12,7 @@
  */
 import fs from 'node:fs';
 import { test, expect } from './_coverage.js';
-import { BASE_URL } from './utils/index.js';
+import { BASE_URL, engineLogMessages } from './utils/index.js';
 import { numberInput } from './utils/builder-helpers.js';
 import { installActivityProbe, activityMark, waitForIdle, waitForActionSince } from './utils/activity.js';
 
@@ -31,7 +31,8 @@ const turnCoordinates = (page) => page.evaluate(() =>
   document.querySelector('#app').__vue_app__.config.globalProperties.$pinia._s.get('mas').mas
     .magnetic.coil.turnsDescription.map((turn) => [...turn.coordinates]));
 
-const calculationIssues = (page) => page.locator('[data-cy$="-CalculationIssue"]').allInnerTexts();
+// Every error the builder reported, in the Engine log (Alf, 2026-10-22).
+const calculationIssues = (page) => engineLogMessages(page, { level: 'ERROR' });
 
 test('LOADMAS-COIL-1: a coil loaded wound keeps its stored layout until the coil is changed', async ({ page }) => {
   test.setTimeout(300000);

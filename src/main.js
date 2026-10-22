@@ -25,7 +25,8 @@ import { initKirchhoffWorker } from 'WebSharedComponents/assets/js/kirchhoffRunt
 import VueLatex from 'vatex'
 import { checkAndClearOutdatedStores, getVersionedWasmUrl } from '/src/stores/storeVersioning'
 import { useConsoleStore } from '/src/stores/console'
-import { useEngineDiagnosticsStore, drainEngineLogAfterCoreLossCalculations } from '/src/stores/engineDiagnostics'
+import { useEngineDiagnosticsStore, drainEngineLogAfterCoreLossCalculations, logSimulationFindings } from '/src/stores/engineDiagnostics'
+import { setNoticeSink } from 'WebSharedComponents/assets/js/notices.js'
 import { installKirchhoffHandoff } from '/src/composables/kirchhoffHandoff'
 
 // PrimeVue: Aura dark preset, tinted with the OM teal as primary
@@ -103,6 +104,10 @@ const pinia = createPinia()
 pinia.use(piniaActionGuard)
 pinia.use(piniaPluginPersistedstate)
 pinia.use(drainEngineLogAfterCoreLossCalculations)
+pinia.use(logSimulationFindings)
+// The builder's and the visualizers' warnings and errors go to the Engine log, never above or
+// inside the cards (Alf, 2026-10-22).
+setNoticeSink((level, source, message) => useEngineDiagnosticsStore(pinia).addRecord(level, source, message))
 {
     const v = new URLSearchParams(window.location.search).get('colortest');
     let testColor = null;

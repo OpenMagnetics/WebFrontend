@@ -21,8 +21,11 @@ export default {
         isEnabled() {
             // Extrapolated material data is reported only here, so the log is reachable whenever
             // extrapolation is allowed, even with the full panel switched off (ABT #1652).
+            // The builder's warnings and errors are reported only here too (notices.js), so it is
+            // reachable whenever it holds a record.
             return this.$settingsStore?.engineLogSettings?.showEngineLog === true
-                || this.engineDiagnosticsStore.allowMaterialDataExtrapolation === true;
+                || this.engineDiagnosticsStore.allowMaterialDataExtrapolation === true
+                || this.engineDiagnosticsStore.records.length > 0;
         },
         filteredRecords() {
             const records = this.engineDiagnosticsStore.records;
