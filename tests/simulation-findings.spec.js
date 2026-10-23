@@ -88,4 +88,34 @@ test.describe('Simulation findings per operating point (ABT #1855)', () => {
     expect(await engineLogMessages(page, { source: 'Builder' }), 'no calculation failed').toEqual([]);
     await expect(page.locator('[data-cy$="-SimulationFindings"]'), 'no findings banner over the cards').toHaveCount(0);
   });
+
+  test('SIMFIND-3: a finding about the whole design, with no operating point, is logged as it is', async ({ page }) => {
+    // MKF ABT #2004: a design-level finding (an edgewise bend tighter than the wire's mandrel)
+    // omits operatingPointIndex. It must not be pinned to "Operating point NaN".
+    test.setTimeout(300000);
+    await page.goto(`${BASE_URL}/`, { waitUntil: 'domcontentloaded' });
+    await page.locator('[data-cy="Header-Load-MAS-file-button"]').setInputFiles({
+      name: 'design.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(fixture('multicolumn_e42_transformer.json'))),
+    });
+    await page.waitForURL('**/magnetic_tool**', { timeout: 120000 });
+    // The design's own analysis first, so it cannot replace the findings set below.
+    await page.waitForFunction(() => {
+      const pinia = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia;
+      const store = pinia._s.get('simulationFindings');
+      return store != null && pinia._s.get('mas').$id in store.findingsByMas;
+    }, null, { timeout: 180000, polling: 500 });
+    await page.evaluate(() => {
+      const pinia = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia;
+      const store = pinia._s.get('simulationFindings');
+      if (store == null) throw new Error('simulationFindings store is not mounted');
+      store.set(pinia._s.get('mas').$id, [
+        { code: 'EDGEWISE_BEND_BELOW_MANDREL', message: 'the turns are bent edgewise tighter than the wire mandrel' },
+        { operatingPointIndex: 0, operatingPointName: 'Nominal', code: 'CORE_SATURATES', message: "At operating point 0 ('Nominal'): the core saturates" },
+      ]);
+    });
+    await expect.poll(() => findings(page), { timeout: 10000 }).toEqual([
+      'The turns are bent edgewise tighter than the wire mandrel',
+      'Nominal: The core saturates',
+    ]);
+  });
 });

@@ -287,13 +287,18 @@ export const useEngineDiagnosticsStore = defineStore('engineDiagnostics', {
             }
         },
 
-        // findings: [{operatingPointIndex, operatingPointName?, code, message}] from analyze_results.
-        // MKF's message opens with the point it is about; the record names it once, in front.
+        // findings: [{operatingPointIndex?, operatingPointName?, code, message}] from analyze_results.
+        // MKF's message opens with the point it is about; the record names it once, in front. A finding
+        // about the whole design (an edgewise bend tighter than the wire's mandrel) has no point.
         replaceSimulationFindings(findings) {
             this.records = this.records.filter((record) => record.module !== SIMULATION_FINDINGS_MODULE);
             const operatingPoints = useMasStore().mas.inputs?.operatingPoints ?? [];
             for (const finding of findings) {
                 const index = finding.operatingPointIndex;
+                if (index == null) {
+                    this.addRecord('WARNING', SIMULATION_FINDINGS_MODULE, finding.message.charAt(0).toUpperCase() + finding.message.slice(1));
+                    continue;
+                }
                 const pointName = finding.operatingPointName ?? operatingPoints[index]?.name ?? `Operating point ${index + 1}`;
                 const message = finding.message.replace(/^At operating point \d+( \('[^']*'\))?(: |, )/, '');
                 this.addRecord('WARNING', SIMULATION_FINDINGS_MODULE, `${pointName}: ${message.charAt(0).toUpperCase() + message.slice(1)}`);
