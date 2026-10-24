@@ -25,6 +25,10 @@ async function load(page, document, name) {
   expect(alerts, 'the load is not refused').toEqual([]);
 }
 
+// A null key and an absent one are the same unset field: MKF writes a core without its unset keys
+// (MKF 7695c88a), while the fixture's copy still carries them as null.
+const withoutNulls = (value) => JSON.parse(JSON.stringify(value, (key, each) => (each === null ? undefined : each)));
+
 const storedMas = (page) => page.evaluate(() => {
   const pinia = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia;
   return JSON.parse(JSON.stringify(pinia._s.get('mas').mas));
@@ -54,7 +58,7 @@ test.describe('Load MAS: a stored core material older than the library', () => {
 
     // Kept until the user decides.
     let loaded = await storedMas(page);
-    expect(loaded.magnetic.core.functionalDescription.material.volumetricLosses).toEqual(material.volumetricLosses);
+    expect(withoutNulls(loaded.magnetic.core.functionalDescription.material.volumetricLosses)).toEqual(withoutNulls(material.volumetricLosses));
 
     // The builder recomputes with the library's copy: its core losses become the library's.
     await page.evaluate(() => {
@@ -104,6 +108,6 @@ test.describe('Load MAS: a stored core material older than the library', () => {
     await page.locator('[data-cy$="-OutdatedCoreMaterial-keepFile"]').click();
     await expect(page.locator(NOTICE)).toHaveCount(0);
     const loaded = await storedMas(page);
-    expect(loaded.magnetic.core.functionalDescription.material.volumetricLosses).toEqual(material.volumetricLosses);
+    expect(withoutNulls(loaded.magnetic.core.functionalDescription.material.volumetricLosses)).toEqual(withoutNulls(material.volumetricLosses));
   });
 });

@@ -16,7 +16,8 @@
  * that used to raise the banner), then require the chart's own record and no
  * builder record. Since 2026-10-22 (Alf) both live in the Engine log, not on
  * the page: the chart's failure is logged under the chart's name, and a design
- * failure would be logged under 'Builder'.
+ * failure would be logged under 'Builder'. Since 2026-10-23 (Alf) the chart also says it where it
+ * would be drawn, and nowhere else on the page does.
  */
 import { test, expect } from './_coverage.js';
 import { BASE_URL } from './utils/env.js';
@@ -58,7 +59,11 @@ test.describe('Magnetic Builder — a chart-local failure is not a design failur
         // ... and the builder does not turn it into a design failure.
         const builderFailures = async () => (await engineLogMessages(page, { source: 'Builder' })).filter((m) => m.includes(TP5_REFUSED));
         expect(await builderFailures()).toEqual([]);
-        await expect(page.getByText(TP5_REFUSED), 'nothing drawn over or inside the cards').toHaveCount(0);
+        // The chart says why it is empty where it would be drawn (Alf, 2026-10-23), and nothing
+        // else on the page repeats it.
+        const inChart = page.locator('[data-cy$="-Graph-ErrorMessage"]').filter({ hasText: TP5_REFUSED });
+        await expect(inChart).toHaveCount(1);
+        await expect(page.getByText(TP5_REFUSED), 'only the chart says it').toHaveCount(1);
 
         // Nor when the sweep fails again. Count the failures as the builder's
         // taskQueue reports them (the very event that used to raise the
