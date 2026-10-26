@@ -34,6 +34,7 @@ test.describe('Instantaneous power on the default manual operating point', () =>
 
     await page.goto(`${BASE_URL}/`, { waitUntil: 'domcontentloaded', timeout: 20000 });
     await pause(page, 800, 'mechanical: settle');
+    await page.locator('[data-cy="Header-new-magnetic-toggle"]').click();
     await page.locator('[data-cy="Header-new-magnetic-link"]').click();
     await page.waitForURL('**/magnetic_tool**', { timeout: 45000 });
     await pause(page, 1500, 'mechanical: settle');

@@ -204,13 +204,13 @@ export default {
                         </div>
                     </div>
 
-                    <!-- Design Wizards -->
+                    <!-- Start from a converter topology -->
                     <div class="lg:col-4">
                         <div class="card h-100 border-0 shadow home-tool-card">
                             <div class="card-body p-4">
                                 <i class="pi pi-sparkles fa-2x text-primary mb-3"></i>
-                                <h4 class="card-title text-white font-bold">Design Wizards</h4>
-                                <p class="card-text text-white">Guided design flows for power converter magnetics:</p>
+                                <h4 class="card-title text-white font-bold">Start from a Converter Topology</h4>
+                                <p class="card-text text-white">Enter your converter's specification and the magnetic is sized for you:</p>
                                 <div class="text-white small">
                                     <div class="mb-1"><i class="pi pi-check text-primary mr-2"></i>Flyback, Buck, Boost converters</div>
                                     <div class="mb-1"><i class="pi pi-check text-primary mr-2"></i>Forward converter (Single/Two-switch/Active clamp)</div>
@@ -220,7 +220,7 @@ export default {
                                     <div class="mb-1"><i class="pi pi-check text-primary mr-2"></i>Common & Differential Mode Chokes</div>
                                 </div>
                                 <button @click="onWizardsLanding" class="btn om-home-btn w-100 mt-2">
-                                    <i class="pi pi-sparkles mr-2"></i>Launch Wizards
+                                    <i class="pi pi-sparkles mr-2"></i>Choose a Topology
                                 </button>
                             </div>
                         </div>

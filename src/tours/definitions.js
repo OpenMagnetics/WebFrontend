@@ -8,14 +8,9 @@
 
 const headerSteps = [
     {
-        element: '[data-cy="Header-new-magnetic-link"]',
+        element: '[data-cy="Header-new-magnetic-toggle"]',
         title: 'Start a new design',
-        description: 'This starts a new power magnetic design from scratch: you enter your requirements and operating conditions, and OpenMagnetics guides you step by step to a finished core, wire and coil.',
-    },
-    {
-        element: 'a.dropdown-toggle.om-wizard-btn',
-        title: 'Design Wizards',
-        description: 'Already know your converter topology? Pick its wizard (Flyback, LLC, Buck, common-mode choke, …) and it will compute the waveforms and size the magnetic from a handful of electrical parameters. This is the fastest way to get a design.',
+        description: 'Start a new magnetic here. Already know your converter topology? Choose "From a converter topology" and pick it (Flyback, LLC, Buck, PFC, …): it computes the waveforms and sizes the magnetic from a handful of electrical parameters, the fastest way to a design. Otherwise choose "Manual design" to enter your requirements and operating points yourself.',
     },
     {
         element: 'a.dropdown-toggle.om-nav-btn',
@@ -57,13 +52,12 @@ export const TOURS = {
                 title: 'Welcome to OpenMagnetics!',
                 description: 'The free, open-source platform for designing power magnetics: transformers, inductors and chokes. Here is how to get started.',
             },
-            ...headerSteps.slice(0, 1),
             {
-                element: 'a.dropdown-toggle.om-wizard-btn',
+                element: '[data-cy="Header-new-magnetic-toggle"]',
                 title: 'Pick your converter',
-                description: 'The fastest way to a design: open this menu and pick the wizard for your converter topology (Flyback, LLC, Buck, common-mode choke, …) — it computes the waveforms and sizes the magnetic from a handful of electrical parameters. The same wizards are listed as cards further down this page.',
+                description: 'The fastest way to a design: open New Magnetic, choose "From a converter topology" and pick your converter (Flyback, LLC, Buck, PFC, …). It computes the waveforms and sizes the magnetic from a handful of electrical parameters. The same converters are listed further down this page. Prefer to enter everything yourself? Choose "Manual design".',
             },
-            ...headerSteps.slice(2),
+            ...headerSteps.slice(1),
         ],
     },
 
@@ -293,18 +287,23 @@ export const TOURS = {
     wizardsLanding: {
         steps: [
             {
-                title: 'Design Wizards',
-                description: 'The fastest way to design a magnetic if you know your converter: each wizard asks only for the electrical parameters of that topology and derives everything else.',
+                title: 'Start from a converter topology',
+                description: 'The fastest way to design a magnetic if you know your converter: each topology asks only for the electrical parameters of that converter and derives everything else.',
             },
             {
-                element: '.card',
+                element: '[data-cy="WizardsLanding-search"]',
+                title: 'Find your converter',
+                description: 'Type part of a name (flyback, LLC, PFC…) to filter the topologies.',
+            },
+            {
+                element: '.tl-tile',
                 title: 'Pick your topology',
-                description: 'Each card is a guided flow for one converter type. Inside, you can let OpenMagnetics design the magnetic for you, or verify a design you already have.',
+                description: 'Each tile is a guided flow for one converter type; its screen sketches the current in that converter\'s magnetic. Inside, you can let OpenMagnetics design the magnetic for you, or verify a design you already have.',
             },
             {
-                element: 'a.dropdown-toggle.om-wizard-btn',
+                element: '[data-cy="Header-new-magnetic-toggle"]',
                 title: 'Also in the header',
-                description: 'The full list of wizards is always available from this menu, grouped by converter family.',
+                description: 'New Magnetic > From a converter topology lists the same converters, grouped by family.',
             },
         ],
     },

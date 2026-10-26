@@ -94,8 +94,7 @@ test.describe('Wizards — disabled entries present but disabled', () => {
     await pause(page, 800, 'mechanical: settle');
     // Toggle dropdown via direct DOM click
     await page.evaluate(() => {
-      const toggles = Array.from(document.querySelectorAll('.dropdown-toggle'));
-      const w = toggles.find(el => el.textContent.includes('Wizards'));
+      const w = document.querySelector('[data-cy="Header-new-magnetic-toggle"]');
       if (w) {
         w.click();
         const d = w.closest('.dropdown') || w.parentElement;

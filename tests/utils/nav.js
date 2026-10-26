@@ -14,8 +14,8 @@ import {
 import { waitForAnalyticalDone, settleAnimations } from './wait.js';
 
 /**
- * Open any wizard by its header data-cy. Opens the Wizards top-level
- * dropdown, then the relevant submenu group, then clicks the item.
+ * Open any wizard by its header data-cy. Opens the New Magnetic top-level
+ * dropdown, then the relevant topology submenu group, then clicks the item.
  * Waits for the Analytical button to be present (proof the wizard is ready).
  *
  * Throws on missing data-cy or missing analytical button.
@@ -36,8 +36,7 @@ export async function openWizard(page, dataCy) {
     .catch(() => { /* fall through: the evaluate below reports it precisely */ });
 
   const clicked = await page.evaluate((cy) => {
-    const toggles = Array.from(document.querySelectorAll('.dropdown-toggle'));
-    const wizardsToggle = toggles.find((el) => el.textContent.includes('Wizards'));
+    const wizardsToggle = document.querySelector('[data-cy="Header-new-magnetic-toggle"]');
     if (wizardsToggle) {
       wizardsToggle.click();
       const dropdown = wizardsToggle.closest('.dropdown') || wizardsToggle.parentElement;

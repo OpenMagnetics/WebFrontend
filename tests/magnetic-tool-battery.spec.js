@@ -47,6 +47,7 @@ const ss = (page, name) => screenshot(page, 'mt-battery', name);
 async function openFresh(page) {
   await page.goto(`${BASE_URL}/`, { waitUntil: 'domcontentloaded', timeout: 20000 });
   await pause(page, 800, 'mechanical: settle');
+  await page.locator('[data-cy="Header-new-magnetic-toggle"]').click();
   const link = page.locator('[data-cy="Header-new-magnetic-link"]');
   await softWaitFor(link, { timeout: 10000 });
   await link.click();
@@ -141,6 +142,7 @@ test.describe('Group A — Layout & Navigation', () => {
 
   test('A6: navigate to magnetic_tool from wizard page via New Magnetic link', async ({ page }) => {
     await openWizard(page, BUCK_CY);
+    await page.locator('[data-cy="Header-new-magnetic-toggle"]').click();
     const newMagLink = page.locator('[data-cy="Header-new-magnetic-link"]');
     if (await softVisible(newMagLink, 5000)) {
       await newMagLink.click();

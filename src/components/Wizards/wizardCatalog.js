@@ -1,0 +1,102 @@
+// The converter-topology wizards offered under New Magnetic > From a converter topology, grouped by
+// family. One list feeds both the header's fly-out menu and the topology page (WizardsLanding.vue),
+// so the two cannot drift apart. `store` is the key in $stateStore.Wizards; `cy` is the header
+// item's data-cy (tests open wizards through it, see tests/utils/nav.js); `magnetic` is what the wizard
+// designs. Each item needs a sketch in topologySketches.js.
+// The Current Transformer wizard is intentionally not listed (see tests/utils/catalog.js).
+export const WIZARD_GROUPS = [
+    {
+        label: 'Filters / PFC',
+        description: 'EMI filter chokes and single-phase power factor correction.',
+        icon: 'bi-funnel-fill',
+        items: [
+            { cy: 'Cmc-link', store: 'CommonModeChoke', magnetic: 'Common-mode choke', hoverKey: 'CommonModeChoke', icon: 'bi-funnel-fill', label: 'CMC',
+              title: 'Common Mode Choke', description: 'Design CMCs for EMI filtering with impedance vs frequency targeting.' },
+            { cy: 'Dmc-link', store: 'DifferentialModeChoke', magnetic: 'Inductor', hoverKey: 'DifferentialModeChoke', icon: 'bi-soundwave', label: 'DMC',
+              title: 'Differential Mode Choke', description: 'Design DMCs for LC filters with attenuation verification via ngspice.' },
+            { cy: 'Pfc-link', store: 'Pfc', magnetic: 'Boost inductor', hoverKey: 'Pfc', icon: 'bi-soundwave', label: 'PFC',
+              title: 'PFC (Power Factor Correction)', description: 'Design boost inductors for AC-DC power factor correction stages.' },
+        ],
+    },
+    {
+        label: 'Non-Isolated DC-DC',
+        description: 'Inductor-based converters with input and output sharing a ground.',
+        icon: 'bi-arrow-down-up',
+        items: [
+            { cy: 'Buck-link', store: 'Buck', magnetic: 'Inductor', hoverKey: 'Buck', icon: 'bi-arrow-down', label: 'Buck',
+              title: 'Buck Converter', description: 'Design inductors for step-down DC-DC converters.' },
+            { cy: 'Boost-link', store: 'Boost', magnetic: 'Inductor', hoverKey: 'Boost', icon: 'bi-arrow-up', label: 'Boost',
+              title: 'Boost Converter', description: 'Design inductors for step-up DC-DC converters.' },
+            { cy: 'Sepic-link', store: 'Sepic', magnetic: 'Two inductors or a coupled pair', hoverKey: 'Sepic', icon: 'bi-arrow-down-up', label: 'SEPIC',
+              title: 'SEPIC Converter', description: 'Non-inverting buck-boost via coupling capacitor; optional coupled inductor and synchronous rectifier.' },
+            { cy: 'Cuk-link', store: 'Cuk', magnetic: 'Two inductors or a coupled pair', hoverKey: 'Cuk', icon: 'bi-arrow-down-up', label: 'Cuk',
+              title: 'Cuk Converter', description: 'Inverting buck-boost via coupling capacitor; continuous input and output currents.' },
+            { cy: 'Zeta-link', store: 'Zeta', magnetic: 'Two inductors or a coupled pair', hoverKey: 'Zeta', icon: 'bi-arrow-down-up', label: 'Zeta',
+              title: 'Zeta Converter', description: 'Non-inverting buck-boost via coupling capacitor with continuous output current.' },
+            { cy: 'FourSwitchBuckBoost-link', store: 'FourSwitchBuckBoost', magnetic: 'Inductor', hoverKey: 'FourSwitchBuckBoost', icon: 'bi-arrow-down-up', label: 'Four-Switch Buck-Boost',
+              title: 'Four-Switch Buck-Boost', description: 'Non-inverting H-bridge buck-boost; buck, boost, or passthrough mode automatically.' },
+        ],
+    },
+    {
+        label: 'Isolated Forward / Flyback',
+        description: 'Single-switch isolated converters, for low and medium power.',
+        icon: 'bi-shield-shaded',
+        items: [
+            { cy: 'Flyback-link', store: 'Flyback', magnetic: 'Coupled inductor', hoverKey: 'Flyback', icon: 'bi-lightning-fill', label: 'Flyback',
+              title: 'Flyback Converter', description: 'Design coupled inductors for flyback converters with CCM/DCM/BCM support.' },
+            { cy: 'IsolatedBuck-link', store: 'IsolatedBuck', magnetic: 'Coupled inductor', hoverKey: 'IsolatedBuck', icon: 'bi-shield-shaded', label: 'Isolated Buck',
+              title: 'Isolated Buck Converter', description: 'Design transformers for isolated step-down converters.' },
+            { cy: 'IsolatedBuckBoost-link', store: 'IsolatedBuckBoost', magnetic: 'Coupled inductor', hoverKey: 'IsolatedBuckBoost', icon: 'bi-shield-exclamation', label: 'Isolated Buck-Boost',
+              title: 'Isolated Buck-Boost Converter', description: 'Design transformers for isolated buck-boost converters.' },
+            { cy: 'SingleSwitchForward-link', store: 'SingleSwitchForward', magnetic: 'Transformer', hoverKey: 'SingleSwitchForward', icon: 'bi-toggle-off', label: 'Single-Switch Forward',
+              title: 'Single-Switch Forward Converter', description: 'Design transformers for single-switch forward converters with reset winding.' },
+            { cy: 'TwoSwitchForward-link', store: 'TwoSwitchForward', magnetic: 'Transformer', hoverKey: 'TwoSwitchForward', icon: 'bi-toggle-on', label: 'Two-Switch Forward',
+              title: 'Two-Switch Forward Converter', description: 'Design transformers for two-switch forward converters with clamping diodes.' },
+            { cy: 'ActiveClampForward-link', store: 'ActiveClampForward', magnetic: 'Transformer', hoverKey: 'ActiveClampForward', icon: 'bi-fullscreen-exit', label: 'Active Clamp Forward',
+              title: 'Active Clamp Forward Converter', description: 'Design transformers for active clamp forward converters with ZVS.' },
+        ],
+    },
+    {
+        label: 'Isolated Bridge / Push-Pull',
+        description: 'Transformers driven from both sides of the B-H loop, for higher power.',
+        icon: 'bi-arrow-left-right',
+        items: [
+            { cy: 'PushPull-link', store: 'PushPull', magnetic: 'Transformer', hoverKey: 'PushPull', icon: 'bi-arrow-left-right', label: 'Push-Pull',
+              title: 'Push-Pull Converter', description: 'Design transformers for push-pull topology with center-tapped primary.' },
+            { cy: 'Weinberg-link', store: 'Weinberg', magnetic: 'Transformer', hoverKey: 'Weinberg', icon: 'bi-arrow-left-right', label: 'Weinberg',
+              title: 'Weinberg Converter', description: 'Isolated push-pull-derived topology with center-tapped secondary and output inductor.' },
+            { cy: 'Psfb-link', store: 'PhaseShiftFullBridge', magnetic: 'Transformer', hoverKey: 'PSFB', icon: 'bi-chevron-double-right', label: 'PSFB',
+              title: 'Phase-Shifted Full Bridge', description: 'ZVS full-bridge converter with phase-shifted PWM.' },
+            { cy: 'Pshb-link', store: 'PhaseShiftHalfBridge', magnetic: 'Transformer', hoverKey: 'PSHB', icon: 'bi-chevron-right', label: 'PSHB',
+              title: 'Phase-Shifted Half Bridge', description: 'ZVS half-bridge converter with phase-shifted PWM.' },
+            { cy: 'Ahb-link', store: 'AsymmetricHalfBridge', magnetic: 'Transformer', hoverKey: 'AHB', icon: 'bi-arrow-bar-right', label: 'AHB',
+              title: 'Asymmetric Half Bridge', description: 'Complementary-PWM half-bridge with DC-blocking cap; CT / FB / current-doubler / flyback rectifiers.' },
+            { cy: 'Dab-link', store: 'DualActiveBridge', magnetic: 'Transformer', hoverKey: 'DAB', icon: 'bi-arrow-left-right', label: 'DAB',
+              title: 'Dual Active Bridge', description: 'Bidirectional DC-DC converter with SPS/EPS/DPS/TPS modulation.' },
+        ],
+    },
+    {
+        label: 'Resonant',
+        description: 'Soft-switched converters whose tank shapes the current into a sine.',
+        icon: 'bi-soundwave',
+        items: [
+            { cy: 'Llc-link', store: 'LlcResonant', magnetic: 'Transformer', hoverKey: 'LLC', icon: 'bi-soundwave', label: 'LLC',
+              title: 'LLC Resonant Converter', description: 'Resonant DC-DC converter with variable frequency control.' },
+            { cy: 'Cllc-link', store: 'CllcResonant', magnetic: 'Transformer', hoverKey: 'CLLC', icon: 'bi-arrow-left-right', label: 'CLLC',
+              title: 'CLLC Bidirectional Resonant Converter', description: 'Bidirectional resonant DC-DC converter with symmetric or asymmetric LC tanks on primary and secondary sides.' },
+            { cy: 'Clllc-link', store: 'Clllc', magnetic: 'Transformer', hoverKey: 'CLLLC', icon: 'bi-arrow-left-right', label: 'CLLLC',
+              title: 'CLLLC Resonant Converter', description: 'Bidirectional 5-element symmetric resonant DC-DC converter.' },
+            { cy: 'Src-link', store: 'SeriesResonant', magnetic: 'Transformer', hoverKey: 'SRC', icon: 'bi-soundwave', label: 'SRC',
+              title: 'Series Resonant Converter (SRC)', description: 'Above-resonance LC-tank converter (no parallel Lm). HB or FB bridge; CT / FB / current-doubler rectifiers.' },
+        ],
+    },
+    {
+        label: 'Three-Phase PFC',
+        description: 'Three-phase rectifiers with power factor correction.',
+        icon: 'bi-lightning-charge',
+        items: [
+            { cy: 'Vienna-link', store: 'Vienna', magnetic: 'Boost inductors', hoverKey: 'Vienna', icon: 'bi-lightning-charge', label: 'Vienna Rectifier',
+              title: 'Vienna Rectifier (3-phase PFC)', description: 'Three-phase three-level boost PFC. Per-phase boost inductor design (Phase A shown; B/C identical by symmetry).' },
+        ],
+    },
+];

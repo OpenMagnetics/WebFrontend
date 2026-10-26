@@ -8,6 +8,7 @@ import { BASE_URL } from './utils.js';
 
 test('OP-VOLTAGE-1: an unbalanced voltage is reported next to the voltage, and the report goes when it is balanced again', async ({ page }) => {
     await page.goto(`${BASE_URL}/`, { waitUntil: 'domcontentloaded' });
+    await page.locator('[data-cy="Header-new-magnetic-toggle"]').click();
     await page.locator('[data-cy="Header-new-magnetic-link"]').click();
     await page.waitForURL('**/magnetic_tool**');
     await page.locator('[data-cy="storyline-Op.Points-button"]').click();

@@ -16,6 +16,7 @@ const BASE_URL = process.env.BASE_URL || 'http://localhost:5173';
 async function openFresh(page) {
     await page.goto(`${BASE_URL}/`, { waitUntil: 'domcontentloaded', timeout: 20000 });
     await pause(page, 800, 'mechanical: settle');
+    await page.locator('[data-cy="Header-new-magnetic-toggle"]').click();
     const link = page.locator('[data-cy="Header-new-magnetic-link"]');
     await link.waitFor({ timeout: 10000 });
     await link.click();

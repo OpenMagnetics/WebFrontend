@@ -7,8 +7,7 @@ async function openDabWizard(page) {
   await page.goto(`${BASE_URL}/`, { waitUntil: 'domcontentloaded', timeout: 20000 });
   await pause(page, 1000, 'mechanical: settle');
   const clicked = await page.evaluate(() => {
-    const toggles = Array.from(document.querySelectorAll('.dropdown-toggle'));
-    const wizardsToggle = toggles.find(el => el.textContent.includes('Wizards'));
+    const wizardsToggle = document.querySelector('[data-cy="Header-new-magnetic-toggle"]');
     if (wizardsToggle) {
       wizardsToggle.click();
       const dropdown = wizardsToggle.closest('.dropdown') || wizardsToggle.parentElement;

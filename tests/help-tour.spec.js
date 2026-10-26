@@ -58,9 +58,9 @@ test.describe('help tour', () => {
         // Cold contexts trampoline through /engine_loader first; wait for the
         // actual landing page (route name drives which tour opens).
         await page.waitForURL('**/wizards_landing', { timeout: 120000 });
-        await page.waitForSelector('.card', { timeout: 30000 });
+        await page.waitForSelector('.tl-tile', { timeout: 30000 });
         await startTour(page);
-        await expect(page.locator('.driver-popover-title')).toHaveText('Design Wizards');
+        await expect(page.locator('.driver-popover-title')).toHaveText('Start from a converter topology');
     });
 
     test('insulation adviser gets its own tour', async ({ page }) => {

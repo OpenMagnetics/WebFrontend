@@ -69,8 +69,9 @@ test.describe('Header — static links', () => {
     await expect(page.locator('[data-cy="Header-brand-home-link"]')).toBeVisible();
   });
 
-  test('H6: New Magnetic link visible', async ({ page }) => {
+  test('H6: New Magnetic menu offers manual design', async ({ page }) => {
     await openHome(page);
+    await page.locator('[data-cy="Header-new-magnetic-toggle"]').click();
     await expect(page.locator('[data-cy="Header-new-magnetic-link"]')).toBeVisible();
   });
 
@@ -143,8 +144,7 @@ test.describe('Header — wizard dropdown', () => {
   /** Open the wizard dropdown and the first submenu group (needed by the submenu-panel design). */
   async function openWizardDropdown(page) {
     await page.evaluate(() => {
-      const toggles = Array.from(document.querySelectorAll('.dropdown-toggle'));
-      const wizardsToggle = toggles.find(el => el.textContent.includes('Wizards'));
+      const wizardsToggle = document.querySelector('[data-cy="Header-new-magnetic-toggle"]');
       if (wizardsToggle) {
         wizardsToggle.click();
         const dropdown = wizardsToggle.closest('.dropdown') || wizardsToggle.parentElement;
@@ -158,9 +158,9 @@ test.describe('Header — wizard dropdown', () => {
     await pause(page, 400, 'mechanical: settle');
   }
 
-  test('H11: Wizards toggle exists in header', async ({ page }) => {
+  test('H11: New Magnetic toggle exists in header', async ({ page }) => {
     await openHome(page);
-    const toggle = page.locator('.dropdown-toggle').filter({ hasText: 'Wizards' }).first();
+    const toggle = page.locator('[data-cy="Header-new-magnetic-toggle"]');
     await expect(toggle).toBeVisible({ timeout: 10000 });
   });
 

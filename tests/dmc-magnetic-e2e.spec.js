@@ -16,8 +16,7 @@ async function openDmcWizard(page) {
   await page.goto(`${BASE_URL}/`, { waitUntil: 'domcontentloaded', timeout: 30000 });
   await pause(page, 1500, 'mechanical: settle');
   await page.evaluate(() => {
-    const toggles = Array.from(document.querySelectorAll('.dropdown-toggle'));
-    const wt = toggles.find(el => el.textContent.includes('Wizards'));
+    const wt = document.querySelector('[data-cy="Header-new-magnetic-toggle"]');
     if (wt) {
       wt.click();
       const dd = wt.closest('.dropdown') || wt.parentElement;

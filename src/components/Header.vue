@@ -13,6 +13,7 @@ import '../assets/scss/custom.scss'
 </script>
 
 <script>
+import { WIZARD_GROUPS } from './Wizards/wizardCatalog'
 
 const headerToggler = ref(null)
 const headerTogglerIsVisible = useElementVisibility(headerToggler)
@@ -33,74 +34,9 @@ export default {
         const loadingMasFileName = null;
         const bugReporterVisible = false;
         const accountModalVisible = false;
-        // Grouped wizard menu — keeps the header dropdown compact by hiding
-        // each topology family behind a fly-out submenu. Keys (cy, store,
-        // hoverKey, icon, label) match the prior flat menu 1:1 so existing
-        // tests and behaviour are unchanged.
-        const wizardGroups = [
-            {
-                label: 'Filters / PFC',
-                icon: 'bi-funnel-fill',
-                items: [
-                    { cy: 'Cmc-link',       store: 'CommonModeChoke',       hoverKey: 'CommonModeChoke',       icon: 'bi-funnel-fill',         label: 'CMC' },
-                    { cy: 'Dmc-link', store: 'DifferentialModeChoke', hoverKey: 'DifferentialModeChoke', icon: 'bi-soundwave',           label: 'DMC' },
-                    { cy: 'Pfc-link',                          store: 'Pfc',                   hoverKey: 'Pfc',                   icon: 'bi-soundwave',           label: 'PFC' },
-                ],
-            },
-            {
-                label: 'Non-Isolated DC-DC',
-                icon: 'bi-arrow-down-up',
-                items: [
-                    { cy: 'Buck-link',                store: 'Buck',                hoverKey: 'Buck',                icon: 'bi-arrow-down',     label: 'Buck' },
-                    { cy: 'Boost-link',               store: 'Boost',               hoverKey: 'Boost',               icon: 'bi-arrow-up',       label: 'Boost' },
-                    { cy: 'Sepic-link',               store: 'Sepic',               hoverKey: 'Sepic',               icon: 'bi-arrow-down-up',  label: 'SEPIC' },
-                    { cy: 'Cuk-link',                 store: 'Cuk',                 hoverKey: 'Cuk',                 icon: 'bi-arrow-down-up',  label: 'Cuk' },
-                    { cy: 'Zeta-link',                store: 'Zeta',                hoverKey: 'Zeta',                icon: 'bi-arrow-down-up',  label: 'Zeta' },
-                    { cy: 'FourSwitchBuckBoost-link', store: 'FourSwitchBuckBoost', hoverKey: 'FourSwitchBuckBoost', icon: 'bi-arrow-down-up',  label: 'Four-Switch Buck-Boost' },
-                ],
-            },
-            {
-                label: 'Isolated Forward / Flyback',
-                icon: 'bi-shield-shaded',
-                items: [
-                    { cy: 'Flyback-link',             store: 'Flyback',             hoverKey: 'Flyback',             icon: 'bi-lightning-fill',   label: 'Flyback' },
-                    { cy: 'IsolatedBuck-link',        store: 'IsolatedBuck',        hoverKey: 'IsolatedBuck',        icon: 'bi-shield-shaded',    label: 'Isolated Buck' },
-                    { cy: 'IsolatedBuckBoost-link',   store: 'IsolatedBuckBoost',   hoverKey: 'IsolatedBuckBoost',   icon: 'bi-shield-exclamation', label: 'Isolated Buck-Boost' },
-                    { cy: 'SingleSwitchForward-link', store: 'SingleSwitchForward', hoverKey: 'SingleSwitchForward', icon: 'bi-toggle-off',       label: 'Single-Switch Forward' },
-                    { cy: 'TwoSwitchForward-link',    store: 'TwoSwitchForward',    hoverKey: 'TwoSwitchForward',    icon: 'bi-toggle-on',        label: 'Two-Switch Forward' },
-                    { cy: 'ActiveClampForward-link',  store: 'ActiveClampForward',  hoverKey: 'ActiveClampForward',  icon: 'bi-fullscreen-exit',  label: 'Active Clamp Forward' },
-                ],
-            },
-            {
-                label: 'Isolated Bridge / Push-Pull',
-                icon: 'bi-arrow-left-right',
-                items: [
-                    { cy: 'PushPull-link', store: 'PushPull',             hoverKey: 'PushPull', icon: 'bi-arrow-left-right',     label: 'Push-Pull' },
-                    { cy: 'Weinberg-link', store: 'Weinberg',             hoverKey: 'Weinberg', icon: 'bi-arrow-left-right',     label: 'Weinberg' },
-                    { cy: 'Psfb-link',                     store: 'PhaseShiftFullBridge', hoverKey: 'PSFB',     icon: 'bi-chevron-double-right', label: 'PSFB' },
-                    { cy: 'Pshb-link',                     store: 'PhaseShiftHalfBridge', hoverKey: 'PSHB',     icon: 'bi-chevron-right',        label: 'PSHB' },
-                    { cy: 'Ahb-link',                      store: 'AsymmetricHalfBridge', hoverKey: 'AHB',      icon: 'bi-arrow-bar-right',      label: 'AHB' },
-                    { cy: 'Dab-link',                      store: 'DualActiveBridge',     hoverKey: 'DAB',      icon: 'bi-arrow-left-right',     label: 'DAB' },
-                ],
-            },
-            {
-                label: 'Resonant',
-                icon: 'bi-soundwave',
-                items: [
-                    { cy: 'Llc-link',   store: 'LlcResonant',    hoverKey: 'LLC',   icon: 'bi-soundwave',        label: 'LLC' },
-                    { cy: 'Cllc-link',  store: 'CllcResonant',   hoverKey: 'CLLC',  icon: 'bi-arrow-left-right', label: 'CLLC' },
-                    { cy: 'Clllc-link', store: 'Clllc',          hoverKey: 'CLLLC', icon: 'bi-arrow-left-right', label: 'CLLLC' },
-                    { cy: 'Src-link',   store: 'SeriesResonant', hoverKey: 'SRC',   icon: 'bi-soundwave',        label: 'SRC' },
-                ],
-            },
-            {
-                label: 'Three-Phase PFC',
-                icon: 'bi-lightning-charge',
-                items: [
-                    { cy: 'Vienna-link', store: 'Vienna', hoverKey: 'Vienna', icon: 'bi-lightning-charge', label: 'Vienna Rectifier' },
-                ],
-            },
-        ];
+        // The topology wizards, grouped by converter family behind fly-out submenus
+        // (shared with the topology page, WizardsLanding.vue).
+        const wizardGroups = WIZARD_GROUPS;
         return {
             masStore,
             historyStore,
@@ -170,6 +106,10 @@ export default {
                 this.$userStore.loadingPath = `${import.meta.env.BASE_URL}magnetic_tool`;
                 await this.$router.push(`${import.meta.env.BASE_URL}engine_loader`);
             }
+        },
+        async onAllTopologies() {
+            this.closeDropdowns();
+            await this.$router.push(`${import.meta.env.BASE_URL}wizards_landing`);
         },
         async onHome() {
             await this.$router.push(`${import.meta.env.BASE_URL}`);
@@ -433,62 +373,41 @@ export default {
                             {{"Alf's Musings"}}
                         </a>
                     </li>
-                    <li class="nav-item">
-                        <button
-                            data-cy="Header-new-magnetic-link"
-                            :class="headerTogglerIsVisible? 'w-100' : 'mx-1' "
-                            class="nav-link w-100 om-nav-btn border rounded px-2"
-                            @click="onNewPowerMagneticDesign"
-                        >
-                            <i class="mr-2 pi pi-briefcase"></i>{{'New Magnetic'}}
-                        </button>
-                    </li>
                     <li class="nav-item dropdown" @click.stop>
                         <a
-                            :class="headerTogglerIsVisible? '' : 'mx-1'"
-                            class="nav-link dropdown-toggle om-nav-btn border rounded"
-                            href="#"
-                            role="button"
-                            @click.prevent="toggleDropdown('tools')"
-                            :aria-expanded="openDropdown === 'tools' ? 'true' : 'false'"
-                        >
-                            <i class="mr-2 pi pi-briefcase"></i>{{'Tools'}}
-                        </a>
-                      <ul class="dropdown-menu px-1" :class="{ show: openDropdown === 'tools' }">
-                        <li>
-                            <button
-                                data-cy="Header-insulation-coordinator-link"
-                                :class="headerTogglerIsVisible? 'w-100' : 'mx-1' "
-                                class="dropdown-item nav-link w-100 px-2"
-                                @click="onInsulationCoordinator"
-                            >
-                                <i class="mr-2 pi pi-bolt-charge-fill"></i>{{'Insulation Coordinator'}}
-                            </button>
-                        </li>
-                        <li>
-                            <button
-                                data-cy="Header-core-studio-link"
-                                :class="headerTogglerIsVisible? 'w-100' : 'mx-1' "
-                                class="dropdown-item nav-link w-100 px-2"
-                                @click="onCoreStudio"
-                            >
-                                <i class="mr-2 pi pi-wrench"></i>{{'Core Studio'}}
-                            </button>
-                        </li>
-                      </ul>
-                    </li>
-                    <li class="nav-item dropdown" @click.stop>
-                        <a
+                            data-cy="Header-new-magnetic-toggle"
                             :class="headerTogglerIsVisible? '' : 'mx-1'"
                             class="nav-link dropdown-toggle om-wizard-btn border rounded"
                             href="#"
                             role="button"
-                            @click.prevent="toggleDropdown('wizards')"
-                            :aria-expanded="openDropdown === 'wizards' ? 'true' : 'false'"
+                            @click.prevent="toggleDropdown('newMagnetic')"
+                            :aria-expanded="openDropdown === 'newMagnetic' ? 'true' : 'false'"
                         >
-                            <i class="mr-2 pi pi-sparkles"></i>{{'Wizards'}}
+                            <i class="mr-2 pi pi-plus-circle"></i>{{'New Magnetic'}}
                         </a>
-                      <ul class="dropdown-menu px-3" :class="{ show: openDropdown === 'wizards' }">
+                      <ul class="dropdown-menu px-3" :class="{ show: openDropdown === 'newMagnetic' }">
+                        <li>
+                            <button
+                                data-cy="Header-new-magnetic-link"
+                                :class="headerTogglerIsVisible? 'w-100' : 'mx-0' "
+                                class="dropdown-item nav-link w-100 px-2"
+                                @click="onNewPowerMagneticDesign"
+                            >
+                                <i class="mr-2 pi pi-pencil"></i>{{'Manual design'}}
+                            </button>
+                        </li>
+                        <li>
+                            <button
+                                data-cy="Header-new-cmc-link"
+                                :class="headerTogglerIsVisible? 'w-100' : 'mx-0' "
+                                class="dropdown-item nav-link w-100 px-2"
+                                @click="onNewCommonModeChokeDesign"
+                            >
+                                <i class="mr-2 bi bi-funnel"></i>{{'Manual common-mode choke'}}
+                            </button>
+                        </li>
+                        <li><hr class="dropdown-divider om-new-magnetic-divider"></li>
+                        <li class="om-new-magnetic-section">{{'From a converter topology'}}</li>
                         <li
                             v-for="group in wizardGroups"
                             :key="group.label"
@@ -521,6 +440,50 @@ export default {
                                     </button>
                                 </li>
                             </ul>
+                        </li>
+                        <li>
+                            <button
+                                data-cy="Header-all-topologies-link"
+                                :class="headerTogglerIsVisible? 'w-100' : 'mx-0' "
+                                class="dropdown-item nav-link w-100 px-2"
+                                @click="onAllTopologies"
+                            >
+                                <i class="mr-2 pi pi-th-large"></i>{{'See all topologies…'}}
+                            </button>
+                        </li>
+                      </ul>
+                    </li>
+                    <li class="nav-item dropdown" @click.stop>
+                        <a
+                            :class="headerTogglerIsVisible? '' : 'mx-1'"
+                            class="nav-link dropdown-toggle om-nav-btn border rounded"
+                            href="#"
+                            role="button"
+                            @click.prevent="toggleDropdown('tools')"
+                            :aria-expanded="openDropdown === 'tools' ? 'true' : 'false'"
+                        >
+                            <i class="mr-2 pi pi-briefcase"></i>{{'Tools'}}
+                        </a>
+                      <ul class="dropdown-menu px-1" :class="{ show: openDropdown === 'tools' }">
+                        <li>
+                            <button
+                                data-cy="Header-insulation-coordinator-link"
+                                :class="headerTogglerIsVisible? 'w-100' : 'mx-1' "
+                                class="dropdown-item nav-link w-100 px-2"
+                                @click="onInsulationCoordinator"
+                            >
+                                <i class="mr-2 pi pi-bolt-charge-fill"></i>{{'Insulation Coordinator'}}
+                            </button>
+                        </li>
+                        <li>
+                            <button
+                                data-cy="Header-core-studio-link"
+                                :class="headerTogglerIsVisible? 'w-100' : 'mx-1' "
+                                class="dropdown-item nav-link w-100 px-2"
+                                @click="onCoreStudio"
+                            >
+                                <i class="mr-2 pi pi-wrench"></i>{{'Core Studio'}}
+                            </button>
                         </li>
                       </ul>
                     </li>
@@ -850,7 +813,7 @@ export default {
         border: 1px solid rgba(var(--p-primary-rgb), 0.35) !important;
         border-radius: 10px !important;
         font-weight: 500;
-        /* New Magnetic is a <button> (others are <a>); buttons default to the
+        /* Some nav items are <button>s (others are <a>); buttons default to the
          * arrow cursor, so force the pointer to match the link items. */
         cursor: pointer;
         transition: background 0.15s, border-color 0.15s, transform 0.1s, box-shadow 0.15s !important;
@@ -866,7 +829,7 @@ export default {
     }
 
     /* ============================================================
-       Wizards nav button — teal filled accent
+       New Magnetic nav button — teal filled accent
        ============================================================ */
     .om-wizard-btn {
         color: var(--p-dark) !important;
@@ -1039,8 +1002,22 @@ export default {
         --p-dropdown-link-hover-bg: rgba(var(--p-primary-rgb), 0.1) !important;
     }
 
+    /* New Magnetic menu: divider and "From a converter topology" section label */
+    .om-header .om-new-magnetic-divider {
+        border-color: rgba(var(--p-primary-rgb), 0.25);
+        margin: 0.35rem 0;
+    }
+    .om-header .om-new-magnetic-section {
+        padding: 0.15rem 0.5rem 0.25rem;
+        font-size: 0.72rem;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: rgba(var(--p-white-rgb), 0.5);
+    }
+
     /* ============================================================
-       Fly-out submenu for the Wizards dropdown
+       Fly-out submenu for the topology wizards (New Magnetic menu)
        ============================================================ */
     .om-header .dropdown-submenu {
         position: relative;
