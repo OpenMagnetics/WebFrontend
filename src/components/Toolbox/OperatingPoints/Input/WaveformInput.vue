@@ -11,6 +11,12 @@ import { toTitleCase, combinedStyle } from 'WebSharedComponents/assets/js/utils.
 export default {
     emits: ["peakToPeakChanged", "offsetChanged", "labelChanged"],
     props: {
+        // Non-empty: the induce button is shown disabled, with this as its explanation
+        // (an inductor derives the other signal by itself; see OperatingPointManual).
+        induceDisabledReason: {
+            type: String,
+            default: '',
+        },
         modelValue:{
             type: Object,
             required: true
@@ -86,11 +92,6 @@ export default {
 
 <template>
     <div class="container-flex ">
-        <div class="row text-center">
-            <label 
-                :style="combinedStyle([$styleStore.operatingPoints.inputTitleFontSize, signalDescriptor == 'current'? $styleStore.operatingPoints.currentTextColor : signalDescriptor == 'voltage'? $styleStore.operatingPoints.voltageTextColor : $styleStore.operatingPoints.commonParameterTextColor])"
-            >{{toTitleCase(signalDescriptor)}} waveform</label>
-        </div>
         <div class="row">
 
             <ElementFromList class="pb-2 mb-1 col-12"
@@ -156,18 +157,16 @@ export default {
                 :textColor="$styleStore.operatingPoints.inputTextColor"
             />
             <button
-                :style="[
-                    combinedStyle([$styleStore.operatingPoints.inputTitleFontSize, signalDescriptor == 'current'? $styleStore.operatingPoints.currentBgColor : signalDescriptor == 'voltage'? $styleStore.operatingPoints.voltageBgColor : $styleStore.operatingPoints.commonParameterBgColor]),
-                    { color: signalDescriptor == 'current' ? 'var(--p-dark)' : 'var(--p-white)', fontWeight: 600, maxHeight: '1.7em' }
-                ]"
                 v-if="induceableSignal"
+                type="button"
                 :data-cy="`${dataTestLabel}-induce-button`"
-                class="btn col-offset-1 col-10 mt-2 p-0"
+                class="op-induce"
+                :disabled="induceDisabledReason !== ''"
+                :title="induceDisabledReason !== '' ? induceDisabledReason : null"
                 @click="$emit('induce')"
             >
-                {{'Induce from ' + (signalDescriptor == 'current'? 'voltage' : 'current')}}
                 <i class="pi pi-bolt"></i>
-                <i class="pi pi-cog"></i>
+                {{'Induce from ' + (signalDescriptor == 'current'? 'voltage' : 'current')}}
             </button>
 
         </div>

@@ -69,6 +69,15 @@ export default {
         }
     },
     computed: {
+        operatingPointsCountText() {
+            const points = this.masStore.mas.inputs.operatingPoints.length;
+            const windings = this.masStore.mas.magnetic.coil.functionalDescription.length;
+            return (points == 1 ? '1 operating point' : points + ' operating points') + ', ' + (windings == 1 ? '1 winding' : windings + ' windings');
+        },
+        // The reasons canContinue writes into errorMessages, one per line.
+        errorLines() {
+            return this.errorMessages.split('\n').map(line => line.trim()).filter(line => line != '');
+        },
         excitationSelectorDisabled() {
             return this.$stateStore.operatingPoints.modePerPoint[this.currentOperatingPointIndex] !== this.$stateStore.OperatingPointsMode.Manual && this.$stateStore.operatingPoints.modePerPoint[this.currentOperatingPointIndex] !== this.$stateStore.OperatingPointsMode.CircuitSimulatorImport && this.$stateStore.operatingPoints.modePerPoint[this.currentOperatingPointIndex] !== this.$stateStore.OperatingPointsMode.HarmonicsList;
         },
@@ -395,39 +404,46 @@ export default {
             }
             return true;
         },
+        windingStatusText(operatingPointIndex, windingIndex) {
+            const name = this.masStore.mas.magnetic.coil.functionalDescription[windingIndex].name;
+            return this.isExcitationProcessed(operatingPointIndex, windingIndex)
+                ? 'Waveforms for ' + name + ' are defined'
+                : 'Waveforms for ' + name + ' have not been defined yet: open the winding to review or edit them';
+        },
     }
 }
 </script>
 
 <template>
     <div class="op-container">
-        <div class="row op-row">
-            <div class="col-12 md:col-2 text-left m-0 px-1 op-panel">
+        <div class="op-layout">
+            <aside class="op-panel" data-op-col="list">
                 <div class="op-header">
-                    <i class="pi pi-list-check"></i>
-                    <span>Operating points</span>
+                    <h2 class="op-header-title" data-op-title>Operating points</h2>
+                    <p class="op-header-count">{{ operatingPointsCountText }}</p>
                 </div>
                 <div class="op-card" :class="{ 'op-card-active': operatingPointIndex == currentOperatingPointIndex }" v-for="(operatingPoint, operatingPointIndex) in masStore.mas.inputs.operatingPoints" :key="operatingPointIndex">
 
-                    <span v-if="$stateStore.operatingPoints.modePerPoint[operatingPointIndex] == null"> Choose a mode for this operating point first <i class="pi pi-arrow-right ml-3"></i> </span>
-                    <div v-else class="m-0 px-1">
+                    <span v-if="$stateStore.operatingPoints.modePerPoint[operatingPointIndex] == null" class="op-card-pending"> Choose a mode for this operating point first <i class="pi pi-arrow-right op-card-pending-arrow"></i> </span>
+                    <div v-else class="op-card-body">
                         <Text
+                            class="op-name"
                             :name="'name'"
                             v-model="masStore.mas.inputs.operatingPoints[operatingPointIndex]"
                             :defaultValue="'My operating point'"
                             :dataTestLabel="dataTestLabel + '-operating-point-' + operatingPointIndex + '-name-input'"
                             :canBeEmpty="false"
                             :labelWidthProportionClass="'col-0'"
-                            :valueWidthProportionClass="'ml-2 col-11'"
+                            :valueWidthProportionClass="'col-12'"
                             :valueFontSize="$styleStore.operatingPoints.inputFontSize"
                             :titleFontSize="$styleStore.operatingPoints.inputTitleFontSize"
                             :labelBgColor="$styleStore.operatingPoints.titleLabelBgColor"
                             :valueBgColor="$styleStore.operatingPoints.titleLabelBgColor"
                             :textColor="$styleStore.operatingPoints.titleTextColor"
                         />
-                        <Dimension class="op-temp px-0"
+                        <Dimension class="op-temp op-field"
                             :name="'ambientTemperature'"
-                            :replaceTitle="'Temp.'"
+                            :replaceTitle="'Temperature'"
                             unit="°C"
                             :dataTestLabel="dataTestLabel + '-ConditionsAmbientTemperature'"
                             :min="minimumMaximumScalePerParameter['temperature']['min']"
@@ -446,7 +462,7 @@ export default {
                              MAS and MKF have supported cooling all along; the app just had
                              no way to set it. Natural convection leaves conditions.cooling
                              null so nothing changes for designs that never touch this. -->
-                        <ElementFromList class="op-cooling px-0"
+                        <ElementFromList class="op-cooling op-field"
                             v-if="coolingUi[operatingPointIndex]"
                             :name="'coolingMode'"
                             :tooltip="tooltipsMagneticSynthesisOperatingPoints['coolingMode']"
@@ -462,7 +478,7 @@ export default {
                             :valueBgColor="$styleStore.operatingPoints.inputValueBgColor"
                             :textColor="$styleStore.operatingPoints.inputTextColor"
                         />
-                        <Dimension class="op-cooling px-0"
+                        <Dimension class="op-cooling op-field"
                             v-if="coolingUi[operatingPointIndex] && coolingUi[operatingPointIndex].coolingMode == 'Forced air'"
                             :name="'airVelocity'"
                             :tooltip="tooltipsMagneticSynthesisOperatingPoints['airVelocity']"
@@ -482,11 +498,11 @@ export default {
                             :valueBgColor="$styleStore.operatingPoints.inputValueBgColor"
                             :textColor="$styleStore.operatingPoints.inputTextColor"
                         />
-                        <Dimension class="op-cooling px-0"
+                        <Dimension class="op-cooling op-field"
                             v-if="coolingUi[operatingPointIndex] && coolingUi[operatingPointIndex].coolingMode == 'Heatsink'"
                             :name="'thermalResistance'"
                             :tooltip="tooltipsMagneticSynthesisOperatingPoints['thermalResistance']"
-                            :replaceTitle="'Heatsink Rth'"
+                            :replaceTitle="'Heatsink thermal resistance'"
                             unit="K/W"
                             :dataTestLabel="dataTestLabel + '-ConditionsHeatsinkRth'"
                             :min="0.01"
@@ -502,6 +518,7 @@ export default {
                             :valueBgColor="$styleStore.operatingPoints.inputValueBgColor"
                             :textColor="$styleStore.operatingPoints.inputTextColor"
                         />
+                        <div v-if="!masStore.hasMirroredWindings && currentOperatingPointIndex == operatingPointIndex" class="op-windings-title">Windings</div>
                         <div
                             v-if="masStore.hasMirroredWindings"
                             class="grid m-0 p-0 py-1 align-items-center flex-nowrap"
@@ -510,9 +527,19 @@ export default {
                         <div
                             v-if="!masStore.hasMirroredWindings && currentOperatingPointIndex == operatingPointIndex"
                             class="op-winding-row"
+                            :class="{
+                                'op-winding-row-current': currentWindingIndex == windingIndex,
+                                'op-winding-row-pending': !isExcitationProcessed(operatingPointIndex, windingIndex),
+                            }"
                             v-for="(winding, windingIndex) in masStore.mas.magnetic.coil.functionalDescription"
                             :key="'winding-' + windingIndex"
                             >
+                            <span
+                                class="op-winding-status"
+                                v-tooltip="windingStatusText(operatingPointIndex, windingIndex)"
+                                role="img"
+                                :aria-label="windingStatusText(operatingPointIndex, windingIndex)"
+                            ></span>
                             <Text
                                 :disabled="excitationSelectorDisabled"
                                 class="op-winding-name"
@@ -531,7 +558,6 @@ export default {
                             />
                             <button
                                 v-tooltip="tooltipsMagneticSynthesisOperatingPoints[(windingIndex == 0? 'reflectPrimary' : 'reflectSecondaries')]"
-                                :style="$styleStore.operatingPoints.reflectWindingButton"
                                 class="op-winding-btn"
                                 :disabled="excitationSelectorDisabled"
                                 :data-cy="dataTestLabel + '-operating-point-' + operatingPointIndex + '-winding-' + windingIndex + '-reflect-button'"
@@ -544,290 +570,507 @@ export default {
                                 v-tooltip="tooltipsMagneticSynthesisOperatingPoints['editWindingWaveform']"
                                 :disabled="excitationSelectorDisabled"
                                 :data-cy="dataTestLabel + '-operating-point-' + operatingPointIndex + '-winding-' + windingIndex + '-select-button'"
-                                :style="currentWindingIndex == windingIndex? $styleStore.operatingPoints.selectedWindingButton : isExcitationProcessed(operatingPointIndex, windingIndex)? $styleStore.operatingPoints.unselectedProcessedWindingButton : $styleStore.operatingPoints.unselectedUnprocessedWindingButton"
-                                class="op-winding-btn"
+                                class="op-winding-btn op-winding-open"
                                 :class="currentWindingIndex == windingIndex? 'disabled' : ''"
                                 @click="changeWinding(windingIndex)"
                             >
                                 <i :class="currentWindingIndex == windingIndex ? 'pi pi-eye' : 'pi pi-file-plus'"></i>
                             </button>
                         </div>
-                        <div v-else class="grid m-0 p-0 gap-2">
-                            <div class="col-6 pr-1">
-                                <button
-                                    :data-cy="dataTestLabel + '-remove-operating-point-' + operatingPointIndex + '-button'"
-                                    class="op-btn op-btn-danger w-100 mt-2"
-                                    @click="removePoint(operatingPointIndex)"
-                                >
-                                    <i class="pi pi-trash"></i>
-                                    <span>Remove</span>
-                                </button>
-                            </div>
-                            <div class="col-6 pl-1">
-                                <button
-                                    :data-cy="dataTestLabel + '-select-operating-point-' + operatingPointIndex + '-button'"
-                                    class="op-btn op-btn-primary w-100 mt-2"
-                                    @click="selectOperatingPoint(operatingPointIndex)"
-                                >
-                                    <i class="pi pi-check"></i>
-                                    <span>Select</span>
-                                </button>
-                            </div>
+                        <div v-else class="op-card-actions">
+                            <button
+                                :data-cy="dataTestLabel + '-remove-operating-point-' + operatingPointIndex + '-button'"
+                                class="op-btn op-btn-danger"
+                                @click="removePoint(operatingPointIndex)"
+                            >
+                                <i class="pi pi-trash"></i>
+                                <span>Remove</span>
+                            </button>
+                            <button
+                                :data-cy="dataTestLabel + '-select-operating-point-' + operatingPointIndex + '-button'"
+                                class="op-btn op-btn-primary"
+                                @click="selectOperatingPoint(operatingPointIndex)"
+                            >
+                                <i class="pi pi-pencil"></i>
+                                <span>Select</span>
+                            </button>
                         </div>
                     </div>
                 </div>
-                <button
-                    :data-cy="dataTestLabel + '-add-operating-point-button'"
-                    class="op-btn op-btn-primary mt-2"
-                    @click="addNewOperatingPoint"
-                >
-                    <i class="pi pi-plus"></i>
-                    <span>Add New OP</span>
-                </button>
-                <button
-                    :data-cy="dataTestLabel + '-modify-number-windings-button'"
-                    class="op-btn op-btn-outline mt-2"
-                    @click="$emit('changeTool', 'designRequirements')"
-                >
-                    <i class="pi pi-sliders-h"></i>
-                    <span>Modify No. Windings</span>
-                </button>
-
-                <div class="col-12">
-                    <label :data-cy="dataTestLabel + '-error-text'" class="text-danger text-center col-12 pt-1" style="font-size: 0.9em; white-space: pre-wrap;">{{errorMessages}}</label>
+                <div class="op-panel-actions">
+                    <button
+                        :data-cy="dataTestLabel + '-add-operating-point-button'"
+                        class="op-btn op-btn-add"
+                        @click="addNewOperatingPoint"
+                    >
+                        <i class="pi pi-plus"></i>
+                        <span>Add New OP</span>
+                    </button>
+                    <button
+                        :data-cy="dataTestLabel + '-modify-number-windings-button'"
+                        class="op-btn op-btn-quiet"
+                        @click="$emit('changeTool', 'designRequirements')"
+                    >
+                        <i class="pi pi-sliders-h"></i>
+                        <span>Change the number of windings</span>
+                    </button>
                 </div>
 
-            </div>
-            <div v-if="masStore.mas.inputs.operatingPoints.length > 0" class="col-12 md:col-10 text-left pr-0 ">
-                <div v-if="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding.length > 0" class="container mx-auto op-detail-container">
-                    <div class="row">
-                        <OperatingPoint 
-                            :currentOperatingPointIndex="currentOperatingPointIndex"
-                            :currentWindingIndex="currentWindingIndex"
-                            :enableManual="enableManual"
-                            :enableCircuitSimulatorImport="enableCircuitSimulatorImport"
-                            :enableHarmonicsList="enableHarmonicsList"
-                            @updatedSignal="updatedSignal"
-                            @updatedWaveform="updatedWaveform"
-                            @importedWaveform="importedWaveform"
-                            @selectedManualOrImported="selectedManualOrImported"
-                        />
-                    </div>
-                </div>
+                <!-- Why Continue is blocked. The same reasons go to the Engine log
+                     (canContinue's reasons array); here they fold under a one-line
+                     summary so they do not push the list down. -->
+                <details class="op-issues" v-show="errorLines.length > 0">
+                    <summary class="op-issues-summary">
+                        <i class="pi pi-exclamation-circle"></i>
+                        <span>{{ errorLines.length == 1 ? '1 thing to finish before you continue' : errorLines.length + ' things to finish before you continue' }}</span>
+                        <i class="pi pi-chevron-down op-issues-chevron"></i>
+                    </summary>
+                    <label :data-cy="dataTestLabel + '-error-text'" class="op-issues-text">{{errorMessages}}</label>
+                </details>
 
+            </aside>
+            <div v-if="masStore.mas.inputs.operatingPoints.length > 0" class="op-detail-column" data-op-col="detail">
+                <OperatingPoint
+                    v-if="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding.length > 0"
+                    :currentOperatingPointIndex="currentOperatingPointIndex"
+                    :currentWindingIndex="currentWindingIndex"
+                    :enableManual="enableManual"
+                    :enableCircuitSimulatorImport="enableCircuitSimulatorImport"
+                    :enableHarmonicsList="enableHarmonicsList"
+                    @updatedSignal="updatedSignal"
+                    @updatedWaveform="updatedWaveform"
+                    @importedWaveform="importedWaveform"
+                    @selectedManualOrImported="selectedManualOrImported"
+                />
             </div>
         </div>
     </div>
 </template>
 
 <style scoped>
-/* Same outer padding as DesignRequirements (.dr-container) so the Operating
- * Points panel lines up with where the Requirements box used to start
- * (and doesn't slide under the Storyline / Steps box on the left). */
+/* ============ Tokens: the Design Requirements panel language ============
+   Defined here, on the step's root, so every editor and output below it
+   (they are children of this component) draws from the same values. */
 .op-container {
-    /* Top padding pushes the "Operating points" / "Operating Point" cards down so
-       their top edge lines up with the Steps card in the left sidebar (which has a
-       constant 8px top spacer). The Steps card itself is not moved. */
-    padding: 10.4px 0.75rem 0 0.75rem;
+    --op-panel-1: color-mix(in srgb, var(--p-light) 45%, var(--p-dark) 55%);
+    --op-panel-2: var(--p-dark);
+    --op-border: rgba(var(--p-white-rgb), 0.1);
+    --op-rule: rgba(var(--p-white-rgb), 0.08);
+    --op-text: var(--p-white);
+    --op-muted: rgba(var(--p-white-rgb), 0.76);
+    --op-faint: rgba(var(--p-white-rgb), 0.64);
+    --op-accent-text: color-mix(in srgb, var(--p-primary) 70%, var(--p-white) 30%);
+    --op-field-border: color-mix(in srgb, var(--p-white) 45%, var(--p-light));
+    --op-field-h: 1.75rem;
+    --op-gutter: 1rem;
+
+    padding: 0.5rem 0.75rem 1.5rem;
     max-width: 100%;
     width: 100%;
-    overflow-x: hidden;
+    color: var(--op-text);
+    text-align: left;
 }
 
-/* The detail column nests an extra container/row that pushes the
-   "Operating Point" panel ~8px below the list panel — pull it up so both OP
-   cards share the same top edge. */
-.op-detail-container {
-    margin-top: -0.5rem;
+.op-layout {
+    display: grid;
+    grid-template-columns: 16.5rem minmax(0, 1fr);
+    gap: 1rem;
+    align-items: start;
 }
 
-/* Neutralize the negative margins my .row shim applies, otherwise the panel
- * leaks past the parent column edge and overlaps the Steps box. */
-.op-container > .op-row {
-    margin-left: 0 !important;
-    margin-right: 0 !important;
-    --p-gutter-x: 0.5rem;
-    gap: 0.5rem 0;
+.op-detail-column {
+    min-width: 0;
 }
 
+/* ============ Operating point list ============ */
 .op-panel {
-    background:
-        linear-gradient(145deg,
-            rgba(var(--p-primary-rgb), 0.06) 0%,
-            rgba(var(--p-primary-rgb), 0.02) 100%),
-        var(--p-dark);
-    border: 1px solid rgba(var(--p-primary-rgb), 0.15);
+    min-width: 0;
+    padding: 1rem 0.75rem 0.75rem 0.85rem;
+    background: linear-gradient(180deg, var(--op-panel-1) 0%, var(--op-panel-2) 100%);
+    border: 1px solid var(--op-border);
+    border-left: 3px solid rgba(var(--p-primary-rgb), 0.8);
     border-radius: 14px;
-    padding: 0.6rem 0.5rem !important;
-    margin: 0.15rem 0 0.5rem 0;
-    box-shadow: 0 4px 20px rgba(var(--p-black-rgb), 0.12), inset 0 1px 0 rgba(var(--p-white-rgb), 0.04);
+    box-shadow:
+        0 6px 20px rgba(var(--p-black-rgb), 0.5),
+        inset 0 1px 0 rgba(var(--p-white-rgb), 0.06);
 }
 
 .op-header {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.5rem 0.6rem;
-    margin: -0.6rem -0.5rem 0.4rem -0.5rem;
-    background: rgba(var(--p-primary-rgb), 0.1);
-    border-bottom: 1px solid rgba(var(--p-primary-rgb), 0.12);
-    font-weight: 600;
-    font-size: 0.9rem;
-    color: var(--p-primary);
-    letter-spacing: 0.02em;
+    padding: 0 0.25rem 0.85rem;
+    margin-bottom: 0.5rem;
+    border-bottom: 1px solid var(--op-rule);
 }
 
-.op-header i {
-    filter: drop-shadow(0 0 4px rgba(var(--p-primary-rgb), 0.45));
+.op-header-title {
+    margin: 0;
+    font-size: 1.15rem;
+    font-weight: 650;
+    letter-spacing: -0.01em;
+    line-height: 1.3;
+    color: var(--p-primary);
+}
+
+.op-header-count {
+    margin: 0.2rem 0 0;
+    font-size: 0.82rem;
+    color: var(--op-muted);
+    font-variant-numeric: tabular-nums;
 }
 
 .op-card {
-    background: rgba(var(--p-white-rgb), 0.04);
-    border: 1px solid rgba(var(--p-white-rgb), 0.1);
-    border-radius: 12px;
-    padding: 0.55rem 0.5rem;
-    margin: 0.35rem 0;
-    transition: all 0.18s ease;
-    opacity: 0.65;
+    margin: 0.15rem 0;
+    padding: 0.45rem 0.5rem;
+    border: 1px solid transparent;
+    border-radius: 10px;
+    transition: background 0.15s, border-color 0.15s;
 }
 
 .op-card.op-card-active {
-    opacity: 1;
-    border-color: rgba(var(--p-primary-rgb), 0.55);
     background: rgba(var(--p-primary-rgb), 0.08);
-    box-shadow: 0 2px 12px rgba(var(--p-primary-rgb), 0.2);
+    border-color: rgba(var(--p-primary-rgb), 0.3);
 }
 
+.op-card + .op-card:not(.op-card-active) {
+    border-top-color: var(--op-rule);
+}
+
+.op-card-pending {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.86rem;
+    line-height: 1.35;
+    color: var(--op-muted);
+}
+
+.op-card-pending-arrow {
+    flex: 0 0 auto;
+    font-size: 0.8rem;
+    color: var(--op-accent-text);
+}
+
+.op-card-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+/* The operating point's name is its title: an editable field that reads
+   as a heading until it is touched. */
+.op-name :deep(.text-container),
+.op-name :deep(.row),
+.op-name :deep(.grid) {
+    margin: 0 !important;
+    padding: 0 !important;
+}
+.op-name :deep([class*="col-"]) {
+    padding: 0 !important;
+    margin: 0 !important;
+}
+.op-name :deep(input) {
+    width: 100% !important;
+    height: 2rem !important;
+    padding: 0 0.35rem !important;
+    font-size: 1rem !important;
+    font-weight: 600 !important;
+    color: var(--op-text) !important;
+    background: transparent !important;
+    border: 1px solid transparent !important;
+    border-bottom: 1px dashed rgba(var(--p-white-rgb), 0.22) !important;
+    border-radius: 4px 4px 0 0 !important;
+    box-shadow: none !important;
+}
+.op-name :deep(input:hover),
+.op-name :deep(input:focus) {
+    border-color: rgba(var(--p-primary-rgb), 0.55) !important;
+}
+.op-card:not(.op-card-active) .op-name :deep(input) {
+    font-weight: 500 !important;
+    color: var(--op-muted) !important;
+}
+
+/* Temperature and cooling: label on the left, field on the right, one
+   field height. The shared editors centre and indent; flatten them. */
+.op-field {
+    margin: 0 !important;
+    padding: 0 !important;
+}
+.op-field :deep(.dim-row),
+.op-field :deep(.efl-row) {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 0.5rem !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+.op-field :deep(.dim-label),
+.op-field :deep(.efl-label) {
+    flex: 0 0 5.6rem !important;
+    width: 5.6rem !important;
+    max-width: 5.6rem !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    font-size: 0.84rem !important;
+    font-weight: 500 !important;
+    line-height: 1.2 !important;
+    color: var(--op-muted) !important;
+    text-align: left !important;
+    background: transparent !important;
+}
+.op-field :deep(.dim-value-row),
+.op-field :deep(.efl-select) {
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+    width: auto !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+.op-windings-title {
+    margin: 0.4rem 0 0.05rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--op-muted);
+}
+
+/* Winding rows: status marker, name, reflect, open. */
+.op-winding-row {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    width: 100%;
+    min-width: 0;
+    padding: 0.1rem 0.25rem 0.1rem 0.15rem;
+    border-radius: 7px;
+}
+.op-winding-row-current {
+    background: rgba(var(--p-primary-rgb), 0.12);
+}
+
+/* Filled teal: waveforms reviewed. Orange ring: not reviewed yet (what
+   blocks Continue). The text is the tooltip and the accessible name. */
+.op-winding-status {
+    flex: 0 0 auto;
+    width: 0.62rem;
+    height: 0.62rem;
+    margin: 0 0.15rem;
+    border-radius: 50%;
+    background: var(--p-primary);
+}
+.op-winding-row-pending .op-winding-status {
+    background: transparent;
+    border: 2px solid var(--p-danger);
+}
+
+.op-winding-name {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+.op-winding-name :deep(.row),
+.op-winding-name :deep(.grid),
+.op-winding-name :deep([class*="col-"]) {
+    margin: 0 !important;
+    padding: 0 !important;
+}
+.op-winding-name :deep(input) {
+    width: 100% !important;
+    height: var(--op-field-h) !important;
+    padding: 0 0.35rem !important;
+    font-size: 0.9rem !important;
+    color: var(--op-text) !important;
+    background: transparent !important;
+    border: 1px solid transparent !important;
+    border-radius: 5px !important;
+    box-shadow: none !important;
+}
+.op-winding-name :deep(input:hover:not(:disabled)),
+.op-winding-name :deep(input:focus) {
+    border-color: rgba(var(--p-primary-rgb), 0.55) !important;
+}
+
+.op-winding-btn {
+    flex: 0 0 auto;
+    width: var(--op-field-h);
+    height: var(--op-field-h);
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: 1px solid rgba(var(--p-white-rgb), 0.2);
+    border-radius: 6px;
+    color: var(--op-muted);
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+.op-winding-btn i {
+    font-size: 0.8rem;
+}
+.op-winding-btn:hover:not(:disabled) {
+    color: var(--op-accent-text);
+    border-color: rgba(var(--p-primary-rgb), 0.6);
+    background: rgba(var(--p-primary-rgb), 0.1);
+}
+.op-winding-btn:focus-visible {
+    outline: 2px solid var(--p-primary);
+    outline-offset: 1px;
+}
+.op-winding-btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+/* The winding being edited: its open button is the "you are here" mark. */
+.op-winding-row-current .op-winding-open {
+    color: var(--p-dark);
+    background: var(--p-primary);
+    border-color: var(--p-primary);
+}
+.op-winding-row-pending:not(.op-winding-row-current) .op-winding-open {
+    color: var(--p-danger);
+    border-color: rgb(var(--p-danger-rgb) / 0.6);
+}
+
+.op-card-actions {
+    display: flex;
+    gap: 0.4rem;
+    justify-content: flex-end;
+}
+
+/* ============ Buttons: quiet by default ============ */
 .op-btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 0.4rem;
-    width: 100%;
-    padding: 0.4rem 0.7rem;
-    border-radius: 10px;
-    font-size: 0.75rem;
+    min-height: var(--op-field-h);
+    padding: 0 0.6rem;
+    border-radius: 7px;
+    font: inherit;
+    font-size: 0.8rem;
     font-weight: 600;
-    letter-spacing: 0.01em;
-    cursor: pointer;
-    border: 1px solid transparent;
-    transition: filter 0.15s, box-shadow 0.2s, transform 0.1s, background 0.15s, color 0.15s;
-    white-space: normal;
     line-height: 1.15;
-    min-height: 2.1rem;
-}
-
-.op-btn:hover:not(:disabled) {
-    filter: brightness(1.12);
-    transform: translateY(-1px);
-}
-
-.op-btn-primary {
-    background: linear-gradient(135deg,
-        color-mix(in srgb, var(--p-primary) 115%, transparent 0%) 0%,
-        var(--p-primary) 55%,
-        rgb(var(--p-primary-rgb) / 0.85) 100%);
-    color: var(--p-white);
-    border: 1px solid color-mix(in srgb, var(--p-primary) 70%, var(--p-white) 30%);
-    box-shadow:
-        0 0 0 1px rgb(var(--p-primary-rgb) / 0.35),
-        0 2px 8px rgb(var(--p-primary-rgb) / 0.4),
-        inset 0 1px 0 rgba(var(--p-white-rgb), 0.3);
-    text-shadow: 0 1px 1px rgba(var(--p-black-rgb), 0.25);
-}
-
-.op-btn-outline {
-    background: rgba(var(--p-white-rgb), 0.08);
-    border: 1px solid rgba(var(--p-primary-rgb), 0.55);
-    color: var(--p-primary);
-    box-shadow: 0 1px 4px rgba(var(--p-black-rgb), 0.25);
-}
-
-.op-btn-outline:hover:not(:disabled) {
-    background: rgba(var(--p-primary-rgb), 0.2);
-    border-color: rgba(var(--p-primary-rgb), 0.85);
-    color: var(--p-white);
-    box-shadow: 0 2px 8px rgba(var(--p-primary-rgb), 0.3);
-}
-
-.op-btn-danger {
-    background: rgb(var(--p-danger-rgb) / 0.2);
-    border: 1px solid rgb(var(--p-danger-rgb) / 0.55);
-    color: var(--p-danger);
-    box-shadow: 0 1px 4px rgba(var(--p-black-rgb), 0.25);
-}
-
-.op-btn-danger:hover:not(:disabled) {
-    background: rgb(var(--p-danger-rgb) / 0.3);
-    border-color: rgb(var(--p-danger-rgb) / 0.75);
-}
-
-/* Winding row: name input + reflect button + select button on one line.
-   Uses plain flex (not col-N grid) so the narrow OP panel fits all three. */
-.op-winding-row {
-    display: flex;
-    align-items: center;
-    gap: 0.35rem;
-    padding: 0.25rem 0;
-    width: 100%;
-    min-width: 0;
-}
-.op-winding-name {
-    flex: 1 1 auto;
-    min-width: 0;
-}
-.op-winding-btn {
-    flex: 0 0 auto;
-    width: 1.75rem;
-    height: 1.75rem;
-    padding: 0;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    border: 0;
-    outline: 0;
-    border-radius: 6px;
     cursor: pointer;
-    transition: filter 0.15s;
+    background: transparent;
+    border: 1px solid rgba(var(--p-white-rgb), 0.2);
+    color: var(--op-muted);
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
 }
-.op-winding-btn:focus,
-.op-winding-btn:focus-visible {
-    border: 0;
-    outline: 2px solid rgba(var(--p-primary-rgb), 0.4);
+.op-btn i {
+    font-size: 0.72rem;
+}
+.op-btn:focus-visible {
+    outline: 2px solid var(--p-primary);
     outline-offset: 1px;
 }
-.op-winding-btn:hover:not(:disabled) {
-    filter: brightness(1.15);
+.op-btn-primary {
+    color: var(--op-accent-text);
+    border-color: rgba(var(--p-primary-rgb), 0.55);
 }
-.op-winding-btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
+.op-btn-primary:hover {
+    background: rgba(var(--p-primary-rgb), 0.14);
 }
-.op-winding-btn i {
-    font-size: 0.9rem;
+.op-btn-danger:hover {
+    color: var(--p-danger);
+    border-color: rgb(var(--p-danger-rgb) / 0.6);
+    background: rgb(var(--p-danger-rgb) / 0.1);
 }
 
-/* Keep the Temp. value (input + °C unit) inside the operating-point card. */
-:deep(.p-inputgroup),
-:deep(.dwt-group) { width: 100%; min-width: 0; }
-:deep(.p-inputnumber),
-:deep(.p-inputnumber > input) { min-width: 0; flex: 1 1 auto; width: 100%; }
-:deep(.p-inputgroup .p-select),
-:deep(.dwt-unit-addon) { flex: 0 0 auto; min-width: 0; max-width: 3.25rem; }
+.op-panel-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    margin-top: 0.6rem;
+    padding-top: 0.6rem;
+    border-top: 1px solid var(--op-rule);
+}
+.op-btn-add {
+    width: 100%;
+    justify-content: flex-start;
+    border-style: dashed;
+    color: var(--op-accent-text);
+    border-color: rgba(var(--p-primary-rgb), 0.5);
+}
+.op-btn-add:hover {
+    background: rgba(var(--p-primary-rgb), 0.12);
+    border-style: solid;
+}
+.op-btn-quiet {
+    width: 100%;
+    justify-content: flex-start;
+    border-color: transparent;
+    font-weight: 500;
+}
+.op-btn-quiet:hover {
+    color: var(--op-text);
+    background: rgba(var(--p-white-rgb), 0.05);
+}
 
-/* Align Temp row flush-left like the rest of the operating-point card,
- * with a touch of breathing room above. */
-.op-temp { margin: 0.4rem 0 0 0 !important; padding: 0 !important; }
-.op-temp :deep(.row),
-.op-temp :deep(.grid) {
-    margin: 0 !important;
-    padding: 0 !important;
-    width: 100% !important;
+/* ============ Why Continue is blocked ============ */
+.op-issues {
+    margin-top: 0.6rem;
+    border-radius: 8px;
+    background: rgb(var(--p-danger-rgb) / 0.08);
+    border: 1px solid rgb(var(--p-danger-rgb) / 0.3);
+}
+.op-issues-summary {
+    display: flex;
     align-items: center;
+    gap: 0.45rem;
+    padding: 0.45rem 0.6rem;
+    list-style: none;
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-weight: 600;
+    line-height: 1.3;
+    color: var(--p-danger);
 }
-.op-temp :deep(.row > [class*="col-"]),
-.op-temp :deep(.grid > [class*="col-"]) {
-    padding-left: 0 !important;
-    padding-right: 0 !important;
+.op-issues-summary::-webkit-details-marker {
+    display: none;
+}
+.op-issues-summary:focus-visible {
+    outline: 2px solid var(--p-danger);
+    outline-offset: 1px;
+    border-radius: 8px;
+}
+.op-issues-summary i {
+    font-size: 0.8rem;
+}
+.op-issues-chevron {
+    margin-left: auto;
+    font-size: 0.65rem !important;
+    transition: transform 0.15s;
+}
+.op-issues[open] .op-issues-chevron {
+    transform: rotate(180deg);
+}
+.op-issues-text {
+    display: block;
+    margin: 0;
+    padding: 0 0.6rem 0.55rem 1.85rem;
+    font-size: 0.8rem;
+    line-height: 1.45;
+    color: var(--op-text);
+    white-space: pre-line;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .op-card, .op-btn, .op-winding-btn, .op-issues-chevron { transition: none; }
+}
+
+/* ============ Narrow screens: the list sits above the editor ============ */
+@media (max-width: 900px) {
+    .op-layout {
+        grid-template-columns: minmax(0, 1fr);
+    }
+    .op-card-pending-arrow {
+        transform: rotate(90deg);
+    }
+}
+@media (max-width: 600px) {
+    .op-container {
+        padding: 0.5rem 0 1.25rem;
+    }
 }
 </style>

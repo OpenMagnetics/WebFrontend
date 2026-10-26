@@ -380,20 +380,17 @@ export default {
 
 <template>
     <div class="oph-container">
-        <div class="row g-2 m-0">
-            <div class="col-12 lg:col-5 oph-col">
+        <div class="op-editor-head" data-op-col="head">
+            <h2 class="op-editor-title" data-op-title :data-cy="dataTestLabel + '-current-title'">{{masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].name}}</h2>
+            <p class="op-editor-sub">Harmonics of {{ masStore.mas.magnetic.coil.functionalDescription[currentWindingIndex].name }}</p>
+        </div>
+        <div class="op-editor-grid">
+            <div class="oph-col op-editor-inputs" data-op-col="inputs">
 
-                <div class="oph-title" :data-cy="dataTestLabel + '-current-title'">
-                    <i class="pi pi-bullseye"></i>
-                    <span>{{masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].name + ' — ' + masStore.mas.magnetic.coil.functionalDescription[currentWindingIndex].name}}</span>
-                </div>
-
-                <div class="oph-card oph-card-current">
-                    <div class="oph-card-header">
-                        <i class="pi pi-volume-up"></i>
-                        <span>Current harmonics</span>
-                    </div>
-                    <div class="oph-card-body">
+                <section class="oph-card oph-card-current op-cell op-cell-current">
+                    <h3 class="oph-card-header op-cell-title" data-op-title>Current harmonics</h3>
+                    <div class="oph-list-head" aria-hidden="true"><span>Order</span><span>Frequency</span><span>Amplitude</span></div>
+                    <div class="oph-card-body op-cell-body">
                         <div
                             v-if="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex] != null && masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex].current.harmonics"
                             v-for="index in masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex].current.harmonics.amplitudes.length" :key="index">
@@ -411,19 +408,17 @@ export default {
                                 @onRemovePoint="onRemovePoint(index - 1, 'current')"
                             />
                         </div>
-                        <div v-if='errorMessages.current != ""' class="oph-error">
-                            <i class="pi pi-exclamation-triangle"></i>
-                            <span>{{errorMessages.current}}</span>
-                        </div>
                     </div>
-                </div>
+                    <div v-if='errorMessages.current != ""' class="oph-error op-cell-error">
+                        <i class="pi pi-exclamation-triangle"></i>
+                        <span>{{errorMessages.current}}</span>
+                    </div>
+                </section>
 
-                <div class="oph-card oph-card-voltage" :class="{ 'oph-disabled': isInductor }">
-                    <div class="oph-card-header">
-                        <i class="pi pi-bolt"></i>
-                        <span>Voltage harmonics</span>
-                    </div>
-                    <div class="oph-card-body">
+                <section class="oph-card oph-card-voltage op-cell op-cell-voltage" :class="{ 'op-cell-derived': isInductor }">
+                    <h3 class="oph-card-header op-cell-title" data-op-title>Voltage harmonics</h3>
+                    <div class="oph-list-head" aria-hidden="true"><span>Order</span><span>Frequency</span><span>Amplitude</span></div>
+                    <div class="oph-card-body op-cell-body">
                         <div
                             v-if="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex] != null && masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex].voltage.harmonics"
                             v-for="index in masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex].voltage.harmonics.amplitudes.length" :key="index">
@@ -442,250 +437,163 @@ export default {
                                 @onRemovePoint="onRemovePoint(index - 1, 'voltage')"
                             />
                         </div>
-                        <div v-if='errorMessages.voltage != ""' class="oph-error">
-                            <i class="pi pi-exclamation-triangle"></i>
-                            <span>{{errorMessages.voltage}}</span>
-                        </div>
                     </div>
-                </div>
+                    <div v-if='errorMessages.voltage != ""' class="oph-error op-cell-error">
+                        <i class="pi pi-exclamation-triangle"></i>
+                        <span>{{errorMessages.voltage}}</span>
+                    </div>
+                </section>
 
-                <div class="oph-actions">
+                <div class="oph-actions op-editor-actions">
                     <button
                         :data-cy="dataTestLabel + '-import-button'"
-                        class="oph-btn oph-btn-outline"
+                        type="button"
+                        class="op-action"
                         @click="$emit('clearMode')">
                         <i class="pi pi-arrow-left"></i>
                         <span>Go back to selecting mode</span>
                     </button>
                     <button
                         :data-cy="dataTestLabel + '-switch-to-manual-button'"
-                        class="oph-btn oph-btn-primary"
+                        type="button"
+                        class="op-action op-action-main"
                         @click="$emit('switchToManual')">
-                        <i class="pi pi-volume-up"></i>
                         <span>Switch to Waveform view</span>
                     </button>
                 </div>
             </div>
-            <div v-if="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex] != null && (masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex].current.waveform != null || masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex].voltage.waveform != null)" class="col-12 lg:col-7 row m-0 p-0 align-items-start" style="max-width: 800px;">
-                <div>
-                    <WaveformGraph class=" col-12 py-2"
-                        :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex]"
-                        :dataTestLabel="dataTestLabel + '-WaveformGraph'"
-                        :enableDrag="false"
-                    />
-                    <WaveformFourier class="col-12 mt-1 mb-3" style="max-height: 150px;"
-                        :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex]"
-                        :updateHarmonics="false"
-                        :dataTestLabel="dataTestLabel + '-WaveformFourier'"
-                        :harmonicPowerThresholdVoltage="0.05"
-                        :harmonicPowerThresholdCurrent="0.05"
-                        :maxHarmonicsToPlot="30"
-                    />
+            <div v-if="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex] != null && (masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex].current.waveform != null || masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex].voltage.waveform != null)" class="op-editor-results" data-op-col="results">
+                <WaveformGraph class="op-chart"
+                    :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex]"
+                    :dataTestLabel="dataTestLabel + '-WaveformGraph'"
+                    :enableDrag="false"
+                />
+                <WaveformFourier class="op-chart" style="max-height: 150px;"
+                    :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex]"
+                    :updateHarmonics="false"
+                    :dataTestLabel="dataTestLabel + '-WaveformFourier'"
+                    :harmonicPowerThresholdVoltage="0.05"
+                    :harmonicPowerThresholdCurrent="0.05"
+                    :maxHarmonicsToPlot="30"
+                />
 
-                    <WaveformSimpleOutput class="col-12 lg:col-12 m-0 px-2"
-                        v-if="!$settingsStore.operatingPointSettings.advancedMode"
+                <WaveformSimpleOutput
+                    v-if="!$settingsStore.operatingPointSettings.advancedMode"
+                    :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex]"
+                    :dataTestLabel="dataTestLabel + '-WaveformOutput-current'"
+                />
+
+                <div v-if="$settingsStore.operatingPointSettings.advancedMode" class="op-outputs-pair">
+                    <WaveformOutput
                         :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex]"
                         :dataTestLabel="dataTestLabel + '-WaveformOutput-current'"
+                        :signalDescriptor="'current'"
                     />
-
-                    <div v-if="$settingsStore.operatingPointSettings.advancedMode" class="row m-0 p-0">
-                        <WaveformOutput class="col-12 md:col-6 lg:col-6 m-0 px-2"
-                            :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex]"
-                            :dataTestLabel="dataTestLabel + '-WaveformOutput-current'"
-                            :signalDescriptor="'current'"
-                        />
-                        <WaveformOutput class="col-12 md:col-6 lg:col-6 m-0 px-2"
-                            :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex]"
-                            :dataTestLabel="dataTestLabel + '-WaveformOutput-voltage'"
-                            :signalDescriptor="'voltage'"
-                        />
-                    </div>
-                    <WaveformCombinedOutput class="col-12 m-0 px-2"
-                        v-if="$settingsStore.operatingPointSettings.advancedMode"
-                        :dataTestLabel="dataTestLabel + '-WaveformCombinedOutput'"
+                    <WaveformOutput
+                        data-op-col="results-second"
                         :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex]"
+                        :dataTestLabel="dataTestLabel + '-WaveformOutput-voltage'"
+                        :signalDescriptor="'voltage'"
                     />
                 </div>
+                <WaveformCombinedOutput
+                    v-if="$settingsStore.operatingPointSettings.advancedMode"
+                    :dataTestLabel="dataTestLabel + '-WaveformCombinedOutput'"
+                    :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex]"
+                />
             </div>
         </div>
     </div>
 </template>
 
 <style scoped>
+/* Layout, cells, actions and results come from the shared editor styles in
+   OperatingPoint.vue (.op-editor-*, .op-cell-*, .op-action). This file only
+   lays out the harmonic rows: order | frequency | amplitude | add/remove. */
 .oph-container {
     width: 100%;
     margin: 0;
     padding: 0;
 }
 
-.oph-col {
-    max-width: 460px;
-    display: flex;
-    flex-direction: column;
-    gap: 0.6rem;
-    padding-left: 0.25rem;
-    padding-right: 0.25rem;
-}
-
-.oph-title {
-    display: flex;
+.oph-list-head,
+.oph-card-body :deep(.container > .row) {
+    display: grid !important;
+    grid-template-columns: 2.6rem minmax(0, 1fr) minmax(0, 1fr) 3.4rem;
+    column-gap: 0.5rem;
     align-items: center;
-    gap: 0.5rem;
-    color: var(--p-primary);
-    font-size: 1.05rem;
-    font-weight: 700;
-    letter-spacing: 0.01em;
-    padding: 0.2rem 0.2rem 0.4rem 0.2rem;
+}
+.oph-list-head {
+    margin: 0 0 0.3rem;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--op-muted);
+}
+.oph-list-head > span:first-child {
+    grid-column: 1;
 }
 
-.oph-title i {
-    filter: drop-shadow(0 0 4px rgba(var(--p-primary-rgb), 0.5));
-}
-
-.oph-card {
-    background:
-        linear-gradient(180deg,
-            rgba(var(--p-primary-rgb), 0.06) 0%,
-            rgba(var(--p-primary-rgb), 0.02) 100%),
-        var(--p-dark);
-    border: 1px solid rgba(var(--p-primary-rgb), 0.18);
-    border-left: 3px solid rgba(var(--p-primary-rgb), 0.7);
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 3px 10px rgba(var(--p-black-rgb), 0.3);
-}
-
-.oph-card-current {
-    border-left-color: rgba(var(--p-info-rgb), 0.7);
-}
-
-.oph-card-voltage {
-    border-left-color: rgba(var(--p-success-rgb), 0.7);
-}
-
-.oph-disabled {
-    opacity: 0.5;
-    pointer-events: none;
-}
-
-.oph-card-header {
-    display: flex;
-    align-items: center;
-    gap: 0.45rem;
-    padding: 0.5rem 0.75rem;
-    background: rgba(var(--p-primary-rgb), 0.08);
-    border-bottom: 1px solid rgba(var(--p-primary-rgb), 0.12);
-    color: var(--p-primary);
-    font-weight: 600;
-    font-size: 0.78rem;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-}
-
-.oph-card-current .oph-card-header {
-    color: var(--p-info);
-    background: rgba(var(--p-info-rgb), 0.1);
-    border-bottom-color: rgba(var(--p-info-rgb), 0.18);
-}
-
-.oph-card-current .oph-card-header i {
-    filter: drop-shadow(0 0 4px rgba(var(--p-info-rgb), 0.5));
-}
-
-.oph-card-voltage .oph-card-header {
-    color: var(--p-success);
-    background: rgba(var(--p-success-rgb), 0.1);
-    border-bottom-color: rgba(var(--p-success-rgb), 0.18);
-}
-
-.oph-card-voltage .oph-card-header i {
-    filter: drop-shadow(0 0 4px rgba(var(--p-success-rgb), 0.5));
-}
-
-.oph-card-header i {
-    font-size: 0.85rem;
-    filter: drop-shadow(0 0 4px rgba(var(--p-primary-rgb), 0.5));
-}
-
+/* The list scrolls inside its cell rather than stretching the page. */
 .oph-card-body {
-    padding: 0.6rem 0.7rem 0.7rem 0.7rem;
     max-height: 28vh;
     overflow-y: auto;
+    overflow-x: hidden;
 }
 
-.oph-card-body :deep(.row) {
-    margin-left: 0 !important;
-    margin-right: 0 !important;
+.oph-card-body :deep(.container) {
+    margin: 0 !important;
+    padding: 0 !important;
+    max-width: none !important;
+    width: 100% !important;
 }
-
-.oph-error {
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-    margin-top: 0.5rem;
-    padding: 0.4rem 0.6rem;
-    background: rgb(var(--p-danger-rgb) / 0.12);
-    border: 1px solid rgb(var(--p-danger-rgb) / 0.4);
-    border-radius: 8px;
-    color: var(--p-danger);
-    font-size: 0.78rem;
-    line-height: 1.3;
-    white-space: pre-wrap;
+.oph-card-body :deep(.container > .row > *) {
+    width: auto !important;
+    max-width: none !important;
+    flex: none !important;
+    margin: 0 !important;
+    padding: 0.15rem 0 !important;
 }
-
-.oph-actions {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    margin-top: 0.4rem;
-}
-
-button.oph-btn {
-    display: inline-flex !important;
-    align-items: center;
-    justify-content: center;
-    gap: 0.45rem;
-    padding: 0.55rem 1rem !important;
-    border-radius: 10px !important;
-    font-size: 0.85rem !important;
+.oph-card-body :deep(.harmonic-title) {
+    font-size: 0.86rem;
     font-weight: 600;
-    letter-spacing: 0.01em;
-    cursor: pointer;
-    transition: filter 0.15s, transform 0.1s, box-shadow 0.2s, background 0.15s;
-    width: 100%;
-    line-height: 1.2;
-    outline: none;
+    color: var(--op-text);
 }
-
-button.oph-btn:hover {
-    filter: brightness(1.15);
-    transform: translateY(-1px);
+/* Each value has its column heading; the per-field label is empty. */
+.oph-card-body :deep(.dim-label) {
+    display: none !important;
 }
-
-button.oph-btn-primary {
-    border: 1px solid rgba(var(--p-primary-rgb), 0.85) !important;
-    background-color: var(--p-primary) !important;
-    background-image: linear-gradient(135deg,
-        rgba(var(--p-primary-rgb), 1) 0%,
-        rgba(var(--p-primary-rgb), 0.8) 100%) !important;
-    color: var(--p-white) !important;
-    box-shadow:
-        0 0 0 1px rgba(var(--p-primary-rgb), 0.3),
-        0 2px 8px rgba(var(--p-primary-rgb), 0.4),
-        inset 0 1px 0 rgba(var(--p-white-rgb), 0.25);
-    text-shadow: 0 1px 1px rgba(var(--p-black-rgb), 0.25);
+.oph-card-body :deep(.dim-row) {
+    gap: 0 !important;
 }
-
-button.oph-btn-outline {
-    background: rgba(var(--p-white-rgb), 0.08) !important;
-    border: 1px solid rgba(var(--p-primary-rgb), 0.55) !important;
-    color: var(--p-primary) !important;
-    box-shadow: 0 1px 4px rgba(var(--p-black-rgb), 0.25);
+.oph-card-body :deep(.dim-value-row) {
+    max-width: none !important;
+    width: 100% !important;
 }
-
-button.oph-btn-outline:hover {
-    background: rgba(var(--p-primary-rgb), 0.2) !important;
-    border-color: rgba(var(--p-primary-rgb), 0.85) !important;
-    color: var(--p-white) !important;
+.oph-card-body :deep(.harmonic-btn-group) {
+    justify-content: flex-end;
+}
+/* Phone width: a narrower order column and unit selects so the numbers
+   keep room to show in full. */
+@container op-editor (max-width: 30rem) {
+    .oph-list-head,
+    .oph-card-body :deep(.container > .row) {
+        grid-template-columns: 2.1rem minmax(0, 1fr) minmax(0, 1fr) 2.9rem;
+        column-gap: 0.35rem;
+    }
+    .oph-card-body :deep(.dim-unit) {
+        flex: 0 0 3.1rem !important;
+        width: 3.1rem !important;
+        min-width: 0 !important;
+    }
+    .oph-card-body :deep(.dim-unit .p-select-label) {
+        padding-left: 0.3rem !important;
+        padding-right: 0 !important;
+    }
+    .oph-card-body :deep(.dim-unit .p-select-dropdown) {
+        width: 1rem !important;
+    }
+    .oph-card-body :deep(.p-inputnumber-input) {
+        padding-left: 0.3rem !important;
+    }
 }
 </style>

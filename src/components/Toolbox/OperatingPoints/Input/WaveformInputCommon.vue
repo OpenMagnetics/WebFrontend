@@ -101,14 +101,6 @@ export default {
 
 <template>
     <div class="container-flex">
-        <div class="row text-center">
-            <label
-                :style="combinedStyle([$styleStore.operatingPoints.inputTitleFontSize, $styleStore.operatingPoints.commonParameterTextColor])"
-                class=""
-            >
-                Common parameters
-            </label>
-        </div>
         <div class="row">
 
             <Dimension class="py-2 col-12"

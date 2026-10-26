@@ -72,10 +72,7 @@ export default {
 
 <template>
     <div class="wco-card">
-        <div class="wco-header">
-            <i class="pi pi-bolt"></i>
-            <span>Power</span>
-        </div>
+        <h3 class="wco-header" data-op-title>Power</h3>
         <div class="wco-body">
             <DimensionReadOnly class="col-6"
                 :name="'instantaneousPower'"
@@ -110,55 +107,71 @@ export default {
 </template>
 
 <style scoped>
+/* A results cell on the sheet: a top rule and a title in the signal's colour. */
 .wco-card {
-    background:
-        linear-gradient(180deg,
-            rgba(var(--p-success-rgb), 0.06) 0%,
-            rgba(var(--p-success-rgb), 0.02) 100%),
-        var(--p-dark);
-    border: 1px solid rgba(var(--p-success-rgb), 0.18);
-    border-left: 3px solid rgba(var(--p-success-rgb), 0.7);
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 3px 10px rgba(var(--p-black-rgb), 0.3);
-    margin: 0.4rem 0 0.25rem 0;
+    --op-cell-colour: var(--p-primary);
+    margin: 0.5rem 0 0;
+    padding: 0.6rem 0 0.4rem;
+    border-top: 1px solid var(--op-rule);
 }
-
 .wco-header {
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-    padding: 0.4rem 0.7rem;
-    background: rgba(var(--p-success-rgb), 0.1);
-    border-bottom: 1px solid rgba(var(--p-success-rgb), 0.18);
-    color: var(--p-success);
-    font-weight: 600;
-    font-size: 0.72rem;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
+    margin: 0 0 0.3rem;
+    font-size: 0.98rem;
+    font-weight: 650;
+    line-height: 1.3;
+    color: var(--op-cell-colour);
 }
-
-.wco-header i {
-    font-size: 0.85rem;
-    filter: drop-shadow(0 0 4px rgba(var(--p-success-rgb), 0.5));
-}
-
 .wco-body {
-    display: flex;
-    padding: 0.45rem 0.6rem;
-    gap: 0.4rem;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    column-gap: 1.5rem;
 }
-
 .wco-body :deep(.col-6) {
-    flex: 1;
-    max-width: 50%;
-    padding: 0.25rem 0.4rem !important;
-    border-radius: 6px;
-    transition: background 0.15s;
+    width: auto !important;
+    max-width: none !important;
+    flex: none !important;
+}
+@container op-editor (max-width: 40rem) {
+    .wco-body {
+        grid-template-columns: minmax(0, 1fr);
+    }
 }
 
-.wco-body :deep(.col-6:hover) {
-    background: rgba(var(--p-white-rgb), 0.03);
+/* Read-only rows: label left in the muted label colour, value right. The
+   shared component sets sizes and colours inline, hence !important. */
+.wco-body :deep(.dim-ro-container) {
+    padding: 0.28rem 0 !important;
+    margin: 0 !important;
+}
+.wco-body :deep(.dim-ro-row) {
+    display: flex !important;
+    align-items: baseline !important;
+    gap: 0.75rem;
+}
+.wco-body :deep(.dim-ro-label) {
+    flex: 1 1 auto !important;
+    min-width: 0;
+    margin: 0 !important;
+    padding: 0 !important;
+    font-size: 0.86rem !important;
+    font-weight: 500 !important;
+    color: var(--op-muted) !important;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.wco-body :deep(.dim-ro-value-wrap) {
+    flex: 0 0 auto !important;
+    width: auto !important;
+    max-width: none !important;
+    padding: 0 !important;
+}
+.wco-body :deep(.dim-ro-value),
+.wco-body :deep(.dim-ro-alt-unit),
+.wco-body :deep(.dim-ro-unit),
+.wco-body :deep(.dim-ro-unit *) {
+    font-size: 0.9rem !important;
+    color: var(--op-text) !important;
+    font-variant-numeric: tabular-nums;
 }
 </style>
-

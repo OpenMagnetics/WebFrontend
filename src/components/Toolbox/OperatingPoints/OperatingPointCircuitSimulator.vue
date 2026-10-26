@@ -127,20 +127,17 @@ export default {
 
 <template>
     <div class="opc-container">
-        <div class="row g-2 m-0">
-            <div class="col-12 lg:col-5 opc-col">
+        <div class="op-editor-head" data-op-col="head">
+            <h2 class="op-editor-title" data-op-title :data-cy="dataTestLabel + '-current-title'">{{masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].name}}</h2>
+            <p class="op-editor-sub">Imported waveforms of {{ masStore.mas.magnetic.coil.functionalDescription[currentWindingIndex].name }}</p>
+        </div>
+        <div class="op-editor-grid">
+            <div class="opc-col op-editor-inputs" data-op-col="inputs">
 
-                <div class="opc-title" :data-cy="dataTestLabel + '-current-title'">
-                    <i class="pi pi-file-import"></i>
-                    <span>{{masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].name + ' — ' + masStore.mas.magnetic.coil.functionalDescription[currentWindingIndex].name}}</span>
-                </div>
-
-                <div class="opc-card">
-                    <div class="opc-card-header">
-                        <i class="pi pi-table"></i>
-                        <span>Imported file columns</span>
-                    </div>
-                    <div class="opc-card-body">
+                <section class="opc-card op-cell">
+                    <h3 class="opc-card-header op-cell-title" data-op-title>Imported file columns</h3>
+                    <p class="op-cell-note">Pick the columns of the file that hold this winding's time, current and voltage.</p>
+                    <div class="opc-card-body op-cell-body">
                         <WaveformInputColumnNames
                             :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex]"
                             :dataTestLabel="dataTestLabel + '-selected'"
@@ -151,22 +148,22 @@ export default {
                             @updatedColumnName="updatedColumnNames"
                         />
                     </div>
-                </div>
+                    <div v-if='loadedFile=="" && !$stateStore.operatingPointsCircuitSimulator.confirmedColumns[currentOperatingPointIndex][currentWindingIndex]' class="opc-error op-cell-error">
+                        <i class="pi pi-exclamation-triangle"></i>
+                        <span>Please reload file</span>
+                    </div>
+                    <div v-if='errorMessages != ""' class="opc-error op-cell-error">
+                        <i class="pi pi-times-circle-fill"></i>
+                        <span>{{errorMessages}}</span>
+                    </div>
+                </section>
 
-                <div v-if='loadedFile=="" && !$stateStore.operatingPointsCircuitSimulator.confirmedColumns[currentOperatingPointIndex][currentWindingIndex]' class="opc-error">
-                    <i class="pi pi-exclamation-triangle"></i>
-                    <span>Please reload file</span>
-                </div>
-                <div v-if='errorMessages != ""' class="opc-error">
-                    <i class="pi pi-times-circle-fill"></i>
-                    <span>{{errorMessages}}</span>
-                </div>
-
-                <div class="opc-actions">
+                <div class="opc-actions op-editor-actions">
                     <button
                         :disabled='loadedFile=="" || loading'
                         :data-cy="dataTestLabel + '-import-button'"
-                        class="opc-btn opc-btn-primary"
+                        type="button"
+                        class="op-action op-action-filled"
                         @click="confirmColumns"
                     >
                         <img v-if="loading" alt="loading" class="opc-loading" :src="$settingsStore.loadingGif">
@@ -177,7 +174,8 @@ export default {
                     </button>
                     <button
                         :data-cy="dataTestLabel + '-import-button'"
-                        class="opc-btn opc-btn-outline"
+                        type="button"
+                        class="op-action"
                         @click="clearMode"
                     >
                         <i class="pi pi-arrow-left"></i>
@@ -185,192 +183,53 @@ export default {
                     </button>
                 </div>
             </div>
-            <div v-if="$stateStore.operatingPointsCircuitSimulator.confirmedColumns[currentOperatingPointIndex][currentWindingIndex]" class="col-12 lg:col-7 row m-0 p-0" style="max-width: 800px;">
-                <div>
-                    <WaveformGraph class=" col-12 py-2"
-                        :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex]"
-                        :dataTestLabel="dataTestLabel + '-WaveformGraph'"
-                        :enableDrag="false"
-                    />
-                    <WaveformFourier class="col-12 mt-1 mb-3" style="max-height: 150px;"
-                        :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex]"
-                        :dataTestLabel="dataTestLabel + '-WaveformFourier'"
-                    />
+            <div v-if="$stateStore.operatingPointsCircuitSimulator.confirmedColumns[currentOperatingPointIndex][currentWindingIndex]" class="op-editor-results" data-op-col="results">
+                <WaveformGraph class="op-chart"
+                    :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex]"
+                    :dataTestLabel="dataTestLabel + '-WaveformGraph'"
+                    :enableDrag="false"
+                />
+                <WaveformFourier class="op-chart" style="max-height: 150px;"
+                    :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex]"
+                    :dataTestLabel="dataTestLabel + '-WaveformFourier'"
+                />
 
-                    <WaveformSimpleOutput class="col-12 lg:col-12 m-0 px-2"
-                        v-if="!$settingsStore.operatingPointSettings.advancedMode"
+                <WaveformSimpleOutput
+                    v-if="!$settingsStore.operatingPointSettings.advancedMode"
+                    :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex]"
+                    :dataTestLabel="dataTestLabel + '-WaveformOutput-current'"
+                />
+
+                <div v-if="$settingsStore.operatingPointSettings.advancedMode" class="op-outputs-pair">
+                    <WaveformOutput
                         :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex]"
                         :dataTestLabel="dataTestLabel + '-WaveformOutput-current'"
+                        :signalDescriptor="'current'"
                     />
-
-                    <div v-if="$settingsStore.operatingPointSettings.advancedMode" class="row m-0 p-0">
-                        <WaveformOutput class="col-12 md:col-6 lg:col-6 m-0 px-2"
-                            :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex]"
-                            :dataTestLabel="dataTestLabel + '-WaveformOutput-current'"
-                            :signalDescriptor="'current'"
-                        />
-                        <WaveformOutput class="col-12 md:col-6 lg:col-6 m-0 px-2"
-                            :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex]"
-                            :dataTestLabel="dataTestLabel + '-WaveformOutput-voltage'"
-                            :signalDescriptor="'voltage'"
-                        />
-                    </div>
-                    <WaveformCombinedOutput class="col-12 m-0 px-2"
-                        v-if="$settingsStore.operatingPointSettings.advancedMode"
-                        :dataTestLabel="dataTestLabel + '-WaveformCombinedOutput'"
+                    <WaveformOutput
+                        data-op-col="results-second"
                         :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex]"
+                        :dataTestLabel="dataTestLabel + '-WaveformOutput-voltage'"
+                        :signalDescriptor="'voltage'"
                     />
                 </div>
+                <WaveformCombinedOutput
+                    v-if="$settingsStore.operatingPointSettings.advancedMode"
+                    :dataTestLabel="dataTestLabel + '-WaveformCombinedOutput'"
+                    :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex]"
+                />
             </div>
         </div>
     </div>
 </template>
 
 <style scoped>
+/* Layout, cells, actions and results come from the shared editor styles in
+   OperatingPoint.vue (.op-editor-*, .op-cell-*, .op-action). */
 .opc-container {
     width: 100%;
     margin: 0;
     padding: 0;
-}
-
-.opc-col {
-    max-width: 460px;
-    display: flex;
-    flex-direction: column;
-    gap: 0.6rem;
-    padding-left: 0.25rem;
-    padding-right: 0.25rem;
-}
-
-.opc-title {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    color: var(--p-primary);
-    font-size: 1.05rem;
-    font-weight: 700;
-    letter-spacing: 0.01em;
-    padding: 0.2rem 0.2rem 0.4rem 0.2rem;
-}
-
-.opc-title i {
-    filter: drop-shadow(0 0 4px rgba(var(--p-primary-rgb), 0.5));
-}
-
-.opc-card {
-    background:
-        linear-gradient(180deg,
-            rgba(var(--p-primary-rgb), 0.06) 0%,
-            rgba(var(--p-primary-rgb), 0.02) 100%),
-        var(--p-dark);
-    border: 1px solid rgba(var(--p-primary-rgb), 0.18);
-    border-left: 3px solid rgba(var(--p-primary-rgb), 0.7);
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 3px 10px rgba(var(--p-black-rgb), 0.3);
-}
-
-.opc-card-header {
-    display: flex;
-    align-items: center;
-    gap: 0.45rem;
-    padding: 0.5rem 0.75rem;
-    background: rgba(var(--p-primary-rgb), 0.08);
-    border-bottom: 1px solid rgba(var(--p-primary-rgb), 0.12);
-    color: var(--p-primary);
-    font-weight: 600;
-    font-size: 0.78rem;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-}
-
-.opc-card-header i {
-    font-size: 0.85rem;
-    filter: drop-shadow(0 0 4px rgba(var(--p-primary-rgb), 0.5));
-}
-
-.opc-card-body {
-    padding: 0.7rem 1rem 0.85rem 1rem;
-}
-
-.opc-card-body :deep(.row) {
-    margin-left: 0 !important;
-    margin-right: 0 !important;
-}
-
-.opc-error {
-    display: flex;
-    align-items: center;
-    gap: 0.45rem;
-    padding: 0.5rem 0.75rem;
-    background: rgb(var(--p-danger-rgb) / 0.12);
-    border: 1px solid rgb(var(--p-danger-rgb) / 0.4);
-    border-radius: 10px;
-    color: var(--p-danger);
-    font-size: 0.8rem;
-    line-height: 1.3;
-    white-space: pre-wrap;
-}
-
-.opc-actions {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    margin-top: 0.4rem;
-}
-
-button.opc-btn {
-    display: inline-flex !important;
-    align-items: center;
-    justify-content: center;
-    gap: 0.45rem;
-    padding: 0.55rem 1rem !important;
-    border-radius: 10px !important;
-    font-size: 0.85rem !important;
-    font-weight: 600;
-    letter-spacing: 0.01em;
-    cursor: pointer;
-    transition: filter 0.15s, transform 0.1s, box-shadow 0.2s, background 0.15s;
-    width: 100%;
-    line-height: 1.2;
-    outline: none;
-}
-
-button.opc-btn:hover:not(:disabled) {
-    filter: brightness(1.15);
-    transform: translateY(-1px);
-}
-
-button.opc-btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
-
-button.opc-btn-primary {
-    border: 1px solid rgba(var(--p-primary-rgb), 0.85) !important;
-    background-color: var(--p-primary) !important;
-    background-image: linear-gradient(135deg,
-        rgba(var(--p-primary-rgb), 1) 0%,
-        rgba(var(--p-primary-rgb), 0.8) 100%) !important;
-    color: var(--p-white) !important;
-    box-shadow:
-        0 0 0 1px rgba(var(--p-primary-rgb), 0.3),
-        0 2px 8px rgba(var(--p-primary-rgb), 0.4),
-        inset 0 1px 0 rgba(var(--p-white-rgb), 0.25);
-    text-shadow: 0 1px 1px rgba(var(--p-black-rgb), 0.25);
-}
-
-button.opc-btn-outline {
-    background: rgba(var(--p-white-rgb), 0.08) !important;
-    border: 1px solid rgba(var(--p-primary-rgb), 0.55) !important;
-    color: var(--p-primary) !important;
-    box-shadow: 0 1px 4px rgba(var(--p-black-rgb), 0.25);
-}
-
-button.opc-btn-outline:hover:not(:disabled) {
-    background: rgba(var(--p-primary-rgb), 0.2) !important;
-    border-color: rgba(var(--p-primary-rgb), 0.85) !important;
-    color: var(--p-white) !important;
 }
 
 .opc-loading {

@@ -4,7 +4,7 @@ import { Chart,
          registerables } from 'chart.js'
 import { removeTrailingZeroes,
          roundWithDecimals } from 'WebSharedComponents/assets/js/utils.js'
-import { themeColor, themeRgba } from '../../../../assets/js/chartTheme.js'
+import { themeColor, themeRgba, themeVarRgba, chartTooltipTheme, seriesLabelColor } from '../../../../assets/js/chartTheme.js'
 import 'chartjs-plugin-dragdata'
 </script>
 
@@ -190,15 +190,10 @@ export default {
                 },
                 tooltip: {
                     // Concrete colors only: canvas ignores 'var(...)' values (see chartTheme.js).
-                    backgroundColor: themeRgba('--p-dark-rgb', 0.92, '20, 20, 25'),
-                    titleColor: themeColor('--p-light', '#f8f9fa'),
-                    bodyColor: themeColor('--p-light', '#f8f9fa'),
-                    borderColor: themeRgba('--p-primary-rgb', 0.6, '80, 200, 175'),
-                    borderWidth: 1,
-                    padding: 8,
-                    cornerRadius: 6,
-                    titleFont: { size: 11, weight: '600' },
-                    bodyFont: { size: 11 },
+                    ...chartTooltipTheme(),
+                    callbacks: {
+                        labelColor: seriesLabelColor,
+                    },
                 },
             },
             layout: {
@@ -221,7 +216,7 @@ export default {
                     max: 15,
                     min: -15,
                     grid: {
-                        color: 'rgba(255, 185, 78, 0.18)',
+                        color: themeVarRgba('--p-warning-rgb', 0.18),
                         drawBorder: false,
                         lineWidth: 1,
                     },
@@ -251,7 +246,7 @@ export default {
                     type: 'linear',
                     ticks: {
                         beginAtZero: true,
-                        color: 'rgba(212, 212, 212, 0.9)',
+                        color: themeVarRgba('--p-white-rgb', 0.82),
                         font: { size: 10, weight: '500' },
                         padding: 4,
                         maxRotation: 0,
@@ -263,12 +258,12 @@ export default {
                         }
                     },
                     grid: {
-                        color: 'rgba(212, 212, 212, 0.08)',
+                        color: themeVarRgba('--p-white-rgb', 0.08),
                         drawBorder: false,
                         lineWidth: 1,
                     },
                     border: {
-                        color: 'rgba(212, 212, 212, 0.25)',
+                        color: themeVarRgba('--p-white-rgb', 0.25),
                     },
                 }
             },

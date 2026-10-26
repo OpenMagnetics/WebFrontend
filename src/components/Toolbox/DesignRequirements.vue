@@ -729,13 +729,21 @@ export default {
 
 <style scoped>
 .dr-container {
-    --dr-panel-1: color-mix(in srgb, var(--p-light) 92%, var(--p-white) 8%);
-    --dr-panel-2: var(--p-light);
+    /* Panel and text tones are set for contrast: body text >= 4.5:1 on the
+       lightest point of the panel gradient. */
+    --dr-panel-1: color-mix(in srgb, var(--p-light) 45%, var(--p-dark) 55%);
+    --dr-panel-2: var(--p-dark);
+    /* Field outlines: >= 3:1 against the panel (WCAG non-text contrast), so the
+       fields read as fields and not as a darker patch of the panel. */
+    --dr-field-border: color-mix(in srgb, var(--p-white) 45%, var(--p-light));
     --dr-border: rgba(var(--p-white-rgb), 0.1);
     --dr-rule: rgba(var(--p-white-rgb), 0.08);
     --dr-text: var(--p-white);
-    --dr-muted: rgba(var(--p-white-rgb), 0.62);
-    --dr-faint: rgba(var(--p-white-rgb), 0.38);
+    --dr-muted: rgba(var(--p-white-rgb), 0.76);
+    --dr-faint: rgba(var(--p-white-rgb), 0.64);
+    /* Teal for small text: the theme teal is for titles and marks; at 12 px it
+       needs a lighter tone to stay legible. */
+    --dr-accent-text: color-mix(in srgb, var(--p-primary) 70%, var(--p-white) 30%);
     --dr-bus-x: 1.05rem;
 
     padding: 0.5rem 0.75rem 1.5rem;
@@ -918,8 +926,7 @@ export default {
     color: var(--dr-muted);
 }
 .dr-req-off .dr-req-action {
-    color: var(--p-primary);
-    opacity: 0.75;
+    color: var(--dr-accent-text);
 }
 .dr-req-off:hover,
 .dr-req-off:focus-visible {
@@ -929,10 +936,6 @@ export default {
 .dr-req-off:hover .dr-req-label,
 .dr-req-off:focus-visible .dr-req-label {
     color: var(--dr-text);
-}
-.dr-req-off:hover .dr-req-action,
-.dr-req-off:focus-visible .dr-req-action {
-    opacity: 1;
 }
 .dr-req-off:hover .dr-pin {
     border-color: var(--p-primary);
@@ -950,7 +953,7 @@ export default {
     font-weight: 500;
 }
 .dr-req-on .dr-req-action {
-    color: var(--dr-faint);
+    color: var(--dr-muted);
 }
 .dr-req-on:hover,
 .dr-req-on:focus-visible {
@@ -1201,7 +1204,7 @@ export default {
 .dr-detail-body :deep(.md-add-btn:hover),
 .dr-detail-body :deep(.dwt-add-btn:focus-visible),
 .dr-detail-body :deep(.md-add-btn:focus-visible) {
-    color: var(--p-primary) !important;
+    color: var(--dr-accent-text) !important;
     border-color: rgba(var(--p-primary-rgb), 0.55) !important;
 }
 .dr-detail-body :deep(.dwt-add-btn .p-button-icon),
@@ -1210,6 +1213,17 @@ export default {
 }
 .dr-detail-body :deep(.md-add-btn:disabled) {
     opacity: 0.45 !important;
+}
+/* Field outlines (inputs, selects, their addons) at non-text contrast; the
+   focus ring keeps the theme's own colour. */
+.dr-detail-body :deep(.p-inputtext:not(:focus):not(.dwt-title-input)),
+.dr-detail-body :deep(.p-select:not(.p-focus)),
+.dr-detail-body :deep(.p-inputgroupaddon) {
+    border-color: var(--dr-field-border) !important;
+}
+/* The bound's tag (Min. / Nom. / Max.) on its remove addon: muted, not dim. */
+.dr-detail-body :deep(.dwt-remove-addon:not(:hover)) {
+    color: var(--dr-muted) !important;
 }
 
 /* Maximum dimensions uses the same field height as every other value. */

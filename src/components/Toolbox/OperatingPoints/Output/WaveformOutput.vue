@@ -114,10 +114,7 @@ export default {
 
 <template>
     <div class="wo-card" :class="signalDescriptor === 'current' ? 'wo-card-current' : 'wo-card-voltage'">
-        <div class="wo-header">
-            <i :class="signalDescriptor === 'current' ? 'pi pi-volume-up' : 'pi pi-bolt'"></i>
-            <span>Outputs · {{ signalDescriptor === 'current' ? 'Current' : 'Voltage' }}</span>
-        </div>
+        <h3 class="wo-header" data-op-title>{{ signalDescriptor === 'current' ? 'Current' : 'Voltage' }} outputs</h3>
         <div v-if="!isDataReady" class="wo-loading">
             <i class="pi pi-refresh fa-spin fa-spin"></i>
             <span>Calculating…</span>
@@ -239,97 +236,73 @@ export default {
 </template>
 
 <style scoped>
+/* A results cell on the sheet: a top rule and a title in the signal's colour. */
 .wo-card {
-    background:
-        linear-gradient(180deg,
-            rgba(var(--p-primary-rgb), 0.05) 0%,
-            rgba(var(--p-primary-rgb), 0.015) 100%),
-        var(--p-dark);
-    border: 1px solid rgba(var(--p-primary-rgb), 0.18);
-    border-left: 3px solid rgba(var(--p-primary-rgb), 0.7);
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 3px 10px rgba(var(--p-black-rgb), 0.3);
-    margin: 0.25rem 0;
+    --op-cell-colour: var(--p-primary);
+    margin: 0.5rem 0 0;
+    padding: 0.6rem 0 0.4rem;
+    border-top: 1px solid var(--op-rule);
 }
-
-.wo-card-current {
-    border-left-color: rgba(var(--p-warning-rgb), 0.7);
-}
-
-.wo-card-voltage {
-    border-left-color: rgba(var(--p-info-rgb), 0.7);
-}
-
 .wo-header {
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-    padding: 0.4rem 0.7rem;
-    background: rgba(var(--p-primary-rgb), 0.08);
-    border-bottom: 1px solid rgba(var(--p-primary-rgb), 0.12);
-    color: var(--p-primary);
-    font-weight: 600;
-    font-size: 0.72rem;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
+    margin: 0 0 0.3rem;
+    font-size: 0.98rem;
+    font-weight: 650;
+    line-height: 1.3;
+    color: var(--op-cell-colour);
+}
+.wo-card-current {
+    --op-cell-colour: var(--p-warning);
+}
+.wo-card-voltage {
+    --op-cell-colour: var(--p-info);
 }
 
-.wo-card-current .wo-header {
-    color: var(--p-warning);
-    background: rgba(var(--p-warning-rgb), 0.1);
-    border-bottom-color: rgba(var(--p-warning-rgb), 0.18);
+/* Read-only rows: label left in the muted label colour, value right. The
+   shared component sets sizes and colours inline, hence !important. */
+.wo-body :deep(.dim-ro-container) {
+    padding: 0.28rem 0 !important;
+    margin: 0 !important;
 }
-
-.wo-card-current .wo-header i {
-    filter: drop-shadow(0 0 4px rgba(var(--p-warning-rgb), 0.5));
+.wo-body :deep(.dim-ro-row) {
+    display: flex !important;
+    align-items: baseline !important;
+    gap: 0.75rem;
 }
-
-.wo-card-voltage .wo-header {
-    color: var(--p-info);
-    background: rgba(var(--p-info-rgb), 0.1);
-    border-bottom-color: rgba(var(--p-info-rgb), 0.18);
+.wo-body :deep(.dim-ro-label) {
+    flex: 1 1 auto !important;
+    min-width: 0;
+    margin: 0 !important;
+    padding: 0 !important;
+    font-size: 0.86rem !important;
+    font-weight: 500 !important;
+    color: var(--op-muted) !important;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
-
-.wo-card-voltage .wo-header i {
-    filter: drop-shadow(0 0 4px rgba(var(--p-info-rgb), 0.5));
+.wo-body :deep(.dim-ro-value-wrap) {
+    flex: 0 0 auto !important;
+    width: auto !important;
+    max-width: none !important;
+    padding: 0 !important;
 }
-
-.wo-header i {
-    font-size: 0.78rem;
-}
-
-.wo-body {
-    padding: 0.4rem 0.6rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.15rem;
-}
-
-.wo-body :deep(> *) {
-    padding: 0.25rem 0.4rem !important;
-    border-radius: 6px;
-    transition: background 0.15s;
-}
-
-.wo-body :deep(> *:hover) {
-    background: rgba(var(--p-white-rgb), 0.03);
-}
-
-.wo-body :deep(> * + *) {
-    border-top: 1px solid rgba(var(--p-white-rgb), 0.04);
+.wo-body :deep(.dim-ro-value),
+.wo-body :deep(.dim-ro-alt-unit),
+.wo-body :deep(.dim-ro-unit),
+.wo-body :deep(.dim-ro-unit *) {
+    font-size: 0.9rem !important;
+    color: var(--op-text) !important;
+    font-variant-numeric: tabular-nums;
 }
 
 .wo-loading {
     display: flex;
     align-items: center;
-    justify-content: center;
     gap: 0.5rem;
-    padding: 1.2rem;
-    color: rgba(var(--p-white-rgb), 0.6);
-    font-size: 0.85rem;
+    padding: 0.6rem 0;
+    color: var(--op-muted);
+    font-size: 0.86rem;
 }
-
 .wo-loading i {
     color: var(--p-primary);
 }

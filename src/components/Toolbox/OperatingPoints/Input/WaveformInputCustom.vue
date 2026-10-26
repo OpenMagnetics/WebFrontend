@@ -11,6 +11,12 @@ import { toTitleCase, combinedStyle } from 'WebSharedComponents/assets/js/utils.
 export default {
     emits: ["labelChanged"],
     props: {
+        // Non-empty: the induce button is shown disabled, with this as its explanation
+        // (an inductor derives the other signal by itself; see OperatingPointManual).
+        induceDisabledReason: {
+            type: String,
+            default: '',
+        },
         modelValue:{
             type: Object,
             required: true
@@ -118,39 +124,19 @@ export default {
         </div>
         <button
             v-if="induceableSignal"
-            :style="[
-                combinedStyle([$styleStore.operatingPoints.inputFontSize, signalDescriptor == 'current'? $styleStore.operatingPoints.currentBgColor : signalDescriptor == 'voltage'? $styleStore.operatingPoints.voltageBgColor : $styleStore.operatingPoints.commonParameterBgColor]),
-                { color: signalDescriptor == 'current' ? 'var(--p-dark)' : 'var(--p-white)', fontWeight: 600, maxHeight: '1.7em' }
-            ]"
-            class="wic-induce-btn col-offset-2 col-8 mt-2"
+            type="button"
+            class="op-induce"
+            :disabled="induceDisabledReason !== ''"
+            :title="induceDisabledReason !== '' ? induceDisabledReason : null"
             @click="$emit('induce')">
-            {{'Induce from ' + (signalDescriptor == 'current'? 'voltage' : 'current')}}
             <i class="pi pi-bolt"></i>
-            <i class="pi pi-cog"></i>
+            {{'Induce from ' + (signalDescriptor == 'current'? 'voltage' : 'current')}}
         </button>
     </div>
 </template>
 
 <style scoped>
-/* The induce button's background colour comes from the inline :style
-   (current = orange, voltage = purple); here we just give it proper button
-   chrome — rounded, padded, no default grey border/box. */
-.wic-induce-btn {
-    border: none;
-    border-radius: 8px;
-    padding: 0.3rem 0.75rem;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.4rem;
-    box-shadow: 0 2px 6px rgba(var(--p-black-rgb), 0.25);
-    transition: filter 0.15s, transform 0.1s;
-}
-.wic-induce-btn:hover {
-    filter: brightness(1.08);
-    transform: translateY(-1px);
-}
+/* The induce button is styled with the editor cells (.op-induce in OperatingPoint.vue). */
 
 /* "Show N more points" toggle: a subtle outline button instead of the
    unstyled grey bar. */

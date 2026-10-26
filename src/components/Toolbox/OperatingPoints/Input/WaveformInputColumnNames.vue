@@ -85,14 +85,6 @@ export default {
 
 <template>
     <div class="container-flex">
-        <div class="row text-center">
-            <label
-                :style="combinedStyle([$styleStore.operatingPoints.inputTitleFontSize, $styleStore.operatingPoints.commonParameterTextColor])"
-                class=""
-            >
-                {{'Common parameters'}}
-            </label>
-        </div>
         <div class="row">
 
             <Dimension class="pb-2 mb-1"
@@ -120,7 +112,7 @@ export default {
                 :dataTestLabel="dataTestLabel + '-Current-Name'"
                 :options="allColumnNames"
                 :titleSameRow="true"
-                :replaceTitle="'Cur. Time'"
+                :replaceTitle="'Time'"
                 v-model="$stateStore.operatingPointsCircuitSimulator.columnNames[currentOperatingPointIndex][currentWindingIndex]"
                 :labelWidthProportionClass="'col-12 md:col-7'"
                 :valueWidthProportionClass="'col-12 md:col-5'"

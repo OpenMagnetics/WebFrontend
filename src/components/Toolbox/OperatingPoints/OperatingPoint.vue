@@ -208,10 +208,6 @@ export default {
                 </button>
             </div>
         </Transition>
-        <div class="op-detail-header">
-            <i class="pi pi-volume-up"></i>
-            <span>Operating Point</span>
-        </div>
         <div class="op-detail-body">
             <div v-if="loadCorrections.length > 0" class="op-load-correction" role="status" :data-cy="dataTestLabel + '-load-correction'">
                 <i class="pi pi-info-circle"></i>
@@ -247,13 +243,13 @@ export default {
                 @clearMode="clearMode"
                 @switchToManual="switchToManual"
             />
-            <div v-if="$stateStore.operatingPoints.modePerPoint[currentOperatingPointIndex] == null" class="op-mode-select">
-                <div class="op-mode-title" :data-cy="dataTestLabel + '-current-title'">
+            <div v-if="$stateStore.operatingPoints.modePerPoint[currentOperatingPointIndex] == null" class="op-mode-select" data-op-col="mode">
+                <h2 class="op-mode-title" data-op-title :data-cy="dataTestLabel + '-current-title'">
                     {{masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].name}}
-                </div>
-                <div class="op-mode-prompt">
+                </h2>
+                <p class="op-mode-prompt">
                     Where do you want to import your operating point from?
-                </div>
+                </p>
                 <div class="op-mode-buttons">
                     <input type="file" id="OperatingPoint-CircuitSimulator-upload-input" ref="OperatingPoint-CircuitSimulator-upload-ref" accept=".csv,.txt,.tsv,text/csv,text/plain" @change="onCircuitSimulatorFileTypeSelected" style="display:none" hidden/>
                     <button
@@ -263,8 +259,21 @@ export default {
                         @click="onCircuitSimulatorTypeSelected"
                         class="op-mode-btn"
                     >
-                        <i class="pi pi-file-import"></i>
-                        <span>Circuit simulator export file or CSV</span>
+                        <!-- Sampled points: what a simulator export is. -->
+                        <svg class="op-mode-glyph" viewBox="0 0 64 32" aria-hidden="true">
+                            <path class="op-glyph-axis" d="M2 16 H62" />
+                            <g class="op-glyph-current">
+                                <circle cx="5" cy="24" r="1.7" /><circle cx="11" cy="20" r="1.7" /><circle cx="17" cy="16" r="1.7" />
+                                <circle cx="23" cy="12" r="1.7" /><circle cx="29" cy="8" r="1.7" /><circle cx="35" cy="11" r="1.7" />
+                                <circle cx="41" cy="14.5" r="1.7" /><circle cx="47" cy="18" r="1.7" /><circle cx="53" cy="21.5" r="1.7" />
+                                <circle cx="59" cy="25" r="1.7" />
+                            </g>
+                        </svg>
+                        <span class="op-mode-text">
+                            <span class="op-mode-name">Circuit simulator export file or CSV</span>
+                            <span class="op-mode-hint">Upload a .csv, .txt or .tsv file with time, current and voltage columns, then pick which column is which.</span>
+                        </span>
+                        <i class="pi pi-upload op-mode-go"></i>
                     </button>
                     <button
                         v-if="enableCircuitSimulatorImport"
@@ -273,8 +282,17 @@ export default {
                         @click="onManualTypeSelected"
                         class="op-mode-btn"
                     >
-                        <i class="pi pi-pencil"></i>
-                        <span>I will define it manually</span>
+                        <!-- A drawn waveform: triangle current over a square voltage. -->
+                        <svg class="op-mode-glyph" viewBox="0 0 64 32" aria-hidden="true">
+                            <path class="op-glyph-axis" d="M2 16 H62" />
+                            <path class="op-glyph-voltage" d="M3 9 H23 V23 H43 V9 H61" />
+                            <path class="op-glyph-current" d="M3 25 L23 7 L43 25 L61 9" />
+                        </svg>
+                        <span class="op-mode-text">
+                            <span class="op-mode-name">I will define it manually</span>
+                            <span class="op-mode-hint">Choose a waveform shape for current and voltage and set its frequency, duty cycle, peak to peak and offset.</span>
+                        </span>
+                        <i class="pi pi-chevron-right op-mode-go"></i>
                     </button>
                     <button
                         v-if="enableHarmonicsList"
@@ -283,8 +301,16 @@ export default {
                         @click="onHarmoncsTypeSelected"
                         class="op-mode-btn"
                     >
-                        <i class="pi pi-chart-line"></i>
-                        <span>I want to introduce a list of harmonics</span>
+                        <!-- A spectrum: a fundamental and falling harmonics. -->
+                        <svg class="op-mode-glyph" viewBox="0 0 64 32" aria-hidden="true">
+                            <path class="op-glyph-axis" d="M2 29 H62" />
+                            <path class="op-glyph-bars" d="M8 29 V20 M18 29 V4 M28 29 V16 M38 29 V21 M48 29 V24 M58 29 V26" />
+                        </svg>
+                        <span class="op-mode-text">
+                            <span class="op-mode-name">I want to introduce a list of harmonics</span>
+                            <span class="op-mode-hint">Enter the frequency and amplitude of each harmonic of the current and the voltage.</span>
+                        </span>
+                        <i class="pi pi-chevron-right op-mode-go"></i>
                     </button>
                 </div>
             </div>
@@ -307,122 +333,508 @@ export default {
     line-height: 1.3;
 }
 
+/* The editor sheet: same panel as the operating point list, without the
+   accent stripe (as on Design Requirements). */
 .op-detail-panel {
     display: flex;
     flex-direction: column;
-    background:
-        linear-gradient(145deg,
-            rgba(var(--p-primary-rgb), 0.06) 0%,
-            rgba(var(--p-primary-rgb), 0.02) 100%),
-        var(--p-dark);
-    border: 1px solid rgba(var(--p-primary-rgb), 0.15);
+    min-width: 0;
+    background: linear-gradient(180deg, var(--op-panel-1) 0%, var(--op-panel-2) 100%);
+    border: 1px solid var(--op-border);
     border-radius: 14px;
     box-shadow:
-        0 4px 20px rgba(var(--p-black-rgb), 0.12),
-        inset 0 1px 0 rgba(var(--p-white-rgb), 0.04);
+        0 6px 20px rgba(var(--p-black-rgb), 0.5),
+        inset 0 1px 0 rgba(var(--p-white-rgb), 0.06);
     overflow: hidden;
-    min-height: 60vh;
-}
-
-.op-detail-header {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.6rem 0.9rem;
-    background: rgba(var(--p-primary-rgb), 0.1);
-    border-bottom: 1px solid rgba(var(--p-primary-rgb), 0.12);
-    color: var(--p-primary);
-    font-weight: 600;
-    font-size: 0.95rem;
-    letter-spacing: 0.02em;
-    flex-shrink: 0;
-}
-
-.op-detail-header i {
-    font-size: 1rem;
-    filter: drop-shadow(0 0 4px rgba(var(--p-primary-rgb), 0.45));
 }
 
 .op-detail-body {
-    padding: 0.5rem 0.5rem 0.6rem 0.5rem;
     flex: 1;
-    overflow-y: auto;
+    min-width: 0;
+    padding: 0;
+}
+.op-detail-body > .op-load-correction {
+    margin: 0.85rem var(--op-gutter) 0;
 }
 
-/* ============ Mode selector view ============ */
+/* ============ Choosing where the operating point comes from ============ */
 .op-mode-select {
     display: flex;
     flex-direction: column;
     align-items: stretch;
-    gap: 0.75rem;
-    padding: 1rem 0 2rem 0;
-    max-width: 560px;
-    margin: 0 auto;
+    max-width: 44rem;
+    padding: 1rem var(--op-gutter) 1.25rem;
 }
 
 .op-mode-title {
+    margin: 0;
     color: var(--p-primary);
-    font-size: 1.35rem;
-    font-weight: 700;
-    letter-spacing: 0.01em;
-    text-align: center;
-    margin-bottom: 0.5rem;
+    font-size: 1.15rem;
+    font-weight: 650;
+    letter-spacing: -0.01em;
+    line-height: 1.3;
 }
 
 .op-mode-prompt {
-    color: var(--p-white);
-    font-size: 0.95rem;
-    font-weight: 500;
-    text-align: center;
-    opacity: 0.8;
-    margin-bottom: 0.75rem;
+    margin: 0.2rem 0 0.9rem;
+    color: var(--op-muted);
+    font-size: 0.9rem;
+    line-height: 1.4;
 }
 
+/* One list of three choices, each saying what it is for. */
 .op-mode-buttons {
     display: flex;
     flex-direction: column;
-    gap: 0.6rem;
+    border: 1px solid var(--op-border);
+    border-radius: 12px;
+    overflow: hidden;
 }
 
 button.op-mode-btn {
-    display: inline-flex !important;
+    display: flex;
     align-items: center;
-    justify-content: center;
-    gap: 0.6rem;
-    padding: 0.85rem 1.25rem !important;
-    border-radius: 12px !important;
-    font-size: 0.95rem !important;
-    font-weight: 600;
-    letter-spacing: 0.01em;
-    cursor: pointer;
-    border: 1px solid rgba(var(--p-primary-rgb), 0.5) !important;
-    background-color: var(--p-primary) !important;
-    background-image: linear-gradient(135deg,
-        rgba(var(--p-primary-rgb), 1) 0%,
-        rgba(var(--p-primary-rgb), 0.8) 100%) !important;
-    color: var(--p-white) !important;
-    box-shadow:
-        0 0 0 1px rgba(var(--p-primary-rgb), 0.3),
-        0 3px 10px rgba(var(--p-primary-rgb), 0.35),
-        inset 0 1px 0 rgba(var(--p-white-rgb), 0.25);
-    text-shadow: 0 1px 1px rgba(var(--p-black-rgb), 0.25);
-    transition: filter 0.15s, transform 0.1s, box-shadow 0.2s;
+    gap: 1rem;
     width: 100%;
-    outline: none;
-    line-height: 1.2;
+    margin: 0;
+    padding: 0.8rem 1rem;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    color: var(--op-text);
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+button.op-mode-btn + button.op-mode-btn {
+    border-top: 1px solid var(--op-rule);
 }
 
 button.op-mode-btn:hover {
-    filter: brightness(1.15);
-    transform: translateY(-1px);
-    box-shadow:
-        0 0 0 1px rgba(var(--p-primary-rgb), 0.4),
-        0 4px 14px rgba(var(--p-primary-rgb), 0.45),
-        inset 0 1px 0 rgba(var(--p-white-rgb), 0.3);
+    background: rgba(var(--p-primary-rgb), 0.1);
 }
 
-button.op-mode-btn i {
-    font-size: 1.05rem;
+button.op-mode-btn:focus-visible {
+    outline: 2px solid var(--p-primary);
+    outline-offset: -2px;
+}
+
+.op-mode-glyph {
+    flex: 0 0 auto;
+    width: 4rem;
+    height: 2rem;
+    padding: 0.2rem 0.25rem;
+    background: rgba(var(--p-black-rgb), 0.25);
+    border: 1px solid var(--op-rule);
+    border-radius: 7px;
+    overflow: visible;
+}
+.op-glyph-axis {
+    stroke: rgba(var(--p-white-rgb), 0.2);
+    stroke-width: 1;
+    fill: none;
+}
+.op-glyph-current {
+    stroke: var(--p-warning);
+    fill: var(--p-warning);
+    stroke-width: 0;
+}
+path.op-glyph-current {
+    fill: none;
+    stroke-width: 2;
+    stroke-linejoin: round;
+}
+.op-glyph-voltage {
+    fill: none;
+    stroke: var(--p-info);
+    stroke-width: 2;
+    stroke-linejoin: round;
+}
+.op-glyph-bars {
+    fill: none;
+    stroke: var(--p-primary);
+    stroke-width: 4;
+}
+
+.op-mode-text {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.op-mode-name {
+    font-size: 0.98rem;
+    font-weight: 600;
+    line-height: 1.3;
+    color: var(--op-text);
+}
+
+.op-mode-hint {
+    font-size: 0.84rem;
+    line-height: 1.4;
+    color: var(--op-muted);
+}
+
+.op-mode-go {
+    flex: 0 0 auto;
+    font-size: 0.8rem;
+    color: var(--op-faint);
+    transition: color 0.15s, transform 0.15s;
+}
+button.op-mode-btn:hover .op-mode-go {
+    color: var(--op-accent-text);
+    transform: translateX(2px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    button.op-mode-btn, .op-mode-go { transition: none; }
+    button.op-mode-btn:hover .op-mode-go { transform: none; }
+}
+
+@media (max-width: 600px) {
+    button.op-mode-btn {
+        gap: 0.75rem;
+        padding: 0.75rem 0.8rem;
+    }
+    .op-mode-glyph {
+        width: 3rem;
+        height: 1.6rem;
+    }
+}
+
+/* ============ The three editors (manual, harmonics, file import) ============
+   They are children of this panel and share one layout, defined once here:
+   a title row, then inputs on the left and results on the right, each
+   section a cell on the sheet with its title on the cell's gutter. */
+.op-detail-body {
+    container: op-editor / inline-size;
+}
+
+.op-detail-body :deep(.op-editor-head) {
+    padding: 0.9rem var(--op-gutter) 0.7rem;
+    border-bottom: 1px solid var(--op-rule);
+}
+.op-detail-body :deep(.op-editor-title) {
+    margin: 0;
+    color: var(--p-primary);
+    font-size: 1.15rem;
+    font-weight: 650;
+    letter-spacing: -0.01em;
+    line-height: 1.3;
+}
+.op-detail-body :deep(.op-editor-sub) {
+    margin: 0.15rem 0 0;
+    font-size: 0.86rem;
+    color: var(--op-muted);
+}
+
+.op-detail-body :deep(.op-editor-grid) {
+    display: grid;
+    grid-template-columns: minmax(18rem, 26rem) minmax(0, 1fr);
+    align-items: start;
+}
+.op-detail-body :deep(.op-editor-inputs) {
+    min-width: 0;
+    border-right: 1px solid var(--op-rule);
+}
+.op-detail-body :deep(.op-editor-results) {
+    min-width: 0;
+    max-width: 58rem;
+    padding: 0.75rem var(--op-gutter) 1rem;
+}
+@container op-editor (max-width: 52rem) {
+    .op-detail-body :deep(.op-editor-grid) {
+        grid-template-columns: minmax(0, 1fr);
+    }
+    .op-detail-body :deep(.op-editor-inputs) {
+        border-right: 0;
+        border-bottom: 1px solid var(--op-rule);
+    }
+}
+
+/* A section of inputs: a cell, its title on the gutter, a short coloured
+   marker beside the title in the signal's chart colour. */
+.op-detail-body :deep(.op-cell) {
+    position: relative;
+    padding: 0.75rem var(--op-gutter) 0.85rem;
+    box-shadow: inset 0 -1px 0 var(--op-rule);
+}
+.op-detail-body :deep(.op-cell)::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0.85rem;
+    width: 3px;
+    height: 1.2rem;
+    border-radius: 0 2px 2px 0;
+    background: var(--op-cell-colour, var(--p-primary));
+}
+.op-detail-body :deep(.op-cell-current) {
+    --op-cell-colour: var(--p-warning);
+}
+.op-detail-body :deep(.op-cell-voltage) {
+    --op-cell-colour: var(--p-info);
+}
+.op-detail-body :deep(.op-cell-title) {
+    display: block;
+    margin: 0 0 0.45rem;
+    font-size: 0.98rem;
+    font-weight: 650;
+    line-height: 1.3;
+    color: var(--op-cell-colour, var(--p-primary));
+}
+.op-detail-body :deep(.op-cell-note) {
+    margin: -0.15rem 0 0.55rem;
+    font-size: 0.84rem;
+    line-height: 1.45;
+    color: var(--op-muted);
+}
+.op-detail-body :deep(.op-cell-link) {
+    display: inline;
+    margin-left: 0.25rem;
+    padding: 0;
+    background: none;
+    border: 0;
+    font: inherit;
+    font-weight: 600;
+    color: var(--op-accent-text);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    cursor: pointer;
+}
+.op-detail-body :deep(.op-cell-link:focus-visible) {
+    outline: 2px solid var(--p-primary);
+    outline-offset: 2px;
+}
+/* A derived signal: its fields are shown but not editable; the note above
+   them, which hands the signal back, stays at full strength. */
+.op-detail-body :deep(.op-cell-derived .op-cell-body) {
+    opacity: 0.5;
+    pointer-events: none;
+}
+.op-detail-body :deep(.op-cell-issue),
+.op-detail-body :deep(.op-cell-error) {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.4rem;
+    margin-top: 0.6rem;
+    padding: 0.4rem 0.6rem;
+    background: rgb(var(--p-danger-rgb) / 0.1);
+    border: 1px solid rgb(var(--p-danger-rgb) / 0.4);
+    border-radius: 8px;
+    color: var(--p-danger);
+    font-size: 0.8rem;
+    line-height: 1.35;
+    white-space: pre-wrap;
+}
+
+/* ---- Fields inside a cell ----
+   The shared editors bring grid gutters, centring and 1.15rem labels.
+   In a cell every field is one row: label on the left, value on the right,
+   one field height. */
+.op-detail-body :deep(.op-cell-body .container-flex),
+.op-detail-body :deep(.op-cell-body .container),
+.op-detail-body :deep(.op-cell-body .row),
+.op-detail-body :deep(.op-cell-body .grid) {
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    max-width: none !important;
+}
+.op-detail-body :deep(.op-cell-body .row > [class*="col-"]),
+.op-detail-body :deep(.op-cell-body .dim-container),
+.op-detail-body :deep(.op-cell-body .efl-container) {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+}
+.op-detail-body :deep(.op-cell-body .dim-container),
+.op-detail-body :deep(.op-cell-body .efl-container) {
+    margin: 0 !important;
+    padding-top: 0.2rem !important;
+    padding-bottom: 0.2rem !important;
+}
+.op-detail-body :deep(.op-cell-body .dim-row),
+.op-detail-body :deep(.op-cell-body .efl-row) {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    gap: 0.75rem !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+.op-detail-body :deep(.op-cell-body .dim-label),
+.op-detail-body :deep(.op-cell-body .efl-label) {
+    flex: 0 0 8.5rem !important;
+    width: 8.5rem !important;
+    max-width: 8.5rem !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    font-size: 0.86rem !important;
+    font-weight: 500 !important;
+    line-height: 1.25 !important;
+    color: var(--op-muted) !important;
+    text-align: left !important;
+    background: transparent !important;
+}
+.op-detail-body :deep(.op-cell-body .dim-value-row),
+.op-detail-body :deep(.op-cell-body .efl-select) {
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+    width: auto !important;
+    max-width: 14rem !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+.op-detail-body :deep(.op-cell-body .p-inputtext),
+.op-detail-body :deep(.op-cell-body .p-select),
+.op-detail-body :deep(.op-cell-body .p-inputgroupaddon) {
+    height: var(--op-field-h) !important;
+    font-size: 0.875rem !important;
+}
+.op-detail-body :deep(.op-cell-body .p-select-label) {
+    font-size: 0.875rem !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+}
+.op-detail-body :deep(.p-inputtext:not(:focus):not(:disabled)),
+.op-detail-body :deep(.p-select:not(.p-focus):not(.p-disabled)) {
+    border-color: var(--op-field-border) !important;
+}
+@container op-editor (max-width: 24rem) {
+    .op-detail-body :deep(.op-cell-body .dim-label),
+    .op-detail-body :deep(.op-cell-body .efl-label) {
+        flex-basis: 6.5rem !important;
+        width: 6.5rem !important;
+    }
+}
+
+/* ---- Actions at the foot of the inputs: quiet ---- */
+.op-detail-body :deep(.op-editor-actions) {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding: 0.85rem var(--op-gutter) 1rem;
+}
+.op-detail-body :deep(button.op-action) {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    min-height: 2rem;
+    margin: 0;
+    padding: 0 0.75rem;
+    background: transparent;
+    border: 1px solid rgba(var(--p-white-rgb), 0.22);
+    border-radius: 8px;
+    color: var(--op-muted);
+    font: inherit;
+    font-size: 0.84rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+.op-detail-body :deep(button.op-action i) {
+    font-size: 0.75rem;
+}
+.op-detail-body :deep(button.op-action:hover:not(:disabled)) {
+    color: var(--op-text);
+    border-color: rgba(var(--p-white-rgb), 0.4);
+    background: rgba(var(--p-white-rgb), 0.05);
+}
+.op-detail-body :deep(button.op-action-main) {
+    color: var(--op-accent-text);
+    border-color: rgba(var(--p-primary-rgb), 0.6);
+}
+.op-detail-body :deep(button.op-action-main:hover:not(:disabled)) {
+    color: var(--op-text);
+    background: rgba(var(--p-primary-rgb), 0.15);
+    border-color: var(--p-primary);
+}
+/* The one filled button: confirming the imported columns is the step's action. */
+.op-detail-body :deep(button.op-action-filled) {
+    color: var(--p-dark);
+    background: var(--p-primary);
+    border-color: var(--p-primary);
+}
+.op-detail-body :deep(button.op-action-filled:hover:not(:disabled)) {
+    color: var(--p-dark);
+    background: color-mix(in srgb, var(--p-primary) 85%, var(--p-white));
+}
+.op-detail-body :deep(button.op-action:disabled) {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+.op-detail-body :deep(button.op-action:focus-visible) {
+    outline: 2px solid var(--p-primary);
+    outline-offset: 1px;
+}
+
+/* ---- Results column: charts sit on the sheet ---- */
+.op-detail-body :deep(.op-editor-results canvas) {
+    border-radius: 8px;
+}
+.op-detail-body :deep(.op-editor-results > .op-chart) {
+    padding: 0 !important;
+    margin: 0 0 0.6rem !important;
+}
+
+/* Current and voltage outputs side by side; one column when narrow. */
+.op-detail-body :deep(.op-outputs-pair) {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    column-gap: 1.5rem;
+}
+@container op-editor (max-width: 40rem) {
+    .op-detail-body :deep(.op-outputs-pair) {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+/* ---- Inducing one signal from the other: a quiet secondary action in
+   the cell's own signal colour, not a filled bar. ---- */
+.op-detail-body :deep(button.op-induce) {
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-self: flex-start;
+    align-items: center;
+    gap: 0.4rem;
+    width: auto;
+    min-height: 1.85rem;
+    margin: 0.5rem 0 0;
+    padding: 0 0.7rem;
+    background: transparent;
+    border: 1px dashed color-mix(in srgb, var(--op-cell-colour, var(--p-primary)) 60%, transparent);
+    border-radius: 8px;
+    color: color-mix(in srgb, var(--op-cell-colour, var(--p-primary)) 72%, var(--p-white));
+    font: inherit;
+    font-size: 0.84rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+}
+.op-detail-body :deep(button.op-induce i) {
+    font-size: 0.75rem;
+}
+.op-detail-body :deep(button.op-induce:hover:not(:disabled)) {
+    border-style: solid;
+    background: color-mix(in srgb, var(--op-cell-colour, var(--p-primary)) 12%, transparent);
+}
+/* Disabled for an inductor: the chosen signal already derives the other one;
+   the button's title says so. */
+.op-detail-body :deep(button.op-induce:disabled) {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+.op-detail-body :deep(button.op-induce:focus-visible) {
+    outline: 2px solid var(--op-cell-colour, var(--p-primary));
+    outline-offset: 1px;
 }
 
 /* Floating, auto-dismissing import-error box (clears after 10s, see setImportError). */

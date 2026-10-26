@@ -77,6 +77,14 @@ export default {
         currentIsDerived() {
             return this.isInductor && this.inductorDrivenBy == 'voltage';
         },
+        // For an inductor the induce buttons would only repeat what the chosen signal already
+        // derives, so they are disabled with this reason; '' (enabled) for a transformer.
+        induceDisabledReason() {
+            if (!this.isInductor) return '';
+            return this.inductorDrivenBy == 'current'
+                ? 'The voltage of an inductor is derived from its current (v = L di/dt). Choose "Define the voltage" above to set it instead.'
+                : 'The current of an inductor is derived from its voltage (v = L di/dt). Choose "Define the current" above to set it instead.';
+        },
         hasInductance() {
             const ind = this.masStore.mas.inputs.designRequirements.magnetizingInductance;
             return ind && (ind.nominal > 0 || ind.minimum > 0);
@@ -96,6 +104,14 @@ export default {
             }
             if (action.name == "updatedInputExcitationProcessed" || action.name == "updatedInputExcitationWaveformUpdatedFromProcessed") {
                 this.checkVoltageSoon();
+            }
+            // The driven signal's waveform has just been rebuilt from its edited parameters
+            // (OperatingPoints.vue does that on updatedInputExcitationProcessed), so the
+            // derived signal can now be derived from it.
+            if (action.name == "updatedInputExcitationWaveformUpdatedFromProcessed"
+                && this._deriveAfterRebuild && action.args[0] == this.inductorDrivenBy) {
+                this._deriveAfterRebuild = false;
+                this.refreshDerivedSoon();
             }
         })
         this.checkVoltageSoon();
@@ -150,6 +166,7 @@ export default {
         // Web bug report #169. Flip which signal the user drives, and immediately derive the
         // other one so the pair never sits inconsistent.
         setInductorDrivenBy(signalDescriptor) {
+            if (this.inductorDrivenBy == signalDescriptor) return;
             this.inductorDrivenBy = signalDescriptor;
             this.induce(signalDescriptor);
         },
@@ -158,27 +175,55 @@ export default {
             this.$emit('updatedWaveform', signalDescriptor);
             this.$emit('updatedSignal');
         },
-        autoInduceVoltageFromCurrent() {
+        // For an inductor the derived signal follows the driven one: after any edit of the
+        // driven signal or of the common parameters it is derived again through induce(), the
+        // same MKF call the induce buttons make for a transformer. Those buttons are disabled
+        // for an inductor, so this is the only way the derived signal is refreshed.
+        //
+        // The edit only marks the derived signal stale; it is derived once the driven signal's
+        // waveform has been rebuilt for the edited parameters (see mounted). Deriving earlier
+        // reads a waveform whose time axis still spans the old period. An edit reported by the
+        // DERIVED signal's own inputs (they echo every value induce() writes into them) is not
+        // an edit of the driven signal and must not derive again, or the two re-derive forever.
+        deriveAfterRebuild(editedSignalDescriptor) {
             if (!this.isInductor || !this.hasInductance) return;
-            // Debounce: wait for current waveform processing to complete
-            // before deriving voltage (WASM needs fully processed harmonics).
+            if (editedSignalDescriptor != null && editedSignalDescriptor != this.inductorDrivenBy) return;
+            this._deriveAfterRebuild = true;
+        },
+        refreshDerivedSoon() {
+            if (!this.isInductor || !this.hasInductance) return;
+            // Debounce: wait for the edited waveform's processing to complete
+            // before deriving the other one (WASM needs fully processed harmonics).
             if (this._autoInduceTimer) clearTimeout(this._autoInduceTimer);
             this._autoInduceTimer = setTimeout(async () => {
                 this._autoInduceTimer = null;
+                const drivenBy = this.inductorDrivenBy;
                 try {
-                    await this.induce('current');
+                    await this.induce(drivenBy);
                 } catch (e) {
-                    console.warn('Auto-induce voltage from current failed:', e.message);
+                    console.warn(`Deriving the inductor's ${drivenBy == 'current' ? 'voltage' : 'current'} from its ${drivenBy} failed:`, e.message);
                 }
             }, 500);
         },
+        commonUpdated() {
+            this.deriveAfterRebuild(null);
+            this.masStore.updatedInputExcitationProcessed();
+        },
         currentUpdated() {
+            this.deriveAfterRebuild('current');
             this.masStore.updatedInputExcitationProcessed('current');
-            this.autoInduceVoltageFromCurrent();
         },
         currentWaveformUpdated() {
+            this.deriveAfterRebuild('current');
             this.masStore.updatedInputExcitationWaveformUpdatedFromProcessed('current');
-            this.autoInduceVoltageFromCurrent();
+        },
+        voltageUpdated() {
+            this.deriveAfterRebuild('voltage');
+            this.masStore.updatedInputExcitationProcessed('voltage');
+        },
+        voltageWaveformUpdated() {
+            this.deriveAfterRebuild('voltage');
+            this.masStore.updatedInputExcitationWaveformUpdatedFromProcessed('voltage');
         },
         async induce(sourceSignalDescriptor){
             const excitation = this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex]?.excitationsPerWinding[this.currentWindingIndex];
@@ -254,42 +299,55 @@ export default {
 
 <template>
     <div class="opm-container">
-        <div class="row g-2 m-0">
-            <div v-if="masStore.mas.inputs.operatingPoints.length > currentOperatingPointIndex" class="col-12 lg:col-5 opm-col">
+        <div v-if="masStore.mas.inputs.operatingPoints.length > currentOperatingPointIndex" class="op-editor-head" data-op-col="head">
+            <h2 class="op-editor-title" data-op-title data-cy="dataTestLabel + '-current-title'">{{masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].name}}</h2>
+            <p class="op-editor-sub">Waveforms of {{ masStore.mas.magnetic.coil.functionalDescription[currentWindingIndex].name }}</p>
+        </div>
+        <div class="op-editor-grid">
+            <div v-if="masStore.mas.inputs.operatingPoints.length > currentOperatingPointIndex" class="opm-col op-editor-inputs" data-op-col="inputs">
 
-                <div class="opm-title" data-cy="dataTestLabel + '-current-title'">
-                    <i class="pi pi-bullseye"></i>
-                    <span>{{masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].name + ' — ' + masStore.mas.magnetic.coil.functionalDescription[currentWindingIndex].name}}</span>
-                </div>
-
-                <div class="opm-card">
-                    <div class="opm-card-header">
-                        <i class="pi pi-sliders-h"></i>
-                        <span>Common parameters</span>
+                <section v-if="isInductor" class="opm-drive op-cell">
+                    <h3 class="op-cell-title" data-op-title :id="dataTestLabel + '-drive-title'">What you define</h3>
+                    <div class="opm-drive-options" role="group" :aria-labelledby="dataTestLabel + '-drive-title'">
+                        <button type="button" class="opm-drive-option opm-drive-current" :data-cy="dataTestLabel + '-drive-with-current'"
+                            :aria-pressed="inductorDrivenBy == 'current' ? 'true' : 'false'"
+                            @click="setInductorDrivenBy('current')">Define the current</button>
+                        <button type="button" class="opm-drive-option opm-drive-voltage" :data-cy="dataTestLabel + '-drive-with-voltage'"
+                            :aria-pressed="inductorDrivenBy == 'voltage' ? 'true' : 'false'"
+                            @click="setInductorDrivenBy('voltage')">Define the voltage</button>
                     </div>
-                    <div class="opm-card-body">
+                    <p class="op-cell-note opm-drive-note">
+                        An inductor's current and voltage are tied by v = L di/dt, so the
+                        {{ inductorDrivenBy == 'current' ? 'voltage' : 'current' }} is derived from the {{ inductorDrivenBy }} you set.
+                    </p>
+                </section>
+
+                <section class="opm-card op-cell">
+                    <h3 class="opm-card-header op-cell-title" data-op-title>Common parameters</h3>
+                    <div class="opm-card-body op-cell-body">
                         <WaveformInputCommon
                             :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex]"
                             :defaultValue="defaultOperatingPointExcitation"
                             :dataTestLabel="dataTestLabel + '-selected'"
-                            @updatedSwitchingFrequency="masStore.updatedInputExcitationProcessed()"
-                            @updatedDutyCycle="masStore.updatedInputExcitationProcessed()"
+                            @updatedSwitchingFrequency="commonUpdated"
+                            @updatedDutyCycle="commonUpdated"
                         />
                     </div>
-                </div>
+                </section>
 
-                <div class="opm-card opm-card-current" :class="{ 'opm-disabled': currentIsDerived }">
-                    <div class="opm-card-header">
-                        <i class="pi pi-volume-up"></i>
+                <section class="opm-card opm-card-current op-cell op-cell-current" :class="{ 'op-cell-derived': currentIsDerived }">
+                    <h3 class="opm-card-header op-cell-title" data-op-title>
                         <span :data-cy="dataTestLabel + '-current-card-title'">Current through {{ currentWindingName }}</span>
-                    </div>
-                    <div class="opm-card-body">
+                    </h3>
+                    <p v-if="currentIsDerived" class="opm-derived-note op-cell-note">Derived from the voltage you set.</p>
+                    <div class="opm-card-body op-cell-body">
                         <WaveformInput
                             v-if="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex].current != null && masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex].current.processed && masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex].current.processed.label != 'custom'"
                             :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex]"
                             :defaultValue="defaultOperatingPointExcitation"
                             :dataTestLabel="dataTestLabel + '-selected-current'"
                             :signalDescriptor="'current'"
+                            :induceDisabledReason="induceDisabledReason"
                             @peakToPeakChanged="currentUpdated"
                             @offsetChanged="currentUpdated"
                             @labelChanged="currentUpdated"
@@ -301,32 +359,26 @@ export default {
                             :defaultValue="defaultOperatingPointExcitation"
                             :dataTestLabel="dataTestLabel + '-selected-current'"
                             :signalDescriptor="'current'"
+                            :induceDisabledReason="induceDisabledReason"
                             @labelChanged="currentUpdated"
                             @updatedTime="currentWaveformUpdated"
                             @updatedData="currentWaveformUpdated"
                             @induce="induce('voltage')"
                         />
                     </div>
-                </div>
+                </section>
 
-                <div class="opm-card opm-card-voltage" :class="{ 'opm-disabled': voltageIsDerived }">
-                    <div class="opm-card-header">
-                        <i class="pi pi-bolt"></i>
+                <section class="opm-card opm-card-voltage op-cell op-cell-voltage" :class="{ 'op-cell-derived': voltageIsDerived }">
+                    <h3 class="opm-card-header op-cell-title" data-op-title>
                         <span :data-cy="dataTestLabel + '-voltage-card-title'">Voltage across {{ currentWindingName }}'s terminals</span>
-                    </div>
-                    <div v-if="isInductor" class="opm-derived-note">
-                        <template v-if="voltageIsDerived">
-                            Derived from the current: for an inductor v = L di/dt, so only one of the two can be set.
-                            <button type="button" class="opm-link-btn" :data-cy="dataTestLabel + '-drive-with-voltage'"
-                                @click="setInductorDrivenBy('voltage')">Set the voltage instead</button>
-                        </template>
-                        <template v-else>
-                            You are setting the voltage; the current is derived from it.
-                            <button type="button" class="opm-link-btn" :data-cy="dataTestLabel + '-drive-with-current'"
-                                @click="setInductorDrivenBy('current')">Go back to setting the current</button>
-                        </template>
-                    </div>
-                    <div class="opm-card-body">
+                    </h3>
+                    <p v-if="voltageIsDerived" class="opm-derived-note op-cell-note">Derived from the current you set.</p>
+                    <p v-else-if="isInductor" class="opm-derived-note op-cell-note">
+                        You are setting the voltage; the current is derived from it.
+                        <button type="button" class="opm-link-btn op-cell-link"
+                            @click="setInductorDrivenBy('current')">Go back to setting the current</button>
+                    </p>
+                    <div class="opm-card-body op-cell-body">
                         <WaveformInput
                             v-if="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex].voltage.processed && masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex].voltage.processed.label != 'custom'"
                             :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex]"
@@ -334,9 +386,10 @@ export default {
                             :dataTestLabel="dataTestLabel + '-selected-voltage'"
                             :signalDescriptor="'voltage'"
                             :disabled="voltageIsDerived"
-                            @peakToPeakChanged="masStore.updatedInputExcitationProcessed('voltage')"
-                            @offsetChanged="masStore.updatedInputExcitationProcessed('voltage')"
-                            @labelChanged="masStore.updatedInputExcitationProcessed('voltage')"
+                            :induceDisabledReason="induceDisabledReason"
+                            @peakToPeakChanged="voltageUpdated"
+                            @offsetChanged="voltageUpdated"
+                            @labelChanged="voltageUpdated"
                             @induce="induce('current')"
                         />
                         <WaveformInputCustom
@@ -346,22 +399,24 @@ export default {
                             :dataTestLabel="dataTestLabel + '-selected-voltage'"
                             :signalDescriptor="'voltage'"
                             :disabled="voltageIsDerived"
-                            @labelChanged="masStore.updatedInputExcitationProcessed('voltage')"
-                            @updatedTime="masStore.updatedInputExcitationWaveformUpdatedFromProcessed('voltage')"
-                            @updatedData="masStore.updatedInputExcitationWaveformUpdatedFromProcessed('voltage')"
+                            :induceDisabledReason="induceDisabledReason"
+                            @labelChanged="voltageUpdated"
+                            @updatedTime="voltageWaveformUpdated"
+                            @updatedData="voltageWaveformUpdated"
                             @induce="induce('current')"
                         />
                     </div>
-                    <div v-if="voltageIssue != ''" class="opm-issue" role="alert" :data-cy="dataTestLabel + '-voltage-issue'">
+                    <div v-if="voltageIssue != ''" class="opm-issue op-cell-issue" role="alert" :data-cy="dataTestLabel + '-voltage-issue'">
                         <i class="pi pi-exclamation-triangle"></i>
                         <span>{{ voltageIssue }}</span>
                     </div>
-                </div>
+                </section>
 
-                <div class="opm-actions">
+                <div class="opm-actions op-editor-actions">
                     <button
                         :data-cy="dataTestLabel + '-import-button'"
-                        class="opm-btn opm-btn-outline"
+                        type="button"
+                        class="op-action"
                         @click="clearMode"
                     >
                         <i class="pi pi-arrow-left"></i>
@@ -369,266 +424,107 @@ export default {
                     </button>
                     <button
                         :data-cy="dataTestLabel + '-switch-to-harmonics-button'"
-                        class="opm-btn opm-btn-primary"
+                        type="button"
+                        class="op-action op-action-main"
                         @click="$emit('switchToHarmonics')"
                     >
-                        <i class="pi pi-chart-line"></i>
                         <span>Switch to Harmonics view</span>
                     </button>
                 </div>
             </div>
-            <div class="col-12 lg:col-7 row m-0 p-0" style="max-width: 800px;">
-                <div>
-                    <WaveformGraph class=" col-12 py-2"
-                        :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex]"
-                        :dataTestLabel="dataTestLabel + '-WaveformGraph'"
-                        @updatedWaveform="updatedWaveform"
-                    />
-                    <WaveformFourier class="col-12 mt-1 mb-3" style="max-height: 150px;"
-                        :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex]"
-                        :dataTestLabel="dataTestLabel + '-WaveformFourier'"
-                    />
+            <div class="op-editor-results" data-op-col="results">
+                <WaveformGraph class="op-chart"
+                    :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex]"
+                    :dataTestLabel="dataTestLabel + '-WaveformGraph'"
+                    @updatedWaveform="updatedWaveform"
+                />
+                <WaveformFourier class="op-chart" style="max-height: 150px;"
+                    :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex]"
+                    :dataTestLabel="dataTestLabel + '-WaveformFourier'"
+                />
 
-                    <WaveformSimpleOutput class="col-12 lg:col-12 m-0 px-2"
-                        v-if="!$settingsStore.operatingPointSettings.advancedMode"
+                <WaveformSimpleOutput
+                    v-if="!$settingsStore.operatingPointSettings.advancedMode"
+                    :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex]"
+                    :dataTestLabel="dataTestLabel + '-WaveformOutput-current'"
+                />
+                <div v-if="$settingsStore.operatingPointSettings.advancedMode" class="op-outputs-pair">
+                    <WaveformOutput
                         :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex]"
                         :dataTestLabel="dataTestLabel + '-WaveformOutput-current'"
+                        :signalDescriptor="'current'"
                     />
-                    <div v-if="$settingsStore.operatingPointSettings.advancedMode" class="row m-0 p-0">
-                        <WaveformOutput class="col-12 md:col-6 lg:col-6 m-0 px-2"
-                            :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex]"
-                            :dataTestLabel="dataTestLabel + '-WaveformOutput-current'"
-                            :signalDescriptor="'current'"
-                        />
-                        <WaveformOutput class="col-12 md:col-6 lg:col-6 m-0 px-2"
-                            :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex]"
-                            :dataTestLabel="dataTestLabel + '-WaveformOutput-voltage'"
-                            :signalDescriptor="'voltage'"
-                        />
-                    </div>
-                    <WaveformCombinedOutput
-                        v-if="$settingsStore.operatingPointSettings.advancedMode"
-                        :style="$styleStore.operatingPoints.main"
-                        class="col-12 m-0 px-2"
-                        :dataTestLabel="dataTestLabel + '-WaveformCombinedOutput'"
+                    <WaveformOutput
+                        data-op-col="results-second"
                         :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex]"
+                        :dataTestLabel="dataTestLabel + '-WaveformOutput-voltage'"
+                        :signalDescriptor="'voltage'"
                     />
-                    <!-- <button :data-cy="dataTestLabel + '-reset-button'" class="p-button p-button-danger text-base md:col-offset-10 col-12 md:col-2  mt-2 p-0" style="max-height: 2em" @click="resetCurrentExcitation"> Reset Point -->
-                    <!-- </button> -->
                 </div>
+                <WaveformCombinedOutput
+                    v-if="$settingsStore.operatingPointSettings.advancedMode"
+                    :style="$styleStore.operatingPoints.main"
+                    :dataTestLabel="dataTestLabel + '-WaveformCombinedOutput'"
+                    :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex]"
+                />
             </div>
         </div>
     </div>
 </template>
 
 <style scoped>
+/* Layout, cells, fields and actions come from the shared editor styles in
+   OperatingPoint.vue (.op-editor-*, .op-cell-*, .op-action). */
 .opm-container {
     width: 100%;
     margin: 0;
     padding: 0;
 }
 
-.opm-col {
-    max-width: 460px;
-    display: flex;
-    flex-direction: column;
-    gap: 0.6rem;
-    padding-left: 0.25rem;
-    padding-right: 0.25rem;
-}
-
-.opm-title {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    color: var(--p-primary);
-    font-size: 1.05rem;
-    font-weight: 700;
-    letter-spacing: 0.01em;
-    padding: 0.2rem 0.2rem 0.4rem 0.2rem;
-}
-
-.opm-title i {
-    font-size: 1rem;
-    filter: drop-shadow(0 0 4px rgba(var(--p-primary-rgb), 0.5));
-}
-
-/* ============ Sub-card ============ */
-.opm-card {
-    background:
-        linear-gradient(180deg,
-            rgba(var(--p-primary-rgb), 0.06) 0%,
-            rgba(var(--p-primary-rgb), 0.02) 100%),
-        var(--p-dark);
-    border: 1px solid rgba(var(--p-primary-rgb), 0.18);
-    border-left: 3px solid rgba(var(--p-primary-rgb), 0.7);
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 3px 10px rgba(var(--p-black-rgb), 0.3);
-}
-
-/* Match the colors used in the waveform chart (Current = warning amber,
- * Voltage = info purple) so the cards visually anchor to the same legend.
- * Common Parameters keeps the default primary teal so all three families
- * are visually distinct. */
-.opm-card-current {
-    border-left-color: rgba(var(--p-warning-rgb), 0.7);
-}
-
-.opm-card-voltage {
-    border-left-color: rgba(var(--p-info-rgb), 0.7);
-}
-
-.opm-derived-note {
-    padding: 0.4rem 0.75rem;
-    font-size: 0.8rem;
-    line-height: 1.35;
-    color: rgba(var(--p-white-rgb), 0.75);
-    background: rgba(var(--p-primary-rgb), 0.08);
-    border-bottom: 1px solid rgba(var(--p-primary-rgb), 0.25);
-}
-
-.opm-issue {
-    display: flex;
-    align-items: flex-start;
-    gap: 0.4rem;
-    margin: 0 0.75rem 0.75rem;
-    padding: 0.4rem 0.6rem;
-    background: rgb(var(--p-danger-rgb) / 0.12);
-    border: 1px solid rgb(var(--p-danger-rgb) / 0.4);
+/* An inductor's choice of the signal the user sets: two options, one pressed. */
+.opm-drive-options {
+    display: inline-flex;
+    max-width: 100%;
+    margin: 0 0 0.5rem;
+    border: 1px solid var(--op-field-border);
     border-radius: 8px;
-    color: var(--p-danger);
-    font-size: 0.78rem;
-    line-height: 1.3;
+    overflow: hidden;
 }
-
-.opm-link-btn {
-    background: none;
+button.opm-drive-option {
+    flex: 1 1 auto;
+    min-height: 2rem;
+    margin: 0;
+    padding: 0 0.85rem;
+    background: transparent;
     border: 0;
-    padding: 0;
-    margin-left: 0.35rem;
-    color: var(--p-primary);
-    font-size: 0.8rem;
+    color: var(--op-muted);
+    font: inherit;
+    font-size: 0.86rem;
     font-weight: 600;
-    text-decoration: underline;
+    white-space: nowrap;
     cursor: pointer;
+    transition: background 0.15s, color 0.15s;
 }
-
-.opm-disabled {
-    opacity: 0.5;
-    pointer-events: none;
+button.opm-drive-option + button.opm-drive-option {
+    border-left: 1px solid var(--op-field-border);
 }
-
-/* The note of a derived signal holds the button that hands the signal back to the user. */
-.opm-disabled .opm-derived-note {
-    pointer-events: auto;
+button.opm-drive-option:hover {
+    color: var(--op-text);
+    background: rgba(var(--p-white-rgb), 0.05);
 }
-
-.opm-card-header {
-    display: flex;
-    align-items: center;
-    gap: 0.45rem;
-    padding: 0.5rem 0.75rem;
-    background: rgba(var(--p-primary-rgb), 0.08);
-    border-bottom: 1px solid rgba(var(--p-primary-rgb), 0.12);
-    color: var(--p-primary);
-    font-weight: 600;
-    font-size: 0.78rem;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
+button.opm-drive-option.opm-drive-current[aria-pressed="true"] {
+    color: var(--p-dark);
+    background: var(--p-warning);
 }
-
-.opm-card-current .opm-card-header {
-    color: var(--p-warning);
-    background: rgba(var(--p-warning-rgb), 0.1);
-    border-bottom-color: rgba(var(--p-warning-rgb), 0.18);
+button.opm-drive-option.opm-drive-voltage[aria-pressed="true"] {
+    color: var(--p-dark);
+    background: var(--p-info);
 }
-
-.opm-card-current .opm-card-header i {
-    filter: drop-shadow(0 0 4px rgba(var(--p-warning-rgb), 0.5));
+button.opm-drive-option:focus-visible {
+    outline: 2px solid var(--p-primary);
+    outline-offset: -2px;
 }
-
-.opm-card-voltage .opm-card-header {
-    color: var(--p-info);
-    background: rgba(var(--p-info-rgb), 0.1);
-    border-bottom-color: rgba(var(--p-info-rgb), 0.18);
-}
-
-.opm-card-voltage .opm-card-header i {
-    filter: drop-shadow(0 0 4px rgba(var(--p-info-rgb), 0.5));
-}
-
-.opm-card-header i {
-    font-size: 0.85rem;
-    filter: drop-shadow(0 0 4px rgba(var(--p-primary-rgb), 0.5));
-}
-
-.opm-card-body {
-    padding: 0.7rem 1rem 0.85rem 1rem;
-}
-
-/* Breathing room: only neutralize the outer row negative margins,
-   inner inputs/selects keep their original sizing. */
-.opm-card-body :deep(> .row),
-.opm-card-body :deep(> .container-flex > .row) {
-    margin-left: 0 !important;
-    margin-right: 0 !important;
-}
-
-/* ============ Action buttons ============ */
-.opm-actions {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    margin-top: 0.4rem;
-}
-
-button.opm-btn {
-    display: inline-flex !important;
-    align-items: center;
-    justify-content: center;
-    gap: 0.45rem;
-    padding: 0.55rem 1rem !important;
-    border-radius: 10px !important;
-    font-size: 0.85rem !important;
-    font-weight: 600;
-    letter-spacing: 0.01em;
-    cursor: pointer;
-    transition: filter 0.15s, transform 0.1s, box-shadow 0.2s, background 0.15s;
-    width: 100%;
-    line-height: 1.2;
-    outline: none;
-}
-
-button.opm-btn:hover {
-    filter: brightness(1.15);
-    transform: translateY(-1px);
-}
-
-button.opm-btn-primary {
-    border: 1px solid rgba(var(--p-primary-rgb), 0.85) !important;
-    background-color: var(--p-primary) !important;
-    background-image: linear-gradient(135deg,
-        rgba(var(--p-primary-rgb), 1) 0%,
-        rgba(var(--p-primary-rgb), 0.8) 100%) !important;
-    color: var(--p-white) !important;
-    box-shadow:
-        0 0 0 1px rgba(var(--p-primary-rgb), 0.3),
-        0 2px 8px rgba(var(--p-primary-rgb), 0.4),
-        inset 0 1px 0 rgba(var(--p-white-rgb), 0.25);
-    text-shadow: 0 1px 1px rgba(var(--p-black-rgb), 0.25);
-}
-
-button.opm-btn-outline {
-    background: rgba(var(--p-white-rgb), 0.08) !important;
-    border: 1px solid rgba(var(--p-primary-rgb), 0.55) !important;
-    color: var(--p-primary) !important;
-    box-shadow: 0 1px 4px rgba(var(--p-black-rgb), 0.25);
-}
-
-button.opm-btn-outline:hover {
-    background: rgba(var(--p-primary-rgb), 0.2) !important;
-    border-color: rgba(var(--p-primary-rgb), 0.85) !important;
-    color: var(--p-white) !important;
+.opm-drive-note {
+    margin: 0;
 }
 </style>
