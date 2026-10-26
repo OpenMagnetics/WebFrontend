@@ -252,7 +252,7 @@ export default {
     min-width: 0;
     margin: 0 !important;
     padding: 0.45rem 0.7rem 0.5rem !important;
-    background: rgba(var(--p-black-rgb), 0.2);
+    background: rgba(var(--p-white-rgb), 0.05);
     border: 1px solid var(--op-rule);
     border-left: 2px solid var(--wso-colour);
     border-radius: 8px;

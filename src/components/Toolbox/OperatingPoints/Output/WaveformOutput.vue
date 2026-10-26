@@ -226,7 +226,7 @@ export default {
     min-width: 0;
     margin: 0.5rem 0 0;
     padding: 0.5rem 0.75rem 0.35rem;
-    background: rgba(var(--p-black-rgb), 0.2);
+    background: rgba(var(--p-white-rgb), 0.05);
     border: 1px solid var(--op-rule);
     border-top: 2px solid var(--op-cell-colour);
     border-radius: 8px;

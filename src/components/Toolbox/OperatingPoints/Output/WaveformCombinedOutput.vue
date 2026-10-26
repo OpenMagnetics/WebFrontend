@@ -125,7 +125,7 @@ export default {
     gap: 0.25rem 1.25rem;
     margin: 0.5rem 0 0;
     padding: 0.45rem 0.75rem;
-    background: rgba(var(--p-black-rgb), 0.2);
+    background: rgba(var(--p-white-rgb), 0.05);
     border: 1px solid var(--op-rule);
     border-left: 2px solid var(--p-primary);
     border-radius: 8px;
