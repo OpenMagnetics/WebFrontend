@@ -76,6 +76,8 @@ export default {
             theme,
             localTexts,
             processedScoring: {},
+            // The filters whose scores the "Losses" bar averages (every filter but Cost and Dimensions).
+            lossesFilters: [],
             taskQueueStore: useTaskQueueStore(),
         }
     },
@@ -133,6 +135,24 @@ export default {
             const h = removeTrailingZeroes(pd.height * 1000, 1);
             return `${w}×${d}×${h} mm`;
         },
+        // One bar per scoring criterion: label, score out of 100 (as the total "pts") and what
+        // the criterion is made of. Scores come from MKF's adviser normalised to 0..1, higher
+        // is better.
+        scoreBars() {
+            return Object.entries(this.processedScoring).map(([criterion, score]) => {
+                const label = toTitleCase(criterion.toLowerCase().replaceAll("_", " "));
+                const description = criterion === 'Losses'
+                    ? `Losses: mean score of ${this.lossesFilters.join(', ')}`
+                    : `${label} score`;
+                return {
+                    criterion,
+                    label,
+                    value: removeTrailingZeroes(score * 100, 0),
+                    percent: score * 100,
+                    description,
+                };
+            });
+        },
         formattedEfficiency() {
             const out = this.masData?.outputs?.[0];
             const coreLosses = out?.coreLosses?.coreLosses;
@@ -154,11 +174,13 @@ export default {
         initializeChart() {
             // Process scoring data
             this.processedScoring = { Losses: 0 };
+            this.lossesFilters = [];
             let efficiencyFilterCount = 0;
             
             Object.entries(this.scoring).forEach(([filter, value]) => {
                 if (filter !== "Cost" && filter !== "Dimensions") {
                     efficiencyFilterCount++;
+                    this.lossesFilters.push(filter);
                     this.processedScoring.Losses += value;
                 } else {
                     this.processedScoring[filter] = value;
@@ -169,21 +191,15 @@ export default {
                 this.processedScoring.Losses /= efficiencyFilterCount;
             }
 
-            const labels = this.formatFilterLabels(this.processedScoring);
-            const truncatedLabels = this.formatFilterLabels(this.processedScoring, true);
-            const values = Object.values(this.processedScoring);
-
+            // The bar view is drawn as labelled HTML bars (scoreBars); only the radar uses ECharts.
             if (this.graphType === 'radar') {
+                const labels = this.formatFilterLabels(this.processedScoring);
+                const values = Object.values(this.processedScoring);
                 this.chartOptions = this.createRadarOptions(labels, values);
-            } else {
-                this.chartOptions = this.createBarOptions(truncatedLabels, values);
             }
         },
-        formatFilterLabels(scoring, truncate = false) {
-            return Object.keys(scoring).map(key => {
-                const label = toTitleCase(key.toLowerCase().replaceAll("_", " "));
-                return truncate ? label.substring(0, 4) : label;
-            });
+        formatFilterLabels(scoring) {
+            return Object.keys(scoring).map(key => toTitleCase(key.toLowerCase().replaceAll("_", " ")));
         },
         createRadarOptions(labels, values) {
             const primary = (this.theme.primary || getComputedStyle(document.documentElement).getPropertyValue('--p-primary')).trim();
@@ -234,60 +250,6 @@ export default {
                             borderWidth: 1
                         }
                     }]
-                }]
-            };
-        },
-        createBarOptions(labels, values) {
-            const primary = (this.theme.primary || getComputedStyle(document.documentElement).getPropertyValue('--p-primary')).trim();
-            const success = (this.theme.success || getComputedStyle(document.documentElement).getPropertyValue('--p-success')).trim();
-            const light = getComputedStyle(document.documentElement).getPropertyValue('--p-light').trim();
-            return {
-                grid: {
-                    left: '8%',
-                    right: '5%',
-                    bottom: '28%',
-                    top: '12%'
-                },
-                xAxis: {
-                    type: 'category',
-                    data: labels,
-                    axisLabel: {
-                        fontSize: 10,
-                        rotate: 35,
-                        color: light,
-                        opacity: 0.75
-                    },
-                    axisLine: {
-                        lineStyle: { color: light, opacity: 0.15 }
-                    },
-                    axisTick: { show: false }
-                },
-                yAxis: {
-                    type: 'value',
-                    min: 0,
-                    max: 1,
-                    splitNumber: 3,
-                    axisLabel: {
-                        fontSize: 10,
-                        color: light,
-                        opacity: 0.6
-                    },
-                    splitLine: {
-                        lineStyle: { color: light, opacity: 0.1 }
-                    },
-                    axisLine: { show: false }
-                },
-                series: [{
-                    type: 'bar',
-                    data: values,
-                    barWidth: '60%',
-                    itemStyle: {
-                        color: primary,
-                        borderRadius: [4, 4, 0, 0]
-                    },
-                    emphasis: {
-                        itemStyle: { color: success }
-                    }
                 }]
             };
         },
@@ -403,8 +365,32 @@ export default {
                 <!-- Chart -->
                 <div class="col-12 lg:col-6">
                     <div class="advise-chart-wrapper">
+                        <div
+                            v-if="graphType === 'bar'"
+                            class="advise-score-bars"
+                            :data-cy="dataTestLabel + '-advise-' + adviseIndex + '-score-bars'"
+                        >
+                            <span class="advise-score-caption" :id="dataTestLabel + '-advise-' + adviseIndex + '-score-caption'">Score by criterion</span>
+                            <ul class="advise-score-columns" :aria-labelledby="dataTestLabel + '-advise-' + adviseIndex + '-score-caption'">
+                                <li
+                                    v-for="bar in scoreBars"
+                                    :key="bar.criterion"
+                                    class="advise-score-bar"
+                                    :title="bar.description"
+                                    :aria-label="bar.label + ': ' + bar.value + ' out of 100'"
+                                >
+                                    <span class="advise-score-track" aria-hidden="true">
+                                        <span class="advise-score-plot">
+                                            <span class="advise-score-fill" :style="{ height: bar.percent + '%' }"></span>
+                                            <span class="advise-score-value" :style="{ bottom: bar.percent + '%' }">{{ bar.value }}</span>
+                                        </span>
+                                    </span>
+                                    <span class="advise-score-label">{{ bar.label }}</span>
+                                </li>
+                            </ul>
+                        </div>
                         <v-chart
-                            v-if="chartOptions"
+                            v-else-if="chartOptions"
                             class="w-100"
                             :option="chartOptions"
                             autoresize
@@ -660,6 +646,89 @@ export default {
 .advise-chart-wrapper > * {
     height: 100% !important;
     min-height: 140px;
+}
+
+/* Bar view: one labelled column per scoring criterion, score out of 100 on top. */
+.advise-score-bars {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    padding: 0.3rem 0.4rem 0.2rem;
+    gap: 0.3rem;
+}
+
+.advise-score-caption {
+    color: var(--ao-text-color-secondary);
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    text-align: center;
+}
+
+.advise-score-columns {
+    flex: 1;
+    display: flex;
+    align-items: stretch;
+    justify-content: space-around;
+    gap: 0.5rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.advise-score-bar {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.2rem;
+}
+
+.advise-score-value {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    color: var(--ao-text);
+    font-size: 0.8rem;
+    font-weight: 700;
+    line-height: 1.1;
+    padding-bottom: 0.15rem;
+}
+
+.advise-score-track {
+    flex: 1;
+    width: 2rem;
+    min-height: 4rem;
+    display: flex;
+    flex-direction: column;
+    /* room above a full bar for its value */
+    padding-top: 1.1rem;
+    border-bottom: 1px solid var(--ao-border-strong);
+}
+
+.advise-score-plot {
+    flex: 1;
+    position: relative;
+}
+
+.advise-score-fill {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: var(--p-primary);
+    border-radius: 4px 4px 0 0;
+}
+
+.advise-score-label {
+    color: var(--ao-text-color-secondary);
+    font-size: 0.7rem;
+    font-weight: 600;
+    line-height: 1.15;
+    text-align: center;
+    white-space: nowrap;
 }
 
 .advise-option-footer {

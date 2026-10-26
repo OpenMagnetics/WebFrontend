@@ -241,15 +241,21 @@ export default {
     color: var(--p-red-400);
     font-size: 0.78rem !important;
 }
+/* The fields wrap instead of squeezing: a set dimension keeps room for its name, its value
+   and its unit (at 390 px the value used to collapse until only the unit showed). */
 .md-fields-row {
     display: flex;
-    flex-wrap: nowrap;
+    flex-wrap: wrap;
     gap: 0.5rem;
     width: 100%;
 }
 .md-field {
     flex: 1 1 0;
     min-width: 0;
+}
+.md-field:has(.md-group) {
+    flex: 1 1 auto;
+    min-width: 11.5rem;
 }
 .md-group {
     width: 100%;
@@ -287,7 +293,7 @@ export default {
 }
 .md-input {
     flex: 1 1 auto;
-    min-width: 0;
+    min-width: 4rem;
     display: flex;
     align-items: stretch;
 }

@@ -59,6 +59,19 @@ export default {
         }
     },
     computed: {
+        // The signals of this winding the import left without a waveform. MKF returns an
+        // excitation with only the signals whose columns were mapped to the winding (with
+        // two windings it can put V(p1,p2) on the second one), and the outputs draw and
+        // compute both signals, so they are only shown once both exist; until then the
+        // missing ones are named here.
+        missingSignals() {
+            const excitation = this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex]?.excitationsPerWinding[this.currentWindingIndex];
+            return ['current', 'voltage'].filter((signalDescriptor) => excitation?.[signalDescriptor]?.waveform == null);
+        },
+        importedSignalsReady() {
+            return this.$stateStore.operatingPointsCircuitSimulator.confirmedColumns[this.currentOperatingPointIndex][this.currentWindingIndex]
+                && this.missingSignals.length == 0;
+        },
     },
     watch: { 
     },
@@ -156,6 +169,10 @@ export default {
                         <i class="pi pi-times-circle-fill"></i>
                         <span>{{errorMessages}}</span>
                     </div>
+                    <div v-if='errorMessages == "" && $stateStore.operatingPointsCircuitSimulator.confirmedColumns[currentOperatingPointIndex][currentWindingIndex] && missingSignals.length > 0' class="opc-error op-cell-error" role="alert" :data-cy="dataTestLabel + '-missing-signals'">
+                        <i class="pi pi-exclamation-triangle"></i>
+                        <span>The imported columns give {{ masStore.mas.magnetic.coil.functionalDescription[currentWindingIndex].name }} no {{ missingSignals.join(' and no ') }} waveform. Pick the column that holds it above and update the columns.</span>
+                    </div>
                 </section>
 
                 <div class="opc-actions op-editor-actions">
@@ -183,7 +200,7 @@ export default {
                     </button>
                 </div>
             </div>
-            <div v-if="$stateStore.operatingPointsCircuitSimulator.confirmedColumns[currentOperatingPointIndex][currentWindingIndex]" class="op-editor-results" data-op-col="results">
+            <div v-if="importedSignalsReady" class="op-editor-results" data-op-col="results">
                 <WaveformGraph class="op-chart"
                     :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex]"
                     :dataTestLabel="dataTestLabel + '-WaveformGraph'"

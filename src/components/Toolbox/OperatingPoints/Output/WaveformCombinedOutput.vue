@@ -30,13 +30,28 @@ export default {
     },
     computed: {
     },
+    // Power follows the waveforms, not every field of the excitation: a frequency edit is
+    // written into the operating point before the waveforms are rebuilt for it, and MKF
+    // rejects a waveform whose time axis spans another period. The waveforms are rebuilt
+    // (and written together) after every frequency or duty cycle edit, so watching them
+    // recomputes the power once the pair is consistent. Watching the excitation itself
+    // covers a switch to another winding or operating point.
     watch: {
-        'modelValue': {
+        'modelValue'() {
+            this.process();
+        },
+        'modelValue.current.waveform': {
           handler(newValue, oldValue) {
             this.process();
           },
           deep: true
-        }
+        },
+        'modelValue.voltage.waveform': {
+          handler(newValue, oldValue) {
+            this.process();
+          },
+          deep: true
+        },
     },
     mounted () {
         this.process();

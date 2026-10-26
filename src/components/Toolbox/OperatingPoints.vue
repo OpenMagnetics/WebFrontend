@@ -177,8 +177,9 @@ export default {
                     this.convertFromProcessedToWaveform(operatingPointIndex, windingIndex, signalDescriptor);
                 }
                 else {
-                    this.convertFromProcessedToWaveform(operatingPointIndex, windingIndex, "current");
-                    this.convertFromProcessedToWaveform(operatingPointIndex, windingIndex, "voltage");
+                    // Both signals at once: a common parameter (frequency, duty cycle) changed,
+                    // and the outputs may only see the pair once both are rebuilt for it.
+                    this.convertFromProcessedToWaveform(operatingPointIndex, windingIndex, ["current", "voltage"]);
                 }
             }
             if (action.name == "updatedInputExcitationWaveformUpdatedFromGraph") {
@@ -279,25 +280,60 @@ export default {
         updatedWaveform(signalDescriptor) {
             this.convertFromWaveformToProcessed(this.currentOperatingPointIndex, this.currentWindingIndex, signalDescriptor);
         },
-        async convertFromProcessedToWaveform(operatingPointIndex, windingIndex, signalDescriptor) {
-            var processed = this.masStore.mas.inputs.operatingPoints[operatingPointIndex].excitationsPerWinding[windingIndex][signalDescriptor].processed;
-            var frequency = this.masStore.mas.inputs.operatingPoints[operatingPointIndex].excitationsPerWinding[windingIndex].frequency;
+        // Rebuilds the waveform of one signal, or of several (["current", "voltage"]), from
+        // its processed data and the excitation's frequency.
+        //
+        // The frequency and duty cycle inputs write into the operating point immediately, and
+        // every output (graph, spectrum, quick stats, power) hands the excitation to MKF. So
+        // the new waveforms are built off-store first, together with the harmonics MKF derives
+        // from them, and only then written in one synchronous block: watchers and the
+        // updatedInputExcitationWaveformUpdatedFromProcessed listeners never see a waveform,
+        // its harmonics and the frequency from two different edits (MKF rejects that pair:
+        // "Waveform time axis spans 1e-05 s ... but the excitation period is 5e-06 s").
+        async convertFromProcessedToWaveform(operatingPointIndex, windingIndex, signalDescriptors) {
+            const descriptors = Array.isArray(signalDescriptors) ? signalDescriptors : [signalDescriptors];
+            const excitation = this.masStore.mas.inputs.operatingPoints[operatingPointIndex].excitationsPerWinding[windingIndex];
+            const frequency = excitation.frequency;
 
             try {
-                if (processed.label != "custom") {
-                    var waveform = await this.taskQueueStore.createWaveform(processed, frequency);
-
-                    if (waveform.data.length > 0) {
-                        this.masStore.mas.inputs.operatingPoints[operatingPointIndex].excitationsPerWinding[windingIndex][signalDescriptor].waveform = waveform;
-                        this.masStore.updatedInputExcitationWaveformUpdatedFromProcessed(signalDescriptor);
+                const rebuilt = await Promise.all(descriptors.map(async (signalDescriptor) => {
+                    const signal = excitation[signalDescriptor];
+                    if (signal.processed.label != "custom") {
+                        const waveform = await this.taskQueueStore.createWaveform(signal.processed, frequency);
+                        if (waveform.data.length == 0) {
+                            return null;
+                        }
+                        const harmonics = await this.taskQueueStore.calculateHarmonics(waveform, frequency);
+                        return { signalDescriptor, waveform, harmonics };
                     }
+                    const scaledWaveform = await this.taskQueueStore.scaleWaveformTimeToFrequency(signal.waveform, frequency);
+                    // A custom waveform at an unchanged frequency keeps its harmonics (in the
+                    // harmonics view they are the ones the user typed); a rescaled time axis
+                    // makes the stored ones describe another period, so MKF derives them again.
+                    const sameTimeAxis = JSON.stringify(scaledWaveform.time) == JSON.stringify(signal.waveform?.time);
+                    const harmonics = sameTimeAxis && signal.harmonics != null
+                        ? signal.harmonics
+                        : await this.taskQueueStore.calculateHarmonics(scaledWaveform, frequency);
+                    return { signalDescriptor, waveform: scaledWaveform, harmonics };
+                }));
+
+                // Superseded: another edit changed the frequency, or replaced this excitation,
+                // while MKF was building these. That edit starts its own rebuild, whose
+                // result is the consistent one; writing this one would store a waveform for
+                // a frequency the operating point no longer has.
+                const current = this.masStore.mas.inputs.operatingPoints[operatingPointIndex]?.excitationsPerWinding[windingIndex];
+                if (current !== excitation || current.frequency != frequency) {
+                    return;
                 }
-                else {
-                    var waveform = this.masStore.mas.inputs.operatingPoints[operatingPointIndex].excitationsPerWinding[windingIndex][signalDescriptor].waveform;
-                    var scaledWaveform = await this.taskQueueStore.scaleWaveformTimeToFrequency(waveform, frequency);
-                    this.masStore.mas.inputs.operatingPoints[operatingPointIndex].excitationsPerWinding[windingIndex][signalDescriptor].waveform = scaledWaveform;
+
+                const written = rebuilt.filter((elem) => elem != null);
+                written.forEach(({ signalDescriptor, waveform, harmonics }) => {
+                    excitation[signalDescriptor].waveform = waveform;
+                    excitation[signalDescriptor].harmonics = harmonics;
+                });
+                written.forEach(({ signalDescriptor }) => {
                     this.masStore.updatedInputExcitationWaveformUpdatedFromProcessed(signalDescriptor);
-                }
+                });
             } catch (error) {
                 console.error(error);
             }
