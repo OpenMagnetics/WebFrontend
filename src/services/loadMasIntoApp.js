@@ -866,7 +866,10 @@ export async function loadMasIntoApp(doc, { masStore, stateStore, userStore, tas
     const loadCorrections = useLoadCorrectionsStore();
     loadCorrections.clear();
     const outdatedCoreMaterial = await findOutdatedCoreMaterial(autocompletedMas, { taskQueueStore, userStore });
-    if (outdatedCoreMaterial != null) {
+    if (outdatedCoreMaterial?.invalid != null) {
+        console.warn(`Imported MAS: MKF refuses the design's copy of core material '${outdatedCoreMaterial.name}' (${outdatedCoreMaterial.invalid}); the file's copy is kept until the user replaces it`);
+    }
+    else if (outdatedCoreMaterial != null) {
         console.warn(`Imported MAS: the design's copy of core material '${outdatedCoreMaterial.name}' gives other core losses than the library's; the file's copy is kept`);
     }
 

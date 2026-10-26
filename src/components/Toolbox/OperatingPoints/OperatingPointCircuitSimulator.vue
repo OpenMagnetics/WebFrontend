@@ -56,6 +56,13 @@ export default {
             taskQueueStore,
             errorMessages: "",
             loading: false,
+            // The last refused import: { operatingPointIndex, windingIndex, missingSignals }, the
+            // signals it left that winding without; null once an import gives both.
+            refusedImport: null,
+            // The frequency typed for the imported signal. Kept here, and written into the
+            // operating point only together with a complete imported excitation (Alf,
+            // 2026-10-26): leaving the view without importing leaves the operating point as it was.
+            importFrequency: masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex].frequency,
         }
     },
     computed: {
@@ -63,8 +70,15 @@ export default {
         // excitation with only the signals whose columns were mapped to the winding (with
         // two windings it can put V(p1,p2) on the second one), and the outputs draw and
         // compute both signals, so they are only shown once both exist; until then the
-        // missing ones are named here.
+        // missing ones are named here. An import that leaves the winding without one of them is
+        // not stored (Alf, 2026-10-26): the operating point keeps what it had, and the signals
+        // that import lacked are the ones named.
         missingSignals() {
+            if (this.refusedImport != null
+                && this.refusedImport.operatingPointIndex == this.currentOperatingPointIndex
+                && this.refusedImport.windingIndex == this.currentWindingIndex) {
+                return this.refusedImport.missingSignals;
+            }
             const excitation = this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex]?.excitationsPerWinding[this.currentWindingIndex];
             return ['current', 'voltage'].filter((signalDescriptor) => excitation?.[signalDescriptor]?.waveform == null);
         },
@@ -87,7 +101,7 @@ export default {
         async extractOperatingPoint(file) {
             try {
                 const numberWindings = this.masStore.mas.inputs.designRequirements.turnsRatios.length + 1;
-                const frequency = this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex].frequency;
+                const frequency = this.importFrequency;
 
                 const mapColumnNames = this.$stateStore.operatingPointsCircuitSimulator.columnNames[this.currentOperatingPointIndex];
                 if (!Array.isArray(mapColumnNames) || mapColumnNames.length === 0) {
@@ -108,6 +122,23 @@ export default {
 
                 var operatingPoint = await this.taskQueueStore.extractOperatingPoint(file, numberWindings, frequency, desiredMagnetizingInductance, mapColumnNames);
                 this.errorMessages = "";
+                const importedExcitation = operatingPoint.excitationsPerWinding[this.currentWindingIndex];
+                const importMissingSignals = ['current', 'voltage'].filter((signalDescriptor) => importedExcitation?.[signalDescriptor]?.waveform == null);
+                if (importMissingSignals.length > 0) {
+                    // Partial: nothing is written, so the operating point keeps its signals and
+                    // the manual editor never opens on a winding with a null one.
+                    this.refusedImport = {
+                        operatingPointIndex: this.currentOperatingPointIndex,
+                        windingIndex: this.currentWindingIndex,
+                        missingSignals: importMissingSignals,
+                    };
+                    this.$stateStore.operatingPointsCircuitSimulator.confirmedColumns[this.currentOperatingPointIndex][this.currentWindingIndex] = true;
+                    return;
+                }
+                this.refusedImport = null;
+                this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding.forEach((elem) => {
+                    elem.frequency = frequency;
+                })
                 this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding[this.currentWindingIndex] = operatingPoint.excitationsPerWinding[this.currentWindingIndex]
                 this.$stateStore.operatingPointsCircuitSimulator.confirmedColumns[this.currentOperatingPointIndex][this.currentWindingIndex] = true;
                 this.$emit("importedWaveform");
@@ -123,9 +154,7 @@ export default {
             }
         },
         updatedSwitchingFrequency(frequency) {
-            this.masStore.mas.inputs.operatingPoints[this.currentOperatingPointIndex].excitationsPerWinding.forEach((elem) => {
-                elem.frequency = frequency;
-            })
+            this.importFrequency = frequency;
         },
         updatedColumnNames() {
             // this.extractOperatingPoint(this.loadedFile);

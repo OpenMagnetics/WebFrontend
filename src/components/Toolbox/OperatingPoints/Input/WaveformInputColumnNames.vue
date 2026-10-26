@@ -69,9 +69,11 @@ export default {
         columnNameChanged(value) {
             this.$emit("updatedColumnName");
         },
+        // The frequency of the imported signal. It is not written into the operating point here:
+        // the circuit-simulator view keeps it and stores it only with a complete imported
+        // excitation (Alf, 2026-10-26), so leaving the view without importing changes nothing.
         frequencyChanged(value) {
-            this.modelValue.frequency = value;
-            if (this.modelValue.frequency < 2) {
+            if (value < 2) {
                 this.errorMessages = 'Please, introduce the frequency of your imported signal';
             }
             else {
