@@ -28,6 +28,22 @@ import { useMagneticBuilderSettingsStore } from '/MagneticBuilder/src/stores/mag
 </script>
 
 <script>
+// Names of the tools opened beside the storyline (from the tool menu), for the Engine log records
+// saying why the current step cannot continue. Storyline steps use their storyline title.
+const SIDE_TOOL_TITLES = {
+    toolSelector: 'Tool selector',
+    magneticAdviser: 'Magnetic Adviser',
+    magneticCoreAdviser: 'Core Adviser',
+    catalogAdviser: 'Catalog Adviser',
+    wireAdviser: 'Wire Adviser',
+    coreCustomizer: 'Core Customizer',
+    wireCustomizer: 'Wire Customizer',
+    magneticViewer: 'Magnetic Viewer',
+    magneticCoreSummary: 'Core Summary',
+    magneticSpecificationsSummary: 'Specifications Summary',
+    insulationRequirements: 'Insulation Requirements',
+};
+
 export default {
     emits: ["toolSelected"],
     props: {
@@ -162,6 +178,14 @@ export default {
         '$stateStore.currentOperatingPoint'() { this.syncOperatingPointSelection(); },
     },
     computed: {
+        currentStepTitle() {
+            const subsection = this.$stateStore.getCurrentToolState().subsection;
+            const title = this.currentStoryline[subsection]?.title ?? SIDE_TOOL_TITLES[subsection];
+            if (title == null) {
+                throw new Error(`GenericTool: no title for step '${subsection}': add it to the storyline or SIDE_TOOL_TITLES`);
+            }
+            return title;
+        },
         operatingPointNames() {
             const names = [];
             this.masStore.mas.inputs.operatingPoints.forEach((elem) => {
@@ -278,7 +302,7 @@ export default {
                     />
                 </div>
                 <StorylineErrors
-                    :dataTestLabel="`${dataTestLabel}-StorylineErrors`"
+                    :step="currentStepTitle"
                     :blocked="$stateStore.getCurrentToolState().canContinue[$stateStore.getCurrentToolState().subsection] === false"
                     :errors="toolErrors[$stateStore.getCurrentToolState().subsection] ?? []"
                 />

@@ -77,6 +77,7 @@ export default {
     },
     mounted () {
         if (this.adviseCacheStore.noCoreAdvises()) {
+            this.$emit("canContinue", false, ["Wait for the core adviser to finish and pick one of the cores it proposes."]);
             setTimeout(() => {this.calculateAdvisedCores();}, 200);
         }
     },
@@ -157,17 +158,22 @@ export default {
                         this.masStore.mas = this.adviseCacheStore.currentCoreAdvises[this.$userStore.coreAdviserSelectedAdvise].mas;
                         this.$emit("canContinue", true);
                     }
+                    else {
+                        this.$emit("canContinue", false, ["The core adviser found no core that meets the requirements. Relax the requirements and advise again."]);
+                    }
 
                     this.loading = false;
 
                 }
                 else {
                     console.error("No operating points found")
+                    this.$emit("canContinue", false, ["The core adviser needs at least one operating point \u2014 add one in the operating points step."]);
                     this.loading = false;
                 }
             } catch (error) {
                 console.error("Error calculating advising cores");
                 console.error(error);
+                this.$emit("canContinue", false, [`The core adviser failed: ${error?.message ?? String(error)}`]);
                 this.loading = false;
             }
         },

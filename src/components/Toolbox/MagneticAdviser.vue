@@ -103,6 +103,9 @@ export default {
             this.currentAdviseToShow = this.adviseCacheStore.currentMasAdvises.length - 1;
         }
         // Otherwise, don't auto-launch - let user click the button
+        if (this.adviseCacheStore.noMasAdvises()) {
+            this.$emit("canContinue", false, ["Run the adviser and pick one of the designs it proposes."]);
+        }
     },
     methods: {
         async calculateAdvisedMagnetics() {
@@ -153,6 +156,9 @@ export default {
                         if (this.adviseCacheStore.currentMasAdvises.length > 0) {
                             this.$emit("canContinue", true);
                         }
+                        else {
+                            this.$emit("canContinue", false, ["The adviser found no design that meets the requirements. Relax the requirements or the filters and advise again."]);
+                        }
 
                         this.loading = false;
                         this.dataUptoDate = true;
@@ -172,6 +178,7 @@ export default {
                     else {
                         console.error("No operating points found")
                         this.adviserError = "The adviser needs at least one operating point \u2014 add one in the operating points step.";
+                        this.$emit("canContinue", false, [this.adviserError]);
                         this.loading = false;
                     }
                 } catch (error) {
@@ -179,6 +186,7 @@ export default {
                     console.error(error);
                     this.adviserError = engineAbortMessage(error, 'The adviser')
                         ?? `The adviser failed: ${error?.message ?? String(error)}`;
+                    this.$emit("canContinue", false, [this.adviserError]);
                     this.loading = false;
                 }
             }, 10);

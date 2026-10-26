@@ -18,6 +18,8 @@ import { useMasStore } from '/src/stores/mas'
 //   enabled in Settings.
 
 export const ENGINE_LOG_LEVELS = ['TRACE', 'DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'];
+// Module of the records saying why the current design step cannot continue (StorylineErrors.vue).
+export const DESIGN_STEP_MODULE = 'Design step';
 const MAXIMUM_RECORDS = 2000;
 const DRAIN_INTERVAL_MS = 1000;
 // Builder actions that evaluate core-loss data, i.e. the ones that can extrapolate it.
@@ -90,6 +92,13 @@ export const useEngineDiagnosticsStore = defineStore('engineDiagnostics', {
     getters: {
         warningCount: (state) => state.records.filter((r) => r.level === 'WARNING').reduce((n, r) => n + r.count, 0),
         errorCount: (state) => state.records.filter((r) => r.level === 'ERROR' || r.level === 'CRITICAL').reduce((n, r) => n + r.count, 0),
+        // Whether the log can be opened (the footer's button and the panel). Extrapolated material
+        // data is reported only here, so the log is reachable whenever extrapolation is allowed,
+        // even with the full panel switched off (ABT #1652). The builder's warnings and errors are
+        // reported only here too (notices.js), so it is reachable whenever it holds a record.
+        logReachable: (state) => useSettingsStore().engineLogSettings?.showEngineLog === true
+            || state.allowMaterialDataExtrapolation === true
+            || state.records.length > 0,
     },
 
     actions: {
@@ -302,6 +311,15 @@ export const useEngineDiagnosticsStore = defineStore('engineDiagnostics', {
                 const pointName = finding.operatingPointName ?? operatingPoints[index]?.name ?? `Operating point ${index + 1}`;
                 const message = finding.message.replace(/^At operating point \d+( \('[^']*'\))?(: |, )/, '');
                 this.addRecord('WARNING', SIMULATION_FINDINGS_MODULE, `${pointName}: ${message.charAt(0).toUpperCase() + message.slice(1)}`);
+            }
+        },
+
+        // reasons: why the design step `step` cannot continue yet (empty once it can). They replace the
+        // step's previous reasons, so the log always holds the current ones, one ERROR record each.
+        replaceStepBlockers(step, reasons) {
+            this.records = this.records.filter((record) => record.module !== DESIGN_STEP_MODULE);
+            for (const reason of reasons) {
+                this.addRecord('ERROR', DESIGN_STEP_MODULE, `${step}: ${reason}`);
             }
         },
 

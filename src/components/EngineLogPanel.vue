@@ -3,8 +3,8 @@ import { useEngineDiagnosticsStore } from '/src/stores/engineDiagnostics'
 
 // MKF's own warnings and log, for advanced users (Settings > Advanced > Engine log panel).
 // The engine keeps structured records ({level, module, message, count}); the store drains them
-// after engine calls while the panel is enabled. Collapsed, it is a button at the bottom left
-// with the warning count; expanded, a panel like the debug console's.
+// after engine calls while the panel is enabled. Collapsed, it is the footer's "Engine log" button
+// with the warning count (Footer.vue); expanded, a panel like the debug console's.
 export default {
     name: 'EngineLogPanel',
     setup() {
@@ -18,15 +18,6 @@ export default {
         };
     },
     computed: {
-        isEnabled() {
-            // Extrapolated material data is reported only here, so the log is reachable whenever
-            // extrapolation is allowed, even with the full panel switched off (ABT #1652).
-            // The builder's warnings and errors are reported only here too (notices.js), so it is
-            // reachable whenever it holds a record.
-            return this.$settingsStore?.engineLogSettings?.showEngineLog === true
-                || this.engineDiagnosticsStore.allowMaterialDataExtrapolation === true
-                || this.engineDiagnosticsStore.records.length > 0;
-        },
         filteredRecords() {
             const records = this.engineDiagnosticsStore.records;
             if (!this.searchQuery) return records;
@@ -70,7 +61,7 @@ export default {
 </script>
 
 <template>
-    <div v-if="isEnabled && engineDiagnosticsStore.panelOpen" class="engine-log-panel" data-cy="EngineLogPanel">
+    <div v-if="engineDiagnosticsStore.logReachable && engineDiagnosticsStore.panelOpen" class="engine-log-panel" data-cy="EngineLogPanel">
         <div class="engine-log-header">
             <div class="engine-log-title">
                 <i class="pi pi-cog mr-2"></i>
@@ -120,20 +111,6 @@ export default {
             </div>
         </div>
     </div>
-
-    <button
-        v-else-if="isEnabled"
-        class="engine-log-toggle"
-        data-cy="EngineLogPanel-toggle"
-        :class="{ 'has-warnings': engineDiagnosticsStore.warningCount + engineDiagnosticsStore.errorCount > 0 }"
-        @click="engineDiagnosticsStore.panelOpen = true"
-        title="Engine log (MKF warnings and log)"
-    >
-        <i class="pi pi-cog"></i>
-        <span v-if="engineDiagnosticsStore.warningCount + engineDiagnosticsStore.errorCount > 0" class="engine-log-count-badge">
-            {{ engineDiagnosticsStore.warningCount + engineDiagnosticsStore.errorCount }}
-        </span>
-    </button>
 </template>
 
 <style scoped>
@@ -305,43 +282,4 @@ export default {
     color: rgba(var(--p-white-rgb), 0.5);
 }
 
-.engine-log-toggle {
-    position: fixed;
-    bottom: 20px;
-    left: 20px;
-    width: 48px;
-    height: 48px;
-    border-radius: 50%;
-    background: var(--p-secondary);
-    border: none;
-    color: var(--p-white);
-    font-size: 1.2rem;
-    cursor: pointer;
-    z-index: 9997;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 2px 10px rgba(var(--p-black-rgb), 0.3);
-}
-
-.engine-log-toggle.has-warnings {
-    background: var(--p-warning);
-}
-
-.engine-log-count-badge {
-    position: absolute;
-    top: -5px;
-    right: -5px;
-    background: var(--p-danger);
-    color: var(--p-white);
-    font-size: 0.7rem;
-    min-width: 20px;
-    height: 20px;
-    padding: 0 4px;
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 600;
-}
 </style>

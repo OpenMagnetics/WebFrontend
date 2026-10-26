@@ -107,7 +107,7 @@ export default {
     created () {
     },
     mounted () {
-        this.$emit("canContinue", false);
+        this.$emit("canContinue", false, ["Search the catalog and pick one of the magnetics it proposes."]);
         // Consume any pending search token so the watcher below doesn't fire
         // a duplicate search immediately after.
         const hadPendingSearch =
@@ -271,7 +271,7 @@ export default {
                     );
                     this.catalogStore.advises = [];
                     this.catalogStore.advisesKey = "";
-                    this.$emit('canContinue', false);
+                    this.$emit('canContinue', false, [`No catalog magnetic has ${requestedWindings} windings (the catalog has ${available.join(', ')}).`]);
                     return;
                 }
 
@@ -288,7 +288,7 @@ export default {
                         'excitation — define or derive every winding waveform before searching.');
                     this.catalogStore.advises = [];
                     this.catalogStore.advisesKey = "";
-                    this.$emit('canContinue', false);
+                    this.$emit('canContinue', false, ['An operating point has a winding without excitation: define or derive every winding waveform before searching.']);
                     return;
                 }
 
@@ -304,10 +304,15 @@ export default {
                     this.catalogStore.advises.push(datum);
                 });
                 this.catalogStore.advisesKey = this.buildAdvisesKey();
-                this.$emit('canContinue', this.catalogStore.advises.length > 0);
+                if (this.catalogStore.advises.length > 0) {
+                    this.$emit('canContinue', true);
+                }
+                else {
+                    this.$emit('canContinue', false, ['No catalog magnetic meets the requirements.']);
+                }
             } catch (error) {
                 console.error('[CatalogAdviser] WASM advise failed:', error);
-                this.$emit('canContinue', false);
+                this.$emit('canContinue', false, [`The catalog search failed: ${error?.message ?? String(error)}`]);
             } finally {
                 this.loading = false;
                 this.hasSearched = true;
