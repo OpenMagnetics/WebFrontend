@@ -7,6 +7,7 @@ import WaveformOutput from './Output/WaveformOutput.vue'
 import WaveformSimpleOutput from './Output/WaveformSimpleOutput.vue'
 import WaveformCombinedOutput from './Output/WaveformCombinedOutput.vue'
 import WaveformInputColumnNames from './Input/WaveformInputColumnNames.vue'
+import InfoTip from '../../InfoTip.vue'
 import { roundWithDecimals, deepCopy, combinedStyle } from 'WebSharedComponents/assets/js/utils.js'
 
 import { defaultOperatingPointExcitation, defaultPrecision, defaultSinusoidalNumberPoints } from 'WebSharedComponents/assets/js/defaults.js'
@@ -170,15 +171,25 @@ export default {
 <template>
     <div class="opc-container">
         <div class="op-editor-head" data-op-col="head">
-            <h2 class="op-editor-title" data-op-title :data-cy="dataTestLabel + '-current-title'">{{masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].name}}</h2>
-            <p class="op-editor-sub">Imported waveforms of {{ masStore.mas.magnetic.coil.functionalDescription[currentWindingIndex].name }}</p>
+            <h2 class="op-editor-title" data-op-title :data-cy="dataTestLabel + '-current-title'">{{masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].name}}
+                <InfoTip
+                    label="About this editor"
+                    :text="'Imported waveforms of ' + masStore.mas.magnetic.coil.functionalDescription[currentWindingIndex].name + ' in this operating point, read from the circuit simulator file.'"
+                    :data-cy="dataTestLabel + '-editor-info'"
+                />
+            </h2>
         </div>
         <div class="op-editor-grid">
             <div class="opc-col op-editor-inputs" data-op-col="inputs">
 
                 <section class="opc-card op-cell">
-                    <h3 class="opc-card-header op-cell-title" data-op-title>Imported file columns</h3>
-                    <p class="op-cell-note">Pick the columns of the file that hold this winding's time, current and voltage.</p>
+                    <h3 class="opc-card-header op-cell-title" data-op-title>Imported file columns
+                        <InfoTip
+                            label="About the file columns"
+                            text="Pick the columns of the file that hold this winding's time, current and voltage."
+                            :data-cy="dataTestLabel + '-columns-info'"
+                        />
+                    </h3>
                     <div class="opc-card-body op-cell-body">
                         <WaveformInputColumnNames
                             :modelValue="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex]"

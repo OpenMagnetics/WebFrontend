@@ -15,6 +15,7 @@ import ArrayDimensionWithTolerance from './DesignRequirements/ArrayDimensionWith
 import ElementFromList from 'WebSharedComponents/DataInput/ElementFromList.vue'
 import ArrayElementFromList from './DesignRequirements/ArrayElementFromList.vue'
 import Name from './DesignRequirements/Name.vue'
+import InfoTip from '../InfoTip.vue'
 </script>
 <script>
 export default {
@@ -317,9 +318,11 @@ export default {
             <aside class="dr-list-panel" aria-label="Requirements">
                 <div class="dr-rail-head">
                     <h2 class="dr-rail-title">Requirements</h2>
-                    <p class="dr-rail-count">
-                        {{ activeOptionalCount }} of {{ optionalRequirements.length }} optional added
-                    </p>
+                    <InfoTip
+                        label="About requirements"
+                        :text="'Locked requirements are always set. Add optional ones to narrow the designs the advisers propose. ' + activeOptionalCount + ' of ' + optionalRequirements.length + ' optional added.'"
+                        :data-cy="dataTestLabel + '-requirements-info'"
+                    />
                 </div>
                 <div class="dr-group"
                      v-for="group in requirementGroups"
@@ -718,7 +721,7 @@ export default {
                 </section>
 
                 <p v-if="activeOptionalCount == 0" class="dr-cell dr-cell-wide dr-sheet-hint">
-                    Only the required values are set. Add a requirement from the list to narrow the designs the advisers propose.
+                    Add optional requirements from the list.
                 </p>
                 </div>
             </div>
@@ -777,6 +780,9 @@ export default {
 }
 
 .dr-rail-head {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
     padding: 0 0.25rem 0.85rem;
     margin-bottom: 0.35rem;
     border-bottom: 1px solid var(--dr-rule);
@@ -790,12 +796,6 @@ export default {
     color: var(--p-primary);
 }
 
-.dr-rail-count {
-    margin: 0.2rem 0 0;
-    font-size: 0.82rem;
-    color: var(--dr-muted);
-    font-variant-numeric: tabular-nums;
-}
 
 .dr-group {
     padding-top: 0.7rem;

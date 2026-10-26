@@ -10,7 +10,7 @@ const headerSteps = [
     {
         element: '[data-cy="Header-new-magnetic-toggle"]',
         title: 'Start a new design',
-        description: 'Start a new magnetic here. Already know your converter topology? Choose "From a converter topology" and pick it (Flyback, LLC, Buck, PFC, …): it computes the waveforms and sizes the magnetic from a handful of electrical parameters, the fastest way to a design. Otherwise choose "Manual design" to enter your requirements and operating points yourself.',
+        description: 'Start a new magnetic here. Know your converter? Under "From a converter topology", open its family and pick it (Flyback, LLC, Buck, PFC, …), or choose "See all topologies…" to browse them as tiles: the operating points are computed from a few electrical values. "Manual design" and "Manual common-mode choke" let you enter requirements and operating points yourself.',
     },
     {
         element: 'a.dropdown-toggle.om-nav-btn',
@@ -34,6 +34,13 @@ const headerSteps = [
     },
 ];
 
+// The footer's Engine log: where a step's blocking reasons and the engine's warnings go.
+const engineLogStep = {
+    element: '[data-cy="EngineLogPanel-toggle"]',
+    title: 'Engine log',
+    description: 'Why a step cannot continue, and the engine\'s warnings (for example core material data used outside its range), are listed here. The number counts the warnings and errors; the button turns yellow or red when there are any.',
+};
+
 export const TOURS = {
 
     header: {
@@ -55,7 +62,7 @@ export const TOURS = {
             {
                 element: '[data-cy="Header-new-magnetic-toggle"]',
                 title: 'Pick your converter',
-                description: 'The fastest way to a design: open New Magnetic, choose "From a converter topology" and pick your converter (Flyback, LLC, Buck, PFC, …). It computes the waveforms and sizes the magnetic from a handful of electrical parameters. The same converters are listed further down this page. Prefer to enter everything yourself? Choose "Manual design".',
+                description: 'The fastest way to a design: open New Magnetic and pick your converter under "From a converter topology" (Flyback, LLC, Buck, PFC, …), or "See all topologies…" for the full list. The operating points are computed from a few electrical values. Prefer to enter everything yourself? Choose "Manual design".',
             },
             ...headerSteps.slice(1),
         ],
@@ -97,14 +104,29 @@ export const TOURS = {
                 description: 'Tell OpenMagnetics what your magnetic must achieve. Only a few fields are mandatory; everything else is optional and helps narrow down better designs.',
             },
             {
-                element: '.dr-list-panel',
-                title: 'The requirements list',
-                description: 'The highlighted entries (number of windings, magnetizing inductance, turns ratios) are always required. Press + on any other requirement — insulation, operating temperature, dimensions, … — to add it to your spec.',
+                element: '[data-cy="MagneticTool-topology-hint"]',
+                title: 'Know your converter?',
+                description: 'Start from its topology instead: you enter the converter\'s specification and the operating points are computed for you. Close the banner to keep designing by hand.',
+            },
+            {
+                element: '.dr-group-required',
+                title: 'Required',
+                description: 'Every design needs these. A lock pin marks them; Turns Ratios applies once there are two or more windings.',
+            },
+            {
+                element: '.dr-req-off',
+                title: 'Add a requirement',
+                description: 'A hollow pin is available. Press Add to put it on the sheet: insulation, temperature, dimensions, … Each one narrows the designs the advisers propose.',
+            },
+            {
+                element: '.dr-req-on',
+                title: 'Added requirements',
+                description: 'A filled pin is on the sheet. Remove takes it off again. The info icon by the list title counts how many you have added.',
             },
             {
                 element: '.dr-detail-panel',
-                title: 'Fill in the values',
-                description: 'Enter the values for each requirement here. Most fields accept a minimum, nominal and maximum, so you can specify tolerances instead of single numbers.',
+                title: 'The specification sheet',
+                description: 'One cell per requirement. Most values take a minimum, nominal and maximum, so you can give a tolerance instead of a single number.',
             },
             {
                 element: '.storyline-panel',
@@ -114,8 +136,9 @@ export const TOURS = {
             {
                 element: '[data-cy="magnetic-synthesis-next-tool-button"]',
                 title: 'Continue when ready',
-                description: 'Once the required fields are filled in, press here to move on to the Operating Points.',
+                description: 'Once the required values are set, move on to the operating points. While something is missing the button reads "Fix Errors".',
             },
+            engineLogStep,
         ],
     },
 
@@ -128,7 +151,17 @@ export const TOURS = {
             {
                 element: '.op-panel',
                 title: 'Your operating points',
-                description: 'Each operating point holds a switching frequency, an ambient temperature and one excitation per winding. Add one per operating condition you want the design verified against.',
+                description: 'Each card is one operating point: its name, ambient temperature and cooling. Add one per condition the design must meet (nominal, worst case, …).',
+            },
+            {
+                element: '.op-card-pending',
+                title: 'Choose a source first',
+                description: 'A new operating point needs a source for its waveforms. Pick one on the right.',
+            },
+            {
+                element: '.op-winding-row',
+                title: 'Windings and their status',
+                description: 'The dot is filled once a winding\'s waveforms are defined. The eye opens a winding in the editor; with two windings, the arrows copy the other winding\'s waveforms through the turns ratio.',
             },
             {
                 element: '[data-cy$="-add-operating-point-button"]',
@@ -136,15 +169,56 @@ export const TOURS = {
                 description: 'Add as many operating points as you need — the advisers check every design against all of them.',
             },
             {
-                element: ['.op-container .md\\:col-10', '.op-container [class*="col-10"]'],
-                title: 'Define the excitation',
-                description: 'Pick how you want to define each winding: choose a waveform shape (sinusoidal, triangular, rectangular, or fully custom points), then set frequency and amplitudes. The other windings are reflected automatically through the turns ratios.',
+                element: '.op-issues',
+                title: 'Things to finish',
+                description: 'What still blocks Continue. Open it to read each reason; the same reasons are in the Engine log.',
+            },
+            {
+                element: '.op-mode-buttons',
+                title: 'Where the waveforms come from',
+                description: 'Import a circuit simulator export or CSV file, set the waveforms by hand, or type a list of harmonics. Hover or focus an option for details.',
+            },
+            {
+                element: '.opm-drive',
+                title: 'Define the current or the voltage',
+                description: 'An inductor\'s current and voltage are tied by v = L·di/dt: you set one and the other is derived, marked "Derived". Choose here which one you set.',
+            },
+            {
+                element: '.opm-card-current',
+                title: 'Shape and values',
+                description: 'Pick a waveform shape and set its peak to peak and offset; frequency and duty cycle are in Common parameters. You can also drag the points on the chart.',
+            },
+            {
+                element: '.oph-card-current',
+                title: 'Harmonics',
+                description: 'One row per harmonic, with its frequency and amplitude. The DC row and the fundamental are always there; add or remove rows below them.',
+            },
+            {
+                element: '.opc-card',
+                title: 'Map the file\'s columns',
+                description: 'Pick which columns of the imported file hold this winding\'s time, current and voltage.',
+            },
+            {
+                element: '.op-editor-results .op-chart',
+                title: 'Waveforms and spectrum',
+                description: 'Current and voltage over one period, with their harmonics below. Hover the chart for values.',
+            },
+            {
+                element: ['.op-outputs-pair', '.wso-card'],
+                title: 'The figures',
+                description: 'Duty cycle, peak to peak, offset, effective frequency, peak, RMS and THD of each signal, with current and voltage row for row. In simple output mode (Settings) only the RMS values and power are shown.',
+            },
+            {
+                element: '.wco-card',
+                title: 'Power',
+                description: 'Instantaneous and RMS power of this winding, from its current and voltage together.',
             },
             {
                 element: '[data-cy="magnetic-synthesis-next-tool-button"]',
                 title: 'Continue when ready',
                 description: 'When every winding of every operating point is defined, continue to choose your design tool.',
             },
+            engineLogStep,
         ],
     },
 
@@ -192,10 +266,16 @@ export const TOURS = {
                 description: 'Press here to generate the designs. Each result card shows the key figures (losses, temperature, dimensions) so you can compare at a glance.',
             },
             {
+                element: '[data-cy$="-score-bars"]',
+                title: 'Score by criterion',
+                description: 'Each bar is one criterion\'s score out of 100, so you can see where a candidate wins or loses. Hover a bar to see what it measures; the total in points is at the top of the card.',
+            },
+            {
                 element: '[data-cy$="-load-and-go-to-builder-button"]',
                 title: 'Refine a candidate',
                 description: 'Like one of the designs? Open it in the Magnetic Builder to inspect and fine-tune every detail.',
             },
+            engineLogStep,
         ],
     },
 
@@ -262,6 +342,7 @@ export const TOURS = {
                 title: 'Continue when ready',
                 description: 'Happy with the magnetic? Continue to the summary to get the full specifications report.',
             },
+            engineLogStep,
         ],
     },
 
@@ -293,12 +374,22 @@ export const TOURS = {
             {
                 element: '[data-cy="WizardsLanding-search"]',
                 title: 'Find your converter',
-                description: 'Type part of a name (flyback, LLC, PFC…) to filter the topologies.',
+                description: 'Type part of a name (flyback, LLC, PFC…) or of the magnetic (transformer, coupled inductor…) to filter the topologies.',
+            },
+            {
+                element: '.tl-families',
+                title: 'Filter by family',
+                description: 'Show one converter family at a time; the number is how many converters it has. Press it again, or All, to see every family.',
             },
             {
                 element: '.tl-tile',
                 title: 'Pick your topology',
-                description: 'Each tile is a guided flow for one converter type; its screen sketches the current in that converter\'s magnetic. Inside, you can let OpenMagnetics design the magnetic for you, or verify a design you already have.',
+                description: 'Each tile is a guided flow for one converter. Its screen sketches the current in the converter\'s magnetic, and the badge names the magnetic you get. Hover or focus a tile for a one-line description; the info icon by each family name describes the family.',
+            },
+            {
+                element: '[data-cy="WizardsLanding-manual-design"]',
+                title: 'Not listed?',
+                description: 'Design the magnetic by hand instead: enter its requirements and operating points yourself.',
             },
             {
                 element: '[data-cy="Header-new-magnetic-toggle"]',

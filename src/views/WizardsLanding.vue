@@ -1,6 +1,7 @@
 <script setup>
 import Header from '../components/Header.vue'
 import Footer from '../components/Footer.vue'
+import InfoTip from '../components/InfoTip.vue'
 </script>
 
 <script>
@@ -17,6 +18,7 @@ export default {
     data() {
         return {
             searchQuery: '',
+            manualDesignHint: 'Design the magnetic manually: enter its requirements and operating points yourself.',
             selectedFamily: null,
             scopeWidth: SCOPE_WIDTH,
             scopeHeight: SCOPE_HEIGHT,
@@ -84,11 +86,15 @@ export default {
         <Header />
         <main role="main" class="main tl-page flex-grow-1">
             <header class="tl-hero">
-                <h1 class="tl-title">Which converter is your magnetic for?</h1>
-                <p class="tl-lede">
-                    Pick it, enter its electrical specification, and the operating points are computed for you.
-                    The magnetic is then sized from them.
-                </p>
+                <h1 class="tl-title">
+                    Which converter is your magnetic for?
+                    <InfoTip
+                        class="tl-title-tip"
+                        label="About converter topologies"
+                        text="Pick it, enter its electrical specification, and the operating points are computed for you. The magnetic is then sized from them."
+                        data-cy="WizardsLanding-info"
+                    />
+                </h1>
 
                 <label class="tl-search">
                     <i class="pi pi-search" aria-hidden="true"></i>
@@ -134,17 +140,26 @@ export default {
             >
                 <div class="tl-group-head">
                     <h2 class="tl-group-title">{{ group.label }}</h2>
-                    <p class="tl-group-desc">{{ group.description }}</p>
+                    <InfoTip :label="'About ' + group.label" :text="group.description" />
                 </div>
 
                 <div class="tl-grid">
-                    <button
+                    <!-- The tile's description is its tooltip, on hover (the wrapper) and on
+                         keyboard focus (the button), at the same spot; aria-describedby gives it
+                         to screen readers. -->
+                    <div
                         v-for="(item, index) in group.items"
                         :key="item.cy"
+                        class="tl-tile-wrap"
+                        v-tooltip.bottom="item.description"
+                    >
+                    <button
                         type="button"
                         class="tl-tile"
                         :data-cy="cardCy(item)"
                         :style="{ '--tl-order': index }"
+                        :aria-describedby="cardCy(item) + '-desc'"
+                        v-tooltip.bottom.focus="item.description"
                         @click="onWizard(item)"
                     >
                         <span class="tl-scope" aria-hidden="true">
@@ -163,9 +178,10 @@ export default {
                         <span class="tl-tile-body">
                             <span class="tl-tile-name">{{ item.title }}</span>
                             <span class="tl-tile-magnetic">{{ item.magnetic }}</span>
-                            <span class="tl-tile-desc">{{ item.description }}</span>
                         </span>
                     </button>
+                    <span :id="cardCy(item) + '-desc'" class="tl-tile-desc">{{ item.description }}</span>
+                    </div>
                 </div>
             </section>
 
@@ -177,11 +193,20 @@ export default {
             <aside class="tl-manual">
                 <div>
                     <h2 class="tl-manual-title">Converter not listed, or you already have the operating points?</h2>
-                    <p class="tl-manual-text">Design the magnetic manually: enter its requirements and operating points yourself.</p>
                 </div>
-                <button type="button" class="tl-manual-btn" data-cy="WizardsLanding-manual-design" @click="onManualDesign">
-                    <i class="pi pi-pencil" aria-hidden="true"></i>Manual design
-                </button>
+                <span class="tl-manual-btn-wrap" v-tooltip.top="manualDesignHint">
+                    <button
+                        type="button"
+                        class="tl-manual-btn"
+                        data-cy="WizardsLanding-manual-design"
+                        aria-describedby="WizardsLanding-manual-design-desc"
+                        v-tooltip.top.focus="manualDesignHint"
+                        @click="onManualDesign"
+                    >
+                        <i class="pi pi-pencil" aria-hidden="true"></i>Manual design
+                    </button>
+                    <span id="WizardsLanding-manual-design-desc" class="tl-tile-desc">{{ manualDesignHint }}</span>
+                </span>
             </aside>
         </main>
         <Footer class="mt-auto"/>
@@ -222,15 +247,13 @@ export default {
     line-height: 1.08;
     letter-spacing: -0.025em;
     color: var(--tl-text);
-    margin: 0 0 0.9rem;
+    margin: 0 0 1.5rem;
 }
 
-.tl-lede {
-    font-size: 1.08rem;
-    line-height: 1.55;
-    color: var(--tl-muted);
-    max-width: 40rem;
-    margin: 0 0 1.75rem;
+.tl-title-tip {
+    margin-left: 0.15em;
+    font-size: 1rem;
+    letter-spacing: 0;
 }
 
 .tl-search {
@@ -333,11 +356,6 @@ export default {
     margin: 0;
 }
 
-.tl-group-desc {
-    font-size: 0.92rem;
-    color: var(--tl-muted);
-    margin: 0;
-}
 
 .tl-grid {
     display: grid;
@@ -468,10 +486,33 @@ export default {
     border: 1px solid rgba(var(--p-primary-rgb), 0.4);
 }
 
+/* Descriptions are tooltips; this copy is read by screen readers and kept for search. */
 .tl-tile-desc {
-    font-size: 0.85rem;
-    line-height: 1.45;
-    color: var(--tl-muted);
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+.tl-tile-wrap {
+    position: relative;
+    display: flex;
+    min-width: 0;
+}
+
+.tl-tile-wrap > .tl-tile {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.tl-manual-btn-wrap {
+    position: relative;
+    display: inline-flex;
 }
 
 /* ---------- Empty state and manual design ---------- */
@@ -506,15 +547,10 @@ export default {
 .tl-manual-title {
     font-size: 1.05rem;
     font-weight: 650;
-    margin: 0 0 0.25rem;
+    margin: 0;
     color: var(--tl-text);
 }
 
-.tl-manual-text {
-    margin: 0;
-    font-size: 0.92rem;
-    color: var(--tl-muted);
-}
 
 .tl-manual-btn {
     display: inline-flex;

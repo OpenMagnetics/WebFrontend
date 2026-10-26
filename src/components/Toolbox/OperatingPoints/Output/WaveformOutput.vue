@@ -113,142 +113,123 @@ export default {
 </script>
 
 <template>
-    <div class="wo-card" :class="signalDescriptor === 'current' ? 'wo-card-current' : 'wo-card-voltage'">
-        <h3 class="wo-header" data-op-title>{{ signalDescriptor === 'current' ? 'Current' : 'Voltage' }} outputs</h3>
+    <!-- One signal's figures as an instrument readout: label | value | unit, one row per
+         figure. Current and voltage list the same figures in the same order, so side by side
+         (.op-outputs-pair) their rows line up for comparison. -->
+    <section class="wo-card" :class="signalDescriptor === 'current' ? 'wo-card-current' : 'wo-card-voltage'">
+        <h3 class="wo-header" data-op-title>
+            <span class="wo-swatch" aria-hidden="true"></span>{{ signalDescriptor === 'current' ? 'Current' : 'Voltage' }}
+        </h3>
         <div v-if="!isDataReady" class="wo-loading">
             <i class="pi pi-refresh fa-spin fa-spin"></i>
             <span>Calculating…</span>
         </div>
         <div v-else class="wo-body">
-        <DimensionReadOnly 
-            :name="'dutyCycle'"
-            :unit="null"
-            :altUnit="'%'"
-            :visualScale="100"
-            :dataTestLabel="dataTestLabel + '-DutyCycle'"
-            :value="removeTrailingZeroes(modelValue[signalDescriptor].processed.dutyCycle)"
-            :min="minimumMaximumScalePerParameter.percentage.min"
-            :max="minimumMaximumScalePerParameter.percentage.max"
-            :disableShortenLabels="true"
-            :valueFontSize="$styleStore.operatingPoints.inputFontSize"
-            :labelFontSize="$styleStore.operatingPoints.inputTitleFontSize"
-            :labelBgColor="$styleStore.operatingPoints.inputLabelBgColor"
-            :valueBgColor="$styleStore.operatingPoints.inputValueBgColor"
-            :textColor="$styleStore.operatingPoints.inputTextColor"
-        />
-        <DimensionReadOnly 
-            :name="'peakToPeak'"
-            :unit="signalDescriptor == 'current'? 'A' : 'V'"
-            :unitMin="0.001"
-            :unitMax="1000"
-            :dataTestLabel="dataTestLabel + '-PeakToPeak'"
-            :value="modelValue[signalDescriptor].processed.peakToPeak"
-            :min="minimumMaximumScalePerParameter[signalDescriptor].min"
-            :max="minimumMaximumScalePerParameter[signalDescriptor].max"
-            :disableShortenLabels="true"
-            :valueFontSize="$styleStore.operatingPoints.inputFontSize"
-            :labelFontSize="$styleStore.operatingPoints.inputTitleFontSize"
-            :labelBgColor="$styleStore.operatingPoints.inputLabelBgColor"
-            :valueBgColor="$styleStore.operatingPoints.inputValueBgColor"
-            :textColor="$styleStore.operatingPoints.inputTextColor"
-        />
-        <DimensionReadOnly 
-            :name="'offset'"
-            :unit="signalDescriptor == 'current'? 'A' : 'V'"
-            :unitMin="0.001"
-            :unitMax="1000"
-            :dataTestLabel="dataTestLabel + '-Offset'"
-            :value="modelValue[signalDescriptor].processed.offset"
-            :min="minimumMaximumScalePerParameter[signalDescriptor].min"
-            :max="minimumMaximumScalePerParameter[signalDescriptor].max"
-            :disableShortenLabels="true"
-            :valueFontSize="$styleStore.operatingPoints.inputFontSize"
-            :labelFontSize="$styleStore.operatingPoints.inputTitleFontSize"
-            :labelBgColor="$styleStore.operatingPoints.inputLabelBgColor"
-            :valueBgColor="$styleStore.operatingPoints.inputValueBgColor"
-            :textColor="$styleStore.operatingPoints.inputTextColor"
-        />
-        <DimensionReadOnly 
-            :name="'effectiveFrequency'"
-            :unit="'Hz'"
-            :dataTestLabel="dataTestLabel + '-EffectiveFrequency'"
-            :value="modelValue[signalDescriptor].processed.effectiveFrequency"
-            :min="minimumMaximumScalePerParameter.frequency.min"
-            :max="minimumMaximumScalePerParameter.frequency.max"
-            :disableShortenLabels="true"
-            :valueFontSize="$styleStore.operatingPoints.inputFontSize"
-            :labelFontSize="$styleStore.operatingPoints.inputTitleFontSize"
-            :labelBgColor="$styleStore.operatingPoints.inputLabelBgColor"
-            :valueBgColor="$styleStore.operatingPoints.inputValueBgColor"
-            :textColor="$styleStore.operatingPoints.inputTextColor"
-        />
-        <DimensionReadOnly 
-            :name="'peak'"
-            :unit="signalDescriptor == 'current'? 'A' : 'V'"
-            :unitMin="0.001"
-            :unitMax="1000"
-            :dataTestLabel="dataTestLabel + '-Peak'"
-            :value="modelValue[signalDescriptor].processed.peak"
-            :min="minimumMaximumScalePerParameter[signalDescriptor].min"
-            :max="minimumMaximumScalePerParameter[signalDescriptor].max"
-            :disableShortenLabels="true"
-            :valueFontSize="$styleStore.operatingPoints.inputFontSize"
-            :labelFontSize="$styleStore.operatingPoints.inputTitleFontSize"
-            :labelBgColor="$styleStore.operatingPoints.inputLabelBgColor"
-            :valueBgColor="$styleStore.operatingPoints.inputValueBgColor"
-            :textColor="$styleStore.operatingPoints.inputTextColor"
-        />
-        <DimensionReadOnly 
-            :name="'rms'"
-            :unit="signalDescriptor == 'current'? 'A' : 'V'"
-            :unitMin="0.001"
-            :unitMax="1000"
-            :dataTestLabel="dataTestLabel + '-Rms'"
-            :value="modelValue[signalDescriptor].processed.rms"
-            :min="minimumMaximumScalePerParameter[signalDescriptor].min"
-            :max="minimumMaximumScalePerParameter[signalDescriptor].max"
-            :disableShortenLabels="true"
-            :valueFontSize="$styleStore.operatingPoints.inputFontSize"
-            :labelFontSize="$styleStore.operatingPoints.inputTitleFontSize"
-            :labelBgColor="$styleStore.operatingPoints.inputLabelBgColor"
-            :valueBgColor="$styleStore.operatingPoints.inputValueBgColor"
-            :textColor="$styleStore.operatingPoints.inputTextColor"
-        />
-        <DimensionReadOnly 
-            :name="'thd'"
-            :unit="null"
-            :altUnit="'%'"
-            :visualScale="100"
-            :dataTestLabel="dataTestLabel + '-Thd'"
-            :value="modelValue[signalDescriptor].processed.thd"
-            :min="minimumMaximumScalePerParameter.percentage.min"
-            :max="minimumMaximumScalePerParameter.percentage.max"
-            :disableShortenLabels="true"
-            :valueFontSize="$styleStore.operatingPoints.inputFontSize"
-            :labelFontSize="$styleStore.operatingPoints.inputTitleFontSize"
-            :labelBgColor="$styleStore.operatingPoints.inputLabelBgColor"
-            :valueBgColor="$styleStore.operatingPoints.inputValueBgColor"
-            :textColor="$styleStore.operatingPoints.inputTextColor"
-        />
+            <DimensionReadOnly
+                :name="'dutyCycle'"
+                :replaceTitle="'Duty cycle'"
+                :unit="null"
+                :altUnit="'%'"
+                :visualScale="100"
+                :dataTestLabel="dataTestLabel + '-DutyCycle'"
+                :value="removeTrailingZeroes(modelValue[signalDescriptor].processed.dutyCycle)"
+                :min="minimumMaximumScalePerParameter.percentage.min"
+                :max="minimumMaximumScalePerParameter.percentage.max"
+                :disableShortenLabels="true"
+                :useTitleCase="false"
+            />
+            <DimensionReadOnly
+                :name="'peakToPeak'"
+                :replaceTitle="'Peak to peak'"
+                :unit="signalDescriptor == 'current'? 'A' : 'V'"
+                :unitMin="0.001"
+                :unitMax="1000"
+                :dataTestLabel="dataTestLabel + '-PeakToPeak'"
+                :value="modelValue[signalDescriptor].processed.peakToPeak"
+                :min="minimumMaximumScalePerParameter[signalDescriptor].min"
+                :max="minimumMaximumScalePerParameter[signalDescriptor].max"
+                :disableShortenLabels="true"
+                :useTitleCase="false"
+            />
+            <DimensionReadOnly
+                :name="'offset'"
+                :replaceTitle="'Offset'"
+                :unit="signalDescriptor == 'current'? 'A' : 'V'"
+                :unitMin="0.001"
+                :unitMax="1000"
+                :dataTestLabel="dataTestLabel + '-Offset'"
+                :value="modelValue[signalDescriptor].processed.offset"
+                :min="minimumMaximumScalePerParameter[signalDescriptor].min"
+                :max="minimumMaximumScalePerParameter[signalDescriptor].max"
+                :disableShortenLabels="true"
+                :useTitleCase="false"
+            />
+            <DimensionReadOnly
+                :name="'effectiveFrequency'"
+                :replaceTitle="'Effective frequency'"
+                :unit="'Hz'"
+                :dataTestLabel="dataTestLabel + '-EffectiveFrequency'"
+                :value="modelValue[signalDescriptor].processed.effectiveFrequency"
+                :min="minimumMaximumScalePerParameter.frequency.min"
+                :max="minimumMaximumScalePerParameter.frequency.max"
+                :disableShortenLabels="true"
+                :useTitleCase="false"
+            />
+            <DimensionReadOnly
+                :name="'peak'"
+                :replaceTitle="'Peak'"
+                :unit="signalDescriptor == 'current'? 'A' : 'V'"
+                :unitMin="0.001"
+                :unitMax="1000"
+                :dataTestLabel="dataTestLabel + '-Peak'"
+                :value="modelValue[signalDescriptor].processed.peak"
+                :min="minimumMaximumScalePerParameter[signalDescriptor].min"
+                :max="minimumMaximumScalePerParameter[signalDescriptor].max"
+                :disableShortenLabels="true"
+                :useTitleCase="false"
+            />
+            <DimensionReadOnly
+                :name="'rms'"
+                :replaceTitle="'RMS'"
+                :unit="signalDescriptor == 'current'? 'A' : 'V'"
+                :unitMin="0.001"
+                :unitMax="1000"
+                :dataTestLabel="dataTestLabel + '-Rms'"
+                :value="modelValue[signalDescriptor].processed.rms"
+                :min="minimumMaximumScalePerParameter[signalDescriptor].min"
+                :max="minimumMaximumScalePerParameter[signalDescriptor].max"
+                :disableShortenLabels="true"
+                :useTitleCase="false"
+            />
+            <DimensionReadOnly
+                :name="'thd'"
+                :replaceTitle="'THD'"
+                :unit="null"
+                :altUnit="'%'"
+                :visualScale="100"
+                :dataTestLabel="dataTestLabel + '-Thd'"
+                :value="modelValue[signalDescriptor].processed.thd"
+                :min="minimumMaximumScalePerParameter.percentage.min"
+                :max="minimumMaximumScalePerParameter.percentage.max"
+                :disableShortenLabels="true"
+                :useTitleCase="false"
+            />
         </div>
-
-    </div>
+    </section>
 </template>
 
 <style scoped>
-/* A results cell on the sheet: a top rule and a title in the signal's colour. */
+/* A readout panel: a quiet surface, the signal's colour as a slim top edge and a swatch
+   matching the chart legend. */
 .wo-card {
     --op-cell-colour: var(--p-primary);
+    min-width: 0;
     margin: 0.5rem 0 0;
-    padding: 0.6rem 0 0.4rem;
-    border-top: 1px solid var(--op-rule);
-}
-.wo-header {
-    margin: 0 0 0.3rem;
-    font-size: 0.98rem;
-    font-weight: 650;
-    line-height: 1.3;
-    color: var(--op-cell-colour);
+    padding: 0.5rem 0.75rem 0.35rem;
+    background: rgba(var(--p-black-rgb), 0.2);
+    border: 1px solid var(--op-rule);
+    border-top: 2px solid var(--op-cell-colour);
+    border-radius: 8px;
 }
 .wo-card-current {
     --op-cell-colour: var(--p-warning);
@@ -256,43 +237,74 @@ export default {
 .wo-card-voltage {
     --op-cell-colour: var(--p-info);
 }
+.wo-header {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    margin: 0 0 0.2rem;
+    font-size: 0.86rem;
+    font-weight: 650;
+    line-height: 1.3;
+    color: var(--op-text);
+}
+.wo-swatch {
+    flex: 0 0 auto;
+    width: 0.55rem;
+    height: 0.55rem;
+    border-radius: 50%;
+    background: var(--op-cell-colour);
+}
 
-/* Read-only rows: label left in the muted label colour, value right. The
-   shared component sets sizes and colours inline, hence !important. */
+/* Rows: label | value (right-aligned, tabular figures) | unit (fixed column), so every
+   value ends on the same line whatever its unit. The shared component sets sizes and
+   colours inline, hence !important. */
 .wo-body :deep(.dim-ro-container) {
-    padding: 0.28rem 0 !important;
+    padding: 0 !important;
     margin: 0 !important;
 }
+.wo-body :deep(.dim-ro-container + .dim-ro-container) {
+    border-top: 1px solid var(--op-rule);
+}
 .wo-body :deep(.dim-ro-row) {
-    display: flex !important;
-    align-items: baseline !important;
-    gap: 0.75rem;
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) auto 2.3rem;
+    align-items: baseline;
+    column-gap: 0.4rem;
+    padding: 0.28rem 0;
+}
+.wo-body :deep(.dim-ro-value-wrap),
+.wo-body :deep(.dim-ro-value-row) {
+    display: contents;
 }
 .wo-body :deep(.dim-ro-label) {
-    flex: 1 1 auto !important;
     min-width: 0;
     margin: 0 !important;
     padding: 0 !important;
-    font-size: 0.86rem !important;
+    font-size: 0.82rem !important;
     font-weight: 500 !important;
     color: var(--op-muted) !important;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
-.wo-body :deep(.dim-ro-value-wrap) {
-    flex: 0 0 auto !important;
-    width: auto !important;
-    max-width: none !important;
-    padding: 0 !important;
+.wo-body :deep(.dim-ro-value) {
+    font-size: 0.92rem !important;
+    font-weight: 600;
+    line-height: 1.25rem !important;
+    color: var(--op-text) !important;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
 }
-.wo-body :deep(.dim-ro-value),
 .wo-body :deep(.dim-ro-alt-unit),
 .wo-body :deep(.dim-ro-unit),
-.wo-body :deep(.dim-ro-unit *) {
-    font-size: 0.9rem !important;
-    color: var(--op-text) !important;
-    font-variant-numeric: tabular-nums;
+.wo-body :deep(.dim-ro-unit .p-select-label) {
+    justify-self: start;
+    height: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    font-size: 0.78rem !important;
+    line-height: 1.25rem !important;
+    color: var(--op-muted) !important;
 }
 
 .wo-loading {

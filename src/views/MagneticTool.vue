@@ -93,6 +93,7 @@ export default {
             currentStoryline,
             masStore: useMasStore(),
             topologyHintDismissed,
+            topologyHintDetail: "Enter the converter's specification and the operating points are computed for you.",
         }
     },
     computed: {
@@ -130,12 +131,20 @@ export default {
                 <div v-if="showTopologyHint" class="om-topology-hint" data-cy="MagneticTool-topology-hint">
                     <i class="pi pi-lightbulb om-topology-hint-icon"></i>
                     <span class="om-topology-hint-text">
-                        Designing for a known converter (flyback, buck, LLC, PFC…)? Start from its topology instead:
-                        enter the converter's specification and the operating points are computed for you.
+                        Designing for a known converter (flyback, buck, LLC, PFC…)?
                     </span>
-                    <button class="om-topology-hint-btn" data-cy="MagneticTool-topology-hint-start" @click="onStartFromTopology">
-                        Start from a converter topology
-                    </button>
+                    <span class="om-topology-hint-btn-wrap" v-tooltip.bottom="topologyHintDetail">
+                        <button
+                            class="om-topology-hint-btn"
+                            data-cy="MagneticTool-topology-hint-start"
+                            aria-describedby="MagneticTool-topology-hint-detail"
+                            v-tooltip.bottom.focus="topologyHintDetail"
+                            @click="onStartFromTopology"
+                        >
+                            Start from a converter topology
+                        </button>
+                        <span id="MagneticTool-topology-hint-detail" class="om-topology-hint-detail">{{ topologyHintDetail }}</span>
+                    </span>
                     <button class="om-topology-hint-close" data-cy="MagneticTool-topology-hint-dismiss" title="Dismiss" @click="dismissTopologyHint">
                         <i class="pi pi-times"></i>
                     </button>
@@ -173,6 +182,24 @@ export default {
 
 .om-topology-hint-text {
     flex: 1;
+}
+
+.om-topology-hint-btn-wrap {
+    position: relative;
+    display: inline-flex;
+}
+
+/* The banner's detail is the button's tooltip; this copy is for screen readers. */
+.om-topology-hint-detail {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
 }
 
 .om-topology-hint-btn {

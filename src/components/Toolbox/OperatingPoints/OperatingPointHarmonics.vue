@@ -7,6 +7,7 @@ import WaveformFourier from './Output/WaveformFourier.vue'
 import WaveformOutput from './Output/WaveformOutput.vue'
 import WaveformSimpleOutput from './Output/WaveformSimpleOutput.vue'
 import WaveformCombinedOutput from './Output/WaveformCombinedOutput.vue'
+import InfoTip from '../../InfoTip.vue'
 import { formatFrequency, removeTrailingZeroes, roundWithDecimals, deepCopy, ordinalSuffixOf } from 'WebSharedComponents/assets/js/utils.js'
 import Dimension from 'WebSharedComponents/DataInput/Dimension.vue'
 import { combinedStyle, combinedClass } from 'WebSharedComponents/assets/js/utils.js'
@@ -381,8 +382,13 @@ export default {
 <template>
     <div class="oph-container">
         <div class="op-editor-head" data-op-col="head">
-            <h2 class="op-editor-title" data-op-title :data-cy="dataTestLabel + '-current-title'">{{masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].name}}</h2>
-            <p class="op-editor-sub">Harmonics of {{ masStore.mas.magnetic.coil.functionalDescription[currentWindingIndex].name }}</p>
+            <h2 class="op-editor-title" data-op-title :data-cy="dataTestLabel + '-current-title'">{{masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].name}}
+                <InfoTip
+                    label="About this editor"
+                    :text="'Harmonics of ' + masStore.mas.magnetic.coil.functionalDescription[currentWindingIndex].name + ' in this operating point: the frequency and amplitude of each harmonic of the current and the voltage.'"
+                    :data-cy="dataTestLabel + '-editor-info'"
+                />
+            </h2>
         </div>
         <div class="op-editor-grid">
             <div class="oph-col op-editor-inputs" data-op-col="inputs">

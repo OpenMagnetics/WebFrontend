@@ -2,6 +2,7 @@
 import { useMasStore } from '../../stores/mas'
 import { useTaskQueueStore } from '../../stores/taskQueue'
 import OperatingPoint from './OperatingPoints/OperatingPoint.vue'
+import InfoTip from '../InfoTip.vue'
 import { roundWithDecimals, deepCopy, combinedStyle } from 'WebSharedComponents/assets/js/utils.js'
 
 import Dimension from 'WebSharedComponents/DataInput/Dimension.vue'
@@ -456,7 +457,11 @@ export default {
             <aside class="op-panel" data-op-col="list">
                 <div class="op-header">
                     <h2 class="op-header-title" data-op-title>Operating points</h2>
-                    <p class="op-header-count">{{ operatingPointsCountText }}</p>
+                    <InfoTip
+                        label="About operating points"
+                        :text="'The load conditions the magnetic must work in, with the current and voltage of each winding. A dot per winding shows whether its waveforms are defined. Now: ' + operatingPointsCountText + '.'"
+                        :data-cy="dataTestLabel + '-operating-points-info'"
+                    />
                 </div>
                 <div class="op-card" :class="{ 'op-card-active': operatingPointIndex == currentOperatingPointIndex }" v-for="(operatingPoint, operatingPointIndex) in masStore.mas.inputs.operatingPoints" :key="operatingPointIndex">
 
@@ -732,6 +737,9 @@ export default {
 }
 
 .op-header {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
     padding: 0 0.25rem 0.85rem;
     margin-bottom: 0.5rem;
     border-bottom: 1px solid var(--op-rule);
@@ -744,13 +752,6 @@ export default {
     letter-spacing: -0.01em;
     line-height: 1.3;
     color: var(--p-primary);
-}
-
-.op-header-count {
-    margin: 0.2rem 0 0;
-    font-size: 0.82rem;
-    color: var(--op-muted);
-    font-variant-numeric: tabular-nums;
 }
 
 .op-card {

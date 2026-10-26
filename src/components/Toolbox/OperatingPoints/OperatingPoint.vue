@@ -62,6 +62,12 @@ export default {
             loadedFile: "",
             importErrorMessage: "",
             importErrorTimeout: null,
+            // Each source's explanation, shown as the option's tooltip.
+            modeHints: {
+                csv: 'Upload a .csv, .txt or .tsv file with time, current and voltage columns, then pick which column is which.',
+                manual: 'Choose a waveform shape for current and voltage and set its frequency, duty cycle, peak to peak and offset.',
+                harmonics: 'Enter the frequency and amplitude of each harmonic of the current and the voltage.',
+            },
         }
     },
     computed: {
@@ -252,12 +258,14 @@ export default {
                 </p>
                 <div class="op-mode-buttons">
                     <input type="file" id="OperatingPoint-CircuitSimulator-upload-input" ref="OperatingPoint-CircuitSimulator-upload-ref" accept=".csv,.txt,.tsv,text/csv,text/plain" @change="onCircuitSimulatorFileTypeSelected" style="display:none" hidden/>
+                    <div v-if="enableManual" class="op-mode-option" v-tooltip.top="modeHints.csv">
                     <button
-                        v-if="enableManual"
                         data-cy="OperatingPoint-source-Manual-button"
                         type="button"
                         @click="onCircuitSimulatorTypeSelected"
                         class="op-mode-btn"
+                        :aria-describedby="'OperatingPoint-mode-hint-csv'"
+                        v-tooltip.top.focus="modeHints.csv"
                     >
                         <!-- Sampled points: what a simulator export is. -->
                         <svg class="op-mode-glyph" viewBox="0 0 64 32" aria-hidden="true">
@@ -271,16 +279,19 @@ export default {
                         </svg>
                         <span class="op-mode-text">
                             <span class="op-mode-name">Circuit simulator export file or CSV</span>
-                            <span class="op-mode-hint">Upload a .csv, .txt or .tsv file with time, current and voltage columns, then pick which column is which.</span>
+                            <span id="OperatingPoint-mode-hint-csv" class="op-mode-hint" aria-hidden="true">{{ modeHints.csv }}</span>
                         </span>
                         <i class="pi pi-upload op-mode-go"></i>
                     </button>
+                    </div>
+                    <div v-if="enableCircuitSimulatorImport" class="op-mode-option" v-tooltip.top="modeHints.manual">
                     <button
-                        v-if="enableCircuitSimulatorImport"
                         data-cy="OperatingPoint-source-Manual-button"
                         type="button"
                         @click="onManualTypeSelected"
                         class="op-mode-btn"
+                        :aria-describedby="'OperatingPoint-mode-hint-manual'"
+                        v-tooltip.top.focus="modeHints.manual"
                     >
                         <!-- A drawn waveform: triangle current over a square voltage. -->
                         <svg class="op-mode-glyph" viewBox="0 0 64 32" aria-hidden="true">
@@ -290,16 +301,19 @@ export default {
                         </svg>
                         <span class="op-mode-text">
                             <span class="op-mode-name">I will define it manually</span>
-                            <span class="op-mode-hint">Choose a waveform shape for current and voltage and set its frequency, duty cycle, peak to peak and offset.</span>
+                            <span id="OperatingPoint-mode-hint-manual" class="op-mode-hint" aria-hidden="true">{{ modeHints.manual }}</span>
                         </span>
                         <i class="pi pi-chevron-right op-mode-go"></i>
                     </button>
+                    </div>
+                    <div v-if="enableHarmonicsList" class="op-mode-option" v-tooltip.top="modeHints.harmonics">
                     <button
-                        v-if="enableHarmonicsList"
                         data-cy="OperatingPoint-source-Manual-button"
                         type="button"
                         @click="onHarmoncsTypeSelected"
                         class="op-mode-btn"
+                        :aria-describedby="'OperatingPoint-mode-hint-harmonics'"
+                        v-tooltip.top.focus="modeHints.harmonics"
                     >
                         <!-- A spectrum: a fundamental and falling harmonics. -->
                         <svg class="op-mode-glyph" viewBox="0 0 64 32" aria-hidden="true">
@@ -308,10 +322,11 @@ export default {
                         </svg>
                         <span class="op-mode-text">
                             <span class="op-mode-name">I want to introduce a list of harmonics</span>
-                            <span class="op-mode-hint">Enter the frequency and amplitude of each harmonic of the current and the voltage.</span>
+                            <span id="OperatingPoint-mode-hint-harmonics" class="op-mode-hint" aria-hidden="true">{{ modeHints.harmonics }}</span>
                         </span>
                         <i class="pi pi-chevron-right op-mode-go"></i>
                     </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -408,7 +423,7 @@ button.op-mode-btn {
     transition: background 0.15s;
 }
 
-button.op-mode-btn + button.op-mode-btn {
+.op-mode-option + .op-mode-option {
     border-top: 1px solid var(--op-rule);
 }
 
@@ -473,10 +488,17 @@ path.op-glyph-current {
     color: var(--op-text);
 }
 
+/* The hint is the option's tooltip; this copy is its aria-describedby text. */
 .op-mode-hint {
-    font-size: 0.84rem;
-    line-height: 1.4;
-    color: var(--op-muted);
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
 }
 
 .op-mode-go {

@@ -9,6 +9,7 @@ import WaveformInputCommon from './Input/WaveformInputCommon.vue'
 import WaveformSimpleOutput from './Output/WaveformSimpleOutput.vue'
 import WaveformOutput from './Output/WaveformOutput.vue'
 import WaveformCombinedOutput from './Output/WaveformCombinedOutput.vue'
+import InfoTip from '../../InfoTip.vue'
 import { roundWithDecimals, deepCopy, combinedStyle } from 'WebSharedComponents/assets/js/utils.js'
 
 import { defaultOperatingPointExcitation, defaultPrecision, defaultSinusoidalNumberPoints } from 'WebSharedComponents/assets/js/defaults.js'
@@ -300,14 +301,20 @@ export default {
 <template>
     <div class="opm-container">
         <div v-if="masStore.mas.inputs.operatingPoints.length > currentOperatingPointIndex" class="op-editor-head" data-op-col="head">
-            <h2 class="op-editor-title" data-op-title data-cy="dataTestLabel + '-current-title'">{{masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].name}}</h2>
-            <p class="op-editor-sub">Waveforms of {{ masStore.mas.magnetic.coil.functionalDescription[currentWindingIndex].name }}</p>
+            <h2 class="op-editor-title" data-op-title data-cy="dataTestLabel + '-current-title'">{{masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].name}}
+                <InfoTip
+                    label="About this editor"
+                    :text="'Waveforms of ' + masStore.mas.magnetic.coil.functionalDescription[currentWindingIndex].name + ' in this operating point: set each signal\'s shape and values, or drag the chart.'"
+                    :data-cy="dataTestLabel + '-editor-info'"
+                />
+            </h2>
         </div>
         <div class="op-editor-grid">
             <div v-if="masStore.mas.inputs.operatingPoints.length > currentOperatingPointIndex" class="opm-col op-editor-inputs" data-op-col="inputs">
 
                 <section v-if="isInductor" class="opm-drive op-cell">
-                    <h3 class="op-cell-title" data-op-title :id="dataTestLabel + '-drive-title'">What you define</h3>
+                    <h3 class="op-cell-title opm-visually-hidden" :id="dataTestLabel + '-drive-title'">What you define</h3>
+                    <div class="opm-drive-row">
                     <div class="opm-drive-options" role="group" :aria-labelledby="dataTestLabel + '-drive-title'">
                         <button type="button" class="opm-drive-option opm-drive-current" :data-cy="dataTestLabel + '-drive-with-current'"
                             :aria-pressed="inductorDrivenBy == 'current' ? 'true' : 'false'"
@@ -316,10 +323,12 @@ export default {
                             :aria-pressed="inductorDrivenBy == 'voltage' ? 'true' : 'false'"
                             @click="setInductorDrivenBy('voltage')">Define the voltage</button>
                     </div>
-                    <p class="op-cell-note opm-drive-note">
-                        An inductor's current and voltage are tied by v = L di/dt, so the
-                        {{ inductorDrivenBy == 'current' ? 'voltage' : 'current' }} is derived from the {{ inductorDrivenBy }} you set.
-                    </p>
+                    <InfoTip
+                        label="Why only one signal"
+                        :text="'An inductor\'s current and voltage are tied by v = L·di/dt, so the ' + (inductorDrivenBy == 'current' ? 'voltage' : 'current') + ' is derived from the ' + inductorDrivenBy + ' you set.'"
+                        :data-cy="dataTestLabel + '-drive-info'"
+                    />
+                    </div>
                 </section>
 
                 <section class="opm-card op-cell">
@@ -338,8 +347,8 @@ export default {
                 <section class="opm-card opm-card-current op-cell op-cell-current" :class="{ 'op-cell-derived': currentIsDerived }">
                     <h3 class="opm-card-header op-cell-title" data-op-title>
                         <span :data-cy="dataTestLabel + '-current-card-title'">Current through {{ currentWindingName }}</span>
+                        <InfoTip v-if="currentIsDerived" class="opm-derived-badge" label="Derived" text="Derived from the voltage you set.">Derived</InfoTip>
                     </h3>
-                    <p v-if="currentIsDerived" class="opm-derived-note op-cell-note">Derived from the voltage you set.</p>
                     <div class="opm-card-body op-cell-body">
                         <WaveformInput
                             v-if="masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex].current != null && masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex].current.processed && masStore.mas.inputs.operatingPoints[currentOperatingPointIndex].excitationsPerWinding[currentWindingIndex].current.processed.label != 'custom'"
@@ -371,12 +380,14 @@ export default {
                 <section class="opm-card opm-card-voltage op-cell op-cell-voltage" :class="{ 'op-cell-derived': voltageIsDerived }">
                     <h3 class="opm-card-header op-cell-title" data-op-title>
                         <span :data-cy="dataTestLabel + '-voltage-card-title'">Voltage across {{ currentWindingName }}'s terminals</span>
+                        <InfoTip v-if="voltageIsDerived" class="opm-derived-badge" label="Derived" text="Derived from the current you set.">Derived</InfoTip>
                     </h3>
-                    <p v-if="voltageIsDerived" class="opm-derived-note op-cell-note">Derived from the current you set.</p>
-                    <p v-else-if="isInductor" class="opm-derived-note op-cell-note">
-                        You are setting the voltage; the current is derived from it.
-                        <button type="button" class="opm-link-btn op-cell-link"
-                            @click="setInductorDrivenBy('current')">Go back to setting the current</button>
+                    <p v-if="!voltageIsDerived && isInductor" class="opm-derived-note op-cell-note">
+                        <span class="opm-link-wrap" v-tooltip.top="'You are setting the voltage; the current is derived from it.'">
+                            <button type="button" class="opm-link-btn op-cell-link"
+                                v-tooltip.top.focus="'You are setting the voltage; the current is derived from it.'"
+                                @click="setInductorDrivenBy('current')">Go back to setting the current</button>
+                        </span>
                     </p>
                     <div class="opm-card-body op-cell-body">
                         <WaveformInput
@@ -524,7 +535,33 @@ button.opm-drive-option:focus-visible {
     outline: 2px solid var(--p-primary);
     outline-offset: -2px;
 }
-.opm-drive-note {
+.opm-drive-row {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+}
+.opm-drive-row .opm-drive-options {
     margin: 0;
+}
+/* The derived signal's status, next to its card title; its tooltip says from what. */
+.opm-derived-badge {
+    margin-left: 0.4rem;
+    vertical-align: 0.1em;
+}
+.opm-derived-note .op-cell-link {
+    margin-left: 0;
+}
+/* Names the inductor's choice for screen readers (aria-labelledby); the two options say it on screen. */
+.opm-visually-hidden {
+    position: absolute !important;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px !important;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
 }
 </style>

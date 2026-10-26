@@ -86,107 +86,113 @@ export default {
 </script>
 
 <template>
-    <div class="wco-card">
-        <h3 class="wco-header" data-op-title>Power</h3>
+    <!-- Power, from the current and voltage together: one strip under the two readouts. -->
+    <section class="wco-card">
+        <h3 class="wco-header" data-op-title>
+            <span class="wco-swatch" aria-hidden="true"></span>Power
+        </h3>
         <div class="wco-body">
-            <DimensionReadOnly class="col-6"
+            <DimensionReadOnly
                 :name="'instantaneousPower'"
+                :replaceTitle="'Instantaneous'"
                 :unit="'W'"
                 :dataTestLabel="dataTestLabel + '-InstantaneousPower'"
                 :value="localData.instantaneousPower"
                 :min="minimumMaximumScalePerParameter.power.min"
                 :max="minimumMaximumScalePerParameter.power.max"
                 :disableShortenLabels="true"
-                :valueFontSize="$styleStore.operatingPoints.inputFontSize"
-                :labelFontSize="$styleStore.operatingPoints.inputTitleFontSize"
-                :labelBgColor="$styleStore.operatingPoints.inputLabelBgColor"
-                :valueBgColor="$styleStore.operatingPoints.inputValueBgColor"
-                :textColor="$styleStore.operatingPoints.inputTextColor"
             />
-            <DimensionReadOnly class="col-6"
+            <DimensionReadOnly
                 :name="'rmsPower'"
+                :replaceTitle="'RMS'"
                 :unit="'W'"
                 :dataTestLabel="dataTestLabel + '-rmsPower'"
                 :value="localData.rmsPower"
                 :min="minimumMaximumScalePerParameter.power.min"
                 :max="minimumMaximumScalePerParameter.power.max"
                 :disableShortenLabels="true"
-                :valueFontSize="$styleStore.operatingPoints.inputFontSize"
-                :labelFontSize="$styleStore.operatingPoints.inputTitleFontSize"
-                :labelBgColor="$styleStore.operatingPoints.inputLabelBgColor"
-                :valueBgColor="$styleStore.operatingPoints.inputValueBgColor"
-                :textColor="$styleStore.operatingPoints.inputTextColor"
             />
         </div>
-    </div>
+    </section>
 </template>
 
 <style scoped>
-/* A results cell on the sheet: a top rule and a title in the signal's colour. */
+/* A strip: the title, then the two power figures inline, each label | value | unit. */
 .wco-card {
-    --op-cell-colour: var(--p-primary);
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.25rem 1.25rem;
     margin: 0.5rem 0 0;
-    padding: 0.6rem 0 0.4rem;
-    border-top: 1px solid var(--op-rule);
+    padding: 0.45rem 0.75rem;
+    background: rgba(var(--p-black-rgb), 0.2);
+    border: 1px solid var(--op-rule);
+    border-left: 2px solid var(--p-primary);
+    border-radius: 8px;
 }
 .wco-header {
-    margin: 0 0 0.3rem;
-    font-size: 0.98rem;
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    margin: 0;
+    font-size: 0.86rem;
     font-weight: 650;
     line-height: 1.3;
-    color: var(--op-cell-colour);
+    color: var(--op-text);
+}
+.wco-swatch {
+    flex: 0 0 auto;
+    width: 0.55rem;
+    height: 0.55rem;
+    border-radius: 50%;
+    background: var(--p-primary);
 }
 .wco-body {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    column-gap: 1.5rem;
-}
-.wco-body :deep(.col-6) {
-    width: auto !important;
-    max-width: none !important;
-    flex: none !important;
-}
-@container op-editor (max-width: 40rem) {
-    .wco-body {
-        grid-template-columns: minmax(0, 1fr);
-    }
+    display: flex;
+    flex: 1 1 auto;
+    flex-wrap: wrap;
+    gap: 0.1rem 1.5rem;
+    min-width: 0;
 }
 
-/* Read-only rows: label left in the muted label colour, value right. The
-   shared component sets sizes and colours inline, hence !important. */
+/* The shared component sets sizes and colours inline, hence !important. */
 .wco-body :deep(.dim-ro-container) {
-    padding: 0.28rem 0 !important;
+    width: auto !important;
     margin: 0 !important;
+    padding: 0 !important;
 }
 .wco-body :deep(.dim-ro-row) {
     display: flex !important;
-    align-items: baseline !important;
-    gap: 0.75rem;
+    align-items: baseline;
+    gap: 0.4rem;
+}
+.wco-body :deep(.dim-ro-value-wrap),
+.wco-body :deep(.dim-ro-value-row) {
+    display: contents;
 }
 .wco-body :deep(.dim-ro-label) {
-    flex: 1 1 auto !important;
-    min-width: 0;
+    flex: 0 0 auto !important;
     margin: 0 !important;
     padding: 0 !important;
-    font-size: 0.86rem !important;
+    font-size: 0.82rem !important;
     font-weight: 500 !important;
     color: var(--op-muted) !important;
     white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
 }
-.wco-body :deep(.dim-ro-value-wrap) {
-    flex: 0 0 auto !important;
-    width: auto !important;
-    max-width: none !important;
-    padding: 0 !important;
-}
-.wco-body :deep(.dim-ro-value),
-.wco-body :deep(.dim-ro-alt-unit),
-.wco-body :deep(.dim-ro-unit),
-.wco-body :deep(.dim-ro-unit *) {
-    font-size: 0.9rem !important;
+.wco-body :deep(.dim-ro-value) {
+    font-size: 0.92rem !important;
+    font-weight: 600;
+    line-height: 1.25rem !important;
     color: var(--op-text) !important;
     font-variant-numeric: tabular-nums;
+}
+.wco-body :deep(.dim-ro-unit),
+.wco-body :deep(.dim-ro-unit .p-select-label) {
+    height: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    font-size: 0.78rem !important;
+    line-height: 1.25rem !important;
+    color: var(--op-muted) !important;
 }
 </style>

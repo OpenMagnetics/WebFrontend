@@ -657,13 +657,18 @@ export default {
     gap: 0.3rem;
 }
 
+/* Names the bar list for screen readers (aria-labelledby); the bar labels say it on screen,
+   and each bar's tooltip says what its criterion measures. */
 .advise-score-caption {
-    color: var(--ao-text-color-secondary);
-    font-size: 0.65rem;
-    font-weight: 600;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    text-align: center;
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
 }
 
 .advise-score-columns {

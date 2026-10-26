@@ -177,15 +177,18 @@ export default {
 </script>
 
 <template>
-    <div class="wso-card">
+    <!-- Three headline figures as small tiles: label on top, value and unit below, each
+         tile edged in its signal's colour (current, voltage, power). -->
+    <section class="wso-card">
         <h3 class="wso-header" data-op-title>Quick stats</h3>
         <div class="wso-body">
             <!-- processed.rms only exists once MKF has standardized the signal.
                  Render nothing until then — never a placeholder number. -->
             <DimensionReadOnly
                 v-if="modelValue.current?.processed?.rms != null"
+                class="wso-tile wso-tile-current"
                 :name="'rms'"
-                :replaceTitle="'Current RMS:'"
+                :replaceTitle="'Current RMS'"
                 :unit="'A'"
                 :unitMin="0.001"
                 :unitMax="1000"
@@ -194,16 +197,12 @@ export default {
                 :min="minimumMaximumScalePerParameter.current.min"
                 :max="minimumMaximumScalePerParameter.current.max"
                 :disableShortenLabels="true"
-                :valueFontSize="$styleStore.operatingPoints.inputTitleFontSize"
-                :labelFontSize="$styleStore.operatingPoints.inputTitleFontSize"
-                :labelBgColor="$styleStore.operatingPoints.inputLabelBgColor"
-                :valueBgColor="$styleStore.operatingPoints.inputValueBgColor"
-                :textColor="$styleStore.operatingPoints.inputTextColor"
             />
             <DimensionReadOnly
                 v-if="modelValue.voltage?.processed?.rms != null"
+                class="wso-tile wso-tile-voltage"
                 :name="'rms'"
-                :replaceTitle="'Voltage RMS:'"
+                :replaceTitle="'Voltage RMS'"
                 :unit="'V'"
                 :unitMin="0.001"
                 :unitMax="1000"
@@ -212,85 +211,99 @@ export default {
                 :min="minimumMaximumScalePerParameter.voltage.min"
                 :max="minimumMaximumScalePerParameter.voltage.max"
                 :disableShortenLabels="true"
-                :valueFontSize="$styleStore.operatingPoints.inputTitleFontSize"
-                :labelFontSize="$styleStore.operatingPoints.inputTitleFontSize"
-                :labelBgColor="$styleStore.operatingPoints.inputLabelBgColor"
-                :valueBgColor="$styleStore.operatingPoints.inputValueBgColor"
-                :textColor="$styleStore.operatingPoints.inputTextColor"
             />
             <DimensionReadOnly
+                class="wso-tile wso-tile-power"
                 :name="'rms'"
-                :replaceTitle="'Power:'"
+                :replaceTitle="'Power'"
                 :unit="'W'"
                 :dataTestLabel="dataTestLabel + '-Rms'"
                 :value="localData.rmsPower"
                 :min="minimumMaximumScalePerParameter.power.min"
                 :max="minimumMaximumScalePerParameter.power.max"
                 :disableShortenLabels="true"
-                :valueFontSize="$styleStore.operatingPoints.inputTitleFontSize"
-                :labelFontSize="$styleStore.operatingPoints.inputTitleFontSize"
-                :labelBgColor="$styleStore.operatingPoints.inputLabelBgColor"
-                :valueBgColor="$styleStore.operatingPoints.inputValueBgColor"
-                :textColor="$styleStore.operatingPoints.inputTextColor"
             />
         </div>
-    </div>
+    </section>
 </template>
 
 <style scoped>
-/* A results cell on the sheet: a top rule and a title in the signal's colour. */
 .wso-card {
-    --op-cell-colour: var(--p-primary);
     margin: 0.5rem 0 0;
-    padding: 0.6rem 0 0.4rem;
-    border-top: 1px solid var(--op-rule);
+    padding: 0;
 }
 .wso-header {
-    margin: 0 0 0.3rem;
-    font-size: 0.98rem;
+    margin: 0 0 0.35rem;
+    font-size: 0.86rem;
     font-weight: 650;
     line-height: 1.3;
-    color: var(--op-cell-colour);
+    color: var(--op-text);
+}
+.wso-body {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(8.5rem, 1fr));
+    gap: 0.5rem;
 }
 
-/* Read-only rows: label left in the muted label colour, value right. The
-   shared component sets sizes and colours inline, hence !important. */
-.wso-body :deep(.dim-ro-container) {
-    padding: 0.28rem 0 !important;
+/* A tile: label on top, the value large in tabular figures with its unit beside it.
+   The shared component sets sizes and colours inline, hence !important. */
+.wso-body :deep(.wso-tile) {
+    --wso-colour: var(--p-primary);
+    min-width: 0;
     margin: 0 !important;
+    padding: 0.45rem 0.7rem 0.5rem !important;
+    background: rgba(var(--p-black-rgb), 0.2);
+    border: 1px solid var(--op-rule);
+    border-left: 2px solid var(--wso-colour);
+    border-radius: 8px;
+}
+.wso-body :deep(.wso-tile-current) {
+    --wso-colour: var(--p-warning);
+}
+.wso-body :deep(.wso-tile-voltage) {
+    --wso-colour: var(--p-info);
 }
 .wso-body :deep(.dim-ro-row) {
-    display: flex !important;
-    align-items: baseline !important;
-    gap: 0.75rem;
+    display: grid !important;
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-areas: "label label" "value unit";
+    align-items: baseline;
+    column-gap: 0.3rem;
+    row-gap: 0.1rem;
+}
+.wso-body :deep(.dim-ro-value-wrap),
+.wso-body :deep(.dim-ro-value-row) {
+    display: contents;
 }
 .wso-body :deep(.dim-ro-label) {
-    flex: 1 1 auto !important;
+    grid-area: label;
     min-width: 0;
     margin: 0 !important;
     padding: 0 !important;
-    font-size: 0.86rem !important;
+    font-size: 0.78rem !important;
     font-weight: 500 !important;
     color: var(--op-muted) !important;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
-.wso-body :deep(.dim-ro-value-wrap) {
-    flex: 0 0 auto !important;
-    width: auto !important;
-    max-width: none !important;
-    padding: 0 !important;
-}
-.wso-body :deep(.dim-ro-value),
-.wso-body :deep(.dim-ro-alt-unit),
-.wso-body :deep(.dim-ro-unit),
-.wso-body :deep(.dim-ro-unit *) {
-    font-size: 0.9rem !important;
+.wso-body :deep(.dim-ro-value) {
+    grid-area: value;
+    font-size: 1.15rem !important;
+    font-weight: 650;
+    line-height: 1.5rem !important;
     color: var(--op-text) !important;
     font-variant-numeric: tabular-nums;
 }
-.wso-body {
-    max-width: 24rem;
+.wso-body :deep(.dim-ro-unit),
+.wso-body :deep(.dim-ro-unit .p-select-label) {
+    grid-area: unit;
+    justify-self: start;
+    height: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    font-size: 0.8rem !important;
+    line-height: 1.5rem !important;
+    color: var(--op-muted) !important;
 }
 </style>
