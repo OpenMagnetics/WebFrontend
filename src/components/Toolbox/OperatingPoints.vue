@@ -219,7 +219,8 @@ export default {
                 const cooling = operatingPoint?.conditions?.cooling;
                 this.coolingUi[operatingPointIndex] = {
                     coolingMode: this.coolingModeOf(operatingPointIndex),
-                    airVelocity: (Array.isArray(cooling?.velocity) && cooling.velocity.length > 0) ? cooling.velocity[0] : 2,
+                    // MAS cooling velocity is a 2- or 3-component vector; MKF uses its magnitude.
+                    airVelocity: (Array.isArray(cooling?.velocity) && cooling.velocity.length > 0) ? Math.hypot(...cooling.velocity) : 2,
                     thermalResistance: cooling?.thermalResistance != null ? cooling.thermalResistance : 10,
                 };
             });
@@ -232,7 +233,9 @@ export default {
                 conditions.cooling = {
                     fluid: 'air',
                     temperature: conditions.ambientTemperature,
-                    velocity: [ui.airVelocity],
+                    // The air speed as a vector (MAS: 2 or 3 components); MKF reads its magnitude,
+                    // so [speed, 0] carries exactly the speed the user entered.
+                    velocity: [ui.airVelocity, 0],
                 };
             }
             else if (ui.coolingMode == 'Heatsink') {
