@@ -6,6 +6,7 @@ import addFormats from 'ajv-formats'
 import masSchemaBundle from 'WebSharedComponents/assets/js/masSchemas.json'
 import { findOutdatedCoreMaterial } from './coreMaterialFreshness.js'
 import { useCoreMaterialNoticeStore } from '../stores/coreMaterialNotice.js'
+import { useRefusedCoreMaterialStore } from '/MagneticBuilder/src/stores/refusedCoreMaterial'
 import { useLoadCorrectionsStore } from '../stores/loadCorrections.js'
 import { reportNotice } from 'WebSharedComponents/assets/js/notices.js'
 import { engineUserSettingsSettled } from '../stores/engineDiagnostics.js'
@@ -871,6 +872,16 @@ export async function loadMasIntoApp(doc, { masStore, stateStore, userStore, tas
     }
     else if (outdatedCoreMaterial != null) {
         console.warn(`Imported MAS: the design's copy of core material '${outdatedCoreMaterial.name}' gives other core losses than the library's; the file's copy is kept`);
+    }
+
+    // The builder's info panels do not compute with a copy MKF refuses; they say it must be
+    // updated, until the design holds another material (the notice's update, or the user's pick).
+    const refusedCoreMaterial = useRefusedCoreMaterialStore();
+    if (outdatedCoreMaterial?.invalid != null) {
+        refusedCoreMaterial.set(masStore.$id, autocompletedMas.magnetic.core.functionalDescription.material, outdatedCoreMaterial.invalid);
+    }
+    else {
+        refusedCoreMaterial.clear(masStore.$id);
     }
 
     masStore.resetMas();
