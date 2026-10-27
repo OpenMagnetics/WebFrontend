@@ -39,7 +39,7 @@ test.describe('Menus survive a wall clock that steps back', () => {
         await page.waitForFunction(() => !window.location.pathname.includes('engine_loader'), null, { timeout: 60000 });
         const toggle = page.locator('#header_wrapper .nav-item.dropdown > .dropdown-toggle').first();
         await expect(toggle).toBeVisible({ timeout: 30000 });
-        const menu = page.locator('#header_wrapper .nav-item.dropdown').first().locator('.dropdown-menu');
+        const menu = page.locator('#header_wrapper .nav-item.dropdown').first().locator(':scope > .dropdown-menu');
 
         await stepClockBack(page);
         await toggle.click();
