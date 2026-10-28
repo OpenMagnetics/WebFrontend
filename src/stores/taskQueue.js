@@ -192,6 +192,25 @@ export const useTaskQueueStore = defineStore('taskQueue', {
             return JSON.parse(result);
         },
 
+        // The core material on its own: MKF's volumetric core losses (W/m3) of the material alone at one
+        // frequency, temperature and sinusoidal flux-density peak, with the material's own loss model.
+        // For the loader's verdict on a stored material copy when the design cannot tell (its
+        // computation stops before the material is reached). Nothing listens to this one either.
+        async calculateVolumetricLossesForMaterialCheck(material, temperature, magneticFluxDensityPeak, frequency) {
+            const mkf = await waitForMkf();
+            await mkf.ready;
+
+            const result = await mkf.sweep_volumetric_losses_over_frequency(JSON.stringify(clean(JSON.parse(JSON.stringify(material)))), temperature, magneticFluxDensityPeak, frequency, frequency, 1, '');
+            if (result.startsWith('Exception')) {
+                throw new Error(result);
+            }
+            const sweep = JSON.parse(result);
+            if (sweep.points?.length !== 1) {
+                throw new Error(`MKF returned ${sweep.points?.length} volumetric-loss points for one frequency`);
+            }
+            return sweep.points[0].value;
+        },
+
         coreTemperatureDependantParametersGotten(success = true, dataOrMessage = '') {
         },
 

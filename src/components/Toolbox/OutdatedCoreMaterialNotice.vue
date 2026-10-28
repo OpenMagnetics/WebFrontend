@@ -10,8 +10,8 @@ import { describeFailure } from 'WebSharedComponents/assets/js/noticeText.js'
 // losses (services/coreMaterialFreshness.js). Says so with MKF's numbers for both, and lets the
 // user switch to the library's copy or keep the file's (Alf, 2026-10-14: warn, keep the file's copy;
 // 2026-10-16: keep the rule, and offer one option that updates to the latest library data).
-// When MKF refuses the file's copy outright (MATERIAL_INVALID_PROPERTY), the notice gives MKF's
-// reason and offers the same update (2026-10-26). MKF's error code and full text are tooltips.
+// When MKF refuses the file's copy outright (one of MATERIAL_REFUSAL_CODES in
+// services/coreMaterialFreshness.js), the notice gives MKF's reason and offers the same update (2026-10-26). MKF's error code and full text are tooltips.
 export default {
     props: {
         dataTestLabel: {
