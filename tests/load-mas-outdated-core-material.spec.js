@@ -2,12 +2,14 @@
  * A stored design carries its own copy of its core material, taken from the library when it was
  * designed; the library is refitted since (a stored TP4A copy's Steinmetz ct(T) turns negative
  * above 149 C). Alf, 2026-10-14: warn, keep the file's copy, offer the library's, and only where
- * the results would change: MKF's core losses with the two copies differ by more than 10 % at an
- * operating point.
+ * the results would change: MKF's volumetric core losses with the two copies differ by more than
+ * 10 % (MKF's compare_core_material_volumetric_losses, at points of the library copy's own data;
+ * until 2026-10-28 the web compared the whole design's core losses per operating point).
  */
 import fs from 'node:fs';
 import { test, expect } from './_coverage.js';
 import { BASE_URL } from './utils.js';
+import { engineLogRecords } from './utils/index.js';
 
 const fixture = (name) => JSON.parse(fs.readFileSync(new URL(`./fixtures/${name}`, import.meta.url).pathname, 'utf8'));
 const NOTICE = '[data-cy$="-OutdatedCoreMaterial"]';
@@ -52,9 +54,12 @@ test.describe('Load MAS: a stored core material older than the library', () => {
     const notice = page.locator(NOTICE);
     await expect(notice).toBeVisible({ timeout: 120000 });
     await expect(notice).toContainText(material.name);
-    const text = await notice.innerText();
-    const [, fromFile, fromLibrary] = text.match(/([0-9.e+-]+) W with the file's copy, ([0-9.e+-]+) W with the library's/);
+    await expect(page.locator('[data-cy$="-OutdatedCoreMaterial-invalid"]')).toHaveCount(0);
+    const text = await page.locator('[data-cy$="-OutdatedCoreMaterial-largestDifference"]').innerText();
+    const [, fromFile, fromLibrary] = text.match(/([0-9.e+-]+) W\/m³ with the file's copy, ([0-9.e+-]+) W\/m³ with the library's/);
     expect(Number(fromFile) / Number(fromLibrary), 'twice the Steinmetz k, twice the losses').toBeCloseTo(2, 1);
+    // The material is judged on its own: nothing about it is an error or a warning in the log.
+    expect((await engineLogRecords(page, { source: 'Load' })).filter((r) => r.message.includes('core material'))).toEqual([]);
 
     // Kept until the user decides.
     let loaded = await storedMas(page);
@@ -72,8 +77,7 @@ test.describe('Load MAS: a stored core material older than the library', () => {
     await expect(page.locator('[data-cy$="-OutdatedCoreMaterial-useLibrary"]')).toHaveText(`Update ${material.name} to the latest library data`);
     await page.locator('[data-cy$="-OutdatedCoreMaterial-useLibrary"]').click();
     await expect(notice).toHaveCount(0);
-    await page.waitForFunction((expected) => (window.__builderCoreLosses ?? []).some((value) => Math.abs(value - expected) <= 0.01 * expected),
-      Number(fromLibrary), { timeout: 60000 });
+    await page.waitForFunction(() => (window.__builderCoreLosses ?? []).some((value) => value > 0), null, { timeout: 60000 });
     loaded = await storedMas(page);
     const library = await page.evaluate(async (name) => {
       const pinia = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia;
@@ -92,7 +96,31 @@ test.describe('Load MAS: a stored core material older than the library', () => {
       return pinia._s.get('mas').mas.magnetic.core.processedDescription != null;
     });
     await expect(page.locator(NOTICE)).toHaveCount(0);
-    expect(warnings.filter((text) => text.includes('gives other core losses than the library'))).toEqual([]);
+    expect(warnings.filter((text) => text.includes('differs from the library'))).toEqual([]);
+  });
+
+  test('LOADMAS-MATERIAL-3: a copy whose core losses stay within 10 % of the library\'s is not reported', async ({ page }) => {
+    test.setTimeout(300000);
+    const mas = fixture('default_two_winding_pq2715.json');
+    const material = mas.magnetic.core.functionalDescription.material;
+    // The stored copy's Steinmetz fit gives 5 % more than the library's: a copy that differs, but not
+    // in its results.
+    let ranges = 0;
+    for (const method of material.volumetricLosses.default) {
+      if (method?.method != 'steinmetz') continue;
+      for (const range of method.ranges) { range.k *= 1.05; ranges++; }
+    }
+    expect(ranges).toBeGreaterThan(0);
+    const warnings = [];
+    page.on('console', (message) => { if (message.type() === 'warning') warnings.push(message.text()); });
+    await load(page, mas, 'close_material_copy.json');
+    await page.waitForFunction(() => {
+      const pinia = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia;
+      return pinia._s.get('mas').mas.magnetic.core.processedDescription != null;
+    });
+    await expect(page.locator(NOTICE)).toHaveCount(0);
+    expect(warnings.filter((text) => text.includes('differs from the library'))).toEqual([]);
+    expect((await engineLogRecords(page, { source: 'Load' })).filter((r) => r.message.includes('core material'))).toEqual([]);
   });
 
   test('LOADMAS-MATERIAL-2: keeping the file\'s copy closes the notice and changes nothing', async ({ page }) => {

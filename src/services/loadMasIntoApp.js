@@ -4,14 +4,14 @@ import { WaveformLabel } from 'WebSharedComponents/assets/ts/MAS.ts'
 import Ajv2020 from 'ajv/dist/2020'
 import addFormats from 'ajv-formats'
 import masSchemaBundle from 'WebSharedComponents/assets/js/masSchemas.json'
-import { findOutdatedCoreMaterial } from './coreMaterialFreshness.js'
+import { findOutdatedCoreMaterial, invalidLossDataWarning } from './coreMaterialFreshness.js'
 import { useCoreMaterialNoticeStore } from '../stores/coreMaterialNotice.js'
 import { useRefusedCoreMaterialStore } from '/MagneticBuilder/src/stores/refusedCoreMaterial'
 import { useLoadCorrectionsStore } from '../stores/loadCorrections.js'
 import { reportNotice } from 'WebSharedComponents/assets/js/notices.js'
 import { describeFailure } from 'WebSharedComponents/assets/js/noticeText.js'
 import { describeMasSchemaErrors } from 'WebSharedComponents/assets/js/masSchemaText.js'
-import { engineUserSettingsSettled } from '../stores/engineDiagnostics.js'
+import { engineUserSettingsSettled, useEngineDiagnosticsStore } from '../stores/engineDiagnostics.js'
 import { stripNulls } from './masNulls.js'
 
 // Map every WaveformLabel enum value by its lowercase, space-free form so legacy
@@ -890,21 +890,24 @@ export async function loadMasIntoApp(doc, { masStore, stateStore, userStore, tas
     coreMaterialNotice.clear();
     const loadCorrections = useLoadCorrectionsStore();
     loadCorrections.clear();
-    // A copy that can be judged neither through the design nor on its own is an error in the
-    // Engine log; the design still opens, with no verdict on its material.
+    // The material is judged on its own by MKF (services/coreMaterialFreshness.js), whatever the
+    // rest of the design does. A copy MKF cannot judge at all (no temperature data), or a verdict the
+    // web has no rule for, is an error in the Engine log; the design still opens, with no verdict on
+    // its material.
     let outdatedCoreMaterial = null;
     try {
-        outdatedCoreMaterial = await findOutdatedCoreMaterial(autocompletedMas, { taskQueueStore, userStore });
+        outdatedCoreMaterial = await findOutdatedCoreMaterial(autocompletedMas, { taskQueueStore });
     } catch (error) {
-        console.error(`Imported MAS: the design's copy of its core material could not be checked: ${error.message}`);
-        reportNotice('ERROR', 'Load', `The design's copy of its core material could not be checked against the library: ${error.message}`);
+        console.error(`Imported MAS: the engine cannot judge the design's copy of its core material: ${error.message}`);
+        reportNotice('ERROR', 'Load', `The engine cannot judge the design's copy of its core material: ${error.message}`);
     }
     if (outdatedCoreMaterial?.invalid != null) {
         console.warn(`Imported MAS: MKF refuses the design's copy of core material '${outdatedCoreMaterial.name}' (${outdatedCoreMaterial.invalid}); the file's copy is kept until the user replaces it`);
     }
     else if (outdatedCoreMaterial != null) {
-        console.warn(`Imported MAS: the design's copy of core material '${outdatedCoreMaterial.name}' gives other core losses than the library's; the file's copy is kept`);
+        console.warn(`Imported MAS: the design's copy of core material '${outdatedCoreMaterial.name}' differs from the library's; the file's copy is kept`);
     }
+    const lossDataWarning = outdatedCoreMaterial == null ? null : invalidLossDataWarning(outdatedCoreMaterial);
 
     // The builder's info panels do not compute with a copy MKF refuses; they say it must be
     // updated, until the design holds another material (the notice's update, or the user's pick).
@@ -919,6 +922,9 @@ export async function loadMasIntoApp(doc, { masStore, stateStore, userStore, tas
     masStore.resetMas();
     masStore.mas = autocompletedMas;
     coreMaterialNotice.set(outdatedCoreMaterial);
+    if (lossDataWarning != null) {
+        useEngineDiagnosticsStore().addRecord('WARNING', 'Load', lossDataWarning.message, { code: lossDataWarning.code, detail: lossDataWarning.detail });
+    }
     loadCorrections.set(corrections);
     // What the load changed in the magnetic itself is reported in the Engine log; waveform
     // corrections are shown on the Op. Points page, next to their signal.

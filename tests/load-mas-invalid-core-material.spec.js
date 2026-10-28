@@ -3,7 +3,8 @@
  * material can have (MATERIAL_INVALID_PROPERTY: Fair-Rite 95's old record held a remanence of
  * 0.8 T at 100 C, above its 0.39 T saturation; MAS efa957f corrected it to 0.08 T), the design
  * cannot be computed. Alf, 2026-10-26: on load, the stale-material notice quotes MKF's message and
- * offers the library's copy; the file's copy is never replaced silently.
+ * offers the library's copy; the file's copy is never replaced silently. The verdict is MKF's
+ * check_core_material on the copy alone (since 2026-10-28).
  *
  * The fixture is tests/fixtures/pq2715_95_1mhz_outside_steinmetz_span.json as it was before its
  * material was refreshed to MAS efa957f: the same design with the old material-95 record.
@@ -11,6 +12,7 @@
 import fs from 'node:fs';
 import { test, expect } from './_coverage.js';
 import { BASE_URL } from './utils.js';
+import { engineLogRecords } from './utils/index.js';
 
 const fixture = (name) => JSON.parse(fs.readFileSync(new URL(`./fixtures/${name}`, import.meta.url).pathname, 'utf8'));
 const NOTICE = '[data-cy$="-OutdatedCoreMaterial"]';
@@ -54,6 +56,9 @@ test.describe('Load MAS: a stored core material MKF refuses', () => {
     await expect(invalid.locator('[data-cy$="-OutdatedCoreMaterial-reason"]')).toHaveAttribute('data-code', 'MATERIAL_INVALID_PROPERTY');
     await expect(invalid).toContainText('remanence');
     await expect(invalid).toContainText('is not below its saturation flux density');
+    // MKF judges the material on its own (check_core_material): a refusal, not an error about
+    // whether it could be judged.
+    expect(await engineLogRecords(page, { source: 'Load', level: 'ERROR' })).toEqual([]);
 
     // Kept until the user decides.
     let loaded = await storedMas(page);

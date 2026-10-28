@@ -177,38 +177,40 @@ export const useTaskQueueStore = defineStore('taskQueue', {
             return materialData;
         },
 
-        // Core losses of one operating point with the core exactly as given (its material included),
-        // for the loader's comparison of a stored material copy with the library's
-        // (services/coreMaterialFreshness.js). Not the builder's calculateCoreLosses: nothing listens
-        // to this one, so it never lands in the builder's displays.
-        async calculateCoreLossesForMaterialCheck(core, coil, inputs, modelsData, operatingPointIndex) {
+        // MKF's verdict on a core material alone, without a design (check_core_material): a material
+        // name in the library or a full CoreMaterial (e.g. the copy a stored design embeds). Returns
+        // {material, valid, problems: [{code, property, message, engineMessage, temperature, frequency}],
+        // coverage, notChecked}; each problem carries the error code the design calculation throws
+        // when it refuses the material there. For the loader's verdict on a stored material copy
+        // (services/coreMaterialFreshness.js); nothing listens to this one.
+        async checkCoreMaterial(material) {
             const mkf = await waitForMkf();
             await mkf.ready;
 
-            const result = await mkf.calculate_core_losses(JSON.stringify(core), JSON.stringify(coil), JSON.stringify(inputs), JSON.stringify(modelsData), operatingPointIndex);
+            const argument = typeof material === 'string' ? material : JSON.stringify(clean(JSON.parse(JSON.stringify(material))));
+            const result = await mkf.check_core_material(argument);
             if (result.startsWith('Exception')) {
                 throw new Error(result);
             }
             return JSON.parse(result);
         },
 
-        // The core material on its own: MKF's volumetric core losses (W/m3) of the material alone at one
-        // frequency, temperature and sinusoidal flux-density peak, with the material's own loss model.
-        // For the loader's verdict on a stored material copy when the design cannot tell (its
-        // computation stops before the material is reached). Nothing listens to this one either.
-        async calculateVolumetricLossesForMaterialCheck(material, temperature, magneticFluxDensityPeak, frequency) {
+        // Two copies of a core material priced with the design's core-loss path at points taken
+        // from the REFERENCE copy's own data (compare_core_material_volumetric_losses). Each is a
+        // material name in the library or a full CoreMaterial. Returns {reference, other,
+        // pointsSource, points: [{frequency, magneticFluxDensityPeak, temperature, reference:
+        // {volumetricLosses, code, message}, other: {...}, relativeDifference}],
+        // maximumAbsoluteRelativeDifference, pointsRefusedByReference, pointsRefusedByOther}.
+        async compareCoreMaterialVolumetricLosses(reference, other) {
             const mkf = await waitForMkf();
             await mkf.ready;
 
-            const result = await mkf.sweep_volumetric_losses_over_frequency(JSON.stringify(clean(JSON.parse(JSON.stringify(material)))), temperature, magneticFluxDensityPeak, frequency, frequency, 1, '');
+            const argument = (material) => typeof material === 'string' ? material : JSON.stringify(clean(JSON.parse(JSON.stringify(material))));
+            const result = await mkf.compare_core_material_volumetric_losses(argument(reference), argument(other));
             if (result.startsWith('Exception')) {
                 throw new Error(result);
             }
-            const sweep = JSON.parse(result);
-            if (sweep.points?.length !== 1) {
-                throw new Error(`MKF returned ${sweep.points?.length} volumetric-loss points for one frequency`);
-            }
-            return sweep.points[0].value;
+            return JSON.parse(result);
         },
 
         coreTemperatureDependantParametersGotten(success = true, dataOrMessage = '') {
