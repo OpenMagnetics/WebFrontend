@@ -121,15 +121,10 @@ export default {
       aux['diodeVoltageDrop'] = this.localData.diodeVoltageDrop;
       aux['efficiency'] = this.localData.efficiency;
       aux['converterType'] = this.converterName;
-      // currentRippleRatio is required by both regular and Advanced from_json
-      // (used for output current ripple even when desiredInductance is given)
-      aux['currentRippleRatio'] = this.localData.currentRippleRatio;
-      // maximumSwitchCurrent is an optional cap — send only when explicitly
-      // set (>0). Backend treats it as an additional constraint alongside
-      // the ripple-derived inductor design.
-      if (this.localData.maximumSwitchCurrent > 0) {
-        aux['maximumSwitchCurrent'] = this.localData.maximumSwitchCurrent;
-      }
+      // No currentRippleRatio / maximumSwitchCurrent: this wizard has no input for either, and
+      // Kirchhoff now receives both (kirchhoffRuntime.js). The hidden defaults (0.3, 3 A) would
+      // have reached the engine as if the user had entered them; a 3 A switch-current limit the
+      // user cannot see refuses any design above a few amps.
       if (this.localData.designLevel == 'I know the design I want') {
         aux['desiredInductance'] = this.localData.inductance;
         const auxDesiredDutyCycle = [];

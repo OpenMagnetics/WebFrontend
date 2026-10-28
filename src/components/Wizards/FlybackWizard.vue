@@ -108,7 +108,8 @@ export default {
       } else {
         if (this.localData.mosfetInputType == 'Its maximum duty cycle') { aux['maximumDutyCycle'] = this.localData.maximumDutyCycle; }
         else { aux['maximumDrainSourceVoltage'] = this.localData.maximumDrainSourceVoltage; }
-        aux['currentRippleRatio'] = this.localData.currentRippleRatio;
+        // No currentRippleRatio: this wizard has no input for it, and Kirchhoff now receives it
+        // (kirchhoffRuntime.js); the hidden default (1.0) would have resized every flyback.
       }
       const auxOp = { outputVoltages: [], outputCurrents: [] };
       this.localData.outputsParameters.forEach(e => { auxOp.outputVoltages.push(e.voltage); auxOp.outputCurrents.push(e.current); });

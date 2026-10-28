@@ -123,10 +123,11 @@ export default {
         aux['desiredDeadTime'] = [this.localData.deadTime];
         aux['desiredTurnsRatios'] = this.localData.outputsParameters.map(e => e.turnsRatio);
       } else {
+        // The other option ('The on-resistance of the MOSFET') has no ripple input: the hidden
+        // currentRippleRatio it used to send would now reach Kirchhoff (kirchhoffRuntime.js) as if
+        // the user had entered it, so nothing is sent for it.
         if (this.localData.currentOptions == 'The maximum switch current') {
           aux['maximumSwitchCurrent'] = this.localData.maximumSwitchCurrent;
-        } else {
-          aux['currentRippleRatio'] = this.localData.currentRippleRatio;
         }
       }
       const auxOp = { outputVoltages: [], outputCurrents: [] };
