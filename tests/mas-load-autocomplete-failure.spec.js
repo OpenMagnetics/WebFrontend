@@ -21,7 +21,7 @@ test('MASLOAD-1: a design MKF cannot complete is refused with the reason', async
   const message = shown.message();
   await shown.dismiss();
   expect(message).toContain('Could not load this file');
-  expect(message).toContain('MKF could not complete this design');
+  expect(message).toContain('the engine could not complete this design');
   expect(message).toContain('Wire that is in no catalogue');
 });
 

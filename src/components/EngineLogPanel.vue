@@ -22,7 +22,8 @@ export default {
             const records = this.engineDiagnosticsStore.records;
             if (!this.searchQuery) return records;
             const q = this.searchQuery.toLowerCase();
-            return records.filter((r) => r.message.toLowerCase().includes(q) || r.module.toLowerCase().includes(q));
+            return records.filter((r) => r.message.toLowerCase().includes(q) || r.module.toLowerCase().includes(q)
+                || (r.detail ?? '').toLowerCase().includes(q));
         },
     },
     watch: {
@@ -36,6 +37,10 @@ export default {
         },
     },
     methods: {
+        // "1 record", "2 records"
+        counted(count, noun) {
+            return `${count} ${noun}${count === 1 ? '' : 's'}`;
+        },
         formatTime(timestamp) {
             return new Date(timestamp).toLocaleTimeString('en-US', {
                 hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit',
@@ -53,6 +58,7 @@ export default {
         copyToClipboard() {
             const text = this.filteredRecords.map((r) =>
                 `[${this.formatTime(r.timestamp)}] [${r.level}] [${r.module}] ${r.message}${r.count > 1 ? ` (x${r.count})` : ''}`
+                + (r.detail ? `\n    Details: ${r.detail}` : '')
             ).join('\n');
             navigator.clipboard.writeText(text);
         },
@@ -67,9 +73,8 @@ export default {
                 <i class="pi pi-cog mr-2"></i>
                 Engine log (MKF)
                 <span class="engine-log-badge">
-                    {{ engineDiagnosticsStore.records.length }} records,
-                    {{ engineDiagnosticsStore.warningCount }} warnings
-                    <span v-if="engineDiagnosticsStore.errorCount > 0" class="text-danger">, {{ engineDiagnosticsStore.errorCount }} errors</span>
+                    {{ counted(engineDiagnosticsStore.records.length, 'record') }},
+                    {{ counted(engineDiagnosticsStore.warningCount, 'warning') }}<span v-if="engineDiagnosticsStore.errorCount > 0">, </span><span v-if="engineDiagnosticsStore.errorCount > 0" class="text-danger">{{ counted(engineDiagnosticsStore.errorCount, 'error') }}</span>
                 </span>
                 <span v-if="engineDiagnosticsStore.allowMaterialDataExtrapolation" class="engine-log-extrapolating" data-cy="EngineLogPanel-extrapolating">
                     Extrapolating material data
@@ -108,6 +113,14 @@ export default {
                 <span class="engine-log-level" :class="levelClass(record.level)">{{ record.level }}</span>
                 <span class="engine-log-module">{{ record.module }}</span>
                 <pre class="engine-log-message">{{ record.message }}<span v-if="record.count > 1" class="engine-log-count"> (x{{ record.count }})</span></pre>
+                <!-- The technical text behind the message (engine code, raw report): a tooltip, not a line. -->
+                <i
+                    v-if="record.detail"
+                    v-tooltip.left="{ value: record.detail, class: 'engine-log-detail-tooltip' }"
+                    class="pi pi-info-circle engine-log-detail"
+                    :aria-label="record.detail"
+                    data-cy="EngineLogPanel-record-detail"
+                ></i>
             </div>
         </div>
     </div>
@@ -278,8 +291,35 @@ export default {
     font-family: inherit;
 }
 
+.engine-log-detail {
+    color: rgba(var(--p-white-rgb), 0.5);
+    font-size: 0.8rem;
+    padding-top: 0.15rem;
+    cursor: help;
+}
+
+.engine-log-detail:hover {
+    color: var(--p-warning);
+}
+
 .engine-log-count {
     color: rgba(var(--p-white-rgb), 0.5);
 }
 
+</style>
+
+<style>
+/* The detail of a record is the engine's full text: keep its line breaks, wrap long words.
+   PrimeVue gives a tooltip its own inline z-index, below the panel's (9997): the tooltip of a
+   record would open behind the panel it belongs to. */
+.engine-log-detail-tooltip {
+    z-index: 9998 !important;
+}
+
+.engine-log-detail-tooltip .p-tooltip-text {
+    white-space: pre-wrap;
+    word-break: break-word;
+    max-width: 36rem;
+    font-size: 0.8rem;
+}
 </style>

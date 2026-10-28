@@ -1,4 +1,4 @@
-import { checkAndFixMas, deepCopy } from 'WebSharedComponents/assets/js/utils.js'
+import { checkAndFixMas, deepCopy, formatUnit } from 'WebSharedComponents/assets/js/utils.js'
 import { defaultOperatingPointExcitation, defaultOperatingConditions, powerMas } from 'WebSharedComponents/assets/js/defaults.js'
 import { WaveformLabel } from 'WebSharedComponents/assets/ts/MAS.ts'
 import Ajv2020 from 'ajv/dist/2020'
@@ -9,6 +9,8 @@ import { useCoreMaterialNoticeStore } from '../stores/coreMaterialNotice.js'
 import { useRefusedCoreMaterialStore } from '/MagneticBuilder/src/stores/refusedCoreMaterial'
 import { useLoadCorrectionsStore } from '../stores/loadCorrections.js'
 import { reportNotice } from 'WebSharedComponents/assets/js/notices.js'
+import { describeFailure } from 'WebSharedComponents/assets/js/noticeText.js'
+import { describeMasSchemaErrors } from 'WebSharedComponents/assets/js/masSchemaText.js'
 import { engineUserSettingsSettled } from '../stores/engineDiagnostics.js'
 import { stripNulls } from './masNulls.js'
 
@@ -26,7 +28,7 @@ const waveformLabelByKey = Object.fromEntries(
 let masImportValidator = null;
 function masImportErrors(mas) {
     if (masImportValidator == null) {
-        const ajv = new Ajv2020({ strict: false, allErrors: true });
+        const ajv = new Ajv2020({ strict: false, allErrors: true, verbose: true });
         addFormats(ajv);
         for (const schema of masSchemaBundle.schemas) ajv.addSchema(schema);
         masImportValidator = ajv.getSchema('https://psma.com/mas/MAS.json');
@@ -36,6 +38,17 @@ function masImportErrors(mas) {
     }
     const probe = stripNulls(JSON.parse(JSON.stringify(mas)));
     return masImportValidator(probe) ? [] : (masImportValidator.errors || []);
+}
+
+// A quantity in a message: three significant digits and an SI prefix (25.7 ns, 16.7 ms, 60 kHz).
+function formatQuantity(value, unit) {
+    const { label, unit: prefixedUnit } = formatUnit(value, unit, 1, 1e-9);
+    return `${Number(Number(label).toPrecision(3))} ${prefixedUnit}`;
+}
+
+// An engine failure's readable part, to continue a sentence (no closing full stop).
+function inOneSentence(error) {
+    return describeFailure(error).message.replace(/[.\s]+$/, '');
 }
 
 function describeSchemaError(error) {
@@ -322,7 +335,7 @@ function placeWaveformsOnTheirPeriod(mas, corrections) {
                 if (unitSlip != null) {
                     if (signalName === 'magnetizingCurrent') {
                         delete excitation.magnetizingCurrent;
-                        correct(signalName, `the magnetizing current was stored over ${span} s, ${unitSlip} times the period of ${excitation.frequency} Hz, so its values were derived on the wrong period; it was removed and MKF derives it again`);
+                        correct(signalName, `the magnetizing current was stored over ${formatQuantity(span, 's')}, ${unitSlip} times the ${formatQuantity(period, 's')} period of ${formatQuantity(excitation.frequency, 'Hz')}, so its values were derived on the wrong period; it was removed and MKF derives it again from the voltage`);
                         continue;
                     }
                     const scale = period / span;
@@ -337,7 +350,7 @@ function placeWaveformsOnTheirPeriod(mas, corrections) {
                         }
                         if (typeof processed.deadTime === 'number') processed.deadTime *= scale;
                     }
-                    correct(signalName, `the ${description} waveform was stored over ${span} s, ${unitSlip} times the period of ${excitation.frequency} Hz; its time axis was scaled to one period (${period} s)`);
+                    correct(signalName, `the ${description} waveform was stored over ${formatQuantity(span, 's')}, ${unitSlip} times the ${formatQuantity(period, 's')} period of ${formatQuantity(excitation.frequency, 'Hz')}; its time axis was scaled to one period`);
                     continue;
                 }
 
@@ -347,7 +360,7 @@ function placeWaveformsOnTheirPeriod(mas, corrections) {
                 if (signalName !== 'magnetizingCurrent' && gap > 0 && gap <= longestStep) {
                     signal.waveform.time = [...time, period];
                     signal.waveform.data = [...data, data[0]];
-                    correct(signalName, `the ${description} waveform stopped ${gap} s before the end of its period (${period} s); its first value was repeated at the end of the period`);
+                    correct(signalName, `the ${description} waveform stopped ${formatQuantity(gap, 's')} before the end of its ${formatQuantity(period, 's')} period; its first value was repeated at the end of the period`);
                 }
             }
         }
@@ -805,8 +818,14 @@ export async function loadMasIntoApp(doc, { masStore, stateStore, userStore, tas
         // the schema would open into a builder where nothing computes. Say what is wrong instead.
         const schemaErrors = masImportErrors(response);
         if (schemaErrors.length > 0) {
-            const shown = [...new Set(schemaErrors.map(describeSchemaError))];
-            throw new Error(`this file does not follow the MAS schema: ${shown.slice(0, 8).join('; ')}${shown.length > 8 ? ` (+${shown.length - 8} more)` : ''}`);
+            // In words: which part of the design, which field, what is wrong with it. The
+            // validator's own report goes to the console with the error.
+            const sentences = describeMasSchemaErrors(schemaErrors, 'Mas', stripNulls(JSON.parse(JSON.stringify(response))));
+            const shown = sentences.slice(0, 8).join('\n');
+            const more = sentences.length > 8 ? `\n(and ${sentences.length - 8} more)` : '';
+            const error = new Error(`it does not follow the MAS format:\n${shown}${more}\nCorrect these values in the file and load it again.`);
+            error.detail = [...new Set(schemaErrors.map(describeSchemaError))].join('; ');
+            throw error;
         }
         try {
             autocompletedMas = await taskQueueStore.masAutocomplete(response, false, {});
@@ -834,12 +853,17 @@ export async function loadMasIntoApp(doc, { masStore, stateStore, userStore, tas
                     const alsoTheMagnetic = magneticError.message === autocompleteError.message
                         ? ''
                         : `; nor its magnetic alone: ${magneticError.message}`;
-                    throw new Error(`MKF could not complete this design: ${autocompleteError.message}${alsoTheMagnetic}`);
+                    const alsoTheMagneticInWords = alsoTheMagnetic === '' ? '' : `; nor its magnetic alone: ${inOneSentence(magneticError)}`;
+                    const error = new Error(`the engine could not complete this design: ${inOneSentence(autocompleteError)}${alsoTheMagneticInWords}. Correct this in the file and load it again.`);
+                    error.detail = `${autocompleteError.message}${alsoTheMagnetic}`;
+                    throw error;
                 }
                 try {
                     await completeProcessedOnlySignals(response, taskQueueStore);
                 } catch (signalError) {
-                    throw new Error(`MKF could not complete this design: ${autocompleteError.message}; and with its magnetic completed alone, ${signalError.message}`);
+                    const error = new Error(`the engine could not complete this design: ${inOneSentence(autocompleteError)}; and with its magnetic completed alone, ${inOneSentence(signalError)}. Correct this in the file and load it again.`);
+                    error.detail = `${autocompleteError.message}; and with its magnetic completed alone, ${signalError.message}`;
+                    throw error;
                 }
                 autocompletedMas = { ...response, magnetic: completedMagnetic };
                 console.warn(`Imported MAS: MKF could not complete this design, so it is opened with its magnetic completed and its inputs as the file holds them: ${autocompleteError.message}`);

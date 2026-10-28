@@ -16,12 +16,12 @@
  * that used to raise the banner), then require the chart's own record and no
  * builder record. Since 2026-10-22 (Alf) both live in the Engine log, not on
  * the page: the chart's failure is logged under the chart's name, and a design
- * failure would be logged under 'Builder'. Since 2026-10-23 (Alf) the chart also says it where it
+ * failure would be logged under the builder's own sources (BUILDER_SOURCES; 'Builder' until 2026-10-28). Since 2026-10-23 (Alf) the chart also says it where it
  * would be drawn, and nowhere else on the page does.
  */
 import { test, expect } from './_coverage.js';
 import { BASE_URL } from './utils/env.js';
-import { engineLogMessages } from './utils/index.js';
+import { engineLogMessages, BUILDER_SOURCES } from './utils/index.js';
 
 const TP5_REFUSED = 'Complex permeability data is not available for TP5';
 const chartRecords = async (page) => (await engineLogMessages(page, { source: 'Impedance Over Frequency graph', level: 'ERROR' })).filter((m) => m.includes(TP5_REFUSED));
@@ -57,7 +57,7 @@ test.describe('Magnetic Builder — a chart-local failure is not a design failur
         await expect.poll(async () => (await chartRecords(page)).length, { timeout: 90000 }).toBeGreaterThan(0);
 
         // ... and the builder does not turn it into a design failure.
-        const builderFailures = async () => (await engineLogMessages(page, { source: 'Builder' })).filter((m) => m.includes(TP5_REFUSED));
+        const builderFailures = async () => (await engineLogMessages(page, { source: BUILDER_SOURCES })).filter((m) => m.includes(TP5_REFUSED));
         expect(await builderFailures()).toEqual([]);
         // The chart says why it is empty where it would be drawn (Alf, 2026-10-23), and nothing
         // else on the page repeats it.

@@ -7,7 +7,7 @@
 import fs from 'node:fs';
 import { test, expect } from './_coverage.js';
 import { BASE_URL } from './utils.js';
-import { engineLogMessages } from './utils/index.js';
+import { engineLogMessages, BUILDER_SOURCES } from './utils/index.js';
 
 const findings = (page) => engineLogMessages(page, { source: 'Simulation findings', level: 'WARNING' });
 
@@ -85,7 +85,7 @@ test.describe('Simulation findings per operating point (ABT #1855)', () => {
     expect(warnings.filter((text) => text.includes('MKF could not complete this design')), 'MKF completes the design').toEqual([]);
     await expect.poll(async () => (await findings(page)).filter((m) => m.includes('not volt-second balanced') && m.includes('the mean removed')).length,
       { timeout: 180000 }).toBe(1);
-    expect(await engineLogMessages(page, { source: 'Builder' }), 'no calculation failed').toEqual([]);
+    expect(await engineLogMessages(page, { source: BUILDER_SOURCES }), 'no calculation failed').toEqual([]);
     await expect(page.locator('[data-cy$="-SimulationFindings"]'), 'no findings banner over the cards').toHaveCount(0);
   });
 

@@ -2,6 +2,7 @@
 import { useMasStore } from '../../stores/mas'
 import { useCoreMaterialNoticeStore } from '../../stores/coreMaterialNotice'
 import { deepCopy } from 'WebSharedComponents/assets/js/utils.js'
+import { describeFailure } from 'WebSharedComponents/assets/js/noticeText.js'
 </script>
 
 <script>
@@ -9,8 +10,8 @@ import { deepCopy } from 'WebSharedComponents/assets/js/utils.js'
 // losses (services/coreMaterialFreshness.js). Says so with MKF's numbers for both, and lets the
 // user switch to the library's copy or keep the file's (Alf, 2026-10-14: warn, keep the file's copy;
 // 2026-10-16: keep the rule, and offer one option that updates to the latest library data).
-// When MKF refuses the file's copy outright (MATERIAL_INVALID_PROPERTY), the notice quotes MKF's
-// message and offers the same update (2026-10-26).
+// When MKF refuses the file's copy outright (MATERIAL_INVALID_PROPERTY), the notice gives MKF's
+// reason and offers the same update (2026-10-26). MKF's error code and full text are tooltips.
 export default {
     props: {
         dataTestLabel: {
@@ -28,10 +29,17 @@ export default {
         finding() {
             return this.noticeStore.outdatedCoreMaterial;
         },
+        refusal() {
+            return this.finding?.invalid == null ? null : describeFailure(this.finding.invalid);
+        },
     },
     methods: {
+        describeFailure,
+        // The refusal itself is said once, above; a point that fails for another reason says which.
         describe(side) {
-            return side.error != null ? `not computable (${side.error})` : `${side.losses.toPrecision(3)} W`;
+            if (side.error == null) return `${side.losses.toPrecision(3)} W`;
+            if (side.error === this.finding.invalid) return 'not computable';
+            return `not computable (${describeFailure(side.error).message.replace(/[.\s]+$/, '')})`;
         },
         useLibraryMaterial() {
             if (this.finding.libraryMaterial == null) {
@@ -60,10 +68,14 @@ export default {
             :data-cy="dataTestLabel + '-OutdatedCoreMaterial-invalid'"
         >
             <i class="pi pi-exclamation-triangle me-2"></i>
-            MKF refuses this design's copy of the core material <strong>{{finding.name}}</strong>, so the design cannot be computed with it:
-            <span class="d-block ms-4 my-1"><code>{{finding.invalid}}</code></span>
+            This design's own copy of the core material <strong>{{finding.name}}</strong> has data the engine refuses, so the design cannot be computed with it:
+            <span
+                v-tooltip.bottom="refusal.detail ?? refusal.message"
+                :data-code="refusal.code"
+                :data-cy="dataTestLabel + '-OutdatedCoreMaterial-reason'"
+            >{{refusal.message.replace(/[.\s]+$/, '') + '. '}}</span>
             <template v-if="finding.libraryMaterial != null">The library's copy of {{finding.name}} can replace it; the file's copy is kept until you choose.</template>
-            <template v-else>The library has no core material {{finding.name}} to replace it with ({{finding.libraryError}}); choose another material in the builder.</template>
+            <template v-else>The library has no core material {{finding.name}} to replace it with ({{describeFailure(finding.libraryError).message.replace(/[.\s]+$/, '')}}); choose another material in the builder.</template>
         </div>
         <div v-else>
             <i class="pi pi-exclamation-triangle me-2"></i>

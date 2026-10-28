@@ -107,7 +107,7 @@ pinia.use(drainEngineLogAfterCoreLossCalculations)
 pinia.use(logSimulationFindings)
 // The builder's and the visualizers' warnings and errors go to the Engine log, never above or
 // inside the cards (Alf, 2026-10-22).
-setNoticeSink((level, source, message) => useEngineDiagnosticsStore(pinia).addRecord(level, source, message))
+setNoticeSink((level, source, message, more) => useEngineDiagnosticsStore(pinia).addRecord(level, source, message, more))
 {
     const v = new URLSearchParams(window.location.search).get('colortest');
     let testColor = null;

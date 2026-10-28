@@ -11,6 +11,7 @@ import { waitForMkf, isWorkerMode, updateEngineSettings, queueEngineSettingsTask
 // webMKF via waitForMkf().
 import { waitForKirchhoff } from 'WebSharedComponents/assets/js/kirchhoffRuntime'
 import { assertValidMas } from 'WebSharedComponents/assets/js/masValidator.js'
+import { DETAILS_SEPARATOR } from 'WebSharedComponents/assets/js/noticeText.js'
 import { clean } from 'WebSharedComponents/assets/js/utils'
 import { unitSystem } from 'WebSharedComponents/assets/js/units.js'
 import { useInventoryStore, ENGINE_HAS_CONTEXT_ADVISERS } from '../stores/inventory'
@@ -27,6 +28,19 @@ import { requireAdviserExcitations, requireCoreAdviseMode } from 'WebSharedCompo
 //
 // We never silently downgrade — on failure we throw with the full quicktype
 // error message (which includes the offending field path).
+// What each sentry-guarded call is, as the user knows it.
+const SENTRY_CALLS = {
+    masAutocomplete: 'the design could not be completed',
+    magneticAutocomplete: 'the magnetic could not be completed',
+    calculateAdvisedCores: 'the core adviser was not run',
+    calculateAdvisedMagnetics: 'the magnetic adviser was not run',
+    getMaximumDimensions: 'its dimensions were not calculated',
+    calculateLeakageInductance: 'the leakage inductance was not calculated',
+    exportMagneticAsSubcircuit: 'the SPICE subcircuit was not exported',
+    exportMagneticAsSymbol: 'the schematic symbol was not exported',
+    simulateFlybackWithMagnetic: 'the flyback simulation was not run',
+};
+
 function masSentry(where, kind, obj) {
     // Sentry-local cleaner. Recursively strips keys whose value is `null`,
     // `"null"`, or `undefined` from objects (not arrays). Quicktype's optional
@@ -63,7 +77,21 @@ function masSentry(where, kind, obj) {
         const msg = `[MAS sentry @ ${where}/${kind}] Frontend produced invalid payload: ${e.message} | DR keys: ${JSON.stringify(drKeys)} | ${drApp}`;
         // eslint-disable-next-line no-console
         console.error(msg);
-        throw new Error(msg);
+        const call = SENTRY_CALLS[where];
+        if (call == null) {
+            throw new Error(`[MAS sentry] no description of the call '${where}' for the user: add it to SENTRY_CALLS. ${msg}`);
+        }
+        // masValidator words the violations; its own report follows ' Details: ', and is the
+        // detail of this message too (the Engine log shows it as a tooltip).
+        // At most 8 of them, as the load dialog does; the full report is the detail.
+        const sentences = Array.isArray(e.masSchemaSentences) ? e.masSchemaSentences : [];
+        const inWords = sentences.length === 0 ? ''
+            : ` ${sentences.slice(0, 8).join(' ')}${sentences.length > 8 ? ` (and ${sentences.length - 8} more)` : ''}`;
+        const separator = e.message.indexOf(DETAILS_SEPARATOR);
+        const technical = separator >= 0 ? e.message.slice(separator + DETAILS_SEPARATOR.length) : e.message;
+        throw new Error(`The design does not follow the MAS format, so ${call}.${inWords} `
+            + 'Correct these values, or report this design if you did not set them.'
+            + `${DETAILS_SEPARATOR}[MAS sentry @ ${where}/${kind}] ${technical} | DR keys: ${JSON.stringify(drKeys)} | ${drApp}`);
     }
 }
 

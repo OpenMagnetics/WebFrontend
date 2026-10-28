@@ -49,7 +49,9 @@ test.describe('Load MAS: a stored core material MKF refuses', () => {
     await expect(notice).toBeVisible({ timeout: 120000 });
     const invalid = page.locator(INVALID);
     await expect(invalid).toBeVisible();
-    await expect(invalid).toContainText('[MATERIAL_INVALID_PROPERTY]');
+    // MKF's error code is not part of the text the user reads; it stays on the reason (its tooltip).
+    await expect(invalid).not.toContainText('[MATERIAL_INVALID_PROPERTY]');
+    await expect(invalid.locator('[data-cy$="-OutdatedCoreMaterial-reason"]')).toHaveAttribute('data-code', 'MATERIAL_INVALID_PROPERTY');
     await expect(invalid).toContainText('remanence');
     await expect(invalid).toContainText('is not below its saturation flux density');
 

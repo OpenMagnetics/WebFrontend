@@ -1,6 +1,7 @@
 <script setup>
 import { clean, download, deepCopy } from 'WebSharedComponents/assets/js/utils.js'
 import { assertValidMas } from 'WebSharedComponents/assets/js/masValidator.js'
+import { describeFailure } from 'WebSharedComponents/assets/js/noticeText.js'
 
 </script>
 <script>
@@ -31,6 +32,7 @@ export default {
         return {
             exported,
             exportError,
+            exportErrorDetail: null,
         }
     },
     computed: {
@@ -64,7 +66,10 @@ export default {
                 assertValidMas(kind, doc, 'MAS export');
                 download(JSON.stringify(doc, null, 4), this.fileName(), "text/plain");
             } catch (e) {
-                this.exportError = e.message;
+                // What is wrong, in words; the validator's report is the tooltip.
+                const { message, detail } = describeFailure(e);
+                this.exportError = message;
+                this.exportErrorDetail = detail;
                 // eslint-disable-next-line no-console
                 console.error(e);
                 return;
@@ -88,7 +93,7 @@ export default {
         >
             {{includeInputs? 'Download MAS file with excitations and results' : 'Download MAS file only with magnetic'}}
         </button>
-        <p v-if="exportError" :data-cy="dataTestLabel + '-export-error'" class="text-danger small mt-2 mb-0">
+        <p v-if="exportError" v-tooltip="exportErrorDetail" :data-cy="dataTestLabel + '-export-error'" class="text-danger small mt-2 mb-0">
             The MAS file was not downloaded: {{ exportError }}
         </p>
     </div>

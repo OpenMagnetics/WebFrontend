@@ -9,10 +9,10 @@
 import fs from 'node:fs';
 import { test, expect } from './_coverage.js';
 import { BASE_URL } from './utils.js';
-import { engineLogMessages } from './utils/index.js';
+import { engineLogMessages, BUILDER_SOURCES } from './utils/index.js';
 
 // The builder's calculation failures, in the Engine log (Alf, 2026-10-22: not a banner over the cards).
-const builderErrors = (page) => engineLogMessages(page, { source: 'Builder', level: 'ERROR' });
+const builderErrors = (page) => engineLogMessages(page, { source: BUILDER_SOURCES, level: 'ERROR' });
 
 const fixture = (name) => JSON.parse(fs.readFileSync(new URL(`./fixtures/${name}`, import.meta.url).pathname, 'utf8'));
 
@@ -440,11 +440,11 @@ test.describe('legacy MAS documents load', () => {
       .filter((m) => m.includes('was stored on the secondary side') && m.includes('it was put on the primary side')).length).toBe(1);
 
     // The builder simulates the design instead of showing MKF's refusal.
-    await page.waitForFunction(() => {
+    await page.waitForFunction((builderSources) => {
       const pinia = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia;
       return (pinia._s.get('mas').mas.outputs?.length ?? 0) > 0
-        || (pinia._s.get('engineDiagnostics')?.records ?? []).some((r) => r.module === 'Builder' && r.level === 'ERROR');
-    }, null, { timeout: 120000 });
+        || (pinia._s.get('engineDiagnostics')?.records ?? []).some((r) => (r.sources ?? [r.module]).some((s) => builderSources.includes(s)) && r.level === 'ERROR');
+    }, BUILDER_SOURCES, { timeout: 120000 });
     expect(await builderErrors(page)).toEqual([]);
   });
 
@@ -514,7 +514,7 @@ test.describe('legacy MAS documents load', () => {
       buffer: Buffer.from(JSON.stringify(mas)),
     });
     await expect.poll(() => alerts.length, { timeout: 120000 }).toBe(1);
-    expect(alerts[0]).toContain('Could not load this file: MKF could not complete this design');
+    expect(alerts[0]).toContain('Could not load this file: the engine could not complete this design');
     expect(alerts[0], 'the signal is named').toContain("'Auxiliary' current");
     expect(alerts[0], "MKF's reason is given").toContain('Waveform must have at least 2 data points');
     expect(new URL(page.url()).pathname, 'nothing is opened').not.toContain('magnetic_tool');
