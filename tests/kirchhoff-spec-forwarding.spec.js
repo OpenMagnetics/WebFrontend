@@ -104,4 +104,29 @@ test.describe('Kirchhoff spec forwarding', () => {
     expect(() => buildKhConverterSpec('acf', { ...USER_ACF_PARAMS, diodeVoltageDrop: 'abc' }))
       .toThrow(/diodeVoltageDrop for acf must be a number/);
   });
+  // PFC conduction mode / wide-bandgap switch (2026-10-28): KH design_pfc reads config.mode and
+  // config.wideBandgapSwitch; the wizard's choice never reached them, so KH sized every PFC in CCM.
+  const PFC_BASE = { inputVoltage: { minimum: 85, maximum: 265 }, outputVoltage: 400, outputPower: 300,
+    switchingFrequency: 65000, lineFrequency: 50, topologyVariant: 'boost' };
+  const PFC_MODES = {
+    continuousConductionMode: 'ccm', discontinuousConductionMode: 'dcm', criticalConductionMode: 'crm',
+  };
+  for (const [mode, key] of Object.entries(PFC_MODES)) {
+    test(`pfc: conduction mode ${mode} reaches config.mode = ${key}`, () => {
+      const spec = buildKhConverterSpec('pfc', { ...PFC_BASE, mode });
+      expect(spec.config.mode).toBe(key);
+    });
+  }
+
+  test('pfc: wideBandgapSwitch reaches config.wideBandgapSwitch', () => {
+    expect(buildKhConverterSpec('pfc', { ...PFC_BASE, wideBandgapSwitch: false }).config.wideBandgapSwitch).toBe(false);
+    expect(buildKhConverterSpec('pfc', { ...PFC_BASE, wideBandgapSwitch: true }).config.wideBandgapSwitch).toBe(true);
+  });
+
+  test('pfc: an unknown conduction mode or a non-boolean wideBandgapSwitch throws', () => {
+    expect(() => buildKhConverterSpec('pfc', { ...PFC_BASE, mode: 'burstMode' }))
+      .toThrow(/unknown PFC conduction mode 'burstMode'/);
+    expect(() => buildKhConverterSpec('pfc', { ...PFC_BASE, wideBandgapSwitch: 'yes' }))
+      .toThrow(/wideBandgapSwitch must be a boolean/);
+  });
 });
