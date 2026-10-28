@@ -2,7 +2,7 @@
 import { useEngineDiagnosticsStore } from '/src/stores/engineDiagnostics'
 
 // MKF's own warnings and log, for advanced users (Settings > Advanced > Engine log panel).
-// The engine keeps structured records ({level, module, message, count}); the store drains them
+// The engine keeps structured records ({level, module, message, count, detail}); the store drains them
 // after engine calls while the panel is enabled. Collapsed, it is the footer's "Engine log" button
 // with the warning count (Footer.vue); expanded, a panel like the debug console's.
 export default {
@@ -23,7 +23,7 @@ export default {
             if (!this.searchQuery) return records;
             const q = this.searchQuery.toLowerCase();
             return records.filter((r) => r.message.toLowerCase().includes(q) || r.module.toLowerCase().includes(q)
-                || (r.detail ?? '').toLowerCase().includes(q));
+                || (this.tooltipText(r) ?? '').toLowerCase().includes(q));
         },
     },
     watch: {
@@ -55,9 +55,19 @@ export default {
                 default: return 'text-secondary';
             }
         },
+        // What the row's tooltip says: the latest value of the part of an engine message that varies
+        // between its repeats (one row per message, counted), then the technical text behind the
+        // message. null when the record has neither.
+        tooltipText(record) {
+            const lines = [];
+            if (record.latestDetail) lines.push(`latest: ${record.latestDetail}`);
+            if (record.detail) lines.push(record.detail);
+            return lines.length > 0 ? lines.join('\n') : null;
+        },
         copyToClipboard() {
             const text = this.filteredRecords.map((r) =>
                 `[${this.formatTime(r.timestamp)}] [${r.level}] [${r.module}] ${r.message}${r.count > 1 ? ` (x${r.count})` : ''}`
+                + (r.latestDetail ? `\n    Latest: ${r.latestDetail}` : '')
                 + (r.detail ? `\n    Details: ${r.detail}` : '')
             ).join('\n');
             navigator.clipboard.writeText(text);
@@ -113,12 +123,13 @@ export default {
                 <span class="engine-log-level" :class="levelClass(record.level)">{{ record.level }}</span>
                 <span class="engine-log-module">{{ record.module }}</span>
                 <pre class="engine-log-message">{{ record.message }}<span v-if="record.count > 1" class="engine-log-count"> (x{{ record.count }})</span></pre>
-                <!-- The technical text behind the message (engine code, raw report): a tooltip, not a line. -->
+                <!-- The latest value of what varies between the message's repeats, and the technical text
+                     behind the message (engine code, raw report): a tooltip, not a line. -->
                 <i
-                    v-if="record.detail"
-                    v-tooltip.left="{ value: record.detail, class: 'engine-log-detail-tooltip' }"
+                    v-if="tooltipText(record)"
+                    v-tooltip.left="{ value: tooltipText(record), class: 'engine-log-detail-tooltip' }"
                     class="pi pi-info-circle engine-log-detail"
-                    :aria-label="record.detail"
+                    :aria-label="tooltipText(record)"
                     data-cy="EngineLogPanel-record-detail"
                 ></i>
             </div>

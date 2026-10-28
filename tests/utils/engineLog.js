@@ -21,8 +21,10 @@ export const BUILDER_SOURCES = ['Coil info', 'Core info', 'Winding', 'Core', 'Co
  * 'Load', 'Core', 'Magnetic drawing', ...) or of any of a list of them (BUILDER_SOURCES), and/or
  * level ('WARNING', 'ERROR'). One failure seen by several parts is one record naming them all
  * ('Coil info, Core info'): it is of each of those sources. A record's engine error code and its
- * detail (the full technical text, the panel's tooltip) are given when it has them.
- * @returns {Promise<Array<{level: string, module: string, message: string, count: number, code?: string, detail?: string}>>}
+ * detail (the full technical text, the panel's tooltip) are given when it has them, and, for a record
+ * from MKF's log, latestDetail: what varies between the message's repeats, as of the latest one
+ * ("asked at 1 MHz, above that span"; "" when the record has none).
+ * @returns {Promise<Array<{level: string, module: string, message: string, count: number, code?: string, detail?: string, latestDetail?: string}>>}
  */
 export async function engineLogRecords(page, { source = null, level = null } = {}) {
   return page.evaluate(({ source, level }) => {
@@ -36,6 +38,7 @@ export async function engineLogRecords(page, { source = null, level = null } = {
         level: r.level, module: r.module, message: r.message, count: r.count,
         ...(r.code != null ? { code: r.code } : {}),
         ...(r.detail != null ? { detail: r.detail } : {}),
+        ...(r.latestDetail != null ? { latestDetail: r.latestDetail } : {}),
       }));
   }, { source, level });
 }

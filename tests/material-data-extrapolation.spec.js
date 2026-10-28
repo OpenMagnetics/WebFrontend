@@ -43,7 +43,13 @@ test.describe('Material data extrapolation (ABT #1652)', () => {
         const record = page.locator('[data-cy="EngineLogPanel-record"]').filter({ hasText: 'Material 95' }).first();
         await expect(record).toBeVisible({ timeout: 120000 });
         await expect(record).toContainText('extrapolated');
-        await expect(record).toContainText('1000000');
+        // One row per message, however many times the builder asks; the value asked is the part MKF
+        // keeps apart (the record's detail), shown in the row's tooltip as of its latest repeat.
+        await expect(record).toContainText('100 kHz to 500 kHz');
+        await expect(record.locator('[data-cy="EngineLogPanel-record-detail"]')).toHaveAttribute('aria-label', /^latest: asked at 1 MHz, above that span/);
+        const extrapolations = (await engineLogRecords(page, { level: 'WARNING' })).filter((r) => r.message.startsWith('Material 95: its Steinmetz loss coefficients'));
+        expect(extrapolations, 'one record for the material, counting its repeats').toHaveLength(1);
+        expect(extrapolations[0].latestDetail).toBe('asked at 1 MHz, above that span');
         // The engine's error code is the record's code (the message is the readable part).
         expect((await engineLogRecords(page, { source: BUILDER_SOURCES, level: 'ERROR' })).filter((r) => r.code === 'MATERIAL_FREQUENCY_OUT_OF_SPAN')).toEqual([]);
     });

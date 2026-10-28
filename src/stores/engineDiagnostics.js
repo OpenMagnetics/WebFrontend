@@ -267,6 +267,13 @@ export const useEngineDiagnosticsStore = defineStore('engineDiagnostics', {
             if (drained.length === 0) return;
             const timestamp = new Date().toISOString();
             for (const record of drained) {
+                // MKF's `detail`: the part of the message that varies between its repeats (the value
+                // asked, e.g. the frequency of each extrapolation of one material), the latest repeat's;
+                // "" when the record has none. MKF keeps it out of `message`, so repeats stay one row.
+                if (typeof record.detail !== 'string') {
+                    throw new Error(`drain_log_collection returned a record without its detail `
+                        + `(${JSON.stringify(record)}): libMKF is older than the log's detail field`);
+                }
                 // MKF's error-code tag ("[MATERIAL_FREQUENCY_OUT_OF_SPAN] ...") is the record's code,
                 // as for the builder's records; the full text stays as its detail.
                 const { message, code, detail } = describeFailure(record.message);
@@ -279,6 +286,7 @@ export const useEngineDiagnosticsStore = defineStore('engineDiagnostics', {
                     const [same] = this.records.splice(sameIndex, 1);
                     same.count += record.count;
                     same.timestamp = timestamp;
+                    same.latestDetail = record.detail;
                     this.records.push(same);
                     continue;
                 }
@@ -290,6 +298,7 @@ export const useEngineDiagnosticsStore = defineStore('engineDiagnostics', {
                     message,
                     code,
                     detail,
+                    latestDetail: record.detail,
                     count: record.count,
                     fromEngine: true,
                 });
