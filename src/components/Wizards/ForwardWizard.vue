@@ -14,6 +14,7 @@ import { defaultForwardWizardInputs, defaultDesignRequirements, minimumMaximumSc
 import ConverterWizardBase from './ConverterWizardBase.vue'
 import KhDiagnosticsPanel from './KhDiagnosticsPanel.vue'
 import CompactVoltageInput from './CompactVoltageInput.vue'
+import { khDesiredDutyCycle, dutyCycleWithoutInputVoltageMessage } from 'WebSharedComponents/assets/js/kirchhoffRuntime'
 import { tooltipsConverterWizards, dropdownLabelsConverterWizards } from 'WebSharedComponents/assets/js/texts'
 </script>
 
@@ -127,11 +128,10 @@ export default {
       // user cannot see refuses any design above a few amps.
       if (this.localData.designLevel == 'I know the design I want') {
         aux['desiredInductance'] = this.localData.inductance;
-        const auxDesiredDutyCycle = [];
-        if (this.localData.inputVoltage.minimum != null && this.localData.dutyCycle.minimum != null) auxDesiredDutyCycle.push(this.localData.dutyCycle.minimum);
-        if (this.localData.inputVoltage.nominal != null && this.localData.dutyCycle.nominal != null) auxDesiredDutyCycle.push(this.localData.dutyCycle.nominal);
-        if (this.localData.inputVoltage.maximum != null && this.localData.dutyCycle.maximum != null) auxDesiredDutyCycle.push(this.localData.dutyCycle.maximum);
-        aux['desiredDutyCycle'] = [auxDesiredDutyCycle];
+        // Each typed duty belongs to the input voltage of its row (Nom. / Min. / Max.); a duty
+        // whose input voltage is empty throws the message the wizard shows (ABT #2160).
+        const desiredDutyCycle = khDesiredDutyCycle(this.localData.inputVoltage, this.localData.dutyCycle);
+        if (desiredDutyCycle) aux['desiredDutyCycle'] = desiredDutyCycle;
         const secondaryTurnsRatios = this.localData.outputsParameters.map(e => e.turnsRatio);
         // Single-Switch Forward requires an extra leading turns ratio for the
         // demagnetization winding (1:1 with primary is the standard choice).
@@ -222,6 +222,11 @@ export default {
 
             updateErrorMessage() {
             this.errorMessage = "";
+            // A duty typed for an input voltage the user did not enter belongs to no operating point.
+            if (this.localData.designLevel == 'I know the design I want') {
+                const dutyMessage = dutyCycleWithoutInputVoltageMessage(this.localData.inputVoltage, this.localData.dutyCycle);
+                if (dutyMessage) { this.errorMessage = dutyMessage; return; }
+            }
         },
         updateNumberOutputs(newNumber) {
             if (newNumber > this.localData.outputsParameters.length) {
@@ -442,7 +447,10 @@ export default {
           :textColor="$styleStore.wizard.inputTextColor"
           @update="updateErrorMessage"
         />
+        <!-- Duty Cycle rows are the duty AT each input voltage row (optional; the duty falls as the
+             voltage rises), not a tolerance band: no ordering between them, and all may be empty. -->
         <DimensionWithTolerance :name="'dutyCycle'" :tooltip="tooltipsConverterWizards['dutyCycle']" :replaceTitle="'Duty Cycle'" :unit="null"
+          :allowAllNull="true" :allowUnsorted="true"
           :dataTestLabel="dataTestLabel + '-DutyCycle'"
           :min="0.01" :max="0.99"
           :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'"

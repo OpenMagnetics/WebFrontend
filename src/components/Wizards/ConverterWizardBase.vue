@@ -409,24 +409,27 @@ export default {
      */
     async ensureConverterWaveforms() {
       if (this.converterWaveforms?.length || this.lazyConverterWaveforms.length) return;
-      if (!this.converterTas || this.loadingConverterWaveforms) return;
+      if (!this.converterTas?.length || this.loadingConverterWaveforms) return;
 
       this.loadingConverterWaveforms = true;
       this.converterWaveformsError = '';
       try {
         const tqs = this.$taskQueueStore || useTaskQueueStore();
-        const result = await tqs.getComponentWaveforms(this.converterTas);
-        const period = result.referencePeriod > 0 ? result.referencePeriod : null;
-        // convertConverterWaveforms consumes one entry per operating point; component_waveforms
-        // covers the single simulated point, so wrap its payload in a one-element array.
-        const wrapped = [{
-          switchingFrequency: period ? 1 / period : undefined,
-          operatingPointName: 'Converter Nodes',
-          components: result.components || [],
-        }];
+        // One TAS per simulated operating point (one per input voltage entered, ABT #2160);
+        // component_waveforms covers one TAS, so run it per point, in the points' order.
+        const wrapped = [];
+        for (const { name, tas } of this.converterTas) {
+          const result = await tqs.getComponentWaveforms(tas);
+          const period = result.referencePeriod > 0 ? result.referencePeriod : null;
+          wrapped.push({
+            switchingFrequency: period ? 1 / period : undefined,
+            operatingPointName: this.converterTas.length > 1 ? `Converter Nodes, ${name}` : 'Converter Nodes',
+            components: result.components || [],
+          });
+        }
         let converted = this.convertConverterWaveforms(wrapped, this.getDefaultFrequencyForDisplay());
         converted = this.tileWaveformsForDisplay(converted, this.numberOfPeriods);
-        if (!converted.length || !converted[0].waveforms?.length) {
+        if (converted.length !== wrapped.length || converted.some((c) => !c.waveforms?.length)) {
           throw new Error('webKirchhoff returned no component waveforms for this design');
         }
         this.lazyConverterWaveforms = converted;
@@ -607,7 +610,9 @@ export default {
       // Or: { converterWaveforms: [...], operatingPoints: [...], designRequirements: {...} }
       const rawConverterWaveforms = result.converterWaveforms || [];
       // KH hands back the assembled TAS so the converter view can fetch its overlays on demand.
-      const converterTas = result.__converterTas ?? null;
+      // [{name, tas}] — one assembled TAS per simulated operating point.
+      const converterTas = result.__converterTasPerOperatingPoint
+        ?? (result.__converterTas ? [{ name: 'Converter Nodes', tas: result.__converterTas }] : null);
       const operatingPoints = result.inputs?.operatingPoints || result.operatingPoints || [];
       const designRequirements = result.inputs?.designRequirements || result.designRequirements || null;
 
@@ -1494,7 +1499,7 @@ export default {
                   <ConverterWaveformVisualizer
                     :magneticWaveforms="magneticWaveforms"
                     :converterWaveforms="effectiveConverterWaveforms"
-                    :converterAvailable="!!converterTas"
+                    :converterAvailable="!!converterTas?.length"
                     :converterLoading="loadingConverterWaveforms"
                     :converterError="converterWaveformsError"
                     :viewMode="waveformViewMode"
