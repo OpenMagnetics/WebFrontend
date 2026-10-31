@@ -139,8 +139,8 @@ test.describe('Kirchhoff spec forwarding', () => {
 // ── Design pins at every input voltage (ABT #2160) ──────────────────────────────────────────────
 // A stand-in engine: the design call and every point report the same diagnostics (or the point's own,
 // when a case changes a part at one point), and every spec sent is recorded.
-const fakeDiagnostics = ({ capacitors = [], inductors = [] }) => ({
-  magnetics: [{ name: 'T1', isMain: true, windings: 2, magnetizingInductance: 1e-4, turnsRatios: [2] }],
+const fakeDiagnostics = ({ capacitors = [], inductors = [], magnetics }) => ({
+  magnetics: magnetics || [{ name: 'T1', isMain: true, windings: 2, magnetizingInductance: 1e-4, turnsRatios: [2] }],
   capacitors,
   computed: { extraInductors: inductors },
 });
@@ -177,7 +177,9 @@ const DESIGN_PIN_CASES = [
     config: { inductanceL2: 2.6e-4, couplingCapacitance: 1e-5 } },
   { topology: 'cuk', params: BASE_DC, parts: { inductors: [ind('L2', 2.2e-4)], capacitors: [cap('C1', 5.3e-6), cap('Crc_sw', 1e-9)] },
     config: { inductanceL2: 2.2e-4, couplingCapacitance: 5.3e-6 } },
-  { topology: 'push_pull', params: BASE_DC, parts: { capacitors: ['Csn1', 'Csn2', 'Csn3', 'Csn4'].map((n) => cap(n, 5.8e-11)).concat([cap('Cdmp', 1e-9)]) },
+  // Alf 2026-10-31: the stand-in transformer has Kirchhoff's real push-pull shape [1, n, n]
+  { topology: 'push_pull', params: BASE_DC, parts: { capacitors: ['Csn1', 'Csn2', 'Csn3', 'Csn4'].map((n) => cap(n, 5.8e-11)).concat([cap('Cdmp', 1e-9)]),
+    magnetics: [{ name: 'T1', isMain: true, windings: 4, magnetizingInductance: 1.44e-4, turnsRatios: [1, 1.51, 1.51] }] },
     config: { snubberCap: 5.8e-11 } },
   { topology: 'fsbb', params: BASE_DC, parts: { capacitors: [cap('Csw1', 2.2e-9), cap('Crc_sw1', 3.7e-9), cap('Crc_sw2', 3.7e-9)] },
     config: { snubberCap: 3.7e-9 } },
@@ -248,5 +250,58 @@ test.describe('Kirchhoff design pins at every input voltage', () => {
     const engine = standInEngine({ capacitors: [cap('Crc_pri', 1.24e-10), cap('CsnA_hi', 2.5e-10)] });
     await expect(khRunAtEachInputVoltage(engine.call, 'dab', BASE_DC, 'analytical'))
       .rejects.toThrow(/energy-budget snubbers differ \(Crc_pri 1\.24e-10, CsnA_hi 2\.5e-10\)/);
+  });
+});
+
+// ── Turns ratios: pinned in the form the topology reads (ABT #2160) ─────────────────────────────
+// Kirchhoff reports the main transformer's ratios per WINDING (diagnostics.magnetics[].turnsRatios) but each
+// topology reads designRequirements.turnsRatios its own way (Kirchhoff src/<Topology>.cpp provided_turns_ratio).
+// push_pull reads one ratio per output at index 1 + i while its transformer reports
+// [1 (2nd primary half), (N_i, N_i) per output]; copying the report index for index made output 2 read
+// output 1's second half, so the Min./Max. points came back with another converter.
+const transformer = (windings, turnsRatios) => [{ name: 'T1', isMain: true, windings, magnetizingInductance: 1.44e-4, turnsRatios }];
+const railsAt = (volts, amps) => ({ ...BASE_DC, operatingPoints: [{ outputVoltages: volts, outputCurrents: amps, switchingFrequency: 100000 }] });
+const TURNS_RATIO_CASES = [
+  { name: 'push_pull, 2 outputs: one ratio per output after the 2nd primary half', topology: 'push_pull',
+    params: railsAt([12, 5], [1, 2]), magnetics: transformer(6, [1, 1.51, 1.51, 3.37, 3.37]), sent: [1, 1.51, 3.37] },
+  { name: 'push_pull, 3 outputs: one ratio per output after the 2nd primary half', topology: 'push_pull',
+    params: railsAt([12, 5, 3.3], [1, 2, 1]), magnetics: transformer(8, [1, 1.51, 1.51, 3.37, 3.37, 4.8, 4.8]), sent: [1, 1.51, 3.37, 4.8] },
+  // Topologies that read the per-winding list itself keep it verbatim (llc reads output i at 2*i on a
+  // centre-tapped rectifier, Llc.cpp; forward reads 1 + i after the demag winding, Forward.cpp).
+  { name: 'llc, 2 centre-tapped outputs: the per-winding list as reported', topology: 'llc',
+    params: railsAt([48, 24], [10, 2]), magnetics: transformer(5, [3.9, 3.9, 7.69, 7.69]), sent: [3.9, 3.9, 7.69, 7.69] },
+  { name: 'forward, 2 outputs: the per-winding list as reported', topology: 'forward',
+    params: railsAt([12, 5], [3, 1]), magnetics: transformer(4, [1, 1.3, 2.91]), sent: [1, 1.3, 2.91] },
+];
+
+test.describe('Kirchhoff turns ratios pinned as each topology reads them', () => {
+  for (const { name, topology, params, magnetics, sent } of TURNS_RATIO_CASES) {
+    test(name, async () => {
+      const engine = standInEngine({ magnetics });
+      await khRunAtEachInputVoltage(engine.call, topology, params, 'analytical');
+      expect(engine.specs.length).toBe(3);
+      for (const spec of engine.specs.slice(1)) {
+        expect(spec.designRequirements.turnsRatios).toEqual(sent.map((n) => ({ nominal: n })));
+      }
+    });
+  }
+
+  test('push_pull: a point whose second output comes back with another ratio throws, naming the transformer', async () => {
+    const design = { magnetics: transformer(6, [1, 1.51, 1.51, 3.37, 3.37]) };
+    const engine = standInEngine(design, () => ({ magnetics: transformer(6, [1, 1.51, 1.51, 1.51, 1.51]) }));
+    await expect(khRunAtEachInputVoltage(engine.call, 'push_pull', railsAt([12, 5], [1, 2]), 'analytical'))
+      .rejects.toThrow(/Turns ratios of T1 is \[1, 1\.51, 1\.51, 3\.37, 3\.37\] in the design but \[1, 1\.51, 1\.51, 1\.51, 1\.51\] at Min\. input \(36 V\)/);
+  });
+
+  test('push_pull: a transformer whose windings do not split into one group per output throws', async () => {
+    const engine = standInEngine({ magnetics: transformer(5, [1, 1.51, 1.51, 3.37]) });
+    await expect(khRunAtEachInputVoltage(engine.call, 'push_pull', railsAt([12, 5], [1, 2]), 'analytical'))
+      .rejects.toThrow(/T1 reports turns ratios \[1, 1\.51, 1\.51, 3\.37\]: 3 windings after the first 1 do not split into one group per output for 2 outputs/);
+  });
+
+  test('push_pull: an output whose two secondary halves differ cannot take one pin: it throws', async () => {
+    const engine = standInEngine({ magnetics: transformer(6, [1, 1.51, 1.51, 3.37, 3.4]) });
+    await expect(khRunAtEachInputVoltage(engine.call, 'push_pull', railsAt([12, 5], [1, 2]), 'analytical'))
+      .rejects.toThrow(/T1 reports turns ratios \[3\.37, 3\.4\] for the windings of output 2, but the spec pins one turns ratio per output/);
   });
 });

@@ -17,6 +17,9 @@ import { tooltipsConverterWizards, dropdownLabelsConverterWizards } from 'WebSha
 </script>
 
 <script>
+// PSFB is a single-output converter (WIZARDS_GUIDE.md §3.2b family 2, like PSHB/AHB): no Number of
+// Outputs card. The one output stays in outputsParameters[0] because the "I know the design" turns
+// ratio is per output (ABT #1541); anything that puts more than one output there throws.
 export default {
   props: {
     dataTestLabel: { type: String, default: 'PsfbWizard' },
@@ -27,7 +30,6 @@ export default {
     const localData = {
       inputVoltage: { nominal: 400, tolerance: 0.1 },
       outputsParameters: [{ voltage: 48, current: 20.83, turnsRatio: 4.0 }],
-      numberOutputs: 1,
       switchingFrequency: 100000,
       phaseShift: 90,
       maxPhaseShift: 144,
@@ -62,6 +64,14 @@ export default {
       });
   },
   methods: {
+    // The single output. More or fewer than one is a fault in whatever set them, not something to trim.
+    singleOutput() {
+      const outs = this.localData.outputsParameters;
+      if (!Array.isArray(outs) || outs.length !== 1) {
+        throw new Error(`PSFB is a single-output converter: got ${Array.isArray(outs) ? outs.length : 'no'} outputs`);
+      }
+      return outs[0];
+    },
     outputTurnsRatioTitle(index) {
       return turnsRatioTitleFor(index, this.localData.outputsParameters.length);
     },
@@ -72,7 +82,7 @@ export default {
         ? (this.localData.inputVoltage?.nominal ?? this.localData.inputVoltage?.minimum ?? 400)
         : (this.localData.inputVoltage ?? 400);
       const knowsDesign = this.localData.designMode === 'I know the design I want';
-      const outs = this.localData.outputsParameters || [];
+      const outs = [this.singleOutput()];
       const desiredTurnsRatios = knowsDesign
         ? outs.map(o => o.turnsRatio || 1.0)
         : outs.map(o => vin / (o.voltage || 1));
@@ -94,9 +104,10 @@ export default {
       return params;
     },
     buildOperatingPoint() {
+      const output = this.singleOutput();
       return {
-        outputVoltages: this.localData.outputsParameters.map(o => o.voltage),
-        outputCurrents: this.localData.outputsParameters.map(o => o.current),
+        outputVoltages: [output.voltage],
+        outputCurrents: [output.current],
         phaseShift: this.localData.phaseShift,
         switchingFrequency: this.localData.switchingFrequency,
         ambientTemperature: this.localData.ambientTemperature,
@@ -133,31 +144,10 @@ export default {
       const vin = typeof this.localData.inputVoltage === 'object'
         ? this.localData.inputVoltage?.nominal
         : this.localData.inputVoltage;
-      const outs = this.localData.outputsParameters || [];
-      const outputsValid = outs.length > 0 && outs.every(o => o.voltage > 0 && o.current > 0);
-      return outputsValid
+      const output = this.singleOutput();
+      return output.voltage > 0 && output.current > 0
         && vin > 0
         && this.localData.switchingFrequency > 0;
-    },
-    updateNumberOutputs(newNumber) {
-      const n = parseInt(newNumber, 10);
-      if (n > this.localData.outputsParameters.length) {
-        const diff = n - this.localData.outputsParameters.length;
-        for (let i = 0; i < diff; i++) {
-          const last = this.localData.outputsParameters[this.localData.outputsParameters.length - 1] || { voltage: 48, current: 20.83, turnsRatio: 4.0 };
-          const newOutput = { voltage: last.voltage, current: last.current };
-          if (last.turnsRatio != null) {
-            newOutput.turnsRatio = last.turnsRatio;
-          } else if (this.localData.designMode === 'I know the design I want') {
-            newOutput.turnsRatio = 1.0;
-          }
-          this.localData.outputsParameters.push(newOutput);
-        }
-      } else if (n < this.localData.outputsParameters.length) {
-        const diff = this.localData.outputsParameters.length - n;
-        this.localData.outputsParameters.splice(-diff, diff);
-      }
-      this.updateErrorMessage();
     },
     updateErrorMessage() { this.errorMessage = ""; },
     dismissError() { this.errorMessage = ""; this.waveformError = ""; },
@@ -224,6 +214,7 @@ export default {
     :waveformViewMode="waveformViewMode"
     :waveformForceUpdate="forceWaveformUpdate"
     :disableActions="errorMessage != '' || !isValid()"
+    :showNumberOutputs="false"
     @update:numberOfPeriods="numberOfPeriods = $event"
     @update:numberOfSteadyStatePeriods="numberOfSteadyStatePeriods = $event"
     @update:waveformViewMode="waveformViewMode = $event"
@@ -283,19 +274,6 @@ export default {
     </template>
 
     <template #outputs>
-      <div class="mb-3">
-        <ElementFromList :name="'numberOutputs'" :tooltip="tooltipsConverterWizards['numberOutputs']" :replaceTitle="'Number of Outputs'"
-        :dataTestLabel="dataTestLabel + '-NumberOutputs'"
-          :options="Array.from({length: 10}, (_, i) => i + 1)"
-          :titleSameRow="true" v-model="localData"
-          :labelWidthProportionClass="'col-5'" :valueWidthProportionClass="'col-7'"
-          :valueFontSize="$styleStore.wizard.inputFontSize"
-          :labelFontSize="$styleStore.wizard.inputLabelFontSize"
-          :labelBgColor="'transparent'" :valueBgColor="$styleStore.wizard.inputValueBgColor"
-          :textColor="$styleStore.wizard.inputTextColor"
-          @update="updateNumberOutputs"
-        />
-      </div>
       <div v-for="(datum, index) in localData.outputsParameters" :key="'output-' + index" class="mb-2">
         <template v-if="localData.designMode === 'I know the design I want'">
           <PairOfDimensions
