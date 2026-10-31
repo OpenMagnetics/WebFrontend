@@ -12,10 +12,15 @@
  * which the ACF and AHB do not read; maximumSwitchCurrent and maximumDrainSourceVoltage were
  * never forwarded at all.
  *
- * Pure function test: no page, no engine.
+ * ABT #2160: the design call's parts are pinned on every input-voltage point (khRunAtEachInputVoltage),
+ * each on the key the Kirchhoff topology accepts as a pin, and every point is checked to come back
+ * with the same parts.
+ *
+ * Pure function test: no page, no engine (the design-pin cases use a stand-in engine that reports
+ * the diagnostics given to it).
  */
 import { test, expect } from '@playwright/test';
-import { buildKhConverterSpec } from '../WebSharedComponents/assets/js/kirchhoffRuntime.js';
+import { buildKhConverterSpec, khRunAtEachInputVoltage } from '../WebSharedComponents/assets/js/kirchhoffRuntime.js';
 
 // The user's Active Clamp Forward, "I know the design I want", as ForwardWizard.buildParams() sends it.
 const USER_ACF_PARAMS = {
@@ -128,5 +133,120 @@ test.describe('Kirchhoff spec forwarding', () => {
       .toThrow(/unknown PFC conduction mode 'burstMode'/);
     expect(() => buildKhConverterSpec('pfc', { ...PFC_BASE, wideBandgapSwitch: 'yes' }))
       .toThrow(/wideBandgapSwitch must be a boolean/);
+  });
+});
+
+// ── Design pins at every input voltage (ABT #2160) ──────────────────────────────────────────────
+// A stand-in engine: the design call and every point report the same diagnostics (or the point's own,
+// when a case changes a part at one point), and every spec sent is recorded.
+const fakeDiagnostics = ({ capacitors = [], inductors = [] }) => ({
+  magnetics: [{ name: 'T1', isMain: true, windings: 2, magnetizingInductance: 1e-4, turnsRatios: [2] }],
+  capacitors,
+  computed: { extraInductors: inductors },
+});
+function standInEngine(design, atPoint = () => design) {
+  const specs = [];
+  const call = async (topology, specJson) => {
+    const spec = JSON.parse(specJson);
+    specs.push(spec);
+    const parts = specs.length === 1 ? design : atPoint(spec);
+    return JSON.stringify({ diagnostics: fakeDiagnostics(parts) });
+  };
+  return { call, specs };
+}
+const cap = (name, capacitance) => ({ name, capacitance });
+const ind = (name, inductance) => ({ name, inductance });
+const TWO_RAILS = { ...BASE_DC, operatingPoints: [{ outputVoltages: [12, 5], outputCurrents: [2, 1], switchingFrequency: 100000 }] };
+
+const DESIGN_PIN_CASES = [
+  { topology: 'flyback', params: TWO_RAILS, parts: { capacitors: [cap('Cin', 1e-5), cap('Cclmp', 1.3e-10), cap('Cout', 8e-5), cap('Cout2', 9e-5)] },
+    config: { outputCapacitance: [8e-5, 9e-5], snubberCap: 1.3e-10 } },
+  { topology: 'two_switch_flyback', params: BASE_DC, parts: { capacitors: [cap('Cclmp', 1.5e-10), cap('Cout', 7e-5)] },
+    config: { outputCapacitance: [7e-5], snubberCap: 1.5e-10 } },
+  { topology: 'active_clamp_flyback', params: BASE_DC, parts: { capacitors: [cap('Cout', 8e-5)] }, config: { outputCapacitance: [8e-5] } },
+  { topology: 'boost', params: BASE_DC, parts: { capacitors: [cap('Cout', 1.7e-5)] }, config: { outputCapacitance: 1.7e-5 } },
+  { topology: 'weinberg', params: BASE_DC, parts: { capacitors: [cap('Cout', 3.2e-5)] }, config: { outputCapacitance: 3.2e-5 } },
+  { topology: 'forward', params: TWO_RAILS, parts: { inductors: [ind('Lout', 1.2e-4), ind('Lout2', 9.7e-5)] },
+    config: { outputInductance: [1.2e-4, 9.7e-5] } },
+  { topology: 'two_switch_forward', params: TWO_RAILS, parts: { inductors: [ind('Lout', 1.2e-4), ind('Lout2', 9.7e-5)] },
+    config: { outputInductance: [1.2e-4, 9.7e-5] } },
+  { topology: 'acf', params: BASE_DC, parts: { inductors: [ind('Lout', 8.6e-6)] }, config: { outputInductance: [8.6e-6] } },
+  { topology: 'sepic', params: BASE_DC, parts: { inductors: [ind('L2', 2.6e-4)], capacitors: [cap('Cs', 1.4e-5)] },
+    config: { inductanceL2: 2.6e-4, couplingCapacitance: 1.4e-5 } },
+  { topology: 'zeta', params: BASE_DC, parts: { inductors: [ind('L2', 2.6e-4)], capacitors: [cap('Cc', 1e-5)] },
+    config: { inductanceL2: 2.6e-4, couplingCapacitance: 1e-5 } },
+  { topology: 'cuk', params: BASE_DC, parts: { inductors: [ind('L2', 2.2e-4)], capacitors: [cap('C1', 5.3e-6), cap('Crc_sw', 1e-9)] },
+    config: { inductanceL2: 2.2e-4, couplingCapacitance: 5.3e-6 } },
+  { topology: 'push_pull', params: BASE_DC, parts: { capacitors: ['Csn1', 'Csn2', 'Csn3', 'Csn4'].map((n) => cap(n, 5.8e-11)).concat([cap('Cdmp', 1e-9)]) },
+    config: { snubberCap: 5.8e-11 } },
+  { topology: 'fsbb', params: BASE_DC, parts: { capacitors: [cap('Csw1', 2.2e-9), cap('Crc_sw1', 3.7e-9), cap('Crc_sw2', 3.7e-9)] },
+    config: { snubberCap: 3.7e-9 } },
+  { topology: 'dab', params: BASE_DC, parts: { inductors: [ind('Lr', 1.9e-4)], capacitors: [cap('Crc_pri', 1.24e-10), cap('CsnA_hi', 1.24e-10), cap('CsnE_lo', 1.24e-10)] },
+    config: { snubberCap: 1.24e-10 }, dr: { desiredSeriesInductance: 1.9e-4 } },
+  { topology: 'psfb', params: BASE_DC, parts: { inductors: [ind('Lr', 2e-6), ind('Lout', 2.4e-5)], capacitors: [cap('Crc_pri', 1.24e-10), cap('CsnA', 2.2e-9)] },
+    config: { outputInductance: 2.4e-5, snubberCap: 1.24e-10 }, dr: { desiredSeriesInductance: 2e-6 } },
+  { topology: 'pshb', params: BASE_DC, parts: { inductors: [ind('Lr', 2e-6), ind('Lout', 2.5e-5)], capacitors: [cap('Crc_pri', 4.96e-10)] },
+    config: { outputInductance: 2.5e-5, snubberCap: 4.96e-10 }, dr: { desiredSeriesInductance: 2e-6 } },
+  { topology: 'src', params: BASE_DC, parts: { inductors: [ind('Lr', 5.2e-5)], capacitors: [cap('Cr', 4.9e-8)] },
+    dr: { desiredResonantInductance: 5.2e-5, desiredResonantCapacitance: 4.9e-8 } },
+];
+
+test.describe('Kirchhoff design pins at every input voltage', () => {
+  for (const { topology, params, parts, config = {}, dr = {} } of DESIGN_PIN_CASES) {
+    test(`${topology}: every point carries the design's parts (${[...Object.keys(config), ...Object.keys(dr)].join(', ')})`, async () => {
+      const engine = standInEngine(parts);
+      const runs = await khRunAtEachInputVoltage(engine.call, topology, params, 'analytical');
+      // Premise: Min. and Max. were entered, so one design call and two points.
+      expect(engine.specs.length).toBe(3);
+      expect(runs.points.map((p) => p.point.value)).toEqual([36, 72]);
+      for (const spec of engine.specs.slice(1)) {
+        for (const [key, value] of Object.entries(config)) expect(spec.config?.[key], `config.${key}`).toEqual(value);
+        for (const [key, value] of Object.entries(dr)) expect(spec.designRequirements[key], `designRequirements.${key}`).toEqual(value);
+      }
+      // The design call itself is never pinned.
+      for (const key of Object.keys(config)) expect(engine.specs[0].config?.[key]).toBeUndefined();
+    });
+  }
+
+  test('a point that comes back with another output capacitor throws, naming the part', async () => {
+    const design = { capacitors: [cap('Cout', 8e-5), cap('Cout2', 9e-5)] };
+    const engine = standInEngine(design, (spec) => (spec.operatingPoints[0].inputVoltage === 72
+      ? { capacitors: [cap('Cout', 8e-5), cap('Cout2', 4e-5)] } : design));
+    await expect(khRunAtEachInputVoltage(engine.call, 'flyback', TWO_RAILS, 'analytical'))
+      .rejects.toThrow(/The converter changed between input voltages: Output capacitors Cout is \[0\.00008, 0\.00009\] in the design but \[0\.00008, 0\.00004\] at Max\. input \(72 V\)/);
+  });
+
+  test('a point that comes back with another snubber throws', async () => {
+    const design = { capacitors: [cap('Crc_pri', 1.24e-10)] };
+    const engine = standInEngine(design, () => ({ capacitors: [cap('Crc_pri', 2e-10)] }));
+    await expect(khRunAtEachInputVoltage(engine.call, 'psfb', BASE_DC, 'analytical'))
+      .rejects.toThrow(/Snubber capacitor Crc_pri is 1\.24e-10 in the design but 2e-10 at Min\. input \(36 V\)/);
+  });
+
+  test('a part the design does not have is not pinned', async () => {
+    const engine = standInEngine({ capacitors: [cap('Cin', 1e-5)] });
+    await khRunAtEachInputVoltage(engine.call, 'flyback', BASE_DC, 'analytical');
+    for (const spec of engine.specs.slice(1)) {
+      expect(spec.config?.outputCapacitance).toBeUndefined();
+      expect(spec.config?.snubberCap).toBeUndefined();
+    }
+  });
+
+  test('a design with an output capacitor on some outputs only throws', async () => {
+    const engine = standInEngine({ capacitors: [cap('Cout', 8e-5)] });
+    await expect(khRunAtEachInputVoltage(engine.call, 'flyback', TWO_RAILS, 'analytical'))
+      .rejects.toThrow(/reports capacitors Cout but has 2 outputs; expected one Cout per output/);
+  });
+
+  test('a listed part without a value throws', async () => {
+    const engine = standInEngine({ inductors: [ind('L2', null)], capacitors: [cap('Cs', 1e-5)] });
+    await expect(khRunAtEachInputVoltage(engine.call, 'sepic', BASE_DC, 'analytical'))
+      .rejects.toThrow(/the design lists inductor L2 with no inductance \(got null\)/);
+  });
+
+  test('energy-budget snubbers of different values cannot share one pin: it throws', async () => {
+    const engine = standInEngine({ capacitors: [cap('Crc_pri', 1.24e-10), cap('CsnA_hi', 2.5e-10)] });
+    await expect(khRunAtEachInputVoltage(engine.call, 'dab', BASE_DC, 'analytical'))
+      .rejects.toThrow(/energy-budget snubbers differ \(Crc_pri 1\.24e-10, CsnA_hi 2\.5e-10\)/);
   });
 });
