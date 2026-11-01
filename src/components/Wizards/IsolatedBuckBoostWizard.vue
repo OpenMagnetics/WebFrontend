@@ -120,7 +120,9 @@ export default {
         // whose input voltage is empty throws the message the wizard shows (ABT #2160).
         const desiredDutyCycle = khDesiredDutyCycle(this.localData.inputVoltage, this.localData.dutyCycle);
         if (desiredDutyCycle) aux['desiredDutyCycle'] = desiredDutyCycle;
-        aux['desiredDeadTime'] = [this.localData.deadTime];
+        // The dead time between the Isolated Buck's two switches (Kirchhoff config.forcedDeadTime).
+        // The Isolated Buck-Boost has one switch and a diode: no dead time, none is sent.
+        if (this.converterName == "Isolated Buck") aux['desiredDeadTime'] = [this.localData.deadTime];
         aux['desiredTurnsRatios'] = this.localData.outputsParameters.map(e => e.turnsRatio);
       } else {
         // The other option ('The on-resistance of the MOSFET') has no ripple input: the hidden
@@ -888,7 +890,7 @@ export default {
           :textColor="$styleStore.wizard.inputTextColor"
           @update="updateErrorMessage"
         />
-        <Dimension :name="'deadTime'" :tooltip="tooltipsConverterWizards['deadTime']" :replaceTitle="'Dead Time'" unit="s"
+        <Dimension v-if="converterName == 'Isolated Buck'" :name="'deadTime'" :tooltip="tooltipsConverterWizards['deadTime']" :replaceTitle="'Dead Time'" unit="s"
           :dataTestLabel="dataTestLabel + '-DeadTime'"
           :min="0" :max="1e-3"
           v-model="localData"

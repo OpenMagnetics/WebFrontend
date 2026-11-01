@@ -12,7 +12,7 @@ import { waitForMkf, isWorkerMode, updateEngineSettings, queueEngineSettingsTask
 import { waitForKirchhoff } from 'WebSharedComponents/assets/js/kirchhoffRuntime'
 import { assertValidMas } from 'WebSharedComponents/assets/js/masValidator.js'
 import { DETAILS_SEPARATOR } from 'WebSharedComponents/assets/js/noticeText.js'
-import { clean } from 'WebSharedComponents/assets/js/utils'
+import { withoutNulls } from 'WebSharedComponents/assets/js/utils'
 import { unitSystem } from 'WebSharedComponents/assets/js/units.js'
 import { useInventoryStore, ENGINE_HAS_CONTEXT_ADVISERS } from '../stores/inventory'
 import { requireAdviserExcitations, requireCoreAdviseMode } from 'WebSharedComponents/assets/js/adviserInputs.js'
@@ -187,7 +187,7 @@ export const useTaskQueueStore = defineStore('taskQueue', {
             const mkf = await waitForMkf();
             await mkf.ready;
 
-            const argument = typeof material === 'string' ? material : JSON.stringify(clean(JSON.parse(JSON.stringify(material))));
+            const argument = typeof material === 'string' ? material : JSON.stringify(withoutNulls(material));
             const result = await mkf.check_core_material(argument);
             if (result.startsWith('Exception')) {
                 throw new Error(result);
@@ -205,7 +205,7 @@ export const useTaskQueueStore = defineStore('taskQueue', {
             const mkf = await waitForMkf();
             await mkf.ready;
 
-            const argument = (material) => typeof material === 'string' ? material : JSON.stringify(clean(JSON.parse(JSON.stringify(material))));
+            const argument = (material) => typeof material === 'string' ? material : JSON.stringify(withoutNulls(material));
             const result = await mkf.compare_core_material_volumetric_losses(argument(reference), argument(other));
             if (result.startsWith('Exception')) {
                 throw new Error(result);
