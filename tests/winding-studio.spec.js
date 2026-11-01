@@ -581,13 +581,15 @@ test.describe('Winding Studio P0', () => {
     await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2 + 20, { steps: 5 });
     await page.mouse.up();
 
-    await page.waitForFunction(() => {
+    // The margin is written into the section before the re-wind returns (MB db80cf7), so it
+    // is no sign the re-wind is done: wait for the re-wound section to leave its old position.
+    await page.waitForFunction((beforeY) => {
       const pinia = document.querySelector('#app')?.__vue_app__?.config?.globalProperties?.$pinia;
       if (pinia == null) return false;   // ABT #929: not mounted yet — poll again, do not throw
       const sections = pinia._s.get('mas').mas?.magnetic?.coil?.sectionsDescription ?? [];
       const primary = sections.find((s) => s.type === 'conduction' && s.partialWindings[0].winding === 'Primary');
-      return primary != null && (primary.margin?.[0] ?? 0) > 0.0005;
-    }, null, { timeout: 60000 });
+      return primary != null && (primary.margin?.[0] ?? 0) > 0.0005 && primary.coordinates[1] !== beforeY;
+    }, before.y, { timeout: 60000 });
     const after = await primarySection();
     expect(after.margin[0]).toBeGreaterThan(0.0005);
     // The turns don't need to re-pack here (24 x 0.855 mm fits the reduced

@@ -188,7 +188,7 @@ test.describe('legacy MAS documents load', () => {
     const { mas: loaded } = await load(page, mas, 'on_time_only_voltage.json');
     const refusals = warnings.filter((text) => text.includes('MKF could not complete this design'));
     expect(refusals.length, 'MKF refused the design').toBeGreaterThan(0);
-    expect(refusals[0]).toContain('a waveform must be given over exactly one period');
+    expect(refusals[0]).toContain('a waveform must cover exactly one period');
     expect(loaded.magnetic.coil.functionalDescription.map((winding) => winding.numberTurns)).toEqual(turns);
     await expect.poll(async () => (await builderErrors(page)).length, { timeout: 60000 }).toBeGreaterThan(0);
   });
@@ -465,7 +465,7 @@ test.describe('legacy MAS documents load', () => {
     const { mas: loaded } = await load(page, mas, 'named_parts_on_time_only.json');
     const refusals = warnings.filter((text) => text.includes('MKF could not complete this design'));
     expect(refusals.length, 'MKF refused the design').toBeGreaterThan(0);
-    expect(refusals[0]).toContain('a waveform must be given over exactly one period');
+    expect(refusals[0]).toContain('a waveform must cover exactly one period');
     expect(refusals[0]).toContain('opened with its magnetic completed');
     // The magnetic is MKF's completion of what the file names.
     const core = loaded.magnetic.core;
@@ -491,7 +491,7 @@ test.describe('legacy MAS documents load', () => {
       expect(excitation.current.harmonics?.amplitudes?.length, `winding ${index} current has harmonics`).toBeGreaterThan(1);
       expect(excitation.current.harmonics.frequencies[1], `winding ${index} fundamental`).toBeCloseTo(excitations[index].frequency, 3);
     }
-    await expect.poll(async () => (await builderErrors(page)).some((m) => m.includes('a waveform must be given over exactly one period')),
+    await expect.poll(async () => (await builderErrors(page)).some((m) => m.includes('a waveform must cover exactly one period')),
       { timeout: 60000 }).toBe(true);
   });
 

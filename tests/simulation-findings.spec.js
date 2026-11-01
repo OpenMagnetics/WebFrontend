@@ -67,7 +67,8 @@ test.describe('Simulation findings per operating point (ABT #1855)', () => {
   test('SIMFIND-2: a voltage whose volt-seconds do not balance is simulated and named', async ({ page }) => {
     test.setTimeout(300000);
     // ABT #1855 (Alf, 2026-10-14): MKF no longer refuses an unbalanced voltage; it simulates its
-    // balanced part (the mean removed) and says so for that operating point.
+    // balanced part (the mean removed) and names the imbalance for that operating point. Since MKF
+    // 6d93c51f the finding no longer says that MKF integrated only the balanced part.
     const mas = fixture('multicolumn_e42_transformer.json');
     const excitation = mas.inputs.operatingPoints[0].excitationsPerWinding[0];
     const period = 1 / excitation.frequency;
@@ -83,7 +84,7 @@ test.describe('Simulation findings per operating point (ABT #1855)', () => {
     await page.waitForURL('**/magnetic_tool**', { timeout: 120000 });
     expect(alerts, 'the load is not refused').toEqual([]);
     expect(warnings.filter((text) => text.includes('MKF could not complete this design')), 'MKF completes the design').toEqual([]);
-    await expect.poll(async () => (await findings(page)).filter((m) => m.includes('not volt-second balanced') && m.includes('the mean removed')).length,
+    await expect.poll(async () => (await findings(page)).filter((m) => m.includes('not volt-second balanced') && m.includes('drifts the flux linkage by')).length,
       { timeout: 180000 }).toBe(1);
     expect(await engineLogMessages(page, { source: BUILDER_SOURCES }), 'no calculation failed').toEqual([]);
     await expect(page.locator('[data-cy$="-SimulationFindings"]'), 'no findings banner over the cards').toHaveCount(0);
