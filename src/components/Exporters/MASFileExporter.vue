@@ -1,5 +1,5 @@
 <script setup>
-import { clean, download, deepCopy } from 'WebSharedComponents/assets/js/utils.js'
+import { cleanKeepingCoreMaterials, download, deepCopy } from 'WebSharedComponents/assets/js/utils.js'
 import { assertValidMas } from 'WebSharedComponents/assets/js/masValidator.js'
 import { describeFailure } from 'WebSharedComponents/assets/js/noticeText.js'
 
@@ -57,12 +57,13 @@ export default {
             //  - "only with magnetic": a MAS Magnetic document (magnetic.json). It used
             //    to be a MAS with inputs and outputs deleted, which MAS requires, so it
             //    was never a valid MAS file. Load MAS reads both.
-            // clean() drops null / empty values: MAS has no null for an absent optional.
+            // clean() drops null / empty values: MAS has no null for an absent optional. The core
+            // material keeps its empty objects, which MAS can require (cleanKeepingCoreMaterials).
             // Any failure is shown under the button: a click that silently does nothing
             // reads as a broken app.
             try {
                 const kind = this.includeInputs ? 'Mas' : 'Magnetic';
-                const doc = clean(deepCopy(this.includeInputs ? this.mas : this.mas.magnetic));
+                const doc = cleanKeepingCoreMaterials(deepCopy(this.includeInputs ? this.mas : this.mas.magnetic));
                 assertValidMas(kind, doc, 'MAS export');
                 download(JSON.stringify(doc, null, 4), this.fileName(), "text/plain");
             } catch (e) {

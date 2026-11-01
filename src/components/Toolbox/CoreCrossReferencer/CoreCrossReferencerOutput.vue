@@ -1,6 +1,6 @@
 <script setup>
 import Module from '../../../assets/js/libCrossReferencers.wasm.js'
-import { toTitleCase, removeTrailingZeroes, processCoreTexts, coreTextsToLatex, deepCopy, downloadBase64asPDF, clean, download } from 'WebSharedComponents/assets/js/utils.js'
+import { toTitleCase, removeTrailingZeroes, processCoreTexts, coreTextsToLatex, deepCopy, downloadBase64asPDF, cleanKeepingCoreMaterials, download } from 'WebSharedComponents/assets/js/utils.js'
 import Core3DVisualizer from 'WebSharedComponents/Common/Core3DVisualizer.vue'
 import CoreSTPExporter from '../../Exporters/CoreSTPExporter.vue'
 import CoreStlExporter from '../../Exporters/CoreStlExporter.vue'
@@ -82,7 +82,7 @@ export default {
             delete masOnlyCore.magnetic.coil.sectionsDescription;
             delete masOnlyCore.magnetic.coil.turnsDescription;
 
-            masOnlyCore = clean(masOnlyCore);
+            masOnlyCore = cleanKeepingCoreMaterials(masOnlyCore);
 
             download(JSON.stringify(masOnlyCore, null, 4), this.mas.magnetic.manufacturerInfo.reference + ".json", "text/plain");
             this.masExported = true
@@ -101,7 +101,7 @@ export default {
             delete masOnlyCore.outputs.strayCapacitance;
             delete masOnlyCore.outputs.temperature;
             delete masOnlyCore.outputs.windingWindowMagneticStrengthField;
-            masOnlyCore = clean(masOnlyCore);
+            masOnlyCore = cleanKeepingCoreMaterials(masOnlyCore);
 
             download(JSON.stringify(masOnlyCore, null, 4), this.mas.magnetic.manufacturerInfo.reference + ".json", "text/plain");
             this.masExported = true

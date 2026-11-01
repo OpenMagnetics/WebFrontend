@@ -1,7 +1,7 @@
 <script setup>
 import { useMasStore } from '../../../stores/mas'
 import { useTaskQueueStore } from '../../../stores/taskQueue'
-import { toTitleCase, removeTrailingZeroes, processCoreTexts, coreTextsToLatex, deepCopy, downloadBase64asPDF, clean, download } from 'WebSharedComponents/assets/js/utils.js'
+import { toTitleCase, removeTrailingZeroes, processCoreTexts, coreTextsToLatex, deepCopy, downloadBase64asPDF, cleanKeepingCoreMaterials, download } from 'WebSharedComponents/assets/js/utils.js'
 import { recordDesign } from 'WebSharedComponents/assets/js/telemetry.js'
 
 </script>
@@ -59,7 +59,7 @@ export default {
             delete masOnlyCore.magnetic.coil.sectionsDescription;
             delete masOnlyCore.magnetic.coil.turnsDescription;
 
-            masOnlyCore = clean(masOnlyCore);
+            masOnlyCore = cleanKeepingCoreMaterials(masOnlyCore);
 
             download(JSON.stringify(masOnlyCore, null, 4), this.masStore.mas.magnetic.manufacturerInfo.reference + ".json", "text/plain");
             this.masExported = true
@@ -78,7 +78,7 @@ export default {
             delete masOnlyCore.outputs.strayCapacitance;
             delete masOnlyCore.outputs.temperature;
             delete masOnlyCore.outputs.windingWindowMagneticStrengthField;
-            masOnlyCore = clean(masOnlyCore);
+            masOnlyCore = cleanKeepingCoreMaterials(masOnlyCore);
 
             download(JSON.stringify(masOnlyCore, null, 4), this.masStore.mas.magnetic.manufacturerInfo.reference + ".json", "text/plain");
             this.masExported = true
