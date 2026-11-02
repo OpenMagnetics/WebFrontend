@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import api from '../services/accountApi'
+import { masForSaving } from '../services/masNulls'
 
 // Link between the local working design (mas store) and its server-side
 // "My Designs" entry, so repeated saves update the same design (optimistic
@@ -28,6 +29,8 @@ export const useCloudDesignStore = defineStore("cloudDesign", {
             this.version = null;
             this.name = null;
         },
+        // Every save sends masForSaving(mas): the document without the explicit nulls the
+        // engine leaves for unset optionals, which the MAS schema rejects (ABT #2222).
         // Save the document. Creates a new design when unlinked, otherwise
         // updates the linked one. A 409 (modified elsewhere) is thrown to the
         // caller, which decides between reload and overwrite.
@@ -36,11 +39,11 @@ export const useCloudDesignStore = defineStore("cloudDesign", {
                 if (name == null || name === "") {
                     throw new Error("cloudDesign.save: a name is required to create a design");
                 }
-                const { data } = await api.post('/designs', { name, mas });
+                const { data } = await api.post('/designs', { name, mas: masForSaving(mas) });
                 this.link(data);
                 return data;
             }
-            const { data } = await api.put(`/designs/${this.designId}`, { mas },
+            const { data } = await api.put(`/designs/${this.designId}`, { mas: masForSaving(mas) },
                 { headers: { 'If-Match': String(this.version) } });
             this.version = data.version;
             return data;
@@ -55,7 +58,7 @@ export const useCloudDesignStore = defineStore("cloudDesign", {
             if (name == null || String(name).trim() === "") {
                 throw new Error("cloudDesign.saveAs: a name is required");
             }
-            const { data } = await api.post('/designs', { name: String(name).trim(), mas });
+            const { data } = await api.post('/designs', { name: String(name).trim(), mas: masForSaving(mas) });
             this.link(data);
             return data;
         },
@@ -65,7 +68,7 @@ export const useCloudDesignStore = defineStore("cloudDesign", {
                 throw new Error("cloudDesign.overwrite: no linked design");
             }
             const { data: current } = await api.get(`/designs/${this.designId}`);
-            const { data } = await api.put(`/designs/${this.designId}`, { mas },
+            const { data } = await api.put(`/designs/${this.designId}`, { mas: masForSaving(mas) },
                 { headers: { 'If-Match': String(current.version) } });
             this.version = data.version;
             return data;

@@ -5,6 +5,7 @@ import { useMasStore } from '/MagneticBuilder/src/stores/mas'
 import { useTaskQueueStore } from '../stores/taskQueue'
 import { useAuthStore } from '../stores/auth'
 import { useCloudDesignStore } from '../stores/cloudDesign'
+import { masForSaving } from '../services/masNulls'
 import api from '../services/accountApi'
 import OrgSelector from '../components/User/OrgSelector.vue'
 import { useOrgContextStore } from '../stores/orgContext'
@@ -120,7 +121,7 @@ export default {
                 if (this.orgContextStore.selectedOrgId != null) {
                     // Org designs belong to the organization; no local link.
                     const { data } = await api.post('/designs' + this.orgContextStore.orgQuery,
-                        { name, mas: this.masStore.mas });
+                        { name, mas: masForSaving(this.masStore.mas) });
                     result = data;
                 } else {
                     result = await this.cloudDesignStore.saveAs(this.masStore.mas, name);
@@ -146,7 +147,7 @@ export default {
                     throw new Error(`the server returned no MAS for "${design.name}"`);
                 }
                 await api.post('/designs' + this.orgContextStore.orgQuery,
-                    { name: this.uniqueCopyName(design.name), mas: data.mas });
+                    { name: this.uniqueCopyName(design.name), mas: masForSaving(data.mas) });
                 await this.refresh();
             } catch (error) {
                 this.error = "Could not duplicate: " + (error.response?.data?.detail || error.message);
@@ -162,7 +163,7 @@ export default {
                 if (this.orgContextStore.selectedOrgId != null) {
                     // Org designs belong to the organization; no local link.
                     const { data } = await api.post('/designs' + this.orgContextStore.orgQuery,
-                        { name: name || this.defaultName(), mas: this.masStore.mas });
+                        { name: name || this.defaultName(), mas: masForSaving(this.masStore.mas) });
                     result = data;
                 } else {
                     result = await this.cloudDesignStore.save(this.masStore.mas, name);

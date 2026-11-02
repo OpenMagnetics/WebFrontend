@@ -9,6 +9,7 @@ import { useCoreMaterialNoticeStore } from '../stores/coreMaterialNotice.js'
 import { useLoadCorrectionsStore } from '../stores/loadCorrections.js'
 import { reportNotice } from 'WebSharedComponents/assets/js/notices.js'
 import { engineUserSettingsSettled } from '../stores/engineDiagnostics.js'
+import { stripNulls } from './masNulls.js'
 
 // Map every WaveformLabel enum value by its lowercase, space-free form so legacy
 // documents with pre-1.0 labels ("Triangular", "Flyback Primary", "Rectangular
@@ -16,26 +17,6 @@ import { engineUserSettingsSettled } from '../stores/engineDiagnostics.js'
 const waveformLabelKey = (label) => label.toLowerCase().replace(/\s+/g, '');
 const waveformLabelByKey = Object.fromEntries(
     Object.values(WaveformLabel).map((value) => [waveformLabelKey(value), value]));
-
-// Same null-stripping the MAS sentry applies before Convert validation:
-// quicktype optionals reject explicit null, and files exported by the app
-// carry plenty of them. Works on a deep copy — callers pass a throwaway.
-function stripNulls(value) {
-    if (Array.isArray(value)) {
-        value.forEach(stripNulls);
-        return value;
-    }
-    if (value && typeof value === 'object') {
-        for (const key of Object.keys(value)) {
-            if (value[key] === null || value[key] === 'null' || value[key] === undefined) {
-                delete value[key];
-            } else {
-                stripNulls(value[key]);
-            }
-        }
-    }
-    return value;
-}
 
 // The MAS JSON Schema violations of a document, as ajv reports them (instancePath, keyword,
 // params). The same schemas the MAS sentry applies (masValidator.js), compiled here as well
