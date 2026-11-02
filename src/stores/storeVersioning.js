@@ -28,6 +28,7 @@ const PERSISTENT_STORE_KEYS = [
     'state',
     'storedCoilLayout',
     'user',
+    'wizardInputs',
 ];
 
 /**

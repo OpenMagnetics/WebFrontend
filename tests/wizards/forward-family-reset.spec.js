@@ -13,7 +13,8 @@
  * kirchhoffRuntime's legacy alias for the SINGLE-switch topology, so clicking
  * "Simulated" on a Two-Switch / Active Clamp design returned three windings
  * (Primary / Demagnetization winding / Secondary 0) and turnsRatios[0] == 1,
- * and those results were merged straight into the MAS store.
+ * and those results were merged straight into the MAS store. (Since ABT #2209 a
+ * run only previews; the design gets the windings on "Design Magnetic".)
  */
 import { test, expect } from '../_coverage.js';
 import { openWizard, runSimulated, runAnalytical, withPinia, clickDesignMagnetic } from '../utils/index.js';
@@ -28,6 +29,17 @@ const readWindings = (page) => withPinia(page, (pinia) => {
   };
 });
 
+// An Analytical / Simulated run is a preview: its result stays on the wizard and reaches the
+// design (mas store) only on "Design Magnetic" (ABT #2209). Read the preview from the wizard.
+const readPreviewWindings = (page) => page.evaluate(() => {
+  const wizard = window.__omFindComponent('ForwardWizard');
+  if (!wizard) throw new Error('ForwardWizard component instance not found in the page');
+  return JSON.parse(JSON.stringify({
+    excitationNames: (wizard.simulatedOperatingPoints?.[0]?.excitationsPerWinding || []).map(e => e.name),
+    turnsRatios: wizard.designRequirements?.turnsRatios || [],
+  }));
+});
+
 const hasDemag = (names) => names.some(n => /demag/i.test(String(n)));
 
 for (const { key, linkCy, title } of [
@@ -39,13 +51,13 @@ for (const { key, linkCy, title } of [
       await openWizard(page, linkCy);
 
       await runAnalytical(page);
-      const analytical = await readWindings(page);
+      const analytical = await readPreviewWindings(page);
       expect(hasDemag(analytical.excitationNames), `analytical windings: ${JSON.stringify(analytical.excitationNames)}`).toBe(false);
       expect(analytical.excitationNames.length).toBe(2);
       expect(analytical.turnsRatios.length).toBe(1);
 
       await runSimulated(page);
-      const simulated = await readWindings(page);
+      const simulated = await readPreviewWindings(page);
       expect(hasDemag(simulated.excitationNames), `simulated windings: ${JSON.stringify(simulated.excitationNames)}`).toBe(false);
       expect(simulated.excitationNames.length).toBe(2);
       expect(simulated.turnsRatios.length).toBe(1);
@@ -65,7 +77,7 @@ test.describe('single-switch-forward reset mechanism @scenario', () => {
     await openWizard(page, 'SingleSwitchForward-link');
     await runAnalytical(page);
 
-    const analytical = await readWindings(page);
+    const analytical = await readPreviewWindings(page);
     expect(hasDemag(analytical.excitationNames), `windings: ${JSON.stringify(analytical.excitationNames)}`).toBe(true);
     expect(analytical.excitationNames.length).toBe(3);
 

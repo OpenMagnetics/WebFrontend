@@ -2,6 +2,7 @@
 import ConverterWaveformVisualizer from './ConverterWaveformVisualizer.vue'
 import { recordDesign } from 'WebSharedComponents/assets/js/telemetry.js'
 import { useTaskQueueStore } from '../../stores/taskQueue'
+import { useWizardInputsStore } from '../../stores/wizardInputs'
 import { toTitleCase } from 'WebSharedComponents/assets/js/utils.js'
 /**
  * ConverterWizardBase - Base layout + common logic for all converter wizards.
@@ -16,7 +17,6 @@ import { toTitleCase } from 'WebSharedComponents/assets/js/utils.js'
  *   formatFrequency, formatImpedance, formatInductance, formatCapacitance,
  *   pruneHarmonicsForInputs, processSimulatedOperatingPoints,
  *   processWaveformResults, processAnalyticalWaveforms, processSimulationWaveforms,
- *   assignResultsToMasStore, setOperatingPointsModeToManual,
  *   navigateToReview, navigateToAdvise, validateWaveforms,
  *   extractSinglePeriod, extractSinglePeriodFromOperatingPoints
  */
@@ -278,6 +278,40 @@ export default {
     };
   },
 
+  created() {
+    // A wizard reopens with the inputs it was left with (ABT #2209: users go back and forth
+    // between a wizard and the Magnetic Builder, and every visit used to start from the
+    // defaults). Every wizard keeps its form in `localData` and mounts this base as a child.
+    // Restoring here — before this component renders the wizard's input slots, and before the
+    // wizard's own mounted() auto-run — means the fields and that first run both see the
+    // restored inputs.
+    // Through `$data`: the wizards use <script setup>, which makes them closed by default, so
+    // `this.$parent` is an empty exposed proxy and `$parent.localData` reads undefined.
+    // `$data` is always reachable through it.
+    const wizard = this.$parent?.$data;
+    if (!wizard || wizard.localData === undefined) {
+      throw new Error(`ConverterWizardBase "${this.title}": the wizard that mounts it has no localData to keep`);
+    }
+    const store = useWizardInputsStore();
+    const key = this.title;
+    const stored = store.inputsByWizard[key];
+    if (stored) {
+      const wanted = Object.keys(wizard.localData).sort().join(',');
+      const found = Object.keys(stored).sort().join(',');
+      if (wanted === found) {
+        wizard.localData = JSON.parse(JSON.stringify(stored));
+      } else {
+        // Saved by a build whose wizard had other fields (a deploy also wipes this store via
+        // storeVersioning). Restoring a different shape would feed the engine a malformed spec.
+        console.warn(`[${key}] saved wizard inputs have fields [${found}] but the wizard has [${wanted}]: starting from the defaults`);
+        delete store.inputsByWizard[key];
+      }
+    }
+    this.$watch(() => wizard.localData, (inputs) => {
+      store.inputsByWizard[key] = JSON.parse(JSON.stringify(inputs));
+    }, { deep: true });
+  },
+
   methods: {
 
     /**
@@ -508,51 +542,13 @@ export default {
       this.resultsParamsKey = paramsKey;
       this.lastRunError = '';
       this.resultsRunId += 1;
-      
-      // Assign to masStore inputs
-      this.assignResultsToMasStore(wizardInstance, processed);
-      
-      // Set operating points mode to Manual
-      this.setOperatingPointsModeToManual(wizardInstance);
-      
+
+      // A run is a PREVIEW: its results stay on the wizard. The design (mas store) and the
+      // builder's operating-point state are written only by processWizardData, i.e. by
+      // "Design Magnetic" / "Review Specs". Writing them here replaced the design open in the
+      // builder every time a wizard merely opened (its mount-time run uses the defaults), so a
+      // finished magnetic sat against a spec the user never entered (ABT #2209).
       return processed;
-    },
-    
-    // Assign results to masStore
-    assignResultsToMasStore(wizardInstance, processed) {
-      const { operatingPoints, designRequirements } = processed;
-      
-      // Assign operating points
-      if (operatingPoints?.length > 0) {
-        // webKirchhoff/webMKF may return operating points without a name. The
-        // Magnetic Tool renders "<name> — <winding>" as the operating-point
-        // heading, so a missing name surfaces literally as "null — Primary".
-        // Name any unnamed point with the same convention the visualizer and
-        // summary already use (never clobber a name a wizard already set).
-        operatingPoints.forEach((op, idx) => {
-          if (!op.name) op.name = `Operating Point ${idx + 1}`;
-        });
-        wizardInstance.masStore.mas.inputs.operatingPoints = operatingPoints;
-      }
-      
-      // Merge design requirements
-      if (designRequirements) {
-        wizardInstance.masStore.mas.inputs.designRequirements = {
-          ...wizardInstance.masStore.mas.inputs.designRequirements,
-          ...designRequirements
-        };
-      }
-    },
-    
-    // Set all operating points to Manual mode
-    setOperatingPointsModeToManual(wizardInstance) {
-      const numPoints = wizardInstance.simulatedOperatingPoints?.length || 1;
-      wizardInstance.$stateStore.operatingPoints.modePerPoint = [];
-      for (let i = 0; i < numPoints; i++) {
-        wizardInstance.$stateStore.operatingPoints.modePerPoint.push(
-          wizardInstance.$stateStore.OperatingPointsMode.Manual
-        );
-      }
     },
     
     // ===== WAVEFORM PROCESSING FROM RESULTS =====
@@ -990,10 +986,8 @@ export default {
     async setupMasStore({ designRequirements, operatingPoints, topology, isolationSides, coilGroups, insulationType, wizardInstance: wi }) {
       // Normalize operating points to ensure processed data is properly structured.
       // Also name any unnamed point: this path REPLACES mas.inputs wholesale, and
-      // processWizardData's no-stored-data fallback builds points straight from
-      // the engine (which returns them nameless) without passing through
-      // assignResultsToMasStore — an unnamed point renders as "null — <winding>"
-      // in the Magnetic Tool heading.
+      // the engine returns them nameless, and an unnamed point renders as
+      // "null — <winding>" in the Magnetic Tool heading.
       const normalizedOperatingPoints = operatingPoints.map((op, idx) => ({
         ...op,
         name: op.name || `Operating Point ${idx + 1}`,
