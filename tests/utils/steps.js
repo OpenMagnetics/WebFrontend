@@ -421,6 +421,7 @@ export async function runSimulated(page, { timeoutMs = 60_000 } = {}) {
     await btn.click();
     await page.waitForFunction(
       () => !document.querySelector('.sim-btn.simulated .fa-spin'),
+      undefined, // waitForFunction(fn, arg, options): options is the third argument
       { timeout: timeoutMs }
     );
     await settleAnimations(page, 300);
