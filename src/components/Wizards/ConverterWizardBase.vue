@@ -822,6 +822,19 @@ export default {
       });
     },
 
+    // The hand-off (processWizardData) has just written the wizard's operating points into the
+    // design, so the builder must show every one of them as a manually defined waveform. This used
+    // to happen on every wizard run; since a run is only a preview (ABT #2209) the hand-off is the
+    // one place that does it. The state's default modes are [null] ("choose a mode"), so a guard on
+    // "already set" never fired and the builder opened asking for a mode with the Builder step locked.
+    setHandedOffOperatingPointsManual(ss, ms) {
+      const operatingPoints = ms.mas.inputs.operatingPoints;
+      if (!Array.isArray(operatingPoints) || operatingPoints.length === 0) {
+        throw new Error(`ConverterWizardBase "${this.title}": the hand-off produced no operating points`);
+      }
+      ss.operatingPoints.modePerPoint = operatingPoints.map(() => ss.OperatingPointsMode.Manual);
+    },
+
     async navigateToReview(ss, ms, appType) {
       this.trackWizardEvent('review_specs', ms);
       ss.resetMagneticTool(); ss.designLoaded();
@@ -830,14 +843,7 @@ export default {
       ss.selectWorkflow("design"); ss.selectTool("agnosticTool");
       ss.setCurrentToolSubsectionStatus("designRequirements", true);
       ss.setCurrentToolSubsectionStatus("operatingPoints", true);
-      // Only set modePerPoint if not already set (preserves mode from waveform simulation)
-      if (!ss.operatingPoints.modePerPoint || ss.operatingPoints.modePerPoint.length === 0) {
-        ss.operatingPoints.modePerPoint = [];
-        const numPoints = ms.mas.inputs.operatingPoints?.length || ms.mas.magnetic.coil.functionalDescription.length || 1;
-        for (let i = 0; i < numPoints; i++) {
-          ss.operatingPoints.modePerPoint.push(ss.OperatingPointsMode.Manual);
-        }
-      }
+      this.setHandedOffOperatingPointsManual(ss, ms);
     },
 
     async navigateToAdvise(ss, ms, appType) {
@@ -849,14 +855,7 @@ export default {
       ss.setCurrentToolSubsection("magneticBuilder");
       ss.setCurrentToolSubsectionStatus("designRequirements", true);
       ss.setCurrentToolSubsectionStatus("operatingPoints", true);
-      // Only set modePerPoint if not already set (preserves mode from waveform simulation)
-      if (!ss.operatingPoints.modePerPoint || ss.operatingPoints.modePerPoint.length === 0) {
-        const numPoints = ms.mas.inputs.operatingPoints?.length || 1;
-        ss.operatingPoints.modePerPoint = [];
-        for (let i = 0; i < numPoints; i++) {
-          ss.operatingPoints.modePerPoint.push(ss.OperatingPointsMode.Manual);
-        }
-      }
+      this.setHandedOffOperatingPointsManual(ss, ms);
     },
 
     // ===== VALIDATION =====
