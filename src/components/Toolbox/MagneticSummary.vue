@@ -13,6 +13,7 @@ import { recordDesign } from 'WebSharedComponents/assets/js/telemetry.js'
 
 <script>
 export default {
+    emits: ["canContinue"],
     props: {
         dataTestLabel: {
             type: String,
@@ -691,6 +692,17 @@ export default {
                 })
             };
         }
+    },
+    watch: {
+        // The storyline panel shows "Fix Errors" for a step that never reports; the
+        // summary used to be one, so its last page always claimed something was wrong.
+        missingRequirements: {
+            handler(missing) {
+                this.$emit("canContinue", missing.length === 0,
+                    missing.map((item) => `The summary needs ${item}. Go back to the Magnetic Builder and complete the design.`));
+            },
+            immediate: true,
+        },
     },
     mounted() {
         // ABT #162: never run computeTexts / recordDesign on a partial design.

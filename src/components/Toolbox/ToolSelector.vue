@@ -1,10 +1,14 @@
 <script>
 export default {
+    emits: ["toolSelected", "canContinue"],
     props: {
         dataTestLabel: {
             type: String,
             default: '',
         },
+    },
+    created() {
+        this.$emit("canContinue", false, ["Choose one of the tools on this page to continue."]);
     },
 }
 </script>

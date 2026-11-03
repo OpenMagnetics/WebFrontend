@@ -35,7 +35,7 @@ export default {
         messages() {
             if (!this.blocked) return [];
             if (this.errors.length > 0) return this.errors;
-            return ["This step is not complete yet. Review the fields on this page."];
+            return [`The "${this.step}" step did not say what is missing. This is a bug in the page: please send a report with the bug button so we can fix it.`];
         },
     },
     watch: {

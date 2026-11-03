@@ -13,7 +13,7 @@
  */
 import { test, expect } from './_coverage.js';
 import { BASE_URL } from './utils/env.js';
-import { withPinia } from './utils/index.js';
+import { withPinia, engineLogMessages } from './utils/index.js';
 
 const panelItems = (page) => page.locator('[data-cy="EngineLogPanel-record"]').filter({ hasText: 'Design step' });
 
@@ -87,4 +87,44 @@ test('the reasons leave the Engine log once the step is valid @layout', async ({
   await expect.poll(() => withPinia(page, (pinia) =>
     pinia._s.get('engineDiagnostics').records.filter((r) => r.module === 'Design step').length),
   { timeout: 20000 }).toBe(0);
+});
+
+// User report 2026-11-03: the Summary step always said "1 thing to fix before continuing / This
+// step is not complete yet". Steps start as not complete and the Summary never reported, so the
+// last page of every finished design claimed something was wrong without saying what.
+const SUMMARY_FIXTURE = new URL('./fixtures/etd49_wound_10uH_5T.json', import.meta.url).pathname;
+
+async function openSummary(page) {
+  await withPinia(page, (pinia) => {
+    pinia._s.get('state').getCurrentToolState().subsection = 'magneticSummary';
+    return true;
+  });
+}
+
+test('SUMMARY-STEP-1: a finished design reaches the Summary with nothing to fix @layout', async ({ page }) => {
+  test.setTimeout(180000);
+  await page.goto(`${BASE_URL}/`, { waitUntil: 'domcontentloaded' });
+  await page.locator('[data-cy="Header-Load-MAS-file-button"]').setInputFiles(SUMMARY_FIXTURE);
+  await page.waitForURL('**/magnetic_tool**', { timeout: 60000 });
+  await expect.poll(() => withPinia(page, (pinia) => pinia._s.get('mas').mas.outputs.length),
+    { message: 'the builder simulates the loaded design', timeout: 90000 }).toBeGreaterThan(0);
+
+  await openSummary(page);
+  await expect.poll(() => withPinia(page, (pinia) => pinia._s.get('state').getCurrentToolState().canContinue.magneticSummary),
+    { message: 'the Summary step reports that it is complete', timeout: 30000 }).toBe(true);
+  expect(await engineLogMessages(page, { source: 'Design step' })).toEqual([]);
+});
+
+test('SUMMARY-STEP-2: the Summary of an unfinished design says what is missing @layout', async ({ page }) => {
+  await openMagneticTool(page);
+  await withPinia(page, (pinia) => {
+    pinia._s.get('mas').mas.outputs = [];
+    return true;
+  });
+  await openSummary(page);
+
+  await expect.poll(() => engineLogMessages(page, { source: 'Design step' }), { timeout: 30000 })
+    .toContainEqual(expect.stringMatching(/^Summary: The summary needs computed outputs/));
+  const messages = await engineLogMessages(page, { source: 'Design step' });
+  expect(messages.some((m) => /did not say what is missing|not complete yet/i.test(m)), JSON.stringify(messages)).toBe(false);
 });

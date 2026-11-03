@@ -313,6 +313,7 @@ export default {
                         v-if="$stateStore.getCurrentToolState().subsection == 'toolSelector'"
                         :dataTestLabel="`${dataTestLabel}-ToolSelector`"
                         @toolSelected="toolSelected"
+                        @canContinue="(...args) => updateCanContinue('toolSelector', ...args)"
                     />
                     <DesignRequirements
                         v-if="$stateStore.getCurrentToolState().subsection == 'designRequirements' && ($stateStore.selectedWorkflow == 'design' || $stateStore.selectedWorkflow == 'catalog')"
@@ -373,12 +374,13 @@ export default {
                         :enableAdvisers="true"
                         :enableSimulation="true"
                         :enableInsertIntermediateMas="enableInsertIntermediateMas"
-                        @canContinue="(...args) => updateCanContinue('magneticBuilder', ...args)"
+                        @canContinue="(...args) => updateCanContinue($stateStore.getCurrentToolState().subsection, ...args)"
                     />
                     <MagneticSummary
                         v-if="$stateStore.getCurrentToolState().subsection == 'magneticSummary'"
                         :mas="masStore.mas"
                         :dataTestLabel="`${dataTestLabel}-MagneticSummary`"
+                        @canContinue="(...args) => updateCanContinue('magneticSummary', ...args)"
                     />
                     <MagneticCoreSummary
                         v-if="$stateStore.getCurrentToolState().subsection == 'magneticCoreSummary'"
