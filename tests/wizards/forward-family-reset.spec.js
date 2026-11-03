@@ -47,6 +47,9 @@ for (const { key, linkCy, title } of [
   { key: 'active-clamp-forward', linkCy: 'ActiveClampForward-link', title: 'Active Clamp Forward' },
 ]) {
   test.describe(`${key} reset mechanism @scenario`, () => {
+    // Simulated covers the whole input-voltage range since Kirchhoff 6c23132 (ABT #2160), so one
+    // Analytical + Simulated + Design Magnetic pass takes ~47 s on a loaded box: past the 30 s default.
+    test.setTimeout(120_000);
     test(`${title} has no demagnetization winding (analytical and simulated)`, async ({ page }) => {
       await openWizard(page, linkCy);
 
