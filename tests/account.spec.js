@@ -153,6 +153,36 @@ test.describe('accounts', () => {
         await expect(page.locator('[data-cy="Header-sign-in-button"]')).toHaveCount(0);
     });
 
+    test('sign-in error says the request got no response, and where it went', async ({ page }) => {
+        const state = { loggedIn: false, emailExists: false, designs: [] };
+        await mockAccountsApi(page, state);
+        // A firewall/extension dropping the connection: the browser gets no response.
+        await page.route('**/auth/check_email', (route) => route.abort('connectionrefused'));
+
+        await page.goto(`${BASE_URL}/`, { waitUntil: 'domcontentloaded' });
+        await page.click('[data-cy="Header-sign-in-button"]');
+        await page.fill('[data-cy="AccountModal-email-input"]', USER.email);
+        await page.click('[data-cy="AccountModal-continue-button"]');
+
+        const error = page.locator('[data-cy="AccountModal-error"]');
+        await expect(error).toContainText('no response from the account service at http', { timeout: 10000 });
+        await expect(error).toContainText('firewall');
+    });
+
+    test('sign-in error states the HTTP status when the server answers without a detail', async ({ page }) => {
+        const state = { loggedIn: false, emailExists: false, designs: [] };
+        await mockAccountsApi(page, state);
+        await page.route('**/auth/check_email', (route) => route.fulfill({ status: 502, body: 'Bad Gateway' }));
+
+        await page.goto(`${BASE_URL}/`, { waitUntil: 'domcontentloaded' });
+        await page.click('[data-cy="Header-sign-in-button"]');
+        await page.fill('[data-cy="AccountModal-email-input"]', USER.email);
+        await page.click('[data-cy="AccountModal-continue-button"]');
+
+        await expect(page.locator('[data-cy="AccountModal-error"]'))
+            .toContainText('the account service answered HTTP 502', { timeout: 10000 });
+    });
+
     test('login flow for an existing email, then sign out restores anonymous UI', async ({ page }) => {
         const state = { loggedIn: false, emailExists: true, designs: [] };
         await mockAccountsApi(page, state);

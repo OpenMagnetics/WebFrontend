@@ -1,7 +1,7 @@
 <script setup>
 import Dialog from 'primevue/dialog'
 import { useAuthStore } from '../../stores/auth'
-import api from '../../services/accountApi'
+import api, { describeAccountError } from '../../services/accountApi'
 </script>
 
 <script>
@@ -55,7 +55,7 @@ export default {
                 this.step = 'password';
                 this.$nextTick(() => this.$refs.passwordInput?.focus());
             } catch (error) {
-                this.error = error.response?.data?.detail || "Could not reach the account service";
+                this.error = describeAccountError(error, "Could not check this email");
             } finally {
                 this.busy = false;
             }
@@ -74,8 +74,7 @@ export default {
                 this.close();
                 this.$emit('logged-in');
             } catch (error) {
-                const detail = error.response?.data?.detail;
-                this.error = (typeof detail === 'string' && detail) || "Could not reach the account service";
+                this.error = describeAccountError(error, this.emailExists ? "Could not log in" : "Could not create the account");
             } finally {
                 this.busy = false;
             }
@@ -87,8 +86,7 @@ export default {
                 await api.post('/auth/request_password_reset', { email: this.email });
                 this.info = "If this email has an account, a reset link is on its way.";
             } catch (error) {
-                const detail = error.response?.data?.detail;
-                this.error = (typeof detail === 'string' && detail) || "Could not send the reset email";
+                this.error = describeAccountError(error, "Could not send the reset email");
             } finally {
                 this.busy = false;
             }
