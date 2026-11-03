@@ -27,7 +27,7 @@
 
 import { test, expect } from './_coverage.js';
 import { openWizard, pause } from './utils.js';
-import { runSimulated } from './utils/index.js';
+import { runSimulated, clickDesignMagnetic } from './utils/index.js';
 
 const SRC_CY = 'Src-link';
 
@@ -137,9 +137,12 @@ test.describe('SRC wizard — analytical vs simulated', () => {
   // Tool renders "<name> — <winding>" and an unnamed point showed as
   // "null — Primary". So the contract is on what the wizard STORES after a
   // Simulated run, not on the raw engine JSON.
+  // A Simulated run is a preview since ABT #2209: the design store is written on the hand-off
+  // (Design Magnetic), which is where unnamed engine points get their name. Read it there.
   test('SRC-UI-4: the simulated operating point the wizard stores has a non-empty name', async ({ page }) => {
     await openWizard(page, SRC_CY);
     await runSimulated(page, { timeoutMs: 120_000 });
+    await clickDesignMagnetic(page);
     const op = await page.evaluate(() => {
       const mas = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia._s.get('mas').mas;
       const p = mas.inputs.operatingPoints?.[0];

@@ -58,7 +58,9 @@ async function setDimension(page, cyPrefix, displayed) {
 const CASES = [
   { key: 'llc',  f1: 105e3, f2: 115e3, vout: { 105e3: 43.91, 115e3: 42.37 } },   // fr 100 kHz, band 80-120 kHz
   { key: 'cllc', f1: 120e3, f2: 140e3, vout: { 140e3: 340.8 } },                 // fr 120 kHz, band 80-200 kHz
-  { key: 'src',  f1: 100e3, f2: 120e3, vout: { 120e3: 42.72 } },                 // fr 100 kHz, band 80-150 kHz
+  // SRC 120 kHz: 42.72 V up to Kirchhoff 737f2a6; 39.50 V from Kirchhoff 36ee490 (fa89704 rectifier node
+  // capacitance, 6c23132 SRC regulates by frequency, ABT #2171): 20 % above resonance the gain now drops.
+  { key: 'src',  f1: 100e3, f2: 120e3, vout: { 120e3: 39.50 } },                 // fr 100 kHz, band 80-150 kHz
 ];
 
 test.describe('Resonant wizards: operating frequency by design mode (ABT #1539)', () => {
