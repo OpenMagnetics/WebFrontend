@@ -1171,6 +1171,106 @@ test.describe('Winding Studio P0', () => {
     await ss(page, 'ws16-window-contiguous');
   });
 
+  // A section margin is [topOrLeft, bottomOrRight]: top/bottom when the window's sections
+  // overlap, left/right when they are contiguous. The gaps a drawn rectangle leaves to the
+  // walls become margins ("auto margin"). They used to be derived only for overlapping
+  // windows and survived a switch to contiguous, so the 14 mm bottom gap of a rectangle
+  // drawn on the overlapping layout became a 14 mm RIGHT margin on an 8 mm wide window:
+  // tape drawn across the whole window, over the turns. And a rectangle drawn on the
+  // contiguous layout sent no margin at all, so the stale one stayed.
+  test('WS-24 builder: contiguous sections carry margins on their own axis (auto margin)', async ({ page }) => {
+    test.setTimeout(240000);
+    await goToMagneticTool(page);
+    await injectMas(page, MULTICOLUMN_FIXTURE, { heal: false, mountFirst: true });
+    const studio = await openStudio(page);
+    await page.waitForFunction(() => {
+      const pinia = document.querySelector('#app')?.__vue_app__?.config?.globalProperties?.$pinia;
+      if (pinia == null) return false;   // ABT #929: not mounted yet — poll again, do not throw
+      const sections = pinia._s.get('mas').mas?.magnetic?.coil?.sectionsDescription ?? [];
+      return sections.filter((s) => s.type === 'conduction').length === 2;
+    }, null, { timeout: 60000 });
+
+    const coilState = () => page.evaluate(() => {
+      const pinia = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia;
+      const coil = pinia._s.get('mas').mas.magnetic.coil;
+      const window0 = coil.bobbin.processedDescription.windingWindows[0];
+      return {
+        orientation: window0.sectionsOrientation,
+        windowWidth: window0.width,
+        windowHeight: window0.height,
+        sections: coil.sectionsDescription
+          .filter((s) => s.type === 'conduction')
+          .map((s) => ({ name: s.name, margin: s.margin, width: s.dimensions[0], height: s.dimensions[1] })),
+      };
+    });
+
+    // Reshape a section with the free transform: select it, drag one edge, release.
+    const dragSectionEdge = async (sectionName, edge, dxFraction, dyFraction) => {
+      await studio.locator(`[data-cy$="-WindingStudio-section-${sectionName}"]`).click({ force: true });
+      const handle = studio.locator(`[data-cy$="-WindingStudio-transform-${edge}"]`);
+      await expect(handle).toBeVisible({ timeout: 5000 });
+      const sectionBox = await studio.locator('[data-cy$="-WindingStudio-transform-move"]').boundingBox();
+      const handleBox = await handle.boundingBox();
+      const beforeDrag = await activityMark(page);
+      await page.mouse.move(handleBox.x + handleBox.width / 2, handleBox.y + handleBox.height / 2);
+      await page.mouse.down();
+      await page.mouse.move(handleBox.x + handleBox.width / 2 + dxFraction * sectionBox.width,
+                            handleBox.y + handleBox.height / 2 + dyFraction * sectionBox.height, { steps: 6 });
+      await page.mouse.up();
+      await waitForActionSince(page, beforeDrag, 'magneticBuilderTaskQueue.rewindLayersAndTurns', { timeout: 60000 });
+      await waitForIdle(page, { since: beforeDrag, label: `the re-flow of ${sectionName}`, timeout: 60000 });
+      // Deselect (plain click on the transform body).
+      const moveZone = studio.locator('[data-cy$="-WindingStudio-transform-move"]');
+      await moveZone.click({ force: true });
+      await expect(moveZone).not.toBeVisible({ timeout: 5000 });
+    };
+
+    // 1. Overlapping layout: shrink both sections along the height. Their wall gaps
+    //    become top/bottom margins (the premise this test builds on).
+    await dragSectionEdge('Primary section 0', 's', 0, -0.5);
+    await dragSectionEdge('Secondary section 0', 'n', 0, 0.4);
+    const overlapping = await coilState();
+    expect(overlapping.orientation).toBe('overlapping');
+    const overlappingMargins = overlapping.sections.map((s) => s.margin[0] + s.margin[1]);
+    expect(Math.max(...overlappingMargins),
+           `the drawn rectangles left no wall gap to become margins: ${JSON.stringify(overlapping.sections)}`)
+      .toBeGreaterThan(overlapping.windowWidth);
+
+    // 2. Switch the window to contiguous sections.
+    const beforeSwitch = await activityMark(page);
+    await studio.locator('[data-cy$="-WindingStudio-window-gear-0"]').click();
+    await expect(studio.locator('[data-cy$="-WindingStudio-window-menu"]')).toBeVisible({ timeout: 3000 });
+    await studio.locator('[data-cy$="-WindingStudio-window-orientation"]').selectOption('contiguous');
+    await studio.locator('[data-cy$="-WindingStudio-window-apply"]').click();
+    await waitForActionSince(page, beforeSwitch, 'magneticBuilderTaskQueue.wind', { timeout: 60000 });
+    await waitForIdle(page, { since: beforeSwitch, label: 'the contiguous re-wind', timeout: 60000 });
+
+    // The top/bottom margins do not carry over as left/right ones: on a contiguous window
+    // every section's left margin + width + right margin fits the window width.
+    const contiguous = await coilState();
+    expect(contiguous.orientation).toBe('contiguous');
+    for (const section of contiguous.sections) {
+      expect(section.margin[0] + section.width + section.margin[1],
+             `section '${section.name}' carries margins [${section.margin.map((m) => (m * 1000).toFixed(2)).join(', ')}] mm `
+             + `beside its ${(section.width * 1000).toFixed(2)} mm width in a ${(contiguous.windowWidth * 1000).toFixed(2)} mm wide `
+             + 'contiguous window: margins measured on the overlapping layout\'s height were kept as left/right margins')
+        .toBeLessThanOrEqual(contiguous.windowWidth + 1e-6);
+    }
+
+    // 3. Contiguous layout: widen the Primary rectangle. Its gaps to the left/right walls
+    //    become its margins, so tape, section and window agree along the width.
+    await dragSectionEdge('Primary section 0', 'e', 1.5, 0);
+    const reshaped = await coilState();
+    const primary = reshaped.sections.find((s) => s.name === 'Primary section 0');
+    // (A gap under 0.05 mm snaps to no margin, hence the tolerance.)
+    expect(Math.abs(primary.margin[0] + primary.width + primary.margin[1] - reshaped.windowWidth),
+           `the drawn Primary rectangle on the contiguous window has margins [${primary.margin.map((m) => (m * 1000).toFixed(2)).join(', ')}] mm `
+           + `beside its ${(primary.width * 1000).toFixed(2)} mm width; its wall gaps on a `
+           + `${(reshaped.windowWidth * 1000).toFixed(2)} mm wide window did not become its left/right margins`)
+      .toBeLessThan(0.00006);
+    await ss(page, 'ws24-contiguous-auto-margin');
+  });
+
   // Toroid polish: angular margin wedges render from the MAS margins, and the
   // boundary between two adjacent sectors drags to new proportions.
   test('WS-17 builder: toroid margin wedges + sector boundary proportions', async ({ page }) => {

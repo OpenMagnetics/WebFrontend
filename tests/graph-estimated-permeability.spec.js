@@ -59,6 +59,8 @@ test.describe('Impedance graphs mark estimated complex permeability (ABT #1861)'
       await expect(tooltip).toBeVisible({ timeout: 10000 });
       const box = await tooltip.boundingBox();
       expect(box.width, 'tooltip width in px').toBeGreaterThan(480);
+      // Past the fade-in, so the screenshot shows the tooltip as it reads.
+      await expect.poll(() => tooltip.evaluate((element) => getComputedStyle(element).opacity), { timeout: 20000 }).toBe('1');
       await page.screenshot({ path: test.info().outputPath(`${graph}-tooltip.png`) });
     });
   }
