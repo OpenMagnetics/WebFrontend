@@ -98,7 +98,8 @@ test('INFO-2273: a core held at its Curie point says so in Core Info, with the l
     }
   });
   await expect(coreLosses(page).first()).toBeVisible({ timeout: 120000 });
-  const hold = page.locator('[data-cy$="-CoreInfo-HeldAtDataLimit"]');
+  // In Core Info's title bar (Alf, 2026-11-05).
+  const hold = page.locator('.coreinfo-header [data-cy$="-CoreInfo-HeldAtDataLimit"]');
   await expect(hold).toHaveText(/Held at 210\s*°C/);
   await expect(hold).toHaveAttribute('aria-label', /Curie temperature \(210\s*°C\)/);
   await expect(hold).toHaveAttribute('aria-label', /Just before the hold the core lost \d+(\.\d+)?\s*k?W/);

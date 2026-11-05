@@ -7,6 +7,7 @@ import MagneticBuilderSettings from './Settings/MagneticBuilderSettings.vue'
 import AdviserSettings from './Settings/AdviserSettings.vue'
 import CatalogSettings from './Settings/CatalogSettings.vue'
 import OperatingPointSettings from './Settings/OperatingPointSettings.vue'
+import EngineLogButton from '../EngineLogButton.vue'
 
 </script>
 
@@ -170,6 +171,8 @@ export default {
                     <i class="pi pi-sparkles"></i>
                     <span>Magnetic Adviser</span>
                 </button>
+                <!-- The Engine log lives here while the tool menu is shown; the footer keeps it on other pages. -->
+                <EngineLogButton placement="toolMenu" class="toolmenu-btn toolmenu-btn-outline" />
                 <button
                     v-if="$stateStore.magneticBuilder.mode.core == $stateStore.MagneticBuilderModes.Advanced && $stateStore.getCurrentToolState().subsection == 'magneticBuilder' && $stateStore.magneticBuilder.submode.core != $stateStore.MagneticBuilderCoreSubmodes.Shape"
                     :data-cy="dataTestLabel + '-change-tool-button'"

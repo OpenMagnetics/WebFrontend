@@ -51,6 +51,15 @@ test.describe('Impedance graphs mark estimated complex permeability (ABT #1861)'
       expect(dashed.length).toBe(1);
       expect(solid[0].drawn).toBeGreaterThan(0);
       expect(dashed[0].drawn).toBeGreaterThan(1);
+
+      // The notes run to a dozen lines: the tooltip is wide enough to read them as paragraphs, not
+      // PrimeVue's default 12.5rem column (Alf, 2026-11-05: "make the tool tip wider").
+      await notes.hover();
+      const tooltip = page.locator('.graph-data-limits-tooltip');
+      await expect(tooltip).toBeVisible({ timeout: 10000 });
+      const box = await tooltip.boundingBox();
+      expect(box.width, 'tooltip width in px').toBeGreaterThan(480);
+      await page.screenshot({ path: test.info().outputPath(`${graph}-tooltip.png`) });
     });
   }
 });

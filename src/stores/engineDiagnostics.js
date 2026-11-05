@@ -90,6 +90,8 @@ export const useEngineDiagnosticsStore = defineStore('engineDiagnostics', {
         collecting: false,
         collectionError: null,
         panelOpen: false,
+        // Engine log buttons rendered in the tool menu (EngineLogButton.vue); the footer's hides while any is.
+        toolMenuEngineLogButtons: 0,
     }),
 
     getters: {

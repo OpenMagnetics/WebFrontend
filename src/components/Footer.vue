@@ -1,27 +1,11 @@
 <script setup>
+import EngineLogButton from './EngineLogButton.vue'
 </script>
 
 <script>
-import { useEngineDiagnosticsStore } from '/src/stores/engineDiagnostics'
-
 const CONSENT_KEY = 'om_cookie_consent';
 
 export default {
-    setup() {
-        const engineDiagnosticsStore = useEngineDiagnosticsStore();
-        return { engineDiagnosticsStore };
-    },
-    computed: {
-        engineLogIssueCount() {
-            return this.engineDiagnosticsStore.warningCount + this.engineDiagnosticsStore.errorCount;
-        },
-        // Green when the log is quiet, soft yellow with warnings, red with errors.
-        engineLogStateClass() {
-            if (this.engineDiagnosticsStore.errorCount > 0) return 'om-footer-engine-log-error';
-            if (this.engineDiagnosticsStore.warningCount > 0) return 'om-footer-engine-log-warning';
-            return null;
-        },
-    },
     methods: {
         resetConsent() {
             localStorage.removeItem(CONSENT_KEY);
@@ -39,16 +23,7 @@ export default {
                 <span class="om-footer-name">OpenMagnetics</span>
                 <span class="om-footer-sep">·</span>
                 <span class="om-footer-copy">© 2022–{{ new Date().getFullYear() }}</span>
-                <button
-                    v-if="engineDiagnosticsStore.logReachable"
-                    class="om-footer-engine-log"
-                    :class="engineLogStateClass"
-                    data-cy="EngineLogPanel-toggle"
-                    title="Engine log (MKF warnings and log)"
-                    @click="engineDiagnosticsStore.panelOpen = !engineDiagnosticsStore.panelOpen"
-                >
-                    <i class="pi pi-cog mr-1"></i>Engine log<span v-if="engineLogIssueCount > 0" class="ml-1">({{ engineLogIssueCount }})</span>
-                </button>
+                <EngineLogButton placement="footer" />
             </div>
 
             <div class="om-footer-links">
@@ -157,30 +132,4 @@ export default {
     background: rgba(var(--p-primary-rgb), 0.07);
 }
 
-.om-footer-engine-log {
-    margin-left: 0.5rem;
-    font-size: 0.74rem;
-    font-weight: 600;
-    color: var(--p-white);
-    background: var(--p-secondary);
-    border: 1px solid var(--p-secondary);
-    border-radius: 5px;
-    padding: 0.15rem 0.6rem;
-    cursor: pointer;
-    white-space: nowrap;
-    transition: filter 0.15s;
-}
-.om-footer-engine-log:hover {
-    filter: brightness(1.15);
-}
-.om-footer-engine-log-warning {
-    color: var(--p-warning);
-    background: rgba(var(--p-warning-rgb), 0.18);
-    border-color: rgba(var(--p-warning-rgb), 0.6);
-}
-.om-footer-engine-log-error {
-    color: var(--p-white);
-    background: var(--p-danger);
-    border-color: var(--p-danger);
-}
 </style>
