@@ -6,7 +6,7 @@ import InfoTip from '../InfoTip.vue'
 import { roundWithDecimals, deepCopy, combinedStyle } from 'WebSharedComponents/assets/js/utils.js'
 
 import Dimension from 'WebSharedComponents/DataInput/Dimension.vue'
-import { defaultOperatingPointExcitation, defaultPrecision, defaultSinusoidalNumberPoints, minimumMaximumScalePerParameter } from 'WebSharedComponents/assets/js/defaults.js'
+import { defaultOperatingPointExcitation, defaultPrecision, defaultSinusoidalNumberPoints, minimumMaximumScalePerParameter, heatsinkInterfaceThermalResistance } from 'WebSharedComponents/assets/js/defaults.js'
 import { tooltipsMagneticSynthesisOperatingPoints } from 'WebSharedComponents/assets/js/texts.js'
 
 import Text from 'WebSharedComponents/DataInput/Text.vue'
@@ -67,6 +67,7 @@ export default {
             blockingRebounds,
             localData,
             coolingUi,
+            heatsinkInterfaceThermalResistance,
         }
     },
     computed: {
@@ -222,6 +223,7 @@ export default {
                     // MAS cooling velocity is a 2- or 3-component vector; MKF uses its magnitude.
                     airVelocity: (Array.isArray(cooling?.velocity) && cooling.velocity.length > 0) ? Math.hypot(...cooling.velocity) : 2,
                     thermalResistance: cooling?.thermalResistance != null ? cooling.thermalResistance : 10,
+                    interfaceThermalResistance: cooling?.interfaceThermalResistance != null ? cooling.interfaceThermalResistance : heatsinkInterfaceThermalResistance,
                 };
             });
         },
@@ -239,7 +241,9 @@ export default {
                 };
             }
             else if (ui.coolingMode == 'Heatsink') {
-                conditions.cooling = { thermalResistance: ui.thermalResistance };
+                // MKF refuses a heatsink without the interface between the core and it (ABT #1611); the
+                // Heatsink option always writes one (ABT #2276).
+                conditions.cooling = { thermalResistance: ui.thermalResistance, interfaceThermalResistance: ui.interfaceThermalResistance };
             }
             else {
                 conditions.cooling = null;
@@ -552,6 +556,28 @@ export default {
                             :min="0.01"
                             :max="1000"
                             :defaultValue="10"
+                            v-model="coolingUi[operatingPointIndex]"
+                            @update="updateCooling(operatingPointIndex)"
+                            :labelWidthProportionClass="'col-12 md:col-3'"
+                            :valueWidthProportionClass="'col-12 md:col-9'"
+                            :valueFontSize="$styleStore.operatingPoints.inputFontSize"
+                            :labelFontSize="$styleStore.operatingPoints.inputFontSize"
+                            :labelBgColor="$styleStore.operatingPoints.operatingPointBgColor"
+                            :valueBgColor="$styleStore.operatingPoints.inputValueBgColor"
+                            :textColor="$styleStore.operatingPoints.inputTextColor"
+                        />
+                        <!-- Area-specific, as MKF reads it; shown in K*cm^2/W so the value reads as a pad's datasheet figure. -->
+                        <Dimension class="op-cooling op-field"
+                            v-if="coolingUi[operatingPointIndex] && coolingUi[operatingPointIndex].coolingMode == 'Heatsink'"
+                            :name="'interfaceThermalResistance'"
+                            :tooltip="tooltipsMagneticSynthesisOperatingPoints['interfaceThermalResistance']"
+                            :replaceTitle="'Interface thermal resistance'"
+                            :altUnit="'K·cm²/W'"
+                            :visualScale="10000"
+                            :dataTestLabel="dataTestLabel + '-ConditionsHeatsinkInterfaceRth'"
+                            :min="1e-7"
+                            :max="1e-1"
+                            :defaultValue="heatsinkInterfaceThermalResistance"
                             v-model="coolingUi[operatingPointIndex]"
                             @update="updateCooling(operatingPointIndex)"
                             :labelWidthProportionClass="'col-12 md:col-3'"

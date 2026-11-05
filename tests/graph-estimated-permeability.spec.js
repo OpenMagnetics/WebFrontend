@@ -1,7 +1,8 @@
 /**
  * ABT #1861 (Alf, 2026-10-14): MKF always extrapolates a ferrite's complex permeability outside its
  * measured span, and the impedance sweeps say where. The builder draws those stretches dashed and
- * says, under the chart, which material and which measured span the estimate comes from.
+ * says, in the tooltip of a pill under the chart, which material and which measured span the estimate
+ * comes from (Alf, 2026-11-05: the sentences are too long to sit around the chart).
  */
 import { test, expect } from './_coverage.js';
 import { BASE_URL } from './utils/env.js';
@@ -10,7 +11,7 @@ const FIXTURE = new URL('./fixtures/04_forward_xfmr_e3216_n87.json', import.meta
 
 // The options of the chart the impedance / Q-factor graph draws.
 const chartSeries = (page) => page.evaluate(() => {
-  const chartElement = document.querySelector('[data-cy$="-Graph-DataLimits"]').parentElement.querySelector('.chart');
+  const chartElement = document.querySelector('[data-cy$="-Graph-DataLimits"]').closest('.graph-data-limits').parentElement.querySelector('.chart');
   let chart = chartElement.__vueParentComponent;
   while (chart && chart.proxy.$refs?.vchart == null) chart = chart.parent;
   chart = { proxy: chart.proxy.$refs.vchart };
@@ -39,9 +40,9 @@ test.describe('Impedance graphs mark estimated complex permeability (ABT #1861)'
       }, graph);
 
       const notes = page.locator('[data-cy$="-Graph-DataLimits"]');
-      await expect(notes).toContainText('Dashed, ', { timeout: 120000 });
-      await expect(notes).toContainText("N87's");
-      await expect(notes).toContainText('is measured from');
+      await expect(notes).toHaveAttribute('aria-label', /Dashed, /, { timeout: 120000 });
+      await expect(notes).toHaveAttribute('aria-label', /N87's/);
+      await expect(notes).toHaveAttribute('aria-label', /is measured from/);
 
       const series = await chartSeries(page);
       const solid = series.filter((each) => each.name == label && !each.dashed);

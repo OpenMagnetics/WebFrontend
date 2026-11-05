@@ -40,9 +40,9 @@ test.describe('Builder graphs — frequency outside the material data', () => {
         });
 
         const notes = page.locator('[data-cy$="-Graph-DataLimits"]');
-        await expect(notes).toContainText('Dashed, ', { timeout: 90000 });
-        await expect(notes).toContainText("97's");
-        await expect(notes).toContainText('is measured from');
+        await expect(notes).toHaveAttribute('aria-label', /Dashed, /, { timeout: 90000 });
+        await expect(notes).toHaveAttribute('aria-label', /97's/);
+        await expect(notes).toHaveAttribute('aria-label', /is measured from/);
         await expect(page.getByText(/Cannot calculate the impedance/)).toHaveCount(0);
     });
 });

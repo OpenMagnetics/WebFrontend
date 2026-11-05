@@ -1,5 +1,5 @@
 import { checkAndFixMas, deepCopy, formatUnit } from 'WebSharedComponents/assets/js/utils.js'
-import { defaultOperatingPointExcitation, defaultOperatingConditions, powerMas } from 'WebSharedComponents/assets/js/defaults.js'
+import { defaultOperatingPointExcitation, defaultOperatingConditions, powerMas, heatsinkInterfaceThermalResistance } from 'WebSharedComponents/assets/js/defaults.js'
 import { WaveformLabel } from 'WebSharedComponents/assets/ts/MAS.ts'
 import Ajv2020 from 'ajv/dist/2020'
 import addFormats from 'ajv-formats'
@@ -384,6 +384,24 @@ function putLoneWindingOnThePrimarySide(mas, corrections) {
     console.warn(`Imported MAS: ${message}`);
 }
 
+// Since ABT #1611 (2026-10-24) MKF refuses a heatsink without the thermal interface between the core
+// and it, and the web's Heatsink option wrote only the heatsink's own resistance: every design saved
+// with it lost its Core and Coil Info (ABT #2276, a user's PQ 50/50 transformer). Such a heatsink gets
+// the interface the Heatsink option now writes (Alf, 2026-11-05), reported per operating point and
+// editable in Op. Points. Cooling MKF reads as a cold plate (it names a maximum temperature) is left
+// for MKF to refuse by name: the web never wrote one.
+function giveHeatsinksTheirInterface(mas, corrections) {
+    for (const [operatingPointIndex, operatingPoint] of (mas?.inputs?.operatingPoints || []).entries()) {
+        const cooling = operatingPoint?.conditions?.cooling;
+        if (cooling == null || typeof cooling.thermalResistance !== 'number') continue;
+        if (cooling.interfaceThermalResistance != null || cooling.maximumTemperature != null) continue;
+        cooling.interfaceThermalResistance = heatsinkInterfaceThermalResistance;
+        const message = `its heatsink had no interface thermal resistance; set to ${heatsinkInterfaceThermalResistance * 1e4} K·cm²/W (a typical gap pad)`;
+        corrections.push({ operatingPointIndex, operatingPointName: operatingPoint.name ?? null, windingIndex: null, signal: null, message });
+        console.warn(`Imported MAS: '${operatingPoint.name ?? 'operating point'}': ${message}`);
+    }
+}
+
 // Topology names from before the MAS enum sweep (RFC 0007) that the case- and punctuation-
 // insensitive matcher in checkAndFixMas cannot map, because the word itself changed. Keyed by
 // the lowercase alphanumeric form.
@@ -487,6 +505,7 @@ export function migrateLegacyMas(mas, corrections = []) {
         removeKeysOfOtherWireTypes(winding?.wire, `winding ${windingIndex} wire`);
     }
     putLoneWindingOnThePrimarySide(mas, corrections);
+    giveHeatsinksTheirInterface(mas, corrections);
     // Distributor prices used to be a bare number; MAS now needs {value, currency}, and the
     // currency of an old price is not in the file. The price is dropped, the distributor kept.
     for (const part of [mas?.magnetic, mas?.magnetic?.core, mas?.magnetic?.coil?.bobbin]) {

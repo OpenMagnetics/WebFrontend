@@ -20,7 +20,10 @@ export const useLoadCorrectionsStore = defineStore('loadCorrections', () => {
     }
 
     function of(operatingPointIndex, windingIndex) {
-        return corrections.value.filter((correction) => correction.operatingPointIndex === operatingPointIndex && correction.windingIndex === windingIndex);
+        // A correction to the operating point as a whole (its cooling) has no winding, and shows with
+        // every winding of that operating point.
+        return corrections.value.filter((correction) => correction.operatingPointIndex === operatingPointIndex
+            && (correction.windingIndex === windingIndex || correction.windingIndex == null));
     }
 
     return { corrections, set, clear, of };
