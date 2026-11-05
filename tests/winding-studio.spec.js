@@ -22,6 +22,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { test, expect } from './_coverage.js';
 import { BASE_URL, screenshot } from './utils.js';
+import { engineLogMessages } from './utils/engineLog.js';
 import { installActivityProbe, activityMark, waitForIdle, waitForActionSince } from './utils/activity.js';
 
 // ABT #929: repo-relative, not '/home/alf/...'. These only ever resolved on one machine.
@@ -31,6 +32,7 @@ const fixture = (...parts) => path.join(REPO_ROOT, ...parts);
 const CLASSIC_FIXTURE = fixture('MagneticBuilder', 'src', 'public', 'test_wound_coil.json');
 const MULTICOLUMN_FIXTURE = fixture('tests', 'fixtures', 'multicolumn_e42_transformer.json');
 const E16_CONTIGUOUS_FIXTURE = fixture('tests', 'fixtures', 'e16_contiguous_two_windings.json');
+const E16_STALE_MARGINS_FIXTURE = fixture('tests', 'fixtures', 'e16_contiguous_stale_margins.json');
 const TOROIDAL_FIXTURE = fixture('tests', 'fixtures', 'toroidal_cmc_t2515.json');
 const CORRUPT_TOROID_FIXTURE = fixture('tests', 'fixtures', 'toroidal_stale_pin_corrupt_t402416.json');
 const CATALOG_BOBBIN_FIXTURE = fixture('tests', 'fixtures', 'multicolumn_e42_catalog_bobbin.json');
@@ -1309,6 +1311,140 @@ test.describe('Winding Studio P0', () => {
     expect(settled.studio, `the studio ends inside its box in the coil card: ${previous}`).toBeLessThanOrEqual(settled.box + 1);
     expect(settled.studio, `the studio ends above Advanced Parasitics: ${previous}`).toBeLessThanOrEqual(settled.parasiticsTop);
     await ss(page, 'ws25-studio-in-coil-card');
+  });
+
+  // The user's own drawing (Alf, 2026-11-05, custom_magnetic (47).json): on the E 16/12/5 window
+  // of contiguous sections, the Primary is drawn over the top 6.39 mm and the Secondary over the
+  // bottom 2.99 mm, both from the left wall to 0.54 mm short of the right one. Leaving the studio
+  // showed a different design: the studio had stored the rectangles' top/bottom gaps as margins,
+  // which MKF's painter reads as left/right ones on contiguous sections, 11.89 mm of tape across the
+  // core. The drawing must leave the studio as drawn.
+  test('WS-26 builder: a drawing on contiguous sections leaves the studio as drawn', async ({ page }) => {
+    test.setTimeout(240000);
+    // A desktop screen, as the user drew on: the studio snaps an edge to the wall within 7 screen
+    // px, and at 1280 x 720 the Primary's 0.54 mm gap to the right wall is under that.
+    await page.setViewportSize({ width: 1920, height: 1080 });
+    await goToMagneticTool(page);
+    await injectMas(page, E16_CONTIGUOUS_FIXTURE, { heal: false, mountFirst: true });
+    const studio = await openStudio(page);
+    await page.waitForFunction(() => {
+      const pinia = document.querySelector('#app')?.__vue_app__?.config?.globalProperties?.$pinia;
+      if (pinia == null) return false;   // ABT #929: not mounted yet — poll again, do not throw
+      return (pinia._s.get('mas').mas?.magnetic?.coil?.sectionsDescription ?? []).filter((s) => s.type === 'conduction').length === 2;
+    }, null, { timeout: 60000 });
+
+    const coilState = () => page.evaluate(() => {
+      const coil = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia._s.get('mas').mas.magnetic.coil;
+      const window0 = coil.bobbin.processedDescription.windingWindows[0];
+      const mm = (value) => value * 1000;
+      return {
+        orientation: window0.sectionsOrientation,
+        window: { x: mm(window0.coordinates[0]), y: mm(window0.coordinates[1]), width: mm(window0.width), height: mm(window0.height) },
+        sections: Object.fromEntries(coil.sectionsDescription.filter((s) => s.type === 'conduction').map((s) => [s.name, {
+          left: mm(s.coordinates[0] - s.dimensions[0] / 2), right: mm(s.coordinates[0] + s.dimensions[0] / 2),
+          bottom: mm(s.coordinates[1] - s.dimensions[1] / 2), top: mm(s.coordinates[1] + s.dimensions[1] / 2),
+          margin: (s.margin ?? [0, 0]).map(mm),
+        }])),
+        turnsOutside: (coil.turnsDescription ?? []).filter((turn) => {
+          const section = coil.sectionsDescription.find((s) => s.name === turn.section);
+          return section == null || Math.abs(turn.coordinates[1] - section.coordinates[1]) > section.dimensions[1] / 2 + 1e-6
+            || Math.abs(turn.coordinates[0] - section.coordinates[0]) > section.dimensions[0] / 2 + 1e-6;
+        }).map((turn) => turn.name),
+      };
+    });
+
+    // Drag one edge of a section to a physical position (mm, the core's frame) with the free transform.
+    const dragEdgeTo = async (sectionName, edge, targetMm) => {
+      await studio.locator(`[data-cy$="-WindingStudio-section-${sectionName}"]`).click({ force: true });
+      const handle = studio.locator(`[data-cy$="-WindingStudio-transform-${edge}"]`);
+      await expect(handle).toBeVisible({ timeout: 5000 });
+      const handleBox = await handle.boundingBox();
+      // The studio draws in mm with y flipped.
+      const target = await studio.locator('.winding-studio-svg').evaluate((svg, [x, y]) => {
+        const point = svg.createSVGPoint();
+        point.x = x;
+        point.y = -y;
+        const screen = point.matrixTransform(svg.getScreenCTM());
+        return { x: screen.x, y: screen.y };
+      }, [edge === 'e' || edge === 'w' ? targetMm : 0, edge === 'n' || edge === 's' ? targetMm : 0]);
+      const from = { x: handleBox.x + handleBox.width / 2, y: handleBox.y + handleBox.height / 2 };
+      const to = { x: edge === 'e' || edge === 'w' ? target.x : from.x, y: edge === 'n' || edge === 's' ? target.y : from.y };
+      const beforeDrag = await activityMark(page);
+      await page.mouse.move(from.x, from.y);
+      await page.mouse.down();
+      await page.mouse.move(to.x, to.y, { steps: 8 });
+      await page.mouse.up();
+      await waitForActionSince(page, beforeDrag, 'magneticBuilderTaskQueue.rewindLayersAndTurns', { timeout: 60000 });
+      await waitForIdle(page, { since: beforeDrag, label: `the re-flow of ${sectionName}`, timeout: 60000 });
+      const moveZone = studio.locator('[data-cy$="-WindingStudio-transform-move"]');
+      await moveZone.click({ force: true });
+      await expect(moveZone).not.toBeVisible({ timeout: 5000 });
+    };
+
+    // The user's rectangles, from the file: Primary 2.92..5.46 x 2.755..9.145 mm, Secondary
+    // 2.92..5.46 x -9.145..-6.155 mm, in a 2.925..6.0 x -9.14..9.14 mm window.
+    await dragEdgeTo('Primary section 0', 's', 2.755);
+    await dragEdgeTo('Primary section 0', 'e', 5.46);
+    // The unconstrained Secondary has re-flowed into the room the Primary left: bring it down first.
+    await dragEdgeTo('Secondary section 0', 's', -9.14);
+    await dragEdgeTo('Secondary section 0', 'n', -6.155);
+    await dragEdgeTo('Secondary section 0', 'e', 5.46);
+
+    const drawn = await coilState();
+    expect(drawn.orientation).toBe('contiguous');
+    const tolerance = 0.2;   // mm: a mouse drag lands to the pixel
+    const near = (actual, expected) => Math.abs(actual - expected) <= tolerance;
+    const primary = drawn.sections['Primary section 0'];
+    const secondary = drawn.sections['Secondary section 0'];
+    expect(near(primary.bottom, 2.755) && near(primary.right, 5.46) && near(primary.top, 9.14),
+           `the Primary was drawn over the top of the window: ${JSON.stringify(primary)}`).toBe(true);
+    expect(near(secondary.top, -6.155) && near(secondary.right, 5.46) && near(secondary.bottom, -9.14),
+           `the Secondary was drawn over the bottom of the window: ${JSON.stringify(secondary)}`).toBe(true);
+    // Its margins are the drawing's left/right wall gaps: no tape on the left, about 0.54 mm on the right.
+    for (const [name, section] of Object.entries(drawn.sections)) {
+      const leftGap = section.left - (drawn.window.x - drawn.window.width / 2);
+      const rightGap = drawn.window.x + drawn.window.width / 2 - section.right;
+      expect(Math.abs(section.margin[0] - (leftGap < 0.05 ? 0 : leftGap)) < 0.06 && Math.abs(section.margin[1] - (rightGap < 0.05 ? 0 : rightGap)) < 0.06,
+             `${name}: margins [${section.margin.map((m) => m.toFixed(2))}] mm are not its wall gaps (${leftGap.toFixed(2)}, ${rightGap.toFixed(2)} mm)`).toBe(true);
+    }
+    await expect(studio.locator('[data-cy*="-WindingStudio-margin-overflow-"]')).toHaveCount(0);
+    await ss(page, 'ws26-drawn-in-studio');
+
+    // Leave the studio: the coil is the one drawn.
+    const beforeExit = await activityMark(page);
+    await page.locator('[data-cy$="-Coil-WindingStudio-button"]').first().click();
+    await expect(page.locator('.winding-studio')).toHaveCount(0, { timeout: 10000 });
+    await waitForIdle(page, { since: beforeExit, label: 'leaving the studio', timeout: 120000 });
+    const outside = await coilState();
+    for (const name of Object.keys(drawn.sections)) {
+      for (const key of ['left', 'right', 'bottom', 'top']) {
+        expect(Math.abs(outside.sections[name][key] - drawn.sections[name][key]),
+               `${name} ${key} after leaving the studio: ${JSON.stringify(outside.sections[name])} vs drawn ${JSON.stringify(drawn.sections[name])}`)
+          .toBeLessThan(0.01);
+      }
+      expect(outside.sections[name].margin.map((m) => +m.toFixed(3))).toEqual(drawn.sections[name].margin.map((m) => +m.toFixed(3)));
+    }
+    expect(outside.turnsOutside, 'every turn lies in its section').toEqual([]);
+    expect(await engineLogMessages(page, { source: 'Winding Studio' })).toEqual([]);
+    await ss(page, 'ws26-after-studio');
+  });
+
+  // A design saved with margins that cannot fit their window (before WS-26's fix): the studio draws
+  // them as stored, as the painter does outside it, outlines the section and says so in the
+  // Engine log, instead of clamping the tape to the window and showing another design.
+  test('WS-27 builder: margins that do not fit their window are drawn as stored and flagged', async ({ page }) => {
+    test.setTimeout(240000);
+    await goToMagneticTool(page);
+    await injectMas(page, E16_STALE_MARGINS_FIXTURE, { heal: false, mountFirst: true });
+    const studio = await openStudio(page);
+    await expect(studio.locator('[data-cy$="-WindingStudio-margin-overflow-Primary section 0"]')).toHaveCount(1, { timeout: 60000 });
+    await expect(studio.locator('[data-cy$="-WindingStudio-margin-overflow-Secondary section 0"]')).toHaveCount(1);
+    await expect.poll(() => engineLogMessages(page, { source: 'Winding Studio', level: 'ERROR' }), { timeout: 10000 })
+      .toEqual(expect.arrayContaining([
+        expect.stringMatching(/Section 'Primary section 0' has margins of 0\.00 mm and 11\.89 mm left and right .* do not fit its 3\.08 mm wide window/),
+        expect.stringMatching(/Section 'Secondary section 0' has margins of 15\.29 mm and 0\.00 mm left and right/),
+      ]));
+    await ss(page, 'ws27-stale-margins-flagged');
   });
 
   // Toroid polish: angular margin wedges render from the MAS margins, and the

@@ -373,6 +373,44 @@ function placeWaveformsOnTheirPeriod(mas, corrections) {
 // primary to: a winding stored on another side is put on the primary side (Alf, 2026-10-18), and
 // the correction is reported for the design rather than for an operating point. With more
 // windings the reference cannot be guessed, and MKF's refusal stands.
+// A section margin is [topOrLeft, bottomOrRight]: along the window's height when its sections
+// overlap, along its width when they are contiguous (MKF reads an unset orientation on a
+// rectangular window as overlapping). Winding Studio used to measure its auto margins on the
+// height whatever the orientation, and so stored, on contiguous windows, top/bottom gaps that MKF
+// reads as left/right ones: 11.89 mm of tape beside a section in a 3.08 mm wide window, drawn
+// across the whole core (Alf, 2026-11-05, custom_magnetic (47).json). Margins that cannot fit
+// beside their section in its window are dropped and the drop is reported (Alf, 2026-11-06:
+// "Flag and clear on load").
+function dropMarginsThatDoNotFitTheirWindow(mas, corrections) {
+    const coil = mas?.magnetic?.coil;
+    const sections = coil?.sectionsDescription;
+    if (!Array.isArray(sections)) return;
+    const bobbinParts = Array.isArray(coil.bobbin) ? coil.bobbin : [coil.bobbin];
+    const windows = bobbinParts.flatMap((part) => (typeof part === 'object' && part != null ? part.processedDescription?.windingWindows ?? [] : []));
+    const groups = coil.groupsDescription ?? [];
+    for (const section of sections) {
+        if (section?.type !== 'conduction' || !Array.isArray(section.margin) || !Array.isArray(section.dimensions)) continue;
+        const [before, after] = section.margin;
+        if (!(before > 0 || after > 0)) continue;
+        const windowIndex = section.windingWindow ?? groups.find((group) => group.name === section.group)?.windingWindow ?? 0;
+        const window = windows[windowIndex];
+        // Without the window's size, or on a round window (angular margins), there is nothing to
+        // measure against here; MKF judges those itself.
+        if (window?.width == null || window?.height == null || window.shape === 'round') continue;
+        const contiguous = window.sectionsOrientation === 'contiguous';
+        const span = contiguous ? window.width : window.height;
+        const size = contiguous ? section.dimensions[0] : section.dimensions[1];
+        if (before + size + after <= span * (1 + 1e-3)) continue;
+        const mm = (value) => `${(value * 1000).toFixed(2)} mm`;
+        const message = `section '${section.name}' carried margins of ${mm(before)} and ${mm(after)} ${contiguous ? 'left and right' : 'above and below'} `
+            + `of its ${mm(size)} ${contiguous ? 'width' : 'height'}, in a ${mm(span)} ${contiguous ? 'wide' : 'high'} window`
+            + `${contiguous ? ' of contiguous sections' : ''}; margins that do not fit the window were removed`;
+        section.margin = [0, 0];
+        corrections.push({ operatingPointIndex: null, operatingPointName: null, windingIndex: null, signal: null, message });
+        console.warn(`Imported MAS: ${message}`);
+    }
+}
+
 function putLoneWindingOnThePrimarySide(mas, corrections) {
     const windings = mas?.magnetic?.coil?.functionalDescription;
     if (!Array.isArray(windings) || windings.length !== 1) return;
@@ -505,6 +543,7 @@ export function migrateLegacyMas(mas, corrections = []) {
         removeKeysOfOtherWireTypes(winding?.wire, `winding ${windingIndex} wire`);
     }
     putLoneWindingOnThePrimarySide(mas, corrections);
+    dropMarginsThatDoNotFitTheirWindow(mas, corrections);
     giveHeatsinksTheirInterface(mas, corrections);
     // Distributor prices used to be a bare number; MAS now needs {value, currency}, and the
     // currency of an old price is not in the file. The price is dropped, the distributor kept.
