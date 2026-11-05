@@ -30,6 +30,7 @@ const fixture = (...parts) => path.join(REPO_ROOT, ...parts);
 
 const CLASSIC_FIXTURE = fixture('MagneticBuilder', 'src', 'public', 'test_wound_coil.json');
 const MULTICOLUMN_FIXTURE = fixture('tests', 'fixtures', 'multicolumn_e42_transformer.json');
+const E16_CONTIGUOUS_FIXTURE = fixture('tests', 'fixtures', 'e16_contiguous_two_windings.json');
 const TOROIDAL_FIXTURE = fixture('tests', 'fixtures', 'toroidal_cmc_t2515.json');
 const CORRUPT_TOROID_FIXTURE = fixture('tests', 'fixtures', 'toroidal_stale_pin_corrupt_t402416.json');
 const CATALOG_BOBBIN_FIXTURE = fixture('tests', 'fixtures', 'multicolumn_e42_catalog_bobbin.json');
@@ -1269,6 +1270,45 @@ test.describe('Winding Studio P0', () => {
            + `${(reshaped.windowWidth * 1000).toFixed(2)} mm wide window did not become its left/right margins`)
       .toBeLessThan(0.00006);
     await ss(page, 'ws24-contiguous-auto-margin');
+  });
+
+  // A tall, narrow window (E 16/12/5) in the coil card: the studio's toolbar wraps to several
+  // lines there, and the studio ran past its box, over Advanced Parasitics and the inputs below
+  // (Alf, 2026-11-05: "the image overflows the space in the coil card").
+  test('WS-25 builder: the studio stays inside the coil card, above Advanced Parasitics', async ({ page }) => {
+    test.setTimeout(240000);
+    await goToMagneticTool(page);
+    await injectMas(page, E16_CONTIGUOUS_FIXTURE, { heal: false, mountFirst: true });
+    const studio = await openStudio(page);
+    const svg = studio.locator('.winding-studio-svg');
+    await expect(svg).toBeVisible({ timeout: 60000 });
+    const parasitics = page.locator('[data-cy$="-Coil-ShowParasiticsView-button"]').first();
+    await expect(parasitics).toBeVisible({ timeout: 30000 });
+
+    // One snapshot of the layout, so the boxes are compared at the same instant (the toolbar
+    // re-wraps while the studio settles), polled until two snapshots agree.
+    const layout = () => studio.evaluate((element) => {
+      const bottom = (node) => Math.round(node.getBoundingClientRect().bottom);
+      const parasiticsButton = document.querySelector('[data-cy$="-Coil-ShowParasiticsView-button"]');
+      return {
+        drawing: bottom(element.querySelector('.winding-studio-svg')),
+        studio: bottom(element),
+        box: bottom(element.parentElement),
+        parasiticsTop: Math.round(parasiticsButton.getBoundingClientRect().top),
+      };
+    });
+    let previous = null;
+    await expect.poll(async () => {
+      const current = JSON.stringify(await layout());
+      const settled = current === previous;
+      previous = current;
+      return settled;
+    }, { timeout: 20000, intervals: [500] }).toBe(true);
+    const settled = JSON.parse(previous);
+    expect(settled.drawing, `the drawing ends inside the studio: ${previous}`).toBeLessThanOrEqual(settled.studio + 1);
+    expect(settled.studio, `the studio ends inside its box in the coil card: ${previous}`).toBeLessThanOrEqual(settled.box + 1);
+    expect(settled.studio, `the studio ends above Advanced Parasitics: ${previous}`).toBeLessThanOrEqual(settled.parasiticsTop);
+    await ss(page, 'ws25-studio-in-coil-card');
   });
 
   // Toroid polish: angular margin wedges render from the MAS margins, and the
