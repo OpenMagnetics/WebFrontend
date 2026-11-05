@@ -801,6 +801,23 @@ export default {
                   const pr = await tqs.calculateProcessed(exc[sig].harmonics, exc[sig].waveform);
                   exc[sig].processed = { ...pr, label: "custom" };
                 }
+                else if (exc[sig].processed.effectiveFrequency == null) {
+                  // The converter engines return the basic processed set (label, duty cycle,
+                  // levels) without the effective frequencies and THD, which only MKF's full
+                  // processing gives. The Op. Points step fills them in, but a hand-off goes
+                  // straight to the builder, which then refused every AC figure of the wire
+                  // (Wire Info's Jeff read as negative micro-amperes, ABT #2277). The engine's
+                  // own fields are kept; only the ones it leaves out are completed.
+                  const pr = await tqs.calculateProcessed(exc[sig].harmonics, exc[sig].waveform);
+                  for (const key of ['effectiveFrequency', 'acEffectiveFrequency', 'thd']) {
+                    if (exc[sig].processed[key] == null) {
+                      if (pr[key] == null) {
+                        throw new Error(`MKF's processing of the ${sig} gives no ${key}`);
+                      }
+                      exc[sig].processed[key] = pr[key];
+                    }
+                  }
+                }
               } catch (e) {
                 // No fallback: fabricating zero harmonics here masked a real
                 // engine bug (excitations arriving with frequency 0) for months.

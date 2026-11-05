@@ -32,3 +32,25 @@ test('WIRE-INFO-ALL: after Resimulate every winding shows its Wire Info, not Out
     await expect(wireInfo.locator('[data-cy$="-WireInfo-Error"]')).toHaveCount(0);
   }
 });
+
+// The converter engines return processed data without the effective frequency; the wizard hand-off
+// went straight to the builder with it null, and Wire Info's Jeff came out as negative micro-amperes
+// (the customer report of ABT #2277). The hand-off completes it from MKF's processing.
+test('WIRE-INFO-HANDOFF: a wizard hand-off reaches the builder with effective frequencies, and Wire Info computes', async ({ page }) => {
+  test.setTimeout(180000);
+  const { goToBuilderStep, adviseCoreAndWait, adviseWireAndWait } = await import('./utils/builder-helpers.js');
+  await goToBuilderStep(page);
+  const processed = await page.evaluate(() => {
+    const mas = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia._s.get('mas').mas;
+    return mas.inputs.operatingPoints.flatMap((op) => op.excitationsPerWinding.flatMap((excitation) =>
+      ['current', 'voltage'].map((signal) => ({ signal, effectiveFrequency: excitation[signal]?.processed?.effectiveFrequency }))));
+  });
+  for (const { signal, effectiveFrequency } of processed) {
+    expect(effectiveFrequency, `${signal} effective frequency`).toBeGreaterThan(0);
+  }
+  await adviseCoreAndWait(page);
+  await adviseWireAndWait(page);
+  const wireInfo = page.locator('.wireinfo-panel').first();
+  await expect(wireInfo.locator('.wireinfo-grid')).toBeVisible({ timeout: 60000 });
+  await expect(wireInfo.locator('[data-cy$="-WireInfo-Error"]')).toHaveCount(0);
+});
