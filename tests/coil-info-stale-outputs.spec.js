@@ -29,9 +29,13 @@ test('COILOUT-1: a failed simulation drops the outputs of the earlier design sta
     pinia._s.get('state').resimulate();
   });
 
-  // Reported in the Engine log, not inside the card (Alf, 2026-10-22).
+  // Reported in the Engine log, and its first sentence inside Coil Info with the full text on hover
+  // (Alf, 2026-11-05, ABT #2277; the test's earlier "not inside the card" of 2026-10-22 is superseded,
+  // Alf 2026-11-06, ABT #2287).
   await expect.poll(async () => (await engineLogMessages(page, { source: 'Coil info', level: 'ERROR' })).some((m) => m.includes('Forced simulation failure')),
     { timeout: 30000 }).toBe(true);
-  await expect(page.locator('[data-cy$="-SimulationError"]')).toHaveCount(0);
+  const panelError = page.locator('[data-cy$="-CoilInfo-SimulationError"]');
+  await expect(panelError).toHaveCount(1);
+  await expect(panelError).toHaveAttribute('aria-label', /forced simulation failure/i);
   expect(await outputsCount(page), 'outputs of the earlier state are not kept').toBe(0);
 });
