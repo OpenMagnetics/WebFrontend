@@ -432,4 +432,50 @@ test.describe('3D on the web', () => {
         await expect.poll(async () => (await engineLogRecords(page, { source: '3D view', level: 'WARNING' })).map((r) => r.message).join('\n'),
             { timeout: 30000 }).toMatch(/real winding could not be built, so the 3D view shows the idealised turns: .*forced refusal for 3DW-6/i);
     });
+
+    // The viewer skips MVB++'s conductor collision gate for its own real-winding draw: colliding
+    // conductors are drawn as they are and each collision is a WARNING in the Engine log (Alf,
+    // 2026-11-06: "Skip it in the viewer"). The engine here refuses a real-winding drawTurns made
+    // with the gate ON, and reports a collision the way MVB++ does (a FINDING on stderr) when it is
+    // off, so the test holds whichever designs MVB++ happens to find colliding.
+    test('3DW-7: the viewer draws colliding real-winding conductors and logs each collision as a warning', async ({ page }) => {
+        test.setTimeout(300000);
+        await page.route('**/wasm/mvbpp.js*', async (route) => {
+            const response = await route.fetch();
+            const body = await response.text();
+            const forced = `${body}
+;createMvbpp = ((create) => async (options) => {
+    const module = await create(options);
+    let skipping = false;
+    const setSkipChecks = module.mvbppSetSkipChecks;
+    module.mvbppSetSkipChecks = (on) => { skipping = !!on; return setSkipChecks(on); };
+    const drawTurns = module.drawTurns;
+    module.drawTurns = (...args) => {
+        if (args[10] === true) {
+            if (!skipping) throw new Error('3DW-7: a real-winding drawTurns ran with the collision gate on');
+            options.printErr('[ConductorBuilder] FINDING (collision allowed by --skip-collision-check / MVB_SKIP_COLLISION_CHECK; copper left as drawn, not a part): Secondary parallel 0 turn 2 overlaps Secondary parallel 1 turn 2 by 0.1 mm (3DW-7)');
+        }
+        return drawTurns(...args);
+    };
+    return module;
+})(createMvbpp);`;
+            await route.fulfill({ response, body: forced });
+        });
+        await page.goto(`${BASE_URL}/`, { waitUntil: 'domcontentloaded' });
+        await clickIfPresent(page.getByRole('button', { name: /Essential only/i }), 5000);
+        await page.locator('[data-cy="Header-Load-MAS-file-button"]').setInputFiles(WOUND_FIXTURE);
+        await page.waitForURL('**/magnetic_tool**', { timeout: 90000 });
+        await page.locator('.magnetic-3d-visualizer-container canvas').first().waitFor({ state: 'visible', timeout: 120000 });
+
+        await page.evaluate(() => {
+            const pinia = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia;
+            pinia._s.get('settings').magneticBuilderSettings.useRealWindingGeometry = true;
+        });
+
+        await expect.poll(async () => (await engineLogRecords(page, { source: '3D view', level: 'WARNING' })).map((r) => r.message).join('\n'),
+            { timeout: 180000 }).toMatch(/The conductors collide, drawn as they are: Secondary parallel 0 turn 2 overlaps Secondary parallel 1 turn 2 by 0\.1 mm \(3DW-7\)/);
+        const logged = (await engineLogRecords(page, { source: '3D view' })).map((r) => r.message).join('\n');
+        expect(logged, 'the real winding was drawn, not replaced by the idealised turns').not.toMatch(/shows the idealised turns/);
+        await expect(page.locator('[data-cy$="-turns-build-failed"]')).toHaveCount(0);
+    });
 });
