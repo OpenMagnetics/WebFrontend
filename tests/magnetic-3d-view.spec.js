@@ -36,6 +36,7 @@ import { openWizard, runAnalytical, goToMagneticBuilder } from './utils/nav.js';
 import { runCoreAdviser } from './utils/steps.js';
 import { clickIfPresent } from './utils/wait.js';
 import { installVueComponentFinder } from './_coverage.js';
+import { engineLogRecords } from './utils/engineLog.js';
 
 // A raw MAS as it comes out of the catalogue: core shape by NAME, bobbin left as
 // the "basic" placeholder, no geometricalDescription. This is the shape of design
@@ -71,6 +72,7 @@ const RAW_BY_NAME_MAGNETIC = {
 };
 
 // A fully-enriched, wound magnetic: real-winding geometry needs turns to route.
+const WOUND_FIXTURE = new URL('./fixtures/etd49_wound_10uH_5T.json', import.meta.url).pathname;
 const REAL_WINDING_MAGNETIC = JSON.parse(
     readFileSync(new URL('./fixtures/etd49_wound_10uH_5T.json', import.meta.url), 'utf-8'),
 ).magnetic;
@@ -357,25 +359,77 @@ test.describe('3D on the web', () => {
             };
             walk(scene);
             if (vm.turnsBuildFailed) return { refused: true, error: String(vm.turnsBuildError).slice(0, 300) };
+            if (meshes && vm.realWindingWarning) return { fellBack: true, warning: String(vm.realWindingWarning).slice(0, 400), meshes };
             return (meshes && vertices !== idealVertices) ? { meshes, vertices } : false;
         }, ideal.vertices, { timeout: 300000 }).then((h) => h.jsonValue());
         await testInfo.attach('viewer-realwinding.png', { body: await page.screenshot(), contentType: 'image/png' });
 
-        if (outcome.refused) {
-            // Refusal is an acceptable OUTCOME, not an acceptable silence: it has to be on
-            // screen, and it has to name a routing failure rather than any old error. A
-            // wind with turns inside the leads' connection corridors is one: the leads have
-            // no room to route (the auto-advised Flyback's interleaved coil fits only as an
-            // ideal wind).
-            await expect(page.locator('[data-cy$="-turns-build-failed"]')).toHaveCount(1);
-            expect(outcome.error, `turns build failed for a non-routing reason: ${outcome.error}`)
+        // The viewer never refuses over the real winding (Alf, 2026-11-06): when it cannot be
+        // built, the idealised turns stay on screen and a WARNING in the Engine log says why.
+        // That warning must still name a routing failure rather than any old error. A wind
+        // with turns inside the leads' connection corridors is one: the leads have no room to
+        // route (the auto-advised Flyback's interleaved coil fits only as an ideal wind).
+        expect(outcome.refused ?? false, `the viewer refused to draw the turns: ${outcome.error}`).toBe(false);
+        if (outcome.fellBack) {
+            const logged = await engineLogRecords(page, { source: '3D view', level: 'WARNING' });
+            expect(logged.map((r) => r.message).join('\n'), 'the fallback to idealised turns is in the Engine log')
+                .toMatch(/real winding could not be built/i);
+            expect(outcome.warning, `real winding failed for a non-routing reason: ${outcome.warning}`)
                 .toMatch(/ConductorBuilder|collision|route|connection corridor/i);
-            testInfo.annotations.push({ type: 'issue', description: `real winding refused: ${outcome.error}` });
+            testInfo.annotations.push({ type: 'issue', description: `real winding not built: ${outcome.warning}` });
             return;
         }
 
         expect(outcome.meshes, 'real-winding scene lost its meshes').toBeGreaterThan(0);
         expect(outcome.vertices).not.toBe(ideal.vertices);
         expect(warnings, `viewer could not build part of the magnetic:\n${warnings.join('\n')}`).toEqual([]);
+    });
+
+    // When the real winding cannot be built, the viewer draws the idealised turns and logs a
+    // WARNING; it never shows a magnetic without its copper (Alf, 2026-11-06: "the 3D view in
+    // the web should not throw, if something like [a real-winding refusal] happens, it should
+    // log a warning, never refuse"). The engine is made to refuse every real-winding drawTurns
+    // here, so the test does not depend on finding a design MKF happens to refuse.
+    test('3DW-6: a real winding that cannot be built leaves the idealised turns on screen and a warning in the Engine log', async ({ page }) => {
+        test.setTimeout(300000);
+        await page.route('**/wasm/mvbpp.js*', async (route) => {
+            const response = await route.fetch();
+            const body = await response.text();
+            const forced = `${body}
+;createMvbpp = ((create) => async (options) => {
+    const module = await create(options);
+    const drawTurns = module.drawTurns;
+    module.drawTurns = (...args) => {
+        if (args[10] === true) throw new Error('Real winding: forced refusal for 3DW-6');
+        return drawTurns(...args);
+    };
+    return module;
+})(createMvbpp);`;
+            await route.fulfill({ response, body: forced });
+        });
+        await page.goto(`${BASE_URL}/`, { waitUntil: 'domcontentloaded' });
+        await clickIfPresent(page.getByRole('button', { name: /Essential only/i }), 5000);
+        await page.locator('[data-cy="Header-Load-MAS-file-button"]').setInputFiles(WOUND_FIXTURE);
+        await page.waitForURL('**/magnetic_tool**', { timeout: 90000 });
+        await page.locator('.magnetic-3d-visualizer-container canvas').first().waitFor({ state: 'visible', timeout: 120000 });
+
+        await page.evaluate(() => {
+            const pinia = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia;
+            pinia._s.get('settings').magneticBuilderSettings.useRealWindingGeometry = true;
+        });
+
+        const state = await page.waitForFunction(() => {
+            const el = document.querySelector('.magnetic-3d-visualizer-container');
+            const vm = el && window.__omFindComponent((i) => i.proxy?.$refs?.scene?.scene && i.proxy.$el?.contains?.(el));
+            if (!vm || vm.updating || !vm.realWindingWarning) return false;
+            return { warning: vm.realWindingWarning, failed: vm.turnsBuildFailed, turnsMeshes: vm.turnsMeshes.length };
+        }, null, { timeout: 180000 }).then((h) => h.jsonValue());
+
+        expect(state.failed, 'the viewer refused to draw the turns').toBe(false);
+        expect(state.turnsMeshes, 'the idealised turns are drawn in place of the real winding').toBeGreaterThan(0);
+        expect(state.warning).toMatch(/forced refusal for 3DW-6/);
+        await expect(page.locator('[data-cy$="-turns-build-failed"]')).toHaveCount(0);
+        await expect.poll(async () => (await engineLogRecords(page, { source: '3D view', level: 'WARNING' })).map((r) => r.message).join('\n'),
+            { timeout: 30000 }).toMatch(/real winding could not be built, so the 3D view shows the idealised turns: .*forced refusal for 3DW-6/i);
     });
 });
