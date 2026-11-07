@@ -13,5 +13,16 @@ import { ref } from 'vue'
  */
 export const useWizardInputsStore = defineStore('wizardInputs', () => {
     const inputsByWizard = ref({})
-    return { inputsByWizard }
+    // ABT #2304: the design each wizard last handed off ("Design Magnetic" / "Review Specs"), as the
+    // params key of the run it was built from, and the params key of each wizard's latest successful
+    // run. When they differ, the wizard offers to update that design's operating points and
+    // requirements (keeping its magnetic), and "Continue design" says the wizard has newer results.
+    const handOffByWizard = ref({})
+    const latestRunByWizard = ref({})
+    // Wizards whose latest run is not in the design they handed off.
+    function wizardsWithUnappliedRuns() {
+        return Object.keys(handOffByWizard.value).filter((title) => latestRunByWizard.value[title] != null
+            && latestRunByWizard.value[title] !== handOffByWizard.value[title]);
+    }
+    return { inputsByWizard, handOffByWizard, latestRunByWizard, wizardsWithUnappliedRuns }
 }, { persist: true })

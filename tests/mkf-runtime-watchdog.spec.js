@@ -52,6 +52,9 @@ function installFakeWorker(workers) {
                     if (name === 'hang') return;
                     if (name === 'take') { setTimeout(() => answer(`took ${args[0]} ms`), args[0]); return; }
                     if (name === 'set_settings') { worker.settings = args[0]; answer(undefined); return; }
+                    // As the engine: its current settings as JSON (mkfRuntime reads them at start-up to apply
+                    // the web's own, ABT #2301).
+                    if (name === 'get_settings') { answer(worker.settings ?? '{}'); return; }
                     if (name === 'load_data') { worker.loaded = true; answer(true); return; }
                     if (name === 'get_state') { answer({ worker: worker.id, settings: worker.settings, loaded: worker.loaded }); return; }
                     if (name === 'fail') { reject(new Error('restore failed on purpose')); return; }
@@ -109,7 +112,8 @@ test.describe('MKF worker watchdog', () => {
 
         // The replacement has the last settings and the app's data before anyone can reach it.
         const fresh = await runtime.waitForMkf();
-        expect(await fresh.get_state()).toEqual({ worker: 1, settings: '{"coilUseRealWindingGeometry":true}', loaded: true });
+        // (with the web's own settings on top: strict thermal geometry off, ABT #2301)
+        expect(await fresh.get_state()).toEqual({ worker: 1, settings: '{"coilUseRealWindingGeometry":true,"thermalNetworkStrictGeometry":false}', loaded: true });
 
         // Nothing left over from the dead worker replaces the new one later...
         await new Promise((resolve) => setTimeout(resolve, 700));
@@ -151,7 +155,8 @@ test.describe('MKF worker watchdog', () => {
         expect(stuckSearch.message).toContain("MKF call 'calculate_advised_coil' did not return within 2s");
         const fresh = await runtime.waitForMkf();
         expect(workers).toHaveLength(2);
-        expect(await fresh.get_state()).toEqual({ worker: 1, settings: null, loaded: true });
+        // The engine started with the web's own settings (strict thermal geometry off, ABT #2301); the replacement gets them too.
+        expect(await fresh.get_state()).toEqual({ worker: 1, settings: '{"thermalNetworkStrictGeometry":false}', loaded: true });
 
         // Every other call keeps the short budget.
         const slowCall = await settle(fresh.take(800));

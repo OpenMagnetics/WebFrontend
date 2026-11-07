@@ -3,6 +3,7 @@ import ConverterWaveformVisualizer from './ConverterWaveformVisualizer.vue'
 import { recordDesign } from 'WebSharedComponents/assets/js/telemetry.js'
 import { useTaskQueueStore } from '../../stores/taskQueue'
 import { useWizardInputsStore } from '../../stores/wizardInputs'
+import { useAdviseCacheStore } from '../../stores/adviseCache'
 import { toTitleCase } from 'WebSharedComponents/assets/js/utils.js'
 /**
  * ConverterWizardBase - Base layout + common logic for all converter wizards.
@@ -246,6 +247,15 @@ export default {
     resultsStale() {
       return this.resultsStaleReason !== '';
     },
+    // ABT #2304: this wizard handed off a design and its latest run (on screen, current, not
+    // failed) answers for other inputs: offer to put that run into the design.
+    designUpdateAvailable() {
+      void this.resultsRunId;  // re-evaluate on every run
+      const store = useWizardInputsStore();
+      const handedOff = store.handOffByWizard[this.title];
+      return handedOff != null && this.resultsParamsKey != null && !this.resultsStale
+        && this.lastRunError === '' && this.resultsParamsKey !== handedOff;
+    },
   },
 
   data() {
@@ -274,6 +284,9 @@ export default {
       resultsRunId: 0,
       resultsParamsKey: null,
       lastRunError: '',
+      updatingDesign: false,
+      designUpdateError: '',
+      designUpdateDone: false,
       rejectedInputs: {},
     };
   },
@@ -545,6 +558,11 @@ export default {
       this.resultsParamsKey = paramsKey;
       this.lastRunError = '';
       this.resultsRunId += 1;
+      this.designUpdateDone = false;
+      this.designUpdateError = '';
+      if (paramsKey != null) {
+        useWizardInputsStore().latestRunByWizard[this.title] = paramsKey;
+      }
 
       // A run is a PREVIEW: its results stay on the wizard. The design (mas store) and the
       // builder's operating-point state are written only by processWizardData, i.e. by
@@ -844,6 +862,49 @@ export default {
     // to happen on every wizard run; since a run is only a preview (ABT #2209) the hand-off is the
     // one place that does it. The state's default modes are [null] ("choose a mode"), so a guard on
     // "already set" never fired and the builder opened asking for a mode with the Builder step locked.
+    /**
+     * ABT #2304 (Alf, 2026-11-07): put the run on screen into the design this wizard handed off, when
+     * the user asks ("Update the design's operating points"). The operating points and the design
+     * requirements are replaced; the magnetic the user built (core, wires, turns) is kept. A run
+     * with other windings cannot keep that magnetic: it throws, and "Design Magnetic" starts anew.
+     */
+    async applyRunToHandedOffDesign() {
+      const wi = this._resultsWizard;
+      if (!wi) throw new Error('ConverterWizardBase: no run on screen to apply to the design');
+      const paramsKey = this.resultsParamsKey;
+      this.updatingDesign = true;
+      this.designUpdateError = '';
+      try {
+        const freq = wi.getDefaultFrequency ? wi.getDefaultFrequency() : (wi.getFrequency ? wi.getFrequency() : 100000);
+        let ops = this.extractSinglePeriodFromOperatingPoints(wi.simulatedOperatingPoints, freq);
+        ops = await this.processSimulatedOperatingPoints(ops, wi.taskQueueStore || this.$taskQueueStore);
+        const coilNames = wi.masStore.mas.magnetic.coil.functionalDescription.map((winding) => winding.name);
+        const newNames = ops[0].excitationsPerWinding.map((excitation) => excitation.name);
+        if (JSON.stringify(coilNames) !== JSON.stringify(newNames)) {
+          throw new Error(`The design has the windings ${coilNames.join(', ')}, but these inputs give `
+            + `${newNames.join(', ')}. Use "Design Magnetic" to start a new design from them.`);
+        }
+        await this.setupMasStore({ designRequirements: wi.designRequirements, operatingPoints: ops, topology: wi.getTopology(),
+          isolationSides: wi.getIsolationSides(), coilGroups: [], insulationType: wi.getInsulationType?.(), wizardInstance: wi, keepMagnetic: true });
+        // Results and advice were computed for the old operating points.
+        wi.masStore.mas.outputs = [];
+        const adviseCacheStore = useAdviseCacheStore();
+        adviseCacheStore.cleanMasAdvises();
+        adviseCacheStore.cleanCoreAdvises();
+        const ss = this.$stateStore;
+        this.setHandedOffOperatingPointsManual(ss, wi.masStore);
+        if (ss.currentOperatingPoint >= ops.length) ss.currentOperatingPoint = 0;
+        useWizardInputsStore().handOffByWizard[this.title] = paramsKey;
+        this.designUpdateDone = true;
+      }
+      catch (error) {
+        this.designUpdateError = error.message;
+      }
+      finally {
+        this.updatingDesign = false;
+      }
+    },
+
     setHandedOffOperatingPointsManual(ss, ms) {
       const operatingPoints = ms.mas.inputs.operatingPoints;
       if (!Array.isArray(operatingPoints) || operatingPoints.length === 0) {
@@ -997,6 +1058,19 @@ export default {
         ops = await this.processSimulatedOperatingPoints(ops, tqs);
         
         await this.setupMasStore({ designRequirements: dr, operatingPoints: ops, topology: wi.getTopology(), isolationSides: wi.getIsolationSides(), coilGroups: wi.getCoilGroups?.() ?? [], insulationType: wi.getInsulationType?.(), wizardInstance: wi });
+        // The design is now this wizard's, built from these inputs (ABT #2304).
+        const wizardInputs = useWizardInputsStore();
+        if (currentParamsKey != null) {
+          wizardInputs.handOffByWizard[this.title] = currentParamsKey;
+          wizardInputs.latestRunByWizard[this.title] = currentParamsKey;
+        }
+        else {
+          delete wizardInputs.handOffByWizard[this.title];
+        }
+        // Another wizard's hand-off no longer describes the design in the builder.
+        for (const title of Object.keys(wizardInputs.handOffByWizard)) {
+          if (title !== this.title) delete wizardInputs.handOffByWizard[title];
+        }
         return { success: true, operatingPoints: ops, designRequirements: dr };
       } catch (e) { 
         console.error('processWizardData:', e); 
@@ -1004,7 +1078,7 @@ export default {
       }
     },
 
-    async setupMasStore({ designRequirements, operatingPoints, topology, isolationSides, coilGroups, insulationType, wizardInstance: wi }) {
+    async setupMasStore({ designRequirements, operatingPoints, topology, isolationSides, coilGroups, insulationType, wizardInstance: wi, keepMagnetic = false }) {
       // Normalize operating points to ensure processed data is properly structured.
       // Also name any unnamed point: this path REPLACES mas.inputs wholesale, and
       // the engine returns them nameless, and an unnamed point renders as
@@ -1042,7 +1116,8 @@ export default {
           + `and the engine ${JSON.stringify(engineSides)} as isolation sides — one per winding is required`);
       }
       wi.masStore.mas.inputs = { designRequirements, operatingPoints: normalizedOperatingPoints };
-      wi.masStore.mas.magnetic.coil.functionalDescription = operatingPoints[0].excitationsPerWinding.map((e, i) => ({
+      // keepMagnetic: updating a handed-off design's inputs keeps the windings the user built (ABT #2304).
+      if (!keepMagnetic) wi.masStore.mas.magnetic.coil.functionalDescription = operatingPoints[0].excitationsPerWinding.map((e, i) => ({
         name: e.name, numberTurns: 0, numberParallels: 0, isolationSide: sides[i], wire: "Dummy"
       }));
       // Apply coil groups (windings that share sections via wound_with).
@@ -1383,6 +1458,23 @@ export default {
         <slot name="col1-footer" :catalogMode="catalogMode" :resultsStale="resultsStale">
           <!-- Wizard can place action buttons here -->
         </slot>
+        <!-- ABT #2304: this wizard's latest run is not in the design it handed off. -->
+        <div v-if="designUpdateAvailable || designUpdateError || designUpdateDone" class="compact-card mt-2" data-cy="wizard-update-design-card">
+          <div class="compact-body">
+            <template v-if="designUpdateAvailable">
+              <div class="mb-2" style="font-size: 0.85rem;">These results are not in the design you are building.</div>
+              <button
+                data-cy="wizard-update-design-button"
+                class="action-btn-sm primary w-100"
+                :disabled="updatingDesign"
+                @click="applyRunToHandedOffDesign">
+                Update the design's operating points (keeps the core and wires)
+              </button>
+            </template>
+            <div v-if="designUpdateDone" class="text-success" style="font-size: 0.85rem;" data-cy="wizard-update-design-done">The design's operating points were updated.</div>
+            <div v-if="designUpdateError" class="text-danger" style="font-size: 0.85rem;" data-cy="wizard-update-design-error">{{ designUpdateError }}</div>
+          </div>
+        </div>
       </div>
 
       <!-- Column 2 -->

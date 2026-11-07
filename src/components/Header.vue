@@ -14,6 +14,8 @@ import '../assets/scss/custom.scss'
 
 <script>
 import { WIZARD_GROUPS } from './Wizards/wizardCatalog'
+import { useWizardInputsStore } from '../stores/wizardInputs'
+import { reportNotice } from 'WebSharedComponents/assets/js/notices.js'
 
 const headerToggler = ref(null)
 const headerTogglerIsVisible = useElementVisibility(headerToggler)
@@ -151,6 +153,14 @@ export default {
                 await this.$router.push(`${import.meta.env.BASE_URL}core_studio`);
         },
         async continueMagneticToolDesign() {
+            // ABT #2304: the user changed a wizard's inputs after handing the design off; those
+            // results are not in the design unless the wizard's "Update the design's operating
+            // points" was clicked. Say so: going back must not look like it took them along.
+            if (this.wizardsWithUnappliedRuns.length > 0) {
+                reportNotice('WARNING', 'Wizard', `${this.wizardsWithUnappliedRuns.join(', ')} has newer results than the design `
+                    + `(its inputs changed after "Design Magnetic"). They are not in the design: open the wizard and click `
+                    + `"Update the design's operating points" to use them.`);
+            }
             // ABT #161: restore a valid Magnetic-Tool workflow/tool before
             // navigating. Flows like the Insulation Coordinator (and the
             // Magnetic Viewer) leave selectedWorkflow pointing at a workflow
@@ -274,6 +284,10 @@ export default {
         },
     },
     computed: {
+        // ABT #2304: wizards whose latest run is not in the design they handed off.
+        wizardsWithUnappliedRuns() {
+            return useWizardInputsStore().wizardsWithUnappliedRuns();
+        },
     },
     watch: {
         // Any navigation closes the header menus. The dropdown <li>s stop
@@ -493,9 +507,11 @@ export default {
                                 data-cy="Header-donate-link"
                                 :class="headerTogglerIsVisible? 'w-100' : 'mx-1' "
                                 class="nav-link w-100 px-2 om-continue-btn"
+                                :title="wizardsWithUnappliedRuns.length > 0 ? `${wizardsWithUnappliedRuns.join(', ')} has newer results that are not in this design` : undefined"
                                 @click="continueMagneticToolDesign"
                             >
                                 <i class="mr-2 pi pi-box-seam"></i>{{'Continue design'}}
+                                <i v-if="wizardsWithUnappliedRuns.length > 0" class="ml-1 pi pi-exclamation-triangle text-warning" data-cy="Header-continue-design-unapplied-runs"></i>
                             </button>
                         </span>
                     </li>

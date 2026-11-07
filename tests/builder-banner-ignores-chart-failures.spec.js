@@ -24,7 +24,8 @@ import { BASE_URL } from './utils/env.js';
 import { engineLogMessages, BUILDER_SOURCES } from './utils/index.js';
 
 const TP5_REFUSED = 'Complex permeability data is not available for TP5';
-const chartRecords = async (page) => (await engineLogMessages(page, { source: 'Impedance Over Frequency graph', level: 'ERROR' })).filter((m) => m.includes(TP5_REFUSED));
+// A WARNING: missing complex permeability is a limit of the material's data, which the chart states (ABT #2302).
+const chartRecords = async (page) => (await engineLogMessages(page, { source: 'Impedance Over Frequency graph', level: 'WARNING' })).filter((m) => m.includes(TP5_REFUSED));
 
 const MAS_FIXTURE = new URL('./fixtures/flyback_e16_tdg_tp5_no_complex_permeability.json', import.meta.url).pathname;
 

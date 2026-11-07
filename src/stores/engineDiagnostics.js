@@ -308,6 +308,18 @@ export const useEngineDiagnosticsStore = defineStore('engineDiagnostics', {
             if (this.records.length > MAXIMUM_RECORDS) {
                 this.records = this.records.slice(-MAXIMUM_RECORDS);
             }
+            this.dropLayoutWarningsTheFindingsRepeat();
+        },
+
+        // MKF warns that a winding layout kept as stated does not fit its window (ABT #1496: every MKF user is told).
+        // Here the Simulation findings say the same thing, per winding and with the turns ("N turns outside its
+        // winding window"), so the Winding layout record is not shown next to them (ABT #2302, Alf 2026-11-07).
+        dropLayoutWarningsTheFindingsRepeat() {
+            const findingsSayIt = this.records.some((record) => record.module === SIMULATION_FINDINGS_MODULE
+                && record.message.includes('outside its winding window'));
+            if (!findingsSayIt) return;
+            this.records = this.records.filter((record) => !(record.fromEngine === true && record.module === 'Winding layout'
+                && record.message.includes('is kept as stated, but it does not fit its window')));
         },
 
         // A record that does not come from MKF's collector (the builder's calculation failures, what a
@@ -356,6 +368,7 @@ export const useEngineDiagnosticsStore = defineStore('engineDiagnostics', {
             if (this.records.length > MAXIMUM_RECORDS) {
                 this.records = this.records.slice(-MAXIMUM_RECORDS);
             }
+            this.dropLayoutWarningsTheFindingsRepeat();
         },
 
         // findings: [{operatingPointIndex?, operatingPointName?, code, message}] from analyze_results.

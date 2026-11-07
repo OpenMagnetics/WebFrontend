@@ -7,6 +7,8 @@ import masSchemaBundle from 'WebSharedComponents/assets/js/masSchemas.json'
 import { findOutdatedCoreMaterial, invalidLossDataWarning } from './coreMaterialFreshness.js'
 import { useCoreMaterialNoticeStore } from '../stores/coreMaterialNotice.js'
 import { useRefusedCoreMaterialStore } from '/MagneticBuilder/src/stores/refusedCoreMaterial'
+import { useWindingStudioStore } from '/MagneticBuilder/src/stores/windingStudio'
+import { useWizardInputsStore } from '../stores/wizardInputs'
 import { useLoadCorrectionsStore } from '../stores/loadCorrections.js'
 import { reportNotice } from 'WebSharedComponents/assets/js/notices.js'
 import { describeFailure } from 'WebSharedComponents/assets/js/noticeText.js'
@@ -978,6 +980,11 @@ export async function loadMasIntoApp(doc, { masStore, stateStore, userStore, tas
     }
 
     masStore.resetMas();
+    // A loaded file is a new design: section rectangles drawn in the Winding Studio on the previous one
+    // (kept by section name) must not be re-imposed on its winds (ABT #2301).
+    useWindingStudioStore().clearCustomSectionRects();
+    // Nor is it any wizard's hand-off: a wizard's later run must not offer to update it (ABT #2304).
+    useWizardInputsStore().handOffByWizard = {};
     masStore.mas = autocompletedMas;
     coreMaterialNotice.set(outdatedCoreMaterial);
     if (lossDataWarning != null) {
