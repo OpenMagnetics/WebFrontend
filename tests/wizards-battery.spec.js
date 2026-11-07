@@ -46,9 +46,16 @@ test.describe('Wizards — smoke (enabled)', () => {
   for (const { cy, label } of ENABLED_WIZARDS) {
     test(`W-${label}: open → Analytical → reach magnetic_tool`, async ({ page }) => {
       const errors = [];
+      // Render failures: an uncaught exception, or a component whose render
+      // threw. In dev Vue reports the latter as a *warning* ("Unhandled error
+      // during execution of render function"), so console errors alone miss
+      // it — a requirements step that threw on every render passed this test.
+      const renderErrors = [];
       page.on('console', msg => {
         if (msg.type() === 'error' && !isBenign(msg.text())) errors.push(msg.text());
+        if (/Unhandled error during execution/.test(msg.text())) renderErrors.push(msg.text());
       });
+      page.on('pageerror', err => renderErrors.push(`[pageerror] ${err.message}`));
 
       await openWizard(page, cy);
       expect(page.url()).toContain('wizards');
@@ -80,6 +87,8 @@ test.describe('Wizards — smoke (enabled)', () => {
 
       // No unexpected console errors from the wizard flow
       expect(errors.filter(e => !/magnetic_tool|api/i.test(e))).toEqual([]);
+      // No page that threw while rendering
+      expect(renderErrors).toEqual([]);
     });
   }
 });

@@ -300,6 +300,11 @@ export default {
                 if (this.$stateStore.getCurrentApplication() == this.$stateStore.SupportedApplications.CommonModeChoke) {
                     this.masStore.resetMagnetic("filter");
                 }
+                // The 'filter' application is the differential-mode choke, whose
+                // default magnetic is dmcMas ("filter" in the mas store is the CMC).
+                if (this.$stateStore.getCurrentApplication() == this.$stateStore.SupportedApplications.Filter) {
+                    this.masStore.resetMagnetic("dmc");
+                }
             }
         },
     }
