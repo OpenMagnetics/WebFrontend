@@ -9,6 +9,12 @@ import CoilExporter from '../Exporters/CoilExporter.vue'
 import MASExporter from '../Exporters/MASExporter.vue'
 import CircuitSimulatorsExporter from '../Exporters/CircuitSimulatorsExporter.vue'
 import { recordDesign } from 'WebSharedComponents/assets/js/telemetry.js'
+// The builder's analyze_results call and its description of a core held at a data limit, so the
+// summary states what Core Info and Coil Info state.
+import { useTaskQueueStore as useMagneticBuilderTaskQueueStore } from '/MagneticBuilder/src/stores/taskQueue'
+import { describeCoreHold } from '/MagneticBuilder/src/components/MagneticBuilder/coreHold.js'
+import { coreInfoModels } from '/MagneticBuilder/src/components/MagneticBuilder/Core/coreInfoModels.js'
+import { useModelSettingsStore } from '/MagneticBuilder/src/stores/modelSettings'
 </script>
 
 <script>
@@ -36,6 +42,13 @@ export default {
             coilExporterVisible: false,
             masExporterVisible: false,
             circuitExporterVisible: false,
+            // MKF's analyze_results on the outputs shown: null while it runs, then its findings
+            // [{operatingPointIndex, code, message}] or the error it failed with.
+            resultFindings: null,
+            resultFindingsError: null,
+            // Core Info's description of the hold (describeCoreHold), when MKF found one.
+            coreHoldDescription: null,
+            resultFindingsRequest: 0,
         }
     },
     computed: {
@@ -74,6 +87,26 @@ export default {
         },
         isDesignComplete() {
             return this.missingRequirements.length === 0;
+        },
+        // ABT #2370: MKF held the core at its material's data limit for the operating point the
+        // summary shows (analyze_results' CORE_ABOVE_MATERIAL_DATA_LIMIT). Its losses there are not
+        // the design's (33 uW for a core that lost 11 W before the hold), so neither the core losses
+        // nor a total that adds them is shown: this error replaces them, here and in the printed
+        // datasheet. While the check runs, or when it failed, the losses are not shown either.
+        // { state: 'checking' | 'failed' | 'held' | 'ok', message }
+        coreLossesVerdict() {
+            if (this.resultFindingsError != null) {
+                return { state: 'failed', message: `The engine could not check the simulated results for problems, so the losses are not shown: ${this.resultFindingsError}` };
+            }
+            if (this.resultFindings == null) {
+                return { state: 'checking', message: 'Checking the results with the engine…' };
+            }
+            const held = this.resultFindings.find((finding) =>
+                finding.code == 'CORE_ABOVE_MATERIAL_DATA_LIMIT' && finding.operatingPointIndex == 0);
+            if (held == null) return { state: 'ok', message: '' };
+            // The engine's core-loss calculation did not describe the hold analyze_results found:
+            // state MKF's own finding.
+            return { state: 'held', message: this.coreHoldDescription != null ? this.coreHoldDescription.error : held.message };
         },
         partNumber() {
             return this.mas?.magnetic?.manufacturerInfo?.reference || 'Custom Design';
@@ -119,7 +152,11 @@ export default {
                 params.push({ label: 'Inductance', value: removeTrailingZeroes(aux.label, 2), unit: aux.unit, icon: 'bi-infinity' });
             }
 
-            if (outputs?.coreLosses?.coreLosses != null) {
+            if (outputs?.coreLosses?.coreLosses != null && this.coreLossesVerdict.state != 'ok') {
+                const short = { checking: 'Checking…', failed: 'Not checked', held: 'No steady temperature' }[this.coreLossesVerdict.state];
+                params.push({ label: 'Core Loss', value: short, unit: '', icon: 'bi-fire', error: this.coreLossesVerdict.message, state: this.coreLossesVerdict.state });
+            }
+            else if (outputs?.coreLosses?.coreLosses != null) {
                 if (outputs.coreLosses.coreLosses < 0) {
                     console.error('[MagneticSummary] Negative core losses received from MKF:', outputs.coreLosses.coreLosses, 'methodUsed:', outputs.coreLosses.methodUsed, 'material:', this.mas?.magnetic?.core?.functionalDescription?.material?.name ?? this.mas?.magnetic?.core?.functionalDescription?.material);
                 }
@@ -554,8 +591,12 @@ export default {
             const data = [];
             const outputs = this.mas?.outputs?.[0];
             
+            const lossesNotShown = outputs?.coreLosses?.coreLosses != null && this.coreLossesVerdict.state != 'ok';
             // Core losses
-            if (outputs?.coreLosses?.coreLosses != null) {
+            if (lossesNotShown) {
+                data.push({ parameter: 'Core Losses (Pcore)', value: this.coreLossesVerdict.message, error: true, state: this.coreLossesVerdict.state, key: 'CoreLosses' });
+            }
+            else if (outputs?.coreLosses?.coreLosses != null) {
                 if (outputs.coreLosses.coreLosses < 0) {
                     console.error('[MagneticSummary] Negative core losses received from MKF:', outputs.coreLosses.coreLosses, 'methodUsed:', outputs.coreLosses.methodUsed, 'material:', this.mas?.magnetic?.core?.functionalDescription?.material?.name ?? this.mas?.magnetic?.core?.functionalDescription?.material);
                 }
@@ -584,7 +625,13 @@ export default {
             // Total losses
             const coreLoss = outputs?.coreLosses?.coreLosses || 0;
             const windingLoss = outputs?.windingLosses?.windingLosses || 0;
-            if (coreLoss || windingLoss) {
+            if (lossesNotShown) {
+                const totalText = this.coreLossesVerdict.state == 'held'
+                    ? 'No total losses: the core has no steady temperature within its material\'s data, so its losses are not the design\'s.'
+                    : this.coreLossesVerdict.message;
+                data.push({ parameter: 'Total Losses', value: totalText, isTotal: true, error: true, state: this.coreLossesVerdict.state, key: 'TotalLosses' });
+            }
+            else if (coreLoss || windingLoss) {
                 const total = coreLoss + windingLoss;
                 const aux = formatPower(total);
                 data.push({ parameter: 'Total Losses', value: `${removeTrailingZeroes(aux.label, 3)} ${aux.unit}`, isTotal: true });
@@ -703,6 +750,13 @@ export default {
             },
             immediate: true,
         },
+        // MKF's verdict on the outputs shown, asked again whenever they change.
+        'mas.outputs': {
+            handler() {
+                this.analyzeShownResults();
+            },
+            deep: true,
+        },
     },
     mounted() {
         // ABT #162: never run computeTexts / recordDesign on a partial design.
@@ -717,11 +771,45 @@ export default {
             return;
         }
         this.computeTexts();
+        this.analyzeShownResults();
         // Reaching the magnetic-adviser report = a finished design (screenshot-safe,
         // counted even if the user never downloads anything).
         recordDesign({ event_type: 'design_report', source: 'adviser', mas: this.mas });
     },
     methods: {
+        analyzeShownResults() {
+            if (!this.isDesignComplete) return;
+            const request = ++this.resultFindingsRequest;
+            this.resultFindings = null;
+            this.resultFindingsError = null;
+            this.coreHoldDescription = null;
+            const taskQueue = useMagneticBuilderTaskQueueStore();
+            taskQueue.analyzeResults(this.mas).then(async (findings) => {
+                const held = findings.some((finding) => finding.code == 'CORE_ABOVE_MATERIAL_DATA_LIMIT' && finding.operatingPointIndex == 0);
+                let holdDescription = null;
+                if (held) {
+                    // The hold's limit and the losses before it are not in the MAS outputs: Core
+                    // Info's core-loss calculation states them, so ask it with Core Info's models.
+                    const models = coreInfoModels(this.$userStore, useModelSettingsStore(), this.$stateStore.pendingSimulationModels);
+                    if (!models.magneticFieldStrength || !models.magneticFieldStrengthFringingEffect) {
+                        throw new Error('the magnetic field strength models are not loaded yet, so the core losses before the hold cannot be computed');
+                    }
+                    const data = await taskQueue.calculateCoreLosses(this.mas.magnetic, this.mas.inputs, 0, models);
+                    if (data == null) {
+                        throw new Error('the core of this design is not complete enough to compute its losses before the hold');
+                    }
+                    holdDescription = describeCoreHold(data.coreLossesData);
+                }
+                if (request == this.resultFindingsRequest) {
+                    this.coreHoldDescription = holdDescription;
+                    this.resultFindings = findings;
+                }
+            })
+            .catch((error) => {
+                if (request == this.resultFindingsRequest) this.resultFindingsError = error?.message || String(error);
+                console.error('[MagneticSummary] analyze_results failed:', error);
+            });
+        },
         // Per-winding leakage (referred to the primary) for winding index i, tolerating both
         // producer shapes of outputs.leakageInductance.leakageInductancePerWinding:
         // - current engine (winding-indexed, N entries, 0 at the primary slot)
@@ -866,7 +954,14 @@ export default {
                     <div class="key-param-body">
                         <div class="param-label">{{ param.label }}</div>
                         <div class="param-value-row">
-                            <span class="param-value">{{ param.value }}</span>
+                            <span
+                                v-if="param.error"
+                                class="param-value param-value-error"
+                                :class="{ 'text-danger': param.state != 'checking' }"
+                                :data-cy="dataTestLabel + '-KeyParameter-CoreLoss-' + param.state"
+                                :title="param.error"
+                            >{{ param.value }}</span>
+                            <span v-else class="param-value">{{ param.value }}</span>
                             <span class="param-unit">{{ param.unit }}</span>
                         </div>
                     </div>
@@ -1099,7 +1194,14 @@ export default {
                                 <tr v-for="(item, index) in performanceData" :key="item.parameter" 
                                     :class="{ 'alt-row': index % 2 === 1, 'total-row': item.isTotal }">
                                     <td class="param-name">{{ item.parameter }}</td>
-                                    <td class="param-val">{{ item.value }}</td>
+                                    <td
+                                        v-if="item.error"
+                                        class="param-val param-val-error"
+                                        :class="{ 'text-danger': item.state != 'checking' }"
+                                        :role="item.state != 'checking' ? 'alert' : null"
+                                        :data-cy="dataTestLabel + '-Performance-' + item.key + '-' + item.state"
+                                    >{{ item.value }}</td>
+                                    <td v-else class="param-val">{{ item.value }}</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -1745,6 +1847,16 @@ export default {
     color: var(--p-primary);
     font-weight: 600;
     letter-spacing: 0.05em;
+}
+
+/* A loss the summary does not show (core held at a data limit, or results not checked). */
+.param-value-error {
+    font-size: 0.85rem;
+}
+
+.param-val-error {
+    font-weight: 600;
+    white-space: normal;
 }
 
 /* Print styles */
