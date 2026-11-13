@@ -323,11 +323,13 @@ export default {
             }
             dim[bound] = value / MM;
         },
-        buildTestCoreForShape() {
+        // ABT #2372: the type comes from MKF's family -> type rule ('two-piece set' was not even a MAS
+        // value, and it typed every non-toroid twoPieceSet, mirroring an EI into an E+E).
+        async buildTestCoreForShape() {
             return {
                 functionalDescription: {
                     name: "Core Studio shape check",
-                    type: this.shapeRecord.family === 't' ? 'toroidal' : 'two-piece set',
+                    type: await this.taskQueueStore.getCoreTypeForShapeFamily(this.shapeRecord.family),
                     material: '3C97',
                     shape: deepCopy(this.shapeRecord),
                     gapping: [],
@@ -342,7 +344,7 @@ export default {
             }
             this.busy = true;
             try {
-                const core = await this.taskQueueStore.calculateCoreData(this.buildTestCoreForShape(), false);
+                const core = await this.taskQueueStore.calculateCoreData(await this.buildTestCoreForShape(), false);
                 const processed = core.processedDescription;
                 this.shapeValidation = {
                     effectiveArea: processed.effectiveParameters.effectiveArea,
@@ -735,7 +737,7 @@ export default {
                 const readback = await this.taskQueueStore.getMaterialData(record.name);
                 const testCore = {
                     functionalDescription: {
-                        name: "Core Studio material check", type: 'two-piece set',
+                        name: "Core Studio material check", type: 'twoPieceSet',
                         material: record.name, shape: 'E 25/13/7', gapping: [], numberStacks: 1,
                     },
                 };
@@ -788,7 +790,7 @@ export default {
                 // gapping one-gap-per-column (same semantics as the builder).
                 fd.gapping = [];
                 const shape = await this.taskQueueStore.getShapeData(fd.shape);
-                fd.type = shape.family === 't' ? 'toroidal' : 'two-piece set';
+                fd.type = await this.taskQueueStore.getCoreTypeForShapeFamily(shape.family);
                 let core = await this.taskQueueStore.calculateCoreData(deepCopy(this.coreRecord), false);
                 const numberColumns = core.processedDescription.columns.length;
 

@@ -812,6 +812,33 @@ export function prepareMasForImport(mas, corrections = []) {
     return mas;
 }
 
+// ABT #2372: the core type follows the shape family (MKF's rule), and MKF refuses a core whose stated
+// type contradicts it. Older builders kept the previous family's type when the user changed family, so
+// designs were saved as, e.g., an EI typed twoPieceSet (web report #193) -- processed as a mirrored E+E,
+// with twice the effective length and volume. Such a core is re-typed from its family, visibly: the
+// change is a load correction (Engine log). Its processed and geometrical descriptions, and the derived
+// fields of its gaps, were computed for the wrong type, so they are dropped for MKF to recompute.
+export async function giveCoreTheTypeOfItsFamily(mas, corrections, taskQueueStore) {
+    const functionalDescription = mas?.magnetic?.core?.functionalDescription;
+    const shape = functionalDescription?.shape;
+    if (shape == null || typeof shape !== 'object' || shape.family == null) return;
+    const familyType = await taskQueueStore.getCoreTypeForShapeFamily(shape.family);
+    if (functionalDescription.type === familyType) return;
+    const coreName = mas.magnetic.core.name ?? shape.name ?? 'the core';
+    const message = `core '${coreName}' (shape family '${shape.family}') was stored as '${functionalDescription.type}', but a '${shape.family}' core is a '${familyType}'; `
+        + `it was loaded as a '${familyType}', and its effective parameters, geometry and gaps were recomputed for that type`;
+    functionalDescription.type = familyType;
+    delete mas.magnetic.core.processedDescription;
+    delete mas.magnetic.core.geometricalDescription;
+    for (const gap of (functionalDescription.gapping ?? [])) {
+        for (const derived of ['area', 'coordinates', 'distanceClosestNormalSurface', 'distanceClosestParallelSurface', 'sectionDimensions', 'shape']) {
+            delete gap[derived];
+        }
+    }
+    corrections.push({ operatingPointIndex: null, operatingPointName: null, windingIndex: null, signal: null, message });
+    console.warn(`Imported MAS: ${message}`);
+}
+
 export async function loadMasIntoApp(doc, { masStore, stateStore, userStore, taskQueueStore, router, route }) {
     const notMas = describeNonMasDocument(doc);
     if (notMas != null) {
@@ -840,6 +867,7 @@ export async function loadMasIntoApp(doc, { masStore, stateStore, userStore, tas
     // Every engine call below must see the user's engine settings (material-data extrapolation).
     await engineUserSettingsSettled();
     await completeHarmonicsOnlySignals(newMas, taskQueueStore);
+    await giveCoreTheTypeOfItsFamily(newMas, corrections, taskQueueStore);
 
     const response = await checkAndFixMas(newMas, taskQueueStore);
 
