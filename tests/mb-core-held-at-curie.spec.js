@@ -102,6 +102,8 @@ async function openSummary(page) {
   await expect(page.locator('[data-cy$="-MagneticSummary-incomplete"]'), 'the summary has a complete design').toHaveCount(0);
   await expect(page.locator('.datasheet-container'), 'the summary renders').toBeVisible({ timeout: 30000 });
 }
+// A flux-density reading: a number with T, mT or µT (the datasheet has no other tesla values).
+const FLUX_VALUE = /\d\s*[mµμ]?T(?![A-Za-z])/;
 const HELD_TEXT = /^No steady temperature: the core reaches its Curie temperature \(240\s*°C\)\. Losses before the hold: 11(\.\d+)?\s*W at 23[89](\.\d+)?\s*°C\.$/;
 
 test('CORE-HOLD-2370-SUMMARY: the summary and its printed datasheet show the hold error, never the held core or total losses', async ({ page }, testInfo) => {
@@ -115,6 +117,10 @@ test('CORE-HOLD-2370-SUMMARY: the summary and its printed datasheet show the hol
   await expect(page.locator('[data-cy$="-KeyParameter-CoreLoss-held"]')).toHaveText('No steady temperature');
   await expect(page.locator('[data-cy$="-KeyParameter-CoreLoss-held"]')).toHaveAttribute('title', HELD_TEXT);
   await expect(page.locator('.datasheet-container'), 'no microwatt reading anywhere in the datasheet').not.toContainText(/µW|μW|uW/);
+  // The flux density of the held core (paramagnetic, ~100x low) is not shown either.
+  await expect(page.locator('[data-cy$="-KeyParameter-PeakB-held"]')).toHaveText('No steady temperature');
+  await expect(page.locator('[data-cy$="-ElectricalSpecs-PeakB-held"]')).toHaveText(HELD_TEXT);
+  await expect(page.locator('.datasheet-container'), 'no flux-density value anywhere in the datasheet').not.toContainText(FLUX_VALUE);
   // The PDF is the browser's print of this page (Print / Save PDF): render it and read its text.
   await page.emulateMedia({ media: 'print' });
   await expect(coreCell).toBeVisible();
@@ -127,6 +133,7 @@ test('CORE-HOLD-2370-SUMMARY: the summary and its printed datasheet show the hol
   expect(pdfText, 'the printed datasheet gives the losses before the hold').toMatch(/the hold: 11(\.\d+)? W at 23[89](\.\d+)? °C\./);
   expect(pdfText, 'the printed datasheet states there is no total').toContain('No total losses');
   expect(pdfText, 'no microwatt reading in the printed datasheet').not.toMatch(/µW|μW|uW/);
+  expect(pdfText, 'no flux-density value in the printed datasheet').not.toMatch(FLUX_VALUE);
 });
 
 test('CORE-HOLD-2370-SUMMARY-4T: with 4 turns the summary shows the core and total losses', async ({ page }, testInfo) => {
@@ -138,4 +145,30 @@ test('CORE-HOLD-2370-SUMMARY-4T: with 4 turns the summary shows the core and tot
   await expect(table.locator('tr', { hasText: 'Core Losses (Pcore)' }).locator('td.param-val')).toHaveText(/^\d+(\.\d+)?\s*m?W$/, { timeout: 60000 });
   await expect(table.locator('tr', { hasText: 'Total Losses' }).locator('td.param-val')).toHaveText(/^\d+(\.\d+)?\s*m?W$/);
   await expect(page.locator('[data-cy*="-Performance-"][data-cy$="-held"], [data-cy*="-Performance-"][data-cy$="-failed"]')).toHaveCount(0);
+  // The flux density is shown when the core settles.
+  await expect(page.locator('.key-param', { hasText: 'Peak B' }).locator('.param-value-row')).toHaveText(/^\s*\d+(\.\d+)?\s*[mµμ]?T\s*$/);
+  await expect(page.locator('tr', { hasText: 'Peak Flux Density' }).locator('td.typ-value')).toHaveText(/^\d+(\.\d+)?$/);
+});
+
+test('CORE-HOLD-2370-SUMMARY-CHECK-FAILS: when analyze_results fails the summary shows its error instead of the losses and flux density', async ({ page }, testInfo) => {
+  test.setTimeout(240000);
+  await loadDesignWithTurns(page, testInfo, 4);
+  await expect(coreLosses(page).first()).toBeVisible({ timeout: 120000 });
+  await expect(page.locator('[data-cy$="-TotalLosses-container"]').first()).toBeVisible({ timeout: 120000 });
+  // The builder's checks are done; from here MagneticBuilder's analyze_results fails.
+  await page.evaluate(() => {
+    const pinia = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia;
+    pinia._s.get('magneticBuilderTaskQueue').analyzeResults = async () => { throw new Error('Exception: stubbed analyze_results failure'); };
+  });
+  await openSummary(page);
+  const failedText = /^The engine could not check the simulated results for problems, so the losses and flux density are not shown: Exception: stubbed analyze_results failure$/;
+  await expect(page.locator('[data-cy$="-Performance-CoreLosses-failed"]')).toHaveText(failedText, { timeout: 60000 });
+  await expect(page.locator('[data-cy$="-Performance-TotalLosses-failed"]')).toHaveText(failedText);
+  await expect(page.locator('[data-cy$="-ElectricalSpecs-PeakB-failed"]')).toHaveText(failedText);
+  await expect(page.locator('[data-cy$="-KeyParameter-CoreLoss-failed"]')).toHaveText('Not checked');
+  await expect(page.locator('[data-cy$="-KeyParameter-PeakB-failed"]')).toHaveText('Not checked');
+  const table = page.locator('.datasheet-container .data-table');
+  await expect(table.locator('tr', { hasText: 'Core Losses (Pcore)' }).locator('td.param-val')).not.toHaveText(/\d\s*m?W/);
+  await expect(table.locator('tr', { hasText: 'Total Losses' }).locator('td.param-val')).not.toHaveText(/\d\s*m?W/);
+  await expect(page.locator('.datasheet-container')).not.toContainText(FLUX_VALUE);
 });

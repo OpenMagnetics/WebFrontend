@@ -96,7 +96,7 @@ export default {
         // { state: 'checking' | 'failed' | 'held' | 'ok', message }
         coreLossesVerdict() {
             if (this.resultFindingsError != null) {
-                return { state: 'failed', message: `The engine could not check the simulated results for problems, so the losses are not shown: ${this.resultFindingsError}` };
+                return { state: 'failed', message: `The engine could not check the simulated results for problems, so the losses and flux density are not shown: ${this.resultFindingsError}` };
             }
             if (this.resultFindings == null) {
                 return { state: 'checking', message: 'Checking the results with the engine…' };
@@ -154,7 +154,7 @@ export default {
 
             if (outputs?.coreLosses?.coreLosses != null && this.coreLossesVerdict.state != 'ok') {
                 const short = { checking: 'Checking…', failed: 'Not checked', held: 'No steady temperature' }[this.coreLossesVerdict.state];
-                params.push({ label: 'Core Loss', value: short, unit: '', icon: 'bi-fire', error: this.coreLossesVerdict.message, state: this.coreLossesVerdict.state });
+                params.push({ label: 'Core Loss', value: short, unit: '', icon: 'bi-fire', error: this.coreLossesVerdict.message, state: this.coreLossesVerdict.state, key: 'CoreLoss' });
             }
             else if (outputs?.coreLosses?.coreLosses != null) {
                 if (outputs.coreLosses.coreLosses < 0) {
@@ -169,7 +169,13 @@ export default {
                 params.push({ label: 'Winding Loss', value: removeTrailingZeroes(aux.label, 2), unit: aux.unit, icon: 'bi-lightning-fill' });
             }
 
-            if (outputs?.coreLosses?.magneticFluxDensity?.processed?.peak) {
+            // On a held core B is computed on the paramagnetic (mu_r = 1) core, ~100x below the
+            // design's: like the losses, it is replaced by the verdict (as Core Info hides it).
+            if (outputs?.coreLosses?.magneticFluxDensity?.processed?.peak && this.coreLossesVerdict.state != 'ok') {
+                const short = { checking: 'Checking…', failed: 'Not checked', held: 'No steady temperature' }[this.coreLossesVerdict.state];
+                params.push({ label: 'Peak B', value: short, unit: '', icon: 'bi-magnet-fill', error: this.coreLossesVerdict.message, state: this.coreLossesVerdict.state, key: 'PeakB' });
+            }
+            else if (outputs?.coreLosses?.magneticFluxDensity?.processed?.peak) {
                 const aux = formatUnit(outputs.coreLosses.magneticFluxDensity.processed.peak, 'T');
                 params.push({ label: 'Peak B', value: removeTrailingZeroes(aux.label, 2), unit: aux.unit, icon: 'bi-magnet-fill' });
             }
@@ -210,8 +216,19 @@ export default {
                 });
             }
             
-            // Peak flux density
-            if (outputs?.coreLosses?.magneticFluxDensity?.processed?.peak) {
+            // Peak flux density (not the held core's: see keyParameters)
+            if (outputs?.coreLosses?.magneticFluxDensity?.processed?.peak && this.coreLossesVerdict.state != 'ok') {
+                specs.push({
+                    parameter: 'Peak Flux Density',
+                    symbol: 'Bpk',
+                    typ: this.coreLossesVerdict.message,
+                    unit: '',
+                    conditions: 'At operating point',
+                    error: true,
+                    state: this.coreLossesVerdict.state,
+                });
+            }
+            else if (outputs?.coreLosses?.magneticFluxDensity?.processed?.peak) {
                 const aux = formatUnit(outputs.coreLosses.magneticFluxDensity.processed.peak, 'T');
                 specs.push({
                     parameter: 'Peak Flux Density',
@@ -958,7 +975,7 @@ export default {
                                 v-if="param.error"
                                 class="param-value param-value-error"
                                 :class="{ 'text-danger': param.state != 'checking' }"
-                                :data-cy="dataTestLabel + '-KeyParameter-CoreLoss-' + param.state"
+                                :data-cy="dataTestLabel + '-KeyParameter-' + param.key + '-' + param.state"
                                 :title="param.error"
                             >{{ param.value }}</span>
                             <span v-else class="param-value">{{ param.value }}</span>
@@ -1000,7 +1017,14 @@ export default {
                         <tr v-for="(spec, index) in electricalSpecs" :key="spec.parameter" :class="{ 'alt-row': index % 2 === 1 }">
                             <td>{{ spec.parameter }}</td>
                             <td class="symbol">{{ spec.symbol }}</td>
-                            <td class="typ-value">{{ spec.typ || '-' }}</td>
+                            <td
+                                v-if="spec.error"
+                                class="typ-value param-val-error"
+                                :class="{ 'text-danger': spec.state != 'checking' }"
+                                :role="spec.state != 'checking' ? 'alert' : null"
+                                :data-cy="dataTestLabel + '-ElectricalSpecs-PeakB-' + spec.state"
+                            >{{ spec.typ }}</td>
+                            <td v-else class="typ-value">{{ spec.typ || '-' }}</td>
                             <td>{{ spec.unit }}</td>
                             <td class="conditions">{{ spec.conditions || '' }}</td>
                         </tr>
