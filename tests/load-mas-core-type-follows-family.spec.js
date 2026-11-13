@@ -62,7 +62,10 @@ test.describe('the core type follows its shape family on load (ABT #2372)', () =
   });
 
   test('CORETYPE-LOAD-2: a core whose type fits its family is left as it is', async ({ page }) => {
+    // The same EI piece-and-plate design, saved without gap positions or fields derived from them (a stored
+    // position of a piece-and-plate gap is dropped on load, CORETYPE-LOAD-3).
     const stored = eiCore('pieceAndPlate');
+    stored.functionalDescription.gapping = stored.functionalDescription.gapping.map(({ type, length }) => ({ type, length }));
     const { core, corrections } = await migrate(page, stored);
     expect(core).toEqual(stored);
     expect(corrections).toEqual([]);
