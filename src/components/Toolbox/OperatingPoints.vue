@@ -96,8 +96,11 @@ export default {
 
             this.errorMessages = "";
             for (var operatingPointIndex = 0; operatingPointIndex < this.masStore.mas.inputs.operatingPoints.length; operatingPointIndex++) {
-                if (this.$stateStore.operatingPoints.modePerPoint[this.currentOperatingPointIndex] !== this.$stateStore.OperatingPointsMode.Manual && this.$stateStore.operatingPoints.modePerPoint[this.currentOperatingPointIndex] !== this.$stateStore.OperatingPointsMode.CircuitSimulatorImport && this.$stateStore.operatingPoints.modePerPoint[this.currentOperatingPointIndex] !== this.$stateStore.OperatingPointsMode.HarmonicsList) {
+                // Every point needs a mode, not just the one on screen.
+                const mode = this.$stateStore.operatingPoints.modePerPoint[operatingPointIndex];
+                if (mode !== this.$stateStore.OperatingPointsMode.Manual && mode !== this.$stateStore.OperatingPointsMode.CircuitSimulatorImport && mode !== this.$stateStore.OperatingPointsMode.HarmonicsList) {
                     allSet = false;
+                    this.errorMessages += "Choose how to define operating point " + this.masStore.mas.inputs.operatingPoints[operatingPointIndex]?.name + ".\n"
                 }
                 if (this.masStore.mas.inputs.operatingPoints[operatingPointIndex] == null) {
                     allSet = false;
@@ -403,11 +406,27 @@ export default {
             this.$stateStore.operatingPoints.modePerPoint[this.currentOperatingPointIndex] = this.defaultMode;
             this.emitCanContinue();
         },
+        // Web bug reports #189/#190: any point can be removed, whatever its mode, as long as
+        // one is left. The store drops the point's mode with it; the cooling view model is
+        // dropped here, so every later card keeps its own.
         removePoint(index) {
-            if (index < this.currentOperatingPointIndex) {
+            const numberOperatingPoints = this.masStore.mas.inputs.operatingPoints.length;
+            if (numberOperatingPoints <= 1) {
+                throw new Error("The only operating point cannot be removed: a design needs one.");
+            }
+            if (index < 0 || index >= numberOperatingPoints) {
+                throw new Error("There is no operating point " + (index + 1) + " to remove; the design has " + numberOperatingPoints + ".");
+            }
+            const removingCurrent = index == this.currentOperatingPointIndex;
+            if (index < this.currentOperatingPointIndex || (removingCurrent && index == numberOperatingPoints - 1)) {
                 this.currentOperatingPointIndex -= 1;
             }
+            this.coolingUi.splice(index, 1);
             this.$stateStore.removeOperatingPoint(index);
+            if (removingCurrent) {
+                // The point that takes its place opens the way selecting it does.
+                this.selectOperatingPoint(this.currentOperatingPointIndex);
+            }
             this.emitCanContinue();
         },
         importedWaveform() {
@@ -501,7 +520,31 @@ export default {
                 </div>
                 <div class="op-card" :class="{ 'op-card-active': operatingPointIndex == currentOperatingPointIndex }" v-for="(operatingPoint, operatingPointIndex) in masStore.mas.inputs.operatingPoints" :key="operatingPointIndex">
 
-                    <span v-if="$stateStore.operatingPoints.modePerPoint[operatingPointIndex] == null" class="op-card-pending"> Choose a mode for this operating point first <i class="pi pi-arrow-right op-card-pending-arrow"></i> </span>
+                    <!-- A point without a mode still gets its Remove / Select buttons (web bug
+                         reports #189/#190: a mode-less point could be neither selected nor removed). -->
+                    <div v-if="$stateStore.operatingPoints.modePerPoint[operatingPointIndex] == null" class="op-card-body">
+                        <span class="op-card-pending"> Choose a mode for this operating point first <i class="pi pi-arrow-right op-card-pending-arrow"></i> </span>
+                        <div class="op-card-actions">
+                            <button
+                                v-if="masStore.mas.inputs.operatingPoints.length > 1"
+                                :data-cy="dataTestLabel + '-remove-operating-point-' + operatingPointIndex + '-button'"
+                                class="op-btn op-btn-danger"
+                                @click="removePoint(operatingPointIndex)"
+                            >
+                                <i class="pi pi-trash"></i>
+                                <span>Remove</span>
+                            </button>
+                            <button
+                                v-if="currentOperatingPointIndex != operatingPointIndex"
+                                :data-cy="dataTestLabel + '-select-operating-point-' + operatingPointIndex + '-button'"
+                                class="op-btn op-btn-primary"
+                                @click="selectOperatingPoint(operatingPointIndex)"
+                            >
+                                <i class="pi pi-pencil"></i>
+                                <span>Select</span>
+                            </button>
+                        </div>
+                    </div>
                     <div v-else class="op-card-body">
                         <Text
                             class="op-name"
@@ -676,8 +719,9 @@ export default {
                                 <i :class="currentWindingIndex == windingIndex ? 'pi pi-eye' : 'pi pi-file-plus'"></i>
                             </button>
                         </div>
-                        <div v-else class="op-card-actions">
+                        <div class="op-card-actions">
                             <button
+                                v-if="masStore.mas.inputs.operatingPoints.length > 1"
                                 :data-cy="dataTestLabel + '-remove-operating-point-' + operatingPointIndex + '-button'"
                                 class="op-btn op-btn-danger"
                                 @click="removePoint(operatingPointIndex)"
@@ -686,6 +730,7 @@ export default {
                                 <span>Remove</span>
                             </button>
                             <button
+                                v-if="masStore.hasMirroredWindings || currentOperatingPointIndex != operatingPointIndex"
                                 :data-cy="dataTestLabel + '-select-operating-point-' + operatingPointIndex + '-button'"
                                 class="op-btn op-btn-primary"
                                 @click="selectOperatingPoint(operatingPointIndex)"

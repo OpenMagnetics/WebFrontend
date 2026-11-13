@@ -222,6 +222,9 @@ export const useStateStore = defineStore("state", () => {
         const masStore = useMasStore();
         this.operatingPointsCircuitSimulator.confirmedColumns.splice(index, 1);
         this.operatingPointsCircuitSimulator.columnNames.splice(index, 1);
+        // The mode goes with its point: left behind, every later point took its
+        // neighbour's mode (web bug reports #189/#190).
+        this.operatingPoints.modePerPoint.splice(index, 1);
         masStore.mas.inputs.operatingPoints.splice(index, 1);
     }
 
