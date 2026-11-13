@@ -67,4 +67,29 @@ test.describe('the core type follows its shape family on load (ABT #2372)', () =
     expect(core).toEqual(stored);
     expect(corrections).toEqual([]);
   });
+
+  // A piece-and-plate core's gaps sit at the leg tip, against the plate (MKF places them there). The
+  // positions stored by older builds sit at mid-leg, so they are dropped for MKF to place, visibly.
+  test('CORETYPE-LOAD-3: the stored gap positions of a pieceAndPlate core are dropped, visibly', async ({ page }) => {
+    const stored = eiCore('pieceAndPlate');
+    const { core, corrections } = await migrate(page, stored);
+    expect(core.functionalDescription.type).toBe('pieceAndPlate');
+    for (const gap of core.functionalDescription.gapping) {
+      expect(gap.coordinates, 'the engine places the gap at the leg tip').toBeUndefined();
+      expect(gap.distanceClosestNormalSurface).toBeUndefined();
+      expect(gap.area).toBeUndefined();
+    }
+    expect(core.functionalDescription.gapping.map((gap) => [gap.type, gap.length])).toEqual([['subtractive', 5e-5], ['residual', 5e-6]]);
+    expect(core.processedDescription, 'the type was right, so the effective parameters stay').toEqual(stored.processedDescription);
+    expect(corrections.length).toBe(1);
+    expect(corrections[0].operatingPointIndex, 'reported in the Engine log, not on an operating point').toBeNull();
+    expect(corrections[0].message).toContain('leg tip, against the plate');
+    expect(corrections[0].message).toContain('gap positions stored with it were dropped');
+  });
+
+  test('CORETYPE-LOAD-4: an EI re-typed to pieceAndPlate says its gaps go to the leg tip', async ({ page }) => {
+    const { corrections } = await migrate(page, eiCore('twoPieceSet'));
+    expect(corrections.length, 'one correction, not one per step').toBe(1);
+    expect(corrections[0].message).toContain('with its gaps at the leg tip, against the plate');
+  });
 });
