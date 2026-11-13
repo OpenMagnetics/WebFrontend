@@ -306,7 +306,12 @@ export default {
             try {
                 const rebuilt = await Promise.all(descriptors.map(async (signalDescriptor) => {
                     const signal = excitation[signalDescriptor];
-                    if (signal.processed.label != "custom") {
+                    if (signal?.processed == null) {
+                        // Defined by its harmonics only (harmonics list): there are no processed
+                        // values to build a waveform from, so this signal is not rebuilt.
+                        return null;
+                    }
+                    if (signal.processed.label != "custom" && !(await this.processedDescribesWaveform(signal))) {
                         const waveform = await this.taskQueueStore.createWaveform(signal.processed, frequency);
                         if (waveform.data.length == 0) {
                             return null;
@@ -346,6 +351,30 @@ export default {
                 console.error(error);
             }
 
+        },
+        // Whether a signal's processed values are still the ones its stored waveform yields,
+        // i.e. nobody has edited them since they were derived from it. Such a waveform is
+        // the signal's source of truth and is never re-synthesised from them: an imported
+        // (CSV / simulator) current that MKF labels 'triangular' would otherwise be replaced
+        // by the ideal 3-point triangle of the same peak to peak, dropping every imported
+        // sample. Compared: the values the manual editor lets the user change.
+        async processedDescribesWaveform(signal) {
+            if (signal.waveform?.data == null || signal.waveform.data.length == 0) {
+                return false;
+            }
+            const derived = await this.taskQueueStore.calculateBasicProcessedData(signal.waveform);
+            const stored = signal.processed;
+            if (derived.label != stored.label) {
+                return false;
+            }
+            const scale = Math.max(Math.abs(stored.peakToPeak ?? 0), Math.abs(derived.peakToPeak ?? 0));
+            return ['peakToPeak', 'offset', 'dutyCycle'].every((key) => {
+                if (stored[key] == null || derived[key] == null) {
+                    return stored[key] == null && derived[key] == null;
+                }
+                const tolerance = 1e-6 * (key == 'dutyCycle' ? 1 : Math.max(scale, Math.abs(stored[key]), Math.abs(derived[key])));
+                return Math.abs(stored[key] - derived[key]) <= tolerance;
+            });
         },
         async convertFromWaveformToProcessed(operatingPointIndex, windingIndex, signalDescriptor) {
             var waveform = this.masStore.mas.inputs.operatingPoints[operatingPointIndex].excitationsPerWinding[windingIndex][signalDescriptor].waveform;

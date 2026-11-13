@@ -15,7 +15,7 @@
  */
 import fs from 'node:fs';
 import { test, expect } from './_coverage.js';
-import { BASE_URL, collectConsoleErrors } from './utils/index.js';
+import { BASE_URL, collectConsoleErrors, withPinia } from './utils/index.js';
 
 // A one-winding design: the reported file came from an inductor.
 const INDUCTOR_MAS = new URL('./fixtures/etd49_wound_10uH_5T.json', import.meta.url).pathname;
@@ -119,5 +119,55 @@ test.describe('Circuit-simulator CSV import', () => {
         expect(elapsed).toBeLessThan(60000);
         await expect(page.getByText(/did not return within/)).toHaveCount(0);
         await expectImportedSignals(page);
+    });
+
+    // MKF labels this imported current 'triangular' (not 'custom'), and any later
+    // "the processed values changed" signal used to rebuild the waveform from those values: the
+    // 8000 imported samples became a 3-point ideal triangle. Changing the operating point's cooling
+    // sends that signal for the excitation on screen.
+    test('CSV-4: an imported waveform keeps its samples when the operating point is updated', async ({ page }, testInfo) => {
+        const getErrors = collectConsoleErrors(page);
+        const file = testInfo.outputPath('ltspice_inductor_keep.txt');
+        writeExport(file, { separator: '\t', periods: 4, pointsPerPeriod: 2000 });
+
+        await importAndConfirm(page, file);
+        await expectImportedSignals(page);
+
+        const imported = await withPinia(page, (pinia) => {
+            const excitation = pinia._s.get('mas').mas.inputs.operatingPoints[0].excitationsPerWinding[0];
+            return {
+                label: excitation.current.processed?.label,
+                current: excitation.current.waveform.data.length,
+                voltage: excitation.voltage.waveform.data.length,
+            };
+        });
+        expect(imported.current, 'the import stored the sampled current').toBeGreaterThan(100);
+
+        // Count the rebuilds the update triggers, so the check below runs after them.
+        await page.evaluate(() => {
+            const pinia = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia;
+            window.__rebuilt = [];
+            pinia._s.get('mas').$onAction((action) => {
+                if (action.name == 'updatedInputExcitationWaveformUpdatedFromProcessed') {
+                    action.after(() => window.__rebuilt.push(action.args[0]));
+                }
+            });
+        });
+
+        const cooling = page.locator('.op-card').first().locator('[data-cy$="-ConditionsCooling-select"]');
+        await cooling.click();
+        await page.getByRole('option', { name: 'Forced air' }).click();
+        await page.waitForFunction(() => window.__rebuilt.includes('current') && window.__rebuilt.includes('voltage'), null, { timeout: 60000 });
+
+        const after = await withPinia(page, (pinia) => {
+            const excitation = pinia._s.get('mas').mas.inputs.operatingPoints[0].excitationsPerWinding[0];
+            return {
+                current: excitation.current.waveform.data.length,
+                voltage: excitation.voltage.waveform.data.length,
+            };
+        });
+        expect(after, `imported current labelled '${imported.label}' must keep its samples`).toEqual({ current: imported.current, voltage: imported.voltage });
+        await expectImportedSignals(page);
+        expect(getErrors()).toEqual([]);
     });
 });
