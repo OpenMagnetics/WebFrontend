@@ -8,7 +8,8 @@
  * MagneticBuilder's Core Info showed the held losses as the result anyway.
  *
  * Decision (Alf, 2026-11-13): the web never shows the held losses; Core Info shows an error with the
- * limit and the losses just before the hold. MKF's hold is unchanged.
+ * limit and the losses just before the hold, and Coil Info shows no total that adds them. MKF's hold
+ * is unchanged.
  *
  * The fixture is the user's saved design (the 4-turn state); the test sets 8 turns in memory, the
  * state the user reported first. It drives the real engine committed with the web.
@@ -58,6 +59,11 @@ test('CORE-HOLD-2370: a core held at its Curie point shows an error with the los
   const hint = page.locator('.coreinfo-header [data-cy$="-CoreInfo-HeldAtDataLimit"]');
   await expect(hint).toHaveText(/Held at 240\s*°C/);
   await expect(hint).toHaveAttribute('aria-label', /Losses before the hold: 11(\.\d+)?\s*W at 23[89](\.\d+)?\s*°C/);
+  // Coil Info's total adds the core losses: once MKF's findings name the hold, it is not shown either.
+  const heldTotal = page.locator('[data-cy$="-TotalLosses-HeldAtDataLimit"]');
+  await expect(heldTotal.first(), 'Coil Info states that there is no total').toBeVisible({ timeout: 120000 });
+  await expect(heldTotal.first()).toHaveText(/^No total losses: the core has no steady temperature within its material's data/);
+  await expect(page.locator('[data-cy$="-TotalLosses-container"]'), 'no total with the held core losses').toHaveCount(0);
 });
 
 test('CORE-HOLD-2370-4T: with 4 turns the core settles and Core Info shows its losses', async ({ page }, testInfo) => {
@@ -65,4 +71,6 @@ test('CORE-HOLD-2370-4T: with 4 turns the core settles and Core Info shows its l
   await loadDesignWithTurns(page, testInfo, 4);
   await expect(coreLosses(page).first(), 'Core Info shows the losses').toBeVisible({ timeout: 120000 });
   await expect(heldError(page)).toHaveCount(0);
+  await expect(page.locator('[data-cy$="-TotalLosses-container"]').first(), 'Coil Info shows the total').toBeVisible({ timeout: 120000 });
+  await expect(page.locator('[data-cy$="-TotalLosses-HeldAtDataLimit"]')).toHaveCount(0);
 });
