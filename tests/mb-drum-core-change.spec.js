@@ -32,8 +32,13 @@ import { typeSi, enterLossPoints, fitSteinmetz, unitScale } from './utils/materi
 
 const FIXTURE = new URL('./fixtures/default_two_winding_pq2715.json', import.meta.url).pathname;
 const DRS_FIXTURE = new URL('./fixtures/drs4_95_two_winding_semishielded.json', import.meta.url).pathname;
-const DRR = 'DRR 1.9/0.98/0.85/0.2156/0.5488/0.2156/2.8/2.02/1.07';
+// The drumRing the user picks, by its catalogue name (MAS 879685c renamed it from
+// 'DRR 1.9/0.98/0.85/0.2156/0.5488/0.2156/2.8/2.02/1.07', kept as an alias).
+const DRR = 'DR 1.9x0.98x0.85 + RI 2.8x1.07x2.02';
+// The saved semi-shielded drum names its shape as it was called when it was saved; the catalogue has renamed
+// it since (the old name kept as an alias), and the design loads under the current name, as MKF resolves it.
 const DRS = 'DRS 4/1.65/1.85/0.45/0.75/0.45/4/4/1.8';
+const DRS_NOW = 'DR 4x1.65x1.85 + shell 4x4x1.8';
 // MKF's effective length of that drumRing: the corrected value with the exact flange c2 term (ABT #2414,
 // MKF 7108c01a). It was 2.196447 mm while the flange term was counted twice.
 const DRR_EFFECTIVE_LENGTH_MM = 2.757842;
@@ -302,11 +307,11 @@ test.describe('drum cores in the Magnetic Builder (ABT #2410)', () => {
   test('DRUM-2: a saved semi-shielded drum is built without gaps and says it needs its shell material', async ({ page }, testInfo) => {
     await loadDrs(page, testInfo);
     const after = await designState(page);
-    expect(after.shapeName).toBe(DRS);
+    expect(after.shapeName).toBe(DRS_NOW);
     expect(after.family).toBe('drumSemishielded');
     expect(after.type).toBe('pieceAndPlate');
     expect(after.gapping, 'a cast shell has no gaps; the PQ\'s are not carried').toEqual([]);
-    expect(new Set(after.pieces)).toEqual(new Set([DRS]));
+    expect(new Set(after.pieces)).toEqual(new Set([DRS_NOW]));
     const fresh = await freshEffectiveParameters(page, DRS, 'drumSemishielded');
     expect(after.effectiveLength).toBeCloseTo(fresh.effectiveLength, 6);
     await expect(page.locator('[data-cy$="-CoreInfo-CoreChangeRefused"]')).toHaveCount(0);
@@ -320,7 +325,7 @@ test.describe('drum cores in the Magnetic Builder (ABT #2410)', () => {
     const missing = page.locator('[data-cy$="-Core-ShellMaterialMissing"]').first();
     await expect(missing, 'the premise: the drum has no shell material yet').toBeVisible();
     const before = await designState(page);
-    expect(before.shapeName).toBe(DRS);
+    expect(before.shapeName).toBe(DRS_NOW);
     // Without its shell the drum cannot be simulated, and the Engine log says so (the premise). From here on,
     // with the shell defined and applied, no further shell error may be logged.
     const shellErrors = async () => (await engineLogRecords(page, { level: 'ERROR' }))
@@ -337,7 +342,7 @@ test.describe('drum cores in the Magnetic Builder (ABT #2410)', () => {
 
     const material = await storeMaterial(page);
     expect(material.summary, 'material = [drum, the user\'s magnetic-epoxy shell], no magneticEpoxy coating').toEqual({
-      isList: true, length: 2, drum: '95', shellName: 'Test shell epoxy', shellType: 'magneticEpoxy', coating: null, shape: DRS });
+      isList: true, length: 2, drum: '95', shellName: 'Test shell epoxy', shellType: 'magneticEpoxy', coating: null, shape: DRS_NOW });
     expect(material.shell.permeability.initial, 'the shell carries the permeability entered, nothing else')
       .toEqual([{ temperature: 25, value: SHELL_PERMEABILITY }]);
     expect(material.shell.saturation.length, 'the one saturation point entered').toBe(1);
@@ -436,17 +441,47 @@ test.describe('drum cores in the Magnetic Builder (ABT #2410)', () => {
     expect(state.family).toBe('drumSemishielded');
     expect(await familyOptions(), 'the loaded part\'s family is offered').toContain('DRUMSEMISHIELDED');
     await expect(page.locator('[data-cy$="-ShapeFamilies-select"]').first()).toContainText('DRUMSEMISHIELDED');
-    await expect(page.locator('[data-cy$="-ShapeNames-select"]').first()).toContainText(DRS);
+    await expect(page.locator('[data-cy$="-ShapeNames-select"]').first()).toContainText(DRS_NOW);
     const shapes = await page.evaluate(async () => {
       const pinia = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia;
       return pinia._s.get('magneticBuilderTaskQueue').getCoreShapes(pinia._s.get('mas').mas, '');
     });
     expect(Object.keys(shapes), 'getCoreShapes lists the loaded part\'s family').toContain('drumSemishielded');
-    expect(shapes.drumSemishielded, 'and the shapes of that family, not just its name').toContain(DRS);
+    expect(shapes.drumSemishielded, 'and the shapes of that family, not just its name').toContain(DRS_NOW);
     expect(shapes.drumSemishielded.length).toBeGreaterThan(1);
     for (const family of ['rod', 'molded']) expect(Object.keys(shapes), `${family} stays hidden`).not.toContain(family);
     await expect(page.locator('[data-cy$="-Core-ShellMaterialMissing"]').first()).toBeVisible();
     await defineShell(page, { name: 'Shell picker check', manufacturer: 'Test lab', type: 'MagneticEpoxy' });
+  });
+
+  test('DRUM-9: a design saved under a shape name the catalogue has replaced loads under the current name, and the shape dropdown shows it', async ({ page }, testInfo) => {
+    const saved = JSON.parse(fs.readFileSync(DRS_FIXTURE, 'utf8'));
+    const savedNames = [saved.magnetic.core.functionalDescription.shape.name,
+      ...saved.magnetic.core.geometricalDescription.filter((piece) => piece.shape != null).map((piece) => piece.shape.name)];
+    expect(new Set(savedNames), 'the premise: the file names its shape by the old name').toEqual(new Set([DRS]));
+    await loadDrs(page, testInfo);
+    const after = await designState(page);
+    expect(after.shapeName, 'the design holds the current name').toBe(DRS_NOW);
+    expect(new Set(after.pieces), 'and so does each piece').toEqual(new Set([DRS_NOW]));
+    await expect(page.locator('[data-cy$="-ShapeNames-select"]').first()).toContainText(DRS_NOW);
+    const renames = (await engineLogRecords(page, { source: 'Load', level: 'WARNING' }))
+      .filter((record) => record.message.includes(`core shape '${DRS}' is now called '${DRS_NOW}'`));
+    expect(renames.length, 'the Engine log says the shape was loaded under its current name').toBe(1);
+
+    // The name comes from MKF: a custom shape keeps its own name, and a name MKF does not know is refused with MKF's reason.
+    const checks = await page.evaluate(async ({ drs }) => {
+      const { giveCoreShapesTheirCurrentNames } = await import('/MagneticBuilder/src/components/MagneticBuilder/Core/coreShapeNames.js');
+      const taskQueue = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia._s.get('taskQueue');
+      const custom = { magnetic: { core: { functionalDescription: { shape: { type: 'custom', family: 'drumSemishielded', name: drs } } } } };
+      await giveCoreShapesTheirCurrentNames(custom, taskQueue);
+      let unknown = null;
+      try {
+        await giveCoreShapesTheirCurrentNames({ magnetic: { core: { functionalDescription: { shape: 'No such shape 1/2/3' } } } }, taskQueue);
+      } catch (error) { unknown = error.message; }
+      return { customName: custom.magnetic.core.functionalDescription.shape.name, unknown };
+    }, { drs: DRS });
+    expect(checks.customName, 'a custom shape is not renamed').toBe(DRS);
+    expect(checks.unknown).toContain("Core shape 'No such shape 1/2/3' is not in the library");
   });
 
   test('DRUM-3: a core change MKF refuses leaves the PQ whole and says why', async ({ page }, testInfo) => {

@@ -2376,6 +2376,23 @@ export const useTaskQueueStore = defineStore('taskQueue', {
             return result;
         },
 
+        // The current catalogue name of a core shape, as MKF resolves it: MAS renames shapes and keeps
+        // the old name as an alias, so a design may name its shape by a name the catalogue replaced.
+        // Throws what MKF answers for a name it does not know.
+        async getCurrentShapeName(shapeName) {
+            const mkf = await waitForMkf();
+            await mkf.ready;
+            const result = await mkf.get_shape_data(String(shapeName));
+            if (result.startsWith('Exception')) {
+                throw new Error(result);
+            }
+            const name = JSON.parse(result).name;
+            if (typeof name !== 'string' || name === '') {
+                throw new Error(`MKF returned core shape '${shapeName}' without a name`);
+            }
+            return name;
+        },
+
         // ==========================================
         // Core Studio (/core_studio) wrappers
         // ==========================================

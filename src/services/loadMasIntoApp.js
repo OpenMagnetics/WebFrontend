@@ -15,6 +15,7 @@ import { describeFailure } from 'WebSharedComponents/assets/js/noticeText.js'
 import { describeMasSchemaErrors } from 'WebSharedComponents/assets/js/masSchemaText.js'
 import { engineUserSettingsSettled, useEngineDiagnosticsStore } from '../stores/engineDiagnostics.js'
 import { stripNulls } from './masNulls.js'
+import { giveCoreShapesTheirCurrentNames } from '/MagneticBuilder/src/components/MagneticBuilder/Core/coreShapeNames.js'
 
 // Map every WaveformLabel enum value by its lowercase, space-free form so legacy
 // documents with pre-1.0 labels ("Triangular", "Flyback Primary", "Rectangular
@@ -891,6 +892,13 @@ export async function loadMasIntoApp(doc, { masStore, stateStore, userStore, tas
     // Every engine call below must see the user's engine settings (material-data extrapolation).
     await engineUserSettingsSettled();
     await completeHarmonicsOnlySignals(newMas, taskQueueStore);
+    // A shape the catalogue has renamed (its old name kept as an alias) is loaded under its current
+    // name, as MKF resolves it, so the builder's shape list shows it (ABT #2410, #2413).
+    for (const { from, to } of await giveCoreShapesTheirCurrentNames(newMas, taskQueueStore)) {
+        const message = `core shape '${from}' is now called '${to}' in the catalogue; the design was loaded with that name`;
+        corrections.push({ operatingPointIndex: null, operatingPointName: null, windingIndex: null, signal: null, message });
+        console.warn(`Imported MAS: ${message}`);
+    }
     await giveCoreTheTypeOfItsFamily(newMas, corrections, taskQueueStore);
 
     const response = await checkAndFixMas(newMas, taskQueueStore);
