@@ -44,6 +44,7 @@ async function loadDesignWithTurns(page, testInfo, numberTurns) {
 }
 
 const heldError = (page) => page.locator('.coreinfo-panel [data-cy$="-CoreLosses-HeldAtDataLimit"]');
+const heldHint = (page) => page.locator('.coreinfo-header [data-cy$="-CoreInfo-HeldAtDataLimit"]');
 const coreLosses = (page) => page.locator('.coreinfo-panel [data-cy$="-CoreLosses-container"]');
 // Rows MKF computes on the held core (paramagnetic, B ~100x below the design's): hidden on a hold.
 // The advanced view shows the two flux-density peaks, the simple view the saturation proportion.
@@ -56,9 +57,9 @@ const isSimpleView = async (page) => (await page.locator('.coreinfo-panel .corei
 test('CORE-HOLD-2370: a core held at its Curie point shows an error with the losses before the hold, never the held losses', async ({ page }, testInfo) => {
   test.setTimeout(240000);
   await loadDesignWithTurns(page, testInfo, 8);
-  await expect(heldError(page).first(), 'Core Info states the hold as an error').toBeVisible({ timeout: 120000 });
-  await expect(heldError(page).first()).toHaveText(
-    /^No steady temperature: the core reaches its Curie temperature \(240\s*°C\)\. Losses before the hold: 11(\.\d+)?\s*W at 23[89](\.\d+)?\s*°C\.$/);
+  await expect(heldHint(page), 'Core Info\'s title bar states the hold').toBeVisible({ timeout: 120000 });
+  // Alf, 2026-11-15: the hold is stated once, by the title-bar hint's tooltip and the Engine log; no inline copy.
+  await expect(heldError(page), 'no inline copy of the hold message').toHaveCount(0);
   await expect(coreLosses(page), 'the held losses are not shown as the core losses').toHaveCount(0);
   await expect(page.locator('.coreinfo-panel'), 'no microwatt reading anywhere in Core Info').not.toContainText(/µW|μW|uW/);
   const rows = heldCoreRows(page);
@@ -69,10 +70,9 @@ test('CORE-HOLD-2370: a core held at its Curie point shows an error with the los
   const hint = page.locator('.coreinfo-header [data-cy$="-CoreInfo-HeldAtDataLimit"]');
   await expect(hint).toHaveText(/Held at 240\s*°C/);
   await expect(hint).toHaveAttribute('aria-label', /Losses before the hold: 11(\.\d+)?\s*W at 23[89](\.\d+)?\s*°C/);
-  // Coil Info's total adds the core losses: once MKF's findings name the hold, it is not shown either.
-  const heldTotal = page.locator('[data-cy$="-TotalLosses-HeldAtDataLimit"]');
-  await expect(heldTotal.first(), 'Coil Info states that there is no total').toBeVisible({ timeout: 120000 });
-  await expect(heldTotal.first()).toHaveText(/^No total losses: the core has no steady temperature within its material's data/);
+  // Coil Info's total adds the core losses: once MKF's findings name the hold, it is not shown either,
+  // and there is no inline copy of the hold message (Alf, 2026-11-15: Core Info's hint and the Engine log say it).
+  await expect(page.locator('[data-cy$="-TotalLosses-HeldAtDataLimit"]'), 'no inline hold message in Coil Info').toHaveCount(0);
   await expect(page.locator('[data-cy$="-TotalLosses-container"]'), 'no total with the held core losses').toHaveCount(0);
 });
 
@@ -109,14 +109,16 @@ const HELD_TEXT = /^No steady temperature: the core reaches its Curie temperatur
 test('CORE-HOLD-2370-SUMMARY: the summary and its printed datasheet show the hold error, never the held core or total losses', async ({ page }, testInfo) => {
   test.setTimeout(240000);
   await loadDesignWithTurns(page, testInfo, 8);
-  await expect(heldError(page).first()).toBeVisible({ timeout: 120000 });
+  await expect(heldHint(page)).toBeVisible({ timeout: 120000 });
   await openSummary(page);
   const coreCell = page.locator('[data-cy$="-Performance-CoreLosses-held"]');
   await expect(coreCell, 'the core losses row states the hold').toHaveText(HELD_TEXT, { timeout: 60000 });
   await expect(page.locator('[data-cy$="-Performance-TotalLosses-held"]')).toHaveText(/^No total losses: the core has no steady temperature within its material's data/);
   await expect(page.locator('[data-cy$="-KeyParameter-CoreLoss-held"]')).toHaveText('No steady temperature');
   await expect(page.locator('[data-cy$="-KeyParameter-CoreLoss-held"]')).toHaveAttribute('title', HELD_TEXT);
-  await expect(page.locator('.datasheet-container'), 'no microwatt reading anywhere in the datasheet').not.toContainText(/µW|μW|uW/);
+  // Rendered text only (innerText skips <style>, whose generated class names can contain 'uW'), and a number before the unit.
+  const datasheetText = await page.locator('.datasheet-container').evaluate((element) => element.innerText);
+  expect(datasheetText, 'no microwatt reading anywhere in the datasheet').not.toMatch(/\d\s*[µμu]W\b/);
   // The flux density of the held core (paramagnetic, ~100x low) is not shown either.
   await expect(page.locator('[data-cy$="-KeyParameter-PeakB-held"]')).toHaveText('No steady temperature');
   await expect(page.locator('[data-cy$="-ElectricalSpecs-PeakB-held"]')).toHaveText(HELD_TEXT);

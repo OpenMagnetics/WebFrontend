@@ -97,12 +97,12 @@ test('INFO-2273: a core held at its Curie point says so in Core Info, with the l
       }
     }
   });
-  // ABT #2370: held, the losses are not shown; Core Info shows the hold as an error in their place.
-  const heldLosses = page.locator('.coreinfo-panel [data-cy$="-CoreLosses-HeldAtDataLimit"]');
-  await expect(heldLosses.first()).toBeVisible({ timeout: 120000 });
+  // ABT #2370: held, the losses are not shown. The hold is stated by the title-bar hint only (Alf, 2026-11-15).
+  const hold = page.locator('.coreinfo-header [data-cy$="-CoreInfo-HeldAtDataLimit"]');
+  await expect(hold).toBeVisible({ timeout: 120000 });
+  await expect(page.locator('.coreinfo-panel [data-cy$="-CoreLosses-HeldAtDataLimit"]')).toHaveCount(0);
   await expect(coreLosses(page)).toHaveCount(0);
   // In Core Info's title bar (Alf, 2026-11-05).
-  const hold = page.locator('.coreinfo-header [data-cy$="-CoreInfo-HeldAtDataLimit"]');
   await expect(hold).toHaveText(/Held at 210\s*°C/);
   await expect(hold).toHaveAttribute('aria-label', /Curie temperature \(210\s*°C\)/);
   await expect(hold).toHaveAttribute('aria-label', /Losses before the hold: \d+(\.\d+)?\s*k?W at \d+(\.\d+)?\s*°C/);
