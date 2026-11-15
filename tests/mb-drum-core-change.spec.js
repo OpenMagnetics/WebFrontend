@@ -468,20 +468,21 @@ test.describe('drum cores in the Magnetic Builder (ABT #2410)', () => {
       .filter((record) => record.message.includes(`core shape '${DRS}' is now called '${DRS_NOW}'`));
     expect(renames.length, 'the Engine log says the shape was loaded under its current name').toBe(1);
 
-    // The name comes from MKF: a custom shape keeps its own name, and a name MKF does not know is refused with MKF's reason.
+    // The name comes from MKF: a custom shape keeps its own name, and a name MKF does not know is kept, with MKF's reason.
     const checks = await page.evaluate(async ({ drs }) => {
       const { giveCoreShapesTheirCurrentNames } = await import('/MagneticBuilder/src/components/MagneticBuilder/Core/coreShapeNames.js');
       const taskQueue = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia._s.get('taskQueue');
       const custom = { magnetic: { core: { functionalDescription: { shape: { type: 'custom', family: 'drumSemishielded', name: drs } } } } };
       await giveCoreShapesTheirCurrentNames(custom, taskQueue);
-      let unknown = null;
-      try {
-        await giveCoreShapesTheirCurrentNames({ magnetic: { core: { functionalDescription: { shape: 'No such shape 1/2/3' } } } }, taskQueue);
-      } catch (error) { unknown = error.message; }
-      return { customName: custom.magnetic.core.functionalDescription.shape.name, unknown };
+      const unknownMas = { magnetic: { core: { functionalDescription: { shape: 'No such shape 1/2/3' } } } };
+      const unknown = await giveCoreShapesTheirCurrentNames(unknownMas, taskQueue);
+      return { customName: custom.magnetic.core.functionalDescription.shape.name, unknown, unknownKept: unknownMas.magnetic.core.functionalDescription.shape };
     }, { drs: DRS });
     expect(checks.customName, 'a custom shape is not renamed').toBe(DRS);
-    expect(checks.unknown).toContain("Core shape 'No such shape 1/2/3' is not in the library");
+    expect(checks.unknownKept, 'a name the catalogue does not know is kept').toBe('No such shape 1/2/3');
+    expect(checks.unknown.renames).toEqual([]);
+    expect(checks.unknown.unknown.map((entry) => entry.name)).toEqual(['No such shape 1/2/3']);
+    expect(checks.unknown.unknown[0].reason).toContain("Core shape 'No such shape 1/2/3' is not in the library");
   });
 
   test('DRUM-3: a core change MKF refuses leaves the PQ whole and says why', async ({ page }, testInfo) => {

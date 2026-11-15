@@ -894,8 +894,13 @@ export async function loadMasIntoApp(doc, { masStore, stateStore, userStore, tas
     await completeHarmonicsOnlySignals(newMas, taskQueueStore);
     // A shape the catalogue has renamed (its old name kept as an alias) is loaded under its current
     // name, as MKF resolves it, so the builder's shape list shows it (ABT #2410, #2413).
-    for (const { from, to } of await giveCoreShapesTheirCurrentNames(newMas, taskQueueStore)) {
-        const message = `core shape '${from}' is now called '${to}' in the catalogue; the design was loaded with that name`;
+    // A name the catalogue does not know at all is kept, and the design opens from its stored dimensions.
+    const shapeNames = await giveCoreShapesTheirCurrentNames(newMas, taskQueueStore);
+    const shapeMessages = [
+        ...shapeNames.renames.map(({ from, to }) => `core shape '${from}' is now called '${to}' in the catalogue; the design was loaded with that name`),
+        ...shapeNames.unknown.map(({ name, reason }) => `core shape '${name}' is not in the catalogue (${reason}); the design keeps it and its stored dimensions`),
+    ];
+    for (const message of shapeMessages) {
         corrections.push({ operatingPointIndex: null, operatingPointName: null, windingIndex: null, signal: null, message });
         console.warn(`Imported MAS: ${message}`);
     }
