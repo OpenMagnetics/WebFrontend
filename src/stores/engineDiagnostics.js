@@ -95,8 +95,10 @@ export const useEngineDiagnosticsStore = defineStore('engineDiagnostics', {
     }),
 
     getters: {
-        warningCount: (state) => state.records.filter((r) => r.level === 'WARNING').reduce((n, r) => n + r.count, 0),
-        errorCount: (state) => state.records.filter((r) => r.level === 'ERROR' || r.level === 'CRITICAL').reduce((n, r) => n + r.count, 0),
+        // Distinct records, not their repeats: one notice repeated 4,128 times is one warning, and its row
+        // keeps its own "(x4128)" (ABT #2410: the header read "8 records, 4219 warnings, 3 errors").
+        warningCount: (state) => state.records.filter((r) => r.level === 'WARNING').length,
+        errorCount: (state) => state.records.filter((r) => r.level === 'ERROR' || r.level === 'CRITICAL').length,
         // Whether the log can be opened (the footer's button and the panel). Extrapolated material
         // data is reported only here, so the log is reachable whenever extrapolation is allowed,
         // even with the full panel switched off (ABT #1652). The builder's warnings and errors are

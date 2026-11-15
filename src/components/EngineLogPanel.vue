@@ -82,8 +82,8 @@ export default {
             <div class="engine-log-title">
                 <i class="pi pi-cog mr-2"></i>
                 Engine log (MKF)
-                <span class="engine-log-badge">
-                    {{ counted(engineDiagnosticsStore.records.length, 'record') }},
+                <span class="engine-log-badge" data-cy="EngineLogPanel-counts">
+                    {{ counted(engineDiagnosticsStore.records.length, 'record') }}:
                     {{ counted(engineDiagnosticsStore.warningCount, 'warning') }}<span v-if="engineDiagnosticsStore.errorCount > 0">, </span><span v-if="engineDiagnosticsStore.errorCount > 0" class="text-danger">{{ counted(engineDiagnosticsStore.errorCount, 'error') }}</span>
                 </span>
                 <span v-if="engineDiagnosticsStore.allowMaterialDataExtrapolation" class="engine-log-extrapolating" data-cy="EngineLogPanel-extrapolating">
