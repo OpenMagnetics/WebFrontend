@@ -19,6 +19,10 @@
  *    magnetic data (nothing is copied from the drum), and it is not applied until it has a permeability.
  *
  * The start is the default two-winding PQ 27/15 design (95, gapped 0.23 mm); each test makes one change.
+ * Since 2026-11-15 (Alf: "hide them for new design, and allow them, only for preexisting MAS that are loaded")
+ * drumSemishielded, rod and molded are not offered for a new design, so DRUM-2, DRUM-6 and DRUM-7 start from a
+ * saved semi-shielded drum instead of picking it: the same PQ design changed to the DRS below in material 95, as
+ * the builder exported it (tests/fixtures/drs4_95_two_winding_semishielded.json). DRUM-8 holds the rule itself.
  */
 import fs from 'node:fs';
 import { test, expect } from './_coverage.js';
@@ -27,6 +31,7 @@ import { installActivityProbe, activityMark, waitForIdle } from './utils/activit
 import { typeSi, enterLossPoints, fitSteinmetz, unitScale } from './utils/materialEditor.js';
 
 const FIXTURE = new URL('./fixtures/default_two_winding_pq2715.json', import.meta.url).pathname;
+const DRS_FIXTURE = new URL('./fixtures/drs4_95_two_winding_semishielded.json', import.meta.url).pathname;
 const DRR = 'DRR 1.9/0.98/0.85/0.2156/0.5488/0.2156/2.8/2.02/1.07';
 const DRS = 'DRS 4/1.65/1.85/0.45/0.75/0.45/4/4/1.8';
 // MKF's effective length of that drumRing: the corrected value with the exact flange c2 term (ABT #2414,
@@ -146,10 +151,10 @@ async function engineInductance(shell, { coil, operatingPoint }) {
   return Number(answer(mkf.calculate_inductance_from_number_turns_and_gapping(core, JSON.stringify(coil), JSON.stringify(operatingPoint), '{}')));
 }
 
-async function loadPq(page, testInfo) {
+async function loadPq(page, testInfo, fixture = FIXTURE) {
   await installActivityProbe(page);
   const file = testInfo.outputPath('design.json');
-  fs.writeFileSync(file, fs.readFileSync(FIXTURE, 'utf8'));
+  fs.writeFileSync(file, fs.readFileSync(fixture, 'utf8'));
   const alerts = [];
   page.on('dialog', async (dialog) => { alerts.push(dialog.message()); await dialog.accept(); });
   await page.goto(`${BASE_URL}/`, { waitUntil: 'domcontentloaded' });
@@ -160,6 +165,9 @@ async function loadPq(page, testInfo) {
   expect(alerts, 'the load is not refused').toEqual([]);
   await waitForIdle(page, { since: mark, quietMs: 3000, timeout: 240000, label: 'the PQ design' });
 }
+
+// The saved semi-shielded drum (DRS above, material 95, no shell yet), loaded as a user loads a MAS file.
+const loadDrs = (page, testInfo) => loadPq(page, testInfo, DRS_FIXTURE);
 
 async function pick(page, suffix, label) {
   const mark = await activityMark(page);
@@ -291,11 +299,8 @@ test.describe('drum cores in the Magnetic Builder (ABT #2410)', () => {
     await expect(page.locator('[data-cy$="-core-build-failed"]')).toHaveCount(0);
   });
 
-  test('DRUM-2: PQ 27/15 -> semi-shielded drum is built without gaps and says it needs its shell material', async ({ page }, testInfo) => {
-    await loadPq(page, testInfo);
-    await expect(page.locator('[data-cy$="-Core-ShellMaterialMissing"]'), 'a PQ needs no shell material').toHaveCount(0);
-    await pick(page, '-ShapeFamilies', 'DRUMSEMISHIELDED');
-    await pick(page, '-ShapeNames', DRS);
+  test('DRUM-2: a saved semi-shielded drum is built without gaps and says it needs its shell material', async ({ page }, testInfo) => {
+    await loadDrs(page, testInfo);
     const after = await designState(page);
     expect(after.shapeName).toBe(DRS);
     expect(after.family).toBe('drumSemishielded');
@@ -311,9 +316,7 @@ test.describe('drum cores in the Magnetic Builder (ABT #2410)', () => {
   });
 
   test('DRUM-6: a semi-shielded drum with a shell the user defines (magnetic epoxy, mu 10, a saturation point, measured losses) is simulated with that permeability', async ({ page }, testInfo) => {
-    await loadPq(page, testInfo);
-    await pick(page, '-ShapeFamilies', 'DRUMSEMISHIELDED');
-    await pick(page, '-ShapeNames', DRS);
+    await loadDrs(page, testInfo);
     const missing = page.locator('[data-cy$="-Core-ShellMaterialMissing"]').first();
     await expect(missing, 'the premise: the drum has no shell material yet').toBeVisible();
     const before = await designState(page);
@@ -386,9 +389,7 @@ test.describe('drum cores in the Magnetic Builder (ABT #2410)', () => {
   });
 
   test('DRUM-7: a shell given a name and type but no permeability is not applied, the core is not simulated with it, and the editor says what is missing', async ({ page }, testInfo) => {
-    await loadPq(page, testInfo);
-    await pick(page, '-ShapeFamilies', 'DRUMSEMISHIELDED');
-    await pick(page, '-ShapeNames', DRS);
+    await loadDrs(page, testInfo);
     const before = await storeMaterial(page);
     expect(before.summary.isList, 'the premise: the drum has no shell material yet').toBe(false);
 
@@ -413,6 +414,39 @@ test.describe('drum cores in the Magnetic Builder (ABT #2410)', () => {
     const shell = { type: 'custom', name: 'Shell without permeability', material: 'magneticEpoxy', manufacturerInfo: { name: 'Test lab' },
       permeability: { initial: [] }, saturation: [], volumetricLosses: { default: [] } };
     await expect(engineInductance(shell, design)).rejects.toThrow(/Initial permeability list is empty for material: Shell without permeability/);
+  });
+
+  test('DRUM-8: drumSemishielded, rod and molded are not offered for a new design, and a loaded semi-shielded drum keeps its family, shapes and shell picker', async ({ page }, testInfo) => {
+    const hidden = ['DRUMSEMISHIELDED', 'ROD', 'MOLDED'];
+    const familyOptions = async () => {
+      await page.locator('[data-cy$="-ShapeFamilies-select"]').first().click();
+      const options = (await page.getByRole('option').allInnerTexts()).map((text) => text.trim());
+      await page.keyboard.press('Escape');
+      return options;
+    };
+    // A new design: the default PQ 27/15 design.
+    await loadPq(page, testInfo);
+    const offered = await familyOptions();
+    expect(offered, 'the premise: the family dropdown lists families').toContain('PQ');
+    for (const family of hidden) expect(offered, `${family} is not offered for a new design`).not.toContain(family);
+
+    // A saved semi-shielded drum: its family and its shapes are shown, and its shell picker works.
+    await loadDrs(page, testInfo);
+    const state = await designState(page);
+    expect(state.family).toBe('drumSemishielded');
+    expect(await familyOptions(), 'the loaded part\'s family is offered').toContain('DRUMSEMISHIELDED');
+    await expect(page.locator('[data-cy$="-ShapeFamilies-select"]').first()).toContainText('DRUMSEMISHIELDED');
+    await expect(page.locator('[data-cy$="-ShapeNames-select"]').first()).toContainText(DRS);
+    const shapes = await page.evaluate(async () => {
+      const pinia = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia;
+      return pinia._s.get('magneticBuilderTaskQueue').getCoreShapes(pinia._s.get('mas').mas, '');
+    });
+    expect(Object.keys(shapes), 'getCoreShapes lists the loaded part\'s family').toContain('drumSemishielded');
+    expect(shapes.drumSemishielded, 'and the shapes of that family, not just its name').toContain(DRS);
+    expect(shapes.drumSemishielded.length).toBeGreaterThan(1);
+    for (const family of ['rod', 'molded']) expect(Object.keys(shapes), `${family} stays hidden`).not.toContain(family);
+    await expect(page.locator('[data-cy$="-Core-ShellMaterialMissing"]').first()).toBeVisible();
+    await defineShell(page, { name: 'Shell picker check', manufacturer: 'Test lab', type: 'MagneticEpoxy' });
   });
 
   test('DRUM-3: a core change MKF refuses leaves the PQ whole and says why', async ({ page }, testInfo) => {
