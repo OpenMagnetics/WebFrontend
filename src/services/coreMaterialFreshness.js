@@ -102,7 +102,10 @@ function problemCode(problem) {
 //   (libraryMaterial null, libraryError says why) or the copies are the same.
 // A problem code without a rule here, or a copy MKF cannot judge, throws.
 export async function findOutdatedCoreMaterial(mas, { taskQueueStore }) {
-    const material = mas.magnetic?.core?.functionalDescription?.material;
+    // A material list ([drum, magnetic-epoxy shell] on a semi-shielded drum, ABT #2410) is checked on the
+    // core's own material, its first entry; the other entries are pieces of their own.
+    const materialField = mas.magnetic?.core?.functionalDescription?.material;
+    const material = Array.isArray(materialField) ? materialField[0] : materialField;
     if (material == null || typeof material !== 'object') return null;
 
     const check = await taskQueueStore.checkCoreMaterial(material);

@@ -63,7 +63,11 @@ export default {
             if (this.finding.libraryMaterial == null) {
                 throw new Error(`The library has no core material '${this.finding.name}' to replace the design's copy with: ${this.finding.libraryError}`);
             }
-            this.masStore.mas.magnetic.core.functionalDescription.material = deepCopy(this.finding.libraryMaterial);
+            const functionalDescription = this.masStore.mas.magnetic.core.functionalDescription;
+            // A material list (a semi-shielded drum's [drum, shell], ABT #2410): the finding is about its first entry.
+            functionalDescription.material = Array.isArray(functionalDescription.material)
+                ? [deepCopy(this.finding.libraryMaterial), ...functionalDescription.material.slice(1)]
+                : deepCopy(this.finding.libraryMaterial);
             this.noticeStore.clear();
             this.$stateStore.resimulate();
         },
