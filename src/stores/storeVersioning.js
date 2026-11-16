@@ -12,7 +12,7 @@
 // Format: 'YYYY-MM-DD'
 // When you make breaking changes to store fields, update this date to today's date.
 // All stores saved before this date will be automatically cleared.
-export const STORE_VERSION_DATE = '2026-11-15-mkf-61bbe5be-mas-879685c-mvbpp-e29b841-kh-36ee490';
+export const STORE_VERSION_DATE = '2026-11-16-mkf-eafe9543-mas-879685c-mvbpp-e29b841-kh-36ee490';
 
 // Key used in localStorage to track when stores were last saved
 const STORE_VERSION_KEY = 'openMagnetics_storeVersionDate';
