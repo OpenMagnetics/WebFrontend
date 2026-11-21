@@ -97,11 +97,24 @@ test('INFO-2273: a core held at its Curie point says so in Core Info, with the l
       }
     }
   });
-  // ABT #2370: held, the losses are not shown. The hold is stated by the title-bar hint only (Alf, 2026-11-15).
+  // ABT #2370: held, the held losses are never shown. The hold is stated by the title-bar hint only (Alf, 2026-11-15).
+  // Alf, 2026-11-20 ("show the losses before the hold in red"): the core losses shown are the losses before the
+  // hold, in the danger colour.
   const hold = page.locator('.coreinfo-header [data-cy$="-CoreInfo-HeldAtDataLimit"]');
   await expect(hold).toBeVisible({ timeout: 120000 });
   await expect(page.locator('.coreinfo-panel [data-cy$="-CoreLosses-HeldAtDataLimit"]')).toHaveCount(0);
-  await expect(coreLosses(page)).toHaveCount(0);
+  const lossesValue = page.locator('.coreinfo-panel [data-cy$="-CoreLosses-number-label"]').first();
+  await expect(lossesValue, 'the losses before the hold are shown').toBeVisible();
+  const dangerColor = await page.evaluate(() => {
+    const pinia = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia;
+    const probe = document.createElement('span');
+    probe.style.color = pinia._s.get('style').magneticBuilder.inputLabelDangerBgColor.color;
+    document.body.appendChild(probe);
+    const color = getComputedStyle(probe).color;
+    probe.remove();
+    return color;
+  });
+  expect(await lossesValue.evaluate((element) => getComputedStyle(element).color), 'in the danger colour').toBe(dangerColor);
   // In Core Info's title bar (Alf, 2026-11-05).
   await expect(hold).toHaveText(/Held at 210\s*°C/);
   await expect(hold).toHaveAttribute('aria-label', /Curie temperature \(210\s*°C\)/);

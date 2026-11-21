@@ -1,22 +1,26 @@
 /**
- * A design whose only operating point drives its core past the end of the material's magnetisation
- * curve. MKF's simulate leaves that point's magnetizing inductance, flux density and core losses unset
- * (no value stands in for them) and analyze_results reports CORE_SATURATES with the reason.
+ * A design whose core saturates: MKF's slow_simulation flyback (EFD 20/10/7, material 95), its
+ * 'Max. input volt.' point at 25 C ambient (B peak 0.464 T against a B_sat of 0.32 T). Its loss loop
+ * settles inside the material's data, so analyze_results reports CORE_SATURATES and no hold.
  *
- * The web lost that reason: Coil Info read the unset inductance and core losses and threw, so the
- * simulated outputs were never stored, and the summary called the design incomplete ("missing
- * magnetizing inductance") and told the user to run the simulation. Now Coil Info shows the winding
- * losses with no total, and the summary shows the engine's CORE_SATURATES message where the
- * inductance, flux density, core losses and total would be.
+ * Decision (Alf, 2026-11-20, "I want core losses shown even if they saturate!! don't hide it, just
+ * mark it in danger color", with the inductance "after saturation"): past the curve's end the core is
+ * fully saturated and MKF continues its B(H) on the vacuum's slope, so it computes the saturated
+ * core's inductance, flux density and core losses, and analyze_results reports CORE_SATURATES. The web
+ * shows every one of them, and the total, in the danger colour with the finding on hover: in Core
+ * Info, Coil Info and the summary.
  *
- * Fixture: MKF's slow_simulation flyback (EFD 20/10/7) with its core in L5D and its 'Max. input volt.'
- * point at 160 C ambient, MKF's own CORE_SATURATES case (TestMagneticSimulator, past the curve at ambient).
+ * Fixture (approved by Alf, 2026-11-21): the test first used the same flyback in L5D at 160 C, past the curve at
+ * ambient. Computed past its curve, that core heats to about 325 C, above L5D's 200 C Curie point, so it is held
+ * there (mb-core-held-at-curie covers that path) and is no longer plain saturation. Only the material, the ambient
+ * and the point's name changed.
+ *
  * It drives the real engine committed with the web.
  */
 import { test, expect } from './_coverage.js';
 import { BASE_URL } from './utils/index.js';
 
-const FIXTURE = new URL('./fixtures/efd20_l5d_flyback_160c_past_magnetisation_curve.json', import.meta.url).pathname;
+const FIXTURE = new URL('./fixtures/efd20_95_flyback_saturates.json', import.meta.url).pathname;
 
 async function loadDesign(page, consoleErrors) {
   page.on('console', (message) => { if (message.type() == 'error') consoleErrors.push(message.text()); });
@@ -32,36 +36,63 @@ async function loadDesign(page, consoleErrors) {
   expect(alerts, 'the load is not refused').toEqual([]);
 }
 
-const SATURATES_TEXT = /^At operating point 0 \('Max\. input volt\. hot'\): the core saturates\. It would need a flux density of .* beyond the end of the magnetisation curve of L5D/;
+// The theme's danger colour as the browser computes it.
+const dangerColor = (page) => page.evaluate(() => {
+  const pinia = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia;
+  const probe = document.createElement('span');
+  probe.style.color = pinia._s.get('style').magneticBuilder.inputLabelDangerBgColor.color;
+  document.body.appendChild(probe);
+  const color = getComputedStyle(probe).color;
+  probe.remove();
+  return color;
+});
+const colorOf = (locator) => locator.evaluate((element) => getComputedStyle(element).color);
+const NUMBER = /^\s*\d+(\.\d+)?\s*$/;
+const SATURATES_TEXT = /^At operating point 0 \('Max\. input volt\.'\): The core saturates/;
 
-test('CORE-SATURATES: Coil Info shows the winding losses with no total, and the summary states the saturation instead of calling the design incomplete', async ({ page }) => {
+test('CORE-SATURATES: a saturating core shows its inductance, flux density, core and total losses in the danger colour', async ({ page }) => {
   test.setTimeout(240000);
   const consoleErrors = [];
   await loadDesign(page, consoleErrors);
-  // Core Info states the engine's refusal (its own core-loss calculation throws CALCULATION_CORE_SATURATES).
-  await expect(page.locator('.coreinfo-panel'), 'Core Info states the saturation').toContainText('beyond the end of the magnetisation curve of L5D', { timeout: 120000 });
-  // Coil Info shows the winding losses of the simulated point, and no total.
-  await expect(page.locator('[data-cy$="-WindingLosses-container"]').first(), 'Coil Info shows the winding losses').toBeVisible({ timeout: 120000 });
-  await expect(page.locator('[data-cy$="-TotalLosses-container"]'), 'no total without core losses').toHaveCount(0);
-  await expect(page.locator('[data-cy$="-CoilInfo-SimulationError"]')).toHaveCount(0);
-  expect(consoleErrors.filter((text) => /TypeError/.test(text)), 'no script error reading the unset outputs').toEqual([]);
+  const danger = async () => dangerColor(page);
 
+  // Core Info: the inductance and the core losses, in the danger colour.
+  const coreLosses = page.locator('.coreinfo-panel [data-cy$="-CoreLosses-number-label"]').first();
+  await expect(coreLosses, 'Core Info shows the core losses').toHaveText(NUMBER, { timeout: 120000 });
+  const inductance = page.locator('.coreinfo-panel [data-cy$="-MagnetizingInductance-number-label"]').first();
+  await expect(inductance, 'Core Info shows the saturated inductance').toHaveText(NUMBER);
+  await expect.poll(() => colorOf(coreLosses), { timeout: 60000, message: 'core losses in the danger colour' }).toBe(await danger());
+  expect(await colorOf(inductance), 'inductance in the danger colour').toBe(await danger());
+  await expect(page.locator('[data-cy$="-CoreInfo-SimulationError"]'), 'Core Info shows no error').toHaveCount(0);
+
+  // Coil Info: the total, in the danger colour.
+  const total = page.locator('[data-cy$="-TotalLosses-number-label"]').first();
+  await expect(total, 'Coil Info shows the total').toHaveText(NUMBER, { timeout: 120000 });
+  expect(await colorOf(total), 'total in the danger colour').toBe(await danger());
+  expect(consoleErrors.filter((text) => /TypeError/.test(text)), 'no script error').toEqual([]);
+
+  // The summary: every core value shown, marked, with MKF's finding on hover.
   await page.evaluate(() => {
     const pinia = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia;
     pinia._s.get('state').getCurrentToolState().subsection = 'magneticSummary';
   });
   await expect(page.locator('.datasheet-container'), 'the summary renders').toBeVisible({ timeout: 30000 });
-  await expect(page.locator('[data-cy$="-MagneticSummary-incomplete"]'), 'the design is not called incomplete').toHaveCount(0);
+  await expect(page.locator('[data-cy$="-MagneticSummary-incomplete"]')).toHaveCount(0);
   for (const key of ['Inductance', 'CoreLoss', 'PeakB']) {
     const tile = page.locator(`[data-cy$="-KeyParameter-${key}-saturates"]`);
-    await expect(tile, `the ${key} tile states the saturation`).toHaveText('Core saturates', { timeout: 60000 });
+    await expect(tile, `the ${key} tile shows its value`).toHaveText(NUMBER, { timeout: 60000 });
+    await expect(tile).toHaveClass(/text-danger/);
     await expect(tile).toHaveAttribute('title', SATURATES_TEXT);
   }
-  await expect(page.locator('[data-cy$="-ElectricalSpecs-Inductance-saturates"]')).toHaveText(SATURATES_TEXT);
-  await expect(page.locator('[data-cy$="-ElectricalSpecs-PeakB-saturates"]')).toHaveText(SATURATES_TEXT);
-  await expect(page.locator('[data-cy$="-Performance-CoreLosses-saturates"]')).toHaveText(SATURATES_TEXT);
-  await expect(page.locator('[data-cy$="-Performance-TotalLosses-saturates"]')).toHaveText(
-    'No total losses: the core saturates at this operating point, so the engine computed no core losses for it.');
-  // The winding losses the engine did compute are shown.
-  await expect(page.locator('.key-param', { hasText: 'Winding Loss' }).locator('.param-value-row')).toHaveText(/^\s*\d+(\.\d+)?\s*m?W\s*$/);
+  for (const key of ['Inductance', 'PeakB']) {
+    const cell = page.locator(`[data-cy$="-ElectricalSpecs-${key}-saturates"]`);
+    await expect(cell).toHaveText(NUMBER);
+    await expect(cell).toHaveAttribute('title', SATURATES_TEXT);
+  }
+  for (const key of ['CoreLosses', 'TotalLosses']) {
+    const cell = page.locator(`[data-cy$="-Performance-${key}-saturates"]`);
+    await expect(cell).toHaveText(/^\d+(\.\d+)? m?W$/);
+    await expect(cell).toHaveClass(/text-danger/);
+    await expect(cell).toHaveAttribute('title', SATURATES_TEXT);
+  }
 });

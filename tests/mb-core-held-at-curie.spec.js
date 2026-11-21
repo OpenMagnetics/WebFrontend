@@ -8,8 +8,10 @@
  * MagneticBuilder's Core Info showed the held losses as the result anyway.
  *
  * Decision (Alf, 2026-11-13): the web never shows the held losses; Core Info shows an error with the
- * limit and the losses just before the hold, and Coil Info shows no total that adds them. MKF's hold
- * is unchanged.
+ * limit and the losses just before the hold. MKF's hold is unchanged.
+ * Decision (Alf, 2026-11-20, "show the losses before the hold in red"): the core losses shown are the
+ * losses just before the hold, in the danger colour with the hold on hover, here, in Coil Info's total
+ * and in the summary. The held core's flux density stays hidden.
  *
  * The fixture is the user's saved design (the 4-turn state); the test sets 8 turns in memory, the
  * state the user reported first. It drives the real engine committed with the web.
@@ -53,14 +55,28 @@ const heldCoreRows = (page) => ({
   simple: page.locator('.coreinfo-panel [data-cy$="-SaturationProportion-container"]'),
 });
 const isSimpleView = async (page) => (await page.locator('.coreinfo-panel .coreinfo-simple').count()) > 0;
+// The theme's danger colour as the browser computes it.
+const dangerColor = (page) => page.evaluate(() => {
+  const pinia = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia;
+  const probe = document.createElement('span');
+  probe.style.color = pinia._s.get('style').magneticBuilder.inputLabelDangerBgColor.color;
+  document.body.appendChild(probe);
+  const color = getComputedStyle(probe).color;
+  probe.remove();
+  return color;
+});
+const colorOf = (locator) => locator.evaluate((element) => getComputedStyle(element).color);
 
-test('CORE-HOLD-2370: a core held at its Curie point shows an error with the losses before the hold, never the held losses', async ({ page }, testInfo) => {
+test('CORE-HOLD-2370: a core held at its Curie point shows the losses before the hold in the danger colour, never the held losses', async ({ page }, testInfo) => {
   test.setTimeout(240000);
   await loadDesignWithTurns(page, testInfo, 8);
   await expect(heldHint(page), 'Core Info\'s title bar states the hold').toBeVisible({ timeout: 120000 });
   // Alf, 2026-11-15: the hold is stated once, by the title-bar hint's tooltip and the Engine log; no inline copy.
   await expect(heldError(page), 'no inline copy of the hold message').toHaveCount(0);
-  await expect(coreLosses(page), 'the held losses are not shown as the core losses').toHaveCount(0);
+  // The core losses are the losses before the hold (11.04 W), in the danger colour.
+  const lossesValue = page.locator('.coreinfo-panel [data-cy$="-CoreLosses-number-label"]').first();
+  await expect(lossesValue, 'the losses before the hold are shown').toHaveText(/^\s*11(\.\d+)?\s*$/);
+  expect(await colorOf(lossesValue), 'in the danger colour').toBe(await dangerColor(page));
   await expect(page.locator('.coreinfo-panel'), 'no microwatt reading anywhere in Core Info').not.toContainText(/µW|μW|uW/);
   const rows = heldCoreRows(page);
   await expect(rows.advanced, 'no flux-density peaks of the held core').toHaveCount(0);
@@ -70,10 +86,12 @@ test('CORE-HOLD-2370: a core held at its Curie point shows an error with the los
   const hint = page.locator('.coreinfo-header [data-cy$="-CoreInfo-HeldAtDataLimit"]');
   await expect(hint).toHaveText(/Held at 240\s*°C/);
   await expect(hint).toHaveAttribute('aria-label', /Losses before the hold: 11(\.\d+)?\s*W at 23[89](\.\d+)?\s*°C/);
-  // Coil Info's total adds the core losses: once MKF's findings name the hold, it is not shown either,
-  // and there is no inline copy of the hold message (Alf, 2026-11-15: Core Info's hint and the Engine log say it).
+  // Coil Info's total adds the losses before the hold, in the danger colour; there is no inline copy of the
+  // hold message (Alf, 2026-11-15: Core Info's hint and the Engine log say it).
   await expect(page.locator('[data-cy$="-TotalLosses-HeldAtDataLimit"]'), 'no inline hold message in Coil Info').toHaveCount(0);
-  await expect(page.locator('[data-cy$="-TotalLosses-container"]'), 'no total with the held core losses').toHaveCount(0);
+  const totalValue = page.locator('[data-cy$="-TotalLosses-number-label"]').first();
+  await expect(totalValue, 'the total adds the losses before the hold').toHaveText(/^\s*1[1-9](\.\d+)?\s*$/, { timeout: 60000 });
+  expect(await colorOf(totalValue), 'in the danger colour').toBe(await dangerColor(page));
 });
 
 test('CORE-HOLD-2370-4T: with 4 turns the core settles and Core Info shows its losses', async ({ page }, testInfo) => {
@@ -106,15 +124,20 @@ async function openSummary(page) {
 const FLUX_VALUE = /\d\s*[mµμ]?T(?![A-Za-z])/;
 const HELD_TEXT = /^No steady temperature: the core reaches its Curie temperature \(240\s*°C\)\. Losses before the hold: 11(\.\d+)?\s*W at 23[89](\.\d+)?\s*°C\.$/;
 
-test('CORE-HOLD-2370-SUMMARY: the summary and its printed datasheet show the hold error, never the held core or total losses', async ({ page }, testInfo) => {
+test('CORE-HOLD-2370-SUMMARY: the summary and its printed datasheet show the losses before the hold in the danger colour, never the held ones', async ({ page }, testInfo) => {
   test.setTimeout(240000);
   await loadDesignWithTurns(page, testInfo, 8);
   await expect(heldHint(page)).toBeVisible({ timeout: 120000 });
   await openSummary(page);
   const coreCell = page.locator('[data-cy$="-Performance-CoreLosses-held"]');
-  await expect(coreCell, 'the core losses row states the hold').toHaveText(HELD_TEXT, { timeout: 60000 });
-  await expect(page.locator('[data-cy$="-Performance-TotalLosses-held"]')).toHaveText(/^No total losses: the core has no steady temperature within its material's data/);
-  await expect(page.locator('[data-cy$="-KeyParameter-CoreLoss-held"]')).toHaveText('No steady temperature');
+  await expect(coreCell, 'the core losses row shows the losses before the hold').toHaveText(/^11(\.\d+)? W$/, { timeout: 60000 });
+  await expect(coreCell, 'with the hold on hover').toHaveAttribute('title', HELD_TEXT);
+  await expect(coreCell).toHaveClass(/text-danger/);
+  const totalCell = page.locator('[data-cy$="-Performance-TotalLosses-held"]');
+  await expect(totalCell, 'the total adds them').toHaveText(/^1[1-9](\.\d+)? W$/);
+  await expect(totalCell).toHaveClass(/text-danger/);
+  await expect(page.locator('[data-cy$="-KeyParameter-CoreLoss-held"]')).toHaveText(/^11(\.\d+)?$/);
+  await expect(page.locator('[data-cy$="-KeyParameter-CoreLoss-held"]')).toHaveClass(/text-danger/);
   await expect(page.locator('[data-cy$="-KeyParameter-CoreLoss-held"]')).toHaveAttribute('title', HELD_TEXT);
   // Rendered text only (innerText skips <style>, whose generated class names can contain 'uW'), and a number before the unit.
   const datasheetText = await page.locator('.datasheet-container').evaluate((element) => element.innerText);
@@ -131,9 +154,9 @@ test('CORE-HOLD-2370-SUMMARY: the summary and its printed datasheet show the hol
   const { execFileSync } = await import('node:child_process');
   const pdfText = execFileSync('pdftotext', [pdfPath, '-'], { encoding: 'utf8' }).replace(/\s+/g, ' ');
   // The table cell wraps over several lines, interleaved with the next column: check its parts.
+  // The flux-density row states the hold; the losses rows give the losses before it.
   expect(pdfText, 'the printed datasheet states the hold').toContain('No steady temperature: the core reaches its');
   expect(pdfText, 'the printed datasheet gives the losses before the hold').toMatch(/the hold: 11(\.\d+)? W at 23[89](\.\d+)? °C\./);
-  expect(pdfText, 'the printed datasheet states there is no total').toContain('No total losses');
   expect(pdfText, 'no microwatt reading in the printed datasheet').not.toMatch(/µW|μW|uW/);
   expect(pdfText, 'no flux-density value in the printed datasheet').not.toMatch(FLUX_VALUE);
 });

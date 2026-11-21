@@ -90,12 +90,17 @@ export default {
         isDesignComplete() {
             return this.missingRequirements.length === 0;
         },
-        // ABT #2370: MKF held the core at its material's data limit for the operating point the
-        // summary shows (analyze_results' CORE_ABOVE_MATERIAL_DATA_LIMIT). Its losses there are not
-        // the design's (33 uW for a core that lost 11 W before the hold), so neither the core losses
-        // nor a total that adds them is shown: this error replaces them, here and in the printed
-        // datasheet. While the check runs, or when it failed, the losses are not shown either.
-        // { state: 'checking' | 'failed' | 'held' | 'ok', message }
+        // MKF's verdict on the core of the operating point the summary shows (analyze_results):
+        // - 'saturates' (CORE_SATURATES): the saturated core's inductance, flux density, core losses and total
+        //   are shown, in the danger colour, with the finding on hover (Alf, 2026-11-20: never hidden, marked);
+        // - 'held' (CORE_ABOVE_MATERIAL_DATA_LIMIT, ABT #2370): the core losses MKF computes on the held core are
+        //   not the design's (33 uW for a core that lost 11 W before the hold); the losses just before the hold
+        //   are shown instead, with the total that adds them, in the danger colour with the hold on hover (Alf,
+        //   2026-11-20). The held (paramagnetic) core's flux density is not shown: the hold replaces it;
+        // - 'checking' / 'failed': while the check runs, or when it failed, the core values are not shown
+        //   (a held core's would be shown as the design's);
+        // - 'missing': the engine returned no core losses.
+        // { state: 'checking' | 'failed' | 'held' | 'saturates' | 'missing' | 'ok', message }
         coreLossesVerdict() {
             if (this.resultFindingsError != null) {
                 return { state: 'failed', message: `The engine could not check the simulated results for problems, so the losses and flux density are not shown: ${this.resultFindingsError}` };
@@ -103,26 +108,49 @@ export default {
             if (this.resultFindings == null) {
                 return { state: 'checking', message: 'Checking the results with the engine…' };
             }
-            // At a point whose flux density lies past the end of the core material's magnetisation curve the
-            // engine computes no magnetizing inductance, flux density or core losses, and analyze_results
-            // says so (CORE_SATURATES). Its message replaces them, and a total that would add them.
-            if (this.mas?.outputs?.[0]?.coreLosses?.coreLosses == null) {
-                const saturates = this.resultFindings.find((finding) =>
-                    finding.code == 'CORE_SATURATES' && finding.operatingPointIndex == 0);
-                if (saturates != null) return { state: 'saturates', message: saturates.message };
-                return { state: 'missing', message: 'The engine computed no core losses for this operating point and reported no reason for it.' };
-            }
             const held = this.resultFindings.find((finding) =>
                 finding.code == 'CORE_ABOVE_MATERIAL_DATA_LIMIT' && finding.operatingPointIndex == 0);
-            if (held == null) return { state: 'ok', message: '' };
-            // The engine's core-loss calculation did not describe the hold analyze_results found:
-            // state MKF's own finding.
-            return { state: 'held', message: this.coreHoldDescription != null ? this.coreHoldDescription.error : held.message };
+            if (held != null) {
+                // The engine's core-loss calculation did not describe the hold analyze_results found:
+                // state MKF's own finding.
+                return { state: 'held', message: this.coreHoldDescription != null ? this.coreHoldDescription.error : held.message };
+            }
+            const saturates = this.resultFindings.find((finding) =>
+                finding.code == 'CORE_SATURATES' && finding.operatingPointIndex == 0);
+            if (this.mas?.outputs?.[0]?.coreLosses?.coreLosses == null) {
+                return { state: 'missing', message: saturates?.message ?? 'The engine computed no core losses for this operating point and reported no reason for it.' };
+            }
+            if (saturates != null) return { state: 'saturates', message: saturates.message };
+            return { state: 'ok', message: '' };
         },
-        // The verdict in a few words, for the key-parameter tiles.
+        // The verdict in a few words, for the key-parameter tiles that show no value.
         coreLossesVerdictShort() {
             return { checking: 'Checking…', failed: 'Not checked', held: 'No steady temperature',
-                     saturates: 'Core saturates', missing: 'Not computed' }[this.coreLossesVerdict.state];
+                     missing: 'Not computed' }[this.coreLossesVerdict.state];
+        },
+        // The core values of the summary, each { value (number), marked } or { verdict: true } when the
+        // verdict replaces it, or null when there is nothing to show. marked: shown in the danger colour
+        // with coreLossesVerdict.message on hover.
+        coreValues() {
+            const state = this.coreLossesVerdict.state;
+            const outputs = this.mas?.outputs?.[0];
+            const marked = state == 'saturates' || state == 'held';
+            const shown = (value) => value == null ? null : { value, marked };
+            const verdict = { verdict: true };
+            const hidden = state == 'checking' || state == 'failed' || state == 'missing';
+            const inductance = this.magnetizingInductanceOutput == null ? (state == 'ok' ? null : verdict)
+                : shown(this.magnetizingInductanceOutput.nominal || this.magnetizingInductanceOutput);
+            const peakFluxDensity = hidden || state == 'held' ? verdict
+                : shown(outputs?.coreLosses?.magneticFluxDensity?.processed?.peak || null);
+            let coreLosses;
+            if (hidden) coreLosses = verdict;
+            else if (state == 'held') coreLosses = this.coreHoldDescription?.lossesBeforeHold != null ? shown(this.coreHoldDescription.lossesBeforeHold) : verdict;
+            else coreLosses = shown(outputs?.coreLosses?.coreLosses);
+            const windingLosses = outputs?.windingLosses?.windingLosses;
+            let totalLosses = null;
+            if (coreLosses?.verdict) totalLosses = verdict;
+            else if (coreLosses != null && windingLosses != null) totalLosses = shown(coreLosses.value + windingLosses);
+            return { inductance, peakFluxDensity, coreLosses, totalLosses };
         },
         partNumber() {
             return this.mas?.magnetic?.manufacturerInfo?.reference || 'Custom Design';
@@ -162,40 +190,31 @@ export default {
             const params = [];
             const outputs = this.mas?.outputs?.[0];
 
-            if (this.magnetizingInductanceOutput != null) {
-                const val = this.magnetizingInductanceOutput.nominal || this.magnetizingInductanceOutput;
-                const aux = formatInductance(val);
-                params.push({ label: 'Inductance', value: removeTrailingZeroes(aux.label, 2), unit: aux.unit, icon: 'bi-infinity' });
-            }
-            else if (this.coreLossesVerdict.state != 'ok') {
-                params.push({ label: 'Inductance', value: this.coreLossesVerdictShort, unit: '', icon: 'bi-infinity', error: this.coreLossesVerdict.message, state: this.coreLossesVerdict.state, key: 'Inductance' });
-            }
-
-            if (this.coreLossesVerdict.state != 'ok') {
-                params.push({ label: 'Core Loss', value: this.coreLossesVerdictShort, unit: '', icon: 'bi-fire', error: this.coreLossesVerdict.message, state: this.coreLossesVerdict.state, key: 'CoreLoss' });
-            }
-            else if (outputs?.coreLosses?.coreLosses != null) {
-                if (outputs.coreLosses.coreLosses < 0) {
-                    console.error('[MagneticSummary] Negative core losses received from MKF:', outputs.coreLosses.coreLosses, 'methodUsed:', outputs.coreLosses.methodUsed, 'material:', this.mas?.magnetic?.core?.functionalDescription?.material?.name ?? this.mas?.magnetic?.core?.functionalDescription?.material);
+            const verdict = this.coreLossesVerdict;
+            const values = this.coreValues;
+            // A value in the danger colour, or the verdict in a few words, with the verdict on hover.
+            const tile = (label, icon, key, cell, format) => {
+                if (cell == null) return;
+                if (cell.verdict) {
+                    params.push({ label, value: this.coreLossesVerdictShort, unit: '', icon, error: verdict.message, state: verdict.state, key });
+                    return;
                 }
-                const aux = formatPower(outputs.coreLosses.coreLosses);
-                params.push({ label: 'Core Loss', value: removeTrailingZeroes(aux.label, 2), unit: aux.unit, icon: 'bi-fire' });
+                const aux = format(cell.value);
+                params.push({ label, value: removeTrailingZeroes(aux.label, 2), unit: aux.unit, icon,
+                              ...(cell.marked ? { error: verdict.message, state: verdict.state, key } : {}) });
+            };
+            tile('Inductance', 'bi-infinity', 'Inductance', values.inductance, formatInductance);
+            if (outputs?.coreLosses?.coreLosses < 0) {
+                console.error('[MagneticSummary] Negative core losses received from MKF:', outputs.coreLosses.coreLosses, 'methodUsed:', outputs.coreLosses.methodUsed, 'material:', this.mas?.magnetic?.core?.functionalDescription?.material?.name ?? this.mas?.magnetic?.core?.functionalDescription?.material);
             }
+            tile('Core Loss', 'bi-fire', 'CoreLoss', values.coreLosses, formatPower);
 
             if (outputs?.windingLosses?.windingLosses != null) {
                 const aux = formatPower(outputs.windingLosses.windingLosses);
                 params.push({ label: 'Winding Loss', value: removeTrailingZeroes(aux.label, 2), unit: aux.unit, icon: 'bi-lightning-fill' });
             }
 
-            // On a held core B is computed on the paramagnetic (mu_r = 1) core, ~100x below the
-            // design's: like the losses, it is replaced by the verdict (as Core Info hides it).
-            if (this.coreLossesVerdict.state != 'ok') {
-                params.push({ label: 'Peak B', value: this.coreLossesVerdictShort, unit: '', icon: 'bi-magnet-fill', error: this.coreLossesVerdict.message, state: this.coreLossesVerdict.state, key: 'PeakB' });
-            }
-            else if (outputs?.coreLosses?.magneticFluxDensity?.processed?.peak) {
-                const aux = formatUnit(outputs.coreLosses.magneticFluxDensity.processed.peak, 'T');
-                params.push({ label: 'Peak B', value: removeTrailingZeroes(aux.label, 2), unit: aux.unit, icon: 'bi-magnet-fill' });
-            }
+            tile('Peak B', 'bi-magnet-fill', 'PeakB', values.peakFluxDensity, (value) => formatUnit(value, 'T'));
 
             params.push({ label: 'Core', value: this.coreShape, unit: '', icon: 'bi-box' });
 
@@ -207,31 +226,20 @@ export default {
             const outputs = this.mas?.outputs?.[0];
             const inputs = this.mas?.inputs?.operatingPoints?.[0];
             
-            // Inductance
-            if (this.magnetizingInductanceOutput != null) {
-                const val = this.magnetizingInductanceOutput.nominal || this.magnetizingInductanceOutput;
-                const aux = formatInductance(val);
-                specs.push({
-                    parameter: 'Magnetizing Inductance',
-                    symbol: 'L',
-                    typ: removeTrailingZeroes(aux.label, 2),
-                    unit: aux.unit,
-                    conditions: '0 A DC'
-                });
-            }
-            else if (this.coreLossesVerdict.state != 'ok') {
-                specs.push({
-                    parameter: 'Magnetizing Inductance',
-                    symbol: 'L',
-                    typ: this.coreLossesVerdict.message,
-                    unit: '',
-                    conditions: 'At operating point',
-                    error: true,
-                    state: this.coreLossesVerdict.state,
-                    key: 'Inductance',
-                });
-            }
-            
+            // A value in the danger colour with the verdict on hover, or the verdict in place of the value.
+            const verdict = this.coreLossesVerdict;
+            const specRow = (parameter, symbol, key, cell, format, conditions) => {
+                if (cell == null) return;
+                if (cell.verdict) {
+                    specs.push({ parameter, symbol, typ: verdict.message, unit: '', conditions: 'At operating point', error: true, state: verdict.state, key });
+                    return;
+                }
+                const aux = format(cell.value);
+                specs.push({ parameter, symbol, typ: removeTrailingZeroes(aux.label, 2), unit: aux.unit, conditions,
+                             ...(cell.marked ? { error: true, state: verdict.state, key, title: verdict.message } : {}) });
+            };
+            specRow('Magnetizing Inductance', 'L', 'Inductance', this.coreValues.inductance, formatInductance, '0 A DC');
+
             // Operating frequency
             const freq = inputs?.excitationsPerWinding?.[0]?.frequency;
             if (freq) {
@@ -245,30 +253,9 @@ export default {
                 });
             }
             
-            // Peak flux density (not the held core's: see keyParameters)
-            if (this.coreLossesVerdict.state != 'ok') {
-                specs.push({
-                    parameter: 'Peak Flux Density',
-                    symbol: 'Bpk',
-                    typ: this.coreLossesVerdict.message,
-                    unit: '',
-                    conditions: 'At operating point',
-                    error: true,
-                    state: this.coreLossesVerdict.state,
-                    key: 'PeakB',
-                });
-            }
-            else if (outputs?.coreLosses?.magneticFluxDensity?.processed?.peak) {
-                const aux = formatUnit(outputs.coreLosses.magneticFluxDensity.processed.peak, 'T');
-                specs.push({
-                    parameter: 'Peak Flux Density',
-                    symbol: 'Bpk',
-                    typ: removeTrailingZeroes(aux.label, 2),
-                    unit: aux.unit,
-                    conditions: 'At operating point'
-                });
-            }
-            
+            // Peak flux density (not the held core's: see coreValues)
+            specRow('Peak Flux Density', 'Bpk', 'PeakB', this.coreValues.peakFluxDensity, (value) => formatUnit(value, 'T'), 'At operating point');
+
             // Leakage inductance (for transformers). All values are referred to the
             // primary winding (web bug report #134: a user compared the displayed value
             // against a secondary-side measurement — off by the turns ratio squared).
@@ -638,19 +625,21 @@ export default {
             const data = [];
             const outputs = this.mas?.outputs?.[0];
             
-            const lossesNotShown = this.coreLossesVerdict.state != 'ok';
+            const verdict = this.coreLossesVerdict;
+            const values = this.coreValues;
+            const power = (value) => {
+                const aux = formatPower(value);
+                return `${removeTrailingZeroes(aux.label, 3)} ${aux.unit}`;
+            };
             // Core losses
-            if (lossesNotShown) {
-                data.push({ parameter: 'Core Losses (Pcore)', value: this.coreLossesVerdict.message, error: true, state: this.coreLossesVerdict.state, key: 'CoreLosses' });
+            if (values.coreLosses?.verdict) {
+                data.push({ parameter: 'Core Losses (Pcore)', value: verdict.message, error: true, state: verdict.state, key: 'CoreLosses' });
             }
-            else if (outputs?.coreLosses?.coreLosses != null) {
-                if (outputs.coreLosses.coreLosses < 0) {
-                    console.error('[MagneticSummary] Negative core losses received from MKF:', outputs.coreLosses.coreLosses, 'methodUsed:', outputs.coreLosses.methodUsed, 'material:', this.mas?.magnetic?.core?.functionalDescription?.material?.name ?? this.mas?.magnetic?.core?.functionalDescription?.material);
-                }
-                const aux = formatPower(outputs.coreLosses.coreLosses);
-                data.push({ parameter: 'Core Losses (Pcore)', value: `${removeTrailingZeroes(aux.label, 3)} ${aux.unit}` });
+            else if (values.coreLosses != null) {
+                data.push({ parameter: 'Core Losses (Pcore)', value: power(values.coreLosses.value),
+                            ...(values.coreLosses.marked ? { error: true, state: verdict.state, key: 'CoreLosses', title: verdict.message } : {}) });
             }
-            
+
             // Winding losses breakdown
             if (outputs?.windingLosses?.windingLossesPerWinding) {
                 let totalOhmic = 0, totalSkin = 0, totalProx = 0;
@@ -670,20 +659,15 @@ export default {
             }
             
             // Total losses
-            const coreLoss = outputs?.coreLosses?.coreLosses || 0;
-            const windingLoss = outputs?.windingLosses?.windingLosses || 0;
-            if (lossesNotShown) {
+            if (values.totalLosses?.verdict) {
                 const totalText = {
-                    held: 'No total losses: the core has no steady temperature within its material\'s data, so its losses are not the design\'s.',
-                    saturates: 'No total losses: the core saturates at this operating point, so the engine computed no core losses for it.',
                     missing: 'No total losses: the engine computed no core losses for this operating point.',
-                }[this.coreLossesVerdict.state] ?? this.coreLossesVerdict.message;
-                data.push({ parameter: 'Total Losses', value: totalText, isTotal: true, error: true, state: this.coreLossesVerdict.state, key: 'TotalLosses' });
+                }[verdict.state] ?? verdict.message;
+                data.push({ parameter: 'Total Losses', value: totalText, isTotal: true, error: true, state: verdict.state, key: 'TotalLosses' });
             }
-            else if (coreLoss || windingLoss) {
-                const total = coreLoss + windingLoss;
-                const aux = formatPower(total);
-                data.push({ parameter: 'Total Losses', value: `${removeTrailingZeroes(aux.label, 3)} ${aux.unit}`, isTotal: true });
+            else if (values.totalLosses != null) {
+                data.push({ parameter: 'Total Losses', value: power(values.totalLosses.value), isTotal: true,
+                            ...(values.totalLosses.marked ? { error: true, state: verdict.state, key: 'TotalLosses', title: verdict.message } : {}) });
             }
             
             return data;
@@ -1055,6 +1039,7 @@ export default {
                                 :class="{ 'text-danger': spec.state != 'checking' }"
                                 :role="spec.state != 'checking' ? 'alert' : null"
                                 :data-cy="dataTestLabel + '-ElectricalSpecs-' + spec.key + '-' + spec.state"
+                                :title="spec.title"
                             >{{ spec.typ }}</td>
                             <td v-else class="typ-value">{{ spec.typ || '-' }}</td>
                             <td>{{ spec.unit }}</td>
@@ -1256,6 +1241,7 @@ export default {
                                         :class="{ 'text-danger': item.state != 'checking' }"
                                         :role="item.state != 'checking' ? 'alert' : null"
                                         :data-cy="dataTestLabel + '-Performance-' + item.key + '-' + item.state"
+                                        :title="item.title"
                                     >{{ item.value }}</td>
                                     <td v-else class="param-val">{{ item.value }}</td>
                                 </tr>
