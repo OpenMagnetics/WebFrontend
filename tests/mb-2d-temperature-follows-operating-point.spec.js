@@ -58,8 +58,15 @@ test('MB-2D-OP-1: the 2D temperature plot is redrawn when another operating poin
     page.waitForEvent('dialog', { timeout: 120000 }),
   ]);
   expect(alerts, 'the load is not refused').toEqual([]);
-  await waitForActionSince(page, beforeLoad, 'magneticBuilderTaskQueue.simulate', { timeout: 120000 });
+  // The file carries its own copy of DMR51W, whose digitised mu_i(T) MKF refuses (it dips below 1
+  // below Curie, ABT #1739), so the builder computes nothing with it. The user takes the library's
+  // copy (cleaned in MAS 9084509, ABT #2466) from the notice, as the notice asks.
   await waitForIdle(page, { since: beforeLoad, quietMs: 3000, timeout: 180000, label: 'the loaded design' });
+  await expect(page.locator('[data-cy$="-OutdatedCoreMaterial-invalid"]').first()).toBeVisible({ timeout: 60000 });
+  const beforeUpdate = await activityMark(page);
+  await page.locator('[data-cy$="-OutdatedCoreMaterial-useLibrary"]').first().click();
+  await waitForActionSince(page, beforeUpdate, 'magneticBuilderTaskQueue.simulate', { timeout: 120000 });
+  await waitForIdle(page, { since: beforeUpdate, quietMs: 3000, timeout: 180000, label: 'the loaded design in the library material' });
 
   const toggle = page.locator('[data-cy$="-Coil-ToggleTemperaturePlot-button"]').first();
   await expect(toggle).toBeVisible({ timeout: 60000 });

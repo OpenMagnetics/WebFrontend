@@ -53,12 +53,20 @@ test('LOADMAS-COIL-1: a coil loaded wound keeps its stored layout until the coil
   ]);
   expect(alerts, 'the load is not refused').toEqual([]);
   await expect(page.locator('[data-cy$="-NumberTurns-container"]').first()).toBeVisible({ timeout: 60000 });
-  // The first simulation of the loaded design has run, or failed, once the app is idle.
-  await waitForActionSince(page, beforeLoad, 'magneticBuilderTaskQueue.simulate', { timeout: 120000 });
+  // The file carries its own copy of DMR51W, whose digitised mu_i(T) MKF refuses (it dips below 1
+  // below Curie, ABT #1739); MAS 9084509 cleaned the library's copy (ABT #2466). The builder computes
+  // nothing with a refused copy. The user takes the library's copy from the notice, as the notice
+  // asks; that must not wind the coil either.
   await waitForIdle(page, { since: beforeLoad, quietMs: 3000, timeout: 180000, label: 'the loaded design' });
+  await expect(page.locator('[data-cy$="-OutdatedCoreMaterial-invalid"]').first()).toBeVisible({ timeout: 60000 });
+  const beforeUpdate = await activityMark(page);
+  await page.locator('[data-cy$="-OutdatedCoreMaterial-useLibrary"]').first().click();
+  // The first simulation of the loaded design has run, or failed, once the app is idle.
+  await waitForActionSince(page, beforeUpdate, 'magneticBuilderTaskQueue.simulate', { timeout: 120000 });
+  await waitForIdle(page, { since: beforeUpdate, quietMs: 3000, timeout: 180000, label: 'the loaded design in the library material' });
 
-  await test.step('loading does not wind, and the stored turns are the ones on screen', async () => {
-    expect(await windCalls(page), 'winds asked of the engine during the load').toBe(0);
+  await test.step('loading and updating the material do not wind, and the stored turns are the ones on screen', async () => {
+    expect(await windCalls(page), 'winds asked of the engine during the load and the material update').toBe(0);
     expect(await turnCoordinates(page)).toEqual(storedCoordinates);
     const issues = await calculationIssues(page);
     expect(issues.filter((issue) => /thermal|temperature|disconnected|does not fit/i.test(issue)),
