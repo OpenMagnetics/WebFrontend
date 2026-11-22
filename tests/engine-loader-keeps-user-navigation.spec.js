@@ -28,7 +28,7 @@ test('LOADER-NAV-1: a click home while the engine loads is not overridden by the
   const homeHeld = new Promise((resolve) => { releaseHome = resolve; });
   let homeRequested = false;
   // The Home view's lazy chunk: the source module on the dev server, the hashed chunk in a build.
-  await page.route(/\/(src\/views\/Home\.vue|assets\/Home-[^/]*\.js)(\?|$)/, async (route) => {
+  await page.route(/\/(src\/views\/Home\.vue|assets\/(?:js\/)?Home-[^/]*\.js)(\?|$)/, async (route) => {
     homeRequested = true;
     await homeHeld;
     await route.continue();
