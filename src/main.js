@@ -387,18 +387,38 @@ app.mount("#app");
 // If Kirchhoff opened us to design a magnetic, wire the cross-origin handoff (no-op otherwise).
 installKirchhoffHandoff(router);
 
+router.afterEach((to, from, failure) => {
+    if (failure != null && lastNavigationStarted === to) lastNavigationStarted = null;
+});
+router.onError(() => { lastNavigationStarted = null; });
+
 // Every exit from /engine_loader must be VERIFIED, not fire-and-forget. A one-shot router.push can be
 // issued while the loader navigation is still in flight and simply be superseded, which parks the app
 // on the loader until the tab is closed (ABT #909). Sitting on the loader once the engine is ready is
 // ALWAYS wrong, so: push, then keep re-checking until we are actually off it. Stops immediately when
 // we leave — including when the user navigated somewhere else themselves, since then the route is no
 // longer EngineLoader and we must not yank them.
+//
+// "The user moved" includes a navigation they started that has not landed yet: clicking the logo while
+// the engine loads starts a navigation home, but until Home's lazy chunk resolves the current route is
+// still the loader, and a push to the loader's destination issued then supersedes the user's own. The
+// guard records the latest navigation started; the loader leaves only while that is the loader itself
+// or the loader's own destination. A navigation that fails or is cancelled is forgotten, so it never
+// holds the app on the loader.
+let lastNavigationStarted = null;
+
+function userNavigatedElsewhere(targetPath) {
+    const started = lastNavigationStarted;
+    return started != null && started.name !== 'EngineLoader' && started.fullPath !== targetPath;
+}
+
 function leaveEngineLoader(router, targetPath) {
     if (targetPath == null) return;
     const deadline = Date.now() + 60000;
     let attempts = 0;
     const tryLeave = () => {
         if (router.currentRoute.value.name !== 'EngineLoader') return;   // out, or the user moved
+        if (userNavigatedElsewhere(targetPath)) return;                  // the user is on their way out
         attempts++;
         if (attempts === 1 || attempts % 20 === 0) {
             console.warn(`[EngineLoader] still on the loader after ${attempts} exit attempt(s); `
@@ -429,6 +449,7 @@ function leaveEngineLoader(router, targetPath) {
 }
 
 router.beforeEach((to, from, next) => {
+    lastNavigationStarted = to;
 
     if (app.config.globalProperties.$mkf != null && !app.config.globalProperties.$mkf._loading && to.name == "EngineLoader") {
         if (app.config.globalProperties.$userStore.loadingPath != null) {

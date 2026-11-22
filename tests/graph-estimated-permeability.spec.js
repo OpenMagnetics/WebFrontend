@@ -6,6 +6,7 @@
  */
 import { test, expect } from './_coverage.js';
 import { BASE_URL } from './utils/env.js';
+import { installActivityProbe, activityMark, waitForIdle } from './utils/activity.js';
 
 const FIXTURE = new URL('./fixtures/04_forward_xfmr_e3216_n87.json', import.meta.url).pathname;
 
@@ -27,8 +28,10 @@ test.describe('Impedance graphs mark estimated complex permeability (ABT #1861)'
 
   for (const [graph, label] of [['impedanceOverFrequency', 'Impedance'], ['qFactorOverFrequency', 'Q Factor']]) {
     test(`GRAPH-ESTIMATED ${graph}: the stretch beyond N87's measured span is dashed and explained`, async ({ page }) => {
+      await installActivityProbe(page);
       await page.goto(`${BASE_URL}/`, { waitUntil: 'domcontentloaded', timeout: 20000 });
       await page.waitForFunction(() => !window.location.pathname.includes('engine_loader'), null, { timeout: 60000 });
+      const beforeLoad = await activityMark(page);
       await page.locator('[data-cy="Header-Load-MAS-file-button"]').setInputFiles(FIXTURE);
       await page.waitForURL('**/magnetic_tool**', { timeout: 60000 });
       await page.evaluate((graph) => {
@@ -51,6 +54,11 @@ test.describe('Impedance graphs mark estimated complex permeability (ABT #1861)'
       expect(dashed.length).toBe(1);
       expect(solid[0].drawn).toBeGreaterThan(0);
       expect(dashed[0].drawn).toBeGreaterThan(1);
+
+      // The builder winds and processes the loaded core after the first sweep, and each of those sweeps
+      // the graph again; the pill is not drawn while the graph is loading, so a tooltip opened before
+      // then is taken down with it. Hover once the builder is idle.
+      await waitForIdle(page, { since: beforeLoad, quietMs: 3000, timeout: 180000, label: 'the loaded design and its graph' });
 
       // The notes run to a dozen lines: the tooltip is wide enough to read them as paragraphs, not
       // PrimeVue's default 12.5rem column (Alf, 2026-11-05: "make the tool tip wider").

@@ -28,10 +28,17 @@ async function primeSharedPage(sharedPage) {
     // the signal that the engine_loader round-trip finished. (On the real
     // worker proxy `_loading` is a generated async method — truthy but not
     // the boolean — hence the strict comparison; see main.js beforeEach.)
+    // Nor is the engine being up: the guard decides on the loader at the first navigation, while the
+    // engine is still null, and that redirect only lands once the route's lazy chunk has loaded, often
+    // after the preloaded engine is ready. Until then the guard holds the destination in
+    // $userStore.loadingPath; the loader clears it when it hands back, so the round-trip is over only
+    // when it is null.
     await sharedPage.waitForFunction(
       () => {
-        const mkf = document.querySelector('#app')?.__vue_app__?.config?.globalProperties?.$mkf;
-        return window.location.pathname.includes('magnetic_tool') && mkf != null && mkf._loading !== true;
+        const app = document.querySelector('#app')?.__vue_app__?.config?.globalProperties;
+        const mkf = app?.$mkf;
+        return window.location.pathname.includes('magnetic_tool') && mkf != null && mkf._loading !== true
+          && app.$userStore.loadingPath == null;
       },
       null,
       { timeout: 90000 },
