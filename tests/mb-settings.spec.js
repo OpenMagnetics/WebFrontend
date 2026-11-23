@@ -81,6 +81,23 @@ test.describe('MB – Group R – Settings Modal', () => {
     await expect(page.getByText(/core losses/i).first()).toBeVisible();
     await ss(page, 'R7-core-losses-model');
   });
+
+  // ABT #2208: the DC-bias switch is in the web's own settings panel and drives the engine's setting.
+  test('MB-R8 – Settings: Core Losses Under DC Bias switch drives the engine setting', async ({ page }) => {
+    await openSettings(page);
+    const toggle = page.locator('[data-cy$="Settings-Modal-core-losses-dc-bias-switch"]').first();
+    await expect(toggle).toBeVisible();
+    const engineValue = () => page.evaluate(async () => {
+      const taskQueue = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia._s.get('magneticBuilderTaskQueue');
+      return (await taskQueue.getSettings()).coreLossesDcBiasEnabled;
+    });
+    const before = await engineValue();
+    expect(typeof before).toBe('boolean');
+    expect(await toggle.isChecked()).toBe(before);
+    await toggle.click();
+    await expect.poll(engineValue, { timeout: 10000 }).toBe(!before);
+    await ss(page, 'R8-core-losses-dc-bias');
+  });
 });
 
 // =====================================================================

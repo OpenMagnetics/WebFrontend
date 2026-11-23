@@ -659,6 +659,25 @@ export default {
                             </small>
                         </div>
 
+                        <!-- DC bias in core losses (ABT #2208): shown only when the engine reports the setting -->
+                        <div class="setting-item py-2 border-bottom border-secondary d-flex justify-content-between align-items-center"
+                             v-if="modelSettingsStore.coreLossesDcBiasEnabled !== null">
+                            <div>
+                                <span class="text-white">Core Losses Under DC Bias</span>
+                                <small class="text-color-secondary d-block">Scale core losses by the material's permeability drop under the DC field, where its data has one</small>
+                            </div>
+                            <div class="form-check form-switch">
+                                <input
+                                    class="form-check-input custom-switch"
+                                    type="checkbox"
+                                    role="switch"
+                                    :data-cy="dataTestLabel + '-Settings-Modal-core-losses-dc-bias-switch'"
+                                    :checked="modelSettingsStore.coreLossesDcBiasEnabled"
+                                    @change="onModelChanged('coreLossesDcBiasEnabled', $event.target.checked)"
+                                >
+                            </div>
+                        </div>
+
                         <!-- Stray Capacitance Model -->
                         <div class="setting-item py-2 border-bottom border-secondary">
                             <label class="text-white mb-1 d-block small">Stray Capacitance Model</label>
