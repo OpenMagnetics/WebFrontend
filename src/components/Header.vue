@@ -236,7 +236,7 @@ export default {
                     input.value = '';
                 }
             };
-            fr.readAsText(file, "ISO-8859-1");
+            fr.readAsText(file, "UTF-8");  // ABT #2544: a MAS file is JSON, which is UTF-8
         },
         onLoggedIn() {
             // Post-login hook: settings sync starts lazily from main.js watcher.
