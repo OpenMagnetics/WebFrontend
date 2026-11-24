@@ -1883,4 +1883,36 @@ test.describe('Winding Studio P0', () => {
     }, primarySectionName, { timeout: 90000 });
     await ss(page, 'ws20-section-layout');
   });
+
+  // A toroid wound with rectangular wire (Alf, 2026-11-24, screenshot): each turn is drawn at its own angle round the
+  // core. MAS gives every toroidal turn its azimuth as `rotation` (degrees, counter-clockwise); the studio drew the
+  // rectangles upright, the inner ring and the outer returns alike. Render-only, as WS-18: buildTurnViews reads
+  // crossSectionalShape and dimensions, so the fixture's round turns are re-typed rectangular here.
+  test('WS-28 toroid: rectangular turns are drawn at their own rotation', async ({ page }) => {
+    const toroid = JSON.parse(fs.readFileSync(TOROIDAL_FIXTURE, 'utf-8'));
+    const turns = toroid.magnetic.coil.turnsDescription;
+    for (const turn of turns) {
+      turn.crossSectionalShape = 'rectangular';
+      turn.dimensions = [0.0012, 0.0004];
+    }
+    const rotated = turns.filter((turn) => Math.abs(turn.rotation ?? 0) > 1);
+    expect(rotated.length, 'the fixture has turns away from 0 degrees').toBeGreaterThan(10);
+    await page.goto(`${BASE_URL}/winding_studio_dev`, { waitUntil: 'domcontentloaded', timeout: 20000 });
+    await page.waitForFunction(() => typeof window.__setStudioMas === 'function', null, { timeout: 30000 });
+    await page.evaluate((mas) => window.__setStudioMas(mas), toroid);
+    const studio = page.locator('.winding-studio').first();
+    await expect(studio).toBeVisible({ timeout: 5000 });
+
+    const glyphs = turns.reduce((count, turn) => count + 1 + (turn.additionalCoordinates?.length ?? 0), 0);
+    const drawn = studio.locator('rect.winding-studio-turn');
+    await expect(drawn).toHaveCount(glyphs, { timeout: 10000 });
+    const angles = await drawn.evaluateAll((nodes) => nodes.map((node) => {
+      const match = /rotate\(\s*(-?[\d.e+-]+)/.exec(node.getAttribute('transform') ?? '');
+      return match ? Number(match[1]) : 0;
+    }));
+    const expected = turns.flatMap((turn) => Array(1 + (turn.additionalCoordinates?.length ?? 0)).fill(-(turn.rotation ?? 0)));
+    expect(angles.length).toBe(expected.length);
+    angles.forEach((angle, index) => expect(angle, `turn glyph ${index}`).toBeCloseTo(expected[index], 6));
+    await ss(page, 'ws28-toroid-rectangular-rotated');
+  });
 });
