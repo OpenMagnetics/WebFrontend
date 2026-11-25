@@ -135,6 +135,13 @@ export default {
                 if (allow && !this.localData.showEngineLog) {
                     await this.setShowEngineLog(true);
                 }
+                // The switch changes what the engine computes, not the design, so nothing the
+                // builder watches moves: with auto-simulation on, the results and the log kept the
+                // previous run (refused or extrapolated) until the next design change (ABT #1708).
+                // With it off, the Resimulate button is there for the user to press.
+                if (this.magneticBuilderSettingsStore.enableAutoSimulation) {
+                    this.$stateStore.resimulate();
+                }
             });
         },
         async setShowEngineLog(show) {

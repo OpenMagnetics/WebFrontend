@@ -4,6 +4,9 @@
  * and the engine log reports every extrapolation as a warning. Switched off, the engine refuses
  * and the builder says why.
  *
+ * ABT #1708: the switch changes what the engine computes, not the design, so with auto-simulation
+ * on nothing re-ran it and the builder kept the previous run's results and log.
+ *
  * Fixture: PQ 27/15 in material 95 (Steinmetz fitted 100-500 kHz) at 1 MHz.
  */
 import { test, expect } from './_coverage.js';
@@ -63,6 +66,33 @@ test.describe('Material data extrapolation (ABT #1652)', () => {
         expect(await persistedChoice(page)).toBe(false);
         await loadFixtureIntoBuilder(page);
         // ... in the Engine log (Alf, 2026-10-22: not a banner over the cards).
+        await expect.poll(async () => (await engineLogRecords(page, { source: BUILDER_SOURCES, level: 'ERROR' })).some((r) => r.code === 'MATERIAL_FREQUENCY_OUT_OF_SPAN'),
+            { timeout: 120000 }).toBe(true);
+    });
+    test('EXTRAP-3: switching it off with auto-simulation on runs the builder again, which the engine now refuses', async ({ page }) => {
+        await openApp(page);
+        expect(await persistedChoice(page)).toBe(true);
+        await loadFixtureIntoBuilder(page);
+        // The first run, extrapolated: its warning is in the log and no refusal is.
+        await expect.poll(async () => (await engineLogRecords(page, { level: 'WARNING' })).some((r) => r.message.startsWith('Material 95: its Steinmetz loss coefficients')),
+            { timeout: 120000 }).toBe(true);
+        expect((await engineLogRecords(page, { source: BUILDER_SOURCES, level: 'ERROR' })).filter((r) => r.code === 'MATERIAL_FREQUENCY_OUT_OF_SPAN')).toEqual([]);
+        expect(await page.evaluate(() => document.querySelector('#app').__vue_app__.config.globalProperties.$pinia._s.get('magneticBuilderSettings').enableAutoSimulation)).toBe(true);
+        // Count the builder's calculations from here on.
+        await page.evaluate(() => {
+            const taskQueue = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia._s.get('magneticBuilderTaskQueue');
+            window.__extrap3Runs = 0;
+            taskQueue.$onAction(({ name, after }) => {
+                if (name === 'simulate' || name === 'calculateCoreLosses') after(() => { window.__extrap3Runs += 1; });
+            });
+        });
+        await page.locator('[data-cy$="settings-modal-button"]').first().click();
+        const toggle = page.locator('[data-cy="Settings-Modal-allow-material-data-extrapolation-switch"]');
+        await expect(toggle).toBeVisible({ timeout: 10000 });
+        await toggle.click();
+        await expect.poll(() => persistedChoice(page), { timeout: 10000 }).toBe(false);
+        // Nothing else changed, so these runs come from the switch alone.
+        await expect.poll(() => page.evaluate(() => window.__extrap3Runs), { timeout: 60000 }).toBeGreaterThan(0);
         await expect.poll(async () => (await engineLogRecords(page, { source: BUILDER_SOURCES, level: 'ERROR' })).some((r) => r.code === 'MATERIAL_FREQUENCY_OUT_OF_SPAN'),
             { timeout: 120000 }).toBe(true);
     });
