@@ -678,6 +678,25 @@ export default {
                             </div>
                         </div>
 
+                        <!-- Core losses from the core's flux density map (ABT #2534): shown only when the engine reports the setting -->
+                        <div class="setting-item py-2 border-bottom border-secondary d-flex justify-content-between align-items-center"
+                             v-if="modelSettingsStore.coreLossesFluxDensityDistribution !== null">
+                            <div>
+                                <span class="text-white">Core Losses From Distributed Flux Density</span>
+                                <small class="text-color-secondary d-block">Price every piece of the core at its own flux density (corners, flanges, the field across a toroid) instead of one effective value. Slower: about 10x per simulation</small>
+                            </div>
+                            <div class="form-check form-switch">
+                                <input
+                                    class="form-check-input custom-switch"
+                                    type="checkbox"
+                                    role="switch"
+                                    :data-cy="dataTestLabel + '-Settings-Modal-core-losses-distributed-flux-density-switch'"
+                                    :checked="modelSettingsStore.coreLossesFluxDensityDistribution === 'DISTRIBUTED'"
+                                    @change="onModelChanged('coreLossesFluxDensityDistribution', $event.target.checked ? 'DISTRIBUTED' : 'EFFECTIVE_PARAMETERS')"
+                                >
+                            </div>
+                        </div>
+
                         <!-- Stray Capacitance Model -->
                         <div class="setting-item py-2 border-bottom border-secondary">
                             <label class="text-white mb-1 d-block small">Stray Capacitance Model</label>

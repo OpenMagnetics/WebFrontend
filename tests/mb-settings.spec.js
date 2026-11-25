@@ -98,6 +98,24 @@ test.describe('MB – Group R – Settings Modal', () => {
     await expect.poll(engineValue, { timeout: 10000 }).toBe(!before);
     await ss(page, 'R8-core-losses-dc-bias');
   });
+
+  // ABT #2534: the distributed flux density switch drives the engine's coreLossesFluxDensityDistribution.
+  test('MB-R9 – Settings: Core Losses From Distributed Flux Density switch drives the engine setting', async ({ page }) => {
+    await openSettings(page);
+    const toggle = page.locator('[data-cy$="Settings-Modal-core-losses-distributed-flux-density-switch"]').first();
+    await expect(toggle).toBeVisible();
+    const engineValue = () => page.evaluate(async () => {
+      const taskQueue = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia._s.get('magneticBuilderTaskQueue');
+      return (await taskQueue.getSettings()).coreLossesFluxDensityDistribution;
+    });
+    expect(await engineValue()).toBe('EFFECTIVE_PARAMETERS');
+    expect(await toggle.isChecked()).toBe(false);
+    await toggle.click();
+    await expect.poll(engineValue, { timeout: 10000 }).toBe('DISTRIBUTED');
+    await toggle.click();
+    await expect.poll(engineValue, { timeout: 10000 }).toBe('EFFECTIVE_PARAMETERS');
+    await ss(page, 'R9-core-losses-distributed-flux-density');
+  });
 });
 
 // =====================================================================
