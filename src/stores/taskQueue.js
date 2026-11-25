@@ -617,8 +617,9 @@ export const useTaskQueueStore = defineStore('taskQueue', {
                 setTimeout(() => { this.rmsPowerCalculated(false, result); }, this.task_standard_response_delay);
                 throw new Error(result);
             }
-            setTimeout(() => { this.rmsPowerCalculated(true, result); }, this.task_standard_response_delay);
-            return result;
+            const rmsPower = JSON.parse(result);  // a JSON number (ABT #1706)
+            setTimeout(() => { this.rmsPowerCalculated(true, rmsPower); }, this.task_standard_response_delay);
+            return rmsPower;
         },
 
         instantaneousPowerCalculated(success = true, dataOrMessage = '') {
@@ -883,13 +884,20 @@ export const useTaskQueueStore = defineStore('taskQueue', {
         effectiveCurrentDensityCalculated(success = true, dataOrMessage = '') {
         },
 
-        async calculateEffectiveCurrentDensity(wire, current, temperature) {
+        // The excitation (its current and frequency), not the bare current: the engine samples the current at the
+        // excitation's frequency (ABT #2279). Answers a JSON number, or "Exception: <reason>", which throws.
+        async calculateEffectiveCurrentDensity(wire, excitation, temperature) {
             const mkf = await waitForMkf();
             await mkf.ready;
 
-            const result = await mkf.calculate_effective_current_density(JSON.stringify(wire), JSON.stringify(current), temperature);
-            setTimeout(() => { this.effectiveCurrentDensityCalculated(true, result); }, this.task_standard_response_delay);
-            return result;
+            const result = await mkf.calculate_effective_current_density(JSON.stringify(wire), JSON.stringify(excitation), temperature);
+            if (typeof result === 'string' && result.startsWith('Exception')) {
+                setTimeout(() => { this.effectiveCurrentDensityCalculated(false, result); }, this.task_standard_response_delay);
+                throw new Error(result);
+            }
+            const effectiveCurrentDensity = JSON.parse(result);
+            setTimeout(() => { this.effectiveCurrentDensityCalculated(true, effectiveCurrentDensity); }, this.task_standard_response_delay);
+            return effectiveCurrentDensity;
         },
 
         // ==========================================
