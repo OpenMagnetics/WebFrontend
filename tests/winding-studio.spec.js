@@ -29,7 +29,11 @@ import { installActivityProbe, activityMark, waitForIdle, waitForActionSince } f
 const REPO_ROOT = fileURLToPath(new URL('..', import.meta.url));
 const fixture = (...parts) => path.join(REPO_ROOT, ...parts);
 
-const CLASSIC_FIXTURE = fixture('MagneticBuilder', 'src', 'public', 'test_wound_coil.json');
+// ABT #929: was MagneticBuilder/src/public/test_wound_coil.json, which despite its name is a PRINTED
+// planar design (ER 25/6/15). The studio exists only in the wound coil selector, so the tests using
+// it passed only when the builder's mount-time reset threw the injected design away, and failed
+// whenever it did not. A wound EFD 20 flyback whose stored turns match its windings (approved by Alf, 2026-11-25).
+const CLASSIC_FIXTURE = fixture('tests', 'fixtures', 'efd20_95_flyback_saturates.json');
 const MULTICOLUMN_FIXTURE = fixture('tests', 'fixtures', 'multicolumn_e42_transformer.json');
 const E16_CONTIGUOUS_FIXTURE = fixture('tests', 'fixtures', 'e16_contiguous_two_windings.json');
 const E16_STALE_MARGINS_FIXTURE = fixture('tests', 'fixtures', 'e16_contiguous_stale_margins.json');
@@ -293,6 +297,22 @@ async function dragChipToColumn(page, chipLocator, columnIndex) {
   await page.mouse.up();
 }
 
+// ABT #929: the test is about the design it injected. If the builder replaced it (its mount-time
+// reset), say so instead of testing whatever design is on screen.
+async function expectInjectedDesignShown(page, fixturePath) {
+  const parsed = JSON.parse(fs.readFileSync(fixturePath, 'utf-8'));
+  const expected = {
+    shape: parsed.magnetic.core.functionalDescription.shape.name ?? parsed.magnetic.core.functionalDescription.shape,
+    windings: parsed.magnetic.coil.functionalDescription.map((w) => [w.name, w.numberTurns, w.numberParallels]),
+  };
+  const shown = await page.evaluate(() => {
+    const mas = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia._s.get('mas').mas;
+    const shape = mas.magnetic.core.functionalDescription.shape;
+    return { shape: shape?.name ?? shape, windings: mas.magnetic.coil.functionalDescription.map((w) => [w.name, w.numberTurns, w.numberParallels]) };
+  });
+  expect(shown, `the builder holds the injected ${path.basename(fixturePath)}`).toEqual(expected);
+}
+
 async function openStudio(page) {
   // ABT #929: the toggle only exists once the builder has mounted its coil section, and the
   // callers that reach here without mountFirst were racing that mount — "element(s) not found"
@@ -335,6 +355,7 @@ test.describe('Winding Studio P0', () => {
     const parsed = JSON.parse(fs.readFileSync(CLASSIC_FIXTURE, 'utf-8'));
     await goToMagneticTool(page);
     await injectMas(page, CLASSIC_FIXTURE);
+    await expectInjectedDesignShown(page, CLASSIC_FIXTURE);
     await ss(page, 'ws1-before-toggle');
 
     const studio = await openStudio(page);
@@ -357,6 +378,7 @@ test.describe('Winding Studio P0', () => {
   test('WS-2 hovering a turn shows tooltip and highlights its winding', async ({ page }) => {
     await goToMagneticTool(page);
     await injectMas(page, CLASSIC_FIXTURE);
+    await expectInjectedDesignShown(page, CLASSIC_FIXTURE);
     const studio = await openStudio(page);
 
     const firstTurn = studio.locator('.winding-studio-turn').first();
@@ -823,6 +845,7 @@ test.describe('Winding Studio P0', () => {
     // 4 of 42 turns. The BasicCoilSelector shape watcher must clear the pins.
     await goToMagneticTool(page);
     await injectMas(page, CLASSIC_FIXTURE);
+    await expectInjectedDesignShown(page, CLASSIC_FIXTURE);
 
     // The windingStudio store is instantiated by BasicCoilSelector's mount —
     // wait for it (and for the fixture's sections to be in place) rather than
