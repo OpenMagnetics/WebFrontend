@@ -28,6 +28,7 @@ import { useConsoleStore } from '/src/stores/console'
 import { useEngineDiagnosticsStore, drainEngineLogAfterCoreLossCalculations, logSimulationFindings } from '/src/stores/engineDiagnostics'
 import { setNoticeSink } from 'WebSharedComponents/assets/js/notices.js'
 import { installKirchhoffHandoff } from '/src/composables/kirchhoffHandoff'
+import { installMasHandoff } from '/src/composables/masHandoff'
 
 // PrimeVue: Aura dark preset, tinted with the OM teal as primary
 import PrimeVue from 'primevue/config'
@@ -386,6 +387,8 @@ app.mount("#app");
 
 // If Kirchhoff opened us to design a magnetic, wire the cross-origin handoff (no-op otherwise).
 installKirchhoffHandoff(router);
+// If another page (Henry's run page) opened us to show a design (?handoff=mas), take its MAS (no-op otherwise).
+installMasHandoff(router);
 
 router.afterEach((to, from, failure) => {
     if (failure != null && lastNavigationStarted === to) lastNavigationStarted = null;

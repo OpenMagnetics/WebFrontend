@@ -33,7 +33,7 @@ const FAKE_PDF_BASE64 =
   'JVBERi0xLjEKMSAwIG9iajw8L1R5cGUvQ2F0YWxvZy9QYWdlcyAyIDAgUj4+ZW5kb2JqCjIgMCBvYmo8PC9UeXBlL1BhZ2VzL0tpZHNbMyAwIFJdL0NvdW50IDE+PmVuZG9iagozIDAgb2JqPDwvVHlwZS9QYWdlL1BhcmVudCAyIDAgUi9NZWRpYUJveFswIDAgNTk1IDg0Ml0+PmVuZG9iagp4cmVmCjAgNAowMDAwMDAwMDAwIDY1NTM1IGYgCjAwMDAwMDAwMTAgMDAwMDAgbiAKMDAwMDAwMDA1MyAwMDAwMCBuIAowMDAwMDAwMDk3IDAwMDAwIG4gCnRyYWlsZXI8PC9TaXplIDQvUm9vdCAxIDAgUj4+CnN0YXJ0eHJlZgoxNDgKJSVFT0YK';
 
 /** Installs route handlers that make the app resilient to missing data/backend. */
-async function installRouteFixtures(page) {
+export async function installRouteFixtures(page) {
   // Serve missing NDJSON catalogs from disk.
   await page.route('**/*.ndjson', async (route) => {
     const url = new URL(route.request().url());
