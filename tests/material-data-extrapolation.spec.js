@@ -78,12 +78,13 @@ test.describe('Material data extrapolation (ABT #1652)', () => {
             { timeout: 120000 }).toBe(true);
         expect((await engineLogRecords(page, { source: BUILDER_SOURCES, level: 'ERROR' })).filter((r) => r.code === 'MATERIAL_FREQUENCY_OUT_OF_SPAN')).toEqual([]);
         expect(await page.evaluate(() => document.querySelector('#app').__vue_app__.config.globalProperties.$pinia._s.get('magneticBuilderSettings').enableAutoSimulation)).toBe(true);
-        // Count the builder's calculations from here on.
+        // Count the builder's calculations started from here on (counted when called: with
+        // extrapolation off the engine refuses, so they reject and an after() hook never runs).
         await page.evaluate(() => {
             const taskQueue = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia._s.get('magneticBuilderTaskQueue');
             window.__extrap3Runs = 0;
-            taskQueue.$onAction(({ name, after }) => {
-                if (name === 'simulate' || name === 'calculateCoreLosses') after(() => { window.__extrap3Runs += 1; });
+            taskQueue.$onAction(({ name }) => {
+                if (name === 'simulate' || name === 'calculateCoreLosses') window.__extrap3Runs += 1;
             });
         });
         await page.locator('[data-cy$="settings-modal-button"]').first().click();
