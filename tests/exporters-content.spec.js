@@ -230,3 +230,51 @@ test.describe('Exporter content — SIMBA', () => {
     await ss(page, 'SB1-downloaded');
   });
 });
+
+// ── Busy state while an export runs (ABT #2582) ───────────────────────────
+
+test.describe('Exporter busy state — circuit simulators', () => {
+  test.describe.configure({ timeout: 120000 });
+
+  // A subcircuit export can take many seconds. The button must stay disabled, with a
+  // spinner, until the file is produced, and only then come back. The export is held
+  // open by the test, so the check does not depend on how long MKF takes.
+  test('EC-BUSY1: NgSpice button stays disabled with a spinner until its download is produced', async ({ page }) => {
+    await setupCompleteMagnetic(page);
+    await openModal(page, 'Circuit-Simulators-exports-modal-button');
+
+    await page.evaluate(() => {
+      const pinia = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia;
+      const taskQueue = pinia._s.get('taskQueue');
+      const original = taskQueue.exportMagneticAsSubcircuit;
+      let release;
+      window.__exportHeld = new Promise((resolve) => { release = resolve; });
+      window.__releaseExport = release;
+      window.__exportCalls = 0;
+      taskQueue.exportMagneticAsSubcircuit = async (...args) => {
+        window.__exportCalls += 1;
+        await window.__exportHeld;
+        return original(...args);
+      };
+    });
+
+    const btn = page.locator('.p-dialog button').filter({ hasText: /NgSpice/i }).first();
+    await expect(btn).toBeEnabled();
+    const downloadPromise = page.waitForEvent('download', { timeout: 60000 });
+    await btn.click();
+
+    await page.waitForFunction(() => window.__exportCalls === 1, null, { timeout: 5000 });
+    await expect(btn).toBeDisabled();
+    await expect(btn.locator('.pi-spinner')).toBeVisible();
+    // The old button re-enabled itself after 2 s whatever the export was doing.
+    await pause(page, 3000, 'mechanical: past the old 2 s re-enable');
+    await expect(btn, 'still disabled while the export is running').toBeDisabled();
+
+    await page.evaluate(() => window.__releaseExport());
+    const download = await downloadPromise;
+    expect(download.suggestedFilename()).toMatch(/\.cir$/i);
+    await expect(btn).toBeEnabled({ timeout: 10000 });
+    await expect(btn.locator('.pi-spinner')).toHaveCount(0);
+    expect(await page.evaluate(() => window.__exportCalls)).toBe(1);
+  });
+});

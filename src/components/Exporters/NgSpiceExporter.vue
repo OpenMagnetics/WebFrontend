@@ -36,10 +36,15 @@ export default {
     computed: {
     },
     methods: {
-        onClick() {
+        async onClick() {
+            // The export can take several seconds: the button stays disabled, with a spinner,
+            // until the file has been produced (ABT #2582).
             this.exported = true
-            setTimeout(() => this.createNgSpiceSubcircuit(), 20);
-            setTimeout(() => this.exported = false, 2000);
+            try {
+                await this.createNgSpiceSubcircuit();
+            } finally {
+                this.exported = false
+            }
         },
         async createNgSpiceSubcircuit() {
             try {
@@ -70,6 +75,7 @@ export default {
             :class="classProp"
             @click="onClick"
         >
+            <i v-if="exported" class="pi pi-spin pi-spinner mr-2" aria-hidden="true"></i>
             {{'Download magnetic subcircuit for NgSpice'}}
         </button>
     </div>

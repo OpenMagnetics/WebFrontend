@@ -40,15 +40,20 @@ export default {
     computed: {
     },
     methods: {
-        onClick() {
+        async onClick() {
+            // The export can take several seconds: the button stays disabled, with a spinner,
+            // until the file has been produced (ABT #2582).
             this.exported = true
-            if (this.isSymbol) {
-                setTimeout(() => this.createLtSpiceSymbol(), 20);
+            try {
+                if (this.isSymbol) {
+                    await this.createLtSpiceSymbol();
+                }
+                else {
+                    await this.createLtSpiceSubcircuit();
+                }
+            } finally {
+                this.exported = false
             }
-            else {
-                setTimeout(() => this.createLtSpiceSubcircuit(), 20);
-            }
-            setTimeout(() => this.exported = false, 2000);
         },
         async createLtSpiceSubcircuit() {
             try {
@@ -94,6 +99,7 @@ export default {
             :class="classProp"
             @click="onClick"
         >
+            <i v-if="exported" class="pi pi-spin pi-spinner mr-2" aria-hidden="true"></i>
             {{isSymbol? 'Download magnetic symbol for LtSpice' : 'Download magnetic subcircuit for LtSpice'}}
         </button>
     </div>

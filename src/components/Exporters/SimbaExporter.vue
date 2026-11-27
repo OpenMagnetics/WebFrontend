@@ -50,6 +50,7 @@ export default {
             fr.onload = async e => {
                 const jsimba = e.target.result
 
+                this.exported = true
                 try {
                     var subcircuit = await this.taskQueueStore.exportMagneticAsSubcircuit(this.magnetic, this.temperature, "SIMBA", jsimba);
                     const filename = name.split(".")[0];
@@ -61,6 +62,8 @@ export default {
 
                 } catch (error) {
                     console.error(error);
+                } finally {
+                    this.exported = false
                 }
             }
         },
@@ -72,9 +75,10 @@ export default {
 
             }
             else {
+                // The export can take several seconds: the button stays disabled, with a spinner,
+                // until the file has been produced (ABT #2582).
                 this.exported = true
-                setTimeout(() => this.createSimbaSubcircuit(), 20);
-                setTimeout(() => this.exported = false, 2000);
+                this.createSimbaSubcircuit().finally(() => { this.exported = false });
             }
         },
         async createSimbaSubcircuit() {
@@ -104,6 +108,7 @@ export default {
             :class="classProp"
             @click="onClick"
         >
+            <i v-if="exported" class="pi pi-spin pi-spinner mr-2" aria-hidden="true"></i>
             {{attachToFile? 'Attach magnetic subcircuit to Simba simulation' : 'Download magnetic subcircuit for Simba'}} 
         </button>
     </div>
