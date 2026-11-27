@@ -23,8 +23,7 @@
                     "unit": null
                 },
                 "overvoltageCategory": "II",
-                "pollutionDegree": "PD1",
-                "standards": []
+                "pollutionDegree": "PD1"
             },
             "isolationSides": null,
             "leakageInductance": null,
