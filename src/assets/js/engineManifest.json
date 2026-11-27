@@ -1,15 +1,15 @@
 {
-  "mkf": "2a3461af62331e6e602bf5a69a1b35765ef3247a",
+  "mkf": "a83e5582c4be9d7c430903c986595508da3670a4",
   "mas": "92e8ac010eea6cdeed40b163e08c0547a75113da",
   "peas": "aaa71c5c740615f97317bd9b248f001f0eff1ac0",
   "engines": {
     "libMKF.wasm.js": "eaf1a766a33eff81b6f3215705ab1739fc6e0045402b3b471101114bdb7048ab",
-    "libMKF.wasm.wasm": "8f5f62d65edaf678f03c164698b61a8a7b43893b0085281d8f6e9906539f75f4",
+    "libMKF.wasm.wasm": "426179a3c3f3ecc64a3e4b791f6b6af12f67400ff0493e7dfdab886a3dc26150",
     "libCrossReferencers.wasm.js": "4ead07637cb254be26934ec0fc41046144ab658a3b5e385438fec548380e547f",
-    "libCrossReferencers.wasm.wasm": "2b4ee328b935551ea5627300ad28b0a351e86ebbc78257e734c5b9ca352e6351",
+    "libCrossReferencers.wasm.wasm": "1843944d69dab0a8203d656bed77cc201b8ad58f6352ffa04afda373e8af4ad0",
     "libInsulationCoordinator.wasm.js": "a117fbd827d83354e7c9654727c5f166edee2958dea1528f2b7f8d3ea630e68c",
-    "libInsulationCoordinator.wasm.wasm": "49a1bef1e1a361226cfe5e8eff30c6eca1c646e425caf581d9f7db90009f391e",
+    "libInsulationCoordinator.wasm.wasm": "0cbc75828d014ec1fd8e2308c5549303c5132992cb493a0cd0d7ef55153d019e",
     "../../../MagneticBuilder/src/assets/js/libMKF.wasm.js": "eaf1a766a33eff81b6f3215705ab1739fc6e0045402b3b471101114bdb7048ab",
-    "../../../MagneticBuilder/src/assets/js/libMKF.wasm.wasm": "8f5f62d65edaf678f03c164698b61a8a7b43893b0085281d8f6e9906539f75f4"
+    "../../../MagneticBuilder/src/assets/js/libMKF.wasm.wasm": "426179a3c3f3ecc64a3e4b791f6b6af12f67400ff0493e7dfdab886a3dc26150"
   }
 }
